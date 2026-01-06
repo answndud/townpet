@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: TownPet
+
+  profiles:
+    active: local
+
+  jpa:
+    open-in-view: false
+    properties:
+      hibernate:
+        query:
+          in_clause_parameter_padding: true
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 20MB
+
+server:
+  error:
+    include-message: always
+    include-binding-errors: always
+
+logging:
+  level:
+    com.townpet: DEBUG

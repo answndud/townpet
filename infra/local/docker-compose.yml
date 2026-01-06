@@ -1,0 +1,34 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: townpet-postgres
+    environment:
+      POSTGRES_DB: townpet
+      POSTGRES_USER: townpet
+      POSTGRES_PASSWORD: townpet
+      TZ: Asia/Seoul
+    ports:
+      - "5432:5432"
+    volumes:
+      - townpet_pg_data:/var/lib/postgresql/data
+    networks:
+      - townpet-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: townpet-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - townpet-network
+    command: redis-server --appendonly yes
+    volumes:
+      - townpet_redis_data:/data
+
+networks:
+  townpet-network:
+    driver: bridge
+
+volumes:
+  townpet_pg_data:
+  townpet_redis_data:
