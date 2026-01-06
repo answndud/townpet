@@ -118,17 +118,6 @@ townpet/
 
 ---
 
-## 🤝 기여하기
-
-프로젝트 기여에 관심이 있으시다면 [CONTRIBUTING.md](CONTRIBUTING.md)를 참고해주세요.
-
----
-
-## 📄 라이선스
-
-이 프로젝트는 MIT 라이선스를 따릅니다. 자세한 내용은 [LICENSE](LICENSE) 파일을 참고하세요.
-
----
 
 ## 👤 Contact
 
