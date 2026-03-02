@@ -22,6 +22,7 @@ import {
   serializeEditorHtml,
 } from "@/lib/editor-content-serializer";
 import { renderLiteMarkdown } from "@/lib/markdown-lite";
+import { REVIEW_CATEGORY, type ReviewCategory } from "@/lib/review-category";
 import { createPostAction } from "@/server/actions/post";
 
 type NeighborhoodOption = {
@@ -54,6 +55,7 @@ type PostCreateFormState = {
   scope: PostScope;
   neighborhoodId: string;
   petTypeId: string;
+  reviewCategory: ReviewCategory;
   animalTagsInput: string;
   hospitalReview: {
     hospitalName: string;
@@ -92,9 +94,17 @@ const postTypeOptions = [
   { value: PostType.LOST_FOUND, label: "실종/목격 제보" },
   { value: PostType.MEETUP, label: "동네모임" },
   { value: PostType.MARKET_LISTING, label: "중고/공동구매" },
-  { value: PostType.PLACE_REVIEW, label: "후기/리뷰" },
-  { value: PostType.PRODUCT_REVIEW, label: "용품리뷰" },
+  { value: PostType.PRODUCT_REVIEW, label: "리뷰" },
   { value: PostType.PET_SHOWCASE, label: "반려자랑" },
+];
+
+const reviewCategoryOptions: Array<{ value: ReviewCategory; label: string }> = [
+  { value: REVIEW_CATEGORY.SUPPLIES, label: "용품" },
+  { value: REVIEW_CATEGORY.FEED, label: "사료" },
+  { value: REVIEW_CATEGORY.SNACK, label: "간식" },
+  { value: REVIEW_CATEGORY.TOY, label: "장난감" },
+  { value: REVIEW_CATEGORY.PLACE, label: "장소" },
+  { value: REVIEW_CATEGORY.ETC, label: "기타" },
 ];
 
 const scopeOptions = [
@@ -120,6 +130,7 @@ function isDraftFormState(value: unknown): value is PostCreateFormState {
     typeof candidate.scope === "string" &&
     typeof candidate.neighborhoodId === "string" &&
     (typeof candidate.petTypeId === "string" || candidate.petTypeId === undefined) &&
+    (typeof candidate.reviewCategory === "string" || candidate.reviewCategory === undefined) &&
     (typeof candidate.animalTagsInput === "string" || candidate.animalTagsInput === undefined) &&
     Array.isArray(candidate.imageUrls) &&
     (typeof candidate.guestDisplayName === "string" || candidate.guestDisplayName === undefined) &&
@@ -167,6 +178,7 @@ export function PostCreateForm({
     scope: PostScope.GLOBAL,
     neighborhoodId: defaultNeighborhoodId,
     petTypeId: communities[0]?.id ?? "",
+    reviewCategory: REVIEW_CATEGORY.SUPPLIES,
     animalTagsInput: "",
     hospitalReview: {
       hospitalName: "",
@@ -219,6 +231,7 @@ export function PostCreateForm({
           ...prev,
           ...draftForm,
           petTypeId: draftForm.petTypeId ?? prev.petTypeId,
+          reviewCategory: draftForm.reviewCategory ?? prev.reviewCategory,
           animalTagsInput: draftForm.animalTagsInput ?? "",
           guestDisplayName: draftForm.guestDisplayName ?? "",
           guestPassword: "",
@@ -458,6 +471,18 @@ export function PostCreateForm({
   }, [canUseLocalScope, formState.scope, isAuthenticated]);
 
   useEffect(() => {
+    if (formState.type !== PostType.PLACE_REVIEW) {
+      return;
+    }
+
+    setFormState((prev) => ({
+      ...prev,
+      type: PostType.PRODUCT_REVIEW,
+      reviewCategory: REVIEW_CATEGORY.PLACE,
+    }));
+  }, [formState.type]);
+
+  useEffect(() => {
     if (formState.petTypeId) {
       return;
     }
@@ -474,10 +499,13 @@ export function PostCreateForm({
 
   const showNeighborhood = formState.scope === PostScope.LOCAL;
   const isCommonBoardType = isCommonBoardPostType(formState.type);
+  const showReviewCategory = formState.type === PostType.PRODUCT_REVIEW;
   const showCommunitySelector = !isCommonBoardType;
   const showAnimalTagsInput = isCommonBoardType;
   const showHospitalReview = formState.type === PostType.HOSPITAL_REVIEW;
-  const showPlaceReview = formState.type === PostType.PLACE_REVIEW;
+  const showPlaceReview =
+    formState.type === PostType.PLACE_REVIEW ||
+    (formState.type === PostType.PRODUCT_REVIEW && formState.reviewCategory === REVIEW_CATEGORY.PLACE);
   const showWalkRoute = formState.type === PostType.WALK_ROUTE;
 
   const hasHospitalReview =
@@ -646,6 +674,12 @@ export function PostCreateForm({
       .map((tag) => tag.trim())
       .filter((tag) => tag.length > 0)
       .slice(0, 5);
+    const resolvedType =
+      formState.type === PostType.PRODUCT_REVIEW && formState.reviewCategory === REVIEW_CATEGORY.PLACE
+        ? PostType.PLACE_REVIEW
+        : formState.type;
+    const shouldAttachReviewCategory =
+      resolvedType === PostType.PLACE_REVIEW || resolvedType === PostType.PRODUCT_REVIEW;
 
     if (showCommunitySelector && !formState.petTypeId) {
       setError("커뮤니티를 선택해 주세요.");
@@ -667,7 +701,8 @@ export function PostCreateForm({
       const payload = {
         title: formState.title,
         content: serializedContent,
-        type: formState.type,
+        type: resolvedType,
+        reviewCategory: shouldAttachReviewCategory ? formState.reviewCategory : undefined,
         scope: isAuthenticated ? formState.scope : PostScope.GLOBAL,
         imageUrls: serializedImageUrls,
         neighborhoodId: showNeighborhood ? formState.neighborhoodId : undefined,
@@ -748,6 +783,7 @@ export function PostCreateForm({
         content: "",
         type: PostType.FREE_BOARD,
         petTypeId: communities[0]?.id ?? "",
+        reviewCategory: REVIEW_CATEGORY.SUPPLIES,
         animalTagsInput: "",
         hospitalReview: {
           ...prev.hospitalReview,
@@ -821,6 +857,28 @@ export function PostCreateForm({
               ))}
             </select>
           </label>
+
+          {showReviewCategory ? (
+            <label className="flex flex-col gap-1.5 text-sm font-medium text-[#355988]">
+              리뷰 카테고리
+              <select
+                className="tp-input-soft px-3 py-2 text-sm"
+                value={formState.reviewCategory}
+                onChange={(event) =>
+                  setFormState((prev) => ({
+                    ...prev,
+                    reviewCategory: event.target.value as ReviewCategory,
+                  }))
+                }
+              >
+                {reviewCategoryOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
 
           <label className="flex flex-col gap-1.5 text-sm font-medium text-[#355988]">
             범위

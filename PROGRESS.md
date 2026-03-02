@@ -17,6 +17,21 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-02: 관심 동물 멀티선택 + 피드 지속 필터
+- 완료 내용
+- 상단 내비게이션 `관심 동물` 드롭다운을 단일 링크형에서 체크박스 멀티선택 UI로 전환하고, 로그인 사용자가 선택값을 저장할 수 있도록 서버 액션/서비스를 추가.
+- `UserPetTypePreference` 스키마/마이그레이션을 추가해 관심 동물 선호를 사용자별로 영구 저장하고, 레이아웃에서 초기값을 주입하도록 연결.
+- `/feed`와 `/api/posts`, 무한스크롤 쿼리를 다중 `petType` 파라미터(`petType=...` 반복)와 사용자 기본 선호 필터를 함께 처리하도록 확장.
+- 게시판 이동/전체글/베스트글 전환 시에도 저장된 관심 동물 필터가 유지되도록 피드 링크 생성 로직을 보강.
+- 검증 결과
+- `pnpm -C app exec prisma migrate deploy` 적용 완료 (`20260303022000_add_user_pet_type_preferences`).
+- `pnpm -C app exec prisma generate` 완료.
+- `pnpm -C app lint` 통과.
+- `pnpm -C app typecheck` 통과.
+- `pnpm -C app test -- src/server/auth.test.ts src/server/queries/post.queries.test.ts` 통과.
+- 이슈/블로커
+- 없음.
+
 ### 2026-03-02: 닉네임 30일 변경 제한 + 프로필 계정정보 문구 정리
 - 완료 내용
 - `User.nicknameUpdatedAt` 필드와 마이그레이션을 추가해 닉네임 변경 시점을 저장.

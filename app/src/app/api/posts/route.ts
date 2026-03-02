@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { PostScope } from "@prisma/client";
+import { z } from "zod";
 
 import { isLoginRequiredPostType } from "@/lib/post-access";
 import { FEED_PAGE_SIZE } from "@/lib/feed";
@@ -32,12 +33,26 @@ export async function GET(request: NextRequest) {
       cacheMs: 1_000,
     });
     const { searchParams } = new URL(request.url);
+    const petTypeQueryValues = searchParams
+      .getAll("petType")
+      .map((value) => value.trim())
+      .filter((value) => value.length > 0);
+    const parsedPetTypes = z.array(z.string().cuid()).max(50).safeParse(petTypeQueryValues);
+    if (!parsedPetTypes.success) {
+      return jsonError(400, {
+        code: "INVALID_QUERY",
+        message: "잘못된 요청 파라미터입니다.",
+      });
+    }
+    const petTypeIds = Array.from(new Set(parsedPetTypes.data));
+
     const parsed = postListSchema.safeParse({
       cursor: searchParams.get("cursor") ?? undefined,
       limit: FEED_PAGE_SIZE,
       type: searchParams.get("type") ?? undefined,
       scope: searchParams.get("scope") ?? undefined,
-      petType: searchParams.get("petType") ?? undefined,
+      petType: petTypeIds[0] ?? undefined,
+      review: searchParams.get("review") ?? undefined,
       q: searchParams.get("q") ?? undefined,
       searchIn: searchParams.get("searchIn") ?? undefined,
       sort: searchParams.get("sort") ?? undefined,
@@ -93,6 +108,7 @@ export async function GET(request: NextRequest) {
       limit: FEED_PAGE_SIZE,
       scope,
       petTypeId,
+      petTypeIds,
       excludeTypes: currentUser ? undefined : loginRequiredTypes,
       neighborhoodId,
       viewerId: currentUser?.id,

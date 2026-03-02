@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import {
   neighborhoodSelectSchema,
+  preferredPetTypesSchema,
   profileImageUpdateSchema,
   profileUpdateSchema,
 } from "@/lib/validations/user";
@@ -206,5 +207,52 @@ export async function updateProfileImage({ userId, input }: UpdateProfileImagePa
     where: { id: userId },
     data: { image: parsed.data.imageUrl },
     select: { id: true, image: true },
+  });
+}
+
+type UpdatePreferredPetTypesParams = {
+  userId: string;
+  input: unknown;
+};
+
+export async function updatePreferredPetTypes({ userId, input }: UpdatePreferredPetTypesParams) {
+  const parsed = preferredPetTypesSchema.safeParse(input);
+  if (!parsed.success) {
+    throw new ServiceError("관심 동물 선택이 올바르지 않습니다.", "INVALID_INPUT", 400);
+  }
+
+  const { petTypeIds } = parsed.data;
+  if (petTypeIds.length > 0) {
+    const existingCount = await prisma.community.count({
+      where: {
+        id: { in: petTypeIds },
+        isActive: true,
+      },
+    });
+    if (existingCount !== petTypeIds.length) {
+      throw new ServiceError("일부 동물 타입을 찾을 수 없습니다.", "COMMUNITY_NOT_FOUND", 404);
+    }
+  }
+
+  return prisma.$transaction(async (tx) => {
+    await tx.userPetTypePreference.deleteMany({ where: { userId } });
+
+    if (petTypeIds.length === 0) {
+      return [];
+    }
+
+    await tx.userPetTypePreference.createMany({
+      data: petTypeIds.map((petTypeId) => ({
+        userId,
+        petTypeId,
+      })),
+      skipDuplicates: true,
+    });
+
+    return tx.userPetTypePreference.findMany({
+      where: { userId },
+      select: { petTypeId: true },
+      orderBy: { createdAt: "asc" },
+    });
   });
 }

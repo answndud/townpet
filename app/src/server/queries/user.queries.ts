@@ -2,6 +2,54 @@ import { Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 
+let userPreferredPetTypesSupport: boolean | null = null;
+
+function supportsUserPreferredPetTypes() {
+  if (userPreferredPetTypesSupport !== null) {
+    return userPreferredPetTypesSupport;
+  }
+
+  userPreferredPetTypesSupport = true;
+  return true;
+}
+
+function isUnknownPreferredPetTypesFieldError(error: unknown) {
+  return (
+    error instanceof Error &&
+    error.message.includes("Unknown field `preferredPetTypes`")
+  );
+}
+
+function isMissingUserPetTypePreferenceTableError(error: unknown) {
+  if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2021") {
+    const tableName = String(error.meta?.table ?? "");
+    return tableName.includes("UserPetTypePreference");
+  }
+
+  return (
+    error instanceof Error &&
+    error.message.includes("UserPetTypePreference") &&
+    error.message.includes("does not exist")
+  );
+}
+
+function isUnavailablePreferredPetTypesError(error: unknown) {
+  return (
+    isUnknownPreferredPetTypesFieldError(error) ||
+    isMissingUserPetTypePreferenceTableError(error)
+  );
+}
+
+const USER_BASE_SELECT = {
+  id: true,
+  email: true,
+  name: true,
+  nickname: true,
+  bio: true,
+  image: true,
+  role: true,
+} as const;
+
 const petListCache = new Map<
   string,
   {
@@ -11,57 +59,144 @@ const petListCache = new Map<
 >();
 
 export async function getUserByEmail(email: string) {
-  return prisma.user.findUnique({
-    where: { email },
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      nickname: true,
-      bio: true,
-      image: true,
-      role: true,
-    },
-  });
+  if (!supportsUserPreferredPetTypes()) {
+    return prisma.user.findUnique({
+      where: { email },
+      select: USER_BASE_SELECT,
+    });
+  }
+
+  return prisma.user
+    .findUnique({
+      where: { email },
+      select: {
+        ...USER_BASE_SELECT,
+        preferredPetTypes: {
+          select: { petTypeId: true },
+          orderBy: { createdAt: "asc" },
+        },
+      },
+    })
+    .catch((error) => {
+      if (!isUnavailablePreferredPetTypesError(error)) {
+        throw error;
+      }
+      userPreferredPetTypesSupport = false;
+      return prisma.user.findUnique({
+        where: { email },
+        select: USER_BASE_SELECT,
+      });
+    });
 }
 
 export async function getUserById(id: string) {
-  return prisma.user.findUnique({
-    where: { id },
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      nickname: true,
-      bio: true,
-      image: true,
-      role: true,
-    },
-  });
+  if (!supportsUserPreferredPetTypes()) {
+    return prisma.user.findUnique({
+      where: { id },
+      select: USER_BASE_SELECT,
+    });
+  }
+
+  return prisma.user
+    .findUnique({
+      where: { id },
+      select: {
+        ...USER_BASE_SELECT,
+        preferredPetTypes: {
+          select: { petTypeId: true },
+          orderBy: { createdAt: "asc" },
+        },
+      },
+    })
+    .catch((error) => {
+      if (!isUnavailablePreferredPetTypesError(error)) {
+        throw error;
+      }
+      userPreferredPetTypesSupport = false;
+      return prisma.user.findUnique({
+        where: { id },
+        select: USER_BASE_SELECT,
+      });
+    });
 }
 
 export async function getUserWithNeighborhoods(id: string) {
-  return prisma.user.findUnique({
-    where: { id },
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      nickname: true,
-      bio: true,
-      image: true,
-      createdAt: true,
-      neighborhoods: {
-        select: {
-          id: true,
-          isPrimary: true,
-          neighborhood: {
-            select: { id: true, name: true, city: true, district: true },
-          },
+  const baseSelect = {
+    id: true,
+    email: true,
+    name: true,
+    nickname: true,
+    bio: true,
+    image: true,
+    createdAt: true,
+    neighborhoods: {
+      select: {
+        id: true,
+        isPrimary: true,
+        neighborhood: {
+          select: { id: true, name: true, city: true, district: true },
         },
       },
     },
-  });
+  } as const;
+
+  if (!supportsUserPreferredPetTypes()) {
+    return prisma.user.findUnique({
+      where: { id },
+      select: baseSelect,
+    });
+  }
+
+  return prisma.user
+    .findUnique({
+      where: { id },
+      select: {
+        ...baseSelect,
+        preferredPetTypes: {
+          select: {
+            petTypeId: true,
+            petType: {
+              select: {
+                id: true,
+                labelKo: true,
+              },
+            },
+          },
+          orderBy: { createdAt: "asc" },
+        },
+      },
+    })
+    .catch((error) => {
+      if (!isUnavailablePreferredPetTypesError(error)) {
+        throw error;
+      }
+      userPreferredPetTypesSupport = false;
+      return prisma.user.findUnique({
+        where: { id },
+        select: baseSelect,
+      });
+    });
+}
+
+export async function listPreferredPetTypeIdsByUserId(userId: string) {
+  if (!supportsUserPreferredPetTypes()) {
+    return [];
+  }
+
+  const items = await prisma.userPetTypePreference
+    .findMany({
+      where: { userId },
+      select: { petTypeId: true },
+      orderBy: { createdAt: "asc" },
+    })
+    .catch((error) => {
+      if (!isUnavailablePreferredPetTypesError(error)) {
+        throw error;
+      }
+      userPreferredPetTypesSupport = false;
+      return [];
+    });
+  return items.map((item) => item.petTypeId);
 }
 
 export async function listUsersByIds(ids: string[]) {

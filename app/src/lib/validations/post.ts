@@ -1,7 +1,8 @@
-import { PostScope, PostType, ReviewCategory } from "@prisma/client";
+import { PostScope, PostType } from "@prisma/client";
 import { z } from "zod";
 
 import { isCommonBoardPostType } from "@/lib/community-board";
+import { REVIEW_CATEGORY, REVIEW_CATEGORY_VALUES, type ReviewCategory } from "@/lib/review-category";
 
 const optionalTrimmedString = z.preprocess(
   (value) => {
@@ -67,7 +68,7 @@ export const postCreateSchema = z.object({
   scope: z.nativeEnum(PostScope).default(PostScope.LOCAL),
   neighborhoodId: z.string().cuid().optional(),
   petTypeId: z.string().cuid().optional(),
-  reviewCategory: z.nativeEnum(ReviewCategory).optional(),
+  reviewCategory: z.enum(REVIEW_CATEGORY_VALUES).optional(),
   animalTags: z.array(z.string().trim().min(1).max(24)).max(5).optional().default([]),
   imageUrls: z.array(imageUrlSchema).max(10).optional().default([]),
   guestDisplayName: z.string().trim().min(2).max(24).optional(),
@@ -85,7 +86,11 @@ export const postCreateSchema = z.object({
       });
     }
 
-    if (value.type === PostType.PLACE_REVIEW && value.reviewCategory && value.reviewCategory !== ReviewCategory.PLACE) {
+    if (
+      value.type === PostType.PLACE_REVIEW &&
+      value.reviewCategory &&
+      value.reviewCategory !== REVIEW_CATEGORY.PLACE
+    ) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["reviewCategory"],
@@ -93,7 +98,7 @@ export const postCreateSchema = z.object({
       });
     }
 
-    if (value.type === PostType.PRODUCT_REVIEW && value.reviewCategory === ReviewCategory.PLACE) {
+    if (value.type === PostType.PRODUCT_REVIEW && value.reviewCategory === REVIEW_CATEGORY.PLACE) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["reviewCategory"],
@@ -168,7 +173,7 @@ export const postListSchema = z.object({
   type: z.nativeEnum(PostType).optional(),
   scope: z.nativeEnum(PostScope).optional(),
   petType: z.string().cuid().optional(),
-  review: z.nativeEnum(ReviewCategory).optional(),
+  review: z.enum(REVIEW_CATEGORY_VALUES).optional(),
   q: z.string().min(1).max(100).optional(),
   searchIn: z.enum(["ALL", "TITLE", "CONTENT", "AUTHOR"]).optional(),
   sort: z.enum(["LATEST", "LIKE", "COMMENT"]).optional(),

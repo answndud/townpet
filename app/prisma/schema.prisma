@@ -36,6 +36,7 @@ model User {
   authAudits        AuthAuditLog[]
   postReactions     PostReaction[]
   commentReactions  CommentReaction[]
+  preferredPetTypes UserPetTypePreference[]
   notifications     Notification[]        @relation("NotificationRecipient")
   actions           Notification[]        @relation("NotificationActor")
   createdAt         DateTime              @default(now())
@@ -182,10 +183,24 @@ model Community {
   tags             String[]          @default([])
   category         CommunityCategory @relation(fields: [categoryId], references: [id])
   posts            Post[]
+  preferredByUsers UserPetTypePreference[]
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
 
   @@index([categoryId, sortOrder])
+}
+
+model UserPetTypePreference {
+  id        String    @id @default(cuid())
+  userId    String
+  petTypeId String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  petType   Community @relation(fields: [petTypeId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+
+  @@unique([userId, petTypeId])
+  @@index([userId])
+  @@index([petTypeId])
 }
 
 model Post {
