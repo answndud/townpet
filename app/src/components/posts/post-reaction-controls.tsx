@@ -140,8 +140,8 @@ export function PostReactionControls({
   }, [canReact, hasInteracted, postId, reactionLoaded]);
 
   const buttonClass = compact
-    ? "inline-flex h-9 min-w-[90px] items-center justify-center border px-2 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 sm:min-w-[100px] sm:px-2.5"
-    : "inline-flex h-8 min-w-[82px] items-center justify-center border px-2 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 sm:h-9 sm:min-w-[98px] sm:px-2.5";
+    ? "inline-flex h-9 min-w-[90px] items-center justify-center rounded-lg border px-2 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 sm:min-w-[100px] sm:px-2.5"
+    : "inline-flex h-8 min-w-[82px] items-center justify-center rounded-lg border px-2 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 sm:h-9 sm:min-w-[98px] sm:px-2.5";
 
   const handleToggle = (target: ReactionType) => {
     if (!canReact) {
@@ -186,14 +186,14 @@ export function PostReactionControls({
           className={`${buttonClass} ${
             effectiveReaction === REACTION_TYPE.LIKE
               ? "border-[#3567b5] bg-[#3567b5] text-white"
-              : "border-[#bfd0ec] bg-white text-[#315484] hover:bg-[#f3f7ff]"
+              : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
           }`}
         >
           좋아요 {likes.toLocaleString()}
         </button>
         {!canReact && showLoginHint && loginIntent === REACTION_TYPE.LIKE ? (
           <div
-            className={`absolute left-0 top-[calc(100%+8px)] z-10 max-w-[min(86vw,260px)] rounded-sm border border-[#bfd0ec] bg-white px-2.5 py-1.5 text-[#355988] shadow-[0_8px_18px_rgba(16,40,74,0.12)] sm:left-1/2 sm:-translate-x-1/2 ${
+            className={`absolute left-0 top-[calc(100%+8px)] z-10 max-w-[min(86vw,260px)] rounded-lg border border-[#dbe6f6] bg-white px-2.5 py-1.5 text-[#355988] shadow-[0_8px_18px_rgba(16,40,74,0.12)] sm:left-1/2 sm:-translate-x-1/2 ${
               compact ? "text-[11px]" : "text-xs"
             }`}
           >
@@ -212,14 +212,14 @@ export function PostReactionControls({
           className={`${buttonClass} ${
             effectiveReaction === REACTION_TYPE.DISLIKE
               ? "border-[#5e7396] bg-[#5e7396] text-white"
-              : "border-[#bfd0ec] bg-white text-[#315484] hover:bg-[#f3f7ff]"
+              : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
           }`}
         >
           싫어요 {dislikes.toLocaleString()}
         </button>
         {!canReact && showLoginHint && loginIntent === REACTION_TYPE.DISLIKE ? (
           <div
-            className={`absolute right-0 top-[calc(100%+8px)] z-10 max-w-[min(86vw,260px)] rounded-sm border border-[#bfd0ec] bg-white px-2.5 py-1.5 text-[#355988] shadow-[0_8px_18px_rgba(16,40,74,0.12)] sm:left-1/2 sm:right-auto sm:-translate-x-1/2 ${
+            className={`absolute right-0 top-[calc(100%+8px)] z-10 max-w-[min(86vw,260px)] rounded-lg border border-[#dbe6f6] bg-white px-2.5 py-1.5 text-[#355988] shadow-[0_8px_18px_rgba(16,40,74,0.12)] sm:left-1/2 sm:right-auto sm:-translate-x-1/2 ${
               compact ? "text-[11px]" : "text-xs"
             }`}
           >

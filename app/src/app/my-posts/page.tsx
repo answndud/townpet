@@ -136,18 +136,18 @@ export default async function MyPostsPage({ searchParams }: MyPostsPageProps) {
                   name="q"
                   defaultValue={query}
                   placeholder="제목, 내용 검색"
-                  className="h-10 w-full rounded-full border border-[#cbdcf5] bg-white px-4 text-sm text-[#1e3f74] outline-none transition focus:border-[#4e89d8]"
+                  className="tp-input-soft h-10 w-full bg-white px-4 text-sm outline-none transition focus:border-[#4e89d8]"
                 />
                 <button
                   type="submit"
-                  className="h-10 min-w-[76px] rounded-full border border-[#3567b5] bg-[#3567b5] px-3 text-sm font-semibold text-white transition hover:bg-[#2f5da4]"
+                  className="tp-btn-primary h-10 min-w-[76px] px-3 text-sm font-semibold"
                 >
                   검색
                 </button>
                 {query ? (
                   <Link
                     href={makeHref({ nextQuery: null })}
-                    className="inline-flex h-10 min-w-[76px] items-center justify-center rounded-full border border-[#cbdcf5] bg-white px-3 text-sm font-semibold text-[#315b9a] transition hover:bg-[#f5f9ff]"
+                    className="tp-btn-soft inline-flex h-10 min-w-[76px] items-center justify-center px-3 text-sm font-semibold"
                   >
                     초기화
                   </Link>
@@ -161,10 +161,10 @@ export default async function MyPostsPage({ searchParams }: MyPostsPageProps) {
                 <div className="flex flex-wrap items-center gap-2">
                   <Link
                     href={makeHref({ nextType: null })}
-                    className={`border px-3 py-1 text-xs font-medium transition ${
+                    className={`rounded-lg border px-3 py-1 text-xs font-medium transition ${
                       !type
                         ? "border-[#3567b5] bg-[#3567b5] text-white"
-                        : "border-[#b9cbeb] bg-white text-[#2f548f] hover:bg-[#f3f7ff]"
+                        : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
                     }`}
                   >
                     전체
@@ -173,10 +173,10 @@ export default async function MyPostsPage({ searchParams }: MyPostsPageProps) {
                     <Link
                       key={value}
                       href={makeHref({ nextType: value })}
-                      className={`border px-3 py-1 text-xs font-medium transition ${
+                       className={`rounded-lg border px-3 py-1 text-xs font-medium transition ${
                         type === value
                           ? "border-[#3567b5] bg-[#3567b5] text-white"
-                          : "border-[#b9cbeb] bg-white text-[#2f548f] hover:bg-[#f3f7ff]"
+                          : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
                       }`}
                     >
                       {typeLabels[value]}
@@ -192,10 +192,10 @@ export default async function MyPostsPage({ searchParams }: MyPostsPageProps) {
                       <Link
                         key={value}
                         href={makeHref({ nextType: value })}
-                        className={`border px-3 py-1 text-xs font-medium transition ${
+                        className={`rounded-lg border px-3 py-1 text-xs font-medium transition ${
                           type === value
                             ? "border-[#3567b5] bg-[#3567b5] text-white"
-                            : "border-[#b9cbeb] bg-white text-[#2f548f] hover:bg-[#f3f7ff]"
+                            : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
                         }`}
                       >
                         {typeLabels[value]}
@@ -213,20 +213,20 @@ export default async function MyPostsPage({ searchParams }: MyPostsPageProps) {
               <div className="mt-2 grid gap-2">
                 <Link
                   href={makeHref({ nextScope: PostScope.LOCAL })}
-                  className={`border px-3 py-2 text-center text-xs font-semibold transition ${
+                  className={`rounded-lg border px-3 py-2 text-center text-xs font-semibold transition ${
                     scope === PostScope.LOCAL
                       ? "border-[#3567b5] bg-[#3567b5] text-white"
-                      : "border-[#b9cbeb] bg-white text-[#2f548f] hover:bg-[#f3f7ff]"
+                      : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
                   }`}
                 >
                   동네 글
                 </Link>
                 <Link
                   href={makeHref({ nextScope: PostScope.GLOBAL })}
-                  className={`border px-3 py-2 text-center text-xs font-semibold transition ${
+                  className={`rounded-lg border px-3 py-2 text-center text-xs font-semibold transition ${
                     scope === PostScope.GLOBAL
                       ? "border-[#3567b5] bg-[#3567b5] text-white"
-                      : "border-[#b9cbeb] bg-white text-[#2f548f] hover:bg-[#f3f7ff]"
+                      : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
                   }`}
                 >
                   온동네 글

@@ -101,14 +101,14 @@ export function ReportQueueTable({ reports }: ReportQueueTableProps) {
   };
 
   return (
-    <section className="overflow-hidden border border-[#c8d7ef] bg-white">
+    <section className="tp-card overflow-hidden">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#dde7f5] bg-[#f6f9ff] px-4 py-3 text-xs sm:px-5">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="border border-[#bfd0ec] bg-white px-3 py-1 text-[#315484]">
+          <span className="rounded-lg border border-[#cbdcf5] bg-white px-3 py-1 text-[#315b9a]">
             선택 {selectedIds.length}건
           </span>
           <input
-            className="border border-[#bfd0ec] bg-white px-3 py-1 text-xs text-[#1f3f71]"
+            className="tp-input-soft bg-white px-3 py-1 text-xs"
             placeholder="일괄 처리 메모(선택)"
             value={bulkResolution}
             onChange={(event) => setBulkResolution(event.target.value)}
@@ -119,7 +119,7 @@ export function ReportQueueTable({ reports }: ReportQueueTableProps) {
           <button
             type="button"
             onClick={() => runBulkAction("RESOLVE")}
-            className="border border-[#3567b5] bg-[#3567b5] px-3 py-1 text-white transition hover:bg-[#2f5da4] disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0]"
+            className="tp-btn-primary px-3 py-1 disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0]"
             disabled={isPending || selectedIds.length === 0}
           >
             일괄 승인
@@ -127,7 +127,7 @@ export function ReportQueueTable({ reports }: ReportQueueTableProps) {
           <button
             type="button"
             onClick={() => runBulkAction("DISMISS")}
-            className="border border-rose-300 bg-white px-3 py-1 text-rose-700 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-lg border border-rose-300 bg-white px-3 py-1 text-rose-700 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
             disabled={isPending || selectedIds.length === 0}
           >
             일괄 기각
@@ -135,7 +135,7 @@ export function ReportQueueTable({ reports }: ReportQueueTableProps) {
           <button
             type="button"
             onClick={() => runBulkAction("HIDE_POST")}
-            className="border border-[#bfd0ec] bg-white px-3 py-1 text-[#315484] transition hover:bg-[#f3f7ff] disabled:cursor-not-allowed disabled:opacity-60"
+            className="tp-btn-soft px-3 py-1 disabled:cursor-not-allowed disabled:opacity-60"
             disabled={isPending || selectedIds.length === 0}
           >
             게시글 숨김
@@ -143,7 +143,7 @@ export function ReportQueueTable({ reports }: ReportQueueTableProps) {
           <button
             type="button"
             onClick={() => runBulkAction("UNHIDE_POST")}
-            className="border border-[#bfd0ec] bg-white px-3 py-1 text-[#315484] transition hover:bg-[#f3f7ff] disabled:cursor-not-allowed disabled:opacity-60"
+            className="tp-btn-soft px-3 py-1 disabled:cursor-not-allowed disabled:opacity-60"
             disabled={isPending || selectedIds.length === 0}
           >
             숨김 해제
@@ -218,7 +218,7 @@ export function ReportQueueTable({ reports }: ReportQueueTableProps) {
                     </td>
                     <td className="px-4 py-3">
                       <span
-                        className={`border px-2 py-0.5 text-[10px] font-semibold ${
+                        className={`rounded-md border px-2 py-0.5 text-[10px] font-semibold ${
                           report.status === ReportStatus.PENDING
                             ? "border-amber-300 bg-amber-50 text-amber-700"
                             : report.status === ReportStatus.RESOLVED
@@ -262,7 +262,7 @@ export function ReportQueueTable({ reports }: ReportQueueTableProps) {
                                 key={audit.id}
                                 className="flex flex-wrap items-center gap-2"
                               >
-                                <span className="border border-[#bfd0ec] bg-white px-2 py-0.5 text-[10px] text-[#355988]">
+                                 <span className="rounded-md border border-[#cbdcf5] bg-white px-2 py-0.5 text-[10px] text-[#355988]">
                                   {statusLabels[audit.status]}
                                 </span>
                                 <span className="text-xs text-[#355988]">

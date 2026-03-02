@@ -95,11 +95,11 @@ export default async function AuthAuditPage({ searchParams }: AuthAuditPageProps
               name="q"
               defaultValue={query}
               placeholder="이메일/닉네임/ID/IP 검색"
-              className="w-full max-w-xs border border-[#bfd0ec] bg-white px-3 py-2 text-xs text-[#1f3f71]"
+              className="tp-input-soft w-full max-w-xs bg-white px-3 py-2 text-xs"
             />
             <button
               type="submit"
-              className="border border-[#3567b5] bg-[#3567b5] px-3 py-2 text-xs font-semibold text-white transition hover:bg-[#2f5da4]"
+              className="tp-btn-primary px-3 py-2 text-xs font-semibold"
             >
               검색
             </button>
@@ -110,7 +110,7 @@ export default async function AuthAuditPage({ searchParams }: AuthAuditPageProps
             ) : null}
             <Link
               href={exportLink}
-              className="border border-[#bfd0ec] bg-white px-3 py-2 text-xs text-[#315484] transition hover:bg-[#f3f7ff]"
+              className="tp-btn-soft px-3 py-2 text-xs"
             >
               CSV 내보내기
             </Link>
@@ -124,10 +124,10 @@ export default async function AuthAuditPage({ searchParams }: AuthAuditPageProps
               <Link
                 key={value}
                 href={buildLink(value as AuthAuditAction | "ALL")}
-                className={`border px-2.5 py-1 transition ${
+                className={`rounded-lg border px-2.5 py-1 transition ${
                   action === value
                     ? "border-[#3567b5] bg-[#3567b5] text-white"
-                    : "border-[#bfd0ec] bg-white text-[#315484] hover:bg-[#f3f7ff]"
+                    : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
                 }`}
               >
                 {value === "ALL" ? "전체" : actionLabels[value as AuthAuditAction]}

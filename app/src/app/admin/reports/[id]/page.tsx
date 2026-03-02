@@ -166,10 +166,10 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
             {report.post ? (
               <div className="flex flex-col gap-2 border border-[#d8e4f6] bg-[#f8fbff] p-4">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="border border-[#bfd0ec] bg-white px-2 py-0.5 text-[10px] text-[#355988]">
+                  <span className="rounded-md border border-[#cbdcf5] bg-white px-2 py-0.5 text-[10px] text-[#355988]">
                     게시글
                   </span>
-                  <span className="border border-[#bfd0ec] bg-white px-2 py-0.5 text-[10px] text-[#355988]">
+                  <span className="rounded-md border border-[#cbdcf5] bg-white px-2 py-0.5 text-[10px] text-[#355988]">
                     {report.post.status}
                   </span>
                 </div>
@@ -181,7 +181,7 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
             ) : report.targetType === ReportTarget.COMMENT && comment ? (
               <div className="flex flex-col gap-2 border border-[#d8e4f6] bg-[#f8fbff] p-4">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="border border-[#bfd0ec] bg-white px-2 py-0.5 text-[10px] text-[#355988]">
+                  <span className="rounded-md border border-[#cbdcf5] bg-white px-2 py-0.5 text-[10px] text-[#355988]">
                     댓글
                   </span>
                   <span className="text-xs text-[#5a7398]">
@@ -195,10 +195,10 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
               </div>
             ) : report.targetType === ReportTarget.USER && targetUser ? (
               <div className="flex flex-col gap-2 border border-[#d8e4f6] bg-[#f8fbff] p-4">
-                <span className="border border-[#bfd0ec] bg-white px-2 py-0.5 text-[10px] text-[#355988]">
+                <span className="rounded-md border border-[#cbdcf5] bg-white px-2 py-0.5 text-[10px] text-[#355988]">
                   사용자
                 </span>
-                <span className="border border-[#bfd0ec] bg-white px-3 py-1 text-xs font-semibold text-[#163462]">
+                <span className="rounded-lg border border-[#cbdcf5] bg-white px-3 py-1 text-xs font-semibold text-[#163462]">
                   {targetUser.nickname ?? targetUser.email}
                 </span>
                 <span className="text-xs text-[#5a7398]">신고 대상</span>
@@ -227,12 +227,12 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
               name="q"
               defaultValue={query}
               placeholder="처리자/메모/ID 검색"
-              className="w-full max-w-xs border border-[#bfd0ec] bg-white px-3 py-2 text-xs text-[#1f3f71]"
+              className="tp-input-soft w-full max-w-xs bg-white px-3 py-2 text-xs"
             />
             <select
               name="order"
               defaultValue={order}
-              className="border border-[#bfd0ec] bg-white px-3 py-2 text-xs text-[#315484]"
+              className="tp-btn-soft px-3 py-2 text-xs"
             >
               <option value="desc">최신순</option>
               <option value="asc">오래된순</option>
@@ -255,7 +255,7 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
               <div className="flex flex-col gap-4 border-l border-[#dbe6f6] pl-4">
                 {audits.map((audit) => (
                   <div key={audit.id} className="relative pl-2">
-                    <span className="absolute left-[-20px] top-1.5 h-2.5 w-2.5 border border-[#bfd0ec] bg-[#f8fbff]" />
+                    <span className="absolute left-[-20px] top-1.5 h-2.5 w-2.5 border border-[#cbdcf5] bg-[#f8fbff]" />
                     <div className="flex flex-wrap items-center gap-2">
                       <span
                         className={`border px-2 py-0.5 text-[10px] font-semibold ${

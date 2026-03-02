@@ -85,7 +85,7 @@ export function LoginForm({
           autoComplete="email"
           inputMode="email"
           spellCheck={false}
-          className="min-h-11 rounded-sm border border-[#adc3e6] bg-[#f7faff] px-3 py-2 text-sm text-[#1f3f71] placeholder:text-[#6887b2] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2f66ba]/40"
+          className="tp-input-soft min-h-11 px-3 py-2 text-sm placeholder:text-[#6887b2] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2f66ba]/40"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
           placeholder="you@townpet.dev"
@@ -107,7 +107,7 @@ export function LoginForm({
           data-testid="login-password"
           type={showPassword ? "text" : "password"}
           autoComplete="current-password"
-          className="min-h-11 flex-1 rounded-sm border border-[#adc3e6] bg-[#f7faff] px-3 py-2 text-sm text-[#1f3f71] placeholder:text-[#6887b2] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2f66ba]/40"
+          className="tp-input-soft min-h-11 flex-1 px-3 py-2 text-sm placeholder:text-[#6887b2] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2f66ba]/40"
           value={password}
           onChange={(event) => setPassword(event.target.value)}
           onKeyUp={(event) => setCapsLockOn(event.getModifierState("CapsLock"))}
@@ -119,7 +119,7 @@ export function LoginForm({
         <button
           type="button"
           onClick={() => setShowPassword((prev) => !prev)}
-          className="min-h-11 min-w-20 rounded-sm border border-[#adc3e6] bg-white px-3 text-xs font-semibold text-[#2a4e7d] transition hover:bg-[#edf3ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2f66ba]/40"
+          className="tp-btn-soft min-h-11 min-w-20 px-3 text-xs font-semibold text-[#2a4e7d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2f66ba]/40"
           aria-pressed={showPassword}
         >
           {showPassword ? "숨기기" : "보기"}
@@ -138,7 +138,7 @@ export function LoginForm({
       <button
         data-testid="login-submit"
         type="submit"
-        className="min-h-11 rounded-sm border border-[#3567b5] bg-[#3567b5] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[#2f5da4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2f66ba]/40 disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0]"
+        className="tp-btn-primary min-h-11 px-5 py-2 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2f66ba]/40 disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0]"
         disabled={isPending || !email.trim() || !password}
       >
         {isPending ? "로그인 중..." : "이메일로 로그인"}

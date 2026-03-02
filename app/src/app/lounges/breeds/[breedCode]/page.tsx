@@ -186,7 +186,7 @@ export default async function BreedLoungePage({ params, searchParams }: BreedLou
           </Link>
           <Link
             href="/feed"
-            className="inline-flex h-8 items-center border border-[#bfd0ec] bg-white px-3 text-xs font-semibold text-[#315484]"
+            className="tp-btn-soft inline-flex h-8 items-center px-3 text-xs font-semibold"
           >
             피드로 이동
           </Link>
@@ -199,7 +199,7 @@ export default async function BreedLoungePage({ params, searchParams }: BreedLou
             name="q"
             defaultValue={query.q ?? ""}
             placeholder="라운지 검색"
-            className="h-8 min-w-[220px] border border-[#bfd0ec] px-3 text-sm"
+            className="tp-input-soft h-8 min-w-[220px] px-3 text-sm"
           />
           <button
             type="submit"
@@ -209,7 +209,7 @@ export default async function BreedLoungePage({ params, searchParams }: BreedLou
           </button>
           <Link
             href={toHref({ breedCode })}
-            className="inline-flex h-8 items-center border border-[#bfd0ec] bg-white px-3 text-xs font-semibold text-[#315484]"
+            className="tp-btn-soft inline-flex h-8 items-center px-3 text-xs font-semibold"
           >
             초기화
           </Link>

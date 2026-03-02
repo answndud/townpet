@@ -209,7 +209,7 @@ export function OnboardingForm({
 
   return (
     <div className="flex flex-col gap-5">
-      <section className="border border-[#c8d7ef] bg-white p-5 sm:p-6">
+      <section className="tp-card p-5 sm:p-6">
         <div className="flex flex-col gap-2">
           <p className="text-xs uppercase tracking-[0.24em] text-[#4e6f9f]">프로필</p>
           <h2 className="text-xl font-semibold text-[#153a6a]">닉네임 설정</h2>
@@ -220,7 +220,7 @@ export function OnboardingForm({
             닉네임
             <input
               data-testid="onboarding-nickname"
-              className="border border-[#bfd0ec] bg-[#f8fbff] px-3 py-2 text-sm text-[#1f3f71]"
+              className="tp-input-soft px-3 py-2 text-sm"
               value={profileName}
               onChange={(event) => setProfileName(event.target.value)}
               placeholder="예: townpet-user"
@@ -231,7 +231,7 @@ export function OnboardingForm({
           <label className="flex flex-col gap-2 text-sm font-medium text-[#355988]">
             소개(선택)
             <textarea
-              className="min-h-[96px] border border-[#bfd0ec] bg-[#f8fbff] px-3 py-2 text-sm text-[#1f3f71]"
+              className="tp-input-soft min-h-[96px] px-3 py-2 text-sm"
               value={profileBio}
               onChange={(event) => setProfileBio(event.target.value)}
               placeholder="나와 반려동물을 간단히 소개해 주세요."
@@ -242,7 +242,7 @@ export function OnboardingForm({
           <button
             data-testid="onboarding-profile-submit"
             type="submit"
-            className="self-start border border-[#3567b5] bg-[#3567b5] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[#2f5da4] disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0]"
+            className="tp-btn-primary self-start px-4 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0]"
             disabled={isPending}
           >
             닉네임 저장
@@ -250,7 +250,7 @@ export function OnboardingForm({
         </form>
       </section>
 
-      <section className="border border-[#c8d7ef] bg-white p-5 sm:p-6">
+      <section className="tp-card p-5 sm:p-6">
         <div className="flex flex-col gap-2">
           <p className="text-xs uppercase tracking-[0.24em] text-[#4e6f9f]">동네</p>
           <h2 className="text-xl font-semibold text-[#153a6a]">내 동네 선택</h2>
@@ -263,7 +263,7 @@ export function OnboardingForm({
             <label className="flex flex-col gap-2 text-sm font-medium text-[#355988]">
               시/도
               <select
-                className="border border-[#bfd0ec] bg-[#f8fbff] px-3 py-2 text-sm text-[#1f3f71]"
+                className="tp-input-soft px-3 py-2 text-sm"
                 value={cityFilter}
                 onChange={(event) => setCityFilter(event.target.value)}
               >
@@ -279,7 +279,7 @@ export function OnboardingForm({
 
           <div className="flex flex-col gap-2 text-sm font-medium text-[#355988]">
             <span>동네 선택 (최대 3개)</span>
-            <div className="max-h-64 space-y-2 overflow-auto border border-[#bfd0ec] bg-[#f8fbff] p-3">
+            <div className="max-h-64 space-y-2 overflow-auto rounded-xl border border-[#dbe6f6] bg-[#f8fbff] p-3">
               {searchItems.map((neighborhood) => (
                 <label key={neighborhood.id} className="flex items-center gap-2 text-xs text-[#1f3f71]">
                   <input
@@ -303,7 +303,7 @@ export function OnboardingForm({
             대표 동네
             <select
               data-testid="onboarding-neighborhood"
-              className="border border-[#bfd0ec] bg-[#f8fbff] px-3 py-2 text-sm text-[#1f3f71]"
+              className="tp-input-soft px-3 py-2 text-sm"
               value={primaryId}
               onChange={(event) => setPrimaryId(event.target.value)}
               required
@@ -339,7 +339,7 @@ export function OnboardingForm({
                   return (
                     <span
                       key={id}
-                      className="inline-flex items-center gap-2 border border-[#bfd0ec] bg-white px-3 py-1 text-xs text-[#1f3f71]"
+                      className="inline-flex items-center gap-2 rounded-full border border-[#cbdcf5] bg-white px-3 py-1 text-xs text-[#1f3f71]"
                     >
                       {neighborhood.city} {neighborhood.district}
                       <button
@@ -369,14 +369,14 @@ export function OnboardingForm({
           <button
             data-testid="onboarding-neighborhood-submit"
             type="submit"
-            className="self-start border border-[#3567b5] bg-[#3567b5] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[#2f5da4] disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0]"
+            className="tp-btn-primary self-start px-4 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0]"
             disabled={isPending || selectedIds.length === 0 || !primaryId}
           >
             동네 저장
           </button>
           <Link
             href="/feed"
-            className="self-start border border-[#bfd0ec] bg-white px-4 py-2 text-xs font-semibold text-[#315484] transition hover:bg-[#f3f7ff]"
+            className="tp-btn-soft self-start px-4 py-2 text-xs font-semibold"
           >
             나중에 설정하기
           </Link>
@@ -384,7 +384,7 @@ export function OnboardingForm({
       </section>
 
       {message ? (
-        <div className="border border-[#bfd0ec] bg-[#f6f9ff] px-4 py-3 text-xs text-[#4f678d]">
+        <div className="rounded-xl border border-[#dbe6f6] bg-[#f6f9ff] px-4 py-3 text-xs text-[#4f678d]">
           {message}
         </div>
       ) : null}

@@ -300,8 +300,8 @@ export function FeedSearchForm({
           }}
           className={
               density === "ULTRA"
-                ? "h-8 rounded-full border border-[#cbdcf5] bg-[#f8fbff] px-2.5 text-xs font-medium text-[#315b9a] outline-none transition focus:border-[#4e89d8] focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
-                : "h-10 rounded-full border border-[#cbdcf5] bg-[#f8fbff] px-3 text-sm text-[#315b9a] outline-none transition focus:border-[#4e89d8] focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
+                ? "tp-input-soft h-8 px-2.5 text-xs font-medium outline-none transition focus:border-[#4e89d8] focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
+                : "tp-input-soft h-10 px-3 text-sm outline-none transition focus:border-[#4e89d8] focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
             }
           >
           {SEARCH_OPTIONS.map((option) => (
@@ -322,8 +322,8 @@ export function FeedSearchForm({
             list={datalistId}
             className={
               density === "ULTRA"
-                ? "h-8 w-full rounded-full border border-[#cbdcf5] bg-white px-3 text-xs text-[#1e3f74] outline-none transition focus:border-[#4e89d8] focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
-                : "h-10 w-full rounded-full border border-[#cbdcf5] bg-white px-4 text-sm text-[#1e3f74] outline-none transition focus:border-[#4e89d8] focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
+                ? "tp-input-soft h-8 w-full bg-white px-3 text-xs outline-none transition focus:border-[#4e89d8] focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
+                : "tp-input-soft h-10 w-full bg-white px-4 text-sm outline-none transition focus:border-[#4e89d8] focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
             }
           />
           <datalist id={datalistId}>
@@ -337,8 +337,8 @@ export function FeedSearchForm({
               href={resetHref}
               className={
                 density === "ULTRA"
-                  ? "inline-flex h-8 min-w-[56px] items-center justify-center rounded-full border border-[#cbdcf5] bg-white px-2.5 text-xs font-semibold text-[#315b9a] transition hover:bg-[#f5f9ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
-                  : "inline-flex h-10 min-w-[72px] items-center justify-center rounded-full border border-[#cbdcf5] bg-white px-3 text-sm font-semibold text-[#315b9a] transition hover:bg-[#f5f9ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
+                  ? "tp-btn-soft inline-flex h-8 min-w-[56px] items-center justify-center px-2.5 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
+                  : "tp-btn-soft inline-flex h-10 min-w-[72px] items-center justify-center px-3 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
                }
              >
                초기화
@@ -347,7 +347,7 @@ export function FeedSearchForm({
         </form>
 
         {showKeywordChips && isKeywordPanelOpen && popularTerms.length > 0 ? (
-          <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-30 hidden rounded-xl border border-[#d4e2f7] bg-white p-2.5 shadow-[0_14px_28px_rgba(30,63,116,0.12)] sm:block">
+          <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-30 hidden rounded-lg border border-[#d4e2f7] bg-white p-2.5 shadow-[0_14px_28px_rgba(30,63,116,0.12)] sm:block">
             <p className="px-1 pb-1 text-[11px] font-semibold text-[#5b7398]">인기 검색어 TOP 10</p>
             <div className="grid grid-cols-1 gap-1 sm:grid-cols-2">
               {popularTerms.slice(0, 10).map((term, index) => (

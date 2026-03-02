@@ -20,7 +20,7 @@ export function ReportUpdateBanner({ message, timeoutMs = 5000 }: ReportUpdateBa
   }
 
   return (
-    <div className="border border-[#bfd0ec] bg-[#f6f9ff] px-4 py-3 text-xs text-[#4f678d]">
+    <div className="rounded-lg border border-[#dbe6f6] bg-[#f6f9ff] px-4 py-3 text-xs text-[#4f678d]">
       {message}
     </div>
   );

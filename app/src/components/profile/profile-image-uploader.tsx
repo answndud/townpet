@@ -38,7 +38,7 @@ export function ProfileImageUploader({ initialImageUrl }: ProfileImageUploaderPr
   };
 
   return (
-    <div className="border border-[#c8d7ef] bg-white p-4">
+    <div className="tp-card p-4">
       <h3 className="text-sm font-semibold text-[#153a6a]">프로필 사진</h3>
       <p className="mt-1 text-xs text-[#5a7398]">
         업로드 후 저장 버튼을 누르면 프로필 사진이 변경됩니다.
@@ -57,7 +57,7 @@ export function ProfileImageUploader({ initialImageUrl }: ProfileImageUploaderPr
         type="button"
         onClick={saveProfileImage}
         disabled={isPending}
-        className="mt-3 border border-[#3567b5] bg-[#3567b5] px-3 py-2 text-xs font-semibold text-white transition hover:bg-[#2f5da4] disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0]"
+        className="tp-btn-primary mt-3 px-3 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0]"
       >
         {isPending ? "저장 중..." : "프로필 사진 저장"}
       </button>

@@ -527,7 +527,7 @@ export function FeedInfiniteList({
                   <p className="mt-1 text-xs leading-5 text-[#446792]">{adConfig.description}</p>
                   <Link
                     href={adConfig.ctaHref}
-                    className="mt-2 inline-flex items-center rounded-full border border-[#3567b5] bg-[#3567b5] px-3 py-1 text-xs font-semibold text-white transition hover:bg-[#2f5da4]"
+                    className="tp-btn-primary mt-2 inline-flex items-center px-3 py-1 text-xs font-semibold"
                   >
                     {adConfig.ctaLabel}
                   </Link>
@@ -624,7 +624,7 @@ export function FeedInfiniteList({
                 void loadMore();
               }}
               disabled={isLoading}
-                className="inline-flex h-10 items-center justify-center rounded-full border border-[#c9daf4] bg-white px-4 text-sm font-semibold text-[#315b9a] transition hover:bg-[#f5f9ff] disabled:cursor-not-allowed disabled:opacity-70"
+                className="tp-btn-soft inline-flex h-10 items-center justify-center px-4 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-70"
               >
               {isLoading ? "불러오는 중..." : "게시글 더 보기"}
             </button>

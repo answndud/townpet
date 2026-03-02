@@ -67,20 +67,51 @@ body {
 
 .tp-hero {
   border: 1px solid #d9e5f7;
-  border-radius: 16px;
+  border-radius: 12px;
   background: linear-gradient(180deg, #fafdff 0%, #f2f7ff 100%);
   box-shadow: 0 10px 24px rgba(30, 63, 116, 0.06);
 }
 
 .tp-card {
   border: 1px solid #d9e5f7;
-  border-radius: 16px;
+  border-radius: 12px;
   background: #fff;
   box-shadow: 0 10px 24px rgba(30, 63, 116, 0.05);
 }
 
 .tp-soft-card {
   border: 1px solid #dbe6f6;
-  border-radius: 14px;
+  border-radius: 10px;
   background: #f8fbff;
+}
+
+.tp-input-soft {
+  border: 1px solid #cbdcf5;
+  border-radius: 8px;
+  background: #f8fbff;
+  color: #1e3f74;
+}
+
+.tp-btn-soft {
+  border: 1px solid #cbdcf5;
+  border-radius: 8px;
+  background: #fff;
+  color: #315b9a;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.tp-btn-soft:hover {
+  background: #f5f9ff;
+}
+
+.tp-btn-primary {
+  border: 1px solid #3567b5;
+  border-radius: 8px;
+  background: #3567b5;
+  color: #fff;
+  transition: background 0.15s ease;
+}
+
+.tp-btn-primary:hover {
+  background: #2f5da4;
 }

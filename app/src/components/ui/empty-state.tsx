@@ -15,7 +15,7 @@ export function EmptyState({
 }: EmptyStateProps) {
   return (
     <div className="px-6 py-14 text-center">
-      <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full border border-[#c8d7ef] bg-[#f5f9ff] text-xs font-semibold leading-none text-[#5c78a3]">
+      <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full border border-[#cbdcf5] bg-[#f5f9ff] text-xs font-semibold leading-none text-[#5c78a3]">
         EMPTY
       </div>
       <h2 className="text-lg font-semibold text-[#1d3660]">{title}</h2>

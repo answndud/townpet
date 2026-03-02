@@ -178,7 +178,7 @@ export function NeighborhoodPreferenceForm({
   };
 
   return (
-    <section className="border border-[#c8d7ef] bg-white p-5 sm:p-6">
+    <section className="tp-card p-5 sm:p-6">
       <h2 className="text-lg font-semibold text-[#153a6a]">내 동네 설정</h2>
       <p className="mt-2 text-xs text-[#5a7398]">
         대한민국 시/군/구를 최대 3개까지 선택하고 대표 동네 1개를 지정할 수 있습니다.
@@ -189,7 +189,7 @@ export function NeighborhoodPreferenceForm({
           <label className="flex flex-col gap-2 text-sm font-medium text-[#355988]">
             시/도
             <select
-              className="border border-[#bfd0ec] bg-[#f8fbff] px-3 py-2 text-sm text-[#1f3f71]"
+              className="tp-input-soft px-3 py-2 text-sm"
               value={cityFilter}
               onChange={(event) => setCityFilter(event.target.value)}
             >
@@ -202,7 +202,7 @@ export function NeighborhoodPreferenceForm({
             </select>
           </label>
         </div>
-        <div className="max-h-64 space-y-2 overflow-auto border border-[#bfd0ec] bg-[#f8fbff] p-3">
+        <div className="max-h-64 space-y-2 overflow-auto rounded-xl border border-[#dbe6f6] bg-[#f8fbff] p-3">
           {searchItems.map((neighborhood) => (
             <label key={neighborhood.id} className="flex items-center gap-2 text-xs text-[#1f3f71]">
               <input
@@ -224,7 +224,7 @@ export function NeighborhoodPreferenceForm({
         <label className="flex flex-col gap-2 text-sm font-medium text-[#355988]">
           대표 동네
           <select
-            className="border border-[#bfd0ec] bg-[#f8fbff] px-3 py-2 text-sm text-[#1f3f71]"
+            className="tp-input-soft px-3 py-2 text-sm"
             value={primaryId}
             onChange={(event) => setPrimaryId(event.target.value)}
           >
@@ -259,7 +259,7 @@ export function NeighborhoodPreferenceForm({
                 return (
                   <span
                     key={id}
-                    className="inline-flex items-center gap-2 border border-[#bfd0ec] bg-white px-3 py-1 text-xs text-[#1f3f71]"
+                    className="inline-flex items-center gap-2 rounded-full border border-[#cbdcf5] bg-white px-3 py-1 text-xs text-[#1f3f71]"
                   >
                     {neighborhood.city} {neighborhood.district}
                     <button

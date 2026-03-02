@@ -218,10 +218,10 @@ export default async function PublicUserProfilePage({
                         src={pet.imageUrl}
                         alt={`${pet.name} 프로필 이미지`}
                         loading="lazy"
-                        className="h-12 w-12 border border-[#bfd0ec] object-cover"
+                        className="h-12 w-12 border border-[#cbdcf5] object-cover"
                       />
                     ) : (
-                      <div className="flex h-12 w-12 items-center justify-center border border-[#bfd0ec] bg-white text-[10px] font-semibold text-[#5b78a1]">
+                      <div className="flex h-12 w-12 items-center justify-center border border-[#cbdcf5] bg-white text-[10px] font-semibold text-[#5b78a1]">
                         PET
                       </div>
                     )}
@@ -248,30 +248,30 @@ export default async function PublicUserProfilePage({
           <div className="flex flex-wrap items-center gap-2 text-xs">
             <Link
               href={buildTabHref(profile.id, "posts")}
-              className={`border px-3 py-1.5 ${
+              className={`rounded-lg border px-3 py-1.5 ${
                 tab === "posts"
                   ? "border-[#3567b5] bg-[#3567b5] text-white"
-                  : "border-[#bfd0ec] bg-white text-[#315484]"
+                  : "border-[#cbdcf5] bg-white text-[#315b9a]"
               }`}
             >
               게시글 활동
             </Link>
             <Link
               href={buildTabHref(profile.id, "comments")}
-              className={`border px-3 py-1.5 ${
+              className={`rounded-lg border px-3 py-1.5 ${
                 tab === "comments"
                   ? "border-[#3567b5] bg-[#3567b5] text-white"
-                  : "border-[#bfd0ec] bg-white text-[#315484]"
+                  : "border-[#cbdcf5] bg-white text-[#315b9a]"
               }`}
             >
               댓글 활동
             </Link>
             <Link
               href={buildTabHref(profile.id, "reactions")}
-              className={`border px-3 py-1.5 ${
+              className={`rounded-lg border px-3 py-1.5 ${
                 tab === "reactions"
                   ? "border-[#3567b5] bg-[#3567b5] text-white"
-                  : "border-[#bfd0ec] bg-white text-[#315484]"
+                  : "border-[#cbdcf5] bg-white text-[#315b9a]"
               }`}
             >
               반응 활동
@@ -299,7 +299,7 @@ export default async function PublicUserProfilePage({
                 <div className="pt-3">
                   <Link
                     href={buildTabHref(profile.id, "posts", nextCursor)}
-                    className="inline-flex border border-[#bfd0ec] bg-white px-3 py-1.5 text-xs font-semibold text-[#315484] hover:bg-[#f3f7ff]"
+                    className="tp-btn-soft inline-flex px-3 py-1.5 text-xs font-semibold"
                   >
                     게시글 활동 더 보기
                   </Link>
@@ -334,7 +334,7 @@ export default async function PublicUserProfilePage({
                 <div className="pt-3">
                   <Link
                     href={buildTabHref(profile.id, "comments", nextCursor)}
-                    className="inline-flex border border-[#bfd0ec] bg-white px-3 py-1.5 text-xs font-semibold text-[#315484] hover:bg-[#f3f7ff]"
+                    className="tp-btn-soft inline-flex px-3 py-1.5 text-xs font-semibold"
                   >
                     댓글 활동 더 보기
                   </Link>
@@ -365,7 +365,7 @@ export default async function PublicUserProfilePage({
                 <div className="pt-3">
                   <Link
                     href={buildTabHref(profile.id, "reactions", nextCursor)}
-                    className="inline-flex border border-[#bfd0ec] bg-white px-3 py-1.5 text-xs font-semibold text-[#315484] hover:bg-[#f3f7ff]"
+                    className="tp-btn-soft inline-flex px-3 py-1.5 text-xs font-semibold"
                   >
                     반응 활동 더 보기
                   </Link>

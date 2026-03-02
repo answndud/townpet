@@ -71,7 +71,7 @@ export default async function RootLayout({
     session?.user?.email ??
     null;
   const navLinkClass =
-    "inline-flex h-8 items-center rounded-sm border border-[#bfd0ec] bg-white px-3 text-xs leading-none text-[#2f548f] transition hover:border-[#9fb7de] hover:bg-[#f5f9ff] sm:h-9 sm:px-3.5 sm:text-[13px]";
+    "tp-btn-soft inline-flex h-8 items-center px-3 text-xs leading-none sm:h-9 sm:px-3.5 sm:text-[13px]";
 
   return (
     <html lang="ko">

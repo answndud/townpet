@@ -398,7 +398,7 @@ export function ImageUploadField({
         </span>
       </div>
 
-      <div className="border border-dashed border-[#bfd0ec] bg-[#f8fbff] p-3">
+      <div className="rounded-lg border border-dashed border-[#cbdcf5] bg-[#f8fbff] p-3">
         <input
           data-testid="image-upload-input"
           ref={inputRef}

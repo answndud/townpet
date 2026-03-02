@@ -54,10 +54,10 @@ export default async function ProfilePage() {
                 alt="프로필 이미지"
                 width={56}
                 height={56}
-                className="h-14 w-14 rounded-full border border-[#bfd0ec] object-cover"
+                className="h-14 w-14 rounded-full border border-[#cbdcf5] object-cover"
               />
             ) : (
-              <div className="flex h-14 w-14 items-center justify-center rounded-full border border-[#bfd0ec] bg-white text-xs font-semibold text-[#5b78a1]">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full border border-[#cbdcf5] bg-white text-xs font-semibold text-[#5b78a1]">
                 NO IMG
               </div>
             )}
@@ -99,31 +99,31 @@ export default async function ProfilePage() {
           <div className="mt-4 flex flex-wrap gap-2 text-xs">
             <Link
               href={`/users/${user.id}`}
-              className="border border-[#bfd0ec] bg-white px-3 py-1.5 text-[#315484] transition hover:bg-[#f3f7ff]"
+              className="tp-btn-soft px-3 py-1.5 text-[#315484]"
             >
               공개 프로필 보기
             </Link>
             <Link
               href="/my-posts"
-              className="border border-[#bfd0ec] bg-white px-3 py-1.5 text-[#315484] transition hover:bg-[#f3f7ff]"
+              className="tp-btn-soft px-3 py-1.5 text-[#315484]"
             >
               내 작성글 보기
             </Link>
             <Link
               href="/password/setup"
-              className="border border-[#bfd0ec] bg-white px-3 py-1.5 text-[#315484] transition hover:bg-[#f3f7ff]"
+              className="tp-btn-soft px-3 py-1.5 text-[#315484]"
             >
               비밀번호 설정
             </Link>
             <Link
               href="/my-posts?scope=LOCAL"
-              className="border border-[#bfd0ec] bg-white px-3 py-1.5 text-[#315484] transition hover:bg-[#f3f7ff]"
+              className="tp-btn-soft px-3 py-1.5 text-[#315484]"
             >
               동네 글
             </Link>
             <Link
               href="/my-posts?scope=GLOBAL"
-              className="border border-[#bfd0ec] bg-white px-3 py-1.5 text-[#315484] transition hover:bg-[#f3f7ff]"
+              className="tp-btn-soft px-3 py-1.5 text-[#315484]"
             >
               온동네 글
             </Link>
@@ -145,7 +145,7 @@ export default async function ProfilePage() {
           </p>
 
           <div className="mt-4 grid gap-4 lg:grid-cols-2">
-            <div className="border border-[#dbe5f3] bg-[#f8fbff] p-4">
+            <div className="tp-soft-card p-4">
               <h3 className="text-sm font-semibold text-[#1f3f71]">
                 차단 목록 ({blockedUsers.length})
               </h3>
@@ -154,10 +154,7 @@ export default async function ProfilePage() {
               ) : (
                 <div className="mt-3 space-y-3">
                   {blockedUsers.map((entry) => (
-                    <div
-                      key={entry.id}
-                      className="border border-[#c9d8ef] bg-white px-3 py-2 text-xs text-[#355988]"
-                    >
+                    <div key={entry.id} className="rounded-lg border border-[#c9d8ef] bg-white px-3 py-2 text-xs text-[#355988]">
                       <p className="font-semibold text-[#1f3f71]">
                         {entry.blocked?.nickname ?? entry.blocked?.email ?? entry.blockedId}
                       </p>
@@ -183,7 +180,7 @@ export default async function ProfilePage() {
               )}
             </div>
 
-            <div className="border border-[#dbe5f3] bg-[#f8fbff] p-4">
+            <div className="tp-soft-card p-4">
               <h3 className="text-sm font-semibold text-[#1f3f71]">
                 뮤트 목록 ({mutedUsers.length})
               </h3>
@@ -192,10 +189,7 @@ export default async function ProfilePage() {
               ) : (
                 <div className="mt-3 space-y-3">
                   {mutedUsers.map((entry) => (
-                    <div
-                      key={entry.id}
-                      className="border border-[#c9d8ef] bg-white px-3 py-2 text-xs text-[#355988]"
-                    >
+                    <div key={entry.id} className="rounded-lg border border-[#c9d8ef] bg-white px-3 py-2 text-xs text-[#355988]">
                       <p className="font-semibold text-[#1f3f71]">
                         {entry.mutedUser?.nickname ?? entry.mutedUser?.email ?? entry.mutedUserId}
                       </p>

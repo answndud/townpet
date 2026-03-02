@@ -163,18 +163,18 @@ export function PetProfileManager({ pets }: PetProfileManagerProps) {
   };
 
   return (
-    <section className="border border-[#c8d7ef] bg-white p-5 sm:p-6">
+    <section className="tp-card p-5 sm:p-6">
       <h2 className="text-lg font-semibold text-[#153a6a]">반려동물 프로필</h2>
       <p className="mt-2 text-xs text-[#5a7398]">
         이름, 종류, 품종/세부종, 몸무게, 태어난 연도와 사진(5MB 이하)을 등록할 수 있습니다.
       </p>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
-        <div className="border border-[#dbe5f3] bg-[#f8fbff] p-4">
+        <div className="tp-soft-card p-4">
           <h3 className="text-sm font-semibold text-[#1f3f71]">새 반려동물 등록</h3>
           <div className="mt-3 grid gap-2">
             <input
-              className="border border-[#bfd0ec] bg-white px-3 py-2 text-sm text-[#1f3f71]"
+              className="tp-input-soft bg-white px-3 py-2 text-sm"
               value={createForm.name}
               onChange={(event) =>
                 setCreateForm((prev) => ({ ...prev, name: event.target.value }))
@@ -182,7 +182,7 @@ export function PetProfileManager({ pets }: PetProfileManagerProps) {
               placeholder="이름"
             />
             <select
-              className="border border-[#bfd0ec] bg-white px-3 py-2 text-sm text-[#1f3f71]"
+              className="tp-input-soft bg-white px-3 py-2 text-sm"
               value={createForm.species}
               onChange={(event) =>
                 setCreateForm((prev) => ({
@@ -198,7 +198,7 @@ export function PetProfileManager({ pets }: PetProfileManagerProps) {
               ))}
             </select>
             <input
-              className="border border-[#bfd0ec] bg-white px-3 py-2 text-sm text-[#1f3f71]"
+              className="tp-input-soft bg-white px-3 py-2 text-sm"
               value={createForm.breedLabel}
               onChange={(event) =>
                 setCreateForm((prev) => ({ ...prev, breedLabel: event.target.value }))
@@ -206,7 +206,7 @@ export function PetProfileManager({ pets }: PetProfileManagerProps) {
               placeholder="품종/세부종(선택)"
             />
             <input
-              className="border border-[#bfd0ec] bg-white px-3 py-2 text-sm text-[#1f3f71]"
+              className="tp-input-soft bg-white px-3 py-2 text-sm"
               value={createForm.weightKg}
               onChange={(event) =>
                 setCreateForm((prev) => ({ ...prev, weightKg: event.target.value }))
@@ -215,7 +215,7 @@ export function PetProfileManager({ pets }: PetProfileManagerProps) {
               inputMode="decimal"
             />
             <input
-              className="border border-[#bfd0ec] bg-white px-3 py-2 text-sm text-[#1f3f71]"
+              className="tp-input-soft bg-white px-3 py-2 text-sm"
               value={createForm.birthYear}
               onChange={(event) =>
                 setCreateForm((prev) => ({ ...prev, birthYear: event.target.value }))
@@ -232,7 +232,7 @@ export function PetProfileManager({ pets }: PetProfileManagerProps) {
               label="반려동물 사진 (5MB 이하)"
             />
             <textarea
-              className="min-h-[90px] border border-[#bfd0ec] bg-white px-3 py-2 text-sm text-[#1f3f71]"
+              className="tp-input-soft min-h-[90px] bg-white px-3 py-2 text-sm"
               value={createForm.bio}
               onChange={(event) =>
                 setCreateForm((prev) => ({ ...prev, bio: event.target.value }))
@@ -244,7 +244,7 @@ export function PetProfileManager({ pets }: PetProfileManagerProps) {
               type="button"
               onClick={saveCreate}
               disabled={isPending}
-              className="self-start border border-[#3567b5] bg-[#3567b5] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[#2f5da4] disabled:cursor-not-allowed disabled:opacity-70"
+              className="tp-btn-primary self-start px-4 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-70"
             >
               {isPending ? "저장 중..." : "등록"}
             </button>
@@ -266,7 +266,7 @@ export function PetProfileManager({ pets }: PetProfileManagerProps) {
                     {isEditing ? (
                       <div className="grid gap-2">
                         <input
-                          className="border border-[#bfd0ec] bg-[#f8fbff] px-2 py-1.5 text-sm text-[#1f3f71]"
+                          className="tp-input-soft px-2 py-1.5 text-sm"
                           value={form.name}
                           onChange={(event) =>
                             setEditForm((prev) => ({ ...prev, name: event.target.value }))
@@ -274,7 +274,7 @@ export function PetProfileManager({ pets }: PetProfileManagerProps) {
                           placeholder="이름"
                         />
                         <select
-                          className="border border-[#bfd0ec] bg-[#f8fbff] px-2 py-1.5 text-sm text-[#1f3f71]"
+                          className="tp-input-soft px-2 py-1.5 text-sm"
                           value={form.species}
                           onChange={(event) =>
                             setEditForm((prev) => ({
@@ -290,7 +290,7 @@ export function PetProfileManager({ pets }: PetProfileManagerProps) {
                           ))}
                         </select>
                         <input
-                          className="border border-[#bfd0ec] bg-[#f8fbff] px-2 py-1.5 text-sm text-[#1f3f71]"
+                          className="tp-input-soft px-2 py-1.5 text-sm"
                           value={form.breedLabel}
                           onChange={(event) =>
                             setEditForm((prev) => ({ ...prev, breedLabel: event.target.value }))
@@ -298,7 +298,7 @@ export function PetProfileManager({ pets }: PetProfileManagerProps) {
                           placeholder="품종/세부종(선택)"
                         />
                         <input
-                          className="border border-[#bfd0ec] bg-[#f8fbff] px-2 py-1.5 text-sm text-[#1f3f71]"
+                          className="tp-input-soft px-2 py-1.5 text-sm"
                           value={form.weightKg}
                           onChange={(event) =>
                             setEditForm((prev) => ({ ...prev, weightKg: event.target.value }))
@@ -307,7 +307,7 @@ export function PetProfileManager({ pets }: PetProfileManagerProps) {
                           inputMode="decimal"
                         />
                         <input
-                          className="border border-[#bfd0ec] bg-[#f8fbff] px-2 py-1.5 text-sm text-[#1f3f71]"
+                          className="tp-input-soft px-2 py-1.5 text-sm"
                           value={form.birthYear}
                           onChange={(event) =>
                             setEditForm((prev) => ({ ...prev, birthYear: event.target.value }))
@@ -324,7 +324,7 @@ export function PetProfileManager({ pets }: PetProfileManagerProps) {
                           label="반려동물 사진 (5MB 이하)"
                         />
                         <textarea
-                          className="min-h-[80px] border border-[#bfd0ec] bg-[#f8fbff] px-2 py-1.5 text-sm text-[#1f3f71]"
+                          className="tp-input-soft min-h-[80px] px-2 py-1.5 text-sm"
                           value={form.bio}
                           onChange={(event) =>
                             setEditForm((prev) => ({ ...prev, bio: event.target.value }))
@@ -343,7 +343,7 @@ export function PetProfileManager({ pets }: PetProfileManagerProps) {
                           <button
                             type="button"
                             onClick={() => setEditTargetId(null)}
-                            className="border border-[#bfd0ec] bg-white px-3 py-1 text-[11px] font-semibold text-[#315484]"
+                            className="tp-btn-soft px-3 py-1 text-[11px] font-semibold"
                           >
                             취소
                           </button>
@@ -368,7 +368,7 @@ export function PetProfileManager({ pets }: PetProfileManagerProps) {
                               setEditTargetId(pet.id);
                               setEditForm(toFormState(pet));
                             }}
-                            className="border border-[#bfd0ec] bg-white px-2 py-1 text-[11px] font-semibold text-[#315484]"
+                            className="tp-btn-soft px-2 py-1 text-[11px] font-semibold"
                           >
                             수정
                           </button>

@@ -54,10 +54,10 @@ export function GuestReadPolicyForm({
         {sortedTypes.map((type) => (
           <label
             key={type}
-            className={`flex cursor-pointer items-center gap-2 border px-3 py-2 text-xs transition ${
+            className={`flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-xs transition ${
               isSelected(type)
                 ? "border-[#3567b5] bg-[#eff5ff] text-[#12386c]"
-                : "border-[#c6d6ee] bg-white text-[#355988] hover:bg-[#f6f9ff]"
+                : "border-[#cbdcf5] bg-white text-[#355988] hover:bg-[#f5f9ff]"
             }`}
           >
             <input
@@ -78,7 +78,7 @@ export function GuestReadPolicyForm({
           type="button"
           onClick={handleSubmit}
           disabled={isPending}
-          className="border border-[#3567b5] bg-[#3567b5] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[#2f5da4] disabled:cursor-not-allowed disabled:opacity-70"
+          className="tp-btn-primary px-4 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-70"
         >
           {isPending ? "저장 중..." : "정책 저장"}
         </button>
@@ -90,7 +90,7 @@ export function GuestReadPolicyForm({
             setError(null);
           }}
           disabled={isPending}
-          className="border border-[#c6d6ee] bg-white px-4 py-2 text-xs font-semibold text-[#315484] transition hover:bg-[#f3f7ff] disabled:cursor-not-allowed disabled:opacity-70"
+          className="tp-btn-soft px-4 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-70"
         >
           모두 공개로 초기화
         </button>

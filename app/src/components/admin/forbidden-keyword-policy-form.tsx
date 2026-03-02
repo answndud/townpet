@@ -52,7 +52,7 @@ export function ForbiddenKeywordPolicyForm({
   return (
     <div className="flex flex-col gap-4">
       <textarea
-        className="min-h-[170px] border border-[#bfd0ec] bg-[#f8fbff] px-3 py-2 text-xs text-[#1f3f71]"
+        className="tp-input-soft min-h-[170px] px-3 py-2 text-xs"
         value={rawKeywords}
         onChange={(event) => setRawKeywords(event.target.value)}
         placeholder="한 줄에 하나씩 금칙어를 입력하세요. (쉼표 구분도 가능)"
@@ -67,7 +67,7 @@ export function ForbiddenKeywordPolicyForm({
           type="button"
           onClick={handleSubmit}
           disabled={isPending}
-          className="border border-[#3567b5] bg-[#3567b5] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[#2f5da4] disabled:cursor-not-allowed disabled:opacity-70"
+          className="tp-btn-primary px-4 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-70"
         >
           {isPending ? "저장 중..." : "금칙어 저장"}
         </button>
@@ -79,7 +79,7 @@ export function ForbiddenKeywordPolicyForm({
             setError(null);
           }}
           disabled={isPending}
-          className="border border-[#c6d6ee] bg-white px-4 py-2 text-xs font-semibold text-[#315484] transition hover:bg-[#f3f7ff] disabled:cursor-not-allowed disabled:opacity-70"
+          className="tp-btn-soft px-4 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-70"
         >
           모두 삭제
         </button>

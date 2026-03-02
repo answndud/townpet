@@ -103,7 +103,7 @@ export function CommentReactionControls({
   }, [loginIntent]);
 
   const buttonClass = compact
-    ? "inline-flex h-6 items-center gap-1 rounded-sm px-1.5 text-[12px] font-medium transition disabled:cursor-not-allowed disabled:opacity-60"
+    ? "inline-flex h-6 items-center gap-1 rounded-md px-1.5 text-[12px] font-medium transition disabled:cursor-not-allowed disabled:opacity-60"
     : "inline-flex h-5 items-center justify-center px-1.5 text-[11px] font-semibold transition disabled:cursor-not-allowed disabled:opacity-60";
 
   const handleToggle = (target: ReactionType) => {
@@ -170,7 +170,7 @@ export function CommentReactionControls({
           )}
         </button>
         {!canReact && !hideLoginHint && loginIntent === REACTION_TYPE.LIKE ? (
-          <div className="absolute left-0 top-[calc(100%+6px)] z-10 max-w-[min(82vw,230px)] rounded-sm border border-[#bfd0ec] bg-white px-2 py-1 text-[11px] text-[#355988] shadow-[0_8px_18px_rgba(16,40,74,0.12)]">
+          <div className="absolute left-0 top-[calc(100%+6px)] z-10 max-w-[min(82vw,230px)] rounded-lg border border-[#dbe6f6] bg-white px-2 py-1 text-[11px] text-[#355988] shadow-[0_8px_18px_rgba(16,40,74,0.12)]">
             로그인 후 반응 가능. {" "}
             <Link href={loginHref} className="font-semibold text-[#2f5da4] underline underline-offset-2">
               로그인하기
@@ -194,7 +194,7 @@ export function CommentReactionControls({
             {compact ? dislikes.toLocaleString() : `비추천 ${dislikes.toLocaleString()}`}
           </button>
           {!canReact && !hideLoginHint && loginIntent === REACTION_TYPE.DISLIKE ? (
-            <div className="absolute left-0 top-[calc(100%+6px)] z-10 max-w-[min(82vw,230px)] rounded-sm border border-[#bfd0ec] bg-white px-2 py-1 text-[11px] text-[#355988] shadow-[0_8px_18px_rgba(16,40,74,0.12)]">
+            <div className="absolute left-0 top-[calc(100%+6px)] z-10 max-w-[min(82vw,230px)] rounded-lg border border-[#dbe6f6] bg-white px-2 py-1 text-[11px] text-[#355988] shadow-[0_8px_18px_rgba(16,40,74,0.12)]">
               로그인 후 반응 가능. {" "}
               <Link href={loginHref} className="font-semibold text-[#2f5da4] underline underline-offset-2">
                 로그인하기

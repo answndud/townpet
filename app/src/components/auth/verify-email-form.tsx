@@ -105,7 +105,7 @@ export function VerifyEmailForm({
           이메일
           <input
             type="email"
-            className="border border-[#bfd0ec] bg-[#f8fbff] px-3 py-2 text-sm text-[#1f3f71]"
+            className="tp-input-soft px-3 py-2 text-sm"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             placeholder="you@townpet.dev"
@@ -116,13 +116,13 @@ export function VerifyEmailForm({
           <p className="text-xs text-emerald-600">인증 메일을 다시 보냈습니다.</p>
         ) : null}
         {issuedToken ? (
-          <div className="border border-[#bfd0ec] bg-[#f6f9ff] p-3 text-xs text-[#4f678d]">
+          <div className="rounded-lg border border-[#dbe6f6] bg-[#f6f9ff] p-3 text-xs text-[#4f678d]">
             발급된 토큰: <span className="font-mono">{issuedToken}</span>
           </div>
         ) : null}
         <button
           type="submit"
-          className="border border-[#bfd0ec] bg-white px-4 py-2 text-xs font-semibold text-[#315484] transition hover:bg-[#f3f7ff]"
+          className="tp-btn-soft px-4 py-2 text-xs font-semibold"
           disabled={isPending}
         >
           {isPending ? "발송 중..." : "인증 메일 보내기"}
@@ -134,7 +134,7 @@ export function VerifyEmailForm({
         <label className="flex flex-col gap-2 text-sm font-medium text-[#355988]">
           토큰
           <input
-            className="border border-[#bfd0ec] bg-[#f8fbff] px-3 py-2 text-sm text-[#1f3f71]"
+            className="tp-input-soft px-3 py-2 text-sm"
             value={token}
             onChange={(event) => setToken(event.target.value)}
             placeholder="메일로 받은 토큰을 입력"

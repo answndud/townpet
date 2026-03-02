@@ -410,13 +410,13 @@ export function PostDetailEditForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="w-full border border-[#c8d7ef] bg-white p-5 sm:p-6"
+      className="tp-card w-full p-5 sm:p-6"
     >
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold text-[#153a6a]">게시물 수정</h2>
         <button
           type="submit"
-          className="border border-[#3567b5] bg-[#3567b5] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[#2f5da4] disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0]"
+          className="tp-btn-primary px-4 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0]"
           disabled={isPending}
         >
           {isPending ? "저장 중..." : "수정 저장"}
@@ -427,7 +427,7 @@ export function PostDetailEditForm({
         <label className="flex flex-col gap-2 text-sm font-medium text-[#355988]">
           제목
           <input
-            className="border border-[#bfd0ec] bg-[#f8fbff] px-3 py-2 text-sm text-[#1f3f71]"
+            className="tp-input-soft px-3 py-2 text-sm"
             value={formState.title}
             onChange={(event) =>
               setFormState((prev) => ({ ...prev, title: event.target.value }))
@@ -439,7 +439,7 @@ export function PostDetailEditForm({
         <label className="flex flex-col gap-2 text-sm font-medium text-[#355988]">
           범위
           <select
-            className="border border-[#bfd0ec] bg-[#f8fbff] px-3 py-2 text-sm text-[#1f3f71]"
+            className="tp-input-soft px-3 py-2 text-sm"
             value={formState.scope}
             onChange={(event) =>
               setFormState((prev) => ({
@@ -460,7 +460,7 @@ export function PostDetailEditForm({
         <label className="flex flex-col gap-2 text-sm font-medium text-[#355988]">
           동네
           <select
-            className="border border-[#bfd0ec] bg-[#f8fbff] px-3 py-2 text-sm text-[#1f3f71]"
+            className="tp-input-soft px-3 py-2 text-sm"
             value={formState.neighborhoodId}
             onChange={(event) =>
               setFormState((prev) => ({
@@ -486,7 +486,7 @@ export function PostDetailEditForm({
           글 비밀번호
           <input
             type="password"
-            className="max-w-[260px] border border-[#bfd0ec] bg-[#f8fbff] px-3 py-2 text-sm text-[#1f3f71]"
+            className="tp-input-soft max-w-[260px] px-3 py-2 text-sm"
             value={formState.guestPassword}
             onChange={(event) =>
               setFormState((prev) => ({ ...prev, guestPassword: event.target.value }))
@@ -498,13 +498,13 @@ export function PostDetailEditForm({
         </label>
       ) : null}
 
-      <div className="mt-6 border border-[#c8d7ef] bg-white">
+      <div className="tp-card mt-6">
         <div className="flex flex-wrap items-center gap-2 border-b border-[#dbe6f6] bg-[#f8fbff] px-3 py-2 text-xs">
           <button
             type="button"
             onClick={applyLink}
             onMouseDown={preserveToolbarSelection}
-            className="inline-flex h-8 items-center border border-[#bfd0ec] bg-white px-3 font-semibold text-[#2f548f] transition hover:bg-[#f3f7ff]"
+            className="tp-btn-soft inline-flex h-8 items-center px-3 font-semibold"
           >
             링크
           </button>
@@ -514,7 +514,7 @@ export function PostDetailEditForm({
             className={`inline-flex h-8 items-center border px-3 font-semibold transition ${
               editorTab === "write"
                 ? "border-[#3567b5] bg-[#3567b5] text-white"
-                : "border-[#bfd0ec] bg-white text-[#2f548f] hover:bg-[#f3f7ff]"
+                : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
             }`}
           >
             작성
@@ -525,7 +525,7 @@ export function PostDetailEditForm({
             className={`inline-flex h-8 items-center border px-3 font-semibold transition ${
               editorTab === "preview"
                 ? "border-[#3567b5] bg-[#3567b5] text-white"
-                : "border-[#bfd0ec] bg-white text-[#2f548f] hover:bg-[#f3f7ff]"
+                : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
             }`}
           >
             미리보기
@@ -538,7 +538,7 @@ export function PostDetailEditForm({
             type="button"
             onClick={() => runEditorCommand("bold")}
             onMouseDown={preserveToolbarSelection}
-            className="inline-flex h-7 items-center border border-[#bfd0ec] bg-white px-2.5 font-semibold text-[#315484] transition hover:bg-[#f3f7ff]"
+            className="tp-btn-soft inline-flex h-7 items-center px-2.5 font-semibold"
           >
             B
           </button>
@@ -546,7 +546,7 @@ export function PostDetailEditForm({
             type="button"
             onClick={() => runEditorCommand("italic")}
             onMouseDown={preserveToolbarSelection}
-            className="inline-flex h-7 items-center border border-[#bfd0ec] bg-white px-2.5 font-semibold italic text-[#315484] transition hover:bg-[#f3f7ff]"
+            className="tp-btn-soft inline-flex h-7 items-center px-2.5 font-semibold italic"
           >
             I
           </button>
@@ -554,7 +554,7 @@ export function PostDetailEditForm({
             type="button"
             onClick={() => runEditorCommand("underline")}
             onMouseDown={preserveToolbarSelection}
-            className="inline-flex h-7 items-center border border-[#bfd0ec] bg-white px-2.5 font-semibold underline text-[#315484] transition hover:bg-[#f3f7ff]"
+            className="tp-btn-soft inline-flex h-7 items-center px-2.5 font-semibold underline"
           >
             밑줄
           </button>
@@ -562,7 +562,7 @@ export function PostDetailEditForm({
             type="button"
             onClick={() => runEditorCommand("strikeThrough")}
             onMouseDown={preserveToolbarSelection}
-            className="inline-flex h-7 items-center border border-[#bfd0ec] bg-white px-2.5 font-semibold text-[#315484] transition hover:bg-[#f3f7ff]"
+            className="tp-btn-soft inline-flex h-7 items-center px-2.5 font-semibold"
           >
             취소선
           </button>
@@ -570,7 +570,7 @@ export function PostDetailEditForm({
             type="button"
             onClick={() => runEditorCommand("formatBlock", "pre")}
             onMouseDown={preserveToolbarSelection}
-            className="inline-flex h-7 items-center border border-[#bfd0ec] bg-white px-2.5 font-mono text-[#315484] transition hover:bg-[#f3f7ff]"
+            className="tp-btn-soft inline-flex h-7 items-center px-2.5 font-mono"
           >
             {'</>'}
           </button>
@@ -578,7 +578,7 @@ export function PostDetailEditForm({
             type="button"
             onClick={() => runEditorCommand("insertUnorderedList")}
             onMouseDown={preserveToolbarSelection}
-            className="inline-flex h-7 items-center border border-[#bfd0ec] bg-white px-2.5 font-semibold text-[#315484] transition hover:bg-[#f3f7ff]"
+            className="tp-btn-soft inline-flex h-7 items-center px-2.5 font-semibold"
           >
             목록
           </button>
@@ -586,7 +586,7 @@ export function PostDetailEditForm({
             type="button"
             onClick={() => runEditorCommand("insertOrderedList")}
             onMouseDown={preserveToolbarSelection}
-            className="inline-flex h-7 items-center border border-[#bfd0ec] bg-white px-2.5 font-semibold text-[#315484] transition hover:bg-[#f3f7ff]"
+            className="tp-btn-soft inline-flex h-7 items-center px-2.5 font-semibold"
           >
             번호목록
           </button>
@@ -594,7 +594,7 @@ export function PostDetailEditForm({
             type="button"
             onClick={() => runEditorCommand("formatBlock", "blockquote")}
             onMouseDown={preserveToolbarSelection}
-            className="inline-flex h-7 items-center border border-[#bfd0ec] bg-white px-2.5 font-semibold text-[#315484] transition hover:bg-[#f3f7ff]"
+            className="tp-btn-soft inline-flex h-7 items-center px-2.5 font-semibold"
           >
             인용
           </button>
@@ -603,7 +603,7 @@ export function PostDetailEditForm({
             type="button"
             onClick={() => applyStyledSelection("size", "small")}
             onMouseDown={preserveToolbarSelection}
-            className="inline-flex h-7 items-center border border-[#bfd0ec] bg-white px-2 text-[11px] text-[#315484] transition hover:bg-[#f3f7ff]"
+            className="tp-btn-soft inline-flex h-7 items-center px-2 text-[11px]"
           >
             작게
           </button>
@@ -611,7 +611,7 @@ export function PostDetailEditForm({
             type="button"
             onClick={() => applyStyledSelection("size", "normal")}
             onMouseDown={preserveToolbarSelection}
-            className="inline-flex h-7 items-center border border-[#bfd0ec] bg-white px-2 text-[12px] text-[#315484] transition hover:bg-[#f3f7ff]"
+            className="tp-btn-soft inline-flex h-7 items-center px-2 text-[12px]"
           >
             보통
           </button>
@@ -619,7 +619,7 @@ export function PostDetailEditForm({
             type="button"
             onClick={() => applyStyledSelection("size", "large")}
             onMouseDown={preserveToolbarSelection}
-            className="inline-flex h-7 items-center border border-[#bfd0ec] bg-white px-2 text-sm font-semibold text-[#315484] transition hover:bg-[#f3f7ff]"
+            className="tp-btn-soft inline-flex h-7 items-center px-2 text-sm font-semibold"
           >
             크게
           </button>
@@ -627,7 +627,7 @@ export function PostDetailEditForm({
             type="button"
             onClick={() => applyStyledSelection("size", "xlarge")}
             onMouseDown={preserveToolbarSelection}
-            className="inline-flex h-7 items-center border border-[#bfd0ec] bg-white px-2 text-base font-semibold text-[#315484] transition hover:bg-[#f3f7ff]"
+            className="tp-btn-soft inline-flex h-7 items-center px-2 text-base font-semibold"
           >
             매우 크게
           </button>
@@ -635,7 +635,7 @@ export function PostDetailEditForm({
             type="button"
             onClick={() => applyStyledSelection("color", "blue")}
             onMouseDown={preserveToolbarSelection}
-            className="inline-flex h-7 items-center border border-[#bfd0ec] bg-white px-2.5 font-semibold text-[#2f5da4] transition hover:bg-[#f3f7ff]"
+            className="tp-btn-soft inline-flex h-7 items-center px-2.5 font-semibold text-[#2f5da4]"
           >
             파랑
           </button>
@@ -643,7 +643,7 @@ export function PostDetailEditForm({
             type="button"
             onClick={() => applyStyledSelection("color", "red")}
             onMouseDown={preserveToolbarSelection}
-            className="inline-flex h-7 items-center border border-[#bfd0ec] bg-white px-2.5 font-semibold text-rose-600 transition hover:bg-[#f3f7ff]"
+            className="tp-btn-soft inline-flex h-7 items-center px-2.5 font-semibold text-rose-600"
           >
             빨강
           </button>
@@ -651,7 +651,7 @@ export function PostDetailEditForm({
             type="button"
             onClick={() => applyStyledSelection("color", "green")}
             onMouseDown={preserveToolbarSelection}
-            className="inline-flex h-7 items-center border border-[#bfd0ec] bg-white px-2.5 font-semibold text-emerald-700 transition hover:bg-[#f3f7ff]"
+            className="tp-btn-soft inline-flex h-7 items-center px-2.5 font-semibold text-emerald-700"
           >
             초록
           </button>
@@ -659,7 +659,7 @@ export function PostDetailEditForm({
             type="button"
             onClick={() => applyStyledSelection("color", "gray")}
             onMouseDown={preserveToolbarSelection}
-            className="inline-flex h-7 items-center border border-[#bfd0ec] bg-white px-2.5 font-semibold text-slate-600 transition hover:bg-[#f3f7ff]"
+            className="tp-btn-soft inline-flex h-7 items-center px-2.5 font-semibold text-slate-600"
           >
             회색
           </button>

@@ -454,7 +454,7 @@ export function PostCommentThread({
                       <>
                         <button
                           type="button"
-                          className="block w-full rounded px-2 py-1 text-left text-xs text-[#2f4f7d] hover:bg-[#f3f7ff]"
+                          className="block w-full rounded px-2 py-1 text-left text-xs text-[#2f4f7d] hover:bg-[#f5f9ff]"
                           onClick={() => {
                             if (isGuestComment) {
                               setGuestActionPrompt((prev) => ({ ...prev, [comment.id]: "EDIT" }));
@@ -485,7 +485,7 @@ export function PostCommentThread({
                     {canInteract && !isAuthor && comment.status === "ACTIVE" ? (
                       <button
                         type="button"
-                        className="block w-full rounded px-2 py-1 text-left text-xs text-[#2f4f7d] hover:bg-[#f3f7ff]"
+                        className="block w-full rounded px-2 py-1 text-left text-xs text-[#2f4f7d] hover:bg-[#f5f9ff]"
                         onClick={() =>
                           setReportOpen((prev) => ({
                             ...prev,
@@ -559,14 +559,14 @@ export function PostCommentThread({
                 {!currentUserId ? (
                   <div className="mb-2 grid gap-1.5 sm:grid-cols-2">
                     <input
-                      className="w-full border border-[#bfd0ec] bg-white px-2.5 py-1.5 text-sm text-[#1f3f71]"
+                      className="tp-input-soft w-full bg-white px-2.5 py-1.5 text-sm"
                       value={guestDisplayName}
                       onChange={(event) => setGuestDisplayName(event.target.value)}
                       placeholder="비회원 닉네임"
                       maxLength={24}
                     />
                     <input
-                      className="w-full border border-[#bfd0ec] bg-white px-2.5 py-1.5 text-sm text-[#1f3f71]"
+                      className="tp-input-soft w-full bg-white px-2.5 py-1.5 text-sm"
                       type="password"
                       value={guestPassword}
                       onChange={(event) => setGuestPassword(event.target.value)}
@@ -576,7 +576,7 @@ export function PostCommentThread({
                   </div>
                 ) : null}
                 <textarea
-                  className="min-h-[68px] w-full border border-[#bfd0ec] bg-white px-2.5 py-1.5 text-sm text-[#1f3f71]"
+                  className="tp-input-soft min-h-[68px] w-full bg-white px-2.5 py-1.5 text-sm"
                   value={replyContent[comment.id] ?? ""}
                   onChange={(event) =>
                     setReplyContent((prev) => ({
@@ -592,7 +592,7 @@ export function PostCommentThread({
                 <div className="mt-1.5 flex justify-end gap-1.5">
                   <button
                     type="button"
-                    className="border border-[#bfd0ec] bg-white px-3 py-1 text-xs font-semibold text-[#315484] transition hover:bg-[#f3f7ff]"
+                    className="tp-btn-soft px-3 py-1 text-xs font-semibold"
                     onClick={() =>
                       setReplyOpen((prev) => ({
                         ...prev,
@@ -625,7 +625,7 @@ export function PostCommentThread({
             <div className="flex flex-wrap items-center gap-2">
               <input
                 type="password"
-                className="h-8 border border-[#bfd0ec] bg-white px-2.5 text-xs text-[#1f3f71]"
+                className="tp-input-soft h-8 bg-white px-2.5 text-xs"
                 placeholder="댓글 비밀번호"
                 value={guestActionPassword[comment.id] ?? ""}
                 onChange={(event) =>
@@ -650,7 +650,7 @@ export function PostCommentThread({
               </button>
               <button
                 type="button"
-                className="h-8 border border-[#bfd0ec] bg-white px-3 text-xs font-semibold text-[#315484] transition hover:bg-[#f3f7ff]"
+                className="tp-btn-soft h-8 px-3 text-xs font-semibold"
                 onClick={() => setGuestActionPrompt((prev) => ({ ...prev, [comment.id]: null }))}
                 disabled={isPending}
               >
@@ -663,7 +663,7 @@ export function PostCommentThread({
         {(canInteract || isGuestComment) && editOpen[comment.id] && canEdit ? (
           <div className="mt-3">
             <textarea
-              className="min-h-[80px] w-full border border-[#bfd0ec] bg-[#f8fbff] px-3 py-2 text-sm text-[#1f3f71]"
+              className="tp-input-soft min-h-[80px] w-full px-3 py-2 text-sm"
               value={editContent[comment.id] ?? comment.content}
               onChange={(event) =>
                 setEditContent((prev) => ({
@@ -686,10 +686,10 @@ export function PostCommentThread({
         ) : null}
 
         {canInteract && reportOpen[comment.id] && !isAuthor ? (
-          <div className="mt-3 border border-[#bfd0ec] bg-[#f8fbff] p-3 text-xs text-[#355988]">
+          <div className="mt-3 rounded-xl border border-[#dbe6f6] bg-[#f8fbff] p-3 text-xs text-[#355988]">
             <div className="flex flex-wrap items-center gap-2">
               <select
-                className="border border-[#bfd0ec] bg-white px-2 py-1"
+                className="tp-input-soft bg-white px-2 py-1"
                 value={reportReason[comment.id] ?? ReportReason.SPAM}
                 onChange={(event) =>
                   setReportReason((prev) => ({
@@ -714,7 +714,7 @@ export function PostCommentThread({
               </button>
             </div>
             <textarea
-              className="mt-2 w-full border border-[#bfd0ec] bg-white px-2 py-1 text-xs"
+              className="tp-input-soft mt-2 w-full bg-white px-2 py-1 text-xs"
               value={reportDescription[comment.id] ?? ""}
               onChange={(event) =>
                 setReportDescription((prev) => ({
@@ -739,7 +739,7 @@ export function PostCommentThread({
   };
 
   return (
-    <div className="mt-6 w-full rounded-lg border border-[#c8d7ef] bg-white p-4 shadow-[0_8px_18px_rgba(16,40,74,0.04)] sm:mt-8 sm:p-5">
+    <div className="tp-card mt-6 w-full p-4 sm:mt-8 sm:p-5">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold tracking-[-0.01em] text-[#1f3f71]">댓글 {comments.length}</h2>
         {roots.length > 0 ? (
@@ -766,7 +766,7 @@ export function PostCommentThread({
                       className={`min-w-7 rounded border px-2 py-0.5 ${
                         item === currentPage
                           ? "border-[#3567b5] bg-[#3567b5] text-white"
-                          : "border-[#c7d7ef] bg-white text-[#315484] hover:bg-[#f3f7ff]"
+                          : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
                       }`}
                       onClick={() => setPage(item)}
                     >
@@ -819,7 +819,7 @@ export function PostCommentThread({
                 className={`min-w-7 rounded border px-2 py-0.5 ${
                   item === currentPage
                     ? "border-[#3567b5] bg-[#3567b5] text-white"
-                    : "border-[#c7d7ef] bg-white text-[#315484] hover:bg-[#f3f7ff]"
+                    : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
                 }`}
                 onClick={() => setPage(item)}
               >
@@ -838,8 +838,8 @@ export function PostCommentThread({
         </div>
       ) : null}
 
-      <div className="mt-3 border-t border-[#c8d7ef] pt-2.5 sm:mt-4 sm:pt-3">
-        <div className="rounded-sm border border-[#dbe6f6] bg-[#f8fbff] p-2.5 sm:p-2.5">
+      <div className="mt-3 border-t border-[#dbe6f6] pt-2.5 sm:mt-4 sm:pt-3">
+        <div className="rounded-xl border border-[#dbe6f6] bg-[#f8fbff] p-2.5 sm:p-2.5">
           {canComment ? (
             <>
               <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#4f6f9a]">
@@ -849,14 +849,14 @@ export function PostCommentThread({
               {!currentUserId ? (
                 <div className="mb-1.5 grid gap-1.5 sm:grid-cols-2">
                   <input
-                    className="w-full border border-[#bfd0ec] bg-white px-2.5 py-1.5 text-sm text-[#1f3f71]"
+                    className="tp-input-soft w-full bg-white px-2.5 py-1.5 text-sm"
                     value={guestDisplayName}
                     onChange={(event) => setGuestDisplayName(event.target.value)}
                     placeholder="비회원 닉네임"
                     maxLength={24}
                   />
                   <input
-                    className="w-full border border-[#bfd0ec] bg-white px-2.5 py-1.5 text-sm text-[#1f3f71]"
+                    className="tp-input-soft w-full bg-white px-2.5 py-1.5 text-sm"
                     type="password"
                     value={guestPassword}
                     onChange={(event) => setGuestPassword(event.target.value)}
@@ -866,7 +866,7 @@ export function PostCommentThread({
                 </div>
               ) : null}
               <textarea
-                className="min-h-[78px] w-full border border-[#bfd0ec] bg-white px-2.5 py-1.5 text-sm text-[#1f3f71] sm:min-h-[88px]"
+                className="tp-input-soft min-h-[78px] w-full bg-white px-2.5 py-1.5 text-sm sm:min-h-[88px]"
                 value={replyContent.root ?? ""}
                 onChange={(event) =>
                   setReplyContent((prev) => ({ ...prev, root: event.target.value }))
