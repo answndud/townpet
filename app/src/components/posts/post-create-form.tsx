@@ -782,7 +782,7 @@ export function PostCreateForm({
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      <section className="border border-[#c8d7ef] bg-white">
+      <section className="tp-card overflow-hidden">
         <div className="border-b border-[#dbe6f6] bg-[#f7fbff] px-4 py-2">
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#4b6b9b]">
             글 정보
@@ -792,7 +792,7 @@ export function PostCreateForm({
           <label className="flex flex-col gap-1.5 text-sm font-medium text-[#355988]">
             제목
             <input
-              className="border border-[#bfd0ec] bg-[#fbfdff] px-3 py-2 text-sm text-[#1f3f71]"
+              className="tp-input-soft px-3 py-2 text-sm"
               value={formState.title}
               onChange={(event) =>
                 setFormState((prev) => ({ ...prev, title: event.target.value }))
@@ -805,7 +805,7 @@ export function PostCreateForm({
           <label className="flex flex-col gap-1.5 text-sm font-medium text-[#355988]">
             분류
             <select
-              className="border border-[#bfd0ec] bg-[#fbfdff] px-3 py-2 text-sm text-[#1f3f71]"
+              className="tp-input-soft px-3 py-2 text-sm"
               value={formState.type}
               onChange={(event) =>
                 setFormState((prev) => ({
@@ -825,7 +825,7 @@ export function PostCreateForm({
           <label className="flex flex-col gap-1.5 text-sm font-medium text-[#355988]">
             범위
             <select
-              className="border border-[#bfd0ec] bg-[#fbfdff] px-3 py-2 text-sm text-[#1f3f71]"
+              className="tp-input-soft px-3 py-2 text-sm"
               value={formState.scope}
               onChange={(event) =>
                 setFormState((prev) => ({
@@ -854,7 +854,7 @@ export function PostCreateForm({
             <select
               className={`border px-3 py-2 text-sm text-[#1f3f71] transition ${
                 showNeighborhood
-                  ? "border-[#bfd0ec] bg-[#fbfdff]"
+                  ? "border-[#cbdcf5] bg-[#f8fbff]"
                   : "cursor-not-allowed border-[#d6deea] bg-[#eef2f8] text-[#8ea1bd]"
               }`}
               value={formState.neighborhoodId}
@@ -878,9 +878,9 @@ export function PostCreateForm({
 
           {showCommunitySelector ? (
             <label className="flex flex-col gap-1.5 text-sm font-medium text-[#355988]">
-              커뮤니티
+              관심 동물
               <select
-                className="border border-[#bfd0ec] bg-[#fbfdff] px-3 py-2 text-sm text-[#1f3f71]"
+                className="tp-input-soft px-3 py-2 text-sm"
                 value={formState.petTypeId}
                 onChange={(event) =>
                   setFormState((prev) => ({
@@ -904,7 +904,7 @@ export function PostCreateForm({
             <label className="flex flex-col gap-1.5 text-sm font-medium text-[#355988] md:col-span-2">
               동물 태그
               <input
-                className="border border-[#bfd0ec] bg-[#fbfdff] px-3 py-2 text-sm text-[#1f3f71]"
+                className="tp-input-soft px-3 py-2 text-sm"
                 value={formState.animalTagsInput}
                 onChange={(event) =>
                   setFormState((prev) => ({
@@ -926,7 +926,7 @@ export function PostCreateForm({
             <label className="flex flex-col gap-1.5 text-sm font-medium text-[#355988]">
               비회원 닉네임
               <input
-                className="border border-[#bfd0ec] bg-white px-3 py-2 text-sm text-[#1f3f71]"
+                className="tp-input-soft bg-white px-3 py-2 text-sm"
                 value={formState.guestDisplayName}
                 onChange={(event) =>
                   setFormState((prev) => ({ ...prev, guestDisplayName: event.target.value }))
@@ -941,7 +941,7 @@ export function PostCreateForm({
               글 비밀번호
               <input
                 type="password"
-                className="border border-[#bfd0ec] bg-white px-3 py-2 text-sm text-[#1f3f71]"
+                className="tp-input-soft bg-white px-3 py-2 text-sm"
                 value={formState.guestPassword}
                 onChange={(event) =>
                   setFormState((prev) => ({ ...prev, guestPassword: event.target.value }))
@@ -956,13 +956,13 @@ export function PostCreateForm({
         ) : null}
       </section>
 
-      <section className="border border-[#c8d7ef] bg-white">
+      <section className="tp-card overflow-hidden">
         <div className="flex flex-wrap items-center gap-2 border-b border-[#dbe6f6] bg-[#f8fbff] px-3 py-2 text-xs">
           <button
             type="button"
             onClick={applyLink}
             onMouseDown={preserveToolbarSelection}
-            className="inline-flex h-8 items-center border border-[#bfd0ec] bg-white px-3 font-semibold text-[#2f548f] transition hover:bg-[#f3f7ff]"
+            className="tp-btn-soft inline-flex h-8 items-center px-3 font-semibold"
           >
             링크
           </button>
@@ -973,7 +973,7 @@ export function PostCreateForm({
             className={`inline-flex h-8 items-center border px-3 font-semibold transition ${
               editorTab === "write"
                 ? "border-[#3567b5] bg-[#3567b5] text-white"
-                : "border-[#bfd0ec] bg-white text-[#2f548f] hover:bg-[#f3f7ff]"
+                : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
             }`}
           >
             작성
@@ -984,7 +984,7 @@ export function PostCreateForm({
             className={`inline-flex h-8 items-center border px-3 font-semibold transition ${
               editorTab === "preview"
                 ? "border-[#3567b5] bg-[#3567b5] text-white"
-                : "border-[#bfd0ec] bg-white text-[#2f548f] hover:bg-[#f3f7ff]"
+                : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
             }`}
           >
             미리보기
@@ -997,7 +997,7 @@ export function PostCreateForm({
             type="button"
             onClick={() => runEditorCommand("bold")}
             onMouseDown={preserveToolbarSelection}
-            className="inline-flex h-7 items-center border border-[#bfd0ec] bg-white px-2.5 font-semibold text-[#315484] transition hover:bg-[#f3f7ff]"
+            className="tp-btn-soft inline-flex h-7 items-center px-2.5 font-semibold"
           >
             B
           </button>
@@ -1005,7 +1005,7 @@ export function PostCreateForm({
             type="button"
             onClick={() => runEditorCommand("italic")}
             onMouseDown={preserveToolbarSelection}
-            className="inline-flex h-7 items-center border border-[#bfd0ec] bg-white px-2.5 font-semibold italic text-[#315484] transition hover:bg-[#f3f7ff]"
+            className="tp-btn-soft inline-flex h-7 items-center px-2.5 font-semibold italic"
           >
             I
           </button>
@@ -1013,7 +1013,7 @@ export function PostCreateForm({
             type="button"
             onClick={applyLink}
             onMouseDown={preserveToolbarSelection}
-            className="inline-flex h-7 items-center border border-[#bfd0ec] bg-white px-2.5 font-semibold text-[#315484] transition hover:bg-[#f3f7ff]"
+            className="tp-btn-soft inline-flex h-7 items-center px-2.5 font-semibold"
           >
             링크
           </button>
@@ -1021,20 +1021,20 @@ export function PostCreateForm({
             type="button"
             onClick={() => runEditorCommand("insertUnorderedList")}
             onMouseDown={preserveToolbarSelection}
-            className="inline-flex h-7 items-center border border-[#bfd0ec] bg-white px-2.5 font-semibold text-[#315484] transition hover:bg-[#f3f7ff]"
+            className="tp-btn-soft inline-flex h-7 items-center px-2.5 font-semibold"
           >
             목록
           </button>
           <details className="ml-auto">
-            <summary className="inline-flex h-7 cursor-pointer list-none items-center border border-[#bfd0ec] bg-white px-2.5 font-semibold text-[#315484] transition hover:bg-[#f3f7ff]">
+            <summary className="tp-btn-soft inline-flex h-7 cursor-pointer list-none items-center px-2.5 font-semibold">
               고급
             </summary>
-            <div className="mt-2 flex flex-wrap gap-1.5 border border-[#dbe6f6] bg-[#f8fbff] p-2">
+            <div className="mt-2 flex flex-wrap gap-1.5 rounded-xl border border-[#dbe6f6] bg-[#f8fbff] p-2">
               <button
                 type="button"
                 onClick={() => applyStyledSelection("size", "large")}
                 onMouseDown={preserveToolbarSelection}
-                className="inline-flex h-7 items-center border border-[#bfd0ec] bg-white px-2.5 font-semibold text-[#315484]"
+                className="tp-btn-soft inline-flex h-7 items-center px-2.5 font-semibold"
               >
                 크게
               </button>
@@ -1042,7 +1042,7 @@ export function PostCreateForm({
                 type="button"
                 onClick={() => runEditorCommand("insertOrderedList")}
                 onMouseDown={preserveToolbarSelection}
-                className="inline-flex h-7 items-center border border-[#bfd0ec] bg-white px-2.5 font-semibold text-[#315484]"
+                className="tp-btn-soft inline-flex h-7 items-center px-2.5 font-semibold"
               >
                 번호
               </button>
@@ -1050,7 +1050,7 @@ export function PostCreateForm({
                 type="button"
                 onClick={() => runEditorCommand("underline")}
                 onMouseDown={preserveToolbarSelection}
-                className="inline-flex h-7 items-center border border-[#bfd0ec] bg-white px-2.5 font-semibold underline text-[#315484]"
+                className="tp-btn-soft inline-flex h-7 items-center px-2.5 font-semibold underline"
               >
                 밑줄
               </button>
@@ -1058,7 +1058,7 @@ export function PostCreateForm({
                 type="button"
                 onClick={() => runEditorCommand("strikeThrough")}
                 onMouseDown={preserveToolbarSelection}
-                className="inline-flex h-7 items-center border border-[#bfd0ec] bg-white px-2.5 font-semibold text-[#315484]"
+                className="tp-btn-soft inline-flex h-7 items-center px-2.5 font-semibold"
               >
                 취소선
               </button>
@@ -1066,7 +1066,7 @@ export function PostCreateForm({
                 type="button"
                 onClick={() => runEditorCommand("formatBlock", "blockquote")}
                 onMouseDown={preserveToolbarSelection}
-                className="inline-flex h-7 items-center border border-[#bfd0ec] bg-white px-2.5 font-semibold text-[#315484]"
+                className="tp-btn-soft inline-flex h-7 items-center px-2.5 font-semibold"
               >
                 인용
               </button>
@@ -1074,7 +1074,7 @@ export function PostCreateForm({
                 type="button"
                 onClick={() => runEditorCommand("formatBlock", "pre")}
                 onMouseDown={preserveToolbarSelection}
-                className="inline-flex h-7 items-center border border-[#bfd0ec] bg-white px-2.5 font-mono text-[#315484]"
+                className="tp-btn-soft inline-flex h-7 items-center px-2.5 font-mono"
               >
                 {'</>'}
               </button>
@@ -1087,7 +1087,7 @@ export function PostCreateForm({
             type="button"
             onClick={() => runEditorCommand("bold")}
             onMouseDown={preserveToolbarSelection}
-            className="inline-flex h-7 items-center border border-[#bfd0ec] bg-white px-2.5 font-semibold text-[#315484] transition hover:bg-[#f3f7ff]"
+            className="tp-btn-soft inline-flex h-7 items-center px-2.5 font-semibold"
           >
             B
           </button>
@@ -1095,7 +1095,7 @@ export function PostCreateForm({
             type="button"
             onClick={() => runEditorCommand("italic")}
             onMouseDown={preserveToolbarSelection}
-            className="inline-flex h-7 items-center border border-[#bfd0ec] bg-white px-2.5 font-semibold italic text-[#315484] transition hover:bg-[#f3f7ff]"
+            className="tp-btn-soft inline-flex h-7 items-center px-2.5 font-semibold italic"
           >
             I
           </button>
@@ -1103,7 +1103,7 @@ export function PostCreateForm({
             type="button"
             onClick={() => runEditorCommand("formatBlock", "pre")}
             onMouseDown={preserveToolbarSelection}
-            className="inline-flex h-7 items-center border border-[#bfd0ec] bg-white px-2.5 font-mono text-[#315484] transition hover:bg-[#f3f7ff]"
+            className="tp-btn-soft inline-flex h-7 items-center px-2.5 font-mono"
           >
             {'</>'}
           </button>
@@ -1111,7 +1111,7 @@ export function PostCreateForm({
             type="button"
             onClick={() => runEditorCommand("insertUnorderedList")}
             onMouseDown={preserveToolbarSelection}
-            className="inline-flex h-7 items-center border border-[#bfd0ec] bg-white px-2.5 font-semibold text-[#315484] transition hover:bg-[#f3f7ff]"
+            className="tp-btn-soft inline-flex h-7 items-center px-2.5 font-semibold"
           >
             목록
           </button>
@@ -1119,7 +1119,7 @@ export function PostCreateForm({
             type="button"
             onClick={() => runEditorCommand("insertOrderedList")}
             onMouseDown={preserveToolbarSelection}
-            className="inline-flex h-7 items-center border border-[#bfd0ec] bg-white px-2.5 font-semibold text-[#315484] transition hover:bg-[#f3f7ff]"
+            className="tp-btn-soft inline-flex h-7 items-center px-2.5 font-semibold"
           >
             번호목록
           </button>
@@ -1127,7 +1127,7 @@ export function PostCreateForm({
             type="button"
             onClick={() => runEditorCommand("formatBlock", "blockquote")}
             onMouseDown={preserveToolbarSelection}
-            className="inline-flex h-7 items-center border border-[#bfd0ec] bg-white px-2.5 font-semibold text-[#315484] transition hover:bg-[#f3f7ff]"
+            className="tp-btn-soft inline-flex h-7 items-center px-2.5 font-semibold"
           >
             인용
           </button>
@@ -1135,7 +1135,7 @@ export function PostCreateForm({
             type="button"
             onClick={() => runEditorCommand("strikeThrough")}
             onMouseDown={preserveToolbarSelection}
-            className="inline-flex h-7 items-center border border-[#bfd0ec] bg-white px-2.5 font-semibold text-[#315484] transition hover:bg-[#f3f7ff]"
+            className="tp-btn-soft inline-flex h-7 items-center px-2.5 font-semibold"
           >
             취소선
           </button>
@@ -1143,7 +1143,7 @@ export function PostCreateForm({
             type="button"
             onClick={() => runEditorCommand("underline")}
             onMouseDown={preserveToolbarSelection}
-            className="inline-flex h-7 items-center border border-[#bfd0ec] bg-white px-2.5 font-semibold underline text-[#315484] transition hover:bg-[#f3f7ff]"
+            className="tp-btn-soft inline-flex h-7 items-center px-2.5 font-semibold underline"
           >
             밑줄
           </button>
@@ -1152,7 +1152,7 @@ export function PostCreateForm({
             type="button"
             onClick={() => applyStyledSelection("size", "small")}
             onMouseDown={preserveToolbarSelection}
-            className="inline-flex h-7 items-center border border-[#bfd0ec] bg-white px-2 text-[11px] text-[#315484] transition hover:bg-[#f3f7ff]"
+            className="tp-btn-soft inline-flex h-7 items-center px-2 text-[11px]"
           >
             작게
           </button>
@@ -1160,7 +1160,7 @@ export function PostCreateForm({
             type="button"
             onClick={() => applyStyledSelection("size", "normal")}
             onMouseDown={preserveToolbarSelection}
-            className="inline-flex h-7 items-center border border-[#bfd0ec] bg-white px-2 text-[12px] text-[#315484] transition hover:bg-[#f3f7ff]"
+            className="tp-btn-soft inline-flex h-7 items-center px-2 text-[12px]"
           >
             보통
           </button>
@@ -1168,7 +1168,7 @@ export function PostCreateForm({
             type="button"
             onClick={() => applyStyledSelection("size", "large")}
             onMouseDown={preserveToolbarSelection}
-            className="inline-flex h-7 items-center border border-[#bfd0ec] bg-white px-2 text-sm font-semibold text-[#315484] transition hover:bg-[#f3f7ff]"
+            className="tp-btn-soft inline-flex h-7 items-center px-2 text-sm font-semibold"
           >
             크게
           </button>
@@ -1176,7 +1176,7 @@ export function PostCreateForm({
             type="button"
             onClick={() => applyStyledSelection("size", "xlarge")}
             onMouseDown={preserveToolbarSelection}
-            className="inline-flex h-7 items-center border border-[#bfd0ec] bg-white px-2 text-base font-semibold text-[#315484] transition hover:bg-[#f3f7ff]"
+            className="tp-btn-soft inline-flex h-7 items-center px-2 text-base font-semibold"
           >
             매우 크게
           </button>
@@ -1185,7 +1185,7 @@ export function PostCreateForm({
             type="button"
             onClick={() => applyStyledSelection("color", "blue")}
             onMouseDown={preserveToolbarSelection}
-            className="inline-flex h-7 items-center border border-[#bfd0ec] bg-white px-2.5 font-semibold text-[#2f5da4] transition hover:bg-[#f3f7ff]"
+            className="tp-btn-soft inline-flex h-7 items-center px-2.5 font-semibold text-[#2f5da4]"
           >
             파랑
           </button>
@@ -1193,7 +1193,7 @@ export function PostCreateForm({
             type="button"
             onClick={() => applyStyledSelection("color", "red")}
             onMouseDown={preserveToolbarSelection}
-            className="inline-flex h-7 items-center border border-[#bfd0ec] bg-white px-2.5 font-semibold text-rose-600 transition hover:bg-[#f3f7ff]"
+            className="tp-btn-soft inline-flex h-7 items-center px-2.5 font-semibold text-rose-600"
           >
             빨강
           </button>
@@ -1201,7 +1201,7 @@ export function PostCreateForm({
             type="button"
             onClick={() => applyStyledSelection("color", "green")}
             onMouseDown={preserveToolbarSelection}
-            className="inline-flex h-7 items-center border border-[#bfd0ec] bg-white px-2.5 font-semibold text-emerald-700 transition hover:bg-[#f3f7ff]"
+            className="tp-btn-soft inline-flex h-7 items-center px-2.5 font-semibold text-emerald-700"
           >
             초록
           </button>
@@ -1209,7 +1209,7 @@ export function PostCreateForm({
             type="button"
             onClick={() => applyStyledSelection("color", "gray")}
             onMouseDown={preserveToolbarSelection}
-            className="inline-flex h-7 items-center border border-[#bfd0ec] bg-white px-2.5 font-semibold text-slate-600 transition hover:bg-[#f3f7ff]"
+            className="tp-btn-soft inline-flex h-7 items-center px-2.5 font-semibold text-slate-600"
           >
             회색
           </button>
@@ -1237,7 +1237,7 @@ export function PostCreateForm({
           <button
             type="button"
             onClick={clearDraft}
-            className="inline-flex h-7 items-center border border-[#bfd0ec] bg-white px-2.5 font-semibold text-[#315484] transition hover:bg-[#f3f7ff]"
+            className="tp-btn-soft inline-flex h-7 items-center px-2.5 font-semibold"
           >
             임시저장 삭제
           </button>
@@ -1250,7 +1250,7 @@ export function PostCreateForm({
         </div>
       </section>
 
-      <div id="post-image-upload" className="border border-[#c8d7ef] bg-white p-4">
+      <div id="post-image-upload" className="tp-card p-4">
         <ImageUploadField
           value={formState.imageUrls}
           onChange={(nextUrls) => {
@@ -1295,7 +1295,7 @@ export function PostCreateForm({
           <label className="flex flex-col gap-2 text-sm font-medium text-[#355988]">
             병원명
             <input
-            className="border border-[#bfd0ec] bg-[#f8fbff] px-3 py-2 text-sm text-[#1f3f71]"
+            className="tp-input-soft px-3 py-2 text-sm"
             value={formState.hospitalReview.hospitalName}
               onChange={(event) =>
                 setFormState((prev) => ({
@@ -1313,7 +1313,7 @@ export function PostCreateForm({
           <label className="flex flex-col gap-2 text-sm font-medium text-[#355988]">
             진료 항목
             <input
-              className="border border-[#bfd0ec] bg-[#f8fbff] px-3 py-2 text-sm text-[#1f3f71]"
+              className="tp-input-soft px-3 py-2 text-sm"
               value={formState.hospitalReview.treatmentType}
               onChange={(event) =>
                 setFormState((prev) => ({
@@ -1332,7 +1332,7 @@ export function PostCreateForm({
             비용(원)
             <input
               type="number"
-              className="border border-[#bfd0ec] bg-[#f8fbff] px-3 py-2 text-sm text-[#1f3f71]"
+              className="tp-input-soft px-3 py-2 text-sm"
               value={formState.hospitalReview.totalCost}
               onChange={(event) =>
                 setFormState((prev) => ({
@@ -1352,7 +1352,7 @@ export function PostCreateForm({
             대기시간(분)
             <input
               type="number"
-              className="border border-[#bfd0ec] bg-[#f8fbff] px-3 py-2 text-sm text-[#1f3f71]"
+              className="tp-input-soft px-3 py-2 text-sm"
               value={formState.hospitalReview.waitTime}
               onChange={(event) =>
                 setFormState((prev) => ({
@@ -1371,7 +1371,7 @@ export function PostCreateForm({
           <label className="flex flex-col gap-2 text-sm font-medium text-[#355988]">
             만족도
             <select
-              className="border border-[#bfd0ec] bg-[#f8fbff] px-3 py-2 text-sm text-[#1f3f71]"
+              className="tp-input-soft px-3 py-2 text-sm"
               value={formState.hospitalReview.rating}
               onChange={(event) =>
                 setFormState((prev) => ({
@@ -1399,7 +1399,7 @@ export function PostCreateForm({
           <label className="flex flex-col gap-2 text-sm font-medium text-[#355988]">
             장소명
             <input
-              className="border border-[#bfd0ec] bg-[#f8fbff] px-3 py-2 text-sm text-[#1f3f71]"
+              className="tp-input-soft px-3 py-2 text-sm"
               value={formState.placeReview.placeName}
               onChange={(event) =>
                 setFormState((prev) => ({
@@ -1417,7 +1417,7 @@ export function PostCreateForm({
           <label className="flex flex-col gap-2 text-sm font-medium text-[#355988]">
             장소 유형
             <input
-              className="border border-[#bfd0ec] bg-[#f8fbff] px-3 py-2 text-sm text-[#1f3f71]"
+              className="tp-input-soft px-3 py-2 text-sm"
               value={formState.placeReview.placeType}
               onChange={(event) =>
                 setFormState((prev) => ({
@@ -1435,7 +1435,7 @@ export function PostCreateForm({
           <label className="flex flex-col gap-2 text-sm font-medium text-[#355988]">
             주소
             <input
-              className="border border-[#bfd0ec] bg-[#f8fbff] px-3 py-2 text-sm text-[#1f3f71]"
+              className="tp-input-soft px-3 py-2 text-sm"
               value={formState.placeReview.address}
               onChange={(event) =>
                 setFormState((prev) => ({
@@ -1453,7 +1453,7 @@ export function PostCreateForm({
           <label className="flex flex-col gap-2 text-sm font-medium text-[#355988]">
             동반 가능 여부
             <select
-              className="border border-[#bfd0ec] bg-[#f8fbff] px-3 py-2 text-sm text-[#1f3f71]"
+              className="tp-input-soft px-3 py-2 text-sm"
               value={formState.placeReview.isPetAllowed}
               onChange={(event) =>
                 setFormState((prev) => ({
@@ -1474,7 +1474,7 @@ export function PostCreateForm({
           <label className="flex flex-col gap-2 text-sm font-medium text-[#355988]">
             만족도
             <select
-              className="border border-[#bfd0ec] bg-[#f8fbff] px-3 py-2 text-sm text-[#1f3f71]"
+              className="tp-input-soft px-3 py-2 text-sm"
               value={formState.placeReview.rating}
               onChange={(event) =>
                 setFormState((prev) => ({
@@ -1502,7 +1502,7 @@ export function PostCreateForm({
           <label className="flex flex-col gap-2 text-sm font-medium text-[#355988]">
             코스 이름
             <input
-              className="border border-[#bfd0ec] bg-[#f8fbff] px-3 py-2 text-sm text-[#1f3f71]"
+              className="tp-input-soft px-3 py-2 text-sm"
               value={formState.walkRoute.routeName}
               onChange={(event) =>
                 setFormState((prev) => ({
@@ -1522,7 +1522,7 @@ export function PostCreateForm({
             <input
               type="number"
               step="0.1"
-              className="border border-[#bfd0ec] bg-[#f8fbff] px-3 py-2 text-sm text-[#1f3f71]"
+              className="tp-input-soft px-3 py-2 text-sm"
               value={formState.walkRoute.distance}
               onChange={(event) =>
                 setFormState((prev) => ({
@@ -1542,7 +1542,7 @@ export function PostCreateForm({
             소요시간(분)
             <input
               type="number"
-              className="border border-[#bfd0ec] bg-[#f8fbff] px-3 py-2 text-sm text-[#1f3f71]"
+              className="tp-input-soft px-3 py-2 text-sm"
               value={formState.walkRoute.duration}
               onChange={(event) =>
                 setFormState((prev) => ({
@@ -1561,7 +1561,7 @@ export function PostCreateForm({
           <label className="flex flex-col gap-2 text-sm font-medium">
             난이도
             <select
-              className="border border-[#bfd0ec] bg-[#f8fbff] px-3 py-2 text-sm text-[#1f3f71]"
+              className="tp-input-soft px-3 py-2 text-sm"
               value={formState.walkRoute.difficulty}
               onChange={(event) =>
                 setFormState((prev) => ({
@@ -1583,7 +1583,7 @@ export function PostCreateForm({
           <label className="flex flex-col gap-2 text-sm font-medium">
             안전 태그(콤마)
             <input
-              className="border border-[#bfd0ec] bg-[#f8fbff] px-3 py-2 text-sm text-[#1f3f71]"
+              className="tp-input-soft px-3 py-2 text-sm"
               value={formState.walkRoute.safetyTags}
               onChange={(event) =>
                 setFormState((prev) => ({
@@ -1672,20 +1672,20 @@ export function PostCreateForm({
           {isAuthenticated && !canUseLocalScope ? (
             <Link
               href="/profile"
-              className="inline-flex h-10 items-center border border-[#bfd0ec] bg-white px-4 text-xs font-semibold text-[#315484] transition hover:bg-[#f3f7ff]"
+              className="tp-btn-soft inline-flex h-10 items-center px-4 text-xs font-semibold"
             >
               프로필에서 동네 설정
             </Link>
           ) : null}
           <Link
             href="/feed"
-            className="inline-flex h-10 items-center border border-[#9aa9bf] bg-[#5c677a] px-5 text-sm font-semibold text-white transition hover:bg-[#4d5666]"
+            className="inline-flex h-10 items-center rounded-xl border border-[#9aa9bf] bg-[#5c677a] px-5 text-sm font-semibold text-white transition hover:bg-[#4d5666]"
           >
             취소
           </Link>
           <button
             type="submit"
-            className="inline-flex h-10 items-center border border-[#3567b5] bg-[#3567b5] px-6 text-sm font-semibold text-white transition hover:bg-[#2f5da4] disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0]"
+            className="tp-btn-primary inline-flex h-10 items-center px-6 text-sm font-semibold disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0]"
             disabled={isPending}
           >
             {isPending ? "등록 중..." : "등록"}

@@ -13,7 +13,7 @@ export default function NotFound() {
         </p>
         <Link
           href="/feed"
-          className="mt-5 inline-flex rounded-full border border-[#3567b5] bg-[#3567b5] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#2f5da4]"
+          className="tp-btn-primary mt-5 inline-flex px-4 py-2 text-sm font-semibold"
         >
           피드로 이동
         </Link>

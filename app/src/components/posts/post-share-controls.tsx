@@ -42,7 +42,7 @@ export function PostShareControls({ url, title }: PostShareControlsProps) {
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className="inline-flex h-8 items-center border border-[#bfd0ec] bg-white px-2.5 text-xs font-semibold text-[#315484] transition hover:bg-[#f3f7ff] sm:h-9 sm:px-3"
+        className="tp-btn-soft inline-flex h-8 items-center px-2.5 text-xs font-semibold sm:h-9 sm:px-3"
         aria-expanded={isOpen}
         aria-controls="post-share-menu"
       >
@@ -52,12 +52,12 @@ export function PostShareControls({ url, title }: PostShareControlsProps) {
       {isOpen ? (
         <div
           id="post-share-menu"
-          className="absolute left-0 top-[calc(100%+6px)] z-20 min-w-[140px] border border-[#c7d7ef] bg-white p-1.5 shadow-[0_8px_18px_rgba(16,40,74,0.12)]"
+          className="absolute left-0 top-[calc(100%+6px)] z-20 min-w-[140px] rounded-lg border border-[#dbe6f6] bg-white p-1.5 shadow-[0_8px_18px_rgba(16,40,74,0.12)]"
         >
           <button
             type="button"
             onClick={handleCopy}
-            className="flex w-full items-center justify-start px-2.5 py-1.5 text-xs font-semibold text-[#315484] transition hover:bg-[#f3f7ff]"
+            className="flex w-full items-center justify-start rounded-md px-2.5 py-1.5 text-xs font-semibold text-[#315484] transition hover:bg-[#f5f9ff]"
           >
             링크 복사
           </button>
@@ -66,7 +66,7 @@ export function PostShareControls({ url, title }: PostShareControlsProps) {
             target="_blank"
             rel="noreferrer noopener"
             onClick={() => setIsOpen(false)}
-            className="flex w-full items-center justify-start px-2.5 py-1.5 text-xs font-semibold text-[#315484] transition hover:bg-[#f3f7ff]"
+            className="flex w-full items-center justify-start rounded-md px-2.5 py-1.5 text-xs font-semibold text-[#315484] transition hover:bg-[#f5f9ff]"
           >
             X 공유
           </a>
@@ -83,7 +83,7 @@ export function PostShareControls({ url, title }: PostShareControlsProps) {
             href={url}
             target="_blank"
             onClick={() => setIsOpen(false)}
-            className="flex w-full items-center justify-start px-2.5 py-1.5 text-xs font-semibold text-[#4f678d] transition hover:bg-[#f3f7ff]"
+            className="flex w-full items-center justify-start rounded-md px-2.5 py-1.5 text-xs font-semibold text-[#4f678d] transition hover:bg-[#f5f9ff]"
           >
             새 탭에서 열기
           </Link>

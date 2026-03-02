@@ -50,7 +50,7 @@ export function SetPasswordForm() {
         현재 비밀번호 (있는 경우)
         <input
           type="password"
-          className="border border-[#bfd0ec] bg-[#f8fbff] px-3 py-2 text-sm text-[#1f3f71]"
+          className="tp-input-soft px-3 py-2 text-sm"
           value={currentPassword}
           onChange={(event) => setCurrentPassword(event.target.value)}
           placeholder="기존 비밀번호"
@@ -60,7 +60,7 @@ export function SetPasswordForm() {
         새 비밀번호
         <input
           type="password"
-          className="border border-[#bfd0ec] bg-[#f8fbff] px-3 py-2 text-sm text-[#1f3f71]"
+          className="tp-input-soft px-3 py-2 text-sm"
           value={password}
           onChange={(event) => setPassword(event.target.value)}
           placeholder="최소 8자"
@@ -71,7 +71,7 @@ export function SetPasswordForm() {
         새 비밀번호 확인
         <input
           type="password"
-          className="border border-[#bfd0ec] bg-[#f8fbff] px-3 py-2 text-sm text-[#1f3f71]"
+          className="tp-input-soft px-3 py-2 text-sm"
           value={passwordConfirm}
           onChange={(event) => setPasswordConfirm(event.target.value)}
           placeholder="다시 입력"

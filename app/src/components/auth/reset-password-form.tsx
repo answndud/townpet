@@ -80,7 +80,7 @@ export function ResetPasswordForm({ initialToken }: ResetPasswordFormProps) {
   return (
     <div className="flex flex-col gap-6">
       {initialToken ? (
-        <div className="border border-[#bfd0ec] bg-[#f6f9ff] p-3 text-xs text-[#4f678d]">
+        <div className="rounded-lg border border-[#dbe6f6] bg-[#f6f9ff] p-3 text-xs text-[#4f678d]">
           메일에서 받은 토큰을 확인했습니다. 아래에서 새 비밀번호를 설정해 주세요.
         </div>
       ) : null}
@@ -93,7 +93,7 @@ export function ResetPasswordForm({ initialToken }: ResetPasswordFormProps) {
           이메일
           <input
             type="email"
-            className="border border-[#bfd0ec] bg-[#f8fbff] px-3 py-2 text-sm text-[#1f3f71]"
+            className="tp-input-soft px-3 py-2 text-sm"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             placeholder="you@townpet.dev"
@@ -101,7 +101,7 @@ export function ResetPasswordForm({ initialToken }: ResetPasswordFormProps) {
           />
         </label>
         {issuedToken ? (
-          <div className="border border-[#bfd0ec] bg-[#f6f9ff] p-3 text-xs text-[#4f678d]">
+          <div className="rounded-lg border border-[#dbe6f6] bg-[#f6f9ff] p-3 text-xs text-[#4f678d]">
             발급된 토큰: <span className="font-mono">{issuedToken}</span>
           </div>
         ) : null}
@@ -110,7 +110,7 @@ export function ResetPasswordForm({ initialToken }: ResetPasswordFormProps) {
         ) : null}
         <button
           type="submit"
-          className="border border-[#bfd0ec] bg-white px-4 py-2 text-xs font-semibold text-[#315484] transition hover:bg-[#f3f7ff]"
+          className="tp-btn-soft px-4 py-2 text-xs font-semibold"
           disabled={isPending}
         >
           {isPending ? "발급 중..." : "토큰 발급"}
@@ -122,7 +122,7 @@ export function ResetPasswordForm({ initialToken }: ResetPasswordFormProps) {
         <label className="flex flex-col gap-2 text-sm font-medium text-[#355988]">
           토큰
           <input
-            className="border border-[#bfd0ec] bg-[#f8fbff] px-3 py-2 text-sm text-[#1f3f71]"
+            className="tp-input-soft px-3 py-2 text-sm"
             value={token}
             onChange={(event) => setToken(event.target.value)}
             placeholder="토큰을 입력하세요"
@@ -133,7 +133,7 @@ export function ResetPasswordForm({ initialToken }: ResetPasswordFormProps) {
           새 비밀번호
           <input
             type="password"
-            className="border border-[#bfd0ec] bg-[#f8fbff] px-3 py-2 text-sm text-[#1f3f71]"
+            className="tp-input-soft px-3 py-2 text-sm"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             placeholder="최소 8자"
@@ -144,7 +144,7 @@ export function ResetPasswordForm({ initialToken }: ResetPasswordFormProps) {
           새 비밀번호 확인
           <input
             type="password"
-            className="border border-[#bfd0ec] bg-[#f8fbff] px-3 py-2 text-sm text-[#1f3f71]"
+            className="tp-input-soft px-3 py-2 text-sm"
             value={passwordConfirm}
             onChange={(event) => setPasswordConfirm(event.target.value)}
             placeholder="다시 입력"

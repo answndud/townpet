@@ -31,14 +31,14 @@ export function NeighborhoodGateNotice({
           {secondaryLink && secondaryLabel ? (
             <Link
               href={secondaryLink}
-              className="border border-[#bfd0ec] bg-white px-4 py-2 text-[#315484] transition hover:bg-[#f3f7ff]"
+              className="tp-btn-soft px-4 py-2 text-[#315484]"
             >
               {secondaryLabel}
             </Link>
           ) : null}
           <Link
             href="/"
-            className="border border-[#bfd0ec] bg-white px-4 py-2 text-[#315484] transition hover:bg-[#f3f7ff]"
+            className="tp-btn-soft px-4 py-2 text-[#315484]"
           >
             홈으로 돌아가기
           </Link>

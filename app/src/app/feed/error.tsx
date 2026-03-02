@@ -19,7 +19,7 @@ export default function FeedError({ error, reset }: FeedErrorProps) {
       <button
         type="button"
         onClick={reset}
-        className="mt-4 rounded-full border border-[#3567b5] bg-[#3567b5] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#2f5da4]"
+        className="tp-btn-primary mt-4 px-4 py-2 text-sm font-semibold"
       >
         다시 시도
       </button>

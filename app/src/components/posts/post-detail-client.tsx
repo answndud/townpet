@@ -404,7 +404,7 @@ export function PostDetailClient({ postId }: { postId: string }) {
     return (
       <div className="tp-page-bg min-h-screen pb-16">
         <main className="mx-auto flex max-w-[1000px] flex-col gap-4 px-4 pb-10 pt-8 sm:px-6 lg:px-8">
-          <div className="rounded-sm border border-[#f0d3d3] bg-white p-6 text-center">
+          <div className="rounded-xl border border-[#f0d3d3] bg-white p-6 text-center">
             <h2 className="text-lg font-semibold text-[#153a6a]">게시글을 불러오지 못했습니다.</h2>
             <p className="mt-2 text-sm text-[#5a7398]">{error}</p>
             <div className="mt-4 flex flex-wrap justify-center gap-2 text-xs">
@@ -420,7 +420,7 @@ export function PostDetailClient({ postId }: { postId: string }) {
               </button>
               <a
                 href={`/posts/${postId}/guest`}
-                className="border border-[#bfd0ec] bg-white px-4 py-2 text-[#315484] transition hover:bg-[#f3f7ff]"
+                className="tp-btn-soft px-4 py-2"
               >
                 게스트 페이지 보기
               </a>
@@ -435,7 +435,7 @@ export function PostDetailClient({ postId }: { postId: string }) {
     return (
       <div className="tp-page-bg min-h-screen pb-16">
         <main className="mx-auto flex max-w-[1000px] flex-col gap-4 px-4 pb-10 pt-8 sm:px-6 lg:px-8">
-          <div className="rounded-sm border border-[#dbe6f6] bg-white p-6 text-center text-sm text-[#6a84ac]">
+          <div className="rounded-xl border border-[#dbe6f6] bg-white p-6 text-center text-sm text-[#6a84ac]">
             게시글을 불러오는 중...
           </div>
         </main>
@@ -523,7 +523,7 @@ export function PostDetailClient({ postId }: { postId: string }) {
       <PostViewTracker postId={post.id} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
       <main className="mx-auto flex w-full max-w-[1100px] flex-col gap-4 px-4 py-5 sm:gap-5 sm:px-6 sm:py-6 lg:px-8">
-        <BackToFeedButton className="inline-flex w-fit items-center rounded-full border border-[#cbdcf5] bg-white px-3.5 py-2 text-xs font-semibold text-[#315b9a] transition hover:bg-[#f5f9ff]" />
+        <BackToFeedButton className="tp-btn-soft inline-flex w-fit items-center px-3.5 py-2 text-xs font-semibold" />
         <div>
           <section className="tp-card p-4 sm:p-7">
             <div className="flex flex-wrap items-center gap-2 text-xs">
@@ -639,20 +639,20 @@ export function PostDetailClient({ postId }: { postId: string }) {
                   <div className="hidden flex-wrap items-center justify-end gap-2 sm:flex">
                     <Link
                       href={`/posts/${post.id}/edit`}
-                      className="border border-[#bfd0ec] bg-white px-3 py-1.5 text-xs font-semibold text-[#315484] transition hover:bg-[#f3f7ff]"
+                      className="tp-btn-soft px-3 py-1.5 text-xs font-semibold"
                     >
                       수정
                     </Link>
                     <PostDetailActions postId={post.id} />
                   </div>
                   <details className="sm:hidden">
-                    <summary className="inline-flex h-8 items-center rounded-sm border border-[#bfd0ec] bg-white px-3 text-xs font-semibold text-[#315484]">
+                    <summary className="tp-btn-soft inline-flex h-8 items-center px-3 text-xs font-semibold">
                       글 관리
                     </summary>
-                    <div className="mt-2 flex flex-wrap items-center gap-2 rounded-sm border border-[#dbe6f6] bg-[#f8fbff] p-2">
+                    <div className="mt-2 flex flex-wrap items-center gap-2 rounded-xl border border-[#dbe6f6] bg-[#f8fbff] p-2">
                       <Link
                         href={`/posts/${post.id}/edit`}
-                        className="inline-flex h-8 items-center border border-[#bfd0ec] bg-white px-3 text-xs font-semibold text-[#315484]"
+                        className="tp-btn-soft inline-flex h-8 items-center px-3 text-xs font-semibold"
                       >
                         수정
                       </Link>

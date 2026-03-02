@@ -67,7 +67,7 @@ export default async function AdminPoliciesPage() {
               loginRequiredTypes.map((type) => (
                 <span
                   key={type}
-                  className="border border-[#bfd0ec] bg-[#f6f9ff] px-2.5 py-1 text-[#315484]"
+                  className="rounded-md border border-[#cbdcf5] bg-[#f6f9ff] px-2.5 py-1 text-[#315484]"
                 >
                   {postTypeMeta[type].label} ({type})
                 </span>
@@ -100,7 +100,7 @@ export default async function AdminPoliciesPage() {
               forbiddenKeywords.slice(0, 20).map((keyword) => (
                 <span
                   key={keyword}
-                  className="border border-[#bfd0ec] bg-[#f6f9ff] px-2.5 py-1 text-[#315484]"
+                  className="rounded-md border border-[#cbdcf5] bg-[#f6f9ff] px-2.5 py-1 text-[#315484]"
                 >
                   {keyword}
                 </span>
@@ -125,25 +125,25 @@ export default async function AdminPoliciesPage() {
             비회원 즉시 공개 글의 작성 범위/카테고리/링크/연락처/이미지 제한을 조정합니다.
           </p>
           <div className="mt-3 flex flex-wrap gap-2 text-[11px]">
-            <span className="border border-[#bfd0ec] bg-[#f6f9ff] px-2.5 py-1 text-[#315484]">
+            <span className="rounded-md border border-[#cbdcf5] bg-[#f6f9ff] px-2.5 py-1 text-[#315484]">
               차단 카테고리 {guestPostPolicy.blockedPostTypes.length}개
             </span>
-            <span className="border border-[#bfd0ec] bg-[#f6f9ff] px-2.5 py-1 text-[#315484]">
+            <span className="rounded-md border border-[#cbdcf5] bg-[#f6f9ff] px-2.5 py-1 text-[#315484]">
               이미지 최대 {guestPostPolicy.maxImageCount}장
             </span>
-            <span className="border border-[#bfd0ec] bg-[#f6f9ff] px-2.5 py-1 text-[#315484]">
+            <span className="rounded-md border border-[#cbdcf5] bg-[#f6f9ff] px-2.5 py-1 text-[#315484]">
               범위 {guestPostPolicy.enforceGlobalScope ? "온동네만" : "동네/온동네"}
             </span>
-            <span className="border border-[#bfd0ec] bg-[#f6f9ff] px-2.5 py-1 text-[#315484]">
+            <span className="rounded-md border border-[#cbdcf5] bg-[#f6f9ff] px-2.5 py-1 text-[#315484]">
               링크 {guestPostPolicy.allowLinks ? "허용" : "차단"}
             </span>
-            <span className="border border-[#bfd0ec] bg-[#f6f9ff] px-2.5 py-1 text-[#315484]">
+            <span className="rounded-md border border-[#cbdcf5] bg-[#f6f9ff] px-2.5 py-1 text-[#315484]">
               연락처 {guestPostPolicy.allowContact ? "허용" : "차단"}
             </span>
-            <span className="border border-[#bfd0ec] bg-[#f6f9ff] px-2.5 py-1 text-[#315484]">
+            <span className="rounded-md border border-[#cbdcf5] bg-[#f6f9ff] px-2.5 py-1 text-[#315484]">
               글 제한 {guestPostPolicy.postRateLimit10m}/{guestPostPolicy.postRateLimit1h}/{guestPostPolicy.postRateLimit24h}
             </span>
-            <span className="border border-[#bfd0ec] bg-[#f6f9ff] px-2.5 py-1 text-[#315484]">
+            <span className="rounded-md border border-[#cbdcf5] bg-[#f6f9ff] px-2.5 py-1 text-[#315484]">
               제재 임계치 {guestPostPolicy.banThreshold24h}/{guestPostPolicy.banThreshold7dMedium}/{guestPostPolicy.banThreshold7dHigh}
             </span>
           </div>
@@ -159,13 +159,13 @@ export default async function AdminPoliciesPage() {
             운영에서 조정할 수 있습니다.
           </p>
           <div className="mt-3 flex flex-wrap gap-2 text-[11px]">
-            <span className="border border-[#bfd0ec] bg-[#f6f9ff] px-2.5 py-1 text-[#315484]">
+            <span className="rounded-md border border-[#cbdcf5] bg-[#f6f9ff] px-2.5 py-1 text-[#315484]">
               카테고리 제한: 가입 후 {newUserSafetyPolicy.minAccountAgeHours}시간
             </span>
-            <span className="border border-[#bfd0ec] bg-[#f6f9ff] px-2.5 py-1 text-[#315484]">
+            <span className="rounded-md border border-[#cbdcf5] bg-[#f6f9ff] px-2.5 py-1 text-[#315484]">
               연락처 차단: 가입 후 {newUserSafetyPolicy.contactBlockWindowHours}시간
             </span>
-            <span className="border border-[#bfd0ec] bg-[#f6f9ff] px-2.5 py-1 text-[#315484]">
+            <span className="rounded-md border border-[#cbdcf5] bg-[#f6f9ff] px-2.5 py-1 text-[#315484]">
               제한 카테고리 {newUserSafetyPolicy.restrictedPostTypes.length}개
             </span>
           </div>

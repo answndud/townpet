@@ -33,7 +33,7 @@ export function UserRelationControls({
   const [isPending, startTransition] = useTransition();
 
   const buttonClass =
-    "border px-2.5 py-1 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-60";
+    "rounded-lg border px-2.5 py-1 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-60";
 
   const runAction = (action: "BLOCK" | "UNBLOCK" | "MUTE" | "UNMUTE") => {
     startTransition(async () => {
@@ -77,7 +77,7 @@ export function UserRelationControls({
         className={`${buttonClass} ${
           isBlockedByMe
             ? "border-rose-300 bg-rose-50 text-rose-700 hover:bg-rose-100"
-            : "border-[#bfd0ec] bg-white text-[#315484] hover:bg-[#f3f7ff]"
+            : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
         }`}
       >
         {isBlockedByMe ? "차단 해제" : "차단"}
@@ -89,7 +89,7 @@ export function UserRelationControls({
         className={`${buttonClass} ${
           isMutedByMe
             ? "border-[#5a7398] bg-[#5a7398] text-white hover:bg-[#4f678d]"
-            : "border-[#bfd0ec] bg-white text-[#315484] hover:bg-[#f3f7ff]"
+            : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
         }`}
       >
         {isMutedByMe ? "뮤트 해제" : "뮤트"}

@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { Prisma } from "@prisma/client";
 import { unstable_cache } from "next/cache";
+import { redirect } from "next/navigation";
 import { PostScope, PostType } from "@prisma/client";
 
 import { NeighborhoodGateNotice } from "@/components/neighborhood/neighborhood-gate-notice";
@@ -63,6 +64,7 @@ type HomePageProps = {
     type?: PostType;
     scope?: "LOCAL" | "GLOBAL";
     petType?: string;
+    communityId?: string;
     q?: string;
     mode?: string;
     days?: string;
@@ -208,6 +210,24 @@ export default async function Home({ searchParams }: HomePageProps) {
   const blockedTypesForGuest = !isAuthenticated ? loginRequiredTypes : [];
 
   const resolvedParams = (await searchParams) ?? {};
+  const legacyCommunityId =
+    typeof resolvedParams.communityId === "string" ? resolvedParams.communityId.trim() : "";
+  const hasLegacyCommunityId = legacyCommunityId.length > 0;
+  const hasPetType =
+    typeof resolvedParams.petType === "string" && resolvedParams.petType.trim().length > 0;
+  if (hasLegacyCommunityId && !hasPetType) {
+    const params = new URLSearchParams();
+    for (const [key, value] of Object.entries(resolvedParams)) {
+      if (key === "communityId") {
+        continue;
+      }
+      if (typeof value === "string" && value.length > 0) {
+        params.set(key, value);
+      }
+    }
+    params.set("petType", legacyCommunityId);
+    redirect(`/feed?${params.toString()}`);
+  }
   await maybeDebugDelay(resolvedParams.debugDelayMs);
   const parsedParams = postListSchema.safeParse({
     ...resolvedParams,
@@ -524,7 +544,7 @@ export default async function Home({ searchParams }: HomePageProps) {
       >
         <div className={isUltraDense ? "space-y-2" : "space-y-3"}>
           <header
-            className={`animate-float-in rounded-2xl border border-[#d9e5f7] bg-[linear-gradient(180deg,#fafdff_0%,#f2f7ff_100%)] shadow-[0_10px_24px_rgba(30,63,116,0.06)] ${
+            className={`tp-hero animate-float-in ${
               isUltraDense ? "px-2.5 py-2 sm:px-3 sm:py-2.5" : "px-3 py-3 sm:px-5 sm:py-4"
             }`}
           >
@@ -547,7 +567,7 @@ export default async function Home({ searchParams }: HomePageProps) {
                </p>
              </div>
              <div className="hidden items-center gap-1.5 text-xs text-[#4f678d] sm:flex">
-               <div className="rounded-full border border-[#d7e3f6] bg-white px-3 py-1">
+                <div className="rounded-lg border border-[#d7e3f6] bg-white px-3 py-1">
                  {mode === "BEST" ? "베스트글" : "전체글"} {items.length}건
                </div>
              </div>
@@ -556,13 +576,13 @@ export default async function Home({ searchParams }: HomePageProps) {
 
         <a
           href="#feed-list"
-          className="inline-flex w-fit items-center rounded-sm border border-[#bfd0ec] bg-white px-2.5 py-1 text-xs font-semibold text-[#2f548f] lg:hidden"
+          className="tp-btn-soft inline-flex w-fit items-center px-3 py-1.5 text-xs font-semibold lg:hidden"
         >
           목록 바로가기
         </a>
 
         <section
-          className={`animate-fade-up rounded-2xl border border-[#d9e5f7] bg-white/95 shadow-[0_12px_28px_rgba(30,63,116,0.06)] ${
+          className={`tp-card animate-fade-up bg-white/95 ${
             isUltraDense ? "p-1.5 sm:p-2" : "p-2.5 sm:p-3.5"
           }`}
         >
@@ -611,7 +631,7 @@ export default async function Home({ searchParams }: HomePageProps) {
               <details className="group rounded-xl border border-[#d6e4f7] bg-[#f8fbff] p-2 sm:p-2.5">
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-xs font-semibold text-[#2f548f] transition hover:bg-white">
                   <span>글 보기 방식</span>
-                  <span className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-[#d4e2f6] bg-[#f8fbff] text-[#5f7ea8]">
+                  <span className="inline-flex h-5 w-5 items-center justify-center rounded-md border border-[#d4e2f6] bg-[#f8fbff] text-[#5f7ea8]">
                     <svg
                       viewBox="0 0 20 20"
                       aria-hidden="true"
@@ -629,7 +649,7 @@ export default async function Home({ searchParams }: HomePageProps) {
                     <div className="mt-1.5 flex flex-wrap gap-1.5">
                       <Link
                         href={makeHref({ nextMode: "ALL", nextPage: 1 })}
-                        className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                        className={`rounded-lg border px-3 py-1 text-xs font-semibold transition ${
                           mode === "ALL"
                             ? "border-[#3567b5] bg-[#3567b5] text-white"
                             : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
@@ -639,7 +659,7 @@ export default async function Home({ searchParams }: HomePageProps) {
                       </Link>
                       <Link
                         href={makeHref({ nextMode: "BEST", nextPage: 1 })}
-                        className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                        className={`rounded-lg border px-3 py-1 text-xs font-semibold transition ${
                           mode === "BEST"
                             ? "border-[#3567b5] bg-[#3567b5] text-white"
                             : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
@@ -655,7 +675,7 @@ export default async function Home({ searchParams }: HomePageProps) {
                             <Link
                               key={`mobile-best-${day}`}
                               href={makeHref({ nextDays: day, nextPage: 1 })}
-                               className={`rounded-full border px-2.5 py-1.5 text-center text-xs font-semibold transition ${
+                               className={`rounded-lg border px-2.5 py-1.5 text-center text-xs font-semibold transition ${
                                  bestDays === day
                                    ? "border-[#3567b5] bg-[#3567b5] text-white"
                                    : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
@@ -672,7 +692,7 @@ export default async function Home({ searchParams }: HomePageProps) {
                               <Link
                                 key={`mobile-sort-${option.value}`}
                                 href={makeHref({ nextSort: option.value, nextPage: 1 })}
-                                 className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                                 className={`rounded-lg border px-3 py-1 text-xs font-semibold transition ${
                                    selectedSort === option.value
                                      ? "border-[#3567b5] bg-[#3567b5] text-white"
                                      : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
@@ -685,7 +705,7 @@ export default async function Home({ searchParams }: HomePageProps) {
                           <div className="hidden flex-wrap gap-1.5 sm:flex">
                             <Link
                               href={makeHref({ nextPeriod: null, nextPage: 1 })}
-                               className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                               className={`rounded-lg border px-3 py-1 text-xs font-semibold transition ${
                                  !periodDays
                                    ? "border-[#3567b5] bg-[#3567b5] text-white"
                                    : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
@@ -697,7 +717,7 @@ export default async function Home({ searchParams }: HomePageProps) {
                               <Link
                                 key={`mobile-period-${day}`}
                                 href={makeHref({ nextPeriod: day, nextPage: 1 })}
-                                 className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                                 className={`rounded-lg border px-3 py-1 text-xs font-semibold transition ${
                                    periodDays === day
                                      ? "border-[#3567b5] bg-[#3567b5] text-white"
                                      : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
@@ -718,7 +738,7 @@ export default async function Home({ searchParams }: HomePageProps) {
               <details className="group rounded-xl border border-[#d6e4f7] bg-[#f8fbff] p-2 sm:p-2.5">
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-xs font-semibold text-[#2f548f] transition hover:bg-white">
                   <span>게시판 선택</span>
-                  <span className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-[#d4e2f6] bg-[#f8fbff] text-[#5f7ea8]">
+                  <span className="inline-flex h-5 w-5 items-center justify-center rounded-md border border-[#d4e2f6] bg-[#f8fbff] text-[#5f7ea8]">
                     <svg
                       viewBox="0 0 20 20"
                       aria-hidden="true"
@@ -738,7 +758,7 @@ export default async function Home({ searchParams }: HomePageProps) {
                             ? makeHref({ nextScope: PostScope.LOCAL, nextPage: 1 })
                             : loginHref("/feed?scope=LOCAL")
                         }
-                        className={`rounded-full border px-2.5 py-1.5 text-center text-xs font-semibold transition ${
+                        className={`rounded-lg border px-2.5 py-1.5 text-center text-xs font-semibold transition ${
                           selectedScope === PostScope.LOCAL
                             ? "border-[#3567b5] bg-[#3567b5] text-white"
                             : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
@@ -748,7 +768,7 @@ export default async function Home({ searchParams }: HomePageProps) {
                       </Link>
                       <Link
                         href={makeHref({ nextScope: PostScope.GLOBAL, nextPage: 1 })}
-                        className={`rounded-full border px-2.5 py-1.5 text-center text-xs font-semibold transition ${
+                        className={`rounded-lg border px-2.5 py-1.5 text-center text-xs font-semibold transition ${
                           selectedScope === PostScope.GLOBAL
                             ? "border-[#3567b5] bg-[#3567b5] text-white"
                             : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
@@ -763,7 +783,7 @@ export default async function Home({ searchParams }: HomePageProps) {
                     <div className="mt-1.5 flex flex-wrap gap-1.5">
                       <Link
                         href={makeHref({ nextType: null, nextPage: 1 })}
-                        className={`rounded-full border px-2.5 py-1 text-xs font-medium transition ${
+                        className={`rounded-lg border px-2.5 py-1 text-xs font-medium transition ${
                           !type
                             ? "border-[#3567b5] bg-[#3567b5] text-white"
                             : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
@@ -780,7 +800,7 @@ export default async function Home({ searchParams }: HomePageProps) {
                           <Link
                             key={`mobile-primary-${value}`}
                             href={isRestricted ? loginHref(targetHref) : targetHref}
-                            className={`rounded-full border px-2.5 py-1 text-xs font-medium transition ${
+                            className={`rounded-lg border px-2.5 py-1 text-xs font-medium transition ${
                               type === value
                                 ? "border-[#3567b5] bg-[#3567b5] text-white"
                                 : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
@@ -797,13 +817,13 @@ export default async function Home({ searchParams }: HomePageProps) {
                     <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#4b6b9b]">관심 동물</p>
                     <div className="mt-1.5 flex flex-wrap gap-1.5">
                       {isCommonBoardType ? (
-                        <span className="rounded-full border border-[#d7e2f3] bg-[#eef3fb] px-2.5 py-1 text-xs font-medium text-[#8aa0be]">
+                        <span className="rounded-lg border border-[#d7e2f3] bg-[#eef3fb] px-2.5 py-1 text-xs font-medium text-[#8aa0be]">
                           전체
                         </span>
                       ) : (
                         <Link
                           href={makeHref({ nextPetTypeId: null, nextPage: 1 })}
-                          className={`rounded-full border px-2.5 py-1 text-xs font-medium transition ${
+                          className={`rounded-lg border px-2.5 py-1 text-xs font-medium transition ${
                             !petTypeId
                               ? "border-[#3567b5] bg-[#3567b5] text-white"
                               : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
@@ -816,7 +836,7 @@ export default async function Home({ searchParams }: HomePageProps) {
                         isCommonBoardType ? (
                           <span
                             key={`mobile-community-${community.id}`}
-                            className="rounded-full border border-[#d7e2f3] bg-[#eef3fb] px-2.5 py-1 text-xs font-medium text-[#8aa0be]"
+                            className="rounded-lg border border-[#d7e2f3] bg-[#eef3fb] px-2.5 py-1 text-xs font-medium text-[#8aa0be]"
                           >
                             {community.labelKo}
                           </span>
@@ -824,7 +844,7 @@ export default async function Home({ searchParams }: HomePageProps) {
                           <Link
                             key={`mobile-community-${community.id}`}
                             href={makeHref({ nextPetTypeId: community.id, nextPage: 1 })}
-                            className={`rounded-full border px-2.5 py-1 text-xs font-medium transition ${
+                            className={`rounded-lg border px-2.5 py-1 text-xs font-medium transition ${
                               petTypeId === community.id
                                 ? "border-[#3567b5] bg-[#3567b5] text-white"
                                 : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
@@ -847,7 +867,7 @@ export default async function Home({ searchParams }: HomePageProps) {
           </div>
         </section>
 
-        <section id="feed-list" className="animate-fade-up overflow-hidden rounded-2xl border border-[#d9e5f7] bg-white shadow-[0_12px_28px_rgba(30,63,116,0.05)]">
+        <section id="feed-list" className="tp-card animate-fade-up overflow-hidden">
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#e2ebf8] bg-[#f8fbff] px-4 py-2.5 text-xs text-[#4c6f9e] sm:px-5">
             <span className="font-semibold">게시글 목록</span>
             <span className="hidden sm:inline">읽은 글은 연한 색상으로 표시됩니다.</span>
@@ -911,7 +931,7 @@ export default async function Home({ searchParams }: HomePageProps) {
                 className={`inline-flex h-8 items-center border px-2.5 text-xs font-semibold transition ${
                   resolvedPage <= 1
                     ? "pointer-events-none border-[#d6e1f1] bg-[#eef3fb] text-[#91a6c6]"
-                    : "border-[#b9cbeb] bg-white text-[#2f548f] hover:bg-[#f3f7ff]"
+                    : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
                 }`}
               >
                 이전
@@ -932,7 +952,7 @@ export default async function Home({ searchParams }: HomePageProps) {
                   className={`inline-flex h-8 min-w-8 items-center justify-center border px-2 text-xs font-semibold transition ${
                     pageNumber === resolvedPage
                       ? "border-[#3567b5] bg-[#3567b5] text-white"
-                      : "border-[#b9cbeb] bg-white text-[#2f548f] hover:bg-[#f3f7ff]"
+                      : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
                   }`}
                 >
                   {pageNumber}
@@ -944,7 +964,7 @@ export default async function Home({ searchParams }: HomePageProps) {
                 className={`inline-flex h-8 items-center border px-2.5 text-xs font-semibold transition ${
                   resolvedPage >= totalPages
                     ? "pointer-events-none border-[#d6e1f1] bg-[#eef3fb] text-[#91a6c6]"
-                    : "border-[#b9cbeb] bg-white text-[#2f548f] hover:bg-[#f3f7ff]"
+                    : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
                 }`}
               >
                 다음
@@ -955,11 +975,11 @@ export default async function Home({ searchParams }: HomePageProps) {
 
          <div className="flex justify-end gap-2">
            <ScrollToTopButton
-             className="inline-flex h-9 items-center justify-center rounded-full border border-[#c8daf4] bg-white px-3.5 text-xs font-semibold text-[#315b9a] transition hover:bg-[#f5f9ff]"
+             className="tp-btn-soft inline-flex h-9 items-center justify-center px-3.5 text-xs font-semibold"
            />
            <Link
              href="/posts/new"
-             className="inline-flex h-9 items-center justify-center rounded-full border border-[#2f5da4] bg-[#2f5da4] px-4 text-xs font-semibold text-white transition hover:bg-[#274f8c]"
+             className="tp-btn-primary inline-flex h-9 items-center justify-center px-4 text-xs font-semibold hover:bg-[#274f8c]"
            >
              글쓰기
            </Link>

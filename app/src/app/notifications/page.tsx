@@ -35,7 +35,7 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
           <div>
             <Link
               href="/login?next=%2Fnotifications"
-              className="inline-flex rounded-full border border-[#3567b5] bg-[#3567b5] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#2f5da4]"
+              className="tp-btn-primary inline-flex px-4 py-2 text-sm font-semibold"
             >
               로그인하기
             </Link>

@@ -18,7 +18,7 @@ export default async function BreedGroupBuyNewPage({ params }: BreedGroupBuyPage
     <main className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6">
       <Link
         href={`/lounges/breeds/${breedCode}`}
-        className="inline-flex items-center border border-[#bfd0ec] bg-white px-3 py-1.5 text-xs font-semibold text-[#315484]"
+        className="tp-btn-soft inline-flex items-center px-3 py-1.5 text-xs font-semibold"
       >
         라운지로 돌아가기
       </Link>

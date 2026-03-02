@@ -118,14 +118,14 @@ export function PostCommentSectionClient({
     return (
       <div
         ref={containerRef}
-        className="mt-6 rounded-sm border border-[#dbe6f6] bg-white p-4 text-sm text-[#6a84ac]"
+        className="mt-6 rounded-xl border border-[#dbe6f6] bg-white p-4 text-sm text-[#6a84ac]"
       >
         <div className="flex flex-wrap items-center justify-between gap-3">
           <span>댓글은 화면에 보일 때 불러옵니다.</span>
           <button
             type="button"
             onClick={() => setShouldLoad(true)}
-            className="border border-[#bfd0ec] bg-white px-3 py-1.5 text-xs font-semibold text-[#315484] transition hover:bg-[#f3f7ff]"
+            className="tp-btn-soft px-3 py-1.5 text-xs font-semibold"
           >
             댓글 불러오기
           </button>
@@ -136,7 +136,7 @@ export function PostCommentSectionClient({
 
   if (error) {
     return (
-      <div className="mt-6 rounded-sm border border-[#f0d3d3] bg-[#fff7f7] p-4 text-sm text-[#8b4b4b]">
+      <div className="mt-6 rounded-xl border border-[#f0d3d3] bg-[#fff7f7] p-4 text-sm text-[#8b4b4b]">
         {error}
       </div>
     );
@@ -144,7 +144,7 @@ export function PostCommentSectionClient({
 
   if (!comments) {
     return (
-      <div className="mt-6 rounded-sm border border-[#dbe6f6] bg-white p-4 text-sm text-[#6a84ac]">
+      <div className="mt-6 rounded-xl border border-[#dbe6f6] bg-white p-4 text-sm text-[#6a84ac]">
         댓글을 불러오는 중...
       </div>
     );

@@ -218,7 +218,7 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
             </p>
             <p className="text-xs text-[#4f678d]">기각 완료</p>
           </div>
-          <div className="border border-[#d8e4f6] bg-white p-3 sm:col-span-2 lg:col-span-1">
+          <div className="rounded-lg border border-[#d8e4f6] bg-white p-3 sm:col-span-2 lg:col-span-1">
             <p className="text-[11px] uppercase tracking-[0.22em] text-[#5b78a1]">평균 처리</p>
             <p className="mt-2 text-2xl font-bold text-[#10284a]">{averageResolutionLabel}</p>
             <p className="text-xs text-[#4f678d]">처리 평균 시간</p>
@@ -269,10 +269,10 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
               <Link
                 key={value}
                 href={buildLink(value as ReportStatus | "ALL", targetType)}
-                className={`border px-2.5 py-1 transition ${
+                className={`rounded-lg border px-2.5 py-1 transition ${
                   status === value
                     ? "border-[#3567b5] bg-[#3567b5] text-white"
-                    : "border-[#bfd0ec] bg-white text-[#315484] hover:bg-[#f3f7ff]"
+                    : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
                 }`}
               >
                 {value === "ALL" ? "전체" : statusLabels[value as ReportStatus]}
@@ -287,10 +287,10 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
               <Link
                 key={value}
                 href={buildLink(status, value as ReportTarget | "ALL")}
-                className={`border px-2.5 py-1 transition ${
+                className={`rounded-lg border px-2.5 py-1 transition ${
                   targetType === value
                     ? "border-[#3567b5] bg-[#3567b5] text-white"
-                    : "border-[#bfd0ec] bg-white text-[#315484] hover:bg-[#f3f7ff]"
+                    : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
                 }`}
               >
                 {value === "ALL" ? "전체" : targetLabels[value as ReportTarget]}

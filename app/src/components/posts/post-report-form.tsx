@@ -51,7 +51,7 @@ export function PostReportForm({ postId }: PostReportFormProps) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="border border-[#c8d7ef] bg-white p-4"
+      className="tp-card p-4"
     >
       <div className="flex items-center justify-between">
         <h2 className="text-base font-semibold text-[#1f3f71]">신고하기</h2>
@@ -68,7 +68,7 @@ export function PostReportForm({ postId }: PostReportFormProps) {
         <label className="flex flex-col gap-2 text-sm font-medium text-[#355988]">
           사유
           <select
-            className="border border-[#bfd0ec] bg-[#f8fbff] px-3 py-2 text-sm text-[#1f3f71]"
+            className="tp-input-soft px-3 py-2 text-sm"
             value={reason}
             onChange={(event) =>
               setReason(event.target.value as ReportReason)
@@ -84,7 +84,7 @@ export function PostReportForm({ postId }: PostReportFormProps) {
         <label className="flex flex-col gap-2 text-sm font-medium text-[#355988] md:col-span-2">
           상세 설명(선택)
           <textarea
-            className="min-h-[80px] border border-[#bfd0ec] bg-[#f8fbff] px-3 py-2 text-sm text-[#1f3f71]"
+            className="tp-input-soft min-h-[80px] px-3 py-2 text-sm"
             value={description}
             onChange={(event) => setDescription(event.target.value)}
             placeholder="추가 설명이 필요하면 입력하세요."
