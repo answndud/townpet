@@ -86,6 +86,15 @@ export const profileImageUpdateSchema = z.object({
     ),
 });
 
+export const preferredPetTypesSchema = z
+  .object({
+    petTypeIds: z.array(z.string().cuid()).min(1).max(50),
+  })
+  .transform((value) => ({
+    petTypeIds: Array.from(new Set(value.petTypeIds)),
+  }));
+
 export type ProfileUpdateInput = z.infer<typeof profileUpdateSchema>;
 export type NeighborhoodSelectInput = z.infer<typeof neighborhoodSelectSchema>;
 export type ProfileImageUpdateInput = z.infer<typeof profileImageUpdateSchema>;
+export type PreferredPetTypesInput = z.infer<typeof preferredPetTypesSchema>;

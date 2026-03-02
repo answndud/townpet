@@ -3,15 +3,21 @@ import Image from "next/image";
 import Link from "next/link";
 import { IBM_Plex_Mono, Space_Grotesk } from "next/font/google";
 import { UserRole } from "@prisma/client";
+import { cookies } from "next/headers";
 
 import { AuthControls } from "@/components/auth/auth-controls";
 import { FeedHoverMenu } from "@/components/navigation/feed-hover-menu";
 import { NotificationBell } from "@/components/notifications/notification-bell";
 import { auth } from "@/lib/auth";
+import {
+  PET_TYPE_PREFERENCE_COOKIE,
+  parsePetTypePreferenceCookie,
+} from "@/lib/pet-type-preference-cookie";
 import { getSiteOrigin } from "@/lib/site-url";
 import { getCurrentUser } from "@/server/auth";
 import { listCommunities } from "@/server/queries/community.queries";
 import { countUnreadNotifications } from "@/server/queries/notification.queries";
+import { listPreferredPetTypeIdsByUserId } from "@/server/queries/user.queries";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -67,9 +73,26 @@ export default async function RootLayout({
   const unreadNotificationCount = currentUser
     ? await countUnreadNotifications(currentUser.id).catch(() => 0)
     : 0;
-  const communities = await listCommunities({ limit: 12 })
-    .then((result) => result.items.map((item) => ({ id: item.id, labelKo: item.labelKo })))
+  const communities = await listCommunities({ limit: 50 })
+    .then((result) =>
+      result.items.map((item) => ({ id: item.id, slug: item.slug, labelKo: item.labelKo })),
+    )
     .catch(() => []);
+  const allPetTypeIds = communities.map((item) => item.id);
+  const cookieStore = await cookies();
+  const cookiePetTypeIds = parsePetTypePreferenceCookie(
+    cookieStore.get(PET_TYPE_PREFERENCE_COOKIE)?.value,
+  ).filter((id) => allPetTypeIds.includes(id));
+  const preferredPetTypeIds = currentUser
+    ? await listPreferredPetTypeIdsByUserId(currentUser.id).catch(() => [])
+    : [];
+  const initialPreferredPetTypeIds = currentUser
+    ? preferredPetTypeIds.filter((id) => allPetTypeIds.includes(id)).length > 0
+      ? preferredPetTypeIds.filter((id) => allPetTypeIds.includes(id))
+      : allPetTypeIds
+    : cookiePetTypeIds.length > 0
+      ? cookiePetTypeIds
+      : allPetTypeIds;
   const navLinkClass =
     "inline-flex h-8 items-center rounded-sm px-1 text-[14px] leading-none text-[#315484] transition hover:bg-[#dcecff] hover:text-[#1f4f8f]";
 
@@ -95,7 +118,11 @@ export default async function RootLayout({
                 <Link href="/feed" className={`${navLinkClass} md:hidden`}>
                   피드
                 </Link>
-                <FeedHoverMenu communities={communities} />
+                <FeedHoverMenu
+                  communities={communities}
+                  isAuthenticated={Boolean(currentUser)}
+                  initialPreferredPetTypeIds={initialPreferredPetTypeIds}
+                />
                 <span className="hidden px-0.5 text-[#9ab0cf] md:inline">|</span>
                 <Link href="/profile" className={navLinkClass}>
                   내 프로필

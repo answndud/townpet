@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { Prisma } from "@prisma/client";
 import { unstable_cache } from "next/cache";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { PostScope, PostType } from "@prisma/client";
 
@@ -16,16 +17,26 @@ import { auth } from "@/lib/auth";
 import { FEED_PAGE_SIZE } from "@/lib/feed";
 import { isCommonBoardPostType } from "@/lib/community-board";
 import { isLoginRequiredPostType } from "@/lib/post-access";
+import {
+  PET_TYPE_PREFERENCE_COOKIE,
+  parsePetTypePreferenceCookie,
+} from "@/lib/pet-type-preference-cookie";
 import { postTypeMeta } from "@/lib/post-presenter";
+import { REVIEW_CATEGORY, type ReviewCategory } from "@/lib/review-category";
 import { isLocalRequiredPostType } from "@/lib/post-scope-policy";
 import { postListSchema, toPostListInput } from "@/lib/validations/post";
 import { getGuestReadLoginRequiredPostTypes } from "@/server/queries/policy.queries";
+import { listCommunities } from "@/server/queries/community.queries";
 import {
   countBestPosts,
   listBestPosts,
   listPosts,
 } from "@/server/queries/post.queries";
-import { getUserWithNeighborhoods, listPetsByUserId } from "@/server/queries/user.queries";
+import {
+  getUserWithNeighborhoods,
+  listPetsByUserId,
+  listPreferredPetTypeIdsByUserId,
+} from "@/server/queries/user.queries";
 
 type FeedMode = "ALL" | "BEST";
 type FeedSort = "LATEST" | "LIKE" | "COMMENT";
@@ -34,6 +45,15 @@ type FeedPersonalized = "0" | "1";
 type FeedDensity = "DEFAULT" | "ULTRA";
 const BEST_DAY_OPTIONS = [3, 7, 30] as const;
 const FEED_PERIOD_OPTIONS = [3, 7, 30] as const;
+const REVIEW_FILTER_OPTIONS: Array<{ label: string; value?: ReviewCategory }> = [
+  { label: "전체" },
+  { label: "용품", value: REVIEW_CATEGORY.SUPPLIES },
+  { label: "사료", value: REVIEW_CATEGORY.FEED },
+  { label: "간식", value: REVIEW_CATEGORY.SNACK },
+  { label: "장난감", value: REVIEW_CATEGORY.TOY },
+  { label: "장소", value: REVIEW_CATEGORY.PLACE },
+  { label: "기타", value: REVIEW_CATEGORY.ETC },
+];
 const MAX_DEBUG_DELAY_MS = 5_000;
 type BestDay = (typeof BEST_DAY_OPTIONS)[number];
 type FeedPeriod = (typeof FEED_PERIOD_OPTIONS)[number];
@@ -55,7 +75,7 @@ type HomePageProps = {
   searchParams?: Promise<{
     type?: PostType;
     scope?: "LOCAL" | "GLOBAL";
-    petType?: string;
+    petType?: string | string[];
     communityId?: string;
     q?: string;
     mode?: string;
@@ -63,6 +83,7 @@ type HomePageProps = {
     period?: string;
     sort?: string;
     searchIn?: string;
+    review?: string;
     personalized?: string;
     page?: string;
     density?: string;
@@ -158,6 +179,22 @@ export default async function Home({ searchParams }: HomePageProps) {
         throw error;
       })
     : null;
+  const communities = await listCommunities({ limit: 50 })
+    .then((result) => result.items.map((item) => ({ id: item.id })))
+    .catch(() => []);
+  const allPetTypeIds = communities.map((item) => item.id);
+  const cookieStore = await cookies();
+  const cookiePetTypeIds = parsePetTypePreferenceCookie(
+    cookieStore.get(PET_TYPE_PREFERENCE_COOKIE)?.value,
+  ).filter((id) => allPetTypeIds.includes(id));
+  const preferredPetTypeIds = userId
+    ? await listPreferredPetTypeIdsByUserId(userId).catch((error) => {
+        if (isDatabaseUnavailableError(error)) {
+          return [];
+        }
+        throw error;
+      })
+    : [];
   const { loginRequiredTypes } = user
     ? await Promise.all([
         getGuestReadLoginRequiredPostTypes().catch((error) => {
@@ -177,8 +214,16 @@ export default async function Home({ searchParams }: HomePageProps) {
   const legacyCommunityId =
     typeof resolvedParams.communityId === "string" ? resolvedParams.communityId.trim() : "";
   const hasLegacyCommunityId = legacyCommunityId.length > 0;
+  const requestedPetTypeValues = Array.isArray(resolvedParams.petType)
+    ? resolvedParams.petType
+    : typeof resolvedParams.petType === "string"
+      ? [resolvedParams.petType]
+      : [];
+  const normalizedPetTypeValues = requestedPetTypeValues
+    .map((value) => value.trim())
+    .filter((value) => value.length > 0);
   const hasPetType =
-    typeof resolvedParams.petType === "string" && resolvedParams.petType.trim().length > 0;
+    normalizedPetTypeValues.length > 0;
   const hasLegacyScope =
     typeof resolvedParams.scope === "string" && resolvedParams.scope.trim().length > 0;
   if ((hasLegacyCommunityId && !hasPetType) || hasLegacyScope) {
@@ -200,14 +245,41 @@ export default async function Home({ searchParams }: HomePageProps) {
   await maybeDebugDelay(resolvedParams.debugDelayMs);
   const parsedParams = postListSchema.safeParse({
     ...resolvedParams,
+    petType: normalizedPetTypeValues[0],
     limit: FEED_PAGE_SIZE,
   });
   const listInput = parsedParams.success ? toPostListInput(parsedParams.data) : null;
-  const type = listInput?.type;
+  const requestedType = listInput?.type;
+  const requestedReviewCategory = listInput?.reviewCategory;
+  const isLegacyReviewType =
+    requestedType === PostType.PLACE_REVIEW || requestedType === PostType.PRODUCT_REVIEW;
+  const type = isLegacyReviewType ? undefined : requestedType;
+  const reviewCategory =
+    requestedReviewCategory ??
+    (requestedType === PostType.PLACE_REVIEW ? REVIEW_CATEGORY.PLACE : undefined);
+  const reviewBoard = isLegacyReviewType || Boolean(reviewCategory);
   const requestedPetTypeId = listInput?.petTypeId;
+  const requestedPetTypeIds =
+    normalizedPetTypeValues.length > 0
+      ? Array.from(new Set(normalizedPetTypeValues)).filter((id) => allPetTypeIds.includes(id))
+      : requestedPetTypeId
+        ? [requestedPetTypeId].filter((id) => allPetTypeIds.includes(id))
+        : [];
+  const defaultPetTypeIds = isAuthenticated
+    ? preferredPetTypeIds.filter((id) => allPetTypeIds.includes(id)).length > 0
+      ? preferredPetTypeIds.filter((id) => allPetTypeIds.includes(id))
+      : allPetTypeIds
+    : cookiePetTypeIds.length > 0
+      ? cookiePetTypeIds
+      : allPetTypeIds;
   const isCommonBoardType = type ? isCommonBoardPostType(type) : false;
   const isLocalRequiredType = isLocalRequiredPostType(type);
-  const petTypeId = isCommonBoardType ? undefined : requestedPetTypeId;
+  const petTypeIds = isCommonBoardType
+    ? []
+    : requestedPetTypeIds.length > 0
+      ? requestedPetTypeIds
+      : defaultPetTypeIds;
+  const petTypeId = petTypeIds[0];
   const selectedScope = isLocalRequiredType ? PostScope.LOCAL : PostScope.GLOBAL;
   const effectiveScope = isAuthenticated
     ? selectedScope
@@ -225,7 +297,7 @@ export default async function Home({ searchParams }: HomePageProps) {
   const usePersonalizedFeed =
     isAuthenticated && mode === "ALL" && selectedPersonalized === "1";
   const isGuestTypeBlocked =
-    !isAuthenticated && isLoginRequiredPostType(type, loginRequiredTypes);
+    !isAuthenticated && isLoginRequiredPostType(requestedType, loginRequiredTypes);
 
   const primaryNeighborhood = user?.neighborhoods.find((item) => item.isPrimary);
   if (isAuthenticated && !primaryNeighborhood && effectiveScope !== PostScope.GLOBAL) {
@@ -267,8 +339,11 @@ export default async function Home({ searchParams }: HomePageProps) {
       ? await countBestPosts({
           days: bestDays,
           type,
+          reviewBoard,
+          reviewCategory,
           scope: effectiveScope,
           petTypeId,
+          petTypeIds,
           q: query || undefined,
           searchIn: selectedSearchIn,
           excludeTypes: isAuthenticated ? undefined : blockedTypesForGuest,
@@ -291,8 +366,11 @@ export default async function Home({ searchParams }: HomePageProps) {
       ? await listPosts({
           limit,
           type,
+          reviewBoard,
+          reviewCategory,
           scope: effectiveScope,
           petTypeId,
+          petTypeIds,
           q: query || undefined,
           searchIn: selectedSearchIn,
           days: periodDays ?? undefined,
@@ -316,8 +394,11 @@ export default async function Home({ searchParams }: HomePageProps) {
           page: resolvedPage,
           days: bestDays,
           type,
+          reviewBoard,
+          reviewCategory,
           scope: effectiveScope,
           petTypeId,
+          petTypeIds,
           q: query || undefined,
           searchIn: selectedSearchIn,
           excludeTypes: isAuthenticated ? undefined : blockedTypesForGuest,
@@ -333,14 +414,21 @@ export default async function Home({ searchParams }: HomePageProps) {
       : [];
 
   const items = mode === "BEST" ? bestItems : posts.items;
-  const feedTitle = type ? `${postTypeMeta[type].label} 게시판` : "전체 게시판";
+  const feedTitle = reviewBoard
+    ? "리뷰 게시판"
+    : type
+      ? `${postTypeMeta[type].label} 게시판`
+      : "전체 게시판";
   const loginHref = (nextPath: string) =>
     `/login?next=${encodeURIComponent(nextPath)}`;
   const feedQueryKey = [
     mode,
     effectiveScope,
     type ?? "ALL",
+    reviewBoard ? "REVIEW" : "GENERAL",
+    reviewCategory ?? "ALL_REVIEW",
     petTypeId ?? "ALL_COMMUNITIES",
+    petTypeIds.join(",") || "ALL_COMMUNITIES_MULTI",
     selectedSort,
     selectedSearchIn,
     selectedPersonalized,
@@ -441,6 +529,7 @@ export default async function Home({ searchParams }: HomePageProps) {
   const makeHref = ({
     nextType,
     nextPetTypeId,
+    nextReviewCategory,
     nextQuery,
     nextPage,
     nextMode,
@@ -453,6 +542,7 @@ export default async function Home({ searchParams }: HomePageProps) {
   }: {
     nextType?: PostType | null;
     nextPetTypeId?: string | null;
+    nextReviewCategory?: ReviewCategory | null;
     nextQuery?: string | null;
     nextPage?: number | null;
     nextMode?: FeedMode | null;
@@ -465,8 +555,14 @@ export default async function Home({ searchParams }: HomePageProps) {
   }) => {
     const params = new URLSearchParams();
     const resolvedType = nextType === undefined ? type : nextType;
-    const resolvedPetTypeId =
-      nextPetTypeId === undefined ? petTypeId : nextPetTypeId;
+    const resolvedPetTypeIds =
+      nextPetTypeId === undefined
+        ? petTypeIds
+        : nextPetTypeId
+          ? [nextPetTypeId]
+          : [];
+    const resolvedReviewCategory =
+      nextReviewCategory === undefined ? reviewCategory : nextReviewCategory;
     const resolvedQuery = nextQuery === undefined ? query : nextQuery;
     const resolvedMode = nextMode === undefined ? mode : nextMode;
     const resolvedDays = nextDays === undefined ? bestDays : nextDays;
@@ -479,13 +575,19 @@ export default async function Home({ searchParams }: HomePageProps) {
     const resolvedDensity = nextDensity === undefined ? density : nextDensity;
     const effectivePage =
       nextPage === undefined ? (resolvedMode === "BEST" ? resolvedPage : 1) : nextPage;
+    const shouldKeepReviewBoard =
+      reviewBoard && resolvedType === undefined && !resolvedReviewCategory;
+    const normalizedType = shouldKeepReviewBoard ? PostType.PRODUCT_REVIEW : resolvedType;
 
-    if (resolvedType) params.set("type", resolvedType);
-    if (resolvedPetTypeId) {
-      const canUseCommunityFilter = !resolvedType || !isCommonBoardPostType(resolvedType);
-      if (canUseCommunityFilter) {
-        params.set("petType", resolvedPetTypeId);
+    if (normalizedType) params.set("type", normalizedType);
+    const canUseCommunityFilter = !normalizedType || !isCommonBoardPostType(normalizedType);
+    if (canUseCommunityFilter) {
+      for (const value of resolvedPetTypeIds) {
+        params.append("petType", value);
       }
+    }
+    if (resolvedReviewCategory) {
+      params.set("review", resolvedReviewCategory);
     }
     if (resolvedQuery) params.set("q", resolvedQuery);
     if (resolvedSearchIn && resolvedSearchIn !== "ALL") {
@@ -586,6 +688,33 @@ export default async function Home({ searchParams }: HomePageProps) {
               >
                 베스트글
               </Link>
+
+              {reviewBoard ? (
+                <>
+                  <span className="px-0.5 text-[#b5c7e3]">|</span>
+                  <span className="font-semibold text-[#4b6b9b]">리뷰</span>
+                  {REVIEW_FILTER_OPTIONS.map((option) => {
+                    const isActive = (option.value ?? null) === (reviewCategory ?? null);
+                    return (
+                      <Link
+                        key={`review-filter-${option.value ?? "all"}`}
+                        href={makeHref({
+                          nextType: PostType.PRODUCT_REVIEW,
+                          nextReviewCategory: option.value ?? null,
+                          nextPage: 1,
+                        })}
+                        className={`px-1 py-0.5 text-[11px] font-semibold transition ${
+                          isActive
+                            ? "text-[#204f8a] underline underline-offset-2"
+                            : "text-[#5173a3] hover:text-[#204f8a]"
+                        }`}
+                      >
+                        {option.label}
+                      </Link>
+                    );
+                  })}
+                </>
+              ) : null}
             </div>
           </div>
           {mode === "ALL" ? (
@@ -688,6 +817,8 @@ export default async function Home({ searchParams }: HomePageProps) {
                   type,
                   scope: effectiveScope,
                   petTypeId,
+                  petTypeIds,
+                  reviewCategory,
                   q: query || undefined,
                   searchIn: selectedSearchIn,
                 sort: selectedSort,

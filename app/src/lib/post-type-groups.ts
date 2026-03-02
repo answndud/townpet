@@ -25,12 +25,11 @@ const POST_TYPE_GROUPS: ReadonlyArray<ReadonlyArray<PostType>> = [
   [PostType.FREE_BOARD, PostType.FREE_POST, PostType.DAILY_SHARE],
   [PostType.QA_QUESTION, PostType.QA_ANSWER],
   [PostType.HOSPITAL_REVIEW],
-  [PostType.PLACE_REVIEW],
+  [PostType.PLACE_REVIEW, PostType.PRODUCT_REVIEW],
   [PostType.WALK_ROUTE],
   [PostType.MEETUP],
   [PostType.MARKET_LISTING],
   [PostType.LOST_FOUND],
-  [PostType.PRODUCT_REVIEW],
   [PostType.PET_SHOWCASE],
 ];
 

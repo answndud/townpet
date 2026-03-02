@@ -12,6 +12,7 @@ import {
   getPostSignals,
   postTypeMeta,
 } from "@/lib/post-presenter";
+import type { ReviewCategory } from "@/lib/review-category";
 
 type FeedMode = "ALL" | "BEST";
 type FeedSort = "LATEST" | "LIKE" | "COMMENT";
@@ -64,6 +65,8 @@ type FeedQueryParams = {
   type?: PostType;
   scope: FeedScope;
   petTypeId?: string;
+  petTypeIds?: string[];
+  reviewCategory?: ReviewCategory;
   q?: string;
   searchIn?: FeedSearchIn;
   sort?: FeedSort;
@@ -389,8 +392,15 @@ export function FeedInfiniteList({
       if (query.type) {
         params.set("type", query.type);
       }
-      if (query.petTypeId) {
+      if (query.petTypeIds && query.petTypeIds.length > 0) {
+        for (const petTypeId of query.petTypeIds) {
+          params.append("petType", petTypeId);
+        }
+      } else if (query.petTypeId) {
         params.set("petType", query.petTypeId);
+      }
+      if (query.reviewCategory) {
+        params.set("review", query.reviewCategory);
       }
       if (query.q) {
         params.set("q", query.q);
@@ -445,6 +455,8 @@ export function FeedInfiniteList({
     nextCursor,
     query.q,
     query.petTypeId,
+    query.petTypeIds,
+    query.reviewCategory,
     query.scope,
     query.searchIn,
     query.sort,

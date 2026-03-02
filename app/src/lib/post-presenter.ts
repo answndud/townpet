@@ -14,7 +14,7 @@ export const postTypeMeta: Record<
     icon: "H",
   },
   PLACE_REVIEW: {
-    label: "후기/리뷰",
+    label: "리뷰",
     chipClass: "border-blue-200 bg-blue-50 text-blue-700",
     icon: "P",
   },
@@ -64,7 +64,7 @@ export const postTypeMeta: Record<
     icon: "D",
   },
   PRODUCT_REVIEW: {
-    label: "용품리뷰",
+    label: "리뷰",
     chipClass: "border-blue-200 bg-blue-50 text-blue-700",
     icon: "R",
   },

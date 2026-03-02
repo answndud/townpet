@@ -658,6 +658,12 @@
 | hover 알림창 + `/notifications` X 버튼 및 제거 UX 반영 | Codex | P1 | `done` | hover 알림창과 알림 페이지에서 `읽음 처리`/`X` 동작 후 항목이 즉시 제거되고 실패 시 오류 메시지가 노출됨 | `app/src/components/notifications/notification-bell.tsx`, `app/src/components/notifications/notification-center.tsx` |
 | 3일 경과 영구삭제 스크립트 및 회귀 시나리오 보강 | Codex | P2 | `done` | `db:cleanup:notifications` 스크립트와 일간 cleanup 워크플로우가 추가되고 알림 읽음/삭제 후 목록 제거 e2e 시나리오가 반영됨 | `app/scripts/cleanup-notifications.ts`, `app/package.json`, `.github/workflows/notification-cleanup.yml`, `app/e2e/notification-comment-flow.spec.ts`, `app/e2e/notification-filter-controls.spec.ts` |
 
+### Cycle 71: 관심 동물 멀티선택 + 피드 지속 필터 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 상단 `관심 동물` 멀티 체크 UI + 영구 저장 | Codex | P1 | `done` | 상단 메뉴에서 관심 동물을 체크박스로 다중 선택/저장할 수 있고 DB에 사용자별 선호 타입이 저장됨 | `app/src/components/navigation/feed-hover-menu.tsx`, `app/src/server/actions/user.ts`, `app/src/server/services/user.service.ts`, `app/src/lib/validations/user.ts`, `app/prisma/schema.prisma`, `app/prisma/migrations/20260303022000_add_user_pet_type_preferences/migration.sql` |
+| 피드/무한스크롤 다중 동물 필터 적용 및 게시판 이동 시 유지 | Codex | P1 | `done` | 사용자 선호 동물 설정이 `/feed` SSR/무한스크롤/API 쿼리에 반영되고 게시판 이동 후에도 동일 필터가 유지됨 | `app/src/app/layout.tsx`, `app/src/app/feed/page.tsx`, `app/src/app/api/posts/route.ts`, `app/src/components/posts/feed-infinite-list.tsx`, `app/src/server/queries/post.queries.ts`, `app/src/server/queries/user.queries.ts` |
+
 ## Blocked (환경 의존)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
