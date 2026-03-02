@@ -122,99 +122,6 @@ const buildPostListIncludeWithoutReactions = (
     },
   }) as const;
 
-const buildPostDetailInclude = (
-  viewerId?: string,
-  includeGuestAuthor = supportsPostGuestAuthorField(),
-  _includeReactions = Boolean(viewerId),
-) =>
-  ({
-    author: { select: { id: true, name: true, nickname: true } },
-    ...(includeGuestAuthor
-      ? { guestAuthor: { select: { id: true, displayName: true, ipDisplay: true, ipLabel: true } } }
-      : {}),
-    neighborhood: {
-      select: { id: true, name: true, city: true },
-    },
-    hospitalReview: {
-      select: {
-        hospitalName: true,
-        totalCost: true,
-        waitTime: true,
-        rating: true,
-        treatmentType: true,
-      },
-    },
-    placeReview: {
-      select: {
-        placeName: true,
-        placeType: true,
-        address: true,
-        isPetAllowed: true,
-        rating: true,
-      },
-    },
-    walkRoute: {
-      select: {
-        routeName: true,
-        distance: true,
-        duration: true,
-        difficulty: true,
-        hasStreetLights: true,
-        hasRestroom: true,
-        hasParkingLot: true,
-        safetyTags: true,
-      },
-    },
-    images: {
-      select: { url: true, order: true },
-    },
-  }) as const;
-
-const buildPostDetailIncludeWithoutReactions = (
-  includeGuestAuthor = supportsPostGuestAuthorField(),
-) =>
-  ({
-    author: { select: { id: true, name: true, nickname: true } },
-    ...(includeGuestAuthor
-      ? { guestAuthor: { select: { id: true, displayName: true, ipDisplay: true, ipLabel: true } } }
-      : {}),
-    neighborhood: {
-      select: { id: true, name: true, city: true },
-    },
-    hospitalReview: {
-      select: {
-        hospitalName: true,
-        totalCost: true,
-        waitTime: true,
-        rating: true,
-        treatmentType: true,
-      },
-    },
-    placeReview: {
-      select: {
-        placeName: true,
-        placeType: true,
-        address: true,
-        isPetAllowed: true,
-        rating: true,
-      },
-    },
-    walkRoute: {
-      select: {
-        routeName: true,
-        distance: true,
-        duration: true,
-        difficulty: true,
-        hasStreetLights: true,
-        hasRestroom: true,
-        hasParkingLot: true,
-        safetyTags: true,
-      },
-    },
-    images: {
-      select: { url: true, order: true },
-    },
-  }) as const;
 
 const HOSPITAL_REVIEW_SELECT = {
   hospitalName: true,
@@ -270,11 +177,7 @@ type PostDetailExtras = {
   } | null;
 };
 
-const buildPostDetailBaseInclude = (
-  viewerId?: string,
-  includeGuestAuthor = supportsPostGuestAuthorField(),
-  _includeReactions = Boolean(viewerId),
-) =>
+const buildPostDetailBaseInclude = (includeGuestAuthor = supportsPostGuestAuthorField()) =>
   ({
     author: { select: { id: true, name: true, nickname: true } },
     ...(includeGuestAuthor
@@ -452,7 +355,7 @@ const buildLegacyPostListSelectWithoutReactions = () =>
     },
   }) as const;
 
-const buildLegacyPostDetailSelect = (viewerId?: string) =>
+const buildLegacyPostDetailSelect = () =>
   ({
     ...LEGACY_POST_BASE_SELECT,
     ...LEGACY_POST_RELATION_SELECT,
@@ -523,6 +426,7 @@ function isMissingCommunityBoardSchemaError(error: unknown) {
     const columnName = typeof meta?.column === "string" ? meta.column : "";
     return (
       columnName.includes("Post.boardScope") ||
+      // Legacy column name for petTypeId is kept in DB via @map("communityId").
       columnName.includes("Post.communityId") ||
       columnName.includes("Post.commonBoardType") ||
       columnName.includes("Post.animalTags")
@@ -591,17 +495,6 @@ function withEmptyReactions<T extends Record<string, unknown>>(items: T[]) {
     ...item,
     reactions: [] as Array<{ type: PostReactionType }>,
   }));
-}
-
-function withEmptyReactionsOne<T extends Record<string, unknown> | null>(item: T) {
-  if (!item) {
-    return null;
-  }
-
-  return {
-    ...item,
-    reactions: [] as Array<{ type: PostReactionType }>,
-  };
 }
 
 function buildPostSearchWhere(
@@ -1066,7 +959,7 @@ export async function getPostById(id?: string, viewerId?: string) {
       const post = await prisma.post
         .findFirst({
           where: { id, ...visibilityFilter },
-          include: buildPostDetailBaseInclude(viewerId, supportsPostGuestAuthorField(), Boolean(viewerId)),
+          include: buildPostDetailBaseInclude(supportsPostGuestAuthorField()),
         })
         .catch(async (error) => {
           if (!isUnknownGuestPostColumnError(error) && !isUnknownGuestAuthorIncludeError(error)) {
@@ -1076,13 +969,13 @@ export async function getPostById(id?: string, viewerId?: string) {
           if (isUnknownGuestAuthorIncludeError(error)) {
             return prisma.post.findFirst({
               where: { id, ...visibilityFilter },
-              include: buildPostDetailBaseInclude(viewerId, false, Boolean(viewerId)),
+              include: buildPostDetailBaseInclude(false),
             });
           }
 
           const post = await prisma.post.findFirst({
             where: { id, ...visibilityFilter },
-            select: buildLegacyPostDetailSelect(viewerId),
+            select: buildLegacyPostDetailSelect(),
           });
           return withEmptyGuestPostMetaOne(post);
         });

@@ -9,6 +9,8 @@ import { getPostById } from "@/server/queries/post.queries";
 import { getUserWithNeighborhoods } from "@/server/queries/user.queries";
 import { jsonError, jsonOk } from "@/server/response";
 
+const HIDDEN_POST_STATS_KEYS = new Set(["likeCount", "dislikeCount", "commentCount", "viewCount"]);
+
 type RouteParams = {
   params: Promise<{ id: string }>;
 };
@@ -50,7 +52,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       }
     }
 
-    const { likeCount, dislikeCount, commentCount, viewCount, ...restPost } = post;
+    const restPost = Object.fromEntries(
+      Object.entries(post).filter(([key]) => !HIDDEN_POST_STATS_KEYS.has(key)),
+    );
 
     return jsonOk(
       {
