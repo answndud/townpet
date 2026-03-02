@@ -17,7 +17,7 @@ import { FEED_PAGE_SIZE } from "@/lib/feed";
 import { isCommonBoardPostType } from "@/lib/community-board";
 import { isLoginRequiredPostType } from "@/lib/post-access";
 import { postTypeMeta } from "@/lib/post-presenter";
-import { PRIMARY_POST_TYPES, SECONDARY_POST_TYPES } from "@/lib/post-type-groups";
+import { PRIMARY_POST_TYPES } from "@/lib/post-type-groups";
 import { postListSchema, toPostListInput } from "@/lib/validations/post";
 import { getGuestReadLoginRequiredPostTypes } from "@/server/queries/policy.queries";
 import { listCommunities } from "@/server/queries/community.queries";
@@ -328,8 +328,6 @@ export default async function Home({ searchParams }: HomePageProps) {
       : [];
 
   const items = mode === "BEST" ? bestItems : posts.items;
-  const localCount = items.filter((post) => post.scope === PostScope.LOCAL).length;
-  const secondaryCategoryTypes = SECONDARY_POST_TYPES;
   const feedTitle = type ? `${postTypeMeta[type].label} 게시판` : "전체 게시판";
   const loginHref = (nextPath: string) =>
     `/login?next=${encodeURIComponent(nextPath)}`;
@@ -798,35 +796,44 @@ export default async function Home({ searchParams }: HomePageProps) {
                   <div className="tp-soft-card p-2.5">
                     <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#4b6b9b]">관심 동물</p>
                     <div className="mt-1.5 flex flex-wrap gap-1.5">
-                      <Link
-                        href={makeHref({ nextPetTypeId: null, nextPage: 1 })}
-                        aria-disabled={isCommonBoardType}
-                        className={`rounded-full border px-2.5 py-1 text-xs font-medium transition ${
-                          isCommonBoardType
-                            ? "pointer-events-none cursor-not-allowed border-[#d7e2f3] bg-[#eef3fb] text-[#8aa0be]"
-                            : !petTypeId
+                      {isCommonBoardType ? (
+                        <span className="rounded-full border border-[#d7e2f3] bg-[#eef3fb] px-2.5 py-1 text-xs font-medium text-[#8aa0be]">
+                          전체
+                        </span>
+                      ) : (
+                        <Link
+                          href={makeHref({ nextPetTypeId: null, nextPage: 1 })}
+                          className={`rounded-full border px-2.5 py-1 text-xs font-medium transition ${
+                            !petTypeId
                               ? "border-[#3567b5] bg-[#3567b5] text-white"
                               : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
-                        }`}
-                      >
-                        전체
-                      </Link>
-                      {communities.items.map((community) => (
-                        <Link
-                          key={`mobile-community-${community.id}`}
-                          href={makeHref({ nextPetTypeId: community.id, nextPage: 1 })}
-                          aria-disabled={isCommonBoardType}
-                          className={`rounded-full border px-2.5 py-1 text-xs font-medium transition ${
-                            isCommonBoardType
-                              ? "pointer-events-none cursor-not-allowed border-[#d7e2f3] bg-[#eef3fb] text-[#8aa0be]"
-                              : petTypeId === community.id
-                                ? "border-[#3567b5] bg-[#3567b5] text-white"
-                                : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
                           }`}
                         >
-                          {community.labelKo}
+                          전체
                         </Link>
-                      ))}
+                      )}
+                      {communities.items.map((community) =>
+                        isCommonBoardType ? (
+                          <span
+                            key={`mobile-community-${community.id}`}
+                            className="rounded-full border border-[#d7e2f3] bg-[#eef3fb] px-2.5 py-1 text-xs font-medium text-[#8aa0be]"
+                          >
+                            {community.labelKo}
+                          </span>
+                        ) : (
+                          <Link
+                            key={`mobile-community-${community.id}`}
+                            href={makeHref({ nextPetTypeId: community.id, nextPage: 1 })}
+                            className={`rounded-full border px-2.5 py-1 text-xs font-medium transition ${
+                              petTypeId === community.id
+                                ? "border-[#3567b5] bg-[#3567b5] text-white"
+                                : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
+                            }`}
+                          >
+                            {community.labelKo}
+                          </Link>
+                        ),
+                      )}
                     </div>
                     {isCommonBoardType ? (
                       <p className="mt-1.5 text-[11px] text-[#5d789f]">
@@ -836,265 +843,7 @@ export default async function Home({ searchParams }: HomePageProps) {
                   </div>
                 </div>
               </details>
-
-              <div className="hidden">
-                <div
-                  className={
-                    isUltraDense
-                      ? "grid gap-1.5 md:grid-cols-2 md:divide-x md:divide-[#dbe6f6]"
-                      : "grid gap-2.5 md:grid-cols-2 md:divide-x md:divide-[#dbe6f6]"
-                  }
-                >
-                  <div className="space-y-1.5 md:pr-4">
-                    <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#4b6b9b]">
-                      모드
-                    </div>
-                    <div className={isUltraDense ? "flex flex-wrap items-center gap-1" : "flex flex-wrap items-center gap-1.5"}>
-                      <Link
-                        href={makeHref({ nextMode: "ALL", nextPage: 1 })}
-                        className={`border ${isUltraDense ? "px-2 py-0.5 text-[11px]" : "px-2.5 py-0.5 text-xs"} font-semibold transition ${
-                          mode === "ALL"
-                            ? "border-[#3567b5] bg-[#3567b5] text-white"
-                            : "border-[#b9cbeb] bg-white text-[#2f548f] hover:bg-[#f3f7ff]"
-                        }`}
-                      >
-                        전체글
-                      </Link>
-                      <Link
-                        href={makeHref({ nextMode: "BEST", nextPage: 1 })}
-                        className={`border ${isUltraDense ? "px-2 py-0.5 text-[11px]" : "px-2.5 py-0.5 text-xs"} font-semibold transition ${
-                          mode === "BEST"
-                            ? "border-[#3567b5] bg-[#3567b5] text-white"
-                            : "border-[#b9cbeb] bg-white text-[#2f548f] hover:bg-[#f3f7ff]"
-                        }`}
-                      >
-                        베스트글
-                      </Link>
-                    </div>
-                  </div>
-
-                  <div
-                    className={
-                      isUltraDense
-                        ? "border-t border-[#dbe6f6] pt-1.5 md:border-t-0 md:pl-4 md:pt-0"
-                        : "border-t border-[#dbe6f6] pt-2 md:border-t-0 md:pl-4 md:pt-0"
-                    }
-                  >
-                    {mode === "BEST" ? (
-                      <>
-                        <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#4b6b9b]">
-                          기간 선택
-                        </div>
-                        <div className={isUltraDense ? "grid grid-cols-3 gap-1" : "grid grid-cols-3 gap-1.5"}>
-                          {BEST_DAY_OPTIONS.map((day) => (
-                            <Link
-                              key={day}
-                              href={makeHref({ nextDays: day, nextPage: 1 })}
-                              className={`border ${isUltraDense ? "px-1.5 py-1 text-[11px]" : "px-2 py-1.5 text-xs"} text-center font-semibold transition ${
-                                bestDays === day
-                                  ? "border-[#3567b5] bg-[#3567b5] text-white"
-                                  : "border-[#b9cbeb] bg-white text-[#2f548f] hover:bg-[#f3f7ff]"
-                              }`}
-                            >
-                              최근 {day}일
-                            </Link>
-                          ))}
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#4b6b9b]">
-                          정렬
-                        </div>
-                        <div className="space-y-1.5">
-                          <div className={isUltraDense ? "flex flex-wrap items-center gap-1" : "flex flex-wrap items-center gap-1.5"}>
-                            {FEED_SORT_OPTIONS.map((option) => (
-                              <Link
-                                key={option.value}
-                                href={makeHref({ nextSort: option.value, nextPage: 1 })}
-                                className={`border ${isUltraDense ? "px-2 py-0.5 text-[11px]" : "px-2.5 py-0.5 text-xs"} font-semibold transition ${
-                                  selectedSort === option.value
-                                    ? "border-[#3567b5] bg-[#3567b5] text-white"
-                                    : "border-[#b9cbeb] bg-white text-[#2f548f] hover:bg-[#f3f7ff]"
-                                }`}
-                              >
-                                {option.label}
-                              </Link>
-                            ))}
-                          </div>
-                          <div className={isUltraDense ? "flex flex-wrap items-center gap-1" : "flex flex-wrap items-center gap-1.5"}>
-                            <Link
-                              href={makeHref({ nextPeriod: null, nextPage: 1 })}
-                              className={`border ${isUltraDense ? "px-2 py-0.5 text-[11px]" : "px-2.5 py-0.5 text-xs"} font-semibold transition ${
-                                !periodDays
-                                  ? "border-[#3567b5] bg-[#3567b5] text-white"
-                                  : "border-[#b9cbeb] bg-white text-[#2f548f] hover:bg-[#f3f7ff]"
-                              }`}
-                            >
-                              전체 기간
-                            </Link>
-                            {FEED_PERIOD_OPTIONS.map((day) => (
-                              <Link
-                                key={`desktop-period-${day}`}
-                                href={makeHref({ nextPeriod: day, nextPage: 1 })}
-                                className={`border ${isUltraDense ? "px-2 py-0.5 text-[11px]" : "px-2.5 py-0.5 text-xs"} font-semibold transition ${
-                                  periodDays === day
-                                    ? "border-[#3567b5] bg-[#3567b5] text-white"
-                                    : "border-[#b9cbeb] bg-white text-[#2f548f] hover:bg-[#f3f7ff]"
-                                }`}
-                              >
-                                최근 {day}일
-                              </Link>
-                            ))}
-                          </div>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div className="hidden">
-                <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#4b6b9b]">
-                  주요 게시판
-                </div>
-                <div className={isUltraDense ? "flex flex-wrap items-center gap-1" : "flex flex-wrap items-center gap-1.5"}>
-                  <Link
-                    href={makeHref({ nextType: null, nextPage: 1 })}
-                    className={`border ${isUltraDense ? "px-2 py-0.5 text-[11px]" : "px-2.5 py-0.5 text-xs"} font-medium transition ${
-                      !type
-                        ? "border-[#3567b5] bg-[#3567b5] text-white"
-                        : "border-[#b9cbeb] bg-white text-[#2f548f] hover:bg-[#f3f7ff]"
-                    }`}
-                  >
-                    전체
-                  </Link>
-                  {PRIMARY_POST_TYPES.map((value) => {
-                    const isRestricted =
-                      !isAuthenticated &&
-                      isLoginRequiredPostType(value, loginRequiredTypes);
-                    const targetHref = makeHref({ nextType: value, nextPage: 1 });
-                    return (
-                      <Link
-                        key={value}
-                        href={isRestricted ? loginHref(targetHref) : targetHref}
-                        className={`border ${isUltraDense ? "px-2 py-0.5 text-[11px]" : "px-2.5 py-0.5 text-xs"} font-medium transition ${
-                          type === value
-                            ? "border-[#3567b5] bg-[#3567b5] text-white"
-                            : "border-[#b9cbeb] bg-white text-[#2f548f] hover:bg-[#f3f7ff]"
-                        }`}
-                      >
-                        {postTypeMeta[value].label}
-                        {isRestricted ? " (로그인)" : ""}
-                      </Link>
-                    );
-                  })}
-                </div>
-                <div className="mt-2 border-t border-[#dbe6f6] pt-2">
-                  <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#4b6b9b]">
-                    추가 게시판
-                  </p>
-                  <div className={isUltraDense ? "flex flex-wrap items-center gap-1" : "flex flex-wrap items-center gap-1.5"}>
-                    {secondaryCategoryTypes.map((value) => {
-                      const isRestricted =
-                        !isAuthenticated &&
-                        isLoginRequiredPostType(value, loginRequiredTypes);
-                      const targetHref = makeHref({ nextType: value, nextPage: 1 });
-                      return (
-                        <Link
-                          key={`secondary-${value}`}
-                          href={isRestricted ? loginHref(targetHref) : targetHref}
-                          className={`border ${isUltraDense ? "px-2 py-0.5 text-[11px]" : "px-2.5 py-0.5 text-xs"} font-medium transition ${
-                            type === value
-                              ? "border-[#3567b5] bg-[#3567b5] text-white"
-                              : "border-[#b9cbeb] bg-white text-[#2f548f] hover:bg-[#f3f7ff]"
-                          }`}
-                        >
-                          {postTypeMeta[value].label}
-                          {isRestricted ? " (로그인)" : ""}
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </div>
-                <div className="mt-2 border-t border-[#dbe6f6] pt-2">
-                  <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#4b6b9b]">
-                    관심 동물
-                  </p>
-                  <div className={isUltraDense ? "flex flex-wrap items-center gap-1" : "flex flex-wrap items-center gap-1.5"}>
-                    <Link
-                      href={makeHref({ nextPetTypeId: null, nextPage: 1 })}
-                      className={`border ${isUltraDense ? "px-2 py-0.5 text-[11px]" : "px-2.5 py-0.5 text-xs"} font-medium transition ${
-                        !petTypeId
-                          ? "border-[#3567b5] bg-[#3567b5] text-white"
-                          : "border-[#b9cbeb] bg-white text-[#2f548f] hover:bg-[#f3f7ff]"
-                      }`}
-                    >
-                      전체
-                    </Link>
-                    {communities.items.map((community) => (
-                      <Link
-                        key={`desktop-community-${community.id}`}
-                        href={makeHref({ nextPetTypeId: community.id, nextPage: 1 })}
-                        className={`border ${isUltraDense ? "px-2 py-0.5 text-[11px]" : "px-2.5 py-0.5 text-xs"} font-medium transition ${
-                          petTypeId === community.id
-                            ? "border-[#3567b5] bg-[#3567b5] text-white"
-                            : "border-[#b9cbeb] bg-white text-[#2f548f] hover:bg-[#f3f7ff]"
-                        }`}
-                      >
-                        {community.labelKo}
-                      </Link>
-                    ))}
-                  </div>
-                  {isCommonBoardType ? (
-                    <p className="mt-1.5 text-[11px] text-[#5d789f]">
-                      공용 보드는 관심 동물 필터 없이 전체 노출됩니다.
-                    </p>
-                  ) : null}
-                </div>
-              </div>
-            </div>
-
-            <aside className="hidden">
-              <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#4b6b9b]">
-                범위
-              </div>
-              <div className={isUltraDense ? "mt-1 grid gap-1" : "mt-1.5 grid gap-1.5"}>
-                <Link
-                  href={
-                    isAuthenticated
-                      ? makeHref({ nextScope: PostScope.LOCAL, nextPage: 1 })
-                      : loginHref("/feed?scope=LOCAL")
-                  }
-                  className={`border ${isUltraDense ? "px-2 py-1 text-[11px]" : "px-2.5 py-1.5 text-xs"} text-center font-semibold transition ${
-                    selectedScope === PostScope.LOCAL
-                      ? "border-[#3567b5] bg-[#3567b5] text-white"
-                      : "border-[#b9cbeb] bg-white text-[#2f548f] hover:bg-[#f3f7ff]"
-                  }`}
-                >
-                  동네
-                </Link>
-                <Link
-                  href={makeHref({ nextScope: PostScope.GLOBAL, nextPage: 1 })}
-                  className={`border ${isUltraDense ? "px-2 py-1 text-[11px]" : "px-2.5 py-1.5 text-xs"} text-center font-semibold transition ${
-                    selectedScope === PostScope.GLOBAL
-                      ? "border-[#3567b5] bg-[#3567b5] text-white"
-                      : "border-[#b9cbeb] bg-white text-[#2f548f] hover:bg-[#f3f7ff]"
-                  }`}
-                >
-                  온동네
-                </Link>
-              </div>
-              <div
-                className={
-                  isUltraDense
-                    ? "mt-1.5 border-t border-[#dbe6f6] pt-1.5 text-[10px] text-[#4f678d]"
-                    : "mt-2 border-t border-[#dbe6f6] pt-2 text-[11px] text-[#4f678d]"
-                }
-              >
-                동네 글 {localCount}건 · 온동네 글 {items.length - localCount}건
-              </div>
-            </aside>
+          </div>
           </div>
         </section>
 
