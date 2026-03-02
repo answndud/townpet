@@ -130,11 +130,11 @@ const typeMeta: Record<PostType, { label: string; chipClass: string }> = {
     chipClass: "border-sky-200 bg-sky-50 text-sky-700",
   },
   PLACE_REVIEW: {
-    label: "장소후기",
+    label: "후기/리뷰",
     chipClass: "border-blue-200 bg-blue-50 text-blue-700",
   },
   WALK_ROUTE: {
-    label: "산책코스",
+    label: "동네 산책코스",
     chipClass: "border-cyan-200 bg-cyan-50 text-cyan-700",
   },
   MEETUP: {
@@ -218,8 +218,8 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
       <NeighborhoodGateNotice
         title="로그인이 필요한 게시글입니다."
         description="이 게시글은 로그인 사용자에게만 공개됩니다."
-        secondaryLink={`/login?next=${encodeURIComponent(`/posts/${post.id}`)}`}
-        secondaryLabel="로그인하기"
+        primaryLink={`/login?next=${encodeURIComponent(`/posts/${post.id}`)}`}
+        primaryLabel="로그인하기"
       />
     );
   }
@@ -452,7 +452,7 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
 
         {post.placeReview ? (
           <section className="tp-card p-5 sm:p-6">
-            <h2 className="text-lg font-semibold text-[#163462]">장소후기 상세</h2>
+            <h2 className="text-lg font-semibold text-[#163462]">후기/리뷰 상세</h2>
             <div className="mt-4 grid gap-3 text-sm text-[#355988] md:grid-cols-3">
               <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">장소명</p>
@@ -480,7 +480,7 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
 
         {post.walkRoute ? (
           <section className="tp-card p-5 sm:p-6">
-            <h2 className="text-lg font-semibold text-[#163462]">산책코스 상세</h2>
+            <h2 className="text-lg font-semibold text-[#163462]">동네 산책코스 상세</h2>
             <div className="mt-4 grid gap-3 text-sm text-[#355988] md:grid-cols-3">
               <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">코스명</p>

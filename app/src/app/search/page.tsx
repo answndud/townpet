@@ -98,6 +98,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       <NeighborhoodGateNotice
         title="동네 설정이 필요합니다."
         description="로컬 검색을 사용하려면 대표 동네를 설정해 주세요."
+        primaryLink="/profile"
+        primaryLabel="프로필에서 동네 설정"
         secondaryLink="/search?scope=GLOBAL"
         secondaryLabel="온동네 검색 보기"
       />

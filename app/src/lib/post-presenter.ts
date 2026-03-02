@@ -14,12 +14,12 @@ export const postTypeMeta: Record<
     icon: "H",
   },
   PLACE_REVIEW: {
-    label: "장소후기",
+    label: "후기/리뷰",
     chipClass: "border-blue-200 bg-blue-50 text-blue-700",
     icon: "P",
   },
   WALK_ROUTE: {
-    label: "산책코스",
+    label: "동네 산책코스",
     chipClass: "border-cyan-200 bg-cyan-50 text-cyan-700",
     icon: "W",
   },

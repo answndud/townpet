@@ -249,6 +249,16 @@
 |---|---|---|---|---|---|
 | content API 분리 | Codex | P1 | `done` | 상세 API에서 rendered content를 제거하고 별도 content API로 로드 | `app/src/app/api/posts/[id]/detail/route.ts`, `app/src/app/api/posts/[id]/content/route.ts`, `app/src/components/posts/post-detail-client.tsx`, `app/src/server/queries/post.queries.ts` |
 
+### Cycle 111: petType 명칭 통일 + 레거시 URL 정규화 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| `communityId` 외부 계약 제거 및 `petType`/`petTypeId` 통일 | Codex | P1 | `done` | `/feed`가 레거시 `communityId` 유입을 `petType`으로 정규화 redirect하고, 공개/API/문서 용어가 `petType` 중심으로 동기화됨 | `app/src/app/feed/page.tsx`, `app/src/app/api/posts/route.ts`, `app/src/lib/validations/post.ts`, `app/src/server/queries/post.queries.ts`, `docs/api/posts-feed-query.md`, `docs/product/*` |
+
+### Cycle 112: 프로필 정책 정리 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 닉네임 30일 변경 제한 + 프로필 문구 정리 | Codex | P1 | `done` | 닉네임 변경이 30일 쿨다운으로 제한되고, `/profile` 계정정보에서 대표 동네 라벨이 일반 표기로 정리됨 | `app/src/server/services/user.service.ts`, `app/prisma/schema.prisma`, `app/prisma/migrations/20260302160000_add_user_nickname_updated_at/migration.sql`, `app/src/app/profile/page.tsx` |
+
 ### Cycle 67: 보안 하드닝 트랙 운영
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|

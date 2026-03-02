@@ -5,10 +5,12 @@ import { IBM_Plex_Mono, Space_Grotesk } from "next/font/google";
 import { UserRole } from "@prisma/client";
 
 import { AuthControls } from "@/components/auth/auth-controls";
+import { FeedHoverMenu } from "@/components/navigation/feed-hover-menu";
 import { NotificationBell } from "@/components/notifications/notification-bell";
 import { auth } from "@/lib/auth";
 import { getSiteOrigin } from "@/lib/site-url";
 import { getCurrentUser } from "@/server/auth";
+import { listCommunities } from "@/server/queries/community.queries";
 import { countUnreadNotifications } from "@/server/queries/notification.queries";
 import "./globals.css";
 
@@ -65,13 +67,11 @@ export default async function RootLayout({
   const unreadNotificationCount = currentUser
     ? await countUnreadNotifications(currentUser.id).catch(() => 0)
     : 0;
-  const userLabel =
-    session?.user?.nickname ??
-    session?.user?.name ??
-    session?.user?.email ??
-    null;
+  const communities = await listCommunities({ limit: 12 })
+    .then((result) => result.items.map((item) => ({ id: item.id, labelKo: item.labelKo })))
+    .catch(() => []);
   const navLinkClass =
-    "tp-btn-soft inline-flex h-8 items-center px-3 text-xs leading-none sm:h-9 sm:px-3.5 sm:text-[13px]";
+    "inline-flex h-8 items-center rounded-sm px-1 text-[14px] leading-none text-[#315484] transition hover:bg-[#dcecff] hover:text-[#1f4f8f]";
 
   return (
     <html lang="ko">
@@ -79,8 +79,8 @@ export default async function RootLayout({
         suppressHydrationWarning
         className={`${spaceGrotesk.variable} ${plexMono.variable} app-shell-bg min-h-screen text-[#10284a] antialiased`}
       >
-        <header className="sticky top-0 z-40 border-b border-[#c7d7ef] bg-[#eef4ffdd] backdrop-blur-sm">
-          <div className="mx-auto flex w-full max-w-[1320px] flex-col gap-2 px-4 py-3 sm:gap-3 sm:px-6 sm:py-4 lg:px-10 lg:py-5 xl:flex-row xl:items-center xl:justify-between">
+        <header className="sticky top-0 z-40 border-b border-[#d8e4f6] bg-[#f4f8ffeb] backdrop-blur-sm">
+          <div className="mx-auto flex w-full max-w-[1320px] flex-col gap-1.5 px-4 py-2 sm:gap-2 sm:px-6 sm:py-2.5 lg:px-10 lg:py-3 xl:flex-row xl:items-center xl:justify-between">
               <Link href="/" className="inline-flex items-center" aria-label="TownPet 홈으로 이동">
                 <Image
                   src="/townpet-logo.svg"
@@ -88,18 +88,23 @@ export default async function RootLayout({
                   width={274}
                   height={72}
                   priority
-                  className="h-[42px] w-auto sm:h-[62px]"
+                  className="h-[34px] w-auto sm:h-[40px]"
                 />
               </Link>
-              <nav className="flex flex-wrap items-center gap-x-2 gap-y-1.5 text-[13px] font-medium text-[#315484] sm:gap-x-2.5 sm:gap-y-2">
-                <Link href="/my-posts" className={navLinkClass}>
-                  내 작성글
+              <nav className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[14px] font-medium text-[#315484] sm:gap-x-3 sm:gap-y-1.5 xl:gap-x-3.5">
+                <Link href="/feed" className={`${navLinkClass} md:hidden`}>
+                  피드
                 </Link>
+                <FeedHoverMenu communities={communities} />
+                <span className="hidden px-0.5 text-[#9ab0cf] md:inline">|</span>
                 <Link href="/profile" className={navLinkClass}>
                   내 프로필
                 </Link>
                 {currentUser ? (
-                  <NotificationBell unreadCount={unreadNotificationCount} />
+                  <>
+                    <span className="hidden px-0.5 text-[#9ab0cf] md:inline">|</span>
+                    <NotificationBell unreadCount={unreadNotificationCount} />
+                  </>
                 ) : null}
                 {canModerate ? (
                   <div className="flex flex-wrap items-center gap-2">
@@ -115,14 +120,33 @@ export default async function RootLayout({
                   </div>
                 ) : null}
                 {session?.user ? (
-                  <AuthControls
-                    label={userLabel ? `${userLabel} 로그아웃` : "로그아웃"}
-                  />
+                  <>
+                    <span className="hidden px-0.5 text-[#9ab0cf] md:inline">|</span>
+                    <AuthControls label="로그아웃" />
+                  </>
                 ) : (
-                  <Link href="/login" className={navLinkClass}>
+                  <Link
+                    href="/login"
+                    className={`${navLinkClass} text-[#173963] hover:text-[#0f2f56]`}
+                  >
                     로그인
                   </Link>
                 )}
+                <form action="/feed" method="get" className="ml-auto hidden items-center gap-2 md:flex">
+                  <span className="px-0.5 text-[#9ab0cf]">|</span>
+                  <input
+                    name="q"
+                    type="search"
+                    placeholder="검색"
+                    className="tp-input-soft h-8 w-[150px] bg-white px-2.5 text-xs leading-none sm:w-[190px]"
+                  />
+                  <button
+                    type="submit"
+                    className="inline-flex h-8 items-center rounded-sm px-1 text-[13px] leading-none text-[#315484] transition hover:bg-[#dcecff] hover:text-[#1f4f8f]"
+                  >
+                    찾기
+                  </button>
+                </form>
               </nav>
           </div>
         </header>

@@ -17,9 +17,9 @@ export default async function PasswordSetupPage() {
           <p className="text-xs uppercase tracking-[0.24em] text-[#4e6f9f]">
             보안
           </p>
-          <h1 className="text-3xl font-semibold text-[#10284a]">비밀번호 설정</h1>
+          <h1 className="text-3xl font-semibold text-[#10284a]">비밀번호 수정</h1>
           <p className="text-sm text-[#4f678d]">
-            기존 계정의 비밀번호를 새로 지정하거나 변경할 수 있습니다.
+            기존 계정의 비밀번호를 새 비밀번호로 수정할 수 있습니다.
           </p>
         </header>
 

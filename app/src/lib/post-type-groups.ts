@@ -4,6 +4,7 @@ export const PRIMARY_POST_TYPES: PostType[] = [
   PostType.FREE_BOARD,
   PostType.QA_QUESTION,
   PostType.HOSPITAL_REVIEW,
+  PostType.PLACE_REVIEW,
   PostType.WALK_ROUTE,
   PostType.LOST_FOUND,
   PostType.MEETUP,
@@ -11,7 +12,6 @@ export const PRIMARY_POST_TYPES: PostType[] = [
 ];
 
 export const SECONDARY_POST_TYPES: PostType[] = [
-  PostType.PLACE_REVIEW,
   PostType.PRODUCT_REVIEW,
   PostType.PET_SHOWCASE,
 ];

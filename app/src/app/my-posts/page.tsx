@@ -22,8 +22,8 @@ type MyPostsPageProps = {
 
 const typeLabels: Record<PostType, string> = {
   HOSPITAL_REVIEW: "병원후기",
-  PLACE_REVIEW: "장소후기",
-  WALK_ROUTE: "산책코스",
+  PLACE_REVIEW: "후기/리뷰",
+  WALK_ROUTE: "동네 산책코스",
   MEETUP: "동네모임",
   MARKET_LISTING: "중고/공동구매",
   LOST_FOUND: "실종/목격 제보",
@@ -77,6 +77,8 @@ export default async function MyPostsPage({ searchParams }: MyPostsPageProps) {
       <NeighborhoodGateNotice
         title="내 작성글을 보려면 동네 설정이 필요합니다."
         description="대표 동네를 설정하면 작성 내역을 확인할 수 있습니다."
+        primaryLink="/profile"
+        primaryLabel="프로필에서 동네 설정"
         secondaryLink="/my-posts?scope=GLOBAL"
         secondaryLabel="온동네 글 보기"
       />

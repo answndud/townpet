@@ -12,6 +12,7 @@ model User {
   email             String                @unique
   name              String?
   nickname          String?               @unique
+  nicknameUpdatedAt DateTime?
   bio               String?               @db.Text
   image             String?
   passwordHash      String?

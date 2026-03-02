@@ -12,8 +12,8 @@ export const NEW_USER_RESTRICTED_POST_TYPES: ReadonlyArray<PostType> =
 
 const restrictedTypeLabels: Record<PostType, string> = {
   HOSPITAL_REVIEW: "병원후기",
-  PLACE_REVIEW: "장소후기",
-  WALK_ROUTE: "산책코스",
+  PLACE_REVIEW: "후기/리뷰",
+  WALK_ROUTE: "동네 산책코스",
   MEETUP: "동네모임",
   MARKET_LISTING: "중고/공동구매",
   LOST_FOUND: "실종/목격 제보",

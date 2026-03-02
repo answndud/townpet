@@ -162,7 +162,7 @@ export function ResetPasswordForm({ initialToken }: ResetPasswordFormProps) {
         ) : null}
         <button
           type="submit"
-          className="border border-[#3567b5] bg-[#3567b5] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[#2f5da4] disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0]"
+          className="tp-btn-primary px-5 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0]"
           disabled={isPending}
         >
           {isPending ? "재설정 중..." : "비밀번호 재설정"}

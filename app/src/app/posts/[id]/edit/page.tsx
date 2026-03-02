@@ -43,8 +43,8 @@ export default async function PostEditPage({ params }: PostEditPageProps) {
       <NeighborhoodGateNotice
         title="수정하려면 동네 설정이 필요합니다."
         description="대표 동네를 설정하면 로컬 게시물을 수정할 수 있습니다."
-        secondaryLink="/onboarding"
-        secondaryLabel="동네 설정하기"
+        primaryLink="/profile"
+        primaryLabel="프로필에서 동네 설정"
       />
     );
   }
