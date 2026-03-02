@@ -41,7 +41,7 @@
 - `pnpm -C app test:unit` 통과 (44 files, 194 tests).
 - `pnpm -C app lint` 실행 (기존 미사용 변수 경고 10건, 이번 변경에서 신규 error 없음).
 - 이슈/블로커
-- 워크플로우는 `DATABASE_URL` 시크릿이 없으면 자동 skip되므로, 운영 저장소 시크릿 확인이 필요.
+- 워크플로우 실행 전 GitHub 저장소 `DATABASE_URL` 시크릿이 필요.
 
 ### 2026-02-27: 상세 content lazy 분리
 - 완료 내용
