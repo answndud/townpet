@@ -3,6 +3,8 @@ import Link from "next/link";
 type NeighborhoodGateNoticeProps = {
   title?: string;
   description?: string;
+  primaryLink?: string;
+  primaryLabel?: string;
   secondaryLink?: string;
   secondaryLabel?: string;
 };
@@ -10,6 +12,8 @@ type NeighborhoodGateNoticeProps = {
 export function NeighborhoodGateNotice({
   title = "동네 설정이 필요합니다.",
   description = "동네를 설정해야 로컬 피드와 작성 기능을 사용할 수 있습니다.",
+  primaryLink,
+  primaryLabel,
   secondaryLink,
   secondaryLabel,
 }: NeighborhoodGateNoticeProps) {
@@ -22,12 +26,14 @@ export function NeighborhoodGateNotice({
         <h1 className="text-2xl font-semibold text-[#10284a]">{title}</h1>
         <p className="text-sm text-[#4f678d]">{description}</p>
         <div className="flex flex-wrap gap-2 text-xs">
-          <Link
-            href="/onboarding"
-            className="border border-[#3567b5] bg-[#3567b5] px-4 py-2 font-semibold text-white transition hover:bg-[#2f5da4]"
-          >
-            온보딩으로 이동
-          </Link>
+          {primaryLink && primaryLabel ? (
+            <Link
+              href={primaryLink}
+              className="tp-btn-soft px-4 py-2 text-[#315484]"
+            >
+              {primaryLabel}
+            </Link>
+          ) : null}
           {secondaryLink && secondaryLabel ? (
             <Link
               href={secondaryLink}

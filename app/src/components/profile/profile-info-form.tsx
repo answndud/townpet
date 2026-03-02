@@ -65,7 +65,7 @@ export function ProfileInfoForm({
           type="button"
           onClick={handleSubmit}
           disabled={isPending}
-          className="tp-btn-primary px-4 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-70"
+          className="tp-btn-primary inline-flex h-9 items-center justify-center px-4 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-70"
         >
           {isPending ? "저장 중..." : "프로필 저장"}
         </button>

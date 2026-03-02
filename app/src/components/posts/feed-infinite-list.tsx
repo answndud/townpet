@@ -599,7 +599,7 @@ export function FeedInfiniteList({
                       ? getStableDateLabel(post.createdAt)
                       : formatRelativeDate(post.createdAt, relativeNow)}
                   </p>
-                   <p className="mt-1 inline-flex w-fit max-w-full items-center rounded-md border border-[#d8e4f6] bg-[#f8fbff] px-2.5 py-0.5 text-[11px] text-[#5a759c] md:ml-auto">
+                   <p className="mt-1 text-[11px] text-[#5a759c] md:ml-auto">
                      조회 {formatCount(post.viewCount)} · 반응 {formatCount(post.likeCount + post.dislikeCount)}
                    </p>
                  </div>

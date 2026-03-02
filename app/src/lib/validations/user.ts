@@ -20,21 +20,23 @@ export const neighborhoodSelectSchema = z
     const uniqueIds = Array.from(new Set(selected));
     const primaryId = value.primaryNeighborhoodId ?? value.neighborhoodId;
 
-    if (uniqueIds.length === 0) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["neighborhoodIds"],
-        message: "최소 1개의 동네를 선택해 주세요.",
-      });
-      return;
-    }
-
     if (uniqueIds.length > 3) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["neighborhoodIds"],
         message: "동네는 최대 3개까지 선택할 수 있습니다.",
       });
+      return;
+    }
+
+    if (uniqueIds.length === 0) {
+      if (primaryId) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["primaryNeighborhoodId"],
+          message: "대표 동네를 지정하려면 동네를 먼저 선택해 주세요.",
+        });
+      }
       return;
     }
 
@@ -59,7 +61,7 @@ export const neighborhoodSelectSchema = z
     const neighborhoodIds = Array.from(
       new Set(value.neighborhoodIds ?? (value.neighborhoodId ? [value.neighborhoodId] : [])),
     );
-    const fallbackPrimary = neighborhoodIds[0] ?? "";
+    const fallbackPrimary = neighborhoodIds[0] ?? null;
 
     return {
       neighborhoodIds,

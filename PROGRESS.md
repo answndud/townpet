@@ -17,6 +17,43 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-02: 닉네임 30일 변경 제한 + 프로필 계정정보 문구 정리
+- 완료 내용
+- `User.nicknameUpdatedAt` 필드와 마이그레이션을 추가해 닉네임 변경 시점을 저장.
+- 프로필 수정 서비스에서 닉네임 변경 시 최근 변경일 기준 30일 쿨다운을 적용하고, 남은 일수 안내 메시지로 차단.
+- 닉네임이 바뀌지 않은 경우(소개만 수정)는 제한 없이 저장되도록 예외 처리.
+- `/profile` 계정정보의 `대표 동네 (나만 보기)` 라벨을 `대표 동네`로 정리.
+- 변경 파일(핵심)
+- `app/prisma/schema.prisma`
+- `app/prisma/migrations/20260302160000_add_user_nickname_updated_at/migration.sql`
+- `app/src/server/services/user.service.ts`
+- `app/src/server/services/user.service.test.ts`
+- `app/src/app/profile/page.tsx`
+- 검증 결과
+- `pnpm -C app exec prisma generate` 완료.
+- `pnpm -C app typecheck` 통과.
+- `pnpm -C app test -- src/server/services/user.service.test.ts src/server/actions/user.test.ts src/lib/validations/user.test.ts` 통과.
+- 이슈/블로커
+- 없음.
+
+### 2026-03-02: petType 계약 단일화 + 레거시 feed URL 정규화
+- 완료 내용
+- `/feed`에서 레거시 `communityId` 쿼리 유입 시 `petType`으로 정규화 redirect(임시 302) 적용.
+- 공개 계약을 `petType`/내부 입력을 `petTypeId` 중심으로 고정하고 문서 용어를 동기화.
+- Prisma 컬럼 호환(`@map("communityId")`)이 남는 이유를 쿼리 fallback 코드 주석으로 명시.
+- 변경 파일(핵심)
+- `app/src/app/feed/page.tsx`
+- `app/src/server/queries/post.queries.ts`
+- `docs/api/posts-feed-query.md`
+- `docs/product/커뮤니티_택소노미_v1.md`
+- `docs/product/커뮤니티_보드_구현_v1.md`
+- `PLAN.md`
+- 검증 결과
+- `pnpm -C app typecheck` 통과.
+- `pnpm -C app test -- src/app/api/posts/route.test.ts src/lib/validations/post.test.ts src/server/queries/post.queries.test.ts` 통과.
+- 이슈/블로커
+- 없음.
+
 ### 2026-03-02: 알림 읽음/닫기 즉시 숨김 + 3일 보존/정리
 - 완료 내용
 - 알림 모델에 `archivedAt`을 추가하고, 목록/카운트 쿼리에서 `archivedAt = null`만 조회하도록 변경.

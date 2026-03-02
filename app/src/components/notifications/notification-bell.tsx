@@ -239,14 +239,14 @@ export function NotificationBell({ unreadCount }: NotificationBellProps) {
       <button
         type="button"
         onClick={handleOpenToggle}
-        className="tp-btn-soft inline-flex h-9 items-center gap-2 px-3.5 text-[13px] leading-none"
+        className="inline-flex h-8 items-center gap-1 rounded-sm px-1 text-[14px] leading-none text-[#315484] transition hover:bg-[#dcecff] hover:text-[#1f4f8f]"
         aria-label={localUnreadCount > 0 ? `알림 ${localUnreadCount}개 미확인` : "알림함"}
         aria-expanded={isOpen}
         aria-controls="notification-popover"
       >
         <span>알림</span>
         <span
-          className={`inline-flex min-w-5 items-center justify-center rounded-full border px-1 text-[10px] font-semibold leading-4 ${
+          className={`inline-flex min-w-5 items-center justify-center rounded-md border px-1 text-[10px] font-semibold leading-4 ${
             localUnreadCount > 0
               ? "border-[#3567b5] bg-[#3567b5] text-white"
               : "border-[#cbdcf5] bg-[#f5f8ff] text-[#4f678d]"

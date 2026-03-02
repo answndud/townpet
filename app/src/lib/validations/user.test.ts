@@ -44,6 +44,18 @@ describe("user validations", () => {
     expect(result.success).toBe(true);
   });
 
+  it("accepts empty neighborhood selection for opt-out", () => {
+    const result = neighborhoodSelectSchema.safeParse({
+      neighborhoodIds: [],
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.neighborhoodIds).toEqual([]);
+      expect(result.data.primaryNeighborhoodId).toBeNull();
+    }
+  });
+
   it("rejects more than three neighborhoods", () => {
     const result = neighborhoodSelectSchema.safeParse({
       neighborhoodIds: [

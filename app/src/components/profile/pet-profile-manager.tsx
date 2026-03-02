@@ -244,14 +244,14 @@ export function PetProfileManager({ pets }: PetProfileManagerProps) {
               type="button"
               onClick={saveCreate}
               disabled={isPending}
-              className="tp-btn-primary self-start px-4 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-70"
+              className="tp-btn-primary inline-flex h-9 items-center justify-center self-start px-4 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-70"
             >
               {isPending ? "저장 중..." : "등록"}
             </button>
           </div>
         </div>
 
-        <div className="border border-[#dbe5f3] bg-[#f8fbff] p-4">
+        <div className="tp-soft-card p-4">
           <h3 className="text-sm font-semibold text-[#1f3f71]">등록된 반려동물 ({pets.length})</h3>
           {pets.length === 0 ? (
             <p className="mt-3 text-xs text-[#5a7398]">등록된 반려동물이 없습니다.</p>
@@ -262,7 +262,7 @@ export function PetProfileManager({ pets }: PetProfileManagerProps) {
                 const form = isEditing ? editForm : toFormState(pet);
 
                 return (
-                  <div key={pet.id} className="border border-[#c9d8ef] bg-white p-3 text-xs">
+                  <div key={pet.id} className="rounded-lg border border-[#c9d8ef] bg-white p-3 text-xs">
                     {isEditing ? (
                       <div className="grid gap-2">
                         <input
@@ -336,14 +336,14 @@ export function PetProfileManager({ pets }: PetProfileManagerProps) {
                             type="button"
                             onClick={saveUpdate}
                             disabled={isPending}
-                            className="border border-[#3567b5] bg-[#3567b5] px-3 py-1 text-[11px] font-semibold text-white"
+                            className="tp-btn-primary inline-flex h-8 items-center justify-center px-3 text-[11px] font-semibold"
                           >
                             저장
                           </button>
                           <button
                             type="button"
                             onClick={() => setEditTargetId(null)}
-                            className="tp-btn-soft px-3 py-1 text-[11px] font-semibold"
+                            className="tp-btn-soft inline-flex h-8 items-center justify-center px-3 text-[11px] font-semibold"
                           >
                             취소
                           </button>
@@ -368,14 +368,14 @@ export function PetProfileManager({ pets }: PetProfileManagerProps) {
                               setEditTargetId(pet.id);
                               setEditForm(toFormState(pet));
                             }}
-                            className="tp-btn-soft px-2 py-1 text-[11px] font-semibold"
+                            className="tp-btn-soft inline-flex h-8 items-center justify-center px-3 text-[11px] font-semibold"
                           >
                             수정
                           </button>
                           <button
                             type="button"
                             onClick={() => removePet(pet.id)}
-                            className="border border-rose-300 bg-rose-50 px-2 py-1 text-[11px] font-semibold text-rose-700"
+                            className="tp-btn-soft inline-flex h-8 items-center justify-center px-3 text-[11px] font-semibold text-rose-700 hover:bg-rose-50"
                           >
                             삭제
                           </button>

@@ -13,7 +13,7 @@ export function AuthControls({ label }: AuthControlsProps) {
   return (
     <button
       type="button"
-      className="tp-btn-soft px-3 py-1.5 text-xs font-medium"
+      className="inline-flex h-8 items-center rounded-sm px-1 text-[14px] leading-none text-[#173963] transition hover:bg-[#dcecff] hover:text-[#0f2f56] disabled:opacity-60"
       onClick={() =>
         startTransition(async () => {
           await signOut({ callbackUrl: "/login" });

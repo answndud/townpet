@@ -17,6 +17,28 @@ export async function updateProfile({ userId, input }: UpdateProfileParams) {
     throw new ServiceError("프로필 입력이 올바르지 않습니다.", "INVALID_INPUT", 400);
   }
 
+  const currentUser = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, nickname: true, nicknameUpdatedAt: true },
+  });
+  if (!currentUser) {
+    throw new ServiceError("사용자를 찾을 수 없습니다.", "USER_NOT_FOUND", 404);
+  }
+
+  const isNicknameChanged = currentUser.nickname !== parsed.data.nickname;
+  if (isNicknameChanged && currentUser.nicknameUpdatedAt) {
+    const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+    const elapsedMs = Date.now() - currentUser.nicknameUpdatedAt.getTime();
+    if (elapsedMs < THIRTY_DAYS_MS) {
+      const remainingDays = Math.ceil((THIRTY_DAYS_MS - elapsedMs) / (24 * 60 * 60 * 1000));
+      throw new ServiceError(
+        `닉네임은 30일에 한 번만 변경할 수 있습니다. ${remainingDays}일 후 다시 시도해 주세요.`,
+        "NICKNAME_CHANGE_RATE_LIMITED",
+        429,
+      );
+    }
+  }
+
   const existing = await prisma.user.findUnique({
     where: { nickname: parsed.data.nickname },
     select: { id: true },
@@ -30,6 +52,7 @@ export async function updateProfile({ userId, input }: UpdateProfileParams) {
     where: { id: userId },
     data: {
       nickname: parsed.data.nickname,
+      nicknameUpdatedAt: isNicknameChanged ? new Date() : undefined,
       bio:
         parsed.data.bio && parsed.data.bio.trim().length > 0
           ? parsed.data.bio.trim()
@@ -114,6 +137,16 @@ export async function setPrimaryNeighborhood({
   }
 
   const normalizedNeighborhoodIds = Array.from(new Set(resolvedIds)) as string[];
+  if (normalizedNeighborhoodIds.length === 0) {
+    return prisma.userNeighborhood.deleteMany({
+      where: { userId },
+    });
+  }
+
+  if (!parsed.data.primaryNeighborhoodId) {
+    throw new ServiceError("대표 동네를 선택해 주세요.", "INVALID_INPUT", 400);
+  }
+
   const primaryResolvedId = await resolveNeighborhoodId(parsed.data.primaryNeighborhoodId);
   if (!primaryResolvedId || !normalizedNeighborhoodIds.includes(primaryResolvedId)) {
     throw new ServiceError("대표 동네를 찾을 수 없습니다.", "NEIGHBORHOOD_NOT_FOUND", 404);

@@ -26,10 +26,8 @@ export default async function ProfilePage() {
 
   const primaryNeighborhood = user.neighborhoods.find((item) => item.isPrimary);
 
-  const [allPosts, localPosts, globalPosts, blockedUsers, mutedUsers, pets] = await Promise.all([
+  const [allPosts, blockedUsers, mutedUsers, pets] = await Promise.all([
     listUserPosts({ authorId: user.id }),
-    listUserPosts({ authorId: user.id, scope: "LOCAL" }),
-    listUserPosts({ authorId: user.id, scope: "GLOBAL" }),
     listMyBlockedUsers(user.id),
     listMyMutedUsers(user.id),
     listPetsByUserId(user.id),
@@ -65,21 +63,11 @@ export default async function ProfilePage() {
           </div>
         </header>
 
-        <section className="grid gap-3 md:grid-cols-3">
+        <section className="grid gap-3 md:grid-cols-1">
           <div className="tp-card p-4">
             <p className="text-[11px] uppercase tracking-[0.22em] text-[#5b78a1]">전체</p>
             <p className="mt-2 text-3xl font-bold text-[#10284a]">{allPosts.length}</p>
             <p className="text-xs text-[#4f678d]">총 작성글</p>
-          </div>
-          <div className="tp-card p-4">
-            <p className="text-[11px] uppercase tracking-[0.22em] text-[#5b78a1]">동네</p>
-            <p className="mt-2 text-3xl font-bold text-[#10284a]">{localPosts.length}</p>
-            <p className="text-xs text-[#4f678d]">동네 범위 글</p>
-          </div>
-          <div className="tp-card p-4">
-            <p className="text-[11px] uppercase tracking-[0.22em] text-[#5b78a1]">온동네</p>
-            <p className="mt-2 text-3xl font-bold text-[#10284a]">{globalPosts.length}</p>
-            <p className="text-xs text-[#4f678d]">온동네 범위 글</p>
           </div>
         </section>
 
@@ -89,7 +77,6 @@ export default async function ProfilePage() {
             <div>닉네임: {user.nickname ?? "미설정"}</div>
             <div>소개: {user.bio?.trim() ? user.bio : "미설정"}</div>
             <div>이메일: {user.email}</div>
-            <div>온보딩 상태: 완료</div>
             <div>
               대표 동네: {primaryNeighborhood
                 ? `${primaryNeighborhood.neighborhood.city} ${primaryNeighborhood.neighborhood.name}`
@@ -97,12 +84,6 @@ export default async function ProfilePage() {
             </div>
           </div>
           <div className="mt-4 flex flex-wrap gap-2 text-xs">
-            <Link
-              href={`/users/${user.id}`}
-              className="tp-btn-soft px-3 py-1.5 text-[#315484]"
-            >
-              공개 프로필 보기
-            </Link>
             <Link
               href="/my-posts"
               className="tp-btn-soft px-3 py-1.5 text-[#315484]"
@@ -113,19 +94,7 @@ export default async function ProfilePage() {
               href="/password/setup"
               className="tp-btn-soft px-3 py-1.5 text-[#315484]"
             >
-              비밀번호 설정
-            </Link>
-            <Link
-              href="/my-posts?scope=LOCAL"
-              className="tp-btn-soft px-3 py-1.5 text-[#315484]"
-            >
-              동네 글
-            </Link>
-            <Link
-              href="/my-posts?scope=GLOBAL"
-              className="tp-btn-soft px-3 py-1.5 text-[#315484]"
-            >
-              온동네 글
+              비밀번호 수정
             </Link>
           </div>
         </section>

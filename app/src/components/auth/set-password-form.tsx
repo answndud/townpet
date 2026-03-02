@@ -33,7 +33,7 @@ export function SetPasswordForm() {
 
       if (!response.ok) {
         const data = await response.json().catch(() => null);
-        setError(data?.error?.message ?? "비밀번호 설정에 실패했습니다.");
+        setError(data?.error?.message ?? "비밀번호 수정에 실패했습니다.");
         return;
       }
 
@@ -89,10 +89,10 @@ export function SetPasswordForm() {
       ) : null}
       <button
         type="submit"
-        className="border border-[#3567b5] bg-[#3567b5] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[#2f5da4] disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0]"
+        className="tp-btn-primary px-5 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0]"
         disabled={isPending}
       >
-        {isPending ? "저장 중..." : "비밀번호 저장"}
+        {isPending ? "저장 중..." : "비밀번호 수정"}
       </button>
     </form>
   );

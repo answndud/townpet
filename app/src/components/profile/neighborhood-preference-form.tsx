@@ -156,24 +156,28 @@ export function NeighborhoodPreferenceForm({
   };
 
   const handleSave = () => {
-    if (selectedIds.length === 0 || !primaryId) {
-      setMessage("동네를 선택하고 대표 동네를 지정해 주세요.");
+    if (selectedIds.length > 0 && !primaryId) {
+      setMessage("동네를 선택했다면 대표 동네도 지정해 주세요.");
       return;
     }
 
     startTransition(async () => {
       setMessage(null);
-      const result = await setPrimaryNeighborhoodAction({
-        neighborhoodIds: selectedIds,
-        primaryNeighborhoodId: primaryId,
-      });
+      const result = await setPrimaryNeighborhoodAction(
+        selectedIds.length === 0
+          ? { neighborhoodIds: [] }
+          : {
+              neighborhoodIds: selectedIds,
+              primaryNeighborhoodId: primaryId,
+            },
+      );
 
       if (!result.ok) {
         setMessage(result.message);
         return;
       }
 
-      setMessage("내 동네가 저장되었습니다.");
+      setMessage(selectedIds.length === 0 ? "내 동네 설정이 해제되었습니다." : "내 동네가 저장되었습니다.");
     });
   };
 
@@ -182,6 +186,9 @@ export function NeighborhoodPreferenceForm({
       <h2 className="text-lg font-semibold text-[#153a6a]">내 동네 설정</h2>
       <p className="mt-2 text-xs text-[#5a7398]">
         대한민국 시/군/구를 최대 3개까지 선택하고 대표 동네 1개를 지정할 수 있습니다.
+      </p>
+      <p className="mt-1 text-xs text-[#5a7398]">
+        대표 동네 정보는 본인에게만 보이며 공개 프로필에는 노출되지 않습니다.
       </p>
 
       <div className="mt-4 space-y-3">
@@ -290,8 +297,8 @@ export function NeighborhoodPreferenceForm({
         <button
           type="button"
           onClick={handleSave}
-          disabled={isPending || selectedIds.length === 0 || !primaryId}
-          className="border border-[#3567b5] bg-[#3567b5] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[#2f5da4] disabled:cursor-not-allowed disabled:opacity-70"
+          disabled={isPending || (selectedIds.length > 0 && !primaryId)}
+          className="tp-btn-primary inline-flex h-9 items-center justify-center px-4 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-70"
         >
           {isPending ? "저장 중..." : "동네 저장"}
         </button>

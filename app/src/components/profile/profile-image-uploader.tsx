@@ -57,7 +57,7 @@ export function ProfileImageUploader({ initialImageUrl }: ProfileImageUploaderPr
         type="button"
         onClick={saveProfileImage}
         disabled={isPending}
-        className="tp-btn-primary mt-3 px-3 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0]"
+        className="tp-btn-primary mt-3 inline-flex h-9 items-center justify-center px-4 text-xs font-semibold disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0]"
       >
         {isPending ? "저장 중..." : "프로필 사진 저장"}
       </button>
