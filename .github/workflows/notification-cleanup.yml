@@ -32,14 +32,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Cleanup archived notifications
-        if: ${{ secrets.DATABASE_URL != '' }}
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           NOTIFICATION_RETENTION_DAYS: "3"
         run: pnpm db:cleanup:notifications
-
-      - name: Skip cleanup when DATABASE_URL is missing
-        if: ${{ secrets.DATABASE_URL == '' }}
-        run: |
-          echo "DATABASE_URL secret is missing."
-          echo "Skipping notification cleanup run."
