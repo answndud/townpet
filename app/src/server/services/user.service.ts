@@ -1,5 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import {
+  getNeighborhoodCityVariants,
+  normalizeNeighborhoodCity,
+  normalizeNeighborhoodDistrict,
+} from "@/lib/neighborhood-region";
+import {
   neighborhoodSelectSchema,
   preferredPetTypesSchema,
   profileImageUpdateSchema,
@@ -80,8 +85,8 @@ function parseRegionSelection(value: string) {
   }
 
   return {
-    city: trimmedCity,
-    district: trimmedDistrict,
+    city: normalizeNeighborhoodCity(trimmedCity),
+    district: normalizeNeighborhoodDistrict(trimmedDistrict),
   };
 }
 
@@ -98,6 +103,19 @@ async function resolveNeighborhoodId(selection: string) {
   const region = parseRegionSelection(selection);
   if (!region) {
     return null;
+  }
+
+  const cityVariants = getNeighborhoodCityVariants(region.city);
+  const existingByRegion = await prisma.neighborhood.findFirst({
+    where: {
+      city: { in: cityVariants },
+      district: region.district,
+    },
+    select: { id: true },
+  });
+
+  if (existingByRegion) {
+    return existingByRegion.id;
   }
 
   const seeded = await prisma.neighborhood.upsert({

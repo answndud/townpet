@@ -17,6 +17,52 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-03: 시/도 목록 표준화 + 출장소/중복 표기 제거
+- 완료 내용
+- 동네 옵션 정규화 유틸(`neighborhood-region`)을 추가해 시/도 별칭을 표준 광역 행정구역으로 통일 (`서울`→`서울특별시`, `부산`→`부산광역시`, `성남`→`경기도` 등).
+- 동네 조회 쿼리에서 `출장소` 항목 및 시/도 자기참조 항목을 제외하고, 표준화된 지역키(`city::district`) 기준으로 중복을 제거.
+- 시/도 필터 선택 시 별칭 데이터까지 함께 조회되도록 city variant 매칭을 적용해 기존 데이터와 신규 표준 데이터가 혼재해도 동일 결과를 반환.
+- 프로필/온보딩 내 동네 선택 폼의 region key 생성 및 표시 city를 정규화해 `서울`/`서울특별시` 이중 표기 문제를 제거.
+- 내 동네 저장 서비스에서 region key 해석 시 별칭 city를 표준화하고 기존 레코드(alias 포함)를 우선 매칭하도록 보강.
+- 검증 결과
+- 쿼리 점검: 표준 시/도 17개 출력, `출장소`/`서울` 단축표기 미노출 확인.
+- `pnpm -C app test -- src/lib/neighborhood-region.test.ts src/app/api/neighborhoods/route.test.ts` 통과.
+- `pnpm -C app typecheck` 통과.
+- `pnpm -C app lint` 통과.
+- 이슈/블로커
+- 없음.
+
+### 2026-03-03: 동네 데이터 동기화 보강
+- 완료 내용
+- `db:sync:neighborhoods` 스크립트에서 기존 동네 데이터가 1건 이상 있으면 즉시 종료하던 로직을 제거해, 부분 시드 상태에서도 전국 동네 데이터를 누락 없이 보충하도록 수정.
+- 동기화 결과 로그를 `processed/existing/inserted/total` 형태로 확장해 운영 중 상태를 바로 확인할 수 있도록 정리.
+- 적용 결과
+- `pnpm -C app db:sync:neighborhoods` 실행: `processed=286 existing=8 inserted=286 total=294`.
+- 검증 결과
+- `pnpm -C app lint` 통과.
+- `pnpm -C app typecheck` 통과.
+- 이슈/블로커
+- 없음.
+
+### 2026-03-03: 동네모임 동네 설정 CTA 강화
+- 완료 내용
+- 동네모임 작성 시 동네를 선택하지 않은 경우 오류 메시지를 `동네 먼저 선택`/`대표 동네 설정 필요`로 분기해 안내하도록 보강.
+- 동네가 아직 설정되지 않은 사용자에게 동네 선택 입력 아래에서 `/profile` 설정 페이지로 바로 이동할 수 있는 링크를 추가.
+- 검증 결과
+- `pnpm -C app typecheck` 통과.
+- `pnpm -C app lint` 통과.
+- 이슈/블로커
+- 없음.
+
+### 2026-03-03: 중고/공동구매 동물 태그 optional 전환
+- 완료 내용
+- 공용보드 동물 태그 필수 조건을 `병원후기`에만 적용하고 `중고/공동구매(MARKET_LISTING)`는 태그 없이 작성 가능하도록 완화.
+- Zod 검증과 서비스 정책을 동일하게 맞춰 API/액션 경로 모두에서 일관 동작하도록 정리.
+- 검증 결과
+- `pnpm -C app test -- src/lib/validations/post.test.ts src/server/services/post-create-policy.test.ts` 통과.
+- 이슈/블로커
+- 없음.
+
 ### 2026-03-03: 게시판 분류/스코프/태그 정책 재정렬
 - 완료 내용
 - `/posts/new`에서 `동네 산책코스` 분류를 제거하고 `반려자랑` 표기를 `반려동물 자랑`으로 변경.

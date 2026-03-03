@@ -5,6 +5,10 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, useTransition } from "react";
 
 import {
+  buildNeighborhoodRegionKey,
+  normalizeNeighborhoodCity,
+} from "@/lib/neighborhood-region";
+import {
   setPrimaryNeighborhoodAction,
   updateProfileAction,
 } from "@/server/actions/user";
@@ -17,7 +21,7 @@ type NeighborhoodOption = {
 };
 
 function toRegionKey(city: string, district: string) {
-  return `${city}::${district}`;
+  return buildNeighborhoodRegionKey(city, district);
 }
 
 function resolvePrimaryRegionKey(
@@ -87,6 +91,7 @@ export function OnboardingForm({
     selectedNeighborhoods.map((item) => ({
       ...item,
       id: toRegionKey(item.city, item.district),
+      city: normalizeNeighborhoodCity(item.city),
       name: item.district,
     })),
   );
@@ -133,6 +138,7 @@ export function OnboardingForm({
     for (const item of selectedNeighborhoods) {
       map.set(toRegionKey(item.city, item.district), {
         ...item,
+        city: normalizeNeighborhoodCity(item.city),
         id: toRegionKey(item.city, item.district),
         name: item.district,
       });

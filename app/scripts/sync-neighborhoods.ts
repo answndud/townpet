@@ -54,24 +54,23 @@ async function loadNeighborhoodSeeds() {
 
 async function main() {
   const existingCount = await prisma.neighborhood.count().catch(() => 0);
-  if (existingCount > 0) {
-    console.log(`[sync-neighborhoods] already seeded (${existingCount} rows)`);
-    return;
-  }
 
   const seeds = await loadNeighborhoodSeeds();
   if (seeds.length === 0) {
     throw new Error("Neighborhood seed data is empty.");
   }
 
+  let insertedCount = 0;
+
   for (let index = 0; index < seeds.length; index += CHUNK_SIZE) {
     const chunk = seeds.slice(index, index + CHUNK_SIZE);
     for (let attempt = 1; attempt <= CHUNK_RETRY_MAX; attempt += 1) {
       try {
-        await prisma.neighborhood.createMany({
+        const result = await prisma.neighborhood.createMany({
           data: chunk,
           skipDuplicates: true,
         });
+        insertedCount += result.count;
         break;
       } catch (error) {
         if (isTransientDbError(error) && attempt < CHUNK_RETRY_MAX) {
@@ -86,7 +85,10 @@ async function main() {
     }
   }
 
-  console.log(`[sync-neighborhoods] processed ${seeds.length} rows`);
+  const finalCount = await prisma.neighborhood.count();
+  console.log(
+    `[sync-neighborhoods] processed=${seeds.length} existing=${existingCount} inserted=${insertedCount} total=${finalCount}`,
+  );
 }
 
 main()

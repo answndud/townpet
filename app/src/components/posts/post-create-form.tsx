@@ -704,7 +704,11 @@ export function PostCreateForm({
     }
 
     if (resolvedScope === PostScope.LOCAL && !formState.neighborhoodId) {
-      setError("동네를 선택해 주세요.");
+      setError(
+        canUseLocalScope
+          ? "동네를 먼저 선택해 주세요."
+          : "동네모임 글을 작성하려면 먼저 대표 동네를 설정해 주세요.",
+      );
       return;
     }
 
@@ -928,6 +932,14 @@ export function PostCreateForm({
                   </option>
                 ))}
               </select>
+              {!canUseLocalScope ? (
+                <span className="flex items-center gap-2 text-xs font-normal text-[#5d789f]">
+                  <span>동네를 먼저 설정해 주세요.</span>
+                  <Link href="/profile" className="font-semibold text-[#1f4f8f] underline underline-offset-2">
+                    설정 페이지로 이동
+                  </Link>
+                </span>
+              ) : null}
             </label>
           ) : null}
 

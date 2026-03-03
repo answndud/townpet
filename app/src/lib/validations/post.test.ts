@@ -132,13 +132,24 @@ describe("post validations", () => {
     expect(result.success).toBe(false);
   });
 
-  it("requires animal tags for common-board posts", () => {
+  it("requires animal tags for hospital-review common-board posts", () => {
     const result = postCreateSchema.safeParse({
-      title: "거래글",
+      title: "병원후기",
+      content: "내용",
+      type: PostType.HOSPITAL_REVIEW,
+      scope: PostScope.GLOBAL,
+      animalTags: ["강아지"],
+    });
+
+    expect(result.success).toBe(true);
+  });
+
+  it("allows market-listing posts without animal tags", () => {
+    const result = postCreateSchema.safeParse({
+      title: "공동구매",
       content: "내용",
       type: PostType.MARKET_LISTING,
       scope: PostScope.GLOBAL,
-      animalTags: ["강아지"],
     });
 
     expect(result.success).toBe(true);

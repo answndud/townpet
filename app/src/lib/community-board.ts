@@ -47,5 +47,5 @@ export function resolveBoardByPostType(type: PostType) {
 }
 
 export function isAnimalTagsRequiredCommonBoardPostType(type: PostType) {
-  return type === "HOSPITAL_REVIEW" || type === "MARKET_LISTING";
+  return type === "HOSPITAL_REVIEW";
 }

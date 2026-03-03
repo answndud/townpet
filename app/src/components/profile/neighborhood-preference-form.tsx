@@ -2,6 +2,10 @@
 
 import { useEffect, useMemo, useState, useTransition } from "react";
 
+import {
+  buildNeighborhoodRegionKey,
+  normalizeNeighborhoodCity,
+} from "@/lib/neighborhood-region";
 import { setPrimaryNeighborhoodAction } from "@/server/actions/user";
 
 type NeighborhoodOption = {
@@ -12,7 +16,7 @@ type NeighborhoodOption = {
 };
 
 function toRegionKey(city: string, district: string) {
-  return `${city}::${district}`;
+  return buildNeighborhoodRegionKey(city, district);
 }
 
 function resolvePrimaryRegionKey(
@@ -73,6 +77,7 @@ export function NeighborhoodPreferenceForm({
     selectedNeighborhoods.map((item) => ({
       ...item,
       id: toRegionKey(item.city, item.district),
+      city: normalizeNeighborhoodCity(item.city),
       name: item.district,
     })),
   );
@@ -119,6 +124,7 @@ export function NeighborhoodPreferenceForm({
     for (const item of selectedNeighborhoods) {
       map.set(toRegionKey(item.city, item.district), {
         ...item,
+        city: normalizeNeighborhoodCity(item.city),
         id: toRegionKey(item.city, item.district),
         name: item.district,
       });
