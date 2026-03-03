@@ -104,6 +104,20 @@ describe("post queries", () => {
     expect(args.where.petTypeId).toBe("ckc7k5qsj0000u0t8qv6d1d7k");
   });
 
+  it("ignores petType filter for free-board feed", async () => {
+    mockPrisma.post.findMany.mockResolvedValue([]);
+
+    await listPosts({
+      limit: 20,
+      scope: PostScope.GLOBAL,
+      type: PostType.FREE_BOARD,
+      petTypeId: "ckc7k5qsj0000u0t8qv6d1d7k",
+    });
+
+    const args = mockPrisma.post.findMany.mock.calls[0][0];
+    expect(args.where.petTypeId).toBeUndefined();
+  });
+
   it("applies requested sorting to feed queries", async () => {
     mockPrisma.post.findMany.mockResolvedValue([]);
 

@@ -2,6 +2,7 @@ import { PostScope, PostType } from "@prisma/client";
 import { z } from "zod";
 
 import { isCommonBoardPostType } from "@/lib/community-board";
+import { isFreeBoardPostType } from "@/lib/post-type-groups";
 import { REVIEW_CATEGORY, REVIEW_CATEGORY_VALUES, type ReviewCategory } from "@/lib/review-category";
 
 const optionalTrimmedString = z.preprocess(
@@ -126,7 +127,7 @@ export const postCreateSchema = z.object({
       return;
     }
 
-    if (!value.petTypeId) {
+    if (!isFreeBoardPostType(value.type) && !value.petTypeId) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["petTypeId"],

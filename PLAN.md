@@ -259,6 +259,11 @@
 |---|---|---|---|---|---|
 | 닉네임 30일 변경 제한 + 프로필 문구 정리 | Codex | P1 | `done` | 닉네임 변경이 30일 쿨다운으로 제한되고, `/profile` 계정정보에서 대표 동네 라벨이 일반 표기로 정리됨 | `app/src/server/services/user.service.ts`, `app/prisma/schema.prisma`, `app/prisma/migrations/20260302160000_add_user_nickname_updated_at/migration.sql`, `app/src/app/profile/page.tsx` |
 
+### Cycle 113: 글쓰기 동물 라벨/자유게시판 선택 정책 정리 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 글쓰기 `관련 동물` 라벨 변경 + 자유게시판 선택 안함 허용 + 자유게시판 피드 동물필터 무시 | Codex | P1 | `done` | 글쓰기 폼에서 라벨이 `관련 동물`로 표시되고 자유게시판 계열은 `선택 안함`으로 작성 가능하며, 자유게시판 피드는 `petType` 조건 없이 전체 노출됨 | `app/src/components/posts/post-create-form.tsx`, `app/src/lib/validations/post.ts`, `app/src/server/services/post.service.ts`, `app/src/app/feed/page.tsx`, `app/src/server/queries/post.queries.ts` |
+
 ### Cycle 67: 보안 하드닝 트랙 운영
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|

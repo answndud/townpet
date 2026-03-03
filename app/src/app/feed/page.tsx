@@ -21,6 +21,7 @@ import {
   PET_TYPE_PREFERENCE_COOKIE,
   parsePetTypePreferenceCookie,
 } from "@/lib/pet-type-preference-cookie";
+import { isFreeBoardPostType } from "@/lib/post-type-groups";
 import { postTypeMeta } from "@/lib/post-presenter";
 import { REVIEW_CATEGORY, type ReviewCategory } from "@/lib/review-category";
 import { isLocalRequiredPostType } from "@/lib/post-scope-policy";
@@ -273,8 +274,9 @@ export default async function Home({ searchParams }: HomePageProps) {
       ? cookiePetTypeIds
       : allPetTypeIds;
   const isCommonBoardType = type ? isCommonBoardPostType(type) : false;
+  const isFreeBoardType = type ? isFreeBoardPostType(type) : false;
   const isLocalRequiredType = isLocalRequiredPostType(type);
-  const petTypeIds = isCommonBoardType
+  const petTypeIds = isCommonBoardType || isFreeBoardType
     ? []
     : requestedPetTypeIds.length > 0
       ? requestedPetTypeIds
@@ -580,7 +582,9 @@ export default async function Home({ searchParams }: HomePageProps) {
     const normalizedType = shouldKeepReviewBoard ? PostType.PRODUCT_REVIEW : resolvedType;
 
     if (normalizedType) params.set("type", normalizedType);
-    const canUseCommunityFilter = !normalizedType || !isCommonBoardPostType(normalizedType);
+    const canUseCommunityFilter =
+      !normalizedType ||
+      (!isCommonBoardPostType(normalizedType) && !isFreeBoardPostType(normalizedType));
     if (canUseCommunityFilter) {
       for (const value of resolvedPetTypeIds) {
         params.append("petType", value);

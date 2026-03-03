@@ -11,6 +11,7 @@ import { FEED_PAGE_SIZE } from "@/lib/feed";
 import {
   expandExcludedPostTypes,
   getEquivalentPostTypes,
+  isFreeBoardPostType,
 } from "@/lib/post-type-groups";
 import type { ReviewCategory } from "@/lib/review-category";
 import { logger, serializeError } from "@/server/logger";
@@ -640,6 +641,7 @@ function buildPostListWhere({
 }): Prisma.PostWhereInput {
   const since = days ? new Date(Date.now() - days * 24 * 60 * 60 * 1000) : null;
   const typeFilter = type ? getEquivalentPostTypes(type) : null;
+  const shouldIgnorePetTypeFilter = typeFilter ? typeFilter.some((item) => isFreeBoardPostType(item)) : false;
   const expandedExcludeTypes = expandExcludedPostTypes(excludeTypes);
   const normalizedAuthorBreedCode = normalizeBreedCode(authorBreedCode);
   const normalizedPetTypeIds =
@@ -674,11 +676,13 @@ function buildPostListWhere({
         : {}),
     ...(reviewCategory ? { reviewCategory } : {}),
     scope,
-    ...(normalizedPetTypeIds.length > 0
-      ? { petTypeId: { in: normalizedPetTypeIds } }
-      : petTypeId
-        ? { petTypeId }
-        : {}),
+    ...(!shouldIgnorePetTypeFilter
+      ? normalizedPetTypeIds.length > 0
+        ? { petTypeId: { in: normalizedPetTypeIds } }
+        : petTypeId
+          ? { petTypeId }
+          : {}
+      : {}),
     ...(scope === PostScope.LOCAL && neighborhoodId
       ? { neighborhoodId }
       : scope === PostScope.LOCAL

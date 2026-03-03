@@ -282,7 +282,7 @@ describe("createPost new-user restriction", () => {
     );
   });
 
-  it("requires community for community-board post types", async () => {
+  it("allows free-board post types without community", async () => {
     mockPrisma.user.findUnique.mockResolvedValue({
       id: "user-1",
       role: UserRole.USER,
@@ -296,6 +296,26 @@ describe("createPost new-user restriction", () => {
           title: "자유글",
           content: "본문",
           type: PostType.FREE_BOARD,
+          scope: PostScope.GLOBAL,
+        },
+      }),
+    ).resolves.toBeTruthy();
+  });
+
+  it("requires community for non-free community-board post types", async () => {
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: "user-1",
+      role: UserRole.USER,
+      createdAt: new Date(Date.now() - 30 * 60 * 60 * 1000),
+    });
+
+    await expect(
+      createPost({
+        authorId: "user-1",
+        input: {
+          title: "질문글",
+          content: "본문",
+          type: PostType.QA_QUESTION,
           scope: PostScope.GLOBAL,
         },
       }),
