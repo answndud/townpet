@@ -525,6 +525,16 @@ export function FeedInfiniteList({
               : `${post.petType.categoryLabelKo} · ${post.petType.labelKo}`
             : null;
           const previewContent = post.content.replace(/\s+/g, " ").trim();
+          const authorNode = post.guestDisplayName ? (
+            <span>
+              {post.guestDisplayName}
+              {post.guestIpDisplay ? ` (${post.guestIpLabel ?? "아이피"} ${post.guestIpDisplay})` : ""}
+            </span>
+          ) : (
+            <Link href={`/users/${post.author.id}`} className="hover:text-[#2f5da4]">
+              {post.author.nickname ?? post.author.name ?? "익명"}
+            </Link>
+          );
 
           return (
             <div key={post.id}>
@@ -596,24 +606,23 @@ export function FeedInfiniteList({
                   ) : null}
                 </div>
 
-                  <div className="text-[11px] text-[#4f678d] md:text-right">
-                    <p className="break-all font-semibold text-[#1f3f71]">
-                      {post.guestDisplayName ? (
-                        <span>
-                          {post.guestDisplayName}
-                        {post.guestIpDisplay ? ` (${post.guestIpLabel ?? "아이피"} ${post.guestIpDisplay})` : ""}
-                      </span>
-                    ) : (
-                      <Link href={`/users/${post.author.id}`} className="hover:text-[#2f5da4]">
-                        {post.author.nickname ?? post.author.name ?? "익명"}
-                      </Link>
-                    )}
-                  </p>
-                  <p className="mt-0.5">
-                    {relativeNow === null
-                      ? getStableDateLabel(post.createdAt)
-                      : formatRelativeDate(post.createdAt, relativeNow)}
-                  </p>
+                  <div className="md:hidden">
+                    <p className="mt-1 truncate text-[10px] font-semibold text-[#1f3f71]">{authorNode}</p>
+                    <p className="mt-0.5 text-[10px] text-[#5a759c]">
+                      {relativeNow === null
+                        ? getStableDateLabel(post.createdAt)
+                        : formatRelativeDate(post.createdAt, relativeNow)}
+                      {" · "}조회 {formatCount(post.viewCount)} · 반응 {formatCount(post.likeCount + post.dislikeCount)}
+                    </p>
+                  </div>
+
+                  <div className="hidden text-[11px] text-[#4f678d] md:block md:text-right">
+                    <p className="break-all font-semibold text-[#1f3f71]">{authorNode}</p>
+                    <p className="mt-0.5">
+                      {relativeNow === null
+                        ? getStableDateLabel(post.createdAt)
+                        : formatRelativeDate(post.createdAt, relativeNow)}
+                    </p>
                     <p className="mt-0.5 text-[11px] text-[#5a759c] md:ml-auto">
                       조회 {formatCount(post.viewCount)} · 반응 {formatCount(post.likeCount + post.dislikeCount)}
                     </p>
