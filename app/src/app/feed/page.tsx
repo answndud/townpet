@@ -421,6 +421,8 @@ export default async function Home({ searchParams }: HomePageProps) {
     : type
       ? `${postTypeMeta[type].label} 게시판`
       : "전체 게시판";
+  const selectedSortLabel =
+    selectedSort === "LIKE" ? "좋아요" : selectedSort === "COMMENT" ? "댓글" : "최신";
   const loginHref = (nextPath: string) =>
     `/login?next=${encodeURIComponent(nextPath)}`;
   const feedQueryKey = [
@@ -631,8 +633,8 @@ export default async function Home({ searchParams }: HomePageProps) {
       >
         <div className={isUltraDense ? "space-y-2" : "space-y-3"}>
           <header
-            className={`tp-hero animate-float-in ${
-              isUltraDense ? "px-2.5 py-1.5 sm:px-3 sm:py-2" : "px-2.5 py-2 sm:px-4 sm:py-2.5"
+            className={`tp-hero hidden animate-float-in sm:block ${
+              isUltraDense ? "sm:px-3 sm:py-2" : "sm:px-4 sm:py-2.5"
             }`}
           >
           <div className="flex flex-wrap items-center justify-between gap-2">
@@ -652,7 +654,7 @@ export default async function Home({ searchParams }: HomePageProps) {
 
         <a
           href="#feed-list"
-          className="tp-btn-soft inline-flex w-fit items-center px-3 py-1.5 text-xs font-semibold lg:hidden"
+          className="tp-btn-soft hidden w-fit items-center px-3 py-1.5 text-xs font-semibold sm:inline-flex lg:hidden"
         >
           목록 바로가기
         </a>
@@ -670,7 +672,7 @@ export default async function Home({ searchParams }: HomePageProps) {
         ) : null}
 
         <section id="feed-list" className="tp-card animate-fade-up overflow-hidden">
-          <div className="flex flex-wrap items-center gap-2 border-b border-[#e2ebf8] bg-[#f8fbff] px-4 py-2.5 text-xs text-[#4c6f9e] sm:px-5">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#e2ebf8] bg-[#f8fbff] px-3 py-2 text-xs text-[#4c6f9e] sm:px-5 sm:py-2.5">
             <div className="flex flex-wrap items-center gap-1.5">
               <Link
                 href={makeHref({ nextMode: "ALL", nextPage: 1 })}
@@ -692,37 +694,144 @@ export default async function Home({ searchParams }: HomePageProps) {
               >
                 베스트글
               </Link>
-
-              {reviewBoard ? (
-                <>
-                  <span className="px-0.5 text-[#b5c7e3]">|</span>
-                  <span className="font-semibold text-[#4b6b9b]">리뷰</span>
-                  {REVIEW_FILTER_OPTIONS.map((option) => {
-                    const isActive = (option.value ?? null) === (reviewCategory ?? null);
-                    return (
+            </div>
+            <div className="flex items-center gap-1 text-[11px] text-[#5a7398] sm:hidden">
+              <span className="rounded border border-[#d2e0f3] bg-white px-1.5 py-0.5">{selectedSortLabel}</span>
+              <span className="rounded border border-[#d2e0f3] bg-white px-1.5 py-0.5">{mode === "BEST" ? "베스트" : "전체"}</span>
+            </div>
+            {reviewBoard ? (
+              <div className="hidden items-center gap-1.5 sm:flex">
+                <span className="px-0.5 text-[#b5c7e3]">|</span>
+                <span className="font-semibold text-[#4b6b9b]">리뷰</span>
+                {REVIEW_FILTER_OPTIONS.map((option) => {
+                  const isActive = (option.value ?? null) === (reviewCategory ?? null);
+                  return (
+                    <Link
+                      key={`review-filter-${option.value ?? "all"}`}
+                      href={makeHref({
+                        nextType: PostType.PRODUCT_REVIEW,
+                        nextReviewCategory: option.value ?? null,
+                        nextPage: 1,
+                      })}
+                      className={`px-1 py-0.5 text-[11px] font-semibold transition ${
+                        isActive
+                          ? "text-[#204f8a] underline underline-offset-2"
+                          : "text-[#5173a3] hover:text-[#204f8a]"
+                      }`}
+                    >
+                      {option.label}
+                    </Link>
+                  );
+                })}
+              </div>
+            ) : null}
+          </div>
+          <details className="border-b border-[#e2ebf8] bg-white sm:hidden">
+            <summary className="cursor-pointer list-none px-3 py-1.5 text-[11px] font-semibold text-[#4b6b9b]">
+              필터 자세히
+            </summary>
+            <div className="space-y-2 border-t border-[#eef3fb] px-3 py-2 text-[11px] text-[#5a7398]">
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="mr-1 font-semibold text-[#4b6b9b]">정렬</span>
+                {([
+                  { value: "LATEST", label: "최신" },
+                  { value: "LIKE", label: "좋아요" },
+                  { value: "COMMENT", label: "댓글" },
+                ] as const).map((option) => (
+                  <Link
+                    key={`mobile-inline-sort-${option.value}`}
+                    href={makeHref({ nextSort: option.value, nextPage: 1 })}
+                    className={`rounded-md border px-2 py-0.5 font-medium transition ${
+                      selectedSort === option.value
+                        ? "border-[#3567b5] bg-[#3567b5] text-white"
+                        : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
+                    }`}
+                  >
+                    {option.label}
+                  </Link>
+                ))}
+              </div>
+              <details className="rounded-md border border-[#dbe6f6] bg-[#f9fbff]">
+                <summary className="cursor-pointer list-none px-2.5 py-1.5 text-[11px] font-semibold text-[#4b6b9b]">
+                  기간/리뷰 옵션
+                </summary>
+                <div className="space-y-2 border-t border-[#e6eefb] px-2.5 py-2">
+                  {mode === "ALL" ? (
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <span className="mr-1 font-semibold text-[#4b6b9b]">기간</span>
                       <Link
-                        key={`review-filter-${option.value ?? "all"}`}
-                        href={makeHref({
-                          nextType: PostType.PRODUCT_REVIEW,
-                          nextReviewCategory: option.value ?? null,
-                          nextPage: 1,
-                        })}
-                        className={`px-1 py-0.5 text-[11px] font-semibold transition ${
-                          isActive
-                            ? "text-[#204f8a] underline underline-offset-2"
-                            : "text-[#5173a3] hover:text-[#204f8a]"
+                        href={makeHref({ nextPeriod: null, nextPage: 1 })}
+                        className={`rounded-md border px-2 py-0.5 font-medium transition ${
+                          !periodDays
+                            ? "border-[#3567b5] bg-[#3567b5] text-white"
+                            : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
                         }`}
                       >
-                        {option.label}
+                        전체
                       </Link>
-                    );
-                  })}
-                </>
-              ) : null}
+                      {FEED_PERIOD_OPTIONS.map((day) => (
+                        <Link
+                          key={`mobile-inline-period-${day}`}
+                          href={makeHref({ nextPeriod: day, nextPage: 1 })}
+                          className={`rounded-md border px-2 py-0.5 font-medium transition ${
+                            periodDays === day
+                              ? "border-[#3567b5] bg-[#3567b5] text-white"
+                              : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
+                          }`}
+                        >
+                          {day}일
+                        </Link>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <span className="mr-1 font-semibold text-[#4b6b9b]">집계 기간</span>
+                      {BEST_DAY_OPTIONS.map((day) => (
+                        <Link
+                          key={`mobile-inline-best-day-${day}`}
+                          href={makeHref({ nextDays: day, nextPage: 1 })}
+                          className={`rounded-md border px-2 py-0.5 font-medium transition ${
+                            bestDays === day
+                              ? "border-[#3567b5] bg-[#3567b5] text-white"
+                              : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
+                          }`}
+                        >
+                          최근 {day}일
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                  {reviewBoard ? (
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <span className="mr-1 font-semibold text-[#4b6b9b]">리뷰</span>
+                      {REVIEW_FILTER_OPTIONS.map((option) => {
+                        const isActive = (option.value ?? null) === (reviewCategory ?? null);
+                        return (
+                          <Link
+                            key={`mobile-review-filter-${option.value ?? "all"}`}
+                            href={makeHref({
+                              nextType: PostType.PRODUCT_REVIEW,
+                              nextReviewCategory: option.value ?? null,
+                              nextPage: 1,
+                            })}
+                            className={`px-1 py-0.5 font-semibold transition ${
+                              isActive
+                                ? "text-[#204f8a] underline underline-offset-2"
+                                : "text-[#5173a3] hover:text-[#204f8a]"
+                            }`}
+                          >
+                            {option.label}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  ) : null}
+                </div>
+              </details>
             </div>
-          </div>
+          </details>
           {mode === "ALL" ? (
-            <div className="flex flex-wrap items-center gap-1.5 border-b border-[#e2ebf8] bg-white px-4 py-2 text-[11px] text-[#5a7398] sm:px-5">
+            <div className="hidden flex-wrap items-center gap-1.5 border-b border-[#e2ebf8] bg-white px-4 py-2 text-[11px] text-[#5a7398] sm:flex sm:px-5">
               <span className="mr-1 font-semibold text-[#4b6b9b]">정렬</span>
               {([
                 { value: "LATEST", label: "최신" },
@@ -768,7 +877,7 @@ export default async function Home({ searchParams }: HomePageProps) {
               ))}
             </div>
           ) : (
-            <div className="flex flex-wrap items-center gap-1.5 border-b border-[#e2ebf8] bg-white px-4 py-2 text-[11px] text-[#5a7398] sm:px-5">
+            <div className="hidden flex-wrap items-center gap-1.5 border-b border-[#e2ebf8] bg-white px-4 py-2 text-[11px] text-[#5a7398] sm:flex sm:px-5">
               <span className="mr-1 font-semibold text-[#4b6b9b]">집계 기간</span>
               {BEST_DAY_OPTIONS.map((day) => (
                 <Link

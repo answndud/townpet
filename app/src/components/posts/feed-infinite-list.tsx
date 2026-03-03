@@ -524,6 +524,7 @@ export function FeedInfiniteList({
               ? post.petType.labelKo
               : `${post.petType.categoryLabelKo} · ${post.petType.labelKo}`
             : null;
+          const previewContent = post.content.replace(/\s+/g, " ").trim();
 
           return (
             <div key={post.id}>
@@ -547,14 +548,14 @@ export function FeedInfiniteList({
               ) : null}
               <article
                 data-testid="feed-post-item"
-                className={`grid gap-2.5 px-4 py-3 transition hover:bg-[#f8fbff] sm:px-5 md:grid-cols-[minmax(0,1fr)_230px] md:items-center ${
+                className={`grid gap-2 px-3 py-2.5 transition hover:bg-[#f8fbff] sm:px-5 sm:py-3 md:grid-cols-[minmax(0,1fr)_230px] md:items-center ${
                   post.status === "HIDDEN" ? "bg-[#fff5f5]" : ""
                 }`}
               >
                 <div className="min-w-0">
-                  <div className="mb-1.5 flex flex-wrap items-center gap-1 text-[11px]">
+                  <div className="mb-1 flex flex-wrap items-center gap-1 text-[11px]">
                     <span
-                      className={`inline-flex items-center gap-1 rounded-md border px-2.5 py-0.5 font-semibold ${meta.chipClass}`}
+                      className={`inline-flex items-center gap-1 rounded-md border px-2 py-0.5 font-semibold ${meta.chipClass}`}
                     >
                       {meta.label}
                     </span>
@@ -570,31 +571,36 @@ export function FeedInfiniteList({
                       preferGuestDetail ? `/posts/${post.id}/guest` : `/posts/${post.id}`
                     }
                     prefetch={preferGuestDetail ? true : false}
-                    className={`flex min-w-0 items-center gap-1 text-base font-semibold leading-snug transition ${
+                    className={`flex min-w-0 items-center gap-1 text-[15px] font-semibold leading-snug transition sm:text-base ${
                       readPostIds.has(post.id)
                         ? "text-[#8c9db8] hover:text-[#7589a8]"
                         : "text-[#1e3f74] hover:text-[#2f5da4]"
                     } visited:text-[#8c9db8]`}
                     onClick={() => markPostAsRead(post.id)}
                   >
-                    <span className="truncate">{post.title}</span>
+                    <span className="overflow-hidden [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]">
+                      {post.title}
+                    </span>
                     <PostSignalIcons signals={signals} />
                     {post.commentCount > 0 ? (
                       <span className="shrink-0 text-[#2f5da4]">[{post.commentCount}]</span>
                     ) : null}
                   </Link>
+                  {previewContent ? (
+                    <p className="mt-0.5 truncate text-[11px] text-[#6b83a6]">{previewContent}</p>
+                  ) : null}
                   {locationLabel || petTypeLabel ? (
-                    <p className="mt-1 truncate text-[11px] text-[#6a82a6]">
+                    <p className="mt-0.5 truncate text-[11px] text-[#6a82a6]">
                       {[locationLabel, petTypeLabel].filter(Boolean).join(" · ")}
                     </p>
                   ) : null}
                 </div>
 
-                 <div className="text-xs text-[#4f678d] md:text-right">
-                   <p className="font-semibold text-[#1f3f71]">
-                     {post.guestDisplayName ? (
-                       <span>
-                         {post.guestDisplayName}
+                  <div className="text-[11px] text-[#4f678d] md:text-right">
+                    <p className="break-all font-semibold text-[#1f3f71]">
+                      {post.guestDisplayName ? (
+                        <span>
+                          {post.guestDisplayName}
                         {post.guestIpDisplay ? ` (${post.guestIpLabel ?? "아이피"} ${post.guestIpDisplay})` : ""}
                       </span>
                     ) : (
@@ -608,10 +614,10 @@ export function FeedInfiniteList({
                       ? getStableDateLabel(post.createdAt)
                       : formatRelativeDate(post.createdAt, relativeNow)}
                   </p>
-                   <p className="mt-1 text-[11px] text-[#5a759c] md:ml-auto">
-                     조회 {formatCount(post.viewCount)} · 반응 {formatCount(post.likeCount + post.dislikeCount)}
-                   </p>
-                 </div>
+                    <p className="mt-0.5 text-[11px] text-[#5a759c] md:ml-auto">
+                      조회 {formatCount(post.viewCount)} · 반응 {formatCount(post.likeCount + post.dislikeCount)}
+                    </p>
+                  </div>
               </article>
             </div>
           );

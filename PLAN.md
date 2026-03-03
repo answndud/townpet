@@ -299,6 +299,16 @@
 |---|---|---|---|---|---|
 | 피드/상세/댓글/글쓰기 모바일 오버플로우 보정 + 모바일 내비게이션 접근성 보강 | Codex | P1 | `done` | 390px 기준에서 필터/페이지네이션/액션 버튼/긴 텍스트가 가로 스크롤 없이 표시되고, 모바일에서도 게시판/관심동물 설정 접근이 가능 | `app/src/components/navigation/feed-hover-menu.tsx`, `app/src/app/feed/page.tsx`, `app/src/components/posts/post-detail-client.tsx`, `app/src/components/posts/post-comment-thread.tsx`, `app/src/components/posts/post-create-form.tsx`, `app/src/components/posts/post-reaction-controls.tsx`, `app/src/app/profile/page.tsx` |
 
+### Cycle 121: 피드 모바일 컴팩트 레이아웃 2차 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 모바일 피드 상단을 요약+접기 구조로 전환하고 목록 카드 밀도를 높여 첫 화면에서 목록 진입을 빠르게 개선 | Codex | P1 | `done` | 모바일에서 정렬/기간/리뷰 필터가 요약 배지 + `필터 자세히` 접기 패널로 동작하고, 피드 카드 제목 2줄/본문 1줄 프리뷰와 축소 간격으로 표시되어 첫 화면 정보 밀도가 향상됨 | `app/src/app/feed/page.tsx`, `app/src/components/posts/feed-infinite-list.tsx` |
+
+### Cycle 122: 피드 상단 초경량 컴팩트 3차 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 모바일에서 상단 정보를 더 줄이고 정렬 우선/기간·리뷰 2차 노출 구조로 재배치 | Codex | P1 | `done` | 모바일에서 hero와 목록바로가기가 숨겨지고, 상단은 `정렬` 중심 요약으로 노출되며 `기간/리뷰`는 접기 패널 2차 옵션으로 접근됨 | `app/src/app/feed/page.tsx` |
+
 ### Cycle 67: 보안 하드닝 트랙 운영
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
