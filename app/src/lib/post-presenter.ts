@@ -69,7 +69,7 @@ export const postTypeMeta: Record<
     icon: "R",
   },
   PET_SHOWCASE: {
-    label: "반려자랑",
+    label: "반려동물 자랑",
     chipClass: "border-sky-200 bg-sky-50 text-sky-700",
     icon: "S",
   },

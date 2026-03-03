@@ -264,6 +264,16 @@
 |---|---|---|---|---|---|
 | 글쓰기 `관련 동물` 라벨 변경 + 자유게시판 선택 안함 허용 + 자유게시판 피드 동물필터 무시 | Codex | P1 | `done` | 글쓰기 폼에서 라벨이 `관련 동물`로 표시되고 자유게시판 계열은 `선택 안함`으로 작성 가능하며, 자유게시판 피드는 `petType` 조건 없이 전체 노출됨 | `app/src/components/posts/post-create-form.tsx`, `app/src/lib/validations/post.ts`, `app/src/server/services/post.service.ts`, `app/src/app/feed/page.tsx`, `app/src/server/queries/post.queries.ts` |
 
+### Cycle 114: 글쓰기 분류/범위 UX 최신화 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| `/posts/new` 분류 목록에서 산책코스 제거 + 범위/동네 노출 조건 정리 | Codex | P1 | `done` | 글쓰기 분류 목록에서 `동네 산책코스`가 제거되고, 범위/동네 입력은 동네 선택이 필요한 게시판에서만 노출되며 동네 select 스타일이 다른 입력과 일관됨 | `app/src/components/navigation/feed-hover-menu.tsx`, `app/src/components/posts/post-create-form.tsx` |
+
+### Cycle 115: 게시판 분류/스코프/태그 정책 재정렬 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 병원후기 온동네 고정 + 동네모임 동네 고정 + 실종/목격 동물태그 optional + 반려동물 자랑 명칭/메뉴 반영 | Codex | P1 | `done` | 병원후기 scope는 GLOBAL로 고정되고 동네모임 scope는 LOCAL로 고정되며, 실종/목격 제보는 동물 태그 없이 작성 가능하고 `반려자랑` 명칭이 `반려동물 자랑`으로 통일/상단 게시판 메뉴에 표시됨 | `app/src/components/posts/post-create-form.tsx`, `app/src/lib/validations/post.ts`, `app/src/server/services/post.service.ts`, `app/src/components/navigation/feed-hover-menu.tsx`, `app/src/lib/post-presenter.ts` |
+
 ### Cycle 67: 보안 하드닝 트랙 운영
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|

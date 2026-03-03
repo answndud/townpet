@@ -16,7 +16,10 @@ import {
   GUEST_BLOCKED_POST_TYPES,
   GUEST_MAX_IMAGE_COUNT,
 } from "@/lib/guest-post-policy";
-import { isCommonBoardPostType } from "@/lib/community-board";
+import {
+  isAnimalTagsRequiredCommonBoardPostType,
+  isCommonBoardPostType,
+} from "@/lib/community-board";
 import { isFreeBoardPostType } from "@/lib/post-type-groups";
 import {
   markupToEditorHtml,
@@ -91,13 +94,22 @@ const postTypeOptions = [
   { value: PostType.FREE_BOARD, label: "자유게시판" },
   { value: PostType.QA_QUESTION, label: "질문/답변" },
   { value: PostType.HOSPITAL_REVIEW, label: "병원후기" },
-  { value: PostType.WALK_ROUTE, label: "동네 산책코스" },
   { value: PostType.LOST_FOUND, label: "실종/목격 제보" },
   { value: PostType.MEETUP, label: "동네모임" },
   { value: PostType.MARKET_LISTING, label: "중고/공동구매" },
   { value: PostType.PRODUCT_REVIEW, label: "리뷰" },
-  { value: PostType.PET_SHOWCASE, label: "반려자랑" },
+  { value: PostType.PET_SHOWCASE, label: "반려동물 자랑" },
 ];
+
+function resolveScopeByPostType(type: PostType, scope: PostScope) {
+  if (type === PostType.HOSPITAL_REVIEW) {
+    return PostScope.GLOBAL;
+  }
+  if (type === PostType.MEETUP) {
+    return PostScope.LOCAL;
+  }
+  return scope;
+}
 
 const reviewCategoryOptions: Array<{ value: ReviewCategory; label: string }> = [
   { value: REVIEW_CATEGORY.SUPPLIES, label: "용품" },
@@ -106,11 +118,6 @@ const reviewCategoryOptions: Array<{ value: ReviewCategory; label: string }> = [
   { value: REVIEW_CATEGORY.TOY, label: "장난감" },
   { value: REVIEW_CATEGORY.PLACE, label: "장소" },
   { value: REVIEW_CATEGORY.ETC, label: "기타" },
-];
-
-const scopeOptions = [
-  { value: PostScope.LOCAL, label: "동네" },
-  { value: PostScope.GLOBAL, label: "전체" },
 ];
 
 const DRAFT_STORAGE_KEY = "townpet:post-create-draft:v1";
@@ -462,16 +469,6 @@ export function PostCreateForm({
   }, [formState.scope, formState.type, isAuthenticated]);
 
   useEffect(() => {
-    if (!isAuthenticated || canUseLocalScope) {
-      return;
-    }
-
-    if (formState.scope === PostScope.LOCAL) {
-      setFormState((prev) => ({ ...prev, scope: PostScope.GLOBAL }));
-    }
-  }, [canUseLocalScope, formState.scope, isAuthenticated]);
-
-  useEffect(() => {
     if (formState.type !== PostType.PLACE_REVIEW) {
       return;
     }
@@ -498,17 +495,35 @@ export function PostCreateForm({
     }));
   }, [communityOptions, formState.petTypeId, formState.type]);
 
-  const showNeighborhood = formState.scope === PostScope.LOCAL;
+  const resolvedScope = resolveScopeByPostType(formState.type, formState.scope);
+  const showNeighborhood = resolvedScope === PostScope.LOCAL;
   const isCommonBoardType = isCommonBoardPostType(formState.type);
   const isFreeBoardType = isFreeBoardPostType(formState.type);
   const showReviewCategory = formState.type === PostType.PRODUCT_REVIEW;
   const showCommunitySelector = !isCommonBoardType;
-  const showAnimalTagsInput = isCommonBoardType;
+  const showAnimalTagsInput = isAnimalTagsRequiredCommonBoardPostType(formState.type);
   const showHospitalReview = formState.type === PostType.HOSPITAL_REVIEW;
   const showPlaceReview =
     formState.type === PostType.PLACE_REVIEW ||
     (formState.type === PostType.PRODUCT_REVIEW && formState.reviewCategory === REVIEW_CATEGORY.PLACE);
   const showWalkRoute = formState.type === PostType.WALK_ROUTE;
+
+  useEffect(() => {
+    if (formState.scope !== resolvedScope) {
+      setFormState((prev) => ({
+        ...prev,
+        scope: resolvedScope,
+      }));
+      return;
+    }
+
+    if (resolvedScope !== PostScope.LOCAL && formState.neighborhoodId) {
+      setFormState((prev) => ({
+        ...prev,
+        neighborhoodId: "",
+      }));
+    }
+  }, [formState.neighborhoodId, formState.scope, resolvedScope]);
 
   const hasHospitalReview =
     showHospitalReview &&
@@ -688,6 +703,11 @@ export function PostCreateForm({
       return;
     }
 
+    if (resolvedScope === PostScope.LOCAL && !formState.neighborhoodId) {
+      setError("동네를 선택해 주세요.");
+      return;
+    }
+
     if (showAnimalTagsInput && normalizedAnimalTags.length === 0) {
       setError("공용 보드 글은 동물 태그를 1개 이상 입력해 주세요.");
       return;
@@ -705,7 +725,7 @@ export function PostCreateForm({
         content: serializedContent,
         type: resolvedType,
         reviewCategory: shouldAttachReviewCategory ? formState.reviewCategory : undefined,
-        scope: isAuthenticated ? formState.scope : PostScope.GLOBAL,
+        scope: isAuthenticated ? resolvedScope : PostScope.GLOBAL,
         imageUrls: serializedImageUrls,
         neighborhoodId: showNeighborhood ? formState.neighborhoodId : undefined,
         petTypeId: showCommunitySelector ? formState.petTypeId || undefined : undefined,
@@ -882,59 +902,34 @@ export function PostCreateForm({
             </label>
           ) : null}
 
-          <label className="flex flex-col gap-1.5 text-sm font-medium text-[#355988]">
-            범위
-            <select
-              className="tp-input-soft px-3 py-2 text-sm"
-              value={formState.scope}
-              onChange={(event) =>
-                setFormState((prev) => ({
-                  ...prev,
-                  scope: event.target.value as PostScope,
-                }))
-              }
-              disabled={!isAuthenticated}
-            >
-              {scopeOptions.map((option) => (
-                <option
-                  key={option.value}
-                  value={option.value}
-                  disabled={option.value === PostScope.LOCAL && !canUseLocalScope}
-                >
-                  {option.value === PostScope.LOCAL && !canUseLocalScope
-                    ? "동네 (설정 필요)"
-                    : option.label}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className="flex flex-col gap-1.5 text-sm font-medium text-[#355988]">
-            동네
-            <select
-              className={`border px-3 py-2 text-sm text-[#1f3f71] transition ${
-                showNeighborhood
-                  ? "border-[#cbdcf5] bg-[#f8fbff]"
-                  : "cursor-not-allowed border-[#d6deea] bg-[#eef2f8] text-[#8ea1bd]"
-              }`}
-              value={formState.neighborhoodId}
-              onChange={(event) =>
-                setFormState((prev) => ({
-                  ...prev,
-                  neighborhoodId: event.target.value,
-                }))
-              }
-              disabled={!showNeighborhood}
-              required={showNeighborhood}
-            >
-              <option value="">선택</option>
-              {neighborhoodOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </label>
+          {formState.type === PostType.MEETUP ? (
+            <label className="flex flex-col gap-1.5 text-sm font-medium text-[#355988]">
+              동네
+              <select
+                className={`tp-input-soft px-3 py-2 text-sm transition ${
+                  showNeighborhood
+                    ? ""
+                    : "cursor-not-allowed border-[#d6deea] bg-[#eef2f8] text-[#8ea1bd]"
+                }`}
+                value={formState.neighborhoodId}
+                onChange={(event) =>
+                  setFormState((prev) => ({
+                    ...prev,
+                    neighborhoodId: event.target.value,
+                  }))
+                }
+                disabled={!showNeighborhood || !canUseLocalScope}
+                required={showNeighborhood && canUseLocalScope}
+              >
+                <option value="">선택</option>
+                {neighborhoodOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
 
           {showCommunitySelector ? (
             <label className="flex flex-col gap-1.5 text-sm font-medium text-[#355988]">
@@ -1724,8 +1719,8 @@ export function PostCreateForm({
         <p className="text-xs text-[#5d769d]">
           {isAuthenticated
             ? canUseLocalScope
-              ? "동네 글은 동네 범위를 선택하고 대표 동네를 지정해야 등록됩니다."
-              : "지금은 전체 글만 작성할 수 있습니다. 프로필에서 동네를 설정하면 동네 글도 작성할 수 있어요."
+              ? "병원후기는 온동네로 고정되고, 동네모임은 동네 범위로만 등록됩니다."
+              : "대표 동네를 설정해야 동네모임을 작성할 수 있습니다."
             : "비회원 글은 전체로만 등록되며 외부 링크/연락처/고위험 카테고리는 제한됩니다."}
         </p>
         <div className="flex items-center gap-2">

@@ -44,8 +44,11 @@ export function FeedHoverMenu({
   const groupedCommunities = groupPetTypeCommunities(communities);
   const selectableCommunities = groupedCommunities.flatMap((group) => group.items);
   const boardPostTypes = [
-    ...PRIMARY_POST_TYPES.filter((value) => value !== PostType.PLACE_REVIEW),
+    ...PRIMARY_POST_TYPES.filter(
+      (value) => value !== PostType.PLACE_REVIEW && value !== PostType.WALK_ROUTE,
+    ),
     PostType.PRODUCT_REVIEW,
+    PostType.PET_SHOWCASE,
   ];
   const triggerClass =
     "inline-flex h-8 items-center appearance-none rounded-sm bg-transparent px-1 text-[14px] leading-none text-[#315484] transition hover:bg-[#dcecff] hover:text-[#1f4f8f]";
