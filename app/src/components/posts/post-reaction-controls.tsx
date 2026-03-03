@@ -140,8 +140,8 @@ export function PostReactionControls({
   }, [canReact, hasInteracted, postId, reactionLoaded]);
 
   const buttonClass = compact
-    ? "inline-flex h-9 min-w-[90px] items-center justify-center rounded-lg border px-2 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 sm:min-w-[100px] sm:px-2.5"
-    : "inline-flex h-8 min-w-[82px] items-center justify-center rounded-lg border px-2 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 sm:h-9 sm:min-w-[98px] sm:px-2.5";
+    ? "inline-flex h-9 min-w-[72px] items-center justify-center rounded-lg border px-1.5 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 sm:min-w-[100px] sm:px-2.5"
+    : "inline-flex h-8 min-w-[70px] items-center justify-center rounded-lg border px-1.5 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 sm:h-9 sm:min-w-[98px] sm:px-2.5";
 
   const handleToggle = (target: ReactionType) => {
     if (!canReact) {

@@ -76,7 +76,7 @@ export default async function ProfilePage() {
           <div className="mt-4 grid gap-2 text-sm text-[#355988]">
             <div>닉네임: {user.nickname ?? "미설정"}</div>
             <div>소개: {user.bio?.trim() ? user.bio : "미설정"}</div>
-            <div>이메일: {user.email}</div>
+            <div className="break-all">이메일: {user.email}</div>
             <div>
               대표 동네: {primaryNeighborhood
                 ? `${primaryNeighborhood.neighborhood.city} ${primaryNeighborhood.neighborhood.name}`
@@ -124,7 +124,7 @@ export default async function ProfilePage() {
                 <div className="mt-3 space-y-3">
                   {blockedUsers.map((entry) => (
                     <div key={entry.id} className="rounded-lg border border-[#c9d8ef] bg-white px-3 py-2 text-xs text-[#355988]">
-                      <p className="font-semibold text-[#1f3f71]">
+                      <p className="break-all font-semibold text-[#1f3f71]">
                         {entry.blocked?.nickname ?? entry.blocked?.email ?? entry.blockedId}
                       </p>
                       <p className="mt-0.5 text-[11px] text-[#5a7398]">
@@ -159,7 +159,7 @@ export default async function ProfilePage() {
                 <div className="mt-3 space-y-3">
                   {mutedUsers.map((entry) => (
                     <div key={entry.id} className="rounded-lg border border-[#c9d8ef] bg-white px-3 py-2 text-xs text-[#355988]">
-                      <p className="font-semibold text-[#1f3f71]">
+                      <p className="break-all font-semibold text-[#1f3f71]">
                         {entry.mutedUser?.nickname ?? entry.mutedUser?.email ?? entry.mutedUserId}
                       </p>
                       <p className="mt-0.5 text-[11px] text-[#5a7398]">

@@ -294,6 +294,11 @@
 |---|---|---|---|---|---|
 | 내 동네 설정 시/도 옵션을 표준 광역 행정구역으로 통일하고 출장소/중복 표기를 제거 | Codex | P1 | `done` | 시/도 목록이 17개 표준 광역 행정구역으로 정규화되고(`서울`→`서울특별시`), 지역/동네 리스트에서 `출장소`와 시/도 자기참조 항목이 노출되지 않음 | `app/src/lib/neighborhood-region.ts`, `app/src/server/queries/neighborhood.queries.ts`, `app/src/components/profile/neighborhood-preference-form.tsx`, `app/src/components/onboarding/onboarding-form.tsx`, `app/src/server/services/user.service.ts` |
 
+### Cycle 120: 모바일 반응형 가독성/접근성 보강 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 피드/상세/댓글/글쓰기 모바일 오버플로우 보정 + 모바일 내비게이션 접근성 보강 | Codex | P1 | `done` | 390px 기준에서 필터/페이지네이션/액션 버튼/긴 텍스트가 가로 스크롤 없이 표시되고, 모바일에서도 게시판/관심동물 설정 접근이 가능 | `app/src/components/navigation/feed-hover-menu.tsx`, `app/src/app/feed/page.tsx`, `app/src/components/posts/post-detail-client.tsx`, `app/src/components/posts/post-comment-thread.tsx`, `app/src/components/posts/post-create-form.tsx`, `app/src/components/posts/post-reaction-controls.tsx`, `app/src/app/profile/page.tsx` |
+
 ### Cycle 67: 보안 하드닝 트랙 운영
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|

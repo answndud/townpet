@@ -1735,24 +1735,24 @@ export function PostCreateForm({
               : "대표 동네를 설정해야 동네모임을 작성할 수 있습니다."
             : "비회원 글은 전체로만 등록되며 외부 링크/연락처/고위험 카테고리는 제한됩니다."}
         </p>
-        <div className="flex items-center gap-2">
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end">
           {isAuthenticated && !canUseLocalScope ? (
             <Link
               href="/profile"
-              className="tp-btn-soft inline-flex h-10 items-center px-4 text-xs font-semibold"
+              className="tp-btn-soft inline-flex h-10 w-full items-center justify-center px-4 text-xs font-semibold sm:w-auto"
             >
               프로필에서 동네 설정
             </Link>
           ) : null}
           <Link
             href="/feed"
-            className="inline-flex h-10 items-center rounded-xl border border-[#9aa9bf] bg-[#5c677a] px-5 text-sm font-semibold text-white transition hover:bg-[#4d5666]"
+            className="inline-flex h-10 w-full items-center justify-center rounded-xl border border-[#9aa9bf] bg-[#5c677a] px-5 text-sm font-semibold text-white transition hover:bg-[#4d5666] sm:w-auto"
           >
             취소
           </Link>
           <button
             type="submit"
-            className="tp-btn-primary inline-flex h-10 items-center px-6 text-sm font-semibold disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0]"
+            className="tp-btn-primary inline-flex h-10 w-full items-center justify-center px-6 text-sm font-semibold disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0] sm:w-auto"
             disabled={isPending}
           >
             {isPending ? "등록 중..." : "등록"}

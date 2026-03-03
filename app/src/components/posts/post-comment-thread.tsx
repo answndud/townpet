@@ -740,10 +740,10 @@ export function PostCommentThread({
 
   return (
     <div className="tp-card mt-6 w-full p-4 sm:mt-8 sm:p-5">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-xl font-semibold tracking-[-0.01em] text-[#1f3f71]">댓글 {comments.length}</h2>
         {roots.length > 0 ? (
-          <div className="flex items-center gap-2 text-xs text-[#4f678d]">
+          <div className="flex flex-wrap items-center gap-2 text-xs text-[#4f678d]">
             {totalPages > 1 ? (
               <>
                 <button
@@ -798,7 +798,7 @@ export function PostCommentThread({
       )}
 
       {totalPages > 1 ? (
-        <div className="mt-2.5 flex items-center justify-center gap-1.5 text-xs text-[#4f678d]">
+        <div className="mt-2.5 flex flex-wrap items-center justify-center gap-1.5 text-xs text-[#4f678d]">
           <button
             type="button"
             className="rounded border border-[#c7d7ef] bg-white px-2 py-0.5 text-[#315484] disabled:opacity-40"
