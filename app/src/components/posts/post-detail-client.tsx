@@ -545,7 +545,7 @@ export function PostDetailClient({ postId }: { postId: string }) {
               </div>
               <div className="text-sm text-[#4f678d] md:text-right">
                 <div className="flex items-start justify-between gap-3 md:flex-col md:items-end">
-                  <p className="font-semibold text-[#1f3f71]">
+                  <p className="min-w-0 break-all font-semibold text-[#1f3f71]">
                     {isGuestPost ? (
                       <span>
                         {displayAuthorName}
@@ -604,7 +604,7 @@ export function PostDetailClient({ postId }: { postId: string }) {
                             <Link
                               href={image.url}
                               target="_blank"
-                              className="text-[#2f5da4] underline decoration-[#9db8df] underline-offset-2 hover:text-[#254e8a]"
+                              className="break-all text-[#2f5da4] underline decoration-[#9db8df] underline-offset-2 hover:text-[#254e8a]"
                             >
                               {fileName}
                             </Link>
@@ -619,7 +619,7 @@ export function PostDetailClient({ postId }: { postId: string }) {
 
             <div className="mt-3 space-y-2 border-b border-[#e0e9f5] pb-3 sm:mt-4 sm:space-y-3 sm:pb-4">
                <div className="rounded-xl border border-[#d8e4f6] bg-[#f8fbff] px-2.5 py-2.5 sm:px-3 sm:py-3">
-                <div className="flex items-center justify-between gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <PostReactionControls
                     postId={post.id}
                     likeCount={resolvedLikeCount}
@@ -628,7 +628,9 @@ export function PostDetailClient({ postId }: { postId: string }) {
                     canReact={canInteract && canInteractWithPostOwner}
                     loginHref={loginHref}
                   />
-                  <PostShareControls url={postUrl} title={post.title} />
+                  <div className="ml-auto">
+                    <PostShareControls url={postUrl} title={post.title} />
+                  </div>
                 </div>
               </div>
               {isAuthor ? (

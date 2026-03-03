@@ -17,6 +17,29 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-03: 모바일 반응형 가독성/접근성 보강
+- 완료 내용
+- 피드 상단 필터 영역의 내부 행을 `flex-wrap`으로 조정해 모바일(<=390px)에서 리뷰/정렬 칩이 가로로 밀리지 않도록 보정.
+- 게시글 상세에서 긴 작성자/IP 문자열 및 첨부파일 링크가 가로 오버플로우를 일으키지 않도록 `break-all`/wrap 동작을 적용.
+- 상세 페이지 반응/공유 행을 wrap 가능 구조로 변경해 좁은 화면에서도 버튼 겹침 없이 노출되도록 개선.
+- 댓글 상단/하단 페이지네이션 행에 wrap을 적용해 페이지 버튼 수가 많아도 모바일에서 줄바꿈되도록 정리.
+- 글쓰기 하단 액션 버튼(동네설정/취소/등록)을 모바일에서 full-width로 배치해 터치 접근성과 레이아웃 안정성을 개선.
+- 헤더의 `게시판/관심 동물` 기능을 모바일 전용 `details` UI로 추가해 데스크톱 hover 메뉴와 동일 기능 접근성을 확보.
+- 검증 결과
+- `pnpm -C app lint` 통과.
+- `pnpm -C app typecheck` 통과.
+- 변경 파일(핵심)
+- `app/src/components/navigation/feed-hover-menu.tsx`
+- `app/src/app/feed/page.tsx`
+- `app/src/components/posts/post-detail-client.tsx`
+- `app/src/components/posts/post-comment-thread.tsx`
+- `app/src/components/posts/post-create-form.tsx`
+- `app/src/components/posts/post-reaction-controls.tsx`
+- `app/src/app/profile/page.tsx`
+- `PLAN.md`
+- 이슈/블로커
+- 없음.
+
 ### 2026-03-03: 시/도 목록 표준화 + 출장소/중복 표기 제거
 - 완료 내용
 - 동네 옵션 정규화 유틸(`neighborhood-region`)을 추가해 시/도 별칭을 표준 광역 행정구역으로 통일 (`서울`→`서울특별시`, `부산`→`부산광역시`, `성남`→`경기도` 등).

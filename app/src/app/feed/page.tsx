@@ -671,7 +671,7 @@ export default async function Home({ searchParams }: HomePageProps) {
 
         <section id="feed-list" className="tp-card animate-fade-up overflow-hidden">
           <div className="flex flex-wrap items-center gap-2 border-b border-[#e2ebf8] bg-[#f8fbff] px-4 py-2.5 text-xs text-[#4c6f9e] sm:px-5">
-            <div className="flex items-center gap-1.5">
+            <div className="flex flex-wrap items-center gap-1.5">
               <Link
                 href={makeHref({ nextMode: "ALL", nextPage: 1 })}
                 className={`rounded-md border px-2 py-0.5 font-medium transition ${
