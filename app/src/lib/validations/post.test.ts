@@ -97,11 +97,22 @@ describe("post validations", () => {
     expect((mapped as { petType?: string }).petType).toBeUndefined();
   });
 
-  it("rejects community posts without petTypeId", () => {
+  it("accepts free-board posts without petTypeId", () => {
     const result = postCreateSchema.safeParse({
       title: "테스트",
       content: "내용",
       type: PostType.FREE_BOARD,
+      scope: PostScope.GLOBAL,
+    });
+
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects non-free community posts without petTypeId", () => {
+    const result = postCreateSchema.safeParse({
+      title: "테스트",
+      content: "내용",
+      type: PostType.QA_QUESTION,
       scope: PostScope.GLOBAL,
     });
 

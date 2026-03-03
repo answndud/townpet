@@ -21,6 +21,12 @@ export const FILTERABLE_POST_TYPES: PostType[] = [
   ...SECONDARY_POST_TYPES,
 ];
 
+export const FREE_BOARD_POST_TYPES: ReadonlyArray<PostType> = [
+  PostType.FREE_BOARD,
+  PostType.FREE_POST,
+  PostType.DAILY_SHARE,
+];
+
 const POST_TYPE_GROUPS: ReadonlyArray<ReadonlyArray<PostType>> = [
   [PostType.FREE_BOARD, PostType.FREE_POST, PostType.DAILY_SHARE],
   [PostType.QA_QUESTION, PostType.QA_ANSWER],
@@ -36,6 +42,10 @@ const POST_TYPE_GROUPS: ReadonlyArray<ReadonlyArray<PostType>> = [
 export function getEquivalentPostTypes(type: PostType): PostType[] {
   const grouped = POST_TYPE_GROUPS.find((group) => group.includes(type));
   return grouped ? [...grouped] : [type];
+}
+
+export function isFreeBoardPostType(type: PostType) {
+  return FREE_BOARD_POST_TYPES.includes(type);
 }
 
 export function expandExcludedPostTypes(types: PostType[]): PostType[] {

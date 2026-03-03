@@ -17,6 +17,7 @@ import {
   GUEST_MAX_IMAGE_COUNT,
 } from "@/lib/guest-post-policy";
 import { isCommonBoardPostType } from "@/lib/community-board";
+import { isFreeBoardPostType } from "@/lib/post-type-groups";
 import {
   markupToEditorHtml,
   serializeEditorHtml,
@@ -177,7 +178,7 @@ export function PostCreateForm({
     type: PostType.FREE_BOARD,
     scope: PostScope.GLOBAL,
     neighborhoodId: defaultNeighborhoodId,
-    petTypeId: communities[0]?.id ?? "",
+    petTypeId: "",
     reviewCategory: REVIEW_CATEGORY.SUPPLIES,
     animalTagsInput: "",
     hospitalReview: {
@@ -483,7 +484,7 @@ export function PostCreateForm({
   }, [formState.type]);
 
   useEffect(() => {
-    if (formState.petTypeId) {
+    if (formState.petTypeId || isFreeBoardPostType(formState.type)) {
       return;
     }
 
@@ -495,10 +496,11 @@ export function PostCreateForm({
       ...prev,
       petTypeId: communityOptions[0].value,
     }));
-  }, [communityOptions, formState.petTypeId]);
+  }, [communityOptions, formState.petTypeId, formState.type]);
 
   const showNeighborhood = formState.scope === PostScope.LOCAL;
   const isCommonBoardType = isCommonBoardPostType(formState.type);
+  const isFreeBoardType = isFreeBoardPostType(formState.type);
   const showReviewCategory = formState.type === PostType.PRODUCT_REVIEW;
   const showCommunitySelector = !isCommonBoardType;
   const showAnimalTagsInput = isCommonBoardType;
@@ -681,7 +683,7 @@ export function PostCreateForm({
     const shouldAttachReviewCategory =
       resolvedType === PostType.PLACE_REVIEW || resolvedType === PostType.PRODUCT_REVIEW;
 
-    if (showCommunitySelector && !formState.petTypeId) {
+    if (showCommunitySelector && !isFreeBoardType && !formState.petTypeId) {
       setError("커뮤니티를 선택해 주세요.");
       return;
     }
@@ -706,7 +708,7 @@ export function PostCreateForm({
         scope: isAuthenticated ? formState.scope : PostScope.GLOBAL,
         imageUrls: serializedImageUrls,
         neighborhoodId: showNeighborhood ? formState.neighborhoodId : undefined,
-        petTypeId: showCommunitySelector ? formState.petTypeId : undefined,
+        petTypeId: showCommunitySelector ? formState.petTypeId || undefined : undefined,
         animalTags: showAnimalTagsInput ? normalizedAnimalTags : undefined,
         guestDisplayName: isAuthenticated ? undefined : formState.guestDisplayName,
         guestPassword: isAuthenticated ? undefined : formState.guestPassword,
@@ -782,7 +784,7 @@ export function PostCreateForm({
         title: "",
         content: "",
         type: PostType.FREE_BOARD,
-        petTypeId: communities[0]?.id ?? "",
+        petTypeId: "",
         reviewCategory: REVIEW_CATEGORY.SUPPLIES,
         animalTagsInput: "",
         hospitalReview: {
@@ -936,7 +938,7 @@ export function PostCreateForm({
 
           {showCommunitySelector ? (
             <label className="flex flex-col gap-1.5 text-sm font-medium text-[#355988]">
-              관심 동물
+              관련 동물
               <select
                 className="tp-input-soft px-3 py-2 text-sm"
                 value={formState.petTypeId}
@@ -946,9 +948,9 @@ export function PostCreateForm({
                     petTypeId: event.target.value,
                   }))
                 }
-                required
+                required={!isFreeBoardType}
               >
-                <option value="">선택</option>
+                <option value="">{isFreeBoardType ? "선택 안함" : "선택"}</option>
                 {communityOptions.map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}

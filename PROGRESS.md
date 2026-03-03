@@ -17,6 +17,17 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-03: 글쓰기 관련 동물 라벨 변경 + 자유게시판 동물 선택 완화
+- 완료 내용
+- 글쓰기 폼의 `관심 동물` 라벨을 `관련 동물`로 변경하고, 자유게시판 계열(`FREE_BOARD/FREE_POST/DAILY_SHARE`)에서는 드롭다운 최상단에 `선택 안함` 옵션을 추가해 미선택 작성을 허용.
+- 자유게시판 계열은 `petTypeId` 필수 검증에서 제외하고, 기존 커뮤니티형 글(예: 질문/답변)은 기존처럼 `petTypeId` 필수 정책을 유지.
+- 피드 쿼리에서 자유게시판 계열은 `petType` 필터를 무시하도록 보정해 동물 조건과 무관하게 전체 글이 노출되도록 반영.
+- 검증 결과
+- `pnpm -C app test -- src/lib/validations/post.test.ts src/server/services/post-create-policy.test.ts src/server/queries/post.queries.test.ts` 통과.
+- `pnpm -C app typecheck` 통과.
+- 이슈/블로커
+- 없음.
+
 ### 2026-03-02: 관심 동물 멀티선택 + 피드 지속 필터
 - 완료 내용
 - 상단 내비게이션 `관심 동물` 드롭다운을 단일 링크형에서 체크박스 멀티선택 UI로 전환하고, 로그인 사용자가 선택값을 저장할 수 있도록 서버 액션/서비스를 추가.
