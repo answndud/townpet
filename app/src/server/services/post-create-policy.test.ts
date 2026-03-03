@@ -302,6 +302,26 @@ describe("createPost new-user restriction", () => {
     ).resolves.toBeTruthy();
   });
 
+  it("allows market-listing common board without animal tags", async () => {
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: "user-1",
+      role: UserRole.USER,
+      createdAt: new Date(Date.now() - 30 * 60 * 60 * 1000),
+    });
+
+    await expect(
+      createPost({
+        authorId: "user-1",
+        input: {
+          title: "공동구매 제안",
+          content: "내용",
+          type: PostType.MARKET_LISTING,
+          scope: PostScope.GLOBAL,
+        },
+      }),
+    ).resolves.toBeTruthy();
+  });
+
   it("forces fixed scope by post type", async () => {
     mockPrisma.user.findUnique.mockResolvedValue({
       id: "user-1",

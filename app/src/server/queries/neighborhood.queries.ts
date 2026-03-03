@@ -1,4 +1,11 @@
 import { prisma } from "@/lib/prisma";
+import {
+  buildNeighborhoodRegionKey,
+  getNeighborhoodCityVariants,
+  isDisplayableNeighborhoodRegion,
+  normalizeNeighborhoodCity,
+  normalizeNeighborhoodDistrict,
+} from "@/lib/neighborhood-region";
 
 export async function listNeighborhoods() {
   return prisma.neighborhood.findMany({
@@ -20,7 +27,7 @@ type SearchNeighborhoodsParams = {
 };
 
 export function toNeighborhoodRegionKey(city: string, district: string) {
-  return `${city}::${district}`;
+  return buildNeighborhoodRegionKey(city, district);
 }
 
 export function parseNeighborhoodRegionKey(value: string) {
@@ -29,9 +36,15 @@ export function parseNeighborhoodRegionKey(value: string) {
     return null;
   }
 
+  const normalizedCity = normalizeNeighborhoodCity(city);
+  const normalizedDistrict = normalizeNeighborhoodDistrict(district);
+  if (!normalizedCity || !normalizedDistrict) {
+    return null;
+  }
+
   return {
-    city: city.trim(),
-    district: district.trim(),
+    city: normalizedCity,
+    district: normalizedDistrict,
   };
 }
 
@@ -78,10 +91,12 @@ export async function searchNeighborhoodRegions({
   const trimmedCity = city?.trim();
   const trimmedDistrict = district?.trim();
 
+  const cityVariants = trimmedCity ? getNeighborhoodCityVariants(trimmedCity) : null;
+
   const rows = await prisma.neighborhood.groupBy({
     by: ["city", "district"],
     where: {
-      city: trimmedCity || undefined,
+      city: cityVariants ? { in: cityVariants } : undefined,
       district: trimmedDistrict || undefined,
       OR: trimmedQ
         ? [
@@ -94,12 +109,32 @@ export async function searchNeighborhoodRegions({
     take: Math.min(Math.max(limit, 1), 300),
   });
 
-  return rows.map((row) => ({
-    id: toNeighborhoodRegionKey(row.city, row.district),
-    name: row.district,
-    city: row.city,
-    district: row.district,
-  }));
+  const regions = new Map<string, { id: string; name: string; city: string; district: string }>();
+  for (const row of rows) {
+    if (!isDisplayableNeighborhoodRegion(row.city, row.district)) {
+      continue;
+    }
+    const city = normalizeNeighborhoodCity(row.city);
+    const district = normalizeNeighborhoodDistrict(row.district);
+    const key = toNeighborhoodRegionKey(city, district);
+
+    if (!regions.has(key)) {
+      regions.set(key, {
+        id: key,
+        name: district,
+        city,
+        district,
+      });
+    }
+  }
+
+  return Array.from(regions.values()).sort((a, b) => {
+    const cityCompare = a.city.localeCompare(b.city, "ko");
+    if (cityCompare !== 0) {
+      return cityCompare;
+    }
+    return a.district.localeCompare(b.district, "ko");
+  });
 }
 
 export async function listNeighborhoodCities() {
@@ -108,7 +143,9 @@ export async function listNeighborhoodCities() {
     orderBy: [{ city: "asc" }],
   });
 
-  return rows.map((row) => row.city);
+  return Array.from(
+    new Set(rows.map((row) => normalizeNeighborhoodCity(row.city)).filter((city) => city.length > 0)),
+  ).sort((a, b) => a.localeCompare(b, "ko"));
 }
 
 export async function listNeighborhoodDistricts(city?: string) {
@@ -117,11 +154,16 @@ export async function listNeighborhoodDistricts(city?: string) {
     return [] as string[];
   }
 
+  const cityVariants = getNeighborhoodCityVariants(trimmedCity);
+
   const rows = await prisma.neighborhood.groupBy({
     by: ["district"],
-    where: { city: trimmedCity },
+    where: { city: { in: cityVariants } },
     orderBy: [{ district: "asc" }],
   });
 
-  return rows.map((row) => row.district);
+  return rows
+    .map((row) => normalizeNeighborhoodDistrict(row.district))
+    .filter((district) => isDisplayableNeighborhoodRegion(trimmedCity, district))
+    .sort((a, b) => a.localeCompare(b, "ko"));
 }

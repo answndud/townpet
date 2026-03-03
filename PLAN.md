@@ -274,6 +274,26 @@
 |---|---|---|---|---|---|
 | 병원후기 온동네 고정 + 동네모임 동네 고정 + 실종/목격 동물태그 optional + 반려동물 자랑 명칭/메뉴 반영 | Codex | P1 | `done` | 병원후기 scope는 GLOBAL로 고정되고 동네모임 scope는 LOCAL로 고정되며, 실종/목격 제보는 동물 태그 없이 작성 가능하고 `반려자랑` 명칭이 `반려동물 자랑`으로 통일/상단 게시판 메뉴에 표시됨 | `app/src/components/posts/post-create-form.tsx`, `app/src/lib/validations/post.ts`, `app/src/server/services/post.service.ts`, `app/src/components/navigation/feed-hover-menu.tsx`, `app/src/lib/post-presenter.ts` |
 
+### Cycle 116: 공용보드 동물태그 정책 미세조정 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 중고/공동구매 동물 태그 optional 전환 | Codex | P1 | `done` | `MARKET_LISTING` 작성 시 동물 태그 없이도 통과하고, 병원후기만 동물 태그 필수로 유지됨 | `app/src/lib/community-board.ts`, `app/src/lib/validations/post.ts`, `app/src/server/services/post.service.ts` |
+
+### Cycle 117: 동네모임 동네 설정 CTA 강화 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 동네모임 작성 시 동네 미설정 사용자 안내 + 설정 페이지 이동 제공 | Codex | P1 | `done` | 동네모임 작성에서 동네 미선택/미설정 시 명확한 오류 메시지가 노출되고, 폼 내에서 `/profile` 설정 페이지 이동 링크가 제공됨 | `app/src/components/posts/post-create-form.tsx` |
+
+### Cycle 118: 동네 데이터 동기화 보강 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 기존 데이터가 있어도 전국 동네 데이터가 누락 없이 동기화되도록 스크립트 수정 | Codex | P1 | `done` | `db:sync:neighborhoods`가 기존 row 존재 여부와 무관하게 누락 동네를 `skipDuplicates`로 보충하고, 실행 로그에 before/inserted/after 수치가 출력됨 | `app/scripts/sync-neighborhoods.ts` |
+
+### Cycle 119: 시/도 목록 표준화 및 동네 옵션 정제 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 내 동네 설정 시/도 옵션을 표준 광역 행정구역으로 통일하고 출장소/중복 표기를 제거 | Codex | P1 | `done` | 시/도 목록이 17개 표준 광역 행정구역으로 정규화되고(`서울`→`서울특별시`), 지역/동네 리스트에서 `출장소`와 시/도 자기참조 항목이 노출되지 않음 | `app/src/lib/neighborhood-region.ts`, `app/src/server/queries/neighborhood.queries.ts`, `app/src/components/profile/neighborhood-preference-form.tsx`, `app/src/components/onboarding/onboarding-form.tsx`, `app/src/server/services/user.service.ts` |
+
 ### Cycle 67: 보안 하드닝 트랙 운영
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
