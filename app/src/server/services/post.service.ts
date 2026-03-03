@@ -1,8 +1,17 @@
-import { GuestViolationCategory, PostReactionType, PostScope, PostStatus } from "@prisma/client";
+import {
+  GuestViolationCategory,
+  PostReactionType,
+  PostScope,
+  PostStatus,
+  PostType,
+} from "@prisma/client";
 import { createHash, randomBytes, randomUUID, scryptSync, timingSafeEqual } from "crypto";
 
 import { runtimeEnv } from "@/lib/env";
-import { resolveBoardByPostType } from "@/lib/community-board";
+import {
+  isAnimalTagsRequiredCommonBoardPostType,
+  resolveBoardByPostType,
+} from "@/lib/community-board";
 import { findMatchedForbiddenKeywords } from "@/lib/forbidden-keyword-policy";
 import { isFreeBoardPostType } from "@/lib/post-type-groups";
 import { prisma } from "@/lib/prisma";
@@ -316,6 +325,12 @@ export async function createPost({ authorId, input, guestIdentity }: CreatePostP
   const normalizedImageUrls = normalizeImageUrls(imageUrls);
   const normalizedAnimalTags = normalizeAnimalTags(animalTags);
   const mappedBoard = resolveBoardByPostType(postData.type);
+  const effectiveScope =
+    postData.type === PostType.HOSPITAL_REVIEW
+      ? PostScope.GLOBAL
+      : postData.type === PostType.MEETUP
+        ? PostScope.LOCAL
+        : postData.scope;
   const rawInput = input as Record<string, unknown>;
   const [forbiddenKeywords, newUserSafetyPolicy, guestPostPolicy] = await Promise.all([
     getForbiddenKeywords(),
@@ -480,7 +495,7 @@ export async function createPost({ authorId, input, guestIdentity }: CreatePostP
     };
   }
 
-  if (postData.scope === PostScope.LOCAL && !postData.neighborhoodId) {
+  if (effectiveScope === PostScope.LOCAL && !postData.neighborhoodId) {
     throw new ServiceError("동네 정보가 필요합니다.", "NEIGHBORHOOD_REQUIRED", 400);
   }
 
@@ -504,13 +519,17 @@ export async function createPost({ authorId, input, guestIdentity }: CreatePostP
       throw new ServiceError("공용 보드 글은 반려동물 타입을 지정할 수 없습니다.", "POST_COMMUNITY_FORBIDDEN", 400);
     }
 
-    if (normalizedAnimalTags.length === 0) {
+    if (
+      isAnimalTagsRequiredCommonBoardPostType(postData.type) &&
+      normalizedAnimalTags.length === 0
+    ) {
       throw new ServiceError("공용 보드 글은 동물 태그를 1개 이상 입력해 주세요.", "POST_COMMON_BOARD_TAGS_REQUIRED", 400);
     }
   }
 
   const commonCreateData = {
     ...postData,
+    scope: effectiveScope,
     boardScope: mappedBoard.boardScope,
     petTypeId: mappedBoard.boardScope === "COMMUNITY" ? (petTypeId ?? null) : null,
     commonBoardType: mappedBoard.commonBoardType,

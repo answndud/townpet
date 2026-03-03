@@ -45,3 +45,7 @@ export function resolveBoardByPostType(type: PostType) {
     commonBoardType: null,
   } as const;
 }
+
+export function isAnimalTagsRequiredCommonBoardPostType(type: PostType) {
+  return type === "HOSPITAL_REVIEW" || type === "MARKET_LISTING";
+}

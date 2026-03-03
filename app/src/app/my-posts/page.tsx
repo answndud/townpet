@@ -32,7 +32,7 @@ const typeLabels: Record<PostType, string> = {
   FREE_BOARD: "자유게시판",
   DAILY_SHARE: "자유게시판",
   PRODUCT_REVIEW: "용품리뷰",
-  PET_SHOWCASE: "반려자랑",
+  PET_SHOWCASE: "반려동물 자랑",
 };
 
 function formatRelativeDate(date: Date) {

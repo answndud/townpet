@@ -143,4 +143,16 @@ describe("post validations", () => {
 
     expect(result.success).toBe(true);
   });
+
+  it("allows lost-found posts without animal tags", () => {
+    const result = postCreateSchema.safeParse({
+      title: "실종 제보",
+      content: "내용",
+      type: PostType.LOST_FOUND,
+      scope: PostScope.GLOBAL,
+    });
+
+    expect(result.success).toBe(true);
+  });
+
 });

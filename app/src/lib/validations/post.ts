@@ -1,7 +1,10 @@
 import { PostScope, PostType } from "@prisma/client";
 import { z } from "zod";
 
-import { isCommonBoardPostType } from "@/lib/community-board";
+import {
+  isAnimalTagsRequiredCommonBoardPostType,
+  isCommonBoardPostType,
+} from "@/lib/community-board";
 import { isFreeBoardPostType } from "@/lib/post-type-groups";
 import { REVIEW_CATEGORY, REVIEW_CATEGORY_VALUES, type ReviewCategory } from "@/lib/review-category";
 
@@ -116,7 +119,10 @@ export const postCreateSchema = z.object({
         });
       }
 
-      if ((value.animalTags ?? []).length === 0) {
+      if (
+        isAnimalTagsRequiredCommonBoardPostType(value.type) &&
+        (value.animalTags ?? []).length === 0
+      ) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ["animalTags"],

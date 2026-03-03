@@ -282,6 +282,74 @@ describe("createPost new-user restriction", () => {
     );
   });
 
+  it("allows lost-found common board without animal tags", async () => {
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: "user-1",
+      role: UserRole.USER,
+      createdAt: new Date(Date.now() - 30 * 60 * 60 * 1000),
+    });
+
+    await expect(
+      createPost({
+        authorId: "user-1",
+        input: {
+          title: "실종 제보",
+          content: "내용",
+          type: PostType.LOST_FOUND,
+          scope: PostScope.GLOBAL,
+        },
+      }),
+    ).resolves.toBeTruthy();
+  });
+
+  it("forces fixed scope by post type", async () => {
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: "user-1",
+      role: UserRole.USER,
+      createdAt: new Date(Date.now() - 30 * 60 * 60 * 1000),
+    });
+
+    await createPost({
+      authorId: "user-1",
+      input: {
+        title: "병원 후기",
+        content: "내용",
+        type: PostType.HOSPITAL_REVIEW,
+        scope: PostScope.LOCAL,
+        animalTags: ["강아지"],
+      },
+    });
+
+    await createPost({
+      authorId: "user-1",
+      input: {
+        title: "동네 모임",
+        content: "내용",
+        type: PostType.MEETUP,
+        scope: PostScope.GLOBAL,
+        neighborhoodId: petTypeId,
+        petTypeId,
+      },
+    });
+
+    expect(mockPrisma.post.create).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        data: expect.objectContaining({
+          scope: PostScope.GLOBAL,
+        }),
+      }),
+    );
+    expect(mockPrisma.post.create).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        data: expect.objectContaining({
+          scope: PostScope.LOCAL,
+        }),
+      }),
+    );
+  });
+
   it("allows free-board post types without community", async () => {
     mockPrisma.user.findUnique.mockResolvedValue({
       id: "user-1",
