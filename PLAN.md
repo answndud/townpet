@@ -430,6 +430,13 @@
 |---|---|---|---|---|---|
 | `unstable_update` 이후 JWT 닉네임 반영 로직 보강 | Codex | P0 | `done` | `updateProfileAction`에서 `unstable_update` 호출 후 JWT callback(`trigger=update`)이 `token.nickname`을 갱신해 미들웨어 가드가 즉시 해제됨 | `app/src/lib/auth.ts`, `app/src/server/actions/user.ts`, `app/middleware.ts` |
 
+### Cycle 141: 닉네임 가드 체감 성능 개선 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 미들웨어 `getToken` 호출 조건 최적화 | Codex | P1 | `done` | 세션 쿠키가 없거나 `/profile`/`/api` 경로인 경우 토큰 복호화를 건너뛰어 요청당 오버헤드를 줄임 | `app/middleware.ts` |
+| `/profile` 요약 조회 경량화(전체 목록 -> count) | Codex | P1 | `done` | 프로필 페이지의 총 작성글 표시가 `findMany` 전체 조회 대신 `count` 단일 쿼리로 동작 | `app/src/server/queries/post.queries.ts`, `app/src/app/profile/page.tsx` |
+| 닉네임 미설정 단계에서 비핵심 섹션 lazy 처리 | Codex | P2 | `done` | 닉네임 미설정 상태에서는 관계관리/펫/동네 설정 섹션 조회를 생략해 초기 프로필 진입 지연을 완화 | `app/src/app/profile/page.tsx` |
+
 ### Cycle 24: 피드 체류 개선 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|

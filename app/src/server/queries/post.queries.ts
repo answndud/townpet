@@ -2053,6 +2053,41 @@ type UserPostListOptions = {
   q?: string;
 };
 
+export async function countUserPosts({
+  authorId,
+  scope,
+  type,
+  q,
+}: UserPostListOptions) {
+  const equivalentTypes = type ? getEquivalentPostTypes(type) : null;
+
+  return prisma.post.count({
+    where: {
+      authorId,
+      status: { in: [PostStatus.ACTIVE, PostStatus.HIDDEN] },
+      ...(scope ? { scope } : {}),
+      ...(equivalentTypes
+        ? {
+            type:
+              equivalentTypes.length === 1
+                ? equivalentTypes[0]
+                : {
+                    in: equivalentTypes,
+                  },
+          }
+        : {}),
+      ...(q
+        ? {
+            OR: [
+              { title: { contains: q, mode: "insensitive" } },
+              { content: { contains: q, mode: "insensitive" } },
+            ],
+          }
+        : {}),
+    },
+  });
+}
+
 export async function listUserPosts({
   authorId,
   scope,
