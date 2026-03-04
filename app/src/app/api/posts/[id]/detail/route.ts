@@ -1,13 +1,12 @@
 import { NextRequest } from "next/server";
 
-import { canGuestReadPost } from "@/lib/post-access";
 import { getCurrentUser } from "@/server/auth";
 import { buildCacheControlHeader } from "@/server/cache/query-cache";
 import { monitorUnhandledError } from "@/server/error-monitor";
-import { getGuestReadLoginRequiredPostTypes } from "@/server/queries/policy.queries";
 import { getPostById } from "@/server/queries/post.queries";
-import { getUserWithNeighborhoods } from "@/server/queries/user.queries";
 import { jsonError, jsonOk } from "@/server/response";
+import { assertPostReadable } from "@/server/services/post-read-access.service";
+import { ServiceError } from "@/server/services/service-error";
 
 const HIDDEN_POST_STATS_KEYS = new Set(["likeCount", "dislikeCount", "commentCount", "viewCount"]);
 
@@ -27,30 +26,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       });
     }
 
-    if (!user) {
-      const loginRequiredTypes = await getGuestReadLoginRequiredPostTypes();
-      if (!canGuestReadPost({
-        scope: post.scope,
-        type: post.type,
-        loginRequiredTypes,
-      })) {
-        return jsonError(401, {
-          code: "AUTH_REQUIRED",
-          message: "로그인이 필요한 게시글입니다.",
-        });
-      }
-    }
-
-    if (user && post.scope === "LOCAL") {
-      const userWithNeighborhoods = await getUserWithNeighborhoods(user.id);
-      const primaryNeighborhood = userWithNeighborhoods?.neighborhoods.find((item) => item.isPrimary);
-      if (!primaryNeighborhood) {
-        return jsonError(400, {
-          code: "NEIGHBORHOOD_REQUIRED",
-          message: "동네 설정이 필요합니다.",
-        });
-      }
-    }
+    await assertPostReadable(post, user?.id);
 
     const restPost = Object.fromEntries(
       Object.entries(post).filter(([key]) => !HIDDEN_POST_STATS_KEYS.has(key)),
@@ -70,6 +46,13 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       },
     );
   } catch (error) {
+    if (error instanceof ServiceError) {
+      return jsonError(error.status, {
+        code: error.code,
+        message: error.message,
+      });
+    }
+
     await monitorUnhandledError(error, { route: "GET /api/posts/[id]/detail", request });
     return jsonError(500, {
       code: "INTERNAL_SERVER_ERROR",

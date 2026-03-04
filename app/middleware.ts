@@ -167,10 +167,13 @@ export function middleware(request: NextRequest) {
   const requestId = requestHeaders.get("x-request-id") ?? crypto.randomUUID();
   const cspNonce = crypto.randomUUID().replaceAll("-", "");
   requestHeaders.set("x-request-id", requestId);
+  requestHeaders.set("x-nonce", cspNonce);
   requestHeaders.set("x-csp-nonce", cspNonce);
 
   const responseHeaders = new Headers();
   responseHeaders.set("x-request-id", requestId);
+  responseHeaders.set("x-nonce", cspNonce);
+  responseHeaders.set("x-csp-nonce", cspNonce);
   applySecurityHeaders(responseHeaders, cspNonce);
 
   if (request.nextUrl.pathname.startsWith("/api")) {

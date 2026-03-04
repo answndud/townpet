@@ -1,22 +1,31 @@
 import type { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { POST } from "@/app/api/posts/[id]/comments/route";
+import { GET, POST } from "@/app/api/posts/[id]/comments/route";
 import { getCurrentUser } from "@/server/auth";
 import { monitorUnhandledError } from "@/server/error-monitor";
 import { getGuestPostPolicy } from "@/server/queries/policy.queries";
+import { getPostStatsById } from "@/server/queries/post.queries";
 import { getClientIp } from "@/server/request-context";
 import { enforceRateLimit } from "@/server/rate-limit";
+import { listComments } from "@/server/queries/comment.queries";
+import { assertPostReadable } from "@/server/services/post-read-access.service";
 import { createComment } from "@/server/services/comment.service";
 import {
   createGuestAuthor,
   getOrCreateGuestSystemUserId,
 } from "@/server/services/guest-author.service";
+import { ServiceError } from "@/server/services/service-error";
 vi.mock("@/server/auth", () => ({ getCurrentUser: vi.fn() }));
 vi.mock("@/server/error-monitor", () => ({ monitorUnhandledError: vi.fn() }));
 vi.mock("@/server/queries/policy.queries", () => ({ getGuestPostPolicy: vi.fn() }));
+vi.mock("@/server/queries/post.queries", () => ({ getPostStatsById: vi.fn() }));
+vi.mock("@/server/queries/comment.queries", () => ({ listComments: vi.fn() }));
 vi.mock("@/server/request-context", () => ({ getClientIp: vi.fn() }));
 vi.mock("@/server/rate-limit", () => ({ enforceRateLimit: vi.fn() }));
+vi.mock("@/server/services/post-read-access.service", () => ({
+  assertPostReadable: vi.fn(),
+}));
 vi.mock("@/server/services/comment.service", () => ({
   createComment: vi.fn(),
   hashGuestCommentPassword: vi.fn().mockReturnValue("hashed-password"),
@@ -41,8 +50,11 @@ vi.mock("@/lib/guest-ip-display", () => ({
 const mockGetCurrentUser = vi.mocked(getCurrentUser);
 const mockMonitorUnhandledError = vi.mocked(monitorUnhandledError);
 const mockGetGuestPostPolicy = vi.mocked(getGuestPostPolicy);
+const mockGetPostStatsById = vi.mocked(getPostStatsById);
 const mockGetClientIp = vi.mocked(getClientIp);
 const mockEnforceRateLimit = vi.mocked(enforceRateLimit);
+const mockListComments = vi.mocked(listComments);
+const mockAssertPostReadable = vi.mocked(assertPostReadable);
 const mockCreateComment = vi.mocked(createComment);
 const mockCreateGuestAuthor = vi.mocked(createGuestAuthor);
 const mockGetOrCreateGuestSystemUserId = vi.mocked(getOrCreateGuestSystemUserId);
@@ -52,8 +64,11 @@ describe("POST /api/posts/[id]/comments contract", () => {
     mockGetCurrentUser.mockReset();
     mockMonitorUnhandledError.mockReset();
     mockGetGuestPostPolicy.mockReset();
+    mockGetPostStatsById.mockReset();
     mockGetClientIp.mockReset();
     mockEnforceRateLimit.mockReset();
+    mockListComments.mockReset();
+    mockAssertPostReadable.mockReset();
     mockCreateComment.mockReset();
     mockCreateGuestAuthor.mockReset();
     mockGetOrCreateGuestSystemUserId.mockReset();
@@ -63,8 +78,46 @@ describe("POST /api/posts/[id]/comments contract", () => {
       postRateLimit10m: 5,
       postRateLimit1h: 10,
     } as never);
+    mockGetPostStatsById.mockResolvedValue({
+      id: "post-1",
+      type: "FREE_POST",
+      scope: "GLOBAL",
+      status: "ACTIVE",
+    } as never);
     mockGetClientIp.mockReturnValue("127.0.0.1");
     mockEnforceRateLimit.mockResolvedValue();
+    mockListComments.mockResolvedValue([]);
+    mockAssertPostReadable.mockResolvedValue();
+  });
+
+  it("returns POST_NOT_FOUND for comments GET when post is missing", async () => {
+    mockGetPostStatsById.mockResolvedValue(null);
+    const request = new Request("http://localhost/api/posts/post-1/comments") as NextRequest;
+
+    const response = await GET(request, { params: Promise.resolve({ id: "post-1" }) });
+    const payload = await response.json();
+
+    expect(response.status).toBe(404);
+    expect(payload).toMatchObject({
+      ok: false,
+      error: { code: "POST_NOT_FOUND" },
+    });
+  });
+
+  it("returns service error from read access guard on comments GET", async () => {
+    mockAssertPostReadable.mockRejectedValue(
+      new ServiceError("forbidden", "FORBIDDEN", 403),
+    );
+    const request = new Request("http://localhost/api/posts/post-1/comments") as NextRequest;
+
+    const response = await GET(request, { params: Promise.resolve({ id: "post-1" }) });
+    const payload = await response.json();
+
+    expect(response.status).toBe(403);
+    expect(payload).toMatchObject({
+      ok: false,
+      error: { code: "FORBIDDEN" },
+    });
   });
 
   it("returns GUEST_PASSWORD_REQUIRED for guest without password", async () => {
@@ -111,6 +164,30 @@ describe("POST /api/posts/[id]/comments contract", () => {
         }),
       }),
     );
+  });
+
+  it("returns service error from read access guard on comments POST", async () => {
+    mockAssertPostReadable.mockRejectedValue(
+      new ServiceError("auth", "AUTH_REQUIRED", 401),
+    );
+    const request = new Request("http://localhost/api/posts/post-1/comments", {
+      method: "POST",
+      body: JSON.stringify({
+        content: "hello",
+        guestDisplayName: "동네손님",
+        guestPassword: "1234",
+      }),
+      headers: { "content-type": "application/json" },
+    }) as NextRequest;
+
+    const response = await POST(request, { params: Promise.resolve({ id: "post-1" }) });
+    const payload = await response.json();
+
+    expect(response.status).toBe(401);
+    expect(payload).toMatchObject({
+      ok: false,
+      error: { code: "AUTH_REQUIRED" },
+    });
   });
 
   it("returns 500 and monitors unexpected errors", async () => {

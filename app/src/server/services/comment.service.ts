@@ -1,4 +1,9 @@
-import { CommentReactionType, GuestViolationCategory, PostStatus } from "@prisma/client";
+import {
+  CommentReactionType,
+  GuestViolationCategory,
+  PostScope,
+  PostStatus,
+} from "@prisma/client";
 import { randomBytes, scryptSync, timingSafeEqual } from "crypto";
 
 import { moderateContactContent } from "@/lib/contact-policy";
@@ -22,6 +27,7 @@ import {
   notifyReplyToComment,
 } from "@/server/services/notification.service";
 import {
+  assertGuestNotBanned,
   hashGuestIdentityCandidates,
   registerGuestViolation,
 } from "@/server/services/guest-safety.service";
@@ -34,6 +40,10 @@ type CreateCommentParams = {
   parentId?: string;
   guestMeta?: {
     guestAuthorId?: string;
+    guestIdentity?: {
+      ip: string;
+      fingerprint?: string;
+    };
   };
 };
 
@@ -150,14 +160,57 @@ export async function createComment({
     );
   }
 
+  const isGuestComment = Boolean(guestMeta?.guestAuthorId);
+  if (isGuestComment) {
+    if (!guestMeta?.guestIdentity) {
+      throw new ServiceError("비회원 식별 정보가 필요합니다.", "INVALID_GUEST_CONTEXT", 400);
+    }
+
+    await assertGuestNotBanned(guestMeta.guestIdentity);
+  }
+
   const transactionResult = await prisma.$transaction(async (tx) => {
     const post = await tx.post.findUnique({
       where: { id: postId },
-      select: { id: true, status: true, authorId: true, title: true },
+      select: {
+        id: true,
+        status: true,
+        authorId: true,
+        title: true,
+        scope: true,
+        neighborhoodId: true,
+      },
     });
 
-    if (!post || post.status === PostStatus.DELETED) {
+    if (!post || post.status !== PostStatus.ACTIVE) {
       throw new ServiceError("게시물을 찾을 수 없습니다.", "POST_NOT_FOUND", 404);
+    }
+
+    if (post.scope === PostScope.LOCAL) {
+      if (isGuestComment) {
+        throw new ServiceError(
+          "이 게시글은 로그인 후 이용할 수 있습니다.",
+          "AUTH_REQUIRED",
+          401,
+        );
+      }
+
+      const primaryNeighborhood = await tx.userNeighborhood.findFirst({
+        where: { userId: authorId, isPrimary: true },
+        select: { neighborhoodId: true },
+      });
+
+      if (!primaryNeighborhood) {
+        throw new ServiceError("대표 동네를 설정해 주세요.", "NEIGHBORHOOD_REQUIRED", 400);
+      }
+
+      if (!post.neighborhoodId || post.neighborhoodId !== primaryNeighborhood.neighborhoodId) {
+        throw new ServiceError(
+          "다른 동네 게시글에는 댓글을 작성할 수 없습니다.",
+          "FORBIDDEN",
+          403,
+        );
+      }
     }
 
     if (await hasBlockingRelation(authorId, post.authorId)) {

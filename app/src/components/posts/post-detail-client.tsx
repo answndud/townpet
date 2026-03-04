@@ -183,7 +183,12 @@ function buildExcerpt(text: string, maxLength = 160) {
   return `${normalized.slice(0, maxLength)}...`;
 }
 
-export function PostDetailClient({ postId }: { postId: string }) {
+type PostDetailClientProps = {
+  postId: string;
+  cspNonce?: string;
+};
+
+export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
   const [data, setData] = useState<PostDetailResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [relationState, setRelationState] = useState<RelationState>({
@@ -521,7 +526,11 @@ export function PostDetailClient({ postId }: { postId: string }) {
   return (
     <div className="tp-page-bg min-h-screen pb-16">
       <PostViewTracker postId={post.id} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
+      <script
+        nonce={cspNonce}
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
       <main className="mx-auto flex w-full max-w-[1100px] flex-col gap-4 px-4 py-5 sm:gap-5 sm:px-6 sm:py-6 lg:px-8">
         <BackToFeedButton className="tp-btn-soft inline-flex w-fit items-center px-3.5 py-2 text-xs font-semibold" />
         <div>

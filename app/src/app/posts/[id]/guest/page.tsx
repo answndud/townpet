@@ -11,6 +11,7 @@ import { PostReportForm } from "@/components/posts/post-report-form";
 import { PostShareControls } from "@/components/posts/post-share-controls";
 import { PostCommentSectionClient } from "@/components/posts/post-comment-section-client";
 import { PostViewTracker } from "@/components/posts/post-view-tracker";
+import { getCspNonce } from "@/lib/csp-nonce";
 import { renderLiteMarkdown } from "@/lib/markdown-lite";
 import { canGuestReadPost } from "@/lib/post-access";
 import { formatRelativeDate } from "@/lib/post-presenter";
@@ -18,9 +19,7 @@ import { toAbsoluteUrl } from "@/lib/site-url";
 import { getGuestReadLoginRequiredPostTypes } from "@/server/queries/policy.queries";
 import { getPostById, getPostMetadataById } from "@/server/queries/post.queries";
 
-export const revalidate = 30;
-export const dynamic = "force-static";
-export const fetchCache = "force-cache";
+export const dynamic = "force-dynamic";
 
 type PostDetailPageProps = {
   params?: Promise<{ id?: string }>;
@@ -194,6 +193,7 @@ const renderBooleanValue = (
 ) => (value === null || value === undefined ? emptyValue : value ? trueLabel : falseLabel);
 
 export default async function GuestPostDetailPage({ params }: PostDetailPageProps) {
+  const cspNonce = await getCspNonce();
   const resolvedParams = (await params) ?? {};
   const post = await getPostById(resolvedParams.id);
   if (!post) {
@@ -291,6 +291,7 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
     <div className="tp-page-bg min-h-screen pb-16">
       <PostViewTracker postId={post.id} />
       <script
+        nonce={cspNonce}
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(structuredData),

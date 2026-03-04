@@ -6,9 +6,11 @@ import { buildCacheControlHeader } from "@/server/cache/query-cache";
 import { monitorUnhandledError } from "@/server/error-monitor";
 import { getGuestPostPolicy } from "@/server/queries/policy.queries";
 import { listComments } from "@/server/queries/comment.queries";
+import { getPostStatsById } from "@/server/queries/post.queries";
 import { getClientIp } from "@/server/request-context";
 import { enforceRateLimit } from "@/server/rate-limit";
 import { jsonError, jsonOk } from "@/server/response";
+import { assertPostReadable } from "@/server/services/post-read-access.service";
 import {
   createComment,
   hashGuestCommentPassword,
@@ -28,6 +30,16 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const { id: postId } = await params;
     const user = await getCurrentUser();
+    const post = await getPostStatsById(postId, user?.id);
+    if (!post) {
+      return jsonError(404, {
+        code: "POST_NOT_FOUND",
+        message: "게시물을 찾을 수 없습니다.",
+      });
+    }
+
+    await assertPostReadable(post, user?.id);
+
     const comments = await listComments(postId, user?.id);
     return jsonOk(comments, {
       headers: {
@@ -35,6 +47,13 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       },
     });
   } catch (error) {
+    if (error instanceof ServiceError) {
+      return jsonError(error.status, {
+        code: error.code,
+        message: error.message,
+      });
+    }
+
     await monitorUnhandledError(error, { route: "GET /api/posts/[id]/comments", request });
     return jsonError(500, {
       code: "INTERNAL_SERVER_ERROR",
@@ -56,6 +75,15 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     const forceGuestMode =
       process.env.NODE_ENV !== "production" && request.headers.get("x-guest-mode") === "1";
     const user = forceGuestMode ? null : await getCurrentUser();
+    const post = await getPostStatsById(postId, user?.id);
+    if (!post) {
+      return jsonError(404, {
+        code: "POST_NOT_FOUND",
+        message: "게시물을 찾을 수 없습니다.",
+      });
+    }
+
+    await assertPostReadable(post, user?.id);
 
     if (user) {
       await enforceRateLimit({ key: `comments:${user.id}`, limit: 10, windowMs: 60_000 });
@@ -114,6 +142,10 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       input: { content: body.content ?? "" },
       guestMeta: {
         guestAuthorId: guestAuthor.id,
+        guestIdentity: {
+          ip: clientIp,
+          fingerprint: guestFingerprint,
+        },
       },
     });
 

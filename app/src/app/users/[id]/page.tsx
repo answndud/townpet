@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 
 import { UserRelationControls } from "@/components/user/user-relation-controls";
 import { auth } from "@/lib/auth";
+import { getCspNonce } from "@/lib/csp-nonce";
 import { formatRelativeDate } from "@/lib/post-presenter";
 import { toAbsoluteUrl } from "@/lib/site-url";
 import { getUserRelationState } from "@/server/queries/user-relation.queries";
@@ -104,6 +105,7 @@ export default async function PublicUserProfilePage({
   params,
   searchParams,
 }: UserProfilePageProps) {
+  const cspNonce = await getCspNonce();
   const [{ id }, resolvedSearchParams] = await Promise.all([
     params,
     searchParams ?? Promise.resolve({}),
@@ -166,6 +168,7 @@ export default async function PublicUserProfilePage({
   return (
     <div className="tp-page-bg min-h-screen pb-16">
       <script
+        nonce={cspNonce}
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(profileJsonLd) }}
       />

@@ -299,4 +299,22 @@ describe("comment service notification flow", () => {
 
     expect(mockPrisma.$transaction).not.toHaveBeenCalled();
   });
+
+  it("requires guest identity when guest author metadata is provided", async () => {
+    await expect(
+      createComment({
+        authorId: "actor-1",
+        postId: "post-1",
+        input: { content: "게스트 댓글" },
+        guestMeta: {
+          guestAuthorId: "guest-author-1",
+        },
+      }),
+    ).rejects.toMatchObject({
+      code: "INVALID_GUEST_CONTEXT",
+      status: 400,
+    });
+
+    expect(mockPrisma.$transaction).not.toHaveBeenCalled();
+  });
 });
