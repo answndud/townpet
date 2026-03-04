@@ -17,6 +17,18 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-04: Sentry 실수신 검증 재시도(토큰 유효성 이슈 확인)
+- 실행 내용
+- `ops-smoke-checks`(`verify_sentry=true`) 실행: `https://github.com/answndud/townpet2/actions/runs/22657129988`
+- `Check Sentry ingestion` 타임아웃 확인 후 검증 스크립트의 API host 분리 패치 반영(`fix: use sentry api host for event lookup`, `093dad4`) 후 재실행.
+- 재실행 런: `https://github.com/answndud/townpet2/actions/runs/22657498614`
+- 검증 결과
+- 두 번째 재실행에서 `Check Sentry ingestion` 단계가 즉시 `HTTP 401`로 실패.
+- 실패 메시지: `Sentry event lookup failed: HTTP 401 body={\"detail\":\"Invalid token\"}`.
+- 이슈/블로커
+- `SENTRY_AUTH_TOKEN`이 무효 상태로 확인되어 Sentry 실수신 검증 blocked 유지.
+- 조치 필요: Sentry Internal Integration 토큰 재발급 후 GitHub Secret `SENTRY_AUTH_TOKEN` 교체.
+
 ### 2026-03-04: Vercel Prisma Client 초기화 오류 대응(`prisma generate` 순서 조정)
 - 완료 내용
 - Vercel 배포 로그의 `Prisma has detected that this project was built on Vercel` 초기화 오류를 반영해 `build:vercel` 순서를 수정.
