@@ -17,6 +17,21 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-04: Cycle 136 완료 (외부 OAuth2 운영/팔로우업 가이드 정식화)
+- 완료 내용
+- Kakao/Naver 외부 OAuth2 로그인/회원가입 운영 가이드를 `docs/ops` 하위에 신규 작성.
+- 운영 이후 관리 항목(시크릿/리다이렉트/릴리즈 전후 점검/주간·월간 팔로우업/장애 대응/지표/기록 템플릿)을 단일 문서로 통합.
+- `oauth-real-e2e` 재실행 성공 run(22662648513) 기록과 수동 실계정 점검의 경계(자동 검증 vs 외부 수동 증적)를 명확히 구분.
+- 검증 결과
+- 문서 경로/추적 확인: `.gitignore` 예외에 `docs/ops/oauth2-external-auth-operations-guide.md` 추가.
+- 가이드 문서 내 즉시 실행 명령(`gh run list/view/workflow run`) 및 운영 동기화 규칙 반영 확인.
+- 이슈/블로커
+- 실계정 온보딩 완료 증적(카카오/네이버 각각)은 외부 계정 접근이 필요해 Cycle 23 `blocked` 유지.
+- 변경 파일(핵심)
+- `docs/ops/oauth2-external-auth-operations-guide.md`
+- `.gitignore`
+- `PLAN.md`
+
 ### 2026-03-04: Cycle 135 완료 (OAuth 재검증 + Day1 handoff 자동화 보강)
 - 완료 내용
 - `oauth-real-e2e` 워크플로우를 재실행해 최신 run success를 확보.

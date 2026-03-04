@@ -400,6 +400,13 @@
 | Day1 채널/UTM/24h 점검표 자동 생성 스크립트 추가 | Codex | P1 | `done` | `pnpm -C app growth:day1:handoff`로 Day1 실행표(채널별 UTM, keep/fix/kill, 실행 체크리스트)를 stdout/file로 생성 가능 | `app/scripts/generate-day1-growth-handoff.ts`, `app/package.json` |
 | Day1 in-progress 항목 실행 준비 상태 고정 | Codex | P2 | `done` | Day1 게시/증적/UTM 로그를 즉시 입력 가능한 템플릿이 생성되어 수동 실행 항목을 바로 수행 가능 | `docs/business/*`, `PLAN.md`, `PROGRESS.md` |
 
+### Cycle 136: 외부 OAuth2 운영/팔로우업 가이드 정식화 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| Kakao/Naver OAuth2 장기 운영 플레이북 작성 | Codex | P1 | `done` | 시크릿/리다이렉트/릴리즈 체크/장애 대응/주기적 팔로우업까지 포함한 운영 가이드 문서가 `docs/ops` 하위에 추가됨 | `docs/ops/oauth2-external-auth-operations-guide.md` |
+| docs 추적 예외에 신규 OAuth2 운영 가이드 추가 | Codex | P2 | `done` | `.gitignore`에서 신규 가이드 파일이 추적 가능 상태로 관리됨 | `.gitignore` |
+| 기존 OAuth 문서와 동기화 규칙 명시 | Codex | P2 | `done` | 신규 가이드에 `차단 해소 체크리스트`, `Vercel OAuth 부트스트랩 가이드`, 워크플로우 동기화 규칙이 명시됨 | `docs/ops/oauth2-external-auth-operations-guide.md` |
+
 ### Cycle 24: 피드 체류 개선 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|

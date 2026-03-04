@@ -48,3 +48,4 @@ docs/ops/*
 !docs/ops/agent-tool-governance.md
 !docs/ops/agent-prompt-template.md
 !docs/ops/에이전트 운영 가이드 (한국어).md
+!docs/ops/oauth2-external-auth-operations-guide.md
