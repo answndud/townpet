@@ -16,7 +16,7 @@ import { enforceRateLimit } from "@/server/rate-limit";
 const isProd = process.env.NODE_ENV === "production";
 const isSocialDevLoginEnabled =
   process.env.NODE_ENV !== "production" &&
-  process.env.ENABLE_SOCIAL_DEV_LOGIN === "1";
+  process.env.DISABLE_SOCIAL_DEV_LOGIN !== "1";
 
 type SocialDevProvider = "kakao" | "naver";
 
