@@ -35,6 +35,7 @@
     "docs:refresh": "node ../scripts/refresh-docs-index.mjs",
     "docs:refresh:check": "node ../scripts/refresh-docs-index.mjs --check",
     "agent:prompt": "tsx scripts/generate-agent-prompt.ts",
+    "growth:day1:handoff": "tsx scripts/generate-day1-growth-handoff.ts",
     "ops:check:health": "tsx scripts/check-health-endpoint.ts",
     "ops:check:sentry": "tsx scripts/check-sentry-ingestion.ts",
     "search:check:cases": "tsx scripts/check-search-cases.ts",

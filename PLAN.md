@@ -393,6 +393,13 @@
 | flaky 의존(UI 비밀번호 입력 필드 nth 인덱스) 제거 | Codex | P1 | `done` | 화면 DOM/반응형 상태에 따라 실패하던 `nth(1)` 선택자 의존을 제거하고, 비밀번호 기반 작성/수정/삭제 플로우가 안정적으로 통과 | `app/e2e/guest-post-management.spec.ts` |
 | guest 관리 E2E 단건 재검증 | Codex | P1 | `done` | `pnpm -C app test:e2e -- e2e/guest-post-management.spec.ts --project=chromium`가 PASS | Playwright local env |
 
+### Cycle 135: OAuth 재검증 + Day1 handoff 자동화 보강 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| `oauth-real-e2e` 최신 재실행 성공 증적 갱신 | Codex | P1 | `done` | GitHub Actions `oauth-real-e2e` 최신 run이 success로 확인되고 run URL이 실행 로그에 기록됨 | `.github/workflows/oauth-real-e2e.yml`, GitHub Actions |
+| Day1 채널/UTM/24h 점검표 자동 생성 스크립트 추가 | Codex | P1 | `done` | `pnpm -C app growth:day1:handoff`로 Day1 실행표(채널별 UTM, keep/fix/kill, 실행 체크리스트)를 stdout/file로 생성 가능 | `app/scripts/generate-day1-growth-handoff.ts`, `app/package.json` |
+| Day1 in-progress 항목 실행 준비 상태 고정 | Codex | P2 | `done` | Day1 게시/증적/UTM 로그를 즉시 입력 가능한 템플릿이 생성되어 수동 실행 항목을 바로 수행 가능 | `docs/business/*`, `PLAN.md`, `PROGRESS.md` |
+
 ### Cycle 24: 피드 체류 개선 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
