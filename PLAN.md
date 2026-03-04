@@ -407,6 +407,12 @@
 | docs 추적 예외에 신규 OAuth2 운영 가이드 추가 | Codex | P2 | `done` | `.gitignore`에서 신규 가이드 파일이 추적 가능 상태로 관리됨 | `.gitignore` |
 | 기존 OAuth 문서와 동기화 규칙 명시 | Codex | P2 | `done` | 신규 가이드에 `차단 해소 체크리스트`, `Vercel OAuth 부트스트랩 가이드`, 워크플로우 동기화 규칙이 명시됨 | `docs/ops/oauth2-external-auth-operations-guide.md` |
 
+### Cycle 137: OAuth 실계정 수동 증적 자동화 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| OAuth 수동 점검 리포트 템플릿 생성 스크립트 추가 | Codex | P1 | `done` | `pnpm -C app ops:oauth:manual-report`로 Kakao/Naver 상태/증적/후속조치를 포함한 markdown 리포트를 생성 가능 | `app/scripts/generate-oauth-manual-check-report.ts`, `app/package.json` |
+| OAuth 운영 가이드에 템플릿 생성 명령 반영 | Codex | P2 | `done` | 수동 점검 절차에서 PROGRESS 기록 직전에 템플릿 생성 명령을 실행하도록 명시됨 | `docs/ops/oauth2-external-auth-operations-guide.md` |
+
 ### Cycle 24: 피드 체류 개선 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|

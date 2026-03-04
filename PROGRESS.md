@@ -17,6 +17,23 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-04: Cycle 137 완료 (OAuth 실계정 수동 증적 자동화)
+- 완료 내용
+- OAuth 실계정 수동 점검 결과를 표준 형식으로 남길 수 있도록 리포트 생성 스크립트를 추가.
+- `ops:oauth:manual-report` 명령으로 Provider별 상태(`pending/pass/fail`), 자동 검증 run URL, 후속 조치를 포함한 markdown 템플릿을 생성하도록 구성.
+- OAuth 운영 가이드의 수동 점검 절차에 템플릿 생성 단계를 반영.
+- 검증 결과
+- `pnpm -C app lint scripts/generate-oauth-manual-check-report.ts` 통과.
+- `pnpm -C app ops:oauth:manual-report --date 2026-03-04 --run-url https://github.com/answndud/townpet2/actions/runs/22662648513 --out /tmp/oauth-manual-check.md` 통과.
+- 생성 파일(`/tmp/oauth-manual-check.md`)에 Provider 체크표 + `PROGRESS.md` 붙여넣기 스니펫 포함 확인.
+- 이슈/블로커
+- 외부 계정 의존 자체(실계정 로그인/동의)는 그대로이며, 이번 변경은 기록 누락/형식 편차를 줄이는 운영 자동화 범위.
+- 변경 파일(핵심)
+- `app/scripts/generate-oauth-manual-check-report.ts`
+- `app/package.json`
+- `docs/ops/oauth2-external-auth-operations-guide.md`
+- `PLAN.md`
+
 ### 2026-03-04: Cycle 136 완료 (외부 OAuth2 운영/팔로우업 가이드 정식화)
 - 완료 내용
 - Kakao/Naver 외부 OAuth2 로그인/회원가입 운영 가이드를 `docs/ops` 하위에 신규 작성.
