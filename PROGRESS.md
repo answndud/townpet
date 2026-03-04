@@ -17,6 +17,21 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-04: blocked 해소 워크플로우 재실행(실OAuth/배포 health/Sentry)
+- 실행 내용
+- `oauth-real-e2e` 워크플로우 재실행: `https://github.com/answndud/townpet2/actions/runs/22655645744`
+- `ops-smoke-checks` 워크플로우 재실행(`target_base_url=https://townpet2.vercel.app`, `verify_sentry=false`): `https://github.com/answndud/townpet2/actions/runs/22655651276`
+- `ops-smoke-checks` Sentry 포함 재검증(`verify_sentry=true`): `https://github.com/answndud/townpet2/actions/runs/22655717872`
+- 검증 결과
+- `oauth-real-e2e`: `success`
+- `ops-smoke-checks`(`verify_sentry=false`): `success`
+- 로컬 사전 검증: `OPS_BASE_URL=https://townpet2.vercel.app pnpm -C app ops:check:health` 통과
+- `ops-smoke-checks`(`verify_sentry=true`): `failure`
+- 실패 원인: `Validate Sentry secrets` 단계에서 저장소 시크릿 4종 누락
+- 누락 키: `SENTRY_DSN`, `SENTRY_AUTH_TOKEN`, `SENTRY_ORG_SLUG`, `SENTRY_PROJECT_SLUG`
+- 이슈/블로커
+- Sentry 실수신 검증은 시크릿 4종 설정 전까지 blocked 유지.
+
 ### 2026-03-04: 품질게이트 소셜 스모크 안정화 + 운영 체크리스트 경로 복구
 - 완료 내용
 - Playwright 설정에 `PLAYWRIGHT_REUSE_EXISTING_SERVER=1|0` 강제 오버라이드 옵션을 추가해 로컬/CI 재사용 전략을 명시적으로 제어할 수 있도록 정리.
