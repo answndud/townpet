@@ -17,6 +17,14 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-04: OAuth 실계정 리다이렉트 스모크 재확인 PASS
+- 실행 내용
+- `oauth-real-e2e` 워크플로우를 재실행해 카카오/네이버 OAuth 리다이렉트 경로를 점검.
+- 런: `https://github.com/answndud/townpet2/actions/runs/22658725857`
+- 검증 결과
+- 워크플로우 `success` 확인.
+- `Validate OAuth secrets`와 `Real OAuth redirect smoke` 단계 통과.
+
 ### 2026-03-04: Sentry 실수신 검증 재확인 PASS
 - 실행 내용
 - `ops-smoke-checks`를 동일 조건(`verify_sentry=true`)으로 재실행.
