@@ -17,6 +17,27 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-04: Cycle 138 완료 (닉네임 미설정 사용자 가드 + 프로필 규칙 UX 보강)
+- 완료 내용
+- 로그인 사용자 세션 닉네임이 비어 있으면 `/profile` 외 경로에서 `/profile`로 강제 리다이렉트되도록 미들웨어 가드를 추가.
+- 프로필 저장 시 `unstable_update`로 세션 닉네임을 즉시 동기화해, 닉네임 저장 후 재로그인 없이 가드가 해제되도록 보강.
+- 온보딩/프로필 폼에 “닉네임 중복 불가 + 설정/변경 후 30일 잠금” 경고 문구를 명시.
+- 확인 결과
+- 닉네임 중복 불가 규칙: `updateProfile`에서 `NICKNAME_TAKEN(409)`으로 이미 강제되고 테스트로 재확인.
+- 30일 변경 제한 규칙: `updateProfile`에서 `NICKNAME_CHANGE_RATE_LIMITED(429)`로 이미 강제되고 테스트로 재확인.
+- 검증 결과
+- `pnpm -C app lint middleware.ts src/middleware.test.ts src/server/actions/user.ts src/server/actions/user.test.ts src/components/profile/profile-info-form.tsx src/components/onboarding/onboarding-form.tsx src/app/profile/page.tsx src/server/queries/user.queries.ts src/server/services/user.service.test.ts` 통과.
+- `pnpm -C app test:unit -- src/middleware.test.ts src/server/actions/user.test.ts src/server/services/user.service.test.ts` 통과.
+- `pnpm -C app typecheck` 통과.
+- 이슈/블로커
+- 없음.
+- 변경 파일(핵심)
+- `app/middleware.ts`
+- `app/src/server/actions/user.ts`
+- `app/src/components/profile/profile-info-form.tsx`
+- `app/src/components/onboarding/onboarding-form.tsx`
+- `PLAN.md`
+
 ### 2026-03-04: Cycle 137 완료 (OAuth 실계정 수동 증적 자동화)
 - 완료 내용
 - OAuth 실계정 수동 점검 결과를 표준 형식으로 남길 수 있도록 리포트 생성 스크립트를 추가.

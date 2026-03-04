@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { unstable_update } from "@/lib/auth";
 import { requireCurrentUser } from "@/server/auth";
 import {
   setPrimaryNeighborhood,
@@ -18,7 +19,16 @@ type UserActionResult =
 export async function updateProfileAction(input: unknown): Promise<UserActionResult> {
   try {
     const user = await requireCurrentUser();
-    await updateProfile({ userId: user.id, input });
+    const updatedUser = await updateProfile({ userId: user.id, input });
+    try {
+      await unstable_update({
+        user: {
+          nickname: updatedUser.nickname,
+        },
+      });
+    } catch {
+      // Session refresh failure should not fail profile persistence.
+    }
     revalidatePath("/profile");
     revalidatePath("/onboarding");
     return { ok: true };

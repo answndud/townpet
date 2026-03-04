@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { isGuestPostDetailPath, resolveCspHeaders } from "../middleware";
+import {
+  isGuestPostDetailPath,
+  isNicknameRequiredProfilePath,
+  resolveCspHeaders,
+} from "../middleware";
 
 describe("resolveCspHeaders", () => {
   it("uses report-only strict CSP in production by default", () => {
@@ -53,5 +57,23 @@ describe("isGuestPostDetailPath", () => {
 
   it("returns false for non-id path", () => {
     expect(isGuestPostDetailPath("/posts/not-an-id")).toBe(false);
+  });
+});
+
+describe("isNicknameRequiredProfilePath", () => {
+  it("allows profile path", () => {
+    expect(isNicknameRequiredProfilePath("/profile")).toBe(true);
+  });
+
+  it("allows profile sub-path", () => {
+    expect(isNicknameRequiredProfilePath("/profile/security")).toBe(true);
+  });
+
+  it("allows api path", () => {
+    expect(isNicknameRequiredProfilePath("/api/auth/session")).toBe(true);
+  });
+
+  it("blocks feed path", () => {
+    expect(isNicknameRequiredProfilePath("/feed")).toBe(false);
   });
 });

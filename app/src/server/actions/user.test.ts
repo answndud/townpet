@@ -1,6 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
+import { unstable_update } from "@/lib/auth";
 import { setPrimaryNeighborhoodAction, updateProfileAction } from "@/server/actions/user";
 import { requireCurrentUser } from "@/server/auth";
 import { ServiceError } from "@/server/services/service-error";
@@ -15,6 +16,10 @@ vi.mock("@/server/services/user.service", () => ({
   setPrimaryNeighborhood: vi.fn(),
 }));
 
+vi.mock("@/lib/auth", () => ({
+  unstable_update: vi.fn(),
+}));
+
 vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
 }));
@@ -23,6 +28,7 @@ const mockRequireCurrentUser = vi.mocked(requireCurrentUser);
 const mockUpdateProfile = vi.mocked(updateProfile);
 const mockSetPrimaryNeighborhood = vi.mocked(setPrimaryNeighborhood);
 const mockRevalidatePath = vi.mocked(revalidatePath);
+const mockUnstableUpdate = vi.mocked(unstable_update);
 
 describe("user actions", () => {
   beforeEach(() => {
@@ -30,10 +36,13 @@ describe("user actions", () => {
     mockUpdateProfile.mockReset();
     mockSetPrimaryNeighborhood.mockReset();
     mockRevalidatePath.mockReset();
+    mockUnstableUpdate.mockReset();
   });
 
   it("updates profile and revalidates", async () => {
     mockRequireCurrentUser.mockResolvedValue({ id: "user-1" } as never);
+    mockUpdateProfile.mockResolvedValue({ nickname: "타운펫" } as never);
+    mockUnstableUpdate.mockResolvedValue(null);
 
     const result = await updateProfileAction({ nickname: "타운펫" });
 
@@ -44,6 +53,9 @@ describe("user actions", () => {
     });
     expect(mockRevalidatePath).toHaveBeenCalledWith("/profile");
     expect(mockRevalidatePath).toHaveBeenCalledWith("/onboarding");
+    expect(mockUnstableUpdate).toHaveBeenCalledWith({
+      user: { nickname: "타운펫" },
+    });
   });
 
   it("sets primary neighborhood and revalidates", async () => {

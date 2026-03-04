@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { getToken } from "next-auth/jwt";
 
 const CORS_METHODS = "GET,POST,PUT,PATCH,DELETE,OPTIONS";
 const CORS_HEADERS = "Content-Type, Authorization, X-Requested-With, X-Request-Id";
 const CSP_REPORT_ENDPOINT = "/api/security/csp-report";
 const POST_ID_PATTERN = /^c[a-z0-9]{24}$/;
+const SESSION_COOKIE_NAME = "townpet.session-token";
 
 function buildCspScriptSrc(nonce: string, isStrict: boolean) {
   const strictSources = [`'self'`, `'nonce-${nonce}'`, "https:"];
@@ -108,6 +110,18 @@ export function isGuestPostDetailPath(pathname: string) {
   return segments.length === 2 || (segments.length === 3 && segments[2] === "guest");
 }
 
+export function isNicknameRequiredProfilePath(pathname: string) {
+  if (pathname === "/profile" || pathname.startsWith("/profile/")) {
+    return true;
+  }
+
+  if (pathname.startsWith("/api")) {
+    return true;
+  }
+
+  return false;
+}
+
 function getAllowedCorsOrigins() {
   const fromCsv = (process.env.CORS_ORIGIN ?? "")
     .split(",")
@@ -177,7 +191,24 @@ function appendVary(headers: Headers, value: string) {
   headers.set("vary", `${existing}, ${value}`);
 }
 
-export function middleware(request: NextRequest) {
+async function resolveSessionToken(request: NextRequest) {
+  const secret = process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET;
+  if (!secret) {
+    return null;
+  }
+
+  try {
+    return await getToken({
+      req: request,
+      secret,
+      cookieName: SESSION_COOKIE_NAME,
+    });
+  } catch {
+    return null;
+  }
+}
+
+export async function middleware(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
   const requestId = requestHeaders.get("x-request-id") ?? crypto.randomUUID();
   const cspNonce = crypto.randomUUID().replaceAll("-", "");
@@ -199,8 +230,26 @@ export function middleware(request: NextRequest) {
     }
   }
 
+  const sessionToken = await resolveSessionToken(request);
+  const nickname =
+    typeof sessionToken?.nickname === "string" ? sessionToken.nickname.trim() : "";
+  if (
+    request.method === "GET" &&
+    sessionToken &&
+    !nickname &&
+    !isNicknameRequiredProfilePath(request.nextUrl.pathname)
+  ) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = "/profile";
+    redirectUrl.search = "";
+    return NextResponse.redirect(redirectUrl, {
+      headers: responseHeaders,
+    });
+  }
+
   const isGuest =
-    !request.cookies.get("townpet.session-token") &&
+    !sessionToken &&
+    !request.cookies.get(SESSION_COOKIE_NAME) &&
     !request.cookies.get("next-auth.session-token") &&
     !request.cookies.get("__Secure-next-auth.session-token");
   if (isGuest && request.method === "GET") {

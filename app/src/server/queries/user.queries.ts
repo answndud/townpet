@@ -126,6 +126,7 @@ export async function getUserWithNeighborhoods(id: string) {
     email: true,
     name: true,
     nickname: true,
+    nicknameUpdatedAt: true,
     bio: true,
     image: true,
     createdAt: true,

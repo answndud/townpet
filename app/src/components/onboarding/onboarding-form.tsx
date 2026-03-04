@@ -220,6 +220,9 @@ export function OnboardingForm({
           <p className="text-xs uppercase tracking-[0.24em] text-[#4e6f9f]">프로필</p>
           <h2 className="text-xl font-semibold text-[#153a6a]">닉네임 설정</h2>
           <p className="text-sm text-[#4f678d]">동네 활동에 표시될 닉네임을 설정해 주세요.</p>
+          <p className="text-xs text-[#5a7398]">
+            닉네임은 중복 사용할 수 없고, 설정/변경 후 30일 동안 다시 변경할 수 없습니다.
+          </p>
         </div>
         <form onSubmit={handleProfile} className="mt-4 flex flex-col gap-3">
           <label className="flex flex-col gap-2 text-sm font-medium text-[#355988]">

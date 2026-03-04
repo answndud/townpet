@@ -47,6 +47,9 @@ export function ProfileInfoForm({
             onChange={(event) => setNickname(event.target.value)}
             maxLength={20}
           />
+          <span className="text-[11px] text-[#5a7398]">
+            닉네임은 설정/변경 후 30일 동안 다시 변경할 수 없습니다.
+          </span>
         </label>
         <label className="flex flex-col gap-2 text-sm font-medium text-[#355988]">
           소개

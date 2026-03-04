@@ -413,6 +413,13 @@
 | OAuth 수동 점검 리포트 템플릿 생성 스크립트 추가 | Codex | P1 | `done` | `pnpm -C app ops:oauth:manual-report`로 Kakao/Naver 상태/증적/후속조치를 포함한 markdown 리포트를 생성 가능 | `app/scripts/generate-oauth-manual-check-report.ts`, `app/package.json` |
 | OAuth 운영 가이드에 템플릿 생성 명령 반영 | Codex | P2 | `done` | 수동 점검 절차에서 PROGRESS 기록 직전에 템플릿 생성 명령을 실행하도록 명시됨 | `docs/ops/oauth2-external-auth-operations-guide.md` |
 
+### Cycle 138: 닉네임 미설정 사용자 가드 + 프로필 규칙 UX 보강 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 닉네임 미설정 로그인 사용자 `/profile` 강제 가드 | Codex | P0 | `done` | 로그인 사용자의 세션 닉네임이 비어 있으면 `/profile` 외 경로 접근 시 `/profile`로 리다이렉트되어 피드 진입이 차단됨 | `app/middleware.ts`, `app/src/middleware.test.ts` |
+| 프로필 저장 시 세션 닉네임 즉시 동기화 | Codex | P1 | `done` | 닉네임 저장 직후 `unstable_update`로 세션이 갱신되어 재로그인 없이 가드 해제가 가능함 | `app/src/lib/auth.ts`, `app/src/server/actions/user.ts`, `app/src/server/actions/user.test.ts` |
+| 닉네임 중복/30일 변경 제한 UX 경고 보강 | Codex | P1 | `done` | 온보딩/프로필 폼에 “중복 불가 + 30일 변경 제한” 경고가 노출되고, 서비스 테스트로 중복/쿨다운 실패 경로가 검증됨 | `app/src/components/onboarding/onboarding-form.tsx`, `app/src/components/profile/profile-info-form.tsx`, `app/src/server/services/user.service.test.ts` |
+
 ### Cycle 24: 피드 체류 개선 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
