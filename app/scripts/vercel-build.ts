@@ -220,17 +220,22 @@ async function repairNotificationArchiveSchema() {
   }
 }
 
+async function runPrismaGenerate() {
+  const generateResult = await runCommand("pnpm", ["prisma", "generate"]);
+  if (generateResult.code !== 0) {
+    throw new Error("[build:vercel] prisma generate failed.");
+  }
+}
+
 async function main() {
   await runPrismaDeploy();
   await repairCommunityBoardSchema();
   await repairNotificationArchiveSchema();
 
+  // Vercel dependency cache can keep an outdated Prisma Client.
+  // Generate before running any TS script that instantiates PrismaClient.
+  await runPrismaGenerate();
   await runNeighborhoodSync();
-
-  const generateResult = await runCommand("pnpm", ["prisma", "generate"]);
-  if (generateResult.code !== 0) {
-    throw new Error("[build:vercel] prisma generate failed.");
-  }
 
   const buildResult = await runCommand("pnpm", ["next", "build"]);
   if (buildResult.code !== 0) {
