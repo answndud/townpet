@@ -230,9 +230,18 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  const sessionToken = await resolveSessionToken(request);
-  const nickname =
-    typeof sessionToken?.nickname === "string" ? sessionToken.nickname.trim() : "";
+  const hasSessionCookie =
+    Boolean(request.cookies.get(SESSION_COOKIE_NAME)) ||
+    Boolean(request.cookies.get("next-auth.session-token")) ||
+    Boolean(request.cookies.get("__Secure-next-auth.session-token"));
+  const shouldResolveSessionToken =
+    request.method === "GET" &&
+    hasSessionCookie &&
+    !isNicknameRequiredProfilePath(request.nextUrl.pathname);
+  const sessionToken = shouldResolveSessionToken
+    ? await resolveSessionToken(request)
+    : null;
+  const nickname = typeof sessionToken?.nickname === "string" ? sessionToken.nickname.trim() : "";
   if (
     request.method === "GET" &&
     sessionToken &&
@@ -249,9 +258,7 @@ export async function middleware(request: NextRequest) {
 
   const isGuest =
     !sessionToken &&
-    !request.cookies.get(SESSION_COOKIE_NAME) &&
-    !request.cookies.get("next-auth.session-token") &&
-    !request.cookies.get("__Secure-next-auth.session-token");
+    !hasSessionCookie;
   if (isGuest && request.method === "GET") {
     if (request.nextUrl.pathname === "/feed") {
       const scope = request.nextUrl.searchParams.get("scope");

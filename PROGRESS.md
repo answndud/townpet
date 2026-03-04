@@ -17,6 +17,22 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-04: Cycle 141 완료 (닉네임 가드 체감 성능 개선)
+- 완료 내용
+- 미들웨어에서 세션 쿠키가 없는 요청과 `/profile`/`/api` 경로는 `getToken` 복호화를 건너뛰도록 조건을 최적화.
+- 프로필 페이지의 "총 작성글" 계산을 `listUserPosts(findMany)`에서 `countUserPosts(count)`로 전환해 DB 읽기량을 축소.
+- 닉네임 미설정 상태에서는 닉네임 설정에 불필요한 관계관리/펫/동네 설정 섹션의 조회를 생략하도록 분기.
+- 검증 결과
+- `pnpm -C app lint middleware.ts src/app/profile/page.tsx src/server/queries/post.queries.ts` 통과.
+- `pnpm -C app typecheck` 통과.
+- 이슈/블로커
+- 없음.
+- 변경 파일(핵심)
+- `app/middleware.ts`
+- `app/src/app/profile/page.tsx`
+- `app/src/server/queries/post.queries.ts`
+- `PLAN.md`
+
 ### 2026-03-04: Cycle 140 완료 (프로필 저장 후 세션 닉네임 동기화 정합 보정)
 - 완료 내용
 - 프로필 저장 후 `unstable_update`가 호출되어도 JWT의 `nickname` 클레임이 즉시 갱신되지 않던 경로를 수정.
