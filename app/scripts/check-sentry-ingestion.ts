@@ -2,9 +2,22 @@ import "dotenv/config"
 import { randomUUID } from "crypto"
 
 type SentryConfig = {
-  host: string
+  ingestHost: string
+  apiHost: string
   projectId: string
   publicKey: string
+}
+
+function resolveApiHostFromIngestHost(ingestHost: string) {
+  const hostname = new URL(ingestHost).hostname.toLowerCase()
+
+  // Sentry SaaS DSN hosts look like `o123456.ingest.sentry.io`.
+  // Event lookup API is served from `sentry.io`.
+  if (hostname.includes(".ingest.") && hostname.endsWith(".sentry.io")) {
+    return "https://sentry.io"
+  }
+
+  return ingestHost
 }
 
 function parseDsn(dsn: string): SentryConfig {
@@ -17,7 +30,8 @@ function parseDsn(dsn: string): SentryConfig {
   }
 
   return {
-    host: parsed.origin,
+    ingestHost: parsed.origin,
+    apiHost: resolveApiHostFromIngestHost(parsed.origin),
     projectId,
     publicKey,
   }
@@ -37,7 +51,7 @@ function sleep(ms: number) {
 
 async function sendEvent(config: SentryConfig, marker: string, environment: string) {
   const eventId = randomUUID().replace(/-/g, "")
-  const url = `${config.host}/api/${config.projectId}/store/?sentry_version=7&sentry_key=${config.publicKey}`
+  const url = `${config.ingestHost}/api/${config.projectId}/store/?sentry_version=7&sentry_key=${config.publicKey}`
 
   const response = await fetch(url, {
     method: "POST",
@@ -121,7 +135,7 @@ async function main() {
 
   const eventId = await sendEvent(config, marker, environment)
   await waitForEvent(
-    config.host,
+    config.apiHost,
     orgSlug,
     projectSlug,
     eventId,
