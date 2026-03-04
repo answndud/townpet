@@ -349,6 +349,11 @@
 |---|---|---|---|---|---|
 | `build:vercel` 동네 동기화 실패를 기본 non-fatal로 완화 | Codex | P1 | `done` | `db:sync:neighborhoods` 실패 시 기본은 경고 후 빌드 계속 진행하고, `NEIGHBORHOOD_SYNC_STRICT=1`일 때만 기존처럼 배포 실패 | `app/scripts/vercel-build.ts` |
 
+### Cycle 128: Vercel Prisma Client 초기화 오류 방지 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| `prisma generate` 실행 순서 조정(`db:sync:neighborhoods` 이전) | Codex | P0 | `done` | Vercel 의존성 캐시 환경에서도 `sync-neighborhoods.ts` 실행 전에 Prisma Client가 생성되어 `Prisma has detected that this project was built on Vercel` 초기화 오류가 재발하지 않음 | `app/scripts/vercel-build.ts` |
+
 ### Cycle 24: 피드 체류 개선 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|

@@ -17,6 +17,20 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-04: Vercel Prisma Client 초기화 오류 대응(`prisma generate` 순서 조정)
+- 완료 내용
+- Vercel 배포 로그의 `Prisma has detected that this project was built on Vercel` 초기화 오류를 반영해 `build:vercel` 순서를 수정.
+- `db:sync:neighborhoods` 실행 전 `prisma generate`를 선행 실행하도록 변경해 `sync-neighborhoods.ts`의 `PrismaClient` 인스턴스 생성 시점에 최신 클라이언트가 보장되게 조정.
+- 기존 `runNeighborhoodSync`의 non-fatal 완화(`NEIGHBORHOOD_SYNC_STRICT=1` opt-in)는 유지.
+- 검증 결과
+- `pnpm -C app lint` 통과.
+- `pnpm -C app typecheck` 통과.
+- 변경 파일(핵심)
+- `app/scripts/vercel-build.ts`
+- `PLAN.md`
+- 이슈/블로커
+- 실제 배포 재검증은 Vercel 재배포 결과 확인 필요.
+
 ### 2026-03-04: Vercel 배포 실패 대응(`build:vercel` neighborhood sync non-fatal)
 - 완료 내용
 - Vercel 빌드에서 `db:sync:neighborhoods` 단계 실패 시 배포 전체가 중단되던 경로를 완화.
