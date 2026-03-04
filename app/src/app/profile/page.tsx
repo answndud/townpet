@@ -99,7 +99,10 @@ export default async function ProfilePage() {
           </div>
         </section>
 
-        <ProfileInfoForm initialNickname={user.nickname} initialBio={user.bio} />
+        <ProfileInfoForm
+          initialNickname={user.nickname}
+          initialBio={user.bio}
+        />
         <NeighborhoodPreferenceForm
           selectedNeighborhoods={user.neighborhoods.map((item) => item.neighborhood)}
           primaryNeighborhoodId={primaryNeighborhood?.neighborhood.id ?? null}

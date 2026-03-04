@@ -93,4 +93,24 @@ describe("user service", () => {
       }),
     );
   });
+
+  it("blocks duplicate nickname", async () => {
+    mockPrisma.user.findUnique
+      .mockResolvedValueOnce({
+        id: "user-1",
+        nickname: "old-name",
+        nicknameUpdatedAt: null,
+      })
+      .mockResolvedValueOnce({ id: "user-2" });
+
+    await expect(
+      updateProfile({
+        userId: "user-1",
+        input: { nickname: "taken-name", bio: "hello" },
+      }),
+    ).rejects.toMatchObject({
+      code: "NICKNAME_TAKEN",
+      status: 409,
+    });
+  });
 });
