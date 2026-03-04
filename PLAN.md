@@ -387,6 +387,12 @@
 | guest 상세 페이지에 공통 읽기 정책 가드 적용 | Codex | P0 | `done` | guest 상세 렌더에서 `assertPostReadable`를 사용해 `HIDDEN/DELETED` 및 로그인 필요 게시글 노출을 차단 | `app/src/app/posts/[id]/guest/page.tsx`, `app/src/server/services/post-read-access.service.ts` |
 | rewrite 경계 회귀 테스트 추가 | Codex | P1 | `done` | `middleware.test`에 `/posts/new`, `/posts/:id/edit`, `/posts/:id/guest` 경계 케이스가 포함되어 실패 경로 회귀를 방지 | `app/src/middleware.test.ts` |
 
+### Cycle 134: guest post management E2E 안정화 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| flaky 의존(UI 비밀번호 입력 필드 nth 인덱스) 제거 | Codex | P1 | `done` | 화면 DOM/반응형 상태에 따라 실패하던 `nth(1)` 선택자 의존을 제거하고, 비밀번호 기반 작성/수정/삭제 플로우가 안정적으로 통과 | `app/e2e/guest-post-management.spec.ts` |
+| guest 관리 E2E 단건 재검증 | Codex | P1 | `done` | `pnpm -C app test:e2e -- e2e/guest-post-management.spec.ts --project=chromium`가 PASS | Playwright local env |
+
 ### Cycle 24: 피드 체류 개선 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|

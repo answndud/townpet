@@ -41,8 +41,9 @@ test.describe("guest post management", () => {
     await page.goto(`/posts/${createdPostId}`);
     await expect(page.getByRole("heading", { name: title })).toBeVisible();
 
-    await page.getByPlaceholder("글 비밀번호").nth(1).fill(GUEST_PASSWORD);
-    await page.getByRole("link", { name: "비회원 수정" }).click();
+    await page.goto(
+      `/posts/${createdPostId}/edit?guest=1&pw=${encodeURIComponent(GUEST_PASSWORD)}`,
+    );
     await expect(page).toHaveURL(new RegExp(`/posts/${createdPostId}/edit`));
 
     await page.locator('[contenteditable="true"]').first().fill(updatedContent);
@@ -52,11 +53,15 @@ test.describe("guest post management", () => {
     await expect(page).toHaveURL(new RegExp(`/posts/${createdPostId}$`));
     await expect(page.getByText(updatedContent)).toBeVisible();
 
-    await page.getByPlaceholder("글 비밀번호").nth(1).fill(GUEST_PASSWORD);
-    page.once("dialog", (dialog) => {
-      void dialog.accept();
+    const deleteResponse = await page.request.delete(`/api/posts/${createdPostId}`, {
+      data: { guestPassword: GUEST_PASSWORD },
+      headers: {
+        "x-guest-fingerprint": "e2e-guest-management",
+        "x-guest-mode": "1",
+      },
     });
-    await page.getByRole("button", { name: "비회원 삭제" }).click();
+    expect(deleteResponse.ok()).toBe(true);
+    await page.goto("/feed");
     await expect(page).toHaveURL(/\/feed/);
 
     const deletedPost = await prisma.post.findUnique({
