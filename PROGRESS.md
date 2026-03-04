@@ -17,6 +17,55 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-04: Cycle 132 완료 (plan-coordinator 연계 운영 루틴 고정)
+- 완료 내용
+- agent-only 운영 가이드에 `agent:prompt -> @plan-coordinator -> 실행 -> 검증 -> 동기화` 순서를 추가해 실행 루틴을 고정.
+- 프롬프트 템플릿 문서에 plan-coordinator 연계 절차를 명시해 문서 1개만 읽어도 동일 루틴을 재현 가능하게 정리.
+- 검증 결과
+- 문서 경로 참조 확인: 운영 가이드/템플릿 모두 `agent:prompt` 명령과 `@plan-coordinator` 단계 포함.
+- `PLAN.md` Cycle 132 작업 2개 `done` 동기화.
+- 이슈/블로커
+- 없음.
+- 변경 파일(핵심)
+- `docs/ops/에이전트 운영 가이드 (한국어).md`
+- `docs/ops/agent-prompt-template.md`
+- `PLAN.md`
+
+### 2026-03-04: Cycle 131 완료 (Agent Prompt 자동화 + docs 추적 보정)
+- 완료 내용
+- `.gitignore`의 `docs` 무시 규칙을 최소 보정해 핵심 운영 문서 3종만 Git 추적 예외로 허용.
+- 표준 프롬프트를 자동 생성하는 스크립트(`agent:prompt`)를 추가해 목표/범위/위험도 기반 템플릿 생성 경로를 고정.
+- 프롬프트 템플릿 문서에 CLI 사용 예시를 추가.
+- 검증 결과
+- `pnpm -C app agent:prompt --goal "Unify report auto-hide policy" --mode policy --scope "prisma,zod,service,api,tests"` 실행 성공(stdout 생성 확인).
+- `pnpm -C app agent:prompt --goal "Cache invalidation review" --mode performance --out /tmp/agent-prompt-sample.txt` 실행 성공(file 생성 확인).
+- `PLAN.md` Cycle 131 작업 3개 `done` 동기화.
+- 이슈/블로커
+- 없음.
+- 변경 파일(핵심)
+- `.gitignore`
+- `app/scripts/generate-agent-prompt.ts`
+- `app/package.json`
+- `docs/ops/agent-prompt-template.md`
+- `PLAN.md`
+
+### 2026-03-04: Cycle 130 완료 (Agent Tool Governance + Prompt Template 적용)
+- 완료 내용
+- Claude Code Picks 인사이트를 TownPet 운영 규칙에 맞게 재설계해, 도구 선택 거버넌스 문서를 신규 작성.
+- 10개 카테고리(ORM/Auth/Validation/Cache/Real-time/Observability/Jobs/Flags/UI/Test)에 대해 기본값/허용 대안/금지선/재검토 트리거를 고정.
+- 에이전트 작업 지시 템플릿을 공통 헤더/입력 포맷/출력 계약/금지 프롬프트 패턴 형태로 표준화.
+- 기존 agent-only 운영 가이드에 신규 표준 문서 참조 링크를 추가.
+- 검증 결과
+- `PLAN.md`에 Cycle 130을 추가하고 작업 3개 상태를 `done`으로 동기화.
+- 문서 간 참조 무결성 확인: 운영 가이드 -> 거버넌스/템플릿 문서 경로 연결 확인.
+- 이슈/블로커
+- 없음.
+- 변경 파일(핵심)
+- `docs/ops/agent-tool-governance.md`
+- `docs/ops/agent-prompt-template.md`
+- `docs/ops/에이전트 운영 가이드 (한국어).md`
+- `PLAN.md`
+
 ### 2026-03-04: ops-smoke-checks 주간 자동 실행 설정 + 동작 확인
 - 완료 내용
 - `ops-smoke-checks` 워크플로우에 주간 스케줄(`매주 월요일 UTC 00:15`)을 추가.

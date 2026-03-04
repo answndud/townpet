@@ -41,3 +41,10 @@ PROGRESS.md
 # private business planning notes (local-only)
 business/
 docs
+!docs/
+docs/*
+!docs/ops/
+docs/ops/*
+!docs/ops/agent-tool-governance.md
+!docs/ops/agent-prompt-template.md
+!docs/ops/에이전트 운영 가이드 (한국어).md
