@@ -27,7 +27,7 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
     naverEnabledByEnv || naverEnabledByDevFlag || naverEnabledByLocalPreview;
   const socialDevEnabled =
     isLocalPreview &&
-    process.env.ENABLE_SOCIAL_DEV_LOGIN === "1";
+    process.env.DISABLE_SOCIAL_DEV_LOGIN !== "1";
 
   return (
     <AuthPageLayout

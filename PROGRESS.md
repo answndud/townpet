@@ -17,6 +17,26 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-04: 품질게이트 소셜 스모크 안정화 + 운영 체크리스트 경로 복구
+- 완료 내용
+- Playwright 설정에 `PLAYWRIGHT_REUSE_EXISTING_SERVER=1|0` 강제 오버라이드 옵션을 추가해 로컬/CI 재사용 전략을 명시적으로 제어할 수 있도록 정리.
+- 개발/테스트 환경에서 `social-dev` provider를 기본 활성화(`DISABLE_SOCIAL_DEV_LOGIN=1`로 opt-out)하여, 기존 `next dev` 재사용 상황에서도 소셜 온보딩 스모크가 `/api/auth/error?error=Configuration`으로 흔들리지 않도록 보강.
+- 운영 문서 링크 정합을 위해 GUIDE의 blocked/주간 루틴 경로를 실제 추적 문서(`docs/ops/차단 해소 체크리스트.md`, `app/README.md`)로 정정하고 품질게이트 섹션 설명을 현재 동작에 맞게 업데이트.
+- 검증 결과
+- `pnpm -C app lint` 통과.
+- `pnpm -C app typecheck` 통과.
+- `pnpm -C app test:e2e:smoke` 통과(7 passed).
+- `pnpm -C app quality:gate` 통과.
+- 변경 파일(핵심)
+- `app/playwright.config.ts`
+- `app/src/lib/auth.ts`
+- `app/src/app/login/page.tsx`
+- `app/src/app/register/page.tsx`
+- `docs/GUIDE.md`
+- `PLAN.md`
+- 이슈/블로커
+- 없음.
+
 ### 2026-03-04: 품질게이트 E2E 안정화 + SEC-002 CSP strict 강제 검증 완료
 - 완료 내용
 - `social-onboarding-flow`/`global-first-neighborhood-flow` E2E의 체크박스 선택자를 전역 `input[type="checkbox"]` 의존에서 테스트 전용 선택자로 전환해 hidden 체크박스 충돌을 제거.

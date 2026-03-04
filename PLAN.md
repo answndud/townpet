@@ -326,6 +326,12 @@
 | 댓글 작성 서비스 방어심화(게스트 ban + LOCAL 제한) | Codex | P0 | `done` | `createComment`가 guest 작성 시 ban 상태를 확인하고, 비활성 글(`HIDDEN/DELETED`) 및 LOCAL 범위 권한 불일치 댓글 작성을 차단 | `app/src/server/services/comment.service.ts` |
 | 접근제어 회귀 테스트 보강 | Codex | P1 | `done` | 공통 읽기 가드 단위 테스트와 posts/comments 라우트 계약 테스트에 실패 경로가 추가되어 회귀를 고정 | `app/src/server/services/post-read-access.service.test.ts`, `app/src/app/api/posts/[id]/route.test.ts`, `app/src/app/api/posts/[id]/comments/route.test.ts`, `app/src/server/services/comment.service.test.ts` |
 
+### Cycle 126: 품질게이트 소셜 스모크 안정화 + 운영 문서 경로 복구 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| Playwright 재사용 전략 제어 + non-prod 소셜 dev 로그인 기본화 | Codex | P1 | `done` | `PLAYWRIGHT_REUSE_EXISTING_SERVER=1|0` 오버라이드가 config에 반영되고, non-prod에서 `social-dev` provider가 기본 활성화되어 기존 dev 서버 재사용 시에도 소셜 온보딩 스모크가 `Configuration` 오류 없이 통과 | `app/playwright.config.ts`, `app/src/lib/auth.ts`, `app/src/app/login/page.tsx`, `app/src/app/register/page.tsx` |
+| 운영 체크리스트 경로 정합 복구 | Codex | P2 | `done` | GUIDE의 blocked/주간 루틴 링크가 실제 추적 문서 경로(`docs/ops/차단 해소 체크리스트.md`, `app/README.md`)를 가리키도록 정리됨 | `docs/GUIDE.md`, `docs/ops/차단 해소 체크리스트.md`, `app/README.md` |
+
 ### Cycle 67: 보안 하드닝 트랙 운영 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|

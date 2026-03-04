@@ -3,6 +3,13 @@ import { defineConfig, devices } from "@playwright/test";
 const port = Number(process.env.PLAYWRIGHT_BASE_PORT ?? 3000);
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? `http://localhost:${port}`;
 const skipWebServer = process.env.PLAYWRIGHT_SKIP_WEBSERVER === "1";
+const reuseExistingServerOverride = process.env.PLAYWRIGHT_REUSE_EXISTING_SERVER;
+const reuseExistingServer =
+  reuseExistingServerOverride === "1"
+    ? true
+    : reuseExistingServerOverride === "0"
+      ? false
+      : !process.env.CI;
 const webServerCommand =
   process.env.PLAYWRIGHT_WEB_SERVER_COMMAND ??
   `./node_modules/.bin/next dev --port ${port}`;
@@ -22,7 +29,7 @@ export default defineConfig({
     : {
         command: webServerCommand,
         url: baseURL,
-        reuseExistingServer: !process.env.CI,
+        reuseExistingServer,
         timeout: 120_000,
         env: {
           ...process.env,
