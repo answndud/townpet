@@ -32,6 +32,7 @@ async function resetOnboardingState(email: string) {
     where: { email },
     update: {
       nickname: null,
+      nicknameUpdatedAt: null,
       bio: null,
       emailVerified: new Date(),
     },
@@ -97,7 +98,9 @@ for (const scenario of scenarios) {
         });
       }
 
-      const firstCheckbox = page.locator('input[type="checkbox"]').first();
+      const firstCheckbox = page
+        .locator('[data-testid^="onboarding-neighborhood-checkbox-"]')
+        .first();
       await expect(firstCheckbox).toBeVisible();
       await firstCheckbox.check();
 

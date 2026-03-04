@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { PostDetailClient } from "@/components/posts/post-detail-client";
+import { getCspNonce } from "@/lib/csp-nonce";
 import { getCurrentUser } from "@/server/auth";
 
 export const dynamic = "force-dynamic";
@@ -20,5 +21,6 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
   if (!user) {
     redirect(`/posts/${postId}/guest`);
   }
-  return <PostDetailClient postId={postId} />;
+  const cspNonce = await getCspNonce();
+  return <PostDetailClient postId={postId} cspNonce={cspNonce} />;
 }

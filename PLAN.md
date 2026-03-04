@@ -319,14 +319,21 @@
 |---|---|---|---|---|---|
 | 모바일 내비게이션에서 게시판 목록을 접기 없이 상시 노출해 FMKorea 스타일의 즉시 탐색성을 강화 | Codex | P1 | `done` | 모바일 `게시판 빠른 이동`이 `details` 접기 없이 칩형 목록으로 항상 보이고, 탭 1회 추가 없이 게시판 전환 가능 | `app/src/components/navigation/feed-hover-menu.tsx` |
 
-### Cycle 67: 보안 하드닝 트랙 운영
+### Cycle 125: 게시글/댓글 읽기 접근제어 정합성 보강 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 상세/콘텐츠/통계/댓글 API 공통 읽기 권한 가드 적용 | Codex | P0 | `done` | `/api/posts/[id]/detail|stats|content`, `/api/posts/[id]/comments`가 `ACTIVE` 상태와 LOCAL 동네 일치 규칙을 동일하게 강제하고 위반 시 401/403/404를 일관 반환 | `app/src/server/services/post-read-access.service.ts`, `app/src/app/api/posts/[id]/*` |
+| 댓글 작성 서비스 방어심화(게스트 ban + LOCAL 제한) | Codex | P0 | `done` | `createComment`가 guest 작성 시 ban 상태를 확인하고, 비활성 글(`HIDDEN/DELETED`) 및 LOCAL 범위 권한 불일치 댓글 작성을 차단 | `app/src/server/services/comment.service.ts` |
+| 접근제어 회귀 테스트 보강 | Codex | P1 | `done` | 공통 읽기 가드 단위 테스트와 posts/comments 라우트 계약 테스트에 실패 경로가 추가되어 회귀를 고정 | `app/src/server/services/post-read-access.service.test.ts`, `app/src/app/api/posts/[id]/route.test.ts`, `app/src/app/api/posts/[id]/comments/route.test.ts`, `app/src/server/services/comment.service.test.ts` |
+
+### Cycle 67: 보안 하드닝 트랙 운영 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
 | 보안 후속조치 전용 트래킹 파일 운영(PLAN/PROGRESS 연동) | Codex | P1 | `done` | `docs/security/` 하위에서 보안 백로그/진행/리스크/의사결정이 추적되고, 루트 `PLAN/PROGRESS`에 링크/상태가 동기화됨 | `docs/security/SECURITY_*.md`, `AGENTS.md` |
 | SEC-001 `/api/health` 공개 응답 민감정보 최소화 + 내부 토큰 게이트 | Codex | P1 | `done` | 공개 응답에서 env/db/rate-limit 상세가 숨겨지고 내부 토큰 인증 시에만 상세 진단이 노출되며 계약 테스트가 통과 | `app/src/app/api/health/route.ts`, `app/src/app/api/health/route.test.ts`, `app/src/lib/env.ts` |
 | SEC-005 신뢰 프록시 기준 client IP 파싱 정책화 | Codex | P1 | `done` | `getClientIp`가 프록시 신뢰 체인 기준으로 동작하고 관련 계약 테스트가 추가됨 | `app/src/server/request-context.ts`, 인프라 헤더 정책 |
 | SEC-004 로그인 락아웃 에스컬레이션(account+IP) | Codex | P1 | `done` | credentials 로그인에 `ip/account+ip/account` 다중 윈도우 제한이 적용되고 키가 이메일 해시 기반으로 생성됨 | `app/src/lib/auth.ts`, `app/src/server/auth-login-rate-limit.ts` |
-| SEC-002 CSP 하드닝(`unsafe-inline` 제거 경로) | Codex | P1 | `in_progress` | `Content-Security-Policy-Report-Only` 기반 위반 수집 후 enforce 정책 적용과 회귀 점검 완료 | `app/middleware.ts`, 운영 모니터링 |
+| SEC-002 CSP 하드닝(`unsafe-inline` 제거 경로) | Codex | P1 | `done` | `CSP_ENFORCE_STRICT=1` 강제 모드에서 nonce 기반 script 허용이 유지되고 `quality:gate`/`build` 회귀가 통과 | `app/middleware.ts`, `app/src/lib/csp-nonce.ts`, `app/src/app/posts/[id]/guest/page.tsx` |
 | SEC-003 비밀번호 정책 강화 + 유출 비밀번호 차단 | Codex | P1 | `done` | 회원가입/비밀번호 설정/리셋에서 강화 정책과 유출 비밀번호 deny 경로가 통합되고 테스트가 통과 | `app/src/lib/validations/auth.ts`, `app/src/server/services/auth.service.ts` |
 | SEC-007 인증 응답 enumeration 완화 + 회귀테스트 | Codex | P1 | `done` | 계정 존재 유추 가능한 메시지/코드를 완화하고 계약 테스트로 고정 | `app/src/server/services/auth.service.ts`, `app/src/app/api/auth/*` |
 | SEC-006 비회원 식별 해시 HMAC(pepper) 전환 | Codex | P1 | `done` | guest identity hash가 pepper 기반 HMAC으로 전환되고 legacy hash와 호환 경로가 유지됨 | `app/src/server/services/guest-safety.service.ts`, 시크릿 설정 |

@@ -3,27 +3,26 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { DELETE, GET, PATCH } from "@/app/api/posts/[id]/route";
 import { getCurrentUser } from "@/server/auth";
-import { canGuestReadPost } from "@/lib/post-access";
 import { monitorUnhandledError } from "@/server/error-monitor";
 import { getPostById } from "@/server/queries/post.queries";
-import {
-  getGuestPostPolicy,
-  getGuestReadLoginRequiredPostTypes,
-} from "@/server/queries/policy.queries";
+import { getGuestPostPolicy } from "@/server/queries/policy.queries";
 import { getClientIp } from "@/server/request-context";
 import { enforceRateLimit } from "@/server/rate-limit";
+import { assertPostReadable } from "@/server/services/post-read-access.service";
+import { ServiceError } from "@/server/services/service-error";
 import { deleteGuestPost, updateGuestPost } from "@/server/services/post.service";
 
 vi.mock("@/server/auth", () => ({ getCurrentUser: vi.fn() }));
-vi.mock("@/lib/post-access", () => ({ canGuestReadPost: vi.fn() }));
 vi.mock("@/server/error-monitor", () => ({ monitorUnhandledError: vi.fn() }));
 vi.mock("@/server/queries/post.queries", () => ({ getPostById: vi.fn() }));
 vi.mock("@/server/queries/policy.queries", () => ({
   getGuestPostPolicy: vi.fn(),
-  getGuestReadLoginRequiredPostTypes: vi.fn(),
 }));
 vi.mock("@/server/request-context", () => ({ getClientIp: vi.fn() }));
 vi.mock("@/server/rate-limit", () => ({ enforceRateLimit: vi.fn() }));
+vi.mock("@/server/services/post-read-access.service", () => ({
+  assertPostReadable: vi.fn(),
+}));
 vi.mock("@/server/services/post.service", () => ({
   deleteGuestPost: vi.fn(),
   deletePost: vi.fn(),
@@ -33,28 +32,24 @@ vi.mock("@/server/services/post.service", () => ({
 }));
 
 const mockGetCurrentUser = vi.mocked(getCurrentUser);
-const mockCanGuestReadPost = vi.mocked(canGuestReadPost);
 const mockMonitorUnhandledError = vi.mocked(monitorUnhandledError);
 const mockGetPostById = vi.mocked(getPostById);
 const mockGetGuestPostPolicy = vi.mocked(getGuestPostPolicy);
-const mockGetGuestReadLoginRequiredPostTypes = vi.mocked(
-  getGuestReadLoginRequiredPostTypes,
-);
 const mockGetClientIp = vi.mocked(getClientIp);
 const mockEnforceRateLimit = vi.mocked(enforceRateLimit);
+const mockAssertPostReadable = vi.mocked(assertPostReadable);
 const mockUpdateGuestPost = vi.mocked(updateGuestPost);
 const mockDeleteGuestPost = vi.mocked(deleteGuestPost);
 
 describe("/api/posts/[id] contract", () => {
   beforeEach(() => {
     mockGetCurrentUser.mockReset();
-    mockCanGuestReadPost.mockReset();
     mockMonitorUnhandledError.mockReset();
     mockGetPostById.mockReset();
     mockGetGuestPostPolicy.mockReset();
-    mockGetGuestReadLoginRequiredPostTypes.mockReset();
     mockGetClientIp.mockReset();
     mockEnforceRateLimit.mockReset();
+    mockAssertPostReadable.mockReset();
     mockUpdateGuestPost.mockReset();
     mockDeleteGuestPost.mockReset();
 
@@ -63,10 +58,9 @@ describe("/api/posts/[id] contract", () => {
       postRateLimit10m: 5,
       postRateLimit1h: 10,
     } as never);
-    mockGetGuestReadLoginRequiredPostTypes.mockResolvedValue([]);
-    mockCanGuestReadPost.mockReturnValue(true);
     mockGetClientIp.mockReturnValue("127.0.0.1");
     mockEnforceRateLimit.mockResolvedValue();
+    mockAssertPostReadable.mockResolvedValue();
   });
 
   it("returns POST_NOT_FOUND when post is missing", async () => {
@@ -80,6 +74,29 @@ describe("/api/posts/[id] contract", () => {
     expect(payload).toMatchObject({
       ok: false,
       error: { code: "POST_NOT_FOUND" },
+    });
+  });
+
+  it("returns read access service error from GET", async () => {
+    mockGetPostById.mockResolvedValue({
+      id: "post-1",
+      status: "ACTIVE",
+      scope: "GLOBAL",
+      type: "FREE_POST",
+      viewCount: 0,
+    } as never);
+    mockAssertPostReadable.mockRejectedValue(
+      new ServiceError("forbidden", "FORBIDDEN", 403),
+    );
+    const request = new Request("http://localhost/api/posts/post-1") as NextRequest;
+
+    const response = await GET(request, { params: Promise.resolve({ id: "post-1" }) });
+    const payload = await response.json();
+
+    expect(response.status).toBe(403);
+    expect(payload).toMatchObject({
+      ok: false,
+      error: { code: "FORBIDDEN" },
     });
   });
 

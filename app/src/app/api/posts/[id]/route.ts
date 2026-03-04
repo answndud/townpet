@@ -1,18 +1,13 @@
 import { NextRequest } from "next/server";
-import { PostScope, PostStatus } from "@prisma/client";
 
-import { canGuestReadPost } from "@/lib/post-access";
 import { getCurrentUser } from "@/server/auth";
 import { monitorUnhandledError } from "@/server/error-monitor";
-import {
-  getGuestPostPolicy,
-  getGuestReadLoginRequiredPostTypes,
-} from "@/server/queries/policy.queries";
+import { getGuestPostPolicy } from "@/server/queries/policy.queries";
 import { getPostById } from "@/server/queries/post.queries";
-import { getUserWithNeighborhoods } from "@/server/queries/user.queries";
 import { getClientIp } from "@/server/request-context";
 import { enforceRateLimit } from "@/server/rate-limit";
 import { jsonError, jsonOk } from "@/server/response";
+import { assertPostReadable } from "@/server/services/post-read-access.service";
 import { ServiceError } from "@/server/services/service-error";
 import {
   deleteGuestPost,
@@ -29,7 +24,6 @@ type RouteParams = {
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const user = await getCurrentUser();
-    const loginRequiredTypes = await getGuestReadLoginRequiredPostTypes();
     const { id } = await params;
     const post = await getPostById(id, user?.id);
 
@@ -40,54 +34,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       });
     }
 
-    if (post.status !== PostStatus.ACTIVE) {
-      return jsonError(404, {
-        code: "POST_NOT_FOUND",
-        message: "게시물을 찾을 수 없습니다.",
-      });
-    }
-
-    if (
-      !user &&
-      !canGuestReadPost({
-        scope: post.scope,
-        type: post.type,
-        loginRequiredTypes: loginRequiredTypes,
-      })
-    ) {
-      return jsonError(401, {
-        code: "AUTH_REQUIRED",
-        message: "이 게시글은 로그인 후 열람할 수 있습니다.",
-      });
-    }
-
-    if (post.scope === PostScope.LOCAL) {
-      if (!user) {
-        return jsonError(401, {
-          code: "AUTH_REQUIRED",
-          message: "이 게시글은 로그인 후 열람할 수 있습니다.",
-        });
-      }
-
-      const userWithNeighborhoods = await getUserWithNeighborhoods(user.id);
-      const primaryNeighborhood = userWithNeighborhoods?.neighborhoods.find(
-        (item) => item.isPrimary,
-      );
-
-      if (!primaryNeighborhood) {
-        return jsonError(400, {
-          code: "NEIGHBORHOOD_REQUIRED",
-          message: "대표 동네를 설정해 주세요.",
-        });
-      }
-
-      if (post.neighborhood?.id !== primaryNeighborhood.neighborhood.id) {
-        return jsonError(403, {
-          code: "FORBIDDEN",
-          message: "다른 동네 게시글은 열람할 수 없습니다.",
-        });
-      }
-    }
+    await assertPostReadable(post, user?.id);
 
     const didCountView = await registerPostView({
       postId: id,

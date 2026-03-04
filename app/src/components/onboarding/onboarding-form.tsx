@@ -289,6 +289,7 @@ export function OnboardingForm({
               {searchItems.map((neighborhood) => (
                 <label key={neighborhood.id} className="flex items-center gap-2 text-xs text-[#1f3f71]">
                   <input
+                    data-testid={`onboarding-neighborhood-checkbox-${neighborhood.id}`}
                     type="checkbox"
                     checked={selectedIds.includes(neighborhood.id)}
                     onChange={() => toggleNeighborhood(neighborhood.id)}

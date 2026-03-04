@@ -17,6 +17,63 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-04: 품질게이트 E2E 안정화 + SEC-002 CSP strict 강제 검증 완료
+- 완료 내용
+- `social-onboarding-flow`/`global-first-neighborhood-flow` E2E의 체크박스 선택자를 전역 `input[type="checkbox"]` 의존에서 테스트 전용 선택자로 전환해 hidden 체크박스 충돌을 제거.
+- 소셜 온보딩 초기화에서 `nicknameUpdatedAt`을 함께 리셋해 닉네임 30일 제한으로 인한 플로우 실패를 제거.
+- 미들웨어 nonce 전파를 `x-nonce` + `x-csp-nonce`로 표준화하고, JSON-LD 인라인 스크립트(공개 프로필/회원 상세/게스트 상세)에 nonce 전달 경로를 연결.
+- 게스트 상세(`/posts/[id]/guest`)를 동적 렌더로 전환해 strict CSP에서 JSON-LD nonce가 실제로 비어 있지 않도록 보정.
+- 최신 글쓰기 정책(범위 선택 제거)에 맞춰 `global-first-neighborhood-flow` assertion을 갱신.
+- 검증 결과
+- `pnpm -C app test:e2e:social-onboarding` 통과.
+- `pnpm -C app test:e2e -- e2e/global-first-neighborhood-flow.spec.ts` 통과.
+- `pnpm -C app quality:gate` 통과.
+- `pnpm -C app build` 통과(최종 라우트에서 `/posts/[id]/guest`는 `ƒ`로 전환 확인).
+- `CSP_ENFORCE_STRICT=1 pnpm -C app start --port 3105` + `curl` 실측에서:
+- `content-security-policy`가 strict(`script-src 'self' 'nonce-...' https:`)로 내려옴.
+- `/posts/<id>/guest`, `/users/<id>`의 `application/ld+json` 스크립트에 nonce 부여 확인.
+- `pnpm -C app test:e2e:social-real-oauth` 실패(카카오/네이버 provider 미설정으로 `/api/auth/error?error=Configuration` 이동).
+- `pnpm -C app ops:check:sentry` 실패(`SENTRY_DSN is required`).
+- 변경 파일(핵심)
+- `app/middleware.ts`
+- `app/src/lib/csp-nonce.ts`
+- `app/src/app/posts/[id]/page.tsx`
+- `app/src/components/posts/post-detail-client.tsx`
+- `app/src/app/users/[id]/page.tsx`
+- `app/src/app/posts/[id]/guest/page.tsx`
+- `app/e2e/social-onboarding-flow.spec.ts`
+- `app/e2e/global-first-neighborhood-flow.spec.ts`
+- `app/src/components/onboarding/onboarding-form.tsx`
+- `app/src/components/profile/neighborhood-preference-form.tsx`
+- `PLAN.md`
+- 이슈/블로커
+- `oauth-real-e2e` 실계정 전체 플로우와 Sentry 실수신 검증은 외부 시크릿/운영 계정 의존으로 로컬에서 최종 PASS 확정 불가.
+
+### 2026-03-04: 게시글/댓글 읽기 접근제어 정합성 보강
+- 완료 내용
+- 게시글 상세 분리 API(`detail/stats/content`)와 댓글 API에 공통 읽기 접근제어 가드를 적용해 `ACTIVE` 상태 + LOCAL 동네 일치 규칙을 일관 강제.
+- 기존 상세 API(`/api/posts/[id]`)와 동일한 정책을 재사용하도록 `assertPostReadable` 서비스 레이어를 추가해 경로별 편차를 제거.
+- 댓글 작성 서비스에서 게스트 작성 시 ban 상태를 확인하고, 비활성 글(`HIDDEN/DELETED`) 및 LOCAL 권한 불일치 댓글 작성을 차단하도록 방어 로직을 보강.
+- 검증 결과
+- `pnpm -C app test -- src/server/services/post-read-access.service.test.ts src/app/api/posts/[id]/route.test.ts src/app/api/posts/[id]/comments/route.test.ts src/server/services/comment.service.test.ts` 통과.
+- `pnpm -C app lint` 통과.
+- `pnpm -C app typecheck` 통과.
+- 변경 파일(핵심)
+- `app/src/server/services/post-read-access.service.ts`
+- `app/src/app/api/posts/[id]/route.ts`
+- `app/src/app/api/posts/[id]/detail/route.ts`
+- `app/src/app/api/posts/[id]/stats/route.ts`
+- `app/src/app/api/posts/[id]/content/route.ts`
+- `app/src/app/api/posts/[id]/comments/route.ts`
+- `app/src/server/services/comment.service.ts`
+- `app/src/server/services/post-read-access.service.test.ts`
+- `app/src/app/api/posts/[id]/route.test.ts`
+- `app/src/app/api/posts/[id]/comments/route.test.ts`
+- `app/src/server/services/comment.service.test.ts`
+- `PLAN.md`
+- 이슈/블로커
+- 없음.
+
 ### 2026-03-03: 모바일 게시판 목록 상시 노출
 - 완료 내용
 - 모바일 피드 내비게이션의 `게시판 빠른 이동`을 `details` 접기 UI에서 상시 노출형 칩 목록으로 전환.
