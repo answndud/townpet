@@ -360,6 +360,26 @@
 | `ops-smoke-checks` 주간 자동 실행(health only) | Codex | P1 | `done` | `ops-smoke-checks`가 스케줄로 주 1회 자동 실행되고(`verify_sentry=false`), 대상 URL은 `OPS_BASE_URL` 변수 또는 기본 URL fallback으로 점검됨 | `.github/workflows/ops-smoke-checks.yml`, GitHub Actions Variables |
 | 실계정 로그인 완료 수동 점검 체크리스트 고정 | Codex | P1 | `done` | 카카오/네이버 각각 `/onboarding -> /feed` 완료 수동 검증 절차와 증적 기록 규칙이 운영 문서에 명시됨 | `docs/ops/차단 해소 체크리스트.md`, `docs/GUIDE.md` |
 
+### Cycle 130: Agent Tool Governance 재설계 적용 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 도구 선택 거버넌스 매트릭스 문서화(10개 카테고리) | Codex | P1 | `done` | ORM/Auth/Cache/Real-time/Observability 등 10개 카테고리에 기본값/허용 대안/금지선/재검토 트리거가 정의됨 | `docs/ops/agent-tool-governance.md`, `AGENTS.md` |
+| 에이전트 작업 지시 템플릿 표준화 | Codex | P1 | `done` | 공통 헤더/입력 템플릿/출력 계약/금지 패턴이 고정되어 프롬프트 편차를 줄임 | `docs/ops/agent-prompt-template.md`, `AGENTS.md` |
+| 운영 가이드에 신규 표준 문서 링크 반영 | Codex | P2 | `done` | agent-only 운영 가이드에서 거버넌스/템플릿 문서를 바로 참조 가능 | `docs/ops/에이전트 운영 가이드 (한국어).md` |
+
+### Cycle 131: Agent Prompt 자동화 + docs 추적 보정 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| docs 추적 규칙 최소 보정(핵심 운영 문서 3종) | Codex | P1 | `done` | `.gitignore`에서 `docs` 전부를 풀지 않고 `agent-tool-governance`, `agent-prompt-template`, `에이전트 운영 가이드`만 추적 예외로 설정 | `.gitignore` |
+| 프롬프트 자동 생성 스크립트 추가 | Codex | P1 | `done` | `pnpm -C app agent:prompt` 실행으로 표준 프롬프트 블록을 stdout/file로 생성 가능 | `app/scripts/generate-agent-prompt.ts`, `app/package.json` |
+| 템플릿 문서에 CLI 사용법 반영 | Codex | P2 | `done` | 운영자가 템플릿 문서만 보고 자동 생성기를 실행할 수 있음 | `docs/ops/agent-prompt-template.md` |
+
+### Cycle 132: plan-coordinator 연계 운영 루틴 고정 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| agent-only 운영 가이드에 자동 생성 루틴 반영 | Codex | P1 | `done` | `agent:prompt -> @plan-coordinator -> 실행 -> 검증 -> 동기화` 순서가 명시됨 | `docs/ops/에이전트 운영 가이드 (한국어).md` |
+| 프롬프트 템플릿 문서에 plan-coordinator 연계 절차 추가 | Codex | P1 | `done` | 템플릿 문서만으로 생성/계획반영/실행/검증/기록 순서를 재현 가능 | `docs/ops/agent-prompt-template.md` |
+
 ### Cycle 24: 피드 체류 개선 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
