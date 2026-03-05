@@ -6,7 +6,7 @@ import { isLoginRequiredPostType } from "@/lib/post-access";
 import { FEED_PAGE_SIZE } from "@/lib/feed";
 import { postListSchema, toPostListInput } from "@/lib/validations/post";
 import { listPosts } from "@/server/queries/post.queries";
-import { getCurrentUserId } from "@/server/auth";
+import { getCurrentUserId, hasSessionCookieFromRequest } from "@/server/auth";
 import { buildCacheControlHeader } from "@/server/cache/query-cache";
 import { monitorUnhandledError } from "@/server/error-monitor";
 import {
@@ -23,7 +23,9 @@ import { getUserWithNeighborhoods } from "@/server/queries/user.queries";
 export async function GET(request: NextRequest) {
   try {
     const clientIp = getClientIp(request);
-    const currentUserId = await getCurrentUserId();
+    const currentUserId = hasSessionCookieFromRequest(request)
+      ? await getCurrentUserId()
+      : null;
     const viewerId = currentUserId ?? undefined;
     const loginRequiredTypes = currentUserId ? [] : await getGuestReadLoginRequiredPostTypes();
     const rateKey = currentUserId ? `feed:user:${currentUserId}` : `feed:ip:${clientIp}`;
