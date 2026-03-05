@@ -35,6 +35,8 @@
 - `pnpm -C app lint scripts/collect-latency-snapshot.ts` 통과.
 - `pnpm -C app typecheck` 통과.
 - `OPS_BASE_URL=https://townpet2.vercel.app OPS_PERF_GET_SAMPLES=2 OPS_PERF_POST_SAMPLES=2 OPS_PERF_PAUSE_MS=50 pnpm -C app ops:perf:snapshot` 스모크 실행 통과(출력 파일: `/tmp/townpet_latency_snapshot_smoke.tsv`, `/tmp/townpet_latency_snapshot_smoke.md`).
+- 신규 워크플로우 `ops-latency-snapshots` 수동 실행 성공: run `22704511501` (`workflow_dispatch`, 소량 샘플 검증).
+- push 품질게이트 성공: run `22704509072`.
 - 이슈/블로커
 - 없음.
 - 변경 파일(핵심)
