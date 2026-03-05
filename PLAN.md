@@ -607,6 +607,14 @@
 | fallback 계약 테스트 추가 | Codex | P2 | `done` | auth lookup 예외 시 200 응답 + guest rate key 사용이 테스트로 고정됨 | `app/src/app/api/search/log/route.test.ts` |
 | 타입/회귀 테스트 재검증 | Codex | P2 | `done` | lint/typecheck 및 route 테스트 스위트가 pass되어 회귀 없음 | `pnpm -C app lint`, `pnpm -C app typecheck`, `pnpm -C app test -- src/app/api/search/log/route.test.ts` |
 
+### Cycle 165: main 배포 반영 + post-deploy 성능/에러 검증 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 품질게이트 실패 원인 분석/복구 | Codex | P1 | `done` | `getCurrentUserId` export 누락으로 실패한 CI를 `auth.ts`/`user.queries.ts` 보강 커밋으로 복구 | GitHub Actions run `22701352904`, `22701395965` |
+| main 재배포 성공 확인 | Codex | P1 | `done` | `quality-gate` run `22701395965`가 `success`로 완료되어 배포 파이프라인 정상화 확인 | GitHub Actions |
+| post-deploy 성능 스냅샷 재수집 | Codex | P1 | `done` | 배포 반영 후 API 4종 30회 샘플(120건) 재수집 및 p50/p95 재집계 완료 | `/tmp/townpet_perf_20260305_postdeploy_final.tsv` |
+| search log burst 에러코드 검증 | Codex | P1 | `done` | 35회 연속 호출에서 `200 x30 + 429 x5` 확인(500 스파이크 소거) | `/tmp/townpet_searchlog_status_postdeploy_20260305.txt` |
+
 ### Cycle 24: 피드 체류 개선 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
