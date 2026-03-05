@@ -352,18 +352,12 @@ function evaluateThresholds(aggregates: EndpointAggregate[]) {
   return evaluations
 }
 
-function buildSummary(aggregates: EndpointAggregate[], evaluations: ThresholdEvaluation[]) {
-  const totalSamples = aggregates.reduce((acc, item) => acc + item.count, 0)
-
-  const lines: string[] = []
-  lines.push(`# API Latency Snapshot`)
-  lines.push(``)
-  lines.push(`- generatedAt: ${new Date().toISOString()}`)
-  lines.push(`- samples: ${totalSamples}`)
+function appendAggregateSection(lines: string[], title: string, aggregates: EndpointAggregate[]) {
+  lines.push(`## ${title}`)
   lines.push(``)
 
   for (const aggregate of aggregates) {
-    lines.push(`## ${aggregate.label}`)
+    lines.push(`### ${aggregate.label}`)
     lines.push(`- count: ${aggregate.count}`)
     lines.push(`- status: ${aggregate.status}`)
     lines.push(
@@ -381,8 +375,37 @@ function buildSummary(aggregates: EndpointAggregate[], evaluations: ThresholdEva
     lines.push(`- slow(>500ms): ${aggregate.slowCount}`)
     lines.push(``)
   }
+}
+
+function buildSummary(
+  allAggregates: EndpointAggregate[],
+  warmupAggregates: EndpointAggregate[],
+  steadyAggregates: EndpointAggregate[],
+  evaluations: ThresholdEvaluation[],
+  warmupSamplesPerEndpoint: number,
+) {
+  const totalSamples = allAggregates.reduce((acc, item) => acc + item.count, 0)
+  const warmupSamples = warmupAggregates.reduce((acc, item) => acc + item.count, 0)
+  const steadySamples = steadyAggregates.reduce((acc, item) => acc + item.count, 0)
+
+  const lines: string[] = []
+  lines.push(`# API Latency Snapshot`)
+  lines.push(``)
+  lines.push(`- generatedAt: ${new Date().toISOString()}`)
+  lines.push(`- samples_total: ${totalSamples}`)
+  lines.push(`- samples_warmup_excluded: ${warmupSamples}`)
+  lines.push(`- samples_steady_state: ${steadySamples}`)
+  lines.push(`- warmup_samples_per_endpoint: ${warmupSamplesPerEndpoint}`)
+  lines.push(``)
+
+  appendAggregateSection(lines, "Full Samples (cold + steady)", allAggregates)
+  if (warmupSamplesPerEndpoint > 0) {
+    appendAggregateSection(lines, "Warm-up Samples (excluded from threshold)", warmupAggregates)
+  }
+  appendAggregateSection(lines, "Steady-state Samples (threshold basis)", steadyAggregates)
 
   lines.push(`## Threshold Evaluation`)
+  lines.push(`- basis: steady-state samples (warmup excluded)`)
   for (const evaluation of evaluations) {
     if (evaluation.passed) {
       lines.push(`- ${evaluation.label}: PASS`)
@@ -407,6 +430,11 @@ async function main() {
   const getSamples = toPositiveInt("OPS_PERF_GET_SAMPLES", process.env.OPS_PERF_GET_SAMPLES, 30)
   const postSamples = toPositiveInt("OPS_PERF_POST_SAMPLES", process.env.OPS_PERF_POST_SAMPLES, 20)
   const pauseMs = toNonNegativeInt("OPS_PERF_PAUSE_MS", process.env.OPS_PERF_PAUSE_MS, 200)
+  const warmupSamplesPerEndpoint = toNonNegativeInt(
+    "OPS_PERF_WARMUP_SAMPLES_PER_ENDPOINT",
+    process.env.OPS_PERF_WARMUP_SAMPLES_PER_ENDPOINT,
+    1,
+  )
   const failOnThresholdBreach = toBoolean(
     "OPS_PERF_FAIL_ON_THRESHOLD_BREACH",
     process.env.OPS_PERF_FAIL_ON_THRESHOLD_BREACH,
@@ -452,6 +480,12 @@ async function main() {
   const records: SampleRecord[] = []
 
   for (const endpoint of endpoints) {
+    if (warmupSamplesPerEndpoint >= endpoint.samples) {
+      throw new Error(
+        `OPS_PERF_WARMUP_SAMPLES_PER_ENDPOINT must be smaller than endpoint samples: label=${endpoint.label}, warmup=${warmupSamplesPerEndpoint}, samples=${endpoint.samples}`,
+      )
+    }
+
     const url = `${normalizedBaseUrl}${endpoint.path}`
     for (let index = 1; index <= endpoint.samples; index += 1) {
       const result = await runCurl(url, endpoint.method, endpoint.body)
@@ -498,9 +532,23 @@ async function main() {
 
   writeFileSync(outputPath, [header, ...tsvLines].join("\n"))
 
-  const aggregates = buildAggregates(records)
-  const evaluations = evaluateThresholds(aggregates)
-  const summary = buildSummary(aggregates, evaluations)
+  const warmupRecords = records.filter((record) => record.index <= warmupSamplesPerEndpoint)
+  const steadyRecords =
+    warmupSamplesPerEndpoint === 0
+      ? records
+      : records.filter((record) => record.index > warmupSamplesPerEndpoint)
+
+  const allAggregates = buildAggregates(records)
+  const warmupAggregates = buildAggregates(warmupRecords)
+  const steadyAggregates = buildAggregates(steadyRecords)
+  const evaluations = evaluateThresholds(steadyAggregates)
+  const summary = buildSummary(
+    allAggregates,
+    warmupAggregates,
+    steadyAggregates,
+    evaluations,
+    warmupSamplesPerEndpoint,
+  )
   writeFileSync(summaryPath, `${summary}\n`)
 
   const failedEvaluations = evaluations.filter((item) => !item.passed)
@@ -510,6 +558,7 @@ async function main() {
   console.log(`- output: ${outputPath}`)
   console.log(`- summary: ${summaryPath}`)
   console.log(`- sampleCount: ${records.length}`)
+  console.log(`- warmupSamplesPerEndpoint: ${warmupSamplesPerEndpoint}`)
   console.log(`- failOnThresholdBreach: ${failOnThresholdBreach}`)
   console.log("")
   console.log(summary)
