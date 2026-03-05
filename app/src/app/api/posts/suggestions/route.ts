@@ -3,7 +3,7 @@ import { PostScope, PostType } from "@prisma/client";
 import { z } from "zod";
 
 import { isLoginRequiredPostType } from "@/lib/post-access";
-import { getCurrentUserId } from "@/server/auth";
+import { getCurrentUserId, hasSessionCookieFromRequest } from "@/server/auth";
 import { buildCacheControlHeader } from "@/server/cache/query-cache";
 import { monitorUnhandledError } from "@/server/error-monitor";
 import { getGuestReadLoginRequiredPostTypes } from "@/server/queries/policy.queries";
@@ -40,7 +40,9 @@ export async function GET(request: NextRequest) {
     }
 
     const clientIp = getClientIp(request);
-    const currentUserId = await getCurrentUserId();
+    const currentUserId = hasSessionCookieFromRequest(request)
+      ? await getCurrentUserId()
+      : null;
     const viewerId = currentUserId ?? undefined;
     const rateKey = currentUserId
       ? `feed-suggest:user:${currentUserId}`

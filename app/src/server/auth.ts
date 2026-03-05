@@ -13,6 +13,26 @@ import {
 } from "@/server/services/sanction.service";
 import { ServiceError } from "@/server/services/service-error";
 
+const SESSION_COOKIE_NAMES = [
+  "townpet.session-token",
+  "__Secure-townpet.session-token",
+  "next-auth.session-token",
+  "__Secure-next-auth.session-token",
+  "authjs.session-token",
+  "__Secure-authjs.session-token",
+] as const;
+
+export function hasSessionCookieFromRequest(request: Pick<Request, "headers">) {
+  const cookieHeader = request.headers.get("cookie");
+  if (!cookieHeader) {
+    return false;
+  }
+
+  return SESSION_COOKIE_NAMES.some((name) =>
+    cookieHeader.includes(`${name}=`),
+  );
+}
+
 export async function getCurrentUserId() {
   const session = await auth();
   if (session?.user?.id) {

@@ -6,7 +6,7 @@ import {
   breedCodeParamSchema,
   breedLoungePostListSchema,
 } from "@/lib/validations/lounge";
-import { getCurrentUserId } from "@/server/auth";
+import { getCurrentUserId, hasSessionCookieFromRequest } from "@/server/auth";
 import { buildCacheControlHeader } from "@/server/cache/query-cache";
 import { monitorUnhandledError } from "@/server/error-monitor";
 import { getGuestReadLoginRequiredPostTypes } from "@/server/queries/policy.queries";
@@ -32,7 +32,9 @@ export async function GET(request: NextRequest, context: RouteContext) {
     }
 
     const clientIp = getClientIp(request);
-    const currentUserId = await getCurrentUserId();
+    const currentUserId = hasSessionCookieFromRequest(request)
+      ? await getCurrentUserId()
+      : null;
     const viewerId = currentUserId ?? undefined;
     await enforceRateLimit({
       key: currentUserId ? `breed-lounge:user:${currentUserId}` : `breed-lounge:ip:${clientIp}`,

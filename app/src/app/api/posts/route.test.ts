@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ServiceError } from "@/server/services/service-error";
 import { GET } from "@/app/api/posts/route";
-import { getCurrentUserId } from "@/server/auth";
+import { getCurrentUserId, hasSessionCookieFromRequest } from "@/server/auth";
 import { monitorUnhandledError } from "@/server/error-monitor";
 import { listPosts } from "@/server/queries/post.queries";
 import {
@@ -13,7 +13,10 @@ import { enforceRateLimit } from "@/server/rate-limit";
 import { getClientIp } from "@/server/request-context";
 import { isLoginRequiredPostType } from "@/lib/post-access";
 
-vi.mock("@/server/auth", () => ({ getCurrentUserId: vi.fn() }));
+vi.mock("@/server/auth", () => ({
+  getCurrentUserId: vi.fn(),
+  hasSessionCookieFromRequest: vi.fn(),
+}));
 vi.mock("@/server/error-monitor", () => ({ monitorUnhandledError: vi.fn() }));
 vi.mock("@/server/queries/post.queries", () => ({ listPosts: vi.fn() }));
 vi.mock("@/server/queries/policy.queries", () => ({
@@ -27,6 +30,7 @@ vi.mock("@/server/queries/user.queries", () => ({ getUserWithNeighborhoods: vi.f
 vi.mock("@/server/services/post.service", () => ({ createPost: vi.fn() }));
 
 const mockGetCurrentUserId = vi.mocked(getCurrentUserId);
+const mockHasSessionCookieFromRequest = vi.mocked(hasSessionCookieFromRequest);
 const mockMonitorUnhandledError = vi.mocked(monitorUnhandledError);
 const mockListPosts = vi.mocked(listPosts);
 const mockGetGuestReadLoginRequiredPostTypes = vi.mocked(
@@ -39,6 +43,7 @@ const mockIsLoginRequiredPostType = vi.mocked(isLoginRequiredPostType);
 describe("GET /api/posts contract", () => {
   beforeEach(() => {
     mockGetCurrentUserId.mockReset();
+    mockHasSessionCookieFromRequest.mockReset();
     mockMonitorUnhandledError.mockReset();
     mockListPosts.mockReset();
     mockGetGuestReadLoginRequiredPostTypes.mockReset();
@@ -47,6 +52,7 @@ describe("GET /api/posts contract", () => {
     mockIsLoginRequiredPostType.mockReset();
 
     mockGetCurrentUserId.mockResolvedValue(null);
+    mockHasSessionCookieFromRequest.mockReturnValue(false);
     mockGetGuestReadLoginRequiredPostTypes.mockResolvedValue([]);
     mockEnforceRateLimit.mockResolvedValue();
     mockGetClientIp.mockReturnValue("127.0.0.1");
@@ -109,6 +115,15 @@ describe("GET /api/posts contract", () => {
       ok: false,
       error: { code: "RATE_LIMITED" },
     });
+  });
+
+  it("skips auth lookup when session cookie is absent", async () => {
+    const request = new Request("http://localhost/api/posts") as NextRequest;
+
+    const response = await GET(request);
+
+    expect(response.status).toBe(200);
+    expect(mockGetCurrentUserId).not.toHaveBeenCalled();
   });
 
   it("returns 500 and monitors unexpected errors", async () => {

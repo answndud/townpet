@@ -6,6 +6,7 @@ import {
   getCurrentUser,
   getCurrentUserId,
   getCurrentUserRole,
+  hasSessionCookieFromRequest,
   requireAuthenticatedUserId,
   requireCurrentUser,
   requireModerator,
@@ -88,6 +89,26 @@ describe("auth helpers", () => {
     expect(userId).toBe("user-id-only");
     expect(mockGetUserById).not.toHaveBeenCalled();
     expect(mockGetUserByEmail).not.toHaveBeenCalled();
+  });
+
+  it("detects session cookie from request header", () => {
+    const request = new Request("http://localhost/api/posts", {
+      headers: {
+        cookie: "townpet.session-token=abc123; foo=bar",
+      },
+    });
+
+    expect(hasSessionCookieFromRequest(request)).toBe(true);
+  });
+
+  it("returns false when request has no auth session cookie", () => {
+    const request = new Request("http://localhost/api/posts", {
+      headers: {
+        cookie: "foo=bar; hello=world",
+      },
+    });
+
+    expect(hasSessionCookieFromRequest(request)).toBe(false);
   });
 
   it("falls back to demo user when no session", async () => {

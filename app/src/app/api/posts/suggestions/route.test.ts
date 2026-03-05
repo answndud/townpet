@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { GET } from "@/app/api/posts/suggestions/route";
 import { isLoginRequiredPostType } from "@/lib/post-access";
-import { getCurrentUserId } from "@/server/auth";
+import { getCurrentUserId, hasSessionCookieFromRequest } from "@/server/auth";
 import { monitorUnhandledError } from "@/server/error-monitor";
 import { getGuestReadLoginRequiredPostTypes } from "@/server/queries/policy.queries";
 import { listPostSearchSuggestions } from "@/server/queries/post.queries";
@@ -12,7 +12,10 @@ import { getClientIp } from "@/server/request-context";
 import { enforceRateLimit } from "@/server/rate-limit";
 
 vi.mock("@/lib/post-access", () => ({ isLoginRequiredPostType: vi.fn() }));
-vi.mock("@/server/auth", () => ({ getCurrentUserId: vi.fn() }));
+vi.mock("@/server/auth", () => ({
+  getCurrentUserId: vi.fn(),
+  hasSessionCookieFromRequest: vi.fn(),
+}));
 vi.mock("@/server/error-monitor", () => ({ monitorUnhandledError: vi.fn() }));
 vi.mock("@/server/queries/policy.queries", () => ({
   getGuestReadLoginRequiredPostTypes: vi.fn(),
@@ -24,6 +27,7 @@ vi.mock("@/server/rate-limit", () => ({ enforceRateLimit: vi.fn() }));
 
 const mockIsLoginRequiredPostType = vi.mocked(isLoginRequiredPostType);
 const mockGetCurrentUserId = vi.mocked(getCurrentUserId);
+const mockHasSessionCookieFromRequest = vi.mocked(hasSessionCookieFromRequest);
 const mockMonitorUnhandledError = vi.mocked(monitorUnhandledError);
 const mockGetGuestReadLoginRequiredPostTypes = vi.mocked(getGuestReadLoginRequiredPostTypes);
 const mockListPostSearchSuggestions = vi.mocked(listPostSearchSuggestions);
@@ -35,6 +39,7 @@ describe("GET /api/posts/suggestions contract", () => {
   beforeEach(() => {
     mockIsLoginRequiredPostType.mockReset();
     mockGetCurrentUserId.mockReset();
+    mockHasSessionCookieFromRequest.mockReset();
     mockMonitorUnhandledError.mockReset();
     mockGetGuestReadLoginRequiredPostTypes.mockReset();
     mockListPostSearchSuggestions.mockReset();
@@ -44,6 +49,7 @@ describe("GET /api/posts/suggestions contract", () => {
 
     mockIsLoginRequiredPostType.mockReturnValue(false);
     mockGetCurrentUserId.mockResolvedValue(null);
+    mockHasSessionCookieFromRequest.mockReturnValue(false);
     mockGetGuestReadLoginRequiredPostTypes.mockResolvedValue([]);
     mockListPostSearchSuggestions.mockResolvedValue(["강아지 산책"]);
     mockGetClientIp.mockReturnValue("127.0.0.1");
@@ -82,6 +88,7 @@ describe("GET /api/posts/suggestions contract", () => {
   });
 
   it("uses user rate key when authenticated", async () => {
+    mockHasSessionCookieFromRequest.mockReturnValue(true);
     mockGetCurrentUserId.mockResolvedValue("user-1");
     const request = new Request("http://localhost/api/posts/suggestions?q=사료") as NextRequest;
 
@@ -93,6 +100,15 @@ describe("GET /api/posts/suggestions contract", () => {
         key: "feed-suggest:user:user-1",
       }),
     );
+  });
+
+  it("skips auth lookup when session cookie is absent", async () => {
+    const request = new Request("http://localhost/api/posts/suggestions?q=사료") as NextRequest;
+
+    const response = await GET(request);
+
+    expect(response.status).toBe(200);
+    expect(mockGetCurrentUserId).not.toHaveBeenCalled();
   });
 
   it("returns 500 and monitors unexpected errors", async () => {
