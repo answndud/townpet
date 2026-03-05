@@ -17,6 +17,26 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-05: Cycle 168 완료 (Cycle 166/167 배포 후 성능 재측정)
+- 완료 내용
+- `quality-gate` run `22702076616` 성공 확인 후 최신 main 기준 배포 성능 재측정 수행.
+- 재측정 raw: `/tmp/townpet_perf_20260305_after167.tsv` (120 lines)
+- 집계 결과(ms):
+  - `api_posts_global`: TTFB p50 `158.9`, p95 `352.2` / total p50 `165.0`, p95 `359.0` (status `200 x30`)
+  - `api_posts_suggestions`: TTFB p50 `152.2`, p95 `360.4` / total p50 `157.2`, p95 `381.8` (status `200 x30`)
+  - `api_search_log`: TTFB p50 `254.0`, p95 `591.5` / total p50 `260.6`, p95 `598.6` (status `200 x30`)
+  - `api_breed_posts`: TTFB p50 `155.4`, p95 `402.7` / total p50 `159.6`, p95 `404.6` (status `200 x30`)
+- 해석
+- `breed_posts`는 이전 스냅샷 대비 p50이 유의미하게 개선(게스트 캐시 헤더 적용 효과 관측).
+- 다만 모든 API에서 단발 고지연(outlier)이 포함되며 n=30 환경의 p95(29번째 표본)가 outlier 영향을 크게 받는 패턴이 지속.
+- 검증 결과
+- 배포 품질게이트: `22702076616 success`
+- 이슈/블로커
+- 없음(다음 단계: outlier 원인 분리 관측 필요).
+- 변경 파일(핵심)
+- `PLAN.md`
+- `PROGRESS.md`
+
 ### 2026-03-05: Cycle 167 완료 (Search log rate-limit 허용 캐시 적용)
 - 완료 내용
 - `POST /api/search/log`의 rate-limit 호출에 `cacheMs: 500`을 적용해 동일 사용자/IP의 연속 입력 구간에서 Redis 왕복 오버헤드를 완화.

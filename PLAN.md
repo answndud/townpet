@@ -629,6 +629,13 @@
 | search log 계약 테스트 정합 보강 | Codex | P2 | `done` | user/ip rate-limit key 기대값에 `cacheMs=500`이 포함되어 회귀 방지 | `app/src/app/api/search/log/route.test.ts` |
 | 타입/회귀 테스트 재검증 | Codex | P2 | `done` | lint/typecheck 및 route 테스트가 통과해 회귀 없음 | `pnpm -C app lint`, `pnpm -C app typecheck`, `pnpm -C app test -- ...` |
 
+### Cycle 168: Cycle 166/167 배포 후 성능 재측정 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| quality-gate 성공 확인 | Codex | P1 | `done` | `22702076616` run이 `success`로 완료되어 latest main 반영 확인 | GitHub Actions |
+| 배포 API 4종 성능 스냅샷 재수집 | Codex | P1 | `done` | `/api/posts`, `/api/posts/suggestions`, `/api/search/log`, `/api/lounges/breeds/[breedCode]/posts` 각 30회, 총 120건 재측정 | `/tmp/townpet_perf_20260305_after167.tsv` |
+| p50/p95 비교 기록 | Codex | P2 | `done` | breed p50 개선 및 p95 아웃라이어 변동성 패턴을 `PROGRESS.md`에 기록 | `PROGRESS.md` |
+
 ### Cycle 24: 피드 체류 개선 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
