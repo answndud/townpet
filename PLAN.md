@@ -676,6 +676,12 @@
 | 운영 URL 기준 수동 점검 리포트 템플릿 생성 | Codex | P1 | `done` | `ops:oauth:manual-report --strict-base-url 1` 실행으로 Base URL sanity + callback URL이 포함된 템플릿 파일 생성 완료 | `/tmp/oauth-manual-check-2026-03-05.md` |
 | blocked 상태 유지 기준 명시 | Codex | P2 | `done` | 카카오/네이버 실계정 온보딩 수동 증적 미입력 상태에서는 Cycle 23 blocked를 유지한다는 기준을 실행로그에 반영 | `PROGRESS.md`, `PLAN.md` |
 
+### Cycle 174: OAuth 수동 증적 저장 경로 고정 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| OAuth 수동 점검 템플릿을 저장소 경로에 생성 | Codex | P1 | `done` | `docs/ops/manual-checks/oauth-manual-check-2026-03-05.md` 파일이 생성되어 즉시 증적 입력이 가능한 상태 | `pnpm -C app ops:oauth:manual-report ...` |
+| 운영 가이드 출력 경로 표준화 | Codex | P2 | `done` | OAuth 운영 가이드의 수동 리포트 생성 명령이 `/tmp`가 아닌 `docs/ops/manual-checks/` 경로를 기본으로 안내 | `docs/ops/oauth2-external-auth-operations-guide.md` |
+
 ### Cycle 24: 피드 체류 개선 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
