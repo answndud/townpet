@@ -6,7 +6,8 @@ import {
   breedCodeParamSchema,
   breedLoungePostListSchema,
 } from "@/lib/validations/lounge";
-import { getCurrentUser } from "@/server/auth";
+import { getCurrentUserId } from "@/server/auth";
+import { buildCacheControlHeader } from "@/server/cache/query-cache";
 import { monitorUnhandledError } from "@/server/error-monitor";
 import { getGuestReadLoginRequiredPostTypes } from "@/server/queries/policy.queries";
 import { listPosts } from "@/server/queries/post.queries";
@@ -31,14 +32,16 @@ export async function GET(request: NextRequest, context: RouteContext) {
     }
 
     const clientIp = getClientIp(request);
-    const currentUser = await getCurrentUser();
+    const currentUserId = await getCurrentUserId();
+    const viewerId = currentUserId ?? undefined;
     await enforceRateLimit({
-      key: currentUser ? `breed-lounge:user:${currentUser.id}` : `breed-lounge:ip:${clientIp}`,
+      key: currentUserId ? `breed-lounge:user:${currentUserId}` : `breed-lounge:ip:${clientIp}`,
       limit: 30,
       windowMs: 60_000,
+      cacheMs: 1_000,
     });
 
-    const loginRequiredTypes = await getGuestReadLoginRequiredPostTypes();
+    const loginRequiredTypes = currentUserId ? [] : await getGuestReadLoginRequiredPostTypes();
     const { searchParams } = new URL(request.url);
     const parsed = breedLoungePostListSchema.safeParse({
       cursor: searchParams.get("cursor") ?? undefined,
@@ -57,7 +60,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       });
     }
 
-    if (!currentUser && parsed.data.type && loginRequiredTypes.includes(parsed.data.type)) {
+    if (!currentUserId && parsed.data.type && loginRequiredTypes.includes(parsed.data.type)) {
       return jsonError(401, {
         code: "AUTH_REQUIRED",
         message: "선택한 카테고리는 로그인 후 이용할 수 있습니다.",
@@ -73,13 +76,18 @@ export async function GET(request: NextRequest, context: RouteContext) {
       searchIn: parsed.data.searchIn,
       sort: parsed.data.sort,
       days: parsed.data.days,
-      excludeTypes: currentUser ? undefined : loginRequiredTypes,
-      viewerId: currentUser?.id,
-      personalized: Boolean(currentUser?.id) && parsed.data.personalized,
+      excludeTypes: currentUserId ? undefined : loginRequiredTypes,
+      viewerId,
+      personalized: Boolean(currentUserId) && parsed.data.personalized,
       authorBreedCode: parsedBreedCode.data,
     });
 
-    return jsonOk(data);
+    const canCache = !currentUserId && !parsed.data.cursor && !parsed.data.personalized;
+    return jsonOk(data, {
+      headers: {
+        "cache-control": canCache ? buildCacheControlHeader(30, 300) : "no-store",
+      },
+    });
   } catch (error) {
     if (error instanceof ServiceError) {
       return jsonError(error.status, {

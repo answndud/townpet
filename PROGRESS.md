@@ -17,6 +17,26 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-05: Cycle 166 완료 (Breed lounge posts 게스트 캐시 헤더 적용)
+- 완료 내용
+- `GET /api/lounges/breeds/[breedCode]/posts`에 게스트 첫 페이지 요청 전용 캐시 헤더를 적용:
+  - `public, s-maxage=30, stale-while-revalidate=300`
+- 인증 요청은 기존대로 `no-store`를 유지해 개인화/권한 경로 캐시 오염을 방지.
+- route 계약 테스트를 보강해:
+  - 인증 요청 `cache-control: no-store`
+  - 게스트 요청 `s-maxage=30` 노출
+  를 고정.
+- 검증 결과
+- `pnpm -C app lint 'src/app/api/lounges/breeds/[breedCode]/posts/route.ts' 'src/app/api/lounges/breeds/[breedCode]/posts/route.test.ts'` 통과.
+- `pnpm -C app typecheck` 통과.
+- `pnpm -C app test -- 'src/app/api/lounges/breeds/[breedCode]/posts/route.test.ts'` 통과(전체 62 files, 303 tests pass).
+- 이슈/블로커
+- 없음.
+- 변경 파일(핵심)
+- `app/src/app/api/lounges/breeds/[breedCode]/posts/route.ts`
+- `app/src/app/api/lounges/breeds/[breedCode]/posts/route.test.ts`
+- `PLAN.md`
+
 ### 2026-03-05: Cycle 165 완료 (main 배포 반영 + post-deploy 성능/에러 검증)
 - 완료 내용
 - 커밋/배포:
