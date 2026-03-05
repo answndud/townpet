@@ -17,6 +17,21 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-05: Cycle 174 완료 (OAuth 수동 증적 저장 경로 고정)
+- 완료 내용
+- 운영 URL 기준 OAuth 수동 점검 템플릿을 저장소 경로에 생성:
+  - `docs/ops/manual-checks/oauth-manual-check-2026-03-05.md`
+  - 포함 항목: Base URL sanity, Kakao/Naver callback URL, Provider 증적 테이블, PROGRESS snippet
+- OAuth 운영 가이드의 템플릿 생성 명령 기본 출력 경로를 `/tmp`에서 `docs/ops/manual-checks/`로 표준화.
+- 검증 결과
+- `pnpm -C app ops:oauth:manual-report --base-url https://townpet2.vercel.app --strict-base-url 1 --date 2026-03-05 --run-url https://github.com/answndud/townpet2/actions/runs/22705265766 --kakao-status pending --naver-status pending --out ../docs/ops/manual-checks/oauth-manual-check-2026-03-05.md` 통과.
+- 이슈/블로커
+- 없음(남은 블로커는 실계정 수동 증적 입력 자체).
+- 변경 파일(핵심)
+- `docs/ops/oauth2-external-auth-operations-guide.md`
+- `PLAN.md`
+- `PROGRESS.md`
+
 ### 2026-03-05: Cycle 173 완료 (OAuth 실검증 run 갱신 + 수동 점검 템플릿 최신화)
 - 완료 내용
 - `oauth-real-e2e` 워크플로우를 수동 재실행해 최신 run success를 확보.
