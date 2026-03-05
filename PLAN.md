@@ -615,6 +615,13 @@
 | post-deploy 성능 스냅샷 재수집 | Codex | P1 | `done` | 배포 반영 후 API 4종 30회 샘플(120건) 재수집 및 p50/p95 재집계 완료 | `/tmp/townpet_perf_20260305_postdeploy_final.tsv` |
 | search log burst 에러코드 검증 | Codex | P1 | `done` | 35회 연속 호출에서 `200 x30 + 429 x5` 확인(500 스파이크 소거) | `/tmp/townpet_searchlog_status_postdeploy_20260305.txt` |
 
+### Cycle 166: Breed lounge posts 게스트 캐시 헤더 적용 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| breed lounge posts 응답 캐시 헤더 추가 | Codex | P1 | `done` | `GET /api/lounges/breeds/[breedCode]/posts`가 guest 첫 페이지 요청에 `public, s-maxage=30, stale-while-revalidate=300` 헤더를 반환 | `app/src/app/api/lounges/breeds/[breedCode]/posts/route.ts` |
+| 인증/게스트 캐시 계약 테스트 보강 | Codex | P2 | `done` | 인증 요청은 `no-store`, 게스트 요청은 캐시 헤더가 노출되는 계약이 테스트로 고정됨 | `app/src/app/api/lounges/breeds/[breedCode]/posts/route.test.ts` |
+| 타입/회귀 테스트 재검증 | Codex | P2 | `done` | lint/typecheck 및 route 계약 테스트가 통과해 회귀 없음 | `pnpm -C app lint`, `pnpm -C app typecheck`, `pnpm -C app test -- ...` |
+
 ### Cycle 24: 피드 체류 개선 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
