@@ -4820,6 +4820,19 @@
 - 리스크/메모
 - 인덱스 생성 효과는 migration이 실제 배포 DB에 적용된 뒤 측정 가능하므로, 배포 후 `ops:perf:snapshot` 재측정으로 확인 필요.
 
+### 2026-03-05: Cycle 181 운영 성능 측정 안정화(cold/steady 분리)
+- 완료 내용
+- `ops:perf:snapshot` 스크립트에 warm-up 분리 집계를 추가해 threshold 평가를 steady-state 기준으로 고정.
+- 신규 env: `OPS_PERF_WARMUP_SAMPLES_PER_ENDPOINT`(기본 `1`)를 도입하고, summary에 `Full Samples`, `Warm-up Samples`, `Steady-state Samples` 섹션을 분리 출력.
+- threshold 평가 섹션에 기준(`steady-state`)을 명시해 cold MISS 단발치로 인한 false fail 해석 혼선을 줄임.
+- 검증 결과
+- 정적 검증: `pnpm -C app lint scripts/collect-latency-snapshot.ts`, `pnpm -C app typecheck` 통과.
+- 스크립트 소량 검증: `OPS_BASE_URL=https://townpet2.vercel.app OPS_PERF_GET_SAMPLES=3 OPS_PERF_POST_SAMPLES=3 OPS_PERF_PAUSE_MS=50 pnpm -C app ops:perf:snapshot` 통과.
+- 운영 재측정(110 samples): `/tmp/townpet_latency_snapshot_2026-03-05T14-30-57-594Z.tsv.summary.md`
+- steady-state 기준 임계치 평가 결과: `api_posts_global`, `api_posts_suggestions`, `api_breed_posts`, `api_search_log` 전부 PASS.
+- 참고 메모
+- 같은 배포에서도 cold/warm-up 구간은 네트워크/edge cache 상태에 따라 변동성이 있으므로, 운영 기준은 steady-state PASS + warm-up 별도 관찰로 유지.
+
 ## 이슈/블로커 통합
 - 환경 의존 블로커
 - Sentry 실수신 검증(DSN/프로젝트 설정 필요)

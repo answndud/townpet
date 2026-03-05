@@ -1126,6 +1126,12 @@
 | 피드 최신 조회용 `Post` 인덱스 추가 | Codex | P1 | `done` | `scope/status/createdAt DESC`, `type/scope/status/createdAt DESC` 인덱스가 Prisma schema + migration에 반영 | `app/prisma/schema.prisma`, `app/prisma/migrations/20260305143000_add_post_feed_indexes/migration.sql` |
 | 인덱스 변경 회귀 검증 | Codex | P1 | `done` | `prisma validate`, `typecheck`, `post queries + posts API` 테스트가 통과 | `app/prisma/schema.prisma`, `app/src/server/queries/post.queries.test.ts`, `app/src/app/api/posts/route.test.ts` |
 
+### Cycle 181: 운영 성능 측정 안정화(cold/steady 분리) (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| `ops:perf:snapshot` warm-up 분리 집계 추가 | Codex | P1 | `done` | `OPS_PERF_WARMUP_SAMPLES_PER_ENDPOINT`(기본 1) 설정으로 warm-up 샘플을 임계치 평가에서 제외하고 summary에 `Full/Warm-up/Steady-state` 3개 섹션이 출력됨 | `app/scripts/collect-latency-snapshot.ts` |
+| 배포 성능 재측정 및 임계치 PASS 확인 | Codex | P1 | `done` | 운영 URL 기준 110샘플 재측정에서 steady-state 기준 전 엔드포인트 PASS를 확인하고 결과 경로를 PROGRESS에 기록 | `/tmp/townpet_latency_snapshot_2026-03-05T14-30-57-594Z.tsv.summary.md` |
+
 ## Blocked (환경 의존)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
