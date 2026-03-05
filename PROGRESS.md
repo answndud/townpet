@@ -17,6 +17,29 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-05: Cycle 165 완료 (main 배포 반영 + post-deploy 성능/에러 검증)
+- 완료 내용
+- 커밋/배포:
+  - `4a0e979` push 후 `quality-gate` run `22701352904` 실패(원인: 원격 `auth.ts`에 `getCurrentUserId` export 누락).
+  - `f19ae95`로 `auth.ts`/`user.queries.ts` export 보강 후 재푸시.
+  - `quality-gate` run `22701395965` 성공으로 main 배포 파이프라인 정상화 확인.
+- post-deploy 성능 재측정(최종 샘플, 30회 x 4 API = 120):
+  - raw: `/tmp/townpet_perf_20260305_postdeploy_final.tsv`
+  - `api_posts_global`: TTFB p50 `151.4`, p95 `232.4` / total p50 `158.7`, p95 `238.9` (status `200 x30`)
+  - `api_posts_suggestions`: TTFB p50 `150.8`, p95 `323.5` / total p50 `157.0`, p95 `333.3` (status `200 x30`)
+  - `api_search_log`: TTFB p50 `241.4`, p95 `326.3` / total p50 `246.7`, p95 `347.3` (status `200 x30`)
+  - `api_breed_posts`: TTFB p50 `234.9`, p95 `367.9` / total p50 `241.4`, p95 `374.2` (status `200 x30`)
+- search log burst 검증:
+  - `/tmp/townpet_searchlog_status_postdeploy_20260305.txt`
+  - 35회 연속 호출 결과 `200 x30`, `429 x5`, `500 x0` 확인(초과분은 `RATE_LIMITED`로 정상 매핑).
+- 이슈/블로커
+- 없음.
+- 변경 파일(핵심)
+- `app/src/server/auth.ts`
+- `app/src/server/queries/user.queries.ts`
+- `PLAN.md`
+- `PROGRESS.md`
+
 ### 2026-03-05: Cycle 164 완료 (Search log 인증 조회 실패 guest fallback)
 - 완료 내용
 - `POST /api/search/log`에서 `getCurrentUserId` 조회가 예외를 던져도 요청을 실패시키지 않고 guest(IP) rate-limit key로 fallback 하도록 보강.
