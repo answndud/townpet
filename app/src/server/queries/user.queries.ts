@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma, UserRole } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 
@@ -57,6 +57,25 @@ const petListCache = new Map<
     pets: Array<Record<string, unknown>>;
   }
 >();
+
+type UserRoleSummary = {
+  id: string;
+  role: UserRole;
+};
+
+export async function getUserRoleByEmail(email: string): Promise<UserRoleSummary | null> {
+  return prisma.user.findUnique({
+    where: { email },
+    select: { id: true, role: true },
+  });
+}
+
+export async function getUserRoleById(id: string): Promise<UserRoleSummary | null> {
+  return prisma.user.findUnique({
+    where: { id },
+    select: { id: true, role: true },
+  });
+}
 
 export async function getUserByEmail(email: string) {
   if (!supportsUserPreferredPetTypes()) {
