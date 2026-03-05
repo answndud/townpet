@@ -223,6 +223,7 @@
 - `pnpm -C app ops:oauth:manual-report --date <YYYY-MM-DD> --run-url <RUN_URL> --out ../docs/ops/manual-checks/oauth-manual-check-<YYYY-MM-DD>.md`로 기록 템플릿 생성
 - 생성된 markdown을 기준으로 `PROGRESS.md`에 결과 append
 - `PLAN.md`의 `blocked` 상태 갱신(조건 충족 시 `done`)
+- `docs/ops/manual-checks/README.md` 기준으로 PII 없이 증적 링크만 기록
 
 ---
 

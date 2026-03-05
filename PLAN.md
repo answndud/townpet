@@ -682,6 +682,13 @@
 | OAuth 수동 점검 템플릿을 저장소 경로에 생성 | Codex | P1 | `done` | `docs/ops/manual-checks/oauth-manual-check-2026-03-05.md` 파일이 생성되어 즉시 증적 입력이 가능한 상태 | `pnpm -C app ops:oauth:manual-report ...` |
 | 운영 가이드 출력 경로 표준화 | Codex | P2 | `done` | OAuth 운영 가이드의 수동 리포트 생성 명령이 `/tmp`가 아닌 `docs/ops/manual-checks/` 경로를 기본으로 안내 | `docs/ops/oauth2-external-auth-operations-guide.md` |
 
+### Cycle 175: OAuth 수동 증적 추적 가능화 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| manual-checks 디렉터리 git 추적 허용 | Codex | P1 | `done` | `.gitignore`에서 `docs/ops/manual-checks/*.md`가 추적 가능하도록 allowlist가 추가됨 | `.gitignore` |
+| 수동 증적 운영 README 추가 | Codex | P2 | `done` | 생성 명령/PII 금지/완료 처리 규칙이 `docs/ops/manual-checks/README.md`에 문서화됨 | `docs/ops/manual-checks/README.md` |
+| 오늘자 OAuth 수동 점검 템플릿 저장 | Codex | P1 | `done` | run `22705265766` 기준 템플릿 파일이 저장소 경로에 생성되어 바로 상태/evidence 입력 가능 | `docs/ops/manual-checks/oauth-manual-check-2026-03-05.md` |
+
 ### Cycle 24: 피드 체류 개선 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
