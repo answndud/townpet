@@ -29,8 +29,8 @@
   - `workflow_dispatch` 입력(`target_base_url/get_samples/post_samples/pause_ms`)
   - schedule: UTC `00:10/08:10/16:10` (KST `09:10/17:10/01:10`)
   - 실행 결과를 `GITHUB_STEP_SUMMARY` + artifact(tsv/md)로 보존
-- 운영 가이드 반영:
-  - `docs/GUIDE.md`에 `ops:perf:snapshot` 수동 실행법/환경변수/워크플로우 정보를 추가
+- 운영 가이드 검증:
+  - `docs/GUIDE.md`에 `ops:perf:snapshot` 수동 실행법/환경변수/워크플로우 안내가 유지되고 있음을 확인
 - 검증 결과
 - `pnpm -C app lint scripts/collect-latency-snapshot.ts` 통과.
 - `pnpm -C app typecheck` 통과.
@@ -43,7 +43,6 @@
 - `app/scripts/collect-latency-snapshot.ts`
 - `app/package.json`
 - `.github/workflows/ops-latency-snapshots.yml`
-- `docs/GUIDE.md`
 - `PLAN.md`
 
 ### 2026-03-05: Cycle 169 완료 (p95 아웃라이어 원인 분리 진단)

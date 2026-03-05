@@ -649,7 +649,7 @@
 | ops 지연 스냅샷 수집 스크립트 추가 | Codex | P1 | `done` | `OPS_BASE_URL` 기준 API 4종 샘플 수집(tsv) + p50/p95 요약(md)을 생성하는 스크립트 제공 | `app/scripts/collect-latency-snapshot.ts` |
 | npm 실행 진입점 추가 | Codex | P2 | `done` | `pnpm ops:perf:snapshot`로 스크립트 실행 가능 | `app/package.json` |
 | GitHub Actions 정기 수집 워크플로우 추가 | Codex | P1 | `done` | `ops-latency-snapshots`가 workflow_dispatch + 하루 3회 schedule로 동작하고 artifact/step-summary를 남김 | `.github/workflows/ops-latency-snapshots.yml` |
-| 운영 가이드 실행법 반영 | Codex | P2 | `done` | GUIDE에 로컬 수동 실행법/환경변수/자동 수집 워크플로우 정보가 문서화됨 | `docs/GUIDE.md` |
+| 운영 가이드 실행 항목 검증 | Codex | P2 | `done` | GUIDE에서 로컬 수동 실행법/환경변수/자동 수집 워크플로우 안내가 유지되고 있는지 확인 | `docs/GUIDE.md` |
 
 ### Cycle 24: 피드 체류 개선 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
