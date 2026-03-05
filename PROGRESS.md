@@ -17,6 +17,28 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-05: Cycle 175 완료 (OAuth 수동 증적 추적 가능화)
+- 완료 내용
+- `.gitignore` allowlist를 추가해 `docs/ops/manual-checks/*.md`를 저장소에서 추적 가능하도록 전환.
+- 수동 증적 운영 기준 문서 추가:
+  - `docs/ops/manual-checks/README.md`
+  - 생성 명령/PII 금지/blocked 해소 기준(두 provider `pass`)을 고정.
+- 최신 실OAuth run(`22705265766`) 기준 수동 점검 템플릿을 저장소 경로에 배치:
+  - `docs/ops/manual-checks/oauth-manual-check-2026-03-05.md`
+- OAuth 운영 가이드에 `manual-checks/README.md` 참조를 추가해 기록 규칙을 연결.
+- 검증 결과
+- `git check-ignore -v docs/ops/manual-checks/oauth-manual-check-2026-03-05.md` 기준으로 ignore 해제 확인.
+- 템플릿 파일에 Base URL sanity/Expected Callback/Provider 상태 입력 칸이 정상 생성됨 확인.
+- 이슈/블로커
+- 실계정 증적 자체 입력(카카오/네이버 각각 pass 판정)은 외부 수동 단계로 잔여.
+- 변경 파일(핵심)
+- `.gitignore`
+- `docs/ops/manual-checks/README.md`
+- `docs/ops/manual-checks/oauth-manual-check-2026-03-05.md`
+- `docs/ops/oauth2-external-auth-operations-guide.md`
+- `PLAN.md`
+- `PROGRESS.md`
+
 ### 2026-03-05: Cycle 174 완료 (OAuth 수동 증적 저장 경로 고정)
 - 완료 내용
 - 운영 URL 기준 OAuth 수동 점검 템플릿을 저장소 경로에 생성:
