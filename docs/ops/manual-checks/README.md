@@ -11,6 +11,9 @@
 - Kakao/Naver 각각 상태(`pass`/`fail`)를 채웁니다.
 - Evidence 칸에 캡처 링크(또는 파일 경로)를 남깁니다.
 - 개인정보(실명, 이메일 전체, 전화번호)는 기록하지 않습니다.
+- 빠른 업데이트 명령:
+  - `pnpm -C app ops:oauth:update-manual --report ../docs/ops/manual-checks/oauth-manual-check-YYYY-MM-DD.md --provider kakao --status pass --evidence <evidence-link>`
+  - `pnpm -C app ops:oauth:update-manual --report ../docs/ops/manual-checks/oauth-manual-check-YYYY-MM-DD.md --provider naver --status pass --evidence <evidence-link>`
 
 ## 완료 처리
 - 검증 명령:

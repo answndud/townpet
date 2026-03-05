@@ -697,6 +697,14 @@
 | 운영 문서 명령 동기화 | Codex | P2 | `done` | OAuth 운영 가이드 및 manual-check README에 verify 명령이 반영됨 | `docs/ops/oauth2-external-auth-operations-guide.md`, `docs/ops/manual-checks/README.md` |
 | 동작 검증 | Codex | P1 | `done` | lint/typecheck/verify 실행 결과가 기록되고, 현재 보고서(pending)에서 `readyToCloseCycle23: no`가 확인됨 | `pnpm -C app lint ...`, `pnpm -C app typecheck`, `pnpm -C app ops:oauth:verify-manual ...` |
 
+### Cycle 177: OAuth 수동 점검 결과 입력 자동화 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| Provider 결과 업데이트 스크립트 추가 | Codex | P1 | `done` | report markdown의 Kakao/Naver 행과 PROGRESS snippet 상태를 CLI로 안전하게 갱신 가능 | `app/scripts/update-oauth-manual-check.ts` |
+| npm 실행 명령 추가 | Codex | P2 | `done` | `pnpm -C app ops:oauth:update-manual --report <path> --provider <kakao|naver> --status <pending|pass|fail> --evidence <link>` 제공 | `app/package.json` |
+| 운영 문서 명령 반영 | Codex | P2 | `done` | manual-check README와 OAuth 운영 가이드에 update-manual 예시 명령이 반영 | `docs/ops/manual-checks/README.md`, `docs/ops/oauth2-external-auth-operations-guide.md` |
+| 검증 | Codex | P1 | `done` | lint/typecheck/update/verify 명령이 정상 동작하며 현재 상태가 `readyToCloseCycle23: no`로 유지됨 | `pnpm -C app lint ...`, `pnpm -C app typecheck`, `pnpm -C app ops:oauth:update-manual ...`, `pnpm -C app ops:oauth:verify-manual ...` |
+
 ### Cycle 24: 피드 체류 개선 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|

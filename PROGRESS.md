@@ -17,6 +17,32 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-05: Cycle 177 완료 (OAuth 수동 점검 결과 입력 자동화)
+- 완료 내용
+- 수동 점검 markdown 결과 행을 CLI로 갱신하는 스크립트 추가:
+  - `app/scripts/update-oauth-manual-check.ts`
+  - 지원 인자: `--provider`, `--status`, `--evidence`, `--account`, `--notes`
+  - provider table 행 + PROGRESS snippet 내 provider 상태 라인을 함께 업데이트
+- npm 명령 추가:
+  - `pnpm -C app ops:oauth:update-manual --report <path> --provider <kakao|naver> --status <pending|pass|fail> --evidence <link>`
+- 운영 문서 반영:
+  - `docs/ops/manual-checks/README.md`
+  - `docs/ops/oauth2-external-auth-operations-guide.md`
+- 검증 결과
+- `pnpm -C app lint scripts/update-oauth-manual-check.ts scripts/verify-oauth-manual-check.ts` 통과.
+- `pnpm -C app typecheck` 통과.
+- `pnpm -C app ops:oauth:update-manual --report ../docs/ops/manual-checks/oauth-manual-check-2026-03-05.md --provider kakao --status pending --evidence screenshot/video link` 통과.
+- `pnpm -C app ops:oauth:verify-manual --report ../docs/ops/manual-checks/oauth-manual-check-2026-03-05.md` 실행 결과 `readyToCloseCycle23: no`.
+- 이슈/블로커
+- 도구 자동화는 완료. 남은 작업은 실계정 결과를 `pass + evidence`로 입력하는 외부 수동 단계.
+- 변경 파일(핵심)
+- `app/scripts/update-oauth-manual-check.ts`
+- `app/package.json`
+- `docs/ops/manual-checks/README.md`
+- `docs/ops/oauth2-external-auth-operations-guide.md`
+- `PLAN.md`
+- `PROGRESS.md`
+
 ### 2026-03-05: Cycle 176 완료 (OAuth 수동 증적 충족 자동판정 도입)
 - 완료 내용
 - 수동 점검 markdown(`docs/ops/manual-checks/oauth-manual-check-*.md`)에서 provider 상태/증적 칸을 자동 판정하는 스크립트 추가:
