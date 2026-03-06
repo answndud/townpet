@@ -86,6 +86,16 @@ const DEFAULT_ENDPOINT_THRESHOLDS: Record<string, EndpointThreshold> = {
     maxSlowCount: 1,
     maxNon200Count: 0,
   },
+  api_feed_guest: {
+    maxP95TotalMs: 420,
+    maxSlowCount: 1,
+    maxNon200Count: 0,
+  },
+  api_search_guest: {
+    maxP95TotalMs: 420,
+    maxSlowCount: 1,
+    maxNon200Count: 0,
+  },
   api_breed_posts: {
     maxP95TotalMs: 450,
     maxSlowCount: 1,
@@ -457,6 +467,20 @@ async function main() {
       label: "api_posts_suggestions",
       method: "GET",
       path: `/api/posts/suggestions?q=${encodeURIComponent("산책코스")}`,
+      samples: getSamples,
+      pauseMs,
+    },
+    {
+      label: "api_feed_guest",
+      method: "GET",
+      path: "/api/feed/guest",
+      samples: getSamples,
+      pauseMs,
+    },
+    {
+      label: "api_search_guest",
+      method: "GET",
+      path: `/api/search/guest?q=${encodeURIComponent("강아지")}`,
       samples: getSamples,
       pauseMs,
     },

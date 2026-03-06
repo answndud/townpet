@@ -109,8 +109,18 @@ async function main() {
       accept: "application/json",
     },
     {
+      label: "api_feed_guest",
+      path: "/api/feed/guest",
+      accept: "application/json",
+    },
+    {
       label: "api_posts_suggestions",
       path: `/api/posts/suggestions?q=${encodeURIComponent("산책코스")}`,
+      accept: "application/json",
+    },
+    {
+      label: "api_search_guest",
+      path: `/api/search/guest?q=${encodeURIComponent("강아지")}`,
       accept: "application/json",
     },
     {
