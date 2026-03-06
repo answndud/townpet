@@ -25,6 +25,12 @@
 
 ## Active Plan
 
+### Cycle 194: guest API prewarm/snapshot 자동화 확장 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| prewarm 대상에 guest API 추가 | Codex | P1 | `done` | `ops:prewarm`이 `/api/feed/guest`, `/api/search/guest`까지 2회 호출하고 실배포에서 2차 `HIT` 전환을 확인 | `app/scripts/prewarm-deployment.ts` |
+| latency snapshot 대상/threshold에 guest API 추가 | Codex | P1 | `done` | `ops:perf:snapshot`이 guest API 두 경로를 함께 측정하고 steady-state p95 PASS를 기록 | `app/scripts/collect-latency-snapshot.ts`, `PROGRESS.md` |
+
 ### Cycle 193: guest 공개 API 배포 검증 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|

@@ -17,6 +17,54 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-06: Cycle 194 guest API prewarm/snapshot 자동화 확장
+- 완료 내용
+- `ops:prewarm` 대상 확장:
+  - `app/scripts/prewarm-deployment.ts`
+  - `/api/feed/guest`
+  - `/api/search/guest?q=강아지`
+  - 기존 `/feed`, `/search`, `/api/posts`, `/api/posts/suggestions`, 품종 피드와 함께 자동 호출
+- `ops:perf:snapshot` 대상 확장:
+  - `app/scripts/collect-latency-snapshot.ts`
+  - `api_feed_guest`
+  - `api_search_guest`
+  - threshold도 guest API 기준으로 추가
+- 실배포 재검증
+- `OPS_BASE_URL=https://townpet2.vercel.app pnpm -C app ops:prewarm`
+  - 1차: `api_feed_guest MISS 967ms`, `api_search_guest MISS 555ms`
+  - 2차: `api_feed_guest HIT 118ms`, `api_search_guest HIT 111ms`
+  - 같은 실행에서 `/feed`, `/search`도 2차 `HIT` 확인
+- `OPS_BASE_URL=https://townpet2.vercel.app pnpm -C app ops:perf:snapshot`
+  - 샘플 수: `170`
+  - warmup 제외 steady-state 기준 전부 PASS
+- 핵심 수치(steady-state p95)
+- `api_feed_guest`: `228.4ms`
+- `api_search_guest`: `215.2ms`
+- `api_posts_global`: `374.0ms`
+- `api_posts_suggestions`: `226.5ms`
+- `api_breed_posts`: `194.6ms`
+- `api_search_log`: `299.3ms`
+- warm-up tail
+- `api_posts_global` 첫 샘플 TTFB `3083.0ms`
+- `api_search_log` 첫 샘플 TTFB `566.5ms`
+- 해석
+- guest API 전환은 운영 자동화(prewarm/snapshot)까지 포함해 정착됨
+- 첫 요청 tail은 여전히 남아 있지만, guest API는 2차부터 빠르게 `HIT`로 전환
+- 검증 결과
+- `pnpm -C app lint scripts/prewarm-deployment.ts scripts/collect-latency-snapshot.ts` 통과
+- `pnpm -C app typecheck` 통과
+- `OPS_BASE_URL=https://townpet2.vercel.app pnpm -C app ops:prewarm`
+- `OPS_BASE_URL=https://townpet2.vercel.app pnpm -C app ops:perf:snapshot`
+- 이슈/블로커
+- cold/warm-up 첫 요청 tail은 계속 추적 필요
+- HTML page 자체의 `private, no-store` 제약은 여전히 별도 이슈
+- 변경 파일(핵심)
+- `app/scripts/prewarm-deployment.ts`
+- `app/scripts/collect-latency-snapshot.ts`
+- `PLAN.md`
+- `PROGRESS.md`
+- `docs/operations/캐시_성능_적용_기록.md`
+
 ### 2026-03-06: Cycle 193 guest 공개 API 배포 검증
 - 완료 내용
 - 실배포 헤더 확인:
