@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { useRef, useState, useTransition } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { PostType } from "@prisma/client";
 
 import {
   PET_TYPE_PREFERENCE_COOKIE,
+  parsePetTypePreferenceCookie,
   serializePetTypePreferenceCookie,
 } from "@/lib/pet-type-preference-cookie";
 import { postTypeMeta } from "@/lib/post-presenter";
@@ -53,13 +54,25 @@ export function FeedHoverMenu({
   const triggerClass =
     "inline-flex h-8 items-center appearance-none rounded-sm bg-transparent px-1 text-[14px] leading-none text-[#315484] transition hover:bg-[#dcecff] hover:text-[#1f4f8f]";
   const [openMenu, setOpenMenu] = useState<"board" | "pet" | null>(null);
-  const [selectedPetTypeIds, setSelectedPetTypeIds] = useState<string[]>(
-    initialPreferredPetTypeIds,
-  );
+  const [selectedPetTypeIds, setSelectedPetTypeIds] = useState<string[]>(() => {
+    if (typeof document === "undefined" || isAuthenticated) {
+      return initialPreferredPetTypeIds;
+    }
+
+    const cookieValue = document.cookie
+      .split("; ")
+      .find((value) => value.startsWith(`${PET_TYPE_PREFERENCE_COOKIE}=`))
+      ?.split("=")[1];
+    const parsedCookieIds = parsePetTypePreferenceCookie(
+      cookieValue ? decodeURIComponent(cookieValue) : undefined,
+    );
+    return parsedCookieIds.length > 0 ? parsedCookieIds : initialPreferredPetTypeIds;
+  });
   const [message, setMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const clearCloseTimer = () => {
@@ -101,7 +114,14 @@ export function FeedHoverMenu({
       document.cookie = `${PET_TYPE_PREFERENCE_COOKIE}=${encodeURIComponent(serializePetTypePreferenceCookie(selectedPetTypeIds))}; path=/; max-age=31536000; samesite=lax`;
       setMessage("관심 동물 설정을 저장했습니다.");
       if (pathname?.startsWith("/feed")) {
-        router.refresh();
+        const params = new URLSearchParams(searchParams?.toString());
+        params.delete("petType");
+        params.delete("page");
+        for (const petTypeId of selectedPetTypeIds) {
+          params.append("petType", petTypeId);
+        }
+        const nextPath = params.toString() ? `/feed?${params.toString()}` : "/feed";
+        router.push(nextPath);
       }
       return;
     }

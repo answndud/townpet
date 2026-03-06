@@ -1,19 +1,18 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { unstable_cache } from "next/cache";
 import { redirect } from "next/navigation";
 import { PostScope, PostType } from "@prisma/client";
 
 import { HighlightText } from "@/components/content/highlight-text";
 import { FeedSearchForm } from "@/components/posts/feed-search-form";
 import { EmptyState } from "@/components/ui/empty-state";
-import { auth } from "@/lib/auth";
 import { isLoginRequiredPostType } from "@/lib/post-access";
 import { formatRelativeDate, postTypeMeta } from "@/lib/post-presenter";
 import { postListSchema, toPostListInput } from "@/lib/validations/post";
 import { getGuestReadLoginRequiredPostTypes } from "@/server/queries/policy.queries";
 import { listRankedSearchPosts } from "@/server/queries/post.queries";
 import { getPopularSearchTerms } from "@/server/queries/search.queries";
-import { getUserWithNeighborhoods } from "@/server/queries/user.queries";
 
 type FeedSearchIn = "ALL" | "TITLE" | "CONTENT" | "AUTHOR";
 
@@ -40,6 +39,22 @@ export const metadata: Metadata = {
   },
 };
 
+const getGuestSearchContext = unstable_cache(
+  async () => {
+    const [loginRequiredTypes, popularSearchTerms] = await Promise.all([
+      getGuestReadLoginRequiredPostTypes(),
+      getPopularSearchTerms(10),
+    ]);
+
+    return {
+      loginRequiredTypes,
+      popularSearchTerms,
+    };
+  },
+  ["search-guest-context"],
+  { revalidate: 60 },
+);
+
 function toFeedSearchIn(value?: string): FeedSearchIn {
   if (value === "TITLE" || value === "CONTENT" || value === "AUTHOR") {
     return value;
@@ -47,20 +62,8 @@ function toFeedSearchIn(value?: string): FeedSearchIn {
   return "ALL";
 }
 
-export default async function SearchPage({ searchParams }: SearchPageProps) {
-  const session = await auth();
-  const userId = session?.user?.id;
-  const user = userId ? await getUserWithNeighborhoods(userId) : null;
-  if (!user) {
-    redirect("/search/guest");
-  }
-  const [loginRequiredTypes, popularSearchTerms] = await Promise.all([
-    getGuestReadLoginRequiredPostTypes(),
-    getPopularSearchTerms(10),
-  ]);
-  const isAuthenticated = Boolean(user);
-  const blockedTypesForGuest = !isAuthenticated ? loginRequiredTypes : [];
-
+export default async function GuestSearchPage({ searchParams }: SearchPageProps) {
+  const { loginRequiredTypes, popularSearchTerms } = await getGuestSearchContext();
   const resolvedParams = (await searchParams) ?? {};
   const hasLegacyScope =
     typeof resolvedParams.scope === "string" && resolvedParams.scope.trim().length > 0;
@@ -83,10 +86,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const effectiveScope = PostScope.GLOBAL;
   const query = listInput?.q?.trim() ?? "";
   const selectedSearchIn = toFeedSearchIn(resolvedParams.searchIn);
-  const isGuestTypeBlocked =
-    !isAuthenticated && isLoginRequiredPostType(type, loginRequiredTypes);
-
-  const neighborhoodId = undefined;
+  const isGuestTypeBlocked = isLoginRequiredPostType(type, loginRequiredTypes);
 
   const resultItems =
     query.length > 0 && !isGuestTypeBlocked
@@ -96,9 +96,9 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           type,
           q: query,
           searchIn: selectedSearchIn,
-          excludeTypes: isAuthenticated ? undefined : blockedTypesForGuest,
-          neighborhoodId,
-          viewerId: user?.id,
+          excludeTypes: loginRequiredTypes,
+          neighborhoodId: undefined,
+          viewerId: undefined,
         })
       : [];
 
@@ -159,77 +159,30 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           <section className="tp-card overflow-hidden">
             <div className="border-b border-[#dbe6f6] px-4 py-3 text-sm text-[#4f678d] sm:px-5">
               검색어 <span className="font-semibold text-[#1f3f71]">&quot;{query}&quot;</span> ·{" "}
-              {resultItems.length}건
+              결과 {resultItems.length}건
             </div>
-            <div className="divide-y divide-[#e1e9f5]">
-              {resultItems.map((post) => {
-                const guestMeta = post as {
-                  guestDisplayName?: string | null;
-                  guestAuthor?: {
-                    displayName?: string | null;
-                    ipDisplay?: string | null;
-                    ipLabel?: string | null;
-                  } | null;
-                  guestIpDisplay?: string | null;
-                  guestIpLabel?: string | null;
-                };
-                const resolvedGuestIpDisplay =
-                  guestMeta.guestIpDisplay ?? guestMeta.guestAuthor?.ipDisplay ?? null;
-                const resolvedGuestIpLabel =
-                  guestMeta.guestIpLabel ?? guestMeta.guestAuthor?.ipLabel ?? null;
-                const meta = postTypeMeta[post.type];
-                const excerpt =
-                  post.content.length > 180
-                    ? `${post.content.slice(0, 180)}...`
-                    : post.content;
-                return (
-                  <article key={post.id} className="px-4 py-4 sm:px-5">
-                    <div className="mb-2 flex flex-wrap items-center gap-2 text-[11px]">
-                      <span
-                        className={`inline-flex items-center gap-1 border px-2 py-0.5 font-semibold ${meta.chipClass}`}
-                      >
-                        <span>{meta.icon}</span>
-                        {meta.label}
-                      </span>
-                      <span className="border border-[#dbe5f3] bg-white px-2 py-0.5 text-[#5d789f]">
-                        {post.neighborhood
-                          ? `${post.neighborhood.city} ${post.neighborhood.name}`
-                          : "전체"}
-                      </span>
-                    </div>
-
-                    <Link
-                      href={
-                        isAuthenticated
-                          ? `/posts/${post.id}`
-                          : `/posts/${post.id}/guest`
-                      }
-                      className="text-base font-semibold text-[#10284a] transition hover:text-[#2f5da4] sm:text-lg"
-                    >
+            <div className="divide-y divide-[#e4edf9]">
+              {resultItems.map((post) => (
+                <article key={post.id} className="px-4 py-4 sm:px-5">
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-[#59739b]">
+                    <span className="font-semibold text-[#1f4f8f]">
+                      {postTypeMeta[post.type].label}
+                    </span>
+                    <span>•</span>
+                    <span>{formatRelativeDate(post.createdAt.toISOString())}</span>
+                    <span>•</span>
+                    <span>{post.author.nickname ?? post.author.name ?? "익명"}</span>
+                  </div>
+                  <Link href={`/posts/${post.id}/guest`} className="mt-2 block">
+                    <h2 className="text-base font-semibold text-[#12315c] sm:text-lg">
                       <HighlightText text={post.title} query={query} />
-                    </Link>
-                    <p className="mt-1 line-clamp-3 text-sm text-[#4c6488]">
-                      <HighlightText text={excerpt} query={query} />
+                    </h2>
+                    <p className="mt-2 line-clamp-3 text-sm leading-6 text-[#4f678d]">
+                      <HighlightText text={post.content} query={query} />
                     </p>
-                    <div className="mt-2 text-xs text-[#5f79a0]">
-                      {guestMeta.guestDisplayName || guestMeta.guestAuthor?.displayName ? (
-                        <span>
-                          {guestMeta.guestDisplayName ?? guestMeta.guestAuthor?.displayName}
-                          {resolvedGuestIpDisplay
-                            ? ` (${resolvedGuestIpLabel ?? "아이피"} ${resolvedGuestIpDisplay})`
-                            : ""}
-                        </span>
-                      ) : (
-                        <Link href={`/users/${post.author.id}`} className="hover:text-[#2f5da4]">
-                          {post.author.nickname ?? post.author.name ?? "익명"}
-                        </Link>
-                      )}{" "}
-                      ·{" "}
-                      {formatRelativeDate(post.createdAt)} · 댓글 {post.commentCount}
-                    </div>
-                  </article>
-                );
-              })}
+                  </Link>
+                </article>
+              ))}
             </div>
           </section>
         )}

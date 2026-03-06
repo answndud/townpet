@@ -25,6 +25,25 @@
 
 ## Active Plan
 
+### Cycle 188: 정적 shell + guest search 캐시 분리 (진행중)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| root layout의 서버 auth/cookie 의존 제거 | Codex | P1 | `done` | 최상위 layout이 서버에서 `auth()`/`cookies()`를 읽지 않고 viewer shell은 client fetch로 보강됨 | `app/src/app/layout.tsx`, `app/src/components/navigation/app-shell-header.tsx`, `app/src/app/api/viewer-shell/route.ts` |
+| guest /search 정적 분리 + rewrite 캐시 적용 | Codex | P1 | `done` | guest `/search`가 전용 경로로 rewrite되고 public cache-control이 적용됨. 코드/테스트 기준 검증 완료 | `app/src/app/search/page.tsx`, `app/src/app/search/guest/page.tsx`, `app/middleware.ts` |
+| guest /feed 정적 분리 + rewrite 캐시 적용 | Codex | P1 | `in_progress` | guest `/feed`가 전용 경로로 rewrite되고 public cache-control이 적용됨. 실배포 헤더 확인까지 완료 | `app/src/app/feed/guest/page.tsx`, `app/src/components/navigation/feed-hover-menu.tsx`, `app/middleware.ts` |
+
+### Cycle 187: 배포 prewarm 자동화 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 공개 GET 경로 prewarm 스크립트 추가 | Codex | P1 | `done` | 배포 URL 기준 공개 feed/search/API 경로를 2회 호출하는 ops 스크립트가 추가됨 | `app/scripts/prewarm-deployment.ts`, `app/package.json` |
+| ops-smoke-checks에 prewarm 단계 연결 | Codex | P1 | `done` | smoke workflow에서 health 뒤 prewarm을 자동 실행하고 운영 문서에 반영됨 | `.github/workflows/ops-smoke-checks.yml`, `docs/operations/*` |
+
+### Cycle 186: 게시글 액션 캐시 무효화 축소 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 게시글 액션의 불필요한 root/feed revalidation 축소 | Codex | P1 | `done` | 게시글 생성/수정/삭제/반응 액션이 실제로 필요한 경로만 revalidate하고 `"/"` 무효화가 제거됨 | `app/src/server/actions/post.ts` |
+| 게시글 액션 revalidation 회귀 테스트 추가 | Codex | P1 | `done` | create/update/delete/reaction 경로의 revalidate 범위를 검증하는 단위 테스트 추가 | `app/src/server/actions/post.test.ts` |
+
 ### Cycle 182: 배포 보안 체크리스트 정리/재배치 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
@@ -1176,6 +1195,12 @@
 | `docs/` 최상위 분류 재편 | Codex | P1 | `done` | 추상적/중복 폴더(`ops`, `plan`, `data_analytics`, `policy_ops`, `사업계획`)가 목적 중심 구조(`operations`, `reports`, `analytics`, `policies`, `business`)로 정리됨 | `docs/*` |
 | 아카이브 분리 및 진입점 추가 | Codex | P1 | `done` | 초안/v1/과거 운영 리포트가 `docs/archive/`로 이동하고, `docs/문서_안내.md`와 핵심 안내 문서(`사업_문서_안내.md`, `운영_문서_안내.md`, `보관_문서_안내.md`)가 정리됨 | `docs/archive/*`, `docs/*` |
 | 코드/문서 참조 경로 정합화 | Codex | P1 | `done` | GUIDE, 운영/보안 문서, 스크립트, E2E 산출물 경로가 새 구조 기준으로 갱신되고 활성 경로에 오래된 `docs/ops`/`docs/plan` 참조가 남지 않음 | `docs/개발_운영_가이드.md`, `README.md`, `app/scripts/*`, `app/e2e/*` |
+
+### Cycle 185: 운영 env 템플릿 실제 키 목록 정렬 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| Vercel runtime 템플릿 키 정렬 | Codex | P1 | `done` | `.env.production.example`이 현재 실제 Vercel runtime 키(`NEXTAUTH_URL`, `DIRECT_URL`, `RESEND_API_KEY`, OAuth 키 포함) 기준으로 정리됨 | `app/.env.production.example` |
+| Vercel/GitHub Actions 실제 키 목록 문서 반영 | Codex | P1 | `done` | 운영 체크리스트와 Vercel 가이드가 사용자가 공유한 실제 key 목록과 현재 판단을 반영함 | `docs/operations/manual-checks/배포_보안_체크리스트.md`, `docs/operations/Vercel_OAuth_초기설정_가이드.md` |
 
 ## Blocked (환경 의존)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |

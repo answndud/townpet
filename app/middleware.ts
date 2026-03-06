@@ -110,6 +110,11 @@ export function isGuestPostDetailPath(pathname: string) {
   return segments.length === 2 || (segments.length === 3 && segments[2] === "guest");
 }
 
+export function isGuestSearchPath(pathname: string) {
+  const segments = pathname.split("/").filter(Boolean);
+  return segments[0] === "search" && segments.length <= 2;
+}
+
 export function isNicknameRequiredProfilePath(pathname: string) {
   if (pathname === "/profile" || pathname.startsWith("/profile/")) {
     return true;
@@ -276,6 +281,20 @@ export async function middleware(request: NextRequest) {
     !sessionToken &&
     !hasSessionCookie;
   if (isGuest && request.method === "GET") {
+    if (request.nextUrl.pathname === "/search") {
+      responseHeaders.set(
+        "cache-control",
+        "public, s-maxage=60, stale-while-revalidate=300",
+      );
+      appendVary(responseHeaders, "Cookie");
+      const rewrittenUrl = request.nextUrl.clone();
+      rewrittenUrl.pathname = "/search/guest";
+      return NextResponse.rewrite(rewrittenUrl, {
+        request: { headers: requestHeaders },
+        headers: responseHeaders,
+      });
+    }
+
     if (request.nextUrl.pathname === "/feed") {
       const scope = request.nextUrl.searchParams.get("scope");
       const personalized = request.nextUrl.searchParams.get("personalized");
@@ -284,7 +303,12 @@ export async function middleware(request: NextRequest) {
           "cache-control",
           "public, s-maxage=60, stale-while-revalidate=300",
         );
-        appendVary(responseHeaders, "Cookie");
+        const rewrittenUrl = request.nextUrl.clone();
+        rewrittenUrl.pathname = "/feed/guest";
+        return NextResponse.rewrite(rewrittenUrl, {
+          request: { headers: requestHeaders },
+          headers: responseHeaders,
+        });
       }
     }
 

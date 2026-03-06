@@ -27,13 +27,20 @@ type PostReactionActionResult =
     }
   | { ok: false; code: string; message: string };
 
+function revalidateFeedPage() {
+  revalidatePath("/feed");
+}
+
+function revalidatePostDetailPage(postId: string) {
+  revalidatePath(`/posts/${postId}`);
+}
+
 export async function createPostAction(input: unknown): Promise<PostActionResult> {
   try {
     const user = await requireCurrentUser();
 
     await createPost({ authorId: user.id, input });
-    revalidatePath("/feed");
-    revalidatePath("/");
+    revalidateFeedPage();
     return { ok: true };
   } catch (error) {
     if (error instanceof ServiceError) {
@@ -52,9 +59,8 @@ export async function deletePostAction(postId: string): Promise<PostActionResult
   try {
     const user = await requireCurrentUser();
     await deletePost({ postId, authorId: user.id });
-    revalidatePath("/feed");
-    revalidatePath("/");
-    revalidatePath(`/posts/${postId}`);
+    revalidateFeedPage();
+    revalidatePostDetailPage(postId);
     return { ok: true };
   } catch (error) {
     if (error instanceof ServiceError) {
@@ -76,9 +82,8 @@ export async function updatePostAction(
   try {
     const user = await requireCurrentUser();
     await updatePost({ postId, authorId: user.id, input });
-    revalidatePath("/feed");
-    revalidatePath("/");
-    revalidatePath(`/posts/${postId}`);
+    revalidateFeedPage();
+    revalidatePostDetailPage(postId);
     return { ok: true };
   } catch (error) {
     if (error instanceof ServiceError) {
@@ -112,9 +117,7 @@ export async function togglePostReactionAction(
       userId: user.id,
       type: type as PostReactionType,
     });
-    revalidatePath("/feed");
-    revalidatePath("/");
-    revalidatePath(`/posts/${postId}`);
+    revalidatePostDetailPage(postId);
 
     return {
       ok: true,
