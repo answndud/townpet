@@ -5,7 +5,7 @@ import Naver from "next-auth/providers/naver";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import type { Provider } from "next-auth/providers";
 
-import { assertRuntimeEnv, runtimeEnv } from "@/lib/env";
+import { assertRuntimeEnv, isSocialDevLoginEnabled, runtimeEnv } from "@/lib/env";
 import { prisma } from "@/lib/prisma";
 import { getClientIp } from "@/server/request-context";
 import { buildLoginRateLimitRules } from "@/server/auth-login-rate-limit";
@@ -14,9 +14,7 @@ import { verifyPassword } from "@/server/password";
 import { enforceRateLimit } from "@/server/rate-limit";
 
 const isProd = process.env.NODE_ENV === "production";
-const isSocialDevLoginEnabled =
-  process.env.NODE_ENV !== "production" &&
-  process.env.DISABLE_SOCIAL_DEV_LOGIN !== "1";
+const socialDevLoginEnabled = isSocialDevLoginEnabled();
 
 type SocialDevProvider = "kakao" | "naver";
 
@@ -105,7 +103,7 @@ const providers: Provider[] = [
   }),
 ];
 
-if (isSocialDevLoginEnabled) {
+if (socialDevLoginEnabled) {
   providers.push(
     Credentials({
       id: "social-dev",

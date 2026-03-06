@@ -79,7 +79,7 @@ async function main() {
   const rows: string[] = [];
   const statuses: string[] = [];
   const startedAt = new Date();
-  const outputPath = resolve(process.cwd(), "../docs/plan/search-manual-check-results.md");
+  const outputPath = resolve(process.cwd(), "../docs/reports/검색_수동점검_결과.md");
   let existingResults = new Map<string, ExistingResult>();
 
   try {
@@ -113,7 +113,7 @@ async function main() {
   const failCount = statuses.filter((status) => status === "FAIL").length;
 
   const report = [
-    "# Search Manual Check Results",
+    "# 검색 수동점검 결과",
     "",
     `- 생성 시각: ${startedAt.toISOString()}`,
     "- 실행 범위: GLOBAL / top5",

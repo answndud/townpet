@@ -16,6 +16,9 @@ const runtimeEnvSchema = z.object({
   SENTRY_DSN: z.string().optional(),
   CORS_ORIGIN: z.string().optional(),
   HEALTH_INTERNAL_TOKEN: z.string().optional(),
+  CSP_ENFORCE_STRICT: z.string().optional(),
+  GUEST_HASH_PEPPER: z.string().optional(),
+  ENABLE_SOCIAL_DEV_LOGIN: z.string().optional(),
   KAKAO_CLIENT_ID: z.string().optional(),
   KAKAO_CLIENT_SECRET: z.string().optional(),
   NAVER_CLIENT_ID: z.string().optional(),
@@ -52,6 +55,17 @@ function parseBoolean(value: string | undefined, fallback: boolean) {
   return fallback;
 }
 
+function isLikelyWeakSecret(value: string) {
+  const lower = value.toLowerCase();
+  if (value.length < 32) {
+    return true;
+  }
+  if (lower.includes("dev-local-nextauth-secret")) {
+    return true;
+  }
+  return lower.includes("changeme") || lower.includes("example") || lower.includes("test");
+}
+
 export const runtimeEnv = {
   nodeEnv: parsed.NODE_ENV,
   databaseUrl: parsed.DATABASE_URL ?? "",
@@ -68,6 +82,9 @@ export const runtimeEnv = {
   sentryDsn: parsed.SENTRY_DSN ?? "",
   corsOrigin: parsed.CORS_ORIGIN ?? "",
   healthInternalToken: parsed.HEALTH_INTERNAL_TOKEN ?? "",
+  cspEnforceStrict: parseBoolean(parsed.CSP_ENFORCE_STRICT, false),
+  guestHashPepper: parsed.GUEST_HASH_PEPPER ?? "",
+  enableSocialDevLogin: parseBoolean(parsed.ENABLE_SOCIAL_DEV_LOGIN, false),
   kakaoClientId: parsed.KAKAO_CLIENT_ID ?? "",
   kakaoClientSecret: parsed.KAKAO_CLIENT_SECRET ?? "",
   isKakaoConfigured:
@@ -96,6 +113,8 @@ export function validateRuntimeEnv(): EnvValidationResult {
 
   if (!runtimeEnv.authSecret) {
     missing.push("AUTH_SECRET_OR_NEXTAUTH_SECRET");
+  } else if (runtimeEnv.isProduction && isLikelyWeakSecret(runtimeEnv.authSecret)) {
+    missing.push("AUTH_SECRET_OR_NEXTAUTH_SECRET_WEAK");
   }
 
   const hasUpstashUrl = Boolean(runtimeEnv.upstashRedisRestUrl);
@@ -118,6 +137,26 @@ export function validateRuntimeEnv(): EnvValidationResult {
 
   if (runtimeEnv.isProduction && !runtimeEnv.appBaseUrl) {
     missing.push("APP_BASE_URL");
+  }
+
+  if (runtimeEnv.isProduction && !runtimeEnv.cspEnforceStrict) {
+    missing.push("CSP_ENFORCE_STRICT");
+  }
+
+  if (runtimeEnv.isProduction && !runtimeEnv.guestHashPepper) {
+    missing.push("GUEST_HASH_PEPPER");
+  }
+
+  if (runtimeEnv.isProduction && !runtimeEnv.healthInternalToken) {
+    missing.push("HEALTH_INTERNAL_TOKEN");
+  }
+
+  if (runtimeEnv.isProduction && !runtimeEnv.isUpstashConfigured) {
+    missing.push("UPSTASH_REDIS_REST_URL_AND_TOKEN_PAIR");
+  }
+
+  if (runtimeEnv.isProduction && runtimeEnv.enableSocialDevLogin) {
+    missing.push("ENABLE_SOCIAL_DEV_LOGIN_MUST_BE_DISABLED");
   }
 
   return {
@@ -145,4 +184,8 @@ export function getAllowedCorsOrigins() {
   ].filter((origin) => origin.length > 0);
 
   return [...new Set([...fromCsv, ...fromBase])];
+}
+
+export function isSocialDevLoginEnabled() {
+  return !runtimeEnv.isProduction && runtimeEnv.enableSocialDevLogin;
 }

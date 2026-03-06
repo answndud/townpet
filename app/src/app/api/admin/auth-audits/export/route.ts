@@ -20,7 +20,9 @@ function toCsvValue(value: string | null) {
   if (!value) {
     return "";
   }
-  const escaped = value.replace(/"/g, '""');
+  const shouldEscapeFormula = /^[\t\r ]*[=+\-@]/.test(value);
+  const normalized = shouldEscapeFormula ? `'${value}` : value;
+  const escaped = normalized.replace(/"/g, '""');
   return `"${escaped}"`;
 }
 

@@ -25,6 +25,32 @@
 
 ## Active Plan
 
+### Cycle 182: 배포 보안 체크리스트 정리/재배치 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| manual-checks 경로로 배포 보안 체크리스트 재배치 | Codex | P1 | `done` | 실사용 체크리스트가 `docs/ops/manual-checks/` 아래로 이동하고 기존 경로는 안내 링크로 유지 | `docs/operations/manual-checks/배포_보안_체크리스트.md`, `docs/operations/manual-checks/배포_보안_체크리스트.md` |
+| Vercel/GitHub Actions 현황 + 슬롯 확인 순서 문서화 | Codex | P1 | `done` | 현재 공유된 설정값, final required list, strict fail=5 기준 슬롯 확인 순서가 한 문서에 정리됨 | `docs/operations/manual-checks/배포_보안_체크리스트.md` |
+
+### Cycle 181: production env 템플릿 정리 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| production env example 추가 | Codex | P1 | `done` | Vercel 반영용 production env 템플릿 파일이 저장소에 추가됨 | `app/.env.production.example` |
+| 운영 문서에 템플릿 경로 연결 | Codex | P2 | `done` | checklist/GUIDE에서 템플릿 파일 위치를 바로 찾을 수 있음 | `docs/operations/manual-checks/배포_보안_체크리스트.md`, `docs/개발_운영_가이드.md` |
+
+### Cycle 180: 배포 보안 프리플라이트 정착 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| strict preflight 실행 명령 고정 | Codex | P1 | `done` | production strict 보안 점검 명령이 package script로 고정됨 | `app/package.json` |
+| 배포 보안 체크리스트 문서화 | Codex | P1 | `done` | 필수 env, strict 결과 해석, 배포 후 smoke 항목 문서화 | `docs/operations/manual-checks/배포_보안_체크리스트.md`, `docs/개발_운영_가이드.md` |
+
+### Cycle 179: 배포 전 보안 하드닝 2차 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 외부 이미지/업로드 URL 제한으로 추적 픽셀 차단 | Codex | P0 | `done` | 게시글 본문/첨부에 1st-party 업로드 URL만 허용되고 외부 이미지가 렌더링되지 않음. 회귀 테스트 포함 | `app/src/lib/validations/post.ts`, `app/src/lib/markdown-lite.ts`, `app/src/components/posts/*` |
+| 관리자 auth audit CSV formula injection 방어 | Codex | P1 | `done` | CSV export에서 수식 시작 문자 sanitize 적용, 회귀 테스트 포함 | `app/src/app/api/admin/auth-audits/export/route.ts` |
+| CSP script-src 실질 강화 | Codex | P1 | `done` | strict/report-only 정책에서 `https:` 광역 허용 제거, 테스트 갱신 | `app/middleware.ts`, `app/src/middleware.test.ts` |
+| 운영 보안 env 강제 + dev social login 기본 비활성화 | Codex | P1 | `done` | production에서 핵심 보안 env 미설정 시 startup fail, dev social login은 명시 opt-in일 때만 노출/동작 | `app/src/lib/env.ts`, `app/src/lib/auth.ts`, `app/src/app/login/page.tsx`, `app/src/app/register/page.tsx` |
+
 ### Cycle 68: 코드 점검 후속 조치(접근제어/안전/정합) (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
@@ -61,7 +87,7 @@
 ### Cycle 73: 리전 정합/연결 경로 점검 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
-| 리전/풀링 체크리스트 작성 | Codex | P1 | `done` | 리전 정합/연결 경로 점검 체크리스트 문서화 | `docs/ops/region-latency-checklist.md` |
+| 리전/풀링 체크리스트 작성 | Codex | P1 | `done` | 리전 정합/연결 경로 점검 체크리스트 문서화 | `docs/operations/리전_지연시간_체크리스트.md` |
 
 ### Cycle 74: 게시글 상세 guest 캐시 적용 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
@@ -329,7 +355,7 @@
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
 | Playwright 재사용 전략 제어 + non-prod 소셜 dev 로그인 기본화 | Codex | P1 | `done` | `PLAYWRIGHT_REUSE_EXISTING_SERVER=1|0` 오버라이드가 config에 반영되고, non-prod에서 `social-dev` provider가 기본 활성화되어 기존 dev 서버 재사용 시에도 소셜 온보딩 스모크가 `Configuration` 오류 없이 통과 | `app/playwright.config.ts`, `app/src/lib/auth.ts`, `app/src/app/login/page.tsx`, `app/src/app/register/page.tsx` |
-| 운영 체크리스트 경로 정합 복구 | Codex | P2 | `done` | GUIDE의 blocked/주간 루틴 링크가 실제 추적 문서 경로(`docs/ops/차단 해소 체크리스트.md`, `app/README.md`)를 가리키도록 정리됨 | `docs/GUIDE.md`, `docs/ops/차단 해소 체크리스트.md`, `app/README.md` |
+| 운영 체크리스트 경로 정합 복구 | Codex | P2 | `done` | GUIDE의 blocked/주간 루틴 링크가 실제 추적 문서 경로(`docs/operations/차단 해소 체크리스트.md`, `app/README.md`)를 가리키도록 정리됨 | `docs/개발_운영_가이드.md`, `docs/operations/차단 해소 체크리스트.md`, `app/README.md` |
 
 ### Cycle 67: 보안 하드닝 트랙 운영 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
@@ -357,13 +383,13 @@
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
 | `ops-smoke-checks` 주간 자동 실행(health only) | Codex | P1 | `done` | `ops-smoke-checks`가 스케줄로 주 1회 자동 실행되고(`verify_sentry=false`), 대상 URL은 `OPS_BASE_URL` 변수 또는 기본 URL fallback으로 점검됨 | `.github/workflows/ops-smoke-checks.yml`, GitHub Actions Variables |
-| 실계정 로그인 완료 수동 점검 체크리스트 고정 | Codex | P1 | `done` | 카카오/네이버 각각 `/onboarding -> /feed` 완료 수동 검증 절차와 증적 기록 규칙이 운영 문서에 명시됨 | `docs/ops/차단 해소 체크리스트.md`, `docs/GUIDE.md` |
+| 실계정 로그인 완료 수동 점검 체크리스트 고정 | Codex | P1 | `done` | 카카오/네이버 각각 `/onboarding -> /feed` 완료 수동 검증 절차와 증적 기록 규칙이 운영 문서에 명시됨 | `docs/operations/차단 해소 체크리스트.md`, `docs/개발_운영_가이드.md` |
 
 ### Cycle 130: Agent Tool Governance 재설계 적용 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
-| 도구 선택 거버넌스 매트릭스 문서화(10개 카테고리) | Codex | P1 | `done` | ORM/Auth/Cache/Real-time/Observability 등 10개 카테고리에 기본값/허용 대안/금지선/재검토 트리거가 정의됨 | `docs/ops/agent-tool-governance.md`, `AGENTS.md` |
-| 에이전트 작업 지시 템플릿 표준화 | Codex | P1 | `done` | 공통 헤더/입력 템플릿/출력 계약/금지 패턴이 고정되어 프롬프트 편차를 줄임 | `docs/ops/agent-prompt-template.md`, `AGENTS.md` |
+| 도구 선택 거버넌스 매트릭스 문서화(10개 카테고리) | Codex | P1 | `done` | ORM/Auth/Cache/Real-time/Observability 등 10개 카테고리에 기본값/허용 대안/금지선/재검토 트리거가 정의됨 | `docs/operations/에이전트_도구_거버넌스.md`, `AGENTS.md` |
+| 에이전트 작업 지시 템플릿 표준화 | Codex | P1 | `done` | 공통 헤더/입력 템플릿/출력 계약/금지 패턴이 고정되어 프롬프트 편차를 줄임 | `docs/operations/에이전트_프롬프트_템플릿.md`, `AGENTS.md` |
 | 운영 가이드에 신규 표준 문서 링크 반영 | Codex | P2 | `done` | agent-only 운영 가이드에서 거버넌스/템플릿 문서를 바로 참조 가능 | `docs/ops/에이전트 운영 가이드 (한국어).md` |
 
 ### Cycle 131: Agent Prompt 자동화 + docs 추적 보정 (완료)
@@ -371,13 +397,13 @@
 |---|---|---|---|---|---|
 | docs 추적 규칙 최소 보정(핵심 운영 문서 3종) | Codex | P1 | `done` | `.gitignore`에서 `docs` 전부를 풀지 않고 `agent-tool-governance`, `agent-prompt-template`, `에이전트 운영 가이드`만 추적 예외로 설정 | `.gitignore` |
 | 프롬프트 자동 생성 스크립트 추가 | Codex | P1 | `done` | `pnpm -C app agent:prompt` 실행으로 표준 프롬프트 블록을 stdout/file로 생성 가능 | `app/scripts/generate-agent-prompt.ts`, `app/package.json` |
-| 템플릿 문서에 CLI 사용법 반영 | Codex | P2 | `done` | 운영자가 템플릿 문서만 보고 자동 생성기를 실행할 수 있음 | `docs/ops/agent-prompt-template.md` |
+| 템플릿 문서에 CLI 사용법 반영 | Codex | P2 | `done` | 운영자가 템플릿 문서만 보고 자동 생성기를 실행할 수 있음 | `docs/operations/에이전트_프롬프트_템플릿.md` |
 
 ### Cycle 132: plan-coordinator 연계 운영 루틴 고정 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
 | agent-only 운영 가이드에 자동 생성 루틴 반영 | Codex | P1 | `done` | `agent:prompt -> @plan-coordinator -> 실행 -> 검증 -> 동기화` 순서가 명시됨 | `docs/ops/에이전트 운영 가이드 (한국어).md` |
-| 프롬프트 템플릿 문서에 plan-coordinator 연계 절차 추가 | Codex | P1 | `done` | 템플릿 문서만으로 생성/계획반영/실행/검증/기록 순서를 재현 가능 | `docs/ops/agent-prompt-template.md` |
+| 프롬프트 템플릿 문서에 plan-coordinator 연계 절차 추가 | Codex | P1 | `done` | 템플릿 문서만으로 생성/계획반영/실행/검증/기록 순서를 재현 가능 | `docs/operations/에이전트_프롬프트_템플릿.md` |
 
 ### Cycle 133: Guest 상세 접근제어 + posts rewrite 정합성 보강 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
@@ -402,15 +428,15 @@
 ### Cycle 136: 외부 OAuth2 운영/팔로우업 가이드 정식화 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
-| Kakao/Naver OAuth2 장기 운영 플레이북 작성 | Codex | P1 | `done` | 시크릿/리다이렉트/릴리즈 체크/장애 대응/주기적 팔로우업까지 포함한 운영 가이드 문서가 `docs/ops` 하위에 추가됨 | `docs/ops/oauth2-external-auth-operations-guide.md` |
+| Kakao/Naver OAuth2 장기 운영 플레이북 작성 | Codex | P1 | `done` | 시크릿/리다이렉트/릴리즈 체크/장애 대응/주기적 팔로우업까지 포함한 운영 가이드 문서가 `docs/ops` 하위에 추가됨 | `docs/operations/OAuth_외부로그인_운영_가이드.md` |
 | docs 추적 예외에 신규 OAuth2 운영 가이드 추가 | Codex | P2 | `done` | `.gitignore`에서 신규 가이드 파일이 추적 가능 상태로 관리됨 | `.gitignore` |
-| 기존 OAuth 문서와 동기화 규칙 명시 | Codex | P2 | `done` | 신규 가이드에 `차단 해소 체크리스트`, `Vercel OAuth 부트스트랩 가이드`, 워크플로우 동기화 규칙이 명시됨 | `docs/ops/oauth2-external-auth-operations-guide.md` |
+| 기존 OAuth 문서와 동기화 규칙 명시 | Codex | P2 | `done` | 신규 가이드에 `차단 해소 체크리스트`, `Vercel OAuth 부트스트랩 가이드`, 워크플로우 동기화 규칙이 명시됨 | `docs/operations/OAuth_외부로그인_운영_가이드.md` |
 
 ### Cycle 137: OAuth 실계정 수동 증적 자동화 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
 | OAuth 수동 점검 리포트 템플릿 생성 스크립트 추가 | Codex | P1 | `done` | `pnpm -C app ops:oauth:manual-report`로 Kakao/Naver 상태/증적/후속조치를 포함한 markdown 리포트를 생성 가능 | `app/scripts/generate-oauth-manual-check-report.ts`, `app/package.json` |
-| OAuth 운영 가이드에 템플릿 생성 명령 반영 | Codex | P2 | `done` | 수동 점검 절차에서 PROGRESS 기록 직전에 템플릿 생성 명령을 실행하도록 명시됨 | `docs/ops/oauth2-external-auth-operations-guide.md` |
+| OAuth 운영 가이드에 템플릿 생성 명령 반영 | Codex | P2 | `done` | 수동 점검 절차에서 PROGRESS 기록 직전에 템플릿 생성 명령을 실행하도록 명시됨 | `docs/operations/OAuth_외부로그인_운영_가이드.md` |
 
 ### Cycle 138: 닉네임 미설정 사용자 가드 + 프로필 규칙 UX 보강 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
@@ -648,7 +674,7 @@
 | ops 지연 스냅샷 수집 스크립트 추가 | Codex | P1 | `done` | `OPS_BASE_URL` 기준 API 4종 샘플 수집(tsv) + p50/p95 요약(md)을 생성하는 스크립트 제공 | `app/scripts/collect-latency-snapshot.ts` |
 | npm 실행 진입점 추가 | Codex | P2 | `done` | `pnpm ops:perf:snapshot`로 스크립트 실행 가능 | `app/package.json` |
 | GitHub Actions 정기 수집 워크플로우 추가 | Codex | P1 | `done` | `ops-latency-snapshots`가 workflow_dispatch + 하루 3회 schedule로 동작하고 artifact/step-summary를 남김 | `.github/workflows/ops-latency-snapshots.yml` |
-| 운영 가이드 실행 항목 검증 | Codex | P2 | `done` | GUIDE에서 로컬 수동 실행법/환경변수/자동 수집 워크플로우 안내가 유지되고 있는지 확인 | `docs/GUIDE.md` |
+| 운영 가이드 실행 항목 검증 | Codex | P2 | `done` | GUIDE에서 로컬 수동 실행법/환경변수/자동 수집 워크플로우 안내가 유지되고 있는지 확인 | `docs/개발_운영_가이드.md` |
 
 ### Cycle 171: 핫패스 API 경량화/계약테스트 확장 + 성능 임계치 평가 보강 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
@@ -665,7 +691,7 @@
 |---|---|---|---|---|---|
 | OAuth 수동 리포트 스크립트 Base URL sanity 평가 추가 | Codex | P1 | `done` | `ops:oauth:manual-report` 출력에 Base URL 위험도(OK/WARN/ERROR)와 provider callback URL이 포함되고 `strict-base-url` 옵션으로 실패 처리 가능 | `app/scripts/generate-oauth-manual-check-report.ts` |
 | OAuth 사전점검 명령 추가 | Codex | P2 | `done` | `pnpm -C app ops:oauth:preflight` 한 번으로 strict Base URL 점검 + 리포트 생성이 가능 | `app/package.json` |
-| 운영 문서/체크리스트 동기화 | Codex | P2 | `done` | OAuth 운영 가이드/GUIDE/차단 해소 체크리스트에 preflight 단계와 금지 도메인(`vercel.com`, `*-projects.vercel.app`) 기준이 반영 | `docs/ops/oauth2-external-auth-operations-guide.md`, `docs/ops/차단 해소 체크리스트.md`, `docs/GUIDE.md` |
+| 운영 문서/체크리스트 동기화 | Codex | P2 | `done` | OAuth 운영 가이드/GUIDE/차단 해소 체크리스트에 preflight 단계와 금지 도메인(`vercel.com`, `*-projects.vercel.app`) 기준이 반영 | `docs/operations/OAuth_외부로그인_운영_가이드.md`, `docs/operations/차단 해소 체크리스트.md`, `docs/개발_운영_가이드.md` |
 | 검증 | Codex | P1 | `done` | lint/typecheck/preflight 스모크가 모두 통과 | `pnpm -C app lint ...`, `pnpm -C app typecheck`, `pnpm -C app ops:oauth:preflight` |
 
 ### Cycle 173: OAuth 실검증 run 갱신 + 수동 점검 템플릿 최신화 (완료)
@@ -678,22 +704,22 @@
 ### Cycle 174: OAuth 수동 증적 저장 경로 고정 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
-| OAuth 수동 점검 템플릿을 저장소 경로에 생성 | Codex | P1 | `done` | `docs/ops/manual-checks/oauth-manual-check-2026-03-05.md` 파일이 생성되어 즉시 증적 입력이 가능한 상태 | `pnpm -C app ops:oauth:manual-report ...` |
-| 운영 가이드 출력 경로 표준화 | Codex | P2 | `done` | OAuth 운영 가이드의 수동 리포트 생성 명령이 `/tmp`가 아닌 `docs/ops/manual-checks/` 경로를 기본으로 안내 | `docs/ops/oauth2-external-auth-operations-guide.md` |
+| OAuth 수동 점검 템플릿을 저장소 경로에 생성 | Codex | P1 | `done` | `docs/operations/manual-checks/OAuth_수동점검_기록_2026-03-05.md` 파일이 생성되어 즉시 증적 입력이 가능한 상태 | `pnpm -C app ops:oauth:manual-report ...` |
+| 운영 가이드 출력 경로 표준화 | Codex | P2 | `done` | OAuth 운영 가이드의 수동 리포트 생성 명령이 `/tmp`가 아닌 `docs/ops/manual-checks/` 경로를 기본으로 안내 | `docs/operations/OAuth_외부로그인_운영_가이드.md` |
 
 ### Cycle 175: OAuth 수동 증적 추적 가능화 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
 | manual-checks 디렉터리 git 추적 허용 | Codex | P1 | `done` | `.gitignore`에서 `docs/ops/manual-checks/*.md`가 추적 가능하도록 allowlist가 추가됨 | `.gitignore` |
-| 수동 증적 운영 README 추가 | Codex | P2 | `done` | 생성 명령/PII 금지/완료 처리 규칙이 `docs/ops/manual-checks/README.md`에 문서화됨 | `docs/ops/manual-checks/README.md` |
-| 오늘자 OAuth 수동 점검 템플릿 저장 | Codex | P1 | `done` | run `22705265766` 기준 템플릿 파일이 저장소 경로에 생성되어 바로 상태/evidence 입력 가능 | `docs/ops/manual-checks/oauth-manual-check-2026-03-05.md` |
+| 수동 증적 운영 README 추가 | Codex | P2 | `done` | 생성 명령/PII 금지/완료 처리 규칙이 `docs/operations/manual-checks/수동점검_안내.md`에 문서화됨 | `docs/operations/manual-checks/수동점검_안내.md` |
+| 오늘자 OAuth 수동 점검 템플릿 저장 | Codex | P1 | `done` | run `22705265766` 기준 템플릿 파일이 저장소 경로에 생성되어 바로 상태/evidence 입력 가능 | `docs/operations/manual-checks/OAuth_수동점검_기록_2026-03-05.md` |
 
 ### Cycle 176: OAuth 수동 증적 충족 자동판정 도입 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
 | 수동 증적 검증 스크립트 추가 | Codex | P1 | `done` | 보고서 markdown에서 Kakao/Naver 상태와 evidence 칸을 파싱해 Cycle 23 해소 가능 여부(`readyToCloseCycle23`)를 출력 | `app/scripts/verify-oauth-manual-check.ts` |
 | npm 검증 명령 추가 | Codex | P2 | `done` | `pnpm -C app ops:oauth:verify-manual --report <path> --strict 1`로 기준 미충족 시 non-zero 종료 가능 | `app/package.json` |
-| 운영 문서 명령 동기화 | Codex | P2 | `done` | OAuth 운영 가이드 및 manual-check README에 verify 명령이 반영됨 | `docs/ops/oauth2-external-auth-operations-guide.md`, `docs/ops/manual-checks/README.md` |
+| 운영 문서 명령 동기화 | Codex | P2 | `done` | OAuth 운영 가이드 및 manual-check README에 verify 명령이 반영됨 | `docs/operations/OAuth_외부로그인_운영_가이드.md`, `docs/operations/manual-checks/수동점검_안내.md` |
 | 동작 검증 | Codex | P1 | `done` | lint/typecheck/verify 실행 결과가 기록되고, 현재 보고서(pending)에서 `readyToCloseCycle23: no`가 확인됨 | `pnpm -C app lint ...`, `pnpm -C app typecheck`, `pnpm -C app ops:oauth:verify-manual ...` |
 
 ### Cycle 177: OAuth 수동 점검 결과 입력 자동화 (완료)
@@ -701,14 +727,14 @@
 |---|---|---|---|---|---|
 | Provider 결과 업데이트 스크립트 추가 | Codex | P1 | `done` | report markdown의 Kakao/Naver 행과 PROGRESS snippet 상태를 CLI로 안전하게 갱신 가능 | `app/scripts/update-oauth-manual-check.ts` |
 | npm 실행 명령 추가 | Codex | P2 | `done` | `pnpm -C app ops:oauth:update-manual --report <path> --provider <kakao|naver> --status <pending|pass|fail> --evidence <link>` 제공 | `app/package.json` |
-| 운영 문서 명령 반영 | Codex | P2 | `done` | manual-check README와 OAuth 운영 가이드에 update-manual 예시 명령이 반영 | `docs/ops/manual-checks/README.md`, `docs/ops/oauth2-external-auth-operations-guide.md` |
+| 운영 문서 명령 반영 | Codex | P2 | `done` | manual-check README와 OAuth 운영 가이드에 update-manual 예시 명령이 반영 | `docs/operations/manual-checks/수동점검_안내.md`, `docs/operations/OAuth_외부로그인_운영_가이드.md` |
 | 검증 | Codex | P1 | `done` | lint/typecheck/update/verify 명령이 정상 동작하며 현재 상태가 `readyToCloseCycle23: no`로 유지됨 | `pnpm -C app lint ...`, `pnpm -C app typecheck`, `pnpm -C app ops:oauth:update-manual ...`, `pnpm -C app ops:oauth:verify-manual ...` |
 
 ### Cycle 178: Cycle 23 blocked 해소 (수동 증적 반영) (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
-| 카카오/네이버 수동 점검 리포트 pass 반영 | Codex | P1 | `done` | `oauth-manual-check-2026-03-05.md` provider table 및 snippet에서 Kakao/Naver가 모두 `pass` 상태로 갱신 | `docs/ops/manual-checks/oauth-manual-check-2026-03-05.md` |
-| Cycle 23 해소 조건 strict 검증 | Codex | P1 | `done` | `ops:oauth:verify-manual --strict 1` 실행 결과 `readyToCloseCycle23: yes` 확인 | `pnpm -C app ops:oauth:verify-manual --report ../docs/ops/manual-checks/oauth-manual-check-2026-03-05.md --strict 1` |
+| 카카오/네이버 수동 점검 리포트 pass 반영 | Codex | P1 | `done` | `oauth-manual-check-2026-03-05.md` provider table 및 snippet에서 Kakao/Naver가 모두 `pass` 상태로 갱신 | `docs/operations/manual-checks/OAuth_수동점검_기록_2026-03-05.md` |
+| Cycle 23 해소 조건 strict 검증 | Codex | P1 | `done` | `ops:oauth:verify-manual --strict 1` 실행 결과 `readyToCloseCycle23: yes` 확인 | `pnpm -C app ops:oauth:verify-manual --report ../docs/operations/manual-checks/OAuth_수동점검_기록_2026-03-05.md --strict 1` |
 | PLAN 내 Cycle 23 상태 동기화 | Codex | P1 | `done` | Cycle 23 heading이 `(완료)`로 갱신되고 기존 `blocked` 2건이 `done`으로 전환 | `PLAN.md` |
 
 ### Cycle 24: 피드 체류 개선 (완료)
@@ -719,7 +745,7 @@
 ### Cycle 25: 검색 고도화 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
-| 검색 대표 케이스 수동 실행/기록 | Codex | P1 | `done` | 체크리스트 기준 PASS/WARN/FAIL 기록 완료 | `docs/plan/search-manual-checklist.md`, `docs/plan/search-manual-check-results.md` |
+| 검색 대표 케이스 수동 실행/기록 | Codex | P1 | `done` | 체크리스트 기준 PASS/WARN/FAIL 기록 완료 | `docs/plan/search-manual-checklist.md`, `docs/reports/검색_수동점검_결과.md` |
 | 검색 로그 저장 구조 고도화(`SiteSetting` -> 전용 테이블) | Codex | P2 | `done` | 고트래픽에서도 집계 안정성 보장 가능한 구조 전환 | Prisma schema 변경 |
 
 ### Cycle 22: 이미지/UX 잔여 (완료)
@@ -738,8 +764,8 @@
 | `oauth-real-e2e` 하이브리드 검증(리다이렉트 + 온보딩/피드) | Codex | P2 | `done` | 단일 워크플로우에서 실OAuth 리다이렉트 스모크 후 `social-dev` 기반 온보딩->피드 진입 회귀까지 연속 검증 | `.github/workflows/oauth-real-e2e.yml`, `app/e2e/social-onboarding-flow.spec.ts` |
 | OAuth 키 갱신/운영 절차 문서화 | Codex | P3 | `done` | 운영 문서만 보고 키 로테이션 가능 | GUIDE 업데이트 |
 | 개발용 소셜 전체 플로우 E2E(`social-dev`) | Codex | P2 | `done` | 소셜 버튼 -> 온보딩 -> 피드 진입 자동 검증 | `ENABLE_SOCIAL_DEV_LOGIN=1` |
-| 카카오 로그인 -> 온보딩 -> 피드 진입 E2E | Codex | P2 | `done` | 수동 점검 리포트에서 Kakao가 `pass` + evidence로 확인되고 strict 검증 통과 | `docs/ops/manual-checks/oauth-manual-check-2026-03-05.md`, `pnpm -C app ops:oauth:verify-manual --strict 1` |
-| 네이버 로그인 -> 온보딩 -> 피드 진입 E2E | Codex | P2 | `done` | 수동 점검 리포트에서 Naver가 `pass` + evidence로 확인되고 strict 검증 통과 | `docs/ops/manual-checks/oauth-manual-check-2026-03-05.md`, `pnpm -C app ops:oauth:verify-manual --strict 1` |
+| 카카오 로그인 -> 온보딩 -> 피드 진입 E2E | Codex | P2 | `done` | 수동 점검 리포트에서 Kakao가 `pass` + evidence로 확인되고 strict 검증 통과 | `docs/operations/manual-checks/OAuth_수동점검_기록_2026-03-05.md`, `pnpm -C app ops:oauth:verify-manual --strict 1` |
+| 네이버 로그인 -> 온보딩 -> 피드 진입 E2E | Codex | P2 | `done` | 수동 점검 리포트에서 Naver가 `pass` + evidence로 확인되고 strict 검증 통과 | `docs/operations/manual-checks/OAuth_수동점검_기록_2026-03-05.md`, `pnpm -C app ops:oauth:verify-manual --strict 1` |
 
 ### Cycle 26: 재방문 장치 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
@@ -817,7 +843,7 @@
 ### Cycle 36: 품종 기반 개인화 설계 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
-| 품종 기반 개인화/광고/커뮤니티 PRD 작성 | Codex | P1 | `done` | 문서 1개에 목표/범위/수용기준/스키마/추천 의사코드가 포함됨 | `docs/product/품종_개인화_PRD.md` |
+| 품종 기반 개인화/광고/커뮤니티 PRD 작성 | Codex | P1 | `done` | 문서 1개에 목표/범위/수용기준/스키마/추천 의사코드가 포함됨 | `docs/product/품종_개인화_기획서.md` |
 | Pet/추천/광고 스키마 상세 설계(Prisma/Zod) | Codex | P1 | `done` | 마이그레이션 가능 단위의 schema diff + validation schema 초안 | `app/prisma/schema.prisma`, `app/src/lib/validations/pet.ts` |
 | 피드 개인화 가중치 MVP 구현 + 계측 | Codex | P1 | `done` | 품종/체급 가중치 + 다양성 guardrail + 로그 계측 반영 | `app/src/server/queries/post.queries.ts`, `app/src/app/feed/page.tsx` |
 | 품종 라운지/공동구매 템플릿 정책 연동 | Codex | P2 | `done` | 라운지 글쓰기 경로에 신규유저 제한/연락처 제한/신고 자동숨김 연결 | `app/src/app/api/lounges/breeds/[breedCode]/posts/route.ts`, `app/src/app/api/lounges/breeds/[breedCode]/groupbuys/route.ts`, `app/src/lib/validations/lounge.ts`, `app/src/server/queries/post.queries.ts` |
@@ -962,7 +988,7 @@
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
 | Day1 채널별 업로드 문안 10개 작성 | Codex | P1 | `done` | 네이버/카카오/인스타에 즉시 게시 가능한 제목/본문/캡션 10개가 문서 1개로 정리됨 | `docs/business/온동네_초기유저_30일_실행플레이북.md` |
-| business 폴더 읽기 순서/목적별 맵 정리 | Codex | P1 | `done` | 초기유저 런칭 실행용 문서 우선순위를 로컬 기준으로 정리 완료 | `docs/business/README.md` |
+| business 폴더 읽기 순서/목적별 맵 정리 | Codex | P1 | `done` | 초기유저 런칭 실행용 문서 우선순위를 로컬 기준으로 정리 완료 | `docs/business/사업_문서_안내.md` |
 
 ### Cycle 53: Guest 권한 경로 정리 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
@@ -1118,7 +1144,7 @@
 | 보안 취약점 대응 의존성 패치(`next`, `@vercel/blob`) | Codex | P0 | `done` | `next/eslint-config-next/@vercel/blob`를 취약점 패치 버전으로 올리고 `pnpm -C app audit --prod` 결과가 clean | `app/package.json`, `app/pnpm-lock.yaml` |
 | 운영 보안 env preflight 스크립트 추가 | Codex | P1 | `done` | `ops:check:security-env`로 핵심 보안 변수(CSP strict, guest pepper, internal token, upstash, auth secret)를 자동 점검하고 strict 모드(`SECURITY_ENV_STRICT=1`)를 지원 | `app/scripts/check-security-env.ts`, `app/package.json` |
 | CI 품질게이트에 보안 env preflight 단계 추가 | Codex | P1 | `done` | `quality-gate` 워크플로우에서 strict 보안 env 체크가 DB sync 이전에 수행되어 설정 누락을 조기 차단 | `.github/workflows/quality-gate.yml` |
-| 운영/보안 문서 동기화 | Codex | P1 | `done` | GUIDE + SECURITY_PLAN/PROGRESS/RISK_REGISTER에 실행 명령/리스크/검증 로그가 반영 | `docs/GUIDE.md`, `docs/security/*.md`, `PROGRESS.md` |
+| 운영/보안 문서 동기화 | Codex | P1 | `done` | GUIDE + SECURITY_PLAN/PROGRESS/RISK_REGISTER에 실행 명령/리스크/검증 로그가 반영 | `docs/개발_운영_가이드.md`, `docs/security/*.md`, `PROGRESS.md` |
 
 ### Cycle 180: 피드 cold MISS DB 인덱스 보강 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
@@ -1136,13 +1162,20 @@
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
 | 내부 health 상세에 `pg_trgm` 상태 노출 | Codex | P1 | `done` | `/api/health` 내부 토큰 경로에서 `checks.search.pgTrgm(state/enabled/message)`가 제공되어 운영자가 확장 누락을 즉시 파악 가능 | `app/src/app/api/health/route.ts`, `app/src/app/api/health/route.test.ts` |
-| `ops:check:health`에 `pg_trgm` 강제 판정 옵션 추가 | Codex | P1 | `done` | `OPS_HEALTH_INTERNAL_TOKEN` + `OPS_HEALTH_REQUIRE_PG_TRGM=1` 조합으로 확장 누락 시 명시적 FAIL이 발생 | `app/scripts/check-health-endpoint.ts`, `docs/GUIDE.md` |
+| `ops:check:health`에 `pg_trgm` 강제 판정 옵션 추가 | Codex | P1 | `done` | `OPS_HEALTH_INTERNAL_TOKEN` + `OPS_HEALTH_REQUIRE_PG_TRGM=1` 조합으로 확장 누락 시 명시적 FAIL이 발생 | `app/scripts/check-health-endpoint.ts`, `docs/개발_운영_가이드.md` |
 
 ### Cycle 183: 배포 스모크에 `pg_trgm` 강제 검증 옵션 추가 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
 | `ops-smoke-checks`에 `verify_pg_trgm` 입력 추가 | Codex | P1 | `done` | 수동 실행 입력에 `verify_pg_trgm`이 추가되고, 활성화 시 `HEALTH_INTERNAL_TOKEN` 검증 후 `OPS_HEALTH_REQUIRE_PG_TRGM=1 pnpm ops:check:health`가 실행됨 | `.github/workflows/ops-smoke-checks.yml` |
-| 운영 가이드에 신규 입력/시크릿 반영 | Codex | P1 | `done` | GUIDE의 ops-smoke-checks 사용법/Secrets/실행기준에 `verify_pg_trgm` + `HEALTH_INTERNAL_TOKEN`이 반영됨 | `docs/GUIDE.md` |
+| 운영 가이드에 신규 입력/시크릿 반영 | Codex | P1 | `done` | GUIDE의 ops-smoke-checks 사용법/Secrets/실행기준에 `verify_pg_trgm` + `HEALTH_INTERNAL_TOKEN`이 반영됨 | `docs/개발_운영_가이드.md` |
+
+### Cycle 184: Docs 구조 압축 및 명확화 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| `docs/` 최상위 분류 재편 | Codex | P1 | `done` | 추상적/중복 폴더(`ops`, `plan`, `data_analytics`, `policy_ops`, `사업계획`)가 목적 중심 구조(`operations`, `reports`, `analytics`, `policies`, `business`)로 정리됨 | `docs/*` |
+| 아카이브 분리 및 진입점 추가 | Codex | P1 | `done` | 초안/v1/과거 운영 리포트가 `docs/archive/`로 이동하고, `docs/문서_안내.md`와 핵심 안내 문서(`사업_문서_안내.md`, `운영_문서_안내.md`, `보관_문서_안내.md`)가 정리됨 | `docs/archive/*`, `docs/*` |
+| 코드/문서 참조 경로 정합화 | Codex | P1 | `done` | GUIDE, 운영/보안 문서, 스크립트, E2E 산출물 경로가 새 구조 기준으로 갱신되고 활성 경로에 오래된 `docs/ops`/`docs/plan` 참조가 남지 않음 | `docs/개발_운영_가이드.md`, `README.md`, `app/scripts/*`, `app/e2e/*` |
 
 ## Blocked (환경 의존)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |

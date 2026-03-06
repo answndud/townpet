@@ -220,10 +220,10 @@
 
 5. 기록 반영
 - `pnpm -C app ops:oauth:preflight`로 Base URL sanity(ERROR/WARN) 먼저 확인
-- `pnpm -C app ops:oauth:manual-report --date <YYYY-MM-DD> --run-url <RUN_URL> --out ../docs/ops/manual-checks/oauth-manual-check-<YYYY-MM-DD>.md`로 기록 템플릿 생성
+- `pnpm -C app ops:oauth:manual-report --date <YYYY-MM-DD> --run-url <RUN_URL> --out ../docs/operations/manual-checks/oauth-manual-check-<YYYY-MM-DD>.md`로 기록 템플릿 생성
 - 생성된 markdown을 기준으로 `PROGRESS.md`에 결과 append
 - `PLAN.md`의 `blocked` 상태 갱신(조건 충족 시 `done`)
-- `docs/ops/manual-checks/README.md` 기준으로 PII 없이 증적 링크만 기록
+- `docs/operations/manual-checks/수동점검_안내.md` 기준으로 PII 없이 증적 링크만 기록
 
 ---
 
@@ -232,8 +232,8 @@
 - 운영 실행 결과는 항상 `PROGRESS.md` 먼저 기록
 - 상태 변화(`blocked -> done`)는 `PLAN.md` 즉시 동기화
 - 본 가이드 수정 시 관련 문서도 함께 점검:
-  - `docs/ops/차단 해소 체크리스트.md`
-  - `docs/ops/Vercel OAuth 부트스트랩 가이드.md`
+  - `docs/operations/차단 해소 체크리스트.md`
+  - `docs/operations/Vercel_OAuth_초기설정_가이드.md`
   - `.github/workflows/oauth-real-e2e.yml`
 
 ---
@@ -254,14 +254,14 @@ gh workflow run oauth-real-e2e.yml --repo answndud/townpet2
 pnpm -C app ops:oauth:preflight
 
 # 실계정 수동 점검 리포트 템플릿 생성
-pnpm -C app ops:oauth:manual-report --date 2026-03-05 --run-url https://github.com/answndud/townpet2/actions/runs/22705265766 --out ../docs/ops/manual-checks/oauth-manual-check-2026-03-05.md
+pnpm -C app ops:oauth:manual-report --date 2026-03-05 --run-url https://github.com/answndud/townpet2/actions/runs/22705265766 --out ../docs/operations/manual-checks/OAuth_수동점검_기록_2026-03-05.md
 
 # Provider 결과 빠른 반영
-pnpm -C app ops:oauth:update-manual --report ../docs/ops/manual-checks/oauth-manual-check-2026-03-05.md --provider kakao --status pass --evidence <evidence-link>
-pnpm -C app ops:oauth:update-manual --report ../docs/ops/manual-checks/oauth-manual-check-2026-03-05.md --provider naver --status pass --evidence <evidence-link>
+pnpm -C app ops:oauth:update-manual --report ../docs/operations/manual-checks/OAuth_수동점검_기록_2026-03-05.md --provider kakao --status pass --evidence <evidence-link>
+pnpm -C app ops:oauth:update-manual --report ../docs/operations/manual-checks/OAuth_수동점검_기록_2026-03-05.md --provider naver --status pass --evidence <evidence-link>
 
 # Cycle 23 해소 조건 검증(strict)
-pnpm -C app ops:oauth:verify-manual --report ../docs/ops/manual-checks/oauth-manual-check-2026-03-05.md --strict 1
+pnpm -C app ops:oauth:verify-manual --report ../docs/operations/manual-checks/OAuth_수동점검_기록_2026-03-05.md --strict 1
 ```
 
 Day1 핸드오프 템플릿 생성:

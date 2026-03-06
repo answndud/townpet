@@ -27,15 +27,28 @@ describe("renderLiteMarkdown", () => {
   });
 
   it("renders markdown image tokens", () => {
-    const html = renderLiteMarkdown("![강아지 사진](https://example.com/dog.png)");
+    const html = renderLiteMarkdown(
+      "![강아지 사진](https://store-1.public.blob.vercel-storage.com/uploads/dog.png)",
+    );
 
-    expect(html).toContain('<img src="https://example.com/dog.png"');
+    expect(html).toContain(
+      '<img src="https://store-1.public.blob.vercel-storage.com/uploads/dog.png"',
+    );
     expect(html).toContain('alt="강아지 사진"');
   });
 
   it("renders image width token", () => {
-    const html = renderLiteMarkdown("![강아지 사진](https://example.com/dog.png){width=320}");
+    const html = renderLiteMarkdown(
+      "![강아지 사진](https://store-1.public.blob.vercel-storage.com/uploads/dog.png){width=320}",
+    );
 
     expect(html).toContain('style="width:min(100%, 320px);height:auto"');
+  });
+
+  it("does not render external markdown images", () => {
+    const html = renderLiteMarkdown("![추적 픽셀](https://example.com/pixel.png)");
+
+    expect(html).not.toContain("<img");
+    expect(html).toContain("추적 픽셀");
   });
 });

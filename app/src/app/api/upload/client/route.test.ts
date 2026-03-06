@@ -39,7 +39,7 @@ describe("POST /api/upload/client contract", () => {
     mockGetClientIp.mockReturnValue("127.0.0.1");
     mockEnforceRateLimit.mockResolvedValue();
     mockHandleUpload.mockImplementation(async (params) => {
-      await params.onBeforeGenerateToken("/test.png", null, false);
+      await params.onBeforeGenerateToken("uploads/test.png", null, false);
       return {
         type: "blob.generate-client-token",
         clientToken: "token-1",
@@ -99,5 +99,30 @@ describe("POST /api/upload/client contract", () => {
       error: { code: "INTERNAL_SERVER_ERROR" },
     });
     expect(mockMonitorUnhandledError).toHaveBeenCalledOnce();
+  });
+
+  it("rejects invalid upload pathname", async () => {
+    mockHandleUpload.mockImplementation(async (params) => {
+      await params.onBeforeGenerateToken("../outside.png", null, false);
+      return {
+        type: "blob.generate-client-token",
+        clientToken: "token-1",
+      } as never;
+    });
+
+    const request = new Request("http://localhost/api/upload/client", {
+      method: "POST",
+      body: JSON.stringify({ type: "blob.generate-client-token" }),
+      headers: { "content-type": "application/json" },
+    }) as NextRequest;
+
+    const response = await POST(request);
+    const payload = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(payload).toMatchObject({
+      ok: false,
+      error: { code: "INVALID_UPLOAD_PATH" },
+    });
   });
 });

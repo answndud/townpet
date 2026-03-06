@@ -19,6 +19,7 @@ describe("post validations", () => {
       scope: PostScope.LOCAL,
       neighborhoodId: "ckc7k5qsj0000u0t8qv6d1d7k",
       petTypeId: "ckc7k5qsj0000u0t8qv6d1d7k",
+      imageUrls: ["/uploads/test.png"],
     });
 
     expect(result.success).toBe(true);
@@ -164,6 +165,18 @@ describe("post validations", () => {
     });
 
     expect(result.success).toBe(true);
+  });
+
+  it("rejects external image urls in post payload", () => {
+    const result = postCreateSchema.safeParse({
+      title: "테스트",
+      content: "내용",
+      type: PostType.FREE_BOARD,
+      scope: PostScope.GLOBAL,
+      imageUrls: ["https://example.com/pixel.png"],
+    });
+
+    expect(result.success).toBe(false);
   });
 
 });
