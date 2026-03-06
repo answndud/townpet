@@ -17,6 +17,36 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-06: Cycle 189 Vercel build 회귀 복구
+- 완료 내용
+- `FeedHoverMenu`에서 `useSearchParams()` 의존 제거:
+  - `app/src/components/navigation/feed-hover-menu.tsx`
+  - guest 관심 동물 저장 후 현재 `/feed` 쿼리는 `window.location.search`로 읽어 유지
+- build phase Upstash 접근 차단:
+  - `app/src/server/cache/query-cache.ts`
+  - `NEXT_PHASE=phase-production-build`에서는 Upstash REST fetch를 건너뛰고 메모리 fallback만 사용
+  - 정적 prerender 중 `/_not-found` 경유 Upstash `no-store` fetch로 인한 dynamic server usage 경고를 회피
+- 회귀 테스트 추가:
+  - `app/src/server/cache/query-cache.test.ts`
+  - build phase에서는 Upstash fetch를 호출하지 않는 케이스와 runtime phase에서는 호출하는 케이스를 고정
+- 검증 결과
+- `pnpm -C app lint src/components/navigation/feed-hover-menu.tsx src/server/cache/query-cache.ts src/server/cache/query-cache.test.ts` 통과
+- `pnpm -C app test -- src/server/cache/query-cache.test.ts`
+  - Vitest 설정상 전체 단위 테스트가 함께 실행되어 전체 회귀 기준으로 검증
+- `pnpm -C app typecheck` 통과
+- `pnpm -C app build`
+  - 이전 실패 원인이던 `useSearchParams` suspense 오류와 build 시 Upstash dynamic server usage 오류는 재현되지 않음
+  - 현재는 production 보안 env 게이트(`AUTH_SECRET`, `CSP_ENFORCE_STRICT`, `GUEST_HASH_PEPPER`, `UPSTASH_REDIS_*`)에서 중단
+- 이슈/블로커
+- 로컬 `next build`는 여전히 production env 미주입 상태라 끝까지 완료되지는 않음
+- 실배포 헤더(`/feed`, `/search`) 확인은 Cycle 188 범위로 남음
+- 변경 파일(핵심)
+- `app/src/components/navigation/feed-hover-menu.tsx`
+- `app/src/server/cache/query-cache.ts`
+- `app/src/server/cache/query-cache.test.ts`
+- `PLAN.md`
+- `PROGRESS.md`
+
 ### 2026-03-06: Cycle 188 정적 shell + guest search 캐시 분리
 - 완료 내용
 - 최상위 shell의 서버 동적 의존 제거:

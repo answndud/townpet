@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRef, useState, useTransition } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { PostType } from "@prisma/client";
 
 import {
@@ -72,7 +72,6 @@ export function FeedHoverMenu({
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const clearCloseTimer = () => {
@@ -114,7 +113,9 @@ export function FeedHoverMenu({
       document.cookie = `${PET_TYPE_PREFERENCE_COOKIE}=${encodeURIComponent(serializePetTypePreferenceCookie(selectedPetTypeIds))}; path=/; max-age=31536000; samesite=lax`;
       setMessage("관심 동물 설정을 저장했습니다.");
       if (pathname?.startsWith("/feed")) {
-        const params = new URLSearchParams(searchParams?.toString());
+        const params = new URLSearchParams(
+          typeof window === "undefined" ? "" : window.location.search,
+        );
         params.delete("petType");
         params.delete("page");
         for (const petTypeId of selectedPetTypeIds) {
