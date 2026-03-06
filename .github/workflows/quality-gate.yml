@@ -65,6 +65,8 @@ jobs:
           NODE_ENV=production \
           SECURITY_ENV_STRICT=1 \
           AUTH_SECRET='ci-auth-secret-strong-value-1234567890' \
+          RESEND_API_KEY='re_ci_dummy_key' \
+          BLOB_READ_WRITE_TOKEN='vercel_blob_rw_ci_dummy_token' \
           CSP_ENFORCE_STRICT=1 \
           GUEST_HASH_PEPPER='ci-guest-hash-pepper-1234567890' \
           HEALTH_INTERNAL_TOKEN='ci-health-internal-token-1234567890' \
