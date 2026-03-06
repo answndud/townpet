@@ -4888,17 +4888,29 @@
 - 결론
 - 현재 잔여 블로커는 시크릿이 아니라 운영 DB `pg_trgm` 확장 미설치
 
+### 2026-03-06: `verify_pg_trgm` 수동 실행 3차 결과 (해소)
+- 실행 내용
+- 워크플로우 실행: `https://github.com/answndud/townpet2/actions/runs/22747534552`
+- 입력값: `target_base_url=https://townpet2.vercel.app`, `verify_sentry=false`, `verify_pg_trgm=true`
+- 결과
+- `success`
+- 확인 사실
+- `Check pg_trgm extension via internal health endpoint` 단계 통과
+- `OPS_HEALTH_REQUIRE_PG_TRGM=1` 기준에서 `/api/health` 상세 응답이 PASS로 판정
+- 결론
+- `ops-smoke-checks`의 `verify_pg_trgm` blocked 항목 해소 완료
+
 ## 이슈/블로커 통합
 - 환경 의존 블로커
-- 운영 DB `pg_trgm` 확장 미설치(`verify_pg_trgm=true` 경로에서 `search.pgTrgm.enabled=false`)
+- 없음(`verify_pg_trgm` 강제 점검 경로 PASS 확인)
 - 기능/기술 부채
-- 검색 품질 최대치를 위해 staging/prod DB `pg_trgm` 확장 설치 확인/적용 필요
+- 없음(현재 추적 중인 `pg_trgm` 운영 블로커 해소)
 
 ## 다음 핸드오프
 - `PLAN.md` 기준 즉시 착수 순서
-1. 운영 DB에 `CREATE EXTENSION IF NOT EXISTS pg_trgm;` 적용
-2. `ops-smoke-checks` 재실행(`verify_pg_trgm=true`)으로 PASS 확인
-3. PASS 후 blocked 항목 닫기(PLAN/PROGRESS 동기화)
+1. `ops-smoke-checks` 주간 자동 실행 모니터링 유지(health-only)
+2. 필요 시 수동으로 `verify_pg_trgm=true` 재실행해 드리프트 점검
+3. 선택 과제: Sentry 실수신 점검 경로(`verify_sentry=true`) 정기 점검 여부 결정
 
 ## 참고 문서
 - 운영/실행 가이드: `docs/GUIDE.md`
