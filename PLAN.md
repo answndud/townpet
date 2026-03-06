@@ -25,6 +25,12 @@
 
 ## Active Plan
 
+### Cycle 189: Vercel build 회귀 복구 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| header search params CSR bailout 제거 | Codex | P1 | `done` | `FeedHoverMenu`가 `useSearchParams()` 없이 현재 URL 쿼리를 처리해 `/admin/auth-audits` prerender가 다시 가능해짐 | `app/src/components/navigation/feed-hover-menu.tsx` |
+| build phase Upstash fetch 우회 + 회귀 테스트 추가 | Codex | P1 | `done` | `phase-production-build`에서는 query cache가 Upstash REST를 호출하지 않고 메모리 fallback을 사용하며 단위 테스트로 고정됨 | `app/src/server/cache/query-cache.ts`, `app/src/server/cache/query-cache.test.ts` |
+
 ### Cycle 188: 정적 shell + guest search 캐시 분리 (진행중)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|

@@ -34,6 +34,14 @@ function shouldUseCache() {
   return runtimeEnv.queryCacheEnabled;
 }
 
+function shouldUseUpstashAtRuntime() {
+  if (!runtimeEnv.isUpstashConfigured) {
+    return false;
+  }
+
+  return process.env.NEXT_PHASE !== "phase-production-build";
+}
+
 function getNow() {
   return Date.now();
 }
@@ -107,7 +115,7 @@ async function getCacheValue(key: string) {
     return null;
   }
 
-  if (runtimeEnv.isUpstashConfigured) {
+  if (shouldUseUpstashAtRuntime()) {
     try {
       const payload = await runUpstashPipeline([["GET", key]]);
       const raw = payload[0]?.result;
@@ -140,7 +148,7 @@ async function setCacheValue(key: string, value: string, ttlSeconds: number) {
   }
 
   const ttlMs = Math.max(ttlSeconds, 1) * 1000;
-  if (runtimeEnv.isUpstashConfigured) {
+  if (shouldUseUpstashAtRuntime()) {
     try {
       await runUpstashPipeline([["SET", key, value, "PX", ttlMs]]);
       return;
@@ -169,7 +177,7 @@ export async function getCacheVersion(bucket: string) {
     return versionSnapshot.value;
   }
 
-  if (runtimeEnv.isUpstashConfigured) {
+  if (shouldUseUpstashAtRuntime()) {
     try {
       const payload = await runUpstashPipeline([["GET", `cache:version:${bucket}`]]);
       const raw = payload[0]?.result;
@@ -211,7 +219,7 @@ export async function bumpCacheVersion(bucket: string) {
 
   memoryVersionSnapshot.delete(bucket);
 
-  if (runtimeEnv.isUpstashConfigured) {
+  if (shouldUseUpstashAtRuntime()) {
     try {
       await runUpstashPipeline([["INCR", `cache:version:${bucket}`]]);
       return;
