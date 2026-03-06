@@ -519,6 +519,7 @@ export function GuestFeedPageClient() {
                 initialNextCursor={mode === "ALL" ? nextCursor : null}
                 mode={mode}
                 disableLoadMore={mode !== "ALL"}
+                apiPath="/api/feed/guest"
                 preferGuestDetail
                 query={{
                   type: type ?? undefined,

@@ -127,6 +127,63 @@ describe("GET /api/feed/guest", () => {
     expect(mockListPosts).not.toHaveBeenCalled();
   });
 
+  it("returns compact cursor payload for guest infinite scroll", async () => {
+    mockListPosts.mockResolvedValue({
+      items: [
+        {
+          id: "post-2",
+          type: PostType.FREE_BOARD,
+          scope: PostScope.GLOBAL,
+          status: PostStatus.ACTIVE,
+          title: "두 번째 글",
+          content: "무한 스크롤 다음 페이지",
+          commentCount: 0,
+          likeCount: 1,
+          dislikeCount: 0,
+          viewCount: 3,
+          createdAt: new Date("2026-03-06T09:00:00.000Z"),
+          author: {
+            id: "user-2",
+            name: "sam",
+            nickname: "샘",
+            image: null,
+          },
+          neighborhood: null,
+          petType: null,
+          images: [],
+          reactions: [],
+        },
+      ],
+      nextCursor: "post-3",
+    } as never);
+
+    const response = await GET(
+      new Request("http://localhost/api/feed/guest?cursor=post-1&sort=LIKE") as NextRequest,
+    );
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(payload).toEqual({
+      ok: true,
+      data: {
+        items: [
+          expect.objectContaining({
+            id: "post-2",
+            title: "두 번째 글",
+          }),
+        ],
+        nextCursor: "post-3",
+      },
+    });
+    expect(mockListCommunityNavItems).not.toHaveBeenCalled();
+    expect(mockListPosts).toHaveBeenCalledWith(
+      expect.objectContaining({
+        cursor: "post-1",
+        sort: "LIKE",
+      }),
+    );
+  });
+
   it("returns 500 on unexpected errors", async () => {
     mockListCommunityNavItems.mockRejectedValue(new Error("boom"));
 

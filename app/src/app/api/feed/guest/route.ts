@@ -41,6 +41,7 @@ const guestFeedQuerySchema = z.object({
   review: z.enum(REVIEW_CATEGORY_VALUES).optional(),
   personalized: z.enum(["0", "1"]).optional(),
   page: z.coerce.number().int().positive().optional(),
+  cursor: z.string().trim().min(1).optional(),
 });
 
 function toFeedMode(value?: string): FeedMode {
@@ -184,6 +185,7 @@ export async function GET(request: NextRequest) {
       review: searchParams.get("review") ?? undefined,
       personalized: searchParams.get("personalized") ?? undefined,
       page: searchParams.get("page") ?? undefined,
+      cursor: searchParams.get("cursor") ?? undefined,
     });
     if (!parsed.success) {
       return jsonError(400, {
@@ -192,21 +194,21 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    const [communities, loginRequiredTypes] = await Promise.all([
-      listCommunityNavItems(50).catch((error) => {
-        if (isDatabaseUnavailableError(error)) {
-          return [];
-        }
-        throw error;
-      }),
-      getGuestReadLoginRequiredPostTypes().catch((error) => {
-        if (isDatabaseUnavailableError(error)) {
-          return [];
-        }
-        throw error;
-      }),
-    ]);
-
+    const isCursorPagination = Boolean(parsed.data.cursor?.trim());
+    const loginRequiredTypes = await getGuestReadLoginRequiredPostTypes().catch((error) => {
+      if (isDatabaseUnavailableError(error)) {
+        return [];
+      }
+      throw error;
+    });
+    const communities = isCursorPagination
+      ? []
+      : await listCommunityNavItems(50).catch((error) => {
+          if (isDatabaseUnavailableError(error)) {
+            return [];
+          }
+          throw error;
+        });
     const allPetTypeIds = communities.map((item) => item.id);
     const parsedParams = postListSchema.safeParse({
       ...parsed.data,
@@ -251,6 +253,7 @@ export async function GET(request: NextRequest) {
     const query = listInput?.q?.trim() ?? "";
     const requestedPage = parsed.data.page ?? 1;
     const currentPage = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
+    const cursor = parsed.data.cursor?.trim() || undefined;
 
     if (isLocalRequiredType && type) {
       return jsonOk(
@@ -264,6 +267,46 @@ export async function GET(request: NextRequest) {
             secondaryLink: "/feed",
             secondaryLabel: "전체 피드 보기",
           },
+        },
+        {
+          headers: {
+            "cache-control": buildCacheControlHeader(30, 300),
+          },
+        },
+      );
+    }
+
+    if (isCursorPagination) {
+      const posts = !isGuestTypeBlocked
+        ? await listPosts({
+            cursor,
+            limit: FEED_PAGE_SIZE,
+            type: type ?? undefined,
+            reviewBoard,
+            reviewCategory,
+            scope: effectiveScope,
+            petTypeId: requestedPetTypeId ?? undefined,
+            petTypeIds: parsedPetTypes.data,
+            q: query || undefined,
+            searchIn: selectedSearchIn,
+            days: periodDays ?? undefined,
+            sort: selectedSort,
+            excludeTypes: loginRequiredTypes,
+            neighborhoodId: undefined,
+            viewerId: undefined,
+            personalized: false,
+          }).catch((error) => {
+            if (isDatabaseUnavailableError(error)) {
+              return { items: [], nextCursor: null };
+            }
+            throw error;
+          })
+        : { items: [], nextCursor: null };
+
+      return jsonOk(
+        {
+          items: serializeFeedItems(posts.items as Array<Record<string, unknown>>),
+          nextCursor: posts.nextCursor,
         },
         {
           headers: {

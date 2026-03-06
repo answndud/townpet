@@ -1238,6 +1238,13 @@
 | Vercel runtime 템플릿 키 정렬 | Codex | P1 | `done` | `.env.production.example`이 현재 실제 Vercel runtime 키(`NEXTAUTH_URL`, `DIRECT_URL`, `RESEND_API_KEY`, OAuth 키 포함) 기준으로 정리됨 | `app/.env.production.example` |
 | Vercel/GitHub Actions 실제 키 목록 문서 반영 | Codex | P1 | `done` | 운영 체크리스트와 Vercel 가이드가 사용자가 공유한 실제 key 목록과 현재 판단을 반영함 | `docs/operations/manual-checks/배포_보안_체크리스트.md`, `docs/operations/Vercel_OAuth_초기설정_가이드.md` |
 
+### Cycle 186: guest 피드 무한스크롤 hot path 축소 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| guest `/feed` 추가 페이지 로드를 guest API로 일원화 | Codex | P1 | `done` | guest `/feed` 무한스크롤이 더 이상 기본 `/api/posts`를 타지 않고 `/api/feed/guest` cursor 경로를 사용함 | `app/src/components/posts/guest-feed-page-client.tsx`, `app/src/components/posts/feed-infinite-list.tsx` |
+| `/api/feed/guest` cursor 전용 경량 응답 추가 | Codex | P1 | `done` | `cursor` 요청 시 커뮤니티 네비/페이지 메타 계산 없이 `items + nextCursor`만 반환하는 compact payload를 제공함 | `app/src/app/api/feed/guest/route.ts` |
+| 회귀 테스트/기록 반영 | Codex | P1 | `done` | guest feed route test가 cursor 경로를 검증하고, 성능 기록/PROGRESS에 hot path 축소 내용을 남김 | `app/src/app/api/feed/guest/route.test.ts`, `docs/operations/캐시_성능_적용_기록.md`, `PROGRESS.md` |
+
 ## Blocked (환경 의존)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
