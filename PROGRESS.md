@@ -5377,6 +5377,23 @@
 2. 필요 시 수동으로 `verify_pg_trgm=true` 재실행해 드리프트 점검
 3. 선택 과제: Sentry 실수신 점검 경로(`verify_sentry=true`) 정기 점검 여부 결정
 
+### 2026-03-06: Cycle 186 guest 피드 무한스크롤 hot path 축소
+- 완료 내용
+- guest `/feed` 첫 페이지는 이미 `/api/feed/guest`를 쓰고 있었지만, 추가 페이지 로드는 기본 `/api/posts`를 타고 있던 경로를 정리했다.
+- `app/src/components/posts/guest-feed-page-client.tsx`에서 `FeedInfiniteList`의 `apiPath`를 `/api/feed/guest`로 지정해 guest 무한스크롤이 전용 guest API를 사용하도록 일원화했다.
+- `app/src/app/api/feed/guest/route.ts`에 `cursor` 전용 compact 응답 경로를 추가했다.
+  - `cursor` 요청 시 `listCommunityNavItems`, 페이지 메타/베스트 집계 계산을 생략
+  - 응답은 `items`, `nextCursor`만 반환해 무한스크롤 추가 로드 hot path를 가볍게 유지
+- `app/src/app/api/feed/guest/route.test.ts`에 cursor payload 회귀 테스트를 추가해 compact 응답 계약과 `listCommunityNavItems` 생략을 고정했다.
+- 검증 결과
+- `pnpm -C app test -- src/app/api/feed/guest/route.test.ts` 통과
+- `pnpm -C app lint src/app/api/feed/guest/route.ts src/app/api/feed/guest/route.test.ts src/components/posts/guest-feed-page-client.tsx` 통과
+- `pnpm -C app typecheck` 통과
+- 기대 효과
+- guest `/feed` 사용자는 첫 페이지뿐 아니라 추가 로드도 캐시 가능한 guest API 경로를 사용하게 되어, 범용 `/api/posts` cold tail 영향을 덜 받는다.
+- 남은 리스크
+- `api_posts_global` 자체의 cold/warm-up 꼬리는 여전히 남아 있을 수 있다. 다만 이제 guest 주요 사용자 경로와 직접 연결된 비중은 더 줄었다.
+
 ## 참고 문서
 - 운영/실행 가이드: `docs/개발_운영_가이드.md`
 - 현재 계획: `PLAN.md`
