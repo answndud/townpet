@@ -11,8 +11,9 @@ describe("resolveCspHeaders", () => {
   it("uses report-only strict CSP in production by default", () => {
     const result = resolveCspHeaders({ nodeEnv: "production", nonce: "nonce-a" });
 
-    expect(result.csp).toContain("script-src 'self' 'nonce-nonce-a' https: 'unsafe-inline'");
-    expect(result.cspReportOnly).toContain("script-src 'self' 'nonce-nonce-a' https:");
+    expect(result.csp).toContain("script-src 'self' 'nonce-nonce-a' 'unsafe-inline'");
+    expect(result.cspReportOnly).toContain("script-src 'self' 'nonce-nonce-a'");
+    expect(result.csp).not.toContain("script-src 'self' 'nonce-nonce-a' https:");
     expect(result.cspReportOnly).not.toContain("script-src 'self' 'unsafe-inline'");
   });
 
@@ -23,8 +24,9 @@ describe("resolveCspHeaders", () => {
       nonce: "nonce-b",
     });
 
-    expect(result.csp).toContain("script-src 'self' 'nonce-nonce-b' https:");
+    expect(result.csp).toContain("script-src 'self' 'nonce-nonce-b'");
     expect(result.csp).not.toContain("script-src 'self' 'unsafe-inline'");
+    expect(result.csp).not.toContain("script-src 'self' 'nonce-nonce-b' https:");
     expect(result.cspReportOnly).toBeNull();
   });
 

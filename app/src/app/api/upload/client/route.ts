@@ -9,6 +9,7 @@ import { getClientIp } from "@/server/request-context";
 import { enforceRateLimit } from "@/server/rate-limit";
 import { jsonError, jsonOk } from "@/server/response";
 import { ServiceError } from "@/server/services/service-error";
+import { isTrustedUploadPathname } from "@/lib/upload-url";
 
 const ALLOWED_CONTENT_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
@@ -19,7 +20,15 @@ export async function POST(request: NextRequest) {
       token: process.env.BLOB_READ_WRITE_TOKEN,
       request,
       body,
-      onBeforeGenerateToken: async () => {
+      onBeforeGenerateToken: async (pathname) => {
+        if (!isTrustedUploadPathname(pathname)) {
+          throw new ServiceError(
+            "허용되지 않은 업로드 경로입니다.",
+            "INVALID_UPLOAD_PATH",
+            400,
+          );
+        }
+
         const userId = await getCurrentUserId();
         const clientIp = getClientIp(request);
         const guestFingerprint = request.headers.get("x-guest-fingerprint")?.trim() || undefined;

@@ -71,6 +71,34 @@ describe("GET /api/admin/auth-audits/export contract", () => {
     });
   });
 
+  it("neutralizes spreadsheet formulas in csv export", async () => {
+    mockListAuthAuditLogs.mockResolvedValue([
+      {
+        action: AuthAuditAction.PASSWORD_SET,
+        userId: "user-1",
+        user: {
+          id: "user-1",
+          email: "=cmd|' /C calc'!A0",
+          nickname: "+nickname",
+          name: "User One",
+        },
+        ipAddress: "127.0.0.1",
+        userAgent: "@evil-agent",
+        createdAt: new Date("2026-03-04T00:00:00.000Z"),
+      },
+    ] as never);
+
+    const request = new Request("http://localhost/api/admin/auth-audits/export") as NextRequest;
+
+    const response = await GET(request);
+    const text = await response.text();
+
+    expect(response.status).toBe(200);
+    expect(text).toContain("\"'=cmd|' /C calc'!A0\"");
+    expect(text).toContain("\"'+nickname\"");
+    expect(text).toContain("\"'@evil-agent\"");
+  });
+
   it("returns 500 and monitors unexpected errors", async () => {
     mockListAuthAuditLogs.mockRejectedValue(new Error("db down"));
     const request = new Request("http://localhost/api/admin/auth-audits/export") as NextRequest;

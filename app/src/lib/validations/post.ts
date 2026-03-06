@@ -7,6 +7,7 @@ import {
 } from "@/lib/community-board";
 import { isFreeBoardPostType } from "@/lib/post-type-groups";
 import { REVIEW_CATEGORY, REVIEW_CATEGORY_VALUES, type ReviewCategory } from "@/lib/review-category";
+import { isTrustedUploadUrl } from "@/lib/upload-url";
 
 const optionalTrimmedString = z.preprocess(
   (value) => {
@@ -57,13 +58,7 @@ const imageUrlSchema = z
   .string()
   .min(1)
   .max(2048)
-  .refine(
-    (value) =>
-      value.startsWith("/uploads/") ||
-      value.startsWith("https://") ||
-      value.startsWith("http://"),
-    "이미지 URL 형식이 올바르지 않습니다.",
-  );
+  .refine((value) => isTrustedUploadUrl(value), "허용된 업로드 이미지 URL만 사용할 수 있습니다.");
 
 export const postCreateSchema = z.object({
   title: z.string().min(1).max(120),

@@ -1,3 +1,5 @@
+import { isTrustedUploadUrl } from "@/lib/upload-url";
+
 function escapeHtml(value: string) {
   return value
     .replace(/&/g, "&amp;")
@@ -20,10 +22,7 @@ function sanitizeHttpUrl(value: string) {
 }
 
 function sanitizeImageUrl(value: string) {
-  if (value.startsWith("/uploads/")) {
-    return value;
-  }
-  return sanitizeHttpUrl(value);
+  return isTrustedUploadUrl(value) ? value.trim() : null;
 }
 
 function replaceLinkToken(value: string) {

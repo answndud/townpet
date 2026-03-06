@@ -289,9 +289,9 @@ test.describe("feed infinite scroll performance", () => {
 
     const reportPath = resolve(
       process.cwd(),
-      "../docs/plan/feed-scroll-performance-report.md",
+      "../docs/reports/피드_스크롤_성능_리포트.md",
     );
-    await mkdir(resolve(process.cwd(), "../docs/plan"), { recursive: true });
+    await mkdir(resolve(process.cwd(), "../docs/reports"), { recursive: true });
     await writeFile(reportPath, report, "utf8");
 
     await testInfo.attach("feed-scroll-metrics", {

@@ -55,8 +55,8 @@ pnpm dev
 
 ## Structure
 - `app/` - Next.js app
-- `docs/` - product and policy docs
+- `docs/` - organized product, business, policy, operations, security docs
 - `docker-compose.yml` - local Postgres
 
 ## Notes
-- This repo is a blueprint and iterates quickly; see `docs/plan/phase_01.md`.
+- Start with `docs/문서_안내.md`, `docs/개발_운영_가이드.md`, `docs/제품_기술_개요.md`, `PLAN.md`, `PROGRESS.md`.

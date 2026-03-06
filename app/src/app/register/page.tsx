@@ -1,3 +1,4 @@
+import { isSocialDevLoginEnabled } from "@/lib/env";
 import { AuthPageLayout } from "@/components/auth/auth-page-layout";
 import { RegisterForm } from "@/components/auth/register-form";
 
@@ -25,9 +26,7 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
   const naverEnabledByLocalPreview = isLocalPreview;
   const naverEnabled =
     naverEnabledByEnv || naverEnabledByDevFlag || naverEnabledByLocalPreview;
-  const socialDevEnabled =
-    isLocalPreview &&
-    process.env.DISABLE_SOCIAL_DEV_LOGIN !== "1";
+  const socialDevEnabled = isSocialDevLoginEnabled();
 
   return (
     <AuthPageLayout

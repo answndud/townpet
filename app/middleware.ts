@@ -9,7 +9,7 @@ const POST_ID_PATTERN = /^c[a-z0-9]{24}$/;
 const SESSION_COOKIE_NAME = "townpet.session-token";
 
 function buildCspScriptSrc(nonce: string, isStrict: boolean) {
-  const strictSources = [`'self'`, `'nonce-${nonce}'`, "https:"];
+  const strictSources = [`'self'`, `'nonce-${nonce}'`];
   if (isStrict) {
     return strictSources.join(" ");
   }
@@ -55,7 +55,7 @@ const PROD_CSP_STRICT = (nonce: string) =>
 
 const DEV_CSP = (nonce: string) =>
   buildCspPolicy({
-    scriptSrc: `${buildCspScriptSrc(nonce, false)} http:`,
+    scriptSrc: `${buildCspScriptSrc(nonce, false)} http: https:`,
     connectSrc: "'self' https: http: ws: wss:",
     includeUnsafeEval: true,
   });

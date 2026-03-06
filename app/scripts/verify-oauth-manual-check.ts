@@ -12,7 +12,8 @@ type ProviderRow = {
   evidence: string;
 };
 
-const DEFAULT_REPORT_PATH = "../docs/ops/manual-checks/oauth-manual-check-2026-03-05.md";
+const DEFAULT_REPORT_PATH =
+  "../docs/operations/manual-checks/OAuth_수동점검_기록_2026-03-05.md";
 
 function usage() {
   console.log(`Usage:

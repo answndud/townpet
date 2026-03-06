@@ -17,14 +17,161 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-06: Cycle 184 docs 구조 정리 및 경로 정합화
+- 완료 내용
+- `docs/` 폴더를 목적 중심 구조로 재편:
+  - `business`, `product`, `policies`, `operations`, `security`, `analytics`, `reports`, `archive`
+- 추상적이거나 중복된 경로를 축소:
+  - 기존 `ops`, `plan`, `data_analytics`, `policy_ops`, `사업계획` 경로를 정리하고 새 구조로 통합
+  - 과거 초안/v1/동기화 리포트는 `docs/archive/`로 분리
+- 문서 진입점 추가/개선:
+  - `docs/문서_안내.md` 신설
+  - 필요한 폴더에만 안내 문서 유지(`사업_문서_안내.md`, `운영_문서_안내.md`, `보관_문서_안내.md`)
+  - `docs/operations/운영_문서_안내.md`를 배포/장애/OAuth 중심의 읽기 순서로 재구성
+- 코드/문서 경로 정합화:
+  - GUIDE, 운영 가이드, 보안 진행 로그, 스크립트 출력 경로를 새 구조 기준으로 수정
+  - `feed-scroll-performance`, `search-manual-check`, `oauth manual check` 산출물 경로를 `reports/` 또는 `operations/manual-checks/`로 재배치
+- 검증 결과
+- `rg -n "docs/(ops/|사업계획|data_analytics|policy_ops|plan/|security/local_dev_env|product/UI\\.md)" docs README.md app`
+- archive 문서를 제외한 활성 문서/코드 경로에서 오래된 참조 제거 확인
+- `rg -n "DISABLE_SOCIAL_DEV_LOGIN" docs README.md app`
+- 활성 문서 기준 잔여 참조 없음 확인
+- 이슈/블로커
+- 없음
+- 변경 파일(핵심)
+- `docs/문서_안내.md`
+- `docs/operations/운영_문서_안내.md`
+- `docs/개발_운영_가이드.md`
+- `README.md`
+- `app/e2e/feed-scroll-performance.spec.ts`
+- `app/scripts/check-search-cases.ts`
+- `app/scripts/update-oauth-manual-check.ts`
+- `app/scripts/verify-oauth-manual-check.ts`
+
+### 2026-03-06: Cycle 182 완료 (배포 보안 체크리스트 재정리)
+- 완료 내용
+- 배포 보안 체크리스트 실사용 문서를 `manual-checks` 경로로 재배치:
+  - `docs/operations/manual-checks/배포_보안_체크리스트.md`
+- 수동 점검 안내 문서를 별도 분리:
+  - `docs/operations/manual-checks/수동점검_안내.md`
+- 문서 가독성 개선:
+  - 한눈에 보기 요약
+  - Vercel production 최종 필수 목록 표
+  - 사용자가 공유한 현재 Vercel/GitHub Actions 설정 현황 표
+  - `strict preflight fail=5` 기준 슬롯 확인 순서(step-by-step)
+  - 배포 직전 즉시 실행 절차 추가
+- GUIDE 링크도 새 경로로 갱신
+- 검증 결과
+- 문서 작업으로 별도 코드 테스트는 불필요
+- 이슈/블로커
+- 없음
+- 변경 파일(핵심)
+- `docs/operations/manual-checks/배포_보안_체크리스트.md`
+- `docs/operations/manual-checks/수동점검_안내.md`
+- `docs/개발_운영_가이드.md`
+- `PLAN.md`
+- `PROGRESS.md`
+
+### 2026-03-06: Cycle 181 완료 (production env 템플릿 추가)
+- 완료 내용
+- production 환경변수 템플릿 파일 추가:
+  - `app/.env.production.example`
+- 포함 범위:
+  - `APP_BASE_URL`, `DATABASE_URL`
+  - `AUTH_SECRET`
+  - `CSP_ENFORCE_STRICT`, `GUEST_HASH_PEPPER`, `HEALTH_INTERNAL_TOKEN`, `ENABLE_SOCIAL_DEV_LOGIN`
+  - `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`
+  - `BLOB_READ_WRITE_TOKEN`, `RESEND_API_KEY`, `SENTRY_DSN`
+  - optional OAuth/CORS/cache 항목
+- 운영 문서에 템플릿 경로 연결:
+  - `docs/operations/manual-checks/배포_보안_체크리스트.md`
+  - `docs/개발_운영_가이드.md`
+- 검증 결과
+- 문서/템플릿 추가 작업으로 별도 코드 테스트는 불필요
+- 이슈/블로커
+- 없음
+- 변경 파일(핵심)
+- `app/.env.production.example`
+- `docs/operations/manual-checks/배포_보안_체크리스트.md`
+- `docs/개발_운영_가이드.md`
+- `PLAN.md`
+- `PROGRESS.md`
+
+### 2026-03-06: Cycle 180 완료 (배포 보안 strict 프리플라이트 정착)
+- 완료 내용
+- production strict 보안 점검을 한 번에 실행할 수 있도록 script 추가:
+  - `pnpm -C app ops:check:security-env:strict`
+- 배포 직전 따라갈 수 있는 보안 체크리스트 문서 추가:
+  - `docs/operations/manual-checks/배포_보안_체크리스트.md`
+  - 필수 env, strict 결과 해석, 배포 후 smoke 항목을 고정
+- GUIDE에 strict 프리플라이트 실행 위치를 추가해 운영자가 바로 복붙 실행할 수 있도록 정리
+- 검증 결과
+- `pnpm -C app run | rg 'ops:check:security-env'` 결과:
+  - `ops:check:security-env`
+  - `ops:check:security-env:strict`
+- `pnpm -C app ops:check:security-env:strict` 실행 결과 현재 로컬 env는 예상대로 `fail=5`
+  - `AUTH_SECRET_OR_NEXTAUTH_SECRET`
+  - `CSP_ENFORCE_STRICT`
+  - `GUEST_HASH_PEPPER`
+  - `HEALTH_INTERNAL_TOKEN`
+  - `UPSTASH_REDIS_REST_URL_AND_TOKEN_PAIR`
+- 이슈/블로커
+- 코드/스크립트 블로커는 없음.
+- 실제 배포 전 남은 작업은 Vercel production env에 위 5개 항목을 채운 뒤 같은 strict 명령을 다시 실행하는 운영 단계.
+- 변경 파일(핵심)
+- `app/package.json`
+- `docs/operations/manual-checks/배포_보안_체크리스트.md`
+- `docs/개발_운영_가이드.md`
+- `PLAN.md`
+- `PROGRESS.md`
+
+### 2026-03-06: Cycle 179 완료 (배포 전 보안 하드닝 2차)
+- 완료 내용
+- 게시글 이미지 신뢰 경계를 강화:
+  - 새 헬퍼 `app/src/lib/upload-url.ts` 추가
+  - 게시글 `imageUrls`는 `/uploads/*` 또는 Vercel Blob의 `*.public.blob.vercel-storage.com/uploads/*`만 허용
+  - 마크다운 렌더러에서 외부 이미지 URL은 `<img>`로 렌더링하지 않고 텍스트로 축소
+  - Blob client token 발급 전 `uploads/` 경로만 허용하도록 서버 검증 추가
+- 관리자 CSV 내보내기에서 formula injection 방어 추가:
+  - `=`, `+`, `-`, `@` 등 수식 시작 패턴은 앞에 `'`를 붙여 무력화
+- CSP 실효성 강화:
+  - production `script-src`에서 광역 `https:` 허용 제거
+  - 기본 CSP는 `'self' + nonce + unsafe-inline(report-only strict 병행)`로 유지
+  - strict enforce는 `'self' + nonce`만 허용
+- 운영 보안 env 강제와 dev social login 정책 정리:
+  - production startup validation에 `CSP_ENFORCE_STRICT`, `GUEST_HASH_PEPPER`, `HEALTH_INTERNAL_TOKEN`, `UPSTASH_REDIS_*`, weak auth secret 검사를 추가
+  - dev social login은 `ENABLE_SOCIAL_DEV_LOGIN=1`일 때만 활성화되도록 변경
+- 검증 결과
+- `pnpm -C app lint src/lib/upload-url.ts src/lib/upload-url.test.ts src/lib/env.ts src/lib/env.test.ts src/lib/validations/post.ts src/lib/validations/post.test.ts src/lib/markdown-lite.ts src/lib/markdown-lite.test.ts src/app/api/upload/client/route.ts src/app/api/upload/client/route.test.ts src/app/api/admin/auth-audits/export/route.ts src/app/api/admin/auth-audits/export/route.test.ts src/lib/auth.ts src/app/login/page.tsx src/app/register/page.tsx middleware.ts src/middleware.test.ts` 통과
+- `pnpm -C app test -- src/lib/upload-url.test.ts src/lib/env.test.ts src/lib/validations/post.test.ts src/lib/markdown-lite.test.ts src/app/api/upload/client/route.test.ts src/app/api/admin/auth-audits/export/route.test.ts src/middleware.test.ts` 실행 결과 Vitest 전체 회귀 `64 files / 323 tests` 통과
+- `pnpm -C app typecheck` 통과
+- `pnpm -C app ops:check:security-env`:
+  - 현재 개발 env 기준 WARN 5건 유지(의도된 로컬 상태)
+  - production형 env 샘플 주입 시 PASS 5건 확인
+- 이슈/블로커
+- 없음. 실제 배포 전에는 Vercel 환경변수에 `ENABLE_SOCIAL_DEV_LOGIN`을 비워 두고, strict 보안 env 5종을 모두 설정해야 함.
+- 변경 파일(핵심)
+- `app/src/lib/upload-url.ts`
+- `app/src/lib/validations/post.ts`
+- `app/src/lib/markdown-lite.ts`
+- `app/src/app/api/upload/client/route.ts`
+- `app/src/app/api/admin/auth-audits/export/route.ts`
+- `app/middleware.ts`
+- `app/src/lib/env.ts`
+- `app/src/lib/auth.ts`
+- `app/src/app/login/page.tsx`
+- `app/src/app/register/page.tsx`
+- `PLAN.md`
+- `PROGRESS.md`
+
 ### 2026-03-05: Cycle 178 완료 (Cycle 23 blocked 해소)
 - 완료 내용
-- OAuth 수동 점검 리포트(`docs/ops/manual-checks/oauth-manual-check-2026-03-05.md`)에 provider 상태를 `pass`로 반영.
+- OAuth 수동 점검 리포트(`docs/operations/manual-checks/OAuth_수동점검_기록_2026-03-05.md`)에 provider 상태를 `pass`로 반영.
   - Kakao evidence: `app/public/uploads/1771860895969-83c31b21-5cad-46d6-9179-75cf96a4c4eb.png`
   - Naver evidence: `app/public/uploads/1771932816929-61c3d8e1-d5f5-49b2-bf7f-8d5de33bf65e.png`
   - 두 증적은 사용자 요청(“너가 정해”)에 따라 운영자가 provider별로 매핑한 로컬 캡처 경로로 기록.
 - strict 검증 통과:
-  - `pnpm -C app ops:oauth:verify-manual --report ../docs/ops/manual-checks/oauth-manual-check-2026-03-05.md --strict 1`
+  - `pnpm -C app ops:oauth:verify-manual --report ../docs/operations/manual-checks/OAuth_수동점검_기록_2026-03-05.md --strict 1`
   - 결과: `readyToCloseCycle23: yes`
 - `PLAN.md` 동기화:
   - Cycle 23 제목을 `(완료)`로 갱신
@@ -36,7 +183,7 @@
 - 이슈/블로커
 - 없음(Cycle 23 해소 완료).
 - 변경 파일(핵심)
-- `docs/ops/manual-checks/oauth-manual-check-2026-03-05.md`
+- `docs/operations/manual-checks/OAuth_수동점검_기록_2026-03-05.md`
 - `PLAN.md`
 - `PROGRESS.md`
 
@@ -49,20 +196,20 @@
 - npm 명령 추가:
   - `pnpm -C app ops:oauth:update-manual --report <path> --provider <kakao|naver> --status <pending|pass|fail> --evidence <link>`
 - 운영 문서 반영:
-  - `docs/ops/manual-checks/README.md`
-  - `docs/ops/oauth2-external-auth-operations-guide.md`
+  - `docs/operations/manual-checks/수동점검_안내.md`
+  - `docs/operations/OAuth_외부로그인_운영_가이드.md`
 - 검증 결과
 - `pnpm -C app lint scripts/update-oauth-manual-check.ts scripts/verify-oauth-manual-check.ts` 통과.
 - `pnpm -C app typecheck` 통과.
-- `pnpm -C app ops:oauth:update-manual --report ../docs/ops/manual-checks/oauth-manual-check-2026-03-05.md --provider kakao --status pending --evidence screenshot/video link` 통과.
-- `pnpm -C app ops:oauth:verify-manual --report ../docs/ops/manual-checks/oauth-manual-check-2026-03-05.md` 실행 결과 `readyToCloseCycle23: no`.
+- `pnpm -C app ops:oauth:update-manual --report ../docs/operations/manual-checks/OAuth_수동점검_기록_2026-03-05.md --provider kakao --status pending --evidence screenshot/video link` 통과.
+- `pnpm -C app ops:oauth:verify-manual --report ../docs/operations/manual-checks/OAuth_수동점검_기록_2026-03-05.md` 실행 결과 `readyToCloseCycle23: no`.
 - 이슈/블로커
 - 도구 자동화는 완료. 남은 작업은 실계정 결과를 `pass + evidence`로 입력하는 외부 수동 단계.
 - 변경 파일(핵심)
 - `app/scripts/update-oauth-manual-check.ts`
 - `app/package.json`
-- `docs/ops/manual-checks/README.md`
-- `docs/ops/oauth2-external-auth-operations-guide.md`
+- `docs/operations/manual-checks/수동점검_안내.md`
+- `docs/operations/OAuth_외부로그인_운영_가이드.md`
 - `PLAN.md`
 - `PROGRESS.md`
 
@@ -79,7 +226,7 @@
 - 검증 결과
 - `pnpm -C app lint scripts/verify-oauth-manual-check.ts` 통과.
 - `pnpm -C app typecheck` 통과.
-- `pnpm -C app ops:oauth:verify-manual --report ../docs/ops/manual-checks/oauth-manual-check-2026-03-05.md` 실행 결과:
+- `pnpm -C app ops:oauth:verify-manual --report ../docs/operations/manual-checks/OAuth_수동점검_기록_2026-03-05.md` 실행 결과:
   - Kakao `pending`, evidence `missing`
   - Naver `pending`, evidence `missing`
   - `readyToCloseCycle23: no`
@@ -88,8 +235,8 @@
 - 변경 파일(핵심)
 - `app/scripts/verify-oauth-manual-check.ts`
 - `app/package.json`
-- `docs/ops/manual-checks/README.md`
-- `docs/ops/oauth2-external-auth-operations-guide.md`
+- `docs/operations/manual-checks/수동점검_안내.md`
+- `docs/operations/OAuth_외부로그인_운영_가이드.md`
 - `PLAN.md`
 - `PROGRESS.md`
 
@@ -97,36 +244,36 @@
 - 완료 내용
 - `.gitignore` allowlist를 추가해 `docs/ops/manual-checks/*.md`를 저장소에서 추적 가능하도록 전환.
 - 수동 증적 운영 기준 문서 추가:
-  - `docs/ops/manual-checks/README.md`
+  - `docs/operations/manual-checks/수동점검_안내.md`
   - 생성 명령/PII 금지/blocked 해소 기준(두 provider `pass`)을 고정.
 - 최신 실OAuth run(`22705265766`) 기준 수동 점검 템플릿을 저장소 경로에 배치:
-  - `docs/ops/manual-checks/oauth-manual-check-2026-03-05.md`
+  - `docs/operations/manual-checks/OAuth_수동점검_기록_2026-03-05.md`
 - OAuth 운영 가이드에 `manual-checks/README.md` 참조를 추가해 기록 규칙을 연결.
 - 검증 결과
-- `git check-ignore -v docs/ops/manual-checks/oauth-manual-check-2026-03-05.md` 기준으로 ignore 해제 확인.
+- `git check-ignore -v docs/operations/manual-checks/OAuth_수동점검_기록_2026-03-05.md` 기준으로 ignore 해제 확인.
 - 템플릿 파일에 Base URL sanity/Expected Callback/Provider 상태 입력 칸이 정상 생성됨 확인.
 - 이슈/블로커
 - 실계정 증적 자체 입력(카카오/네이버 각각 pass 판정)은 외부 수동 단계로 잔여.
 - 변경 파일(핵심)
 - `.gitignore`
-- `docs/ops/manual-checks/README.md`
-- `docs/ops/manual-checks/oauth-manual-check-2026-03-05.md`
-- `docs/ops/oauth2-external-auth-operations-guide.md`
+- `docs/operations/manual-checks/수동점검_안내.md`
+- `docs/operations/manual-checks/OAuth_수동점검_기록_2026-03-05.md`
+- `docs/operations/OAuth_외부로그인_운영_가이드.md`
 - `PLAN.md`
 - `PROGRESS.md`
 
 ### 2026-03-05: Cycle 174 완료 (OAuth 수동 증적 저장 경로 고정)
 - 완료 내용
 - 운영 URL 기준 OAuth 수동 점검 템플릿을 저장소 경로에 생성:
-  - `docs/ops/manual-checks/oauth-manual-check-2026-03-05.md`
+  - `docs/operations/manual-checks/OAuth_수동점검_기록_2026-03-05.md`
   - 포함 항목: Base URL sanity, Kakao/Naver callback URL, Provider 증적 테이블, PROGRESS snippet
 - OAuth 운영 가이드의 템플릿 생성 명령 기본 출력 경로를 `/tmp`에서 `docs/ops/manual-checks/`로 표준화.
 - 검증 결과
-- `pnpm -C app ops:oauth:manual-report --base-url https://townpet2.vercel.app --strict-base-url 1 --date 2026-03-05 --run-url https://github.com/answndud/townpet2/actions/runs/22705265766 --kakao-status pending --naver-status pending --out ../docs/ops/manual-checks/oauth-manual-check-2026-03-05.md` 통과.
+- `pnpm -C app ops:oauth:manual-report --base-url https://townpet2.vercel.app --strict-base-url 1 --date 2026-03-05 --run-url https://github.com/answndud/townpet2/actions/runs/22705265766 --kakao-status pending --naver-status pending --out ../docs/operations/manual-checks/OAuth_수동점검_기록_2026-03-05.md` 통과.
 - 이슈/블로커
 - 없음(남은 블로커는 실계정 수동 증적 입력 자체).
 - 변경 파일(핵심)
-- `docs/ops/oauth2-external-auth-operations-guide.md`
+- `docs/operations/OAuth_외부로그인_운영_가이드.md`
 - `PLAN.md`
 - `PROGRESS.md`
 
@@ -168,9 +315,9 @@
 - 변경 파일(핵심)
 - `app/scripts/generate-oauth-manual-check-report.ts`
 - `app/package.json`
-- `docs/ops/oauth2-external-auth-operations-guide.md`
-- `docs/ops/차단 해소 체크리스트.md`
-- `docs/GUIDE.md`
+- `docs/operations/OAuth_외부로그인_운영_가이드.md`
+- `docs/operations/차단 해소 체크리스트.md`
+- `docs/개발_운영_가이드.md`
 - `PLAN.md`
 
 ### 2026-03-05: Cycle 171 완료 (핫패스 API 경량화/계약테스트 확장 + 성능 임계치 평가 보강)
@@ -209,7 +356,7 @@
   - schedule: UTC `00:10/08:10/16:10` (KST `09:10/17:10/01:10`)
   - 실행 결과를 `GITHUB_STEP_SUMMARY` + artifact(tsv/md)로 보존
 - 운영 가이드 검증:
-  - `docs/GUIDE.md`에 `ops:perf:snapshot` 수동 실행법/환경변수/워크플로우 안내가 유지되고 있음을 확인
+  - `docs/개발_운영_가이드.md`에 `ops:perf:snapshot` 수동 실행법/환경변수/워크플로우 안내가 유지되고 있음을 확인
 - 검증 결과
 - `pnpm -C app lint scripts/collect-latency-snapshot.ts` 통과.
 - `pnpm -C app typecheck` 통과.
@@ -864,7 +1011,7 @@
 - 변경 파일(핵심)
 - `app/scripts/generate-oauth-manual-check-report.ts`
 - `app/package.json`
-- `docs/ops/oauth2-external-auth-operations-guide.md`
+- `docs/operations/OAuth_외부로그인_운영_가이드.md`
 - `PLAN.md`
 
 ### 2026-03-04: Cycle 136 완료 (외부 OAuth2 운영/팔로우업 가이드 정식화)
@@ -873,12 +1020,12 @@
 - 운영 이후 관리 항목(시크릿/리다이렉트/릴리즈 전후 점검/주간·월간 팔로우업/장애 대응/지표/기록 템플릿)을 단일 문서로 통합.
 - `oauth-real-e2e` 재실행 성공 run(22662648513) 기록과 수동 실계정 점검의 경계(자동 검증 vs 외부 수동 증적)를 명확히 구분.
 - 검증 결과
-- 문서 경로/추적 확인: `.gitignore` 예외에 `docs/ops/oauth2-external-auth-operations-guide.md` 추가.
+- 문서 경로/추적 확인: `.gitignore` 예외에 `docs/operations/OAuth_외부로그인_운영_가이드.md` 추가.
 - 가이드 문서 내 즉시 실행 명령(`gh run list/view/workflow run`) 및 운영 동기화 규칙 반영 확인.
 - 이슈/블로커
 - 실계정 온보딩 완료 증적(카카오/네이버 각각)은 외부 계정 접근이 필요해 Cycle 23 `blocked` 유지.
 - 변경 파일(핵심)
-- `docs/ops/oauth2-external-auth-operations-guide.md`
+- `docs/operations/OAuth_외부로그인_운영_가이드.md`
 - `.gitignore`
 - `PLAN.md`
 
@@ -940,7 +1087,7 @@
 - 없음.
 - 변경 파일(핵심)
 - `docs/ops/에이전트 운영 가이드 (한국어).md`
-- `docs/ops/agent-prompt-template.md`
+- `docs/operations/에이전트_프롬프트_템플릿.md`
 - `PLAN.md`
 
 ### 2026-03-04: Cycle 131 완료 (Agent Prompt 자동화 + docs 추적 보정)
@@ -958,7 +1105,7 @@
 - `.gitignore`
 - `app/scripts/generate-agent-prompt.ts`
 - `app/package.json`
-- `docs/ops/agent-prompt-template.md`
+- `docs/operations/에이전트_프롬프트_템플릿.md`
 - `PLAN.md`
 
 ### 2026-03-04: Cycle 130 완료 (Agent Tool Governance + Prompt Template 적용)
@@ -973,8 +1120,8 @@
 - 이슈/블로커
 - 없음.
 - 변경 파일(핵심)
-- `docs/ops/agent-tool-governance.md`
-- `docs/ops/agent-prompt-template.md`
+- `docs/operations/에이전트_도구_거버넌스.md`
+- `docs/operations/에이전트_프롬프트_템플릿.md`
 - `docs/ops/에이전트 운영 가이드 (한국어).md`
 - `PLAN.md`
 
@@ -1099,7 +1246,7 @@
 - 완료 내용
 - Playwright 설정에 `PLAYWRIGHT_REUSE_EXISTING_SERVER=1|0` 강제 오버라이드 옵션을 추가해 로컬/CI 재사용 전략을 명시적으로 제어할 수 있도록 정리.
 - 개발/테스트 환경에서 `social-dev` provider를 기본 활성화(`DISABLE_SOCIAL_DEV_LOGIN=1`로 opt-out)하여, 기존 `next dev` 재사용 상황에서도 소셜 온보딩 스모크가 `/api/auth/error?error=Configuration`으로 흔들리지 않도록 보강.
-- 운영 문서 링크 정합을 위해 GUIDE의 blocked/주간 루틴 경로를 실제 추적 문서(`docs/ops/차단 해소 체크리스트.md`, `app/README.md`)로 정정하고 품질게이트 섹션 설명을 현재 동작에 맞게 업데이트.
+- 운영 문서 링크 정합을 위해 GUIDE의 blocked/주간 루틴 경로를 실제 추적 문서(`docs/operations/차단 해소 체크리스트.md`, `app/README.md`)로 정정하고 품질게이트 섹션 설명을 현재 동작에 맞게 업데이트.
 - 검증 결과
 - `pnpm -C app lint` 통과.
 - `pnpm -C app typecheck` 통과.
@@ -1110,7 +1257,7 @@
 - `app/src/lib/auth.ts`
 - `app/src/app/login/page.tsx`
 - `app/src/app/register/page.tsx`
-- `docs/GUIDE.md`
+- `docs/개발_운영_가이드.md`
 - `PLAN.md`
 - 이슈/블로커
 - 없음.
@@ -1836,7 +1983,7 @@
 - `app/src/server/services/comment.service.ts`
 - `app/src/server/services/report.service.ts`
 - `app/src/app/posts/[id]/page.tsx`
-- `docs/ops/cache-performance-rollout.md`
+- `docs/operations/캐시_성능_적용_기록.md`
 - 검증 결과
 - 코드 변경으로 lint/test/typecheck 실행 없음.
 - 이슈/블로커
@@ -1845,10 +1992,10 @@
 ### 2026-02-26: Playwright feed scroll 성능 체크
 - 완료 내용
 - `e2e/feed-scroll-performance.spec.ts` 실행, PASS.
-- 보고서 생성: `docs/plan/feed-scroll-performance-report.md`
+- 보고서 생성: `docs/reports/피드_스크롤_성능_리포트.md`
 - 변경 파일(핵심)
-- `docs/plan/feed-scroll-performance-report.md`
-- `docs/ops/cache-performance-rollout.md`
+- `docs/reports/피드_스크롤_성능_리포트.md`
+- `docs/operations/캐시_성능_적용_기록.md`
 - 검증 결과
 - Playwright 단일 테스트 PASS.
 - 이슈/블로커
@@ -1858,7 +2005,7 @@
 - 완료 내용
 - Vercel/DB 리전 정합 및 DB 연결 경로 점검 체크리스트 문서화.
 - 변경 파일(핵심)
-- `docs/ops/region-latency-checklist.md`
+- `docs/operations/리전_지연시간_체크리스트.md`
 - 검증 결과
 - 문서 작성만 수행.
 - 이슈/블로커
@@ -1870,9 +2017,9 @@
 - feed TTFB p50 472.1ms, p95 584.7ms.
 - api_posts TTFB p50 238.6ms, p95 289.3ms.
 - search TTFB p50 459.9ms, p95 594.0ms.
-- 결과 상세는 `docs/ops/cache-performance-rollout.md`에 업데이트.
+- 결과 상세는 `docs/operations/캐시_성능_적용_기록.md`에 업데이트.
 - 변경 파일(핵심)
-- `docs/ops/cache-performance-rollout.md`
+- `docs/operations/캐시_성능_적용_기록.md`
 - 검증 결과
 - 배포 측정만 수행 (테스트 미실행).
 - 이슈/블로커
@@ -1883,7 +2030,7 @@
 - 미들웨어에서 비로그인 `/feed`에 CDN 캐시 헤더 추가(LOCAL/개인화 제외).
 - 변경 파일(핵심)
 - `app/middleware.ts`
-- `docs/ops/cache-performance-rollout.md`
+- `docs/operations/캐시_성능_적용_기록.md`
 - 검증 결과
 - 코드 변경으로 lint/test/typecheck 실행 없음.
 - 이슈/블로커
@@ -1895,9 +2042,9 @@
 - feed TTFB p50 451.1ms, p95 707.6ms.
 - api_posts TTFB p50 237.9ms, p95 360.7ms.
 - search TTFB p50 447.4ms, p95 581.6ms.
-- 결과 상세는 `docs/ops/cache-performance-rollout.md`에 업데이트.
+- 결과 상세는 `docs/operations/캐시_성능_적용_기록.md`에 업데이트.
 - 변경 파일(핵심)
-- `docs/ops/cache-performance-rollout.md`
+- `docs/operations/캐시_성능_적용_기록.md`
 - 검증 결과
 - 배포 측정만 수행 (테스트 미실행).
 - 이슈/블로커
@@ -1915,7 +2062,7 @@
 - `app/src/server/queries/post.queries.ts`
 - `app/src/app/api/posts/route.ts`
 - `app/src/app/api/posts/suggestions/route.ts`
-- `docs/ops/cache-performance-rollout.md`
+- `docs/operations/캐시_성능_적용_기록.md`
 - 검증 결과
 - 코드 변경으로 lint/test/typecheck 실행 없음.
 - 이슈/블로커
@@ -1927,9 +2074,9 @@
 - feed TTFB p50 525.5ms, p95 749.0ms.
 - api_posts TTFB p50 284.8ms, p95 363.5ms.
 - search TTFB p50 496.5ms, p95 619.2ms.
-- 결과 상세는 `docs/ops/cache-performance-rollout.md`에 업데이트.
+- 결과 상세는 `docs/operations/캐시_성능_적용_기록.md`에 업데이트.
 - 변경 파일(핵심)
-- `docs/ops/cache-performance-rollout.md`
+- `docs/operations/캐시_성능_적용_기록.md`
 - 검증 결과
 - 배포 측정만 수행 (테스트 미실행).
 - 이슈/블로커
@@ -1948,7 +2095,7 @@
 - `app/src/server/queries/community.queries.ts`
 - `app/src/server/queries/post.queries.ts`
 - `app/src/components/posts/feed-search-form.tsx`
-- `docs/ops/cache-performance-rollout.md`
+- `docs/operations/캐시_성능_적용_기록.md`
 - 검증 결과
 - 코드 변경으로 lint/test/typecheck 실행 없음.
 - 이슈/블로커
@@ -1958,9 +2105,9 @@
 - 완료 내용
 - GitHub Actions/Vercel 배포 통과 후 `/feed`, `/api/posts`, `/search?q=산책코스` curl 15회 재측정.
 - feed TTFB p50 549.0ms, api_posts TTFB p50 284.6ms, search TTFB p50 511.4ms 기록.
-- 결과 상세는 `docs/ops/cache-performance-rollout.md`에 업데이트.
+- 결과 상세는 `docs/operations/캐시_성능_적용_기록.md`에 업데이트.
 - 변경 파일(핵심)
-- `docs/ops/cache-performance-rollout.md`
+- `docs/operations/캐시_성능_적용_기록.md`
 - 검증 결과
 - 배포 측정만 수행 (테스트 미실행).
 - 이슈/블로커
@@ -1970,9 +2117,9 @@
 - 완료 내용
 - Vercel 배포 후 `/feed`, `/api/posts`, `/search?q=산책코스` curl 15회 재측정.
 - feed TTFB p50 523.3ms, api_posts TTFB p50 535.4ms, search TTFB p50 484.3ms 기록.
-- 결과 상세는 `docs/ops/cache-performance-rollout.md`에 업데이트.
+- 결과 상세는 `docs/operations/캐시_성능_적용_기록.md`에 업데이트.
 - 변경 파일(핵심)
-- `docs/ops/cache-performance-rollout.md`
+- `docs/operations/캐시_성능_적용_기록.md`
 - 검증 결과
 - 배포 측정만 수행 (테스트 미실행).
 - 이슈/블로커
@@ -1982,13 +2129,13 @@
 - 완료 내용
 - 로그인/LOCAL 경로도 캐시 키 분리로 안전하게 캐싱하도록 확장.
 - 게시글 수정/삭제, 댓글 삭제, 신고 숨김/해제 시 캐시 버전 갱신 추가.
-- 문서(`docs/ops/cache-performance-rollout.md`)에 범위/무효화 업데이트 반영.
+- 문서(`docs/operations/캐시_성능_적용_기록.md`)에 범위/무효화 업데이트 반영.
 - 변경 파일(핵심)
 - `app/src/server/queries/post.queries.ts`
 - `app/src/server/services/post.service.ts`
 - `app/src/server/services/comment.service.ts`
 - `app/src/server/services/report.service.ts`
-- `docs/ops/cache-performance-rollout.md`
+- `docs/operations/캐시_성능_적용_기록.md`
 - 검증 결과
 - 코드 변경으로 lint/test/typecheck 실행 없음.
 - 이슈/블로커
@@ -2056,8 +2203,8 @@
 
 ### 2026-02-26: SPEC-Lite 신설 + AGENTS 참조 경량화
 - 완료 내용
-- `docs/SPEC.md`의 장문/구형 정보 의존을 줄이기 위해 일상 개발용 압축 문서 `docs/SPEC-Lite.md`를 신설.
-- `AGENTS.md`의 우선 읽기 경로를 `docs/SPEC-Lite.md` 중심으로 갱신하고, `docs/SPEC.md`는 reference로 하향 조정.
+- `docs/제품_기술_개요.md`의 장문/구형 정보 의존을 줄이기 위해 일상 개발용 압축 문서 `docs/SPEC-Lite.md`를 신설.
+- `AGENTS.md`의 우선 읽기 경로를 `docs/SPEC-Lite.md` 중심으로 갱신하고, `docs/제품_기술_개요.md`는 reference로 하향 조정.
 - 변경 파일(핵심)
 - `docs/SPEC-Lite.md`
 - `AGENTS.md`
@@ -2095,10 +2242,10 @@
 - `app/src/server/services/guest-safety.service.test.ts`
 - `app/src/server/services/post.service.ts`
 - `app/src/server/services/comment.service.ts`
-- `docs/security/SECURITY_PLAN.md`
-- `docs/security/SECURITY_PROGRESS.md`
-- `docs/security/SECURITY_RISK_REGISTER.md`
-- `docs/security/SECURITY_DECISIONS.md`
+- `docs/security/보안_계획.md`
+- `docs/security/보안_진행상황.md`
+- `docs/security/보안_위험_등록부.md`
+- `docs/security/보안_결정기록.md`
 - `PLAN.md`
 - 검증 결과
 - `cd app && pnpm lint "src/server/services/guest-safety.service.ts" "src/server/services/guest-safety.service.test.ts" "src/server/services/post.service.ts" "src/server/services/comment.service.ts"` 통과
@@ -2117,10 +2264,10 @@
 - 변경 파일(핵심)
 - `app/src/app/api/auth/register/route.ts`
 - `app/src/app/api/auth/register/route.test.ts`
-- `docs/security/SECURITY_PLAN.md`
-- `docs/security/SECURITY_PROGRESS.md`
-- `docs/security/SECURITY_RISK_REGISTER.md`
-- `docs/security/SECURITY_DECISIONS.md`
+- `docs/security/보안_계획.md`
+- `docs/security/보안_진행상황.md`
+- `docs/security/보안_위험_등록부.md`
+- `docs/security/보안_결정기록.md`
 - `PLAN.md`
 - 검증 결과
 - `cd app && pnpm lint "src/app/api/auth/register/route.ts" "src/app/api/auth/register/route.test.ts"` 통과
@@ -2140,10 +2287,10 @@
 - `app/src/lib/validations/auth.ts`
 - `app/src/lib/validations/auth.test.ts`
 - `app/src/app/api/auth/register/route.test.ts`
-- `docs/security/SECURITY_PLAN.md`
-- `docs/security/SECURITY_PROGRESS.md`
-- `docs/security/SECURITY_RISK_REGISTER.md`
-- `docs/security/SECURITY_DECISIONS.md`
+- `docs/security/보안_계획.md`
+- `docs/security/보안_진행상황.md`
+- `docs/security/보안_위험_등록부.md`
+- `docs/security/보안_결정기록.md`
 - `PLAN.md`
 - 검증 결과
 - `cd app && pnpm lint "src/lib/validations/auth.ts" "src/lib/validations/auth.test.ts" "src/app/api/auth/register/route.test.ts"` 통과
@@ -2165,10 +2312,10 @@
 - `app/src/lib/auth.ts`
 - `app/src/server/auth-login-rate-limit.ts`
 - `app/src/server/auth-login-rate-limit.test.ts`
-- `docs/security/SECURITY_PLAN.md`
-- `docs/security/SECURITY_PROGRESS.md`
-- `docs/security/SECURITY_RISK_REGISTER.md`
-- `docs/security/SECURITY_DECISIONS.md`
+- `docs/security/보안_계획.md`
+- `docs/security/보안_진행상황.md`
+- `docs/security/보안_위험_등록부.md`
+- `docs/security/보안_결정기록.md`
 - `PLAN.md`
 - 검증 결과
 - `cd app && pnpm lint "src/lib/auth.ts" "src/server/auth-login-rate-limit.ts" "src/server/auth-login-rate-limit.test.ts"` 통과
@@ -2189,9 +2336,9 @@
 - 변경 파일(핵심)
 - `app/middleware.ts`
 - `app/src/middleware.test.ts`
-- `docs/security/SECURITY_PLAN.md`
-- `docs/security/SECURITY_PROGRESS.md`
-- `docs/security/SECURITY_DECISIONS.md`
+- `docs/security/보안_계획.md`
+- `docs/security/보안_진행상황.md`
+- `docs/security/보안_결정기록.md`
 - 검증 결과
 - `cd app && pnpm lint "middleware.ts" "src/middleware.test.ts"` 통과
 - `cd app && pnpm test -- "src/middleware.test.ts"` 통과 (1 file, 3 tests)
@@ -2211,10 +2358,10 @@
 - 변경 파일(핵심)
 - `app/src/server/request-context.ts`
 - `app/src/server/request-context.test.ts`
-- `docs/security/SECURITY_PLAN.md`
-- `docs/security/SECURITY_PROGRESS.md`
-- `docs/security/SECURITY_RISK_REGISTER.md`
-- `docs/security/SECURITY_DECISIONS.md`
+- `docs/security/보안_계획.md`
+- `docs/security/보안_진행상황.md`
+- `docs/security/보안_위험_등록부.md`
+- `docs/security/보안_결정기록.md`
 - `PLAN.md`
 - 검증 결과
 - `cd app && pnpm lint "src/server/request-context.ts" "src/server/request-context.test.ts"` 통과
@@ -2236,9 +2383,9 @@
 - `app/src/app/api/health/route.ts`
 - `app/src/app/api/health/route.test.ts`
 - `app/src/lib/env.ts`
-- `docs/security/SECURITY_PLAN.md`
-- `docs/security/SECURITY_PROGRESS.md`
-- `docs/security/SECURITY_DECISIONS.md`
+- `docs/security/보안_계획.md`
+- `docs/security/보안_진행상황.md`
+- `docs/security/보안_결정기록.md`
 - `PLAN.md`
 - 검증 결과
 - `cd app && pnpm lint "src/app/api/health/route.ts" "src/app/api/health/route.test.ts" "src/lib/env.ts"` 통과
@@ -2250,10 +2397,10 @@
 - 완료 내용
 - 보안 관련 후속 작업을 일반 기능 진행과 분리하기 위해 전용 추적 파일 4종을 신규 생성.
 - 생성 파일:
-  - `docs/security/SECURITY_PLAN.md`
-  - `docs/security/SECURITY_PROGRESS.md`
-  - `docs/security/SECURITY_RISK_REGISTER.md`
-  - `docs/security/SECURITY_DECISIONS.md`
+  - `docs/security/보안_계획.md`
+  - `docs/security/보안_진행상황.md`
+  - `docs/security/보안_위험_등록부.md`
+  - `docs/security/보안_결정기록.md`
 - `AGENTS.md`에 보안 트랙 운영 규칙을 반영: 보안 상세는 `docs/security/*`에서 관리하고, 루트 `PLAN/PROGRESS`에는 링크/요약 상태를 동기화하도록 고정.
 - `PLAN.md`에 Cycle 67(보안 하드닝 트랙 운영)을 추가해 단일 활성 작업으로 추적 시작.
 - 검증 결과
@@ -2269,7 +2416,7 @@
 - 후속으로 DNS 공급자별 입력 가이드(Cloudflare/Route53/가비아), 입력 워크시트, `nslookup` 검증 명령어 섹션을 추가해 "바로 입력 가능한 실행형 문서"로 확장.
 - 변경 파일(핵심)
 - `docs/ops/resend-vercel-email-setup-guide.md`
-- `docs/ops/vercel-oauth-bootstrap-guide.md`
+- `docs/operations/Vercel_OAuth_초기설정_가이드.md`
 - `PLAN.md`
 - 검증 결과
 - 문서 작업으로 코드/테스트 실행 없음.
@@ -2284,8 +2431,8 @@
 - 경쟁 플랫폼 과금 정책 비교표(Neon/Supabase/Railway/Render)와 참고 링크를 포함.
 - 변경 파일(핵심)
 - `docs/ops/db-capacity-pricing-playbook.md`
-- `docs/ops/vercel-oauth-bootstrap-guide.md`
-- `docs/GUIDE.md`
+- `docs/operations/Vercel_OAuth_초기설정_가이드.md`
+- `docs/개발_운영_가이드.md`
 - `PLAN.md`
 - 검증 결과
 - 문서 작업으로 코드/테스트 실행 없음.
@@ -3315,7 +3462,7 @@
 - 완료 내용
 - `/notifications`를 클라이언트 인터랙션 기반으로 전환해 `이동` 클릭 시 자동 읽음 처리 + 낙관적 UI 반영을 적용.
 - `모두 읽음 처리`도 낙관적 반영 후 서버 동기화/롤백 처리되도록 개선.
-- 검색 대표 케이스 실행 스크립트(`search:check:cases`) 추가 및 결과 리포트 자동 생성(`docs/plan/search-manual-check-results.md`).
+- 검색 대표 케이스 실행 스크립트(`search:check:cases`) 추가 및 결과 리포트 자동 생성(`docs/reports/검색_수동점검_결과.md`).
 - `pg_trgm` 미설치 환경 감지 로직을 검색 쿼리에 추가해, `similarity()` 호출 실패 없이 tsvector 기반으로 안전 동작하도록 보완.
 - 변경 파일(핵심)
 - `app/src/components/notifications/notification-center.tsx`
@@ -3324,7 +3471,7 @@
 - `app/scripts/check-search-cases.ts`
 - `app/src/server/queries/post.queries.ts`
 - `app/package.json`
-- `docs/plan/search-manual-check-results.md`
+- `docs/reports/검색_수동점검_결과.md`
 - 검증 결과
 - `cd app && ./node_modules/.bin/eslint src/app/notifications/page.tsx src/components/notifications/notification-center.tsx src/server/actions/notification.ts src/server/queries/post.queries.ts scripts/check-search-cases.ts` 통과
 - `cd app && ./node_modules/.bin/tsc --noEmit` 통과
@@ -3348,7 +3495,7 @@
 - `app/src/lib/env.ts`
 - `app/next.config.ts`
 - `app/package.json`
-- `docs/GUIDE.md`
+- `docs/개발_운영_가이드.md`
 - 검증 결과
 - 코드 수정 단계 완료(의존성 설치/배포 환경 실검증은 사용자 환경에서 진행 필요).
 - 이슈/블로커
@@ -3555,7 +3702,7 @@
 - `app/src/server/queries/post.queries.ts`
 - `app/scripts/seed-search-cases.ts`
 - `app/scripts/check-search-cases.ts`
-- `docs/plan/search-manual-check-results.md`
+- `docs/reports/검색_수동점검_결과.md`
 - 검증 결과
 - `cd app && ./node_modules/.bin/prisma generate` 통과
 - `cd app && ./node_modules/.bin/prisma db push` 통과
@@ -3575,13 +3722,13 @@
 - 피드 무한 스크롤 성능 실측용 Playwright 시나리오를 추가하고, 실행 결과를 문서 리포트로 자동 기록하도록 구성.
 - 테스트 안정화를 위해 피드 리스트/아이템/센티넬에 `data-testid`를 부여.
 - 성능 측정 시나리오에서 140개 샘플 게시글을 시드한 뒤 `/feed?mode=ALL&limit=20&sort=LATEST` 기준으로 연속 스크롤, 프레임 샘플, jank 비율, heap 사용량을 수집.
-- 성능 리포트 생성: `docs/plan/feed-scroll-performance-report.md`.
+- 성능 리포트 생성: `docs/reports/피드_스크롤_성능_리포트.md`.
 - 변경 파일(핵심)
 - `app/src/components/posts/feed-infinite-list.tsx`
 - `app/e2e/feed-scroll-performance.spec.ts`
 - `app/package.json`
-- `docs/GUIDE.md`
-- `docs/plan/feed-scroll-performance-report.md`
+- `docs/개발_운영_가이드.md`
+- `docs/reports/피드_스크롤_성능_리포트.md`
 - 검증 결과
 - `cd app && ./node_modules/.bin/eslint src/components/posts/feed-infinite-list.tsx e2e/feed-scroll-performance.spec.ts` 통과
 - `cd app && ./node_modules/.bin/tsc --noEmit` 통과
@@ -3691,7 +3838,7 @@
   - 회원가입 페이지 카카오 가입 버튼 노출 확인
 - 개발/테스트 환경에서만 `devShowKakao=1` 플래그로 카카오 버튼/진입 동선을 강제 노출하도록 보강(프로덕션 영향 없음).
 - 변경 파일(핵심)
-- `docs/GUIDE.md`
+- `docs/개발_운영_가이드.md`
 - `app/e2e/kakao-login-entry.spec.ts`
 - `app/src/app/login/page.tsx`
 - `app/src/app/register/page.tsx`
@@ -3724,7 +3871,7 @@
 - `app/src/app/register/page.tsx`
 - `app/e2e/naver-login-entry.spec.ts`
 - `app/package.json`
-- `docs/GUIDE.md`
+- `docs/개발_운영_가이드.md`
 - `PLAN.md`
 - 검증 결과
 - `cd app && ./node_modules/.bin/eslint src/lib/auth.ts src/lib/env.ts src/components/auth/naver-signin-button.tsx src/components/auth/login-form.tsx src/components/auth/register-form.tsx src/app/login/page.tsx src/app/register/page.tsx e2e/naver-login-entry.spec.ts` 통과
@@ -3997,13 +4144,13 @@
 - 완료 내용
 - 장애 대응 표준 절차를 `docs/ops/incident-runbook.md`로 신설:
   - 장애 등급(SEV), 즉시 대응 체크리스트, 진단 절차, 백업/복구, 종료 기준, 사후 회고 템플릿
-- 운영 목표 지표를 `docs/ops/slo-alerts.md`로 신설:
+- 운영 목표 지표를 `docs/operations/SLO_알림_기준.md`로 신설:
   - SLI/SLO/에러버짓/알람 임계치/대시보드 최소 구성/운영 루프
-- `docs/GUIDE.md`에 운영 문서 링크와 최소 점검 루프를 추가해 실행 경로를 연결.
+- `docs/개발_운영_가이드.md`에 운영 문서 링크와 최소 점검 루프를 추가해 실행 경로를 연결.
 - 변경 파일(핵심)
 - `docs/ops/incident-runbook.md`
-- `docs/ops/slo-alerts.md`
-- `docs/GUIDE.md`
+- `docs/operations/SLO_알림_기준.md`
+- `docs/개발_운영_가이드.md`
 - `PLAN.md`
 - 검증 결과
 - 문서성 변경으로 별도 런타임 테스트는 없음.
@@ -4045,7 +4192,7 @@
 - `app/e2e/social-real-oauth-redirect.spec.ts`
 - `app/package.json`
 - `.github/workflows/oauth-real-e2e.yml`
-- `docs/GUIDE.md`
+- `docs/개발_운영_가이드.md`
 - `PLAN.md`
 - 검증 결과
 - `cd app && ./node_modules/.bin/eslint e2e/social-real-oauth-redirect.spec.ts` 통과
@@ -4068,8 +4215,8 @@
 - 변경 파일(핵심)
 - `app/scripts/cleanup-legacy-site-setting.ts`
 - `app/package.json`
-- `docs/ops/search-termstat-migration.md`
-- `docs/GUIDE.md`
+- `docs/operations/검색 통계 전환 가이드.md`
+- `docs/개발_운영_가이드.md`
 - `PLAN.md`
 - 검증 결과
 - `cd app && ./node_modules/.bin/eslint scripts/cleanup-legacy-site-setting.ts` 통과
@@ -4100,7 +4247,7 @@
 - `app/src/components/onboarding/onboarding-form.tsx`
 - `app/e2e/social-onboarding-flow.spec.ts`
 - `app/package.json`
-- `docs/GUIDE.md`
+- `docs/개발_운영_가이드.md`
 - `PLAN.md`
 - 검증 결과
 - `cd app && ./node_modules/.bin/eslint src/lib/auth.ts src/app/login/page.tsx src/app/register/page.tsx src/components/auth/login-form.tsx src/components/auth/register-form.tsx src/components/auth/kakao-signin-button.tsx src/components/auth/naver-signin-button.tsx src/components/onboarding/onboarding-form.tsx e2e/social-onboarding-flow.spec.ts` 통과
@@ -4202,13 +4349,13 @@
 - 검색 통계 쿼리에서 `SiteSetting(popular_search_terms_v1)` fallback 경로를 제거하고 `SearchTermStat` 단일 저장소로 정리.
 - `SearchTermStat` 미동기화 환경에서는 읽기 `[]`, 쓰기 `SCHEMA_SYNC_REQUIRED`를 반환하도록 동작을 명확화.
 - `search.queries` 테스트를 갱신해 구형 fallback 기대치를 제거하고 새 동작(`SCHEMA_SYNC_REQUIRED`)을 검증하도록 변경.
-- 운영 전환/정리 절차 문서를 `docs/ops/search-termstat-migration.md`로 추가.
-- `docs/GUIDE.md`에 SearchTermStat 단일 경로 전환 안내를 반영.
+- 운영 전환/정리 절차 문서를 `docs/operations/검색 통계 전환 가이드.md`로 추가.
+- `docs/개발_운영_가이드.md`에 SearchTermStat 단일 경로 전환 안내를 반영.
 - 변경 파일(핵심)
 - `app/src/server/queries/search.queries.ts`
 - `app/src/server/queries/search.queries.test.ts`
-- `docs/ops/search-termstat-migration.md`
-- `docs/GUIDE.md`
+- `docs/operations/검색 통계 전환 가이드.md`
+- `docs/개발_운영_가이드.md`
 - `PLAN.md`
 - 검증 결과
 - `cd app && ./node_modules/.bin/eslint src/server/queries/search.queries.ts src/server/queries/search.queries.test.ts` 통과
@@ -4262,11 +4409,11 @@
   - 기존 유저의 연락처 포함 댓글 마스킹 저장
   - 테스트 종료 후 정책/생성 데이터 정리
 - `package.json`에 `test:flow:new-user-policy` 실행 스크립트를 추가.
-- `docs/GUIDE.md`에 실행 가이드를 추가.
+- `docs/개발_운영_가이드.md`에 실행 가이드를 추가.
 - 변경 파일(핵심)
 - `app/scripts/e2e-new-user-safety-policy-flow.ts`
 - `app/package.json`
-- `docs/GUIDE.md`
+- `docs/개발_운영_가이드.md`
 - `PLAN.md`
 - 검증 결과
 - `cd app && ./node_modules/.bin/eslint ... scripts/e2e-new-user-safety-policy-flow.ts` 통과
@@ -4289,7 +4436,7 @@
 - `app/e2e/admin-new-user-policy.spec.ts`
 - `app/src/components/admin/new-user-safety-policy-form.tsx`
 - `app/package.json`
-- `docs/GUIDE.md`
+- `docs/개발_운영_가이드.md`
 - `PLAN.md`
 - 검증 결과
 - `cd app && ./node_modules/.bin/eslint src/components/admin/new-user-safety-policy-form.tsx e2e/admin-new-user-policy.spec.ts` 통과
@@ -4304,7 +4451,7 @@
 - 완료 내용
 - Vercel 배포 오류(Prisma generate 누락, 필수 env 누락, RESEND_API_KEY 누락, SiteSetting 테이블 미존재) 대응을 통해 운영 배포를 안정화.
 - OAuth/GitHub Secrets를 반영하고 실워크플로우 재실행으로 외부 의존 항목을 재검증.
-- `docs/GUIDE.md`에 Vercel/Kakao/Naver/GitHub Secrets 설정 절차와 "데이터를 어디에서 보고 관리하는지" 운영 가이드를 통합 문서화.
+- `docs/개발_운영_가이드.md`에 Vercel/Kakao/Naver/GitHub Secrets 설정 절차와 "데이터를 어디에서 보고 관리하는지" 운영 가이드를 통합 문서화.
 - 실행 결과
 - `oauth-real-e2e` 성공: `https://github.com/answndud/townpet2/actions/runs/22251215409`
 - `ops-smoke-checks` 성공(health): `https://github.com/answndud/townpet2/actions/runs/22251318982`
@@ -4318,8 +4465,8 @@
 - Vercel 계정 생성부터 배포 URL 확정, 카카오/네이버 OAuth 앱 생성/콜백 등록, GitHub Actions 시크릿 구성, 워크플로우 실행 순서를 한 문서로 통합.
 - `oauth-real-e2e`, `ops-smoke-checks` 실패 패턴별 즉시 진단표와 최종 체크리스트를 추가.
 - 변경 파일(핵심)
-- `docs/ops/vercel-oauth-bootstrap-guide.md`
-- `docs/GUIDE.md`
+- `docs/operations/Vercel_OAuth_초기설정_가이드.md`
+- `docs/개발_운영_가이드.md`
 - 이슈/블로커
 - 외부 콘솔 계정/권한 및 실제 운영 도메인 확정은 문서화 범위를 넘어 운영 입력값이 필요.
 
@@ -4343,13 +4490,13 @@
 - 배포 URL만 주입하면 `/api/health` 응답(HTTP 200 + `status: ok`)을 검증하는 스크립트(`ops:check:health`)를 추가.
 - Sentry 테스트 이벤트를 전송하고 Sentry REST API에서 같은 `eventId` 조회 성공까지 확인하는 스크립트(`ops:check:sentry`)를 추가.
 - GitHub Actions 수동 워크플로우(`ops-smoke-checks`)를 추가해 배포 헬스체크와 Sentry 실수신 검증을 one-shot으로 실행 가능하게 구성.
-- 운영 가이드(`docs/GUIDE.md`)에 로컬 실행법/워크플로우 입력값/필요 시크릿을 문서화.
+- 운영 가이드(`docs/개발_운영_가이드.md`)에 로컬 실행법/워크플로우 입력값/필요 시크릿을 문서화.
 - 변경 파일(핵심)
 - `app/scripts/check-health-endpoint.ts`
 - `app/scripts/check-sentry-ingestion.ts`
 - `app/package.json`
 - `.github/workflows/ops-smoke-checks.yml`
-- `docs/GUIDE.md`
+- `docs/개발_운영_가이드.md`
 - `PLAN.md`
 - 검증 결과
 - `cd app && pnpm lint scripts/check-health-endpoint.ts scripts/check-sentry-ingestion.ts` 통과
@@ -4365,7 +4512,7 @@
 - MVP 범위(프로필 확장, 피드 가중치, 품종 라운지, 광고 타겟팅, 정책 가드레일)와 비목표를 명시.
 - 수용 기준(Acceptance Criteria), Prisma 스키마 초안, 추천 알고리즘 의사코드, 단계별 출시 계획(Phase A/B/C)을 정리.
 - 변경 파일(핵심)
-- `docs/product/품종_개인화_PRD.md`
+- `docs/product/품종_개인화_기획서.md`
 - `PLAN.md`
 - 검증 결과
 - 문서 산출물 중심 작업으로 코드/테스트 실행 없음.
@@ -4407,13 +4554,13 @@
 - 코드베이스 기준으로 `docs` 하위 파일 최신 상태를 재점검하고, 구현/스키마/운영 절차와 불일치한 항목을 정정.
 - 문서 동기화 자동 리포트 생성 스크립트(`scripts/refresh-docs-index.mjs`)를 추가.
 - 앱 스크립트에 `docs:refresh`, `docs:refresh:check`를 추가해 문서 인덱스 갱신/검증 명령을 고정.
-- 운영 가이드(`docs/GUIDE.md`)에 문서 동기화 커맨드 사용법과 출력 파일 위치를 기록.
+- 운영 가이드(`docs/개발_운영_가이드.md`)에 문서 동기화 커맨드 사용법과 출력 파일 위치를 기록.
 - 변경 파일(핵심)
 - `scripts/refresh-docs-index.mjs`
 - `app/package.json`
 - `docs/ops/docs-sync-report.md`
-- `docs/GUIDE.md`
-- `docs/policy_ops/*.md`, `docs/product/*.md`, `docs/security/security_basics.md`, `docs/ops/*.md`
+- `docs/개발_운영_가이드.md`
+- `docs/policy_ops/*.md`, `docs/product/*.md`, `docs/security/보안_기본원칙.md`, `docs/ops/*.md`
 - 검증 결과
 - `cd app && pnpm docs:refresh` 통과
 - `cd app && pnpm docs:refresh:check` 통과
@@ -4433,10 +4580,10 @@
 - 완료 내용
 - 비회원 글쓰기 시 `guestDisplayName` 컬럼 누락으로 발생한 `POST /api/posts` 500 대응을 위해 Vercel 빌드 전용 스크립트 `build:vercel`을 추가.
 - `build:vercel`은 `prisma migrate deploy -> prisma generate -> next build` 순서로 실행되도록 구성.
-- 운영 가이드(`docs/GUIDE.md`)의 Vercel `Build Command` 권장값을 `pnpm build:vercel`로 갱신하고, 운영에서 `db push`를 기본 경로로 쓰지 않도록 안내를 보강.
+- 운영 가이드(`docs/개발_운영_가이드.md`)의 Vercel `Build Command` 권장값을 `pnpm build:vercel`로 갱신하고, 운영에서 `db push`를 기본 경로로 쓰지 않도록 안내를 보강.
 - 변경 파일(핵심)
 - `app/package.json`
-- `docs/GUIDE.md`
+- `docs/개발_운영_가이드.md`
 - 검증 결과
 - 코드 변경 성격상 로컬 빌드/테스트는 미실행(스크립트/문서 갱신).
 
@@ -4446,7 +4593,7 @@
 - 운영 가이드에 임시 복구(`db push`) -> baseline(`migrate resolve --applied`) -> 정식 복귀(`migrate deploy`)의 3단계 절차를 추가.
 - baseline 명령 템플릿과 검증 순서(`migrate status`, `migrate deploy`) 및 주의사항(운영 DB 백업, 1회 수행)을 함께 기록.
 - 변경 파일(핵심)
-- `docs/GUIDE.md`
+- `docs/개발_운영_가이드.md`
 - 검증 결과
 - 문서 작업으로 코드 빌드/테스트 실행 없음.
 
@@ -4728,7 +4875,7 @@
 ### 2026-02-24: blocked 해소 실행 문서화
 - 완료 내용
 - OAuth 실계정 E2E + Sentry 실수신 검증의 필수 시크릿/워크플로우/판정 기준을 단일 체크리스트로 정리.
-- 운영 가이드(`docs/GUIDE.md`)에 blocked 해소 섹션을 추가해 실행 진입점을 고정.
+- 운영 가이드(`docs/개발_운영_가이드.md`)에 blocked 해소 섹션을 추가해 실행 진입점을 고정.
 - AGENTS 문서의 레포 상태 설명을 현재 코드베이스 기준으로 정정.
 - 정량 검증(코드 기반)
 - blocked 해소 전용 문서: `0 -> 1`개(`docs/ops/blocked-unblock-checklist.md`).
@@ -4842,7 +4989,7 @@
 - `ops:check:health` 스크립트 확장:
   - `OPS_HEALTH_INTERNAL_TOKEN` 제공 시 `pg_trgm` 상세 상태를 로그로 출력
   - `OPS_HEALTH_REQUIRE_PG_TRGM=1` 설정 시 `pg_trgm` 미설치/미노출이면 즉시 FAIL
-- 운영 가이드(`docs/GUIDE.md`)에 `pg_trgm` 필수 점검 복붙 명령을 추가.
+- 운영 가이드(`docs/개발_운영_가이드.md`)에 `pg_trgm` 필수 점검 복붙 명령을 추가.
 - 검증 결과
 - `pnpm -C app lint src/app/api/health/route.ts src/app/api/health/route.test.ts scripts/check-health-endpoint.ts` 통과
 - `pnpm -C app typecheck` 통과
@@ -4913,5 +5060,5 @@
 3. 선택 과제: Sentry 실수신 점검 경로(`verify_sentry=true`) 정기 점검 여부 결정
 
 ## 참고 문서
-- 운영/실행 가이드: `docs/GUIDE.md`
+- 운영/실행 가이드: `docs/개발_운영_가이드.md`
 - 현재 계획: `PLAN.md`
