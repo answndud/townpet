@@ -17,6 +17,120 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-06: Cycle 188 정적 shell + guest search 캐시 분리
+- 완료 내용
+- 최상위 shell의 서버 동적 의존 제거:
+  - `app/src/app/layout.tsx`에서 `auth()` / `cookies()` / 알림 조회를 제거
+  - 새 클라이언트 헤더 `app/src/components/navigation/app-shell-header.tsx` 추가
+  - 로그인/알림/운영자 메뉴/선호 동물은 `GET /api/viewer-shell`로 hydration 후 보강
+- guest `/search` 정적 분리:
+  - 새 guest 경로 `app/src/app/search/guest/page.tsx` 추가
+  - 로그인 사용자는 기존 `/search` 페이지 유지
+  - guest 요청은 middleware에서 `/search/guest`로 rewrite + `public, s-maxage=60, stale-while-revalidate=300`
+- guest `/feed` 정적 분리:
+  - 새 guest 경로 `app/src/app/feed/guest/page.tsx` 추가
+  - guest 요청은 middleware에서 `/feed/guest`로 rewrite + `public, s-maxage=60, stale-while-revalidate=300`
+  - guest 관심 동물 저장은 쿠키 유지 + 현재 `/feed` 화면에서는 `petType` 쿼리로 즉시 push 해 서버 쿠키 의존을 줄임
+- `FeedHoverMenu`는 guest 쿠키 선호를 클라이언트 초기 상태에서 읽고, auth 전환 시 remount key로 동기화
+- 검증 결과
+- `pnpm -C app lint src/app/layout.tsx src/components/navigation/app-shell-header.tsx src/components/navigation/feed-hover-menu.tsx src/app/api/viewer-shell/route.ts src/app/api/viewer-shell/route.test.ts src/app/search/page.tsx src/app/search/guest/page.tsx middleware.ts src/middleware.test.ts` 통과
+- `pnpm -C app test -- src/app/api/viewer-shell/route.test.ts src/middleware.test.ts`
+  - Vitest 설정상 전체 단위 테스트가 함께 실행되어 `66 files / 333 tests` 통과
+- `pnpm -C app typecheck` 통과
+- `pnpm -C app lint src/app/feed/guest/page.tsx src/components/navigation/feed-hover-menu.tsx middleware.ts` 통과
+- `pnpm -C app test -- src/middleware.test.ts`
+  - Vitest 설정상 전체 단위 테스트가 함께 실행되어 `66 files / 333 tests` 통과
+- `pnpm -C app build`
+  - 코드 오류가 아니라 production 보안 env 게이트(`AUTH_SECRET`, `CSP_ENFORCE_STRICT`, `GUEST_HASH_PEPPER`, `UPSTASH_REDIS_*`) 누락으로 중단
+- 이슈/블로커
+- 실배포 헤더는 아직 확인 전. 코드 변경이 배포되지 않았으므로 `/feed`, `/search`의 `x-vercel-cache`/`cache-control` 검증은 배포 후 필요
+- guest `/feed`는 캐시 가능한 경로로 분리했지만, 쿼리 없는 재진입에서 guest 선호 쿠키를 서버 기본값으로 반영하지는 않음. 현재는 저장 직후 쿼리 push로 해결
+- 변경 파일(핵심)
+- `app/src/app/layout.tsx`
+- `app/src/components/navigation/app-shell-header.tsx`
+- `app/src/components/navigation/feed-hover-menu.tsx`
+- `app/src/app/api/viewer-shell/route.ts`
+- `app/src/app/api/viewer-shell/route.test.ts`
+- `app/src/app/feed/guest/page.tsx`
+- `app/src/app/search/page.tsx`
+- `app/src/app/search/guest/page.tsx`
+- `app/middleware.ts`
+- `app/src/middleware.test.ts`
+- `PLAN.md`
+- `PROGRESS.md`
+
+### 2026-03-06: Cycle 187 배포 prewarm 자동화
+- 완료 내용
+- 배포 직후 cold path 완화를 위한 prewarm 스크립트 추가:
+  - `pnpm -C app ops:prewarm`
+  - 공개 GET 경로(`/feed`, `/search`, 공개 피드/검색 API)를 기본 2회 호출
+- `ops-smoke-checks` 워크플로우에 prewarm 단계 연결:
+  - health PASS 직후 guest 공개 경로를 미리 호출해 첫 사용자 요청 tail latency를 완화
+- 운영 문서 반영:
+  - Vercel/OAuth 초기설정 가이드
+  - 차단 해소 체크리스트
+  - 캐시 성능 적용 기록
+- 검증 결과
+- `pnpm -C app lint scripts/prewarm-deployment.ts` 통과
+- `pnpm -C app typecheck` 통과
+- `OPS_BASE_URL=https://townpet2.vercel.app pnpm -C app ops:prewarm`
+  - `feed_page_guest`: 1차 `2955ms MISS` -> 2차 `297ms MISS`
+  - `api_posts_global`: 1차 `1357ms MISS` -> 2차 `123ms HIT`
+  - `api_posts_suggestions`: 1차 `273ms MISS` -> 2차 `128ms HIT`
+  - `api_breed_posts`: 1차 `351ms MISS` -> 2차 `121ms HIT`
+- 이슈/블로커
+- `/feed`, `/search`는 2차에도 `MISS`가 남아 page CDN cache 자체는 별도 분석 필요
+- 변경 파일(핵심)
+- `app/scripts/prewarm-deployment.ts`
+- `app/package.json`
+- `.github/workflows/ops-smoke-checks.yml`
+- `docs/operations/Vercel_OAuth_초기설정_가이드.md`
+- `docs/operations/차단 해소 체크리스트.md`
+- `docs/operations/캐시_성능_적용_기록.md`
+- `PLAN.md`
+- `PROGRESS.md`
+
+### 2026-03-06: Cycle 186 게시글 액션 캐시 무효화 축소
+- 완료 내용
+- 게시글 서버 액션의 경로 무효화를 축소:
+  - `createPostAction`은 `/feed`만 revalidate
+  - `deletePostAction`, `updatePostAction`은 `/feed` + 상세 경로만 revalidate
+  - `togglePostReactionAction`은 상세 경로만 revalidate
+- 불필요한 `revalidatePath("/")` 호출 제거:
+  - 루트 페이지는 `/feed` 리다이렉트 전용이라 재검증 이득이 거의 없고 캐시 churn만 증가시키는 경로였음
+- 게시글 액션 회귀 테스트 추가:
+  - create/update/reaction의 revalidate 범위 검증
+  - service error 시 revalidate가 호출되지 않는 실패 경로 검증
+- 검증 결과
+- `pnpm -C app test -- src/server/actions/post.test.ts`
+  - Vitest 설정상 전체 단위 테스트가 함께 실행되어 `65 files / 327 tests` 통과
+- `pnpm -C app lint src/server/actions/post.ts src/server/actions/post.test.ts` 통과
+- `pnpm -C app typecheck` 통과
+- 이슈/블로커
+- 없음
+- 변경 파일(핵심)
+- `app/src/server/actions/post.ts`
+- `app/src/server/actions/post.test.ts`
+- `PLAN.md`
+- `PROGRESS.md`
+
+### 2026-03-06: Cycle 185 env 템플릿/운영 문서 실제 키 목록 기준 정렬
+- 완료 내용
+- `app/.env.production.example`을 현재 실제 Vercel runtime 키 기준으로 재정리:
+  - `NEXTAUTH_URL`, `DIRECT_URL`, `RESEND_API_KEY`, OAuth provider 키 반영
+  - GitHub Actions에서 쓰는 secret 목록은 참고 주석으로 분리
+- 운영 문서를 사용자가 공유한 실제 Vercel / GitHub Actions key 목록 기준으로 갱신:
+  - `RESEND_API_KEY` 반영
+  - `UPSTASH_REDIS_REST_URL`은 "누락 단정"이 아니라 "Production 슬롯 재확인 필요"로 표현 조정
+- 검증 결과
+- 문서/템플릿 정리 작업으로 별도 코드 테스트는 불필요
+- 이슈/블로커
+- 없음
+- 변경 파일(핵심)
+- `app/.env.production.example`
+- `docs/operations/manual-checks/배포_보안_체크리스트.md`
+- `docs/operations/Vercel_OAuth_초기설정_가이드.md`
+
 ### 2026-03-06: Cycle 184 docs 구조 정리 및 경로 정합화
 - 완료 내용
 - `docs/` 폴더를 목적 중심 구조로 재편:

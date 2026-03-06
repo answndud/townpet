@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  isGuestSearchPath,
   isGuestPostDetailPath,
   isPrefetchRequest,
   isNicknameRequiredProfilePath,
@@ -60,6 +61,20 @@ describe("isGuestPostDetailPath", () => {
 
   it("returns false for non-id path", () => {
     expect(isGuestPostDetailPath("/posts/not-an-id")).toBe(false);
+  });
+});
+
+describe("isGuestSearchPath", () => {
+  it("returns true for search root path", () => {
+    expect(isGuestSearchPath("/search")).toBe(true);
+  });
+
+  it("returns true for guest search rewrite path", () => {
+    expect(isGuestSearchPath("/search/guest")).toBe(true);
+  });
+
+  it("returns false for unrelated path", () => {
+    expect(isGuestSearchPath("/feed")).toBe(false);
   });
 });
 

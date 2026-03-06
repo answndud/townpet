@@ -56,6 +56,9 @@ jobs:
       - name: Check deployment health endpoint
         run: pnpm ops:check:health
 
+      - name: Prewarm guest feed and search routes
+        run: pnpm ops:prewarm
+
       - name: Validate internal health token secret
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.verify_pg_trgm }}
         env:

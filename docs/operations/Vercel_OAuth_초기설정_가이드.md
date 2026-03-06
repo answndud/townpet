@@ -39,11 +39,16 @@
 
 Vercel 프로젝트 -> `Settings` -> `Environment Variables`에서 입력:
 
+현재 실제 Vercel에 두고 있는 키 목록 기준으로 정리하면 아래처럼 보면 됩니다.
+
 필수(최소):
 - `DATABASE_URL`
 - `AUTH_SECRET` (또는 `NEXTAUTH_SECRET`)
 - `APP_BASE_URL` (초기에는 임시 Vercel 도메인)
 - `NEXTAUTH_URL` (동일하게 `APP_BASE_URL` 값)
+- `CSP_ENFORCE_STRICT=1`
+- `GUEST_HASH_PEPPER`
+- `HEALTH_INTERNAL_TOKEN`
 
 OAuth 연결 전 임시로 비워도 되는 값:
 - `KAKAO_CLIENT_ID`, `KAKAO_CLIENT_SECRET`
@@ -53,6 +58,39 @@ OAuth 연결 전 임시로 비워도 되는 값:
 - `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`
 - `SENTRY_DSN`
 - `RESEND_API_KEY`
+- `BLOB_READ_WRITE_TOKEN`
+- `DIRECT_URL` (현재 runtime 필수는 아니지만 migration/debug 용도로 둘 수 있음)
+
+현재 사용자가 공유한 Vercel 키:
+- `UPSTASH_REDIS_REST_TOKEN`
+- `CSP_ENFORCE_STRICT`
+- `GUEST_HASH_PEPPER`
+- `APP_BASE_URL`
+- `NEXTAUTH_URL`
+- `SENTRY_DSN`
+- `DIRECT_URL`
+- `DATABASE_URL`
+- `HEALTH_INTERNAL_TOKEN`
+- `BLOB_READ_WRITE_TOKEN`
+- `KAKAO_CLIENT_SECRET`
+- `NAVER_CLIENT_ID`
+- `NAVER_CLIENT_SECRET`
+- `KAKAO_CLIENT_ID`
+- `AUTH_SECRET`
+- `RESEND_API_KEY`
+
+현재 사용자가 공유한 GitHub Actions secrets:
+- `AUTH_SECRET`
+- `DATABASE_URL`
+- `HEALTH_INTERNAL_TOKEN`
+- `KAKAO_CLIENT_ID`
+- `KAKAO_CLIENT_SECRET`
+- `NAVER_CLIENT_ID`
+- `NAVER_CLIENT_SECRET`
+- `SENTRY_AUTH_TOKEN`
+- `SENTRY_DSN`
+- `SENTRY_ORG_SLUG`
+- `SENTRY_PROJECT_SLUG`
 
 생성 팁:
 - `AUTH_SECRET`는 32바이트 이상 랜덤 문자열 권장
@@ -163,6 +201,7 @@ GitHub 저장소 -> `Settings` -> `Secrets and variables` -> `Actions` -> `New r
      - `verify_sentry=true` (Sentry도 함께 검증할 때)
    - 기대 결과:
      - health 체크 PASS
+     - guest 공개 경로 prewarm 완료
      - Sentry 이벤트 전송/조회 PASS
 
 ---
