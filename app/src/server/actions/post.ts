@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import {
   createPost,
   deletePost,
+  togglePostBookmark,
   togglePostReaction,
   updatePost,
 } from "@/server/services/post.service";
@@ -24,6 +25,13 @@ type PostReactionActionResult =
       likeCount: number;
       dislikeCount: number;
       reaction: PostReactionInput | null;
+    }
+  | { ok: false; code: string; message: string };
+
+type PostBookmarkActionResult =
+  | {
+      ok: true;
+      bookmarked: boolean;
     }
   | { ok: false; code: string; message: string };
 
@@ -132,6 +140,41 @@ export async function togglePostReactionAction(
     logger.error("togglePostReactionAction 실패", {
       postId,
       type,
+      error: serializeError(error),
+    });
+
+    return {
+      ok: false,
+      code: "INTERNAL_SERVER_ERROR",
+      message: "서버 오류가 발생했습니다.",
+    };
+  }
+}
+
+export async function togglePostBookmarkAction(
+  postId: string,
+): Promise<PostBookmarkActionResult> {
+  try {
+    const user = await requireCurrentUser();
+    const result = await togglePostBookmark({
+      postId,
+      userId: user.id,
+    });
+    revalidateFeedPage();
+    revalidatePostDetailPage(postId);
+    revalidatePath("/saved");
+
+    return {
+      ok: true,
+      bookmarked: result.bookmarked,
+    };
+  } catch (error) {
+    if (error instanceof ServiceError) {
+      return { ok: false, code: error.code, message: error.message };
+    }
+
+    logger.error("togglePostBookmarkAction 실패", {
+      postId,
       error: serializeError(error),
     });
 

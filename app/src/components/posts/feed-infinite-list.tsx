@@ -6,6 +6,7 @@ import type { PostType } from "@prisma/client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { PostSignalIcons } from "@/components/posts/post-signal-icons";
+import { PostBookmarkButton } from "@/components/posts/post-bookmark-button";
 import type {
   FeedAudienceSourceValue,
   FeedPersonalizationEventValue,
@@ -64,6 +65,7 @@ export type FeedPostItem = {
   images: Array<{
     id: string;
   }>;
+  isBookmarked?: boolean | null;
   reactions?: Array<{
     type: FeedReactionType;
   }>;
@@ -107,6 +109,7 @@ type FeedInfiniteListProps = {
   disableLoadMore?: boolean;
   apiPath?: string;
   preferGuestDetail?: boolean;
+  canBookmark?: boolean;
   adConfig?: {
     audienceKey: string;
     headline: string;
@@ -194,6 +197,7 @@ export function FeedInfiniteList({
   disableLoadMore = false,
   apiPath = "/api/posts",
   preferGuestDetail,
+  canBookmark = true,
   adConfig,
   personalizationTracking,
 }: FeedInfiniteListProps) {
@@ -720,6 +724,15 @@ export function FeedInfiniteList({
                         : formatRelativeDate(post.createdAt, relativeNow)}
                       {" · "}조회 {formatCount(post.viewCount)} · 반응 {formatCount(post.likeCount + post.dislikeCount)}
                     </p>
+                    <div className="mt-1">
+                      <PostBookmarkButton
+                        postId={post.id}
+                        currentBookmarked={Boolean(post.isBookmarked)}
+                        compact
+                        canSave={canBookmark}
+                        loginHref={`/login?next=${encodeURIComponent(`/posts/${post.id}`)}`}
+                      />
+                    </div>
                   </div>
 
                   <div className="hidden text-[11px] text-[#4f678d] md:block md:text-right">
@@ -732,6 +745,15 @@ export function FeedInfiniteList({
                     <p className="mt-0.5 text-[11px] text-[#5a759c] md:ml-auto">
                       조회 {formatCount(post.viewCount)} · 반응 {formatCount(post.likeCount + post.dislikeCount)}
                     </p>
+                    <div className="mt-2 flex justify-end">
+                      <PostBookmarkButton
+                        postId={post.id}
+                        currentBookmarked={Boolean(post.isBookmarked)}
+                        compact
+                        canSave={canBookmark}
+                        loginHref={`/login?next=${encodeURIComponent(`/posts/${post.id}`)}`}
+                      />
+                    </div>
                   </div>
               </article>
             </div>

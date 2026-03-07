@@ -25,6 +25,13 @@
 
 ## Active Plan
 
+### Cycle 222: 저장(bookmark) 기반 7차 개인화 신호 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| PostBookmark 스키마 + 저장/해제 UI/액션 추가 | Codex | P1 | `done` | 인증 사용자가 피드/상세에서 게시글을 저장/해제할 수 있고 `PostBookmark` 스키마, 서비스, 액션, 회귀 테스트가 존재함 | `app/prisma/schema.prisma`, `app/src/server/services/post.service.ts`, `app/src/server/actions/post.ts`, `app/src/components/posts/*` |
+| 저장한 글 조회 페이지 추가 | Codex | P2 | `done` | `/saved`에서 저장한 글을 페이지네이션/검색/카테고리 필터와 함께 조회할 수 있고 프로필에서 진입 가능함 | `app/src/server/queries/post.queries.ts`, `app/src/app/saved/page.tsx`, `app/src/app/profile/page.tsx` |
+| recent bookmark signal을 personalized ranking 7차 가중치와 피드 설명에 연결 | Codex | P1 | `done` | personalized feed가 최근 저장한 글의 커뮤니티/관심 태그를 7차 신호로 약하게 반영하고 `/feed` 설명/제품 문서가 동기화됨 | `app/src/server/queries/post.queries.ts`, `app/src/lib/feed-personalization.ts`, `app/src/app/feed/page.tsx`, `docs/product/품종_개인화_기획서.md` |
+
 ### Cycle 221: 상세 체류시간 기반 6차 개인화 신호 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|

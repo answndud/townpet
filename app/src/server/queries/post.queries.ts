@@ -35,6 +35,7 @@ const DEFAULT_POST_LIST_SORT: PostListSort = "LATEST";
 const DEFAULT_POST_SEARCH_IN: PostSearchIn = "ALL";
 const SEARCH_SIMILARITY_THRESHOLD = 0.12;
 let postReactionsFieldSupport: boolean | null = null;
+let postBookmarksFieldSupport: boolean | null = null;
 let postGuestAuthorFieldSupport: boolean | null = null;
 let postReviewCategoryFieldSupport: boolean | null = null;
 let pgTrgmSupport: boolean | null = null;
@@ -426,6 +427,22 @@ function isUnavailableReactionsIncludeError(error: unknown) {
   return isUnknownReactionsIncludeError(error) || isMissingPostReactionTableError(error);
 }
 
+function isMissingPostBookmarkTableError(error: unknown) {
+  if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2021") {
+    const meta = error.meta as { table?: unknown } | undefined;
+    const tableName = typeof meta?.table === "string" ? meta.table : "";
+    if (tableName.includes("PostBookmark")) {
+      return true;
+    }
+  }
+
+  return (
+    error instanceof Error &&
+    error.message.includes("PostBookmark") &&
+    error.message.includes("does not exist")
+  );
+}
+
 function isMissingFeedPersonalizationEventLogSchemaError(error: unknown) {
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     if (error.code !== "P2021" && error.code !== "P2022") {
@@ -568,6 +585,23 @@ function supportsPostReactionsField() {
   return true;
 }
 
+function supportsPostBookmarksField() {
+  if (postBookmarksFieldSupport !== null) {
+    return postBookmarksFieldSupport;
+  }
+
+  postBookmarksFieldSupport = Boolean(
+    (
+      prisma as typeof prisma & {
+        postBookmark?: {
+          findMany: (typeof prisma.postBookmark)["findMany"];
+        };
+      }
+    ).postBookmark,
+  );
+  return postBookmarksFieldSupport;
+}
+
 function supportsFeedPersonalizationEventLogField() {
   return Boolean(
     (
@@ -618,6 +652,85 @@ function withEmptyReactions<T extends Record<string, unknown>>(items: T[]) {
     ...item,
     reactions: [] as Array<{ type: PostReactionType }>,
   }));
+}
+
+function withBookmarkStateOne<T extends { id: string }>(
+  item: T | null,
+  bookmarkedPostIds: Set<string>,
+): (T & { isBookmarked: boolean }) | null {
+  if (!item) {
+    return null;
+  }
+
+  return {
+    ...item,
+    isBookmarked: bookmarkedPostIds.has(item.id),
+  };
+}
+
+function withBookmarkState<T extends { id: string }>(
+  items: T[],
+  bookmarkedPostIds: Set<string>,
+): Array<T & { isBookmarked: boolean }> {
+  return items.map((item) => ({
+    ...item,
+    isBookmarked: bookmarkedPostIds.has(item.id),
+  }));
+}
+
+async function getBookmarkedPostIdSet(postIds: string[], viewerId?: string) {
+  if (!viewerId || postIds.length === 0 || !supportsPostBookmarksField()) {
+    return new Set<string>();
+  }
+
+  const delegate = (
+    prisma as typeof prisma & {
+      postBookmark?: {
+        findMany: (typeof prisma.postBookmark)["findMany"];
+      };
+    }
+  ).postBookmark;
+
+  if (!delegate) {
+    postBookmarksFieldSupport = false;
+    return new Set<string>();
+  }
+
+  try {
+    const bookmarks = await delegate.findMany({
+      where: {
+        userId: viewerId,
+        postId: { in: postIds },
+      },
+      select: { postId: true },
+    });
+    return new Set(bookmarks.map((bookmark) => bookmark.postId));
+  } catch (error) {
+    if (!isMissingPostBookmarkTableError(error)) {
+      throw error;
+    }
+    postBookmarksFieldSupport = false;
+    return new Set<string>();
+  }
+}
+
+async function attachBookmarkStateToPosts<T extends { id: string }>(
+  items: T[],
+  viewerId?: string,
+) {
+  const bookmarkedPostIds = await getBookmarkedPostIdSet(
+    Array.from(new Set(items.map((item) => item.id))),
+    viewerId,
+  );
+  return withBookmarkState(items, bookmarkedPostIds);
+}
+
+async function attachBookmarkStateToPost<T extends { id: string }>(
+  item: T | null,
+  viewerId?: string,
+) {
+  const bookmarkedPostIds = await getBookmarkedPostIdSet(item ? [item.id] : [], viewerId);
+  return withBookmarkStateOne(item, bookmarkedPostIds);
 }
 
 function buildPostSearchWhere(
@@ -924,6 +1037,8 @@ type ViewerPersonalizationContext = {
   recentAdAudienceKeyWeights: Record<string, number>;
   recentDwellPetTypeWeights: Record<string, number>;
   recentDwellInterestWeights: Record<string, number>;
+  recentBookmarkPetTypeWeights: Record<string, number>;
+  recentBookmarkInterestWeights: Record<string, number>;
 };
 
 const REVIEW_CATEGORY_INTEREST_LABELS: Partial<Record<ReviewCategory, string[]>> = {
@@ -1188,6 +1303,29 @@ function buildRecentDwellSignal(logs: FeedPersonalizationEventLogLike[]) {
   };
 }
 
+function buildRecentBookmarkSignal(posts: PostInterestLike[]) {
+  const recentBookmarkPetTypeWeights: Record<string, number> = {};
+  const recentBookmarkInterestWeights: Record<string, number> = {};
+  const recentBookmarkSummaryWeights: Record<string, number> = {};
+
+  posts.forEach((post, index) => {
+    const weight = getRecencyWeight(index);
+    addWeightedDimension(recentBookmarkPetTypeWeights, post.petTypeId, weight);
+
+    const interestLabels = collectPostInterestLabels(post);
+    for (const label of interestLabels) {
+      addWeightedDimension(recentBookmarkInterestWeights, label, weight);
+      addWeightedDimension(recentBookmarkSummaryWeights, label, weight);
+    }
+  });
+
+  return {
+    recentBookmarkPetTypeWeights,
+    recentBookmarkInterestWeights,
+    summaryLabels: listTopWeightedDimensions(recentBookmarkSummaryWeights, 3),
+  };
+}
+
 function calculatePreferredInterestBoost(
   post: FeedLikePost,
   preferredInterestLabels: string[],
@@ -1332,6 +1470,32 @@ function calculateRecentDwellBoost(
   return boost;
 }
 
+function calculateRecentBookmarkBoost(
+  post: FeedLikePost,
+  viewerContext: ViewerPersonalizationContext,
+) {
+  let boost = 0;
+
+  if (post.petTypeId) {
+    boost += Math.min(
+      0.07,
+      (viewerContext.recentBookmarkPetTypeWeights[post.petTypeId] ?? 0) * 0.042,
+    );
+  }
+
+  const postInterestLabels = collectPostInterestLabels(post);
+  if (postInterestLabels.length === 0) {
+    return boost;
+  }
+
+  const bookmarkInterestWeight = postInterestLabels.reduce(
+    (total, label) => total + (viewerContext.recentBookmarkInterestWeights[label] ?? 0),
+    0,
+  );
+  boost += Math.min(0.08, bookmarkInterestWeight * 0.024);
+  return boost;
+}
+
 function calculateViewerPersonalizationBoost(
   post: FeedLikePost,
   viewerContext: ViewerPersonalizationContext,
@@ -1356,6 +1520,7 @@ function calculateViewerPersonalizationBoost(
     authorPetByUserId,
   );
   const recentDwellBoost = calculateRecentDwellBoost(post, viewerContext);
+  const recentBookmarkBoost = calculateRecentBookmarkBoost(post, viewerContext);
 
   return (
     petBoost +
@@ -1363,7 +1528,8 @@ function calculateViewerPersonalizationBoost(
     preferredInterestBoost +
     recentEngagementBoost +
     recentBehaviorBoost +
-    recentDwellBoost
+    recentDwellBoost +
+    recentBookmarkBoost
   );
 }
 
@@ -1712,15 +1878,82 @@ export async function listViewerRecentDwellSummaryLabels(viewerId: string) {
   return buildRecentDwellSignal(recentDwellEvents).summaryLabels;
 }
 
+async function listViewerRecentBookmarkedPosts(
+  viewerId: string,
+  take = 12,
+): Promise<PostInterestLike[]> {
+  if (!supportsPostBookmarksField()) {
+    return [];
+  }
+
+  const delegate = (
+    prisma as typeof prisma & {
+      postBookmark?: {
+        findMany: (typeof prisma.postBookmark)["findMany"];
+      };
+    }
+  ).postBookmark;
+
+  if (!delegate) {
+    return [];
+  }
+
+  return delegate
+    .findMany({
+      where: {
+        userId: viewerId,
+      },
+      orderBy: { createdAt: "desc" },
+      take,
+      select: {
+        post: {
+          select: {
+            petTypeId: true,
+            type: true,
+            reviewCategory: true,
+            animalTags: true,
+            petType: {
+              select: {
+                tags: true,
+              },
+            },
+          },
+        },
+      },
+    })
+    .then((bookmarks) =>
+      bookmarks.flatMap((bookmark) =>
+        bookmark.post ? [bookmark.post as PostInterestLike] : [],
+      ),
+    )
+    .catch((error) => {
+      if (
+        isMissingPostBookmarkTableError(error) ||
+        isMissingCommunityBoardSchemaError(error) ||
+        isMissingReviewCategoryColumnError(error)
+      ) {
+        return [];
+      }
+      throw error;
+    });
+}
+
+export async function listViewerRecentBookmarkSummaryLabels(viewerId: string) {
+  const recentBookmarks = await listViewerRecentBookmarkedPosts(viewerId, 12);
+  return buildRecentBookmarkSignal(recentBookmarks).summaryLabels;
+}
+
 async function listViewerPersonalizationContext(
   viewerId: string,
 ): Promise<ViewerPersonalizationContext> {
-  const [petSignals, preferredPetTypeIds, recentBehaviorEvents, recentDwellEvents] = await Promise.all([
-    listViewerPetSignals(viewerId),
-    listPreferredPetTypeIdsByUserId(viewerId),
-    listViewerRecentBehaviorEvents(viewerId, 20),
-    listViewerRecentDwellEvents(viewerId, 20),
-  ]);
+  const [petSignals, preferredPetTypeIds, recentBehaviorEvents, recentDwellEvents, recentBookmarks] =
+    await Promise.all([
+      listViewerPetSignals(viewerId),
+      listPreferredPetTypeIdsByUserId(viewerId),
+      listViewerRecentBehaviorEvents(viewerId, 20),
+      listViewerRecentDwellEvents(viewerId, 20),
+      listViewerRecentBookmarkedPosts(viewerId, 20),
+    ]);
   const normalizedPreferredPetTypeIds = Array.from(
     new Set(
       preferredPetTypeIds.filter(
@@ -1787,6 +2020,7 @@ async function listViewerPersonalizationContext(
   const negativeReactions = recentReactions.filter((reaction) => reaction.type === "DISLIKE");
   const recentBehaviorSignal = buildRecentBehaviorSignal(recentBehaviorEvents);
   const recentDwellSignal = buildRecentDwellSignal(recentDwellEvents);
+  const recentBookmarkSignal = buildRecentBookmarkSignal(recentBookmarks);
 
   return {
     petSignals,
@@ -1814,6 +2048,8 @@ async function listViewerPersonalizationContext(
     recentAdAudienceKeyWeights: recentBehaviorSignal.recentAdAudienceKeyWeights,
     recentDwellPetTypeWeights: recentDwellSignal.recentDwellPetTypeWeights,
     recentDwellInterestWeights: recentDwellSignal.recentDwellInterestWeights,
+    recentBookmarkPetTypeWeights: recentBookmarkSignal.recentBookmarkPetTypeWeights,
+    recentBookmarkInterestWeights: recentBookmarkSignal.recentBookmarkInterestWeights,
   };
 }
 
@@ -1839,7 +2075,9 @@ async function applyPetPersonalization<T extends FeedLikePost>(
     Object.keys(viewerContext.recentAdBreedWeights).length === 0 &&
     Object.keys(viewerContext.recentAdAudienceKeyWeights).length === 0 &&
     Object.keys(viewerContext.recentDwellPetTypeWeights).length === 0 &&
-    Object.keys(viewerContext.recentDwellInterestWeights).length === 0
+    Object.keys(viewerContext.recentDwellInterestWeights).length === 0 &&
+    Object.keys(viewerContext.recentBookmarkPetTypeWeights).length === 0 &&
+    Object.keys(viewerContext.recentBookmarkInterestWeights).length === 0
   ) {
     return items;
   }
@@ -1945,7 +2183,10 @@ export async function getPostById(id?: string, viewerId?: string) {
             select: buildLegacyPostDetailSelectWithoutReactions(),
           });
         });
-      return attachPostDetailExtras(withEmptyGuestPostMetaOne(post));
+      return attachBookmarkStateToPost(
+        await attachPostDetailExtras(withEmptyGuestPostMetaOne(post)),
+        viewerId,
+      );
     }
 
     try {
@@ -1972,7 +2213,7 @@ export async function getPostById(id?: string, viewerId?: string) {
           });
           return withEmptyGuestPostMetaOne(post);
         });
-      return attachPostDetailExtras(post);
+      return attachBookmarkStateToPost(await attachPostDetailExtras(post), viewerId);
     } catch (error) {
       if (
         !isUnavailableReactionsIncludeError(error) &&
@@ -2008,7 +2249,10 @@ export async function getPostById(id?: string, viewerId?: string) {
             select: buildLegacyPostDetailSelectWithoutReactions(),
           });
         });
-      return attachPostDetailExtras(withEmptyGuestPostMetaOne(post));
+      return attachBookmarkStateToPost(
+        await attachPostDetailExtras(withEmptyGuestPostMetaOne(post)),
+        viewerId,
+      );
     }
   };
 
@@ -2489,12 +2733,21 @@ export async function listPosts({
         viewerId,
       )) as typeof items;
       return {
-        items: personalizedItems,
+        items: (await attachBookmarkStateToPosts(
+          personalizedItems as Array<{ id: string }>,
+        viewerId,
+      )) as unknown as typeof personalizedItems,
         nextCursor,
       };
     }
 
-    return { items, nextCursor };
+    return {
+      items: (await attachBookmarkStateToPosts(
+        items as Array<{ id: string }>,
+        viewerId,
+      )) as unknown as typeof items,
+      nextCursor,
+    };
   };
 
   const normalizedAuthorBreedCode = normalizeBreedCode(authorBreedCode);
@@ -2808,7 +3061,10 @@ export async function listBestPosts({
             });
         return withEmptyReactions(withEmptyGuestPostMeta(fallbackItems));
       });
-    return items;
+    return (await attachBookmarkStateToPosts(
+      items as Array<{ id: string }>,
+      viewerId,
+    )) as unknown as typeof items;
   };
 
   const shouldCache = true;
@@ -3101,6 +3357,148 @@ export async function listUserPostsPage({
 
   const hasNext = rows.length > safeLimit;
   const items = hasNext ? rows.slice(0, safeLimit) : rows;
+  return {
+    items,
+    hasNext,
+  };
+}
+
+type UserBookmarkedPostListOptions = {
+  userId: string;
+  type?: PostType;
+  q?: string;
+};
+
+type UserBookmarkedPostPageOptions = UserBookmarkedPostListOptions & {
+  limit: number;
+  page: number;
+};
+
+function buildUserBookmarkedPostWhere({
+  userId,
+  type,
+  q,
+}: UserBookmarkedPostListOptions): Prisma.PostBookmarkWhereInput {
+  const equivalentTypes = type ? getEquivalentPostTypes(type) : null;
+
+  return {
+    userId,
+    post: {
+      status: { in: [PostStatus.ACTIVE, PostStatus.HIDDEN] },
+      ...(equivalentTypes
+        ? {
+            type:
+              equivalentTypes.length === 1
+                ? equivalentTypes[0]
+                : {
+                    in: equivalentTypes,
+                  },
+          }
+        : {}),
+      ...(q
+        ? {
+            OR: [
+              { title: { contains: q, mode: "insensitive" } },
+              { content: { contains: q, mode: "insensitive" } },
+            ],
+          }
+        : {}),
+    },
+  };
+}
+
+export async function countUserBookmarkedPosts({
+  userId,
+  type,
+  q,
+}: UserBookmarkedPostListOptions) {
+  if (!supportsPostBookmarksField()) {
+    return 0;
+  }
+
+  return prisma.postBookmark
+    .count({
+      where: buildUserBookmarkedPostWhere({ userId, type, q }),
+    })
+    .catch((error) => {
+      if (!isMissingPostBookmarkTableError(error)) {
+        throw error;
+      }
+      postBookmarksFieldSupport = false;
+      return 0;
+    });
+}
+
+export async function listUserBookmarkedPostsPage({
+  userId,
+  type,
+  q,
+  limit,
+  page,
+}: UserBookmarkedPostPageOptions) {
+  if (!supportsPostBookmarksField()) {
+    return { items: [], hasNext: false };
+  }
+
+  const safeLimit = Math.min(Math.max(limit, 1), 50);
+  const safePage = Math.max(page, 1);
+  const rows = await prisma.postBookmark
+    .findMany({
+      where: buildUserBookmarkedPostWhere({ userId, type, q }),
+      orderBy: { createdAt: "desc" },
+      skip: (safePage - 1) * safeLimit,
+      take: safeLimit + 1,
+      select: {
+        createdAt: true,
+        post: {
+          select: {
+            id: true,
+            type: true,
+            status: true,
+            title: true,
+            content: true,
+            commentCount: true,
+            likeCount: true,
+            viewCount: true,
+            createdAt: true,
+            author: {
+              select: {
+                id: true,
+                name: true,
+                nickname: true,
+              },
+            },
+            neighborhood: {
+              select: { id: true, name: true, city: true, district: true },
+            },
+            images: {
+              select: { id: true },
+            },
+          },
+        },
+      },
+    })
+    .catch((error) => {
+      if (!isMissingPostBookmarkTableError(error)) {
+        throw error;
+      }
+      postBookmarksFieldSupport = false;
+      return [];
+    });
+
+  const hasNext = rows.length > safeLimit;
+  const items = (hasNext ? rows.slice(0, safeLimit) : rows)
+    .map((row) =>
+      row.post
+        ? {
+            ...row.post,
+            bookmarkedAt: row.createdAt,
+            isBookmarked: true,
+          }
+        : null,
+    )
+    .filter((item): item is NonNullable<typeof item> => Boolean(item));
+
   return {
     items,
     hasNext,

@@ -521,6 +521,7 @@ export function GuestFeedPageClient() {
                 disableLoadMore={mode !== "ALL"}
                 apiPath="/api/feed/guest"
                 preferGuestDetail
+                canBookmark={false}
                 query={{
                   type: type ?? undefined,
                   scope: "GLOBAL",

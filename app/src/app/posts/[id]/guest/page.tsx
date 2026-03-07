@@ -6,6 +6,7 @@ import { PostType } from "@prisma/client";
 import { BackToFeedButton } from "@/components/posts/back-to-feed-button";
 import { NeighborhoodGateNotice } from "@/components/neighborhood/neighborhood-gate-notice";
 import { GuestPostDetailActions } from "@/components/posts/guest-post-detail-actions";
+import { PostBookmarkButton } from "@/components/posts/post-bookmark-button";
 import { PostReactionControls } from "@/components/posts/post-reaction-controls";
 import { PostReportForm } from "@/components/posts/post-report-form";
 import { PostShareControls } from "@/components/posts/post-share-controls";
@@ -375,14 +376,22 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
             <div className="mt-3 space-y-2 border-b border-[#e0e9f5] pb-3 sm:mt-4 sm:space-y-3 sm:pb-4">
               <div className="rounded-xl border border-[#d8e4f6] bg-[#f8fbff] px-2.5 py-2.5 sm:px-3 sm:py-3">
                 <div className="flex items-center justify-between gap-2">
-                  <PostReactionControls
-                    postId={post.id}
-                    likeCount={safeLikeCount}
-                    dislikeCount={safeDislikeCount}
-                    currentReaction={null}
-                    canReact={false}
-                    loginHref={loginHref}
-                  />
+                  <div className="flex flex-wrap items-center gap-2">
+                    <PostReactionControls
+                      postId={post.id}
+                      likeCount={safeLikeCount}
+                      dislikeCount={safeDislikeCount}
+                      currentReaction={null}
+                      canReact={false}
+                      loginHref={loginHref}
+                    />
+                    <PostBookmarkButton
+                      postId={post.id}
+                      currentBookmarked={false}
+                      canSave={false}
+                      loginHref={loginHref}
+                    />
+                  </div>
                   <PostShareControls url={postUrl} title={post.title} />
                 </div>
               </div>
