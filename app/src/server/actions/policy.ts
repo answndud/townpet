@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { requireModerator } from "@/server/auth";
 import {
+  updateFeedPersonalizationPolicy,
   updateForbiddenKeywordPolicy,
   updateGuestPostPolicy,
   updateGuestReadPolicy,
@@ -89,6 +90,29 @@ export async function updateGuestPostPolicyAction(
     await updateGuestPostPolicy({ input });
     revalidatePath("/posts/new");
     revalidatePath("/admin/policies");
+    return { ok: true };
+  } catch (error) {
+    if (error instanceof ServiceError) {
+      return { ok: false, code: error.code, message: error.message };
+    }
+
+    return {
+      ok: false,
+      code: "INTERNAL_SERVER_ERROR",
+      message: "서버 오류가 발생했습니다.",
+    };
+  }
+}
+
+export async function updateFeedPersonalizationPolicyAction(
+  input: unknown,
+): Promise<PolicyActionResult> {
+  try {
+    await requireModerator();
+    await updateFeedPersonalizationPolicy({ input });
+    revalidatePath("/feed");
+    revalidatePath("/admin/policies");
+    revalidatePath("/admin/personalization");
     return { ok: true };
   } catch (error) {
     if (error instanceof ServiceError) {

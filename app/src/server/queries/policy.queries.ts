@@ -24,6 +24,12 @@ import {
   type GuestPostPolicy,
   normalizeGuestPostPolicy,
 } from "@/lib/guest-post-policy";
+import {
+  DEFAULT_FEED_PERSONALIZATION_POLICY,
+  FEED_PERSONALIZATION_POLICY_KEY,
+  normalizeFeedPersonalizationPolicy,
+  type FeedPersonalizationPolicy,
+} from "@/lib/feed-personalization-policy";
 import { prisma } from "@/lib/prisma";
 import { bumpCacheVersion, createQueryCacheKey, withQueryCache } from "@/server/cache/query-cache";
 import { logger, serializeError } from "@/server/logger";
@@ -297,6 +303,65 @@ export async function setGuestPostPolicy(input: GuestPostPolicy) {
     warnMissingSiteSettingTable(error);
     return { ok: false, reason: "SCHEMA_SYNC_REQUIRED" } as const;
   }
+
+  return { ok: true, setting } as const satisfies SetGuestReadPolicyResult;
+}
+
+export async function getFeedPersonalizationPolicy(): Promise<FeedPersonalizationPolicy> {
+  const delegate = requireSiteSettingDelegate();
+
+  const cacheKey = await createQueryCacheKey("policy", {
+    key: FEED_PERSONALIZATION_POLICY_KEY,
+  });
+  return withQueryCache({
+    key: cacheKey,
+    ttlSeconds: 60,
+    fetcher: async () => {
+      let setting: { value: unknown } | null = null;
+      try {
+        setting = await delegate.findUnique({
+          where: { key: FEED_PERSONALIZATION_POLICY_KEY },
+          select: { value: true },
+        });
+      } catch (error) {
+        throwPolicySchemaSyncRequired(error);
+      }
+
+      return normalizeFeedPersonalizationPolicy(
+        setting?.value,
+        DEFAULT_FEED_PERSONALIZATION_POLICY,
+      );
+    },
+  });
+}
+
+export async function setFeedPersonalizationPolicy(input: FeedPersonalizationPolicy) {
+  const normalized = normalizeFeedPersonalizationPolicy(
+    input,
+    DEFAULT_FEED_PERSONALIZATION_POLICY,
+  );
+
+  const delegate = getSiteSettingDelegate();
+  if (!delegate) {
+    return { ok: false, reason: "SCHEMA_SYNC_REQUIRED" } as const;
+  }
+
+  let setting: SiteSettingRecord;
+  try {
+    setting = await delegate.upsert({
+      where: { key: FEED_PERSONALIZATION_POLICY_KEY },
+      update: { value: normalized },
+      create: { key: FEED_PERSONALIZATION_POLICY_KEY, value: normalized },
+    });
+  } catch (error) {
+    if (!isSiteSettingTableMissingError(error)) {
+      throw error;
+    }
+    warnMissingSiteSettingTable(error);
+    return { ok: false, reason: "SCHEMA_SYNC_REQUIRED" } as const;
+  }
+
+  void bumpCacheVersion("policy").catch(() => undefined);
 
   return { ok: true, setting } as const satisfies SetGuestReadPolicyResult;
 }

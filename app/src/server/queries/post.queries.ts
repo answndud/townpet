@@ -10,6 +10,7 @@ import {
 import {
   DEFAULT_BREED_CATALOG,
 } from "@/lib/breed-catalog";
+import type { FeedPersonalizationPolicy } from "@/lib/feed-personalization-policy";
 import {
   extractAudienceSegmentBreedLabel,
   getPetBreedDisplayLabel,
@@ -24,6 +25,7 @@ import {
 } from "@/lib/post-type-groups";
 import type { ReviewCategory } from "@/lib/review-category";
 import { logger, serializeError } from "@/server/logger";
+import { getFeedPersonalizationPolicy } from "@/server/queries/policy.queries";
 import { listPreferredPetTypeIdsByUserId } from "@/server/queries/user.queries";
 import { listHiddenAuthorIdsForViewer } from "@/server/queries/user-relation.queries";
 import { createQueryCacheKey, withQueryCache } from "@/server/cache/query-cache";
@@ -1024,6 +1026,7 @@ type FeedPersonalizationEventLogLike = {
 };
 
 type ViewerPersonalizationContext = {
+  policy: FeedPersonalizationPolicy;
   petSignals: PetSignal[];
   preferredPetTypeIds: string[];
   preferredInterestLabels: string[];
@@ -1107,8 +1110,8 @@ function buildFallbackAudienceKey(input: {
   return parts.join(":");
 }
 
-function getRecencyWeight(index: number) {
-  return Math.max(0.28, 1 - index * 0.12);
+function getRecencyWeight(index: number, policy: FeedPersonalizationPolicy) {
+  return Math.max(policy.recencyDecayFloor, 1 - index * policy.recencyDecayStep);
 }
 
 function addWeightedDimension(
@@ -1136,6 +1139,14 @@ function listTopWeightedDimensions(
     })
     .slice(0, limit)
     .map(([key]) => key);
+}
+
+function applySignalCap(baseBoost: number, multiplier: number, cap: number) {
+  if (baseBoost <= 0 || multiplier <= 0 || cap <= 0) {
+    return 0;
+  }
+
+  return Math.min(cap, baseBoost * multiplier);
 }
 
 function getBreedSummaryLabel(breedCode: string) {
@@ -1223,6 +1234,7 @@ function collectPostInterestLabels(post: PostInterestLike) {
 
 function buildRecentBehaviorSignal(
   logs: FeedPersonalizationEventLogLike[],
+  policy: FeedPersonalizationPolicy,
 ) {
   const recentClickPetTypeWeights: Record<string, number> = {};
   const recentClickInterestWeights: Record<string, number> = {};
@@ -1231,7 +1243,7 @@ function buildRecentBehaviorSignal(
   const recentBehaviorSummaryWeights: Record<string, number> = {};
 
   logs.forEach((log, index) => {
-    const weight = getRecencyWeight(index);
+    const weight = getRecencyWeight(index, policy);
 
     if (log.event === "POST_CLICK" && log.post) {
       addWeightedDimension(
@@ -1276,7 +1288,10 @@ function buildRecentBehaviorSignal(
   };
 }
 
-function buildRecentDwellSignal(logs: FeedPersonalizationEventLogLike[]) {
+function buildRecentDwellSignal(
+  logs: FeedPersonalizationEventLogLike[],
+  policy: FeedPersonalizationPolicy,
+) {
   const recentDwellPetTypeWeights: Record<string, number> = {};
   const recentDwellInterestWeights: Record<string, number> = {};
   const recentDwellSummaryWeights: Record<string, number> = {};
@@ -1286,7 +1301,7 @@ function buildRecentDwellSignal(logs: FeedPersonalizationEventLogLike[]) {
       return;
     }
 
-    const weight = getRecencyWeight(index);
+    const weight = getRecencyWeight(index, policy);
     addWeightedDimension(recentDwellPetTypeWeights, log.post.petTypeId, weight);
 
     const interestLabels = collectPostInterestLabels(log.post);
@@ -1303,13 +1318,16 @@ function buildRecentDwellSignal(logs: FeedPersonalizationEventLogLike[]) {
   };
 }
 
-function buildRecentBookmarkSignal(posts: PostInterestLike[]) {
+function buildRecentBookmarkSignal(
+  posts: PostInterestLike[],
+  policy: FeedPersonalizationPolicy,
+) {
   const recentBookmarkPetTypeWeights: Record<string, number> = {};
   const recentBookmarkInterestWeights: Record<string, number> = {};
   const recentBookmarkSummaryWeights: Record<string, number> = {};
 
   posts.forEach((post, index) => {
-    const weight = getRecencyWeight(index);
+    const weight = getRecencyWeight(index, policy);
     addWeightedDimension(recentBookmarkPetTypeWeights, post.petTypeId, weight);
 
     const interestLabels = collectPostInterestLabels(post);
@@ -1391,10 +1409,10 @@ function calculateRecentBehaviorBoost(
   viewerContext: ViewerPersonalizationContext,
   authorPetByUserId: Map<string, PetSignal[]>,
 ) {
-  let boost = 0;
+  let clickBoost = 0;
 
   if (post.petTypeId) {
-    boost += Math.min(
+    clickBoost += Math.min(
       0.045,
       (viewerContext.recentClickPetTypeWeights[post.petTypeId] ?? 0) * 0.03,
     );
@@ -1406,8 +1424,14 @@ function calculateRecentBehaviorBoost(
       (total, label) => total + (viewerContext.recentClickInterestWeights[label] ?? 0),
       0,
     );
-    boost += Math.min(0.05, clickInterestWeight * 0.015);
+    clickBoost += Math.min(0.05, clickInterestWeight * 0.015);
   }
+
+  let boost = applySignalCap(
+    clickBoost,
+    viewerContext.policy.clickSignalMultiplier,
+    viewerContext.policy.clickSignalCap,
+  );
 
   const authorPets = authorPetByUserId.get(post.author.id) ?? [];
   if (authorPets.length === 0) {
@@ -1439,8 +1463,14 @@ function calculateRecentBehaviorBoost(
     }
   }
 
-  boost += Math.min(0.04, bestBreedWeight * 0.028);
-  boost += Math.min(0.025, bestAudienceKeyWeight * 0.02);
+  const adBoost =
+    Math.min(0.04, bestBreedWeight * 0.028) +
+    Math.min(0.025, bestAudienceKeyWeight * 0.02);
+  boost += applySignalCap(
+    adBoost,
+    viewerContext.policy.adSignalMultiplier,
+    viewerContext.policy.adSignalCap,
+  );
   return boost;
 }
 
@@ -1448,10 +1478,10 @@ function calculateRecentDwellBoost(
   post: FeedLikePost,
   viewerContext: ViewerPersonalizationContext,
 ) {
-  let boost = 0;
+  let baseBoost = 0;
 
   if (post.petTypeId) {
-    boost += Math.min(
+    baseBoost += Math.min(
       0.06,
       (viewerContext.recentDwellPetTypeWeights[post.petTypeId] ?? 0) * 0.038,
     );
@@ -1459,25 +1489,33 @@ function calculateRecentDwellBoost(
 
   const postInterestLabels = collectPostInterestLabels(post);
   if (postInterestLabels.length === 0) {
-    return boost;
+    return applySignalCap(
+      baseBoost,
+      viewerContext.policy.dwellSignalMultiplier,
+      viewerContext.policy.dwellSignalCap,
+    );
   }
 
   const dwellInterestWeight = postInterestLabels.reduce(
     (total, label) => total + (viewerContext.recentDwellInterestWeights[label] ?? 0),
     0,
   );
-  boost += Math.min(0.07, dwellInterestWeight * 0.022);
-  return boost;
+  baseBoost += Math.min(0.07, dwellInterestWeight * 0.022);
+  return applySignalCap(
+    baseBoost,
+    viewerContext.policy.dwellSignalMultiplier,
+    viewerContext.policy.dwellSignalCap,
+  );
 }
 
 function calculateRecentBookmarkBoost(
   post: FeedLikePost,
   viewerContext: ViewerPersonalizationContext,
 ) {
-  let boost = 0;
+  let baseBoost = 0;
 
   if (post.petTypeId) {
-    boost += Math.min(
+    baseBoost += Math.min(
       0.07,
       (viewerContext.recentBookmarkPetTypeWeights[post.petTypeId] ?? 0) * 0.042,
     );
@@ -1485,15 +1523,23 @@ function calculateRecentBookmarkBoost(
 
   const postInterestLabels = collectPostInterestLabels(post);
   if (postInterestLabels.length === 0) {
-    return boost;
+    return applySignalCap(
+      baseBoost,
+      viewerContext.policy.bookmarkSignalMultiplier,
+      viewerContext.policy.bookmarkSignalCap,
+    );
   }
 
   const bookmarkInterestWeight = postInterestLabels.reduce(
     (total, label) => total + (viewerContext.recentBookmarkInterestWeights[label] ?? 0),
     0,
   );
-  boost += Math.min(0.08, bookmarkInterestWeight * 0.024);
-  return boost;
+  baseBoost += Math.min(0.08, bookmarkInterestWeight * 0.024);
+  return applySignalCap(
+    baseBoost,
+    viewerContext.policy.bookmarkSignalMultiplier,
+    viewerContext.policy.bookmarkSignalCap,
+  );
 }
 
 function calculateViewerPersonalizationBoost(
@@ -1811,7 +1857,8 @@ async function listViewerRecentBehaviorEvents(
 
 export async function listViewerRecentBehaviorSummaryLabels(viewerId: string) {
   const recentBehaviorEvents = await listViewerRecentBehaviorEvents(viewerId, 12);
-  return buildRecentBehaviorSignal(recentBehaviorEvents).summaryLabels;
+  const policy = await getFeedPersonalizationPolicy();
+  return buildRecentBehaviorSignal(recentBehaviorEvents, policy).summaryLabels;
 }
 
 async function listViewerRecentDwellEvents(
@@ -1875,7 +1922,8 @@ async function listViewerRecentDwellEvents(
 
 export async function listViewerRecentDwellSummaryLabels(viewerId: string) {
   const recentDwellEvents = await listViewerRecentDwellEvents(viewerId, 12);
-  return buildRecentDwellSignal(recentDwellEvents).summaryLabels;
+  const policy = await getFeedPersonalizationPolicy();
+  return buildRecentDwellSignal(recentDwellEvents, policy).summaryLabels;
 }
 
 async function listViewerRecentBookmarkedPosts(
@@ -1940,14 +1988,16 @@ async function listViewerRecentBookmarkedPosts(
 
 export async function listViewerRecentBookmarkSummaryLabels(viewerId: string) {
   const recentBookmarks = await listViewerRecentBookmarkedPosts(viewerId, 12);
-  return buildRecentBookmarkSignal(recentBookmarks).summaryLabels;
+  const policy = await getFeedPersonalizationPolicy();
+  return buildRecentBookmarkSignal(recentBookmarks, policy).summaryLabels;
 }
 
 async function listViewerPersonalizationContext(
   viewerId: string,
 ): Promise<ViewerPersonalizationContext> {
-  const [petSignals, preferredPetTypeIds, recentBehaviorEvents, recentDwellEvents, recentBookmarks] =
+  const [policy, petSignals, preferredPetTypeIds, recentBehaviorEvents, recentDwellEvents, recentBookmarks] =
     await Promise.all([
+      getFeedPersonalizationPolicy(),
       listViewerPetSignals(viewerId),
       listPreferredPetTypeIdsByUserId(viewerId),
       listViewerRecentBehaviorEvents(viewerId, 20),
@@ -2018,11 +2068,12 @@ async function listViewerPersonalizationContext(
     : [];
   const positiveReactions = recentReactions.filter((reaction) => reaction.type === "LIKE");
   const negativeReactions = recentReactions.filter((reaction) => reaction.type === "DISLIKE");
-  const recentBehaviorSignal = buildRecentBehaviorSignal(recentBehaviorEvents);
-  const recentDwellSignal = buildRecentDwellSignal(recentDwellEvents);
-  const recentBookmarkSignal = buildRecentBookmarkSignal(recentBookmarks);
+  const recentBehaviorSignal = buildRecentBehaviorSignal(recentBehaviorEvents, policy);
+  const recentDwellSignal = buildRecentDwellSignal(recentDwellEvents, policy);
+  const recentBookmarkSignal = buildRecentBookmarkSignal(recentBookmarks, policy);
 
   return {
+    policy,
     petSignals,
     preferredPetTypeIds: normalizedPreferredPetTypeIds,
     preferredInterestLabels: dedupeInterestLabels(
@@ -2141,13 +2192,15 @@ async function applyPetPersonalization<T extends FeedLikePost>(
     })
     .sort((a, b) => b.score - a.score);
 
-  const personalized = scored.filter((entry) => entry.boost > 0.05).map((entry) => entry.item);
+  const personalized = scored
+    .filter((entry) => entry.boost > viewerContext.policy.personalizedThreshold)
+    .map((entry) => entry.item);
   const personalizedSet = new Set(personalized.map((item) => item.id));
   const explore = scored
     .filter((entry) => !personalizedSet.has(entry.item.id))
     .map((entry) => entry.item);
 
-  return interleaveForDiversity(personalized, explore, 0.65);
+  return interleaveForDiversity(personalized, explore, viewerContext.policy.personalizedRatio);
 }
 
 export async function getPostById(id?: string, viewerId?: string) {

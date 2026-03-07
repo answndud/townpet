@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { PostScope, PostType } from "@prisma/client";
 
+import { DEFAULT_FEED_PERSONALIZATION_POLICY } from "@/lib/feed-personalization-policy";
+
 vi.mock("@/lib/env", async () => {
   const actual = await vi.importActual<typeof import("@/lib/env")>("@/lib/env");
   return {
@@ -31,6 +33,9 @@ vi.mock("@/lib/prisma", () => ({
     },
     userAudienceSegment: {
       findMany: vi.fn(),
+    },
+    siteSetting: {
+      findUnique: vi.fn(),
     },
     userPetTypePreference: {
       findMany: vi.fn(),
@@ -67,6 +72,9 @@ const mockPrisma = vi.mocked(prisma) as unknown as {
   userAudienceSegment: {
     findMany: ReturnType<typeof vi.fn>;
   };
+  siteSetting: {
+    findUnique: ReturnType<typeof vi.fn>;
+  };
   userPetTypePreference: {
     findMany: ReturnType<typeof vi.fn>;
   };
@@ -99,6 +107,8 @@ describe("post queries", () => {
     mockPrisma.post.findMany.mockReset();
     mockPrisma.userAudienceSegment.findMany.mockReset();
     mockPrisma.userAudienceSegment.findMany.mockResolvedValue([]);
+    mockPrisma.siteSetting.findUnique.mockReset();
+    mockPrisma.siteSetting.findUnique.mockResolvedValue(null);
     mockPrisma.userPetTypePreference.findMany.mockReset();
     mockPrisma.userPetTypePreference.findMany.mockResolvedValue([]);
     mockPrisma.community.findMany.mockReset();
@@ -1092,6 +1102,75 @@ describe("post queries", () => {
     });
 
     expect(result.items[0]?.id).toBe("p2");
+    expect(result.nextCursor).toBe("p3");
+  });
+
+  it("respects personalization tuning policy when bookmark multiplier is disabled", async () => {
+    mockPrisma.siteSetting.findUnique.mockResolvedValue({
+      value: {
+        ...DEFAULT_FEED_PERSONALIZATION_POLICY,
+        bookmarkSignalMultiplier: 0,
+      },
+    });
+    mockPrisma.post.findMany.mockResolvedValue([
+      {
+        id: "p1",
+        type: PostType.FREE_BOARD,
+        petTypeId: "cat-community",
+        author: { id: "a1" },
+        createdAt: new Date("2026-02-02T00:00:00.000Z"),
+        likeCount: 0,
+        commentCount: 0,
+        viewCount: 0,
+      },
+      {
+        id: "p2",
+        type: PostType.PRODUCT_REVIEW,
+        petTypeId: "dog-community",
+        reviewCategory: "FEED",
+        animalTags: ["사료"],
+        petType: { tags: ["사료"] },
+        author: { id: "a2" },
+        createdAt: new Date("2026-02-01T23:00:00.000Z"),
+        likeCount: 0,
+        commentCount: 0,
+        viewCount: 0,
+      },
+      {
+        id: "p3",
+        type: PostType.FREE_BOARD,
+        petTypeId: "bird-community",
+        author: { id: "a3" },
+        createdAt: new Date("2026-02-01T22:00:00.000Z"),
+        likeCount: 0,
+        commentCount: 0,
+        viewCount: 0,
+      },
+    ]);
+    mockPrisma.feedPersonalizationEventLog.findMany.mockResolvedValue([]);
+    mockPrisma.postBookmark.findMany
+      .mockResolvedValueOnce([
+        {
+          post: {
+            petTypeId: "dog-community",
+            type: PostType.PRODUCT_REVIEW,
+            reviewCategory: "FEED",
+            animalTags: ["사료"],
+            petType: { tags: ["사료"] },
+          },
+        },
+      ])
+      .mockResolvedValueOnce([]);
+    mockPrisma.pet.findMany.mockResolvedValueOnce([]);
+
+    const result = await listPosts({
+      limit: 2,
+      scope: PostScope.GLOBAL,
+      personalized: true,
+      viewerId: "viewer-1",
+    });
+
+    expect(result.items[0]?.id).toBe("p1");
     expect(result.nextCursor).toBe("p3");
   });
 

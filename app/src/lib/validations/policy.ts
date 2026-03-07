@@ -1,6 +1,7 @@
 import { PostType } from "@prisma/client";
 import { z } from "zod";
 
+import { feedPersonalizationPolicySchema } from "@/lib/feed-personalization-policy";
 import { GUEST_MAX_IMAGE_COUNT } from "@/lib/guest-post-policy";
 import { MAX_POLICY_HOURS } from "@/lib/new-user-safety-policy";
 
@@ -50,4 +51,10 @@ export const guestPostPolicyUpdateSchema = z.object({
 
 export type GuestPostPolicyUpdateInput = z.infer<
   typeof guestPostPolicyUpdateSchema
+>;
+
+export const feedPersonalizationPolicyUpdateSchema = feedPersonalizationPolicySchema;
+
+export type FeedPersonalizationPolicyUpdateInput = z.infer<
+  typeof feedPersonalizationPolicyUpdateSchema
 >;

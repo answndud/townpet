@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { UserRole } from "@prisma/client";
 
+import { FeedPersonalizationPolicyForm } from "@/components/admin/feed-personalization-policy-form";
 import { ForbiddenKeywordPolicyForm } from "@/components/admin/forbidden-keyword-policy-form";
 import { GuestPostPolicyForm } from "@/components/admin/guest-post-policy-form";
 import { GuestReadPolicyForm } from "@/components/admin/guest-read-policy-form";
@@ -11,6 +12,7 @@ import { getCurrentUser } from "@/server/auth";
 import { redirectToProfileIfNicknameMissing } from "@/server/nickname-guard";
 import {
   getForbiddenKeywords,
+  getFeedPersonalizationPolicy,
   getGuestPostPolicy,
   getGuestReadLoginRequiredPostTypes,
   getNewUserSafetyPolicy,
@@ -45,11 +47,18 @@ export default async function AdminPoliciesPage() {
     );
   }
 
-  const [loginRequiredTypes, forbiddenKeywords, newUserSafetyPolicy, guestPostPolicy] = await Promise.all([
+  const [
+    loginRequiredTypes,
+    forbiddenKeywords,
+    newUserSafetyPolicy,
+    guestPostPolicy,
+    feedPersonalizationPolicy,
+  ] = await Promise.all([
     getGuestReadLoginRequiredPostTypes(),
     getForbiddenKeywords(),
     getNewUserSafetyPolicy(),
     getGuestPostPolicy(),
+    getFeedPersonalizationPolicy(),
   ]);
 
   return (
@@ -177,6 +186,35 @@ export default async function AdminPoliciesPage() {
           <div className="mt-4">
             <NewUserSafetyPolicyForm
               initialPolicy={newUserSafetyPolicy}
+            />
+          </div>
+        </section>
+
+        <section className="tp-card p-5 sm:p-6">
+          <h2 className="text-lg font-semibold text-[#153a6a]">개인화 튜닝 정책</h2>
+          <p className="mt-2 text-xs text-[#5a7398]">
+            recent click/ad/dwell/bookmark 신호의 감쇠, cap, 개인화/탐색 혼합 비율을 운영에서 조정합니다.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2 text-[11px]">
+            <span className="rounded-md border border-[#cbdcf5] bg-[#f6f9ff] px-2.5 py-1 text-[#315484]">
+              개인화 비율 {Math.round(feedPersonalizationPolicy.personalizedRatio * 100)}%
+            </span>
+            <span className="rounded-md border border-[#cbdcf5] bg-[#f6f9ff] px-2.5 py-1 text-[#315484]">
+              recency step {feedPersonalizationPolicy.recencyDecayStep.toFixed(2)}
+            </span>
+            <span className="rounded-md border border-[#cbdcf5] bg-[#f6f9ff] px-2.5 py-1 text-[#315484]">
+              임계치 {feedPersonalizationPolicy.personalizedThreshold.toFixed(2)}
+            </span>
+            <span className="rounded-md border border-[#cbdcf5] bg-[#f6f9ff] px-2.5 py-1 text-[#315484]">
+              클릭/광고/체류/저장 cap {feedPersonalizationPolicy.clickSignalCap.toFixed(2)}/
+              {feedPersonalizationPolicy.adSignalCap.toFixed(2)}/
+              {feedPersonalizationPolicy.dwellSignalCap.toFixed(2)}/
+              {feedPersonalizationPolicy.bookmarkSignalCap.toFixed(2)}
+            </span>
+          </div>
+          <div className="mt-4">
+            <FeedPersonalizationPolicyForm
+              initialPolicy={feedPersonalizationPolicy}
             />
           </div>
         </section>
