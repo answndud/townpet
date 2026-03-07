@@ -7,6 +7,7 @@ import { PostType } from "@prisma/client";
 import { BackToFeedButton } from "@/components/posts/back-to-feed-button";
 import { GuestPostDetailActions } from "@/components/posts/guest-post-detail-actions";
 import { PostDetailActions } from "@/components/posts/post-detail-actions";
+import { PostPersonalizationDwellTracker } from "@/components/posts/post-personalization-dwell-tracker";
 import { PostReactionControls } from "@/components/posts/post-reaction-controls";
 import { PostReportForm } from "@/components/posts/post-report-form";
 import { PostShareControls } from "@/components/posts/post-share-controls";
@@ -365,6 +366,7 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
   return (
     <div className="tp-page-bg min-h-screen pb-16">
       <PostViewTracker postId={post.id} />
+      <PostPersonalizationDwellTracker postId={post.id} enabled={Boolean(viewerId)} />
       <script
         nonce={cspNonce}
         type="application/ld+json"

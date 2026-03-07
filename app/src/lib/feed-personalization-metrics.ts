@@ -6,6 +6,7 @@ export const FEED_PERSONALIZATION_SURFACE_VALUES = [
 export const FEED_PERSONALIZATION_EVENT_VALUES = [
   "VIEW",
   "POST_CLICK",
+  "POST_DWELL",
   "AD_IMPRESSION",
   "AD_CLICK",
 ] as const;
@@ -37,6 +38,7 @@ export const FEED_PERSONALIZATION_EVENT_LABELS: Record<
 > = {
   VIEW: "개인화 피드 조회",
   POST_CLICK: "개인화 게시글 클릭",
+  POST_DWELL: "개인화 상세 체류",
   AD_IMPRESSION: "광고 노출",
   AD_CLICK: "광고 클릭",
 };

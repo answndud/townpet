@@ -17,6 +17,46 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-07: Cycle 221 완료 (상세 체류시간 기반 6차 개인화 신호)
+- 완료 내용
+- post dwell event 계측 추가:
+  - `app/prisma/schema.prisma`
+  - `app/prisma/migrations/20260307090000_add_post_dwell_event/migration.sql`
+  - `app/src/lib/feed-personalization-metrics.ts`
+  - `app/src/lib/validations/feed-personalization.ts`
+  - `app/src/lib/feed-personalization-tracking.ts`
+  - `app/src/components/posts/post-personalization-dwell-tracker.tsx`
+  - `app/src/components/posts/post-detail-client.tsx`
+  - authenticated 상세 페이지에서 12초 이상 머문 경우에만 `POST_DWELL` 이벤트를 기록하도록 tracker를 추가
+  - dwell 이벤트는 기존 `/api/feed/personalization` 경로와 user-level event log에 함께 저장되고, `POST_DWELL`도 `postId`를 필수로 검증
+- recent dwell 6차 랭킹 신호/설명 연결:
+  - `app/src/server/queries/post.queries.ts`
+  - `app/src/server/queries/post.queries.test.ts`
+  - `app/src/lib/feed-personalization.ts`
+  - `app/src/lib/feed-personalization.test.ts`
+  - `app/src/app/feed/page.tsx`
+  - 최근 오래 읽은 게시글의 `petTypeId`/관심 태그를 recency-weighted 6차 positive signal로 연결하고, 5차 click/ad signal과 분리해 더 강한 intent로만 반영
+  - `/feed` 맞춤 추천 설명에 `최근 오래 읽은 글` 6차 신호를 추가하고, 프로필 신호가 부족하면 dwell 기준 fallback summary도 제공
+- 제품 문서 동기화:
+  - `docs/product/품종_개인화_기획서.md`
+  - 구현 상태를 dwell 기반 6차 신호까지 반영된 상태로 갱신하고, 다음 오픈 이슈를 `bookmark/save` 기반 후속 신호로 조정
+- 검증 결과
+- `pnpm -C app exec prisma format` 통과
+- `pnpm -C app exec prisma generate` 통과
+- `pnpm -C app lint src/components/posts/post-personalization-dwell-tracker.tsx src/components/posts/post-detail-client.tsx src/components/posts/feed-infinite-list.tsx src/lib/feed-personalization-tracking.ts src/lib/feed-personalization-metrics.ts src/lib/feed-personalization.ts src/lib/feed-personalization.test.ts src/lib/validations/feed-personalization.ts src/app/api/feed/personalization/route.test.ts src/server/services/feed-personalization-metrics.service.ts src/server/services/feed-personalization-metrics.service.test.ts src/server/queries/post.queries.ts src/server/queries/post.queries.test.ts src/app/feed/page.tsx` 통과
+- `pnpm -C app typecheck` 통과
+- `pnpm -C app test -- src/app/api/feed/personalization/route.test.ts src/lib/feed-personalization.test.ts src/server/queries/post.queries.test.ts src/server/services/feed-personalization-metrics.service.test.ts` 실행 시 전체 Vitest 스위트 `97 files / 490 tests` 통과
+- 이슈/블로커
+- local `prisma migrate deploy`는 여전히 선행 `20260307011000_limit_report_target_to_post` migration에서 legacy non-post report rows 때문에 막히므로, 새 dwell enum migration도 production DB에선 선행 migration이 이미 정리된 상태를 전제로 반영해야 함
+
+### 2026-03-07: Cycle 221 착수 (상세 체류시간 기반 6차 개인화 신호)
+- 진행 내용
+- user-level personalization event log에는 현재 `POST_CLICK`/`AD_CLICK`만 있어, 실제로 오래 읽은 글과 스치듯 클릭한 글이 동일한 5차 신호로 취급되고 있음을 확인
+- 저장(bookmark) 기능은 제품 자체가 아직 없으므로, 이번 사이클은 authenticated 상세 페이지에서 일정 시간 이상 머문 `POST_DWELL` 이벤트를 기록하고 이를 6차 신호로 사용하는 방향이 가장 현실적이라고 판단
+- 이번 사이클 범위를 `post detail dwell tracking -> user-level log -> recent dwell ranking signal` + 피드 설명/제품 문서 동기화로 확정
+- 이슈/블로커
+- 없음
+
 ### 2026-03-07: Cycle 220 완료 (최근 클릭/광고 반응 기반 5차 개인화 신호)
 - 완료 내용
 - user-level click/ad event log 저장소 추가:

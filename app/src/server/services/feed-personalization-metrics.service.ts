@@ -87,7 +87,9 @@ function getDayBucket(date = new Date()) {
 function shouldRecordUserLevelEvent(input: RecordFeedPersonalizationMetricInput) {
   return Boolean(
     input.userId &&
-      (input.event === "POST_CLICK" || input.event === "AD_CLICK"),
+      (input.event === "POST_CLICK" ||
+        input.event === "POST_DWELL" ||
+        input.event === "AD_CLICK"),
   );
 }
 
@@ -143,7 +145,10 @@ export async function recordFeedPersonalizationMetric(
       await eventLogDelegate.create({
         data: {
           userId: input.userId,
-          postId: input.event === "POST_CLICK" ? postId : null,
+          postId:
+            input.event === "POST_CLICK" || input.event === "POST_DWELL"
+              ? postId
+              : null,
           surface: input.surface,
           event: input.event,
           audienceKey,

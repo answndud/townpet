@@ -118,12 +118,13 @@ describe("feed personalization helpers", () => {
       preferredInterestLabels: ["산책", "건강"],
       recentEngagementLabels: ["산책", "후기"],
       recentBehaviorLabels: ["말티즈", "산책"],
+      recentDwellLabels: ["건강", "산책"],
     });
 
     expect(buildFeedPersonalizationSummary(context)).toMatchObject({
       title: "강아지 · 말티즈 · 소형 · 성체 기준으로 맞춤 추천 중",
       emphasis:
-        "세그먼트 신뢰도 83% · 선호 커뮤니티 강아지 일상, 강아지 건강 · 관심 태그 산책, 건강 · 최근 반응 산책, 후기 · 최근 클릭/광고 반응 말티즈, 산책",
+        "세그먼트 신뢰도 83% · 선호 커뮤니티 강아지 일상, 강아지 건강 · 관심 태그 산책, 건강 · 최근 반응 산책, 후기 · 최근 클릭/광고 반응 말티즈, 산책 · 최근 오래 읽은 글 건강, 산책",
     });
     expect(buildFeedPersonalizationSummary(context).description).toContain(
       "선택한 커뮤니티 선호도 2차 신호로 함께 반영합니다.",
@@ -137,6 +138,9 @@ describe("feed personalization helpers", () => {
     expect(buildFeedPersonalizationSummary(context).description).toContain(
       "최근 클릭/광고 반응 5차 신호도 약하게 반영합니다.",
     );
+    expect(buildFeedPersonalizationSummary(context).description).toContain(
+      "최근 오래 읽은 글 6차 신호도 약하게 반영합니다.",
+    );
   });
 
   it("falls back to preferred communities when profile signals are missing", () => {
@@ -145,12 +149,13 @@ describe("feed personalization helpers", () => {
       preferredInterestLabels: ["산책", "건강"],
       recentEngagementLabels: ["산책", "후기"],
       recentBehaviorLabels: ["말티즈", "산책"],
+      recentDwellLabels: ["건강", "산책"],
     });
 
     expect(buildFeedPersonalizationSummary(context)).toMatchObject({
       title: "선호 커뮤니티 기준으로 기본 맞춤 추천 중",
       emphasis:
-        "선호 커뮤니티 강아지 일상, 강아지 건강 · 관심 태그 산책, 건강 · 최근 반응 산책, 후기 · 최근 클릭/광고 반응 말티즈, 산책",
+        "선호 커뮤니티 강아지 일상, 강아지 건강 · 관심 태그 산책, 건강 · 최근 반응 산책, 후기 · 최근 클릭/광고 반응 말티즈, 산책 · 최근 오래 읽은 글 건강, 산책",
     });
   });
 
@@ -159,11 +164,13 @@ describe("feed personalization helpers", () => {
       preferredInterestLabels: ["산책", "건강"],
       recentEngagementLabels: ["산책", "후기"],
       recentBehaviorLabels: ["말티즈", "산책"],
+      recentDwellLabels: ["건강", "산책"],
     });
 
     expect(buildFeedPersonalizationSummary(context)).toMatchObject({
       title: "관심 태그 기준으로 기본 맞춤 추천 중",
-      emphasis: "관심 태그 산책, 건강 · 최근 반응 산책, 후기 · 최근 클릭/광고 반응 말티즈, 산책",
+      emphasis:
+        "관심 태그 산책, 건강 · 최근 반응 산책, 후기 · 최근 클릭/광고 반응 말티즈, 산책 · 최근 오래 읽은 글 건강, 산책",
     });
   });
 
@@ -186,6 +193,17 @@ describe("feed personalization helpers", () => {
     expect(buildFeedPersonalizationSummary(context)).toMatchObject({
       title: "최근 클릭 기준으로 기본 맞춤 추천 중",
       emphasis: "최근 클릭/광고 반응 말티즈, 산책",
+    });
+  });
+
+  it("falls back to recent dwell summary when only long-read activity is available", () => {
+    const context = resolveFeedAudienceContext({
+      recentDwellLabels: ["건강", "산책"],
+    });
+
+    expect(buildFeedPersonalizationSummary(context)).toMatchObject({
+      title: "최근 오래 읽은 글 기준으로 기본 맞춤 추천 중",
+      emphasis: "최근 오래 읽은 글 건강, 산책",
     });
   });
 });

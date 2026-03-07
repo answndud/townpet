@@ -123,4 +123,28 @@ describe("feed personalization metrics service", () => {
     expect(mockPrisma.feedPersonalizationStat?.upsert).toHaveBeenCalledTimes(1);
     expect(mockPrisma.feedPersonalizationEventLog?.create).toHaveBeenCalledTimes(1);
   });
+
+  it("records dwell events with postId in user-level event log", async () => {
+    mockPrisma.feedPersonalizationStat?.upsert.mockResolvedValue({});
+    mockPrisma.feedPersonalizationEventLog?.create.mockResolvedValue({});
+
+    const result = await recordFeedPersonalizationMetric({
+      surface: "FEED",
+      event: "POST_DWELL",
+      audienceSource: "NONE",
+      postId: "post-9",
+      userId: "user-9",
+    });
+
+    expect(result).toEqual({ ok: true, recorded: true });
+    expect(
+      mockPrisma.feedPersonalizationEventLog?.create.mock.calls.at(-1)?.[0],
+    ).toMatchObject({
+      data: {
+        userId: "user-9",
+        postId: "post-9",
+        event: "POST_DWELL",
+      },
+    });
+  });
 });

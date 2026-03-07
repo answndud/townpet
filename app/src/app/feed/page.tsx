@@ -40,6 +40,7 @@ import {
   countBestPosts,
   listViewerRecentEngagementSummaryLabels,
   listViewerRecentBehaviorSummaryLabels,
+  listViewerRecentDwellSummaryLabels,
   listBestPosts,
   listPosts,
 } from "@/server/queries/post.queries";
@@ -491,6 +492,7 @@ export default async function Home({ searchParams }: HomePageProps) {
     viewerPets,
     recentEngagementLabels,
     recentBehaviorLabels,
+    recentDwellLabels,
   ] =
     shouldLoadViewerPersonalizationContext && viewerUserId
       ? await Promise.all([
@@ -527,8 +529,17 @@ export default async function Home({ searchParams }: HomePageProps) {
             }
             throw error;
           }),
+          listViewerRecentDwellSummaryLabels(viewerUserId).catch((error) => {
+            if (
+              isDatabaseUnavailableError(error) ||
+              error instanceof Prisma.PrismaClientKnownRequestError
+            ) {
+              return [];
+            }
+            throw error;
+          }),
         ])
-      : [[], [], [], []];
+      : [[], [], [], [], []];
   const primaryAudienceSegment = viewerAudienceSegments[0] ?? null;
   const primaryPet = viewerPets[0] ?? null;
   const feedAudienceContext = resolveFeedAudienceContext({
@@ -538,6 +549,7 @@ export default async function Home({ searchParams }: HomePageProps) {
     preferredInterestLabels,
     recentEngagementLabels,
     recentBehaviorLabels,
+    recentDwellLabels,
   });
   const personalizedSummary = usePersonalizedFeed
     ? buildFeedPersonalizationSummary(feedAudienceContext)

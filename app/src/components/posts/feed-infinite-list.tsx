@@ -12,6 +12,9 @@ import type {
   FeedPersonalizationSurfaceValue,
 } from "@/lib/feed-personalization-metrics";
 import {
+  sendFeedPersonalizationMetric,
+} from "@/lib/feed-personalization-tracking";
+import {
   formatCount,
   formatRelativeDate,
   getPostSignals,
@@ -180,30 +183,6 @@ function parseReadPosts(raw: string | null): StoredReadPost[] {
   } catch {
     return [];
   }
-}
-
-async function sendFeedPersonalizationMetric(input: {
-  surface: FeedPersonalizationSurfaceValue;
-  event: FeedPersonalizationEventValue;
-  audienceKey?: string | null;
-  breedCode?: string | null;
-  audienceSource: FeedAudienceSourceValue;
-  postId?: string | null;
-}) {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  await fetch("/api/feed/personalization", {
-    method: "POST",
-    credentials: "same-origin",
-    keepalive: true,
-    cache: "no-store",
-    headers: {
-      "content-type": "application/json",
-    },
-    body: JSON.stringify(input),
-  }).catch(() => undefined);
 }
 
 export function FeedInfiniteList({

@@ -17,6 +17,7 @@ import {
   listPostSearchSuggestions,
   listPosts,
   listViewerRecentBehaviorSummaryLabels,
+  listViewerRecentDwellSummaryLabels,
   listUserPostsPage,
 } from "@/server/queries/post.queries";
 import { prisma } from "@/lib/prisma";
@@ -819,7 +820,7 @@ describe("post queries", () => {
       viewerId: "viewer-1",
     });
 
-    expect(mockPrisma.feedPersonalizationEventLog.findMany).toHaveBeenCalledTimes(1);
+    expect(mockPrisma.feedPersonalizationEventLog.findMany).toHaveBeenCalledTimes(2);
     expect(result.items[0]?.id).toBe("p2");
     expect(result.nextCursor).toBe("p3");
   });
@@ -922,6 +923,99 @@ describe("post queries", () => {
     const result = await listViewerRecentBehaviorSummaryLabels("viewer-1");
 
     expect(result).toEqual(["산책", "말티즈"]);
+  });
+
+  it("applies recent dwell events as sixth-order personalized feed signal", async () => {
+    mockPrisma.post.findMany.mockResolvedValue([
+      {
+        id: "p1",
+        type: PostType.FREE_BOARD,
+        petTypeId: "cat-community",
+        author: { id: "a1" },
+        createdAt: new Date("2026-02-02T00:00:00.000Z"),
+        likeCount: 0,
+        commentCount: 0,
+        viewCount: 0,
+      },
+      {
+        id: "p2",
+        type: PostType.WALK_ROUTE,
+        petTypeId: "dog-community",
+        author: { id: "a2" },
+        createdAt: new Date("2026-02-01T23:00:00.000Z"),
+        likeCount: 0,
+        commentCount: 0,
+        viewCount: 0,
+      },
+      {
+        id: "p3",
+        type: PostType.FREE_BOARD,
+        petTypeId: "bird-community",
+        author: { id: "a3" },
+        createdAt: new Date("2026-02-01T22:00:00.000Z"),
+        likeCount: 0,
+        commentCount: 0,
+        viewCount: 0,
+      },
+    ]);
+    mockPrisma.feedPersonalizationEventLog.findMany.mockResolvedValue([
+      {
+        event: "POST_DWELL",
+        audienceKey: "NONE",
+        breedCode: "NONE",
+        post: {
+          petTypeId: "dog-community",
+          type: PostType.WALK_ROUTE,
+          reviewCategory: null,
+          animalTags: [],
+          petType: { tags: ["산책"] },
+        },
+      },
+    ]);
+    mockPrisma.pet.findMany.mockResolvedValueOnce([]);
+
+    const result = await listPosts({
+      limit: 2,
+      scope: PostScope.GLOBAL,
+      personalized: true,
+      viewerId: "viewer-1",
+    });
+
+    expect(result.items[0]?.id).toBe("p2");
+    expect(result.nextCursor).toBe("p3");
+  });
+
+  it("builds recent dwell summary labels from dwell logs", async () => {
+    mockPrisma.feedPersonalizationEventLog.findMany.mockResolvedValue([
+      {
+        event: "POST_DWELL",
+        audienceKey: "NONE",
+        breedCode: "NONE",
+        post: {
+          petTypeId: "dog-community",
+          type: PostType.WALK_ROUTE,
+          reviewCategory: null,
+          animalTags: [],
+          petType: { tags: ["산책"] },
+        },
+      },
+      {
+        event: "POST_DWELL",
+        audienceKey: "NONE",
+        breedCode: "NONE",
+        post: {
+          petTypeId: "cat-community",
+          type: PostType.HOSPITAL_REVIEW,
+          reviewCategory: null,
+          animalTags: [],
+          petType: { tags: ["건강"] },
+        },
+      },
+    ]);
+
+    const result = await listViewerRecentDwellSummaryLabels("viewer-1");
+
+    expect(result).toEqual(["산책", "건강", "병원"]);
   });
 
   it("builds best feed with likes and recency ordering", async () => {
