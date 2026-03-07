@@ -25,6 +25,12 @@
 
 ## Active Plan
 
+### Cycle 208: 회원가입 abuse defense 현실화 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 회원가입 다축 rate-limit + fingerprint 방어 도입 | Codex | P1 | `done` | 회원가입 경로가 IP/fingerprint/email+IP/email 기준 throttling을 적용하고 malformed JSON/중복/요청 제한을 정상 응답으로 surface함 | `app/src/app/api/auth/register/route.ts`, `app/src/server/auth-register-rate-limit.ts`, `app/src/components/auth/register-form.tsx` |
+| 회원가입 성공/거절/제한 auth audit 가시화 | Codex | P1 | `done` | 등록 흐름이 auth audit에 `REGISTER_SUCCESS/REJECTED/RATE_LIMITED`를 남기고 관리자 화면/검색에서 운영자가 추적 가능함 | `app/prisma/schema.prisma`, `app/src/server/auth-audit-log.ts`, `app/src/app/admin/auth-audits/page.tsx` |
+
 ### Cycle 207: middleware incident defense-in-depth (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|

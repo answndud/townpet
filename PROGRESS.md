@@ -17,6 +17,33 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-07: Cycle 208 완료 (회원가입 abuse defense 현실화)
+- 완료 내용
+- 회원가입 다축 abuse 방어 도입:
+  - `app/src/server/auth-register-rate-limit.ts`
+  - `app/src/app/api/auth/register/route.ts`
+  - `app/src/components/auth/register-form.tsx`
+  - 회원가입 route가 pre-validation `IP/fingerprint`, post-validation `email+IP/email` 기준 throttling을 순차 적용
+  - malformed JSON, invalid input, duplicate rejection, rate-limit hit, registration success를 각각 명시적인 응답/감사 로그로 surface
+  - 브라우저 register form이 `x-client-fingerprint` 헤더를 전송해 디바이스 축 제한을 활성화
+- auth audit/운영 가시화 확장:
+  - `app/prisma/schema.prisma`
+  - `app/prisma/migrations/20260307043000_expand_auth_audit_for_register_events/migration.sql`
+  - `app/src/app/admin/auth-audits/page.tsx`
+  - auth audit action에 `REGISTER_SUCCESS`, `REGISTER_REJECTED`, `REGISTER_RATE_LIMITED`를 추가
+  - 관리자 인증 감사 화면에서 신규 액션과 등록 제한/중복/입력 오류 사유 라벨을 조회 가능하게 정리
+- 회귀 테스트 추가/보강:
+  - `app/src/server/auth-register-rate-limit.test.ts`
+  - `app/src/app/api/auth/register/route.test.ts`
+- 검증 결과
+- `pnpm -C app exec prisma format` 통과
+- `pnpm -C app exec prisma generate` 통과
+- `pnpm -C app lint src/app/api/auth/register/route.ts src/app/api/auth/register/route.test.ts src/app/admin/auth-audits/page.tsx src/components/auth/register-form.tsx src/server/auth-register-rate-limit.ts src/server/auth-register-rate-limit.test.ts` 통과
+- `pnpm -C app typecheck` 통과
+- `pnpm -C app test -- src/server/auth-register-rate-limit.test.ts src/app/api/auth/register/route.test.ts src/app/api/admin/auth-audits/route.test.ts src/app/api/admin/auth-audits/export/route.test.ts` 실행 시 전체 Vitest 스위트 `88 files / 435 tests` 통과
+- 이슈/블로커
+- 없음
+
 ### 2026-03-07: Cycle 204 완료 (알림/운영 이력 retention 강화)
 - 완료 내용
 - 읽음/보관 의미 분리:

@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 
 import { KakaoSignInButton } from "@/components/auth/kakao-signin-button";
 import { NaverSignInButton } from "@/components/auth/naver-signin-button";
+import { getGuestFingerprint } from "@/lib/guest-client";
 
 type RegisterFormProps = {
   kakaoEnabled?: boolean;
@@ -43,7 +44,10 @@ export function RegisterForm({
     startTransition(async () => {
       const response = await fetch("/api/auth/register", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-client-fingerprint": getGuestFingerprint(),
+        },
         body: JSON.stringify({
           email,
           password,
