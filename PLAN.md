@@ -25,6 +25,12 @@
 
 ## Active Plan
 
+### Cycle 220: 최근 클릭/광고 반응 기반 5차 개인화 신호 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| personalized feed 계측에 user-level click/ad log 저장소 추가 | Codex | P1 | `done` | `/api/feed/personalization`가 aggregate 통계와 별도로 최근 게시글 클릭/광고 클릭 로그를 사용자 단위로 저장하고 스키마/route/service 테스트가 존재함 | `app/prisma/schema.prisma`, `app/src/app/api/feed/personalization/route.ts`, `app/src/server/services/feed-personalization-metrics.service.ts` |
+| recent click/ad response를 personalized ranking 5차 신호와 피드 설명에 연결 | Codex | P1 | `done` | personalized feed가 최근 클릭/광고 반응 로그를 recency-weighted 5차 신호로 약하게 반영하고 `/feed` 설명/제품 문서가 동기화됨 | `app/src/server/queries/post.queries.ts`, `app/src/lib/feed-personalization.ts`, `app/src/app/feed/page.tsx`, `docs/product/품종_개인화_기획서.md` |
+
 ### Cycle 219: 최근 반응 기반 4차 개인화 신호 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|

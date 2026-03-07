@@ -188,6 +188,7 @@ async function sendFeedPersonalizationMetric(input: {
   audienceKey?: string | null;
   breedCode?: string | null;
   audienceSource: FeedAudienceSourceValue;
+  postId?: string | null;
 }) {
   if (typeof window === "undefined") {
     return;
@@ -332,7 +333,12 @@ export function FeedInfiniteList({
   }, [scrollStorageKey]);
 
   const trackPersonalizationEvent = useCallback(
-    (event: FeedPersonalizationEventValue) => {
+    (
+      event: FeedPersonalizationEventValue,
+      options?: {
+        postId?: string | null;
+      },
+    ) => {
       if (!query.personalized || !personalizationTracking) {
         return;
       }
@@ -343,6 +349,7 @@ export function FeedInfiniteList({
         audienceKey: personalizationTracking.audienceKey,
         breedCode: personalizationTracking.breedCode,
         audienceSource: personalizationTracking.audienceSource,
+        postId: options?.postId,
       });
     },
     [personalizationTracking, query.personalized],
@@ -703,7 +710,9 @@ export function FeedInfiniteList({
                     } visited:text-[#8c9db8]`}
                     onClick={() => {
                       markPostAsRead(post.id);
-                      trackPersonalizationEvent("POST_CLICK");
+                      trackPersonalizationEvent("POST_CLICK", {
+                        postId: post.id,
+                      });
                     }}
                   >
                     <span className="overflow-hidden [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]">

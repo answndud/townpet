@@ -16,6 +16,7 @@ import {
   listBestPosts,
   listPostSearchSuggestions,
   listPosts,
+  listViewerRecentBehaviorSummaryLabels,
   listUserPostsPage,
 } from "@/server/queries/post.queries";
 import { prisma } from "@/lib/prisma";
@@ -35,6 +36,9 @@ vi.mock("@/lib/prisma", () => ({
       findMany: vi.fn(),
     },
     postReaction: {
+      findMany: vi.fn(),
+    },
+    feedPersonalizationEventLog: {
       findMany: vi.fn(),
     },
     pet: {
@@ -65,6 +69,9 @@ const mockPrisma = vi.mocked(prisma) as unknown as {
   postReaction: {
     findMany: ReturnType<typeof vi.fn>;
   };
+  feedPersonalizationEventLog: {
+    findMany: ReturnType<typeof vi.fn>;
+  };
   pet: {
     findMany: ReturnType<typeof vi.fn>;
   };
@@ -87,6 +94,8 @@ describe("post queries", () => {
     mockPrisma.community.findMany.mockResolvedValue([]);
     mockPrisma.postReaction.findMany.mockReset();
     mockPrisma.postReaction.findMany.mockResolvedValue([]);
+    mockPrisma.feedPersonalizationEventLog.findMany.mockReset();
+    mockPrisma.feedPersonalizationEventLog.findMany.mockResolvedValue([]);
     mockPrisma.pet.findMany.mockReset();
     mockPrisma.userBlock.findMany.mockReset();
     mockPrisma.userBlock.findMany.mockResolvedValue([]);
@@ -752,6 +761,167 @@ describe("post queries", () => {
 
     expect(result.items[0]?.id).toBe("p2");
     expect(result.nextCursor).toBe("p3");
+  });
+
+  it("applies recent post clicks as fifth-order personalized feed signal", async () => {
+    mockPrisma.post.findMany.mockResolvedValue([
+      {
+        id: "p1",
+        type: PostType.FREE_BOARD,
+        petTypeId: "cat-community",
+        author: { id: "a1" },
+        createdAt: new Date("2026-02-02T00:00:00.000Z"),
+        likeCount: 0,
+        commentCount: 0,
+        viewCount: 0,
+      },
+      {
+        id: "p2",
+        type: PostType.WALK_ROUTE,
+        petTypeId: "dog-community",
+        author: { id: "a2" },
+        createdAt: new Date("2026-02-01T23:00:00.000Z"),
+        likeCount: 0,
+        commentCount: 0,
+        viewCount: 0,
+      },
+      {
+        id: "p3",
+        type: PostType.FREE_BOARD,
+        petTypeId: "bird-community",
+        author: { id: "a3" },
+        createdAt: new Date("2026-02-01T22:00:00.000Z"),
+        likeCount: 0,
+        commentCount: 0,
+        viewCount: 0,
+      },
+    ]);
+    mockPrisma.feedPersonalizationEventLog.findMany.mockResolvedValue([
+      {
+        event: "POST_CLICK",
+        audienceKey: "DOG",
+        breedCode: "NONE",
+        post: {
+          petTypeId: "dog-community",
+          type: PostType.WALK_ROUTE,
+          reviewCategory: null,
+          animalTags: [],
+          petType: { tags: ["산책"] },
+        },
+      },
+    ]);
+    mockPrisma.pet.findMany.mockResolvedValueOnce([]);
+
+    const result = await listPosts({
+      limit: 2,
+      scope: PostScope.GLOBAL,
+      personalized: true,
+      viewerId: "viewer-1",
+    });
+
+    expect(mockPrisma.feedPersonalizationEventLog.findMany).toHaveBeenCalledTimes(1);
+    expect(result.items[0]?.id).toBe("p2");
+    expect(result.nextCursor).toBe("p3");
+  });
+
+  it("applies recent ad clicks as fifth-order breed reinforcement signal", async () => {
+    mockPrisma.post.findMany.mockResolvedValue([
+      {
+        id: "p1",
+        type: PostType.FREE_BOARD,
+        petTypeId: "dog-community",
+        author: { id: "a1" },
+        createdAt: new Date("2026-02-01T22:00:00.000Z"),
+        likeCount: 0,
+        commentCount: 0,
+        viewCount: 0,
+      },
+      {
+        id: "p2",
+        type: PostType.FREE_BOARD,
+        petTypeId: "dog-community",
+        author: { id: "a2" },
+        createdAt: new Date("2026-02-02T00:00:00.000Z"),
+        likeCount: 0,
+        commentCount: 0,
+        viewCount: 0,
+      },
+      {
+        id: "p3",
+        type: PostType.FREE_BOARD,
+        petTypeId: "cat-community",
+        author: { id: "a3" },
+        createdAt: new Date("2026-02-01T21:00:00.000Z"),
+        likeCount: 0,
+        commentCount: 0,
+        viewCount: 0,
+      },
+    ]);
+    mockPrisma.feedPersonalizationEventLog.findMany.mockResolvedValue([
+      {
+        event: "AD_CLICK",
+        audienceKey: "MALTESE",
+        breedCode: "MALTESE",
+        post: null,
+      },
+    ]);
+    mockPrisma.pet.findMany
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([
+        {
+          userId: "a1",
+          species: "DOG",
+          breedCode: "MALTESE",
+          breedLabel: "말티즈",
+          sizeClass: "SMALL",
+          lifeStage: "ADULT",
+        },
+        {
+          userId: "a2",
+          species: "DOG",
+          breedCode: "POODLE",
+          breedLabel: "푸들",
+          sizeClass: "SMALL",
+          lifeStage: "ADULT",
+        },
+      ]);
+
+    const result = await listPosts({
+      limit: 2,
+      scope: PostScope.GLOBAL,
+      personalized: true,
+      viewerId: "viewer-1",
+    });
+
+    expect(result.items[0]?.id).toBe("p1");
+    expect(result.nextCursor).toBe("p3");
+  });
+
+  it("builds recent behavior summary labels from click and ad logs", async () => {
+    mockPrisma.feedPersonalizationEventLog.findMany.mockResolvedValue([
+      {
+        event: "POST_CLICK",
+        audienceKey: "DOG",
+        breedCode: "NONE",
+        post: {
+          petTypeId: "dog-community",
+          type: PostType.WALK_ROUTE,
+          reviewCategory: null,
+          animalTags: [],
+          petType: { tags: ["산책"] },
+        },
+      },
+      {
+        event: "AD_CLICK",
+        audienceKey: "MALTESE",
+        breedCode: "MALTESE",
+        post: null,
+      },
+    ]);
+
+    const result = await listViewerRecentBehaviorSummaryLabels("viewer-1");
+
+    expect(result).toEqual(["산책", "말티즈"]);
   });
 
   it("builds best feed with likes and recency ordering", async () => {

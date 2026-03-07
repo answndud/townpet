@@ -31,7 +31,10 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const result = await recordFeedPersonalizationMetric(parsed.data);
+    const result = await recordFeedPersonalizationMetric({
+      ...parsed.data,
+      userId: currentUserId,
+    });
     if (!result.ok) {
       return jsonOk(
         {
