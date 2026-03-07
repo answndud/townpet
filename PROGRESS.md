@@ -26,11 +26,15 @@
 - 회귀 테스트/실배포 재현 기반 검증:
   - `app/src/lib/security-headers.test.ts`
   - `app/src/middleware.test.ts`
-  - 비로그인 desktop/mobile `/feed` 실배포를 headless browser로 열어 blank screen 원인이던 `Executing inline script violates ...` CSP console error가 기존 정책에서 재현됨을 확인했고, 수정 후 같은 경로로 재검증할 예정
+  - 비로그인 desktop/mobile `/feed` 실배포를 headless browser로 열어 blank screen 원인이던 `Executing inline script violates ...` CSP console error가 기존 정책에서 재현됨을 확인
+  - 수정 후 운영 `/feed` 응답 헤더가 `script-src 'self' 'unsafe-inline'` + strict `content-security-policy-report-only`로 바뀐 것을 확인했고, 같은 headless browser 검증에서 desktop/mobile 모두 console error/page error 없이 본문이 정상 렌더됨을 확인
 - 검증 결과
 - `pnpm -C app lint src/lib/security-headers.ts src/lib/security-headers.test.ts src/middleware.test.ts` 통과
 - `pnpm -C app typecheck` 통과
 - `pnpm -C app test -- src/lib/security-headers.test.ts src/middleware.test.ts` 실행 시 전체 Vitest 스위트 `98 files / 502 tests` 통과
+- GitHub Actions `quality-gate` run `22799569527` `success`
+- `https://townpet2.vercel.app/feed` 응답에서 enforce/report-only CSP 헤더 갱신 확인
+- 운영 `/feed` headless browser desktop/mobile 검증에서 `consoleErrors: []`, `pageErrors: []` 확인
 - 이슈/블로커
 - 없음
 
