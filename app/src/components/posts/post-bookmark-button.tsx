@@ -42,7 +42,7 @@ export function PostBookmarkButton({
   }, [loginIntent]);
 
   const buttonClass = compact
-    ? "inline-flex h-8 min-w-[66px] items-center justify-center rounded-lg border px-2 text-[11px] font-semibold transition disabled:cursor-not-allowed disabled:opacity-60"
+    ? "inline-flex h-7 min-w-[58px] items-center justify-center rounded-md border px-2 text-[10px] font-semibold leading-none transition disabled:cursor-not-allowed disabled:opacity-60"
     : "inline-flex h-9 min-w-[80px] items-center justify-center rounded-lg border px-3 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-60";
 
   const handleToggle = () => {

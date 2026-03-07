@@ -25,6 +25,12 @@
 
 ## Active Plan
 
+### Cycle 228: 모바일 피드 카드 밀도 재정리 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 모바일 게시글 카드 메타/액션 압축 | Codex | P1 | `done` | 모바일 `/feed` 목록에서 게시글 카드가 제목 중심 밀도로 재정리되고, 날짜/조회/반응은 한 줄 메타로 합쳐지며 북마크 액션은 같은 행의 소형 토글로 축소됨 | `app/src/components/posts/feed-infinite-list.tsx`, `app/src/components/posts/post-bookmark-button.tsx`, `app/src/lib/feed-list-presenter.ts` |
+| 모바일 피드 상단 빠른 이동 영역 높이 축소 | Codex | P2 | `done` | 모바일 `/feed` 첫 화면에서 게시판 빠른 이동이 기본 접힘형으로 바뀌고 현재 피드 경로에서는 중복 링크가 사라져 첫 뷰포트에 게시글이 더 빨리 노출됨 | `app/src/components/navigation/feed-hover-menu.tsx`, `app/src/components/navigation/app-shell-header.tsx` |
+
 ### Cycle 227: 비로그인 피드 CSP hydration 장애 복구 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|

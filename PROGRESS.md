@@ -17,6 +17,28 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-07: Cycle 228 완료 (모바일 피드 카드 밀도 재정리)
+- 완료 내용
+- 모바일 카드 밀도 재정리:
+  - `app/src/components/posts/feed-infinite-list.tsx`
+  - `app/src/components/posts/post-bookmark-button.tsx`
+  - `app/src/lib/feed-list-presenter.ts`
+  - 모바일 게시글 카드를 `제목 중심 + 1줄 메타 + 소형 북마크 토글` 구조로 재정리하고, 본문 미리보기와 지역/동물 보조 정보는 `sm` 이상에서만 노출되게 축소
+  - 날짜/조회/반응 메타는 한 줄 문자열로 합쳐 리스트 스캔 밀도를 높였고, 모바일 전용 북마크 버튼도 소형 사이즈로 줄여 별도 행을 차지하지 않게 정리
+- 모바일 상단 영역 높이 축소:
+  - `app/src/components/navigation/feed-hover-menu.tsx`
+  - `app/src/components/navigation/app-shell-header.tsx`
+  - 모바일 `게시판 빠른 이동`을 기본 접힘형으로 바꾸고, `/feed` 화면에서는 헤더의 중복 `피드` 링크를 숨겨 첫 뷰포트에서 게시글이 더 빨리 보이도록 조정
+- 비교/검증 근거:
+  - `https://m.dcinside.com/` 모바일 첫 화면은 제목 중심 + 1줄 메타 + 액션 최소화 구조라 한 화면에 더 많은 글이 들어오는 점을 직접 확인
+  - `https://www.fmkorea.com/` 모바일 첫 화면 비교는 Cloudflare 봇 차단으로 자동 검증이 불가했고, 이번 개선은 디시 모바일의 정보 밀도 패턴과 실배포 TownPet 모바일 스크린샷을 기준으로 적용
+- 검증 결과
+- `pnpm -C app lint src/lib/feed-list-presenter.ts src/lib/feed-list-presenter.test.ts src/components/posts/post-bookmark-button.tsx src/components/posts/feed-infinite-list.tsx src/components/navigation/feed-hover-menu.tsx src/components/navigation/app-shell-header.tsx` 통과
+- `pnpm -C app typecheck` 통과
+- `pnpm -C app test -- src/lib/feed-list-presenter.test.ts` 실행 시 전체 Vitest 스위트 `99 files / 506 tests` 통과
+- 이슈/블로커
+- 로컬 `next dev` 시각 확인은 기존 `.next/dev/lock` stale lock 때문에 수행하지 못했고, 최종 UI 확인은 실배포 검증으로 대체
+
 ### 2026-03-07: Cycle 227 완료 (비로그인 피드 CSP hydration 장애 복구)
 - 완료 내용
 - production CSP hydration-safe fallback 전환:

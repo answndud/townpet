@@ -21,6 +21,10 @@ import {
   getPostSignals,
   postTypeMeta,
 } from "@/lib/post-presenter";
+import {
+  buildFeedMobileStatsLabel,
+  getStableFeedDateLabel,
+} from "@/lib/feed-list-presenter";
 import type { ReviewCategory } from "@/lib/review-category";
 
 type FeedMode = "ALL" | "BEST";
@@ -276,14 +280,6 @@ export function FeedInfiniteList({
   useEffect(() => {
     setRelativeNow(Date.now());
   }, []);
-
-  const getStableDateLabel = (isoDate: string) => {
-    const date = new Date(isoDate);
-    if (Number.isNaN(date.getTime())) {
-      return "";
-    }
-    return date.toISOString().slice(0, 10).replace(/-/g, ".");
-  };
 
   useEffect(() => {
     if (typeof window === "undefined" || restoreDoneRef.current) {
@@ -629,6 +625,12 @@ export function FeedInfiniteList({
               : `${post.petType.categoryLabelKo} · ${post.petType.labelKo}`
             : null;
           const previewContent = post.content.replace(/\s+/g, " ").trim();
+          const mobileStatsLabel = buildFeedMobileStatsLabel({
+            createdAt: post.createdAt,
+            relativeNow,
+            viewCount: post.viewCount,
+            reactionCount: post.likeCount + post.dislikeCount,
+          });
           const authorNode = post.guestDisplayName ? (
             <span>
               {post.guestDisplayName}
@@ -663,19 +665,19 @@ export function FeedInfiniteList({
               ) : null}
               <article
                 data-testid="feed-post-item"
-                className={`grid gap-2 px-3 py-2.5 transition hover:bg-[#f8fbff] sm:px-5 sm:py-3 md:grid-cols-[minmax(0,1fr)_230px] md:items-center ${
+                className={`grid gap-1.5 px-3 py-2 transition hover:bg-[#f8fbff] sm:px-5 sm:py-3 md:grid-cols-[minmax(0,1fr)_230px] md:items-center ${
                   post.status === "HIDDEN" ? "bg-[#fff5f5]" : ""
                 }`}
               >
                 <div className="min-w-0">
-                  <div className="mb-1 flex flex-wrap items-center gap-1 text-[11px]">
+                  <div className="mb-0.5 flex flex-wrap items-center gap-1 text-[11px]">
                     <span
-                      className={`inline-flex items-center gap-1 rounded-md border px-2 py-0.5 font-semibold ${meta.chipClass}`}
+                      className={`inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[10px] font-semibold ${meta.chipClass}`}
                     >
                       {meta.label}
                     </span>
                     {post.status === "HIDDEN" ? (
-                      <span className="rounded-md border border-rose-300 bg-rose-50 px-2 py-0.5 text-rose-700">
+                      <span className="rounded-md border border-rose-300 bg-rose-50 px-1.5 py-0.5 text-[10px] text-rose-700">
                         숨김
                       </span>
                     ) : null}
@@ -686,7 +688,7 @@ export function FeedInfiniteList({
                       preferGuestDetail ? `/posts/${post.id}/guest` : `/posts/${post.id}`
                     }
                     prefetch={preferGuestDetail ? true : false}
-                    className={`flex min-w-0 items-center gap-1 text-[15px] font-semibold leading-snug transition sm:text-base ${
+                    className={`flex min-w-0 items-center gap-1 text-[14px] font-semibold leading-snug transition sm:text-base ${
                       readPostIds.has(post.id)
                         ? "text-[#8c9db8] hover:text-[#7589a8]"
                         : "text-[#1e3f74] hover:text-[#2f5da4]"
@@ -707,24 +709,21 @@ export function FeedInfiniteList({
                     ) : null}
                   </Link>
                   {previewContent ? (
-                    <p className="mt-0.5 truncate text-[11px] text-[#6b83a6]">{previewContent}</p>
+                    <p className="mt-0.5 hidden truncate text-[11px] text-[#6b83a6] sm:block">{previewContent}</p>
                   ) : null}
                   {locationLabel || petTypeLabel ? (
-                    <p className="mt-0.5 truncate text-[11px] text-[#6a82a6]">
+                    <p className="mt-0.5 hidden truncate text-[11px] text-[#6a82a6] sm:block">
                       {[locationLabel, petTypeLabel].filter(Boolean).join(" · ")}
                     </p>
                   ) : null}
                 </div>
 
-                  <div className="md:hidden">
-                    <p className="mt-1 truncate text-[10px] font-semibold text-[#1f3f71]">{authorNode}</p>
-                    <p className="mt-0.5 text-[10px] text-[#5a759c]">
-                      {relativeNow === null
-                        ? getStableDateLabel(post.createdAt)
-                        : formatRelativeDate(post.createdAt, relativeNow)}
-                      {" · "}조회 {formatCount(post.viewCount)} · 반응 {formatCount(post.likeCount + post.dislikeCount)}
-                    </p>
-                    <div className="mt-1">
+                  <div className="mt-0.5 flex items-start justify-between gap-2 md:hidden">
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[10px] font-semibold text-[#1f3f71]">{authorNode}</p>
+                      <p className="mt-0.5 truncate text-[10px] text-[#5a759c]">{mobileStatsLabel}</p>
+                    </div>
+                    <div className="shrink-0 pt-0.5">
                       <PostBookmarkButton
                         postId={post.id}
                         currentBookmarked={Boolean(post.isBookmarked)}
@@ -739,7 +738,7 @@ export function FeedInfiniteList({
                     <p className="break-all font-semibold text-[#1f3f71]">{authorNode}</p>
                     <p className="mt-0.5">
                       {relativeNow === null
-                        ? getStableDateLabel(post.createdAt)
+                        ? getStableFeedDateLabel(post.createdAt)
                         : formatRelativeDate(post.createdAt, relativeNow)}
                     </p>
                     <p className="mt-0.5 text-[11px] text-[#5a759c] md:ml-auto">

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { AuthControls } from "@/components/auth/auth-controls";
@@ -32,6 +33,7 @@ const DEFAULT_VIEWER_SHELL: ViewerShellData = {
 
 export function AppShellHeader({ communities }: AppShellHeaderProps) {
   const [viewerShell, setViewerShell] = useState<ViewerShellData>(DEFAULT_VIEWER_SHELL);
+  const pathname = usePathname();
   const navLinkClass =
     "inline-flex h-8 items-center rounded-sm px-1 text-[14px] leading-none text-[#315484] transition hover:bg-[#dcecff] hover:text-[#1f4f8f]";
   const allPetTypeIds = communities.map((item) => item.id);
@@ -84,9 +86,11 @@ export function AppShellHeader({ communities }: AppShellHeaderProps) {
           />
         </Link>
         <nav className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[14px] font-medium text-[#315484] sm:gap-x-3 sm:gap-y-1.5 xl:gap-x-3.5">
-          <Link href="/feed" className={`${navLinkClass} md:hidden`}>
-            피드
-          </Link>
+          {pathname !== "/feed" ? (
+            <Link href="/feed" className={`${navLinkClass} md:hidden`}>
+              피드
+            </Link>
+          ) : null}
           <FeedHoverMenu
             key={`${viewerShell.isAuthenticated ? "auth" : "guest"}:${preferredPetTypeIds.join(",")}`}
             communities={communities}
