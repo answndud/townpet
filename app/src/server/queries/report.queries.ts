@@ -22,7 +22,22 @@ export async function listReports({ status, targetType }: ReportListOptions = {}
     },
     orderBy: { createdAt: "desc" },
     include: {
-      reporter: { select: { id: true, email: true, nickname: true } },
+      reporter: {
+        select: {
+          id: true,
+          email: true,
+          nickname: true,
+          createdAt: true,
+          emailVerified: true,
+          _count: {
+            select: {
+              posts: true,
+              comments: true,
+              sanctionsReceived: true,
+            },
+          },
+        },
+      },
       post: { select: { id: true, title: true, status: true } },
     },
   });

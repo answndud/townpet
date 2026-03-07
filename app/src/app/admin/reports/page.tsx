@@ -3,6 +3,12 @@ import { redirect } from "next/navigation";
 import { ReportReason, ReportStatus, ReportTarget, UserRole } from "@prisma/client";
 
 import { ReportQueueTable } from "@/components/admin/report-queue-table";
+import {
+  calculateReporterTrustWeight,
+  getReportQueuePriorityLabel,
+  getReportQueuePriorityOrder,
+  summarizeReportModeration,
+} from "@/lib/report-moderation";
 import { ReportUpdateBanner } from "@/components/admin/report-update-banner";
 import {
   SUPPORTED_REPORT_TARGETS,
@@ -100,41 +106,103 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
   const formatResolvedAt = (date: Date | null) =>
     date ? date.toLocaleString("ko-KR") : "-";
 
-  const reportRows = reports.map((report) => {
+  const moderationMap = new Map<
+    string,
+    ReturnType<typeof summarizeReportModeration>
+  >();
+  const moderationSignalsByTarget = new Map<
+    string,
+    Array<{
+      reporterId: string;
+      createdAt: Date;
+      reason: ReportReason;
+      reporterTrustWeight: number;
+    }>
+  >();
+  for (const report of reports) {
+    const key = `${report.targetType}:${report.targetId}`;
+    const existingSignals = moderationSignalsByTarget.get(key) ?? [];
+    existingSignals.push({
+      reporterId: report.reporterId,
+      createdAt: report.createdAt,
+      reason: report.reason,
+      reporterTrustWeight: calculateReporterTrustWeight({
+        createdAt: report.reporter.createdAt,
+        emailVerified: report.reporter.emailVerified,
+        postCount: report.reporter._count.posts,
+        commentCount: report.reporter._count.comments,
+        sanctionCount: report.reporter._count.sanctionsReceived,
+      }),
+    });
+    moderationSignalsByTarget.set(key, existingSignals);
+  }
+
+  for (const [key, signals] of moderationSignalsByTarget.entries()) {
+    moderationMap.set(key, summarizeReportModeration(signals));
+  }
+
+  const reportRows = reports
+    .map((report) => {
+      const moderationKey = `${report.targetType}:${report.targetId}`;
+      const moderation =
+        moderationMap.get(moderationKey) ?? summarizeReportModeration([]);
     const targetTitle = report.post?.title ?? report.targetId;
     const targetHref = report.post ? `/posts/${report.post.id}` : undefined;
 
     const auditsForReport = auditMap.get(report.id) ?? [];
 
-    return {
-      id: report.id,
-      targetType: report.targetType,
-      targetTitle,
-      targetHref,
-      status: report.status,
-      reason: reasonLabels[report.reason] ?? report.reason,
-      description: report.description ?? null,
-      reporterLabel: report.reporter.nickname ?? report.reporter.email,
-      resolution: report.resolution ?? null,
-      resolvedByLabel: report.resolvedBy
-        ? resolverMap.get(report.resolvedBy)?.nickname ??
-          resolverMap.get(report.resolvedBy)?.email ??
-          report.resolvedBy
-        : null,
-      resolvedAtLabel: formatResolvedAt(report.resolvedAt),
-      audits: auditsForReport.map((audit) => ({
-        id: audit.id,
-        status: audit.status,
-        resolution: audit.resolution ?? null,
-        resolverLabel:
-          audit.resolver?.nickname ??
-          audit.resolver?.email ??
-          audit.resolvedBy ??
-          "-",
-        createdAt: formatResolvedAt(audit.createdAt),
-      })),
-    };
-  });
+      return {
+        id: report.id,
+        targetType: report.targetType,
+        targetTitle,
+        targetHref,
+        status: report.status,
+        reason: reasonLabels[report.reason] ?? report.reason,
+        description: report.description ?? null,
+        reporterLabel: report.reporter.nickname ?? report.reporter.email,
+        resolution: report.resolution ?? null,
+        resolvedByLabel: report.resolvedBy
+          ? resolverMap.get(report.resolvedBy)?.nickname ??
+            resolverMap.get(report.resolvedBy)?.email ??
+            report.resolvedBy
+          : null,
+        resolvedAtLabel: formatResolvedAt(report.resolvedAt),
+        priority: moderation.priority,
+        priorityLabel: getReportQueuePriorityLabel(moderation.priority),
+        signalSummary: moderation.signalLabels,
+        weightedScoreLabel: moderation.weightedScore.toFixed(2),
+        createdAtMs: report.createdAt.getTime(),
+        audits: auditsForReport.map((audit) => ({
+          id: audit.id,
+          status: audit.status,
+          resolution: audit.resolution ?? null,
+          resolverLabel:
+            audit.resolver?.nickname ??
+            audit.resolver?.email ??
+            audit.resolvedBy ??
+            "-",
+          createdAt: formatResolvedAt(audit.createdAt),
+        })),
+      };
+    })
+    .sort((left, right) => {
+      const priorityDiff =
+        getReportQueuePriorityOrder(right.priority) -
+        getReportQueuePriorityOrder(left.priority);
+      if (priorityDiff !== 0) {
+        return priorityDiff;
+      }
+
+      return right.createdAtMs - left.createdAtMs;
+    });
+
+  const moderationSummaries = Array.from(moderationMap.values());
+  const criticalPendingCount = moderationSummaries.filter(
+    (summary) => summary.priority === "CRITICAL",
+  ).length;
+  const highPendingCount = moderationSummaries.filter(
+    (summary) => summary.priority === "HIGH",
+  ).length;
 
   const buildLink = (nextStatus: ReportStatus | "ALL", nextTarget: ReportTarget | "ALL") => {
     const params = new URLSearchParams();
@@ -159,6 +227,9 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
           </h1>
           <p className="mt-2 text-sm text-[#4f678d]">
             신고 접수 현황을 확인하고 대기 건을 처리합니다.
+          </p>
+          <p className="mt-3 text-xs text-[#5a7398]">
+            긴급 {criticalPendingCount}건 · 높은 우선순위 {highPendingCount}건
           </p>
         </header>
 

@@ -17,6 +17,37 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-07: Cycle 201 완료 (신고/제재 운영 현실화)
+- 완료 내용
+- 신고 auto-hide 정책을 고정 임계치에서 가중치 기반으로 전환:
+  - `app/src/lib/report-moderation.ts`
+  - reporter trust(계정 나이/이메일 인증/활동량/기존 제재 이력)와 10분 내 신고 속도를 함께 평가하는 helper 추가
+  - `고유 신고자 2명 이상 + 누적 가중치 3.0 이상`일 때만 자동 숨김하고, 저신뢰 burst는 `HIGH` 우선순위 큐로 승격
+- 신고 생성/일괄 처리 서비스 보강:
+  - `app/src/server/services/report.service.ts`
+  - 신규 신고 시 PENDING 신고만 기준으로 auto-hide 여부를 재계산
+  - bulk 승인 경로에 `applySanction` 옵션 추가
+  - bulk 승인 시 동일 사용자에 대해서는 report 수와 무관하게 사용자별 1회만 단계적 제재를 발급
+  - 이미 처리된 신고를 bulk/single 경로에서 다시 처리하지 못하도록 방어
+- 관리자 신고 큐 우선순위 반영:
+  - `app/src/server/queries/report.queries.ts`
+  - `app/src/app/admin/reports/page.tsx`
+  - `app/src/components/admin/report-queue-table.tsx`
+  - 운영 큐에서 가중치/속도/저신뢰 집중 신호를 표시하고 `긴급/높음/보통/낮음` 우선순위로 정렬
+  - bulk 승인 UI에 단계적 제재 체크박스와 제재 요약 메시지 추가
+- 정책 문서 동기화:
+  - `docs/policies/신고_운영정책.md`
+  - `docs/policies/모더레이션_운영규칙.md`
+- 회귀 테스트 보강:
+  - `app/src/lib/report-moderation.test.ts`
+  - `app/src/server/services/report.service.test.ts`
+- 검증 결과
+- `pnpm -C app lint src/lib/report-moderation.ts src/lib/report-moderation.test.ts src/lib/validations/report-bulk.ts src/server/services/report.service.ts src/server/services/report.service.test.ts src/server/queries/report.queries.ts src/app/admin/reports/page.tsx src/components/admin/report-queue-table.tsx` 통과
+- `pnpm -C app typecheck` 통과
+- `pnpm -C app exec vitest run src/lib/report-moderation.test.ts src/server/services/report.service.test.ts src/app/api/reports/route.test.ts src/server/queries/report.queries.test.ts` 통과
+- 이슈/블로커
+- 로컬 워크트리에는 `app/src/lib/env.ts` 별도 수정이 계속 남아 있으며, 이번 cycle 커밋에는 포함하지 않음
+
 ### 2026-03-07: Cycle 200 완료 (신고 target 범위 Post-only 정렬)
 - 완료 내용
 - 신고 target 범위를 Post-only로 고정:

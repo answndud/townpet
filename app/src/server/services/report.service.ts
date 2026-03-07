@@ -1,6 +1,10 @@
 import { PostStatus, Prisma, ReportStatus, ReportTarget } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
+import {
+  calculateReporterTrustWeight,
+  summarizeReportModeration,
+} from "@/lib/report-moderation";
 import { reportCreateSchema } from "@/lib/validations/report";
 import { reportBulkActionSchema } from "@/lib/validations/report-bulk";
 import { reportUpdateSchema } from "@/lib/validations/report-update";
@@ -17,8 +21,6 @@ import {
 } from "@/server/services/sanction.service";
 import { ServiceError } from "@/server/services/service-error";
 
-const AUTO_HIDE_THRESHOLD = 3;
-
 async function resolvePostReportTargetUserId(
   tx: Prisma.TransactionClient,
   targetId: string,
@@ -28,6 +30,114 @@ async function resolvePostReportTargetUserId(
     select: { authorId: true },
   });
   return post?.authorId ?? null;
+}
+
+async function listPendingPostModerationSignals(
+  tx: Prisma.TransactionClient,
+  targetId: string,
+) {
+  const reports = await tx.report.findMany({
+    where: {
+      targetType: ReportTarget.POST,
+      targetId,
+      status: ReportStatus.PENDING,
+    },
+    select: {
+      reporterId: true,
+      createdAt: true,
+      reason: true,
+      reporter: {
+        select: {
+          createdAt: true,
+          emailVerified: true,
+          _count: {
+            select: {
+              posts: true,
+              comments: true,
+              sanctionsReceived: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  return reports.map((report) => ({
+    reporterId: report.reporterId,
+    createdAt: report.createdAt,
+    reason: report.reason,
+    reporterTrustWeight: calculateReporterTrustWeight({
+      createdAt: report.reporter.createdAt,
+      emailVerified: report.reporter.emailVerified,
+      postCount: report.reporter._count.posts,
+      commentCount: report.reporter._count.comments,
+      sanctionCount: report.reporter._count.sanctionsReceived,
+    }),
+  }));
+}
+
+type BulkSanctionCandidate = {
+  reportId: string;
+  targetUserId: string;
+  targetId: string;
+};
+
+async function issueBulkSanctions({
+  reports,
+  moderatorId,
+  resolution,
+}: {
+  reports: BulkSanctionCandidate[];
+  moderatorId: string;
+  resolution?: string;
+}) {
+  const reportsByUser = new Map<
+    string,
+    { anchorReportId: string; targetId: string; reportCount: number }
+  >();
+
+  for (const report of reports) {
+    if (report.targetUserId === moderatorId) {
+      continue;
+    }
+
+    const existing = reportsByUser.get(report.targetUserId);
+    if (existing) {
+      existing.reportCount += 1;
+      continue;
+    }
+
+    reportsByUser.set(report.targetUserId, {
+      anchorReportId: report.reportId,
+      targetId: report.targetId,
+      reportCount: 1,
+    });
+  }
+
+  const sanctionResults = await Promise.all(
+    Array.from(reportsByUser.entries()).map(async ([targetUserId, value]) => {
+      const sanction = await issueNextUserSanction({
+        userId: targetUserId,
+        moderatorId,
+        reason:
+          resolution?.trim() ||
+          `신고 ${value.reportCount}건 일괄 승인에 따른 단계적 제재 (대상 글 ${value.targetId})`,
+        sourceReportId: value.anchorReportId,
+      });
+
+      return sanction;
+    }),
+  );
+
+  const appliedSanctions = sanctionResults.filter(
+    (result): result is NonNullable<typeof result> => Boolean(result),
+  );
+  return {
+    count: appliedSanctions.length,
+    labels: Array.from(
+      new Set(appliedSanctions.map((sanction) => formatSanctionLevelLabel(sanction.level))),
+    ),
+  };
 }
 
 type CreateReportParams = {
@@ -83,14 +193,10 @@ export async function createReport({ reporterId, input }: CreateReportParams) {
       },
     });
 
-    const count = await tx.report.count({
-      where: {
-        targetType: parsed.data.targetType,
-        targetId: parsed.data.targetId,
-      },
-    });
+    const moderationSignals = await listPendingPostModerationSignals(tx, parsed.data.targetId);
+    const moderationSummary = summarizeReportModeration(moderationSignals);
 
-    if (count >= AUTO_HIDE_THRESHOLD) {
+    if (moderationSummary.shouldAutoHide) {
       await tx.post.update({
         where: { id: parsed.data.targetId },
         data: { status: PostStatus.HIDDEN },
@@ -138,6 +244,10 @@ export async function updateReport({
 
     if (!report) {
       throw new ServiceError("신고를 찾을 수 없습니다.", "REPORT_NOT_FOUND", 404);
+    }
+
+    if (report.status !== ReportStatus.PENDING) {
+      throw new ServiceError("이미 처리된 신고입니다.", "REPORT_ALREADY_PROCESSED", 409);
     }
 
     if (report.targetType !== ReportTarget.POST) {
@@ -235,11 +345,25 @@ export async function bulkUpdateReports({ input, moderatorId }: BulkUpdateReport
   const result = await prisma.$transaction(async (tx) => {
     const reports = await tx.report.findMany({
       where: { id: { in: reportIds } },
-      select: { id: true, targetType: true, targetId: true },
+      select: {
+        id: true,
+        status: true,
+        targetType: true,
+        targetId: true,
+        targetUserId: true,
+        post: {
+          select: { authorId: true },
+        },
+      },
     });
 
     if (reports.length === 0) {
       throw new ServiceError("처리할 신고가 없습니다.", "REPORT_NOT_FOUND", 404);
+    }
+
+    const alreadyProcessed = reports.filter((report) => report.status !== ReportStatus.PENDING);
+    if (alreadyProcessed.length > 0) {
+      throw new ServiceError("이미 처리된 신고가 포함되어 있습니다.", "REPORT_ALREADY_PROCESSED", 409);
     }
 
     const unsupportedReports = reports.filter(
@@ -302,8 +426,27 @@ export async function bulkUpdateReports({ input, moderatorId }: BulkUpdateReport
       }
     }
 
-    return { count: reports.length, status };
+    return {
+      count: reports.length,
+      status,
+      sanctionCandidates: reports
+        .map((report) => ({
+          reportId: report.id,
+          targetId: report.targetId,
+          targetUserId: report.targetUserId ?? report.post?.authorId ?? "",
+        }))
+        .filter((report): report is BulkSanctionCandidate => Boolean(report.targetUserId)),
+    };
   });
+
+  let sanctionSummary: { count: number; labels: string[] } | undefined;
+  if (action === "RESOLVE" && parsed.data.applySanction) {
+    sanctionSummary = await issueBulkSanctions({
+      reports: result.sanctionCandidates,
+      moderatorId,
+      resolution,
+    });
+  }
 
   if (shouldBumpCache) {
     void bumpFeedCacheVersion().catch(() => undefined);
@@ -311,5 +454,11 @@ export async function bulkUpdateReports({ input, moderatorId }: BulkUpdateReport
     void bumpSuggestCacheVersion().catch(() => undefined);
     void bumpPostDetailCacheVersion().catch(() => undefined);
   }
-  return result;
+
+  return {
+    count: result.count,
+    status: result.status,
+    sanctionCount: sanctionSummary?.count ?? 0,
+    sanctionLabels: sanctionSummary?.labels ?? [],
+  };
 }
