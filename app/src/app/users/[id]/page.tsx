@@ -5,6 +5,12 @@ import { notFound, redirect } from "next/navigation";
 import { UserRelationControls } from "@/components/user/user-relation-controls";
 import { auth } from "@/lib/auth";
 import { getCspNonce } from "@/lib/csp-nonce";
+import {
+  getPetBreedDisplayLabel,
+  getPetLifeStageLabel,
+  getPetSizeClassLabel,
+  getPetSpeciesLabel,
+} from "@/lib/pet-profile";
 import { formatRelativeDate } from "@/lib/post-presenter";
 import { toAbsoluteUrl } from "@/lib/site-url";
 import { redirectToProfileIfNicknameMissing } from "@/server/nickname-guard";
@@ -23,18 +29,6 @@ type UserProfilePageProps = {
 };
 
 type ActivityTab = "posts" | "comments" | "reactions";
-
-function speciesLabel(species: string) {
-  if (species === "CAT") return "고양이";
-  if (species === "BIRD") return "조류";
-  if (species === "REPTILE") return "파충류";
-  if (species === "SMALL_PET") return "소동물";
-  if (species === "AQUATIC") return "어류/수조";
-  if (species === "AMPHIBIAN") return "양서류";
-  if (species === "ARTHROPOD") return "절지류/곤충";
-  if (species === "SPECIAL_OTHER") return "특수동물/기타";
-  return "강아지";
-}
 
 function toTab(value?: string): ActivityTab {
   if (value === "comments" || value === "reactions") {
@@ -217,9 +211,21 @@ export default async function PublicUserProfilePage({
             <p className="mt-3 text-sm text-[#5a7398]">등록된 반려동물 프로필이 없습니다.</p>
           ) : (
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              {pets.map((pet) => (
-                <article key={pet.id} className="border border-[#dbe5f3] bg-[#f8fbff] p-3">
-                  <div className="flex items-start gap-3">
+              {pets.map((pet) => {
+                const breedDisplay = getPetBreedDisplayLabel({
+                  breedCode: pet.breedCode,
+                  breedLabel: pet.breedLabel,
+                });
+                const sizeLabel = getPetSizeClassLabel(pet.sizeClass);
+                const lifeStageLabel = getPetLifeStageLabel(pet.lifeStage);
+                const hasBreedLounge =
+                  Boolean(pet.breedCode) &&
+                  pet.breedCode !== "UNKNOWN" &&
+                  pet.breedCode !== "MIXED";
+
+                return (
+                  <article key={pet.id} className="border border-[#dbe5f3] bg-[#f8fbff] p-3">
+                    <div className="flex items-start gap-3">
                     {pet.imageUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
@@ -236,18 +242,29 @@ export default async function PublicUserProfilePage({
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-semibold text-[#1f3f71]">{pet.name}</p>
                         <p className="text-xs text-[#4f678d]">
-                          {speciesLabel(pet.species)}
-                          {pet.breedLabel?.trim() ? ` · ${pet.breedLabel}` : ""}
+                          {getPetSpeciesLabel(pet.species)}
+                          {breedDisplay ? ` · ${breedDisplay}` : ""}
+                          {sizeLabel ? ` · ${sizeLabel}` : ""}
+                          {lifeStageLabel ? ` · ${lifeStageLabel}` : ""}
                           {pet.weightKg !== null ? ` · ${pet.weightKg}kg` : ""}
                           {pet.birthYear !== null ? ` · ${pet.birthYear}년생` : ""}
                         </p>
+                        {hasBreedLounge ? (
+                          <Link
+                            href={`/lounges/breeds/${pet.breedCode}`}
+                            className="mt-2 inline-flex text-[11px] font-semibold text-[#2f5da4] hover:text-[#244b86]"
+                          >
+                            품종 라운지 보기
+                          </Link>
+                        ) : null}
                     </div>
                   </div>
                   <p className="mt-2 text-xs text-[#5a7398]">
                     {pet.bio?.trim() ? pet.bio : "소개가 없습니다."}
                   </p>
-                </article>
-              ))}
+                  </article>
+                );
+              })}
             </div>
           )}
         </section>

@@ -17,6 +17,38 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-07: Cycle 211 완료 (프로필 기반 개인화 신호 활성화)
+- 완료 내용
+- 반려동물 프로필 입력 확장:
+  - `app/src/lib/validations/pet.ts`
+  - `app/src/server/services/pet.service.ts`
+  - `app/src/components/profile/pet-profile-manager.tsx`
+  - 반려동물 create/update 경로가 `breedCode`, `sizeClass`, `lifeStage`를 저장하도록 확장
+  - 프로필 UI에서 품종 코드, 품종명, 체급, 생애단계를 입력/수정할 수 있고, 의미 있는 품종 코드는 품종 라운지 링크로 연결
+- 개인화 세그먼트 동기화/조회 추가:
+  - `app/src/lib/pet-profile.ts`
+  - `app/src/server/services/audience-segment.service.ts`
+  - `app/src/server/queries/audience-segment.queries.ts`
+  - `app/src/app/api/profile/audience-segments/route.ts`
+  - pet 변경 시 `UserAudienceSegment`를 transaction 안에서 재생성하도록 변경
+  - 내 프로필에서 세그먼트 요약과 신뢰도를 노출하고 `/api/profile/audience-segments`에서 no-store 조회 가능하게 추가
+- 프로필 노출 정합화:
+  - `app/src/app/profile/page.tsx`
+  - `app/src/app/users/[id]/page.tsx`
+  - `/profile`, `/users/[id]` 모두 품종/체급/생애단계를 같은 규칙으로 표시하도록 정리
+- 제품 문서 동기화:
+  - `docs/product/품종_개인화_기획서.md`
+- 회귀 테스트 추가/보강:
+  - `app/src/lib/pet-profile.test.ts`
+  - `app/src/app/api/profile/audience-segments/route.test.ts`
+  - `app/src/server/services/pet.service.test.ts`
+- 검증 결과
+- `pnpm -C app lint src/lib/pet-profile.ts src/lib/pet-profile.test.ts src/lib/validations/pet.ts src/server/services/audience-segment.service.ts src/server/queries/audience-segment.queries.ts src/server/services/pet.service.ts src/server/services/pet.service.test.ts src/components/profile/pet-profile-manager.tsx src/app/profile/page.tsx 'src/app/users/[id]/page.tsx' src/app/api/profile/audience-segments/route.ts src/app/api/profile/audience-segments/route.test.ts` 통과
+- `pnpm -C app typecheck` 통과
+- `pnpm -C app test -- src/lib/pet-profile.test.ts src/server/services/pet.service.test.ts src/app/api/profile/audience-segments/route.test.ts` 실행 시 전체 Vitest 스위트 `91 files / 443 tests` 통과
+- 이슈/블로커
+- 없음
+
 ### 2026-03-07: Cycle 210 완료 (인증 감사 로그 retention 정착)
 - 완료 내용
 - auth audit retention helper 도입:

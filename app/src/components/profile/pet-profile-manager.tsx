@@ -1,31 +1,34 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 import { ImageUploadField } from "@/components/ui/image-upload-field";
+import {
+  PET_LIFE_STAGE_OPTIONS,
+  PET_SIZE_CLASS_OPTIONS,
+  getPetBreedDisplayLabel,
+  getPetLifeStageLabel,
+  getPetSizeClassLabel,
+  type PetLifeStageValue,
+  type PetSizeClassValue,
+  type PetSpeciesValue,
+} from "@/lib/pet-profile";
 import {
   createPetAction,
   deletePetAction,
   updatePetAction,
 } from "@/server/actions/pet";
 
-type PetSpecies =
-  | "DOG"
-  | "CAT"
-  | "BIRD"
-  | "REPTILE"
-  | "SMALL_PET"
-  | "AQUATIC"
-  | "AMPHIBIAN"
-  | "ARTHROPOD"
-  | "SPECIAL_OTHER";
-
 type PetItem = {
   id: string;
   name: string;
-  species: PetSpecies;
+  species: PetSpeciesValue;
+  breedCode: string | null;
   breedLabel: string | null;
+  sizeClass: PetSizeClassValue;
+  lifeStage: PetLifeStageValue;
   weightKg: number | null;
   birthYear: number | null;
   imageUrl: string | null;
@@ -39,15 +42,18 @@ type PetProfileManagerProps = {
 
 type PetFormState = {
   name: string;
-  species: PetSpecies;
+  species: PetSpeciesValue;
+  breedCode: string;
   breedLabel: string;
+  sizeClass: PetSizeClassValue;
+  lifeStage: PetLifeStageValue;
   weightKg: string;
   birthYear: string;
   imageUrls: string[];
   bio: string;
 };
 
-const SPECIES_OPTIONS: Array<{ value: PetSpecies; label: string }> = [
+const SPECIES_OPTIONS: Array<{ value: PetSpeciesValue; label: string }> = [
   { value: "DOG", label: "강아지" },
   { value: "CAT", label: "고양이" },
   { value: "BIRD", label: "조류" },
@@ -61,12 +67,15 @@ const SPECIES_OPTIONS: Array<{ value: PetSpecies; label: string }> = [
 
 const SPECIES_LABEL = Object.fromEntries(
   SPECIES_OPTIONS.map((option) => [option.value, option.label]),
-) as Record<PetSpecies, string>;
+) as Record<PetSpeciesValue, string>;
 
 const EMPTY_FORM: PetFormState = {
   name: "",
   species: "DOG",
+  breedCode: "",
   breedLabel: "",
+  sizeClass: "UNKNOWN",
+  lifeStage: "UNKNOWN",
   weightKg: "",
   birthYear: "",
   imageUrls: [],
@@ -77,7 +86,10 @@ function toFormState(pet: PetItem): PetFormState {
   return {
     name: pet.name,
     species: pet.species,
+    breedCode: pet.breedCode ?? "",
     breedLabel: pet.breedLabel ?? "",
+    sizeClass: pet.sizeClass,
+    lifeStage: pet.lifeStage,
     weightKg: pet.weightKg === null ? "" : String(pet.weightKg),
     birthYear: pet.birthYear === null ? "" : String(pet.birthYear),
     imageUrls: pet.imageUrl ? [pet.imageUrl] : [],
@@ -99,7 +111,10 @@ export function PetProfileManager({ pets }: PetProfileManagerProps) {
       const result = await createPetAction({
         name: createForm.name,
         species: createForm.species,
+        breedCode: createForm.breedCode,
         breedLabel: createForm.breedLabel,
+        sizeClass: createForm.sizeClass,
+        lifeStage: createForm.lifeStage,
         weightKg: createForm.weightKg.length > 0 ? Number(createForm.weightKg) : undefined,
         birthYear: createForm.birthYear.length > 0 ? Number(createForm.birthYear) : undefined,
         imageUrl: createForm.imageUrls[0] ?? "",
@@ -126,7 +141,10 @@ export function PetProfileManager({ pets }: PetProfileManagerProps) {
         petId: editTargetId,
         name: editForm.name,
         species: editForm.species,
+        breedCode: editForm.breedCode,
         breedLabel: editForm.breedLabel,
+        sizeClass: editForm.sizeClass,
+        lifeStage: editForm.lifeStage,
         weightKg: editForm.weightKg.length > 0 ? Number(editForm.weightKg) : undefined,
         birthYear: editForm.birthYear.length > 0 ? Number(editForm.birthYear) : undefined,
         imageUrl: editForm.imageUrls[0] ?? "",
@@ -166,7 +184,7 @@ export function PetProfileManager({ pets }: PetProfileManagerProps) {
     <section className="tp-card p-5 sm:p-6">
       <h2 className="text-lg font-semibold text-[#153a6a]">반려동물 프로필</h2>
       <p className="mt-2 text-xs text-[#5a7398]">
-        이름, 종류, 품종/세부종, 몸무게, 태어난 연도와 사진(5MB 이하)을 등록할 수 있습니다.
+        이름, 종류, 품종 코드/이름, 체급, 생애단계, 몸무게, 태어난 연도와 사진(5MB 이하)을 등록할 수 있습니다.
       </p>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
@@ -187,7 +205,7 @@ export function PetProfileManager({ pets }: PetProfileManagerProps) {
               onChange={(event) =>
                 setCreateForm((prev) => ({
                   ...prev,
-                  species: event.target.value as PetSpecies,
+                  species: event.target.value as PetSpeciesValue,
                 }))
               }
             >
@@ -199,12 +217,54 @@ export function PetProfileManager({ pets }: PetProfileManagerProps) {
             </select>
             <input
               className="tp-input-soft bg-white px-3 py-2 text-sm"
+              value={createForm.breedCode}
+              onChange={(event) =>
+                setCreateForm((prev) => ({ ...prev, breedCode: event.target.value }))
+              }
+              placeholder="품종 코드(예: MALTESE, KOREAN_SHORTHAIR, MIXED)"
+            />
+            <input
+              className="tp-input-soft bg-white px-3 py-2 text-sm"
               value={createForm.breedLabel}
               onChange={(event) =>
                 setCreateForm((prev) => ({ ...prev, breedLabel: event.target.value }))
               }
               placeholder="품종/세부종(선택)"
             />
+            <div className="grid gap-2 sm:grid-cols-2">
+              <select
+                className="tp-input-soft bg-white px-3 py-2 text-sm"
+                value={createForm.sizeClass}
+                onChange={(event) =>
+                  setCreateForm((prev) => ({
+                    ...prev,
+                    sizeClass: event.target.value as PetSizeClassValue,
+                  }))
+                }
+              >
+                {PET_SIZE_CLASS_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              <select
+                className="tp-input-soft bg-white px-3 py-2 text-sm"
+                value={createForm.lifeStage}
+                onChange={(event) =>
+                  setCreateForm((prev) => ({
+                    ...prev,
+                    lifeStage: event.target.value as PetLifeStageValue,
+                  }))
+                }
+              >
+                {PET_LIFE_STAGE_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
             <input
               className="tp-input-soft bg-white px-3 py-2 text-sm"
               value={createForm.weightKg}
@@ -260,6 +320,16 @@ export function PetProfileManager({ pets }: PetProfileManagerProps) {
               {pets.map((pet) => {
                 const isEditing = editTargetId === pet.id;
                 const form = isEditing ? editForm : toFormState(pet);
+                const breedDisplay = getPetBreedDisplayLabel({
+                  breedCode: pet.breedCode,
+                  breedLabel: pet.breedLabel,
+                });
+                const sizeLabel = getPetSizeClassLabel(pet.sizeClass);
+                const lifeStageLabel = getPetLifeStageLabel(pet.lifeStage);
+                const hasBreedLounge =
+                  Boolean(pet.breedCode) &&
+                  pet.breedCode !== "UNKNOWN" &&
+                  pet.breedCode !== "MIXED";
 
                 return (
                   <div key={pet.id} className="rounded-lg border border-[#c9d8ef] bg-white p-3 text-xs">
@@ -279,7 +349,7 @@ export function PetProfileManager({ pets }: PetProfileManagerProps) {
                           onChange={(event) =>
                             setEditForm((prev) => ({
                               ...prev,
-                              species: event.target.value as PetSpecies,
+                              species: event.target.value as PetSpeciesValue,
                             }))
                           }
                         >
@@ -291,12 +361,54 @@ export function PetProfileManager({ pets }: PetProfileManagerProps) {
                         </select>
                         <input
                           className="tp-input-soft px-2 py-1.5 text-sm"
+                          value={form.breedCode}
+                          onChange={(event) =>
+                            setEditForm((prev) => ({ ...prev, breedCode: event.target.value }))
+                          }
+                          placeholder="품종 코드(예: MALTESE)"
+                        />
+                        <input
+                          className="tp-input-soft px-2 py-1.5 text-sm"
                           value={form.breedLabel}
                           onChange={(event) =>
                             setEditForm((prev) => ({ ...prev, breedLabel: event.target.value }))
                           }
                           placeholder="품종/세부종(선택)"
                         />
+                        <div className="grid gap-2 sm:grid-cols-2">
+                          <select
+                            className="tp-input-soft px-2 py-1.5 text-sm"
+                            value={form.sizeClass}
+                            onChange={(event) =>
+                              setEditForm((prev) => ({
+                                ...prev,
+                                sizeClass: event.target.value as PetSizeClassValue,
+                              }))
+                            }
+                          >
+                            {PET_SIZE_CLASS_OPTIONS.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+                          <select
+                            className="tp-input-soft px-2 py-1.5 text-sm"
+                            value={form.lifeStage}
+                            onChange={(event) =>
+                              setEditForm((prev) => ({
+                                ...prev,
+                                lifeStage: event.target.value as PetLifeStageValue,
+                              }))
+                            }
+                          >
+                            {PET_LIFE_STAGE_OPTIONS.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
                         <input
                           className="tp-input-soft px-2 py-1.5 text-sm"
                           value={form.weightKg}
@@ -354,14 +466,24 @@ export function PetProfileManager({ pets }: PetProfileManagerProps) {
                         <p className="text-sm font-semibold text-[#1f3f71]">{pet.name}</p>
                         <p className="mt-0.5 text-[#4f678d]">
                           {SPECIES_LABEL[pet.species]}
-                          {pet.breedLabel?.trim() ? ` · ${pet.breedLabel}` : ""}
+                          {breedDisplay ? ` · ${breedDisplay}` : ""}
+                          {sizeLabel ? ` · ${sizeLabel}` : ""}
+                          {lifeStageLabel ? ` · ${lifeStageLabel}` : ""}
                           {pet.weightKg !== null ? ` · ${pet.weightKg}kg` : ""}
                           {pet.birthYear !== null ? ` · ${pet.birthYear}년생` : ""}
                         </p>
                         <p className="mt-1 text-[#5a7398]">
                           {pet.bio?.trim() ? pet.bio : "소개 없음"}
                         </p>
-                        <div className="mt-2 flex items-center gap-2">
+                        <div className="mt-2 flex flex-wrap items-center gap-2">
+                          {hasBreedLounge ? (
+                            <Link
+                              href={`/lounges/breeds/${pet.breedCode}`}
+                              className="tp-btn-soft inline-flex h-8 items-center justify-center px-3 text-[11px] font-semibold text-[#204f8a]"
+                            >
+                              품종 라운지
+                            </Link>
+                          ) : null}
                           <button
                             type="button"
                             onClick={() => {

@@ -9,6 +9,8 @@ import { ProfileImageUploader } from "@/components/profile/profile-image-uploade
 import { ProfileInfoForm } from "@/components/profile/profile-info-form";
 import { UserRelationControls } from "@/components/user/user-relation-controls";
 import { auth } from "@/lib/auth";
+import { getPetLifeStageLabel, getPetSizeClassLabel } from "@/lib/pet-profile";
+import { listAudienceSegmentsByUserId } from "@/server/queries/audience-segment.queries";
 import {
   getUserPasswordStatusById,
   getUserWithNeighborhoods,
@@ -39,12 +41,14 @@ export default async function ProfilePage() {
   let blockedUsers = [] as Awaited<ReturnType<typeof listMyBlockedUsers>>;
   let mutedUsers = [] as Awaited<ReturnType<typeof listMyMutedUsers>>;
   let pets = [] as Awaited<ReturnType<typeof listPetsByUserId>>;
+  let audienceSegments = [] as Awaited<ReturnType<typeof listAudienceSegmentsByUserId>>;
 
   if (!isNicknameMissing) {
-    [blockedUsers, mutedUsers, pets] = await Promise.all([
+    [blockedUsers, mutedUsers, pets, audienceSegments] = await Promise.all([
       listMyBlockedUsers(user.id),
       listMyMutedUsers(user.id),
       listPetsByUserId(user.id),
+      listAudienceSegmentsByUserId(user.id),
     ]);
   }
 
@@ -140,6 +144,52 @@ export default async function ProfilePage() {
             />
             <ProfileImageUploader initialImageUrl={user.image} />
             <PetProfileManager pets={pets} />
+            <section className="tp-card p-5 sm:p-6">
+              <h2 className="text-lg font-semibold text-[#153a6a]">개인화 세그먼트</h2>
+              <p className="mt-2 text-xs text-[#5a7398]">
+                반려동물 프로필에서 계산한 맞춤 피드/품종 라운지 기준입니다.
+              </p>
+              {audienceSegments.length === 0 ? (
+                <p className="mt-4 text-sm text-[#5a7398]">
+                  반려동물 프로필에 품종 코드, 체급, 생애단계를 입력하면 맞춤 세그먼트가 생성됩니다.
+                </p>
+              ) : (
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  {audienceSegments.map((segment) => (
+                    <article
+                      key={segment.id}
+                      className="rounded-lg border border-[#dbe5f3] bg-[#f8fbff] p-3"
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <p className="text-sm font-semibold text-[#1f3f71]">{segment.label}</p>
+                        <span className="rounded-full border border-[#c8daf5] bg-white px-2 py-0.5 text-[11px] font-semibold text-[#315b9a]">
+                          신뢰도 {Math.round(segment.confidenceScore * 100)}%
+                        </span>
+                      </div>
+                      <p className="mt-1 text-xs text-[#5a7398]">
+                        {[
+                          segment.breedCode ? `품종 코드 ${segment.breedCode}` : null,
+                          getPetSizeClassLabel(segment.sizeClass),
+                          getPetLifeStageLabel(segment.lifeStage),
+                        ]
+                          .filter(Boolean)
+                          .join(" · ") || "반려동물 프로필 기반 직접 신호"}
+                      </p>
+                      {segment.breedCode &&
+                      segment.breedCode !== "UNKNOWN" &&
+                      segment.breedCode !== "MIXED" ? (
+                        <Link
+                          href={`/lounges/breeds/${segment.breedCode}`}
+                          className="tp-btn-soft mt-3 inline-flex px-3 py-1.5 text-xs font-semibold text-[#204f8a]"
+                        >
+                          품종 라운지 보기
+                        </Link>
+                      ) : null}
+                    </article>
+                  ))}
+                </div>
+              )}
+            </section>
 
             <section className="tp-card p-5 sm:p-6">
               <h2 className="text-lg font-semibold text-[#153a6a]">사용자 관계 관리</h2>

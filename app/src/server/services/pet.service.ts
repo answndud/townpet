@@ -1,9 +1,11 @@
 import { prisma } from "@/lib/prisma";
+import { normalizePetBreedCode } from "@/lib/pet-profile";
 import {
   petCreateSchema,
   petDeleteSchema,
   petUpdateSchema,
 } from "@/lib/validations/pet";
+import { syncAudienceSegmentsForUserTx } from "@/server/services/audience-segment.service";
 import { ServiceError } from "@/server/services/service-error";
 
 type PetMutationParams = {
@@ -23,7 +25,10 @@ function normalizePetData(data: {
     | "AMPHIBIAN"
     | "ARTHROPOD"
     | "SPECIAL_OTHER";
+  breedCode?: string;
   breedLabel?: string;
+  sizeClass?: "TOY" | "SMALL" | "MEDIUM" | "LARGE" | "GIANT" | "UNKNOWN";
+  lifeStage?: "PUPPY_KITTEN" | "YOUNG" | "ADULT" | "SENIOR" | "UNKNOWN";
   weightKg?: number;
   birthYear?: number;
   imageUrl?: string;
@@ -32,10 +37,10 @@ function normalizePetData(data: {
   return {
     name: data.name.trim(),
     species: data.species,
-    breedCode: null,
+    breedCode: normalizePetBreedCode(data.breedCode),
     breedLabel: data.breedLabel?.trim() ? data.breedLabel.trim() : null,
-    sizeClass: "UNKNOWN" as const,
-    lifeStage: "UNKNOWN" as const,
+    sizeClass: data.sizeClass ?? ("UNKNOWN" as const),
+    lifeStage: data.lifeStage ?? ("UNKNOWN" as const),
     age: null,
     weightKg: data.weightKg ?? null,
     birthYear: data.birthYear ?? null,
@@ -50,18 +55,27 @@ export async function createPet({ userId, input }: PetMutationParams) {
     throw new ServiceError("반려동물 입력값이 올바르지 않습니다.", "INVALID_INPUT", 400);
   }
 
-  const currentCount = await prisma.pet.count({
-    where: { userId },
-  });
-  if (currentCount >= 10) {
-    throw new ServiceError("반려동물은 최대 10마리까지 등록할 수 있습니다.", "PET_LIMIT_EXCEEDED", 400);
-  }
+  return prisma.$transaction(async (tx) => {
+    const currentCount = await tx.pet.count({
+      where: { userId },
+    });
+    if (currentCount >= 10) {
+      throw new ServiceError(
+        "반려동물은 최대 10마리까지 등록할 수 있습니다.",
+        "PET_LIMIT_EXCEEDED",
+        400,
+      );
+    }
 
-  return prisma.pet.create({
-    data: {
-      userId,
-      ...normalizePetData(parsed.data),
-    },
+    const created = await tx.pet.create({
+      data: {
+        userId,
+        ...normalizePetData(parsed.data),
+      },
+    });
+
+    await syncAudienceSegmentsForUserTx(tx, userId);
+    return created;
   });
 }
 
@@ -71,20 +85,25 @@ export async function updatePet({ userId, input }: PetMutationParams) {
     throw new ServiceError("반려동물 입력값이 올바르지 않습니다.", "INVALID_INPUT", 400);
   }
 
-  const existing = await prisma.pet.findUnique({
-    where: { id: parsed.data.petId },
-    select: { id: true, userId: true },
-  });
-  if (!existing) {
-    throw new ServiceError("반려동물 정보를 찾을 수 없습니다.", "PET_NOT_FOUND", 404);
-  }
-  if (existing.userId !== userId) {
-    throw new ServiceError("수정 권한이 없습니다.", "FORBIDDEN", 403);
-  }
+  return prisma.$transaction(async (tx) => {
+    const existing = await tx.pet.findUnique({
+      where: { id: parsed.data.petId },
+      select: { id: true, userId: true },
+    });
+    if (!existing) {
+      throw new ServiceError("반려동물 정보를 찾을 수 없습니다.", "PET_NOT_FOUND", 404);
+    }
+    if (existing.userId !== userId) {
+      throw new ServiceError("수정 권한이 없습니다.", "FORBIDDEN", 403);
+    }
 
-  return prisma.pet.update({
-    where: { id: parsed.data.petId },
-    data: normalizePetData(parsed.data),
+    const updated = await tx.pet.update({
+      where: { id: parsed.data.petId },
+      data: normalizePetData(parsed.data),
+    });
+
+    await syncAudienceSegmentsForUserTx(tx, userId);
+    return updated;
   });
 }
 
@@ -94,19 +113,24 @@ export async function deletePet({ userId, input }: PetMutationParams) {
     throw new ServiceError("삭제 입력값이 올바르지 않습니다.", "INVALID_INPUT", 400);
   }
 
-  const existing = await prisma.pet.findUnique({
-    where: { id: parsed.data.petId },
-    select: { id: true, userId: true },
-  });
-  if (!existing) {
-    throw new ServiceError("반려동물 정보를 찾을 수 없습니다.", "PET_NOT_FOUND", 404);
-  }
-  if (existing.userId !== userId) {
-    throw new ServiceError("삭제 권한이 없습니다.", "FORBIDDEN", 403);
-  }
+  return prisma.$transaction(async (tx) => {
+    const existing = await tx.pet.findUnique({
+      where: { id: parsed.data.petId },
+      select: { id: true, userId: true },
+    });
+    if (!existing) {
+      throw new ServiceError("반려동물 정보를 찾을 수 없습니다.", "PET_NOT_FOUND", 404);
+    }
+    if (existing.userId !== userId) {
+      throw new ServiceError("삭제 권한이 없습니다.", "FORBIDDEN", 403);
+    }
 
-  return prisma.pet.delete({
-    where: { id: parsed.data.petId },
-    select: { id: true },
+    const deleted = await tx.pet.delete({
+      where: { id: parsed.data.petId },
+      select: { id: true },
+    });
+
+    await syncAudienceSegmentsForUserTx(tx, userId);
+    return deleted;
   });
 }
