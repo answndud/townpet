@@ -1228,6 +1228,15 @@ type TogglePostReactionResult = {
   reaction: PostReactionType | null;
 };
 
+type TogglePostBookmarkParams = {
+  postId: string;
+  userId: string;
+};
+
+type TogglePostBookmarkResult = {
+  bookmarked: boolean;
+};
+
 type ReactionDelegateLike = {
   findUnique: (args: {
     where: { postId_userId: { postId: string; userId: string } };
@@ -1448,4 +1457,58 @@ export async function togglePostReaction({
   void bumpPostDetailCacheVersion().catch(() => undefined);
 
   return result;
+}
+
+export async function togglePostBookmark({
+  postId,
+  userId,
+}: TogglePostBookmarkParams): Promise<TogglePostBookmarkResult> {
+  await assertUserInteractionAllowed(userId);
+
+  const existingPost = await prisma.post.findUnique({
+    where: { id: postId },
+    select: { id: true, status: true, authorId: true },
+  });
+
+  if (!existingPost || existingPost.status === PostStatus.DELETED) {
+    throw new ServiceError("게시물을 찾을 수 없습니다.", "POST_NOT_FOUND", 404);
+  }
+
+  if (await hasBlockingRelation(userId, existingPost.authorId)) {
+    throw new ServiceError(
+      "차단 관계에서는 저장할 수 없습니다.",
+      "USER_BLOCK_RELATION",
+      403,
+    );
+  }
+
+  const existingBookmark = await prisma.postBookmark.findUnique({
+    where: {
+      postId_userId: {
+        postId,
+        userId,
+      },
+    },
+    select: { id: true },
+  });
+
+  if (existingBookmark) {
+    await prisma.postBookmark.delete({
+      where: { id: existingBookmark.id },
+    });
+    void bumpFeedCacheVersion().catch(() => undefined);
+    void bumpPostDetailCacheVersion().catch(() => undefined);
+    return { bookmarked: false };
+  }
+
+  await prisma.postBookmark.create({
+    data: {
+      postId,
+      userId,
+    },
+  });
+
+  void bumpFeedCacheVersion().catch(() => undefined);
+  void bumpPostDetailCacheVersion().catch(() => undefined);
+  return { bookmarked: true };
 }

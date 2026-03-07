@@ -40,6 +40,7 @@ import {
   countBestPosts,
   listViewerRecentEngagementSummaryLabels,
   listViewerRecentBehaviorSummaryLabels,
+  listViewerRecentBookmarkSummaryLabels,
   listViewerRecentDwellSummaryLabels,
   listBestPosts,
   listPosts,
@@ -493,6 +494,7 @@ export default async function Home({ searchParams }: HomePageProps) {
     recentEngagementLabels,
     recentBehaviorLabels,
     recentDwellLabels,
+    recentBookmarkLabels,
   ] =
     shouldLoadViewerPersonalizationContext && viewerUserId
       ? await Promise.all([
@@ -538,8 +540,17 @@ export default async function Home({ searchParams }: HomePageProps) {
             }
             throw error;
           }),
+          listViewerRecentBookmarkSummaryLabels(viewerUserId).catch((error) => {
+            if (
+              isDatabaseUnavailableError(error) ||
+              error instanceof Prisma.PrismaClientKnownRequestError
+            ) {
+              return [];
+            }
+            throw error;
+          }),
         ])
-      : [[], [], [], [], []];
+      : [[], [], [], [], [], []];
   const primaryAudienceSegment = viewerAudienceSegments[0] ?? null;
   const primaryPet = viewerPets[0] ?? null;
   const feedAudienceContext = resolveFeedAudienceContext({
@@ -550,6 +561,7 @@ export default async function Home({ searchParams }: HomePageProps) {
     recentEngagementLabels,
     recentBehaviorLabels,
     recentDwellLabels,
+    recentBookmarkLabels,
   });
   const personalizedSummary = usePersonalizedFeed
     ? buildFeedPersonalizationSummary(feedAudienceContext)
@@ -617,6 +629,7 @@ export default async function Home({ searchParams }: HomePageProps) {
     images: post.images.map((image) => ({
       id: image.id,
     })),
+    isBookmarked: Boolean((post as { isBookmarked?: boolean | null }).isBookmarked),
     reactions:
       (post as { reactions?: Array<{ type: "LIKE" | "DISLIKE" }> }).reactions?.map(
         (reaction) => ({ type: reaction.type }),
@@ -1078,6 +1091,7 @@ export default async function Home({ searchParams }: HomePageProps) {
               mode={mode}
               disableLoadMore={mode !== "ALL"}
               preferGuestDetail={!isAuthenticated}
+              canBookmark={isAuthenticated}
                 query={{
                   type,
                   scope: effectiveScope,

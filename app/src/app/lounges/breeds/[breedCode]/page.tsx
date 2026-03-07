@@ -179,6 +179,7 @@ export default async function BreedLoungePage({ params, searchParams }: BreedLou
         }
       : null,
     images: post.images.map((image) => ({ id: image.id })),
+    isBookmarked: Boolean((post as { isBookmarked?: boolean | null }).isBookmarked),
     reactions:
       (post as { reactions?: Array<{ type: "LIKE" | "DISLIKE" }> }).reactions?.map(
         (reaction) => ({ type: reaction.type }),
@@ -413,6 +414,7 @@ export default async function BreedLoungePage({ params, searchParams }: BreedLou
             initialItems={initialItems}
             initialNextCursor={data.nextCursor}
             mode="ALL"
+            canBookmark={Boolean(viewerId)}
             query={{
               type: query.type,
               scope: PostScope.GLOBAL,

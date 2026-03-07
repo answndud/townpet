@@ -6,6 +6,7 @@ import { PostType } from "@prisma/client";
 
 import { BackToFeedButton } from "@/components/posts/back-to-feed-button";
 import { GuestPostDetailActions } from "@/components/posts/guest-post-detail-actions";
+import { PostBookmarkButton } from "@/components/posts/post-bookmark-button";
 import { PostDetailActions } from "@/components/posts/post-detail-actions";
 import { PostPersonalizationDwellTracker } from "@/components/posts/post-personalization-dwell-tracker";
 import { PostReactionControls } from "@/components/posts/post-reaction-controls";
@@ -52,6 +53,7 @@ type PostDetailItem = {
   likeCount?: number | null;
   dislikeCount?: number | null;
   commentCount?: number | null;
+  isBookmarked?: boolean | null;
   author: { id: string; name: string | null; nickname: string | null; image?: string | null };
   guestAuthor?: { displayName?: string | null; ipDisplay?: string | null; ipLabel?: string | null } | null;
   guestAuthorId?: string | null;
@@ -480,6 +482,12 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
                     dislikeCount={resolvedDislikeCount}
                     currentReaction={canInteract ? undefined : null}
                     canReact={canInteract && canInteractWithPostOwner}
+                    loginHref={loginHref}
+                  />
+                  <PostBookmarkButton
+                    postId={post.id}
+                    currentBookmarked={Boolean(post.isBookmarked)}
+                    canSave={canInteract && canInteractWithPostOwner}
                     loginHref={loginHref}
                   />
                   <div className="ml-auto">

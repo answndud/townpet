@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { notifyReactionOnPost } from "@/server/services/notification.service";
 import {
   registerPostView,
+  togglePostBookmark,
   togglePostReaction,
 } from "@/server/services/post.service";
 
@@ -13,6 +14,11 @@ vi.mock("@/lib/prisma", () => ({
     post: {
       findUnique: vi.fn(),
       update: vi.fn(),
+    },
+    postBookmark: {
+      findUnique: vi.fn(),
+      create: vi.fn(),
+      delete: vi.fn(),
     },
     userBlock: {
       findFirst: vi.fn(),
@@ -34,6 +40,11 @@ const mockPrisma = vi.mocked(prisma) as unknown as {
     findUnique: ReturnType<typeof vi.fn>;
     update: ReturnType<typeof vi.fn>;
   };
+  postBookmark: {
+    findUnique: ReturnType<typeof vi.fn>;
+    create: ReturnType<typeof vi.fn>;
+    delete: ReturnType<typeof vi.fn>;
+  };
   userBlock: {
     findFirst: ReturnType<typeof vi.fn>;
   };
@@ -49,6 +60,9 @@ describe("post reaction toggle", () => {
   beforeEach(() => {
     mockPrisma.post.findUnique.mockReset();
     mockPrisma.post.update.mockReset();
+    mockPrisma.postBookmark.findUnique.mockReset();
+    mockPrisma.postBookmark.create.mockReset();
+    mockPrisma.postBookmark.delete.mockReset();
     mockPrisma.userBlock.findFirst.mockReset();
     mockPrisma.userBlock.findFirst.mockResolvedValue(null);
     mockPrisma.userSanction.findFirst.mockReset();
@@ -201,6 +215,62 @@ describe("post reaction toggle", () => {
       postId: "post-1",
       postTitle: "주말 산책 후기",
     });
+  });
+});
+
+describe("post bookmark toggle", () => {
+  beforeEach(() => {
+    mockPrisma.post.findUnique.mockReset();
+    mockPrisma.postBookmark.findUnique.mockReset();
+    mockPrisma.postBookmark.create.mockReset();
+    mockPrisma.postBookmark.delete.mockReset();
+    mockPrisma.userBlock.findFirst.mockReset();
+    mockPrisma.userBlock.findFirst.mockResolvedValue(null);
+    mockPrisma.userSanction.findFirst.mockReset();
+    mockPrisma.userSanction.findFirst.mockResolvedValue(null);
+  });
+
+  it("creates bookmark when no bookmark exists", async () => {
+    mockPrisma.post.findUnique.mockResolvedValue({
+      id: "post-1",
+      status: PostStatus.ACTIVE,
+      authorId: "owner-1",
+    });
+    mockPrisma.postBookmark.findUnique.mockResolvedValue(null);
+    mockPrisma.postBookmark.create.mockResolvedValue({ id: "bookmark-1" });
+
+    const result = await togglePostBookmark({
+      postId: "post-1",
+      userId: "user-1",
+    });
+
+    expect(mockPrisma.postBookmark.create).toHaveBeenCalledWith({
+      data: {
+        postId: "post-1",
+        userId: "user-1",
+      },
+    });
+    expect(result).toEqual({ bookmarked: true });
+  });
+
+  it("removes bookmark when it already exists", async () => {
+    mockPrisma.post.findUnique.mockResolvedValue({
+      id: "post-2",
+      status: PostStatus.ACTIVE,
+      authorId: "owner-2",
+    });
+    mockPrisma.postBookmark.findUnique.mockResolvedValue({ id: "bookmark-9" });
+    mockPrisma.postBookmark.delete.mockResolvedValue({ id: "bookmark-9" });
+
+    const result = await togglePostBookmark({
+      postId: "post-2",
+      userId: "user-2",
+    });
+
+    expect(mockPrisma.postBookmark.delete).toHaveBeenCalledWith({
+      where: { id: "bookmark-9" },
+    });
+    expect(result).toEqual({ bookmarked: false });
   });
 });
 

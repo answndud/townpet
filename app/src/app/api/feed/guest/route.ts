@@ -145,6 +145,7 @@ function serializeFeedItems(items: Array<Record<string, unknown>>) {
     images: ((post.images as Array<{ id: string }>) ?? []).map((image) => ({
       id: image.id,
     })),
+    isBookmarked: false,
     reactions:
       ((post.reactions as Array<{ type: "LIKE" | "DISLIKE" }> | undefined) ?? []).map(
         (reaction) => ({ type: reaction.type }),

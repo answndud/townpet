@@ -17,7 +17,9 @@ import {
   listPostSearchSuggestions,
   listPosts,
   listViewerRecentBehaviorSummaryLabels,
+  listViewerRecentBookmarkSummaryLabels,
   listViewerRecentDwellSummaryLabels,
+  listUserBookmarkedPostsPage,
   listUserPostsPage,
 } from "@/server/queries/post.queries";
 import { prisma } from "@/lib/prisma";
@@ -38,6 +40,10 @@ vi.mock("@/lib/prisma", () => ({
     },
     postReaction: {
       findMany: vi.fn(),
+    },
+    postBookmark: {
+      findMany: vi.fn(),
+      count: vi.fn(),
     },
     feedPersonalizationEventLog: {
       findMany: vi.fn(),
@@ -70,6 +76,10 @@ const mockPrisma = vi.mocked(prisma) as unknown as {
   postReaction: {
     findMany: ReturnType<typeof vi.fn>;
   };
+  postBookmark: {
+    findMany: ReturnType<typeof vi.fn>;
+    count: ReturnType<typeof vi.fn>;
+  };
   feedPersonalizationEventLog: {
     findMany: ReturnType<typeof vi.fn>;
   };
@@ -95,6 +105,10 @@ describe("post queries", () => {
     mockPrisma.community.findMany.mockResolvedValue([]);
     mockPrisma.postReaction.findMany.mockReset();
     mockPrisma.postReaction.findMany.mockResolvedValue([]);
+    mockPrisma.postBookmark.findMany.mockReset();
+    mockPrisma.postBookmark.findMany.mockResolvedValue([]);
+    mockPrisma.postBookmark.count.mockReset();
+    mockPrisma.postBookmark.count.mockResolvedValue(0);
     mockPrisma.feedPersonalizationEventLog.findMany.mockReset();
     mockPrisma.feedPersonalizationEventLog.findMany.mockResolvedValue([]);
     mockPrisma.pet.findMany.mockReset();
@@ -1018,6 +1032,96 @@ describe("post queries", () => {
     expect(result).toEqual(["산책", "건강", "병원"]);
   });
 
+  it("applies recent bookmarked posts as seventh-order personalized feed signal", async () => {
+    mockPrisma.post.findMany.mockResolvedValue([
+      {
+        id: "p1",
+        type: PostType.FREE_BOARD,
+        petTypeId: "cat-community",
+        author: { id: "a1" },
+        createdAt: new Date("2026-02-02T00:00:00.000Z"),
+        likeCount: 0,
+        commentCount: 0,
+        viewCount: 0,
+      },
+      {
+        id: "p2",
+        type: PostType.PRODUCT_REVIEW,
+        petTypeId: "dog-community",
+        reviewCategory: "FEED",
+        animalTags: ["사료"],
+        petType: { tags: ["사료"] },
+        author: { id: "a2" },
+        createdAt: new Date("2026-02-01T23:00:00.000Z"),
+        likeCount: 0,
+        commentCount: 0,
+        viewCount: 0,
+      },
+      {
+        id: "p3",
+        type: PostType.FREE_BOARD,
+        petTypeId: "bird-community",
+        author: { id: "a3" },
+        createdAt: new Date("2026-02-01T22:00:00.000Z"),
+        likeCount: 0,
+        commentCount: 0,
+        viewCount: 0,
+      },
+    ]);
+    mockPrisma.feedPersonalizationEventLog.findMany.mockResolvedValue([]);
+    mockPrisma.postBookmark.findMany
+      .mockResolvedValueOnce([
+        {
+          post: {
+            petTypeId: "dog-community",
+            type: PostType.PRODUCT_REVIEW,
+            reviewCategory: "FEED",
+            animalTags: ["사료"],
+            petType: { tags: ["사료"] },
+          },
+        },
+      ])
+      .mockResolvedValueOnce([]);
+    mockPrisma.pet.findMany.mockResolvedValueOnce([]);
+
+    const result = await listPosts({
+      limit: 2,
+      scope: PostScope.GLOBAL,
+      personalized: true,
+      viewerId: "viewer-1",
+    });
+
+    expect(result.items[0]?.id).toBe("p2");
+    expect(result.nextCursor).toBe("p3");
+  });
+
+  it("builds recent bookmark summary labels from bookmarked posts", async () => {
+    mockPrisma.postBookmark.findMany.mockResolvedValue([
+      {
+        post: {
+          petTypeId: "dog-community",
+          type: PostType.FREE_BOARD,
+          reviewCategory: null,
+          animalTags: ["사료"],
+          petType: { tags: ["간식"] },
+        },
+      },
+      {
+        post: {
+          petTypeId: "cat-community",
+          type: PostType.WALK_ROUTE,
+          reviewCategory: null,
+          animalTags: [],
+          petType: { tags: ["산책"] },
+        },
+      },
+    ]);
+
+    const result = await listViewerRecentBookmarkSummaryLabels("viewer-1");
+
+    expect(result).toEqual(["간식", "사료", "산책"]);
+  });
+
   it("builds best feed with likes and recency ordering", async () => {
     mockPrisma.post.findMany.mockResolvedValue([]);
 
@@ -1125,5 +1229,34 @@ describe("post queries", () => {
     const args = mockPrisma.post.findMany.mock.calls[0][0];
     expect(args.skip).toBe(0);
     expect(args.take).toBe(21);
+  });
+
+  it("paginates saved-posts query with limit + 1 strategy", async () => {
+    mockPrisma.postBookmark.findMany.mockResolvedValue([
+      {
+        createdAt: new Date("2026-03-07T08:00:00.000Z"),
+        post: { id: "s1", images: [] },
+      },
+      {
+        createdAt: new Date("2026-03-07T07:00:00.000Z"),
+        post: { id: "s2", images: [] },
+      },
+      {
+        createdAt: new Date("2026-03-07T06:00:00.000Z"),
+        post: { id: "s3", images: [] },
+      },
+    ]);
+
+    const result = await listUserBookmarkedPostsPage({
+      userId: "user-1",
+      limit: 2,
+      page: 1,
+    });
+
+    const args = mockPrisma.postBookmark.findMany.mock.calls[0][0];
+    expect(args.take).toBe(3);
+    expect(args.skip).toBe(0);
+    expect(result.items).toHaveLength(2);
+    expect(result.hasNext).toBe(true);
   });
 });

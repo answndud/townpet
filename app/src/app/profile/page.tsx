@@ -22,7 +22,7 @@ import {
   getUserWithNeighborhoods,
   listPetsByUserId,
 } from "@/server/queries/user.queries";
-import { countUserPosts } from "@/server/queries/post.queries";
+import { countUserBookmarkedPosts, countUserPosts } from "@/server/queries/post.queries";
 import { listMyBlockedUsers, listMyMutedUsers } from "@/server/queries/user-relation.queries";
 
 export default async function ProfilePage() {
@@ -43,7 +43,10 @@ export default async function ProfilePage() {
   const isNicknameMissing = !user.nickname?.trim();
   const primaryNeighborhood = user.neighborhoods.find((item) => item.isPrimary);
 
-  const postCount = await countUserPosts({ authorId: user.id });
+  const [postCount, bookmarkedPostCount] = await Promise.all([
+    countUserPosts({ authorId: user.id }),
+    countUserBookmarkedPosts({ userId: user.id }),
+  ]);
   let blockedUsers = [] as Awaited<ReturnType<typeof listMyBlockedUsers>>;
   let mutedUsers = [] as Awaited<ReturnType<typeof listMyMutedUsers>>;
   let pets = [] as Awaited<ReturnType<typeof listPetsByUserId>>;
@@ -104,11 +107,16 @@ export default async function ProfilePage() {
           </section>
         ) : null}
 
-        <section className="grid gap-3 md:grid-cols-1">
+        <section className="grid gap-3 md:grid-cols-2">
           <div className="tp-card p-4">
             <p className="text-[11px] uppercase tracking-[0.22em] text-[#5b78a1]">전체</p>
             <p className="mt-2 text-3xl font-bold text-[#10284a]">{postCount}</p>
             <p className="text-xs text-[#4f678d]">총 작성글</p>
+          </div>
+          <div className="tp-card p-4">
+            <p className="text-[11px] uppercase tracking-[0.22em] text-[#5b78a1]">저장</p>
+            <p className="mt-2 text-3xl font-bold text-[#10284a]">{bookmarkedPostCount}</p>
+            <p className="text-xs text-[#4f678d]">저장한 글</p>
           </div>
         </section>
 
@@ -130,6 +138,12 @@ export default async function ProfilePage() {
               className="tp-btn-soft px-3 py-1.5 text-[#315484]"
             >
               내 작성글 보기
+            </Link>
+            <Link
+              href="/saved"
+              className="tp-btn-soft px-3 py-1.5 text-[#315484]"
+            >
+              저장한 글 보기
             </Link>
             <Link
               href="/password/setup"

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import {
   createPostAction,
   deletePostAction,
+  togglePostBookmarkAction,
   togglePostReactionAction,
   updatePostAction,
 } from "@/server/actions/post";
@@ -11,6 +12,7 @@ import { requireCurrentUser } from "@/server/auth";
 import {
   createPost,
   deletePost,
+  togglePostBookmark,
   togglePostReaction,
   updatePost,
 } from "@/server/services/post.service";
@@ -27,6 +29,7 @@ vi.mock("@/server/auth", () => ({
 vi.mock("@/server/services/post.service", () => ({
   createPost: vi.fn(),
   deletePost: vi.fn(),
+  togglePostBookmark: vi.fn(),
   updatePost: vi.fn(),
   togglePostReaction: vi.fn(),
 }));
@@ -35,6 +38,7 @@ const mockRevalidatePath = vi.mocked(revalidatePath);
 const mockRequireCurrentUser = vi.mocked(requireCurrentUser);
 const mockCreatePost = vi.mocked(createPost);
 const mockDeletePost = vi.mocked(deletePost);
+const mockTogglePostBookmark = vi.mocked(togglePostBookmark);
 const mockUpdatePost = vi.mocked(updatePost);
 const mockTogglePostReaction = vi.mocked(togglePostReaction);
 
@@ -44,6 +48,7 @@ describe("post actions", () => {
     mockRequireCurrentUser.mockReset();
     mockCreatePost.mockReset();
     mockDeletePost.mockReset();
+    mockTogglePostBookmark.mockReset();
     mockUpdatePost.mockReset();
     mockTogglePostReaction.mockReset();
   });
@@ -101,6 +106,28 @@ describe("post actions", () => {
     });
     expect(mockRevalidatePath).toHaveBeenCalledTimes(1);
     expect(mockRevalidatePath).toHaveBeenCalledWith("/posts/post-9");
+  });
+
+  it("revalidates feed, detail, and saved page after toggling a bookmark", async () => {
+    mockRequireCurrentUser.mockResolvedValue({ id: "user-8" } as never);
+    mockTogglePostBookmark.mockResolvedValue({
+      bookmarked: true,
+    } as never);
+
+    const result = await togglePostBookmarkAction("post-12");
+
+    expect(result).toEqual({
+      ok: true,
+      bookmarked: true,
+    });
+    expect(mockTogglePostBookmark).toHaveBeenCalledWith({
+      postId: "post-12",
+      userId: "user-8",
+    });
+    expect(mockRevalidatePath).toHaveBeenCalledTimes(3);
+    expect(mockRevalidatePath).toHaveBeenCalledWith("/feed");
+    expect(mockRevalidatePath).toHaveBeenCalledWith("/posts/post-12");
+    expect(mockRevalidatePath).toHaveBeenCalledWith("/saved");
   });
 
   it("maps service errors without revalidating paths", async () => {
