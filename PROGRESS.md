@@ -17,6 +17,31 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-07: Cycle 209 완료 (배포 보안 pre-deploy gate 완결)
+- 완료 내용
+- production build preflight 편입:
+  - `app/scripts/vercel-build.ts`
+  - Vercel `production` 타깃 배포에서 `ops:check:security-env:strict`를 빌드 최상단에 실행하도록 추가
+  - preflight 실패 시 `prisma migrate deploy`, schema repair, `next build` 이전에 즉시 종료
+  - preview/development 타깃은 기본 skip 유지, 필요 시 `DEPLOY_SECURITY_PREFLIGHT_STRICT=1`로 opt-in 가능
+- 배포 파이프라인 회귀 테스트 추가:
+  - `app/scripts/vercel-build.test.ts`
+  - production 타깃에서 preflight가 맨 먼저 실행되는지와 failure 시 prisma deploy 이전에 중단되는지 고정
+- 운영 문서/리스크 동기화:
+  - `docs/개발_운영_가이드.md`
+  - `docs/operations/Vercel_OAuth_초기설정_가이드.md`
+  - `docs/operations/manual-checks/배포_보안_체크리스트.md`
+  - `docs/security/보안_계획.md`
+  - `docs/security/보안_진행상황.md`
+  - `docs/security/보안_위험_등록부.md`
+  - `build:vercel` 설명을 실제 동작 순서로 갱신하고, `R-009`를 mitigated로 전환
+- 검증 결과
+- `pnpm -C app lint scripts/vercel-build.ts scripts/vercel-build.test.ts` 통과
+- `pnpm -C app typecheck` 통과
+- `pnpm -C app test -- scripts/vercel-build.test.ts` 실행 시 전체 Vitest 스위트 통과
+- 이슈/블로커
+- 없음
+
 ### 2026-03-07: Cycle 208 완료 (회원가입 abuse defense 현실화)
 - 완료 내용
 - 회원가입 다축 abuse 방어 도입:

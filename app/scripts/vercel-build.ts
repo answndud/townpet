@@ -1,17 +1,24 @@
 import { readdir } from "node:fs/promises";
 import path from "node:path";
 import { spawn } from "node:child_process";
+import { fileURLToPath } from "node:url";
 
 type CommandResult = {
   code: number;
   output: string;
 };
 
+type CommandRunner = (
+  command: string,
+  args: string[],
+) => Promise<CommandResult>;
+
 const PRISMA_DEPLOY_MAX_ATTEMPTS = 4;
 const PRISMA_DEPLOY_RETRY_DELAY_MS = 4_000;
 const NEIGHBORHOOD_SYNC_MAX_ATTEMPTS = 3;
 const NEIGHBORHOOD_SYNC_RETRY_DELAY_MS = 3_000;
 const NEIGHBORHOOD_SYNC_STRICT = process.env.NEIGHBORHOOD_SYNC_STRICT === "1";
+const CURRENT_FILE_PATH = fileURLToPath(import.meta.url);
 
 function runCommand(command: string, args: string[]) {
   return new Promise<CommandResult>((resolve, reject) => {
@@ -83,6 +90,24 @@ async function sleep(ms: number) {
   await new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function hasTruthyFlag(value: string | undefined) {
+  const normalized = value?.trim().toLowerCase() ?? "";
+  return normalized === "1" || normalized === "true" || normalized === "yes";
+}
+
+export function shouldRunSecurityEnvPreflight(env: NodeJS.ProcessEnv = process.env) {
+  if (hasTruthyFlag(env.DEPLOY_SECURITY_PREFLIGHT_SKIP)) {
+    return false;
+  }
+
+  if (hasTruthyFlag(env.DEPLOY_SECURITY_PREFLIGHT_STRICT)) {
+    return true;
+  }
+
+  const targetEnv = (env.VERCEL_TARGET_ENV ?? env.VERCEL_ENV ?? "").trim().toLowerCase();
+  return targetEnv === "production";
+}
+
 async function listMigrationNames() {
   const migrationsDir = path.join(process.cwd(), "prisma", "migrations");
   const entries = await readdir(migrationsDir, { withFileTypes: true });
@@ -92,7 +117,7 @@ async function listMigrationNames() {
     .sort((a, b) => a.localeCompare(b));
 }
 
-async function baselineMigrations() {
+async function baselineMigrations(commandRunner: CommandRunner = runCommand) {
   const migrations = await listMigrationNames();
   if (migrations.length === 0) {
     throw new Error("No Prisma migrations found in prisma/migrations.");
@@ -101,7 +126,7 @@ async function baselineMigrations() {
   console.log("[build:vercel] P3005 detected. Running Prisma baseline resolve...");
 
   for (const migration of migrations) {
-    const result = await runCommand("pnpm", [
+    const result = await commandRunner("pnpm", [
       "prisma",
       "migrate",
       "resolve",
@@ -115,18 +140,32 @@ async function baselineMigrations() {
   }
 }
 
-async function runPrismaDeploy() {
+export async function runSecurityEnvPreflight(commandRunner: CommandRunner = runCommand) {
+  if (!shouldRunSecurityEnvPreflight()) {
+    console.log(
+      "[build:vercel] skipping strict security env preflight (non-production target or opt-out).",
+    );
+    return;
+  }
+
+  const result = await commandRunner("pnpm", ["ops:check:security-env:strict"]);
+  if (result.code !== 0) {
+    throw new Error("[build:vercel] security env preflight failed.");
+  }
+}
+
+async function runPrismaDeploy(commandRunner: CommandRunner = runCommand) {
   let baselineAttempted = false;
 
   for (let attempt = 1; attempt <= PRISMA_DEPLOY_MAX_ATTEMPTS; attempt += 1) {
-    const deployResult = await runCommand("pnpm", ["prisma", "migrate", "deploy"]);
+    const deployResult = await commandRunner("pnpm", ["prisma", "migrate", "deploy"]);
     if (deployResult.code === 0) {
       return;
     }
 
     if (isBaselineRequired(deployResult.output) && !baselineAttempted) {
       baselineAttempted = true;
-      await baselineMigrations();
+      await baselineMigrations(commandRunner);
       continue;
     }
 
@@ -144,11 +183,11 @@ async function runPrismaDeploy() {
   throw new Error("[build:vercel] prisma migrate deploy exhausted retry attempts.");
 }
 
-async function runNeighborhoodSync() {
+async function runNeighborhoodSync(commandRunner: CommandRunner = runCommand) {
   let lastOutput = "";
 
   for (let attempt = 1; attempt <= NEIGHBORHOOD_SYNC_MAX_ATTEMPTS; attempt += 1) {
-    const syncNeighborhoodResult = await runCommand("pnpm", ["db:sync:neighborhoods"]);
+    const syncNeighborhoodResult = await commandRunner("pnpm", ["db:sync:neighborhoods"]);
     lastOutput = syncNeighborhoodResult.output;
 
     if (syncNeighborhoodResult.code === 0) {
@@ -188,8 +227,8 @@ async function runNeighborhoodSync() {
   }
 }
 
-async function repairCommunityBoardSchema() {
-  const repairResult = await runCommand("pnpm", [
+async function repairCommunityBoardSchema(commandRunner: CommandRunner = runCommand) {
+  const repairResult = await commandRunner("pnpm", [
     "prisma",
     "db",
     "execute",
@@ -204,8 +243,8 @@ async function repairCommunityBoardSchema() {
   }
 }
 
-async function repairNotificationArchiveSchema() {
-  const repairResult = await runCommand("pnpm", [
+async function repairNotificationArchiveSchema(commandRunner: CommandRunner = runCommand) {
+  const repairResult = await commandRunner("pnpm", [
     "prisma",
     "db",
     "execute",
@@ -220,30 +259,37 @@ async function repairNotificationArchiveSchema() {
   }
 }
 
-async function runPrismaGenerate() {
-  const generateResult = await runCommand("pnpm", ["prisma", "generate"]);
+async function runPrismaGenerate(commandRunner: CommandRunner = runCommand) {
+  const generateResult = await commandRunner("pnpm", ["prisma", "generate"]);
   if (generateResult.code !== 0) {
     throw new Error("[build:vercel] prisma generate failed.");
   }
 }
 
-async function main() {
-  await runPrismaDeploy();
-  await repairCommunityBoardSchema();
-  await repairNotificationArchiveSchema();
+export async function runBuildVercel(commandRunner: CommandRunner = runCommand) {
+  await runSecurityEnvPreflight(commandRunner);
+  await runPrismaDeploy(commandRunner);
+  await repairCommunityBoardSchema(commandRunner);
+  await repairNotificationArchiveSchema(commandRunner);
 
   // Vercel dependency cache can keep an outdated Prisma Client.
   // Generate before running any TS script that instantiates PrismaClient.
-  await runPrismaGenerate();
-  await runNeighborhoodSync();
+  await runPrismaGenerate(commandRunner);
+  await runNeighborhoodSync(commandRunner);
 
-  const buildResult = await runCommand("pnpm", ["next", "build"]);
+  const buildResult = await commandRunner("pnpm", ["next", "build"]);
   if (buildResult.code !== 0) {
     throw new Error("[build:vercel] next build failed.");
   }
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+export async function main() {
+  await runBuildVercel();
+}
+
+if (process.argv[1] && path.resolve(process.argv[1]) === CURRENT_FILE_PATH) {
+  main().catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
+}

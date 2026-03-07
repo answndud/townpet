@@ -31,6 +31,7 @@
    - Framework Preset: `Next.js`
    - Root Directory: `app`
    - Build Command: `pnpm build:vercel` (Root Directory=`app` 기준 `app/vercel.json`과 동일)
+   - production 배포에서는 `build:vercel`가 strict security env preflight를 먼저 실행하므로, 필수 secret이 빠지면 빌드 초반에 실패
 5. 우선 빈 환경변수로는 실패할 수 있으니, 아래 2단계까지 진행 후 Deploy
 
 ---
