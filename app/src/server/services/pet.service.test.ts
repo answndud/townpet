@@ -6,46 +6,80 @@ import { ServiceError } from "@/server/services/service-error";
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
+    $transaction: vi.fn(),
     pet: {
       count: vi.fn(),
       create: vi.fn(),
       findUnique: vi.fn(),
+      findMany: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
+    },
+    userAudienceSegment: {
+      deleteMany: vi.fn(),
+      createMany: vi.fn(),
     },
   },
 }));
 
 const mockPrisma = vi.mocked(prisma) as unknown as {
+  $transaction: ReturnType<typeof vi.fn>;
   pet: {
     count: ReturnType<typeof vi.fn>;
     create: ReturnType<typeof vi.fn>;
     findUnique: ReturnType<typeof vi.fn>;
+    findMany: ReturnType<typeof vi.fn>;
     update: ReturnType<typeof vi.fn>;
     delete: ReturnType<typeof vi.fn>;
+  };
+  userAudienceSegment: {
+    deleteMany: ReturnType<typeof vi.fn>;
+    createMany: ReturnType<typeof vi.fn>;
   };
 };
 
 describe("pet service", () => {
   beforeEach(() => {
+    mockPrisma.$transaction.mockReset();
     mockPrisma.pet.count.mockReset();
     mockPrisma.pet.create.mockReset();
     mockPrisma.pet.findUnique.mockReset();
+    mockPrisma.pet.findMany.mockReset();
     mockPrisma.pet.update.mockReset();
     mockPrisma.pet.delete.mockReset();
+    mockPrisma.userAudienceSegment.deleteMany.mockReset();
+    mockPrisma.userAudienceSegment.createMany.mockReset();
 
+    mockPrisma.$transaction.mockImplementation(async (callback: (tx: typeof mockPrisma) => unknown) =>
+      callback(mockPrisma),
+    );
     mockPrisma.pet.count.mockResolvedValue(0);
+    mockPrisma.pet.findMany.mockResolvedValue([]);
+    mockPrisma.userAudienceSegment.deleteMany.mockResolvedValue({ count: 0 });
+    mockPrisma.userAudienceSegment.createMany.mockResolvedValue({ count: 0 });
   });
 
   it("creates pet with normalized values", async () => {
     mockPrisma.pet.create.mockResolvedValue({ id: "pet-1" });
+    mockPrisma.pet.findMany.mockResolvedValue([
+      {
+        species: "DOG",
+        breedCode: "MALTESE",
+        breedLabel: "말티즈",
+        sizeClass: "SMALL",
+        lifeStage: "ADULT",
+      },
+    ]);
 
     await createPet({
       userId: "user-1",
       input: {
         name: "  마루 ",
         species: "DOG",
+        breedCode: " maltese ",
         breedLabel: "  말티즈 ",
+        sizeClass: "SMALL",
+        lifeStage: "ADULT",
         weightKg: "4.3",
         birthYear: "2021",
         imageUrl: " https://img.example.com/pet.jpg ",
@@ -58,16 +92,39 @@ describe("pet service", () => {
         userId: "user-1",
         name: "마루",
         species: "DOG",
-        breedCode: null,
+        breedCode: "MALTESE",
         breedLabel: "말티즈",
-        sizeClass: "UNKNOWN",
-        lifeStage: "UNKNOWN",
+        sizeClass: "SMALL",
+        lifeStage: "ADULT",
         age: null,
         weightKg: 4.3,
         birthYear: 2021,
         imageUrl: "https://img.example.com/pet.jpg",
         bio: "사람 좋아해요",
       },
+    });
+    expect(mockPrisma.userAudienceSegment.deleteMany).toHaveBeenCalledWith({
+      where: { userId: "user-1" },
+    });
+    expect(mockPrisma.userAudienceSegment.createMany).toHaveBeenCalledWith({
+      data: [
+        expect.objectContaining({
+          userId: "user-1",
+          species: "DOG",
+          breedCode: "MALTESE",
+          sizeClass: "SMALL",
+          lifeStage: "ADULT",
+          interestTags: expect.arrayContaining([
+            "source:pet-profile",
+            "signal:explicit-pet",
+            "species:DOG",
+            "breed:MALTESE",
+            "breedLabel:말티즈",
+            "size:SMALL",
+            "lifeStage:ADULT",
+          ]),
+        }),
+      ],
     });
   });
 
@@ -129,6 +186,15 @@ describe("pet service", () => {
       id: "clwpet000000000000000001",
       userId: "user-1",
     });
+    mockPrisma.pet.findMany.mockResolvedValue([
+      {
+        species: "DOG",
+        breedCode: "MALTESE",
+        breedLabel: "말티즈",
+        sizeClass: "SMALL",
+        lifeStage: "ADULT",
+      },
+    ]);
     mockPrisma.pet.update.mockResolvedValue({
       id: "clwpet000000000000000001",
     });
@@ -139,7 +205,10 @@ describe("pet service", () => {
         petId: "clwpet000000000000000001",
         name: " 마루 ",
         species: "DOG",
+        breedCode: " maltese ",
         breedLabel: " 말티즈 ",
+        sizeClass: "SMALL",
+        lifeStage: "ADULT",
         weightKg: "4.8",
         birthYear: "2020",
         imageUrl: "",
@@ -152,10 +221,10 @@ describe("pet service", () => {
       data: {
         name: "마루",
         species: "DOG",
-        breedCode: null,
+        breedCode: "MALTESE",
         breedLabel: "말티즈",
-        sizeClass: "UNKNOWN",
-        lifeStage: "UNKNOWN",
+        sizeClass: "SMALL",
+        lifeStage: "ADULT",
         age: null,
         weightKg: 4.8,
         birthYear: 2020,
@@ -171,6 +240,7 @@ describe("pet service", () => {
       userId: "user-1",
     });
     mockPrisma.pet.delete.mockResolvedValue({ id: "clwpet000000000000000002" });
+    mockPrisma.pet.findMany.mockResolvedValue([]);
 
     await deletePet({
       userId: "user-1",
@@ -181,5 +251,9 @@ describe("pet service", () => {
       where: { id: "clwpet000000000000000002" },
       select: { id: true },
     });
+    expect(mockPrisma.userAudienceSegment.deleteMany).toHaveBeenCalledWith({
+      where: { userId: "user-1" },
+    });
+    expect(mockPrisma.userAudienceSegment.createMany).not.toHaveBeenCalled();
   });
 });

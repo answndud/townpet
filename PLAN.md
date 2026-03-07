@@ -25,6 +25,12 @@
 
 ## Active Plan
 
+### Cycle 211: 프로필 기반 개인화 신호 활성화 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 반려동물 프로필에 품종 코드/체급/생애단계 입력 활성화 | Codex | P1 | `done` | 반려동물 create/update 경로가 `breedCode`, `sizeClass`, `lifeStage`를 저장하고 `/profile`, `/users/[id]`에 동일 정보가 노출됨 | `app/src/lib/validations/pet.ts`, `app/src/server/services/pet.service.ts`, `app/src/components/profile/pet-profile-manager.tsx`, `app/src/app/profile/page.tsx`, `app/src/app/users/[id]/page.tsx` |
+| UserAudienceSegment 동기화 + 개인화 세그먼트 조회 경로 추가 | Codex | P1 | `done` | pet 변경 시 `UserAudienceSegment`가 재생성되고 `/api/profile/audience-segments`와 프로필 UI에서 세그먼트 요약을 확인할 수 있음 | `app/src/server/**/*.ts`, `app/src/app/api/profile/audience-segments/route.ts`, `app/src/lib/pet-profile.ts` |
+
 ### Cycle 210: 인증 감사 로그 retention 정착 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
