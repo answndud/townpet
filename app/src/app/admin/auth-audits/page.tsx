@@ -219,9 +219,10 @@ export default async function AuthAuditPage({ searchParams }: AuthAuditPageProps
           )}
         </section>
 
-        <Link href="/admin/reports" className="text-xs text-[#5a7398]">
-          신고 큐로 이동
-        </Link>
+        <div className="flex flex-wrap gap-3 text-xs text-[#5a7398]">
+          <Link href="/admin/reports">신고 큐</Link>
+          <Link href="/admin/personalization">개인화 지표</Link>
+        </div>
       </main>
     </div>
   );

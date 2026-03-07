@@ -184,6 +184,7 @@ export default async function AdminPoliciesPage() {
         <div className="flex flex-wrap items-center gap-3 text-xs text-[#5a7398]">
           <Link href="/admin/reports">신고 큐</Link>
           <Link href="/admin/auth-audits">인증 로그</Link>
+          <Link href="/admin/personalization">개인화 지표</Link>
           <Link href="/feed">피드로 이동</Link>
         </div>
       </main>
