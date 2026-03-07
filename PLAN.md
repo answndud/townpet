@@ -25,6 +25,12 @@
 
 ## Active Plan
 
+### Cycle 209: 배포 보안 pre-deploy gate 완결 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| Vercel production build에 strict security preflight 편입 | Codex | P1 | `done` | `build:vercel`가 production 타깃 배포에서 `ops:check:security-env:strict`를 먼저 실행하고 실패 시 마이그레이션/빌드 전에 종료됨 | `app/scripts/vercel-build.ts`, `app/vercel.json`, `app/package.json` |
+| 배포 운영 문서/보안 리스크 상태 동기화 | Codex | P1 | `done` | 운영 가이드와 Vercel 설정 문서가 pre-deploy gate를 설명하고 `R-009`가 mitigated로 닫힘 | `docs/개발_운영_가이드.md`, `docs/operations/*`, `docs/security/*` |
+
 ### Cycle 208: 회원가입 abuse defense 현실화 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
