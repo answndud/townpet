@@ -922,6 +922,8 @@ type ViewerPersonalizationContext = {
   recentClickInterestWeights: Record<string, number>;
   recentAdBreedWeights: Record<string, number>;
   recentAdAudienceKeyWeights: Record<string, number>;
+  recentDwellPetTypeWeights: Record<string, number>;
+  recentDwellInterestWeights: Record<string, number>;
 };
 
 const REVIEW_CATEGORY_INTEREST_LABELS: Partial<Record<ReviewCategory, string[]>> = {
@@ -1159,6 +1161,33 @@ function buildRecentBehaviorSignal(
   };
 }
 
+function buildRecentDwellSignal(logs: FeedPersonalizationEventLogLike[]) {
+  const recentDwellPetTypeWeights: Record<string, number> = {};
+  const recentDwellInterestWeights: Record<string, number> = {};
+  const recentDwellSummaryWeights: Record<string, number> = {};
+
+  logs.forEach((log, index) => {
+    if (log.event !== FeedPersonalizationEvent.POST_DWELL || !log.post) {
+      return;
+    }
+
+    const weight = getRecencyWeight(index);
+    addWeightedDimension(recentDwellPetTypeWeights, log.post.petTypeId, weight);
+
+    const interestLabels = collectPostInterestLabels(log.post);
+    for (const label of interestLabels) {
+      addWeightedDimension(recentDwellInterestWeights, label, weight);
+      addWeightedDimension(recentDwellSummaryWeights, label, weight);
+    }
+  });
+
+  return {
+    recentDwellPetTypeWeights,
+    recentDwellInterestWeights,
+    summaryLabels: listTopWeightedDimensions(recentDwellSummaryWeights, 3),
+  };
+}
+
 function calculatePreferredInterestBoost(
   post: FeedLikePost,
   preferredInterestLabels: string[],
@@ -1277,6 +1306,32 @@ function calculateRecentBehaviorBoost(
   return boost;
 }
 
+function calculateRecentDwellBoost(
+  post: FeedLikePost,
+  viewerContext: ViewerPersonalizationContext,
+) {
+  let boost = 0;
+
+  if (post.petTypeId) {
+    boost += Math.min(
+      0.06,
+      (viewerContext.recentDwellPetTypeWeights[post.petTypeId] ?? 0) * 0.038,
+    );
+  }
+
+  const postInterestLabels = collectPostInterestLabels(post);
+  if (postInterestLabels.length === 0) {
+    return boost;
+  }
+
+  const dwellInterestWeight = postInterestLabels.reduce(
+    (total, label) => total + (viewerContext.recentDwellInterestWeights[label] ?? 0),
+    0,
+  );
+  boost += Math.min(0.07, dwellInterestWeight * 0.022);
+  return boost;
+}
+
 function calculateViewerPersonalizationBoost(
   post: FeedLikePost,
   viewerContext: ViewerPersonalizationContext,
@@ -1300,13 +1355,15 @@ function calculateViewerPersonalizationBoost(
     viewerContext,
     authorPetByUserId,
   );
+  const recentDwellBoost = calculateRecentDwellBoost(post, viewerContext);
 
   return (
     petBoost +
     preferredPetTypeBoost +
     preferredInterestBoost +
     recentEngagementBoost +
-    recentBehaviorBoost
+    recentBehaviorBoost +
+    recentDwellBoost
   );
 }
 
@@ -1591,13 +1648,78 @@ export async function listViewerRecentBehaviorSummaryLabels(viewerId: string) {
   return buildRecentBehaviorSignal(recentBehaviorEvents).summaryLabels;
 }
 
+async function listViewerRecentDwellEvents(
+  viewerId: string,
+  take = 12,
+): Promise<FeedPersonalizationEventLogLike[]> {
+  if (!supportsFeedPersonalizationEventLogField()) {
+    return [];
+  }
+
+  const delegate = (
+    prisma as typeof prisma & {
+      feedPersonalizationEventLog?: {
+        findMany: (typeof prisma.feedPersonalizationEventLog)["findMany"];
+      };
+    }
+  ).feedPersonalizationEventLog;
+
+  if (!delegate) {
+    return [];
+  }
+
+  return delegate
+    .findMany({
+      where: {
+        userId: viewerId,
+        event: FeedPersonalizationEvent.POST_DWELL,
+      },
+      orderBy: { createdAt: "desc" },
+      take,
+      select: {
+        event: true,
+        audienceKey: true,
+        breedCode: true,
+        post: {
+          select: {
+            petTypeId: true,
+            type: true,
+            reviewCategory: true,
+            animalTags: true,
+            petType: {
+              select: {
+                tags: true,
+              },
+            },
+          },
+        },
+      },
+    })
+    .catch((error) => {
+      if (
+        isMissingFeedPersonalizationEventLogSchemaError(error) ||
+        isMissingCommunityBoardSchemaError(error) ||
+        isMissingReviewCategoryColumnError(error)
+      ) {
+        return [];
+      }
+      throw error;
+    });
+}
+
+export async function listViewerRecentDwellSummaryLabels(viewerId: string) {
+  const recentDwellEvents = await listViewerRecentDwellEvents(viewerId, 12);
+  return buildRecentDwellSignal(recentDwellEvents).summaryLabels;
+}
+
 async function listViewerPersonalizationContext(
   viewerId: string,
 ): Promise<ViewerPersonalizationContext> {
-  const [petSignals, preferredPetTypeIds, recentBehaviorEvents] = await Promise.all([
+  const [petSignals, preferredPetTypeIds, recentBehaviorEvents, recentDwellEvents] = await Promise.all([
     listViewerPetSignals(viewerId),
     listPreferredPetTypeIdsByUserId(viewerId),
     listViewerRecentBehaviorEvents(viewerId, 20),
+    listViewerRecentDwellEvents(viewerId, 20),
   ]);
   const normalizedPreferredPetTypeIds = Array.from(
     new Set(
@@ -1664,6 +1786,7 @@ async function listViewerPersonalizationContext(
   const positiveReactions = recentReactions.filter((reaction) => reaction.type === "LIKE");
   const negativeReactions = recentReactions.filter((reaction) => reaction.type === "DISLIKE");
   const recentBehaviorSignal = buildRecentBehaviorSignal(recentBehaviorEvents);
+  const recentDwellSignal = buildRecentDwellSignal(recentDwellEvents);
 
   return {
     petSignals,
@@ -1689,6 +1812,8 @@ async function listViewerPersonalizationContext(
     recentClickInterestWeights: recentBehaviorSignal.recentClickInterestWeights,
     recentAdBreedWeights: recentBehaviorSignal.recentAdBreedWeights,
     recentAdAudienceKeyWeights: recentBehaviorSignal.recentAdAudienceKeyWeights,
+    recentDwellPetTypeWeights: recentDwellSignal.recentDwellPetTypeWeights,
+    recentDwellInterestWeights: recentDwellSignal.recentDwellInterestWeights,
   };
 }
 
@@ -1712,7 +1837,9 @@ async function applyPetPersonalization<T extends FeedLikePost>(
     Object.keys(viewerContext.recentClickPetTypeWeights).length === 0 &&
     Object.keys(viewerContext.recentClickInterestWeights).length === 0 &&
     Object.keys(viewerContext.recentAdBreedWeights).length === 0 &&
-    Object.keys(viewerContext.recentAdAudienceKeyWeights).length === 0
+    Object.keys(viewerContext.recentAdAudienceKeyWeights).length === 0 &&
+    Object.keys(viewerContext.recentDwellPetTypeWeights).length === 0 &&
+    Object.keys(viewerContext.recentDwellInterestWeights).length === 0
   ) {
     return items;
   }

@@ -25,6 +25,12 @@
 
 ## Active Plan
 
+### Cycle 221: 상세 체류시간 기반 6차 개인화 신호 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| personalized event log에 post dwell 신호 추가 | Codex | P1 | `done` | 게시글 상세에서 일정 체류시간 이상 머문 authenticated viewer에 대해 `POST_DWELL` 이벤트가 기록되고 schema/route/service 테스트가 존재함 | `app/prisma/schema.prisma`, `app/src/app/api/feed/personalization/route.ts`, `app/src/server/services/feed-personalization-metrics.service.ts`, `app/src/components/posts/*` |
+| recent dwell signal을 personalized ranking 6차 가중치와 피드 설명에 연결 | Codex | P1 | `done` | personalized feed가 최근 오래 읽은 게시글의 petType/관심 태그를 6차 신호로 약하게 반영하고 `/feed` 설명/제품 문서가 동기화됨 | `app/src/server/queries/post.queries.ts`, `app/src/lib/feed-personalization.ts`, `app/src/app/feed/page.tsx`, `docs/product/품종_개인화_기획서.md` |
+
 ### Cycle 220: 최근 클릭/광고 반응 기반 5차 개인화 신호 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|

@@ -25,11 +25,14 @@ export const feedPersonalizationMetricSchema = z
     postId: postIdSchema,
   })
   .superRefine((value, ctx) => {
-    if (value.event === "POST_CLICK" && !value.postId) {
+    if (
+      (value.event === "POST_CLICK" || value.event === "POST_DWELL") &&
+      !value.postId
+    ) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["postId"],
-        message: "게시글 클릭 이벤트에는 postId가 필요합니다.",
+        message: "게시글 개인화 이벤트에는 postId가 필요합니다.",
       });
     }
   });

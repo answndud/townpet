@@ -108,6 +108,31 @@ describe("POST /api/feed/personalization contract", () => {
     expect(mockRecordFeedPersonalizationMetric).not.toHaveBeenCalled();
   });
 
+  it("returns 400 when dwell payload omits postId", async () => {
+    mockRequireAuthenticatedUserId.mockResolvedValue("user-1");
+    mockEnforceRateLimit.mockResolvedValue();
+
+    const request = new Request("http://localhost/api/feed/personalization", {
+      method: "POST",
+      body: JSON.stringify({
+        surface: "FEED",
+        event: "POST_DWELL",
+        audienceSource: "NONE",
+      }),
+      headers: { "content-type": "application/json" },
+    }) as NextRequest;
+
+    const response = await POST(request);
+    const payload = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(payload).toMatchObject({
+      ok: false,
+      error: { code: "INVALID_INPUT" },
+    });
+    expect(mockRecordFeedPersonalizationMetric).not.toHaveBeenCalled();
+  });
+
   it("returns 500 and monitors unexpected errors", async () => {
     mockRequireAuthenticatedUserId.mockResolvedValue("user-1");
     mockEnforceRateLimit.mockResolvedValue();

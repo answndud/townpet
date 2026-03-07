@@ -139,6 +139,7 @@ enum FeedPersonalizationSurface {
 enum FeedPersonalizationEvent {
   VIEW
   POST_CLICK
+  POST_DWELL
   AD_IMPRESSION
   AD_CLICK
 }
