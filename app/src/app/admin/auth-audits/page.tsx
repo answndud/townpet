@@ -18,15 +18,25 @@ const actionLabels: Record<AuthAuditAction, string> = {
   LOGIN_SUCCESS: "로그인 성공",
   LOGIN_FAILURE: "로그인 실패",
   LOGIN_RATE_LIMITED: "로그인 제한",
+  REGISTER_SUCCESS: "회원가입 성공",
+  REGISTER_REJECTED: "회원가입 거절",
+  REGISTER_RATE_LIMITED: "회원가입 제한",
 };
 
 const reasonLabels: Record<string, string> = {
   INVALID_INPUT: "입력 형식 오류",
+  INVALID_JSON: "잘못된 JSON",
   USER_NOT_FOUND: "사용자 없음",
   PASSWORD_NOT_SET: "비밀번호 미설정",
   EMAIL_NOT_VERIFIED: "이메일 미인증",
   INVALID_PASSWORD: "비밀번호 불일치",
   RATE_LIMITED: "요청 제한",
+  EMAIL_TAKEN: "이메일 중복",
+  NICKNAME_TAKEN: "닉네임 중복",
+  REGISTER_RATE_LIMIT_IP: "가입 IP 제한",
+  REGISTER_RATE_LIMIT_FINGERPRINT: "가입 디바이스 제한",
+  REGISTER_RATE_LIMIT_EMAIL_IP: "가입 이메일+IP 제한",
+  REGISTER_RATE_LIMIT_EMAIL: "가입 이메일 제한",
 };
 
 export default async function AuthAuditPage({ searchParams }: AuthAuditPageProps) {
@@ -102,7 +112,7 @@ export default async function AuthAuditPage({ searchParams }: AuthAuditPageProps
             인증 감사 로그
           </h1>
           <p className="mt-2 text-sm text-[#4f678d]">
-            로그인 성공/실패/제한과 비밀번호 변경 기록을 확인합니다.
+            회원가입·로그인·비밀번호 변경 흐름의 성공/실패/제한 기록을 확인합니다.
           </p>
         </header>
 
