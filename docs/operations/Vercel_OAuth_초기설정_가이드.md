@@ -259,7 +259,7 @@ Sentry 검증 실패
   - `/admin/personalization` 개인화 CTR/이벤트 지표
   - `/admin/breeds` 품종 사전 관리
 - 사용자 지원 시 확인하는 화면:
-  - `/saved` 저장한 글
+  - `/bookmarks` 북마크한 글 (`/saved`는 호환 리다이렉트)
   - `/profile` 반려동물/세그먼트 설정
 - DB(Neon): 회원/게시글/이미지 원본 데이터 조회 및 SQL 관리
 

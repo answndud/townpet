@@ -114,9 +114,17 @@ export default async function ProfilePage() {
             <p className="text-xs text-[#4f678d]">총 작성글</p>
           </div>
           <div className="tp-card p-4">
-            <p className="text-[11px] uppercase tracking-[0.22em] text-[#5b78a1]">저장</p>
+            <p className="text-[11px] uppercase tracking-[0.22em] text-[#5b78a1]">북마크</p>
             <p className="mt-2 text-3xl font-bold text-[#10284a]">{bookmarkedPostCount}</p>
-            <p className="text-xs text-[#4f678d]">저장한 글</p>
+            <p className="text-xs text-[#4f678d]">북마크한 글</p>
+            <div className="mt-4">
+              <Link
+                href="/bookmarks"
+                className="tp-btn-soft inline-flex px-3 py-1.5 text-xs text-[#315484]"
+              >
+                북마크 보기
+              </Link>
+            </div>
           </div>
         </section>
 
@@ -138,12 +146,6 @@ export default async function ProfilePage() {
               className="tp-btn-soft px-3 py-1.5 text-[#315484]"
             >
               내 작성글 보기
-            </Link>
-            <Link
-              href="/saved"
-              className="tp-btn-soft px-3 py-1.5 text-[#315484]"
-            >
-              저장한 글 보기
             </Link>
             <Link
               href="/password/setup"

@@ -90,8 +90,8 @@ export function FeedPersonalizationPolicyForm({
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {decimalInput("dwellSignalMultiplier", "체류 신호 multiplier", 0, 3)}
         {decimalInput("dwellSignalCap", "체류 신호 cap", 0, 0.35)}
-        {decimalInput("bookmarkSignalMultiplier", "저장 신호 multiplier", 0, 3)}
-        {decimalInput("bookmarkSignalCap", "저장 신호 cap", 0, 0.35)}
+        {decimalInput("bookmarkSignalMultiplier", "북마크 신호 multiplier", 0, 3)}
+        {decimalInput("bookmarkSignalCap", "북마크 신호 cap", 0, 0.35)}
       </div>
 
       <div className="flex flex-wrap items-center gap-2">

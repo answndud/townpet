@@ -162,7 +162,7 @@ export async function togglePostBookmarkAction(
     });
     revalidateFeedPage();
     revalidatePostDetailPage(postId);
-    revalidatePath("/saved");
+    revalidatePath("/bookmarks");
 
     return {
       ok: true,

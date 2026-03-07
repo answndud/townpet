@@ -9,7 +9,7 @@ type PostBookmarkButtonProps = {
   postId: string;
   currentBookmarked?: boolean | null;
   compact?: boolean;
-  canSave?: boolean;
+  canBookmark?: boolean;
   loginHref?: string;
   showLoginHint?: boolean;
 };
@@ -18,7 +18,7 @@ export function PostBookmarkButton({
   postId,
   currentBookmarked,
   compact = false,
-  canSave = true,
+  canBookmark = true,
   loginHref = "/login",
   showLoginHint = true,
 }: PostBookmarkButtonProps) {
@@ -46,7 +46,7 @@ export function PostBookmarkButton({
     : "inline-flex h-9 min-w-[80px] items-center justify-center rounded-lg border px-3 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-60";
 
   const handleToggle = () => {
-    if (!canSave) {
+    if (!canBookmark) {
       setLoginIntent(true);
       return;
     }
@@ -80,15 +80,15 @@ export function PostBookmarkButton({
             : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
         }`}
       >
-        {bookmarked ? "저장됨" : "저장"}
+        {bookmarked ? "북마크됨" : "북마크"}
       </button>
-      {!canSave && showLoginHint && loginIntent ? (
+      {!canBookmark && showLoginHint && loginIntent ? (
         <div
           className={`absolute left-0 top-[calc(100%+8px)] z-10 max-w-[min(86vw,260px)] rounded-lg border border-[#dbe6f6] bg-white px-2.5 py-1.5 text-[#355988] shadow-[0_8px_18px_rgba(16,40,74,0.12)] ${
             compact ? "text-[11px]" : "text-xs"
           }`}
         >
-          로그인 후 저장 가능.{" "}
+          로그인 후 북마크 가능.{" "}
           <Link href={loginHref} className="font-semibold text-[#2f5da4] underline underline-offset-2">
             로그인하기
           </Link>

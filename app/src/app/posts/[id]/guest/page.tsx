@@ -388,7 +388,7 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
                     <PostBookmarkButton
                       postId={post.id}
                       currentBookmarked={false}
-                      canSave={false}
+                      canBookmark={false}
                       loginHref={loginHref}
                     />
                   </div>

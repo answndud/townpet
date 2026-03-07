@@ -487,7 +487,7 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
                   <PostBookmarkButton
                     postId={post.id}
                     currentBookmarked={Boolean(post.isBookmarked)}
-                    canSave={canInteract && canInteractWithPostOwner}
+                    canBookmark={canInteract && canInteractWithPostOwner}
                     loginHref={loginHref}
                   />
                   <div className="ml-auto">

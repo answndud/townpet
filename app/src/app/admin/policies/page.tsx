@@ -193,7 +193,7 @@ export default async function AdminPoliciesPage() {
         <section className="tp-card p-5 sm:p-6">
           <h2 className="text-lg font-semibold text-[#153a6a]">개인화 튜닝 정책</h2>
           <p className="mt-2 text-xs text-[#5a7398]">
-            recent click/ad/dwell/bookmark 신호의 감쇠, cap, 개인화/탐색 혼합 비율을 운영에서 조정합니다.
+            클릭/광고/체류/북마크 신호의 감쇠, cap, 개인화/탐색 혼합 비율을 운영에서 조정합니다.
           </p>
           <div className="mt-3 flex flex-wrap gap-2 text-[11px]">
             <span className="rounded-md border border-[#cbdcf5] bg-[#f6f9ff] px-2.5 py-1 text-[#315484]">
@@ -206,7 +206,7 @@ export default async function AdminPoliciesPage() {
               임계치 {feedPersonalizationPolicy.personalizedThreshold.toFixed(2)}
             </span>
             <span className="rounded-md border border-[#cbdcf5] bg-[#f6f9ff] px-2.5 py-1 text-[#315484]">
-              클릭/광고/체류/저장 cap {feedPersonalizationPolicy.clickSignalCap.toFixed(2)}/
+              클릭/광고/체류/북마크 cap {feedPersonalizationPolicy.clickSignalCap.toFixed(2)}/
               {feedPersonalizationPolicy.adSignalCap.toFixed(2)}/
               {feedPersonalizationPolicy.dwellSignalCap.toFixed(2)}/
               {feedPersonalizationPolicy.bookmarkSignalCap.toFixed(2)}

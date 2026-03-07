@@ -108,7 +108,7 @@ describe("post actions", () => {
     expect(mockRevalidatePath).toHaveBeenCalledWith("/posts/post-9");
   });
 
-  it("revalidates feed, detail, and saved page after toggling a bookmark", async () => {
+  it("revalidates feed, detail, and bookmarks page after toggling a bookmark", async () => {
     mockRequireCurrentUser.mockResolvedValue({ id: "user-8" } as never);
     mockTogglePostBookmark.mockResolvedValue({
       bookmarked: true,
@@ -127,7 +127,7 @@ describe("post actions", () => {
     expect(mockRevalidatePath).toHaveBeenCalledTimes(3);
     expect(mockRevalidatePath).toHaveBeenCalledWith("/feed");
     expect(mockRevalidatePath).toHaveBeenCalledWith("/posts/post-12");
-    expect(mockRevalidatePath).toHaveBeenCalledWith("/saved");
+    expect(mockRevalidatePath).toHaveBeenCalledWith("/bookmarks");
   });
 
   it("maps service errors without revalidating paths", async () => {
