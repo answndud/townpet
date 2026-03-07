@@ -17,6 +17,45 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-07: Cycle 213 완료 (개인화/광고 반응 지표 계측 정착)
+- 완료 내용
+- 개인화 지표 집계 저장소 추가:
+  - `app/prisma/schema.prisma`
+  - `app/prisma/migrations/20260307054500_add_feed_personalization_stats/migration.sql`
+  - `FeedPersonalizationStat` 일별 집계 모델과 `surface/event/audienceSource` enum을 추가
+  - audienceKey/breedCode를 non-null 차원으로 정규화해 upsert 기반 집계를 안정화
+- personalized tracking route/service/query 추가:
+  - `app/src/lib/feed-personalization-metrics.ts`
+  - `app/src/lib/validations/feed-personalization.ts`
+  - `app/src/server/services/feed-personalization-metrics.service.ts`
+  - `app/src/server/queries/feed-personalization-metrics.queries.ts`
+  - `app/src/app/api/feed/personalization/route.ts`
+  - 개인화 피드 조회, 게시글 클릭, 광고 노출, 광고 클릭을 일별 aggregate로 저장하는 서버 경로를 추가
+  - schema 미동기화 시 202 `SCHEMA_SYNC_REQUIRED`로 skip하고 UX는 깨지지 않게 유지
+- 피드/라운지 client tracking 연결:
+  - `app/src/components/posts/feed-infinite-list.tsx`
+  - `app/src/app/feed/page.tsx`
+  - `app/src/app/lounges/breeds/[breedCode]/page.tsx`
+  - personalized feed 최초 조회를 queryKey 기준 1회 기록하고, 게시글 클릭과 광고 노출/클릭도 keepalive POST로 집계
+  - 메인 피드와 품종 라운지 모두 `surface`와 `audienceSource`를 함께 전달
+- 운영 UI 추가:
+  - `app/src/app/admin/personalization/page.tsx`
+  - `app/src/app/admin/auth-audits/page.tsx`
+  - `app/src/app/admin/reports/page.tsx`
+  - `app/src/app/admin/policies/page.tsx`
+  - `/admin/personalization`에서 최근 7/14/30일 personalized feed CTR, 광고 CTR, surface/source 요약, 상위 audience key를 확인 가능하게 추가
+  - 기존 admin 페이지에서 바로 진입할 수 있도록 링크를 연결
+- 제품 문서 동기화:
+  - `docs/product/품종_개인화_기획서.md`
+- 검증 결과
+- `pnpm -C app exec prisma format` 통과
+- `pnpm -C app exec prisma generate` 통과
+- `pnpm -C app lint src/lib/feed-personalization-metrics.ts src/lib/validations/feed-personalization.ts src/server/services/feed-personalization-metrics.service.ts src/server/services/feed-personalization-metrics.service.test.ts src/server/queries/feed-personalization-metrics.queries.ts src/server/queries/feed-personalization-metrics.queries.test.ts src/app/api/feed/personalization/route.ts src/app/api/feed/personalization/route.test.ts src/app/admin/personalization/page.tsx src/components/posts/feed-infinite-list.tsx src/app/feed/page.tsx 'src/app/lounges/breeds/[breedCode]/page.tsx' src/app/admin/auth-audits/page.tsx src/app/admin/reports/page.tsx src/app/admin/policies/page.tsx` 통과
+- `pnpm -C app typecheck` 통과
+- `pnpm -C app test -- src/server/services/feed-personalization-metrics.service.test.ts src/server/queries/feed-personalization-metrics.queries.test.ts src/app/api/feed/personalization/route.test.ts src/server/queries/post.queries.test.ts src/lib/feed-personalization.test.ts` 실행 시 전체 Vitest 스위트 `95 files / 454 tests` 통과
+- 이슈/블로커
+- 없음
+
 ### 2026-03-07: Cycle 212 완료 (맞춤 추천 모드 노출 및 세그먼트 소비 고도화)
 - 완료 내용
 - `/feed` 맞춤 추천 노출 정리:

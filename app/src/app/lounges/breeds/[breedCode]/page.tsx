@@ -11,6 +11,7 @@ import {
   buildFeedPersonalizationSummary,
   resolveFeedAudienceContext,
 } from "@/lib/feed-personalization";
+import { toFeedAudienceSourceValue } from "@/lib/feed-personalization-metrics";
 import { FEED_PAGE_SIZE } from "@/lib/feed";
 import { postTypeMeta } from "@/lib/post-presenter";
 import {
@@ -423,6 +424,18 @@ export default async function BreedLoungePage({ params, searchParams }: BreedLou
             }}
             queryKey={queryKey}
             apiPath={`/api/lounges/breeds/${breedCode}/posts`}
+            personalizationTracking={
+              query.personalized
+                ? {
+                    surface: "BREED_LOUNGE",
+                    audienceKey: loungeAudienceContext.audienceKey,
+                    breedCode: loungeAudienceContext.breedCode,
+                    audienceSource: toFeedAudienceSourceValue(
+                      loungeAudienceContext.source,
+                    ),
+                  }
+                : undefined
+            }
           />
         )}
       </section>

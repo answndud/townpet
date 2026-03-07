@@ -6,6 +6,11 @@ import type { PostType } from "@prisma/client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { PostSignalIcons } from "@/components/posts/post-signal-icons";
+import type {
+  FeedAudienceSourceValue,
+  FeedPersonalizationEventValue,
+  FeedPersonalizationSurfaceValue,
+} from "@/lib/feed-personalization-metrics";
 import {
   formatCount,
   formatRelativeDate,
@@ -108,6 +113,12 @@ type FeedInfiniteListProps = {
     sessionCap: number;
     dailyCap: number;
   };
+  personalizationTracking?: {
+    surface: FeedPersonalizationSurfaceValue;
+    audienceKey?: string | null;
+    breedCode?: string | null;
+    audienceSource: FeedAudienceSourceValue;
+  };
 };
 
 const SCROLL_RESTORE_TTL_MS = 30 * 60 * 1000;
@@ -171,6 +182,29 @@ function parseReadPosts(raw: string | null): StoredReadPost[] {
   }
 }
 
+async function sendFeedPersonalizationMetric(input: {
+  surface: FeedPersonalizationSurfaceValue;
+  event: FeedPersonalizationEventValue;
+  audienceKey?: string | null;
+  breedCode?: string | null;
+  audienceSource: FeedAudienceSourceValue;
+}) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  await fetch("/api/feed/personalization", {
+    method: "POST",
+    credentials: "same-origin",
+    keepalive: true,
+    cache: "no-store",
+    headers: {
+      "content-type": "application/json",
+    },
+    body: JSON.stringify(input),
+  }).catch(() => undefined);
+}
+
 export function FeedInfiniteList({
   initialItems,
   initialNextCursor,
@@ -181,6 +215,7 @@ export function FeedInfiniteList({
   apiPath = "/api/posts",
   preferGuestDetail,
   adConfig,
+  personalizationTracking,
 }: FeedInfiniteListProps) {
   const [items, setItems] = useState(initialItems);
   const [nextCursor, setNextCursor] = useState(initialNextCursor);
@@ -192,6 +227,8 @@ export function FeedInfiniteList({
   const scrollStorageKey = useMemo(() => `feed:scroll:${queryKey}`, [queryKey]);
   const [relativeNow, setRelativeNow] = useState<number | null>(null);
   const [showAdSlot, setShowAdSlot] = useState(false);
+  const trackedViewKeyRef = useRef<string | null>(null);
+  const trackedAdKeyRef = useRef<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -293,6 +330,83 @@ export function FeedInfiniteList({
 
     restoreDoneRef.current = true;
   }, [scrollStorageKey]);
+
+  const trackPersonalizationEvent = useCallback(
+    (event: FeedPersonalizationEventValue) => {
+      if (!query.personalized || !personalizationTracking) {
+        return;
+      }
+
+      void sendFeedPersonalizationMetric({
+        surface: personalizationTracking.surface,
+        event,
+        audienceKey: personalizationTracking.audienceKey,
+        breedCode: personalizationTracking.breedCode,
+        audienceSource: personalizationTracking.audienceSource,
+      });
+    },
+    [personalizationTracking, query.personalized],
+  );
+
+  useEffect(() => {
+    if (!query.personalized || !personalizationTracking || items.length === 0) {
+      trackedViewKeyRef.current = null;
+      return;
+    }
+
+    const viewKey = [
+      queryKey,
+      personalizationTracking.surface,
+      personalizationTracking.audienceKey ?? "NONE",
+      personalizationTracking.audienceSource,
+    ].join("|");
+
+    if (trackedViewKeyRef.current === viewKey) {
+      return;
+    }
+
+    trackedViewKeyRef.current = viewKey;
+    trackPersonalizationEvent("VIEW");
+  }, [
+    items.length,
+    personalizationTracking,
+    query.personalized,
+    queryKey,
+    trackPersonalizationEvent,
+  ]);
+
+  useEffect(() => {
+    if (
+      !showAdSlot ||
+      !adConfig ||
+      !query.personalized ||
+      !personalizationTracking
+    ) {
+      trackedAdKeyRef.current = null;
+      return;
+    }
+
+    const adKey = [
+      queryKey,
+      adConfig.audienceKey,
+      personalizationTracking.surface,
+      personalizationTracking.audienceSource,
+    ].join("|");
+
+    if (trackedAdKeyRef.current === adKey) {
+      return;
+    }
+
+    trackedAdKeyRef.current = adKey;
+    trackPersonalizationEvent("AD_IMPRESSION");
+  }, [
+    adConfig,
+    personalizationTracking,
+    query.personalized,
+    queryKey,
+    showAdSlot,
+    trackPersonalizationEvent,
+  ]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -551,6 +665,7 @@ export function FeedInfiniteList({
                   <Link
                     href={adConfig.ctaHref}
                     className="tp-btn-primary mt-2 inline-flex items-center px-3 py-1 text-xs font-semibold"
+                    onClick={() => trackPersonalizationEvent("AD_CLICK")}
                   >
                     {adConfig.ctaLabel}
                   </Link>
@@ -586,7 +701,10 @@ export function FeedInfiniteList({
                         ? "text-[#8c9db8] hover:text-[#7589a8]"
                         : "text-[#1e3f74] hover:text-[#2f5da4]"
                     } visited:text-[#8c9db8]`}
-                    onClick={() => markPostAsRead(post.id)}
+                    onClick={() => {
+                      markPostAsRead(post.id);
+                      trackPersonalizationEvent("POST_CLICK");
+                    }}
                   >
                     <span className="overflow-hidden [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]">
                       {post.title}

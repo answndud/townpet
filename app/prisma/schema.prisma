@@ -130,6 +130,42 @@ model UserAudienceSegment {
   @@index([species, breedCode, sizeClass, lifeStage])
 }
 
+enum FeedPersonalizationSurface {
+  FEED
+  BREED_LOUNGE
+}
+
+enum FeedPersonalizationEvent {
+  VIEW
+  POST_CLICK
+  AD_IMPRESSION
+  AD_CLICK
+}
+
+enum FeedAudienceSource {
+  SEGMENT
+  PET
+  NONE
+}
+
+model FeedPersonalizationStat {
+  id             String                     @id @default(cuid())
+  day            DateTime
+  surface        FeedPersonalizationSurface
+  event          FeedPersonalizationEvent
+  audienceKey    String                     @default("NONE")
+  breedCode      String                     @default("NONE")
+  audienceSource FeedAudienceSource
+  count          Int                        @default(0)
+  createdAt      DateTime                   @default(now())
+  updatedAt      DateTime                   @updatedAt
+
+  @@unique([day, surface, event, audienceKey, breedCode, audienceSource])
+  @@index([day, surface, event])
+  @@index([event, updatedAt(sort: Desc)])
+  @@index([audienceKey, day, event])
+}
+
 enum UserRole {
   USER
   ADMIN

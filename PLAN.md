@@ -25,6 +25,12 @@
 
 ## Active Plan
 
+### Cycle 213: 개인화/광고 반응 지표 계측 정착 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| personalized feed/ad 반응 집계 저장소와 수집 route 추가 | Codex | P1 | `done` | 개인화 피드 조회/포스트 클릭/광고 노출/광고 클릭이 일별 집계 테이블에 저장되고 route/service/query 테스트가 존재함 | `app/prisma/schema.prisma`, `app/src/app/api/feed/personalization/route.ts`, `app/src/server/services/*`, `app/src/server/queries/*` |
+| 관리자 개인화 CTR 요약 화면 추가 | Codex | P1 | `done` | `/admin/personalization`에서 최근 개인화 피드/광고 CTR과 상위 audience key를 확인할 수 있고 기존 admin 페이지에서 진입 가능함 | `app/src/app/admin/personalization/page.tsx`, `app/src/app/admin/*.tsx`, `docs/product/품종_개인화_기획서.md` |
+
 ### Cycle 212: 맞춤 추천 모드 노출 및 세그먼트 소비 고도화 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|

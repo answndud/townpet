@@ -19,6 +19,7 @@ import {
   buildFeedPersonalizationSummary,
   resolveFeedAudienceContext,
 } from "@/lib/feed-personalization";
+import { toFeedAudienceSourceValue } from "@/lib/feed-personalization-metrics";
 import { FEED_PAGE_SIZE } from "@/lib/feed";
 import { isCommonBoardPostType } from "@/lib/community-board";
 import { isLoginRequiredPostType } from "@/lib/post-access";
@@ -1035,6 +1036,18 @@ export default async function Home({ searchParams }: HomePageProps) {
               }}
               queryKey={feedQueryKey}
               adConfig={adConfig}
+              personalizationTracking={
+                usePersonalizedFeed
+                  ? {
+                      surface: "FEED",
+                      audienceKey: feedAudienceContext.audienceKey,
+                      breedCode: feedAudienceContext.breedCode,
+                      audienceSource: toFeedAudienceSourceValue(
+                        feedAudienceContext.source,
+                      ),
+                    }
+                  : undefined
+              }
             />
           )}
           {mode === "BEST" && items.length > 0 && totalPages > 1 ? (
