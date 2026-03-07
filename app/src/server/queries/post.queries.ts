@@ -1,4 +1,5 @@
 import {
+  FeedPersonalizationEvent,
   PostReactionType,
   PostScope,
   PostStatus,
@@ -7,7 +8,11 @@ import {
 } from "@prisma/client";
 
 import {
+  DEFAULT_BREED_CATALOG,
+} from "@/lib/breed-catalog";
+import {
   extractAudienceSegmentBreedLabel,
+  getPetBreedDisplayLabel,
   hasBreedLoungeRoute,
 } from "@/lib/pet-profile";
 import { prisma } from "@/lib/prisma";
@@ -421,6 +426,29 @@ function isUnavailableReactionsIncludeError(error: unknown) {
   return isUnknownReactionsIncludeError(error) || isMissingPostReactionTableError(error);
 }
 
+function isMissingFeedPersonalizationEventLogSchemaError(error: unknown) {
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    if (error.code !== "P2021" && error.code !== "P2022") {
+      return false;
+    }
+
+    const tableName = String(error.meta?.table ?? "");
+    const columnName = String(error.meta?.column ?? "");
+    return (
+      tableName.includes("FeedPersonalizationEventLog") ||
+      columnName.includes("FeedPersonalizationEventLog")
+    );
+  }
+
+  return (
+    error instanceof Error &&
+    error.message.includes("FeedPersonalizationEventLog") &&
+    (error.message.includes("does not exist") ||
+      error.message.includes("Unknown field") ||
+      error.message.includes("Unknown arg"))
+  );
+}
+
 function isUnknownGuestAuthorIncludeError(error: unknown) {
   return error instanceof Error && error.message.includes("Unknown field `guestAuthor`");
 }
@@ -538,6 +566,18 @@ function supportsPostReactionsField() {
 
   postReactionsFieldSupport = true;
   return true;
+}
+
+function supportsFeedPersonalizationEventLogField() {
+  return Boolean(
+    (
+      prisma as typeof prisma & {
+        feedPersonalizationEventLog?: {
+          findMany: (typeof prisma.feedPersonalizationEventLog)["findMany"];
+        };
+      }
+    ).feedPersonalizationEventLog,
+  );
 }
 
 function supportsPostGuestAuthorField() {
@@ -863,6 +903,13 @@ type PostInterestLike = Pick<
   "petTypeId" | "type" | "reviewCategory" | "animalTags" | "petType"
 >;
 
+type FeedPersonalizationEventLogLike = {
+  event: FeedPersonalizationEvent;
+  audienceKey: string;
+  breedCode: string;
+  post: PostInterestLike | null;
+};
+
 type ViewerPersonalizationContext = {
   petSignals: PetSignal[];
   preferredPetTypeIds: string[];
@@ -871,6 +918,10 @@ type ViewerPersonalizationContext = {
   recentNegativePetTypeIds: string[];
   recentEngagementInterestLabels: string[];
   recentNegativeInterestLabels: string[];
+  recentClickPetTypeWeights: Record<string, number>;
+  recentClickInterestWeights: Record<string, number>;
+  recentAdBreedWeights: Record<string, number>;
+  recentAdAudienceKeyWeights: Record<string, number>;
 };
 
 const REVIEW_CATEGORY_INTEREST_LABELS: Partial<Record<ReviewCategory, string[]>> = {
@@ -902,6 +953,11 @@ function normalizeBreedLabel(value: string | null | undefined) {
   return normalized && normalized.length > 0 ? normalized : null;
 }
 
+function normalizeAudienceKey(value: string | null | undefined) {
+  const normalized = value?.trim().toUpperCase();
+  return normalized && normalized.length > 0 ? normalized : null;
+}
+
 function normalizeInterestLabel(value: string | null | undefined) {
   const normalized = value?.trim().replace(/\s+/g, " ").toLowerCase();
   return normalized && normalized.length > 0 ? normalized : null;
@@ -913,6 +969,61 @@ function dedupeInterestLabels(values: Array<string | null | undefined>) {
       values.filter((value): value is string => typeof value === "string" && value.length > 0),
     ),
   );
+}
+
+function buildFallbackAudienceKey(input: {
+  species: string | null | undefined;
+  sizeClass?: string | null;
+  lifeStage?: string | null;
+}) {
+  if (!input.species) {
+    return null;
+  }
+
+  const parts = [String(input.species)];
+  if (input.sizeClass && input.sizeClass !== "UNKNOWN") {
+    parts.push(String(input.sizeClass));
+  }
+  if (input.lifeStage && input.lifeStage !== "UNKNOWN") {
+    parts.push(String(input.lifeStage));
+  }
+  return parts.join(":");
+}
+
+function getRecencyWeight(index: number) {
+  return Math.max(0.28, 1 - index * 0.12);
+}
+
+function addWeightedDimension(
+  target: Record<string, number>,
+  key: string | null | undefined,
+  weight: number,
+) {
+  if (!key || weight <= 0) {
+    return;
+  }
+
+  target[key] = (target[key] ?? 0) + weight;
+}
+
+function listTopWeightedDimensions(
+  values: Record<string, number>,
+  limit = 3,
+) {
+  return Object.entries(values)
+    .sort((left, right) => {
+      if (right[1] !== left[1]) {
+        return right[1] - left[1];
+      }
+      return left[0].localeCompare(right[0], "ko");
+    })
+    .slice(0, limit)
+    .map(([key]) => key);
+}
+
+function getBreedSummaryLabel(breedCode: string) {
+  const catalogEntry = DEFAULT_BREED_CATALOG.find((entry) => entry.code === breedCode);
+  return catalogEntry?.labelKo ?? getPetBreedDisplayLabel({ breedCode, breedLabel: null });
 }
 
 function calculatePersonalizationBoost(
@@ -993,6 +1104,61 @@ function collectPostInterestLabels(post: PostInterestLike) {
   ]);
 }
 
+function buildRecentBehaviorSignal(
+  logs: FeedPersonalizationEventLogLike[],
+) {
+  const recentClickPetTypeWeights: Record<string, number> = {};
+  const recentClickInterestWeights: Record<string, number> = {};
+  const recentAdBreedWeights: Record<string, number> = {};
+  const recentAdAudienceKeyWeights: Record<string, number> = {};
+  const recentBehaviorSummaryWeights: Record<string, number> = {};
+
+  logs.forEach((log, index) => {
+    const weight = getRecencyWeight(index);
+
+    if (log.event === "POST_CLICK" && log.post) {
+      addWeightedDimension(
+        recentClickPetTypeWeights,
+        log.post.petTypeId,
+        weight,
+      );
+      const interestLabels = collectPostInterestLabels(log.post);
+      for (const label of interestLabels) {
+        addWeightedDimension(recentClickInterestWeights, label, weight);
+        addWeightedDimension(recentBehaviorSummaryWeights, label, weight);
+      }
+      return;
+    }
+
+    if (log.event !== "AD_CLICK") {
+      return;
+    }
+
+    const breedCode = normalizeBreedCode(log.breedCode);
+    if (breedCode && hasBreedLoungeRoute(breedCode)) {
+      addWeightedDimension(recentAdBreedWeights, breedCode, weight);
+      addWeightedDimension(
+        recentBehaviorSummaryWeights,
+        getBreedSummaryLabel(breedCode),
+        weight,
+      );
+    }
+
+    const audienceKey = normalizeAudienceKey(log.audienceKey);
+    if (audienceKey && audienceKey !== "NONE") {
+      addWeightedDimension(recentAdAudienceKeyWeights, audienceKey, weight);
+    }
+  });
+
+  return {
+    recentClickPetTypeWeights,
+    recentClickInterestWeights,
+    recentAdBreedWeights,
+    recentAdAudienceKeyWeights,
+    summaryLabels: listTopWeightedDimensions(recentBehaviorSummaryWeights, 3),
+  };
+}
+
 function calculatePreferredInterestBoost(
   post: FeedLikePost,
   preferredInterestLabels: string[],
@@ -1053,6 +1219,64 @@ function calculateRecentEngagementBoost(
   return boost;
 }
 
+function calculateRecentBehaviorBoost(
+  post: FeedLikePost,
+  viewerContext: ViewerPersonalizationContext,
+  authorPetByUserId: Map<string, PetSignal[]>,
+) {
+  let boost = 0;
+
+  if (post.petTypeId) {
+    boost += Math.min(
+      0.045,
+      (viewerContext.recentClickPetTypeWeights[post.petTypeId] ?? 0) * 0.03,
+    );
+  }
+
+  const postInterestLabels = collectPostInterestLabels(post);
+  if (postInterestLabels.length > 0) {
+    const clickInterestWeight = postInterestLabels.reduce(
+      (total, label) => total + (viewerContext.recentClickInterestWeights[label] ?? 0),
+      0,
+    );
+    boost += Math.min(0.05, clickInterestWeight * 0.015);
+  }
+
+  const authorPets = authorPetByUserId.get(post.author.id) ?? [];
+  if (authorPets.length === 0) {
+    return boost;
+  }
+
+  let bestBreedWeight = 0;
+  let bestAudienceKeyWeight = 0;
+
+  for (const authorPet of authorPets) {
+    const authorBreedCode = normalizeBreedCode(authorPet.breedCode);
+    if (authorBreedCode && hasBreedLoungeRoute(authorBreedCode)) {
+      bestBreedWeight = Math.max(
+        bestBreedWeight,
+        viewerContext.recentAdBreedWeights[authorBreedCode] ?? 0,
+      );
+    }
+
+    const fallbackAudienceKey = buildFallbackAudienceKey({
+      species: authorPet.species,
+      sizeClass: authorPet.sizeClass,
+      lifeStage: authorPet.lifeStage,
+    });
+    if (fallbackAudienceKey) {
+      bestAudienceKeyWeight = Math.max(
+        bestAudienceKeyWeight,
+        viewerContext.recentAdAudienceKeyWeights[fallbackAudienceKey] ?? 0,
+      );
+    }
+  }
+
+  boost += Math.min(0.04, bestBreedWeight * 0.028);
+  boost += Math.min(0.025, bestAudienceKeyWeight * 0.02);
+  return boost;
+}
+
 function calculateViewerPersonalizationBoost(
   post: FeedLikePost,
   viewerContext: ViewerPersonalizationContext,
@@ -1071,8 +1295,19 @@ function calculateViewerPersonalizationBoost(
     viewerContext.preferredInterestLabels,
   );
   const recentEngagementBoost = calculateRecentEngagementBoost(post, viewerContext);
+  const recentBehaviorBoost = calculateRecentBehaviorBoost(
+    post,
+    viewerContext,
+    authorPetByUserId,
+  );
 
-  return petBoost + preferredPetTypeBoost + preferredInterestBoost + recentEngagementBoost;
+  return (
+    petBoost +
+    preferredPetTypeBoost +
+    preferredInterestBoost +
+    recentEngagementBoost +
+    recentBehaviorBoost
+  );
 }
 
 function calculateFeedScore(
@@ -1292,12 +1527,77 @@ export async function listViewerRecentEngagementSummaryLabels(viewerId: string) 
   ).slice(0, 3);
 }
 
+async function listViewerRecentBehaviorEvents(
+  viewerId: string,
+  take = 16,
+): Promise<FeedPersonalizationEventLogLike[]> {
+  if (!supportsFeedPersonalizationEventLogField()) {
+    return [];
+  }
+
+  const delegate = (
+    prisma as typeof prisma & {
+      feedPersonalizationEventLog?: {
+        findMany: (typeof prisma.feedPersonalizationEventLog)["findMany"];
+      };
+    }
+  ).feedPersonalizationEventLog;
+
+  if (!delegate) {
+    return [];
+  }
+
+  return delegate
+    .findMany({
+      where: {
+        userId: viewerId,
+        event: { in: ["POST_CLICK", "AD_CLICK"] },
+      },
+      orderBy: { createdAt: "desc" },
+      take,
+      select: {
+        event: true,
+        audienceKey: true,
+        breedCode: true,
+        post: {
+          select: {
+            petTypeId: true,
+            type: true,
+            reviewCategory: true,
+            animalTags: true,
+            petType: {
+              select: {
+                tags: true,
+              },
+            },
+          },
+        },
+      },
+    })
+    .catch((error) => {
+      if (
+        isMissingFeedPersonalizationEventLogSchemaError(error) ||
+        isMissingCommunityBoardSchemaError(error) ||
+        isMissingReviewCategoryColumnError(error)
+      ) {
+        return [];
+      }
+      throw error;
+    });
+}
+
+export async function listViewerRecentBehaviorSummaryLabels(viewerId: string) {
+  const recentBehaviorEvents = await listViewerRecentBehaviorEvents(viewerId, 12);
+  return buildRecentBehaviorSignal(recentBehaviorEvents).summaryLabels;
+}
+
 async function listViewerPersonalizationContext(
   viewerId: string,
 ): Promise<ViewerPersonalizationContext> {
-  const [petSignals, preferredPetTypeIds] = await Promise.all([
+  const [petSignals, preferredPetTypeIds, recentBehaviorEvents] = await Promise.all([
     listViewerPetSignals(viewerId),
     listPreferredPetTypeIdsByUserId(viewerId),
+    listViewerRecentBehaviorEvents(viewerId, 20),
   ]);
   const normalizedPreferredPetTypeIds = Array.from(
     new Set(
@@ -1363,6 +1663,7 @@ async function listViewerPersonalizationContext(
     : [];
   const positiveReactions = recentReactions.filter((reaction) => reaction.type === "LIKE");
   const negativeReactions = recentReactions.filter((reaction) => reaction.type === "DISLIKE");
+  const recentBehaviorSignal = buildRecentBehaviorSignal(recentBehaviorEvents);
 
   return {
     petSignals,
@@ -1384,6 +1685,10 @@ async function listViewerPersonalizationContext(
     recentNegativeInterestLabels: dedupeInterestLabels(
       negativeReactions.flatMap((reaction) => collectPostInterestLabels(reaction.post)),
     ),
+    recentClickPetTypeWeights: recentBehaviorSignal.recentClickPetTypeWeights,
+    recentClickInterestWeights: recentBehaviorSignal.recentClickInterestWeights,
+    recentAdBreedWeights: recentBehaviorSignal.recentAdBreedWeights,
+    recentAdAudienceKeyWeights: recentBehaviorSignal.recentAdAudienceKeyWeights,
   };
 }
 
@@ -1403,13 +1708,21 @@ async function applyPetPersonalization<T extends FeedLikePost>(
     viewerContext.recentEngagementPetTypeIds.length === 0 &&
     viewerContext.recentNegativePetTypeIds.length === 0 &&
     viewerContext.recentEngagementInterestLabels.length === 0 &&
-    viewerContext.recentNegativeInterestLabels.length === 0
+    viewerContext.recentNegativeInterestLabels.length === 0 &&
+    Object.keys(viewerContext.recentClickPetTypeWeights).length === 0 &&
+    Object.keys(viewerContext.recentClickInterestWeights).length === 0 &&
+    Object.keys(viewerContext.recentAdBreedWeights).length === 0 &&
+    Object.keys(viewerContext.recentAdAudienceKeyWeights).length === 0
   ) {
     return items;
   }
 
   const authorPetByUserId = new Map<string, PetSignal[]>();
-  if (viewerContext.petSignals.length > 0) {
+  if (
+    viewerContext.petSignals.length > 0 ||
+    Object.keys(viewerContext.recentAdBreedWeights).length > 0 ||
+    Object.keys(viewerContext.recentAdAudienceKeyWeights).length > 0
+  ) {
     const authorIds = Array.from(new Set(items.map((item) => item.author.id)));
     if (authorIds.length > 0) {
       const authorPetSignalsRaw = await prisma.pet.findMany({

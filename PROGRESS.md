@@ -17,6 +17,44 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-07: Cycle 220 완료 (최근 클릭/광고 반응 기반 5차 개인화 신호)
+- 완료 내용
+- user-level click/ad event log 저장소 추가:
+  - `app/prisma/schema.prisma`
+  - `app/prisma/migrations/20260307083000_add_feed_personalization_event_logs/migration.sql`
+  - `app/src/lib/validations/feed-personalization.ts`
+  - `app/src/app/api/feed/personalization/route.ts`
+  - `app/src/server/services/feed-personalization-metrics.service.ts`
+  - personalized feed aggregate 통계는 유지하면서, 인증 사용자 `POST_CLICK`/`AD_CLICK` 이벤트를 `FeedPersonalizationEventLog`에 함께 저장하도록 확장
+  - `POST_CLICK` payload에는 `postId`를 필수로 강제하고, 롤링 배포 구간에서 새 log table이 아직 없더라도 aggregate 수집은 유지되도록 best-effort 저장으로 정리
+- recency-weighted 5차 랭킹 신호/설명 연결:
+  - `app/src/server/queries/post.queries.ts`
+  - `app/src/server/queries/post.queries.test.ts`
+  - `app/src/lib/feed-personalization.ts`
+  - `app/src/lib/feed-personalization.test.ts`
+  - `app/src/app/feed/page.tsx`
+  - 최근 게시글 클릭 로그는 `petTypeId`/관심 태그 기준으로 약한 5차 boost에 반영하고, 최근 광고 클릭 로그는 품종 audience key 기준으로 author pet 매치에 약한 reinforcement로 반영
+  - `/feed` 맞춤 추천 설명에 `최근 클릭/광고 반응` 5차 신호를 추가하고, 프로필 신호가 부족한 경우에는 recent behavior 기준 fallback summary도 제공
+- 제품 문서 동기화:
+  - `docs/product/품종_개인화_기획서.md`
+  - 구현 상태를 user-level click/ad response 5차 신호까지 반영된 상태로 갱신하고, 다음 오픈 이슈를 `저장(bookmark)/체류시간` 기반 6차 신호로 조정
+- 검증 결과
+- `pnpm -C app exec prisma format` 통과
+- `pnpm -C app exec prisma generate` 통과
+- `pnpm -C app lint src/app/api/feed/personalization/route.ts src/app/api/feed/personalization/route.test.ts src/app/feed/page.tsx src/components/posts/feed-infinite-list.tsx src/lib/feed-personalization.ts src/lib/feed-personalization.test.ts src/lib/validations/feed-personalization.ts src/server/queries/post.queries.ts src/server/queries/post.queries.test.ts src/server/services/feed-personalization-metrics.service.ts src/server/services/feed-personalization-metrics.service.test.ts` 통과
+- `pnpm -C app typecheck` 통과
+- `pnpm -C app test -- src/app/api/feed/personalization/route.test.ts src/lib/feed-personalization.test.ts src/server/queries/post.queries.test.ts src/server/services/feed-personalization-metrics.service.test.ts` 실행 시 전체 Vitest 스위트 `97 files / 485 tests` 통과
+- 이슈/블로커
+- 로컬 `pnpm -C app exec prisma migrate deploy`는 이번 변경이 아니라 이전 `20260307011000_limit_report_target_to_post` migration에서 local DB에 남아 있는 legacy non-post report rows 때문에 막혔음. production DB는 해당 선행 migration이 이미 적용된 상태를 전제로 새 migration을 반영해야 함
+
+### 2026-03-07: Cycle 220 착수 (최근 클릭/광고 반응 기반 5차 개인화 신호)
+- 진행 내용
+- current personalized feed는 프로필, 선호 커뮤니티, 관심 태그, 최근 reaction까지는 반영하지만, user-level `POST_CLICK`/`AD_CLICK` 로그는 aggregate 통계로만 남고 개인화 랭킹에는 사용하지 않고 있음을 확인
+- `/api/feed/personalization` route와 service는 현재 일별 aggregate upsert만 수행하므로, 이번 사이클은 aggregate를 유지하면서 per-user click/ad event log를 추가하고 recent click/ad response를 약한 5차 signal로 소비하는 방향으로 범위를 확정
+- 저장(bookmark) 반응은 현재 제품 기능 자체가 없으므로 이번 사이클 범위에서는 제외하고, 실제로 존재하는 click/ad response 로그를 recency-weighted signal로 우선 연결
+- 이슈/블로커
+- 없음
+
 ### 2026-03-07: Cycle 219 완료 (최근 반응 기반 4차 개인화 신호)
 - 완료 내용
 - recent reaction 4차 랭킹 신호 연결:

@@ -7,6 +7,9 @@ vi.mock("@/lib/prisma", () => ({
     feedPersonalizationStat: {
       upsert: vi.fn(),
     },
+    feedPersonalizationEventLog: {
+      create: vi.fn(),
+    },
   },
 }));
 
@@ -14,15 +17,20 @@ const mockPrisma = vi.mocked(prisma) as unknown as {
   feedPersonalizationStat?: {
     upsert: ReturnType<typeof vi.fn>;
   };
+  feedPersonalizationEventLog?: {
+    create: ReturnType<typeof vi.fn>;
+  };
 };
 
 describe("feed personalization metrics service", () => {
   beforeEach(() => {
     mockPrisma.feedPersonalizationStat?.upsert.mockReset();
+    mockPrisma.feedPersonalizationEventLog?.create.mockReset();
   });
 
-  it("upserts daily aggregate with normalized dimensions", async () => {
+  it("upserts daily aggregate and writes post-click event log with normalized dimensions", async () => {
     mockPrisma.feedPersonalizationStat?.upsert.mockResolvedValue({});
+    mockPrisma.feedPersonalizationEventLog?.create.mockResolvedValue({});
 
     const result = await recordFeedPersonalizationMetric({
       surface: "FEED",
@@ -30,10 +38,13 @@ describe("feed personalization metrics service", () => {
       audienceKey: " maltese ",
       breedCode: "",
       audienceSource: "SEGMENT",
+      postId: "post-1",
+      userId: "user-1",
     });
 
     expect(result).toEqual({ ok: true, recorded: true });
     expect(mockPrisma.feedPersonalizationStat?.upsert).toHaveBeenCalledTimes(1);
+    expect(mockPrisma.feedPersonalizationEventLog?.create).toHaveBeenCalledTimes(1);
     expect(
       mockPrisma.feedPersonalizationStat?.upsert.mock.calls[0][0],
     ).toMatchObject({
@@ -47,6 +58,19 @@ describe("feed personalization metrics service", () => {
       },
       update: {
         count: { increment: 1 },
+      },
+    });
+    expect(
+      mockPrisma.feedPersonalizationEventLog?.create.mock.calls[0][0],
+    ).toMatchObject({
+      data: {
+        userId: "user-1",
+        postId: "post-1",
+        surface: "FEED",
+        event: "POST_CLICK",
+        audienceKey: "MALTESE",
+        breedCode: "NONE",
+        audienceSource: "SEGMENT",
       },
     });
   });
@@ -78,5 +102,25 @@ describe("feed personalization metrics service", () => {
     });
 
     expect(result).toEqual({ ok: false, reason: "SCHEMA_SYNC_REQUIRED" });
+  });
+
+  it("keeps aggregate recording when event log table is missing", async () => {
+    mockPrisma.feedPersonalizationStat?.upsert.mockResolvedValue({});
+    mockPrisma.feedPersonalizationEventLog?.create.mockRejectedValue(
+      new Error("The table `public.FeedPersonalizationEventLog` does not exist"),
+    );
+
+    const result = await recordFeedPersonalizationMetric({
+      surface: "BREED_LOUNGE",
+      event: "AD_CLICK",
+      audienceKey: "MALTESE",
+      breedCode: "MALTESE",
+      audienceSource: "SEGMENT",
+      userId: "user-2",
+    });
+
+    expect(result).toEqual({ ok: true, recorded: true });
+    expect(mockPrisma.feedPersonalizationStat?.upsert).toHaveBeenCalledTimes(1);
+    expect(mockPrisma.feedPersonalizationEventLog?.create).toHaveBeenCalledTimes(1);
   });
 });

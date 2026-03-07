@@ -13,13 +13,26 @@ const metricDimensionSchema = z
   .regex(/^[A-Za-z0-9_:-]+$/)
   .optional();
 
-export const feedPersonalizationMetricSchema = z.object({
-  surface: z.enum(FEED_PERSONALIZATION_SURFACE_VALUES),
-  event: z.enum(FEED_PERSONALIZATION_EVENT_VALUES),
-  audienceKey: metricDimensionSchema,
-  breedCode: metricDimensionSchema,
-  audienceSource: z.enum(FEED_AUDIENCE_SOURCE_VALUES),
-});
+const postIdSchema = z.string().trim().min(1).max(64).optional();
+
+export const feedPersonalizationMetricSchema = z
+  .object({
+    surface: z.enum(FEED_PERSONALIZATION_SURFACE_VALUES),
+    event: z.enum(FEED_PERSONALIZATION_EVENT_VALUES),
+    audienceKey: metricDimensionSchema,
+    breedCode: metricDimensionSchema,
+    audienceSource: z.enum(FEED_AUDIENCE_SOURCE_VALUES),
+    postId: postIdSchema,
+  })
+  .superRefine((value, ctx) => {
+    if (value.event === "POST_CLICK" && !value.postId) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["postId"],
+        message: "게시글 클릭 이벤트에는 postId가 필요합니다.",
+      });
+    }
+  });
 
 export const adminFeedPersonalizationQuerySchema = z.object({
   days: z.coerce.number().int().min(1).max(30).optional(),

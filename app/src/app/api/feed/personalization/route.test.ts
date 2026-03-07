@@ -75,6 +75,37 @@ describe("POST /api/feed/personalization contract", () => {
         skippedReason: "SCHEMA_SYNC_REQUIRED",
       },
     });
+    expect(mockRecordFeedPersonalizationMetric).toHaveBeenCalledWith({
+      surface: "FEED",
+      event: "VIEW",
+      audienceSource: "PET",
+      userId: "user-1",
+    });
+  });
+
+  it("returns 400 when post click payload omits postId", async () => {
+    mockRequireAuthenticatedUserId.mockResolvedValue("user-1");
+    mockEnforceRateLimit.mockResolvedValue();
+
+    const request = new Request("http://localhost/api/feed/personalization", {
+      method: "POST",
+      body: JSON.stringify({
+        surface: "FEED",
+        event: "POST_CLICK",
+        audienceSource: "SEGMENT",
+      }),
+      headers: { "content-type": "application/json" },
+    }) as NextRequest;
+
+    const response = await POST(request);
+    const payload = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(payload).toMatchObject({
+      ok: false,
+      error: { code: "INVALID_INPUT" },
+    });
+    expect(mockRecordFeedPersonalizationMetric).not.toHaveBeenCalled();
   });
 
   it("returns 500 and monitors unexpected errors", async () => {
@@ -84,7 +115,12 @@ describe("POST /api/feed/personalization contract", () => {
 
     const request = new Request("http://localhost/api/feed/personalization", {
       method: "POST",
-      body: JSON.stringify({ surface: "FEED", event: "POST_CLICK", audienceSource: "SEGMENT" }),
+      body: JSON.stringify({
+        surface: "FEED",
+        event: "POST_CLICK",
+        audienceSource: "SEGMENT",
+        postId: "post-1",
+      }),
       headers: { "content-type": "application/json" },
     }) as NextRequest;
 
