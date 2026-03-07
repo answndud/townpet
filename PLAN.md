@@ -25,6 +25,13 @@
 
 ## Active Plan
 
+### Cycle 223: 개인화 튜닝 정책 설정화 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| feed personalization tuning policy 모델/validation/query/service 추가 | Codex | P1 | `done` | `SiteSetting` 기반으로 recent signal decay, personalized ratio/threshold, click/ad/dwell/bookmark multiplier+cap을 저장/조회할 수 있고 validation/query 테스트가 존재함 | `app/src/lib/feed-personalization-policy.ts`, `app/src/lib/validations/policy.ts`, `app/src/server/queries/policy.queries.ts`, `app/src/server/services/policy.service.ts` |
+| 관리자 정책 화면에 개인화 튜닝 편집 UI 추가 | Codex | P1 | `done` | `/admin/policies`에서 운영자가 개인화 튜닝 정책을 수정할 수 있고 성공/실패 메시지가 노출됨 | `app/src/app/admin/policies/page.tsx`, `app/src/components/admin/feed-personalization-policy-form.tsx`, `app/src/server/actions/policy.ts` |
+| personalized feed ranking에 tuning policy 적용 | Codex | P1 | `done` | recent click/ad/dwell/bookmark boost와 personalized/explore blend가 정책값을 사용하고 회귀 테스트/제품 문서가 동기화됨 | `app/src/server/queries/post.queries.ts`, `app/src/server/queries/post.queries.test.ts`, `docs/product/품종_개인화_기획서.md` |
+
 ### Cycle 222: 저장(bookmark) 기반 7차 개인화 신호 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|

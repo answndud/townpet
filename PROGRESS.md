@@ -17,6 +17,42 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-07: Cycle 223 완료 (개인화 튜닝 정책 설정화)
+- 완료 내용
+- 개인화 튜닝 정책 저장소/검증 경로 추가:
+  - `app/src/lib/feed-personalization-policy.ts`
+  - `app/src/lib/feed-personalization-policy.test.ts`
+  - `app/src/lib/validations/policy.ts`
+  - `app/src/server/queries/policy.queries.ts`
+  - `app/src/server/queries/policy.queries.test.ts`
+  - `SiteSetting` 기반 `feed_personalization_policy_v1` 정책을 추가해 recent signal recency decay, personalized ratio/threshold, click/ad/dwell/bookmark multiplier+cap을 운영 조정 가능하게 구성
+- 관리자 정책 화면에 개인화 튜닝 UI 추가:
+  - `app/src/app/admin/policies/page.tsx`
+  - `app/src/components/admin/feed-personalization-policy-form.tsx`
+  - `app/src/server/actions/policy.ts`
+  - `app/src/server/services/policy.service.ts`
+  - `/admin/policies`에서 개인화 blend/threshold와 recent signal multiplier/cap을 수정할 수 있게 했고, 저장 성공/오류 메시지를 운영 UI에 연결
+- personalized feed ranking에 tuning policy 적용:
+  - `app/src/server/queries/post.queries.ts`
+  - `app/src/server/queries/post.queries.test.ts`
+  - recent click/ad/dwell/bookmark signal과 personalized/explore interleave가 정책값을 직접 사용하도록 바꿨고, bookmark multiplier를 0으로 내리면 최근 저장 신호가 꺼지는 회귀 테스트를 추가
+- 제품 문서 동기화:
+  - `docs/product/품종_개인화_기획서.md`
+  - 개인화 tuning 정책이 운영 조정 경로로 추가된 상태를 반영하고, 후속 오픈 이슈를 A/B 실험/CTR 기준 재보정으로 정리
+- 검증 결과
+- `pnpm -C app lint src/app/admin/policies/page.tsx src/components/admin/feed-personalization-policy-form.tsx src/lib/feed-personalization-policy.ts src/lib/feed-personalization-policy.test.ts src/lib/validations/policy.ts src/server/actions/policy.ts src/server/services/policy.service.ts src/server/queries/policy.queries.ts src/server/queries/policy.queries.test.ts src/server/queries/post.queries.ts src/server/queries/post.queries.test.ts` 통과
+- `pnpm -C app typecheck` 통과
+- `pnpm -C app test -- src/lib/feed-personalization-policy.test.ts src/server/queries/policy.queries.test.ts src/server/queries/post.queries.test.ts` 실행 시 전체 Vitest 스위트 통과
+- 이슈/블로커
+- 없음
+
+### 2026-03-07: Cycle 223 착수 (개인화 튜닝 정책 설정화)
+- 진행 내용
+- recent click/ad/dwell/bookmark 개인화 가중치와 recency decay, personalized/explore blend가 전부 하드코딩되어 있어 운영자가 CTR/저장률 데이터에 맞춰 즉시 튜닝할 경로가 없음을 확인
+- 이번 사이클 범위를 `SiteSetting 기반 tuning policy` + `/admin/policies` 편집 UI + personalized ranking 적용 + 회귀 테스트로 확정
+- 이슈/블로커
+- 현재 `docs/product/품종_개인화_기획서.md`는 사용자가 수정한 내용이 일부 남아 있어, 기존 변경을 되돌리지 않고 필요한 운영 튜닝 메모만 최소 반영하기로 함
+
 ### 2026-03-07: Cycle 222 완료 (저장(bookmark) 기반 7차 개인화 신호)
 - 완료 내용
 - PostBookmark 스키마/서비스/액션/저장 UI 추가:
