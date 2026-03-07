@@ -17,6 +17,36 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-07: Cycle 217 완료 (선호 커뮤니티 기반 2차 개인화 신호 연결)
+- 완료 내용
+- preferredPetTypes 2차 랭킹 신호 연결:
+  - `app/src/server/queries/post.queries.ts`
+  - `app/src/server/queries/post.queries.test.ts`
+  - personalized feed 점수에 viewer의 `preferredPetTypes`와 post `petTypeId` 매치를 `+0.12` 2차 가중치로 추가
+  - 프로필/세그먼트 기반 pet signal이 없어도 선호 커뮤니티만으로 personalized feed가 약하게 재정렬되도록 보정
+  - viewer pet signal이 없을 때는 author pet 조회를 생략해 불필요한 query를 줄이고, 선호 커뮤니티 매치 회귀 테스트를 추가
+- 피드 개인화 설명에 선호 커뮤니티 신호 노출:
+  - `app/src/lib/feed-personalization.ts`
+  - `app/src/lib/feed-personalization.test.ts`
+  - `app/src/app/feed/page.tsx`
+  - `docs/product/품종_개인화_기획서.md`
+  - `resolveFeedAudienceContext`에 선호 커뮤니티 라벨을 포함하고, 품종/프로필 기준 설명에 `선호 커뮤니티` 2차 신호를 함께 노출
+  - 프로필 신호가 비어 있는 경우에도 `선호 커뮤니티 기준으로 기본 맞춤 추천` 요약이 나오도록 fallback summary를 추가
+- 검증 결과
+- `pnpm -C app lint src/server/queries/post.queries.ts src/server/queries/post.queries.test.ts src/lib/feed-personalization.ts src/lib/feed-personalization.test.ts src/app/feed/page.tsx` 통과
+- `pnpm -C app typecheck` 통과
+- `pnpm -C app test -- src/lib/feed-personalization.test.ts src/server/queries/post.queries.test.ts` 실행 시 전체 Vitest 스위트 `97 files / 474 tests` 통과
+- 이슈/블로커
+- 없음
+
+### 2026-03-07: Cycle 217 착수 (선호 커뮤니티 기반 2차 개인화 신호 연결)
+- 진행 내용
+- `preferredPetTypes`와 `UserPetTypePreference` 저장 경로는 이미 존재하지만, personalized ranking 점수 함수는 여전히 품종/체급/생애단계 신호만 사용하고 있음을 확인
+- `/feed` 개인화 설명도 세그먼트/프로필 기준만 노출하고 있어 사용자가 선택한 커뮤니티 선호가 랭킹에 어떻게 쓰이는지 보이지 않음을 확인
+- 이번 사이클 범위를 `preferredPetTypes -> post.petTypeId` 2차 가중치 연결 + 피드 설명/제품 문서 동기화로 확정
+- 이슈/블로커
+- 없음
+
 ### 2026-03-07: Cycle 216 완료 (혼종/품종 미상 개인화 fallback 고도화)
 - 완료 내용
 - 세그먼트 confidence/audience key 보정:

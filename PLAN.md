@@ -25,6 +25,12 @@
 
 ## Active Plan
 
+### Cycle 217: 선호 커뮤니티 기반 2차 개인화 신호 연결 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| preferredPetTypes를 personalized ranking 2차 가중치로 연결 | Codex | P1 | `done` | personalized feed가 viewer의 `preferredPetTypes`와 post `petTypeId` 매치를 추가 신호로 사용하고 회귀 테스트가 존재함 | `app/src/server/queries/post.queries.ts`, `app/src/server/queries/post.queries.test.ts`, `app/src/server/queries/user.queries.ts` |
+| 피드 개인화 설명에 선호 커뮤니티 신호 노출 | Codex | P2 | `done` | `/feed` 맞춤 추천 설명이 품종/프로필 신호 외에 선호 커뮤니티 2차 신호를 함께 안내하고 문서가 동기화됨 | `app/src/lib/feed-personalization.ts`, `app/src/lib/feed-personalization.test.ts`, `app/src/app/feed/page.tsx`, `docs/product/품종_개인화_기획서.md` |
+
 ### Cycle 216: 혼종/품종 미상 개인화 fallback 고도화 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|

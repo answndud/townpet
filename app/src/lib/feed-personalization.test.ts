@@ -102,4 +102,38 @@ describe("feed personalization helpers", () => {
       emphasis: "프로필 보강 필요",
     });
   });
+
+  it("surfaces preferred communities as secondary signal in feed summary", () => {
+    const context = resolveFeedAudienceContext({
+      segment: {
+        label: "강아지 · 말티즈 · 소형 · 성체",
+        species: "DOG",
+        breedCode: "maltese",
+        breedLabel: "말티즈",
+        sizeClass: "SMALL",
+        lifeStage: "ADULT",
+        confidenceScore: 0.83,
+      },
+      preferredPetTypeLabels: ["강아지 일상", "강아지 건강"],
+    });
+
+    expect(buildFeedPersonalizationSummary(context)).toMatchObject({
+      title: "강아지 · 말티즈 · 소형 · 성체 기준으로 맞춤 추천 중",
+      emphasis: "세그먼트 신뢰도 83% · 선호 커뮤니티 강아지 일상, 강아지 건강",
+    });
+    expect(buildFeedPersonalizationSummary(context).description).toContain(
+      "선택한 커뮤니티 선호도 2차 신호로 함께 반영합니다.",
+    );
+  });
+
+  it("falls back to preferred communities when profile signals are missing", () => {
+    const context = resolveFeedAudienceContext({
+      preferredPetTypeLabels: ["강아지 일상", "강아지 건강"],
+    });
+
+    expect(buildFeedPersonalizationSummary(context)).toMatchObject({
+      title: "선호 커뮤니티 기준으로 기본 맞춤 추천 중",
+      emphasis: "선호 커뮤니티 강아지 일상, 강아지 건강",
+    });
+  });
 });

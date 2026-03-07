@@ -217,6 +217,7 @@ export default async function Home({ searchParams }: HomePageProps) {
     nickname: session?.user?.nickname,
   });
   const allPetTypeIds = communities.map((item) => item.id);
+  const communityLabelById = new Map(communities.map((item) => [item.id, item.labelKo]));
   const cookiePetTypeIds = parsePetTypePreferenceCookie(
     cookieStore.get(PET_TYPE_PREFERENCE_COOKIE)?.value,
   ).filter((id) => allPetTypeIds.includes(id));
@@ -232,6 +233,9 @@ export default async function Home({ searchParams }: HomePageProps) {
     ? []
     : await getGuestFeedContext().then((context) => context.loginRequiredTypes);
   const preferredPetTypeIds = extractPreferredPetTypeIds(user);
+  const preferredPetTypeLabels = preferredPetTypeIds
+    .map((id) => communityLabelById.get(id) ?? null)
+    .filter((label): label is string => typeof label === "string" && label.length > 0);
   const isAuthenticated = Boolean(user);
   const blockedTypesForGuest = !isAuthenticated ? loginRequiredTypes : [];
 
@@ -494,6 +498,7 @@ export default async function Home({ searchParams }: HomePageProps) {
   const feedAudienceContext = resolveFeedAudienceContext({
     segment: primaryAudienceSegment,
     fallbackPet: primaryPet,
+    preferredPetTypeLabels,
   });
   const personalizedSummary = usePersonalizedFeed
     ? buildFeedPersonalizationSummary(feedAudienceContext)
