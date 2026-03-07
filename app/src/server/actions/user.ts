@@ -30,6 +30,7 @@ export async function updateProfileAction(input: unknown): Promise<UserActionRes
       // Session refresh failure should not fail profile persistence.
     }
     revalidatePath("/profile");
+    revalidatePath(`/users/${user.id}`);
     revalidatePath("/onboarding");
     return { ok: true };
   } catch (error) {

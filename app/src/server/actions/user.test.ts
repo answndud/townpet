@@ -44,14 +44,25 @@ describe("user actions", () => {
     mockUpdateProfile.mockResolvedValue({ nickname: "타운펫" } as never);
     mockUnstableUpdate.mockResolvedValue(null);
 
-    const result = await updateProfileAction({ nickname: "타운펫" });
+    const result = await updateProfileAction({
+      nickname: "타운펫",
+      showPublicPosts: false,
+      showPublicComments: true,
+      showPublicPets: false,
+    });
 
     expect(result).toEqual({ ok: true });
     expect(mockUpdateProfile).toHaveBeenCalledWith({
       userId: "user-1",
-      input: { nickname: "타운펫" },
+      input: {
+        nickname: "타운펫",
+        showPublicPosts: false,
+        showPublicComments: true,
+        showPublicPets: false,
+      },
     });
     expect(mockRevalidatePath).toHaveBeenCalledWith("/profile");
+    expect(mockRevalidatePath).toHaveBeenCalledWith("/users/user-1");
     expect(mockRevalidatePath).toHaveBeenCalledWith("/onboarding");
     expect(mockUnstableUpdate).toHaveBeenCalledWith({
       user: { nickname: "타운펫" },

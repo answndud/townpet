@@ -165,6 +165,9 @@ export async function getUserWithNeighborhoods(id: string) {
     bio: true,
     image: true,
     createdAt: true,
+    showPublicPosts: true,
+    showPublicComments: true,
+    showPublicPets: true,
     neighborhoods: {
       select: {
         id: true,
@@ -256,6 +259,9 @@ export async function getPublicUserProfileById(id: string) {
       bio: true,
       image: true,
       createdAt: true,
+      showPublicPosts: true,
+      showPublicComments: true,
+      showPublicPets: true,
     },
   });
 
@@ -264,18 +270,22 @@ export async function getPublicUserProfileById(id: string) {
   }
 
   const [postCount, commentCount, reactionCount] = await Promise.all([
-    prisma.post.count({
-      where: {
-        authorId: id,
-        status: "ACTIVE",
-      },
-    }),
-    prisma.comment.count({
-      where: {
-        authorId: id,
-        status: "ACTIVE",
-      },
-    }),
+    user.showPublicPosts
+      ? prisma.post.count({
+          where: {
+            authorId: id,
+            status: "ACTIVE",
+          },
+        })
+      : Promise.resolve(null),
+    user.showPublicComments
+      ? prisma.comment.count({
+          where: {
+            authorId: id,
+            status: "ACTIVE",
+          },
+        })
+      : Promise.resolve(null),
     prisma.postReaction.count({
       where: {
         userId: id,

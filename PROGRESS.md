@@ -17,6 +17,37 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-07: Cycle 230 완료 (공개 프로필 로그인 게이트 + 공개 범위 설정)
+- 완료 내용
+- 비회원 공개 프로필 로그인 게이트:
+  - `app/src/app/users/[id]/page.tsx`
+  - `app/src/components/auth/login-form.tsx`
+  - `app/src/lib/public-profile.ts`
+  - 비회원이 `/users/{id}` 접근 시 `/login?next=/users/{id}&notice=PROFILE_LOGIN_REQUIRED`로 이동하게 바꿨고, 로그인 페이지에는 `프로필을 보려면 로그인해 주세요.` 안내 문구를 추가
+  - `generateMetadata`도 비로그인 요청에는 일반 로그인 안내 메타만 반환하도록 조정해 공개 프로필 정보가 비회원 메타에 그대로 노출되지 않게 정리
+- 공개 범위 설정 저장/반영:
+  - `app/prisma/schema.prisma`
+  - `app/prisma/migrations/20260307100000_add_public_profile_visibility_settings/migration.sql`
+  - `app/src/components/profile/profile-info-form.tsx`
+  - `app/src/server/services/user.service.ts`
+  - `app/src/server/actions/user.ts`
+  - `app/src/server/queries/user.queries.ts`
+  - `app/src/app/users/[id]/page.tsx`
+  - 사용자 `User` 모델에 `showPublicPosts`, `showPublicComments`, `showPublicPets`를 추가하고 `/profile`의 `프로필 정보 수정`에서 각 공개 범위를 개별 체크박스로 저장할 수 있게 구현
+  - 공개 프로필에서는 게시글/댓글 카운트와 활동 탭을 설정에 따라 숨기고, 반려동물 프로필도 비공개 메시지로 대체되게 반영
+- 운영 문서 동기화:
+  - `docs/개발_운영_가이드.md`
+  - `docs/operations/운영_문서_안내.md`
+  - 공개 프로필 점검 절차에 `로그인 필수`와 `공개 범위` 설정을 반영
+- 검증 결과
+- `pnpm -C app exec prisma format` 통과
+- `pnpm -C app exec prisma generate` 통과
+- `pnpm -C app lint 'src/app/users/[id]/page.tsx' src/app/profile/page.tsx src/components/profile/profile-info-form.tsx src/components/auth/login-form.tsx src/lib/public-profile.ts src/lib/public-profile.test.ts src/lib/validations/user.ts src/lib/validations/user.test.ts src/server/services/user.service.ts src/server/services/user.service.test.ts src/server/actions/user.ts src/server/actions/user.test.ts src/server/queries/user.queries.ts` 통과
+- `pnpm -C app typecheck` 통과
+- `pnpm -C app test -- src/lib/public-profile.test.ts src/lib/validations/user.test.ts src/server/services/user.service.test.ts src/server/actions/user.test.ts` 실행 시 전체 Vitest 스위트 `100 files / 512 tests` 통과
+- 이슈/블로커
+- 운영 DB에는 `20260307100000_add_public_profile_visibility_settings` migration 적용이 추가로 필요
+
 ### 2026-03-07: Cycle 229 완료 (피드 카드 메타 우측 정렬 + 피드 북마크 제거)
 - 완료 내용
 - 피드 카드 메타 우측 정렬:

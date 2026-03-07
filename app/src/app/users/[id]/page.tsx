@@ -6,6 +6,10 @@ import { UserRelationControls } from "@/components/user/user-relation-controls";
 import { auth } from "@/lib/auth";
 import { getCspNonce } from "@/lib/csp-nonce";
 import {
+  buildPublicProfileLoginHref,
+  resolvePublicProfileTab,
+} from "@/lib/public-profile";
+import {
   getPetBreedDisplayLabel,
   getPetLifeStageLabel,
   getPetSizeClassLabel,
@@ -60,6 +64,14 @@ export async function generateMetadata({
   params,
 }: UserProfilePageProps): Promise<Metadata> {
   const resolvedParams = await params;
+  const session = await auth();
+  if (!session?.user?.id) {
+    return {
+      title: "로그인이 필요합니다",
+      description: "프로필을 보려면 로그인해 주세요.",
+      robots: { index: false, follow: false },
+    };
+  }
   const profile = await getPublicUserProfileById(resolvedParams.id);
 
   if (!profile) {
@@ -112,12 +124,15 @@ export default async function PublicUserProfilePage({
 
   const session = await auth();
   const viewerId = session?.user?.id;
+  if (!viewerId) {
+    redirect(buildPublicProfileLoginHref(id));
+  }
   redirectToProfileIfNicknameMissing({
-    isAuthenticated: Boolean(viewerId),
+    isAuthenticated: true,
     nickname: session?.user?.nickname,
   });
 
-  if (viewerId && viewerId === id) {
+  if (viewerId === id) {
     redirect("/profile");
   }
 
@@ -126,33 +141,35 @@ export default async function PublicUserProfilePage({
     notFound();
   }
 
-  const relationState = viewerId
-    ? await getUserRelationState(viewerId, profile.id)
-    : {
-        isBlockedByMe: false,
-        hasBlockedMe: false,
-        isMutedByMe: false,
-      };
+  const relationState = await getUserRelationState(viewerId, profile.id);
+  const resolvedTab = resolvePublicProfileTab(tab, {
+    showPublicPosts: profile.showPublicPosts,
+    showPublicComments: profile.showPublicComments,
+    showPublicPets: profile.showPublicPets,
+  });
+  if (resolvedTab !== tab) {
+    redirect(buildTabHref(profile.id, resolvedTab));
+  }
 
   const [postsPage, commentsPage, reactionsPage, pets] = await Promise.all([
-    tab === "posts"
+    resolvedTab === "posts" && profile.showPublicPosts
       ? listPublicUserPosts({ userId: profile.id, limit: 20, cursor })
       : Promise.resolve({ items: [], nextCursor: null }),
-    tab === "comments"
+    resolvedTab === "comments" && profile.showPublicComments
       ? listPublicUserComments({ userId: profile.id, limit: 20, cursor })
       : Promise.resolve({ items: [], nextCursor: null }),
-    tab === "reactions"
+    resolvedTab === "reactions"
       ? listPublicUserReactions({ userId: profile.id, limit: 20, cursor })
       : Promise.resolve({ items: [], nextCursor: null }),
-    listPetsByUserId(profile.id),
+    profile.showPublicPets ? listPetsByUserId(profile.id) : Promise.resolve([]),
   ]);
   const posts = postsPage.items;
   const comments = commentsPage.items;
   const reactions = reactionsPage.items;
   const nextCursor =
-    tab === "posts"
+    resolvedTab === "posts"
       ? postsPage.nextCursor
-      : tab === "comments"
+      : resolvedTab === "comments"
         ? commentsPage.nextCursor
         : reactionsPage.nextCursor;
 
@@ -184,21 +201,27 @@ export default async function PublicUserProfilePage({
           <p className="mt-3 text-sm text-[#355988]">
             {profile.bio?.trim() ? profile.bio : "등록된 소개가 없습니다."}
           </p>
-          {viewerId ? (
-            <div className="mt-4">
-              <UserRelationControls targetUserId={profile.id} initialState={relationState} />
-            </div>
-          ) : null}
+          <div className="mt-4">
+            <UserRelationControls targetUserId={profile.id} initialState={relationState} />
+          </div>
         </header>
 
         <section className="grid gap-3 md:grid-cols-3">
           <div className="tp-card p-4">
             <p className="text-[11px] uppercase tracking-[0.22em] text-[#5b78a1]">게시글</p>
-            <p className="mt-2 text-3xl font-bold text-[#10284a]">{profile.postCount}</p>
+            {profile.showPublicPosts ? (
+              <p className="mt-2 text-3xl font-bold text-[#10284a]">{profile.postCount}</p>
+            ) : (
+              <p className="mt-3 text-sm font-semibold text-[#5a7398]">비공개</p>
+            )}
           </div>
           <div className="tp-card p-4">
             <p className="text-[11px] uppercase tracking-[0.22em] text-[#5b78a1]">댓글</p>
-            <p className="mt-2 text-3xl font-bold text-[#10284a]">{profile.commentCount}</p>
+            {profile.showPublicComments ? (
+              <p className="mt-2 text-3xl font-bold text-[#10284a]">{profile.commentCount}</p>
+            ) : (
+              <p className="mt-3 text-sm font-semibold text-[#5a7398]">비공개</p>
+            )}
           </div>
           <div className="tp-card p-4">
             <p className="text-[11px] uppercase tracking-[0.22em] text-[#5b78a1]">반응</p>
@@ -208,7 +231,11 @@ export default async function PublicUserProfilePage({
 
         <section className="tp-card p-5 sm:p-6">
           <h2 className="text-lg font-semibold text-[#153a6a]">반려동물 프로필</h2>
-          {pets.length === 0 ? (
+          {!profile.showPublicPets ? (
+            <p className="mt-3 text-sm text-[#5a7398]">
+              이 사용자는 반려동물 프로필을 공개하지 않습니다.
+            </p>
+          ) : pets.length === 0 ? (
             <p className="mt-3 text-sm text-[#5a7398]">등록된 반려동물 프로필이 없습니다.</p>
           ) : (
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -269,30 +296,34 @@ export default async function PublicUserProfilePage({
 
         <section className="tp-card p-4">
           <div className="flex flex-wrap items-center gap-2 text-xs">
-            <Link
-              href={buildTabHref(profile.id, "posts")}
-              className={`rounded-lg border px-3 py-1.5 ${
-                tab === "posts"
-                  ? "border-[#3567b5] bg-[#3567b5] text-white"
-                  : "border-[#cbdcf5] bg-white text-[#315b9a]"
-              }`}
-            >
-              게시글 활동
-            </Link>
-            <Link
-              href={buildTabHref(profile.id, "comments")}
-              className={`rounded-lg border px-3 py-1.5 ${
-                tab === "comments"
-                  ? "border-[#3567b5] bg-[#3567b5] text-white"
-                  : "border-[#cbdcf5] bg-white text-[#315b9a]"
-              }`}
-            >
-              댓글 활동
-            </Link>
+            {profile.showPublicPosts ? (
+              <Link
+                href={buildTabHref(profile.id, "posts")}
+                className={`rounded-lg border px-3 py-1.5 ${
+                  resolvedTab === "posts"
+                    ? "border-[#3567b5] bg-[#3567b5] text-white"
+                    : "border-[#cbdcf5] bg-white text-[#315b9a]"
+                }`}
+              >
+                게시글 활동
+              </Link>
+            ) : null}
+            {profile.showPublicComments ? (
+              <Link
+                href={buildTabHref(profile.id, "comments")}
+                className={`rounded-lg border px-3 py-1.5 ${
+                  resolvedTab === "comments"
+                    ? "border-[#3567b5] bg-[#3567b5] text-white"
+                    : "border-[#cbdcf5] bg-white text-[#315b9a]"
+                }`}
+              >
+                댓글 활동
+              </Link>
+            ) : null}
             <Link
               href={buildTabHref(profile.id, "reactions")}
               className={`rounded-lg border px-3 py-1.5 ${
-                tab === "reactions"
+                resolvedTab === "reactions"
                   ? "border-[#3567b5] bg-[#3567b5] text-white"
                   : "border-[#cbdcf5] bg-white text-[#315b9a]"
               }`}
@@ -301,7 +332,7 @@ export default async function PublicUserProfilePage({
             </Link>
           </div>
 
-          {tab === "posts" ? (
+          {resolvedTab === "posts" ? (
             <div className="mt-4 divide-y divide-[#e1e9f5]">
               {posts.length === 0 ? (
                 <p className="py-6 text-sm text-[#5a7398]">게시글 활동이 없습니다.</p>
@@ -331,7 +362,7 @@ export default async function PublicUserProfilePage({
             </div>
           ) : null}
 
-          {tab === "comments" ? (
+          {resolvedTab === "comments" ? (
             <div className="mt-4 divide-y divide-[#e1e9f5]">
               {comments.length === 0 ? (
                 <p className="py-6 text-sm text-[#5a7398]">댓글 활동이 없습니다.</p>
@@ -366,7 +397,7 @@ export default async function PublicUserProfilePage({
             </div>
           ) : null}
 
-          {tab === "reactions" ? (
+          {resolvedTab === "reactions" ? (
             <div className="mt-4 divide-y divide-[#e1e9f5]">
               {reactions.length === 0 ? (
                 <p className="py-6 text-sm text-[#5a7398]">반응 활동이 없습니다.</p>

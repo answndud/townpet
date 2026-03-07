@@ -51,13 +51,22 @@ describe("user service", () => {
         id: "user-1",
         nickname: "old-name",
         nicknameUpdatedAt: new Date(Date.now() - 31 * 24 * 60 * 60 * 1000),
+        showPublicPosts: true,
+        showPublicComments: true,
+        showPublicPets: true,
       })
       .mockResolvedValueOnce(null);
     mockPrisma.user.update.mockResolvedValue({ id: "user-1" });
 
     await updateProfile({
       userId: "user-1",
-      input: { nickname: "new-name", bio: "hello" },
+      input: {
+        nickname: "new-name",
+        bio: "hello",
+        showPublicPosts: false,
+        showPublicComments: true,
+        showPublicPets: false,
+      },
     });
 
     expect(mockPrisma.user.update).toHaveBeenCalledWith(
@@ -65,6 +74,9 @@ describe("user service", () => {
         data: expect.objectContaining({
           nickname: "new-name",
           nicknameUpdatedAt: expect.any(Date),
+          showPublicPosts: false,
+          showPublicComments: true,
+          showPublicPets: false,
         }),
       }),
     );
@@ -76,6 +88,9 @@ describe("user service", () => {
         id: "user-1",
         nickname: "same-name",
         nicknameUpdatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+        showPublicPosts: true,
+        showPublicComments: false,
+        showPublicPets: true,
       })
       .mockResolvedValueOnce({ id: "user-1" });
     mockPrisma.user.update.mockResolvedValue({ id: "user-1" });
@@ -89,6 +104,9 @@ describe("user service", () => {
       expect.objectContaining({
         data: expect.objectContaining({
           nicknameUpdatedAt: undefined,
+          showPublicPosts: true,
+          showPublicComments: false,
+          showPublicPets: true,
         }),
       }),
     );
@@ -100,6 +118,9 @@ describe("user service", () => {
         id: "user-1",
         nickname: "old-name",
         nicknameUpdatedAt: null,
+        showPublicPosts: true,
+        showPublicComments: true,
+        showPublicPets: true,
       })
       .mockResolvedValueOnce({ id: "user-2" });
 
@@ -112,5 +133,34 @@ describe("user service", () => {
       code: "NICKNAME_TAKEN",
       status: 409,
     });
+  });
+
+  it("preserves existing profile visibility when omitted from payload", async () => {
+    mockPrisma.user.findUnique
+      .mockResolvedValueOnce({
+        id: "user-1",
+        nickname: "same-name",
+        nicknameUpdatedAt: null,
+        showPublicPosts: false,
+        showPublicComments: true,
+        showPublicPets: false,
+      })
+      .mockResolvedValueOnce({ id: "user-1" });
+    mockPrisma.user.update.mockResolvedValue({ id: "user-1" });
+
+    await updateProfile({
+      userId: "user-1",
+      input: { nickname: "same-name", bio: "updated" },
+    });
+
+    expect(mockPrisma.user.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          showPublicPosts: false,
+          showPublicComments: true,
+          showPublicPets: false,
+        }),
+      }),
+    );
   });
 });

@@ -25,6 +25,12 @@
 
 ## Active Plan
 
+### Cycle 230: 공개 프로필 로그인 게이트 + 공개 범위 설정 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 비회원 공개 프로필 접근 차단과 로그인 안내 추가 | Codex | P1 | `done` | 비회원이 `/users/{id}` 접근 시 로그인 페이지로 리다이렉트되고 `프로필을 보려면 로그인` 안내가 노출됨 | `app/src/app/users/[id]/page.tsx`, `app/src/components/auth/login-form.tsx`, `app/src/lib/public-profile.ts` |
+| 프로필 공개 범위 설정 저장/반영 | Codex | P1 | `done` | `/profile`에서 게시글/댓글/반려동물 공개 여부를 각각 저장할 수 있고, `/users/{id}`에서 각 섹션과 활동 탭이 설정에 맞게 노출/비공개 처리됨 | `app/prisma/schema.prisma`, `app/src/components/profile/profile-info-form.tsx`, `app/src/server/services/user.service.ts`, `app/src/server/queries/user.queries.ts` |
+
 ### Cycle 229: 피드 카드 메타 우측 정렬 + 피드 북마크 제거 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|

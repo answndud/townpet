@@ -20,8 +20,20 @@ describe("user validations", () => {
     const result = profileUpdateSchema.safeParse({
       nickname: "townpet_user",
       bio: "우리 동네 산책 코스를 자주 공유합니다.",
+      showPublicPosts: true,
+      showPublicComments: false,
+      showPublicPets: true,
     });
     expect(result.success).toBe(true);
+  });
+
+  it("rejects non-boolean profile visibility flags", () => {
+    const result = profileUpdateSchema.safeParse({
+      nickname: "townpet_user",
+      showPublicPosts: "yes",
+    });
+
+    expect(result.success).toBe(false);
   });
 
   it("accepts a single neighborhood id (legacy payload)", () => {

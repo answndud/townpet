@@ -150,6 +150,9 @@ export default async function ProfilePage() {
         <ProfileInfoForm
           initialNickname={user.nickname}
           initialBio={user.bio}
+          initialShowPublicPosts={user.showPublicPosts}
+          initialShowPublicComments={user.showPublicComments}
+          initialShowPublicPets={user.showPublicPets}
         />
         {!isNicknameMissing ? (
           <>
