@@ -147,15 +147,15 @@ export function FeedHoverMenu({
 
   return (
     <>
-      <div className="w-full space-y-2 md:hidden">
-        <div className="tp-soft-card overflow-hidden">
-          <div className="border-b border-[#dbe6f6] bg-[#f7fbff] px-3 py-1.5 text-[11px] font-semibold text-[#315484]">
+      <div className="w-full space-y-1.5 md:hidden">
+        <details className="tp-soft-card overflow-hidden">
+          <summary className="cursor-pointer list-none px-3 py-2 text-xs font-semibold text-[#315484]">
             게시판 빠른 이동
-          </div>
-          <div className="flex flex-wrap gap-1.5 bg-white p-2">
+          </summary>
+          <div className="border-t border-[#dbe6f6] flex flex-wrap gap-1 bg-white p-2">
             <Link
               href={buildFeedHref({ page: "1" })}
-              className="inline-flex rounded-sm border border-[#c9daf4] bg-white px-2 py-1 text-[11px] font-medium text-[#315b9a] hover:bg-[#f5f9ff]"
+              className="inline-flex rounded-sm border border-[#c9daf4] bg-white px-2 py-1 text-[10px] font-medium text-[#315b9a] hover:bg-[#f5f9ff]"
             >
               전체
             </Link>
@@ -163,13 +163,13 @@ export function FeedHoverMenu({
               <Link
                 key={`mobile-nav-type-${value}`}
                 href={buildFeedHref({ type: value, page: "1" })}
-                className="inline-flex rounded-sm border border-[#c9daf4] bg-white px-2 py-1 text-[11px] font-medium text-[#315b9a] hover:bg-[#f5f9ff]"
+                className="inline-flex rounded-sm border border-[#c9daf4] bg-white px-2 py-1 text-[10px] font-medium text-[#315b9a] hover:bg-[#f5f9ff]"
               >
                 {postTypeMeta[value].label}
               </Link>
             ))}
           </div>
-        </div>
+        </details>
 
         <details className="tp-soft-card overflow-hidden">
           <summary className="cursor-pointer list-none px-3 py-2 text-xs font-semibold text-[#315484]">
