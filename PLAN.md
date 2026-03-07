@@ -25,12 +25,19 @@
 
 ## Active Plan
 
+### Cycle 225: 북마크 네이밍/진입 경로 정렬 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 게시글 북마크 기능 사용자 노출 네이밍 정렬 | Codex | P1 | `done` | 버튼/빈상태/피드 설명/관리 정책 화면에서 `저장` 표현이 bookmark 기능 문맥에선 `북마크`로 통일됨 | `app/src/components/posts/post-bookmark-button.tsx`, `app/src/lib/feed-personalization.ts`, `app/src/app/admin/policies/page.tsx`, `app/src/components/admin/feed-personalization-policy-form.tsx` |
+| 기본 진입 경로를 `/bookmarks`로 전환하고 `/saved` 호환 리다이렉트 추가 | Codex | P1 | `done` | 북마크 목록의 기본 경로가 `/bookmarks`가 되고, 기존 `/saved` 접근은 쿼리를 유지한 채 `/bookmarks`로 이동하며 관련 테스트가 존재함 | `app/src/app/bookmarks/page.tsx`, `app/src/app/saved/page.tsx`, `app/src/app/saved/page.test.tsx`, `app/src/server/actions/post.ts` |
+| 프로필 북마크 CTA 위치/문서 정합화 | Codex | P2 | `done` | 프로필 계정 정보 카드에서 북마크 링크가 제거되고 활동 요약 카드/운영 문서/PLAN/PROGRESS가 새 네이밍과 경로를 반영함 | `app/src/app/profile/page.tsx`, `docs/개발_운영_가이드.md`, `docs/operations/*`, `PLAN.md`, `PROGRESS.md` |
+
 ### Cycle 224: 운영 문서 drift sync (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
 | production env/email/upload 운영 문서 기준선 동기화 | Codex | P1 | `done` | `RESEND_API_KEY`, `BLOB_READ_WRITE_TOKEN`, `UPSTASH_REDIS_REST_*`의 production 필수 여부와 메일 fail-fast 동작이 운영 문서와 모순되지 않음 | `docs/개발_운영_가이드.md`, `docs/operations/Resend_Vercel_이메일_설정_가이드.md`, `docs/operations/Vercel_OAuth_초기설정_가이드.md` |
 | migration 장애 복구 + Neon 검증 절차 문서화 | Codex | P1 | `done` | `P3005`, `P3009`, `_prisma_migrations`, enum 확인 절차를 운영자가 `docs/`만 보고 재현할 수 있음 | `docs/개발_운영_가이드.md` |
-| 사이클 종료 루틴/targeted test/운영 화면 안내 보강 | Codex | P2 | `done` | cycle close 루틴, changed-file 기준 검증 명령, `/admin/*` 및 `/saved` 운영 화면 안내가 `docs/operations`와 공용 기술 문서에 반영됨 | `docs/operations/에이전트_운영_가이드.md`, `docs/operations/운영_문서_안내.md`, `docs/제품_기술_개요.md` |
+| 사이클 종료 루틴/targeted test/운영 화면 안내 보강 | Codex | P2 | `done` | cycle close 루틴, changed-file 기준 검증 명령, `/admin/*` 및 `/bookmarks` 운영 화면 안내가 `docs/operations`와 공용 기술 문서에 반영됨 | `docs/operations/에이전트_운영_가이드.md`, `docs/operations/운영_문서_안내.md`, `docs/제품_기술_개요.md` |
 
 ### Cycle 223: 개인화 튜닝 정책 설정화 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
@@ -39,12 +46,12 @@
 | 관리자 정책 화면에 개인화 튜닝 편집 UI 추가 | Codex | P1 | `done` | `/admin/policies`에서 운영자가 개인화 튜닝 정책을 수정할 수 있고 성공/실패 메시지가 노출됨 | `app/src/app/admin/policies/page.tsx`, `app/src/components/admin/feed-personalization-policy-form.tsx`, `app/src/server/actions/policy.ts` |
 | personalized feed ranking에 tuning policy 적용 | Codex | P1 | `done` | recent click/ad/dwell/bookmark boost와 personalized/explore blend가 정책값을 사용하고 회귀 테스트/제품 문서가 동기화됨 | `app/src/server/queries/post.queries.ts`, `app/src/server/queries/post.queries.test.ts`, `docs/product/품종_개인화_기획서.md` |
 
-### Cycle 222: 저장(bookmark) 기반 7차 개인화 신호 (완료)
+### Cycle 222: 북마크(bookmark) 기반 7차 개인화 신호 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
-| PostBookmark 스키마 + 저장/해제 UI/액션 추가 | Codex | P1 | `done` | 인증 사용자가 피드/상세에서 게시글을 저장/해제할 수 있고 `PostBookmark` 스키마, 서비스, 액션, 회귀 테스트가 존재함 | `app/prisma/schema.prisma`, `app/src/server/services/post.service.ts`, `app/src/server/actions/post.ts`, `app/src/components/posts/*` |
-| 저장한 글 조회 페이지 추가 | Codex | P2 | `done` | `/saved`에서 저장한 글을 페이지네이션/검색/카테고리 필터와 함께 조회할 수 있고 프로필에서 진입 가능함 | `app/src/server/queries/post.queries.ts`, `app/src/app/saved/page.tsx`, `app/src/app/profile/page.tsx` |
-| recent bookmark signal을 personalized ranking 7차 가중치와 피드 설명에 연결 | Codex | P1 | `done` | personalized feed가 최근 저장한 글의 커뮤니티/관심 태그를 7차 신호로 약하게 반영하고 `/feed` 설명/제품 문서가 동기화됨 | `app/src/server/queries/post.queries.ts`, `app/src/lib/feed-personalization.ts`, `app/src/app/feed/page.tsx`, `docs/product/품종_개인화_기획서.md` |
+| PostBookmark 스키마 + 북마크/해제 UI/액션 추가 | Codex | P1 | `done` | 인증 사용자가 피드/상세에서 게시글을 북마크/해제할 수 있고 `PostBookmark` 스키마, 서비스, 액션, 회귀 테스트가 존재함 | `app/prisma/schema.prisma`, `app/src/server/services/post.service.ts`, `app/src/server/actions/post.ts`, `app/src/components/posts/*` |
+| 북마크 목록 페이지 추가 | Codex | P2 | `done` | `/bookmarks`에서 북마크한 글을 페이지네이션/검색/카테고리 필터와 함께 조회할 수 있고 프로필에서 진입 가능함 | `app/src/server/queries/post.queries.ts`, `app/src/app/bookmarks/page.tsx`, `app/src/app/profile/page.tsx` |
+| recent bookmark signal을 personalized ranking 7차 가중치와 피드 설명에 연결 | Codex | P1 | `done` | personalized feed가 최근 북마크한 글의 커뮤니티/관심 태그를 7차 신호로 약하게 반영하고 `/feed` 설명/제품 문서가 동기화됨 | `app/src/server/queries/post.queries.ts`, `app/src/lib/feed-personalization.ts`, `app/src/app/feed/page.tsx`, `docs/product/품종_개인화_기획서.md` |
 
 ### Cycle 221: 상세 체류시간 기반 6차 개인화 신호 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |

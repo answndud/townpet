@@ -729,7 +729,7 @@ export function FeedInfiniteList({
                         postId={post.id}
                         currentBookmarked={Boolean(post.isBookmarked)}
                         compact
-                        canSave={canBookmark}
+                        canBookmark={canBookmark}
                         loginHref={`/login?next=${encodeURIComponent(`/posts/${post.id}`)}`}
                       />
                     </div>
@@ -750,7 +750,7 @@ export function FeedInfiniteList({
                         postId={post.id}
                         currentBookmarked={Boolean(post.isBookmarked)}
                         compact
-                        canSave={canBookmark}
+                        canBookmark={canBookmark}
                         loginHref={`/login?next=${encodeURIComponent(`/posts/${post.id}`)}`}
                       />
                     </div>

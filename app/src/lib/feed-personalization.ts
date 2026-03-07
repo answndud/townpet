@@ -230,7 +230,7 @@ function buildRecentBookmarkEmphasis(recentBookmarkLabels: string[]) {
     return null;
   }
 
-  return `최근 저장 ${recentBookmarkLabels.join(", ")}`;
+  return `최근 북마크 ${recentBookmarkLabels.join(", ")}`;
 }
 
 function appendRecentBookmarkHint(description: string, recentBookmarkLabels: string[]) {
@@ -238,7 +238,7 @@ function appendRecentBookmarkHint(description: string, recentBookmarkLabels: str
     return description;
   }
 
-  return `${description} 최근 저장한 글 7차 신호도 약하게 반영합니다.`;
+  return `${description} 최근 북마크한 글 7차 신호도 약하게 반영합니다.`;
 }
 
 export function resolveFeedAudienceContext({
@@ -474,7 +474,7 @@ export function buildFeedPersonalizationSummary(context: FeedAudienceContext) {
             ? "반려동물 프로필 신호가 부족해 최근 클릭/광고 반응 주제를 우선 반영합니다. 프로필을 보강하면 품종/체급 기준 정확도가 더 올라갑니다."
             : context.recentDwellLabels.length > 0
               ? "반려동물 프로필 신호가 부족해 최근 오래 읽은 글 주제를 우선 반영합니다. 프로필을 보강하면 품종/체급 기준 정확도가 더 올라갑니다."
-              : "반려동물 프로필 신호가 부족해 최근 저장한 글 주제를 우선 반영합니다. 프로필을 보강하면 품종/체급 기준 정확도가 더 올라갑니다.";
+              : "반려동물 프로필 신호가 부족해 최근 북마크한 글 주제를 우선 반영합니다. 프로필을 보강하면 품종/체급 기준 정확도가 더 올라갑니다.";
     return {
       title:
         context.preferredPetTypeLabels.length > 0
@@ -487,7 +487,7 @@ export function buildFeedPersonalizationSummary(context: FeedAudienceContext) {
               ? "최근 클릭 기준으로 기본 맞춤 추천 중"
               : context.recentDwellLabels.length > 0
                 ? "최근 오래 읽은 글 기준으로 기본 맞춤 추천 중"
-                : "최근 저장한 글 기준으로 기본 맞춤 추천 중",
+                : "최근 북마크한 글 기준으로 기본 맞춤 추천 중",
       description: appendRecentBookmarkHint(
         appendRecentDwellHint(
           appendRecentBehaviorHint(

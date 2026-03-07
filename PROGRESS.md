@@ -17,6 +17,37 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-07: Cycle 225 완료 (북마크 네이밍/진입 경로 정렬)
+- 완료 내용
+- 북마크 네이밍과 경로 정렬:
+  - `app/src/components/posts/post-bookmark-button.tsx`
+  - `app/src/app/bookmarks/page.tsx`
+  - `app/src/app/saved/page.tsx`
+  - `app/src/server/actions/post.ts`
+  - 게시글 토글 버튼, 빈 상태, 북마크 목록 헤더/타임스탬프를 `저장` 기준에서 `북마크` 기준으로 통일
+  - 기본 목록 경로를 `/bookmarks`로 옮기고, 기존 `/saved`는 검색 파라미터를 유지한 채 `/bookmarks`로 리다이렉트되도록 호환 경로를 추가
+- 프로필/개인화/운영 문서 정렬:
+  - `app/src/app/profile/page.tsx`
+  - `app/src/lib/feed-personalization.ts`
+  - `app/src/app/admin/policies/page.tsx`
+  - `app/src/components/admin/feed-personalization-policy-form.tsx`
+  - 북마크 CTA를 계정 정보 카드에서 제거하고 활동 요약 카드로 옮겼으며, 개인화 설명과 운영 정책 화면의 `최근 저장`/`저장 신호` 표현도 `최근 북마크`/`북마크 신호`로 맞춤
+  - `docs/개발_운영_가이드.md`, `docs/operations/Vercel_OAuth_초기설정_가이드.md`, `docs/operations/운영_문서_안내.md`, `PLAN.md`, `PROGRESS.md`도 `/bookmarks` 및 `북마크` 기준으로 갱신
+- 검증 결과
+- `pnpm -C app lint src/app/bookmarks/page.tsx src/app/saved/page.tsx src/app/saved/page.test.tsx src/app/profile/page.tsx src/app/posts/[id]/guest/page.tsx src/components/posts/post-bookmark-button.tsx src/components/posts/post-detail-client.tsx src/components/posts/feed-infinite-list.tsx src/server/actions/post.ts src/server/actions/post.test.ts src/lib/feed-personalization.ts src/lib/feed-personalization.test.ts src/app/admin/policies/page.tsx src/components/admin/feed-personalization-policy-form.tsx` 통과
+- `pnpm -C app typecheck` 통과
+- `pnpm -C app test -- src/app/saved/page.test.tsx src/server/actions/post.test.ts src/lib/feed-personalization.test.ts` 통과
+- `pnpm -C app docs:refresh:check` 통과
+- 이슈/블로커
+- 없음
+
+### 2026-03-07: Cycle 225 착수 (북마크 네이밍/진입 경로 정렬)
+- 진행 내용
+- 사용자 노출 경로와 문구가 `bookmark` 기능임에도 `/saved`, `저장`, `저장한 글`로 섞여 있어 북마크 기능 인지가 약하고, 프로필 계정 정보 카드에 북마크 링크가 들어간 것도 맥락이 어색함을 확인
+- 이번 사이클 범위를 `UI/설명/운영 문서 네이밍 정렬` + `기본 경로 /bookmarks 전환` + `프로필 CTA 위치 조정`으로 확정
+- 이슈/블로커
+- 없음
+
 ### 2026-03-07: Cycle 224 완료 (운영 문서 drift sync)
 - 완료 내용
 - production env/email/upload 기준선 문서 동기화:
@@ -34,7 +65,7 @@
   - `docs/operations/에이전트_운영_가이드.md`
   - `docs/operations/운영_문서_안내.md`
   - `docs/제품_기술_개요.md`
-  - `commit -> push -> quality-gate -> ops:check:health -> worktree clean` 종료 루틴과 changed-file 기준 lint/typecheck/vitest/playwright 실행법, `/admin/personalization`, `/admin/breeds`, `/saved` 진입점을 운영 문서에 반영
+  - `commit -> push -> quality-gate -> ops:check:health -> worktree clean` 종료 루틴과 changed-file 기준 lint/typecheck/vitest/playwright 실행법, `/admin/personalization`, `/admin/breeds`, `/bookmarks` 진입점을 운영 문서에 반영
   - `scripts/refresh-docs-index.mjs` 출력 경로를 현재 문서 구조(`docs/archive/operations/문서 동기화 리포트.md`)와 맞춰 `docs:refresh`/`docs:refresh:check`가 다시 동작하도록 정리
 - 검증 결과
 - `git diff --check` 통과
@@ -66,7 +97,7 @@
 - personalized feed ranking에 tuning policy 적용:
   - `app/src/server/queries/post.queries.ts`
   - `app/src/server/queries/post.queries.test.ts`
-  - recent click/ad/dwell/bookmark signal과 personalized/explore interleave가 정책값을 직접 사용하도록 바꿨고, bookmark multiplier를 0으로 내리면 최근 저장 신호가 꺼지는 회귀 테스트를 추가
+  - recent click/ad/dwell/bookmark signal과 personalized/explore interleave가 정책값을 직접 사용하도록 바꿨고, bookmark multiplier를 0으로 내리면 최근 북마크 신호가 꺼지는 회귀 테스트를 추가
 - 제품 문서 동기화:
   - `docs/product/품종_개인화_기획서.md`
   - 개인화 tuning 정책이 운영 조정 경로로 추가된 상태를 반영하고, 후속 오픈 이슈를 A/B 실험/CTR 기준 재보정으로 정리
@@ -84,41 +115,41 @@
 - 이슈/블로커
 - 현재 `docs/product/품종_개인화_기획서.md`는 사용자가 수정한 내용이 일부 남아 있어, 기존 변경을 되돌리지 않고 필요한 운영 튜닝 메모만 최소 반영하기로 함
 
-### 2026-03-07: Cycle 222 완료 (저장(bookmark) 기반 7차 개인화 신호)
+### 2026-03-07: Cycle 222 완료 (북마크(bookmark) 기반 7차 개인화 신호)
 - 완료 내용
-- PostBookmark 스키마/서비스/액션/저장 UI 추가:
+- PostBookmark 스키마/서비스/액션/북마크 UI 추가:
   - `app/prisma/schema.prisma`
   - `app/prisma/migrations/20260307093000_add_post_bookmarks/migration.sql`
   - `app/src/server/services/post.service.ts`
   - `app/src/server/actions/post.ts`
   - `app/src/components/posts/post-bookmark-button.tsx`
-  - 인증 사용자가 피드/상세에서 게시글을 저장/해제할 수 있도록 `PostBookmark` 모델과 토글 액션을 추가하고, 저장/해제 시 `/feed`, `/posts/[id]`, `/saved` 캐시를 함께 무효화하도록 정리
+  - 인증 사용자가 피드/상세에서 게시글을 북마크/해제할 수 있도록 `PostBookmark` 모델과 토글 액션을 추가하고, 북마크/해제 시 `/feed`, `/posts/[id]`, `/bookmarks` 캐시를 함께 무효화하도록 정리
   - 상세/피드 조회 경로는 viewer 기준 `isBookmarked` 상태를 후처리로 부착해 기존 목록/상세 쿼리와 롤링 배포 호환성을 유지
-- 저장한 글 조회 페이지 및 프로필 진입 경로 추가:
+- 북마크 목록 페이지 및 프로필 진입 경로 추가:
   - `app/src/server/queries/post.queries.ts`
-  - `app/src/app/saved/page.tsx`
+  - `app/src/app/bookmarks/page.tsx`
   - `app/src/app/profile/page.tsx`
-  - `/saved`에서 검색/카테고리/페이지네이션 기준으로 저장한 글을 조회할 수 있게 했고, 프로필 요약 카드와 링크로 진입 경로를 연결
+  - `/bookmarks`에서 검색/카테고리/페이지네이션 기준으로 북마크한 글을 조회할 수 있게 했고, 프로필 요약 카드와 링크로 진입 경로를 연결
 - recent bookmark 기반 7차 개인화 신호/설명 연결:
   - `app/src/server/queries/post.queries.ts`
   - `app/src/lib/feed-personalization.ts`
   - `app/src/lib/feed-personalization.test.ts`
   - `app/src/app/feed/page.tsx`
   - `docs/product/품종_개인화_기획서.md`
-  - 최근 저장한 글의 커뮤니티/관심 태그를 personalized ranking의 약한 7차 signal로 반영하고, `/feed` 맞춤 추천 설명과 제품 문서를 `최근 저장한 글` 기준 설명까지 동기화
+  - 최근 북마크한 글의 커뮤니티/관심 태그를 personalized ranking의 약한 7차 signal로 반영하고, `/feed` 맞춤 추천 설명과 제품 문서를 `최근 북마크한 글` 기준 설명까지 동기화
 - 검증 결과
 - `pnpm -C app exec prisma format` 통과
 - `pnpm -C app exec prisma generate` 통과
-- `pnpm -C app lint app/src/app/saved/page.tsx app/src/app/feed/page.tsx app/src/app/lounges/breeds/[breedCode]/page.tsx app/src/app/posts/[id]/guest/page.tsx app/src/app/profile/page.tsx app/src/components/posts/post-bookmark-button.tsx app/src/components/posts/post-detail-client.tsx app/src/components/posts/feed-infinite-list.tsx app/src/components/posts/guest-feed-page-client.tsx app/src/app/api/feed/guest/route.ts app/src/lib/feed-personalization.ts app/src/lib/feed-personalization.test.ts app/src/server/actions/post.ts app/src/server/actions/post.test.ts app/src/server/queries/post.queries.ts app/src/server/queries/post.queries.test.ts app/src/server/services/post.service.ts app/src/server/services/post.service.test.ts` 통과
+- `pnpm -C app lint app/src/app/bookmarks/page.tsx app/src/app/feed/page.tsx app/src/app/lounges/breeds/[breedCode]/page.tsx app/src/app/posts/[id]/guest/page.tsx app/src/app/profile/page.tsx app/src/components/posts/post-bookmark-button.tsx app/src/components/posts/post-detail-client.tsx app/src/components/posts/feed-infinite-list.tsx app/src/components/posts/guest-feed-page-client.tsx app/src/app/api/feed/guest/route.ts app/src/lib/feed-personalization.ts app/src/lib/feed-personalization.test.ts app/src/server/actions/post.ts app/src/server/actions/post.test.ts app/src/server/queries/post.queries.ts app/src/server/queries/post.queries.test.ts app/src/server/services/post.service.ts app/src/server/services/post.service.test.ts` 통과
 - `pnpm -C app typecheck` 통과
 - `pnpm -C app test -- src/server/actions/post.test.ts src/server/services/post.service.test.ts src/server/queries/post.queries.test.ts src/lib/feed-personalization.test.ts` 실행 시 전체 Vitest 스위트 `97 files / 497 tests` 통과
 - 이슈/블로커
 - local `pnpm -C app exec prisma migrate deploy`는 이번 변경 때문이 아니라 기존 `20260307011000_limit_report_target_to_post` migration에서 local DB의 legacy non-post report rows 때문에 계속 막히므로, 새 bookmark migration은 production DB에서 선행 migration 정리 상태를 전제로 반영해야 함
 
-### 2026-03-07: Cycle 222 착수 (저장(bookmark) 기반 7차 개인화 신호)
+### 2026-03-07: Cycle 222 착수 (북마크(bookmark) 기반 7차 개인화 신호)
 - 진행 내용
 - 현재 personalized feed는 dwell까지 6차 신호를 쓰지만, PRD에 명시된 `save` 기반 signal과 제품 자체의 저장 기능은 아직 전혀 없음을 확인
-- 이번 사이클 범위를 `PostBookmark 모델/토글 UI/저장한 글 페이지` + `최근 저장 기반 7차 signal` + 피드 설명/제품 문서 동기화로 확정
+- 이번 사이클 범위를 `PostBookmark 모델/토글 UI/북마크 페이지` + `최근 북마크 기반 7차 signal` + 피드 설명/제품 문서 동기화로 확정
 - 이슈/블로커
 - 없음
 
