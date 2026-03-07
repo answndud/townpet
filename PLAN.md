@@ -55,11 +55,11 @@
 | moderation/policy control plane missing schema fail-closed 전환 | Codex | P1 | `pending` | sanction/policy/block/mute/notification/guest-safety 핵심 모델 누락 시 기능 비활성화 대신 health/preflight FAIL 또는 명시 5xx로 surface됨 | `app/src/server/services/sanction.service.ts`, `app/src/server/queries/policy.queries.ts`, `app/src/server/queries/user-relation.queries.ts`, `app/src/server/queries/notification.queries.ts`, `app/src/server/services/guest-safety.service.ts` |
 | 운영 health/preflight를 moderation control plane까지 확장 | Codex | P1 | `pending` | health/security-env/ops 체크가 moderation 관련 스키마 drift를 조기에 감지하고 문서에 반영됨 | `app/src/app/api/health/route.ts`, `app/scripts/check-security-env.ts`, `docs/operations/*` |
 
-### Cycle 201: 신고/제재 운영 현실화
+### Cycle 201: 신고/제재 운영 현실화 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
-| bulk 신고 처리의 sanction parity 복구 | Codex | P1 | `pending` | 일괄 승인 경로도 단건 승인과 동일하게 제재 적용 옵션/감사 이력을 제공하고 회귀 테스트가 존재함 | `app/src/server/services/report.service.ts`, `app/src/components/admin/report-queue-table.tsx` |
-| trust-weighted auto-hide + severity queue 도입 | Codex | P1 | `pending` | 신고 3건 고정 규칙을 대체할 reporter trust/계정연령/속도 기반 자동 숨김 또는 우선 검토 모델이 도입되고 운영 정책과 정렬됨 | `app/src/server/services/report.service.ts`, `docs/policies/신고_운영정책.md`, `docs/policies/모더레이션_운영규칙.md` |
+| bulk 신고 처리의 sanction parity 복구 | Codex | P1 | `done` | 일괄 승인 경로도 단건 승인과 동일하게 제재 적용 옵션/감사 이력을 제공하고 회귀 테스트가 존재함 | `app/src/server/services/report.service.ts`, `app/src/components/admin/report-queue-table.tsx` |
+| trust-weighted auto-hide + severity queue 도입 | Codex | P1 | `done` | 신고 3건 고정 규칙을 대체할 reporter trust/계정연령/속도 기반 자동 숨김 또는 우선 검토 모델이 도입되고 운영 정책과 정렬됨 | `app/src/server/services/report.service.ts`, `docs/policies/신고_운영정책.md`, `docs/policies/모더레이션_운영규칙.md` |
 
 ### Cycle 200: 신고 대상 모델/운영 정합화 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |

@@ -22,12 +22,17 @@ type ReportQueueItem = {
   targetTitle: string;
   targetHref?: string;
   status: ReportStatus;
+  priority: "LOW" | "NORMAL" | "HIGH" | "CRITICAL";
+  priorityLabel: string;
+  signalSummary: string[];
+  weightedScoreLabel: string;
   reason: string;
   description: string | null;
   reporterLabel: string;
   resolution: string | null;
   resolvedByLabel: string | null;
   resolvedAtLabel: string | null;
+  createdAtMs: number;
   audits: ReportQueueAudit[];
 };
 
@@ -46,11 +51,14 @@ export function ReportQueueTable({ reports }: ReportQueueTableProps) {
   const [isPending, startTransition] = useTransition();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [bulkResolution, setBulkResolution] = useState("");
+  const [bulkApplySanction, setBulkApplySanction] = useState(true);
   const [message, setMessage] = useState<string | null>(null);
 
   const allSelected = useMemo(
-    () => reports.length > 0 && selectedIds.length === reports.length,
-    [reports.length, selectedIds.length],
+    () =>
+      reports.some((report) => report.status === ReportStatus.PENDING) &&
+      selectedIds.length === reports.filter((report) => report.status === ReportStatus.PENDING).length,
+    [reports, selectedIds.length],
   );
 
   const toggleSelection = (reportId: string) => {
@@ -62,7 +70,13 @@ export function ReportQueueTable({ reports }: ReportQueueTableProps) {
   };
 
   const toggleAll = () => {
-    setSelectedIds(allSelected ? [] : reports.map((report) => report.id));
+    setSelectedIds(
+      allSelected
+        ? []
+        : reports
+            .filter((report) => report.status === ReportStatus.PENDING)
+            .map((report) => report.id),
+    );
   };
 
   const runBulkAction = (action: "RESOLVE" | "DISMISS" | "HIDE_POST" | "UNHIDE_POST") => {
@@ -79,6 +93,7 @@ export function ReportQueueTable({ reports }: ReportQueueTableProps) {
           reportIds: selectedIds,
           action,
           resolution: bulkResolution.trim() || undefined,
+          applySanction: action === "RESOLVE" ? bulkApplySanction : false,
         }),
       });
 
@@ -88,8 +103,20 @@ export function ReportQueueTable({ reports }: ReportQueueTableProps) {
         return;
       }
 
-      setMessage("일괄 처리 완료");
+      const payload = await response.json();
+      const sanctionCount = payload?.data?.sanctionCount as number | undefined;
+      const sanctionLabels = payload?.data?.sanctionLabels as string[] | undefined;
+      if (action === "RESOLVE" && sanctionCount && sanctionCount > 0) {
+        const labelSummary =
+          sanctionLabels && sanctionLabels.length > 0
+            ? `: ${sanctionLabels.join(", ")}`
+            : "";
+        setMessage(`일괄 처리 완료 (제재 ${sanctionCount}건${labelSummary})`);
+      } else {
+        setMessage("일괄 처리 완료");
+      }
       setBulkResolution("");
+      setBulkApplySanction(true);
       setSelectedIds([]);
       router.refresh();
     });
@@ -109,6 +136,16 @@ export function ReportQueueTable({ reports }: ReportQueueTableProps) {
             onChange={(event) => setBulkResolution(event.target.value)}
             disabled={isPending}
           />
+          <label className="flex items-center gap-2 text-[11px] text-[#4f678d]">
+            <input
+              type="checkbox"
+              checked={bulkApplySanction}
+              onChange={(event) => setBulkApplySanction(event.target.checked)}
+              disabled={isPending || selectedIds.length === 0}
+              className="accent-[#3567b5]"
+            />
+            일괄 승인 시 사용자별 1회 단계적 제재 적용
+          </label>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <button
@@ -165,6 +202,7 @@ export function ReportQueueTable({ reports }: ReportQueueTableProps) {
                   />
                 </th>
                 <th className="px-3 py-2.5">대상</th>
+                <th className="px-3 py-2.5">우선순위</th>
                 <th className="px-3 py-2.5">타입</th>
                 <th className="px-3 py-2.5">상태</th>
                 <th className="px-3 py-2.5">사유</th>
@@ -186,6 +224,7 @@ export function ReportQueueTable({ reports }: ReportQueueTableProps) {
                         checked={selectedIds.includes(report.id)}
                         onChange={() => toggleSelection(report.id)}
                         aria-label={`신고 ${report.id} 선택`}
+                        disabled={report.status !== ReportStatus.PENDING}
                       />
                     </td>
                     <td className="px-3 py-2.5">
@@ -206,6 +245,29 @@ export function ReportQueueTable({ reports }: ReportQueueTableProps) {
                         >
                           상세 보기
                         </Link>
+                      </div>
+                    </td>
+                    <td className="px-3 py-2.5">
+                      <div className="flex flex-col gap-1">
+                        <span
+                          className={`inline-flex w-fit rounded-md border px-2 py-0.5 text-[10px] font-semibold ${
+                            report.priority === "CRITICAL"
+                              ? "border-rose-300 bg-rose-50 text-rose-700"
+                              : report.priority === "HIGH"
+                                ? "border-amber-300 bg-amber-50 text-amber-700"
+                                : report.priority === "NORMAL"
+                                  ? "border-[#cbdcf5] bg-[#f6f9ff] text-[#315b9a]"
+                                  : "border-[#d8e4f6] bg-white text-[#5a7398]"
+                          }`}
+                        >
+                          {report.priorityLabel}
+                        </span>
+                        <span className="text-[10px] text-[#5a7398]">
+                          점수 {report.weightedScoreLabel}
+                        </span>
+                        <span className="text-[10px] text-[#5a7398]">
+                          {report.signalSummary.join(" · ")}
+                        </span>
                       </div>
                     </td>
                     <td className="px-3 py-2.5 text-xs text-[#4f678d]">
@@ -245,7 +307,7 @@ export function ReportQueueTable({ reports }: ReportQueueTableProps) {
                     </td>
                   </tr>
                   <tr className="border-t border-[#e1e9f5] bg-[#f8fbff]">
-                    <td colSpan={11} className="px-3 py-2.5 text-xs text-[#4f678d]">
+                    <td colSpan={12} className="px-3 py-2.5 text-xs text-[#4f678d]">
                       <div className="flex flex-col gap-2">
                         <span className="text-[10px] uppercase tracking-[0.3em] text-[#5b78a1]">
                           처리 이력
