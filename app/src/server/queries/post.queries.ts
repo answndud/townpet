@@ -19,6 +19,7 @@ import {
 } from "@/lib/post-type-groups";
 import type { ReviewCategory } from "@/lib/review-category";
 import { logger, serializeError } from "@/server/logger";
+import { listPreferredPetTypeIdsByUserId } from "@/server/queries/user.queries";
 import { listHiddenAuthorIdsForViewer } from "@/server/queries/user-relation.queries";
 import { createQueryCacheKey, withQueryCache } from "@/server/cache/query-cache";
 
@@ -843,9 +844,15 @@ type FeedLikePost = {
   likeCount: number;
   commentCount: number;
   viewCount: number;
+  petTypeId?: string | null;
   author: {
     id: string;
   };
+};
+
+type ViewerPersonalizationContext = {
+  petSignals: PetSignal[];
+  preferredPetTypeIds: string[];
 };
 
 function normalizeBreedCode(value: string | null | undefined) {
@@ -912,18 +919,47 @@ function calculatePersonalizationBoost(
   return best;
 }
 
+function calculatePreferredPetTypeBoost(
+  postPetTypeId: string | null | undefined,
+  preferredPetTypeIds: string[],
+) {
+  if (!postPetTypeId || preferredPetTypeIds.length === 0) {
+    return 0;
+  }
+
+  return preferredPetTypeIds.includes(postPetTypeId) ? 0.12 : 0;
+}
+
+function calculateViewerPersonalizationBoost(
+  post: FeedLikePost,
+  viewerContext: ViewerPersonalizationContext,
+  authorPetByUserId: Map<string, PetSignal[]>,
+) {
+  const petBoost = calculatePersonalizationBoost(
+    authorPetByUserId.get(post.author.id) ?? [],
+    viewerContext.petSignals,
+  );
+  const preferredPetTypeBoost = calculatePreferredPetTypeBoost(
+    post.petTypeId,
+    viewerContext.preferredPetTypeIds,
+  );
+
+  return petBoost + preferredPetTypeBoost;
+}
+
 function calculateFeedScore(
   post: FeedLikePost,
-  viewerPets: PetSignal[],
+  viewerContext: ViewerPersonalizationContext,
   authorPetByUserId: Map<string, PetSignal[]>,
 ) {
   const ageHours = Math.max(1, (Date.now() - post.createdAt.getTime()) / 3_600_000);
   const recency = 1 / Math.sqrt(ageHours);
   const engagement =
     Math.log1p(post.likeCount * 2 + post.commentCount * 1.6 + post.viewCount * 0.15) / 6;
-  const personalization = calculatePersonalizationBoost(
-    authorPetByUserId.get(post.author.id) ?? [],
-    viewerPets,
+  const personalization = calculateViewerPersonalizationBoost(
+    post,
+    viewerContext,
+    authorPetByUserId,
   );
 
   return recency * 0.5 + engagement * 0.35 + personalization;
@@ -1019,7 +1055,7 @@ function isMissingAudienceSegmentSchemaError(error: unknown) {
   );
 }
 
-async function listViewerPersonalizationSignals(viewerId: string) {
+async function listViewerPetSignals(viewerId: string) {
   const viewerAudienceSignalsRaw = await prisma.userAudienceSegment
     .findMany({
       where: { userId: viewerId },
@@ -1082,6 +1118,27 @@ async function listViewerPersonalizationSignals(viewerId: string) {
   );
 }
 
+async function listViewerPersonalizationContext(
+  viewerId: string,
+): Promise<ViewerPersonalizationContext> {
+  const [petSignals, preferredPetTypeIds] = await Promise.all([
+    listViewerPetSignals(viewerId),
+    listPreferredPetTypeIdsByUserId(viewerId),
+  ]);
+
+  return {
+    petSignals,
+    preferredPetTypeIds: Array.from(
+      new Set(
+        preferredPetTypeIds.filter(
+          (petTypeId): petTypeId is string =>
+            typeof petTypeId === "string" && petTypeId.length > 0,
+        ),
+      ),
+    ),
+  };
+}
+
 async function applyPetPersonalization<T extends FeedLikePost>(
   items: T[],
   viewerId: string,
@@ -1090,61 +1147,65 @@ async function applyPetPersonalization<T extends FeedLikePost>(
     return items;
   }
 
-  const viewerPets = await listViewerPersonalizationSignals(viewerId);
-  if (viewerPets.length === 0) {
+  const viewerContext = await listViewerPersonalizationContext(viewerId);
+  if (
+    viewerContext.petSignals.length === 0 &&
+    viewerContext.preferredPetTypeIds.length === 0
+  ) {
     return items;
   }
-
-  const authorIds = Array.from(new Set(items.map((item) => item.author.id)));
-  if (authorIds.length === 0) {
-    return items;
-  }
-
-  const authorPetSignalsRaw = await prisma.pet.findMany({
-    where: {
-      userId: { in: authorIds },
-    },
-    select: {
-      userId: true,
-      species: true,
-      breedCode: true,
-      breedLabel: true,
-      sizeClass: true,
-      lifeStage: true,
-    },
-  });
-  const authorPetSignals: PetSignal[] = authorPetSignalsRaw.map((pet) =>
-    mapToPetSignal({
-      userId: pet.userId,
-      species: String(pet.species),
-      breedCode: pet.breedCode,
-      breedLabel: pet.breedLabel,
-      sizeClass: String(pet.sizeClass),
-      lifeStage: String(pet.lifeStage),
-    }),
-  );
 
   const authorPetByUserId = new Map<string, PetSignal[]>();
-  for (const pet of authorPetSignals) {
-    const list = authorPetByUserId.get(pet.userId);
-    if (list) {
-      list.push(pet);
-      continue;
+  if (viewerContext.petSignals.length > 0) {
+    const authorIds = Array.from(new Set(items.map((item) => item.author.id)));
+    if (authorIds.length > 0) {
+      const authorPetSignalsRaw = await prisma.pet.findMany({
+        where: {
+          userId: { in: authorIds },
+        },
+        select: {
+          userId: true,
+          species: true,
+          breedCode: true,
+          breedLabel: true,
+          sizeClass: true,
+          lifeStage: true,
+        },
+      });
+      const authorPetSignals: PetSignal[] = authorPetSignalsRaw.map((pet) =>
+        mapToPetSignal({
+          userId: pet.userId,
+          species: String(pet.species),
+          breedCode: pet.breedCode,
+          breedLabel: pet.breedLabel,
+          sizeClass: String(pet.sizeClass),
+          lifeStage: String(pet.lifeStage),
+        }),
+      );
+
+      for (const pet of authorPetSignals) {
+        const list = authorPetByUserId.get(pet.userId);
+        if (list) {
+          list.push(pet);
+          continue;
+        }
+        authorPetByUserId.set(pet.userId, [pet]);
+      }
     }
-    authorPetByUserId.set(pet.userId, [pet]);
   }
 
   const scored = items
     .map((item) => {
-      const boost = calculatePersonalizationBoost(
-        authorPetByUserId.get(item.author.id) ?? [],
-        viewerPets,
+      const boost = calculateViewerPersonalizationBoost(
+        item,
+        viewerContext,
+        authorPetByUserId,
       );
 
       return {
         item,
         boost,
-        score: calculateFeedScore(item, viewerPets, authorPetByUserId),
+        score: calculateFeedScore(item, viewerContext, authorPetByUserId),
       };
     })
     .sort((a, b) => b.score - a.score);

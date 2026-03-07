@@ -28,6 +28,9 @@ vi.mock("@/lib/prisma", () => ({
     userAudienceSegment: {
       findMany: vi.fn(),
     },
+    userPetTypePreference: {
+      findMany: vi.fn(),
+    },
     pet: {
       findMany: vi.fn(),
     },
@@ -47,6 +50,9 @@ const mockPrisma = vi.mocked(prisma) as unknown as {
   userAudienceSegment: {
     findMany: ReturnType<typeof vi.fn>;
   };
+  userPetTypePreference: {
+    findMany: ReturnType<typeof vi.fn>;
+  };
   pet: {
     findMany: ReturnType<typeof vi.fn>;
   };
@@ -63,6 +69,8 @@ describe("post queries", () => {
     mockPrisma.post.findMany.mockReset();
     mockPrisma.userAudienceSegment.findMany.mockReset();
     mockPrisma.userAudienceSegment.findMany.mockResolvedValue([]);
+    mockPrisma.userPetTypePreference.findMany.mockReset();
+    mockPrisma.userPetTypePreference.findMany.mockResolvedValue([]);
     mockPrisma.pet.findMany.mockReset();
     mockPrisma.userBlock.findMany.mockReset();
     mockPrisma.userBlock.findMany.mockResolvedValue([]);
@@ -508,6 +516,54 @@ describe("post queries", () => {
       viewerId: "viewer-1",
     });
 
+    expect(result.items[0]?.id).toBe("p2");
+    expect(result.nextCursor).toBe("p3");
+  });
+
+  it("applies preferred pet type as secondary personalized feed signal", async () => {
+    mockPrisma.post.findMany.mockResolvedValue([
+      {
+        id: "p1",
+        petTypeId: "cat-community",
+        author: { id: "a1" },
+        createdAt: new Date("2026-02-02T00:00:00.000Z"),
+        likeCount: 0,
+        commentCount: 0,
+        viewCount: 0,
+      },
+      {
+        id: "p2",
+        petTypeId: "dog-community",
+        author: { id: "a2" },
+        createdAt: new Date("2026-02-01T23:00:00.000Z"),
+        likeCount: 0,
+        commentCount: 0,
+        viewCount: 0,
+      },
+      {
+        id: "p3",
+        petTypeId: "etc-community",
+        author: { id: "a3" },
+        createdAt: new Date("2026-02-01T22:00:00.000Z"),
+        likeCount: 0,
+        commentCount: 0,
+        viewCount: 0,
+      },
+    ]);
+    mockPrisma.userPetTypePreference.findMany.mockResolvedValue([
+      { petTypeId: "dog-community" },
+    ]);
+    mockPrisma.pet.findMany.mockResolvedValueOnce([]);
+
+    const result = await listPosts({
+      limit: 2,
+      scope: PostScope.GLOBAL,
+      personalized: true,
+      viewerId: "viewer-1",
+    });
+
+    expect(mockPrisma.userPetTypePreference.findMany).toHaveBeenCalledTimes(1);
+    expect(mockPrisma.pet.findMany).toHaveBeenCalledTimes(1);
     expect(result.items[0]?.id).toBe("p2");
     expect(result.nextCursor).toBe("p3");
   });

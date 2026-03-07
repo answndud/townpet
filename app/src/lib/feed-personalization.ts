@@ -34,6 +34,7 @@ export type FeedAudienceContext = {
   breedCode: string | null;
   personalizationMode: "breed" | "fallback" | "none";
   confidenceScore: number | null;
+  preferredPetTypeLabels: string[];
 };
 
 function buildFallbackAudienceKey(input: {
@@ -55,13 +56,49 @@ function buildFallbackAudienceKey(input: {
   return parts.join(":");
 }
 
+function normalizePreferredPetTypeLabels(labels?: string[]) {
+  if (!Array.isArray(labels)) {
+    return [];
+  }
+
+  return Array.from(
+    new Set(
+      labels
+        .map((label) => label.trim())
+        .filter((label) => label.length > 0),
+    ),
+  ).slice(0, 3);
+}
+
+function appendPreferredPetTypeHint(description: string, preferredPetTypeLabels: string[]) {
+  if (preferredPetTypeLabels.length === 0) {
+    return description;
+  }
+
+  return `${description} 선택한 커뮤니티 선호도 2차 신호로 함께 반영합니다.`;
+}
+
+function buildPreferredPetTypeEmphasis(preferredPetTypeLabels: string[]) {
+  if (preferredPetTypeLabels.length === 0) {
+    return null;
+  }
+
+  return `선호 커뮤니티 ${preferredPetTypeLabels.join(", ")}`;
+}
+
 export function resolveFeedAudienceContext({
   segment,
   fallbackPet,
+  preferredPetTypeLabels,
 }: {
   segment?: AudienceSegmentLike | null;
   fallbackPet?: PetLike | null;
+  preferredPetTypeLabels?: string[];
 }): FeedAudienceContext {
+  const normalizedPreferredPetTypeLabels = normalizePreferredPetTypeLabels(
+    preferredPetTypeLabels,
+  );
+
   if (segment) {
     const breedCode = normalizePetBreedCode(segment.breedCode);
     const hasSpecificBreed = hasBreedLoungeRoute(breedCode);
@@ -79,6 +116,7 @@ export function resolveFeedAudienceContext({
       breedCode,
       personalizationMode: hasSpecificBreed ? "breed" : "fallback",
       confidenceScore: segment.confidenceScore,
+      preferredPetTypeLabels: normalizedPreferredPetTypeLabels,
     };
   }
 
@@ -111,6 +149,7 @@ export function resolveFeedAudienceContext({
       breedCode,
       personalizationMode: hasSpecificBreed ? "breed" : "fallback",
       confidenceScore: null,
+      preferredPetTypeLabels: normalizedPreferredPetTypeLabels,
     };
   }
 
@@ -121,31 +160,57 @@ export function resolveFeedAudienceContext({
     breedCode: null,
     personalizationMode: "none",
     confidenceScore: null,
+    preferredPetTypeLabels: normalizedPreferredPetTypeLabels,
   };
 }
 
 export function buildFeedPersonalizationSummary(context: FeedAudienceContext) {
+  const preferredPetTypeEmphasis = buildPreferredPetTypeEmphasis(
+    context.preferredPetTypeLabels,
+  );
+
   if (context.label) {
     if (context.personalizationMode === "fallback") {
       return {
         title: `${context.label} 기준으로 기본 맞춤 추천 중`,
-        description:
+        description: appendPreferredPetTypeHint(
           "품종 정보가 구체적이지 않아 같은 종, 체급, 생애단계와 혼종 라벨 신호를 우선 반영합니다.",
-        emphasis:
+          context.preferredPetTypeLabels,
+        ),
+        emphasis: [
           context.confidenceScore !== null
             ? `fallback 세그먼트 신뢰도 ${Math.round(context.confidenceScore * 100)}%`
             : "프로필 fallback 신호",
+          preferredPetTypeEmphasis,
+        ]
+          .filter(Boolean)
+          .join(" · "),
       };
     }
 
     return {
       title: `${context.label} 기준으로 맞춤 추천 중`,
-      description:
+      description: appendPreferredPetTypeHint(
         "품종/체급 신호가 맞는 글을 조금 더 앞쪽에 보여주되, 일반 탐색 글도 함께 섞어 편향을 낮춥니다.",
-      emphasis:
+        context.preferredPetTypeLabels,
+      ),
+      emphasis: [
         context.confidenceScore !== null
           ? `세그먼트 신뢰도 ${Math.round(context.confidenceScore * 100)}%`
           : "프로필 기반 직접 신호",
+        preferredPetTypeEmphasis,
+      ]
+        .filter(Boolean)
+        .join(" · "),
+    };
+  }
+
+  if (context.preferredPetTypeLabels.length > 0) {
+    return {
+      title: "선호 커뮤니티 기준으로 기본 맞춤 추천 중",
+      description:
+        "반려동물 프로필 신호가 부족해 선택한 커뮤니티 선호를 우선 반영합니다. 프로필을 보강하면 품종/체급 기준 정확도가 더 올라갑니다.",
+      emphasis: preferredPetTypeEmphasis ?? "선호 커뮤니티 신호",
     };
   }
 
