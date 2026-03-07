@@ -25,7 +25,14 @@ export async function updateProfile({ userId, input }: UpdateProfileParams) {
 
   const currentUser = await prisma.user.findUnique({
     where: { id: userId },
-    select: { id: true, nickname: true, nicknameUpdatedAt: true },
+    select: {
+      id: true,
+      nickname: true,
+      nicknameUpdatedAt: true,
+      showPublicPosts: true,
+      showPublicComments: true,
+      showPublicPets: true,
+    },
   });
   if (!currentUser) {
     throw new ServiceError("사용자를 찾을 수 없습니다.", "USER_NOT_FOUND", 404);
@@ -63,6 +70,9 @@ export async function updateProfile({ userId, input }: UpdateProfileParams) {
         parsed.data.bio && parsed.data.bio.trim().length > 0
           ? parsed.data.bio.trim()
           : null,
+      showPublicPosts: parsed.data.showPublicPosts ?? currentUser.showPublicPosts,
+      showPublicComments: parsed.data.showPublicComments ?? currentUser.showPublicComments,
+      showPublicPets: parsed.data.showPublicPets ?? currentUser.showPublicPets,
     },
   });
 }

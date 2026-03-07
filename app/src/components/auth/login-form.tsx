@@ -7,6 +7,7 @@ import { useMemo, useState, useTransition } from "react";
 
 import { KakaoSignInButton } from "@/components/auth/kakao-signin-button";
 import { NaverSignInButton } from "@/components/auth/naver-signin-button";
+import { getPublicProfileLoginNoticeMessage } from "@/lib/public-profile";
 
 type LoginFormProps = {
   kakaoEnabled?: boolean;
@@ -32,6 +33,7 @@ export function LoginForm({
   const [showPassword, setShowPassword] = useState(false);
   const [capsLockOn, setCapsLockOn] = useState(false);
   const oauthError = searchParams.get("error");
+  const notice = searchParams.get("notice");
   const nextPath = searchParams.get("next");
   const callbackUrl =
     nextPath && nextPath.startsWith("/") ? nextPath : "/feed";
@@ -46,6 +48,7 @@ export function LoginForm({
     }
     return "소셜 로그인 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.";
   }, [oauthError]);
+  const noticeMessage = useMemo(() => getPublicProfileLoginNoticeMessage(notice), [notice]);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -133,6 +136,11 @@ export function LoginForm({
       {error ? (
         <p className="text-xs font-medium text-rose-700" role="alert" aria-live="polite">
           {error}
+        </p>
+      ) : null}
+      {noticeMessage ? (
+        <p className="rounded-lg border border-[#dbe6f6] bg-[#f8fbff] px-3 py-2 text-xs font-medium text-[#315b9a]">
+          {noticeMessage}
         </p>
       ) : null}
       <button

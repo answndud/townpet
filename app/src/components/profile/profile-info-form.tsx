@@ -7,14 +7,23 @@ import { updateProfileAction } from "@/server/actions/user";
 type ProfileInfoFormProps = {
   initialNickname: string | null;
   initialBio: string | null;
+  initialShowPublicPosts: boolean;
+  initialShowPublicComments: boolean;
+  initialShowPublicPets: boolean;
 };
 
 export function ProfileInfoForm({
   initialNickname,
   initialBio,
+  initialShowPublicPosts,
+  initialShowPublicComments,
+  initialShowPublicPets,
 }: ProfileInfoFormProps) {
   const [nickname, setNickname] = useState(initialNickname ?? "");
   const [bio, setBio] = useState(initialBio ?? "");
+  const [showPublicPosts, setShowPublicPosts] = useState(initialShowPublicPosts);
+  const [showPublicComments, setShowPublicComments] = useState(initialShowPublicComments);
+  const [showPublicPets, setShowPublicPets] = useState(initialShowPublicPets);
   const [isPending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
 
@@ -24,6 +33,9 @@ export function ProfileInfoForm({
       const result = await updateProfileAction({
         nickname,
         bio,
+        showPublicPosts,
+        showPublicComments,
+        showPublicPets,
       });
 
       if (!result.ok) {
@@ -62,6 +74,57 @@ export function ProfileInfoForm({
           />
           <span className="text-[11px] text-[#5a7398]">{bio.length}/240</span>
         </label>
+        <div className="rounded-xl border border-[#dbe6f6] bg-[#f8fbff] p-4">
+          <p className="text-sm font-semibold text-[#1f3f71]">공개 범위</p>
+          <p className="mt-1 text-[11px] text-[#5a7398]">
+            공개 프로필은 로그인한 사용자에게만 보입니다. 아래 항목별로 상대방에게 노출할 범위를
+            선택할 수 있습니다.
+          </p>
+          <div className="mt-3 grid gap-2">
+            <label className="flex items-start gap-3 rounded-lg border border-[#dbe6f6] bg-white px-3 py-2 text-sm text-[#355988]">
+              <input
+                type="checkbox"
+                checked={showPublicPosts}
+                onChange={(event) => setShowPublicPosts(event.target.checked)}
+                className="mt-0.5 h-4 w-4 border-[#bcd0ed]"
+              />
+              <span>
+                <span className="block font-medium text-[#1f3f71]">내 게시글 공개</span>
+                <span className="block text-[11px] text-[#5a7398]">
+                  공개 프로필에서 내가 작성한 게시글 목록과 게시글 수를 보여줍니다.
+                </span>
+              </span>
+            </label>
+            <label className="flex items-start gap-3 rounded-lg border border-[#dbe6f6] bg-white px-3 py-2 text-sm text-[#355988]">
+              <input
+                type="checkbox"
+                checked={showPublicComments}
+                onChange={(event) => setShowPublicComments(event.target.checked)}
+                className="mt-0.5 h-4 w-4 border-[#bcd0ed]"
+              />
+              <span>
+                <span className="block font-medium text-[#1f3f71]">내 댓글 공개</span>
+                <span className="block text-[11px] text-[#5a7398]">
+                  공개 프로필에서 댓글 활동 목록과 댓글 수를 보여줍니다.
+                </span>
+              </span>
+            </label>
+            <label className="flex items-start gap-3 rounded-lg border border-[#dbe6f6] bg-white px-3 py-2 text-sm text-[#355988]">
+              <input
+                type="checkbox"
+                checked={showPublicPets}
+                onChange={(event) => setShowPublicPets(event.target.checked)}
+                className="mt-0.5 h-4 w-4 border-[#bcd0ed]"
+              />
+              <span>
+                <span className="block font-medium text-[#1f3f71]">반려동물 프로필 공개</span>
+                <span className="block text-[11px] text-[#5a7398]">
+                  공개 프로필에서 반려동물 사진과 품종/체급/생애단계 정보를 보여줍니다.
+                </span>
+              </span>
+            </label>
+          </div>
+        </div>
       </div>
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <button
