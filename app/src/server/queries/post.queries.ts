@@ -2633,14 +2633,16 @@ export async function listPosts({
             { likeCount: "desc" },
             { commentCount: "desc" },
             { createdAt: "desc" },
+            { id: "desc" },
           ]
         : resolvedSort === "COMMENT"
           ? [
               { commentCount: "desc" },
               { likeCount: "desc" },
               { createdAt: "desc" },
+              { id: "desc" },
             ]
-          : [{ createdAt: "desc" }];
+          : [{ createdAt: "desc" }, { id: "desc" }];
 
     const legacyCompatibleWhere = buildPostListWhere({
       type: effectiveType,
@@ -3003,6 +3005,7 @@ export async function listBestPosts({
         { commentCount: "desc" },
         { viewCount: "desc" },
         { createdAt: "desc" },
+        { id: "desc" },
       ],
     };
 

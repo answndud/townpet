@@ -269,6 +269,39 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
     });
   };
 
+  const handleReactionStateChange = ({
+    likeCount,
+    dislikeCount,
+  }: {
+    likeCount: number;
+    dislikeCount: number;
+  }) => {
+    setData((current) => {
+      if (!current?.ok || !current.data) {
+        return current;
+      }
+
+      if (
+        current.data.post.likeCount === likeCount &&
+        current.data.post.dislikeCount === dislikeCount
+      ) {
+        return current;
+      }
+
+      return {
+        ...current,
+        data: {
+          ...current.data,
+          post: {
+            ...current.data.post,
+            likeCount,
+            dislikeCount,
+          },
+        },
+      };
+    });
+  };
+
   useEffect(() => {
     let cancelled = false;
     const run = async () => {
@@ -554,18 +587,19 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
                   <div className="hidden sm:block" aria-hidden="true" />
                   <div className="flex justify-center sm:justify-self-center">
                     <PostReactionControls
-                      key={`${post.id}:${resolvedLikeCount}:${resolvedDislikeCount}:${canInteract ? "pending" : "guest"}`}
+                      key={`${post.id}:${canInteract ? "viewer" : "guest"}:${canInteractWithPostOwner ? "interactive" : "blocked"}`}
                       postId={post.id}
                       likeCount={resolvedLikeCount}
                       dislikeCount={resolvedDislikeCount}
                       currentReaction={canInteract ? undefined : null}
                       canReact={canInteract && canInteractWithPostOwner}
                       loginHref={loginHref}
+                      onStateChange={handleReactionStateChange}
                     />
                   </div>
                   <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-self-end">
                     <PostBookmarkButton
-                      key={`${post.id}:${post.isBookmarked ? "1" : "0"}`}
+                      key={`${post.id}:${canInteract ? "viewer" : "guest"}`}
                       postId={post.id}
                       currentBookmarked={Boolean(post.isBookmarked)}
                       canBookmark={canInteract && canInteractWithPostOwner}

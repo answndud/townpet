@@ -18,7 +18,7 @@ type CommentActionResult =
   | { ok: true }
   | { ok: false; code: string; message: string };
 
-type CommentReactionInput = "LIKE" | "DISLIKE";
+type CommentReactionInput = "LIKE" | "DISLIKE" | null;
 
 type CommentReactionActionResult =
   | {
@@ -134,6 +134,14 @@ export async function toggleCommentReactionAction(
   let userId: string | undefined;
 
   try {
+    if (type !== null && type !== "LIKE" && type !== "DISLIKE") {
+      return {
+        ok: false,
+        code: "INVALID_INPUT",
+        message: "반응 값이 올바르지 않습니다.",
+      };
+    }
+
     const user = await requireCurrentUser();
     userId = user.id;
     await enforceRateLimit({
@@ -145,7 +153,7 @@ export async function toggleCommentReactionAction(
     const result = await toggleCommentReaction({
       commentId,
       userId: user.id,
-      type: type as CommentReactionType,
+      type: type as CommentReactionType | null,
     });
 
     revalidatePath(`/posts/${postId}`);

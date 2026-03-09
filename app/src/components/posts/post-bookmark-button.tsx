@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 
 import { togglePostBookmarkAction } from "@/server/actions/post";
 
@@ -26,6 +26,13 @@ export function PostBookmarkButton({
   const [loginIntent, setLoginIntent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const actionLockRef = useRef(false);
+
+  useEffect(() => {
+    setBookmarked(Boolean(currentBookmarked));
+    setError(null);
+    setLoginIntent(false);
+  }, [currentBookmarked, postId]);
 
   useEffect(() => {
     if (!loginIntent) {
@@ -46,25 +53,34 @@ export function PostBookmarkButton({
     : "inline-flex tp-btn-sm min-w-[72px] items-center justify-center rounded-lg border transition disabled:cursor-not-allowed disabled:opacity-60";
 
   const handleToggle = () => {
+    if (actionLockRef.current) {
+      return;
+    }
+
     if (!canBookmark) {
       setLoginIntent(true);
       return;
     }
 
     const previous = bookmarked;
+    actionLockRef.current = true;
     setError(null);
     setLoginIntent(false);
     setBookmarked(!previous);
 
     startTransition(async () => {
-      const result = await togglePostBookmarkAction(postId);
-      if (!result.ok) {
-        setBookmarked(previous);
-        setError(result.message);
-        return;
-      }
+      try {
+        const result = await togglePostBookmarkAction(postId, !previous);
+        if (!result.ok) {
+          setBookmarked(previous);
+          setError(result.message);
+          return;
+        }
 
-      setBookmarked(result.bookmarked);
+        setBookmarked(result.bookmarked);
+      } finally {
+        actionLockRef.current = false;
+      }
     });
   };
 

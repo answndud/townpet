@@ -2,7 +2,6 @@ import { NextRequest } from "next/server";
 
 import { buildGuestIpMeta } from "@/lib/guest-ip-display";
 import { getCurrentUserId } from "@/server/auth";
-import { buildCacheControlHeader } from "@/server/cache/query-cache";
 import { monitorUnhandledError } from "@/server/error-monitor";
 import { assertGuestStepUp } from "@/server/guest-step-up";
 import { getGuestPostPolicy } from "@/server/queries/policy.queries";
@@ -45,7 +44,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const comments = await listComments(postId, viewerId);
     return jsonOk(comments, {
       headers: {
-        "cache-control": userId ? "no-store" : buildCacheControlHeader(60, 300),
+        "cache-control": "no-store",
       },
     });
   } catch (error) {

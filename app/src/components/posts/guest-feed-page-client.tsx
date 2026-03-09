@@ -82,6 +82,7 @@ export function GuestFeedPageClient() {
   const [data, setData] = useState<GuestFeedGate | GuestFeedView | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [reloadToken, setReloadToken] = useState(0);
 
   const queryString = searchParams.toString();
   const legacyCommunityId = searchParams.get("communityId")?.trim() ?? "";
@@ -105,6 +106,19 @@ export function GuestFeedPageClient() {
   }, [hasPetType, legacyCommunityId, pathname, router, searchParams, shouldNormalizeLegacy]);
 
   useEffect(() => {
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        setReloadToken((current) => current + 1);
+      }
+    };
+
+    window.addEventListener("pageshow", handlePageShow);
+    return () => {
+      window.removeEventListener("pageshow", handlePageShow);
+    };
+  }, []);
+
+  useEffect(() => {
     if (shouldNormalizeLegacy) {
       return;
     }
@@ -120,7 +134,7 @@ export function GuestFeedPageClient() {
         const response = await fetch(`/api/feed/guest${queryString ? `?${queryString}` : ""}`, {
           method: "GET",
           credentials: "same-origin",
-          cache: "force-cache",
+          cache: "no-store",
           signal: controller.signal,
         });
         const payload = (await response.json()) as GuestFeedResponse;
@@ -156,7 +170,7 @@ export function GuestFeedPageClient() {
       cancelled = true;
       controller.abort();
     };
-  }, [queryString, shouldNormalizeLegacy]);
+  }, [queryString, reloadToken, shouldNormalizeLegacy]);
 
   const selectedSortLabel = useMemo(() => {
     if (!data || data.view !== "feed") {

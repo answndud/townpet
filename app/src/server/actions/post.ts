@@ -17,7 +17,7 @@ import { requireCurrentUser } from "@/server/auth";
 type PostActionResult =
   | { ok: true }
   | { ok: false; code: string; message: string };
-type PostReactionInput = "LIKE" | "DISLIKE";
+type PostReactionInput = "LIKE" | "DISLIKE" | null;
 
 type PostReactionActionResult =
   | {
@@ -111,7 +111,7 @@ export async function togglePostReactionAction(
   type: PostReactionInput,
 ): Promise<PostReactionActionResult> {
   try {
-    if (type !== "LIKE" && type !== "DISLIKE") {
+    if (type !== null && type !== "LIKE" && type !== "DISLIKE") {
       return {
         ok: false,
         code: "INVALID_INPUT",
@@ -123,7 +123,7 @@ export async function togglePostReactionAction(
     const result = await togglePostReaction({
       postId,
       userId: user.id,
-      type: type as PostReactionType,
+      type: type as PostReactionType | null,
     });
     revalidatePostDetailPage(postId);
 
@@ -153,12 +153,22 @@ export async function togglePostReactionAction(
 
 export async function togglePostBookmarkAction(
   postId: string,
+  bookmarked: boolean,
 ): Promise<PostBookmarkActionResult> {
   try {
+    if (typeof bookmarked !== "boolean") {
+      return {
+        ok: false,
+        code: "INVALID_INPUT",
+        message: "북마크 값이 올바르지 않습니다.",
+      };
+    }
+
     const user = await requireCurrentUser();
     const result = await togglePostBookmark({
       postId,
       userId: user.id,
+      bookmarked,
     });
     revalidateFeedPage();
     revalidatePostDetailPage(postId);
@@ -175,6 +185,7 @@ export async function togglePostBookmarkAction(
 
     logger.error("togglePostBookmarkAction 실패", {
       postId,
+      bookmarked,
       error: serializeError(error),
     });
 

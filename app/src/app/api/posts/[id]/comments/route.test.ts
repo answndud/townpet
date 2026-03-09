@@ -128,6 +128,15 @@ describe("POST /api/posts/[id]/comments contract", () => {
     });
   });
 
+  it("disables caching for comments GET", async () => {
+    mockListComments.mockResolvedValue([{ id: "comment-1" }] as never);
+    const request = new Request("http://localhost/api/posts/post-1/comments") as NextRequest;
+
+    const response = await GET(request, { params: Promise.resolve({ id: "post-1" }) });
+
+    expect(response.headers.get("cache-control")).toBe("no-store");
+  });
+
   it("returns GUEST_PASSWORD_REQUIRED for guest without password", async () => {
     const request = new Request("http://localhost/api/posts/post-1/comments", {
       method: "POST",

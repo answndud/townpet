@@ -222,7 +222,9 @@ describe("comment service notification flow", () => {
     expect(mockNotifyReplyToComment).not.toHaveBeenCalled();
   });
 
-  it("toggles off existing same reaction", async () => {
+  it("keeps existing reaction when requested state already matches", async () => {
+    const remove = vi.fn().mockResolvedValue({ id: "reaction-10" });
+    const change = vi.fn();
     mockPrisma.$transaction.mockImplementation(async (callback) =>
       callback({
         comment: {
@@ -241,13 +243,13 @@ describe("comment service notification flow", () => {
             id: "reaction-10",
             type: CommentReactionType.LIKE,
           }),
-          delete: vi.fn().mockResolvedValue({ id: "reaction-10" }),
-          update: vi.fn(),
+          delete: remove,
+          update: change,
           create: vi.fn(),
           count: vi
             .fn()
             .mockImplementation(({ where }: { where: { type: CommentReactionType } }) =>
-              where.type === CommentReactionType.LIKE ? 0 : 0,
+              where.type === CommentReactionType.LIKE ? 1 : 0,
             ),
         },
       } as never),
@@ -259,6 +261,51 @@ describe("comment service notification flow", () => {
       type: CommentReactionType.LIKE,
     });
 
+    expect(result).toEqual({
+      commentId: "comment-10",
+      reaction: CommentReactionType.LIKE,
+      likeCount: 1,
+      dislikeCount: 0,
+    });
+    expect(remove).not.toHaveBeenCalled();
+    expect(change).not.toHaveBeenCalled();
+  });
+
+  it("clears comment reaction when desired state is null", async () => {
+    const remove = vi.fn().mockResolvedValue({ id: "reaction-10" });
+    mockPrisma.$transaction.mockImplementation(async (callback) =>
+      callback({
+        comment: {
+          findUnique: vi.fn().mockResolvedValue({
+            id: "comment-10",
+            status: PostStatus.ACTIVE,
+          }),
+          update: vi.fn().mockResolvedValue({
+            id: "comment-10",
+            likeCount: 0,
+            dislikeCount: 0,
+          }),
+        },
+        commentReaction: {
+          findUnique: vi.fn().mockResolvedValue({
+            id: "reaction-10",
+            type: CommentReactionType.LIKE,
+          }),
+          delete: remove,
+          update: vi.fn(),
+          create: vi.fn(),
+          count: vi.fn().mockResolvedValue(0),
+        },
+      } as never),
+    );
+
+    const result = await toggleCommentReaction({
+      commentId: "comment-10",
+      userId: "user-10",
+      type: null,
+    });
+
+    expect(remove).toHaveBeenCalledWith({ where: { id: "reaction-10" } });
     expect(result).toEqual({
       commentId: "comment-10",
       reaction: null,
