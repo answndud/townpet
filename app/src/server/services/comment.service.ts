@@ -708,7 +708,7 @@ export async function deleteGuestComment({
 type ToggleCommentReactionParams = {
   commentId: string;
   userId: string;
-  type: CommentReactionType;
+  type: CommentReactionType | null;
 };
 
 type ToggleCommentReactionResult = {
@@ -755,17 +755,15 @@ export async function toggleCommentReaction({
 
     let reaction: CommentReactionType | null = type;
 
-    if (existing) {
-      if (existing.type === type) {
-        await tx.commentReaction.delete({ where: { id: existing.id } });
-        reaction = null;
-      } else {
-        await tx.commentReaction.update({
-          where: { id: existing.id },
-          data: { type },
-        });
-      }
-    } else {
+    if (existing && type === null) {
+      await tx.commentReaction.delete({ where: { id: existing.id } });
+      reaction = null;
+    } else if (existing && type && existing.type !== type) {
+      await tx.commentReaction.update({
+        where: { id: existing.id },
+        data: { type },
+      });
+    } else if (!existing && type) {
       await tx.commentReaction.create({
         data: {
           commentId,

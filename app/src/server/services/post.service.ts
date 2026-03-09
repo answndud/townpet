@@ -1570,18 +1570,20 @@ export async function deleteGuestPost({
 type TogglePostReactionParams = {
   postId: string;
   userId: string;
-  type: PostReactionType;
+  type: PostReactionType | null;
 };
 
 type TogglePostReactionResult = {
   likeCount: number;
   dislikeCount: number;
   reaction: PostReactionType | null;
+  previousReaction: PostReactionType | null;
 };
 
 type TogglePostBookmarkParams = {
   postId: string;
   userId: string;
+  bookmarked: boolean;
 };
 
 type TogglePostBookmarkResult = {
@@ -1638,7 +1640,7 @@ async function togglePostReactionWithRawSql({
   tx: TxLike;
   postId: string;
   userId: string;
-  type: PostReactionType;
+  type: PostReactionType | null;
 }): Promise<TogglePostReactionResult> {
   const now = new Date();
   const existingRows = await tx.$queryRaw<Array<{ id: string; type: string }>>`
@@ -1649,21 +1651,24 @@ async function togglePostReactionWithRawSql({
   `;
   const existingRow = existingRows[0];
 
-  let reaction: PostReactionType | null = type;
+  const previousReaction =
+    existingRow?.type === PostReactionType.LIKE || existingRow?.type === PostReactionType.DISLIKE
+      ? (existingRow.type as PostReactionType)
+      : null;
+  const reaction: PostReactionType | null = type;
 
-  if (existingRow && existingRow.type === type) {
+  if (existingRow && type === null) {
     await tx.$executeRaw`
       DELETE FROM "PostReaction"
       WHERE id = ${existingRow.id}
     `;
-    reaction = null;
-  } else if (existingRow) {
+  } else if (existingRow && type && existingRow.type !== type) {
     await tx.$executeRaw`
       UPDATE "PostReaction"
       SET "type" = ${type}::"PostReactionType", "updatedAt" = ${now}
       WHERE id = ${existingRow.id}
     `;
-  } else {
+  } else if (!existingRow && type) {
     const reactionId = randomUUID().replace(/-/g, "");
     await tx.$executeRaw`
       INSERT INTO "PostReaction" ("id", "postId", "userId", "type", "createdAt", "updatedAt")
@@ -1693,7 +1698,7 @@ async function togglePostReactionWithRawSql({
     },
   });
 
-  return { likeCount, dislikeCount, reaction };
+  return { likeCount, dislikeCount, reaction, previousReaction };
 }
 
 export async function togglePostReaction({
@@ -1742,19 +1747,19 @@ export async function togglePostReaction({
       select: { id: true, type: true },
     });
 
-    let reaction: PostReactionType | null = type;
+    const previousReaction = existingReaction?.type ?? null;
+    const reaction: PostReactionType | null = type;
 
-    if (existingReaction?.type === type) {
+    if (existingReaction && type === null) {
       await reactionDelegate.delete({
         where: { id: existingReaction.id },
       });
-      reaction = null;
-    } else if (existingReaction) {
+    } else if (existingReaction && type && existingReaction.type !== type) {
       await reactionDelegate.update({
         where: { id: existingReaction.id },
         data: { type },
       });
-    } else {
+    } else if (!existingReaction && type) {
       await reactionDelegate.create({
         data: {
           postId,
@@ -1781,11 +1786,12 @@ export async function togglePostReaction({
       },
     });
 
-    return { likeCount, dislikeCount, reaction };
+    return { likeCount, dislikeCount, reaction, previousReaction };
   });
 
   if (
     result.reaction === PostReactionType.LIKE &&
+    result.previousReaction !== PostReactionType.LIKE &&
     existingPost.authorId !== userId
   ) {
     try {
@@ -1813,6 +1819,7 @@ export async function togglePostReaction({
 export async function togglePostBookmark({
   postId,
   userId,
+  bookmarked,
 }: TogglePostBookmarkParams): Promise<TogglePostBookmarkResult> {
   await assertUserInteractionAllowed(userId);
 
@@ -1843,7 +1850,7 @@ export async function togglePostBookmark({
     select: { id: true },
   });
 
-  if (existingBookmark) {
+  if (existingBookmark && !bookmarked) {
     await prisma.postBookmark.delete({
       where: { id: existingBookmark.id },
     });
@@ -1852,14 +1859,18 @@ export async function togglePostBookmark({
     return { bookmarked: false };
   }
 
-  await prisma.postBookmark.create({
-    data: {
-      postId,
-      userId,
-    },
-  });
+  if (!existingBookmark && bookmarked) {
+    await prisma.postBookmark.create({
+      data: {
+        postId,
+        userId,
+      },
+    });
 
-  void bumpFeedCacheVersion().catch(() => undefined);
-  void bumpPostDetailCacheVersion().catch(() => undefined);
-  return { bookmarked: true };
+    void bumpFeedCacheVersion().catch(() => undefined);
+    void bumpPostDetailCacheVersion().catch(() => undefined);
+    return { bookmarked: true };
+  }
+
+  return { bookmarked: Boolean(existingBookmark) };
 }

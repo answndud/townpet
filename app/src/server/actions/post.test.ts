@@ -89,6 +89,7 @@ describe("post actions", () => {
       likeCount: 5,
       dislikeCount: 1,
       reaction: "LIKE",
+      previousReaction: null,
     } as never);
 
     const result = await togglePostReactionAction("post-9", "LIKE");
@@ -114,7 +115,7 @@ describe("post actions", () => {
       bookmarked: true,
     } as never);
 
-    const result = await togglePostBookmarkAction("post-12");
+    const result = await togglePostBookmarkAction("post-12", true);
 
     expect(result).toEqual({
       ok: true,
@@ -123,11 +124,24 @@ describe("post actions", () => {
     expect(mockTogglePostBookmark).toHaveBeenCalledWith({
       postId: "post-12",
       userId: "user-8",
+      bookmarked: true,
     });
     expect(mockRevalidatePath).toHaveBeenCalledTimes(3);
     expect(mockRevalidatePath).toHaveBeenCalledWith("/feed");
     expect(mockRevalidatePath).toHaveBeenCalledWith("/posts/post-12");
     expect(mockRevalidatePath).toHaveBeenCalledWith("/bookmarks");
+  });
+
+  it("rejects invalid bookmark input before calling the service", async () => {
+    const result = await togglePostBookmarkAction("post-13", "1" as never);
+
+    expect(result).toEqual({
+      ok: false,
+      code: "INVALID_INPUT",
+      message: "북마크 값이 올바르지 않습니다.",
+    });
+    expect(mockRequireCurrentUser).not.toHaveBeenCalled();
+    expect(mockTogglePostBookmark).not.toHaveBeenCalled();
   });
 
   it("maps service errors without revalidating paths", async () => {

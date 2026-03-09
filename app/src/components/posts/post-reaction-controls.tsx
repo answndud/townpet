@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 
 import {
   calculatePostReactionScore,
@@ -26,6 +26,11 @@ type PostReactionControlsProps = {
   canReact?: boolean;
   loginHref?: string;
   showLoginHint?: boolean;
+  onStateChange?: (nextState: {
+    reaction: ReactionType | null;
+    likeCount: number;
+    dislikeCount: number;
+  }) => void;
 };
 
 function getNextState(
@@ -78,6 +83,7 @@ export function PostReactionControls({
   canReact = true,
   loginHref = "/login",
   showLoginHint = true,
+  onStateChange,
 }: PostReactionControlsProps) {
   const initialLikeCount =
     Number.isFinite(likeCount) && Number(likeCount) > 0 ? Math.trunc(Number(likeCount)) : 0;
@@ -94,6 +100,36 @@ export function PostReactionControls({
   const [loginIntent, setLoginIntent] = useState<ReactionType | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const actionLockRef = useRef(false);
+
+  useEffect(() => {
+    setLikes(initialLikeCount);
+    setDislikes(initialDislikeCount);
+  }, [initialDislikeCount, initialLikeCount]);
+
+  useEffect(() => {
+    if (currentReaction === undefined) {
+      return;
+    }
+
+    setReaction(currentReaction);
+    setReactionLoaded(true);
+    setHasInteracted(false);
+  }, [currentReaction]);
+
+  useEffect(() => {
+    setHasInteracted(false);
+    setError(null);
+    setLoginIntent(null);
+    if (currentReaction !== undefined) {
+      setReaction(currentReaction);
+      setReactionLoaded(true);
+      return;
+    }
+
+    setReaction(null);
+    setReactionLoaded(false);
+  }, [currentReaction, postId]);
 
   useEffect(() => {
     if (!loginIntent) {
@@ -122,6 +158,7 @@ export function PostReactionControls({
         const response = await fetch(`/api/posts/${postId}/reaction`, {
           method: "GET",
           credentials: "same-origin",
+          cache: "no-store",
         });
         if (!response.ok) {
           return;
@@ -172,6 +209,10 @@ export function PostReactionControls({
                 : "border-[#d8e4f6] bg-white text-[#5d7499]";
 
   const handleToggle = (target: ReactionType) => {
+    if (actionLockRef.current) {
+      return;
+    }
+
     if (!canReact) {
       setLoginIntent(target);
       return;
@@ -179,28 +220,44 @@ export function PostReactionControls({
 
     setHasInteracted(true);
 
-    const previous = { reaction: effectiveReaction, likes, dislikes };
+    const previous = {
+      reaction: effectiveReaction,
+      likeCount: likes,
+      dislikeCount: dislikes,
+    };
     const optimistic = getNextState(effectiveReaction, target, likes, dislikes);
+    actionLockRef.current = true;
 
     setError(null);
     setLoginIntent(null);
     setReaction(optimistic.reaction);
     setLikes(optimistic.likeCount);
     setDislikes(optimistic.dislikeCount);
+    onStateChange?.(optimistic);
 
     startTransition(async () => {
-      const result = await togglePostReactionAction(postId, target);
-      if (!result.ok) {
-        setReaction(previous.reaction);
-        setLikes(previous.likes);
-        setDislikes(previous.dislikes);
-        setError(result.message);
-        return;
-      }
+      try {
+        const result = await togglePostReactionAction(postId, optimistic.reaction);
+        if (!result.ok) {
+          setReaction(previous.reaction);
+          setLikes(previous.likeCount);
+          setDislikes(previous.dislikeCount);
+          setError(result.message);
+          onStateChange?.(previous);
+          return;
+        }
 
-      setReaction(result.reaction);
-      setLikes(result.likeCount);
-      setDislikes(result.dislikeCount);
+        setReaction(result.reaction);
+        setLikes(result.likeCount);
+        setDislikes(result.dislikeCount);
+        onStateChange?.({
+          reaction: result.reaction,
+          likeCount: result.likeCount,
+          dislikeCount: result.dislikeCount,
+        });
+      } finally {
+        actionLockRef.current = false;
+      }
     });
   };
 

@@ -17,6 +17,37 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-09: Cycle 262 완료 (게스트 상세 댓글 수 실시간 동기화)
+- 완료 내용
+- `app/src/lib/post-comment-count-sync.ts`에 브라우저 이벤트 기반 댓글 수 sync 유틸을 추가했고, `app/src/lib/post-comment-count-sync.test.ts`로 전달/무창(window 없음) fallback을 검증했다.
+- `app/src/components/posts/post-comment-section-client.tsx`는 댓글 목록 재조회 후 `postId`와 새 댓글 수를 함께 emit하도록 바꿨다.
+- `app/src/components/posts/post-comment-count-stat.tsx`를 추가해 게스트 상세 상단 메타의 댓글 수를 별도 client state로 구독하게 했고, `app/src/app/posts/[id]/guest/page.tsx`에서 기존 정적 텍스트를 이 컴포넌트로 교체했다.
+- 결과적으로 게스트 상세에서도 댓글 목록과 상단 댓글 수가 같은 재조회 타이밍으로 맞춰진다.
+- 검증 결과
+- `pnpm -C app lint src/components/posts/post-comment-section-client.tsx 'src/app/posts/[id]/guest/page.tsx' src/components/posts/post-comment-count-stat.tsx src/lib/post-comment-count-sync.ts src/lib/post-comment-count-sync.test.ts` 통과
+- `pnpm -C app typecheck` 통과
+- `pnpm -C app test -- src/lib/post-comment-count-sync.test.ts 'src/app/api/posts/[id]/comments/route.test.ts'` 실행 시 전체 Vitest suite로 확장되어 `111 files / 566 tests` 통과
+- `git diff --check` 통과
+- 메모
+- 이 동기화는 게스트 상세 전용 보강이며, 로그인 상세는 이미 local state 업데이트로 상단 댓글 수를 맞추고 있다.
+
+### 2026-03-09: Cycle 261 완료 (댓글/반응 상태 반영 안정화 2차)
+- 완료 내용
+- `app/src/app/api/posts/[id]/comments/route.ts`와 `app/src/components/posts/post-comment-section-client.tsx`에서 댓글 GET 응답과 후속 재조회 모두 `no-store`로 맞춰 비회원/로그인 공통 stale 캐시를 제거했다.
+- `app/src/components/posts/post-comment-thread.tsx`에 상호작용 락을 추가해 댓글 생성/수정/삭제 연타 중복을 막았고, 새 루트 댓글 작성 성공 시 마지막 댓글 페이지로 이동하도록 보강했다.
+- `app/src/server/services/post.service.ts`, `app/src/server/services/comment.service.ts`, `app/src/server/actions/post.ts`, `app/src/server/actions/comment.ts`를 수정해 게시글 반응/댓글 반응/북마크를 toggle이 아니라 “원하는 최종 상태 설정” 방식으로 처리하도록 바꿨다.
+- `app/src/components/posts/post-reaction-controls.tsx`, `app/src/components/posts/comment-reaction-controls.tsx`, `app/src/components/posts/post-bookmark-button.tsx`는 optimistic state를 유지하되 서버에는 최종 desired state를 보내고, 중복 클릭 락과 props 재동기화도 함께 정리했다.
+- `app/src/components/posts/post-detail-client.tsx`는 반응 바 상태 변경을 상단 메타 카운트에도 즉시 반영하도록 바꿨고, `app/src/components/posts/guest-feed-page-client.tsx`는 BFCache 복귀 시 재조회되게 해 모바일 back stale 가능성을 낮췄다.
+- `app/src/server/queries/post.queries.ts`에 `id desc` tie-breaker를 추가해 반응/댓글/베스트 정렬 페이지네이션의 누락/중복 리스크를 줄였다.
+- `app/src/server/services/post.service.test.ts`, `app/src/server/services/comment.service.test.ts`, `app/src/server/actions/post.test.ts`, `app/src/server/queries/post.queries.test.ts`, `app/src/app/api/posts/[id]/comments/route.test.ts`를 현재 시맨틱에 맞게 갱신했다.
+- 검증 결과
+- `pnpm -C app lint src/components/posts/post-comment-section-client.tsx src/components/posts/post-comment-thread.tsx src/components/posts/post-reaction-controls.tsx src/components/posts/comment-reaction-controls.tsx src/components/posts/post-bookmark-button.tsx src/components/posts/post-detail-client.tsx 'src/app/posts/[id]/guest/page.tsx' 'src/app/api/posts/[id]/comments/route.ts' 'src/app/api/posts/[id]/comments/route.test.ts' src/components/posts/guest-feed-page-client.tsx src/server/actions/post.ts src/server/actions/post.test.ts src/server/actions/comment.ts src/server/services/post.service.ts src/server/services/post.service.test.ts src/server/services/comment.service.ts src/server/services/comment.service.test.ts src/server/queries/post.queries.ts` 통과
+- `pnpm -C app typecheck` 통과
+- `pnpm -C app test -- src/server/services/post.service.test.ts src/server/services/comment.service.test.ts src/server/actions/post.test.ts 'src/app/api/posts/[id]/comments/route.test.ts' src/server/queries/post.queries.test.ts` 실행 시 전체 Vitest suite로 확장되어 `110 files / 564 tests` 통과
+- `git diff --check` 통과
+- 메모
+- 이번 턴에서는 게스트 상세 상단 댓글 수를 별도 client state로 분리하지는 않았다. 현재는 댓글 route no-store + `router.refresh()` 조합으로 서버 페이지 갱신을 우선 보강했고, 이후 필요하면 게스트 상세 상단 메타도 client wrapper로 묶어 같은 패턴으로 더 줄일 수 있다.
+
 ### 2026-03-09: Cycle 260 완료 (상호작용 상태 재동기화 점검 및 보강)
 - 완료 내용
 - `app/src/components/posts/post-detail-client.tsx`, `app/src/components/posts/post-comment-thread.tsx`, `app/src/app/posts/[id]/guest/page.tsx`, `app/src/app/users/[id]/page.tsx`, `app/src/app/profile/page.tsx`에서 반응/북마크/관계 컨트롤에 incoming 스냅샷 기반 `key`를 부여해 같은 컴포넌트가 재사용될 때 이전 local state가 남지 않도록 정리했다.

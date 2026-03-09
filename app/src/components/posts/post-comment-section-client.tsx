@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { unwrapCommentListResponse } from "@/lib/comment-client";
+import { emitPostCommentCountSync } from "@/lib/post-comment-count-sync";
 import { PostCommentThread } from "@/components/posts/post-comment-thread";
 
 type CommentItem = {
@@ -68,6 +69,7 @@ export function PostCommentSectionClient({
       const response = await fetch(`/api/posts/${postId}/comments`, {
         method: "GET",
         credentials: "same-origin",
+        cache: "no-store",
       });
       const payload = (await response.json()) as CommentResponse;
       const nextComments = unwrapCommentListResponse(response.ok, payload);
@@ -75,6 +77,7 @@ export function PostCommentSectionClient({
         setComments(nextComments);
         setError(null);
         onCommentCountChange?.(nextComments.length);
+        emitPostCommentCountSync({ postId, count: nextComments.length });
       }
     } catch {
       if (mountedRef.current) {

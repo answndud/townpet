@@ -26,6 +26,18 @@
 
 ## Active Plan
 
+### Cycle 262: 게스트 상세 댓글 수 실시간 동기화 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 게스트 상세 상단 댓글 수를 댓글 목록 재조회와 같은 client 이벤트로 동기화 | Codex | P2 | `done` | 게스트 상세 상단 메타의 댓글 수가 댓글 섹션 재조회 직후 새로고침 없이 같이 갱신되고, 관련 sync 유틸/테스트가 추가된다 | `PLAN.md`, `PROGRESS.md`, `app/src/components/posts/post-comment-section-client.tsx`, `app/src/components/posts/post-comment-count-stat.tsx`, `app/src/lib/post-comment-count-sync.ts`, `app/src/lib/post-comment-count-sync.test.ts`, `app/src/app/posts/[id]/guest/page.tsx` |
+
+### Cycle 261: 댓글/반응 상태 반영 안정화 2차 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 댓글 목록 캐시 제거와 새 루트 댓글 가시성 보강 | Codex | P1 | `done` | 댓글 GET 응답과 클라이언트 재조회가 캐시되지 않고, 루트 댓글 작성 직후 새 댓글이 속한 마지막 페이지로 이동해 새로고침 없이 바로 확인된다 | `PLAN.md`, `PROGRESS.md`, `app/src/app/api/posts/[id]/comments/route.ts`, `app/src/components/posts/post-comment-section-client.tsx`, `app/src/components/posts/post-comment-thread.tsx`, `app/src/app/api/posts/[id]/comments/route.test.ts` |
+| 게시글/댓글 반응과 북마크를 idempotent set 시맨틱으로 전환 | Codex | P1 | `done` | 좋아요/싫어요/댓글 반응/북마크가 중복 클릭·재시도 시 토글로 뒤집히지 않고 원하는 최종 상태를 기준으로 저장되며, 관련 액션/서비스 테스트가 갱신된다 | `PLAN.md`, `PROGRESS.md`, `app/src/server/actions/post.ts`, `app/src/server/actions/comment.ts`, `app/src/server/services/post.service.ts`, `app/src/server/services/comment.service.ts`, `app/src/components/posts/post-reaction-controls.tsx`, `app/src/components/posts/comment-reaction-controls.tsx`, `app/src/components/posts/post-bookmark-button.tsx`, 관련 테스트 |
+| 상세/피드 메타 동기화와 페이지네이션 안정성 보강 | Codex | P2 | `done` | 로그인 상세의 상단 좋아요/싫어요 메타가 액션 바와 함께 갱신되고, 게스트 피드는 BFCache 복귀 시 재조회되며, 정렬 기반 피드/베스트 쿼리에 안정적인 `id desc` tie-breaker가 추가된다 | `PLAN.md`, `PROGRESS.md`, `app/src/components/posts/post-detail-client.tsx`, `app/src/components/posts/guest-feed-page-client.tsx`, `app/src/server/queries/post.queries.ts`, `app/src/server/queries/post.queries.test.ts` |
+
 ### Cycle 260: 상호작용 상태 재동기화 점검 및 보강 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|

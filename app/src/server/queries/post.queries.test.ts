@@ -215,6 +215,7 @@ describe("post queries", () => {
       { commentCount: "desc" },
       { likeCount: "desc" },
       { createdAt: "desc" },
+      { id: "desc" },
     ]);
   });
 
@@ -1218,6 +1219,7 @@ describe("post queries", () => {
       { commentCount: "desc" },
       { viewCount: "desc" },
       { createdAt: "desc" },
+      { id: "desc" },
     ]);
   });
 

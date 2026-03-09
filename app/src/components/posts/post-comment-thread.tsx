@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { PostStatus } from "@prisma/client";
-import { useMemo, useState, useTransition, type KeyboardEvent } from "react";
+import { useMemo, useRef, useState, useTransition, type KeyboardEvent } from "react";
 
 import { CommentReactionControls } from "@/components/posts/comment-reaction-controls";
 import { LinkifiedContent } from "@/components/content/linkified-content";
@@ -97,6 +97,7 @@ export function PostCommentThread({
   const [guestPassword, setGuestPassword] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const actionLockRef = useRef(false);
   const canComment = canInteract || !currentUserId;
 
   const handleCommentSubmitShortcut = (
@@ -132,6 +133,10 @@ export function PostCommentThread({
   const pagedRoots = roots.slice((currentPage - 1) * ROOTS_PER_PAGE, currentPage * ROOTS_PER_PAGE);
 
   const handleCreate = (parentId?: string) => {
+    if (actionLockRef.current) {
+      return;
+    }
+
     if (!canComment) {
       setMessage("현재 상태에서는 댓글을 작성할 수 없습니다.");
       return;
@@ -154,26 +159,114 @@ export function PostCommentThread({
       }
     }
 
+    actionLockRef.current = true;
     startTransition(async () => {
       setMessage(null);
-      const result = currentUserId
-        ? await createCommentAction(postId, { content }, parentId)
-        : await (async () => {
-            try {
-              const guestHeaders = await getGuestWriteHeaders("comment:create");
-              const response = await fetch(`/api/posts/${postId}/comments`, {
-                method: "POST",
+      try {
+        const result = currentUserId
+          ? await createCommentAction(postId, { content }, parentId)
+          : await (async () => {
+              try {
+                const guestHeaders = await getGuestWriteHeaders("comment:create");
+                const response = await fetch(`/api/posts/${postId}/comments`, {
+                  method: "POST",
+                  headers: {
+                    "content-type": "application/json",
+                    ...guestHeaders,
+                    "x-guest-mode": "1",
+                  },
+                  body: JSON.stringify({
+                    content,
+                    parentId,
+                    guestDisplayName,
+                    guestPassword,
+                  }),
+                });
+                const payload = (await response.json()) as {
+                  ok: boolean;
+                  error?: { message?: string };
+                };
+
+                if (response.ok && payload.ok) {
+                  return { ok: true } as const;
+                }
+
+                return {
+                  ok: false,
+                  message: payload.error?.message ?? "댓글 등록에 실패했습니다.",
+                } as const;
+              } catch (guestError) {
+                return {
+                  ok: false,
+                  message:
+                    guestError instanceof Error && guestError.message.trim().length > 0
+                      ? guestError.message
+                      : "네트워크 오류가 발생했습니다.",
+                } as const;
+              }
+            })();
+
+        if (!result.ok) {
+          setMessage(result.message);
+          if (!currentUserId) {
+            window.alert(result.message);
+          }
+          return;
+        }
+
+        if (!parentId) {
+          const nextRootCount = roots.length + 1;
+          setPage(Math.max(1, Math.ceil(nextRootCount / ROOTS_PER_PAGE)));
+        }
+
+        setReplyContent((prev) => ({ ...prev, [parentId ?? "root"]: "" }));
+        if (parentId) {
+          setReplyOpen((prev) => ({ ...prev, [parentId]: false }));
+          setCollapsedReplies((prev) => ({ ...prev, [parentId]: false }));
+        }
+        if (onCommentsChanged) {
+          await onCommentsChanged();
+        }
+        router.refresh();
+      } finally {
+        actionLockRef.current = false;
+      }
+    });
+  };
+
+  const handleUpdate = (commentId: string, isGuestComment: boolean) => {
+    if (actionLockRef.current) {
+      return;
+    }
+
+    if (!canInteract && !isGuestComment) {
+      setMessage("로그인 후 댓글을 수정할 수 있습니다.");
+      return;
+    }
+
+    const content = editContent[commentId];
+    if (!content) return;
+
+    actionLockRef.current = true;
+    startTransition(async () => {
+      setMessage(null);
+      try {
+        const result = !isGuestComment
+          ? await updateCommentAction(postId, commentId, { content })
+          : await (async () => {
+              const password = (guestActionPassword[commentId] ?? "").trim();
+              if (!password) {
+                return { ok: false, message: "비밀번호가 필요합니다." } as const;
+              }
+
+              const response = await fetch(`/api/comments/${commentId}`, {
+                method: "PATCH",
                 headers: {
                   "content-type": "application/json",
-                  ...guestHeaders,
+                  "x-guest-fingerprint": getGuestFingerprint(),
                   "x-guest-mode": "1",
                 },
-                body: JSON.stringify({
-                  content,
-                  parentId,
-                  guestDisplayName,
-                  guestPassword,
-                }),
+                body: JSON.stringify({ content, guestPassword: password }),
               });
               const payload = (await response.json()) as {
                 ok: boolean;
@@ -186,93 +279,26 @@ export function PostCommentThread({
 
               return {
                 ok: false,
-                message: payload.error?.message ?? "댓글 등록에 실패했습니다.",
+                message: payload.error?.message ?? "댓글 수정에 실패했습니다.",
               } as const;
-            } catch (guestError) {
-              return {
-                ok: false,
-                message:
-                  guestError instanceof Error && guestError.message.trim().length > 0
-                    ? guestError.message
-                    : "네트워크 오류가 발생했습니다.",
-              } as const;
-            }
-          })();
+            })();
 
-      if (!result.ok) {
-        setMessage(result.message);
-        if (!currentUserId) {
-          window.alert(result.message);
+        if (!result.ok) {
+          setMessage(result.message);
+          if (isGuestComment) {
+            window.alert(result.message);
+          }
+          return;
         }
-        return;
-      }
-      setReplyContent((prev) => ({ ...prev, [parentId ?? "root"]: "" }));
-      if (parentId) {
-        setReplyOpen((prev) => ({ ...prev, [parentId]: false }));
-        setCollapsedReplies((prev) => ({ ...prev, [parentId]: false }));
-      }
-      if (onCommentsChanged) {
-        await onCommentsChanged();
-      }
-      router.refresh();
-    });
-  };
 
-  const handleUpdate = (commentId: string, isGuestComment: boolean) => {
-    if (!canInteract && !isGuestComment) {
-      setMessage("로그인 후 댓글을 수정할 수 있습니다.");
-      return;
-    }
-
-    const content = editContent[commentId];
-    if (!content) return;
-
-    startTransition(async () => {
-      setMessage(null);
-      const result = !isGuestComment
-        ? await updateCommentAction(postId, commentId, { content })
-        : await (async () => {
-            const password = (guestActionPassword[commentId] ?? "").trim();
-            if (!password) {
-              return { ok: false, message: "비밀번호가 필요합니다." } as const;
-            }
-
-            const response = await fetch(`/api/comments/${commentId}`, {
-              method: "PATCH",
-              headers: {
-                "content-type": "application/json",
-                "x-guest-fingerprint": getGuestFingerprint(),
-                "x-guest-mode": "1",
-              },
-              body: JSON.stringify({ content, guestPassword: password }),
-            });
-            const payload = (await response.json()) as {
-              ok: boolean;
-              error?: { message?: string };
-            };
-
-            if (response.ok && payload.ok) {
-              return { ok: true } as const;
-            }
-
-            return {
-              ok: false,
-              message: payload.error?.message ?? "댓글 수정에 실패했습니다.",
-            } as const;
-          })();
-
-      if (!result.ok) {
-        setMessage(result.message);
-        if (isGuestComment) {
-          window.alert(result.message);
+        setEditOpen((prev) => ({ ...prev, [commentId]: false }));
+        if (onCommentsChanged) {
+          await onCommentsChanged();
         }
-        return;
+        router.refresh();
+      } finally {
+        actionLockRef.current = false;
       }
-      setEditOpen((prev) => ({ ...prev, [commentId]: false }));
-      if (onCommentsChanged) {
-        await onCommentsChanged();
-      }
-      router.refresh();
     });
   };
 
@@ -281,55 +307,65 @@ export function PostCommentThread({
     isGuestComment: boolean,
     overridePassword?: string,
   ) => {
+    if (actionLockRef.current) {
+      return;
+    }
+
     if (!canInteract && !isGuestComment) {
       setMessage("로그인 후 댓글을 삭제할 수 있습니다.");
       return;
     }
 
+    actionLockRef.current = true;
     startTransition(async () => {
       setMessage(null);
-      const result = !isGuestComment
-        ? await deleteCommentAction(postId, commentId)
-        : await (async () => {
-            const password = (overridePassword ?? guestActionPassword[commentId] ?? "").trim();
-            if (!password) {
-              return { ok: false, message: "비밀번호가 필요합니다." } as const;
-            }
+      try {
+        const result = !isGuestComment
+          ? await deleteCommentAction(postId, commentId)
+          : await (async () => {
+              const password = (overridePassword ?? guestActionPassword[commentId] ?? "").trim();
+              if (!password) {
+                return { ok: false, message: "비밀번호가 필요합니다." } as const;
+              }
 
-            const response = await fetch(`/api/comments/${commentId}`, {
-              method: "DELETE",
-              headers: {
-                "content-type": "application/json",
-                "x-guest-fingerprint": getGuestFingerprint(),
-                "x-guest-mode": "1",
-              },
-              body: JSON.stringify({ guestPassword: password }),
-            });
-            const payload = (await response.json()) as {
-              ok: boolean;
-              error?: { message?: string };
-            };
-            if (response.ok && payload.ok) {
-              return { ok: true } as const;
-            }
-            return {
-              ok: false,
-              message: payload.error?.message ?? "댓글 삭제에 실패했습니다.",
-            } as const;
-          })();
+              const response = await fetch(`/api/comments/${commentId}`, {
+                method: "DELETE",
+                headers: {
+                  "content-type": "application/json",
+                  "x-guest-fingerprint": getGuestFingerprint(),
+                  "x-guest-mode": "1",
+                },
+                body: JSON.stringify({ guestPassword: password }),
+              });
+              const payload = (await response.json()) as {
+                ok: boolean;
+                error?: { message?: string };
+              };
+              if (response.ok && payload.ok) {
+                return { ok: true } as const;
+              }
+              return {
+                ok: false,
+                message: payload.error?.message ?? "댓글 삭제에 실패했습니다.",
+              } as const;
+            })();
 
-      if (!result.ok) {
-        setMessage(result.message);
-        if (isGuestComment) {
-          window.alert(result.message);
+        if (!result.ok) {
+          setMessage(result.message);
+          if (isGuestComment) {
+            window.alert(result.message);
+          }
+          return;
         }
-        return;
+
+        setGuestActionPrompt((prev) => ({ ...prev, [commentId]: null }));
+        if (onCommentsChanged) {
+          await onCommentsChanged();
+        }
+        router.refresh();
+      } finally {
+        actionLockRef.current = false;
       }
-      setGuestActionPrompt((prev) => ({ ...prev, [commentId]: null }));
-      if (onCommentsChanged) {
-        await onCommentsChanged();
-      }
-      router.refresh();
     });
   };
 

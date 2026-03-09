@@ -7,6 +7,7 @@ import { BackToFeedButton } from "@/components/posts/back-to-feed-button";
 import { NeighborhoodGateNotice } from "@/components/neighborhood/neighborhood-gate-notice";
 import { GuestPostDetailActions } from "@/components/posts/guest-post-detail-actions";
 import { PostBookmarkButton } from "@/components/posts/post-bookmark-button";
+import { PostCommentCountStat } from "@/components/posts/post-comment-count-stat";
 import { PostReactionControls } from "@/components/posts/post-reaction-controls";
 import { PostReportForm } from "@/components/posts/post-report-form";
 import { PostShareControls } from "@/components/posts/post-share-controls";
@@ -289,7 +290,11 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
                   <span>조회 {safeViewCount.toLocaleString()}</span>
                   <span>좋아요 {safeLikeCount.toLocaleString()}</span>
                   <span>싫어요 {safeDislikeCount.toLocaleString()}</span>
-                  <span>댓글 {safeCommentCount.toLocaleString()}</span>
+                  <PostCommentCountStat
+                    key={`${post.id}:${safeCommentCount}`}
+                    postId={post.id}
+                    initialCount={safeCommentCount}
+                  />
                 </p>
                 <details className="mt-1 text-[11px] text-[#6b84ab] md:text-right">
                   <summary className="cursor-pointer list-none font-semibold text-[#5878a2]">상세 정보</summary>
@@ -345,7 +350,7 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
                   <div className="hidden sm:block" aria-hidden="true" />
                   <div className="flex justify-center sm:justify-self-center">
                     <PostReactionControls
-                      key={`${post.id}:${safeLikeCount}:${safeDislikeCount}:guest`}
+                      key={`${post.id}:guest`}
                       postId={post.id}
                       likeCount={safeLikeCount}
                       dislikeCount={safeDislikeCount}
@@ -356,7 +361,7 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
                   </div>
                   <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-self-end">
                     <PostBookmarkButton
-                      key={`${post.id}:guest`}
+                      key={`${post.id}:guest-bookmark`}
                       postId={post.id}
                       currentBookmarked={false}
                       canBookmark={false}

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 
 import { toggleCommentReactionAction } from "@/server/actions/comment";
 
@@ -87,6 +87,16 @@ export function CommentReactionControls({
   const [loginIntent, setLoginIntent] = useState<ReactionType | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const actionLockRef = useRef(false);
+
+  useEffect(() => {
+    setReaction(currentReaction);
+  }, [commentId, currentReaction]);
+
+  useEffect(() => {
+    setLikes(initialLikeCount);
+    setDislikes(initialDislikeCount);
+  }, [commentId, initialDislikeCount, initialLikeCount]);
 
   useEffect(() => {
     if (!loginIntent) {
@@ -107,6 +117,10 @@ export function CommentReactionControls({
     : "inline-flex h-5 items-center justify-center px-1.5 text-[11px] font-semibold transition disabled:cursor-not-allowed disabled:opacity-60";
 
   const handleToggle = (target: ReactionType) => {
+    if (actionLockRef.current) {
+      return;
+    }
+
     if (!canReact) {
       setLoginIntent(target);
       return;
@@ -114,6 +128,7 @@ export function CommentReactionControls({
 
     const previous = { reaction, likes, dislikes };
     const optimistic = getNextState(reaction, target, likes, dislikes);
+    actionLockRef.current = true;
 
     setError(null);
     setLoginIntent(null);
@@ -122,18 +137,22 @@ export function CommentReactionControls({
     setDislikes(optimistic.dislikeCount);
 
     startTransition(async () => {
-      const result = await toggleCommentReactionAction(postId, commentId, target);
-      if (!result.ok) {
-        setReaction(previous.reaction);
-        setLikes(previous.likes);
-        setDislikes(previous.dislikes);
-        setError(result.message);
-        return;
-      }
+      try {
+        const result = await toggleCommentReactionAction(postId, commentId, optimistic.reaction);
+        if (!result.ok) {
+          setReaction(previous.reaction);
+          setLikes(previous.likes);
+          setDislikes(previous.dislikes);
+          setError(result.message);
+          return;
+        }
 
-      setReaction(result.reaction);
-      setLikes(result.likeCount);
-      setDislikes(result.dislikeCount);
+        setReaction(result.reaction);
+        setLikes(result.likeCount);
+        setDislikes(result.dislikeCount);
+      } finally {
+        actionLockRef.current = false;
+      }
     });
   };
 
