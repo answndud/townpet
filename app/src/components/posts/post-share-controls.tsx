@@ -6,13 +6,14 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 type PostShareControlsProps = {
   url: string;
   title: string;
+  compact?: boolean;
 };
 
 function encode(value: string) {
   return encodeURIComponent(value);
 }
 
-export function PostShareControls({ url, title }: PostShareControlsProps) {
+export function PostShareControls({ url, title, compact = false }: PostShareControlsProps) {
   const [message, setMessage] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
@@ -97,7 +98,11 @@ export function PostShareControls({ url, title }: PostShareControlsProps) {
         ref={buttonRef}
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className="tp-btn-soft inline-flex h-8 items-center px-2.5 text-xs font-semibold sm:h-9 sm:px-3"
+        className={
+          compact
+            ? "tp-btn-soft tp-btn-xs inline-flex items-center rounded-lg"
+            : "tp-btn-soft tp-btn-sm inline-flex items-center rounded-lg"
+        }
         aria-expanded={isOpen}
         aria-controls={menuId}
       >

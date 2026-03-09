@@ -539,7 +539,7 @@ export function FeedInfiniteList({
                       preferGuestDetail ? `/posts/${post.id}/guest` : `/posts/${post.id}`
                     }
                     prefetch={preferGuestDetail ? true : false}
-                    className={`flex min-w-0 items-center gap-1 text-[14px] font-semibold leading-snug transition sm:text-base ${
+                    className={`tp-text-card-title flex min-w-0 items-center gap-1 transition ${
                       readPostIds.has(post.id)
                         ? "text-[#8c9db8] hover:text-[#7589a8]"
                         : "text-[#1e3f74] hover:text-[#2f5da4]"

@@ -211,10 +211,10 @@ export function NotificationCenter({
     <>
       <header className="tp-hero p-5 sm:p-6">
         <p className="text-[11px] uppercase tracking-[0.24em] text-[#3f5f90]">알림 센터</p>
-        <h1 className="mt-2 text-2xl font-bold tracking-tight text-[#10284a] sm:text-4xl">
+        <h1 className="tp-text-page-title mt-2 text-[#10284a]">
           내 알림
         </h1>
-        <p className="mt-2 text-sm text-[#4f678d] sm:text-base">미확인 알림 {unreadCount}건</p>
+        <p className="mt-2 text-sm text-[#4f678d]">미확인 알림 {unreadCount}건</p>
         <p className="mt-1 text-xs text-[#5f79a0]">
           읽음 처리 후에도 목록에 남아 있으며, 보관한 알림만 목록에서 숨겨집니다.
         </p>
@@ -225,7 +225,7 @@ export function NotificationCenter({
               type="button"
               disabled={isFilterPending}
               onClick={() => handleApplyFilter(tab.kind, unreadOnly)}
-              className={`px-3 py-1.5 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${
+              className={`tp-btn-sm transition disabled:cursor-not-allowed disabled:opacity-60 ${
                 kind === tab.kind
                   ? "tp-btn-primary"
                   : "tp-btn-soft"
@@ -238,7 +238,7 @@ export function NotificationCenter({
             type="button"
             disabled={isFilterPending}
             onClick={() => handleApplyFilter(kind, !unreadOnly)}
-            className={`px-3 py-1.5 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${
+            className={`tp-btn-sm transition disabled:cursor-not-allowed disabled:opacity-60 ${
               unreadOnly
                 ? "tp-btn-primary"
                 : "tp-btn-soft"
@@ -250,7 +250,7 @@ export function NotificationCenter({
             type="button"
             onClick={handleMarkAll}
             disabled={isMarkAllPending || isFilterPending || unreadCount === 0}
-            className="tp-btn-primary px-3 py-1.5 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-60"
+            className="tp-btn-primary tp-btn-sm disabled:cursor-not-allowed disabled:opacity-60"
           >
             모두 읽음 처리
           </button>
@@ -280,9 +280,9 @@ export function NotificationCenter({
                     <span>{actorLabel}</span>
                     <span>{new Date(notification.createdAt).toLocaleString("ko-KR")}</span>
                   </div>
-                  <p className="mt-1 text-sm font-semibold text-[#163462]">{notification.title}</p>
+                  <p className="tp-text-card-title mt-1 text-[#163462]">{notification.title}</p>
                   {notification.body ? (
-                    <p className="mt-1 text-sm text-[#4f678d]">{notification.body}</p>
+                    <p className="mt-1 text-[13px] text-[#4f678d]">{notification.body}</p>
                   ) : null}
                   <div className="mt-3 flex flex-wrap items-center gap-2">
                     <button
@@ -290,8 +290,8 @@ export function NotificationCenter({
                       type="button"
                       onClick={() => void handleMove(notification)}
                       disabled={isPending}
-                       className="tp-btn-soft px-2.5 py-1 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-60"
-                     >
+                      className="tp-btn-soft tp-btn-xs disabled:cursor-not-allowed disabled:opacity-60"
+                    >
                       이동
                     </button>
                     <button
@@ -299,7 +299,7 @@ export function NotificationCenter({
                       type="button"
                       onClick={() => void handleArchive(notification.id)}
                       disabled={isPending}
-                      className="tp-btn-soft px-2.5 py-1 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-60"
+                      className="tp-btn-soft tp-btn-xs disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       보관
                     </button>
@@ -309,7 +309,7 @@ export function NotificationCenter({
                         type="button"
                         onClick={() => void handleMarkRead(notification.id)}
                         disabled={isPending}
-                        className="tp-btn-primary px-2.5 py-1 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-60"
+                        className="tp-btn-primary tp-btn-xs disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         읽음 처리
                       </button>

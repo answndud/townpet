@@ -17,6 +17,96 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-09: Cycle 260 완료 (상호작용 상태 재동기화 점검 및 보강)
+- 완료 내용
+- `app/src/components/posts/post-detail-client.tsx`, `app/src/components/posts/post-comment-thread.tsx`, `app/src/app/posts/[id]/guest/page.tsx`, `app/src/app/users/[id]/page.tsx`, `app/src/app/profile/page.tsx`에서 반응/북마크/관계 컨트롤에 incoming 스냅샷 기반 `key`를 부여해 같은 컴포넌트가 재사용될 때 이전 local state가 남지 않도록 정리했다.
+- 이 방식으로 `app/src/components/posts/post-bookmark-button.tsx`, `app/src/components/posts/post-reaction-controls.tsx`, `app/src/components/posts/comment-reaction-controls.tsx`, `app/src/components/user/user-relation-controls.tsx`의 낙관적 local state는 유지하면서도 외부 props 갱신 시 안전하게 remount된다.
+- `app/src/components/navigation/app-shell-header.tsx`는 경로 변경과 브라우저 포커스 복귀 시 `/api/viewer-shell`을 다시 읽고, `app/src/lib/viewer-shell-sync.ts` 이벤트 구독도 추가했다.
+- `app/src/components/navigation/feed-hover-menu.tsx`는 인증 사용자가 관심 동물 저장에 성공하면 viewer-shell sync 이벤트를 발행하도록 연결했다.
+- `app/src/components/posts/post-comment-section-client.tsx`에 댓글 개수 변경 콜백을 추가했고, `app/src/components/posts/post-detail-client.tsx`는 이 콜백으로 상단 댓글 메타도 목록 재조회 직후 같이 맞추도록 보강했다.
+- `app/src/lib/viewer-shell-sync.test.ts`에 브라우저 없음 fallback과 이벤트 전달 회귀 테스트를 추가했다.
+- 검증 결과
+- `pnpm -C app lint src/components/posts/post-bookmark-button.tsx src/components/posts/post-reaction-controls.tsx src/components/posts/comment-reaction-controls.tsx src/components/user/user-relation-controls.tsx src/components/navigation/app-shell-header.tsx src/components/navigation/feed-hover-menu.tsx src/components/posts/post-detail-client.tsx src/components/posts/post-comment-section-client.tsx src/components/posts/post-comment-thread.tsx 'src/app/posts/[id]/guest/page.tsx' 'src/app/users/[id]/page.tsx' src/app/profile/page.tsx src/lib/viewer-shell-sync.ts src/lib/viewer-shell-sync.test.ts` 통과
+- `pnpm -C app typecheck` 통과
+- `pnpm -C app test -- src/lib/viewer-shell-sync.test.ts src/lib/comment-client.test.ts 'src/app/api/posts/[id]/comments/route.test.ts' 'src/app/api/posts/[id]/reaction/route.test.ts' 'src/app/api/users/[id]/relation/route.test.ts'` 실행 시 전체 Vitest suite로 확장되어 `110 files / 559 tests` 통과
+- `git diff --check` 통과
+- 메모
+- 댓글과 같은 stale state 패턴을 전체 훑은 결과, 관리자 정책 폼/프로필 입력 폼류는 의도된 draft state 성격이라 이번 보강 대상에서 제외했다.
+- 게스트 상세 페이지의 상단 댓글 메타는 여전히 서버 렌더 텍스트라 client-side 댓글 재조회와 완전히 묶여 있지는 않다. 이번 턴에는 로그인 상세와 반복 사용 컨트롤 stale 문제를 우선 정리했다.
+
+### 2026-03-09: Cycle 259 완료 (댓글 작성 후 즉시 반영 보장)
+- 완료 내용
+- `app/src/components/posts/post-comment-section-client.tsx`에 댓글 목록 재조회 함수(`reloadComments`)를 추가하고, 최초 로딩과 후속 재로딩 모두 같은 경로를 쓰도록 정리했다.
+- `app/src/components/posts/post-comment-thread.tsx`에서 댓글 생성/수정/삭제 성공 직후 `onCommentsChanged`를 호출해 목록을 즉시 다시 불러오도록 연결했다.
+- 기존 `router.refresh()`는 유지해 상단 메타(댓글 수 등)도 계속 새 값으로 갱신되게 했다.
+- `app/src/lib/comment-client.ts`에 댓글 목록 응답 파싱 helper를 분리했고, 실패 응답 시 예외를 던지는 failure-path 테스트를 `app/src/lib/comment-client.test.ts`에 추가했다.
+- 검증 결과
+- `pnpm -C app lint src/components/posts/post-comment-section-client.tsx src/components/posts/post-comment-thread.tsx src/lib/comment-client.ts src/lib/comment-client.test.ts` 통과
+- `pnpm -C app typecheck` 통과
+- `pnpm -C app test -- src/lib/comment-client.test.ts 'src/app/api/posts/[id]/comments/route.test.ts'` 실행 시 전체 Vitest suite로 확장되어 `109 files / 557 tests` 통과
+- `git diff --check` 통과
+- 메모
+- 이제 댓글은 성공 후 수동 새로고침 없이 다시 보인다. 푸시는 하지 않았다.
+
+### 2026-03-09: Cycle 258 완료 (상세 신고/댓글 UI 밀도 정리)
+- 완료 내용
+- `app/src/components/posts/post-report-form.tsx`에서 신고 폼을 큰 카드형 블록 대신 작은 입력 묶음 + 우측 신고 버튼 구조로 줄였다.
+- `app/src/components/posts/post-detail-client.tsx`, `app/src/app/posts/[id]/guest/page.tsx`의 게시글 신고 영역도 큰 `details` 카드 대신 작은 토글 버튼과 간결한 내부 패널로 정리했다.
+- `app/src/components/posts/post-comment-section-client.tsx`에서 댓글 lazy-load/로딩/에러 박스를 더 작은 한 줄 형태로 줄였고, 설명성 문구를 최소화했다.
+- `app/src/components/posts/post-comment-thread.tsx`에서 댓글 상단 중복 페이지네이션을 없애고, 댓글 카드 패딩/아바타/본문/액션 링크를 한 단계 압축했다.
+- 댓글 작성 박스의 `댓글 작성`, `배려 있는 댓글 문화` 같은 설명 텍스트를 제거하고, 비회원 비밀번호 확인/답글/수정 UI도 간단한 입력+버튼 조합으로 축소했다.
+- `app/src/components/posts/comment-reaction-controls.tsx`의 compact 반응 버튼도 같이 줄여 댓글 줄 높이가 덜 커지게 맞췄다.
+- 검증 결과
+- `pnpm -C app lint src/components/posts/post-comment-section-client.tsx src/components/posts/post-comment-thread.tsx src/components/posts/post-report-form.tsx src/components/posts/comment-reaction-controls.tsx src/components/posts/post-detail-client.tsx 'src/app/posts/[id]/guest/page.tsx'` 통과
+- `pnpm -C app typecheck` 통과
+- `pnpm -C app test -- 'src/app/api/posts/[id]/comments/route.test.ts' src/app/api/reports/route.test.ts src/server/services/report.service.test.ts` 실행 시 전체 Vitest suite로 확장되어 `108 files / 555 tests` 통과
+- `git diff --check` 통과
+- 메모
+- 푸시는 하지 않았다. 현재 변경은 로컬 워크트리에만 있다.
+
+### 2026-03-09: Cycle 257 완료 (전역 타이포/버튼 스케일 정돈)
+- 완료 내용
+- `app/src/app/globals.css`에 `tp-text-page-title`, `tp-text-page-title-sm`, `tp-text-post-title`, `tp-text-section-title`, `tp-text-card-title`, `tp-text-body`, `tp-btn-xs/sm/md` 공통 스케일 토큰을 추가했다.
+- `app/src/components/posts/post-reaction-controls.tsx`, `app/src/components/posts/post-bookmark-button.tsx`, `app/src/components/posts/post-share-controls.tsx`에서 상세 반응 바와 보조 액션 버튼의 높이/폭/폰트 굵기를 한 단계 줄였다.
+- `app/src/components/posts/post-detail-client.tsx`, `app/src/app/posts/[id]/guest/page.tsx`의 게시글 제목을 `24px/42px` 계열에서 공통 `tp-text-post-title`로 축소했고, 본문/메타/신고/관리 버튼도 더 가벼운 스케일로 맞췄다.
+- `app/src/app/feed/page.tsx`, `app/src/components/posts/feed-infinite-list.tsx`, `app/src/components/posts/feed-search-form.tsx`에서 피드 헤더, 목록 제목, 검색 입력/초기화 버튼 크기를 줄였다.
+- `app/src/app/boards/adoption/page.tsx`, `app/src/components/boards/adoption-board-grid.tsx`에서 입양 보드 hero 제목, 검색/페이지네이션 버튼, 카드 제목/요약 텍스트를 축소했다.
+- `app/src/app/bookmarks/page.tsx`, `app/src/app/search/page.tsx`, `app/src/app/profile/page.tsx`, `app/src/components/profile/profile-summary-link-card.tsx`, `app/src/components/notifications/notification-center.tsx`, `app/src/app/notifications/page.tsx`에도 같은 스케일 규칙을 적용해 2차 화면 헤더/CTA/목록 제목을 동기화했다.
+- 검증 결과
+- `pnpm -C app lint src/components/posts/post-reaction-controls.tsx src/components/posts/post-bookmark-button.tsx src/components/posts/post-share-controls.tsx src/components/posts/post-detail-client.tsx 'src/app/posts/[id]/guest/page.tsx' src/app/feed/page.tsx src/components/posts/feed-infinite-list.tsx src/app/boards/adoption/page.tsx src/components/boards/adoption-board-grid.tsx src/app/bookmarks/page.tsx src/app/search/page.tsx src/app/profile/page.tsx src/components/profile/profile-summary-link-card.tsx src/components/notifications/notification-center.tsx src/app/notifications/page.tsx src/components/posts/feed-search-form.tsx` 통과
+- `pnpm -C app typecheck` 통과
+- `pnpm -C app test -- src/lib/post-reaction-score.test.ts src/lib/post-presenter.test.ts` 실행 시 전체 Vitest suite로 확장되어 `108 files / 555 tests` 통과
+- `git diff --check` 통과
+- 메모
+- `globals.css`는 현재 ESLint 대상이 아니어서 스타일 토큰 파일 자체는 `git diff --check`와 브라우저 렌더 기준으로 확인했다.
+- 푸시는 하지 않았다. 현재 변경은 로컬 워크트리에만 있다.
+
+### 2026-03-09: Cycle 256 완료 (상세 반응 바 중앙 정렬 및 순반응 점수화)
+- 완료 내용
+- `app/src/components/posts/post-reaction-controls.tsx`에서 좋아요/싫어요 버튼 사이에 `좋아요 - 싫어요` 기준의 순반응 점수 칩을 추가했다.
+- 순반응 점수는 `app/src/lib/post-reaction-score.ts`로 계산하도록 분리했고, 좋아요 우세일 때는 파랑 계열, 싫어요 우세일 때는 빨강 계열, 중립일 때는 회색 계열로 바뀌게 했다.
+- 가운데 숫자는 FMKorea류 포텐/방출 UI처럼 부호 대신 절대값을 보여주고, 방향은 색상으로만 구분하도록 `getPostReactionScoreMagnitude` helper를 추가했다.
+- `app/src/components/posts/post-detail-client.tsx`, `app/src/app/posts/[id]/guest/page.tsx`의 액션 바를 3열 그리드로 바꿔 반응 버튼 묶음은 중앙에 고정하고, 북마크/공유는 우측 보조 액션으로 유지했다.
+- `app/src/lib/post-reaction-score.test.ts`에 순반응 점수 계산 및 톤 선택 회귀 테스트를 추가했다.
+- 검증 결과
+- `pnpm -C app lint src/components/posts/post-reaction-controls.tsx src/components/posts/post-detail-client.tsx 'src/app/posts/[id]/guest/page.tsx' src/lib/post-reaction-score.ts src/lib/post-reaction-score.test.ts` 통과
+- `pnpm -C app typecheck` 통과
+- `pnpm -C app test -- src/lib/post-reaction-score.test.ts` 실행 시 전체 Vitest suite로 확장되어 `108 files / 555 tests` 통과
+- `git diff --check` 통과
+- 메모
+- 푸시는 하지 않았다. 현재 변경은 로컬 워크트리에만 있다.
+
+### 2026-03-09: Cycle 255 완료 (상세 액션 바 보조 버튼 축소)
+- 완료 내용
+- `app/src/components/posts/post-detail-client.tsx`에서 상세 액션 바의 북마크 버튼을 반응 버튼 묶음에서 분리해 공유 버튼 옆 우측 보조 액션으로 이동시켰다.
+- `app/src/app/posts/[id]/guest/page.tsx`도 같은 배치로 맞춰, 게스트 상세에서도 북마크와 공유가 같은 위치/같은 크기로 노출되도록 정리했다.
+- `app/src/components/posts/post-bookmark-button.tsx`, `app/src/components/posts/post-share-controls.tsx`에 compact 스타일을 적용해 `차단/뮤트`와 비슷한 작은 보조 버튼 크기로 줄였다.
+- 검증 결과
+- `pnpm -C app lint src/components/posts/post-detail-client.tsx 'src/app/posts/[id]/guest/page.tsx' src/components/posts/post-bookmark-button.tsx src/components/posts/post-share-controls.tsx` 통과
+- `git diff --check` 통과
+- 메모
+- 푸시는 하지 않았다. 현재 변경은 로컬 워크트리에만 있다.
+
 ### 2026-03-09: Cycle 254 완료 (전역 목록 페이지네이션 통일)
 - 완료 내용
 - `app/src/app/feed/page.tsx`, `app/src/components/posts/guest-feed-page-client.tsx`, `app/src/app/lounges/breeds/[breedCode]/page.tsx`에서 전체 목록도 `page` 기준으로 조회하도록 바꿨고, `app/src/components/posts/feed-infinite-list.tsx`의 `게시글 더 보기`/IntersectionObserver 경로를 제거했다.

@@ -3,6 +3,11 @@
 import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
 
+import {
+  calculatePostReactionScore,
+  getPostReactionScoreMagnitude,
+  getPostReactionScoreTone,
+} from "@/lib/post-reaction-score";
 import { togglePostReactionAction } from "@/server/actions/post";
 
 const REACTION_TYPE = {
@@ -74,8 +79,12 @@ export function PostReactionControls({
   loginHref = "/login",
   showLoginHint = true,
 }: PostReactionControlsProps) {
-  const initialLikeCount = Number.isFinite(likeCount) ? Number(likeCount) : 0;
-  const initialDislikeCount = Number.isFinite(dislikeCount) ? Number(dislikeCount) : 0;
+  const initialLikeCount =
+    Number.isFinite(likeCount) && Number(likeCount) > 0 ? Math.trunc(Number(likeCount)) : 0;
+  const initialDislikeCount =
+    Number.isFinite(dislikeCount) && Number(dislikeCount) > 0
+      ? Math.trunc(Number(dislikeCount))
+      : 0;
 
   const [reaction, setReaction] = useState<ReactionType | null>(currentReaction ?? null);
   const [reactionLoaded, setReactionLoaded] = useState(currentReaction !== undefined);
@@ -140,8 +149,27 @@ export function PostReactionControls({
   }, [canReact, hasInteracted, postId, reactionLoaded]);
 
   const buttonClass = compact
-    ? "inline-flex h-9 min-w-[72px] items-center justify-center rounded-lg border px-1.5 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 sm:min-w-[100px] sm:px-2.5"
-    : "inline-flex h-8 min-w-[70px] items-center justify-center rounded-lg border px-1.5 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 sm:h-9 sm:min-w-[98px] sm:px-2.5";
+    ? "inline-flex tp-btn-xs min-w-[60px] items-center justify-center rounded-lg border transition disabled:cursor-not-allowed disabled:opacity-60"
+    : "inline-flex tp-btn-sm min-w-[76px] items-center justify-center rounded-lg border transition disabled:cursor-not-allowed disabled:opacity-60";
+  const reactionScore = calculatePostReactionScore(likes, dislikes);
+  const reactionScoreMagnitude = getPostReactionScoreMagnitude(reactionScore);
+  const reactionScoreTone = getPostReactionScoreTone(reactionScore);
+  const reactionScoreDirectionLabel =
+    reactionScore > 0 ? "좋아요 우세" : reactionScore < 0 ? "싫어요 우세" : "반응 균형";
+  const reactionScoreClass =
+    reactionScoreTone === "positiveStrong"
+      ? "border-[#739de7] bg-[#e1edff] text-[#184f9c]"
+      : reactionScoreTone === "positive"
+        ? "border-[#a5c1ee] bg-[#eef5ff] text-[#275ea8]"
+        : reactionScoreTone === "positiveSoft"
+          ? "border-[#cbdcf7] bg-[#f5f9ff] text-[#3567b5]"
+          : reactionScoreTone === "negativeStrong"
+            ? "border-[#e47e93] bg-[#ffe7eb] text-[#b52639]"
+            : reactionScoreTone === "negative"
+              ? "border-[#ec9dad] bg-[#fff0f2] text-[#c73b4d]"
+              : reactionScoreTone === "negativeSoft"
+                ? "border-[#f3cbd2] bg-[#fff6f7] text-[#d14a5b]"
+                : "border-[#d8e4f6] bg-white text-[#5d7499]";
 
   const handleToggle = (target: ReactionType) => {
     if (!canReact) {
@@ -177,19 +205,21 @@ export function PostReactionControls({
   };
 
   return (
-    <div className={`flex flex-wrap items-center gap-1 ${compact ? "justify-end" : "justify-center"}`}>
+    <div className={`flex flex-wrap items-center gap-2 ${compact ? "justify-end" : "justify-center"}`}>
       <div className="relative">
         <button
           type="button"
           onClick={() => handleToggle(REACTION_TYPE.LIKE)}
           disabled={isPending}
+          aria-label={`좋아요 ${likes.toLocaleString()}개`}
+          title={`좋아요 ${likes.toLocaleString()}개`}
           className={`${buttonClass} ${
             effectiveReaction === REACTION_TYPE.LIKE
-              ? "border-[#3567b5] bg-[#3567b5] text-white"
+              ? "border-[#3567b5] bg-[#f5f9ff] text-[#2d5fab]"
               : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
           }`}
         >
-          좋아요 {likes.toLocaleString()}
+          좋아요
         </button>
         {!canReact && showLoginHint && loginIntent === REACTION_TYPE.LIKE ? (
           <div
@@ -204,18 +234,29 @@ export function PostReactionControls({
           </div>
         ) : null}
       </div>
+      <div
+        aria-label={`${reactionScoreDirectionLabel} ${reactionScoreMagnitude.toLocaleString()}`}
+        title={`좋아요 ${likes.toLocaleString()}개, 싫어요 ${dislikes.toLocaleString()}개`}
+        className={`inline-flex min-w-[64px] items-center justify-center rounded-lg border px-2.5 py-1 text-[15px] font-semibold leading-none tabular-nums ${reactionScoreClass} ${
+          compact ? "min-h-[1.875rem] text-xs" : "min-h-[2rem]"
+        }`}
+      >
+        {reactionScoreMagnitude.toLocaleString()}
+      </div>
       <div className="relative">
         <button
           type="button"
           onClick={() => handleToggle(REACTION_TYPE.DISLIKE)}
           disabled={isPending}
+          aria-label={`싫어요 ${dislikes.toLocaleString()}개`}
+          title={`싫어요 ${dislikes.toLocaleString()}개`}
           className={`${buttonClass} ${
             effectiveReaction === REACTION_TYPE.DISLIKE
-              ? "border-[#5e7396] bg-[#5e7396] text-white"
+              ? "border-[#d94b60] bg-[#fff7f8] text-[#d83b52]"
               : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
           }`}
         >
-          싫어요 {dislikes.toLocaleString()}
+          싫어요
         </button>
         {!canReact && showLoginHint && loginIntent === REACTION_TYPE.DISLIKE ? (
           <div

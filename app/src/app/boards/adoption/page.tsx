@@ -106,7 +106,7 @@ export default async function AdoptionBoardPage({
           </p>
           <div className="mt-3 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-3xl">
-              <h1 className="text-3xl font-bold tracking-tight text-[#3d2c08] sm:text-4xl">
+              <h1 className="tp-text-page-title text-[#3d2c08]">
                 유기동물 입양 게시판
               </h1>
             </div>
@@ -125,18 +125,18 @@ export default async function AdoptionBoardPage({
               name="q"
               defaultValue={query}
               placeholder="보호소명, 지역, 동물종, 품종 검색"
-              className="h-11 flex-1 rounded-2xl border border-[#dccb95] bg-white px-4 text-sm text-[#3f300c] outline-none transition focus:border-[#c49d2d]"
+              className="h-10 flex-1 rounded-xl border border-[#dccb95] bg-white px-3.5 text-[13px] text-[#3f300c] outline-none transition focus:border-[#c49d2d]"
             />
             <button
               type="submit"
-              className="inline-flex h-11 items-center justify-center rounded-2xl bg-[#b9891f] px-5 text-sm font-semibold text-white transition hover:bg-[#9d7419]"
+              className="tp-btn-primary tp-btn-md inline-flex items-center justify-center rounded-xl bg-[#b9891f] px-5 text-white transition hover:bg-[#9d7419]"
             >
               검색
             </button>
             {query ? (
               <Link
                 href="/boards/adoption"
-                className="inline-flex h-11 items-center justify-center rounded-2xl border border-[#d8c69a] bg-white px-5 text-sm font-semibold text-[#725a22] transition hover:bg-[#fffaf0]"
+                className="tp-btn-soft tp-btn-md inline-flex items-center justify-center rounded-xl border border-[#d8c69a] bg-white px-5 text-[#725a22] transition hover:bg-[#fffaf0]"
               >
                 초기화
               </Link>
@@ -169,7 +169,7 @@ export default async function AdoptionBoardPage({
                 <Link
                   href={buildAdoptionBoardHref({ q: query, page: Math.max(1, resolvedPage - 1) })}
                   aria-disabled={resolvedPage <= 1}
-                  className={`inline-flex h-9 items-center rounded-xl border px-3 text-xs font-semibold transition ${
+                  className={`tp-btn-soft tp-btn-sm inline-flex items-center rounded-xl border transition ${
                     resolvedPage <= 1
                       ? "pointer-events-none border-[#d8e3f4] bg-[#eef3fb] text-[#96aac7]"
                       : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
@@ -190,7 +190,7 @@ export default async function AdoptionBoardPage({
                   <Link
                     key={`adoption-board-page-${pageNumber}`}
                     href={buildAdoptionBoardHref({ q: query, page: pageNumber })}
-                    className={`inline-flex h-9 min-w-9 items-center justify-center rounded-xl border px-2 text-xs font-semibold transition ${
+                    className={`tp-btn-soft tp-btn-sm inline-flex min-w-8 items-center justify-center rounded-xl border px-2 transition ${
                       pageNumber === resolvedPage
                         ? "border-[#3567b5] bg-[#3567b5] text-white"
                         : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
@@ -202,7 +202,7 @@ export default async function AdoptionBoardPage({
                 <Link
                   href={buildAdoptionBoardHref({ q: query, page: Math.min(totalPages, resolvedPage + 1) })}
                   aria-disabled={resolvedPage >= totalPages}
-                  className={`inline-flex h-9 items-center rounded-xl border px-3 text-xs font-semibold transition ${
+                  className={`tp-btn-soft tp-btn-sm inline-flex items-center rounded-xl border transition ${
                     resolvedPage >= totalPages
                       ? "pointer-events-none border-[#d8e3f4] bg-[#eef3fb] text-[#96aac7]"
                       : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
@@ -216,11 +216,11 @@ export default async function AdoptionBoardPage({
         )}
 
         <div className="flex justify-end gap-2">
-          <ScrollToTopButton className="tp-btn-soft inline-flex h-10 items-center justify-center px-4 text-xs font-semibold" />
+          <ScrollToTopButton className="tp-btn-soft tp-btn-sm inline-flex items-center justify-center" />
           {canManageAdoptionListings ? (
             <Link
               href="/posts/new"
-              className="inline-flex h-10 items-center justify-center rounded-xl bg-[#b9891f] px-4 text-xs font-semibold text-white transition hover:bg-[#9d7419]"
+              className="tp-btn-primary tp-btn-sm inline-flex items-center justify-center rounded-xl bg-[#b9891f] text-white transition hover:bg-[#9d7419]"
             >
               입양 글 작성
             </Link>

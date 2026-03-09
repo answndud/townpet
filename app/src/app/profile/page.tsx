@@ -104,7 +104,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
       <main className="mx-auto flex w-full max-w-[1320px] flex-col gap-5 px-4 py-6 sm:px-6 lg:px-10">
         <header className="tp-hero p-5 sm:p-6">
           <p className="text-[11px] uppercase tracking-[0.24em] text-[#3f5f90]">내 프로필</p>
-          <h1 className="mt-2 text-2xl font-bold tracking-tight text-[#10284a] sm:text-3xl">
+          <h1 className="tp-text-page-title mt-2 text-[#10284a]">
             계정 활동 요약
           </h1>
           <p className="mt-2 text-sm text-[#4f678d]">
@@ -144,7 +144,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
 
         {isNicknameMissing ? (
           <section className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-900">
-            <h2 className="text-base font-semibold">닉네임 설정이 필요합니다.</h2>
+            <h2 className="tp-text-section-title">닉네임 설정이 필요합니다.</h2>
             <p className="mt-1">
               현재 계정은 닉네임이 없어 다른 페이지로 이동할 수 없습니다. 아래
               <span className="font-semibold"> 프로필 정보 수정</span>에서 닉네임을 저장하면
@@ -180,7 +180,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
         </section>
 
         <section className="tp-card p-5 sm:p-6">
-          <h2 className="text-lg font-semibold text-[#153a6a]">계정 정보</h2>
+          <h2 className="tp-text-section-title text-[#153a6a]">계정 정보</h2>
           <div className="mt-4 grid gap-2 text-sm text-[#355988]">
             <div>닉네임: {user.nickname ?? "미설정"}</div>
             <div>소개: {user.bio?.trim() ? user.bio : "미설정"}</div>
@@ -195,7 +195,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
             {passwordSetupCopy ? (
               <Link
                 href="/password/setup"
-                className="tp-btn-soft px-3 py-1.5 text-[#315484]"
+                className="tp-btn-soft tp-btn-sm text-[#315484]"
               >
                 {passwordSetupCopy.profileLinkLabel}
               </Link>
@@ -226,7 +226,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
               breedCatalogBySpecies={breedCatalogBySpecies}
             />
             <section className="tp-card p-5 sm:p-6">
-              <h2 className="text-lg font-semibold text-[#153a6a]">개인화 세그먼트</h2>
+              <h2 className="tp-text-section-title text-[#153a6a]">개인화 세그먼트</h2>
               <p className="mt-2 text-xs text-[#5a7398]">
                 반려동물 프로필에서 계산한 맞춤 피드/품종 라운지 기준입니다.
               </p>
@@ -242,7 +242,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
                       className="rounded-lg border border-[#dbe5f3] bg-[#f8fbff] p-3"
                     >
                       <div className="flex flex-wrap items-center justify-between gap-2">
-                        <p className="text-sm font-semibold text-[#1f3f71]">{segment.label}</p>
+                        <p className="tp-text-card-title text-[#1f3f71]">{segment.label}</p>
                         <span className="rounded-full border border-[#c8daf5] bg-white px-2 py-0.5 text-[11px] font-semibold text-[#315b9a]">
                           신뢰도 {Math.round(segment.confidenceScore * 100)}%
                         </span>
@@ -259,7 +259,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
                       {hasBreedLoungeRoute(segment.breedCode) ? (
                         <Link
                           href={`/lounges/breeds/${segment.breedCode}`}
-                          className="tp-btn-soft mt-3 inline-flex px-3 py-1.5 text-xs font-semibold text-[#204f8a]"
+                          className="tp-btn-soft tp-btn-sm mt-3 inline-flex text-[#204f8a]"
                         >
                           품종 라운지 보기
                         </Link>
@@ -271,14 +271,14 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
             </section>
 
             <section className="tp-card p-5 sm:p-6">
-              <h2 className="text-lg font-semibold text-[#153a6a]">사용자 관계 관리</h2>
+              <h2 className="tp-text-section-title text-[#153a6a]">사용자 관계 관리</h2>
               <p className="mt-2 text-xs text-[#5a7398]">
                 차단/뮤트한 사용자를 여기서 바로 해제할 수 있습니다.
               </p>
 
               <div className="mt-4 grid gap-4 lg:grid-cols-2">
                 <div className="tp-soft-card p-4">
-                  <h3 className="text-sm font-semibold text-[#1f3f71]">
+                  <h3 className="tp-text-card-title text-[#1f3f71]">
                     차단 목록 ({blockedUsers.length})
                   </h3>
                   {blockedUsers.length === 0 ? (
@@ -295,6 +295,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
                           </p>
                           <div className="mt-2">
                             <UserRelationControls
+                              key={`${entry.blockedId}:1:${mutedUsers.some((mute) => mute.mutedUserId === entry.blockedId) ? "1" : "0"}:0`}
                               targetUserId={entry.blockedId}
                               initialState={{
                                 isBlockedByMe: true,
@@ -313,7 +314,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
                 </div>
 
                 <div className="tp-soft-card p-4">
-                  <h3 className="text-sm font-semibold text-[#1f3f71]">
+                  <h3 className="tp-text-card-title text-[#1f3f71]">
                     뮤트 목록 ({mutedUsers.length})
                   </h3>
                   {mutedUsers.length === 0 ? (
@@ -330,6 +331,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
                           </p>
                           <div className="mt-2">
                             <UserRelationControls
+                              key={`${entry.mutedUserId}:${blockedUsers.some((block) => block.blockedId === entry.mutedUserId) ? "1" : "0"}:1:0`}
                               targetUserId={entry.mutedUserId}
                               initialState={{
                                 isBlockedByMe: blockedUsers.some(

@@ -301,7 +301,7 @@ export function FeedSearchForm({
           className={
               density === "ULTRA"
                 ? "tp-input-soft h-8 px-2.5 text-xs font-medium outline-none transition focus:border-[#4e89d8] focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
-                : "tp-input-soft h-10 px-3 text-sm outline-none transition focus:border-[#4e89d8] focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
+                : "tp-input-soft h-9 px-3 text-[13px] outline-none transition focus:border-[#4e89d8] focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
             }
           >
           {SEARCH_OPTIONS.map((option) => (
@@ -323,7 +323,7 @@ export function FeedSearchForm({
             className={
               density === "ULTRA"
                 ? "tp-input-soft h-8 w-full bg-white px-3 text-xs outline-none transition focus:border-[#4e89d8] focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
-                : "tp-input-soft h-10 w-full bg-white px-4 text-sm outline-none transition focus:border-[#4e89d8] focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
+                : "tp-input-soft h-9 w-full bg-white px-3.5 text-[13px] outline-none transition focus:border-[#4e89d8] focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
             }
           />
           <datalist id={datalistId}>
@@ -337,8 +337,8 @@ export function FeedSearchForm({
               href={resetHref}
               className={
                 density === "ULTRA"
-                  ? "tp-btn-soft inline-flex h-8 min-w-[56px] items-center justify-center px-2.5 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
-                  : "tp-btn-soft inline-flex h-10 min-w-[72px] items-center justify-center px-3 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
+                  ? "tp-btn-soft tp-btn-xs inline-flex min-w-[56px] items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
+                  : "tp-btn-soft tp-btn-md inline-flex min-w-[72px] items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
                }
              >
                초기화

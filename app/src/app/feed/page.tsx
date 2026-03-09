@@ -807,22 +807,22 @@ export default async function Home({ searchParams }: HomePageProps) {
               <h1
                 className={
                   isUltraDense
-                     ? "mt-0.5 text-[15px] font-semibold text-[#1e3f74] sm:text-base"
-                     : "mt-0.5 text-lg font-semibold text-[#1e3f74] sm:text-[22px]"
-                 }
-               >
-                 {feedTitle}
-               </h1>
+                    ? "tp-text-card-title mt-0.5 text-[#1e3f74]"
+                    : "tp-text-page-title-sm mt-0.5 text-[#1e3f74]"
+                }
+              >
+                {feedTitle}
+              </h1>
               </div>
             </div>
-           </header>
+          </header>
 
-        <a
-          href="#feed-list"
-          className="tp-btn-soft hidden w-fit items-center px-3 py-1.5 text-xs font-semibold sm:inline-flex lg:hidden"
-        >
-          목록 바로가기
-        </a>
+          <a
+            href="#feed-list"
+            className="tp-btn-soft tp-btn-sm hidden w-fit items-center sm:inline-flex lg:hidden"
+          >
+            목록 바로가기
+          </a>
 
         {isGuestTypeBlocked && type ? (
           <div className="border border-[#d9c38b] bg-[#fff8e5] px-3 py-2.5 text-sm text-[#6c5319]">
@@ -871,7 +871,7 @@ export default async function Home({ searchParams }: HomePageProps) {
             </div>
             {usePersonalizedFeed ? (
               <div className="bg-white px-3 py-3 sm:px-5">
-                <p className="text-sm font-semibold text-[#153a6a]">
+                <p className="tp-text-card-title text-[#153a6a]">
                   {personalizedSummary?.title}
                 </p>
                 <p className="mt-1 text-xs leading-5 text-[#5a7398]">

@@ -26,6 +26,41 @@
 
 ## Active Plan
 
+### Cycle 260: 상호작용 상태 재동기화 점검 및 보강 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 반응/북마크/관계 컨트롤의 stale local state 재동기화 보강 | Codex | P1 | `done` | 게시글/댓글 반응, 북마크, 사용자 차단/뮤트 컨트롤이 외부 props 갱신이나 같은 컴포넌트 재사용 시 이전 local state를 붙잡지 않고 최신 서버 스냅샷으로 다시 맞춰진다 | `PLAN.md`, `PROGRESS.md`, `app/src/components/posts/post-reaction-controls.tsx`, `app/src/components/posts/comment-reaction-controls.tsx`, `app/src/components/posts/post-bookmark-button.tsx`, `app/src/components/user/user-relation-controls.tsx` |
+| 앱 셸 viewer 상태 재조회 경로 보강 | Codex | P1 | `done` | 상단 헤더의 viewer shell이 경로 이동/포커스 복귀/관심동물 저장 후 다시 읽혀 로그인/권한/관심동물 상태가 오래 stale 되지 않는다 | `PLAN.md`, `PROGRESS.md`, `app/src/components/navigation/app-shell-header.tsx`, `app/src/components/navigation/feed-hover-menu.tsx`, `app/src/lib/viewer-shell-sync.ts`, `app/src/lib/viewer-shell-sync.test.ts` |
+
+### Cycle 259: 댓글 작성 후 즉시 반영 보장 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 댓글 생성/수정/삭제 성공 후 목록 재조회 연결 | Codex | P1 | `done` | 게시글 상세 댓글이 생성/수정/삭제 직후 새로고침 없이 즉시 다시 로드되어 화면에 반영된다 | `PLAN.md`, `PROGRESS.md`, `app/src/components/posts/post-comment-section-client.tsx`, `app/src/components/posts/post-comment-thread.tsx` |
+| 댓글 목록 응답 파싱 helper 및 회귀 테스트 추가 | Codex | P2 | `done` | 댓글 목록 응답이 실패면 예외를 던지고, 성공이면 배열을 반환하는 helper와 테스트가 추가된다 | `PLAN.md`, `PROGRESS.md`, `app/src/lib/comment-client.ts`, `app/src/lib/comment-client.test.ts` |
+
+### Cycle 258: 상세 신고/댓글 UI 밀도 정리 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 게시글 신고 섹션을 compact disclosure 형태로 축소 | Codex | P2 | `done` | 게시글 상세와 게스트 상세에서 신고 영역이 큰 카드형 섹션이 아니라 작은 토글 + 간결한 입력 폼으로 보인다 | `PLAN.md`, `PROGRESS.md`, `app/src/components/posts/post-report-form.tsx`, `app/src/components/posts/post-detail-client.tsx`, `app/src/app/posts/[id]/guest/page.tsx` |
+| 댓글 섹션의 설명 문구와 과한 UI 요소 정리 | Codex | P2 | `done` | 댓글 섹션에서 lazy-load/작성/비회원 액션 안내 문구가 줄고, 중복 페이지네이션/과도한 패딩 없이 더 단정하게 렌더링된다 | `PLAN.md`, `PROGRESS.md`, `app/src/components/posts/post-comment-section-client.tsx`, `app/src/components/posts/post-comment-thread.tsx`, `app/src/components/posts/comment-reaction-controls.tsx` |
+
+### Cycle 257: 전역 타이포/버튼 스케일 정돈 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 공통 타이포 계층과 버튼 size variant 정의 | Codex | P1 | `done` | `globals.css` 또는 공통 UI 레이어에 페이지 타이틀/섹션 타이틀/게시글 제목/메타/본문과 버튼 `xs/sm/md` 크기 규칙이 정리되고, 이후 화면이 이 토큰을 재사용할 수 있다 | `PLAN.md`, `PROGRESS.md`, `app/src/app/globals.css`, 공통 버튼/타이포 사용처 |
+| 게시글 상세/피드/주요 보드의 과대 텍스트 우선 축소 | Codex | P1 | `done` | 게시글 상세 제목/반응 바, 피드 헤더, 목록 제목, 입양 보드 카드/헤더 등 사용자가 자주 보는 화면의 제목과 버튼 크기가 한 단계씩 낮아지고 시각적 위계는 유지된다 | `PLAN.md`, `PROGRESS.md`, `app/src/components/posts/*`, `app/src/app/feed/page.tsx`, `app/src/components/boards/adoption-board-grid.tsx`, `app/src/app/boards/adoption/page.tsx` |
+| 프로필/검색/알림 등 2차 화면 스케일 동기화 및 회귀 검증 | Codex | P2 | `done` | 프로필/검색/알림/북마크 등 서브 화면도 같은 타이포/버튼 규칙을 따르고, lint/typecheck/관련 렌더링 검증이 통과한다 | `PLAN.md`, `PROGRESS.md`, `app/src/app/profile/page.tsx`, `app/src/app/search/page.tsx`, `app/src/app/notifications/page.tsx`, `app/src/app/bookmarks/page.tsx` |
+
+### Cycle 256: 상세 반응 바 중앙 정렬 및 순반응 점수화 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 게시글 상세 액션 바의 좋아요/싫어요를 중앙 순반응 바 형태로 재구성 | Codex | P2 | `done` | 게시글 상세와 게스트 상세 액션 바에서 좋아요/싫어요가 중앙에 배치되고, 두 버튼 사이에 순반응 점수가 노출되며 점수 방향에 따라 파랑/빨강 계열로 변한다 | `PLAN.md`, `PROGRESS.md`, `app/src/components/posts/post-reaction-controls.tsx`, `app/src/components/posts/post-detail-client.tsx`, `app/src/app/posts/[id]/guest/page.tsx`, `app/src/lib/post-reaction-score.ts`, `app/src/lib/post-reaction-score.test.ts` |
+
+### Cycle 255: 상세 액션 바 보조 버튼 축소 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 게시글 상세 액션 바에서 북마크/공유를 우측 보조 버튼으로 재배치 | Codex | P2 | `done` | 게시글 상세와 게스트 상세 액션 바에서 북마크가 공유 옆으로 이동하고 두 버튼이 반응 버튼보다 작은 compact 스타일로 렌더링된다 | `PLAN.md`, `PROGRESS.md`, `app/src/components/posts/post-detail-client.tsx`, `app/src/app/posts/[id]/guest/page.tsx`, `app/src/components/posts/post-bookmark-button.tsx`, `app/src/components/posts/post-share-controls.tsx` |
+
 ### Cycle 254: 전역 목록 페이지네이션 통일 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|

@@ -247,7 +247,7 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
         }}
       />
       <main className="mx-auto flex w-full max-w-[1100px] flex-col gap-4 px-4 py-5 sm:gap-5 sm:px-6 sm:py-6 lg:px-8">
-        <BackToFeedButton className="tp-btn-soft inline-flex w-fit items-center px-3.5 py-2 text-xs font-semibold" />
+        <BackToFeedButton className="tp-btn-soft tp-btn-sm inline-flex w-fit items-center" />
         <div>
           <section className="tp-card p-4 sm:p-7">
             <div className="flex flex-wrap items-center gap-2 text-xs">
@@ -263,11 +263,11 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
 
             <div className="mt-3 grid gap-3 border-b border-[#e0e9f5] pb-4 md:mt-4 md:gap-4 md:pb-5 md:grid-cols-[minmax(0,1fr)_260px] md:items-start">
               <div>
-                <h1 className="text-[24px] font-bold leading-tight tracking-[-0.01em] text-[#10284a] sm:text-[42px]">
+                <h1 className="tp-text-post-title text-[#10284a]">
                   {post.title}
                 </h1>
               </div>
-              <div className="text-sm text-[#4f678d] md:text-right">
+              <div className="text-[13px] text-[#4f678d] md:text-right">
                 <div className="flex items-start justify-between gap-3 md:flex-col md:items-end">
                   <p className="font-semibold text-[#1f3f71]">
                     {guestPostMeta.isGuestPost ? (
@@ -283,9 +283,9 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
                       </Link>
                     )}
                   </p>
-                  <p className="text-[12px] text-[#5a759c]">{formatRelativeDate(createdAt)}</p>
+                  <p className="text-[11px] text-[#5a759c]">{formatRelativeDate(createdAt)}</p>
                 </div>
-                <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] font-medium text-[#5f7da8] md:justify-end">
+                <p className="tp-text-meta mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[#5f7da8] md:justify-end">
                   <span>조회 {safeViewCount.toLocaleString()}</span>
                   <span>좋아요 {safeLikeCount.toLocaleString()}</span>
                   <span>싫어요 {safeDislikeCount.toLocaleString()}</span>
@@ -305,7 +305,7 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
               <h2 className="mb-2 text-[11px] font-semibold tracking-[0.14em] text-[#4f6f9f]">
                 내용
               </h2>
-              <article className="text-[16px] leading-8 text-[#17345f]">
+              <article className="tp-text-body text-[#17345f]">
                 {shouldUsePlainFallback ? (
                   <div className="whitespace-pre-wrap">{post.content}</div>
                 ) : (
@@ -341,9 +341,11 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
 
             <div className="mt-3 space-y-2 border-b border-[#e0e9f5] pb-3 sm:mt-4 sm:space-y-3 sm:pb-4">
               <div className="rounded-xl border border-[#d8e4f6] bg-[#f8fbff] px-2.5 py-2.5 sm:px-3 sm:py-3">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex flex-wrap items-center gap-2">
+                <div className="grid gap-2 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
+                  <div className="hidden sm:block" aria-hidden="true" />
+                  <div className="flex justify-center sm:justify-self-center">
                     <PostReactionControls
+                      key={`${post.id}:${safeLikeCount}:${safeDislikeCount}:guest`}
                       postId={post.id}
                       likeCount={safeLikeCount}
                       dislikeCount={safeDislikeCount}
@@ -351,23 +353,27 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
                       canReact={false}
                       loginHref={loginHref}
                     />
+                  </div>
+                  <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-self-end">
                     <PostBookmarkButton
+                      key={`${post.id}:guest`}
                       postId={post.id}
                       currentBookmarked={false}
                       canBookmark={false}
                       loginHref={loginHref}
+                      compact
                     />
+                    <PostShareControls url={postUrl} title={post.title} compact />
                   </div>
-                  <PostShareControls url={postUrl} title={post.title} />
                 </div>
               </div>
               {guestPostMeta.isGuestPost ? <GuestPostDetailActions postId={post.id} /> : null}
             </div>
 
             {canReportPost ? (
-              <details className="mt-4 rounded-xl border border-[#d9e5f7] bg-white p-4">
-                <summary className="cursor-pointer text-sm font-semibold text-[#1f3f71]">게시글 신고</summary>
-                <div className="mt-3">
+              <details className="mt-3 rounded-lg border border-[#d9e5f7] bg-[#fbfdff] px-3 py-2.5">
+                <summary className="tp-btn-soft tp-btn-xs inline-flex cursor-pointer items-center">게시글 신고</summary>
+                <div className="mt-2 rounded-lg border border-[#e3ebf8] bg-white p-3">
                   <PostReportForm postId={post.id} />
                 </div>
               </details>
@@ -377,7 +383,7 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
 
         {post.hospitalReview ? (
           <section className="tp-card p-5 sm:p-6">
-            <h2 className="text-lg font-semibold text-[#163462]">병원후기 상세</h2>
+            <h2 className="tp-text-section-title text-[#163462]">병원후기 상세</h2>
             <div className="mt-4 grid gap-3 text-sm text-[#355988] md:grid-cols-3">
               <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">병원</p>
@@ -409,7 +415,7 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
 
         {post.placeReview ? (
           <section className="tp-card p-5 sm:p-6">
-            <h2 className="text-lg font-semibold text-[#163462]">후기/리뷰 상세</h2>
+            <h2 className="tp-text-section-title text-[#163462]">후기/리뷰 상세</h2>
             <div className="mt-4 grid gap-3 text-sm text-[#355988] md:grid-cols-3">
               <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">장소명</p>
@@ -437,7 +443,7 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
 
         {post.walkRoute ? (
           <section className="tp-card p-5 sm:p-6">
-            <h2 className="text-lg font-semibold text-[#163462]">동네 산책코스 상세</h2>
+            <h2 className="tp-text-section-title text-[#163462]">동네 산책코스 상세</h2>
             <div className="mt-4 grid gap-3 text-sm text-[#355988] md:grid-cols-3">
               <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">코스명</p>
@@ -481,7 +487,7 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
 
         {post.adoptionListing ? (
           <section className="tp-card p-5 sm:p-6">
-            <h2 className="text-lg font-semibold text-[#163462]">유기동물 입양 정보</h2>
+            <h2 className="tp-text-section-title text-[#163462]">유기동물 입양 정보</h2>
             <div className="mt-4 grid gap-3 text-sm text-[#355988] md:grid-cols-3">
               <div className="border border-[#f0dfb8] bg-[#fffaf0] px-3 py-3">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#9b7a34]">보호소</p>
@@ -545,7 +551,7 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
 
         {post.volunteerRecruitment ? (
           <section className="tp-card p-5 sm:p-6">
-            <h2 className="text-lg font-semibold text-[#163462]">보호소 봉사 모집 정보</h2>
+            <h2 className="tp-text-section-title text-[#163462]">보호소 봉사 모집 정보</h2>
             <div className="mt-4 grid gap-3 text-sm text-[#355988] md:grid-cols-3">
               <div className="border border-[#d6e7b3] bg-[#f8fff0] px-3 py-3">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6d8d2d]">보호소</p>

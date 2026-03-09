@@ -27,7 +27,6 @@ export function UserRelationControls({
 }: UserRelationControlsProps) {
   const router = useRouter();
   const [isBlockedByMe, setIsBlockedByMe] = useState(initialState.isBlockedByMe);
-  const [hasBlockedMe] = useState(initialState.hasBlockedMe);
   const [isMutedByMe, setIsMutedByMe] = useState(initialState.isMutedByMe);
   const [message, setMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -94,7 +93,7 @@ export function UserRelationControls({
       >
         {isMutedByMe ? "뮤트 해제" : "뮤트"}
       </button>
-      {hasBlockedMe ? (
+      {initialState.hasBlockedMe ? (
         <span className="text-[11px] text-rose-700">상대가 나를 차단한 상태입니다.</span>
       ) : null}
       {message ? <span className="text-[11px] text-[#4f678d]">{message}</span> : null}
