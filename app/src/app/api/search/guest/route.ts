@@ -3,7 +3,6 @@ import { PostScope, PostType } from "@prisma/client";
 import { z } from "zod";
 
 import { isLoginRequiredPostType } from "@/lib/post-access";
-import { buildCacheControlHeader } from "@/server/cache/query-cache";
 import { monitorUnhandledError } from "@/server/error-monitor";
 import { getGuestReadLoginRequiredPostTypes } from "@/server/queries/policy.queries";
 import { listRankedSearchPosts } from "@/server/queries/post.queries";
@@ -77,7 +76,7 @@ export async function GET(request: NextRequest) {
       },
       {
         headers: {
-          "cache-control": buildCacheControlHeader(45, 300),
+          "cache-control": "no-store",
         },
       },
     );

@@ -72,8 +72,18 @@ export async function setPrimaryNeighborhoodAction(
 export async function updateProfileImageAction(input: unknown): Promise<UserActionResult> {
   try {
     const user = await requireCurrentUser();
-    await updateProfileImage({ userId: user.id, input });
+    const updatedUser = await updateProfileImage({ userId: user.id, input });
+    try {
+      await unstable_update({
+        user: {
+          image: updatedUser.image,
+        },
+      });
+    } catch {
+      // Session refresh failure should not fail profile image persistence.
+    }
     revalidatePath("/profile");
+    revalidatePath(`/users/${user.id}`);
     return { ok: true };
   } catch (error) {
     if (error instanceof ServiceError) {

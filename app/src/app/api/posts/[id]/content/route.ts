@@ -2,7 +2,6 @@ import { NextRequest } from "next/server";
 
 import { renderLiteMarkdown } from "@/lib/markdown-lite";
 import { getCurrentUserId } from "@/server/auth";
-import { buildCacheControlHeader } from "@/server/cache/query-cache";
 import { monitorUnhandledError } from "@/server/error-monitor";
 import { getPostContentById } from "@/server/queries/post.queries";
 import { jsonError, jsonOk } from "@/server/response";
@@ -41,7 +40,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       },
       {
         headers: {
-          "cache-control": userId ? "no-store" : buildCacheControlHeader(60, 600),
+          "cache-control": "no-store",
         },
       },
     );

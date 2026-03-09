@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
+import { formatKoreanDateTime } from "@/lib/date-format";
 import type { NotificationFilterKind } from "@/lib/notification-filter";
 import { buildPaginationWindow } from "@/lib/pagination";
 import { emitNotificationUnreadSync } from "@/lib/notification-unread-sync";
@@ -278,7 +279,7 @@ export function NotificationCenter({
                 >
                   <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-[#5f79a0]">
                     <span>{actorLabel}</span>
-                    <span>{new Date(notification.createdAt).toLocaleString("ko-KR")}</span>
+                    <span>{formatKoreanDateTime(notification.createdAt)}</span>
                   </div>
                   <p className="tp-text-card-title mt-1 text-[#163462]">{notification.title}</p>
                   {notification.body ? (

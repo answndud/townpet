@@ -214,6 +214,10 @@ export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
               ? user.sessionVersion
               : undefined,
         });
+        token.image =
+          "image" in user && typeof user.image === "string" && user.image.length > 0
+            ? String(user.image)
+            : null;
       }
 
       if (trigger === "update" && session?.user) {
@@ -224,6 +228,10 @@ export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
           typeof session.user.nickname === "string" && session.user.nickname
             ? String(session.user.nickname)
             : null;
+        token.image =
+          typeof session.user.image === "string" && session.user.image.length > 0
+            ? String(session.user.image)
+            : null;
         if (typeof session.user.authProvider === "string") {
           token.authProvider = session.user.authProvider;
         }
@@ -232,8 +240,10 @@ export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
       if (typeof token.id === "string" && token.id.length > 0) {
         const currentUser = await prisma.user.findUnique({
           where: { id: token.id },
-          select: { sessionVersion: true, nickname: true },
+          select: { sessionVersion: true, nickname: true, image: true },
         });
+
+        token.image = currentUser?.image ?? null;
 
         return syncSessionVersionToken(
           token,
@@ -265,6 +275,7 @@ export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
       if (session.user) {
         session.user.id = String(token.id ?? "");
         session.user.nickname = token.nickname ? String(token.nickname) : null;
+        session.user.image = typeof token.image === "string" ? String(token.image) : null;
         session.user.authProvider =
           typeof token.authProvider === "string" ? String(token.authProvider) : null;
       }

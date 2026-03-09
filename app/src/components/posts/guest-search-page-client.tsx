@@ -62,6 +62,7 @@ export function GuestSearchPageClient() {
   const [data, setData] = useState(DEFAULT_DATA);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [reloadToken, setReloadToken] = useState(0);
 
   const queryString = searchParams.toString();
 
@@ -81,6 +82,19 @@ export function GuestSearchPageClient() {
   }, [pathname, router, searchParams]);
 
   useEffect(() => {
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        setReloadToken((current) => current + 1);
+      }
+    };
+
+    window.addEventListener("pageshow", handlePageShow);
+    return () => {
+      window.removeEventListener("pageshow", handlePageShow);
+    };
+  }, []);
+
+  useEffect(() => {
     let cancelled = false;
     const controller = new AbortController();
 
@@ -94,7 +108,7 @@ export function GuestSearchPageClient() {
           {
             method: "GET",
             credentials: "same-origin",
-            cache: "force-cache",
+            cache: "no-store",
             signal: controller.signal,
           },
         );
@@ -136,7 +150,7 @@ export function GuestSearchPageClient() {
       cancelled = true;
       controller.abort();
     };
-  }, [queryString]);
+  }, [queryString, reloadToken]);
 
   const query = data.query;
   const type = data.type;

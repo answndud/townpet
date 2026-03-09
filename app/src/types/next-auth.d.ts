@@ -22,6 +22,7 @@ declare module "next-auth/jwt" {
   interface JWT {
     id?: string;
     nickname?: string | null;
+    image?: string | null;
     authProvider?: string | null;
     sessionVersion?: number;
     sessionInvalidated?: boolean;
