@@ -11,7 +11,7 @@ type Channel = {
   evidenceHint: string;
 };
 
-const DEFAULT_BASE_URL = "https://townpet2.vercel.app";
+const DEFAULT_BASE_URL = "https://townpet.vercel.app";
 
 const CHANNELS: Channel[] = [
   {
@@ -22,24 +22,6 @@ const CHANNELS: Channel[] = [
     content: "seed-post-1",
     postTask: "시작가이드/질문 템플릿 게시 1건",
     evidenceHint: "게시 URL + 스크린샷",
-  },
-  {
-    name: "Kakao Open Chat",
-    source: "kakao",
-    medium: "openchat",
-    campaign: "day1_ondongne",
-    content: "notice-post-1",
-    postTask: "공지 1건 + 질문 유도 1건",
-    evidenceHint: "오픈채팅 공지 캡처",
-  },
-  {
-    name: "Instagram",
-    source: "instagram",
-    medium: "reel",
-    campaign: "day1_ondongne",
-    content: "reel-1",
-    postTask: "릴스/피드 1건",
-    evidenceHint: "게시 URL + 인사이트 캡처",
   },
 ];
 
@@ -116,6 +98,8 @@ function renderMarkdown(options: CliOptions) {
   lines.push("");
   lines.push(`Base URL: ${options.baseUrl}`);
   lines.push("");
+  lines.push("Mode: Naver-only reduced launch");
+  lines.push("");
   lines.push("## 채널별 실행");
   lines.push("| Channel | Task | UTM URL | Evidence | Status |");
   lines.push("|---|---|---|---|---|");
@@ -134,10 +118,12 @@ function renderMarkdown(options: CliOptions) {
   lines.push("| Signup -> First action (7d) | 30%+ |  | pending |  |");
   lines.push("| First post -> 24h first comment | 60%+ |  | pending |  |");
   lines.push("");
+  lines.push("## 보류 채널");
+  lines.push("- Kakao Open Chat: Day1 범위에서 제외");
+  lines.push("- Instagram: Day1 범위에서 제외");
+  lines.push("");
   lines.push("## 실행 로그");
   lines.push("- [ ] Naver 게시 1건 완료");
-  lines.push("- [ ] Kakao 게시 1건 완료");
-  lines.push("- [ ] Instagram 게시 1건 완료");
   lines.push("- [ ] UTM 유입 로그 수집 시작");
   lines.push("");
 

@@ -1,9 +1,13 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { PostDetailClient } from "@/components/posts/post-detail-client";
 import { getCspNonce } from "@/lib/csp-nonce";
+import { buildPostDetailMetadata } from "@/lib/post-page-metadata";
 import { getCurrentUser } from "@/server/auth";
 import { redirectToProfileIfNicknameMissing } from "@/server/nickname-guard";
+import { getGuestReadLoginRequiredPostTypes } from "@/server/queries/policy.queries";
+import { getPostMetadataById } from "@/server/queries/post.queries";
 
 export const dynamic = "force-dynamic";
 
@@ -11,8 +15,16 @@ type PostDetailPageProps = {
   params?: Promise<{ id?: string }>;
 };
 
-export async function generateMetadata() {
-  return { title: "게시글" };
+export async function generateMetadata({
+  params,
+}: PostDetailPageProps): Promise<Metadata> {
+  const resolvedParams = (await params) ?? {};
+  const [post, loginRequiredTypes] = await Promise.all([
+    getPostMetadataById(resolvedParams.id),
+    getGuestReadLoginRequiredPostTypes(),
+  ]);
+
+  return buildPostDetailMetadata(post, loginRequiredTypes);
 }
 
 export default async function PostDetailPage({ params }: PostDetailPageProps) {

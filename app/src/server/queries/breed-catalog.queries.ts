@@ -1,6 +1,7 @@
 import type { PetSpecies } from "@prisma/client";
 
 import {
+  DEFAULT_BREED_CATALOG,
   findDefaultBreedCatalogEntry,
   mergeBreedCatalogEntries,
   type BreedCatalogEntry,
@@ -134,4 +135,25 @@ export async function findBreedCatalogEntryBySpeciesAndCode(
   }
 
   return findDefaultBreedCatalogEntry(species, normalizedCode);
+}
+
+export async function findBreedCatalogEntryByCode(code: string | null | undefined) {
+  const normalizedCode = code?.trim().toUpperCase();
+  if (!normalizedCode) {
+    return null;
+  }
+
+  const item = await prisma.breedCatalog.findFirst({
+    where: {
+      code: normalizedCode,
+      isActive: true,
+    },
+    orderBy: { updatedAt: "desc" },
+  });
+
+  if (item) {
+    return toPlainBreedCatalogEntry(toPersistedBreedCatalogEntry(item));
+  }
+
+  return DEFAULT_BREED_CATALOG.find((entry) => entry.code === normalizedCode) ?? null;
 }

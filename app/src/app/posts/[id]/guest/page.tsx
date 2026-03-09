@@ -14,8 +14,12 @@ import { PostCommentSectionClient } from "@/components/posts/post-comment-sectio
 import { PostViewTracker } from "@/components/posts/post-view-tracker";
 import { getCspNonce } from "@/lib/csp-nonce";
 import { renderLiteMarkdown } from "@/lib/markdown-lite";
+import {
+  buildExcerpt,
+  buildPostDetailMetadata,
+  ensureDate,
+} from "@/lib/post-page-metadata";
 import { getGuestPostMeta } from "@/lib/post-guest-meta";
-import { canGuestReadPost } from "@/lib/post-access";
 import { formatRelativeDate } from "@/lib/post-presenter";
 import { toAbsoluteUrl } from "@/lib/site-url";
 import { resolveUserDisplayName } from "@/lib/user-display";
@@ -30,14 +34,6 @@ type PostDetailPageProps = {
   params?: Promise<{ id?: string }>;
 };
 
-function buildExcerpt(text: string, maxLength = 160) {
-  const normalized = text.replace(/\s+/g, " ").trim();
-  if (normalized.length <= maxLength) {
-    return normalized;
-  }
-  return `${normalized.slice(0, maxLength)}...`;
-}
-
 function extractAttachmentName(url: string, fallbackIndex: number) {
   try {
     const parsed = url.startsWith("http://") || url.startsWith("https://")
@@ -51,77 +47,16 @@ function extractAttachmentName(url: string, fallbackIndex: number) {
   }
 }
 
-function ensureDate(value: unknown) {
-  if (value instanceof Date) {
-    return value;
-  }
-  if (typeof value === "string") {
-    const parsed = Date.parse(value);
-    if (Number.isFinite(parsed)) {
-      return new Date(parsed);
-    }
-  }
-  return null;
-}
-
 export async function generateMetadata({
   params,
 }: PostDetailPageProps): Promise<Metadata> {
   const resolvedParams = (await params) ?? {};
-  const post = await getPostMetadataById(resolvedParams.id);
-  if (!post) {
-    return {
-      title: "게시글을 찾을 수 없습니다",
-      robots: { index: false, follow: false },
-    };
-  }
+  const [post, loginRequiredTypes] = await Promise.all([
+    getPostMetadataById(resolvedParams.id),
+    getGuestReadLoginRequiredPostTypes(),
+  ]);
 
-  const loginRequiredTypes = await getGuestReadLoginRequiredPostTypes();
-  const guestReadable = canGuestReadPost({
-    scope: post.scope,
-    type: post.type,
-    loginRequiredTypes,
-  });
-  const isIndexable = post.status === "ACTIVE" && guestReadable;
-  const description = buildExcerpt(post.content);
-  const url = toAbsoluteUrl(`/posts/${post.id}`);
-  const imageUrl = post.images[0]?.url ? toAbsoluteUrl(post.images[0].url) : undefined;
-  const createdAt = ensureDate(post.createdAt);
-  const updatedAt = ensureDate(post.updatedAt) ?? createdAt;
-
-  if (!createdAt || !updatedAt) {
-    return {
-      title: post.title,
-      robots: { index: false, follow: false },
-    };
-  }
-
-  return {
-    title: post.title,
-    description,
-    alternates: {
-      canonical: `/posts/${post.id}`,
-    },
-    robots: {
-      index: isIndexable,
-      follow: isIndexable,
-    },
-    openGraph: {
-      type: "article",
-      url,
-      title: post.title,
-      description,
-      publishedTime: createdAt.toISOString(),
-      modifiedTime: updatedAt.toISOString(),
-      images: imageUrl ? [{ url: imageUrl }] : undefined,
-    },
-    twitter: {
-      card: imageUrl ? "summary_large_image" : "summary",
-      title: post.title,
-      description,
-      images: imageUrl ? [imageUrl] : undefined,
-    },
-  };
+  return buildPostDetailMetadata(post, loginRequiredTypes);
 }
 
 const typeMeta: Record<PostType, { label: string; chipClass: string }> = {

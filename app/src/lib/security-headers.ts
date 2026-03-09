@@ -12,6 +12,9 @@ type ResolveCspHeadersParams = {
 
 type StaticSecurityHeadersParams = Omit<ResolveCspHeadersParams, "nonce">;
 
+const PERMISSIONS_POLICY = "camera=(), geolocation=(), microphone=()";
+const HSTS_HEADER_VALUE = "max-age=31536000";
+
 function buildCspPolicy(params: CspPolicyParams) {
   const scriptSrc = params.includeUnsafeEval
     ? `${params.scriptSrc} 'unsafe-eval'`
@@ -109,6 +112,10 @@ export function buildStaticSecurityHeaders(params: StaticSecurityHeadersParams) 
     { key: "X-Frame-Options", value: "DENY" },
     { key: "X-Content-Type-Options", value: "nosniff" },
     { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+    { key: "Permissions-Policy", value: PERMISSIONS_POLICY },
+    ...(isDevelopment
+      ? []
+      : [{ key: "Strict-Transport-Security", value: HSTS_HEADER_VALUE }]),
     { key: "Content-Security-Policy", value: csp },
   ];
 }

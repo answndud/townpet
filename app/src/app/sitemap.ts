@@ -1,13 +1,18 @@
 import type { MetadataRoute } from "next";
 import { PostScope, PostStatus } from "@prisma/client";
 
+import { hasBreedLoungeRoute } from "@/lib/pet-profile";
 import { prisma } from "@/lib/prisma";
 import { getSiteOrigin } from "@/lib/site-url";
+import { listEffectiveBreedCatalogGroupedBySpecies } from "@/server/queries/breed-catalog.queries";
 import { getGuestReadLoginRequiredPostTypes } from "@/server/queries/policy.queries";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteOrigin = getSiteOrigin();
-  const loginRequiredTypes = await getGuestReadLoginRequiredPostTypes();
+  const [loginRequiredTypes, breedCatalogBySpecies] = await Promise.all([
+    getGuestReadLoginRequiredPostTypes(),
+    listEffectiveBreedCatalogGroupedBySpecies(),
+  ]);
 
   const posts = await prisma.post.findMany({
     where: {
@@ -53,5 +58,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
-  return [...staticRoutes, ...postRoutes];
+  const breedRoutes: MetadataRoute.Sitemap = Array.from(
+    new Set(
+      Object.values(breedCatalogBySpecies)
+        .flat()
+        .map((entry) => entry.code)
+        .filter((breedCode) => hasBreedLoungeRoute(breedCode)),
+    ),
+  ).map((breedCode) => ({
+    url: `${siteOrigin}/lounges/breeds/${breedCode}`,
+    lastModified: new Date(),
+    changeFrequency: "daily",
+    priority: 0.6,
+  }));
+
+  return [...staticRoutes, ...breedRoutes, ...postRoutes];
 }

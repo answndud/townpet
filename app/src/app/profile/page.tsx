@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { buildDefaultBreedCatalogBySpecies } from "@/lib/breed-catalog";
@@ -35,6 +36,18 @@ type ProfilePageProps = {
   searchParams?: Promise<{
     notice?: string;
   }>;
+};
+
+export const metadata: Metadata = {
+  title: "내 프로필",
+  description: "계정 활동, 동네 설정, 반려동물 정보를 관리합니다.",
+  alternates: {
+    canonical: "/profile",
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default async function ProfilePage({ searchParams }: ProfilePageProps) {
@@ -108,8 +121,21 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
                 className="h-14 w-14 rounded-full border border-[#cbdcf5] object-cover"
               />
             ) : (
-              <div className="flex h-14 w-14 items-center justify-center rounded-full border border-[#cbdcf5] bg-white text-xs font-semibold text-[#5b78a1]">
-                NO IMG
+              <div className="flex h-14 w-14 items-center justify-center rounded-full border border-[#cbdcf5] bg-[radial-gradient(circle_at_top,#ffffff,transparent_60%),linear-gradient(180deg,#f8fbff_0%,#edf4ff_100%)] text-[#5b78a1] shadow-[0_8px_18px_rgba(53,103,181,0.10)]">
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 48 48"
+                  className="h-7 w-7"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="24" cy="19" r="7" />
+                  <path d="M12 38c2.8-6.1 8-9.2 12-9.2s9.2 3.1 12 9.2" />
+                </svg>
+                <span className="sr-only">프로필 이미지 없음</span>
               </div>
             )}
             <p className="text-xs text-[#5a7398]">프로필 사진은 내 프로필 섹션에서 수정할 수 있습니다.</p>

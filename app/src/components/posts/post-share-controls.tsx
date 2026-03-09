@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 
 type PostShareControlsProps = {
   url: string;
@@ -15,6 +15,9 @@ function encode(value: string) {
 export function PostShareControls({ url, title }: PostShareControlsProps) {
   const [message, setMessage] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+  const menuId = useId();
 
   const xShareUrl = useMemo(
     () =>
@@ -37,26 +40,81 @@ export function PostShareControls({ url, title }: PostShareControlsProps) {
     }
   };
 
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const handlePointerDown = (event: MouseEvent) => {
+      const target = event.target;
+      if (!(target instanceof Node)) {
+        return;
+      }
+
+      if (menuRef.current?.contains(target) || buttonRef.current?.contains(target)) {
+        return;
+      }
+
+      setIsOpen(false);
+    };
+
+    const handleFocusIn = (event: FocusEvent) => {
+      const target = event.target;
+      if (!(target instanceof Node)) {
+        return;
+      }
+
+      if (menuRef.current?.contains(target) || buttonRef.current?.contains(target)) {
+        return;
+      }
+
+      setIsOpen(false);
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") {
+        return;
+      }
+
+      setIsOpen(false);
+      buttonRef.current?.focus();
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("focusin", handleFocusIn);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("focusin", handleFocusIn);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen]);
+
   return (
     <div className="relative flex flex-wrap items-center gap-1.5">
       <button
+        ref={buttonRef}
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
         className="tp-btn-soft inline-flex h-8 items-center px-2.5 text-xs font-semibold sm:h-9 sm:px-3"
         aria-expanded={isOpen}
-        aria-controls="post-share-menu"
+        aria-controls={menuId}
       >
         공유
       </button>
 
       {isOpen ? (
         <div
-          id="post-share-menu"
+          ref={menuRef}
+          id={menuId}
+          role="menu"
           className="absolute left-0 top-[calc(100%+6px)] z-20 min-w-[140px] rounded-lg border border-[#dbe6f6] bg-white p-1.5 shadow-[0_8px_18px_rgba(16,40,74,0.12)]"
         >
           <button
             type="button"
             onClick={handleCopy}
+            role="menuitem"
             className="flex w-full items-center justify-start rounded-md px-2.5 py-1.5 text-xs font-semibold text-[#315484] transition hover:bg-[#f5f9ff]"
           >
             링크 복사
@@ -66,6 +124,7 @@ export function PostShareControls({ url, title }: PostShareControlsProps) {
             target="_blank"
             rel="noreferrer noopener"
             onClick={() => setIsOpen(false)}
+            role="menuitem"
             className="flex w-full items-center justify-start rounded-md px-2.5 py-1.5 text-xs font-semibold text-[#315484] transition hover:bg-[#f5f9ff]"
           >
             X 공유
@@ -75,6 +134,7 @@ export function PostShareControls({ url, title }: PostShareControlsProps) {
             target="_blank"
             rel="noreferrer noopener"
             onClick={() => setIsOpen(false)}
+            role="menuitem"
             className="flex w-full items-center justify-start px-2.5 py-1.5 text-xs font-semibold text-[#6c5319] transition hover:bg-[#fff5df]"
           >
             카카오 공유
@@ -83,6 +143,7 @@ export function PostShareControls({ url, title }: PostShareControlsProps) {
             href={url}
             target="_blank"
             onClick={() => setIsOpen(false)}
+            role="menuitem"
             className="flex w-full items-center justify-start rounded-md px-2.5 py-1.5 text-xs font-semibold text-[#4f678d] transition hover:bg-[#f5f9ff]"
           >
             새 탭에서 열기

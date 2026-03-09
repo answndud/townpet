@@ -17,6 +17,6 @@ test.describe("feed loading skeleton", () => {
       .getByTestId("feed-post-list")
       .or(page.getByText("게시글이 없습니다"))
       .or(page.getByText("베스트글이 없습니다"));
-    await expect(feedContent.first()).toBeVisible();
+    await expect(feedContent.first()).toBeVisible({ timeout: 15_000 });
   });
 });

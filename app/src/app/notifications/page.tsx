@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 
 import { NotificationCenter } from "@/components/notifications/notification-center";
 import {
@@ -11,6 +12,18 @@ import { listNotificationsByUser } from "@/server/queries/notification.queries";
 
 type NotificationsPageProps = {
   searchParams?: Promise<{ kind?: string; unreadOnly?: string }>;
+};
+
+export const metadata: Metadata = {
+  title: "알림",
+  description: "댓글, 답글, 반응 알림을 한곳에서 확인합니다.",
+  alternates: {
+    canonical: "/notifications",
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default async function NotificationsPage({ searchParams }: NotificationsPageProps) {

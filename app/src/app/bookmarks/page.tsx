@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { PostType } from "@prisma/client";
 
@@ -21,6 +22,18 @@ type BookmarksPageProps = {
 };
 
 const BOOKMARKS_PAGE_SIZE = 20;
+
+export const metadata: Metadata = {
+  title: "북마크",
+  description: "내가 북마크한 게시글을 다시 확인합니다.",
+  alternates: {
+    canonical: "/bookmarks",
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 const typeLabels: Record<PostType, string> = {
   HOSPITAL_REVIEW: "병원후기",

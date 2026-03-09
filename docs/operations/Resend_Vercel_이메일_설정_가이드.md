@@ -134,7 +134,7 @@ Vercel 문서: https://vercel.com/docs/environment-variables
 
 필수:
 - `RESEND_API_KEY` = Resend에서 발급한 키
-- `APP_BASE_URL` = 실제 배포 URL (예: `https://townpet2.vercel.app` 또는 커스텀 도메인)
+- `APP_BASE_URL` = 실제 배포 URL (예: `https://townpet.vercel.app` 또는 커스텀 도메인)
 
 권장 적용 환경:
 - Production: 필수
