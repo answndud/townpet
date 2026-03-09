@@ -26,6 +26,12 @@
 
 ## Active Plan
 
+### Cycle 245: 로컬 dev 서버 Turbopack panic 우회 기본화 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 기본 `pnpm dev`를 webpack 모드로 전환 | Codex | P1 | `done` | 로컬 기본 개발 서버가 `next dev --webpack`으로 실행되어 Turbopack panic에 따른 HMR/새로고침 루프를 우회하고, Turbopack은 별도 `dev:turbo` 스크립트로 분리된다 | `PLAN.md`, `PROGRESS.md`, `app/package.json` |
+| 로컬 실행/테스트 가이드에 panic 대응 경로 반영 | Codex | P1 | `done` | 운영 가이드와 Playwright webServer 기본값이 webpack 경로를 사용하도록 갱신되어 동일 panic으로 인한 로컬/E2E 흔들림을 줄인다 | `PLAN.md`, `PROGRESS.md`, `docs/개발_운영_가이드.md`, `app/playwright.config.ts` |
+
 ### Cycle 244: 피드 목록 행 높이 압축 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
