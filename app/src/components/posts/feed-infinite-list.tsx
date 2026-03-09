@@ -659,12 +659,12 @@ export function FeedInfiniteList({
               ) : null}
               <article
                 data-testid="feed-post-item"
-                className={`grid grid-cols-[minmax(0,1fr)_106px] gap-x-3 gap-y-1 px-3 py-2 transition hover:bg-[#f8fbff] sm:grid-cols-[minmax(0,1fr)_132px] sm:px-5 sm:py-3 md:grid-cols-[minmax(0,1fr)_188px] md:items-center ${
+                className={`grid grid-cols-[minmax(0,1fr)_106px] gap-x-3 gap-y-0.5 px-3 py-1.5 transition hover:bg-[#f8fbff] sm:grid-cols-[minmax(0,1fr)_132px] sm:px-4 sm:py-2 md:grid-cols-[minmax(0,1fr)_188px] md:items-center ${
                   post.status === "HIDDEN" ? "bg-[#fff5f5]" : ""
                 }`}
               >
                 <div className="min-w-0">
-                  <div className="mb-0.5 flex flex-wrap items-center gap-1 text-[11px]">
+                  <div className="mb-px flex flex-wrap items-center gap-1 text-[11px]">
                     <span
                       className={`inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[10px] font-semibold ${meta.chipClass}`}
                     >
@@ -703,10 +703,10 @@ export function FeedInfiniteList({
                     ) : null}
                   </Link>
                   {previewContent ? (
-                    <p className="mt-0.5 hidden truncate text-[11px] text-[#6b83a6] sm:block">{previewContent}</p>
+                    <p className="mt-px hidden truncate text-[11px] text-[#6b83a6] sm:block">{previewContent}</p>
                   ) : null}
                   {locationLabel || petTypeLabel ? (
-                    <p className="mt-0.5 hidden truncate text-[11px] text-[#6a82a6] sm:block">
+                    <p className="hidden truncate text-[11px] text-[#6a82a6] sm:block">
                       {[locationLabel, petTypeLabel].filter(Boolean).join(" · ")}
                     </p>
                   ) : null}
@@ -714,7 +714,7 @@ export function FeedInfiniteList({
 
                 <div className="min-w-0 self-center text-right text-[10px] text-[#4f678d] sm:text-[11px]">
                   <p className="font-semibold text-[#1f3f71]">{authorNode}</p>
-                  <p className="mt-0.5 break-keep text-[#5a759c]">{statsLabel}</p>
+                  <p className="break-keep text-[#5a759c]">{statsLabel}</p>
                 </div>
               </article>
             </div>
