@@ -212,7 +212,11 @@ export default async function PublicUserProfilePage({
             {profile.bio?.trim() ? profile.bio : "등록된 소개가 없습니다."}
           </p>
           <div className="mt-4">
-            <UserRelationControls targetUserId={profile.id} initialState={relationState} />
+            <UserRelationControls
+              key={`${profile.id}:${relationState.isBlockedByMe ? "1" : "0"}:${relationState.isMutedByMe ? "1" : "0"}:${relationState.hasBlockedMe ? "1" : "0"}`}
+              targetUserId={profile.id}
+              initialState={relationState}
+            />
           </div>
         </header>
 

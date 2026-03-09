@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
+import { unwrapCommentListResponse } from "@/lib/comment-client";
 import { PostCommentThread } from "@/components/posts/post-comment-thread";
 
 type CommentItem = {
@@ -36,6 +37,7 @@ type PostCommentSectionClientProps = {
   canInteract: boolean;
   canInteractWithPostOwner: boolean;
   loginHref: string;
+  onCommentCountChange?: (count: number) => void;
 };
 
 export function PostCommentSectionClient({
@@ -44,21 +46,48 @@ export function PostCommentSectionClient({
   canInteract,
   canInteractWithPostOwner,
   loginHref,
+  onCommentCountChange,
 }: PostCommentSectionClientProps) {
   const [comments, setComments] = useState<CommentItem[] | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [shouldLoad, setShouldLoad] = useState(false);
+  const [shouldLoad, setShouldLoad] = useState(
+    () => typeof window !== "undefined" && !("IntersectionObserver" in window),
+  );
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
+  const reloadComments = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/posts/${postId}/comments`, {
+        method: "GET",
+        credentials: "same-origin",
+      });
+      const payload = (await response.json()) as CommentResponse;
+      const nextComments = unwrapCommentListResponse(response.ok, payload);
+      if (mountedRef.current) {
+        setComments(nextComments);
+        setError(null);
+        onCommentCountChange?.(nextComments.length);
+      }
+    } catch {
+      if (mountedRef.current) {
+        setError("댓글을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.");
+      }
+    }
+  }, [onCommentCountChange, postId]);
 
   useEffect(() => {
     if (shouldLoad) {
       return;
     }
-    if (typeof window === "undefined") {
-      return;
-    }
-    if (!("IntersectionObserver" in window)) {
-      setShouldLoad(true);
+    if (typeof window === "undefined" || !("IntersectionObserver" in window)) {
       return;
     }
 
@@ -86,46 +115,27 @@ export function PostCommentSectionClient({
     if (!shouldLoad) {
       return;
     }
-    let cancelled = false;
+    const timer = window.setTimeout(() => {
+      void reloadComments();
+    }, 0);
 
-    const run = async () => {
-      try {
-        const response = await fetch(`/api/posts/${postId}/comments`, {
-          method: "GET",
-          credentials: "same-origin",
-        });
-        const payload = (await response.json()) as CommentResponse;
-        if (!response.ok || !payload.ok) {
-          throw new Error(payload.error?.message ?? "댓글 로딩 실패");
-        }
-        if (!cancelled) {
-          setComments(payload.data ?? []);
-        }
-      } catch {
-        if (!cancelled) {
-          setError("댓글을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.");
-        }
-      }
-    };
-
-    run();
     return () => {
-      cancelled = true;
+      window.clearTimeout(timer);
     };
-  }, [postId, shouldLoad]);
+  }, [reloadComments, shouldLoad]);
 
   if (!shouldLoad) {
     return (
       <div
         ref={containerRef}
-        className="mt-6 rounded-xl border border-[#dbe6f6] bg-white p-4 text-sm text-[#6a84ac]"
+        className="mt-5 rounded-lg border border-[#dbe6f6] bg-white px-3 py-2.5 text-[13px] text-[#6a84ac]"
       >
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <span>댓글은 화면에 보일 때 불러옵니다.</span>
+          <span>댓글</span>
           <button
             type="button"
             onClick={() => setShouldLoad(true)}
-            className="tp-btn-soft px-3 py-1.5 text-xs font-semibold"
+            className="tp-btn-soft tp-btn-xs"
           >
             댓글 불러오기
           </button>
@@ -136,7 +146,7 @@ export function PostCommentSectionClient({
 
   if (error) {
     return (
-      <div className="mt-6 rounded-xl border border-[#f0d3d3] bg-[#fff7f7] p-4 text-sm text-[#8b4b4b]">
+      <div className="mt-5 rounded-lg border border-[#f0d3d3] bg-[#fff7f7] px-3 py-2.5 text-[13px] text-[#8b4b4b]">
         {error}
       </div>
     );
@@ -144,7 +154,7 @@ export function PostCommentSectionClient({
 
   if (!comments) {
     return (
-      <div className="mt-6 rounded-xl border border-[#dbe6f6] bg-white p-4 text-sm text-[#6a84ac]">
+      <div className="mt-5 rounded-lg border border-[#dbe6f6] bg-white px-3 py-2.5 text-[13px] text-[#6a84ac]">
         댓글을 불러오는 중...
       </div>
     );
@@ -157,6 +167,7 @@ export function PostCommentSectionClient({
       currentUserId={currentUserId}
       canInteract={canInteract && canInteractWithPostOwner}
       loginHref={loginHref}
+      onCommentsChanged={reloadComments}
       interactionDisabledMessage={
         canInteract && !canInteractWithPostOwner
           ? "차단 관계에서는 댓글 작성/답글/신고를 사용할 수 없습니다."

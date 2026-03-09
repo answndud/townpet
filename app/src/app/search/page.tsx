@@ -113,10 +113,10 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       <main className="mx-auto flex w-full max-w-[1320px] flex-col gap-5 px-4 py-6 sm:px-6 lg:px-10">
         <header className="tp-hero p-5 sm:p-6">
           <p className="text-[11px] uppercase tracking-[0.24em] text-[#3f5f90]">검색</p>
-          <h1 className="mt-2 text-2xl font-bold tracking-tight text-[#10284a] sm:text-4xl">
+          <h1 className="tp-text-page-title mt-2 text-[#10284a]">
             게시글 검색
           </h1>
-          <p className="mt-2 text-sm text-[#4f678d] sm:text-base">
+          <p className="mt-2 text-sm text-[#4f678d]">
             제목, 내용, 작성자 기준으로 원하는 글을 빠르게 찾을 수 있습니다.
           </p>
           <div className="mt-4">
@@ -210,11 +210,11 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                           ? `/posts/${post.id}`
                           : `/posts/${post.id}/guest`
                       }
-                      className="text-base font-semibold text-[#10284a] transition hover:text-[#2f5da4] sm:text-lg"
+                      className="tp-text-card-title text-[#10284a] transition hover:text-[#2f5da4]"
                     >
                       <HighlightText text={post.title} query={query} />
                     </Link>
-                    <p className="mt-1 line-clamp-3 text-sm text-[#4c6488]">
+                    <p className="mt-1 line-clamp-3 text-[13px] text-[#4c6488]">
                       <HighlightText text={excerpt} query={query} />
                     </p>
                     <div className="mt-2 text-xs text-[#5f79a0]">

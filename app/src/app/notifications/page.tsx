@@ -48,7 +48,7 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
       <div className="tp-page-bg min-h-screen pb-16">
         <main className="mx-auto flex w-full max-w-[860px] flex-col gap-4 px-4 py-8 sm:px-6">
           <p className="text-xs uppercase tracking-[0.24em] text-[#4e6f9f]">알림</p>
-          <h1 className="text-2xl font-bold tracking-tight text-[#10284a] sm:text-3xl">
+          <h1 className="tp-text-page-title text-[#10284a]">
             로그인 후 알림을 확인할 수 있습니다.
           </h1>
           <p className="text-sm text-[#4f678d]">
@@ -57,7 +57,7 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
           <div>
             <Link
               href="/login?next=%2Fnotifications"
-              className="tp-btn-primary inline-flex px-4 py-2 text-sm font-semibold"
+              className="tp-btn-primary tp-btn-md inline-flex"
             >
               로그인하기
             </Link>

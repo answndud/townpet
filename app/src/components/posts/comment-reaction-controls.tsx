@@ -103,7 +103,7 @@ export function CommentReactionControls({
   }, [loginIntent]);
 
   const buttonClass = compact
-    ? "inline-flex h-6 items-center gap-1 rounded-md px-1.5 text-[12px] font-medium transition disabled:cursor-not-allowed disabled:opacity-60"
+    ? "inline-flex h-5 items-center gap-1 rounded-md px-1 text-[11px] font-medium transition disabled:cursor-not-allowed disabled:opacity-60"
     : "inline-flex h-5 items-center justify-center px-1.5 text-[11px] font-semibold transition disabled:cursor-not-allowed disabled:opacity-60";
 
   const handleToggle = (target: ReactionType) => {

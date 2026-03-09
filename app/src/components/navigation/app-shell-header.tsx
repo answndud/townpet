@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { AuthControls } from "@/components/auth/auth-controls";
 import { FeedHoverMenu } from "@/components/navigation/feed-hover-menu";
 import { NotificationBell } from "@/components/notifications/notification-bell";
+import { subscribeViewerShellSync } from "@/lib/viewer-shell-sync";
 
 type AppShellHeaderProps = {
   communities: Array<{
@@ -42,6 +43,7 @@ export function AppShellHeader({ communities }: AppShellHeaderProps) {
 
   useEffect(() => {
     let cancelled = false;
+    const controller = new AbortController();
 
     const loadViewerShell = async () => {
       try {
@@ -49,6 +51,7 @@ export function AppShellHeader({ communities }: AppShellHeaderProps) {
           method: "GET",
           credentials: "same-origin",
           cache: "no-store",
+          signal: controller.signal,
         });
         const payload = (await response.json()) as
           | { ok: true; data: ViewerShellData }
@@ -60,17 +63,31 @@ export function AppShellHeader({ communities }: AppShellHeaderProps) {
         if (!cancelled) {
           setViewerShell(payload.data);
         }
-      } catch {
+      } catch (error) {
+        if ((error as { name?: string }).name === "AbortError") {
+          return;
+        }
         // Keep the default guest shell when viewer data cannot be loaded.
       }
     };
 
     void loadViewerShell();
 
+    const unsubscribe = subscribeViewerShellSync(() => {
+      void loadViewerShell();
+    });
+    const handleFocus = () => {
+      void loadViewerShell();
+    };
+    window.addEventListener("focus", handleFocus);
+
     return () => {
       cancelled = true;
+      controller.abort();
+      window.removeEventListener("focus", handleFocus);
+      unsubscribe();
     };
-  }, []);
+  }, [pathname]);
 
   return (
     <header className="sticky top-0 z-40 border-b border-[#d8e4f6] bg-[#f4f8ffeb] backdrop-blur-sm">

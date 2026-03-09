@@ -14,6 +14,7 @@ import { getDedicatedBoardPathByPostType } from "@/lib/community-board";
 import { getPostTypeMeta } from "@/lib/post-presenter";
 import { groupPetTypeCommunities } from "@/lib/pet-type-taxonomy";
 import { PRIMARY_POST_TYPES } from "@/lib/post-type-groups";
+import { emitViewerShellSync } from "@/lib/viewer-shell-sync";
 import { updatePreferredPetTypesAction } from "@/server/actions/user";
 
 type FeedHoverMenuProps = {
@@ -144,6 +145,7 @@ export function FeedHoverMenu({
       }
 
       setMessage("관심 동물 설정을 저장했습니다.");
+      emitViewerShellSync({ reason: "preferred-pet-types-updated" });
       if (pathname?.startsWith("/feed")) {
         router.refresh();
       }

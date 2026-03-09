@@ -93,20 +93,20 @@ export function AdoptionBoardGrid({
                 </p>
                 <Link
                   href={detailHref}
-                  className="line-clamp-2 text-lg font-semibold tracking-tight text-[#10284a] transition hover:text-[#2f5da4]"
+                  className="tp-text-card-title line-clamp-2 text-[#10284a] transition hover:text-[#2f5da4]"
                 >
                   {item.title}
                 </Link>
-                <p className="text-sm text-[#557091]">
+                <p className="text-[13px] text-[#557091]">
                   {[listing?.region, summary.join(" · ")].filter(Boolean).join(" · ")}
                 </p>
               </div>
 
-              <p className="line-clamp-2 text-sm leading-6 text-[#4f678d]">
+              <p className="tp-text-body-sm line-clamp-2 text-[#4f678d]">
                 {item.content}
               </p>
 
-              <div className="grid gap-2 rounded-2xl border border-[#e5edf8] bg-[#f8fbff] p-3 text-sm text-[#3e5f89]">
+              <div className="grid gap-2 rounded-2xl border border-[#e5edf8] bg-[#f8fbff] p-3 text-[13px] text-[#3e5f89]">
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-[#6c84a8]">체형</span>
                   <span className="font-medium text-[#204f8a]">
@@ -135,7 +135,7 @@ export function AdoptionBoardGrid({
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-[#6580a7]">
+              <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-[#6580a7]">
                 <span>{resolveUserDisplayName(item.author.nickname)}</span>
                 <span>{formatRelativeDate(item.createdAt)}</span>
               </div>

@@ -132,7 +132,7 @@ export default async function BookmarksPage({ searchParams }: BookmarksPageProps
       <main className="mx-auto flex w-full max-w-[1320px] flex-col gap-5 px-4 py-6 sm:px-6 lg:px-10">
         <header className="tp-hero p-5 sm:p-6">
           <p className="text-[11px] uppercase tracking-[0.24em] text-[#3f5f90]">북마크</p>
-          <h1 className="mt-2 text-2xl font-bold tracking-tight text-[#10284a] sm:text-3xl">
+          <h1 className="tp-text-page-title mt-2 text-[#10284a]">
             북마크한 게시글
           </h1>
           <p className="mt-2 text-sm text-[#4f678d]">
@@ -148,18 +148,18 @@ export default async function BookmarksPage({ searchParams }: BookmarksPageProps
                 name="q"
                 defaultValue={query}
                 placeholder="제목, 내용 검색"
-                className="tp-input-soft h-10 w-full bg-white px-4 text-sm outline-none transition focus:border-[#4e89d8]"
+                className="tp-input-soft h-9 w-full bg-white px-3.5 text-[13px] outline-none transition focus:border-[#4e89d8]"
               />
               <button
                 type="submit"
-                className="tp-btn-primary h-10 min-w-[76px] px-3 text-sm font-semibold"
+                className="tp-btn-primary tp-btn-md min-w-[72px]"
               >
                 검색
               </button>
               {query ? (
                 <Link
                   href={makeHref({ nextQuery: null })}
-                  className="tp-btn-soft inline-flex h-10 min-w-[76px] items-center justify-center px-3 text-sm font-semibold"
+                  className="tp-btn-soft tp-btn-md inline-flex min-w-[72px] items-center justify-center"
                 >
                   초기화
                 </Link>
@@ -173,7 +173,7 @@ export default async function BookmarksPage({ searchParams }: BookmarksPageProps
               <div className="flex flex-wrap items-center gap-2">
                 <Link
                   href={makeHref({ nextType: null })}
-                  className={`rounded-lg border px-3 py-1 text-xs font-medium transition ${
+                  className={`tp-btn-xs inline-flex items-center rounded-lg border transition ${
                     !type
                       ? "border-[#3567b5] bg-[#3567b5] text-white"
                       : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
@@ -185,7 +185,7 @@ export default async function BookmarksPage({ searchParams }: BookmarksPageProps
                   <Link
                     key={value}
                     href={makeHref({ nextType: value })}
-                    className={`rounded-lg border px-3 py-1 text-xs font-medium transition ${
+                    className={`tp-btn-xs inline-flex items-center rounded-lg border transition ${
                       type === value
                         ? "border-[#3567b5] bg-[#3567b5] text-white"
                         : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
@@ -204,7 +204,7 @@ export default async function BookmarksPage({ searchParams }: BookmarksPageProps
                     <Link
                       key={value}
                       href={makeHref({ nextType: value })}
-                      className={`rounded-lg border px-3 py-1 text-xs font-medium transition ${
+                      className={`tp-btn-xs inline-flex items-center rounded-lg border transition ${
                         type === value
                           ? "border-[#3567b5] bg-[#3567b5] text-white"
                           : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
@@ -265,7 +265,7 @@ export default async function BookmarksPage({ searchParams }: BookmarksPageProps
 
                       <Link
                         href={`/posts/${post.id}`}
-                        className="flex min-w-0 items-center gap-1 text-base font-semibold text-[#10284a] transition hover:text-[#2f5da4] sm:text-lg"
+                        className="tp-text-card-title flex min-w-0 items-center gap-1 text-[#10284a] transition hover:text-[#2f5da4]"
                       >
                         <span className="truncate">{post.title}</span>
                         <PostSignalIcons signals={signals} />
@@ -273,7 +273,7 @@ export default async function BookmarksPage({ searchParams }: BookmarksPageProps
                           <span className="shrink-0 text-[#2f5da4]">[{post.commentCount}]</span>
                         ) : null}
                       </Link>
-                      <p className="mt-1 truncate text-sm text-[#4c6488]">
+                      <p className="mt-1 truncate text-[13px] text-[#4c6488]">
                         {post.content.length > 120 ? `${post.content.slice(0, 120)}...` : post.content}
                       </p>
                     </div>
@@ -300,7 +300,7 @@ export default async function BookmarksPage({ searchParams }: BookmarksPageProps
             {currentPage > 1 ? (
               <Link
                 href={makeHref({ nextPage: currentPage - 1 })}
-                className="tp-btn-soft px-3 py-1.5 text-xs font-semibold text-[#315484]"
+                className="tp-btn-soft tp-btn-sm text-[#315484]"
               >
                 이전 페이지
               </Link>
@@ -309,7 +309,7 @@ export default async function BookmarksPage({ searchParams }: BookmarksPageProps
             {hasNext ? (
               <Link
                 href={makeHref({ nextPage: currentPage + 1 })}
-                className="tp-btn-soft px-3 py-1.5 text-xs font-semibold text-[#315484]"
+                className="tp-btn-soft tp-btn-sm text-[#315484]"
               >
                 다음 페이지
               </Link>

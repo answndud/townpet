@@ -45,24 +45,13 @@ export function PostReportForm({ postId }: PostReportFormProps) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="tp-card p-4"
+      className="space-y-3"
     >
-      <div className="flex items-center justify-between">
-        <h2 className="text-base font-semibold text-[#1f3f71]">신고하기</h2>
-        <button
-          type="submit"
-          className="border border-rose-300 bg-white px-3 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:border-[#d5dfee] disabled:text-[#9fb2cf]"
-          disabled={isPending}
-        >
-          {isPending ? "접수 중..." : "신고"}
-        </button>
-      </div>
-
-      <div className="mt-4 grid gap-4 md:grid-cols-2">
-        <label className="flex flex-col gap-2 text-sm font-medium text-[#355988]">
-          사유
+      <div className="grid gap-2">
+        <label className="flex flex-col gap-1 text-[11px] font-semibold text-[#355988]">
+          <span>사유</span>
           <select
-            className="tp-input-soft px-3 py-2 text-sm"
+            className="tp-input-soft h-9 px-3 text-[13px]"
             value={reason}
             onChange={(event) =>
               setReason(event.target.value as ReportReason)
@@ -75,18 +64,27 @@ export function PostReportForm({ postId }: PostReportFormProps) {
             ))}
           </select>
         </label>
-        <label className="flex flex-col gap-2 text-sm font-medium text-[#355988] md:col-span-2">
-          상세 설명(선택)
+        <label className="flex flex-col gap-1 text-[11px] font-semibold text-[#355988]">
+          <span>추가 설명</span>
           <textarea
-            className="tp-input-soft min-h-[80px] px-3 py-2 text-sm"
+            className="tp-input-soft min-h-[72px] px-3 py-2 text-[13px]"
             value={description}
             onChange={(event) => setDescription(event.target.value)}
-            placeholder="추가 설명이 필요하면 입력하세요."
+            placeholder="필요할 때만 입력"
           />
         </label>
       </div>
 
-      {message ? <p className="mt-3 text-sm text-[#4f678d]">{message}</p> : null}
+      <div className="flex items-center justify-between gap-2">
+        {message ? <p className="text-[11px] text-[#4f678d]">{message}</p> : <span />}
+        <button
+          type="submit"
+          className="tp-btn-soft tp-btn-xs border-rose-300 text-rose-700 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:border-[#d5dfee] disabled:text-[#9fb2cf]"
+          disabled={isPending}
+        >
+          {isPending ? "접수 중..." : "신고"}
+        </button>
+      </div>
     </form>
   );
 }
