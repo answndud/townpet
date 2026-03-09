@@ -12,7 +12,7 @@ const reuseExistingServer =
       : !process.env.CI;
 const webServerCommand =
   process.env.PLAYWRIGHT_WEB_SERVER_COMMAND ??
-  `./node_modules/.bin/next dev --port ${port}`;
+  `./node_modules/.bin/next dev --webpack --port ${port}`;
 
 export default defineConfig({
   testDir: "./e2e",

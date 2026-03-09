@@ -17,6 +17,22 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-09: Cycle 245 완료 (로컬 dev 서버 Turbopack panic 우회 기본화)
+- 완료 내용
+  - 사용자가 제공한 Turbopack panic 로그(`/var/folders/.../next-panic-c6c4fc16c13a63921d0607cc21895c56.log`)를 확인한 결과, `/feed/page`와 `/page` HMR 재빌드 중 `Next.js package not found`로 Turbopack이 반복 실패하고 있었다.
+  - 이 증상은 앱 내부 `router.refresh()` 루프보다 dev bundler panic에 따른 브라우저 재연결/새로고침 패턴에 가깝다고 판단했다.
+  - `app/package.json`의 기본 `dev` 스크립트를 `next dev --webpack`으로 전환하고, 기존 Turbopack 경로는 `dev:turbo`로 분리했다.
+  - `app/playwright.config.ts`의 기본 webServer도 `next dev --webpack --port ...`를 쓰도록 바꿔 로컬/E2E에서 같은 panic이 재발할 가능성을 낮췄다.
+  - `docs/개발_운영_가이드.md`에 panic 로그 식별 문구와 재실행 경로(`pnpm dev`, `next dev --webpack`)를 기록했다.
+- 검증 결과
+  - `./node_modules/.bin/next dev --help`에서 `--webpack`, `--turbopack` 옵션 제공 확인
+  - `pnpm -C app lint playwright.config.ts` 통과
+  - `pnpm -C app typecheck` 통과
+  - `git diff --check` 통과
+- 이슈/블로커
+  - 현재 샌드박스에서는 로컬 포트 바인딩이 막혀 있어 실제 브라우저 재현까지는 못 했다.
+  - 따라서 이번 수정은 panic 로그와 CLI 옵션 확인에 근거한 우회 조치이며, 사용자는 로컬에서 `cd /Users/alex/project/townpet/app && pnpm dev`로 바로 재확인하면 된다.
+
 ### 2026-03-09: Cycle 244 완료 (피드 목록 행 높이 압축)
 - 완료 내용
   - `app/src/components/posts/feed-infinite-list.tsx`에서 게시글 목록 행(`feed-post-item`)의 세로 패딩과 내부 세로 간격을 축소했다.
