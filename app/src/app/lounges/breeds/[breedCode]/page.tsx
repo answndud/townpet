@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { PostScope, PostType } from "@prisma/client";
 
 import {
@@ -7,6 +8,7 @@ import {
 } from "@/components/posts/feed-infinite-list";
 import { EmptyState } from "@/components/ui/empty-state";
 import { auth } from "@/lib/auth";
+import { getPetBreedDisplayLabel } from "@/lib/pet-profile";
 import {
   buildFeedPersonalizationSummary,
   resolveFeedAudienceContext,
@@ -14,12 +16,14 @@ import {
 import { toFeedAudienceSourceValue } from "@/lib/feed-personalization-metrics";
 import { FEED_PAGE_SIZE } from "@/lib/feed";
 import { postTypeMeta } from "@/lib/post-presenter";
+import { toAbsoluteUrl } from "@/lib/site-url";
 import {
   breedCodeParamSchema,
   breedLoungePostListSchema,
 } from "@/lib/validations/lounge";
 import { redirectToProfileIfNicknameMissing } from "@/server/nickname-guard";
 import { listAudienceSegmentsByUserId } from "@/server/queries/audience-segment.queries";
+import { findBreedCatalogEntryByCode } from "@/server/queries/breed-catalog.queries";
 import { getGuestReadLoginRequiredPostTypes } from "@/server/queries/policy.queries";
 import { listPosts } from "@/server/queries/post.queries";
 
@@ -80,6 +84,52 @@ function toHref(params: {
     : `/lounges/breeds/${params.breedCode}`;
 }
 
+async function resolveBreedLoungeLabel(breedCode: string) {
+  const catalogEntry = await findBreedCatalogEntryByCode(breedCode);
+  return (
+    catalogEntry?.labelKo ??
+    getPetBreedDisplayLabel({ breedCode, breedLabel: null }) ??
+    breedCode
+  );
+}
+
+export async function generateMetadata({
+  params,
+}: BreedLoungePageProps): Promise<Metadata> {
+  const resolvedParams = await params;
+  const parsedBreedCode = breedCodeParamSchema.safeParse(resolvedParams.breedCode);
+  if (!parsedBreedCode.success) {
+    return {
+      title: "품종 라운지를 찾을 수 없습니다",
+      robots: { index: false, follow: false },
+    };
+  }
+
+  const breedCode = parsedBreedCode.data;
+  const breedLabel = await resolveBreedLoungeLabel(breedCode);
+  const title = `${breedLabel} 라운지`;
+  const description = `같은 품종 보호자들의 질문, 후기, 공동구매 글을 ${breedLabel} 라운지에서 확인하세요.`;
+  const url = toAbsoluteUrl(`/lounges/breeds/${breedCode}`);
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `/lounges/breeds/${breedCode}`,
+    },
+    openGraph: {
+      title: `${title} | TownPet`,
+      description,
+      url,
+    },
+    twitter: {
+      card: "summary",
+      title: `${title} | TownPet`,
+      description,
+    },
+  };
+}
+
 export default async function BreedLoungePage({ params, searchParams }: BreedLoungePageProps) {
   const resolvedParams = await params;
   const parsedBreedCode = breedCodeParamSchema.safeParse(resolvedParams.breedCode);
@@ -95,6 +145,7 @@ export default async function BreedLoungePage({ params, searchParams }: BreedLou
   }
 
   const breedCode = parsedBreedCode.data;
+  const breedLabel = await resolveBreedLoungeLabel(breedCode);
   const rawSearchParams = (await searchParams) ?? {};
   const parsedQuery = breedLoungePostListSchema.safeParse({
     q: readSearchParam(rawSearchParams, "q"),
@@ -199,7 +250,7 @@ export default async function BreedLoungePage({ params, searchParams }: BreedLou
     <main className="mx-auto w-full max-w-[1160px] px-4 py-5 sm:px-6">
       <section className="tp-hero p-4 sm:p-5">
         <p className="text-[11px] uppercase tracking-[0.22em] text-[#4b6b9b]">Breed Lounge</p>
-        <h1 className="mt-1 text-2xl font-bold text-[#10284a]">{breedCode} 라운지</h1>
+        <h1 className="mt-1 text-2xl font-bold text-[#10284a]">{breedLabel} 라운지</h1>
         <p className="mt-2 text-sm text-[#49648c]">
           같은 품종 보호자들의 질문/후기/공동구매 글을 모아봅니다.
         </p>

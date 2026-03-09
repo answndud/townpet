@@ -37,6 +37,8 @@ describe("buildStaticSecurityHeaders", () => {
   it("builds a fallback CSP for production without middleware nonce support", () => {
     const headers = buildStaticSecurityHeaders({ nodeEnv: "production" });
     const csp = headers.find((header) => header.key === "Content-Security-Policy");
+    const hsts = headers.find((header) => header.key === "Strict-Transport-Security");
+    const permissionsPolicy = headers.find((header) => header.key === "Permissions-Policy");
 
     expect(headers).toEqual(
       expect.arrayContaining([
@@ -45,7 +47,18 @@ describe("buildStaticSecurityHeaders", () => {
         { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
       ]),
     );
+    expect(hsts?.value).toBe("max-age=31536000");
+    expect(permissionsPolicy?.value).toBe("camera=(), geolocation=(), microphone=()");
     expect(csp?.value).toContain("script-src 'self' 'unsafe-inline'");
     expect(csp?.value).not.toContain("'unsafe-eval'");
+  });
+
+  it("omits HSTS in development while keeping Permissions-Policy", () => {
+    const headers = buildStaticSecurityHeaders({ nodeEnv: "development" });
+    const hsts = headers.find((header) => header.key === "Strict-Transport-Security");
+    const permissionsPolicy = headers.find((header) => header.key === "Permissions-Policy");
+
+    expect(hsts).toBeUndefined();
+    expect(permissionsPolicy?.value).toBe("camera=(), geolocation=(), microphone=()");
   });
 });

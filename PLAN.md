@@ -1,6 +1,6 @@
 # PLAN.md
 
-기준일: 2026-02-26
+기준일: 2026-03-09
 목표: TownPet를 기능/운영/품질 기준에서 "완성도 높은 커뮤니티" 상태로 끌어올린다.
 
 ## 운영 규칙
@@ -16,14 +16,57 @@
 - Phase 2 보류: 마켓/케어/결제/공동구매/카카오맵은 Phase 1 완료 후 착수
 
 ## 현재 우선순위
-1. 운영 안정화: 무료 주간 10분 루틴 정착(health/log/manual smoke)
-2. 운영 문서 유지: Vercel/OAuth/Secrets/데이터 관리 가이드 최신 상태 유지
-3. `oauth-real-e2e` 워크플로우 실시크릿 1회 PASS 기록 완료
-4. `ops-smoke-checks` 워크플로우 실배포 URL health PASS 기록 완료 (Sentry 검증은 선택)
-5. 품종 기반 개인화/광고/커뮤니티 기능 PRD 확정 및 구현 사이클 착수
-6. 보안 하드닝 트랙 분리 운영: `docs/security/*` 백로그/리스크/진행 로그 상시 동기화
+1. 런치 준비 갭 정리: 공개 SEO/metadata/sitemap, 로딩/빈상태 polish, 보안 헤더/coverage 증거 보강
+2. 운영 안정화: 무료 주간 10분 루틴 정착(health/log/manual smoke)
+3. 운영 문서 유지: Vercel/OAuth/Secrets/데이터 관리 가이드 최신 상태 유지
+4. `oauth-real-e2e` 워크플로우 실시크릿 1회 PASS 기록 완료
+5. `ops-smoke-checks` 워크플로우 실배포 URL health PASS 기록 완료 (Sentry 검증은 선택)
+6. 품종 기반 개인화/광고/커뮤니티 기능 PRD 확정 및 구현 사이클 착수
+7. 보안 하드닝 트랙 분리 운영: `docs/security/*` 백로그/리스크/진행 로그 상시 동기화
 
 ## Active Plan
+
+### Cycle 240: external naming cutover 실배포 검증 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| `townpet.vercel.app` cutover와 old domain redirect를 실배포 응답으로 확인 | Codex | P0 | `done` | 새 운영 URL이 200으로 응답하고 `/api/health`가 `ok`, old `townpet2.vercel.app`는 새 도메인으로 redirect되며 제공된 Vercel deployment 링크도 접근 가능함 | `PLAN.md`, `PROGRESS.md`, Vercel production, `/api/health` |
+
+### Cycle 239: 프로젝트 식별자 잔존 문자열 감사 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| `townpet` 메인 repo 기준 legacy 식별자 잔존 여부를 감사하고 예외를 명시 | Codex | P0 | `done` | repo 전체에서 `townpet2`, `townpet-springboot`, old GitHub/path 식별자를 스캔해 live 코드/문서/워크플로우에 남은 오염이 없음을 확인하고, 유일한 historical record 예외는 문서에 명시됨 | `PLAN.md`, `PROGRESS.md`, `docs/operations/캐시_성능_적용_기록.md` |
+
+### Cycle 238: Legacy Spring Boot 식별자 분리 + Next.js 메인 repo를 `townpet`으로 복원 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| Next.js 메인 workspace/repo를 `townpet`으로 확정하고 legacy Spring Boot 이름과 분리 | Codex | P0 | `done` | GitHub repo remote가 `answndud/townpet`를 가리키고, 로컬 workspace 경로와 운영 문서의 절대 경로/Actions repo 예시가 `townpet` 기준으로 정리되며 공개 도메인 `townpet.vercel.app`은 그대로 유지되고 이 repo 안에 `townpet-springboot` 참조가 남지 않음 | `PLAN.md`, `PROGRESS.md`, `.git/config`, `docs/**`, `app/scripts/generate-oauth-manual-check-report.ts` |
+
+### Cycle 237: `townpet2` -> `townpet` 식별자 정리 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 기본 배포 URL/운영 문서/자동 생성 스크립트의 `townpet2` 식별자 제거 | Codex | P0 | `done` | repo 내부 기본 배포 URL, ops workflow fallback, growth/oauth handoff 스크립트, 주요 운영 문서가 `townpet.vercel.app` 기준으로 정리되고 검증 산출물도 새 이름을 사용함 | `.github/workflows/*`, `app/scripts/*`, `docs/business/*`, `docs/operations/*`, `PROGRESS.md` |
+
+### Cycle 236: 실배포 health/ops 직접 검증 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| production runtime health와 최근 ops smoke 직접 확인 | Codex | P0 | `done` | 실배포 `https://townpet2.vercel.app` 기준 `/api/health`와 루트 응답 헤더를 직접 확인하고, 최신 `ops-smoke-checks` run에서 deployment health/internal token/pg_trgm/Sentry 검증 성공 여부를 교차 확인함 | `PROGRESS.md`, `docs/operations/manual-checks/배포_보안_체크리스트.md`, GitHub Actions `ops-smoke-checks` |
+
+### Cycle 235: 배포 전 preflight 검증 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| production env strict preflight/build/health 검증 | Codex | P0 | `done` | local `.env` 누락과 무관하게 production placeholder env 기준 `ops:check:security-env:strict`, `build`, 가능하면 built app health까지 재현해 코드 레벨 배포 가능 여부와 실제 시크릿 미설정 항목을 분리 기록함 | `app/scripts/check-security-env.ts`, `app/scripts/vercel-build.ts`, `app/src/lib/env.ts`, `docs/operations/manual-checks/배포_보안_체크리스트.md`, `PROGRESS.md` |
+
+### Cycle 234: 런치 smoke 재검증 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 로컬 E2E smoke 환경 복구 및 재실행 | Codex | P1 | `done` | Playwright Chromium/browser prerequisite와 로컬 Postgres를 맞춘 뒤 `pnpm -C app test:e2e:smoke`가 통과하고, flaky하던 feed loading smoke는 현재 streaming 완료 시간을 반영해 안정화됨 | `docker-compose.yml`, `app/e2e/feed-loading-skeleton.spec.ts`, `PROGRESS.md` |
+
+### Cycle 233: 런치 준비 갭 재정렬 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 공개 SEO 경로/메타데이터 정합화 | Codex | P0 | `done` | `/posts/[id]`와 `/posts/[id]/guest` 메타 전략이 public route 기준으로 일관되고, guest indexable 경로만 sitemap에 포함되며 `/bookmarks`, `/notifications`, `/profile`, `/lounges/breeds/[breedCode]` 메타가 추가됨 | `app/src/app/posts/[id]/page.tsx`, `app/src/app/posts/[id]/guest/page.tsx`, `app/src/app/sitemap.ts`, `app/src/app/bookmarks/page.tsx`, `app/src/app/notifications/page.tsx`, `app/src/app/profile/page.tsx`, `app/src/app/lounges/breeds/[breedCode]/page.tsx` |
+| 페이지 로딩/빈상태/공유 UX 마감 | Codex | P1 | `done` | 텍스트 placeholder(`EMPTY`, `NO IMG`)가 아이콘/일러스트 기반으로 교체되고, `search`/`notifications`/`bookmarks`/품종 라운지 계열 라우트에 필요한 `loading.tsx`가 추가되며 공유 드롭다운이 외부 클릭/포커스 이탈 시 닫힘 | `app/src/components/ui/empty-state.tsx`, `app/src/app/profile/page.tsx`, `app/src/components/posts/post-share-controls.tsx`, `app/src/app/search`, `app/src/app/notifications`, `app/src/app/bookmarks`, `app/src/app/lounges/breeds` |
+| 런치 하드닝 증거 보강 | Codex | P1 | `done` | `HSTS`/최소 `Permissions-Policy`가 코드에 추가되고, coverage 실행 경로가 `package.json`/CI에 반영되며, 기존 런북은 중복 작성 대신 rollback/backup/email 대응 드릴 결과 중심으로 보강됨 | `app/src/lib/security-headers.ts`, `app/package.json`, `.github/workflows/quality-gate.yml`, `docs/operations/장애 대응 런북.md`, `docs/operations/Resend_Vercel_이메일_설정_가이드.md`, `PROGRESS.md` |
 
 ### Cycle 232: 소셜 로그인 프로필 비밀번호 버튼 숨김 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
@@ -293,12 +336,12 @@
 | header search params CSR bailout 제거 | Codex | P1 | `done` | `FeedHoverMenu`가 `useSearchParams()` 없이 현재 URL 쿼리를 처리해 `/admin/auth-audits` prerender가 다시 가능해짐 | `app/src/components/navigation/feed-hover-menu.tsx` |
 | build phase Upstash fetch 우회 + 회귀 테스트 추가 | Codex | P1 | `done` | `phase-production-build`에서는 query cache가 Upstash REST를 호출하지 않고 메모리 fallback을 사용하며 단위 테스트로 고정됨 | `app/src/server/cache/query-cache.ts`, `app/src/server/cache/query-cache.test.ts` |
 
-### Cycle 188: 정적 shell + guest search 캐시 분리 (진행중)
+### Cycle 188: 정적 shell + guest search 캐시 분리 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
 | root layout의 서버 auth/cookie 의존 제거 | Codex | P1 | `done` | 최상위 layout이 서버에서 `auth()`/`cookies()`를 읽지 않고 viewer shell은 client fetch로 보강됨 | `app/src/app/layout.tsx`, `app/src/components/navigation/app-shell-header.tsx`, `app/src/app/api/viewer-shell/route.ts` |
 | guest /search 정적 분리 + rewrite 캐시 적용 | Codex | P1 | `done` | guest `/search`가 전용 경로로 rewrite되고 public cache-control이 적용됨. 코드/테스트 기준 검증 완료 | `app/src/app/search/page.tsx`, `app/src/app/search/guest/page.tsx`, `app/middleware.ts` |
-| guest /feed 정적 분리 + rewrite 캐시 적용 | Codex | P1 | `blocked` | guest `/feed` rewrite는 완료됐지만 요청별 CSP nonce 때문에 HTML 응답이 `private, no-store`로 전달되어 CDN public cache 검증이 보류됨. 다음 단계는 HTML cache가 아니라 API/클라이언트 로딩 중심 최적화 | `app/src/app/feed/guest/page.tsx`, `app/src/components/navigation/feed-hover-menu.tsx`, `app/middleware.ts`, `app/src/lib/csp-nonce.ts` |
+| guest /feed 정적 분리 + rewrite 캐시 적용 | Codex | P1 | `done` | 실배포 `https://townpet2.vercel.app/feed`가 `/feed/guest`로 rewrite된 상태에서 `cache-control: public, s-maxage=60, stale-while-revalidate=300`과 `x-vercel-cache: HIT`를 반환하고, `/api/feed/guest` 재요청도 `x-vercel-cache: STALE`로 캐시 재사용됨 | `app/src/app/feed/guest/page.tsx`, `app/src/components/navigation/feed-hover-menu.tsx`, `app/middleware.ts`, `app/src/app/api/feed/guest/route.ts`, `PROGRESS.md` |
 
 ### Cycle 187: 배포 prewarm 자동화 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
@@ -1317,7 +1360,7 @@
 | `/fix-local-error` 커맨드 추가 | Codex | P1 | `done` | 에러 로그 입력으로 즉시 로컬 에러 수정 플로우를 실행하는 커맨드가 추가됨 | `.opencode/commands/fix-local-error.md` |
 | 오케스트레이터 및 task 권한에 local-error-fixer 연결 | Codex | P1 | `done` | orchestrator 라우팅 규칙과 `opencode.json` task allowlist에 local-error-fixer가 반영됨 | `.opencode/agents/orchestrator.md`, `opencode.json` |
 
-### Cycle 61: 다중 탭 에이전트 확인 커맨드 추가
+### Cycle 61: 다중 탭 에이전트 확인 커맨드 추가 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
 | 최근 세션별 마지막 에이전트 표시 커맨드 추가 | Codex | P1 | `done` | `/agent-status` 실행 시 최근 세션의 마지막 사용 agent가 표 형태로 출력됨 | `.opencode/commands/agent-status.md` |
@@ -1330,7 +1373,7 @@
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
 | 초기 홍보 전략 수립 + business 파일 기반 개선 피드백 우선 세션 시작 | `growth-operator`, `plan-coordinator` | P1 | `done` | growth-operator 결과(근거기반 business 피드백, 7/14/30 실행안+copy pack, Go/Stop 임계값+keep/fix/kill 매트릭스)가 핸드오프 가능한 형태로 고정됨 | `docs/business/*`, `PLAN.md`, `PROGRESS.md` |
-| 솔로 창업자 즉시 실행 Day1 핸드오프(채널 3개 게시 + 지표 기록 시작) | `growth-operator`, `plan-coordinator` | P1 | `in_progress` | Naver/Kakao/Instagram Day1 게시 1회, UTM 포함 유입 로그 시작, keep/fix/kill 기준으로 24h 점검 항목이 기록됨 | `docs/business/*`, `PLAN.md`, `PROGRESS.md` |
+| 솔로 창업자 즉시 실행 Day1 핸드오프(네이버 1건 게시 + UTM 기록 시작) | `growth-operator`, `plan-coordinator` | P1 | `blocked` | Naver Blog Day1 게시 1회와 UTM 유입 로그 시작이 기록되고, 24h 뒤 Keep/Fix/Kill 기준으로 네이버 메시지 유지/수정 여부가 판정됨 | `docs/business/*`, `docs/business/Day1_채널_실행팩.md`, `PLAN.md`, `PROGRESS.md`, `/tmp/day1-growth-handoff-2026-03-09.md` |
 | Day2 실행팩 + Day3 Fix 카피 문서화 | `growth-operator`, `plan-coordinator` | P1 | `done` | Day2 시간블록 실행안, 블로그/카페/오픈채팅 즉시 사용 카피, Day3 Fix 시나리오 카피가 단일 문서로 정리됨 | `docs/business/온동네_초기유저_30일_실행플레이북.md` |
 | Day3 실행팩(반응률 개선) 문서화 | `growth-operator`, `plan-coordinator` | P1 | `done` | 첫 글 24h 댓글률 개선용 블로그 #3, 오픈채팅 3회 후속 스크립트, 카페 미응답 후속 템플릿, EOD 판정표가 단일 문서로 정리됨 | `docs/business/온동네_초기유저_30일_실행플레이북.md` |
 
@@ -1480,5 +1523,5 @@
 ## Blocked (환경 의존)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
-| `ops-smoke-checks` `verify_pg_trgm` 경로 활성화 | Codex | P2 | `done` | workflow_dispatch에서 `verify_pg_trgm=true` 실행이 PASS(`OPS_HEALTH_REQUIRE_PG_TRGM=1` 기준) | 실행 증적: `https://github.com/answndud/townpet2/actions/runs/22747534552` |
+| `ops-smoke-checks` `verify_pg_trgm` 경로 활성화 | Codex | P2 | `done` | workflow_dispatch에서 `verify_pg_trgm=true` 실행이 PASS(`OPS_HEALTH_REQUIRE_PG_TRGM=1` 기준) | 실행 증적: `https://github.com/answndud/townpet/actions/runs/22747534552` |
 | Sentry 실수신 검증(의도적 에러, 선택) | Codex | P3 | `done` | 실제 Sentry 프로젝트에서 이벤트 수신 확인(선택 운영, 미연동 시 deferred 유지) | `SENTRY_DSN`, `SENTRY_AUTH_TOKEN`(유효 토큰/만료·권한 확인), `SENTRY_ORG_SLUG`, `SENTRY_PROJECT_SLUG` 저장소 시크릿 설정 |

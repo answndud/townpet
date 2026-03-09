@@ -26,7 +26,7 @@
 
 1. `https://vercel.com/signup` 접속
 2. `Continue with GitHub`로 가입/로그인
-3. `Add New...` -> `Project` -> `answndud/townpet2` 저장소 Import
+3. `Add New...` -> `Project` -> `answndud/townpet` 저장소 Import
 4. 프로젝트 설정
    - Framework Preset: `Next.js`
    - Root Directory: `app`
@@ -107,7 +107,7 @@ OAuth 연결 전 임시로 비워도 되는 값:
 ## 3) 첫 배포 후 "배포 URL" 확정
 
 1. Vercel `Deployments`에서 최신 배포 열기
-2. 배포 URL 확인 (예: `https://townpet2-xxxx.vercel.app`)
+2. 배포 URL 확인 (예: `https://townpet-xxxx.vercel.app`)
 3. URL로 health 확인:
 
 ```bash

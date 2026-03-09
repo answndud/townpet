@@ -92,8 +92,19 @@ jobs:
       - name: Quality check (lint/typecheck/unit)
         run: pnpm quality:check
 
+      - name: Coverage report
+        run: pnpm test:coverage
+
       - name: Notification contract suite
         run: pnpm test:unit:notifications
+
+      - name: Upload coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-html
+          path: app/coverage
+          if-no-files-found: ignore
 
       - name: Install Playwright browser
         run: pnpm exec playwright install --with-deps chromium

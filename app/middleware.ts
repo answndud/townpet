@@ -82,6 +82,10 @@ function applySecurityHeaders(headers: Headers, nonce: string) {
   headers.set("x-frame-options", "DENY");
   headers.set("x-content-type-options", "nosniff");
   headers.set("referrer-policy", "strict-origin-when-cross-origin");
+  headers.set("permissions-policy", "camera=(), geolocation=(), microphone=()");
+  if (process.env.NODE_ENV === "production") {
+    headers.set("strict-transport-security", "max-age=31536000");
+  }
   headers.set("content-security-policy", cspHeaders.csp);
 
   if (cspHeaders.cspReportOnly) {

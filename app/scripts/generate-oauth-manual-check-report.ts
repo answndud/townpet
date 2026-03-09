@@ -19,9 +19,9 @@ type CliOptions = {
   out?: string;
 };
 
-const DEFAULT_BASE_URL = "https://townpet2.vercel.app";
+const DEFAULT_BASE_URL = "https://townpet.vercel.app";
 const DEFAULT_RUN_URL =
-  "https://github.com/answndud/townpet2/actions/workflows/oauth-real-e2e.yml";
+  "https://github.com/answndud/townpet/actions/workflows/oauth-real-e2e.yml";
 
 function usage() {
   console.log(`Usage:

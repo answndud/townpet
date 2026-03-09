@@ -433,7 +433,7 @@ function buildSummary(
 async function main() {
   const baseUrl = process.env.OPS_BASE_URL
   if (!baseUrl) {
-    throw new Error("OPS_BASE_URL is required (example: https://townpet2.vercel.app)")
+    throw new Error("OPS_BASE_URL is required (example: https://townpet.vercel.app)")
   }
 
   const normalizedBaseUrl = normalizeBaseUrl(baseUrl)

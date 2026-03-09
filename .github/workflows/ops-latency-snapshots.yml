@@ -34,7 +34,7 @@ jobs:
       run:
         working-directory: app
     env:
-      OPS_BASE_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.target_base_url || vars.OPS_BASE_URL || 'https://townpet2.vercel.app' }}
+      OPS_BASE_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.target_base_url || vars.OPS_BASE_URL || 'https://townpet.vercel.app' }}
       OPS_PERF_GET_SAMPLES: ${{ github.event_name == 'workflow_dispatch' && inputs.get_samples || '30' }}
       OPS_PERF_POST_SAMPLES: ${{ github.event_name == 'workflow_dispatch' && inputs.post_samples || '20' }}
       OPS_PERF_PAUSE_MS: ${{ github.event_name == 'workflow_dispatch' && inputs.pause_ms || '200' }}

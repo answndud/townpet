@@ -206,7 +206,7 @@
 - 점검 계정 상태 확인(차단/휴면 여부)
 
 2. 카카오 점검
-- `https://townpet2.vercel.app/login?next=%2Fonboarding` 접속
+- `https://townpet.vercel.app/login?next=%2Fonboarding` 접속
 - 카카오 로그인 버튼 클릭 -> 인증 완료
 - `/onboarding` 진입 확인
 - 닉네임/대표동네 저장 후 `/feed` 도달
@@ -242,19 +242,19 @@
 
 ```bash
 # OAuth 워크플로우 최근 5개 조회
-gh run list --workflow oauth-real-e2e.yml --limit 5 --repo answndud/townpet2
+gh run list --workflow oauth-real-e2e.yml --limit 5 --repo answndud/townpet
 
 # 특정 run 상세 확인
-gh run view <RUN_ID> --repo answndud/townpet2
+gh run view <RUN_ID> --repo answndud/townpet
 
 # 워크플로우 수동 실행
-gh workflow run oauth-real-e2e.yml --repo answndud/townpet2
+gh workflow run oauth-real-e2e.yml --repo answndud/townpet
 
 # Base URL sanity 사전 점검(strict)
 pnpm -C app ops:oauth:preflight
 
 # 실계정 수동 점검 리포트 템플릿 생성
-pnpm -C app ops:oauth:manual-report --date 2026-03-05 --run-url https://github.com/answndud/townpet2/actions/runs/22705265766 --out ../docs/operations/manual-checks/OAuth_수동점검_기록_2026-03-05.md
+pnpm -C app ops:oauth:manual-report --date 2026-03-05 --run-url https://github.com/answndud/townpet/actions/runs/22705265766 --out ../docs/operations/manual-checks/OAuth_수동점검_기록_2026-03-05.md
 
 # Provider 결과 빠른 반영
 pnpm -C app ops:oauth:update-manual --report ../docs/operations/manual-checks/OAuth_수동점검_기록_2026-03-05.md --provider kakao --status pass --evidence <evidence-link>

@@ -1,6 +1,6 @@
 # PROGRESS.md
 
-기준일: 2026-02-26
+기준일: 2026-03-09
 
 ## 진행 현황 요약
 - Cycle 1~20: 완료
@@ -17,6 +17,226 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-09: Cycle 240 완료 (external naming cutover 실배포 검증)
+- 완료 내용
+  - 실배포 `https://townpet.vercel.app/` 루트 응답과 `/api/health`를 직접 조회해 새 운영 URL cutover가 정상인지 확인
+  - old `https://townpet2.vercel.app/`가 새 도메인으로 redirect되는지 확인
+  - 사용자가 제공한 Vercel deployment dashboard URL도 외부에서 200으로 열리는지 교차 확인
+- 검증 결과
+  - `curl -sSI https://townpet.vercel.app/` -> `HTTP/2 200`, `strict-transport-security`, `content-security-policy`, `x-frame-options`, `x-content-type-options` 확인
+  - `curl -sS -D - -o /tmp/townpet_health_check.txt https://townpet.vercel.app/api/health` -> `HTTP/2 200`, body `{"ok":true,"status":"ok",...,"checks":{"database":{"state":"ok"},"rateLimit":{"backend":"redis","status":"ok"},"controlPlane":{"state":"ok"}}}`
+  - `curl -sSI https://townpet2.vercel.app/` -> `HTTP/2 307`, `location: https://townpet.vercel.app/`
+  - `curl -sSI https://vercel.com/jmoon0227-9736s-projects/townpet/7yTyVJsU4J5BNVcSQuq1LkbFzDFZ` -> `HTTP/2 200`
+- 이슈/블로커
+  - 없음
+
+### 2026-03-09: Cycle 239 완료 (프로젝트 식별자 잔존 문자열 감사)
+- 완료 내용
+  - repo 전체에서 `townpet2`, `townpet-springboot`, old GitHub/path/domain 식별자를 스캔해 live 코드/운영 문서/워크플로우에 혼선이 남아 있는지 감사
+  - live 참조는 발견되지 않았고, 예외는 과거 실배포 측정 기록을 보존하는 `docs/operations/캐시_성능_적용_기록.md` 한 파일뿐임을 확인
+  - 해당 문서 상단에 `townpet2.vercel.app` 표기가 historical record 보존 목적이라는 안내를 추가해 이후 외부 rename 작업 시 혼동을 줄임
+- 검증 결과
+  - repo-wide `rg` 결과 old identifier hit는 `docs/operations/캐시_성능_적용_기록.md`만 반환
+  - case-insensitive 재검사 결과도 동일
+  - 결론: 현재 repo는 external rename 전제에서 naming-clean 상태이며, 남은 `townpet2` 표기는 의도된 역사 기록임
+- 이슈/블로커
+  - 없음
+
+### 2026-03-09: Cycle 238 완료 (legacy Spring Boot 식별자 분리 + Next.js 메인 repo 복원)
+- 완료 내용
+  - 사용자가 정정한 기준에 맞춰, 이 Next.js 메인 프로젝트는 `townpet`, 예전 Spring Boot 프로젝트만 `townpet-springboot`로 분리되도록 정리
+  - local clone `origin`을 `git@github.com:answndud/townpet.git`로 복원하고, workspace 경로도 `/Users/alex/project/townpet`로 복원
+  - repo 내부의 GitHub Actions 링크/운영 문서/로컬 절대 경로 예시를 다시 `townpet` 기준으로 정리해 main repo와 legacy repo 식별자를 분리
+- 검증 결과
+  - `gh repo view answndud/townpet --json nameWithOwner,url` 결과 `answndud/townpet`
+  - `git remote -v` 결과 `origin git@github.com:answndud/townpet.git`
+  - repo 내부 `townpet-springboot` 검색 결과 0건
+- 이슈/블로커
+  - `docs/operations/캐시_성능_적용_기록.md`의 `townpet2.vercel.app` 표기는 과거 실배포 측정 기록 보존을 위해 그대로 유지
+
+### 2026-03-09: Cycle 237 완료 (`townpet2` -> `townpet` 식별자 정리)
+- 완료 내용
+  - ops workflow fallback URL을 `https://townpet.vercel.app` 기준으로 갱신
+  - growth/oauth 자동 생성 스크립트 기본 Base URL을 `https://townpet.vercel.app`로 변경하고, OAuth manual report 기본 run URL도 `answndud/townpet` 기준으로 정리
+  - Day1 실행팩, 개발/운영 가이드, OAuth/Vercel/보안 템플릿, README 등 living docs의 기본 배포 도메인 예시를 `townpet` 기준으로 갱신
+  - Day1 handoff와 OAuth manual report를 새 기본값으로 재생성해 산출물까지 `townpet` 기준으로 맞춤
+- 검증 결과
+  - `pnpm -C app growth:day1:handoff --date 2026-03-09 --out /tmp/day1-growth-handoff-2026-03-09.md` 통과
+  - `pnpm -C app ops:oauth:manual-report --date 2026-03-09 --out /tmp/oauth-manual-check-2026-03-09.md` 통과
+  - `pnpm -C app lint scripts/generate-day1-growth-handoff.ts scripts/generate-oauth-manual-check-report.ts scripts/collect-latency-snapshot.ts` 통과
+  - 생성 파일 확인:
+    - `/tmp/day1-growth-handoff-2026-03-09.md` -> `Base URL: https://townpet.vercel.app`
+    - `/tmp/oauth-manual-check-2026-03-09.md` -> `Base URL: https://townpet.vercel.app`, `run: https://github.com/answndud/townpet/actions/workflows/oauth-real-e2e.yml`
+- 이슈/블로커
+  - 현재 workspace 경로(`/Users/alex/project/townpet`)와 외부 GitHub repo/Vercel project 실객체 rename은 repo 내부 수정만으로 완료할 수 없음
+  - `docs/operations/캐시_성능_적용_기록.md` 같은 과거 운영 기록은 당시 실배포 URL(`townpet2.vercel.app`)을 보존하기 위해 이번 변경에서 그대로 유지
+
+### 2026-03-09: Cycle 60 Day1 범위 축소 (네이버 1채널)
+- 완료 내용
+  - 사용자의 운영 부담을 반영해 Day1 채널 전략을 `네이버 1개 -> 검증 후 확장` 구조로 축소
+  - `app/scripts/generate-day1-growth-handoff.ts`를 네이버 단일 채널 기준으로 수정해 앞으로 생성되는 handoff가 더 이상 카카오/인스타 작업을 포함하지 않도록 정리
+  - `docs/business/Day1_채널_실행팩.md`를 네이버 전용 실행팩으로 축소하고, 카카오/인스타는 Day1 보류 채널로 명시
+  - `PLAN.md`의 Cycle 60 마지막 항목명/DoD를 `네이버 1건 게시 + UTM 기록 시작` 기준으로 재정의
+- 검증 결과
+  - Day1 handoff 생성 스크립트 수정 완료
+  - 실행팩 문서가 네이버 단일 채널 기준으로 정리됨
+  - 생성 파일:
+    - `/tmp/day1-growth-handoff-2026-03-09.md`
+    - `/tmp/day1-growth-handoff-2026-03-08.md` (열려 있던 기존 파일도 동일 내용으로 갱신)
+- 이슈/블로커
+  - 실제 네이버 게시, 게시 URL 확보, 스크린샷 확보, UTM 유입 로그 시작은 여전히 외부 계정 접근이 필요해 이 환경에서 대행 불가
+
+### 2026-03-08: Cycle 60 Day1 handoff 실행 파일 생성 + 외부 수동 단계 분리
+- 완료 내용
+  - `pnpm -C app growth:day1:handoff --date 2026-03-08 --out /tmp/day1-growth-handoff-2026-03-08.md`로 오늘 기준 Day1 실행 문서를 생성
+  - 생성 파일에 `Naver Blog`, `Kakao Open Chat`, `Instagram` 채널별 UTM 링크, 증적 종류, 24h Keep/Fix/Kill 판정표를 포함시켜 바로 수동 게시 가능한 상태로 정리
+  - `PLAN.md`의 Cycle 60 Day1 항목을 `in_progress`에서 `blocked`로 전환해 현재 남은 일이 문서 미작성 아니라 외부 채널 수동 실행임을 명시
+  - `docs/business/Day1_채널_실행팩.md`를 추가해 채널별 제목/본문/공지/캡션을 repo 안에 고정하고, 수동 게시를 복붙 단계까지 축소
+- 검증 결과
+  - 생성 파일: `/tmp/day1-growth-handoff-2026-03-08.md`
+  - 실행팩 문서: `docs/business/Day1_채널_실행팩.md`
+  - 포함 UTM:
+    - `utm_source=naver&utm_medium=blog&utm_campaign=day1_ondongne&utm_content=seed-post-1`
+    - `utm_source=kakao&utm_medium=openchat&utm_campaign=day1_ondongne&utm_content=notice-post-1`
+    - `utm_source=instagram&utm_medium=reel&utm_campaign=day1_ondongne&utm_content=reel-1`
+  - `pnpm -C app growth:day1:handoff ...` 실행 통과
+- 이슈/블로커
+  - 실제 Naver/Kakao/Instagram 게시, 게시 URL 확보, 스크린샷/인사이트 캡처, UTM 유입 로그 시작은 외부 계정 로그인과 수동 게시 권한이 필요해 이 환경에서 대행 불가
+  - 따라서 현재 저장소 기준 마지막 미완료 항목은 Cycle 60의 외부 실행 단계만 남음
+
+### 2026-03-08: Cycle 188 상태 재검증 + PLAN drift 정리
+- 완료 내용
+  - 실배포 `https://townpet2.vercel.app/feed`, `https://townpet2.vercel.app/feed/guest`, `https://townpet2.vercel.app/api/feed/guest` 헤더를 직접 재확인해 Cycle 188의 기존 blocked 설명이 현재 상태와 맞는지 검증
+  - `PLAN.md`에서 Cycle 188을 완료 상태로 정리하고, all-`done`인데 제목에 `(완료)`가 빠져 있던 Cycle 61 heading도 정규화
+- 검증 결과
+  - `curl -sD - -o /dev/null https://townpet2.vercel.app/feed` 결과 `HTTP/2 200`, `cache-control: public, s-maxage=60, stale-while-revalidate=300`, `x-matched-path: /feed/guest`, `x-vercel-cache: HIT`
+  - `curl -sD - -o /dev/null https://townpet2.vercel.app/feed/guest` 결과도 `HTTP/2 200`, `x-vercel-cache: HIT`
+  - `curl -sD - -o /dev/null https://townpet2.vercel.app/api/feed/guest` 첫 요청은 `x-vercel-cache: MISS`, 직후 재요청은 `x-vercel-cache: STALE`로 캐시 재사용 확인
+  - 결론: guest `/feed` HTML public cache가 현재 실배포에서 이미 동작 중이므로, Cycle 188의 과거 blocked 메모는 stale 상태였음
+- 이슈/블로커
+  - 엔지니어링 기준 미완료 cycle은 더 이상 남지 않고, 현재 남은 것은 growth 실행 과제인 Cycle 60뿐
+
+### 2026-03-08: Cycle 236 완료 (실배포 health/ops 직접 검증)
+- 완료 내용
+  - 실배포 URL `https://townpet2.vercel.app` 기준으로 루트 응답 헤더와 `/api/health`를 직접 조회
+  - GitHub Actions `ops-smoke-checks` 최신 성공 run(`22750502206`, 2026-03-06 05:28:57Z)을 열어 deployment health/internal health token/pg_trgm/Sentry 검증 단계 성공 여부를 교차 확인
+- 검증 결과
+  - `curl -sSI https://townpet2.vercel.app/` 응답 `HTTP/2 200`
+  - 루트 응답 헤더에 `content-security-policy`, `content-security-policy-report-only`, `strict-transport-security`, `referrer-policy`, `x-frame-options`, `x-content-type-options` 존재 확인
+  - `curl -sS -D - -o /tmp/townpet_health_headers.txt https://townpet2.vercel.app/api/health` 결과 `HTTP/2 200`
+  - `/api/health` body: `{"ok":true,"status":"ok",...,"env":{"nodeEnv":"production","state":"ok"},"checks":{"database":{"state":"ok"},"rateLimit":{"backend":"redis","status":"ok"},"controlPlane":{"state":"ok"}}}`
+  - 최신 `ops-smoke-checks` run `22750502206`은 `success`였고, 세부 step 중 `Check deployment health endpoint`, `Validate internal health token secret`, `Check pg_trgm extension via internal health endpoint`, `Validate Sentry secrets`, `Check Sentry ingestion`이 모두 `success`
+- 이슈/블로커
+  - 이 머신에는 `vercel` CLI, `~/.vercel` 로그인 정보, `VERCEL_TOKEN`이 없어 Vercel Production env 값 목록 자체를 직접 열람하지는 못함
+  - 대신 실배포 runtime health와 GitHub Actions의 내부 health token 기반 smoke가 모두 성공했으므로, production에 필요한 env는 현재 배포 동작 기준으로 정상 부착된 것으로 판단
+
+### 2026-03-08: Cycle 235 완료 (배포 전 preflight 검증)
+- 완료 내용
+  - `docs/operations/manual-checks/배포_보안_체크리스트.md`, `app/scripts/check-security-env.ts`, `app/scripts/vercel-build.ts`, `app/src/lib/env.ts`
+  - local `.env`만으로는 strict preflight/build가 실패함을 먼저 재확인했고, 실패 원인이 코드 회귀가 아니라 production 필수 env 누락이라는 점을 분리
+  - CI와 동일한 목적의 placeholder production env(`APP_BASE_URL`, 강한 `AUTH_SECRET`, `CSP_ENFORCE_STRICT=1`, `GUEST_HASH_PEPPER`, `HEALTH_INTERNAL_TOKEN`, `UPSTASH_REDIS_REST_*`, `RESEND_API_KEY`, `BLOB_READ_WRITE_TOKEN`)를 주입해 preflight와 실제 배포 스크립트를 재실행
+  - local Postgres(`docker compose`의 `townpet:townpet@localhost:5432/townpet`)를 대상으로 `build:vercel`을 끝까지 돌려 Prisma migrate deploy, schema repair, Prisma generate, neighborhood sync, `next build`까지 통과 확인
+  - production build 산출물로 `pnpm -C app start --port 3105`를 띄워 루트 응답/보안 헤더를 확인하고, `ops:check:health`로 degraded 원인을 세부 분리
+- 검증 결과
+  - `env ... pnpm -C app ops:check:security-env:strict` 통과
+  - 결과: `pass=7, warn=1, fail=0`
+  - warn 1건은 `OPS_BASE_URL` 미설정으로 원격 moderation drift 검사를 건너뛴 것뿐이며 local placeholder 검증 목적에는 영향 없음
+  - `env ... pnpm -C app build:vercel` 통과
+  - 결과: strict preflight PASS -> `prisma migrate deploy` no pending migrations -> schema repair 2건 성공 -> `db:sync:neighborhoods` `processed=286 existing=294 inserted=0 total=294` -> `next build` 성공
+  - `curl -sI http://localhost:3105/` 확인 결과 `HTTP/1.1 200 OK`, `Strict-Transport-Security`, `Permissions-Policy`, CSP 헤더가 모두 응답에 포함됨
+  - `env OPS_BASE_URL=http://localhost:3105 OPS_HEALTH_INTERNAL_TOKEN=... pnpm -C app ops:check:health` 실패
+  - 실패 body 기준 `/api/health`는 `HTTP 503 degraded`였고, 원인은 `rateLimit.backend=redis`에서 placeholder `UPSTASH_REDIS_REST_*`에 대한 ping이 `fetch failed`로 떨어진 것뿐이며 DB/control plane/pg_trgm/env state는 모두 `ok`
+- 이슈/블로커
+  - local placeholder env로는 health의 Redis ping을 정상화할 수 없으므로, 최종 `ops:check:health` 200 PASS는 실제 production `UPSTASH_REDIS_REST_URL/TOKEN` 또는 접근 가능한 staging-equivalent Redis로 별도 확인 필요
+  - 수동 검증을 위해 띄운 `next start --port 3105` 서버는 종료함
+
+### 2026-03-08: Cycle 234 완료 (런치 smoke 재검증)
+- 완료 내용
+  - `docker-compose.yml`
+  - `app/e2e/feed-loading-skeleton.spec.ts`
+  - 로컬 Docker Desktop을 기동하고 `docker compose up -d`로 Postgres를 올린 뒤 `pnpm -C app db:push`로 E2E용 스키마를 동기화
+  - `pnpm -C app exec playwright install chromium`로 누락된 Playwright Chromium/headless shell을 설치
+  - `feed-loading-skeleton` 스모크는 App Router streaming 완료가 첫 컴파일 시 5초를 넘길 수 있어 최종 콘텐츠 기대 timeout을 `15s`로 조정
+  - 디버깅 중 띄운 수동 `next dev`가 `ENABLE_SOCIAL_DEV_LOGIN` 없이 떠 있어 social onboarding이 `Configuration` 에러를 냈음을 확인했고, 수동 서버 종료 후 smoke를 클린 환경에서 재실행
+- 검증 결과
+  - `docker compose exec -T postgres psql -U townpet -d townpet -c "SELECT 1;"` 통과
+  - `pnpm -C app db:push` 통과
+  - `pnpm -C app test:e2e:smoke` 통과
+  - 결과: Playwright smoke `7 passed (11.4s)`
+- 이슈/블로커
+  - 로컬 Docker Desktop과 `townpet2-postgres-1` 컨테이너는 테스트를 위해 실행한 상태
+
+### 2026-03-08: Cycle 233 완료 (런치 준비 갭 재정렬)
+- 완료 내용
+- 공개 SEO/metadata/sitemap 정합화:
+  - `app/src/lib/post-page-metadata.ts`
+  - `app/src/lib/post-page-metadata.test.ts`
+  - `app/src/app/posts/[id]/page.tsx`
+  - `app/src/app/posts/[id]/guest/page.tsx`
+  - `app/src/app/sitemap.ts`
+  - `app/src/app/bookmarks/page.tsx`
+  - `app/src/app/notifications/page.tsx`
+  - `app/src/app/profile/page.tsx`
+  - `app/src/app/lounges/breeds/[breedCode]/page.tsx`
+  - 게시글 상세 public metadata 로직을 공용 helper로 추출해 auth/guest 상세가 동일한 canonical/robots/OG 규칙을 사용하게 정리
+  - sitemap에 guest indexable 게시글과 함께 품종 라운지 경로를 추가하고, 공개 프로필은 로그인 게이트 정책에 맞춰 제외 유지
+  - `/bookmarks`, `/notifications`, `/profile`은 noindex metadata를 추가하고, 품종 라운지는 품종 라벨 기반 title/description을 동적으로 생성
+- 페이지 loading/placeholder/share polish:
+  - `app/src/components/ui/empty-state.tsx`
+  - `app/src/app/profile/page.tsx`
+  - `app/src/components/posts/post-share-controls.tsx`
+  - `app/src/app/search/loading.tsx`
+  - `app/src/app/notifications/loading.tsx`
+  - `app/src/app/bookmarks/loading.tsx`
+  - `app/src/app/lounges/breeds/[breedCode]/loading.tsx`
+  - `EMPTY`, `NO IMG` 텍스트 placeholder를 SVG 기반 비주얼로 교체
+  - `search`/`notifications`/`bookmarks`/품종 라운지 route skeleton을 추가
+  - 공유 메뉴는 외부 클릭, focus 이동, `Escape` 입력 시 닫히도록 보강하고 고정 id 대신 `useId`를 사용하도록 수정
+- 런치 하드닝/coverage:
+  - `app/src/lib/security-headers.ts`
+  - `app/src/lib/security-headers.test.ts`
+  - `app/middleware.ts`
+  - `app/vitest.config.ts`
+  - `app/package.json`
+  - `app/pnpm-lock.yaml`
+  - `.github/workflows/quality-gate.yml`
+  - production static/middleware header에 `Strict-Transport-Security`, `Permissions-Policy`를 추가
+  - Vitest 기본 include를 `.test.tsx`까지 확장하고 `test:coverage` 스크립트 + v8 coverage provider를 추가
+  - `quality-gate` workflow가 coverage를 생성하고 HTML artifact를 업로드하도록 정리
+- 검증 결과
+- `pnpm -C app lint src middleware.ts next.config.ts vitest.config.ts` 통과
+- `pnpm -C app typecheck` 통과
+- `pnpm -C app test:unit -- src/lib/post-page-metadata.test.ts src/lib/security-headers.test.ts src/middleware.test.ts src/app/saved/page.test.tsx src/components/profile/profile-summary-link-card.test.tsx` 실행 시 전체 Vitest 스위트 `104 files / 526 tests` 통과
+- `pnpm -C app test:coverage` 통과
+- coverage summary: statements `65.41%`, branches `57.14%`, functions `70.38%`, lines `65.8%`
+- `git diff --check` 통과
+- 이슈/블로커
+- E2E smoke는 이번 턴에서 재실행하지 않음; 변경 범위가 metadata/static UI/header/CI 설정 중심이라 unit/typecheck/coverage로 우선 검증
+
+### 2026-03-08: Cycle 233 계획 수립 (런치 준비 갭 재정렬)
+- 검증 내용
+  - 공개 SEO/메타데이터:
+    - `app/src/app/posts/[id]/page.tsx`의 `generateMetadata`는 아직 `{ title: "게시글" }` 고정이지만, `app/src/app/posts/[id]/guest/page.tsx`는 이미 제목/본문 요약/대표 이미지 기반 동적 메타데이터를 생성함
+    - `app/src/app/sitemap.ts`는 현재 `/`, `/feed`, `/search`, 공개 게시글만 포함하며 품종 라운지 라우트가 빠져 있음
+    - `/users/[id]`는 2026-03-07 Cycle 230부터 로그인 게이트가 적용돼 비로그인 메타가 `noindex`이므로 사이트맵 후보에서 제외하는 것이 맞음
+    - `/bookmarks`, `/notifications`, `/profile`, `/lounges/breeds/[breedCode]`에는 개별 metadata export가 아직 없음
+  - 페이지 polish:
+    - `app/src/components/ui/empty-state.tsx`가 여전히 `EMPTY` 텍스트 badge를 렌더하고, `app/src/app/profile/page.tsx`도 프로필 이미지 fallback으로 `NO IMG` 텍스트를 사용함
+    - `app/src/app/feed/loading.tsx`, `app/src/app/posts/[id]/loading.tsx`, `app/src/app/profile/loading.tsx`, `app/src/app/my-posts/loading.tsx`는 이미 존재하므로 외부 진단의 "루트만 존재" 평가는 현재 기준과 다름
+    - 대신 `search`/`notifications`/`bookmarks`/품종 라운지 계열은 route loading 정리가 아직 필요함
+    - `app/src/components/posts/post-share-controls.tsx`는 드롭다운 토글/복사/외부 공유는 구현돼 있지만 click-outside 또는 focus-out dismiss 처리가 없음
+  - 보안/운영 증거:
+    - `app/src/lib/security-headers.ts`에는 `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Content-Security-Policy`만 있고 `Strict-Transport-Security`, `Permissions-Policy`는 아직 없음
+    - `app/package.json`과 `.github/workflows/quality-gate.yml` 기준 coverage 실행 경로/리포트 업로드는 아직 없음
+    - 백업/복구, 이메일 SPF/DKIM, 스팸 대응은 `docs/operations/장애 대응 런북.md`, `docs/operations/Resend_Vercel_이메일_설정_가이드.md`, `docs/policies/*`에 이미 문서가 있으므로 신규 문서 추가보다 드릴/검증 기록 보강이 더 적절함
+- 우선순위 결정
+  - P0: public route 기준 SEO/metadata/sitemap 정합화
+  - P1: loading/empty-state/share dropdown polish
+  - P1: security header/coverage/ops drill evidence 보강
+- 이슈/블로커
+  - 공개 프로필은 제품 정책상 로그인 게이트가 걸려 있어 공개 사이트맵 확장 대상으로 취급하면 안 됨
+  - 외부 진단 수치(예: 테스트 429개, loading root only)는 2026-03-08 현재 코드와 일부 불일치하므로 계획 입력값으로 그대로 재사용하지 않음
+
 ### 2026-03-08: Cycle 232 완료 (소셜 로그인 프로필 비밀번호 버튼 숨김)
 - 완료 내용
 - 비밀번호 관리 가능 여부 정책/세션 정리:
@@ -1386,7 +1606,7 @@
   - HTML 공개 캐시가 필요하면 CSP nonce 전략 재설계 또는 정적 shell + 클라이언트 data fetch 방식으로 옮겨야 한다
   - 보안 우선순위상 CSP nonce를 당장 약화시키기보다, 이후 최적화는 API/클라이언트 중심으로 가져가는 쪽이 안전하다
 - 검증 결과
-- `gh run list --repo answndud/townpet2 --limit 8`
+- `gh run list --repo answndud/townpet --limit 8`
   - `Fix Vercel build regressions` quality-gate 성공 확인
 - 원격 헤더 확인:
   - `/feed`, `/search`, `/feed/guest`, `/search/guest`, `/posts/:id/guest` 모두 `private, no-store`
@@ -1795,7 +2015,7 @@
   - 포함 항목: Base URL sanity, Kakao/Naver callback URL, Provider 증적 테이블, PROGRESS snippet
 - OAuth 운영 가이드의 템플릿 생성 명령 기본 출력 경로를 `/tmp`에서 `docs/ops/manual-checks/`로 표준화.
 - 검증 결과
-- `pnpm -C app ops:oauth:manual-report --base-url https://townpet2.vercel.app --strict-base-url 1 --date 2026-03-05 --run-url https://github.com/answndud/townpet2/actions/runs/22705265766 --kakao-status pending --naver-status pending --out ../docs/operations/manual-checks/OAuth_수동점검_기록_2026-03-05.md` 통과.
+- `pnpm -C app ops:oauth:manual-report --base-url https://townpet2.vercel.app --strict-base-url 1 --date 2026-03-05 --run-url https://github.com/answndud/townpet/actions/runs/22705265766 --kakao-status pending --naver-status pending --out ../docs/operations/manual-checks/OAuth_수동점검_기록_2026-03-05.md` 통과.
 - 이슈/블로커
 - 없음(남은 블로커는 실계정 수동 증적 입력 자체).
 - 변경 파일(핵심)
@@ -1806,14 +2026,14 @@
 ### 2026-03-05: Cycle 173 완료 (OAuth 실검증 run 갱신 + 수동 점검 템플릿 최신화)
 - 완료 내용
 - `oauth-real-e2e` 워크플로우를 수동 재실행해 최신 run success를 확보.
-  - run: `https://github.com/answndud/townpet2/actions/runs/22705265766`
+  - run: `https://github.com/answndud/townpet/actions/runs/22705265766`
   - 상태: `success`
 - 운영 URL(`https://townpet2.vercel.app`) 기준으로 `ops:oauth:manual-report --strict-base-url 1`를 실행해 수동 점검 템플릿을 최신화.
   - 출력 파일: `/tmp/oauth-manual-check-2026-03-05.md`
   - 포함 항목: Base URL sanity, Kakao/Naver expected callback URL, Provider별 수동 증적 테이블
 - 검증 결과
-- `gh run view 22705265766 --repo answndud/townpet2` 조회로 `oauth-real-e2e` 완료 상태 확인.
-- `pnpm -C app ops:oauth:manual-report --base-url https://townpet2.vercel.app --strict-base-url 1 --date 2026-03-05 --run-url https://github.com/answndud/townpet2/actions/runs/22705265766 --kakao-status pending --naver-status pending --out /tmp/oauth-manual-check-2026-03-05.md` 통과.
+- `gh run view 22705265766 --repo answndud/townpet` 조회로 `oauth-real-e2e` 완료 상태 확인.
+- `pnpm -C app ops:oauth:manual-report --base-url https://townpet2.vercel.app --strict-base-url 1 --date 2026-03-05 --run-url https://github.com/answndud/townpet/actions/runs/22705265766 --kakao-status pending --naver-status pending --out /tmp/oauth-manual-check-2026-03-05.md` 통과.
 - 이슈/블로커
 - Cycle 23의 `카카오/네이버 로그인 -> 온보딩 -> 피드`는 실계정 수동 증적(스크린샷/영상 + pass 판정) 입력 전까지 `blocked` 유지.
 - 변경 파일(핵심)
@@ -2530,7 +2750,7 @@
 - OAuth 운영 가이드의 수동 점검 절차에 템플릿 생성 단계를 반영.
 - 검증 결과
 - `pnpm -C app lint scripts/generate-oauth-manual-check-report.ts` 통과.
-- `pnpm -C app ops:oauth:manual-report --date 2026-03-04 --run-url https://github.com/answndud/townpet2/actions/runs/22662648513 --out /tmp/oauth-manual-check.md` 통과.
+- `pnpm -C app ops:oauth:manual-report --date 2026-03-04 --run-url https://github.com/answndud/townpet/actions/runs/22662648513 --out /tmp/oauth-manual-check.md` 통과.
 - 생성 파일(`/tmp/oauth-manual-check.md`)에 Provider 체크표 + `PROGRESS.md` 붙여넣기 스니펫 포함 확인.
 - 이슈/블로커
 - 외부 계정 의존 자체(실계정 로그인/동의)는 그대로이며, 이번 변경은 기록 누락/형식 편차를 줄이는 운영 자동화 범위.
@@ -2561,7 +2781,7 @@
 - Day1 채널 실행용 UTM/증적/24h keep-fix-kill 점검표를 자동 생성하는 스크립트를 추가.
 - `growth:day1:handoff` 실행으로 Day1 실행 템플릿을 파일로 생성해 수동 게시 작업의 즉시 착수 경로를 고정.
 - 검증 결과
-- OAuth run: `https://github.com/answndud/townpet2/actions/runs/22662648513` (`success`).
+- OAuth run: `https://github.com/answndud/townpet/actions/runs/22662648513` (`success`).
 - `pnpm -C app lint scripts/generate-day1-growth-handoff.ts` 통과.
 - `pnpm -C app growth:day1:handoff --date 2026-03-04 --out /tmp/day1-growth-handoff.md` 통과(템플릿 생성 확인).
 - 이슈/블로커
@@ -2657,7 +2877,7 @@
 - 자동 실행 경로는 health-only로 동작하도록 `verify_sentry` 조건을 `workflow_dispatch` 입력일 때만 활성화되게 조정.
 - 대상 URL은 `OPS_BASE_URL` repository variable 우선, 미설정 시 `https://townpet2.vercel.app` fallback 사용으로 고정.
 - 검증 결과
-- 수동 검증 실행: `https://github.com/answndud/townpet2/actions/runs/22659011560` `success`.
+- 수동 검증 실행: `https://github.com/answndud/townpet/actions/runs/22659011560` `success`.
 - `Check deployment health endpoint` 단계 `success`.
 - `Validate Sentry secrets`/`Check Sentry ingestion` 단계는 `verify_sentry=false` 경로로 `skipped` 확인.
 - 변경 파일(핵심)
@@ -2670,7 +2890,7 @@
 - 단일 런에서 `Real OAuth redirect smoke`(실공급자 리다이렉트) 후 `social-dev` 기반 온보딩->피드 진입 회귀를 연속 검증하도록 확장.
 - 검증 결과
 - 스펙 인식 확인: `pnpm -C app test:e2e:social-onboarding --list` 통과(2 tests).
-- 워크플로우 실행: `https://github.com/answndud/townpet2/actions/runs/22658861470` `success`.
+- 워크플로우 실행: `https://github.com/answndud/townpet/actions/runs/22658861470` `success`.
 - 단계별 확인: `Real OAuth redirect smoke` `success`, `Social onboarding to feed smoke (app flow)` `success`.
 - 변경 파일(핵심)
 - `.github/workflows/oauth-real-e2e.yml`
@@ -2681,7 +2901,7 @@
 ### 2026-03-04: OAuth 실계정 리다이렉트 스모크 재확인 PASS
 - 실행 내용
 - `oauth-real-e2e` 워크플로우를 재실행해 카카오/네이버 OAuth 리다이렉트 경로를 점검.
-- 런: `https://github.com/answndud/townpet2/actions/runs/22658725857`
+- 런: `https://github.com/answndud/townpet/actions/runs/22658725857`
 - 검증 결과
 - 워크플로우 `success` 확인.
 - `Validate OAuth secrets`와 `Real OAuth redirect smoke` 단계 통과.
@@ -2689,7 +2909,7 @@
 ### 2026-03-04: Sentry 실수신 검증 재확인 PASS
 - 실행 내용
 - `ops-smoke-checks`를 동일 조건(`verify_sentry=true`)으로 재실행.
-- 런: `https://github.com/answndud/townpet2/actions/runs/22658628800`
+- 런: `https://github.com/answndud/townpet/actions/runs/22658628800`
 - 검증 결과
 - 워크플로우 `success` 확인.
 - `Validate Sentry secrets` 및 `Check Sentry ingestion` 단계 모두 `success`.
@@ -2697,7 +2917,7 @@
 ### 2026-03-04: Sentry 실수신 검증 최종 PASS
 - 실행 내용
 - `SENTRY_AUTH_TOKEN` 교체 후 `ops-smoke-checks`를 `verify_sentry=true`로 재실행.
-- 런: `https://github.com/answndud/townpet2/actions/runs/22657771711`
+- 런: `https://github.com/answndud/townpet/actions/runs/22657771711`
 - 검증 결과
 - 워크플로우 `success` 확인.
 - `Check Sentry ingestion` 단계에서 이벤트 전송/조회 검증 통과.
@@ -2706,9 +2926,9 @@
 
 ### 2026-03-04: Sentry 실수신 검증 재시도(토큰 유효성 이슈 확인)
 - 실행 내용
-- `ops-smoke-checks`(`verify_sentry=true`) 실행: `https://github.com/answndud/townpet2/actions/runs/22657129988`
+- `ops-smoke-checks`(`verify_sentry=true`) 실행: `https://github.com/answndud/townpet/actions/runs/22657129988`
 - `Check Sentry ingestion` 타임아웃 확인 후 검증 스크립트의 API host 분리 패치 반영(`fix: use sentry api host for event lookup`, `093dad4`) 후 재실행.
-- 재실행 런: `https://github.com/answndud/townpet2/actions/runs/22657498614`
+- 재실행 런: `https://github.com/answndud/townpet/actions/runs/22657498614`
 - 검증 결과
 - 두 번째 재실행에서 `Check Sentry ingestion` 단계가 즉시 `HTTP 401`로 실패.
 - 실패 메시지: `Sentry event lookup failed: HTTP 401 body={\"detail\":\"Invalid token\"}`.
@@ -2755,9 +2975,9 @@
 
 ### 2026-03-04: blocked 해소 워크플로우 재실행(실OAuth/배포 health/Sentry)
 - 실행 내용
-- `oauth-real-e2e` 워크플로우 재실행: `https://github.com/answndud/townpet2/actions/runs/22655645744`
-- `ops-smoke-checks` 워크플로우 재실행(`target_base_url=https://townpet2.vercel.app`, `verify_sentry=false`): `https://github.com/answndud/townpet2/actions/runs/22655651276`
-- `ops-smoke-checks` Sentry 포함 재검증(`verify_sentry=true`): `https://github.com/answndud/townpet2/actions/runs/22655717872`
+- `oauth-real-e2e` 워크플로우 재실행: `https://github.com/answndud/townpet/actions/runs/22655645744`
+- `ops-smoke-checks` 워크플로우 재실행(`target_base_url=https://townpet2.vercel.app`, `verify_sentry=false`): `https://github.com/answndud/townpet/actions/runs/22655651276`
+- `ops-smoke-checks` Sentry 포함 재검증(`verify_sentry=true`): `https://github.com/answndud/townpet/actions/runs/22655717872`
 - 검증 결과
 - `oauth-real-e2e`: `success`
 - `ops-smoke-checks`(`verify_sentry=false`): `success`
@@ -5724,8 +5944,8 @@
 - `cd app && ./node_modules/.bin/eslint e2e/social-real-oauth-redirect.spec.ts` 통과
 - `cd app && ./node_modules/.bin/tsc --noEmit` 통과
 - `cd app && E2E_REAL_SOCIAL_OAUTH=1 ./node_modules/.bin/playwright test e2e/social-real-oauth-redirect.spec.ts --project=chromium --list` 통과 (2 tests 목록 확인)
-- `gh workflow run oauth-real-e2e.yml --repo answndud/townpet2` 실행
-- 실행 결과: `https://github.com/answndud/townpet2/actions/runs/22211885335` 실패 (시크릿 미설정)
+- `gh workflow run oauth-real-e2e.yml --repo answndud/townpet` 실행
+- 실행 결과: `https://github.com/answndud/townpet/actions/runs/22211885335` 실패 (시크릿 미설정)
 - 이슈/블로커
 - 실제 공급자 인증(카카오/네이버 계정 로그인 입력 단계)은 외부 콘솔/계정 상태에 의존하므로 기본 CI에서는 실행하지 않음.
 - 저장소 시크릿(`AUTH_SECRET or NEXTAUTH_SECRET`, `KAKAO_*`, `NAVER_*`) 미설정 시 `oauth-real-e2e`는 의도적으로 즉시 실패.
@@ -5979,9 +6199,9 @@
 - OAuth/GitHub Secrets를 반영하고 실워크플로우 재실행으로 외부 의존 항목을 재검증.
 - `docs/개발_운영_가이드.md`에 Vercel/Kakao/Naver/GitHub Secrets 설정 절차와 "데이터를 어디에서 보고 관리하는지" 운영 가이드를 통합 문서화.
 - 실행 결과
-- `oauth-real-e2e` 성공: `https://github.com/answndud/townpet2/actions/runs/22251215409`
-- `ops-smoke-checks` 성공(health): `https://github.com/answndud/townpet2/actions/runs/22251318982`
-- `ops-smoke-checks` Sentry 검증 시도 실패(시크릿 미설정): `https://github.com/answndud/townpet2/actions/runs/22251292806`
+- `oauth-real-e2e` 성공: `https://github.com/answndud/townpet/actions/runs/22251215409`
+- `ops-smoke-checks` 성공(health): `https://github.com/answndud/townpet/actions/runs/22251318982`
+- `ops-smoke-checks` Sentry 검증 시도 실패(시크릿 미설정): `https://github.com/answndud/townpet/actions/runs/22251292806`
 - 현재 상태
 - 배포 health/OAuth 리다이렉트 검증은 PASS.
 - Sentry 실수신 검증은 운영 선택에 따라 보류(시크릿 미설정 상태).
@@ -6001,9 +6221,9 @@
 - `oauth-real-e2e` 워크플로우를 재실행해 현재 실패 원인을 재확인.
 - `ops-smoke-checks` 워크플로우를 `target_base_url=https://townpet2.vercel.app`, `verify_sentry=false`로 실행해 배포 URL 유효성 점검.
 - 실행 결과
-- `oauth-real-e2e`: `https://github.com/answndud/townpet2/actions/runs/22250009041` 실패
+- `oauth-real-e2e`: `https://github.com/answndud/townpet/actions/runs/22250009041` 실패
   - 누락 시크릿: `AUTH_SECRET or NEXTAUTH_SECRET`, `KAKAO_CLIENT_ID`, `KAKAO_CLIENT_SECRET`, `NAVER_CLIENT_ID`, `NAVER_CLIENT_SECRET`
-- `ops-smoke-checks`: `https://github.com/answndud/townpet2/actions/runs/22250010405` 실패
+- `ops-smoke-checks`: `https://github.com/answndud/townpet/actions/runs/22250010405` 실패
   - 원인: 입력한 URL(`https://townpet2.vercel.app`)이 Vercel 기준 `deployment not found`(HTTP 404)
 - 이슈/블로커
 - 실배포 URL 미확정
@@ -6410,8 +6630,8 @@
 
 ### 2026-02-24: blocked 해소 워크플로우 실행 시작
 - 실행 내용
-- `oauth-real-e2e` 수동 실행 트리거 완료: `https://github.com/answndud/townpet2/actions/runs/22340689788`
-- `ops-smoke-checks`(target=`https://townpet2.vercel.app`, verify_sentry=`true`) 트리거 완료: `https://github.com/answndud/townpet2/actions/runs/22340693180`
+- `oauth-real-e2e` 수동 실행 트리거 완료: `https://github.com/answndud/townpet/actions/runs/22340689788`
+- `ops-smoke-checks`(target=`https://townpet2.vercel.app`, verify_sentry=`true`) 트리거 완료: `https://github.com/answndud/townpet/actions/runs/22340693180`
 - 현재 상태
 - 두 워크플로우 모두 `in_progress` 상태로 확인됨(실행 결과는 완료 후 별도 append 예정).
 
@@ -6419,15 +6639,15 @@
 - `ops-smoke-checks` 결과: `failure`
 - 실패 원인: Sentry secrets 4종 누락
 - 누락 키: `SENTRY_DSN`, `SENTRY_AUTH_TOKEN`, `SENTRY_ORG_SLUG`, `SENTRY_PROJECT_SLUG`
-- 참고 런: `https://github.com/answndud/townpet2/actions/runs/22340693180`
+- 참고 런: `https://github.com/answndud/townpet/actions/runs/22340693180`
 - `oauth-real-e2e` 결과: 실행 중(`in_progress`)
-- 참고 런: `https://github.com/answndud/townpet2/actions/runs/22340689788`
+- 참고 런: `https://github.com/answndud/townpet/actions/runs/22340689788`
 
 ### 2026-02-24: blocked 워크플로우 재실행 결과
 - `oauth-real-e2e`: `success`
-- 런: `https://github.com/answndud/townpet2/actions/runs/22340689788`
+- 런: `https://github.com/answndud/townpet/actions/runs/22340689788`
 - `ops-smoke-checks`(verify_sentry=false): `success`
-- 런: `https://github.com/answndud/townpet2/actions/runs/22340745824`
+- 런: `https://github.com/answndud/townpet/actions/runs/22340745824`
 - 잔여 블로커
 - Sentry secrets 4종 미등록으로 `verify_sentry=true` 경로는 여전히 blocked 상태.
 
@@ -6538,7 +6758,7 @@
 
 ### 2026-03-06: `verify_pg_trgm` 수동 실행 1차 결과 (blocked 확인)
 - 실행 내용
-- 워크플로우 실행: `https://github.com/answndud/townpet2/actions/runs/22746431810`
+- 워크플로우 실행: `https://github.com/answndud/townpet/actions/runs/22746431810`
 - 입력값: `target_base_url=https://townpet2.vercel.app`, `verify_sentry=false`, `verify_pg_trgm=true`
 - 결과
 - `failure`
@@ -6549,7 +6769,7 @@
 
 ### 2026-03-06: `verify_pg_trgm` 수동 실행 2차 결과 (원인 확정)
 - 실행 내용
-- 워크플로우 실행: `https://github.com/answndud/townpet2/actions/runs/22747240206`
+- 워크플로우 실행: `https://github.com/answndud/townpet/actions/runs/22747240206`
 - 입력값: `target_base_url=https://townpet2.vercel.app`, `verify_sentry=false`, `verify_pg_trgm=true`
 - 결과
 - `failure`
@@ -6563,7 +6783,7 @@
 
 ### 2026-03-06: `verify_pg_trgm` 수동 실행 3차 결과 (해소)
 - 실행 내용
-- 워크플로우 실행: `https://github.com/answndud/townpet2/actions/runs/22747534552`
+- 워크플로우 실행: `https://github.com/answndud/townpet/actions/runs/22747534552`
 - 입력값: `target_base_url=https://townpet2.vercel.app`, `verify_sentry=false`, `verify_pg_trgm=true`
 - 결과
 - `success`

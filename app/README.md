@@ -41,7 +41,7 @@ Use this routine to keep operations simple without adding new external services.
 
 1. Check recent Vercel deployments (last 3).
 2. Run GitHub Actions `ops-smoke-checks` with:
-   - `target_base_url=https://townpet2.vercel.app`
+   - `target_base_url=https://townpet.vercel.app`
    - `verify_sentry=false` (default)
 3. Review Vercel function logs for repeated `500`/timeout errors.
 4. Manual smoke: `/feed` -> open a post -> click `목록으로`.
