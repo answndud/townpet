@@ -17,6 +17,16 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-09: Cycle 244 완료 (피드 목록 행 높이 압축)
+- 완료 내용
+  - `app/src/components/posts/feed-infinite-list.tsx`에서 게시글 목록 행(`feed-post-item`)의 세로 패딩과 내부 세로 간격을 축소했다.
+  - 기본 행 패딩을 `py-2 -> py-1.5`, 데스크톱 패딩을 `sm:py-3 -> sm:py-2`로 줄이고, grid `gap-y` 및 미리보기/메타 텍스트의 `mt`를 함께 낮춰 줄 간격이 과하게 벌어지지 않도록 정리했다.
+- 검증 결과
+  - `pnpm -C app lint src/components/posts/feed-infinite-list.tsx` 통과
+  - `git diff --check` 통과
+- 이슈/블로커
+  - 없음
+
 ### 2026-03-09: Cycle 243 완료 (글쓰기 에디터 작성 전용 정리 + 플로우 점검)
 - 완료 내용
   - `app/src/components/posts/post-create-form.tsx`에서 `링크`, `미리보기` 버튼만 숨기지 않고 관련 로직까지 함께 제거했다.
