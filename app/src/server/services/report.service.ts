@@ -1,5 +1,6 @@
 import { PostStatus, Prisma, ReportStatus, ReportTarget } from "@prisma/client";
 
+import { isReportablePostType } from "@/lib/post-type-groups";
 import { prisma } from "@/lib/prisma";
 import {
   calculateReporterTrustWeight,
@@ -21,15 +22,14 @@ import {
 } from "@/server/services/sanction.service";
 import { ServiceError } from "@/server/services/service-error";
 
-async function resolvePostReportTargetUserId(
+async function resolvePostReportTarget(
   tx: Prisma.TransactionClient,
   targetId: string,
 ) {
-  const post = await tx.post.findUnique({
+  return tx.post.findUnique({
     where: { id: targetId },
-    select: { authorId: true },
+    select: { authorId: true, type: true },
   });
-  return post?.authorId ?? null;
 }
 
 async function listPendingPostModerationSignals(
@@ -165,10 +165,18 @@ export async function createReport({ reporterId, input }: CreateReportParams) {
 
   let shouldBumpCache = false;
   const report = await prisma.$transaction(async (tx) => {
-    const targetUserId = await resolvePostReportTargetUserId(tx, parsed.data.targetId);
+    const targetPost = await resolvePostReportTarget(tx, parsed.data.targetId);
+    const targetUserId = targetPost?.authorId ?? null;
 
-    if (!targetUserId) {
+    if (!targetPost || !targetUserId) {
       throw new ServiceError("신고 대상을 찾을 수 없습니다.", "REPORT_TARGET_NOT_FOUND", 404);
+    }
+    if (!isReportablePostType(targetPost.type)) {
+      throw new ServiceError(
+        "운영 관리 게시글은 신고할 수 없습니다.",
+        "REPORT_DISABLED_FOR_POST_TYPE",
+        403,
+      );
     }
     if (targetUserId === reporterId) {
       throw new ServiceError("자기 자신은 신고할 수 없습니다.", "INVALID_TARGET", 400);

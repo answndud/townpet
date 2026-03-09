@@ -4,6 +4,7 @@ import {
   DEFAULT_NEW_USER_MIN_ACCOUNT_AGE_HOURS,
   DEFAULT_NEW_USER_RESTRICTED_POST_TYPES,
 } from "@/lib/new-user-safety-policy";
+import { isAdminOnlyPostType } from "@/lib/post-type-groups";
 
 export const NEW_USER_RESTRICTION_HOURS = DEFAULT_NEW_USER_MIN_ACCOUNT_AGE_HOURS;
 
@@ -43,6 +44,16 @@ type EvaluateNewUserPostWritePolicyResult = {
   message: string | null;
 };
 
+type EvaluateAdminOnlyPostWritePolicyParams = {
+  role: UserRole;
+  postType: PostType;
+};
+
+type EvaluateAdminOnlyPostWritePolicyResult = {
+  allowed: boolean;
+  message: string | null;
+};
+
 export function evaluateNewUserPostWritePolicy({
   role,
   accountCreatedAt,
@@ -70,4 +81,22 @@ export function evaluateNewUserPostWritePolicy({
   const message = `가입 후 ${minAccountAgeHours}시간 이내에는 ${restrictedTypeLabels[postType]} 카테고리 글을 작성할 수 없습니다. 약 ${remainingHours}시간 후 다시 시도해 주세요.`;
 
   return { allowed: false, remainingHours, message };
+}
+
+export function evaluateAdminOnlyPostWritePolicy({
+  role,
+  postType,
+}: EvaluateAdminOnlyPostWritePolicyParams): EvaluateAdminOnlyPostWritePolicyResult {
+  if (!isAdminOnlyPostType(postType)) {
+    return { allowed: true, message: null };
+  }
+
+  if (role === UserRole.ADMIN || role === UserRole.MODERATOR) {
+    return { allowed: true, message: null };
+  }
+
+  return {
+    allowed: false,
+    message: `${restrictedTypeLabels[postType]} 글은 관리자만 등록하거나 수정할 수 있습니다.`,
+  };
 }

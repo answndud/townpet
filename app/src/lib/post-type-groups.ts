@@ -29,6 +29,14 @@ export const FREE_BOARD_POST_TYPES: ReadonlyArray<PostType> = [
   PostType.DAILY_SHARE,
 ];
 
+export const ADMIN_ONLY_POST_TYPES: ReadonlyArray<PostType> = [
+  PostType.ADOPTION_LISTING,
+];
+
+export const NON_REPORTABLE_POST_TYPES: ReadonlyArray<PostType> = [
+  PostType.ADOPTION_LISTING,
+];
+
 const POST_TYPE_GROUPS: ReadonlyArray<ReadonlyArray<PostType>> = [
   [PostType.FREE_BOARD, PostType.FREE_POST, PostType.DAILY_SHARE],
   [PostType.QA_QUESTION, PostType.QA_ANSWER],
@@ -50,6 +58,14 @@ export function getEquivalentPostTypes(type: PostType): PostType[] {
 
 export function isFreeBoardPostType(type: PostType) {
   return FREE_BOARD_POST_TYPES.includes(type);
+}
+
+export function isAdminOnlyPostType(type: PostType) {
+  return ADMIN_ONLY_POST_TYPES.includes(type);
+}
+
+export function isReportablePostType(type: PostType) {
+  return !NON_REPORTABLE_POST_TYPES.includes(type);
 }
 
 export function expandExcludedPostTypes(types: PostType[]): PostType[] {

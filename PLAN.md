@@ -1582,3 +1582,10 @@
 |---|---|---|---|---|---|
 | `ops-smoke-checks` `verify_pg_trgm` 경로 활성화 | Codex | P2 | `done` | workflow_dispatch에서 `verify_pg_trgm=true` 실행이 PASS(`OPS_HEALTH_REQUIRE_PG_TRGM=1` 기준) | 실행 증적: `https://github.com/answndud/townpet/actions/runs/22747534552` |
 | Sentry 실수신 검증(의도적 에러, 선택) | Codex | P3 | `done` | 실제 Sentry 프로젝트에서 이벤트 수신 확인(선택 운영, 미연동 시 deferred 유지) | `SENTRY_DSN`, `SENTRY_AUTH_TOKEN`(유효 토큰/만료·권한 확인), `SENTRY_ORG_SLUG`, `SENTRY_PROJECT_SLUG` 저장소 시크릿 설정 |
+
+### Cycle 251: 입양 게시판 관리자 전용 전환 및 신고 제거 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 입양 게시글 작성 권한을 관리자 전용으로 제한 | Codex | P0 | `done` | 일반 사용자/비회원은 `ADOPTION_LISTING` 생성·수정이 차단되고, 작성 폼에서도 타입이 노출되지 않음 | `app/src/lib/post-write-policy.ts`, `app/src/server/services/post.service.ts`, `app/src/components/posts/post-create-form.tsx`, `app/src/app/posts/new/page.tsx` |
+| 입양 게시글 신고 기능 제거 | Codex | P0 | `done` | 입양 게시글 상세/게스트 상세에서 신고 UI가 사라지고, API 직접 호출도 `REPORT_DISABLED_FOR_POST_TYPE`으로 차단됨 | `app/src/components/posts/post-detail-client.tsx`, `app/src/app/posts/[id]/guest/page.tsx`, `app/src/server/services/report.service.ts` |
+| 입양 보드 CTA/회귀 테스트 정리 | Codex | P1 | `done` | 입양 보드의 작성 CTA가 관리자에게만 보이고, 권한/신고 회귀 테스트가 통과함 | `app/src/app/boards/adoption/page.tsx`, `app/src/server/services/post-create-policy.test.ts`, `app/src/server/services/report.service.test.ts`, `app/src/lib/post-write-policy.test.ts` |

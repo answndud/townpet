@@ -1,13 +1,14 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { PostType } from "@prisma/client";
+import { PostType, UserRole } from "@prisma/client";
 
 import { AdoptionBoardGrid } from "@/components/boards/adoption-board-grid";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ScrollToTopButton } from "@/components/ui/scroll-to-top-button";
 import { auth } from "@/lib/auth";
 import { isLoginRequiredPostType } from "@/lib/post-access";
+import { getCurrentUserRole } from "@/server/auth";
 import { redirectToProfileIfNicknameMissing } from "@/server/nickname-guard";
 import { getGuestReadLoginRequiredPostTypes } from "@/server/queries/policy.queries";
 import {
@@ -60,6 +61,10 @@ export default async function AdoptionBoardPage({
 }: AdoptionBoardPageProps) {
   const session = await auth();
   const userId = session?.user?.id;
+  const currentUserRole = userId ? await getCurrentUserRole() : null;
+  const canManageAdoptionListings =
+    currentUserRole?.role === UserRole.ADMIN ||
+    currentUserRole?.role === UserRole.MODERATOR;
   redirectToProfileIfNicknameMissing({
     isAuthenticated: Boolean(userId),
     nickname: session?.user?.nickname,
@@ -148,8 +153,8 @@ export default async function AdoptionBoardPage({
                   ? "검색어에 맞는 입양 게시글이 없습니다. 다른 키워드로 다시 시도해 보세요."
                   : "아직 등록된 입양 게시글이 없습니다."
               }
-              actionHref="/posts/new"
-              actionLabel="입양 글 등록하기"
+              actionHref={canManageAdoptionListings ? "/posts/new" : undefined}
+              actionLabel={canManageAdoptionListings ? "입양 글 등록하기" : undefined}
             />
           </section>
         ) : (
@@ -212,12 +217,14 @@ export default async function AdoptionBoardPage({
 
         <div className="flex justify-end gap-2">
           <ScrollToTopButton className="tp-btn-soft inline-flex h-10 items-center justify-center px-4 text-xs font-semibold" />
-          <Link
-            href="/posts/new"
-            className="inline-flex h-10 items-center justify-center rounded-xl bg-[#b9891f] px-4 text-xs font-semibold text-white transition hover:bg-[#9d7419]"
-          >
-            입양 글 작성
-          </Link>
+          {canManageAdoptionListings ? (
+            <Link
+              href="/posts/new"
+              className="inline-flex h-10 items-center justify-center rounded-xl bg-[#b9891f] px-4 text-xs font-semibold text-white transition hover:bg-[#9d7419]"
+            >
+              입양 글 작성
+            </Link>
+          ) : null}
         </div>
       </main>
     </div>

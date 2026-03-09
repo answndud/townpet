@@ -225,7 +225,7 @@ describe("createPost new-user restriction", () => {
   it("blocks forbidden keywords in adoption listing structured fields", async () => {
     mockPrisma.user.findUnique.mockResolvedValue({
       id: "user-1",
-      role: UserRole.USER,
+      role: UserRole.MODERATOR,
       createdAt: new Date(Date.now() - 30 * 60 * 60 * 1000),
     });
     mockPrisma.siteSetting.findUnique.mockImplementation(async ({ where }) => {
@@ -252,6 +252,36 @@ describe("createPost new-user restriction", () => {
     ).rejects.toMatchObject({
       code: "FORBIDDEN_KEYWORD_DETECTED",
       status: 400,
+    });
+
+    expect(mockPrisma.post.create).not.toHaveBeenCalled();
+  });
+
+  it("blocks adoption listing creation for regular users", async () => {
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: "user-1",
+      role: UserRole.USER,
+      createdAt: new Date(Date.now() - 30 * 60 * 60 * 1000),
+    });
+
+    await expect(
+      createPost({
+        authorId: "user-1",
+        input: {
+          title: "입양 공고",
+          content: "내용",
+          type: PostType.ADOPTION_LISTING,
+          scope: PostScope.GLOBAL,
+          adoptionListing: {
+            shelterName: "강동 보호소",
+            animalType: "강아지",
+            status: "OPEN",
+          },
+        },
+      }),
+    ).rejects.toMatchObject({
+      code: "ADMIN_ONLY_POST_TYPE",
+      status: 403,
     });
 
     expect(mockPrisma.post.create).not.toHaveBeenCalled();
@@ -541,7 +571,7 @@ describe("createPost new-user restriction", () => {
   it("allows adoption common board without animal tags and stores structured relation", async () => {
     mockPrisma.user.findUnique.mockResolvedValue({
       id: "user-1",
-      role: UserRole.USER,
+      role: UserRole.MODERATOR,
       createdAt: new Date(Date.now() - 30 * 60 * 60 * 1000),
     });
 

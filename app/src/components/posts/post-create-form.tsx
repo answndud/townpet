@@ -50,6 +50,7 @@ type PostCreateFormProps = {
   communities: CommunityOption[];
   defaultNeighborhoodId?: string;
   isAuthenticated: boolean;
+  canCreateAdoptionListing?: boolean;
 };
 
 type PostCreateFormState = {
@@ -179,6 +180,7 @@ export function PostCreateForm({
   communities,
   defaultNeighborhoodId = "",
   isAuthenticated,
+  canCreateAdoptionListing = false,
 }: PostCreateFormProps) {
   const router = useRouter();
   const contentRef = useRef<HTMLDivElement>(null);
@@ -474,28 +476,42 @@ export function PostCreateForm({
   );
 
   const availablePostTypeOptions = useMemo(() => {
-    if (isAuthenticated) {
-      return postTypeOptions;
-    }
-
-    return postTypeOptions.filter(
-      (option) => !GUEST_BLOCKED_POST_TYPES.includes(option.value),
-    );
-  }, [isAuthenticated]);
+    return postTypeOptions.filter((option) => {
+      if (!isAuthenticated && GUEST_BLOCKED_POST_TYPES.includes(option.value)) {
+        return false;
+      }
+      if (option.value === PostType.ADOPTION_LISTING && !canCreateAdoptionListing) {
+        return false;
+      }
+      return true;
+    });
+  }, [canCreateAdoptionListing, isAuthenticated]);
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (!isAuthenticated && formState.scope !== PostScope.GLOBAL) {
+      setFormState((prev) => ({ ...prev, scope: PostScope.GLOBAL }));
       return;
     }
 
-    if (formState.scope !== PostScope.GLOBAL) {
-      setFormState((prev) => ({ ...prev, scope: PostScope.GLOBAL }));
-    }
+    const isGuestBlockedType =
+      !isAuthenticated && GUEST_BLOCKED_POST_TYPES.includes(formState.type);
+    const isRoleBlockedType =
+      formState.type === PostType.ADOPTION_LISTING && !canCreateAdoptionListing;
 
-    if (GUEST_BLOCKED_POST_TYPES.includes(formState.type)) {
+    if (
+      isGuestBlockedType ||
+      isRoleBlockedType ||
+      !availablePostTypeOptions.some((option) => option.value === formState.type)
+    ) {
       setFormState((prev) => ({ ...prev, type: PostType.FREE_BOARD }));
     }
-  }, [formState.scope, formState.type, isAuthenticated]);
+  }, [
+    availablePostTypeOptions,
+    canCreateAdoptionListing,
+    formState.scope,
+    formState.type,
+    isAuthenticated,
+  ]);
 
   useEffect(() => {
     if (formState.type !== PostType.PLACE_REVIEW) {

@@ -18,6 +18,7 @@ import { getGuestPostMeta } from "@/lib/post-guest-meta";
 import { UserRelationControls } from "@/components/user/user-relation-controls";
 import { renderLiteMarkdown } from "@/lib/markdown-lite";
 import { formatRelativeDate } from "@/lib/post-presenter";
+import { isReportablePostType } from "@/lib/post-type-groups";
 import { toAbsoluteUrl } from "@/lib/site-url";
 import { resolveUserDisplayName } from "@/lib/user-display";
 
@@ -362,6 +363,7 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
   };
   const canInteract = Boolean(viewerId);
   const isAuthor = viewerId === post.authorId;
+  const canReportPost = isReportablePostType(post.type);
   const canInteractWithPostOwner = !(
     resolvedRelationState.hasBlockedMe || resolvedRelationState.isBlockedByMe
   );
@@ -578,11 +580,11 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
 
             {canInteract && !isAuthor && !canInteractWithPostOwner ? (
               <div className="mt-4 border border-rose-300 bg-rose-50 px-3 py-2 text-xs text-rose-700">
-                차단 관계에서는 댓글/반응/신고 기능을 사용할 수 없습니다.
+                차단 관계에서는 {canReportPost ? "댓글/반응/신고" : "댓글/반응"} 기능을 사용할 수 없습니다.
               </div>
             ) : null}
 
-            {canInteract && !isAuthor && canInteractWithPostOwner ? (
+            {canReportPost && canInteract && !isAuthor && canInteractWithPostOwner ? (
                <details className="mt-4 rounded-xl border border-[#d9e5f7] bg-white p-4">
                 <summary className="cursor-pointer text-sm font-semibold text-[#1f3f71]">게시글 신고</summary>
                 <div className="mt-3">

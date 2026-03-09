@@ -2,6 +2,7 @@ import { PostType, UserRole } from "@prisma/client";
 import { describe, expect, it } from "vitest";
 
 import {
+  evaluateAdminOnlyPostWritePolicy,
   NEW_USER_RESTRICTION_HOURS,
   evaluateNewUserPostWritePolicy,
 } from "@/lib/post-write-policy";
@@ -73,5 +74,29 @@ describe("evaluateNewUserPostWritePolicy", () => {
 
   it("uses default minimum account age as 24 hours", () => {
     expect(NEW_USER_RESTRICTION_HOURS).toBe(24);
+  });
+
+  it("blocks admin-only post types for regular users", () => {
+    const result = evaluateAdminOnlyPostWritePolicy({
+      role: UserRole.USER,
+      postType: PostType.ADOPTION_LISTING,
+    });
+
+    expect(result).toEqual({
+      allowed: false,
+      message: "유기동물 입양 글은 관리자만 등록하거나 수정할 수 있습니다.",
+    });
+  });
+
+  it("allows admin-only post types for moderators", () => {
+    const result = evaluateAdminOnlyPostWritePolicy({
+      role: UserRole.MODERATOR,
+      postType: PostType.ADOPTION_LISTING,
+    });
+
+    expect(result).toEqual({
+      allowed: true,
+      message: null,
+    });
   });
 });
