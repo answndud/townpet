@@ -1,9 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
+import Link from "next/link";
+import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 import type { NotificationFilterKind } from "@/lib/notification-filter";
+import { buildPaginationWindow } from "@/lib/pagination";
 import { emitNotificationUnreadSync } from "@/lib/notification-unread-sync";
 import { buildNotificationListHref } from "@/lib/notification-filter";
 import { resolveUserDisplayName } from "@/lib/user-display";
@@ -30,25 +32,10 @@ type NotificationCenterItem = {
 
 type NotificationCenterProps = {
   initialItems: NotificationCenterItem[];
-  nextCursor: string | null;
+  currentPage: number;
+  totalPages: number;
   initialKind: NotificationFilterKind;
   initialUnreadOnly: boolean;
-};
-
-type NotificationApiSuccess = {
-  ok: true;
-  data: {
-    items: NotificationCenterItem[];
-    nextCursor: string | null;
-  };
-};
-
-type NotificationApiError = {
-  ok: false;
-  error: {
-    code: string;
-    message: string;
-  };
 };
 
 function markItemRead(items: NotificationCenterItem[], id: string) {
@@ -84,22 +71,19 @@ function buildNotificationHref(notification: {
 
 export function NotificationCenter({
   initialItems,
-  nextCursor,
+  currentPage,
+  totalPages,
   initialKind,
   initialUnreadOnly,
 }: NotificationCenterProps) {
   const router = useRouter();
   const [items, setItems] = useState(initialItems);
-  const [cursor, setCursor] = useState(nextCursor);
-  const [kind, setKind] = useState<NotificationFilterKind>(initialKind);
-  const [unreadOnly, setUnreadOnly] = useState(initialUnreadOnly);
+  const kind = initialKind;
+  const unreadOnly = initialUnreadOnly;
   const [message, setMessage] = useState<string | null>(null);
   const [pendingMap, setPendingMap] = useState<Record<string, boolean>>({});
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [loadMoreError, setLoadMoreError] = useState<string | null>(null);
   const [isFilterPending, startFilterTransition] = useTransition();
   const [isMarkAllPending, startMarkAllTransition] = useTransition();
-  const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   const unreadCount = useMemo(
     () => items.filter((item) => !item.isRead).length,
@@ -113,131 +97,14 @@ export function NotificationCenter({
     }));
   };
 
-  const requestNotifications = useCallback(
-    async (options: {
-      cursor?: string | null;
-      kind: NotificationFilterKind;
-      unreadOnly: boolean;
-    }) => {
-      const params = new URLSearchParams();
-      params.set("limit", "20");
-      if (options.cursor) {
-        params.set("cursor", options.cursor);
-      }
-      if (options.kind !== "ALL") {
-        params.set("kind", options.kind);
-      }
-      if (options.unreadOnly) {
-        params.set("unreadOnly", "1");
-      }
-
-      const response = await fetch(`/api/notifications?${params.toString()}`, {
-        method: "GET",
-        credentials: "same-origin",
-        cache: "no-store",
-      });
-      const payload = (await response.json()) as NotificationApiSuccess | NotificationApiError;
-
-      if (!response.ok || !payload.ok) {
-        throw new Error(payload.ok ? "알림을 불러오지 못했습니다." : payload.error.message);
-      }
-
-      return payload.data;
-    },
-    [],
-  );
-
-  const loadMore = useCallback(async () => {
-    if (!cursor || isLoadingMore) {
-      return;
-    }
-
-    setIsLoadingMore(true);
-    setLoadMoreError(null);
-
-    try {
-      const data = await requestNotifications({
-        cursor,
-        kind,
-        unreadOnly,
-      });
-
-      setItems((prev) => {
-        const merged = [...prev];
-        const seen = new Set(prev.map((item) => item.id));
-
-        for (const item of data.items) {
-          if (seen.has(item.id)) {
-            continue;
-          }
-          merged.push(item);
-          seen.add(item.id);
-        }
-
-        return merged;
-      });
-      setCursor(data.nextCursor);
-    } catch (error) {
-      const nextMessage =
-        error instanceof Error && error.message.trim().length > 0
-          ? error.message
-          : "알림을 더 불러오지 못했습니다.";
-      setLoadMoreError(nextMessage);
-    } finally {
-      setIsLoadingMore(false);
-    }
-  }, [cursor, isLoadingMore, kind, unreadOnly, requestNotifications]);
-
   const handleApplyFilter = (nextKind: NotificationFilterKind, nextUnreadOnly: boolean) => {
     setMessage(null);
-    setLoadMoreError(null);
-
-    startFilterTransition(async () => {
-      try {
-        const data = await requestNotifications({
-          kind: nextKind,
-          unreadOnly: nextUnreadOnly,
-        });
-        setKind(nextKind);
-        setUnreadOnly(nextUnreadOnly);
-        setItems(data.items);
-        setCursor(data.nextCursor);
-        router.replace(buildNotificationListHref(nextKind, nextUnreadOnly), {
-          scroll: false,
-        });
-      } catch (error) {
-        const nextMessage =
-          error instanceof Error && error.message.trim().length > 0
-            ? error.message
-            : "알림을 불러오지 못했습니다.";
-        setMessage(nextMessage);
-      }
+    startFilterTransition(() => {
+      router.replace(buildNotificationListHref(nextKind, nextUnreadOnly, 1), {
+        scroll: false,
+      });
     });
   };
-
-  useEffect(() => {
-    if (!cursor) {
-      return;
-    }
-
-    const node = sentinelRef.current;
-    if (!node) {
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const target = entries[0];
-        if (target?.isIntersecting) {
-          void loadMore();
-        }
-      },
-      { rootMargin: "200px 0px" },
-    );
-
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, [cursor, loadMore]);
 
   const handleMarkRead = async (id: string) => {
     setMessage(null);
@@ -287,7 +154,6 @@ export function NotificationCenter({
   const handleMarkAll = () => {
     setMessage(null);
     const previousItems = items;
-    const previousCursor = cursor;
     const unreadIds = previousItems.filter((item) => !item.isRead).map((item) => item.id);
     if (unreadIds.length === 0) {
       return;
@@ -295,7 +161,6 @@ export function NotificationCenter({
 
     if (unreadOnly) {
       setItems([]);
-      setCursor(null);
     } else {
       setItems((prev) =>
         prev.map((item) =>
@@ -314,7 +179,6 @@ export function NotificationCenter({
       if (!result.ok) {
         setMessage(result.message);
         setItems(previousItems);
-        setCursor(previousCursor);
         return;
       }
       emitNotificationUnreadSync({ resetTo: 0 });
@@ -462,18 +326,43 @@ export function NotificationCenter({
         )}
       </section>
 
-      {cursor ? (
-        <div className="flex flex-col items-start gap-2">
-          <div ref={sentinelRef} className="h-1 w-full" aria-hidden />
-          <button
-            type="button"
-            onClick={() => void loadMore()}
-            disabled={isLoadingMore}
-            className="tp-btn-soft px-3 py-1.5 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-60"
+      {items.length > 0 && totalPages > 1 ? (
+        <div className="flex flex-wrap items-center justify-center gap-1.5 rounded-[20px] border border-[#dbe6f6] bg-white px-3 py-3">
+          <Link
+            href={buildNotificationListHref(kind, unreadOnly, Math.max(1, currentPage - 1))}
+            aria-disabled={currentPage <= 1}
+            className={`inline-flex h-8 items-center rounded-lg border px-2.5 text-xs font-semibold transition ${
+              currentPage <= 1
+                ? "pointer-events-none border-[#d6e1f1] bg-[#eef3fb] text-[#91a6c6]"
+                : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
+            }`}
           >
-            {isLoadingMore ? "알림 불러오는 중..." : "알림 더 보기"}
-          </button>
-          {loadMoreError ? <p className="text-xs text-rose-600">{loadMoreError}</p> : null}
+            이전
+          </Link>
+          {buildPaginationWindow(currentPage, totalPages).map((pageNumber) => (
+            <Link
+              key={`notification-page-${pageNumber}`}
+              href={buildNotificationListHref(kind, unreadOnly, pageNumber)}
+              className={`inline-flex h-8 min-w-8 items-center justify-center rounded-lg border px-2 text-xs font-semibold transition ${
+                pageNumber === currentPage
+                  ? "border-[#3567b5] bg-[#3567b5] text-white"
+                  : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
+              }`}
+            >
+              {pageNumber}
+            </Link>
+          ))}
+          <Link
+            href={buildNotificationListHref(kind, unreadOnly, Math.min(totalPages, currentPage + 1))}
+            aria-disabled={currentPage >= totalPages}
+            className={`inline-flex h-8 items-center rounded-lg border px-2.5 text-xs font-semibold transition ${
+              currentPage >= totalPages
+                ? "pointer-events-none border-[#d6e1f1] bg-[#eef3fb] text-[#91a6c6]"
+                : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
+            }`}
+          >
+            다음
+          </Link>
         </div>
       ) : items.length > 0 ? (
         <p className="text-xs text-[#5f79a0]">마지막 알림까지 모두 확인했습니다.</p>

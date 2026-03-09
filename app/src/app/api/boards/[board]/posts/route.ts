@@ -18,6 +18,7 @@ const commonBoardRouteParamSchema = z.enum([
 
 const commonBoardQuerySchema = z.object({
   cursor: z.string().cuid().optional(),
+  page: z.coerce.number().int().positive().optional(),
   limit: z.coerce.number().int().min(1).max(50).default(20),
   animalTag: z.string().trim().min(1).max(24).optional(),
   q: z.string().trim().min(1).max(100).optional(),
@@ -59,6 +60,7 @@ export async function GET(
     const { searchParams } = new URL(request.url);
     const queryParsed = commonBoardQuerySchema.safeParse({
       cursor: searchParams.get("cursor") ?? undefined,
+      page: searchParams.get("page") ?? undefined,
       limit: searchParams.get("limit") ?? undefined,
       animalTag: searchParams.get("animalTag") ?? undefined,
       q: searchParams.get("q") ?? undefined,

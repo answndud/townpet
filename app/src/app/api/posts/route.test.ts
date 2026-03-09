@@ -5,7 +5,7 @@ import { ServiceError } from "@/server/services/service-error";
 import { GET, POST } from "@/app/api/posts/route";
 import { getCurrentUserId, hasSessionCookieFromRequest } from "@/server/auth";
 import { monitorUnhandledError } from "@/server/error-monitor";
-import { listPosts } from "@/server/queries/post.queries";
+import { countPosts, listPosts } from "@/server/queries/post.queries";
 import {
   getGuestPostPolicy,
   getGuestReadLoginRequiredPostTypes,
@@ -21,7 +21,7 @@ vi.mock("@/server/auth", () => ({
   hasSessionCookieFromRequest: vi.fn(),
 }));
 vi.mock("@/server/error-monitor", () => ({ monitorUnhandledError: vi.fn() }));
-vi.mock("@/server/queries/post.queries", () => ({ listPosts: vi.fn() }));
+vi.mock("@/server/queries/post.queries", () => ({ countPosts: vi.fn(), listPosts: vi.fn() }));
 vi.mock("@/server/queries/policy.queries", () => ({
   getGuestReadLoginRequiredPostTypes: vi.fn(),
   getGuestPostPolicy: vi.fn(),
@@ -36,6 +36,7 @@ vi.mock("@/server/services/post.service", () => ({ createPost: vi.fn() }));
 const mockGetCurrentUserId = vi.mocked(getCurrentUserId);
 const mockHasSessionCookieFromRequest = vi.mocked(hasSessionCookieFromRequest);
 const mockMonitorUnhandledError = vi.mocked(monitorUnhandledError);
+const mockCountPosts = vi.mocked(countPosts);
 const mockListPosts = vi.mocked(listPosts);
 const mockGetGuestPostPolicy = vi.mocked(getGuestPostPolicy);
 const mockGetGuestReadLoginRequiredPostTypes = vi.mocked(
@@ -52,6 +53,7 @@ describe("GET /api/posts contract", () => {
     mockGetCurrentUserId.mockReset();
     mockHasSessionCookieFromRequest.mockReset();
     mockMonitorUnhandledError.mockReset();
+    mockCountPosts.mockReset();
     mockListPosts.mockReset();
     mockGetGuestPostPolicy.mockReset();
     mockGetGuestReadLoginRequiredPostTypes.mockReset();
@@ -76,6 +78,7 @@ describe("GET /api/posts contract", () => {
       riskLevel: "NORMAL",
     } as never);
     mockIsLoginRequiredPostType.mockReturnValue(false);
+    mockCountPosts.mockResolvedValue(0);
     mockListPosts.mockResolvedValue({ items: [], nextCursor: null });
     mockCreatePost.mockResolvedValue({ id: "post-1" } as never);
   });

@@ -23,6 +23,7 @@ export function parseUnreadOnly(value: string | null | undefined) {
 export function buildNotificationListHref(
   kind: NotificationFilterKind,
   unreadOnly: boolean,
+  page = 1,
 ) {
   const params = new URLSearchParams();
   if (kind !== "ALL") {
@@ -30,6 +31,9 @@ export function buildNotificationListHref(
   }
   if (unreadOnly) {
     params.set("unreadOnly", "1");
+  }
+  if (page > 1) {
+    params.set("page", String(page));
   }
 
   const query = params.toString();

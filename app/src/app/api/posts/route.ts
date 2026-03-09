@@ -5,7 +5,7 @@ import { z } from "zod";
 import { isLoginRequiredPostType } from "@/lib/post-access";
 import { FEED_PAGE_SIZE } from "@/lib/feed";
 import { postListSchema, toPostListInput } from "@/lib/validations/post";
-import { listPosts } from "@/server/queries/post.queries";
+import { countPosts, listPosts } from "@/server/queries/post.queries";
 import { getCurrentUserId, hasSessionCookieFromRequest } from "@/server/auth";
 import { buildCacheControlHeader } from "@/server/cache/query-cache";
 import { monitorUnhandledError } from "@/server/error-monitor";
@@ -85,6 +85,8 @@ export async function GET(request: NextRequest) {
     }
 
     const scope = listInput.scope ?? PostScope.GLOBAL;
+    const currentPage =
+      typeof listInput.page === "number" && listInput.page > 0 ? listInput.page : 1;
     let neighborhoodId: string | undefined;
 
       if (scope === PostScope.LOCAL) {
@@ -110,8 +112,21 @@ export async function GET(request: NextRequest) {
       neighborhoodId = primaryNeighborhood.neighborhood.id;
     }
 
+    const totalCount = await countPosts({
+      ...listSchemaInput,
+      scope,
+      petTypeId,
+      petTypeIds,
+      excludeTypes: currentUserId ? undefined : loginRequiredTypes,
+      neighborhoodId,
+      viewerId,
+    });
+    const totalPages = Math.max(1, Math.ceil(totalCount / FEED_PAGE_SIZE));
+    const resolvedPage = Math.min(currentPage, totalPages);
+
     const data = await listPosts({
       ...listSchemaInput,
+      page: resolvedPage,
       limit: FEED_PAGE_SIZE,
       scope,
       petTypeId,
@@ -125,8 +140,14 @@ export async function GET(request: NextRequest) {
       !currentUserId &&
       scope === PostScope.GLOBAL &&
       !listInput.cursor &&
-      !listInput.personalized;
-    return jsonOk(data, {
+      !listInput.personalized &&
+      resolvedPage === 1;
+    return jsonOk({
+      ...data,
+      page: resolvedPage,
+      totalPages,
+      totalCount,
+    }, {
       headers: {
         "cache-control": canCache ? buildCacheControlHeader(30, 300) : "no-store",
       },

@@ -14,6 +14,7 @@ import { monitorUnhandledError } from "@/server/error-monitor";
 import { getGuestReadLoginRequiredPostTypes } from "@/server/queries/policy.queries";
 import { listCommunityNavItems } from "@/server/queries/community.queries";
 import {
+  countPosts,
   countBestPosts,
   listBestPosts,
   listPosts,
@@ -313,35 +314,56 @@ export async function GET(request: NextRequest) {
     }
 
     const totalItemCount =
-      mode === "BEST" && !isGuestTypeBlocked
-        ? await countBestPosts({
-            days: bestDays,
-            type: type ?? undefined,
-            reviewBoard,
-            reviewCategory,
-            scope: effectiveScope,
-            petTypeId: petTypeId ?? undefined,
-            petTypeIds,
-            q: query || undefined,
-            searchIn: selectedSearchIn,
-            excludeTypes: loginRequiredTypes,
-            neighborhoodId: undefined,
-            minLikes: 1,
-            viewerId: undefined,
-          }).catch((error) => {
-            if (isDatabaseUnavailableError(error)) {
-              return 0;
-            }
-            throw error;
-          })
+      !isGuestTypeBlocked
+        ? mode === "BEST"
+          ? await countBestPosts({
+              days: bestDays,
+              type: type ?? undefined,
+              reviewBoard,
+              reviewCategory,
+              scope: effectiveScope,
+              petTypeId: petTypeId ?? undefined,
+              petTypeIds,
+              q: query || undefined,
+              searchIn: selectedSearchIn,
+              excludeTypes: loginRequiredTypes,
+              neighborhoodId: undefined,
+              minLikes: 1,
+              viewerId: undefined,
+            }).catch((error) => {
+              if (isDatabaseUnavailableError(error)) {
+                return 0;
+              }
+              throw error;
+            })
+          : await countPosts({
+              type: type ?? undefined,
+              reviewBoard,
+              reviewCategory,
+              scope: effectiveScope,
+              petTypeId: petTypeId ?? undefined,
+              petTypeIds,
+              q: query || undefined,
+              searchIn: selectedSearchIn,
+              days: periodDays ?? undefined,
+              excludeTypes: loginRequiredTypes,
+              neighborhoodId: undefined,
+              viewerId: undefined,
+            }).catch((error) => {
+              if (isDatabaseUnavailableError(error)) {
+                return 0;
+              }
+              throw error;
+            })
         : 0;
 
-    const totalPages = mode === "BEST" ? Math.max(1, Math.ceil(totalItemCount / FEED_PAGE_SIZE)) : 1;
-    const resolvedPage = mode === "BEST" ? Math.min(currentPage, totalPages) : 1;
+    const totalPages = Math.max(1, Math.ceil(totalItemCount / FEED_PAGE_SIZE));
+    const resolvedPage = Math.min(currentPage, totalPages);
 
     const posts =
       mode === "ALL" && !isGuestTypeBlocked
         ? await listPosts({
+            page: resolvedPage,
             limit: FEED_PAGE_SIZE,
             type: type ?? undefined,
             reviewBoard,
@@ -411,7 +433,7 @@ export async function GET(request: NextRequest) {
       bestDays,
       periodDays ?? "ALL_TIME",
       query || "__EMPTY__",
-      mode === "BEST" ? resolvedPage : "CURSOR",
+      resolvedPage,
     ].join("|");
 
     return jsonOk(
@@ -436,7 +458,7 @@ export async function GET(request: NextRequest) {
           resolvedPage,
           feedQueryKey,
           items: serializeFeedItems(items as Array<Record<string, unknown>>),
-          nextCursor: mode === "ALL" ? posts.nextCursor : null,
+          nextCursor: null,
         },
       },
       {

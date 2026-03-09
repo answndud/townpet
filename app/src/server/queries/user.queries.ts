@@ -312,11 +312,15 @@ type PublicUserActivityOptions = {
   userId: string;
   limit?: number;
   cursor?: string;
+  page?: number;
 };
 
 type CursorPageResult<T> = {
   items: T[];
   nextCursor: string | null;
+  page: number;
+  totalPages: number;
+  totalCount: number;
 };
 
 function isCursorNotFoundError(error: unknown) {
@@ -348,22 +352,32 @@ export async function listPublicUserPosts({
   userId,
   limit = 20,
   cursor,
+  page = 1,
 }: PublicUserActivityOptions) {
   const safeLimit = Math.min(Math.max(limit, 1), 50);
+  const safePage = Math.max(page, 1);
+  const where = {
+    authorId: userId,
+    status: "ACTIVE" as const,
+    scope: "GLOBAL" as const,
+  };
+  const totalCount = await prisma.post.count({ where });
+  const totalPages = Math.max(1, Math.ceil(totalCount / safeLimit));
+  const resolvedPage = Math.min(safePage, totalPages);
   const items = await runWithCursorFallback(cursor, (cursorValue) =>
     prisma.post.findMany({
-      where: {
-        authorId: userId,
-        status: "ACTIVE",
-        scope: "GLOBAL",
-      },
+      where,
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-      take: safeLimit + 1,
+      take: cursorValue ? safeLimit + 1 : safeLimit,
       ...(cursorValue
         ? {
             cursor: { id: cursorValue },
             skip: 1,
           }
+        : resolvedPage > 1
+          ? {
+              skip: (resolvedPage - 1) * safeLimit,
+            }
         : {}),
       select: {
         id: true,
@@ -387,6 +401,9 @@ export async function listPublicUserPosts({
   return {
     items,
     nextCursor,
+    page: resolvedPage,
+    totalPages,
+    totalCount,
   } satisfies CursorPageResult<(typeof items)[number]>;
 }
 
@@ -394,25 +411,35 @@ export async function listPublicUserComments({
   userId,
   limit = 20,
   cursor,
+  page = 1,
 }: PublicUserActivityOptions) {
   const safeLimit = Math.min(Math.max(limit, 1), 50);
+  const safePage = Math.max(page, 1);
+  const where = {
+    authorId: userId,
+    status: "ACTIVE" as const,
+    post: {
+      status: "ACTIVE" as const,
+      scope: "GLOBAL" as const,
+    },
+  };
+  const totalCount = await prisma.comment.count({ where });
+  const totalPages = Math.max(1, Math.ceil(totalCount / safeLimit));
+  const resolvedPage = Math.min(safePage, totalPages);
   const items = await runWithCursorFallback(cursor, (cursorValue) =>
     prisma.comment.findMany({
-      where: {
-        authorId: userId,
-        status: "ACTIVE",
-        post: {
-          status: "ACTIVE",
-          scope: "GLOBAL",
-        },
-      },
+      where,
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-      take: safeLimit + 1,
+      take: cursorValue ? safeLimit + 1 : safeLimit,
       ...(cursorValue
         ? {
             cursor: { id: cursorValue },
             skip: 1,
           }
+        : resolvedPage > 1
+          ? {
+              skip: (resolvedPage - 1) * safeLimit,
+            }
         : {}),
       select: {
         id: true,
@@ -437,6 +464,9 @@ export async function listPublicUserComments({
   return {
     items,
     nextCursor,
+    page: resolvedPage,
+    totalPages,
+    totalCount,
   } satisfies CursorPageResult<(typeof items)[number]>;
 }
 
@@ -444,24 +474,34 @@ export async function listPublicUserReactions({
   userId,
   limit = 20,
   cursor,
+  page = 1,
 }: PublicUserActivityOptions) {
   const safeLimit = Math.min(Math.max(limit, 1), 50);
+  const safePage = Math.max(page, 1);
+  const where = {
+    userId,
+    post: {
+      status: "ACTIVE" as const,
+      scope: "GLOBAL" as const,
+    },
+  };
+  const totalCount = await prisma.postReaction.count({ where });
+  const totalPages = Math.max(1, Math.ceil(totalCount / safeLimit));
+  const resolvedPage = Math.min(safePage, totalPages);
   const items = await runWithCursorFallback(cursor, (cursorValue) =>
     prisma.postReaction.findMany({
-      where: {
-        userId,
-        post: {
-          status: "ACTIVE",
-          scope: "GLOBAL",
-        },
-      },
+      where,
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-      take: safeLimit + 1,
+      take: cursorValue ? safeLimit + 1 : safeLimit,
       ...(cursorValue
         ? {
             cursor: { id: cursorValue },
             skip: 1,
           }
+        : resolvedPage > 1
+          ? {
+              skip: (resolvedPage - 1) * safeLimit,
+            }
         : {}),
       select: {
         id: true,
@@ -492,6 +532,9 @@ export async function listPublicUserReactions({
   return {
     items,
     nextCursor,
+    page: resolvedPage,
+    totalPages,
+    totalCount,
   } satisfies CursorPageResult<(typeof items)[number]>;
 }
 

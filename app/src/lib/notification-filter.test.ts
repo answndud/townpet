@@ -35,5 +35,8 @@ describe("notification-filter", () => {
     expect(buildNotificationListHref("REACTION", true)).toBe(
       "/notifications?kind=REACTION&unreadOnly=1",
     );
+    expect(buildNotificationListHref("ALL", false, 3)).toBe(
+      "/notifications?page=3",
+    );
   });
 });

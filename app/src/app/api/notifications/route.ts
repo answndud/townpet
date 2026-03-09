@@ -15,6 +15,7 @@ import { ServiceError } from "@/server/services/service-error";
 
 const notificationListSchema = z.object({
   cursor: z.string().cuid().optional(),
+  page: z.coerce.number().int().positive().optional(),
   limit: z.coerce.number().int().min(1).max(40).default(20),
   kind: z.enum(notificationFilterKindValues).default("ALL"),
 });
@@ -36,6 +37,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const parsed = notificationListSchema.safeParse({
       cursor: searchParams.get("cursor") ?? undefined,
+      page: searchParams.get("page") ?? undefined,
       limit: searchParams.get("limit") ?? undefined,
       kind: searchParams.get("kind") ?? undefined,
     });
@@ -49,10 +51,11 @@ export async function GET(request: NextRequest) {
 
     const unreadOnly = parseUnreadOnly(searchParams.get("unreadOnly"));
 
-    const { items, nextCursor } = await listNotificationsByUser({
+    const { items, nextCursor, page, totalPages, totalCount } = await listNotificationsByUser({
       userId: authenticatedUserId,
       limit: parsed.data.limit,
       cursor: parsed.data.cursor,
+      page: parsed.data.page,
       kind: parsed.data.kind,
       unreadOnly,
     });
@@ -75,6 +78,9 @@ export async function GET(request: NextRequest) {
           : null,
       })),
       nextCursor,
+      page,
+      totalPages,
+      totalCount,
     });
   } catch (error) {
     if (error instanceof ServiceError) {

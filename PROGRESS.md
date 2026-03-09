@@ -17,9 +17,25 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-09: Cycle 254 완료 (전역 목록 페이지네이션 통일)
+- 완료 내용
+- `app/src/app/feed/page.tsx`, `app/src/components/posts/guest-feed-page-client.tsx`, `app/src/app/lounges/breeds/[breedCode]/page.tsx`에서 전체 목록도 `page` 기준으로 조회하도록 바꿨고, `app/src/components/posts/feed-infinite-list.tsx`의 `게시글 더 보기`/IntersectionObserver 경로를 제거했다.
+- `app/src/app/api/feed/guest/route.ts`, `app/src/app/api/posts/route.ts`, `app/src/app/api/lounges/breeds/[breedCode]/posts/route.ts`, `app/src/app/api/boards/[board]/posts/route.ts`가 `page`를 받아 total/page 메타를 반환하도록 정리했다.
+- `app/src/app/notifications/page.tsx`, `app/src/components/notifications/notification-center.tsx`, `app/src/lib/notification-filter.ts`, `app/src/server/queries/notification.queries.ts`를 수정해 알림센터가 커서 기반 `알림 더 보기` 없이 번호 페이지네이션만 사용하도록 바꿨다.
+- `app/src/app/users/[id]/page.tsx`, `app/src/server/queries/user.queries.ts`를 수정해 공개 프로필 활동 탭(`posts/comments/reactions`)의 `더 보기` 링크를 번호 페이지네이션으로 전환했다.
+- `app/src/lib/validations/post.ts`, `app/src/lib/validations/lounge.ts`, `app/src/lib/pagination.ts`를 추가/확장해 목록 validation과 페이지 계산 helper를 공통화했다.
+- 검증 결과
+- `pnpm -C app lint src/app/feed/page.tsx src/components/posts/feed-infinite-list.tsx src/components/posts/guest-feed-page-client.tsx 'src/app/lounges/breeds/[breedCode]/page.tsx' 'src/app/api/lounges/breeds/[breedCode]/posts/route.ts' src/app/notifications/page.tsx src/components/notifications/notification-center.tsx src/lib/notification-filter.ts src/server/queries/notification.queries.ts 'src/app/users/[id]/page.tsx' src/server/queries/user.queries.ts src/app/api/posts/route.ts src/app/api/feed/guest/route.ts src/server/queries/community.queries.ts 'src/app/api/boards/[board]/posts/route.ts' src/lib/feed.ts src/lib/pagination.ts src/lib/feed.test.ts src/lib/notification-filter.test.ts src/app/api/notifications/route.ts src/app/api/posts/route.test.ts src/app/api/feed/guest/route.test.ts 'src/app/api/lounges/breeds/[breedCode]/posts/route.test.ts' src/app/api/notifications/route.test.ts src/server/queries/notification.queries.test.ts 'src/app/api/boards/[board]/posts/route.test.ts'` 통과
+- `pnpm -C app typecheck` 통과
+- `pnpm -C app test -- src/app/api/posts/route.test.ts src/app/api/feed/guest/route.test.ts 'src/app/api/lounges/breeds/[breedCode]/posts/route.test.ts' src/app/api/notifications/route.test.ts src/server/queries/notification.queries.test.ts src/lib/feed.test.ts src/lib/notification-filter.test.ts` 실행 시 현재 환경에서는 Vitest 전체 suite가 실행됐고 `107 files / 551 tests` 통과
+- `git diff --check` 통과
+- 메모
+- 제품 UI 기준으로 무한 스크롤/더보기는 제거했고, 남아 있는 `cursor` 파라미터 처리는 하위 호환 계약 용도다. 현재 화면은 모두 URL 기반 페이지네이션만 사용한다.
+- 푸시는 하지 않았다. 현재 변경은 로컬 워크트리에만 있다.
+
 ### 2026-03-09: Cycle 250 완료 (입양 보드 헤더 설명 문구 제거)
 - 완료 내용
-  - `app/src/app/boards/adoption/page.tsx`의 헤더 설명 문구를 제거해 사용자가 보는 영역에는 제목, 검색, 개수 메타만 남기도록 정리했다.
+- `app/src/app/boards/adoption/page.tsx`의 헤더 설명 문구를 제거해 사용자가 보는 영역에는 제목, 검색, 개수 메타만 남기도록 정리했다.
 - 검증 결과
   - `pnpm -C app lint src/app/boards/adoption/page.tsx` 통과
   - `git diff --check` 통과
@@ -6990,6 +7006,76 @@
 - `pnpm -C app typecheck` 통과
 - `git diff --check` 통과
 - 메모
+- 푸시는 하지 않았다. 현재 변경은 로컬 워크트리에만 있다.
+
+### 2026-03-09: Cycle 252 게시판 더미데이터 대량 시드 확장
+- 완료 내용
+- 여러 게시판에 걸쳐 재실행 가능한 더미 게시글 시드 스크립트를 추가했다.
+  - `app/scripts/seed-board-posts.ts`
+  - `app/package.json`에 `pnpm -C app db:seed:board-posts` 명령을 추가했다.
+- 시드 범위
+  - `FREE_BOARD`, `FREE_POST`, `DAILY_SHARE`
+  - `QA_QUESTION`
+  - `HOSPITAL_REVIEW`, `PLACE_REVIEW`, `WALK_ROUTE`
+  - `MARKET_LISTING`, `MEETUP`, `LOST_FOUND`
+  - `SHELTER_VOLUNTEER`, `ADOPTION_LISTING`
+- 관리자/모더레이터/일반 사용자 데모 계정을 함께 보장하고, 입양 게시글은 운영 정책에 맞게 관리자/모더레이터 계정으로만 시드했다.
+- 검증 및 실행 결과
+- `pnpm -C app lint scripts/seed-board-posts.ts` 통과
+- `pnpm -C app typecheck` 통과
+- `pnpm -C app db:seed:board-posts` 실행 결과
+  - 총 54건 생성
+  - 생성 분포
+    - `FREE_BOARD` 4
+    - `FREE_POST` 4
+    - `DAILY_SHARE` 4
+    - `QA_QUESTION` 5
+    - `HOSPITAL_REVIEW` 3
+    - `PLACE_REVIEW` 3
+    - `WALK_ROUTE` 3
+    - `PRODUCT_REVIEW` 4
+    - `PET_SHOWCASE` 4
+    - `MARKET_LISTING` 4
+    - `MEETUP` 4
+    - `LOST_FOUND` 4
+    - `SHELTER_VOLUNTEER` 4
+    - `ADOPTION_LISTING` 4
+- 주입 후 최종 타입별 게시글 수
+  - `HOSPITAL_REVIEW` 9
+  - `PLACE_REVIEW` 7
+  - `WALK_ROUTE` 10
+  - `MEETUP` 5
+  - `MARKET_LISTING` 4
+  - `LOST_FOUND` 5
+  - `QA_QUESTION` 5
+  - `FREE_POST` 12
+  - `FREE_BOARD` 10
+  - `DAILY_SHARE` 6
+  - `PRODUCT_REVIEW` 7
+  - `PET_SHOWCASE` 6
+  - `ADOPTION_LISTING` 8
+  - `SHELTER_VOLUNTEER` 4
+- 메모
+- 푸시는 하지 않았다. 현재 변경은 로컬 워크트리에만 있다.
+
+### 2026-03-09: Cycle 253 피드 `page` 파라미터 혼선 정리
+- 확인 사실
+- 현재 `/feed`는 두 가지 방식이 섞여 있었다.
+  - `mode=ALL`: cursor 기반 무한스크롤 + 하단 `게시글 더 보기`
+  - `mode=BEST`: numbered pagination
+- 그래서 `ALL` 모드에서 `?page=1`이 붙어 있어도 실제로는 페이지 버튼이 나오지 않는 것이 코드상 정상 동작이었다.
+- 완료 내용
+- `app/src/lib/feed.ts`에 `shouldStripFeedPageParam` helper를 추가했다.
+- `app/src/app/feed/page.tsx`에서 아래 케이스를 만나면 정규화 redirect 하도록 바꿨다.
+  - `mode=ALL`인데 `page`가 붙은 경우
+  - `mode=BEST`인데 `page=1` 또는 invalid page가 붙은 경우
+- 검증 결과
+- `pnpm -C app lint src/lib/feed.ts src/lib/feed.test.ts src/app/feed/page.tsx` 통과
+- `pnpm -C app test -- src/lib/feed.test.ts` 통과
+  - 현재 환경에서는 전체 Vitest suite로 확장 실행되어 `107 files / 550 tests`가 통과했다.
+- `pnpm -C app typecheck` 통과
+- 메모
+- 현재 `/feed`의 numbered pagination은 여전히 `BEST` 모드 전용이고, 전체 피드는 무한스크롤 설계다.
 - 푸시는 하지 않았다. 현재 변경은 로컬 워크트리에만 있다.
 
 ### 2026-03-07: Cycle 205 비회원 abuse defense 현실화

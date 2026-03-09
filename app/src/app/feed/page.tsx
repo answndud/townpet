@@ -20,7 +20,8 @@ import {
   resolveFeedAudienceContext,
 } from "@/lib/feed-personalization";
 import { toFeedAudienceSourceValue } from "@/lib/feed-personalization-metrics";
-import { FEED_PAGE_SIZE } from "@/lib/feed";
+import { FEED_PAGE_SIZE, shouldStripFeedPageParam } from "@/lib/feed";
+import { buildPaginationWindow } from "@/lib/pagination";
 import {
   getDedicatedBoardPathByPostType,
   isCommonBoardPostType,
@@ -40,6 +41,7 @@ import { listAudienceSegmentsByUserId } from "@/server/queries/audience-segment.
 import { getGuestReadLoginRequiredPostTypes } from "@/server/queries/policy.queries";
 import { listCommunityNavItems } from "@/server/queries/community.queries";
 import {
+  countPosts,
   countBestPosts,
   listViewerRecentEngagementSummaryLabels,
   listViewerRecentBehaviorSummaryLabels,
@@ -289,6 +291,25 @@ export default async function Home({ searchParams }: HomePageProps) {
     const serialized = params.toString();
     redirect(serialized ? `/feed?${serialized}` : "/feed");
   }
+  if (
+    shouldStripFeedPageParam({
+      page: typeof resolvedParams.page === "string" ? resolvedParams.page : null,
+    })
+  ) {
+    const params = new URLSearchParams();
+    for (const [key, value] of Object.entries(resolvedParams)) {
+      if (key === "page") {
+        continue;
+      }
+
+      if (typeof value === "string" && value.length > 0) {
+        params.set(key, value);
+      }
+    }
+
+    const serialized = params.toString();
+    redirect(serialized ? `/feed?${serialized}` : "/feed");
+  }
   await maybeDebugDelay(resolvedParams.debugDelayMs);
   const parsedParams = postListSchema.safeParse({
     ...resolvedParams,
@@ -399,35 +420,56 @@ export default async function Home({ searchParams }: HomePageProps) {
       : undefined;
 
   const totalItemCount =
-    mode === "BEST" && !isGuestTypeBlocked
-      ? await countBestPosts({
-          days: bestDays,
-          type,
-          reviewBoard,
-          reviewCategory,
-          scope: effectiveScope,
-          petTypeId,
-          petTypeIds,
-          q: query || undefined,
-          searchIn: selectedSearchIn,
-          excludeTypes: isAuthenticated ? undefined : blockedTypesForGuest,
-          neighborhoodId,
-          minLikes: 1,
-          viewerId: user?.id,
-        }).catch((error) => {
-          if (isDatabaseUnavailableError(error)) {
-            return 0;
-          }
-          throw error;
-        })
+    !isGuestTypeBlocked
+      ? mode === "BEST"
+        ? await countBestPosts({
+            days: bestDays,
+            type,
+            reviewBoard,
+            reviewCategory,
+            scope: effectiveScope,
+            petTypeId,
+            petTypeIds,
+            q: query || undefined,
+            searchIn: selectedSearchIn,
+            excludeTypes: isAuthenticated ? undefined : blockedTypesForGuest,
+            neighborhoodId,
+            minLikes: 1,
+            viewerId: user?.id,
+          }).catch((error) => {
+            if (isDatabaseUnavailableError(error)) {
+              return 0;
+            }
+            throw error;
+          })
+        : await countPosts({
+            type,
+            reviewBoard,
+            reviewCategory,
+            scope: effectiveScope,
+            petTypeId,
+            petTypeIds,
+            q: query || undefined,
+            searchIn: selectedSearchIn,
+            days: periodDays ?? undefined,
+            excludeTypes: isAuthenticated ? undefined : blockedTypesForGuest,
+            neighborhoodId,
+            viewerId: user?.id,
+          }).catch((error) => {
+            if (isDatabaseUnavailableError(error)) {
+              return 0;
+            }
+            throw error;
+          })
       : 0;
 
-  const totalPages = mode === "BEST" ? Math.max(1, Math.ceil(totalItemCount / limit)) : 1;
-  const resolvedPage = mode === "BEST" ? Math.min(currentPage, totalPages) : 1;
+  const totalPages = Math.max(1, Math.ceil(totalItemCount / limit));
+  const resolvedPage = Math.min(currentPage, totalPages);
 
   const posts =
     mode === "ALL" && !isGuestTypeBlocked
       ? await listPosts({
+          page: resolvedPage,
           limit,
           type,
           reviewBoard,
@@ -502,7 +544,7 @@ export default async function Home({ searchParams }: HomePageProps) {
     bestDays,
     periodDays ?? "ALL_TIME",
     query || "__EMPTY__",
-    mode === "BEST" ? resolvedPage : "CURSOR",
+    resolvedPage,
   ].join("|");
   const viewerUserId = user?.id ?? null;
   const shouldLoadViewerPersonalizationContext =
@@ -701,8 +743,7 @@ export default async function Home({ searchParams }: HomePageProps) {
     const resolvedPersonalized =
       nextPersonalized === undefined ? selectedPersonalized : nextPersonalized;
     const resolvedDensity = nextDensity === undefined ? density : nextDensity;
-    const effectivePage =
-      nextPage === undefined ? (resolvedMode === "BEST" ? resolvedPage : 1) : nextPage;
+    const effectivePage = nextPage === undefined ? resolvedPage : nextPage;
     const shouldKeepReviewBoard =
       reviewBoard && resolvedType === undefined && !resolvedReviewCategory;
     const normalizedType = shouldKeepReviewBoard ? PostType.PRODUCT_REVIEW : resolvedType;
@@ -740,7 +781,7 @@ export default async function Home({ searchParams }: HomePageProps) {
     } else if (resolvedMode === "ALL" && resolvedPeriod) {
       params.set("period", String(resolvedPeriod));
     }
-    if (resolvedMode === "BEST" && effectivePage && effectivePage > 1) {
+    if (effectivePage && effectivePage > 1) {
       params.set("page", String(effectivePage));
     }
 
@@ -1104,10 +1145,10 @@ export default async function Home({ searchParams }: HomePageProps) {
             />
           ) : (
             <FeedInfiniteList
+              key={feedQueryKey}
               initialItems={initialFeedItems}
-              initialNextCursor={mode === "ALL" ? posts.nextCursor : null}
+              initialNextCursor={null}
               mode={mode}
-              disableLoadMore={mode !== "ALL"}
               preferGuestDetail={!isAuthenticated}
               query={{
                 type,
@@ -1137,7 +1178,7 @@ export default async function Home({ searchParams }: HomePageProps) {
               }
             />
           )}
-          {mode === "BEST" && items.length > 0 && totalPages > 1 ? (
+          {items.length > 0 && totalPages > 1 ? (
             <div className="flex flex-wrap items-center justify-center gap-1.5 border-t border-[#dbe6f6] bg-[#f8fbff] px-3 py-3">
               <Link
                 href={makeHref({ nextPage: Math.max(1, resolvedPage - 1) })}
@@ -1150,16 +1191,7 @@ export default async function Home({ searchParams }: HomePageProps) {
               >
                 이전
               </Link>
-              {Array.from(
-                {
-                  length:
-                    Math.min(totalPages, Math.max(5, resolvedPage + 2)) -
-                    Math.max(1, Math.min(resolvedPage - 2, totalPages - 4)) +
-                    1,
-                },
-                (_, index) =>
-                  Math.max(1, Math.min(resolvedPage - 2, totalPages - 4)) + index,
-              ).map((pageNumber) => (
+              {buildPaginationWindow(resolvedPage, totalPages).map((pageNumber) => (
                 <Link
                   key={`feed-page-${pageNumber}`}
                   href={makeHref({ nextPage: pageNumber })}

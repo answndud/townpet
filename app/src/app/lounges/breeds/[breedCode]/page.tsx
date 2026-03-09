@@ -8,6 +8,7 @@ import {
 } from "@/components/posts/feed-infinite-list";
 import { EmptyState } from "@/components/ui/empty-state";
 import { auth } from "@/lib/auth";
+import { buildPaginationWindow } from "@/lib/pagination";
 import { getPetBreedDisplayLabel } from "@/lib/pet-profile";
 import {
   buildFeedPersonalizationSummary,
@@ -25,7 +26,7 @@ import { redirectToProfileIfNicknameMissing } from "@/server/nickname-guard";
 import { listAudienceSegmentsByUserId } from "@/server/queries/audience-segment.queries";
 import { findBreedCatalogEntryByCode } from "@/server/queries/breed-catalog.queries";
 import { getGuestReadLoginRequiredPostTypes } from "@/server/queries/policy.queries";
-import { listPosts } from "@/server/queries/post.queries";
+import { countPosts, listPosts } from "@/server/queries/post.queries";
 
 type BreedLoungePageProps = {
   params: Promise<{ breedCode?: string }>;
@@ -61,6 +62,7 @@ function toHref(params: {
   days?: 3 | 7 | 30;
   type?: PostType;
   personalized?: boolean;
+  page?: number;
 }) {
   const search = new URLSearchParams();
   if (params.q?.trim()) {
@@ -77,6 +79,9 @@ function toHref(params: {
   }
   if (params.personalized) {
     search.set("personalized", "1");
+  }
+  if (params.page && params.page > 1) {
+    search.set("page", String(params.page));
   }
   const serialized = search.toString();
   return serialized
@@ -148,6 +153,7 @@ export default async function BreedLoungePage({ params, searchParams }: BreedLou
   const breedLabel = await resolveBreedLoungeLabel(breedCode);
   const rawSearchParams = (await searchParams) ?? {};
   const parsedQuery = breedLoungePostListSchema.safeParse({
+    page: readSearchParam(rawSearchParams, "page"),
     q: readSearchParam(rawSearchParams, "q"),
     sort: readSearchParam(rawSearchParams, "sort"),
     days: readSearchParam(rawSearchParams, "period") ?? readSearchParam(rawSearchParams, "days"),
@@ -171,8 +177,22 @@ export default async function BreedLoungePage({ params, searchParams }: BreedLou
   const loungePersonalizedSummary = query.personalized
     ? buildFeedPersonalizationSummary(loungeAudienceContext)
     : null;
+  const currentPage = Number.isFinite(query.page) && (query.page ?? 0) > 0 ? query.page ?? 1 : 1;
+  const totalItemCount = await countPosts({
+    type: query.type,
+    scope: PostScope.GLOBAL,
+    q: query.q,
+    searchIn: query.searchIn,
+    days: query.days,
+    excludeTypes: viewerId ? undefined : loginRequiredTypes,
+    viewerId: viewerId ?? undefined,
+    authorBreedCode: breedCode,
+  }).catch(() => 0);
+  const totalPages = Math.max(1, Math.ceil(totalItemCount / FEED_PAGE_SIZE));
+  const resolvedPage = Math.min(currentPage, totalPages);
 
   const data = await listPosts({
+    page: resolvedPage,
     limit: FEED_PAGE_SIZE,
     scope: PostScope.GLOBAL,
     q: query.q,
@@ -244,6 +264,7 @@ export default async function BreedLoungePage({ params, searchParams }: BreedLou
     query.days ?? "ALL_TIME",
     query.type ?? "ALL",
     query.personalized ? "PERSONALIZED" : "DEFAULT",
+    resolvedPage,
   ].join("|");
 
   return (
@@ -460,34 +481,100 @@ export default async function BreedLoungePage({ params, searchParams }: BreedLou
             actionLabel="공동구매 템플릿 작성"
           />
         ) : (
-          <FeedInfiniteList
-            initialItems={initialItems}
-            initialNextCursor={data.nextCursor}
-            mode="ALL"
-            query={{
-              type: query.type,
-              scope: PostScope.GLOBAL,
-              q: query.q,
-              searchIn: query.searchIn,
-              sort: query.sort,
-              days: query.days,
-              personalized: Boolean(viewerId) && query.personalized,
-            }}
-            queryKey={queryKey}
-            apiPath={`/api/lounges/breeds/${breedCode}/posts`}
-            personalizationTracking={
-              query.personalized
-                ? {
-                    surface: "BREED_LOUNGE",
-                    audienceKey: loungeAudienceContext.audienceKey,
-                    breedCode: loungeAudienceContext.breedCode,
-                    audienceSource: toFeedAudienceSourceValue(
-                      loungeAudienceContext.source,
-                    ),
-                  }
-                : undefined
-            }
-          />
+          <>
+            <FeedInfiniteList
+              key={queryKey}
+              initialItems={initialItems}
+              initialNextCursor={null}
+              mode="ALL"
+              query={{
+                type: query.type,
+                scope: PostScope.GLOBAL,
+                q: query.q,
+                searchIn: query.searchIn,
+                sort: query.sort,
+                days: query.days,
+                personalized: Boolean(viewerId) && query.personalized,
+              }}
+              queryKey={queryKey}
+              apiPath={`/api/lounges/breeds/${breedCode}/posts`}
+              personalizationTracking={
+                query.personalized
+                  ? {
+                      surface: "BREED_LOUNGE",
+                      audienceKey: loungeAudienceContext.audienceKey,
+                      breedCode: loungeAudienceContext.breedCode,
+                      audienceSource: toFeedAudienceSourceValue(
+                        loungeAudienceContext.source,
+                      ),
+                    }
+                  : undefined
+              }
+            />
+            {totalPages > 1 ? (
+              <div className="flex flex-wrap items-center justify-center gap-1.5 border-t border-[#dbe6f6] bg-[#f8fbff] px-3 py-3">
+                <Link
+                  href={toHref({
+                    breedCode,
+                    q: query.q,
+                    sort: query.sort,
+                    days: query.days,
+                    type: query.type,
+                    personalized: query.personalized,
+                    page: Math.max(1, resolvedPage - 1),
+                  })}
+                  aria-disabled={resolvedPage <= 1}
+                  className={`inline-flex h-8 items-center border px-2.5 text-xs font-semibold transition ${
+                    resolvedPage <= 1
+                      ? "pointer-events-none border-[#d6e1f1] bg-[#eef3fb] text-[#91a6c6]"
+                      : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
+                  }`}
+                >
+                  이전
+                </Link>
+                {buildPaginationWindow(resolvedPage, totalPages).map((pageNumber) => (
+                  <Link
+                    key={`breed-lounge-page-${pageNumber}`}
+                    href={toHref({
+                      breedCode,
+                      q: query.q,
+                      sort: query.sort,
+                      days: query.days,
+                      type: query.type,
+                      personalized: query.personalized,
+                      page: pageNumber,
+                    })}
+                    className={`inline-flex h-8 min-w-8 items-center justify-center border px-2 text-xs font-semibold transition ${
+                      pageNumber === resolvedPage
+                        ? "border-[#3567b5] bg-[#3567b5] text-white"
+                        : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
+                    }`}
+                  >
+                    {pageNumber}
+                  </Link>
+                ))}
+                <Link
+                  href={toHref({
+                    breedCode,
+                    q: query.q,
+                    sort: query.sort,
+                    days: query.days,
+                    type: query.type,
+                    personalized: query.personalized,
+                    page: Math.min(totalPages, resolvedPage + 1),
+                  })}
+                  aria-disabled={resolvedPage >= totalPages}
+                  className={`inline-flex h-8 items-center border px-2.5 text-xs font-semibold transition ${
+                    resolvedPage >= totalPages
+                      ? "pointer-events-none border-[#d6e1f1] bg-[#eef3fb] text-[#91a6c6]"
+                      : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
+                  }`}
+                >
+                  다음
+                </Link>
+              </div>
+            ) : null}
+          </>
         )}
       </section>
     </main>

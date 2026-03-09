@@ -10,7 +10,7 @@ import { getCurrentUserId, hasSessionCookieFromRequest } from "@/server/auth";
 import { buildCacheControlHeader } from "@/server/cache/query-cache";
 import { monitorUnhandledError } from "@/server/error-monitor";
 import { getGuestReadLoginRequiredPostTypes } from "@/server/queries/policy.queries";
-import { listPosts } from "@/server/queries/post.queries";
+import { countPosts, listPosts } from "@/server/queries/post.queries";
 import { getClientIp } from "@/server/request-context";
 import { enforceRateLimit } from "@/server/rate-limit";
 import { jsonError, jsonOk } from "@/server/response";
@@ -47,6 +47,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     const { searchParams } = new URL(request.url);
     const parsed = breedLoungePostListSchema.safeParse({
       cursor: searchParams.get("cursor") ?? undefined,
+      page: searchParams.get("page") ?? undefined,
       q: searchParams.get("q") ?? undefined,
       searchIn: searchParams.get("searchIn") ?? undefined,
       sort: searchParams.get("sort") ?? undefined,
@@ -69,8 +70,24 @@ export async function GET(request: NextRequest, context: RouteContext) {
       });
     }
 
+    const currentPage =
+      typeof parsed.data.page === "number" && parsed.data.page > 0 ? parsed.data.page : 1;
+    const totalCount = await countPosts({
+      type: parsed.data.type,
+      scope: PostScope.GLOBAL,
+      q: parsed.data.q,
+      searchIn: parsed.data.searchIn,
+      days: parsed.data.days,
+      excludeTypes: currentUserId ? undefined : loginRequiredTypes,
+      viewerId,
+      authorBreedCode: parsedBreedCode.data,
+    });
+    const totalPages = Math.max(1, Math.ceil(totalCount / FEED_PAGE_SIZE));
+    const resolvedPage = Math.min(currentPage, totalPages);
+
     const data = await listPosts({
       cursor: parsed.data.cursor,
+      page: resolvedPage,
       limit: FEED_PAGE_SIZE,
       type: parsed.data.type,
       scope: PostScope.GLOBAL,
@@ -84,8 +101,17 @@ export async function GET(request: NextRequest, context: RouteContext) {
       authorBreedCode: parsedBreedCode.data,
     });
 
-    const canCache = !currentUserId && !parsed.data.cursor && !parsed.data.personalized;
-    return jsonOk(data, {
+    const canCache =
+      !currentUserId &&
+      !parsed.data.cursor &&
+      !parsed.data.personalized &&
+      resolvedPage === 1;
+    return jsonOk({
+      ...data,
+      page: resolvedPage,
+      totalPages,
+      totalCount,
+    }, {
       headers: {
         "cache-control": canCache ? buildCacheControlHeader(30, 300) : "no-store",
       },

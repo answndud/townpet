@@ -13,6 +13,7 @@ type ListCommunitiesOptions = {
 
 type ListCommonBoardPostsOptions = {
   cursor?: string;
+  page?: number;
   limit: number;
   commonBoardType: CommonBoardType;
   animalTag?: string;
@@ -297,31 +298,45 @@ export const listCommunityNavItems = cache(
 
 export async function listCommonBoardPosts({
   cursor,
+  page = 1,
   limit,
   commonBoardType,
   animalTag,
   q,
 }: ListCommonBoardPostsOptions) {
   const safeLimit = Math.min(Math.max(limit, 1), 50);
+  const safePage = Math.max(page, 1);
   const trimmedTag = animalTag?.trim();
   const trimmedQ = q?.trim();
+  const where = {
+    status: PostStatus.ACTIVE,
+    boardScope: "COMMON" as const,
+    commonBoardType,
+    ...(trimmedTag ? { animalTags: { has: trimmedTag } } : {}),
+    ...(trimmedQ
+      ? {
+          OR: [
+            { title: { contains: trimmedQ, mode: Prisma.QueryMode.insensitive } },
+            { content: { contains: trimmedQ, mode: Prisma.QueryMode.insensitive } },
+          ],
+        }
+      : {}),
+  };
+  const totalCount = await prisma.post
+    .count({ where })
+    .catch((error) => {
+      if (isMissingCommonBoardPostColumnError(error)) {
+        return 0;
+      }
+
+      throw error;
+    });
+  const totalPages = Math.max(1, Math.ceil(totalCount / safeLimit));
+  const resolvedPage = Math.min(safePage, totalPages);
 
   const items = await prisma.post
     .findMany({
-      where: {
-        status: PostStatus.ACTIVE,
-        boardScope: "COMMON",
-        commonBoardType,
-        ...(trimmedTag ? { animalTags: { has: trimmedTag } } : {}),
-        ...(trimmedQ
-          ? {
-              OR: [
-                { title: { contains: trimmedQ, mode: Prisma.QueryMode.insensitive } },
-                { content: { contains: trimmedQ, mode: Prisma.QueryMode.insensitive } },
-              ],
-            }
-          : {}),
-      },
+      where,
       select: {
         id: true,
         title: true,
@@ -370,6 +385,10 @@ export async function listCommonBoardPosts({
             cursor: { id: cursor },
             skip: 1,
           }
+        : resolvedPage > 1
+          ? {
+              skip: (resolvedPage - 1) * safeLimit,
+            }
         : {}),
     })
     .catch((error) => {
@@ -386,7 +405,7 @@ export async function listCommonBoardPosts({
     nextCursor = nextItem?.id ?? null;
   }
 
-  return { items, nextCursor };
+  return { items, nextCursor, page: resolvedPage, totalPages, totalCount };
 }
 
 export async function countAdoptionBoardPosts({ q }: { q?: string }) {

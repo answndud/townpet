@@ -66,6 +66,7 @@ describe("notification queries cache behavior", () => {
     mockBumpUnreadVersion.mockResolvedValue(undefined);
     mockBumpListVersion.mockReset();
     mockBumpListVersion.mockResolvedValue(undefined);
+    mockPrisma.notification.count.mockResolvedValue(0);
   });
 
   it("uses query cache for first-page notification list", async () => {
@@ -88,6 +89,20 @@ describe("notification queries cache behavior", () => {
       userId: "user-cursor",
       limit: 20,
       cursor: "c1234567890abcdefghijklmn",
+      kind: "ALL",
+      unreadOnly: false,
+    });
+
+    expect(mockWithQueryCache).not.toHaveBeenCalled();
+  });
+
+  it("bypasses query cache for later pages", async () => {
+    mockPrisma.notification.findMany.mockResolvedValue([]);
+
+    await listNotificationsByUser({
+      userId: "user-page",
+      limit: 20,
+      page: 2,
       kind: "ALL",
       unreadOnly: false,
     });
@@ -126,6 +141,7 @@ describe("notification queries invalidation behavior", () => {
     mockBumpUnreadVersion.mockResolvedValue(undefined);
     mockBumpListVersion.mockReset();
     mockBumpListVersion.mockResolvedValue(undefined);
+    mockPrisma.notification.count.mockResolvedValue(0);
   });
 
   it("bumps list/unread cache when marking one notification as read", async () => {

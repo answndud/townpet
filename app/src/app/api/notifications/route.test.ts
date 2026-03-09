@@ -37,6 +37,9 @@ describe("GET /api/notifications contract", () => {
     mockListNotificationsByUser.mockResolvedValue({
       items: [],
       nextCursor: null,
+      page: 1,
+      totalPages: 1,
+      totalCount: 0,
     });
   });
 
@@ -105,6 +108,9 @@ describe("GET /api/notifications contract", () => {
         },
       ],
       nextCursor: "n-2",
+      page: 2,
+      totalPages: 4,
+      totalCount: 37,
     } as never);
     const request = new Request(
       "http://localhost/api/notifications?kind=REACTION&unreadOnly=1&limit=12",
@@ -118,6 +124,7 @@ describe("GET /api/notifications contract", () => {
       userId: "user-1",
       limit: 12,
       cursor: undefined,
+      page: undefined,
       kind: "REACTION",
       unreadOnly: true,
     });
@@ -125,6 +132,9 @@ describe("GET /api/notifications contract", () => {
       ok: true,
       data: {
         nextCursor: "n-2",
+        page: 2,
+        totalPages: 4,
+        totalCount: 37,
         items: [
           {
             id: "n-1",

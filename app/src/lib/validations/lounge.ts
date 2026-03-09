@@ -22,6 +22,7 @@ export const breedCodeParamSchema = z
 
 export const breedLoungePostListSchema = z.object({
   cursor: z.string().cuid().optional(),
+  page: z.coerce.number().int().positive().optional(),
   q: z.string().min(1).max(100).optional(),
   searchIn: z.enum(["ALL", "TITLE", "CONTENT", "AUTHOR"]).optional(),
   sort: z.enum(["LATEST", "LIKE", "COMMENT"]).optional(),
