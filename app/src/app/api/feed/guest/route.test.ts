@@ -8,6 +8,7 @@ import { monitorUnhandledError } from "@/server/error-monitor";
 import { listCommunityNavItems } from "@/server/queries/community.queries";
 import { getGuestReadLoginRequiredPostTypes } from "@/server/queries/policy.queries";
 import {
+  countPosts,
   countBestPosts,
   listBestPosts,
   listPosts,
@@ -21,6 +22,7 @@ vi.mock("@/server/queries/policy.queries", () => ({
   getGuestReadLoginRequiredPostTypes: vi.fn(),
 }));
 vi.mock("@/server/queries/post.queries", () => ({
+  countPosts: vi.fn(),
   countBestPosts: vi.fn(),
   listBestPosts: vi.fn(),
   listPosts: vi.fn(),
@@ -31,6 +33,7 @@ vi.mock("@/server/rate-limit", () => ({ enforceRateLimit: vi.fn() }));
 const mockMonitorUnhandledError = vi.mocked(monitorUnhandledError);
 const mockListCommunityNavItems = vi.mocked(listCommunityNavItems);
 const mockGetGuestReadLoginRequiredPostTypes = vi.mocked(getGuestReadLoginRequiredPostTypes);
+const mockCountPosts = vi.mocked(countPosts);
 const mockCountBestPosts = vi.mocked(countBestPosts);
 const mockListBestPosts = vi.mocked(listBestPosts);
 const mockListPosts = vi.mocked(listPosts);
@@ -42,6 +45,7 @@ describe("GET /api/feed/guest", () => {
     mockMonitorUnhandledError.mockReset();
     mockListCommunityNavItems.mockReset();
     mockGetGuestReadLoginRequiredPostTypes.mockReset();
+    mockCountPosts.mockReset();
     mockCountBestPosts.mockReset();
     mockListBestPosts.mockReset();
     mockListPosts.mockReset();
@@ -54,6 +58,7 @@ describe("GET /api/feed/guest", () => {
       { id: "c000000000000000000000202", slug: "cat", labelKo: "고양이" },
     ]);
     mockGetGuestReadLoginRequiredPostTypes.mockResolvedValue([]);
+    mockCountPosts.mockResolvedValue(0);
     mockCountBestPosts.mockResolvedValue(0);
     mockListBestPosts.mockResolvedValue([]);
   });

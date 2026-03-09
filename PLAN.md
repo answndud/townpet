@@ -26,6 +26,13 @@
 
 ## Active Plan
 
+### Cycle 254: 전역 목록 페이지네이션 통일 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 피드/게스트 피드/품종 라운지의 ALL 목록을 페이지네이션으로 전환 | Codex | P0 | `done` | `/feed`, `/feed/guest`, 품종 라운지 목록에서 무한 스크롤/더보기 없이 `page` 기반 번호 페이지네이션만 노출된다 | `PLAN.md`, `PROGRESS.md`, `app/src/app/feed/page.tsx`, `app/src/components/posts/guest-feed-page-client.tsx`, `app/src/app/lounges/breeds/[breedCode]/page.tsx`, `app/src/components/posts/feed-infinite-list.tsx`, `app/src/app/api/feed/guest/route.ts` |
+| 알림센터/공개 프로필 활동 탭을 페이지네이션으로 전환 | Codex | P0 | `done` | 알림센터와 공개 프로필 활동 탭이 커서 기반 `더 보기` 대신 URL 기반 페이지네이션 링크만 사용한다 | `PLAN.md`, `PROGRESS.md`, `app/src/app/notifications/page.tsx`, `app/src/components/notifications/notification-center.tsx`, `app/src/lib/notification-filter.ts`, `app/src/server/queries/notification.queries.ts`, `app/src/app/users/[id]/page.tsx`, `app/src/server/queries/user.queries.ts` |
+| 목록 API/검증 계약을 `page` 메타 기준으로 정리 | Codex | P1 | `done` | 게시글/라운지/알림/공용보드 목록 route가 `page`를 받아 total/page 메타를 반환하고, 관련 테스트가 통과한다 | `PLAN.md`, `PROGRESS.md`, `app/src/lib/validations/post.ts`, `app/src/lib/validations/lounge.ts`, `app/src/app/api/posts/route.ts`, `app/src/app/api/lounges/breeds/[breedCode]/posts/route.ts`, `app/src/app/api/notifications/route.ts`, `app/src/app/api/boards/[board]/posts/route.ts` |
+
 ### Cycle 250: 입양 보드 헤더 설명 문구 제거 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
@@ -1589,3 +1596,15 @@
 | 입양 게시글 작성 권한을 관리자 전용으로 제한 | Codex | P0 | `done` | 일반 사용자/비회원은 `ADOPTION_LISTING` 생성·수정이 차단되고, 작성 폼에서도 타입이 노출되지 않음 | `app/src/lib/post-write-policy.ts`, `app/src/server/services/post.service.ts`, `app/src/components/posts/post-create-form.tsx`, `app/src/app/posts/new/page.tsx` |
 | 입양 게시글 신고 기능 제거 | Codex | P0 | `done` | 입양 게시글 상세/게스트 상세에서 신고 UI가 사라지고, API 직접 호출도 `REPORT_DISABLED_FOR_POST_TYPE`으로 차단됨 | `app/src/components/posts/post-detail-client.tsx`, `app/src/app/posts/[id]/guest/page.tsx`, `app/src/server/services/report.service.ts` |
 | 입양 보드 CTA/회귀 테스트 정리 | Codex | P1 | `done` | 입양 보드의 작성 CTA가 관리자에게만 보이고, 권한/신고 회귀 테스트가 통과함 | `app/src/app/boards/adoption/page.tsx`, `app/src/server/services/post-create-policy.test.ts`, `app/src/server/services/report.service.test.ts`, `app/src/lib/post-write-policy.test.ts` |
+
+### Cycle 252: 게시판 더미데이터 대량 시드 확장 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 게시판별 대량 더미 게시글 시드 스크립트 추가 | Codex | P1 | `done` | 자유/질문/후기/산책/장터/모임/실종/봉사/입양 등 여러 타입에 걸쳐 재실행 가능한 seed 스크립트가 추가됨 | `app/scripts/seed-board-posts.ts`, `app/package.json` |
+| 로컬 DB 더미 게시글 실제 주입 및 분포 확인 | Codex | P1 | `done` | 새 스크립트 실행으로 게시글 54건이 추가되고, 타입별 분포가 확인됨 | 로컬 DB, `pnpm -C app db:seed:board-posts` |
+
+### Cycle 253: 피드 `page` 파라미터 혼선 정리 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| `ALL` 피드의 의미 없는 `page` 쿼리 제거 | Codex | P1 | `done` | 전체 피드에서 `page` 파라미터가 들어오면 정규화 redirect로 제거되고, `BEST`에서도 `page=1`은 남지 않음 | `app/src/app/feed/page.tsx`, `app/src/lib/feed.ts` |
+| 피드 페이지 파라미터 정규화 테스트 추가 | Codex | P1 | `done` | `ALL/BEST/page=1/invalid` 케이스를 검증하는 unit test가 추가되고 통과함 | `app/src/lib/feed.test.ts` |

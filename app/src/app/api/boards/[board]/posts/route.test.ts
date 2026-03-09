@@ -26,7 +26,13 @@ describe("GET /api/boards/[board]/posts contract", () => {
 
     mockGetClientIp.mockReturnValue("127.0.0.1");
     mockEnforceRateLimit.mockResolvedValue();
-    mockListCommonBoardPosts.mockResolvedValue({ items: [], nextCursor: null });
+    mockListCommonBoardPosts.mockResolvedValue({
+      items: [],
+      nextCursor: null,
+      page: 1,
+      totalPages: 1,
+      totalCount: 0,
+    });
   });
 
   it("returns 400 for invalid board params", async () => {

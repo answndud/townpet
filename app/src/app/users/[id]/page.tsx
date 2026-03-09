@@ -5,6 +5,7 @@ import { notFound, redirect } from "next/navigation";
 import { UserRelationControls } from "@/components/user/user-relation-controls";
 import { auth } from "@/lib/auth";
 import { getCspNonce } from "@/lib/csp-nonce";
+import { buildPaginationWindow, parsePositivePage } from "@/lib/pagination";
 import {
   buildPublicProfileLoginHref,
   resolvePublicProfileTab,
@@ -31,7 +32,7 @@ import {
 
 type UserProfilePageProps = {
   params: Promise<{ id: string }>;
-  searchParams?: Promise<{ tab?: string; cursor?: string }>;
+  searchParams?: Promise<{ tab?: string; page?: string }>;
 };
 
 type ActivityTab = "posts" | "comments" | "reactions";
@@ -51,11 +52,11 @@ function buildBioExcerpt(text: string, maxLength = 140) {
   return `${normalized.slice(0, maxLength)}...`;
 }
 
-function buildTabHref(userId: string, tab: ActivityTab, cursor?: string | null) {
+function buildTabHref(userId: string, tab: ActivityTab, page = 1) {
   const query = new URLSearchParams();
   query.set("tab", tab);
-  if (cursor) {
-    query.set("cursor", cursor);
+  if (page > 1) {
+    query.set("page", String(page));
   }
 
   return `/users/${userId}?${query.toString()}`;
@@ -120,8 +121,9 @@ export default async function PublicUserProfilePage({
     searchParams ?? Promise.resolve({}),
   ]);
   const tab = toTab((resolvedSearchParams as { tab?: string } | undefined)?.tab);
-  const cursorValue = (resolvedSearchParams as { cursor?: string } | undefined)?.cursor;
-  const cursor = cursorValue && cursorValue.length > 0 ? cursorValue : undefined;
+  const currentPage = parsePositivePage(
+    (resolvedSearchParams as { page?: string } | undefined)?.page,
+  );
 
   const session = await auth();
   const viewerId = session?.user?.id;
@@ -155,25 +157,31 @@ export default async function PublicUserProfilePage({
 
   const [postsPage, commentsPage, reactionsPage, pets] = await Promise.all([
     resolvedTab === "posts" && profile.showPublicPosts
-      ? listPublicUserPosts({ userId: profile.id, limit: 20, cursor })
-      : Promise.resolve({ items: [], nextCursor: null }),
+      ? listPublicUserPosts({ userId: profile.id, limit: 20, page: currentPage })
+      : Promise.resolve({ items: [], nextCursor: null, page: 1, totalPages: 1, totalCount: 0 }),
     resolvedTab === "comments" && profile.showPublicComments
-      ? listPublicUserComments({ userId: profile.id, limit: 20, cursor })
-      : Promise.resolve({ items: [], nextCursor: null }),
+      ? listPublicUserComments({ userId: profile.id, limit: 20, page: currentPage })
+      : Promise.resolve({ items: [], nextCursor: null, page: 1, totalPages: 1, totalCount: 0 }),
     resolvedTab === "reactions"
-      ? listPublicUserReactions({ userId: profile.id, limit: 20, cursor })
-      : Promise.resolve({ items: [], nextCursor: null }),
+      ? listPublicUserReactions({ userId: profile.id, limit: 20, page: currentPage })
+      : Promise.resolve({ items: [], nextCursor: null, page: 1, totalPages: 1, totalCount: 0 }),
     profile.showPublicPets ? listPetsByUserId(profile.id) : Promise.resolve([]),
   ]);
   const posts = postsPage.items;
   const comments = commentsPage.items;
   const reactions = reactionsPage.items;
-  const nextCursor =
+  const tabPage =
     resolvedTab === "posts"
-      ? postsPage.nextCursor
+      ? postsPage.page
       : resolvedTab === "comments"
-        ? commentsPage.nextCursor
-        : reactionsPage.nextCursor;
+        ? commentsPage.page
+        : reactionsPage.page;
+  const tabTotalPages =
+    resolvedTab === "posts"
+      ? postsPage.totalPages
+      : resolvedTab === "comments"
+        ? commentsPage.totalPages
+        : reactionsPage.totalPages;
 
   const profileJsonLd = {
     "@context": "https://schema.org",
@@ -351,13 +359,42 @@ export default async function PublicUserProfilePage({
                   </article>
                 ))
               )}
-              {nextCursor ? (
-                <div className="pt-3">
+              {tabTotalPages > 1 ? (
+                <div className="flex flex-wrap items-center justify-center gap-1.5 pt-3">
                   <Link
-                    href={buildTabHref(profile.id, "posts", nextCursor)}
-                    className="tp-btn-soft inline-flex px-3 py-1.5 text-xs font-semibold"
+                    href={buildTabHref(profile.id, "posts", Math.max(1, tabPage - 1))}
+                    aria-disabled={tabPage <= 1}
+                    className={`inline-flex h-8 items-center rounded-lg border px-2.5 text-xs font-semibold transition ${
+                      tabPage <= 1
+                        ? "pointer-events-none border-[#d6e1f1] bg-[#eef3fb] text-[#91a6c6]"
+                        : "border-[#cbdcf5] bg-white text-[#315b9a]"
+                    }`}
                   >
-                    게시글 활동 더 보기
+                    이전
+                  </Link>
+                  {buildPaginationWindow(tabPage, tabTotalPages).map((pageNumber) => (
+                    <Link
+                      key={`public-profile-post-page-${pageNumber}`}
+                      href={buildTabHref(profile.id, "posts", pageNumber)}
+                      className={`inline-flex h-8 min-w-8 items-center justify-center rounded-lg border px-2 text-xs font-semibold transition ${
+                        pageNumber === tabPage
+                          ? "border-[#3567b5] bg-[#3567b5] text-white"
+                          : "border-[#cbdcf5] bg-white text-[#315b9a]"
+                      }`}
+                    >
+                      {pageNumber}
+                    </Link>
+                  ))}
+                  <Link
+                    href={buildTabHref(profile.id, "posts", Math.min(tabTotalPages, tabPage + 1))}
+                    aria-disabled={tabPage >= tabTotalPages}
+                    className={`inline-flex h-8 items-center rounded-lg border px-2.5 text-xs font-semibold transition ${
+                      tabPage >= tabTotalPages
+                        ? "pointer-events-none border-[#d6e1f1] bg-[#eef3fb] text-[#91a6c6]"
+                        : "border-[#cbdcf5] bg-white text-[#315b9a]"
+                    }`}
+                  >
+                    다음
                   </Link>
                 </div>
               ) : null}
@@ -386,13 +423,42 @@ export default async function PublicUserProfilePage({
                   </article>
                 ))
               )}
-              {nextCursor ? (
-                <div className="pt-3">
+              {tabTotalPages > 1 ? (
+                <div className="flex flex-wrap items-center justify-center gap-1.5 pt-3">
                   <Link
-                    href={buildTabHref(profile.id, "comments", nextCursor)}
-                    className="tp-btn-soft inline-flex px-3 py-1.5 text-xs font-semibold"
+                    href={buildTabHref(profile.id, "comments", Math.max(1, tabPage - 1))}
+                    aria-disabled={tabPage <= 1}
+                    className={`inline-flex h-8 items-center rounded-lg border px-2.5 text-xs font-semibold transition ${
+                      tabPage <= 1
+                        ? "pointer-events-none border-[#d6e1f1] bg-[#eef3fb] text-[#91a6c6]"
+                        : "border-[#cbdcf5] bg-white text-[#315b9a]"
+                    }`}
                   >
-                    댓글 활동 더 보기
+                    이전
+                  </Link>
+                  {buildPaginationWindow(tabPage, tabTotalPages).map((pageNumber) => (
+                    <Link
+                      key={`public-profile-comment-page-${pageNumber}`}
+                      href={buildTabHref(profile.id, "comments", pageNumber)}
+                      className={`inline-flex h-8 min-w-8 items-center justify-center rounded-lg border px-2 text-xs font-semibold transition ${
+                        pageNumber === tabPage
+                          ? "border-[#3567b5] bg-[#3567b5] text-white"
+                          : "border-[#cbdcf5] bg-white text-[#315b9a]"
+                      }`}
+                    >
+                      {pageNumber}
+                    </Link>
+                  ))}
+                  <Link
+                    href={buildTabHref(profile.id, "comments", Math.min(tabTotalPages, tabPage + 1))}
+                    aria-disabled={tabPage >= tabTotalPages}
+                    className={`inline-flex h-8 items-center rounded-lg border px-2.5 text-xs font-semibold transition ${
+                      tabPage >= tabTotalPages
+                        ? "pointer-events-none border-[#d6e1f1] bg-[#eef3fb] text-[#91a6c6]"
+                        : "border-[#cbdcf5] bg-white text-[#315b9a]"
+                    }`}
+                  >
+                    다음
                   </Link>
                 </div>
               ) : null}
@@ -417,13 +483,42 @@ export default async function PublicUserProfilePage({
                   </article>
                 ))
               )}
-              {nextCursor ? (
-                <div className="pt-3">
+              {tabTotalPages > 1 ? (
+                <div className="flex flex-wrap items-center justify-center gap-1.5 pt-3">
                   <Link
-                    href={buildTabHref(profile.id, "reactions", nextCursor)}
-                    className="tp-btn-soft inline-flex px-3 py-1.5 text-xs font-semibold"
+                    href={buildTabHref(profile.id, "reactions", Math.max(1, tabPage - 1))}
+                    aria-disabled={tabPage <= 1}
+                    className={`inline-flex h-8 items-center rounded-lg border px-2.5 text-xs font-semibold transition ${
+                      tabPage <= 1
+                        ? "pointer-events-none border-[#d6e1f1] bg-[#eef3fb] text-[#91a6c6]"
+                        : "border-[#cbdcf5] bg-white text-[#315b9a]"
+                    }`}
                   >
-                    반응 활동 더 보기
+                    이전
+                  </Link>
+                  {buildPaginationWindow(tabPage, tabTotalPages).map((pageNumber) => (
+                    <Link
+                      key={`public-profile-reaction-page-${pageNumber}`}
+                      href={buildTabHref(profile.id, "reactions", pageNumber)}
+                      className={`inline-flex h-8 min-w-8 items-center justify-center rounded-lg border px-2 text-xs font-semibold transition ${
+                        pageNumber === tabPage
+                          ? "border-[#3567b5] bg-[#3567b5] text-white"
+                          : "border-[#cbdcf5] bg-white text-[#315b9a]"
+                      }`}
+                    >
+                      {pageNumber}
+                    </Link>
+                  ))}
+                  <Link
+                    href={buildTabHref(profile.id, "reactions", Math.min(tabTotalPages, tabPage + 1))}
+                    aria-disabled={tabPage >= tabTotalPages}
+                    className={`inline-flex h-8 items-center rounded-lg border px-2.5 text-xs font-semibold transition ${
+                      tabPage >= tabTotalPages
+                        ? "pointer-events-none border-[#d6e1f1] bg-[#eef3fb] text-[#91a6c6]"
+                        : "border-[#cbdcf5] bg-white text-[#315b9a]"
+                    }`}
+                  >
+                    다음
                   </Link>
                 </div>
               ) : null}

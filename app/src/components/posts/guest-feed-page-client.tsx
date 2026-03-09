@@ -10,6 +10,7 @@ import { FeedInfiniteList, type FeedPostItem } from "@/components/posts/feed-inf
 import { ScrollToTopButton } from "@/components/ui/scroll-to-top-button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { isCommonBoardPostType } from "@/lib/community-board";
+import { buildPaginationWindow } from "@/lib/pagination";
 import { isFreeBoardPostType } from "@/lib/post-type-groups";
 import { postTypeMeta } from "@/lib/post-presenter";
 import { REVIEW_CATEGORY, type ReviewCategory } from "@/lib/review-category";
@@ -224,7 +225,6 @@ export function GuestFeedPageClient() {
     resolvedPage,
     feedQueryKey,
     items,
-    nextCursor,
   } = data.feed;
   const isUltraDense = density === "ULTRA";
   const loginHref = (nextPath: string) => `/login?next=${encodeURIComponent(nextPath)}`;
@@ -271,8 +271,7 @@ export function GuestFeedPageClient() {
     const resolvedSort = nextSort == null ? selectedSort : nextSort;
     const resolvedSearchIn = nextSearchIn == null ? selectedSearchIn : nextSearchIn;
     const resolvedDensity = nextDensity == null ? density : nextDensity;
-    const effectivePage =
-      nextPage === undefined ? (resolvedMode === "BEST" ? resolvedPage : 1) : nextPage;
+    const effectivePage = nextPage === undefined ? resolvedPage : nextPage;
     const shouldKeepReviewBoard =
       reviewBoard && resolvedType === null && !resolvedReviewCategory;
     const normalizedType = shouldKeepReviewBoard ? PostType.PRODUCT_REVIEW : resolvedType;
@@ -311,7 +310,7 @@ export function GuestFeedPageClient() {
     } else if (resolvedPeriod) {
       params.set("period", String(resolvedPeriod));
     }
-    if (resolvedMode === "BEST" && effectivePage && effectivePage > 1) {
+    if (effectivePage && effectivePage > 1) {
       params.set("page", String(effectivePage));
     }
     const serialized = params.toString();
@@ -515,10 +514,10 @@ export function GuestFeedPageClient() {
               />
             ) : (
               <FeedInfiniteList
+                key={feedQueryKey}
                 initialItems={items}
-                initialNextCursor={mode === "ALL" ? nextCursor : null}
+                initialNextCursor={null}
                 mode={mode}
-                disableLoadMore={mode !== "ALL"}
                 apiPath="/api/feed/guest"
                 preferGuestDetail
                 query={{
@@ -536,7 +535,7 @@ export function GuestFeedPageClient() {
                 queryKey={feedQueryKey}
               />
             )}
-            {mode === "BEST" && items.length > 0 && totalPages > 1 ? (
+            {items.length > 0 && totalPages > 1 ? (
               <div className="flex flex-wrap items-center justify-center gap-1.5 border-t border-[#dbe6f6] bg-[#f8fbff] px-3 py-3">
                 <Link
                   href={makeHref({ nextPage: Math.max(1, resolvedPage - 1) })}
@@ -549,16 +548,7 @@ export function GuestFeedPageClient() {
                 >
                   이전
                 </Link>
-                {Array.from(
-                  {
-                    length:
-                      Math.min(totalPages, Math.max(5, resolvedPage + 2)) -
-                      Math.max(1, Math.min(resolvedPage - 2, totalPages - 4)) +
-                      1,
-                  },
-                  (_, index) =>
-                    Math.max(1, Math.min(resolvedPage - 2, totalPages - 4)) + index,
-                ).map((pageNumber) => (
+                {buildPaginationWindow(resolvedPage, totalPages).map((pageNumber) => (
                   <Link
                     key={`feed-page-${pageNumber}`}
                     href={makeHref({ nextPage: pageNumber })}

@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 import { NotificationCenter } from "@/components/notifications/notification-center";
+import { parsePositivePage } from "@/lib/pagination";
 import {
   parseNotificationFilterKind,
   parseUnreadOnly,
@@ -11,7 +12,7 @@ import { redirectToProfileIfNicknameMissing } from "@/server/nickname-guard";
 import { listNotificationsByUser } from "@/server/queries/notification.queries";
 
 type NotificationsPageProps = {
-  searchParams?: Promise<{ kind?: string; unreadOnly?: string }>;
+  searchParams?: Promise<{ kind?: string; unreadOnly?: string; page?: string }>;
 };
 
 export const metadata: Metadata = {
@@ -28,7 +29,7 @@ export const metadata: Metadata = {
 
 export default async function NotificationsPage({ searchParams }: NotificationsPageProps) {
   const resolvedSearchParamsPromise =
-    searchParams ?? Promise.resolve({} as { kind?: string; unreadOnly?: string });
+    searchParams ?? Promise.resolve({} as { kind?: string; unreadOnly?: string; page?: string });
   const [session, resolvedSearchParams] = await Promise.all([
     auth(),
     resolvedSearchParamsPromise,
@@ -40,6 +41,7 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
   });
   const kind = parseNotificationFilterKind(resolvedSearchParams.kind);
   const unreadOnly = parseUnreadOnly(resolvedSearchParams.unreadOnly);
+  const currentPage = parsePositivePage(resolvedSearchParams.page);
 
   if (!currentUserId) {
     return (
@@ -65,9 +67,10 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
     );
   }
 
-  const { items, nextCursor } = await listNotificationsByUser({
+  const { items, totalPages, page } = await listNotificationsByUser({
     userId: currentUserId,
     limit: 20,
+    page: currentPage,
     kind,
     unreadOnly,
   });
@@ -92,8 +95,10 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
     <div className="tp-page-bg min-h-screen pb-16">
       <main className="mx-auto flex w-full max-w-[980px] flex-col gap-5 px-4 py-6 sm:px-6 lg:px-8">
         <NotificationCenter
+          key={`${kind}|${unreadOnly ? "1" : "0"}|${page}`}
           initialItems={initialItems}
-          nextCursor={nextCursor}
+          currentPage={page}
+          totalPages={totalPages}
           initialKind={kind}
           initialUnreadOnly={unreadOnly}
         />

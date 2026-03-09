@@ -19,6 +19,7 @@ type ListNotificationsByUserOptions = {
   userId: string;
   limit?: number;
   cursor?: string;
+  page?: number;
   kind?: NotificationFilterKind;
   unreadOnly?: boolean;
 };
@@ -51,6 +52,9 @@ type NotificationListItem = Prisma.NotificationGetPayload<{
 type ListNotificationsByUserResult = {
   items: NotificationListItem[];
   nextCursor: string | null;
+  page: number;
+  totalPages: number;
+  totalCount: number;
 };
 
 type NotificationDelegate = {
@@ -119,12 +123,14 @@ export async function listNotificationsByUser({
   userId,
   limit = 20,
   cursor,
+  page = 1,
   kind = "ALL",
   unreadOnly = false,
 }: ListNotificationsByUserOptions): Promise<ListNotificationsByUserResult> {
   const delegate = requireNotificationDelegate();
 
   const safeLimit = Math.min(Math.max(limit, 1), 50);
+  const safePage = Math.max(page, 1);
   const typeFilter =
     kind === "COMMENT"
       ? [NotificationType.COMMENT_ON_POST, NotificationType.REPLY_TO_COMMENT]
@@ -133,24 +139,34 @@ export async function listNotificationsByUser({
         : kind === "SYSTEM"
           ? [NotificationType.SYSTEM]
           : null;
+  const where: Prisma.NotificationWhereInput = {
+    userId,
+    archivedAt: null,
+    ...(unreadOnly ? { isRead: false } : {}),
+    ...(typeFilter ? { type: { in: typeFilter } } : {}),
+  };
 
   const fetchNotificationItems = async (): Promise<ListNotificationsByUserResult> => {
     let items: NotificationListItem[];
+    let totalCount = 0;
     try {
+      totalCount = await delegate.count({ where });
+      const totalPages = Math.max(1, Math.ceil(totalCount / safeLimit));
+      const resolvedPage = Math.min(safePage, totalPages);
+
       items = await delegate.findMany({
-        where: {
-          userId,
-          archivedAt: null,
-          ...(unreadOnly ? { isRead: false } : {}),
-          ...(typeFilter ? { type: { in: typeFilter } } : {}),
-        },
-        take: safeLimit + 1,
+        where,
+        take: cursor ? safeLimit + 1 : safeLimit,
         ...(cursor
           ? {
               cursor: { id: cursor },
               skip: 1,
             }
-          : {}),
+          : resolvedPage > 1
+            ? {
+                skip: (resolvedPage - 1) * safeLimit,
+              }
+            : {}),
         orderBy: [{ createdAt: "desc" }, { id: "desc" }],
         include: {
           actor: {
@@ -167,15 +183,22 @@ export async function listNotificationsByUser({
     }
 
     let nextCursor: string | null = null;
-    if (items.length > safeLimit) {
+    if (cursor && items.length > safeLimit) {
       const next = items.pop();
       nextCursor = next?.id ?? null;
     }
 
-    return { items, nextCursor };
+    const totalPages = Math.max(1, Math.ceil(totalCount / safeLimit));
+    return {
+      items,
+      nextCursor,
+      page: Math.min(safePage, totalPages),
+      totalPages,
+      totalCount,
+    };
   };
 
-  if (cursor) {
+  if (cursor || safePage > 1) {
     return fetchNotificationItems();
   }
 

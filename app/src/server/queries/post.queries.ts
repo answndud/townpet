@@ -1069,6 +1069,7 @@ type PostCountOptions = {
   excludeTypes?: PostType[];
   neighborhoodId?: string;
   viewerId?: string;
+  authorBreedCode?: string;
 };
 
 type BestPostCountOptions = {
@@ -3266,6 +3267,7 @@ export async function countPosts({
   excludeTypes,
   neighborhoodId,
   viewerId,
+  authorBreedCode,
 }: PostCountOptions) {
   const hiddenAuthorIds = await listHiddenAuthorIdsForViewer(viewerId);
   const normalizedExcludeTypes = expandExcludedPostTypes(excludeTypes ?? []);
@@ -3293,6 +3295,7 @@ export async function countPosts({
     neighborhoodId,
     hiddenAuthorIds,
     days,
+    authorBreedCode,
   });
 
   return prisma.post.count({ where }).catch((error) => {
@@ -3317,6 +3320,7 @@ export async function countPosts({
       neighborhoodId,
       hiddenAuthorIds,
       days,
+      authorBreedCode,
     });
 
     return prisma.post.count({ where: legacyWhere });

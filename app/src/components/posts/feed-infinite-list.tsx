@@ -96,22 +96,6 @@ type FeedQueryParams = {
   personalized?: boolean;
 };
 
-type FeedApiSuccess = {
-  ok: true;
-  data: {
-    items: FeedPostItem[];
-    nextCursor: string | null;
-  };
-};
-
-type FeedApiError = {
-  ok: false;
-  error: {
-    code: string;
-    message: string;
-  };
-};
-
 type FeedInfiniteListProps = {
   initialItems: FeedPostItem[];
   initialNextCursor: string | null;
@@ -141,8 +125,6 @@ type FeedInfiniteListProps = {
 const SCROLL_RESTORE_TTL_MS = 30 * 60 * 1000;
 const READ_POSTS_STORAGE_KEY = "feed:read-posts:v1";
 const MAX_READ_POSTS = 500;
-const AD_DAILY_STORAGE_KEY = "feed:ad-impressions:daily:v1";
-const AD_SESSION_STORAGE_KEY = "feed:ad-impressions:session:v1";
 
 const adoptionStatusLabel: Record<string, string> = {
   OPEN: "입양 가능",
@@ -162,14 +144,6 @@ type StoredReadPost = {
   id: string;
   ts: number;
 };
-
-function parseErrorMessage(error: unknown) {
-  if (error instanceof Error && error.message.trim().length > 0) {
-    return error.message;
-  }
-
-  return "게시글을 더 불러오지 못했습니다.";
-}
 
 function formatListDate(value: string | Date | null | undefined) {
   if (!value) {
@@ -231,91 +205,23 @@ function parseReadPosts(raw: string | null): StoredReadPost[] {
 
 export function FeedInfiniteList({
   initialItems,
-  initialNextCursor,
   mode,
   query,
   queryKey,
-  disableLoadMore = false,
-  apiPath = "/api/posts",
   preferGuestDetail,
   adConfig,
   personalizationTracking,
 }: FeedInfiniteListProps) {
-  const [items, setItems] = useState(initialItems);
-  const [nextCursor, setNextCursor] = useState(initialNextCursor);
+  const items = initialItems;
   const [readPostIds, setReadPostIds] = useState<Set<string>>(() => new Set());
-  const [isLoading, setIsLoading] = useState(false);
-  const [loadError, setLoadError] = useState<string | null>(null);
-  const sentinelRef = useRef<HTMLDivElement | null>(null);
   const restoreDoneRef = useRef(false);
   const scrollStorageKey = useMemo(() => `feed:scroll:${queryKey}`, [queryKey]);
-  const [relativeNow, setRelativeNow] = useState<number | null>(null);
-  const [showAdSlot, setShowAdSlot] = useState(false);
+  const [relativeNow] = useState<number>(() => Date.now());
+  const showAdSlot = Boolean(adConfig && mode === "ALL" && initialItems.length >= 5);
   const trackedViewKeyRef = useRef<string | null>(null);
   const trackedAdKeyRef = useRef<string | null>(null);
   const router = useRouter();
-
-  useEffect(() => {
-    setItems(initialItems);
-    setNextCursor(initialNextCursor);
-    setIsLoading(false);
-    setLoadError(null);
-    restoreDoneRef.current = false;
-  }, [queryKey, initialItems, initialNextCursor]);
-
-  useEffect(() => {
-    if (
-      typeof window === "undefined" ||
-      !adConfig ||
-      mode !== "ALL" ||
-      initialItems.length < 5
-    ) {
-      setShowAdSlot(false);
-      return;
-    }
-
-    const today = new Date().toISOString().slice(0, 10);
-    const dailyRaw = window.localStorage.getItem(AD_DAILY_STORAGE_KEY);
-    const sessionRaw = window.sessionStorage.getItem(AD_SESSION_STORAGE_KEY);
-
-    let daily: Record<string, { date: string; count: number }> = {};
-    let session: Record<string, number> = {};
-
-    try {
-      daily = dailyRaw ? (JSON.parse(dailyRaw) as Record<string, { date: string; count: number }>) : {};
-    } catch {
-      daily = {};
-    }
-
-    try {
-      session = sessionRaw ? (JSON.parse(sessionRaw) as Record<string, number>) : {};
-    } catch {
-      session = {};
-    }
-
-    const dailyEntry = daily[adConfig.audienceKey];
-    const dailyCount = dailyEntry?.date === today ? dailyEntry.count : 0;
-    const sessionCount = session[adConfig.audienceKey] ?? 0;
-
-    if (dailyCount >= adConfig.dailyCap || sessionCount >= adConfig.sessionCap) {
-      setShowAdSlot(false);
-      return;
-    }
-
-    daily[adConfig.audienceKey] = {
-      date: today,
-      count: dailyCount + 1,
-    };
-    session[adConfig.audienceKey] = sessionCount + 1;
-
-    window.localStorage.setItem(AD_DAILY_STORAGE_KEY, JSON.stringify(daily));
-    window.sessionStorage.setItem(AD_SESSION_STORAGE_KEY, JSON.stringify(session));
-    setShowAdSlot(true);
-  }, [adConfig, initialItems.length, mode, queryKey]);
-
-  useEffect(() => {
-    setRelativeNow(Date.now());
-  }, []);
+  const isPersonalizedQuery = Boolean(query.personalized);
 
   useEffect(() => {
     if (typeof window === "undefined" || restoreDoneRef.current) {
@@ -354,7 +260,7 @@ export function FeedInfiniteList({
         postId?: string | null;
       },
     ) => {
-      if (!query.personalized || !personalizationTracking) {
+      if (!isPersonalizedQuery || !personalizationTracking) {
         return;
       }
 
@@ -367,11 +273,11 @@ export function FeedInfiniteList({
         postId: options?.postId,
       });
     },
-    [personalizationTracking, query.personalized],
+    [isPersonalizedQuery, personalizationTracking],
   );
 
   useEffect(() => {
-    if (!query.personalized || !personalizationTracking || items.length === 0) {
+    if (!isPersonalizedQuery || !personalizationTracking || items.length === 0) {
       trackedViewKeyRef.current = null;
       return;
     }
@@ -390,9 +296,9 @@ export function FeedInfiniteList({
     trackedViewKeyRef.current = viewKey;
     trackPersonalizationEvent("VIEW");
   }, [
+    isPersonalizedQuery,
     items.length,
     personalizationTracking,
-    query.personalized,
     queryKey,
     trackPersonalizationEvent,
   ]);
@@ -401,7 +307,7 @@ export function FeedInfiniteList({
     if (
       !showAdSlot ||
       !adConfig ||
-      !query.personalized ||
+      !isPersonalizedQuery ||
       !personalizationTracking
     ) {
       trackedAdKeyRef.current = null;
@@ -423,8 +329,8 @@ export function FeedInfiniteList({
     trackPersonalizationEvent("AD_IMPRESSION");
   }, [
     adConfig,
+    isPersonalizedQuery,
     personalizationTracking,
-    query.personalized,
     queryKey,
     showAdSlot,
     trackPersonalizationEvent,
@@ -511,121 +417,6 @@ export function FeedInfiniteList({
       }
     };
   }, [scrollStorageKey]);
-
-  const loadMore = useCallback(async () => {
-    if (mode !== "ALL" || !nextCursor || isLoading) {
-      return;
-    }
-
-    setIsLoading(true);
-    setLoadError(null);
-
-    try {
-      const params = new URLSearchParams();
-      params.set("cursor", nextCursor);
-      params.set("scope", query.scope);
-
-      if (query.type) {
-        params.set("type", query.type);
-      }
-      if (query.petTypeIds && query.petTypeIds.length > 0) {
-        for (const petTypeId of query.petTypeIds) {
-          params.append("petType", petTypeId);
-        }
-      } else if (query.petTypeId) {
-        params.set("petType", query.petTypeId);
-      }
-      if (query.reviewCategory) {
-        params.set("review", query.reviewCategory);
-      }
-      if (query.q) {
-        params.set("q", query.q);
-      }
-      if (query.searchIn && query.searchIn !== "ALL") {
-        params.set("searchIn", query.searchIn);
-      }
-      if (query.sort && query.sort !== "LATEST") {
-        params.set("sort", query.sort);
-      }
-      if (query.days) {
-        params.set("period", String(query.days));
-      }
-      if (query.personalized) {
-        params.set("personalized", "1");
-      }
-
-      const response = await fetch(`${apiPath}?${params.toString()}`, {
-        method: "GET",
-        credentials: "same-origin",
-        cache: "no-store",
-      });
-      const payload = (await response.json()) as FeedApiSuccess | FeedApiError;
-
-      if (!response.ok || !payload.ok) {
-        throw new Error(
-          payload.ok ? "게시글을 더 불러오지 못했습니다." : payload.error.message,
-        );
-      }
-
-      setItems((prev) => {
-        const merged = [...prev];
-        const seen = new Set(prev.map((item) => item.id));
-        for (const item of payload.data.items) {
-          if (seen.has(item.id)) {
-            continue;
-          }
-          merged.push(item);
-          seen.add(item.id);
-        }
-        return merged;
-      });
-      setNextCursor(payload.data.nextCursor);
-    } catch (error) {
-      setLoadError(parseErrorMessage(error));
-    } finally {
-      setIsLoading(false);
-    }
-  }, [
-    isLoading,
-    mode,
-    nextCursor,
-    query.q,
-    query.petTypeId,
-    query.petTypeIds,
-    query.reviewCategory,
-    query.scope,
-    query.searchIn,
-    query.sort,
-    query.type,
-    query.days,
-    query.personalized,
-    apiPath,
-  ]);
-
-  useEffect(() => {
-    if (mode !== "ALL" || !nextCursor || isLoading) {
-      return;
-    }
-
-    const target = sentinelRef.current;
-    if (!target) {
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) {
-          void loadMore();
-        }
-      },
-      {
-        rootMargin: "600px 0px",
-      },
-    );
-
-    observer.observe(target);
-    return () => observer.disconnect();
-  }, [isLoading, loadMore, mode, nextCursor]);
 
   useEffect(() => {
     if (preferGuestDetail) {
@@ -789,38 +580,6 @@ export function FeedInfiniteList({
           );
         })}
       </div>
-
-      {mode === "ALL" && !disableLoadMore ? (
-        <div className="border-t border-[#d8e3f2] px-4 py-4 text-center">
-          {loadError ? (
-            <div className="mb-3 border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">
-              {loadError}
-            </div>
-          ) : null}
-
-          {nextCursor ? (
-            <button
-              type="button"
-              onClick={() => {
-                void loadMore();
-              }}
-              disabled={isLoading}
-                className="tp-btn-soft inline-flex h-10 items-center justify-center px-4 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-70"
-              >
-              {isLoading ? "불러오는 중..." : "게시글 더 보기"}
-            </button>
-          ) : (
-            <p className="text-xs text-[#6a84ab]">마지막 게시글입니다.</p>
-          )}
-
-          <div
-            ref={sentinelRef}
-            data-testid="feed-load-sentinel"
-            className="h-2 w-full"
-            aria-hidden
-          />
-        </div>
-      ) : null}
     </>
   );
 }
