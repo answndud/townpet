@@ -14,12 +14,15 @@ import {
   resolveBoardByPostType,
 } from "@/lib/community-board";
 import { findMatchedForbiddenKeywords } from "@/lib/forbidden-keyword-policy";
-import { isFreeBoardPostType } from "@/lib/post-type-groups";
+import { isAdminOnlyPostType, isFreeBoardPostType } from "@/lib/post-type-groups";
 import { prisma } from "@/lib/prisma";
 import { detectContactSignals, moderateContactContent } from "@/lib/contact-policy";
 import { buildGuestIpMeta } from "@/lib/guest-ip-display";
 import { isGuestPostTypeBlocked, isGuestScopeAllowed } from "@/lib/guest-post-policy";
-import { evaluateNewUserPostWritePolicy } from "@/lib/post-write-policy";
+import {
+  evaluateAdminOnlyPostWritePolicy,
+  evaluateNewUserPostWritePolicy,
+} from "@/lib/post-write-policy";
 import {
   type AdoptionListingInput,
   type HospitalReviewInput,
@@ -539,6 +542,18 @@ export async function createPost({ authorId, input, guestIdentity }: CreatePostP
       );
     }
 
+    const adminOnlyWritePolicy = evaluateAdminOnlyPostWritePolicy({
+      role: author.role,
+      postType: postData.type,
+    });
+    if (!adminOnlyWritePolicy.allowed) {
+      throw new ServiceError(
+        adminOnlyWritePolicy.message ?? "현재 계정으로는 이 카테고리 글을 작성할 수 없습니다.",
+        "ADMIN_ONLY_POST_TYPE",
+        403,
+      );
+    }
+
     const contactPolicy = moderateContactContent({
       text: postData.content,
       role: author.role,
@@ -583,6 +598,14 @@ export async function createPost({ authorId, input, guestIdentity }: CreatePostP
   } else {
     if (!guestIdentity) {
       throw new ServiceError("비회원 식별 정보가 필요합니다.", "INVALID_GUEST_CONTEXT", 400);
+    }
+
+    if (isAdminOnlyPostType(postData.type)) {
+      throw new ServiceError(
+        "해당 카테고리 글은 관리자만 등록할 수 있습니다.",
+        "ADMIN_ONLY_POST_TYPE",
+        403,
+      );
     }
 
     await assertGuestNotBanned(guestIdentity);
@@ -1119,7 +1142,7 @@ export async function updatePost({ postId, authorId, input }: UpdatePostParams) 
 
   const existing = await prisma.post.findUnique({
     where: { id: postId },
-    select: { id: true, status: true, authorId: true },
+    select: { id: true, status: true, authorId: true, type: true },
   });
 
   if (!existing || existing.status === PostStatus.DELETED) {
@@ -1128,6 +1151,18 @@ export async function updatePost({ postId, authorId, input }: UpdatePostParams) 
 
   if (existing.authorId !== authorId) {
     throw new ServiceError("수정 권한이 없습니다.", "FORBIDDEN", 403);
+  }
+
+  const adminOnlyWritePolicy = evaluateAdminOnlyPostWritePolicy({
+    role: author.role,
+    postType: existing.type,
+  });
+  if (!adminOnlyWritePolicy.allowed) {
+    throw new ServiceError(
+      adminOnlyWritePolicy.message ?? "현재 계정으로는 이 카테고리 글을 수정할 수 없습니다.",
+      "ADMIN_ONLY_POST_TYPE",
+      403,
+    );
   }
 
   const updated = await prisma.post.update({

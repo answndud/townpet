@@ -1,7 +1,9 @@
 import Link from "next/link";
+import { UserRole } from "@prisma/client";
 
 import { PostCreateForm } from "@/components/posts/post-create-form";
 import { auth } from "@/lib/auth";
+import { getCurrentUserRole } from "@/server/auth";
 import { redirectToProfileIfNicknameMissing } from "@/server/nickname-guard";
 import { listCommunities } from "@/server/queries/community.queries";
 import { getUserWithNeighborhoods } from "@/server/queries/user.queries";
@@ -9,6 +11,7 @@ import { getUserWithNeighborhoods } from "@/server/queries/user.queries";
 export default async function NewPostPage() {
   const session = await auth();
   const userId = session?.user?.id;
+  const currentUserRole = userId ? await getCurrentUserRole() : null;
   redirectToProfileIfNicknameMissing({
     isAuthenticated: Boolean(userId),
     nickname: session?.user?.nickname,
@@ -50,6 +53,10 @@ export default async function NewPostPage() {
             communities={communities.items}
             defaultNeighborhoodId={primaryNeighborhood?.neighborhood.id}
             isAuthenticated={Boolean(userId)}
+            canCreateAdoptionListing={
+              currentUserRole?.role === UserRole.ADMIN ||
+              currentUserRole?.role === UserRole.MODERATOR
+            }
           />
         </section>
       </main>

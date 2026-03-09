@@ -6971,6 +6971,27 @@
 - 운영/실행 가이드: `docs/개발_운영_가이드.md`
 - 현재 계획: `PLAN.md`
 
+### 2026-03-09: Cycle 251 입양 게시판 관리자 전용 전환 및 신고 제거
+- 완료 내용
+- `ADOPTION_LISTING`을 관리자 전용 카테고리로 고정했다.
+  - `app/src/lib/post-type-groups.ts`에 관리자 전용/신고 비활성 타입 헬퍼를 추가했다.
+  - `app/src/lib/post-write-policy.ts`에 관리자 전용 작성 정책을 추가했다.
+  - `app/src/server/services/post.service.ts`에서 일반 사용자/비회원의 입양 글 생성과 일반 사용자의 기존 입양 글 수정을 `ADMIN_ONLY_POST_TYPE`으로 차단했다.
+  - `app/src/components/posts/post-create-form.tsx`, `app/src/app/posts/new/page.tsx`에서 일반 사용자에게 입양 타입을 숨겼다.
+- 입양 게시글 신고 기능을 제거했다.
+  - `app/src/components/posts/post-detail-client.tsx`, `app/src/app/posts/[id]/guest/page.tsx`에서 입양 글 신고 UI를 숨겼다.
+  - `app/src/server/services/report.service.ts`에서 입양 글 신고를 `REPORT_DISABLED_FOR_POST_TYPE`으로 거부한다.
+- 입양 보드 CTA도 관리자에게만 노출되도록 정리했다.
+  - `app/src/app/boards/adoption/page.tsx`
+- 검증 결과
+- `pnpm -C app lint src/lib/post-type-groups.ts src/lib/post-write-policy.ts src/lib/post-write-policy.test.ts src/server/services/post.service.ts src/server/services/post-create-policy.test.ts src/server/services/report.service.ts src/server/services/report.service.test.ts src/components/posts/post-create-form.tsx src/components/posts/post-detail-client.tsx 'src/app/posts/[id]/guest/page.tsx' src/app/posts/new/page.tsx src/app/boards/adoption/page.tsx` 통과
+- `pnpm -C app test -- src/lib/post-write-policy.test.ts src/server/services/post-create-policy.test.ts src/server/services/report.service.test.ts` 통과
+  - 현재 환경에서는 전체 Vitest suite로 확장 실행되어 `106 files / 546 tests`가 통과했다.
+- `pnpm -C app typecheck` 통과
+- `git diff --check` 통과
+- 메모
+- 푸시는 하지 않았다. 현재 변경은 로컬 워크트리에만 있다.
+
 ### 2026-03-07: Cycle 205 비회원 abuse defense 현실화
 - 완료 내용
 - 비회원 글/댓글/업로드 경로에 공용 step-up 검증을 도입했다.

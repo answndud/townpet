@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { ReportStatus, ReportTarget, SanctionLevel } from "@prisma/client";
+import { PostType, ReportStatus, ReportTarget, SanctionLevel } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 import { bulkUpdateReports, createReport } from "@/server/services/report.service";
@@ -83,7 +83,10 @@ describe("report service", () => {
     mockPrisma.$transaction.mockImplementation(async (callback) =>
       callback({
         post: {
-          findUnique: vi.fn().mockResolvedValue({ authorId: "user-9" }),
+          findUnique: vi.fn().mockResolvedValue({
+            authorId: "user-9",
+            type: PostType.FREE_BOARD,
+          }),
           update: updatePost,
         },
         report: {
@@ -127,6 +130,42 @@ describe("report service", () => {
       where: { id: "cmf0auto0000014tgtarget01" },
       data: { status: "HIDDEN" },
     });
+  });
+
+  it("rejects reports for admin-managed adoption posts", async () => {
+    const createReportRow = vi.fn();
+    mockFindFirst.mockResolvedValue(null);
+
+    mockPrisma.$transaction.mockImplementation(async (callback) =>
+      callback({
+        post: {
+          findUnique: vi.fn().mockResolvedValue({
+            authorId: "admin-1",
+            type: PostType.ADOPTION_LISTING,
+          }),
+        },
+        report: {
+          create: createReportRow,
+          findMany: vi.fn(),
+        },
+      } as never),
+    );
+
+    await expect(
+      createReport({
+        reporterId: "user-3",
+        input: {
+          targetType: "POST",
+          targetId: "cmf0adopt000014tgadminpost",
+          reason: "SPAM",
+        },
+      }),
+    ).rejects.toMatchObject({
+      code: "REPORT_DISABLED_FOR_POST_TYPE",
+      status: 403,
+    });
+
+    expect(createReportRow).not.toHaveBeenCalled();
   });
 
   it("rejects bulk actions for non-post targets", async () => {

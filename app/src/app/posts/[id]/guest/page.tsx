@@ -21,6 +21,7 @@ import {
 } from "@/lib/post-page-metadata";
 import { getGuestPostMeta } from "@/lib/post-guest-meta";
 import { formatRelativeDate } from "@/lib/post-presenter";
+import { isReportablePostType } from "@/lib/post-type-groups";
 import { toAbsoluteUrl } from "@/lib/site-url";
 import { resolveUserDisplayName } from "@/lib/user-display";
 import { getGuestReadLoginRequiredPostTypes } from "@/server/queries/policy.queries";
@@ -188,6 +189,7 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
 
   const loginHref = `/login?next=${encodeURIComponent(`/posts/${post.id}`)}`;
   const guestPostMeta = getGuestPostMeta(post);
+  const canReportPost = isReportablePostType(post.type);
   const displayAuthorName = guestPostMeta.guestAuthorName
     ? guestPostMeta.guestAuthorName
     : resolveUserDisplayName(post.author.nickname);
@@ -362,12 +364,14 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
               {guestPostMeta.isGuestPost ? <GuestPostDetailActions postId={post.id} /> : null}
             </div>
 
-            <details className="mt-4 rounded-xl border border-[#d9e5f7] bg-white p-4">
-              <summary className="cursor-pointer text-sm font-semibold text-[#1f3f71]">게시글 신고</summary>
-              <div className="mt-3">
-                <PostReportForm postId={post.id} />
-              </div>
-            </details>
+            {canReportPost ? (
+              <details className="mt-4 rounded-xl border border-[#d9e5f7] bg-white p-4">
+                <summary className="cursor-pointer text-sm font-semibold text-[#1f3f71]">게시글 신고</summary>
+                <div className="mt-3">
+                  <PostReportForm postId={post.id} />
+                </div>
+              </details>
+            ) : null}
           </section>
         </div>
 
