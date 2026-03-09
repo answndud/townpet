@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { PostType } from "@prisma/client";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 
 import { PostSignalIcons } from "@/components/posts/post-signal-icons";
 import type {
@@ -14,6 +14,7 @@ import type {
 import {
   sendFeedPersonalizationMetric,
 } from "@/lib/feed-personalization-tracking";
+import { formatKoreanMonthDay } from "@/lib/date-format";
 import {
   getPostSignals,
   postTypeMeta,
@@ -145,6 +146,56 @@ type StoredReadPost = {
   ts: number;
 };
 
+let relativeNowSnapshot: number | null = null;
+let relativeNowPrimed = false;
+let relativeNowInterval: number | null = null;
+const relativeNowListeners = new Set<() => void>();
+
+function emitRelativeNow(next: number) {
+  relativeNowSnapshot = next;
+}
+
+function refreshRelativeNow() {
+  emitRelativeNow(Date.now());
+  for (const listener of relativeNowListeners) {
+    listener();
+  }
+}
+
+function subscribeRelativeNow(onStoreChange: () => void) {
+  if (typeof window === "undefined") {
+    return () => {};
+  }
+
+  relativeNowListeners.add(onStoreChange);
+
+  if (!relativeNowPrimed) {
+    relativeNowPrimed = true;
+    queueMicrotask(refreshRelativeNow);
+  }
+
+  if (relativeNowInterval === null) {
+    relativeNowInterval = window.setInterval(refreshRelativeNow, 60_000);
+  }
+
+  const handlePageShow = () => {
+    refreshRelativeNow();
+  };
+
+  window.addEventListener("pageshow", handlePageShow);
+  window.addEventListener("focus", refreshRelativeNow);
+
+  return () => {
+    relativeNowListeners.delete(onStoreChange);
+    window.removeEventListener("pageshow", handlePageShow);
+    window.removeEventListener("focus", refreshRelativeNow);
+    if (relativeNowListeners.size === 0 && relativeNowInterval !== null) {
+      window.clearInterval(relativeNowInterval);
+      relativeNowInterval = null;
+    }
+  };
+}
+
 function formatListDate(value: string | Date | null | undefined) {
   if (!value) {
     return null;
@@ -155,10 +206,7 @@ function formatListDate(value: string | Date | null | undefined) {
     return null;
   }
 
-  return date.toLocaleDateString("ko-KR", {
-    month: "numeric",
-    day: "numeric",
-  });
+  return formatKoreanMonthDay(date);
 }
 
 function parseReadPosts(raw: string | null): StoredReadPost[] {
@@ -216,12 +264,20 @@ export function FeedInfiniteList({
   const [readPostIds, setReadPostIds] = useState<Set<string>>(() => new Set());
   const restoreDoneRef = useRef(false);
   const scrollStorageKey = useMemo(() => `feed:scroll:${queryKey}`, [queryKey]);
-  const [relativeNow] = useState<number>(() => Date.now());
+  const relativeNow = useSyncExternalStore(
+    subscribeRelativeNow,
+    () => relativeNowSnapshot,
+    () => null,
+  );
   const showAdSlot = Boolean(adConfig && mode === "ALL" && initialItems.length >= 5);
   const trackedViewKeyRef = useRef<string | null>(null);
   const trackedAdKeyRef = useRef<string | null>(null);
   const router = useRouter();
   const isPersonalizedQuery = Boolean(query.personalized);
+
+  useEffect(() => {
+    refreshRelativeNow();
+  }, [queryKey]);
 
   useEffect(() => {
     if (typeof window === "undefined" || restoreDoneRef.current) {

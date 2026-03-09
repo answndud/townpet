@@ -2,6 +2,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 
+import { RouteRefreshOnReturn } from "@/components/ui/route-refresh-on-return";
+import { PublicProfileSummaryStats } from "@/components/user/public-profile-summary-stats";
 import { UserRelationControls } from "@/components/user/user-relation-controls";
 import { auth } from "@/lib/auth";
 import { getCspNonce } from "@/lib/csp-nonce";
@@ -199,6 +201,7 @@ export default async function PublicUserProfilePage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(profileJsonLd) }}
       />
+      <RouteRefreshOnReturn refreshOnFocus={false} />
       <main className="mx-auto flex w-full max-w-[1320px] flex-col gap-5 px-4 py-6 sm:px-6 lg:px-10">
         <header className="tp-hero p-5 sm:p-6">
           <p className="text-[11px] uppercase tracking-[0.24em] text-[#3f5f90]">공개 프로필</p>
@@ -220,28 +223,17 @@ export default async function PublicUserProfilePage({
           </div>
         </header>
 
-        <section className="grid gap-3 md:grid-cols-3">
-          <div className="tp-card p-4">
-            <p className="text-[11px] uppercase tracking-[0.22em] text-[#5b78a1]">게시글</p>
-            {profile.showPublicPosts ? (
-              <p className="mt-2 text-3xl font-bold text-[#10284a]">{profile.postCount}</p>
-            ) : (
-              <p className="mt-3 text-sm font-semibold text-[#5a7398]">비공개</p>
-            )}
-          </div>
-          <div className="tp-card p-4">
-            <p className="text-[11px] uppercase tracking-[0.22em] text-[#5b78a1]">댓글</p>
-            {profile.showPublicComments ? (
-              <p className="mt-2 text-3xl font-bold text-[#10284a]">{profile.commentCount}</p>
-            ) : (
-              <p className="mt-3 text-sm font-semibold text-[#5a7398]">비공개</p>
-            )}
-          </div>
-          <div className="tp-card p-4">
-            <p className="text-[11px] uppercase tracking-[0.22em] text-[#5b78a1]">반응</p>
-            <p className="mt-2 text-3xl font-bold text-[#10284a]">{profile.reactionCount}</p>
-          </div>
-        </section>
+        <PublicProfileSummaryStats
+          key={`${profile.id}:${profile.showPublicPosts ? "1" : "0"}:${profile.showPublicComments ? "1" : "0"}:${profile.postCount ?? "hidden"}:${profile.commentCount ?? "hidden"}:${profile.reactionCount}`}
+          userId={profile.id}
+          initialSummary={{
+            showPublicPosts: profile.showPublicPosts,
+            showPublicComments: profile.showPublicComments,
+            postCount: profile.postCount,
+            commentCount: profile.commentCount,
+            reactionCount: profile.reactionCount,
+          }}
+        />
 
         <section className="tp-card p-5 sm:p-6">
           <h2 className="text-lg font-semibold text-[#153a6a]">반려동물 프로필</h2>

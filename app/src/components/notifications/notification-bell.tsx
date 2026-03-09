@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 
 import {
   emitNotificationUnreadSync,
   subscribeNotificationUnreadSync,
 } from "@/lib/notification-unread-sync";
+import { formatKoreanDate } from "@/lib/date-format";
 import { resolveUserDisplayName } from "@/lib/user-display";
 import {
   archiveNotificationAction,
@@ -101,7 +102,7 @@ function formatRelativeLabel(isoDate: string) {
     return `${days}일 전`;
   }
 
-  return new Date(isoDate).toLocaleDateString("ko-KR");
+  return formatKoreanDate(isoDate);
 }
 
 export function NotificationBell({ unreadCount }: NotificationBellProps) {
@@ -113,7 +114,6 @@ export function NotificationBell({ unreadCount }: NotificationBellProps) {
   const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [items, setItems] = useState<NotificationPreviewItem[]>([]);
   const [previewFilter, setPreviewFilter] = useState<PreviewFilter>("ALL");
-  const [loadedOnce, setLoadedOnce] = useState(false);
   const [isActionPending, startActionTransition] = useTransition();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const badgeLabel = localUnreadCount > 99 ? "99+" : String(localUnreadCount);
@@ -164,7 +164,7 @@ export function NotificationBell({ unreadCount }: NotificationBellProps) {
     };
   }, [isOpen]);
 
-  const loadPreview = async () => {
+  const loadPreview = useCallback(async () => {
     setIsLoading(true);
     setLoadError(null);
 
@@ -182,7 +182,6 @@ export function NotificationBell({ unreadCount }: NotificationBellProps) {
       }
 
       setItems(payload.data.items);
-      setLoadedOnce(true);
     } catch (error) {
       setLoadError(
         error instanceof Error && error.message.trim().length > 0
@@ -192,15 +191,36 @@ export function NotificationBell({ unreadCount }: NotificationBellProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    void loadPreview();
+
+    const refresh = () => {
+      void loadPreview();
+    };
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        refresh();
+      }
+    };
+
+    window.addEventListener("focus", refresh);
+    window.addEventListener("pageshow", handlePageShow);
+
+    return () => {
+      window.removeEventListener("focus", refresh);
+      window.removeEventListener("pageshow", handlePageShow);
+    };
+  }, [isOpen, loadPreview]);
 
   const handleOpenToggle = () => {
     const nextOpen = !isOpen;
     setIsOpen(nextOpen);
-
-    if (nextOpen && !loadedOnce && !isLoading) {
-      void loadPreview();
-    }
   };
 
   const markOneAsRead = (id: string) => {

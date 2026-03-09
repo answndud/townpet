@@ -2,10 +2,18 @@ import { revalidatePath } from "next/cache";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
 import { unstable_update } from "@/lib/auth";
-import { setPrimaryNeighborhoodAction, updateProfileAction } from "@/server/actions/user";
+import {
+  setPrimaryNeighborhoodAction,
+  updateProfileAction,
+  updateProfileImageAction,
+} from "@/server/actions/user";
 import { requireCurrentUser } from "@/server/auth";
 import { ServiceError } from "@/server/services/service-error";
-import { setPrimaryNeighborhood, updateProfile } from "@/server/services/user.service";
+import {
+  setPrimaryNeighborhood,
+  updateProfile,
+  updateProfileImage,
+} from "@/server/services/user.service";
 
 vi.mock("@/server/auth", () => ({
   requireCurrentUser: vi.fn(),
@@ -13,6 +21,7 @@ vi.mock("@/server/auth", () => ({
 
 vi.mock("@/server/services/user.service", () => ({
   updateProfile: vi.fn(),
+  updateProfileImage: vi.fn(),
   setPrimaryNeighborhood: vi.fn(),
 }));
 
@@ -26,6 +35,7 @@ vi.mock("next/cache", () => ({
 
 const mockRequireCurrentUser = vi.mocked(requireCurrentUser);
 const mockUpdateProfile = vi.mocked(updateProfile);
+const mockUpdateProfileImage = vi.mocked(updateProfileImage);
 const mockSetPrimaryNeighborhood = vi.mocked(setPrimaryNeighborhood);
 const mockRevalidatePath = vi.mocked(revalidatePath);
 const mockUnstableUpdate = vi.mocked(unstable_update);
@@ -34,6 +44,7 @@ describe("user actions", () => {
   beforeEach(() => {
     mockRequireCurrentUser.mockReset();
     mockUpdateProfile.mockReset();
+    mockUpdateProfileImage.mockReset();
     mockSetPrimaryNeighborhood.mockReset();
     mockRevalidatePath.mockReset();
     mockUnstableUpdate.mockReset();
@@ -82,6 +93,25 @@ describe("user actions", () => {
     expect(mockRevalidatePath).toHaveBeenCalledWith("/");
     expect(mockRevalidatePath).toHaveBeenCalledWith("/profile");
     expect(mockRevalidatePath).toHaveBeenCalledWith("/onboarding");
+  });
+
+  it("updates profile image, session, and public profile revalidation", async () => {
+    mockRequireCurrentUser.mockResolvedValue({ id: "user-5" } as never);
+    mockUpdateProfileImage.mockResolvedValue({ id: "user-5", image: "/uploads/avatar.png" } as never);
+    mockUnstableUpdate.mockResolvedValue(null);
+
+    const result = await updateProfileImageAction({ imageUrl: "/uploads/avatar.png" });
+
+    expect(result).toEqual({ ok: true });
+    expect(mockUpdateProfileImage).toHaveBeenCalledWith({
+      userId: "user-5",
+      input: { imageUrl: "/uploads/avatar.png" },
+    });
+    expect(mockUnstableUpdate).toHaveBeenCalledWith({
+      user: { image: "/uploads/avatar.png" },
+    });
+    expect(mockRevalidatePath).toHaveBeenCalledWith("/profile");
+    expect(mockRevalidatePath).toHaveBeenCalledWith("/users/user-5");
   });
 
   it("accepts multi-neighborhood payload", async () => {

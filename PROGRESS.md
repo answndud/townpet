@@ -17,6 +17,43 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-09: Cycle 264 완료 (알림/공개프로필/상대시간 freshness 보강)
+- 완료 내용
+- `app/src/components/notifications/notification-bell.tsx`에서 알림 드롭다운이 최초 1회 로드에 고정되지 않도록 `loadPreview`를 `useCallback`으로 정리하고, 패널을 열 때마다 최신 목록을 다시 불러오게 바꿨다.
+- 같은 알림 드롭다운은 열린 상태에서 브라우저 포커스 복귀와 BFCache `pageshow` 복귀 시에도 재조회되도록 보강해 오래 열어둔 탭에서 stale 미리보기가 남는 시간을 줄였다.
+- `app/src/app/api/users/[id]/profile-summary/route.ts`를 추가해 공개 프로필 상단 활동 수치만 가볍게 가져오는 `no-store` API를 만들었고, `app/src/app/api/users/[id]/profile-summary/route.test.ts`로 성공/인증 실패/예상치 못한 예외 경로를 검증했다.
+- `app/src/components/user/public-profile-summary-stats.tsx`를 추가해 공개 프로필의 게시글/댓글/반응 카드를 client 컴포넌트로 분리하고, 포커스 복귀/BFCache 복귀/60초 주기 재검증으로 count만 다시 읽게 했다.
+- `app/src/app/users/[id]/page.tsx`는 기존 정적 카운트 카드 대신 위 client 컴포넌트를 쓰도록 바꿨고, `RouteRefreshOnReturn`은 포커스 refresh를 끄고 BFCache 복귀 refresh만 남겨 중복 갱신을 줄였다.
+- `app/src/components/posts/feed-infinite-list.tsx`의 상대시간 store는 기존 포커스/BFCache 복귀 외에 전역 60초 interval도 함께 돌도록 바꿔, 오래 열린 피드 탭에서도 `방금 전/몇 분 전`이 계속 갱신되게 했다.
+- 검증 결과
+- `pnpm -C app lint src/components/notifications/notification-bell.tsx src/components/ui/route-refresh-on-return.tsx 'src/app/api/users/[id]/profile-summary/route.ts' 'src/app/api/users/[id]/profile-summary/route.test.ts' src/components/user/public-profile-summary-stats.tsx 'src/app/users/[id]/page.tsx' src/components/posts/feed-infinite-list.tsx` 통과
+- `pnpm -C app typecheck` 통과
+- `pnpm -C app test -- 'src/app/api/users/[id]/profile-summary/route.test.ts' src/app/api/search/guest/route.test.ts src/server/actions/user.test.ts src/lib/feed-list-presenter.test.ts` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `113 files / 574 tests` 통과
+- `git diff --check` 통과
+- 메모
+- 알림 드롭다운은 여전히 목록 API를 직접 다시 읽는 구조이며, unread badge 전체 카운트는 `viewer-shell` sync 흐름을 계속 사용한다.
+- 공개 프로필 카운트는 전체 페이지 refresh보다 가볍게 갱신되지만, 활동 탭 목록 자체는 여전히 서버 페이지 스냅샷 기준이다.
+
+### 2026-03-09: Cycle 263 완료 (캐시/리패치/하이드레이션 불일치 정리)
+- 완료 내용
+- `app/src/components/posts/guest-search-page-client.tsx`에 `pageshow` 재조회 토큰을 추가하고 `fetch(..., cache: "no-store")`로 바꿔 게스트 검색이 BFCache 복귀나 뒤로가기 이후 오래된 브라우저 캐시를 다시 쓰지 않게 했다.
+- `app/src/app/api/search/guest/route.ts`, `app/src/app/api/posts/[id]/detail/route.ts`, `app/src/app/api/posts/[id]/stats/route.ts`, `app/src/app/api/posts/[id]/content/route.ts`의 guest 응답 cache-control을 모두 `no-store`로 통일해 리스트/상세/부분 조회가 서로 다른 TTL로 갈라지지 않게 정리했다.
+- `app/src/lib/date-format.ts`와 `app/src/lib/date-format.test.ts`를 추가해 `Asia/Seoul` 기준 고정 날짜/월일/일시 포맷 helper를 만들었다.
+- `app/src/components/posts/feed-infinite-list.tsx`는 초기 hydration 시에는 절대 날짜 스냅샷을 쓰고, hydration 이후/포커스 복귀/BFCache 복귀 시 상대시간 스냅샷을 갱신하는 external-store 패턴으로 바꿨다.
+- `app/src/lib/post-presenter.ts`, `app/src/components/notifications/notification-center.tsx`, `app/src/components/notifications/notification-bell.tsx`는 새 고정 포맷 helper를 써서 locale/timezone 차이로 인한 hydration mismatch 가능성을 줄였다.
+- `app/src/server/actions/user.ts`의 `updateProfileImageAction`은 저장 후 `unstable_update`로 session image를 갱신하고 `/users/{id}`도 함께 재검증하도록 보강했다.
+- `app/src/lib/auth.ts`와 `app/src/types/next-auth.d.ts`는 JWT/session에 `image`를 유지하도록 확장해 프로필 이미지 변경 후 session payload도 일관되게 맞췄다.
+- `app/src/components/profile/profile-image-uploader.tsx`는 저장 성공 직후 `router.refresh()`를 호출해 같은 `/profile` 화면 상단 아바타가 즉시 바뀌게 했다.
+- `app/src/components/ui/route-refresh-on-return.tsx`를 추가하고 `app/src/app/users/[id]/page.tsx`에 연결해 공개 프로필이 tab focus/BFCache 복귀 시 새 서버 스냅샷으로 refresh되도록 했다.
+- 검증 결과
+- `pnpm -C app lint src/lib/date-format.ts src/lib/date-format.test.ts src/lib/post-presenter.ts src/components/posts/feed-infinite-list.tsx src/components/notifications/notification-center.tsx src/components/notifications/notification-bell.tsx src/components/posts/guest-search-page-client.tsx src/app/api/search/guest/route.ts src/app/api/search/guest/route.test.ts src/lib/auth.ts src/types/next-auth.d.ts src/server/actions/user.ts src/server/actions/user.test.ts src/components/profile/profile-image-uploader.tsx src/components/ui/route-refresh-on-return.tsx 'src/app/users/[id]/page.tsx' 'src/app/api/posts/[id]/detail/route.ts' 'src/app/api/posts/[id]/stats/route.ts' 'src/app/api/posts/[id]/content/route.ts'` 통과
+- `pnpm -C app typecheck` 통과
+- `pnpm -C app test -- src/lib/date-format.test.ts src/lib/feed-list-presenter.test.ts src/app/api/search/guest/route.test.ts src/server/actions/user.test.ts` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `112 files / 571 tests` 통과
+- `git diff --check` 통과
+- 메모
+- `docs/SPEC.md`는 현재 저장소에 존재하지 않아 이번 턴에서는 확인 대상에서 제외했다.
+- 공개 프로필 stale 완화는 page-level `router.refresh()` 기반이다. 이 페이지는 읽기 전용이어서 draft 손실 리스크가 낮지만, 폼이 있는 `/profile`에는 같은 방식을 적용하지 않았다.
+
 ### 2026-03-09: Cycle 262 완료 (게스트 상세 댓글 수 실시간 동기화)
 - 완료 내용
 - `app/src/lib/post-comment-count-sync.ts`에 브라우저 이벤트 기반 댓글 수 sync 유틸을 추가했고, `app/src/lib/post-comment-count-sync.test.ts`로 전달/무창(window 없음) fallback을 검증했다.

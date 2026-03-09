@@ -1,10 +1,9 @@
 import { NextRequest } from "next/server";
 
-import { getCurrentUserId } from "@/server/auth";
+import { requireAuthenticatedUserId } from "@/server/auth";
 import { monitorUnhandledError } from "@/server/error-monitor";
-import { getPostStatsById } from "@/server/queries/post.queries";
+import { getPublicUserProfileById } from "@/server/queries/user.queries";
 import { jsonError, jsonOk } from "@/server/response";
-import { assertPostReadable } from "@/server/services/post-read-access.service";
 import { ServiceError } from "@/server/services/service-error";
 
 type RouteParams = {
@@ -12,26 +11,28 @@ type RouteParams = {
 };
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
+  let viewerId: string | undefined;
+
   try {
-    const { id: postId } = await params;
-    const userId = await getCurrentUserId();
-    const viewerId = userId ?? undefined;
-    const post = await getPostStatsById(postId, viewerId);
-    if (!post) {
+    viewerId = await requireAuthenticatedUserId();
+    const { id } = await params;
+    const profile = await getPublicUserProfileById(id);
+
+    if (!profile) {
       return jsonError(404, {
         code: "NOT_FOUND",
-        message: "게시글을 찾을 수 없습니다.",
+        message: "사용자를 찾을 수 없습니다.",
       });
     }
 
-    await assertPostReadable(post, viewerId);
-
     return jsonOk(
       {
-        likeCount: post.likeCount ?? 0,
-        dislikeCount: post.dislikeCount ?? 0,
-        commentCount: post.commentCount ?? 0,
-        viewCount: post.viewCount ?? 0,
+        id: profile.id,
+        showPublicPosts: profile.showPublicPosts,
+        showPublicComments: profile.showPublicComments,
+        postCount: profile.postCount,
+        commentCount: profile.commentCount,
+        reactionCount: profile.reactionCount,
       },
       {
         headers: {
@@ -47,7 +48,12 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       });
     }
 
-    await monitorUnhandledError(error, { route: "GET /api/posts/[id]/stats", request });
+    await monitorUnhandledError(error, {
+      route: "GET /api/users/[id]/profile-summary",
+      request,
+      userId: viewerId,
+    });
+
     return jsonError(500, {
       code: "INTERNAL_SERVER_ERROR",
       message: "서버 오류가 발생했습니다.",

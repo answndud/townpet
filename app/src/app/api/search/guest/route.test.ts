@@ -47,7 +47,7 @@ describe("GET /api/search/guest", () => {
     mockGetGuestReadLoginRequiredPostTypes.mockResolvedValue([]);
   });
 
-  it("returns guest search results with public cache headers", async () => {
+  it("returns guest search results without storing stale guest cache", async () => {
     mockListRankedSearchPosts.mockResolvedValue([
       {
         id: "post-1",
@@ -66,7 +66,7 @@ describe("GET /api/search/guest", () => {
     const payload = await response.json();
 
     expect(response.status).toBe(200);
-    expect(response.headers.get("cache-control")).toBe("public, s-maxage=45, stale-while-revalidate=300");
+    expect(response.headers.get("cache-control")).toBe("no-store");
     expect(mockEnforceRateLimit).toHaveBeenCalledWith(
       expect.objectContaining({ key: "guest-search:ip:127.0.0.1", limit: 40 }),
     );

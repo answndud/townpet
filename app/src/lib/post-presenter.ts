@@ -1,5 +1,7 @@
 import { PostType } from "@prisma/client";
 
+import { formatKoreanDate } from "@/lib/date-format";
+
 export type PostSignal = "image" | "twitter" | "instagram" | "link";
 export type PostTypeMeta = {
   label: string;
@@ -125,7 +127,7 @@ export function formatRelativeDate(
   const days = Math.floor(hours / 24);
   if (days < 7) return `${days}일 전`;
 
-  return targetDate.toLocaleDateString("ko-KR");
+  return formatKoreanDate(targetDate);
 }
 
 export function formatCount(value?: number | null) {

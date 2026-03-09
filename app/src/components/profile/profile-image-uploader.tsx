@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
 import { ImageUploadField } from "@/components/ui/image-upload-field";
@@ -10,6 +11,7 @@ type ProfileImageUploaderProps = {
 };
 
 export function ProfileImageUploader({ initialImageUrl }: ProfileImageUploaderProps) {
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [imageUrls, setImageUrls] = useState<string[]>(
     initialImageUrl ? [initialImageUrl] : [],
@@ -34,6 +36,7 @@ export function ProfileImageUploader({ initialImageUrl }: ProfileImageUploaderPr
       }
 
       setMessage("프로필 이미지가 저장되었습니다.");
+      router.refresh();
     });
   };
 

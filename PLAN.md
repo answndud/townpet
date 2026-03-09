@@ -26,6 +26,20 @@
 
 ## Active Plan
 
+### Cycle 264: 알림/공개프로필/상대시간 freshness 보강 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 알림 드롭다운을 재오픈/포커스 복귀 시 최신 스냅샷으로 재조회 | Codex | P2 | `done` | 상단 알림 드롭다운이 최초 1회 fetch에 머무르지 않고, 열 때마다 최신 알림을 다시 읽으며 열린 상태에서는 포커스 복귀/BFCache 복귀 시에도 refresh된다 | `PLAN.md`, `PROGRESS.md`, `app/src/components/notifications/notification-bell.tsx` |
+| 공개 프로필 상단 활동 수치를 경량 API 기반 live 카드로 분리 | Codex | P2 | `done` | 공개 프로필의 게시글/댓글/반응 수가 전체 페이지 refresh 없이도 포커스 복귀/주기적 재검증으로 갱신되고, 전용 API route 및 테스트가 존재한다 | `PLAN.md`, `PROGRESS.md`, `app/src/app/api/users/[id]/profile-summary/route.ts`, `app/src/app/api/users/[id]/profile-summary/route.test.ts`, `app/src/components/user/public-profile-summary-stats.tsx`, `app/src/app/users/[id]/page.tsx` |
+| 피드 상대시간을 장시간 체류 중에도 주기적으로 갱신 | Codex | P3 | `done` | 피드 목록의 상대시간이 hydration 이후 분 단위 타이머와 포커스/BFCache 복귀 이벤트로 갱신되어 오래 열린 탭에서도 stale 시간이 덜 보인다 | `PLAN.md`, `PROGRESS.md`, `app/src/components/posts/feed-infinite-list.tsx` |
+
+### Cycle 263: 캐시/리패치/하이드레이션 불일치 정리 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 게스트 검색과 guest detail 계열 API의 stale cache 제거 | Codex | P1 | `done` | 게스트 검색 클라이언트와 `/api/search/guest`, guest detail/content/stats API가 `no-store` 기준으로 동작하고, BFCache 복귀 시 게스트 검색도 재조회된다 | `PLAN.md`, `PROGRESS.md`, `app/src/components/posts/guest-search-page-client.tsx`, `app/src/app/api/search/guest/route.ts`, `app/src/app/api/posts/[id]/detail/route.ts`, `app/src/app/api/posts/[id]/stats/route.ts`, `app/src/app/api/posts/[id]/content/route.ts`, 관련 테스트 |
+| 피드/알림 날짜 렌더링을 hydration-safe 포맷으로 통일 | Codex | P1 | `done` | 피드 목록과 알림 센터가 SSR/CSR에서 같은 초기 날짜 문자열을 사용하고, hydration 후 상대시간/고정 포맷으로 자연스럽게 갱신된다 | `PLAN.md`, `PROGRESS.md`, `app/src/lib/date-format.ts`, `app/src/components/posts/feed-infinite-list.tsx`, `app/src/components/notifications/notification-center.tsx`, `app/src/lib/post-presenter.ts`, 관련 테스트 |
+| 프로필 이미지와 공개 프로필 stale 반영 경로 보강 | Codex | P2 | `done` | 프로필 이미지 저장 시 세션 image와 공개 프로필 경로가 함께 갱신되고, 공개 프로필은 tab 복귀/BFCache 복귀 시 새 스냅샷으로 refresh된다 | `PLAN.md`, `PROGRESS.md`, `app/src/server/actions/user.ts`, `app/src/lib/auth.ts`, `app/src/components/profile/profile-image-uploader.tsx`, `app/src/components/ui/route-refresh-on-return.tsx`, `app/src/app/users/[id]/page.tsx`, 관련 테스트 |
+
 ### Cycle 262: 게스트 상세 댓글 수 실시간 동기화 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
