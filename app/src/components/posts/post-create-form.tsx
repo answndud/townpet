@@ -26,7 +26,6 @@ import {
   markupToEditorHtml,
   serializeEditorHtml,
 } from "@/lib/editor-content-serializer";
-import { renderLiteMarkdown } from "@/lib/markdown-lite";
 import { REVIEW_CATEGORY, type ReviewCategory } from "@/lib/review-category";
 import { createPostAction } from "@/server/actions/post";
 
@@ -123,8 +122,6 @@ const reviewCategoryOptions: Array<{ value: ReviewCategory; label: string }> = [
 
 const DRAFT_STORAGE_KEY = "townpet:post-create-draft:v1";
 
-type EditorTab = "write" | "preview";
-
 function isDraftFormState(value: unknown): value is PostCreateFormState {
   if (!value || typeof value !== "object") {
     return false;
@@ -159,7 +156,6 @@ export function PostCreateForm({
   const contentRef = useRef<HTMLDivElement>(null);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [editorTab, setEditorTab] = useState<EditorTab>("write");
   const [draftLoaded, setDraftLoaded] = useState(false);
   const [draftMessage, setDraftMessage] = useState<string | null>(null);
   const [draftSavedAt, setDraftSavedAt] = useState<string | null>(null);
@@ -258,11 +254,11 @@ export function PostCreateForm({
     if (element.innerHTML !== editorHtml) {
       element.innerHTML = editorHtml;
     }
-  }, [editorHtml, editorTab]);
+  }, [editorHtml]);
 
   useEffect(() => {
     const editor = contentRef.current;
-    if (!editor || editorTab !== "write") {
+    if (!editor) {
       return;
     }
 
@@ -380,7 +376,7 @@ export function PostCreateForm({
       editor.removeEventListener("scroll", handleScroll);
       handle.remove();
     };
-  }, [editorTab]);
+  }, []);
 
   useEffect(() => {
     if (!draftLoaded || typeof window === "undefined") {
@@ -536,10 +532,6 @@ export function PostCreateForm({
       formState.walkRoute.hasStreetLights === "true" ||
       formState.walkRoute.hasRestroom === "true" ||
       formState.walkRoute.hasParkingLot === "true");
-  const previewHtml = useMemo(
-    () => renderLiteMarkdown(formState.content),
-    [formState.content],
-  );
 
   const syncEditorToFormState = () => {
     const element = contentRef.current;
@@ -609,17 +601,6 @@ export function PostCreateForm({
       }
     }
     syncEditorToFormState();
-  };
-
-  const applyLink = () => {
-    if (typeof window === "undefined") {
-      return;
-    }
-    const url = window.prompt("링크 주소를 입력해 주세요.", "https://");
-    if (!url || !/^https?:\/\//i.test(url.trim())) {
-      return;
-    }
-    runEditorCommand("createLink", url.trim());
   };
 
   const applyStyledSelection = (
@@ -1021,37 +1002,6 @@ export function PostCreateForm({
 
       <section className="tp-card overflow-hidden">
         <div className="flex flex-wrap items-center gap-2 border-b border-[#dbe6f6] bg-[#f8fbff] px-3 py-2 text-xs">
-          <button
-            type="button"
-            onClick={applyLink}
-            onMouseDown={preserveToolbarSelection}
-            className="tp-btn-soft inline-flex h-8 items-center px-3 font-semibold"
-          >
-            링크
-          </button>
-          <div className="mx-1 h-5 w-px bg-[#d8e3f4]" />
-          <button
-            type="button"
-            onClick={() => setEditorTab("write")}
-            className={`inline-flex h-8 items-center border px-3 font-semibold transition ${
-              editorTab === "write"
-                ? "border-[#3567b5] bg-[#3567b5] text-white"
-                : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
-            }`}
-          >
-            작성
-          </button>
-          <button
-            type="button"
-            onClick={() => setEditorTab("preview")}
-            className={`inline-flex h-8 items-center border px-3 font-semibold transition ${
-              editorTab === "preview"
-                ? "border-[#3567b5] bg-[#3567b5] text-white"
-                : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
-            }`}
-          >
-            미리보기
-          </button>
           <span className="ml-auto text-[#5a7398]">{formState.content.length.toLocaleString("ko-KR")}자</span>
         </div>
 
@@ -1072,22 +1022,6 @@ export function PostCreateForm({
           >
             I
           </button>
-          <button
-            type="button"
-            onClick={applyLink}
-            onMouseDown={preserveToolbarSelection}
-            className="tp-btn-soft inline-flex h-7 items-center px-2.5 font-semibold"
-          >
-            링크
-          </button>
-          <button
-            type="button"
-            onClick={() => runEditorCommand("insertUnorderedList")}
-            onMouseDown={preserveToolbarSelection}
-            className="tp-btn-soft inline-flex h-7 items-center px-2.5 font-semibold"
-          >
-            목록
-          </button>
           <details className="ml-auto">
             <summary className="tp-btn-soft inline-flex h-7 cursor-pointer list-none items-center px-2.5 font-semibold">
               고급
@@ -1100,14 +1034,6 @@ export function PostCreateForm({
                 className="tp-btn-soft inline-flex h-7 items-center px-2.5 font-semibold"
               >
                 크게
-              </button>
-              <button
-                type="button"
-                onClick={() => runEditorCommand("insertOrderedList")}
-                onMouseDown={preserveToolbarSelection}
-                className="tp-btn-soft inline-flex h-7 items-center px-2.5 font-semibold"
-              >
-                번호
               </button>
               <button
                 type="button"
@@ -1124,22 +1050,6 @@ export function PostCreateForm({
                 className="tp-btn-soft inline-flex h-7 items-center px-2.5 font-semibold"
               >
                 취소선
-              </button>
-              <button
-                type="button"
-                onClick={() => runEditorCommand("formatBlock", "blockquote")}
-                onMouseDown={preserveToolbarSelection}
-                className="tp-btn-soft inline-flex h-7 items-center px-2.5 font-semibold"
-              >
-                인용
-              </button>
-              <button
-                type="button"
-                onClick={() => runEditorCommand("formatBlock", "pre")}
-                onMouseDown={preserveToolbarSelection}
-                className="tp-btn-soft inline-flex h-7 items-center px-2.5 font-mono"
-              >
-                {'</>'}
               </button>
             </div>
           </details>
@@ -1161,38 +1071,6 @@ export function PostCreateForm({
             className="tp-btn-soft inline-flex h-7 items-center px-2.5 font-semibold italic"
           >
             I
-          </button>
-          <button
-            type="button"
-            onClick={() => runEditorCommand("formatBlock", "pre")}
-            onMouseDown={preserveToolbarSelection}
-            className="tp-btn-soft inline-flex h-7 items-center px-2.5 font-mono"
-          >
-            {'</>'}
-          </button>
-          <button
-            type="button"
-            onClick={() => runEditorCommand("insertUnorderedList")}
-            onMouseDown={preserveToolbarSelection}
-            className="tp-btn-soft inline-flex h-7 items-center px-2.5 font-semibold"
-          >
-            목록
-          </button>
-          <button
-            type="button"
-            onClick={() => runEditorCommand("insertOrderedList")}
-            onMouseDown={preserveToolbarSelection}
-            className="tp-btn-soft inline-flex h-7 items-center px-2.5 font-semibold"
-          >
-            번호목록
-          </button>
-          <button
-            type="button"
-            onClick={() => runEditorCommand("formatBlock", "blockquote")}
-            onMouseDown={preserveToolbarSelection}
-            className="tp-btn-soft inline-flex h-7 items-center px-2.5 font-semibold"
-          >
-            인용
           </button>
           <button
             type="button"
@@ -1278,23 +1156,14 @@ export function PostCreateForm({
           </button>
         </div>
 
-        {editorTab === "write" ? (
-          <div
-            ref={contentRef}
-            contentEditable
-            suppressContentEditableWarning
-            onInput={syncEditorToFormState}
-            onBlur={syncEditorToFormState}
-            className="min-h-[340px] w-full border-0 bg-[#fcfdff] px-4 py-3 text-sm leading-relaxed text-[#1f3f71] outline-none [&_img]:h-auto [&_img]:max-w-full"
-          />
-        ) : (
-          <div className="min-h-[340px] border-0 bg-[#fcfdff] px-4 py-3 text-sm text-[#1f3f71]">
-            <div
-              className="prose prose-sm max-w-none space-y-2 text-[#1f3f71]"
-              dangerouslySetInnerHTML={{ __html: previewHtml }}
-            />
-          </div>
-        )}
+        <div
+          ref={contentRef}
+          contentEditable
+          suppressContentEditableWarning
+          onInput={syncEditorToFormState}
+          onBlur={syncEditorToFormState}
+          className="min-h-[340px] w-full border-0 bg-[#fcfdff] px-4 py-3 text-sm leading-relaxed text-[#1f3f71] outline-none [&_img]:h-auto [&_img]:max-w-full"
+        />
 
         <div className="flex flex-wrap items-center gap-2 border-t border-[#dbe6f6] bg-[#f7fbff] px-3 py-2 text-xs">
           <button
