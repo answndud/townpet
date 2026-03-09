@@ -17,6 +17,37 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-09: Cycle 243 완료 (글쓰기 에디터 작성 전용 정리 + 플로우 점검)
+- 완료 내용
+  - `app/src/components/posts/post-create-form.tsx`에서 `링크`, `미리보기` 버튼만 숨기지 않고 관련 로직까지 함께 제거했다.
+  - `renderLiteMarkdown` 기반 preview 렌더링, `editorTab` 상태, `applyLink()` 삽입 함수를 정리하고 에디터를 단일 `contentEditable` 작성 모드로 고정했다.
+  - 현재 글쓰기 플로우를 코드 기준으로 재점검한 결과, 작성 자체는 실제 저장 경로까지 연결되어 있다.
+    - 로그인 사용자는 `createPostAction` -> `createPost` 서비스로 저장된다.
+    - 비회원 사용자는 `/api/posts` POST -> step-up/rate-limit -> `createPost` 서비스로 저장된다.
+    - 입력값은 `postCreateSchema`와 타입별 구조화 스키마를 거쳐 검증된다.
+- 검증 결과
+  - `pnpm -C app lint src/components/posts/post-create-form.tsx` 통과
+  - `pnpm -C app typecheck` 통과
+  - `pnpm -C app test -- src/app/api/posts/route.test.ts` 실행 시 현재 환경에서는 Vitest 전체 suite가 돌아갔고 `104 files / 529 tests` 통과
+  - `pnpm -C app test -- src/lib/validations/post.test.ts` 실행 시 현재 환경에서는 Vitest 전체 suite가 돌아갔고 `104 files / 529 tests` 통과
+  - `git diff --check` 통과
+- 점검 메모
+  - 현재 글쓰기는 "폼만 있는 미완성" 상태는 아니다. 제목/본문/이미지/구조화 입력이 실제 생성 서비스까지 이어지는 기본 커뮤니티 글쓰기 흐름은 구현돼 있다.
+  - 다만 에디터는 범용 에디터 라이브러리가 아니라 `contentEditable + serializeEditorHtml + document.execCommand` 조합이므로, 붙여넣기/브라우저별 편집 동작 일관성 면에서는 성숙한 에디터 대비 리스크가 남아 있다.
+  - 이번 변경은 그 리스크를 키우는 저사용 기능을 덜어내는 방향이며, 지금 기준으로는 "기본 글쓰기 가능" 주장은 가능하지만 "완성도 높은 전문 에디터" 주장은 과장이다.
+- 이슈/블로커
+  - 없음
+
+### 2026-03-09: Cycle 242 완료 (글쓰기 에디터 툴바 단순화)
+- 완료 내용
+  - `app/src/components/posts/post-create-form.tsx`의 글쓰기 에디터 툴바에서 `</>`, `목록`, `번호목록`, `인용` 버튼을 제거.
+  - 모바일 툴바의 `고급` 팝오버와 데스크톱 기본 툴바 양쪽에서 동일하게 정리해, 현재 실제로 자주 쓰는 기본 서식/링크/크기/색상 중심으로 단순화.
+- 검증 결과
+  - `pnpm -C app lint src/components/posts/post-create-form.tsx` 통과
+  - `git diff --check` 통과
+- 이슈/블로커
+  - 없음
+
 ### 2026-03-09: Cycle 241 완료 (병원후기 구조화 moderation 하드닝)
 - 완료 내용
   - `app/src/server/services/post.service.ts`에서 `HOSPITAL_REVIEW` 구조화 입력을 생성 초기에 파싱하도록 정리하고, `hospitalName`, `treatmentType`를 게시글 `title/content`와 함께 금칙어 검사 대상으로 포함.

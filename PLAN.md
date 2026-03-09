@@ -26,6 +26,17 @@
 
 ## Active Plan
 
+### Cycle 243: 글쓰기 에디터 작성 전용 정리 + 플로우 점검 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 글쓰기 툴바에서 링크/미리보기 제거 및 작성 전용 모드로 단순화 | Codex | P2 | `done` | 글쓰기 에디터에서 `링크`, `미리보기` UI와 관련 상태/렌더링 분기가 제거되고 작성 화면이 단일 편집 모드로 유지된다 | `PLAN.md`, `PROGRESS.md`, `app/src/components/posts/post-create-form.tsx` |
+| 현재 글쓰기 플로우의 실제 구현 범위 점검 | Codex | P1 | `done` | 폼 제출이 action/API, validation, service까지 실제 연결되는지 점검하고, 현재 수준에서 주장 가능한 범위와 남는 리스크를 `PROGRESS.md`에 기록한다 | `PLAN.md`, `PROGRESS.md`, `app/src/components/posts/post-create-form.tsx`, `app/src/server/actions/post.ts`, `app/src/app/api/posts/route.ts`, `app/src/lib/validations/post.ts`, `app/src/server/services/post.service.ts` |
+
+### Cycle 242: 글쓰기 에디터 툴바 단순화 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 글쓰기 툴바에서 저사용 서식 버튼 제거 | Codex | P2 | `done` | 글쓰기 툴바에서 `</>`, 목록, 번호목록, 인용 버튼이 제거되고 나머지 서식/링크/미리보기 동작은 유지된다 | `PLAN.md`, `PROGRESS.md`, `app/src/components/posts/post-create-form.tsx` |
+
 ### Cycle 241: 병원후기 구조화 moderation 하드닝 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
