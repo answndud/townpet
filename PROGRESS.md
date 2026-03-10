@@ -17,6 +17,33 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-10: Cycle 284 완료 (모바일 헤더 비고정화)
+- 완료 내용
+  - `app/src/components/navigation/app-shell-header.tsx`의 헤더 포지셔닝 클래스를 분리해 모바일 기본값에서는 고정을 제거하고, `sm` 이상에서만 `sticky top-0 z-40`이 적용되도록 조정했다.
+  - `app/src/components/navigation/app-shell-header-class.ts`를 추가해 responsive header class를 상수화했고, 향후 클래스 회귀를 문자열 diff 없이 테스트할 수 있게 정리했다.
+  - `app/src/components/navigation/app-shell-header-class.test.ts`는 모바일에서 bare `sticky/top-0`가 남지 않는지와, `sm:sticky`, `sm:top-0`가 유지되는지를 고정한다.
+- 검증 결과
+  - `pnpm -C app lint src/components/navigation/app-shell-header.tsx src/components/navigation/app-shell-header-class.ts src/components/navigation/app-shell-header-class.test.ts` 통과
+  - `pnpm -C app test -- src/components/navigation/app-shell-header-class.test.ts` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `129 files / 650 tests` 통과
+  - `pnpm -C app typecheck` 통과
+  - `git diff --check` 통과
+- 메모
+  - 저장소 지침에 적힌 `docs/SPEC.md`는 현재 repo에 존재하지 않아 확인할 수 없었고, 이번 변경은 헤더 레이아웃 한정 UI 수정으로 진행했다.
+
+### 2026-03-10: Cycle 282 완료 (전역 맨 위로 버튼 공통화)
+- 완료 내용
+  - `app/src/components/ui/scroll-to-top-button.tsx`를 scroll threshold 기반 전역 플로팅 버튼으로 확장하고, route change 뒤에도 현재 `window.scrollY`를 다시 읽어 노출 여부를 동기화하도록 정리했다.
+  - `app/src/app/layout.tsx`가 버튼을 루트에 1회만 렌더링하도록 바꿔 `/feed`뿐 아니라 게시글 상세(`/posts/[id]`, `/posts/[id]/guest`)와 기타 스크롤 페이지에서도 같은 `맨 위로` 동작을 제공한다.
+  - `app/src/app/feed/page.tsx`, `app/src/components/posts/guest-feed-page-client.tsx`, `app/src/app/boards/adoption/page.tsx`의 개별 `ScrollToTopButton` 삽입은 제거해 중복 CTA를 없앴다.
+  - `app/src/components/ui/scroll-to-top-button.test.ts`를 추가해 threshold 이전 숨김, threshold 도달 후 노출 기준, smooth scroll 호출을 회귀 테스트로 고정했다.
+- 검증 결과
+  - `pnpm -C app lint src/components/ui/scroll-to-top-button.tsx src/components/ui/scroll-to-top-button.test.ts src/app/layout.tsx src/app/feed/page.tsx src/components/posts/guest-feed-page-client.tsx src/app/boards/adoption/page.tsx` 통과
+  - `pnpm -C app test -- src/components/ui/scroll-to-top-button.test.ts` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `128 files / 649 tests` 통과
+  - `pnpm -C app typecheck` 통과
+  - `git diff --check` 통과
+- 메모
+  - 모바일에서는 하단 `글쓰기` CTA와 직접 겹치지 않도록 전역 버튼의 기본 bottom offset을 더 크게 두고, `sm` 이상 화면에서는 기존 하단 우측 고정 패턴으로 내렸다.
+
 ### 2026-03-10: Cycle 281 완료 (비회원 게시글 신고 로그인 게이트 정렬)
 - 완료 내용
   - 서버 `POST /api/reports`는 이미 `requireCurrentUser()`로 비회원 신고를 401 차단하고 있었고, 이번 턴에서는 guest 상세 UI가 그 정책과 어긋나게 활성 신고 폼을 노출하던 문제를 정리했다.

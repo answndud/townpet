@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { IBM_Plex_Mono, Space_Grotesk } from "next/font/google";
 
 import { AppShellHeader } from "@/components/navigation/app-shell-header";
+import { ScrollToTopButton } from "@/components/ui/scroll-to-top-button";
 import { getSiteOrigin } from "@/lib/site-url";
 import { listCommunityNavItems } from "@/server/queries/community.queries";
 import "./globals.css";
@@ -63,6 +64,7 @@ export default async function RootLayout({
         <AppShellHeader communities={communities} />
 
         {children}
+        <ScrollToTopButton />
       </body>
     </html>
   );

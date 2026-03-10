@@ -7,7 +7,6 @@ import { PostType } from "@prisma/client";
 
 import { NeighborhoodGateNotice } from "@/components/neighborhood/neighborhood-gate-notice";
 import { FeedInfiniteList, type FeedPostItem } from "@/components/posts/feed-infinite-list";
-import { ScrollToTopButton } from "@/components/ui/scroll-to-top-button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { isCommonBoardPostType } from "@/lib/community-board";
 import { buildPaginationWindow } from "@/lib/pagination";
@@ -591,7 +590,6 @@ export function GuestFeedPageClient() {
           </section>
 
           <div className="flex justify-end gap-2">
-            <ScrollToTopButton className="tp-btn-soft inline-flex h-9 items-center justify-center px-3.5 text-xs font-semibold" />
             <Link
               href="/posts/new"
               className="tp-btn-primary inline-flex h-9 items-center justify-center px-4 text-xs font-semibold hover:bg-[#274f8c]"

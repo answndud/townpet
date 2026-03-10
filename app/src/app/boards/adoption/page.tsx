@@ -5,7 +5,6 @@ import { PostType, UserRole } from "@prisma/client";
 
 import { AdoptionBoardGrid } from "@/components/boards/adoption-board-grid";
 import { EmptyState } from "@/components/ui/empty-state";
-import { ScrollToTopButton } from "@/components/ui/scroll-to-top-button";
 import { auth } from "@/lib/auth";
 import { isLoginRequiredPostType } from "@/lib/post-access";
 import { getCurrentUserRole } from "@/server/auth";
@@ -216,7 +215,6 @@ export default async function AdoptionBoardPage({
         )}
 
         <div className="flex justify-end gap-2">
-          <ScrollToTopButton className="tp-btn-soft tp-btn-sm inline-flex items-center justify-center" />
           {canManageAdoptionListings ? (
             <Link
               href="/posts/new"

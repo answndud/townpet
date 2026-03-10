@@ -1,6 +1,6 @@
 # PLAN.md
 
-기준일: 2026-03-09
+기준일: 2026-03-10
 목표: TownPet를 기능/운영/품질 기준에서 "완성도 높은 커뮤니티" 상태로 끌어올린다.
 
 ## 운영 규칙
@@ -25,6 +25,16 @@
 7. 보안 하드닝 트랙 분리 운영: `docs/security/*` 백로그/리스크/진행 로그 상시 동기화
 
 ## Active Plan
+
+### Cycle 284: 모바일 헤더 비고정화 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 모바일 스크롤 시 앱 헤더가 함께 내려가도록 responsive sticky 범위 조정 | Codex | P2 | `done` | 모바일 viewport에서는 앱 헤더가 더 이상 `sticky`로 고정되지 않고 스크롤과 함께 사라지며, `sm` 이상 breakpoint에서는 기존 상단 고정 동작이 유지되고, class 회귀 테스트가 존재한다 | `PLAN.md`, `PROGRESS.md`, `app/src/components/navigation/app-shell-header.tsx`, `app/src/components/navigation/app-shell-header-class.ts`, `app/src/components/navigation/app-shell-header-class.test.ts` |
+
+### Cycle 282: 전역 맨 위로 버튼 공통화 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| `/feed` 외 상세/일반 페이지까지 공통 `맨 위로` 버튼을 전역 배치로 확장 | Codex | P2 | `done` | 루트 레이아웃에 전역 플로팅 `맨 위로` 버튼이 배치되어 게시글 상세를 포함한 대부분의 스크롤 페이지에서 동일하게 동작하고, `/feed`/게스트 피드/입양 보드의 중복 버튼이 제거되며, 표시 threshold와 스크롤 동작 회귀 테스트가 존재한다 | `PLAN.md`, `PROGRESS.md`, `app/src/app/layout.tsx`, `app/src/components/ui/scroll-to-top-button.tsx`, `app/src/components/ui/scroll-to-top-button.test.ts`, `app/src/app/feed/page.tsx`, `app/src/components/posts/guest-feed-page-client.tsx`, `app/src/app/boards/adoption/page.tsx` |
 
 ### Cycle 281: 비회원 게시글 신고 로그인 게이트 정렬 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
