@@ -66,16 +66,11 @@ function markPreviewItemRead(items: NotificationPreviewItem[], id: string) {
 }
 
 function buildNotificationHref(notification: {
+  id: string;
   postId: string | null;
   commentId: string | null;
 }) {
-  if (notification.postId && notification.commentId) {
-    return `/posts/${notification.postId}#comment-${notification.commentId}`;
-  }
-  if (notification.postId) {
-    return `/posts/${notification.postId}`;
-  }
-  return "/notifications";
+  return `/notifications/redirect/${notification.id}`;
 }
 
 function formatRelativeLabel(isoDate: string) {
@@ -128,12 +123,41 @@ export function NotificationBell({ unreadCount }: NotificationBellProps) {
     return subscribeNotificationUnreadSync((payload) => {
       if (typeof payload.resetTo === "number" && Number.isFinite(payload.resetTo)) {
         setLocalUnreadCount(Math.max(0, payload.resetTo));
+        setItems((prev) =>
+          prev.map((item) =>
+            item.isRead
+              ? item
+              : {
+                  ...item,
+                  isRead: true,
+                },
+          ),
+        );
         return;
       }
 
       const delta = payload.delta;
       if (typeof delta === "number" && Number.isFinite(delta)) {
         setLocalUnreadCount((prev) => Math.max(0, prev + delta));
+      }
+
+      if (payload.archiveIds && payload.archiveIds.length > 0) {
+        const archiveIds = new Set(payload.archiveIds);
+        setItems((prev) => prev.filter((item) => !archiveIds.has(item.id)));
+      }
+
+      if (payload.markReadIds && payload.markReadIds.length > 0) {
+        const markReadIds = new Set(payload.markReadIds);
+        setItems((prev) =>
+          prev.map((item) =>
+            markReadIds.has(item.id)
+              ? {
+                  ...item,
+                  isRead: true,
+                }
+              : item,
+          ),
+        );
       }
     });
   }, []);
@@ -243,7 +267,7 @@ export function NotificationBell({ unreadCount }: NotificationBellProps) {
           : markPreviewItemRead(prev, id),
       );
       setLocalUnreadCount((prev) => Math.max(0, prev - 1));
-      emitNotificationUnreadSync({ delta: -1 });
+      emitNotificationUnreadSync({ delta: -1, markReadIds: [id] });
     });
   };
 
@@ -264,7 +288,9 @@ export function NotificationBell({ unreadCount }: NotificationBellProps) {
       setItems((prev) => prev.filter((item) => item.id !== id));
       if (!target.isRead) {
         setLocalUnreadCount((prev) => Math.max(0, prev - 1));
-        emitNotificationUnreadSync({ delta: -1 });
+        emitNotificationUnreadSync({ delta: -1, archiveIds: [id] });
+      } else {
+        emitNotificationUnreadSync({ archiveIds: [id] });
       }
     });
   };

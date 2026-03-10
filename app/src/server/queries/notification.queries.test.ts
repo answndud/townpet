@@ -1,8 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { NotificationDeliveryStatus, PostStatus } from "@prisma/client";
 
 import {
   archiveNotification,
   createNotification,
+  createNotificationDelivery,
+  deliverNotificationDelivery,
+  flushNotificationDeliveriesForUser,
+  getNotificationNavigationTarget,
   listNotificationsByUser,
   markAllNotificationsRead,
   markNotificationRead,
@@ -35,9 +40,16 @@ vi.mock("@/lib/prisma", () => ({
   prisma: {
     notification: {
       updateMany: vi.fn(),
+      findUnique: vi.fn(),
       create: vi.fn(),
       count: vi.fn(),
       findMany: vi.fn(),
+    },
+    notificationDelivery: {
+      create: vi.fn(),
+      findUnique: vi.fn(),
+      findMany: vi.fn(),
+      update: vi.fn(),
     },
   },
 }));
@@ -45,9 +57,16 @@ vi.mock("@/lib/prisma", () => ({
 const mockPrisma = vi.mocked(prisma) as unknown as {
   notification: {
     updateMany: ReturnType<typeof vi.fn>;
+    findUnique: ReturnType<typeof vi.fn>;
     create: ReturnType<typeof vi.fn>;
     count: ReturnType<typeof vi.fn>;
     findMany: ReturnType<typeof vi.fn>;
+  };
+  notificationDelivery: {
+    create: ReturnType<typeof vi.fn>;
+    findUnique: ReturnType<typeof vi.fn>;
+    findMany: ReturnType<typeof vi.fn>;
+    update: ReturnType<typeof vi.fn>;
   };
 };
 
@@ -58,15 +77,22 @@ const mockBumpListVersion = vi.mocked(bumpNotificationListCacheVersion);
 describe("notification queries cache behavior", () => {
   beforeEach(() => {
     mockPrisma.notification.updateMany.mockReset();
+    mockPrisma.notification.findUnique.mockReset();
     mockPrisma.notification.create.mockReset();
     mockPrisma.notification.count.mockReset();
     mockPrisma.notification.findMany.mockReset();
+    mockPrisma.notificationDelivery.create.mockReset();
+    mockPrisma.notificationDelivery.findUnique.mockReset();
+    mockPrisma.notificationDelivery.findMany.mockReset();
+    mockPrisma.notificationDelivery.update.mockReset();
     mockWithQueryCache.mockClear();
     mockBumpUnreadVersion.mockReset();
     mockBumpUnreadVersion.mockResolvedValue(undefined);
     mockBumpListVersion.mockReset();
     mockBumpListVersion.mockResolvedValue(undefined);
     mockPrisma.notification.count.mockResolvedValue(0);
+    mockPrisma.notification.findMany.mockResolvedValue([]);
+    mockPrisma.notificationDelivery.findMany.mockResolvedValue([]);
   });
 
   it("uses query cache for first-page notification list", async () => {
@@ -110,6 +136,50 @@ describe("notification queries cache behavior", () => {
     expect(mockWithQueryCache).not.toHaveBeenCalled();
   });
 
+  it("includes mention notifications in the comment filter", async () => {
+    mockPrisma.notification.findMany.mockResolvedValue([]);
+
+    await listNotificationsByUser({
+      userId: "user-comment-filter",
+      limit: 20,
+      kind: "COMMENT",
+      unreadOnly: false,
+    });
+
+    expect(mockPrisma.notification.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          userId: "user-comment-filter",
+          type: {
+            in: ["COMMENT_ON_POST", "REPLY_TO_COMMENT", "MENTION_IN_COMMENT"],
+          },
+        }),
+      }),
+    );
+  });
+
+  it("includes comment reactions in the reaction filter", async () => {
+    mockPrisma.notification.findMany.mockResolvedValue([]);
+
+    await listNotificationsByUser({
+      userId: "user-reaction-filter",
+      limit: 20,
+      kind: "REACTION",
+      unreadOnly: false,
+    });
+
+    expect(mockPrisma.notification.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          userId: "user-reaction-filter",
+          type: {
+            in: ["REACTION_ON_POST", "REACTION_ON_COMMENT"],
+          },
+        }),
+      }),
+    );
+  });
+
   it("fails closed when notification delegate is missing", async () => {
     const originalDelegate = (mockPrisma as { notification?: unknown }).notification;
     delete (mockPrisma as { notification?: unknown }).notification;
@@ -133,15 +203,22 @@ describe("notification queries cache behavior", () => {
 describe("notification queries invalidation behavior", () => {
   beforeEach(() => {
     mockPrisma.notification.updateMany.mockReset();
+    mockPrisma.notification.findUnique.mockReset();
     mockPrisma.notification.create.mockReset();
     mockPrisma.notification.count.mockReset();
     mockPrisma.notification.findMany.mockReset();
+    mockPrisma.notificationDelivery.create.mockReset();
+    mockPrisma.notificationDelivery.findUnique.mockReset();
+    mockPrisma.notificationDelivery.findMany.mockReset();
+    mockPrisma.notificationDelivery.update.mockReset();
     mockWithQueryCache.mockClear();
     mockBumpUnreadVersion.mockReset();
     mockBumpUnreadVersion.mockResolvedValue(undefined);
     mockBumpListVersion.mockReset();
     mockBumpListVersion.mockResolvedValue(undefined);
     mockPrisma.notification.count.mockResolvedValue(0);
+    mockPrisma.notification.findMany.mockResolvedValue([]);
+    mockPrisma.notificationDelivery.findMany.mockResolvedValue([]);
   });
 
   it("bumps list/unread cache when marking one notification as read", async () => {
@@ -230,5 +307,178 @@ describe("notification queries invalidation behavior", () => {
 
     expect(mockBumpUnreadVersion).toHaveBeenCalledWith("user-4");
     expect(mockBumpListVersion).toHaveBeenCalledWith("user-4");
+  });
+
+  it("stores notification delivery outbox rows", async () => {
+    mockPrisma.notificationDelivery.create.mockResolvedValue({ id: "delivery-1" });
+
+    const created = await createNotificationDelivery({
+      userId: "user-5",
+      type: "SYSTEM",
+      entityType: "SYSTEM",
+      entityId: "event-2",
+      title: "대기중 알림",
+    });
+
+    expect(created).toEqual({ id: "delivery-1" });
+    expect(mockPrisma.notificationDelivery.create).toHaveBeenCalledWith({
+      data: {
+        userId: "user-5",
+        actorId: null,
+        type: "SYSTEM",
+        entityType: "SYSTEM",
+        entityId: "event-2",
+        postId: null,
+        commentId: null,
+        title: "대기중 알림",
+        body: null,
+        metadata: undefined,
+      },
+      select: {
+        id: true,
+      },
+    });
+  });
+
+  it("delivers queued notifications and marks the outbox row delivered", async () => {
+    mockPrisma.notificationDelivery.findUnique.mockResolvedValue({
+      id: "delivery-2",
+      userId: "user-6",
+      actorId: "actor-1",
+      type: "COMMENT_ON_POST",
+      entityType: "COMMENT",
+      entityId: "comment-1",
+      postId: "post-1",
+      commentId: "comment-1",
+      title: "새 댓글",
+      body: "내용",
+      metadata: null,
+      status: NotificationDeliveryStatus.PENDING,
+      attempts: 0,
+    });
+    mockPrisma.notification.create.mockResolvedValue({ id: "noti-2" });
+    mockPrisma.notificationDelivery.update.mockResolvedValue({});
+
+    await deliverNotificationDelivery("delivery-2");
+
+    expect(mockPrisma.notification.create).toHaveBeenCalledWith({
+      data: {
+        deliveryId: "delivery-2",
+        userId: "user-6",
+        actorId: "actor-1",
+        type: "COMMENT_ON_POST",
+        entityType: "COMMENT",
+        entityId: "comment-1",
+        postId: "post-1",
+        commentId: "comment-1",
+        title: "새 댓글",
+        body: "내용",
+        metadata: undefined,
+      },
+    });
+    expect(mockPrisma.notificationDelivery.update).toHaveBeenCalledWith({
+      where: { id: "delivery-2" },
+      data: {
+        status: NotificationDeliveryStatus.DELIVERED,
+        attempts: { increment: 1 },
+        deliveredAt: expect.any(Date),
+        lastError: null,
+      },
+    });
+  });
+
+  it("flushes pending/failed deliveries for the same user", async () => {
+    mockPrisma.notificationDelivery.findMany
+      .mockResolvedValueOnce([
+        { id: "delivery-a" },
+        { id: "delivery-b" },
+      ])
+      .mockResolvedValue([]);
+    mockPrisma.notificationDelivery.findUnique.mockResolvedValue({
+      id: "delivery-a",
+      userId: "user-7",
+      actorId: null,
+      type: "SYSTEM",
+      entityType: "SYSTEM",
+      entityId: "event-a",
+      postId: null,
+      commentId: null,
+      title: "a",
+      body: null,
+      metadata: null,
+      status: NotificationDeliveryStatus.FAILED,
+      attempts: 1,
+    });
+    mockPrisma.notification.create.mockResolvedValue({ id: "noti-a" });
+    mockPrisma.notificationDelivery.update.mockResolvedValue({});
+
+    await flushNotificationDeliveriesForUser("user-7", 5);
+
+    expect(mockPrisma.notificationDelivery.findMany).toHaveBeenCalledWith({
+      where: {
+        userId: "user-7",
+        status: {
+          in: [NotificationDeliveryStatus.PENDING, NotificationDeliveryStatus.FAILED],
+        },
+      },
+      orderBy: [{ scheduledAt: "asc" }, { createdAt: "asc" }],
+      take: 5,
+      select: {
+        id: true,
+      },
+    });
+  });
+
+  it("archives notifications whose post target was deleted before counting", async () => {
+    mockPrisma.notification.findMany
+      .mockResolvedValueOnce([
+        {
+          id: "noti-stale",
+          postId: "post-deleted",
+          post: { id: "post-deleted", status: PostStatus.DELETED },
+        },
+      ])
+      .mockResolvedValueOnce([]);
+    mockPrisma.notification.updateMany.mockResolvedValue({ count: 1 });
+    mockPrisma.notification.count.mockResolvedValue(0);
+
+    await listNotificationsByUser({
+      userId: "user-cleanup",
+      kind: "ALL",
+      unreadOnly: false,
+    });
+
+    expect(mockPrisma.notification.updateMany).toHaveBeenCalledWith({
+      where: {
+        userId: "user-cleanup",
+        archivedAt: null,
+        id: { in: ["noti-stale"] },
+      },
+      data: {
+        archivedAt: expect.any(Date),
+      },
+    });
+  });
+
+  it("resolves notification redirect to post fallback when comment target is gone", async () => {
+    mockPrisma.notification.findUnique.mockResolvedValue({
+      id: "noti-nav",
+      userId: "user-8",
+      isRead: false,
+      archivedAt: null,
+      postId: "post-8",
+      commentId: "comment-missing",
+      post: { id: "post-8", status: PostStatus.ACTIVE },
+      comment: null,
+    });
+    mockPrisma.notification.updateMany.mockResolvedValue({ count: 1 });
+
+    const target = await getNotificationNavigationTarget("user-8", "noti-nav");
+
+    expect(target).toEqual({
+      href: "/posts/post-8",
+      archived: false,
+      found: true,
+    });
   });
 });

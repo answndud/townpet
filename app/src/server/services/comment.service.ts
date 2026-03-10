@@ -21,9 +21,12 @@ import {
   getGuestPostPolicy,
   getNewUserSafetyPolicy,
 } from "@/server/queries/policy.queries";
+import { findUsersByNicknames } from "@/server/queries/user.queries";
 import { hasBlockingRelation } from "@/server/queries/user-relation.queries";
 import {
   notifyCommentOnPost,
+  notifyMentionInComment,
+  notifyReactionOnComment,
   notifyReplyToComment,
 } from "@/server/services/notification.service";
 import {
@@ -47,6 +50,16 @@ type CreateCommentParams = {
     };
   };
 };
+
+function extractMentionNicknames(content: string) {
+  return Array.from(
+    new Set(
+      Array.from(content.matchAll(/(^|[\s(])@([a-zA-Z0-9가-힣_-]{2,20})/g))
+        .map((match) => match[2]?.trim() ?? "")
+        .filter((nickname) => nickname.length > 0),
+    ),
+  );
+}
 
 function verifyGuestPassword(rawPassword: string, stored: string) {
   const [salt, expectedHash] = stored.split(":");
@@ -274,10 +287,12 @@ export async function createComment({
   });
 
   const notificationJobs: Array<Promise<unknown>> = [];
+  const notifiedUserIds = new Set<string>([authorId]);
   if (
     transactionResult.postAuthorId !== authorId &&
     transactionResult.parentAuthorId !== transactionResult.postAuthorId
   ) {
+    notifiedUserIds.add(transactionResult.postAuthorId);
     notificationJobs.push(
       notifyCommentOnPost({
         recipientUserId: transactionResult.postAuthorId,
@@ -291,6 +306,7 @@ export async function createComment({
   }
 
   if (transactionResult.parentAuthorId && transactionResult.parentAuthorId !== authorId) {
+    notifiedUserIds.add(transactionResult.parentAuthorId);
     notificationJobs.push(
       notifyReplyToComment({
         recipientUserId: transactionResult.parentAuthorId,
@@ -298,9 +314,31 @@ export async function createComment({
         postId,
         commentId: transactionResult.comment.id,
         postTitle: transactionResult.postTitle,
-        replyContent: parsed.data.content,
+        replyContent: safeContent,
       }),
     );
+  }
+
+  const mentionNicknames = extractMentionNicknames(safeContent);
+  if (mentionNicknames.length > 0) {
+    const mentionedUsers = await findUsersByNicknames(mentionNicknames);
+    for (const mentionedUser of mentionedUsers) {
+      if (notifiedUserIds.has(mentionedUser.id)) {
+        continue;
+      }
+
+      notifiedUserIds.add(mentionedUser.id);
+      notificationJobs.push(
+        notifyMentionInComment({
+          recipientUserId: mentionedUser.id,
+          actorId: authorId,
+          postId,
+          commentId: transactionResult.comment.id,
+          postTitle: transactionResult.postTitle,
+          commentContent: safeContent,
+        }),
+      );
+    }
   }
 
   if (notificationJobs.length > 0) {
@@ -725,10 +763,10 @@ export async function toggleCommentReaction({
 }: ToggleCommentReactionParams): Promise<ToggleCommentReactionResult> {
   await assertUserInteractionAllowed(userId);
 
-  return prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx) => {
     const comment = await tx.comment.findUnique({
       where: { id: commentId },
-      select: { id: true, status: true, authorId: true },
+      select: { id: true, status: true, authorId: true, postId: true, content: true },
     });
 
     if (!comment || comment.status !== PostStatus.ACTIVE) {
@@ -753,6 +791,7 @@ export async function toggleCommentReaction({
       select: { id: true, type: true },
     });
 
+    const previousReaction = existing?.type ?? null;
     let reaction: CommentReactionType | null = type;
 
     if (existing && type === null) {
@@ -795,6 +834,40 @@ export async function toggleCommentReaction({
       reaction,
       likeCount,
       dislikeCount,
+      previousReaction,
+      authorId: comment.authorId,
+      postId: comment.postId,
+      content: comment.content,
     };
   });
+
+  if (
+    result.reaction &&
+    result.reaction !== result.previousReaction &&
+    result.authorId !== userId
+  ) {
+    try {
+      await notifyReactionOnComment({
+        recipientUserId: result.authorId,
+        actorId: userId,
+        postId: result.postId,
+        commentId,
+        commentContent: result.content,
+        reactionType: result.reaction,
+      });
+    } catch (error) {
+      logger.warn("댓글 반응 알림 생성에 실패했습니다.", {
+        commentId,
+        userId,
+        error: serializeError(error),
+      });
+    }
+  }
+
+  return {
+    commentId: result.commentId,
+    reaction: result.reaction,
+    likeCount: result.likeCount,
+    dislikeCount: result.dislikeCount,
+  };
 }

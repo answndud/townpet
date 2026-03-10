@@ -26,6 +26,18 @@
 
 ## Active Plan
 
+### Cycle 276: 멘션/댓글 반응/싫어요 알림 규칙 확장 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| NotificationType과 서비스에 멘션/댓글 반응 알림 추가 | Codex | P0 | `done` | 댓글 작성 시 `@닉네임` 멘션과 댓글 반응 알림이 서버에서 생성되고, reply/post author 중복과 self notification을 피한다 | `PLAN.md`, `PROGRESS.md`, `app/prisma/schema.prisma`, `app/prisma/migrations/**`, `app/src/server/services/comment.service.ts`, `app/src/server/services/notification.service.ts`, 관련 테스트 |
+| 게시글 싫어요 알림과 필터 분기를 UI/쿼리에 연결 | Codex | P1 | `done` | 게시글 좋아요/싫어요가 모두 반응 알림으로 기록되고, notification filter/query/UI가 새 타입을 `COMMENT`/`REACTION` 규칙에 맞게 보여준다 | `PLAN.md`, `PROGRESS.md`, `app/src/server/services/post.service.ts`, `app/src/server/queries/notification.queries.ts`, `app/src/lib/notification-filter.ts`, 관련 테스트 |
+
+### Cycle 275: 알림 신뢰성/읽음 상태 일관화 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 알림 delivery outbox와 invalid target cleanup 추가 | Codex | P0 | `done` | 알림 생성은 outbox row를 남기고 전달 재시도 경로를 가지며, 삭제된 게시글을 가리키는 알림은 목록/뱃지에서 자동 정리된다 | `PLAN.md`, `PROGRESS.md`, `app/prisma/schema.prisma`, `app/prisma/migrations/**`, `app/src/server/queries/notification.queries.ts`, `app/src/server/services/notification.service.ts`, 관련 테스트 |
+| 알림 unread count와 이동 UX를 bell/center에서 일관화 | Codex | P1 | `done` | `/notifications`와 bell이 같은 unread 기준을 공유하고, 여러 탭 sync 및 알림 클릭 시 redirect fallback으로 없는 리소스 404를 줄인다 | `PLAN.md`, `PROGRESS.md`, `app/src/components/notifications/**`, `app/src/app/notifications/**`, `app/src/app/api/viewer-shell/route.ts`, 관련 테스트 |
+
 ### Cycle 274: 제재 계정의 읽기 전용 인증 API 가드 통일 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|

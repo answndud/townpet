@@ -1790,8 +1790,8 @@ export async function togglePostReaction({
   });
 
   if (
-    result.reaction === PostReactionType.LIKE &&
-    result.previousReaction !== PostReactionType.LIKE &&
+    result.reaction &&
+    result.reaction !== result.previousReaction &&
     existingPost.authorId !== userId
   ) {
     try {
@@ -1800,6 +1800,7 @@ export async function togglePostReaction({
         actorId: userId,
         postId: existingPost.id,
         postTitle: existingPost.title,
+        reactionType: result.reaction,
       });
     } catch (error) {
       logger.warn("게시글 반응 알림 생성에 실패했습니다.", {

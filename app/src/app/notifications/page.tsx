@@ -9,10 +9,13 @@ import {
 } from "@/lib/notification-filter";
 import { auth } from "@/lib/auth";
 import { redirectToProfileIfNicknameMissing } from "@/server/nickname-guard";
-import { listNotificationsByUser } from "@/server/queries/notification.queries";
+import {
+  countUnreadNotifications,
+  listNotificationsByUser,
+} from "@/server/queries/notification.queries";
 
 type NotificationsPageProps = {
-  searchParams?: Promise<{ kind?: string; unreadOnly?: string; page?: string }>;
+  searchParams?: Promise<{ kind?: string; unreadOnly?: string; page?: string; notice?: string }>;
 };
 
 export const metadata: Metadata = {
@@ -29,7 +32,13 @@ export const metadata: Metadata = {
 
 export default async function NotificationsPage({ searchParams }: NotificationsPageProps) {
   const resolvedSearchParamsPromise =
-    searchParams ?? Promise.resolve({} as { kind?: string; unreadOnly?: string; page?: string });
+    searchParams ??
+    Promise.resolve({} as {
+      kind?: string;
+      unreadOnly?: string;
+      page?: string;
+      notice?: string;
+    });
   const [session, resolvedSearchParams] = await Promise.all([
     auth(),
     resolvedSearchParamsPromise,
@@ -42,6 +51,10 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
   const kind = parseNotificationFilterKind(resolvedSearchParams.kind);
   const unreadOnly = parseUnreadOnly(resolvedSearchParams.unreadOnly);
   const currentPage = parsePositivePage(resolvedSearchParams.page);
+  const initialMessage =
+    resolvedSearchParams.notice === "TARGET_UNAVAILABLE"
+      ? "삭제되었거나 더 이상 열 수 없는 알림은 목록에서 정리했습니다."
+      : null;
 
   if (!currentUserId) {
     return (
@@ -67,13 +80,16 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
     );
   }
 
-  const { items, totalPages, page } = await listNotificationsByUser({
-    userId: currentUserId,
-    limit: 20,
-    page: currentPage,
-    kind,
-    unreadOnly,
-  });
+  const [{ items, totalPages, page }, unreadCount] = await Promise.all([
+    listNotificationsByUser({
+      userId: currentUserId,
+      limit: 20,
+      page: currentPage,
+      kind,
+      unreadOnly,
+    }),
+    countUnreadNotifications(currentUserId),
+  ]);
   const initialItems = items.map((item) => ({
     id: item.id,
     title: item.title,
@@ -97,6 +113,8 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
         <NotificationCenter
           key={`${kind}|${unreadOnly ? "1" : "0"}|${page}`}
           initialItems={initialItems}
+          initialUnreadCount={unreadCount}
+          initialMessage={initialMessage}
           currentPage={page}
           totalPages={totalPages}
           initialKind={kind}
