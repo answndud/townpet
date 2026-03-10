@@ -17,6 +17,21 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-10: Cycle 270 완료 (Vercel auth email preflight Prisma generate 순서 수정)
+- 완료 내용
+- 사용자 제공 Vercel production 빌드 로그에서 `ops:check:auth-email-readiness`가 `Prisma has detected that this project was built on Vercel` 초기화 오류로 실패하는 것을 확인했고, 원인이 `build:vercel`의 auth email readiness preflight가 `prisma generate`보다 먼저 실행되는 순서 문제임을 재현 로그 기준으로 정리했다.
+- `app/scripts/vercel-build.ts`는 production build 순서를 `ops:check:security-env:strict -> prisma generate -> ops:check:auth-email-readiness -> prisma migrate deploy -> schema repair -> prisma generate -> next build`로 바꿨다.
+- 첫 번째 `prisma generate`는 Vercel dependency cache safeguard 우회를 위해 TS preflight보다 앞당겼고, 두 번째 `prisma generate`는 migration/schema repair 이후의 Prisma Client 동기화를 유지하기 위해 그대로 남겼다.
+- `app/scripts/vercel-build.test.ts`는 production build call order를 새 순서로 고정했고, `prisma generate` 실패 시 auth email preflight 이전에 fail-fast 되는 회귀 테스트를 추가했다.
+- `docs/개발_운영_가이드.md`, `docs/operations/Vercel_OAuth_초기설정_가이드.md`, `docs/operations/manual-checks/배포_보안_체크리스트.md`, `docs/security/보안_진행상황.md`의 build 순서 설명을 실제 동작과 맞게 갱신했다.
+- 검증 결과
+- `pnpm -C app lint scripts/vercel-build.ts scripts/vercel-build.test.ts` 통과
+- `pnpm -C app typecheck` 통과
+- `pnpm -C app test -- scripts/vercel-build.test.ts` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 통과
+- `git diff --check` 통과
+- 메모
+- 이 수정 후에는 같은 커밋을 Vercel에서 다시 `Redeploy`하면, `auth email readiness preflight`가 stale Prisma Client 오류 없이 실행되어야 한다.
+
 ### 2026-03-10: Cycle 269 완료 (운영 DB 인증 이메일 preflight 추가)
 - 완료 내용
 - `app/src/server/auth-email-readiness.ts`와 `app/src/server/auth-email-readiness.test.ts`를 추가해 `User.email`과 `VerificationToken.identifier`의 `trim+lowercase` 기준 중복, 정규화 drift, 잘못된 normalized 값 유입 여부를 공용 helper와 회귀 테스트로 점검할 수 있게 했다.

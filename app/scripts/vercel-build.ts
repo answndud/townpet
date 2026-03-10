@@ -297,13 +297,15 @@ async function runPrismaGenerate(commandRunner: CommandRunner = runCommand) {
 
 export async function runBuildVercel(commandRunner: CommandRunner = runCommand) {
   await runSecurityEnvPreflight(commandRunner);
+  // Vercel dependency cache can keep an outdated Prisma Client.
+  // Generate before running TS preflights that instantiate PrismaClient.
+  await runPrismaGenerate(commandRunner);
   await runAuthEmailReadinessPreflight(commandRunner);
   await runPrismaDeploy(commandRunner);
   await repairCommunityBoardSchema(commandRunner);
   await repairNotificationArchiveSchema(commandRunner);
 
-  // Vercel dependency cache can keep an outdated Prisma Client.
-  // Generate before running any TS script that instantiates PrismaClient.
+  // Run generate again after deploy/repair in case the schema changed during migrate.
   await runPrismaGenerate(commandRunner);
   await runNeighborhoodSync(commandRunner);
 

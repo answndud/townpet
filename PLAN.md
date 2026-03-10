@@ -26,6 +26,12 @@
 
 ## Active Plan
 
+### Cycle 270: Vercel auth email preflight Prisma generate 순서 수정 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| production build에서 Prisma generate를 auth email preflight보다 먼저 실행 | Codex | P0 | `done` | `build:vercel`가 `security preflight -> prisma generate -> auth email readiness preflight -> migrate deploy` 순서로 동작하고, Vercel Prisma safeguard 재현 로그 기준 회귀 테스트가 존재한다 | `PLAN.md`, `PROGRESS.md`, `app/scripts/vercel-build.ts`, `app/scripts/vercel-build.test.ts` |
+| 운영 문서의 build 순서를 실제 동작과 맞게 수정 | Codex | P1 | `done` | 운영/배포 문서가 auth email readiness preflight 앞단의 `prisma generate`를 반영하고, Vercel redeploy 해석 기준이 최신 동작과 일치한다 | `PLAN.md`, `PROGRESS.md`, `docs/개발_운영_가이드.md`, `docs/operations/**`, `docs/security/**` |
+
 ### Cycle 269: 운영 DB 인증 이메일 preflight 추가 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
