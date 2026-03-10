@@ -17,6 +17,18 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-10: Cycle 295 완료 (피드 모바일 메타 우측 복귀)
+- 완료 내용
+  - `app/src/components/posts/feed-infinite-list.tsx`는 모바일 카드 레이아웃을 다시 2컬럼 grid로 바꿔 게시판 칩, 작성자, 시간 메타가 제목 아래 분리줄이 아니라 우측 컬럼에 유지되도록 조정했다.
+  - 같은 파일은 모바일 메타 블록의 `border-top` 구분선을 제거하고, `FeedPostMetaBadges`를 우측 정렬 기본값으로 맞춰 데스크톱과 같은 시선 흐름을 유지하면서도 작은 화면에서 너무 아래로 떨어지지 않게 정리했다.
+- 검증 결과
+  - `pnpm -C app lint src/components/posts/feed-infinite-list.tsx src/components/posts/feed-post-meta-badges.tsx src/components/posts/feed-post-meta-badges.test.tsx` 통과
+  - `pnpm -C app test -- src/components/posts/feed-post-meta-badges.test.tsx` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `132 files / 666 tests` 통과
+  - `pnpm -C app typecheck` 통과
+  - `git diff --check` 통과
+- 메모
+  - 이번 턴은 모바일 레이아웃만 우측 컬럼 방식으로 되돌렸고, 직전 Cycle 294에서 조정한 칩 디자인과 메타 밀도 방향은 유지했다.
+
 ### 2026-03-10: Cycle 294 완료 (피드 목록 메타 밀도 미세 조정)
 - 완료 내용
   - `app/src/components/posts/feed-infinite-list.tsx`는 모바일에서 목록 카드 메타 영역을 제목 아래 별도 줄로 더 분리하고, 작성자/시간 블록과 칩 블록 사이 간격을 늘려 답답함을 줄였다.

@@ -26,6 +26,11 @@
 
 ## Active Plan
 
+### Cycle 295: 피드 모바일 메타 우측 복귀 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 피드 목록 모바일 메타 영역을 제목 아래가 아니라 우측 컬럼으로 재배치 | Codex | P2 | `done` | 모바일 피드 목록 카드에서도 게시판 칩/작성자/시간 메타가 제목 아래 분리줄 대신 우측 컬럼에 유지되고, 데스크톱 배치 및 기존 칩 디자인은 그대로 유지되며, 관련 lint/test/typecheck 검증이 기록된다 | `PLAN.md`, `PROGRESS.md`, `app/src/components/posts/feed-infinite-list.tsx`, `app/src/components/posts/feed-post-meta-badges.tsx`, `app/src/components/posts/feed-post-meta-badges.test.tsx` |
+
 ### Cycle 294: 피드 목록 메타 밀도 미세 조정 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
