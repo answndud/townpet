@@ -26,6 +26,13 @@
 
 ## Active Plan
 
+### Cycle 288: 검색/필터/정렬 일관성 보강 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 메인 검색/자동완성에서 숨김 글 노출 제거 및 검색 정렬 안정성 보강 | Codex | P0 | `done` | 랭킹 검색과 자동완성은 더 이상 `HIDDEN` 게시글을 대상으로 삼지 않고, raw SQL 검색과 suggestion 정렬에 stable tie-breaker가 적용되며 회귀 테스트가 존재한다 | `PLAN.md`, `PROGRESS.md`, `app/src/server/queries/post.queries.ts`, `app/src/server/queries/post.queries.test.ts` |
+| 공용 보드/입양 보드에 차단·뮤트 작성자 필터와 안정적 정렬 적용 | Codex | P0 | `done` | common board API와 adoption board query/count가 `viewerId` 기준 hidden author 필터를 적용하고, 목록 정렬이 `createdAt desc, id desc`로 안정화되며 회귀 테스트가 존재한다 | `PLAN.md`, `PROGRESS.md`, `app/src/server/queries/community.queries.ts`, `app/src/server/queries/community.queries.test.ts`, `app/src/app/api/boards/[board]/posts/route.ts`, `app/src/app/boards/adoption/page.tsx` |
+| 인증 검색 페이지의 local/global scope 지원과 구조화 필드 검색 범위 확장 | Codex | P1 | `done` | `/search`는 로그인 사용자에 대해 global/local scope를 실제 지원하고, `ALL` 검색이 병원/장소/산책/입양/봉사 구조화 필드까지 포함하며 lint/typecheck/test 결과가 `PROGRESS.md`에 기록된다 | `PLAN.md`, `PROGRESS.md`, `app/src/app/search/page.tsx`, `app/src/server/queries/post.queries.ts`, 관련 테스트 |
+
 ### Cycle 287: 게시글 정합성 repair GitHub Actions 자동화 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|

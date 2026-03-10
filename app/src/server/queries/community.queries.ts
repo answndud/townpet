@@ -3,6 +3,7 @@ import { cache } from "react";
 
 import { prisma } from "@/lib/prisma";
 import { createStaticQueryCacheKey, withQueryCache } from "@/server/cache/query-cache";
+import { listHiddenAuthorIdsForViewer } from "@/server/queries/user-relation.queries";
 
 type ListCommunitiesOptions = {
   cursor?: string;
@@ -18,6 +19,7 @@ type ListCommonBoardPostsOptions = {
   commonBoardType: CommonBoardType;
   animalTag?: string;
   q?: string;
+  viewerId?: string;
 };
 
 type CommunityNavItem = {
@@ -60,6 +62,7 @@ export type AdoptionBoardPostItem = {
 
 type AdoptionBoardWhereOptions = {
   q?: string;
+  hiddenAuthorIds?: string[];
 };
 
 function isMissingCommunitySchemaError(error: unknown) {
@@ -114,7 +117,78 @@ function isMissingAdoptionBoardSchemaError(error: unknown) {
   );
 }
 
-function buildAdoptionBoardWhere({ q }: AdoptionBoardWhereOptions): Prisma.PostWhereInput {
+function buildCommonBoardSearchFilters(
+  commonBoardType: CommonBoardType,
+  trimmedQ?: string,
+): Prisma.PostWhereInput[] {
+  if (!trimmedQ) {
+    return [];
+  }
+
+  const baseFilters: Prisma.PostWhereInput[] = [
+    { title: { contains: trimmedQ, mode: Prisma.QueryMode.insensitive } },
+    { content: { contains: trimmedQ, mode: Prisma.QueryMode.insensitive } },
+  ];
+
+  if (commonBoardType === CommonBoardType.HOSPITAL) {
+    return [
+      ...baseFilters,
+      {
+        hospitalReview: {
+          is: {
+            OR: [
+              { hospitalName: { contains: trimmedQ, mode: Prisma.QueryMode.insensitive } },
+              { treatmentType: { contains: trimmedQ, mode: Prisma.QueryMode.insensitive } },
+            ],
+          },
+        },
+      },
+    ];
+  }
+
+  if (commonBoardType === CommonBoardType.ADOPTION) {
+    return [
+      ...baseFilters,
+      {
+        adoptionListing: {
+          is: {
+            OR: [
+              { shelterName: { contains: trimmedQ, mode: Prisma.QueryMode.insensitive } },
+              { region: { contains: trimmedQ, mode: Prisma.QueryMode.insensitive } },
+              { animalType: { contains: trimmedQ, mode: Prisma.QueryMode.insensitive } },
+              { breed: { contains: trimmedQ, mode: Prisma.QueryMode.insensitive } },
+              { ageLabel: { contains: trimmedQ, mode: Prisma.QueryMode.insensitive } },
+            ],
+          },
+        },
+      },
+    ];
+  }
+
+  if (commonBoardType === CommonBoardType.VOLUNTEER) {
+    return [
+      ...baseFilters,
+      {
+        volunteerRecruitment: {
+          is: {
+            OR: [
+              { shelterName: { contains: trimmedQ, mode: Prisma.QueryMode.insensitive } },
+              { region: { contains: trimmedQ, mode: Prisma.QueryMode.insensitive } },
+              { volunteerType: { contains: trimmedQ, mode: Prisma.QueryMode.insensitive } },
+            ],
+          },
+        },
+      },
+    ];
+  }
+
+  return baseFilters;
+}
+
+function buildAdoptionBoardWhere({
+  q,
+  hiddenAuthorIds = [],
+}: AdoptionBoardWhereOptions): Prisma.PostWhereInput {
   const trimmedQ = q?.trim();
 
   return {
@@ -122,47 +196,10 @@ function buildAdoptionBoardWhere({ q }: AdoptionBoardWhereOptions): Prisma.PostW
     boardScope: "COMMON",
     commonBoardType: CommonBoardType.ADOPTION,
     type: PostType.ADOPTION_LISTING,
+    ...(hiddenAuthorIds.length > 0 ? { authorId: { notIn: hiddenAuthorIds } } : {}),
     ...(trimmedQ
       ? {
-          OR: [
-            { title: { contains: trimmedQ, mode: Prisma.QueryMode.insensitive } },
-            { content: { contains: trimmedQ, mode: Prisma.QueryMode.insensitive } },
-            {
-              adoptionListing: {
-                is: {
-                  shelterName: { contains: trimmedQ, mode: Prisma.QueryMode.insensitive },
-                },
-              },
-            },
-            {
-              adoptionListing: {
-                is: {
-                  region: { contains: trimmedQ, mode: Prisma.QueryMode.insensitive },
-                },
-              },
-            },
-            {
-              adoptionListing: {
-                is: {
-                  animalType: { contains: trimmedQ, mode: Prisma.QueryMode.insensitive },
-                },
-              },
-            },
-            {
-              adoptionListing: {
-                is: {
-                  breed: { contains: trimmedQ, mode: Prisma.QueryMode.insensitive },
-                },
-              },
-            },
-            {
-              adoptionListing: {
-                is: {
-                  ageLabel: { contains: trimmedQ, mode: Prisma.QueryMode.insensitive },
-                },
-              },
-            },
-          ],
+          OR: buildCommonBoardSearchFilters(CommonBoardType.ADOPTION, trimmedQ),
         }
       : {}),
   };
@@ -303,22 +340,22 @@ export async function listCommonBoardPosts({
   commonBoardType,
   animalTag,
   q,
+  viewerId,
 }: ListCommonBoardPostsOptions) {
   const safeLimit = Math.min(Math.max(limit, 1), 50);
   const safePage = Math.max(page, 1);
   const trimmedTag = animalTag?.trim();
   const trimmedQ = q?.trim();
+  const hiddenAuthorIds = await listHiddenAuthorIdsForViewer(viewerId);
   const where = {
     status: PostStatus.ACTIVE,
     boardScope: "COMMON" as const,
     commonBoardType,
+    ...(hiddenAuthorIds.length > 0 ? { authorId: { notIn: hiddenAuthorIds } } : {}),
     ...(trimmedTag ? { animalTags: { has: trimmedTag } } : {}),
     ...(trimmedQ
       ? {
-          OR: [
-            { title: { contains: trimmedQ, mode: Prisma.QueryMode.insensitive } },
-            { content: { contains: trimmedQ, mode: Prisma.QueryMode.insensitive } },
-          ],
+          OR: buildCommonBoardSearchFilters(commonBoardType, trimmedQ),
         }
       : {}),
   };
@@ -378,7 +415,7 @@ export async function listCommonBoardPosts({
           },
         },
       },
-      orderBy: [{ createdAt: "desc" }],
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       take: safeLimit + 1,
       ...(cursor
         ? {
@@ -408,10 +445,17 @@ export async function listCommonBoardPosts({
   return { items, nextCursor, page: resolvedPage, totalPages, totalCount };
 }
 
-export async function countAdoptionBoardPosts({ q }: { q?: string }) {
+export async function countAdoptionBoardPosts({
+  q,
+  viewerId,
+}: {
+  q?: string;
+  viewerId?: string;
+}) {
+  const hiddenAuthorIds = await listHiddenAuthorIdsForViewer(viewerId);
   return prisma.post
     .count({
-      where: buildAdoptionBoardWhere({ q }),
+      where: buildAdoptionBoardWhere({ q, hiddenAuthorIds }),
     })
     .catch((error) => {
       if (isMissingCommonBoardPostColumnError(error) || isMissingAdoptionBoardSchemaError(error)) {
@@ -426,18 +470,21 @@ export async function listAdoptionBoardPostsPage({
   page,
   limit,
   q,
+  viewerId,
 }: {
   page: number;
   limit: number;
   q?: string;
+  viewerId?: string;
 }) {
   const safeLimit = Math.min(Math.max(limit, 1), 48);
   const safePage = Math.max(page, 1);
+  const hiddenAuthorIds = await listHiddenAuthorIdsForViewer(viewerId);
 
   return prisma.post
     .findMany({
-      where: buildAdoptionBoardWhere({ q }),
-      orderBy: [{ createdAt: "desc" }],
+      where: buildAdoptionBoardWhere({ q, hiddenAuthorIds }),
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       skip: (safePage - 1) * safeLimit,
       take: safeLimit,
       select: {

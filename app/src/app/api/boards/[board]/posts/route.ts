@@ -3,6 +3,7 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 
 import { monitorUnhandledError } from "@/server/error-monitor";
+import { getCurrentUserId, hasSessionCookieFromRequest } from "@/server/auth";
 import { listCommonBoardPosts } from "@/server/queries/community.queries";
 import { getClientIp } from "@/server/request-context";
 import { enforceRateLimit } from "@/server/rate-limit";
@@ -50,6 +51,7 @@ export async function GET(
     }
 
     const clientIp = getClientIp(request);
+    const viewerId = hasSessionCookieFromRequest(request) ? await getCurrentUserId() : undefined;
     await enforceRateLimit({
       key: `boards:${boardParsed.data}:ip:${clientIp}`,
       limit: 60,
@@ -76,6 +78,7 @@ export async function GET(
     const data = await listCommonBoardPosts({
       ...queryParsed.data,
       commonBoardType: commonBoardTypeByRoute[boardParsed.data],
+      viewerId: viewerId ?? undefined,
     });
     return jsonOk(data);
   } catch (error) {
