@@ -158,6 +158,32 @@ export async function getUserById(id: string) {
     });
 }
 
+export async function findUsersByNicknames(nicknames: string[]) {
+  const uniqueNicknames = Array.from(
+    new Set(
+      nicknames
+        .map((nickname) => nickname.trim())
+        .filter((nickname) => nickname.length > 0),
+    ),
+  );
+
+  if (uniqueNicknames.length === 0) {
+    return [];
+  }
+
+  return prisma.user.findMany({
+    where: {
+      nickname: {
+        in: uniqueNicknames,
+      },
+    },
+    select: {
+      id: true,
+      nickname: true,
+    },
+  });
+}
+
 export async function getUserPasswordStatusById(id: string) {
   const user = await prisma.user.findUnique({
     where: { id },

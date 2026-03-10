@@ -874,6 +874,7 @@ model SearchTermStat {
 
 model Notification {
   id         String                 @id @default(cuid())
+  deliveryId String?                @unique
   userId     String
   actorId    String?
   type       NotificationType
@@ -900,6 +901,30 @@ model Notification {
   @@index([entityType, entityId])
 }
 
+model NotificationDelivery {
+  id          String                     @id @default(cuid())
+  userId      String
+  actorId     String?
+  type        NotificationType
+  entityType  NotificationEntityType
+  entityId    String
+  postId      String?
+  commentId   String?
+  title       String
+  body        String?
+  metadata    Json?
+  status      NotificationDeliveryStatus @default(PENDING)
+  attempts    Int                        @default(0)
+  lastError   String?
+  scheduledAt DateTime                   @default(now())
+  deliveredAt DateTime?
+  createdAt   DateTime                   @default(now())
+  updatedAt   DateTime                   @updatedAt
+
+  @@index([userId, status, createdAt(sort: Desc)])
+  @@index([status, scheduledAt, createdAt(sort: Desc)])
+}
+
 enum AuthAuditAction {
   PASSWORD_SET
   PASSWORD_CHANGE
@@ -915,7 +940,9 @@ enum AuthAuditAction {
 enum NotificationType {
   COMMENT_ON_POST
   REPLY_TO_COMMENT
+  MENTION_IN_COMMENT
   REACTION_ON_POST
+  REACTION_ON_COMMENT
   SYSTEM
 }
 
@@ -924,4 +951,10 @@ enum NotificationEntityType {
   COMMENT
   REACTION
   SYSTEM
+}
+
+enum NotificationDeliveryStatus {
+  PENDING
+  DELIVERED
+  FAILED
 }

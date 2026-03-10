@@ -1,13 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 import { formatKoreanDateTime } from "@/lib/date-format";
 import type { NotificationFilterKind } from "@/lib/notification-filter";
 import { buildPaginationWindow } from "@/lib/pagination";
-import { emitNotificationUnreadSync } from "@/lib/notification-unread-sync";
+import {
+  emitNotificationUnreadSync,
+  subscribeNotificationUnreadSync,
+} from "@/lib/notification-unread-sync";
 import { buildNotificationListHref } from "@/lib/notification-filter";
 import { resolveUserDisplayName } from "@/lib/user-display";
 import {
@@ -33,6 +36,8 @@ type NotificationCenterItem = {
 
 type NotificationCenterProps = {
   initialItems: NotificationCenterItem[];
+  initialUnreadCount: number;
+  initialMessage?: string | null;
   currentPage: number;
   totalPages: number;
   initialKind: NotificationFilterKind;
@@ -52,26 +57,23 @@ function markItemRead(items: NotificationCenterItem[], id: string) {
 
 const filterTabs: Array<{ kind: NotificationFilterKind; label: string }> = [
   { kind: "ALL", label: "전체" },
-  { kind: "COMMENT", label: "댓글/답글" },
+  { kind: "COMMENT", label: "댓글/멘션" },
   { kind: "REACTION", label: "반응" },
   { kind: "SYSTEM", label: "시스템" },
 ];
 
 function buildNotificationHref(notification: {
+  id: string;
   postId: string | null;
   commentId: string | null;
 }) {
-  if (notification.postId && notification.commentId) {
-    return `/posts/${notification.postId}#comment-${notification.commentId}`;
-  }
-  if (notification.postId) {
-    return `/posts/${notification.postId}`;
-  }
-  return "/notifications";
+  return `/notifications/redirect/${notification.id}`;
 }
 
 export function NotificationCenter({
   initialItems,
+  initialUnreadCount,
+  initialMessage = null,
   currentPage,
   totalPages,
   initialKind,
@@ -79,17 +81,88 @@ export function NotificationCenter({
 }: NotificationCenterProps) {
   const router = useRouter();
   const [items, setItems] = useState(initialItems);
+  const [globalUnreadCount, setGlobalUnreadCount] = useState(
+    Number.isFinite(initialUnreadCount) ? Math.max(0, initialUnreadCount) : 0,
+  );
   const kind = initialKind;
   const unreadOnly = initialUnreadOnly;
-  const [message, setMessage] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(initialMessage);
   const [pendingMap, setPendingMap] = useState<Record<string, boolean>>({});
   const [isFilterPending, startFilterTransition] = useTransition();
   const [isMarkAllPending, startMarkAllTransition] = useTransition();
 
-  const unreadCount = useMemo(
-    () => items.filter((item) => !item.isRead).length,
-    [items],
-  );
+  useEffect(() => {
+    setGlobalUnreadCount(Number.isFinite(initialUnreadCount) ? Math.max(0, initialUnreadCount) : 0);
+  }, [initialUnreadCount]);
+
+  useEffect(() => {
+    setMessage(initialMessage);
+  }, [initialMessage]);
+
+  useEffect(() => {
+    return subscribeNotificationUnreadSync((payload) => {
+      if (typeof payload.resetTo === "number" && Number.isFinite(payload.resetTo)) {
+        setGlobalUnreadCount(Math.max(0, payload.resetTo));
+        setItems((prev) =>
+          unreadOnly
+            ? []
+            : prev.map((item) =>
+                item.isRead
+                  ? item
+                  : {
+                      ...item,
+                      isRead: true,
+                    },
+              ),
+        );
+        return;
+      }
+
+      const delta = payload.delta;
+      if (typeof delta === "number" && Number.isFinite(delta)) {
+        setGlobalUnreadCount((prev) => Math.max(0, prev + delta));
+      }
+
+      if (payload.archiveIds && payload.archiveIds.length > 0) {
+        const archiveIds = new Set(payload.archiveIds);
+        setItems((prev) => prev.filter((item) => !archiveIds.has(item.id)));
+      }
+
+      if (payload.markReadIds && payload.markReadIds.length > 0) {
+        const markReadIds = new Set(payload.markReadIds);
+        setItems((prev) =>
+          unreadOnly
+            ? prev.filter((item) => !markReadIds.has(item.id))
+            : prev.map((item) =>
+                markReadIds.has(item.id)
+                  ? {
+                      ...item,
+                      isRead: true,
+                    }
+                  : item,
+              ),
+        );
+      }
+    });
+  }, [unreadOnly]);
+
+  useEffect(() => {
+    const refresh = () => {
+      router.refresh();
+    };
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        refresh();
+      }
+    };
+
+    window.addEventListener("focus", refresh);
+    window.addEventListener("pageshow", handlePageShow);
+    return () => {
+      window.removeEventListener("focus", refresh);
+      window.removeEventListener("pageshow", handlePageShow);
+    };
+  }, [router]);
 
   const setPending = (id: string, value: boolean) => {
     setPendingMap((prev) => ({
@@ -123,7 +196,8 @@ export function NotificationCenter({
       setItems((prev) =>
         unreadOnly ? prev.filter((item) => item.id !== id) : markItemRead(prev, id),
       );
-      emitNotificationUnreadSync({ delta: -1 });
+      setGlobalUnreadCount((prev) => Math.max(0, prev - 1));
+      emitNotificationUnreadSync({ delta: -1, markReadIds: [id] });
     }
 
     setPending(id, false);
@@ -144,7 +218,8 @@ export function NotificationCenter({
             ? prev.filter((candidate) => candidate.id !== item.id)
             : markItemRead(prev, item.id),
         );
-        emitNotificationUnreadSync({ delta: -1 });
+        setGlobalUnreadCount((prev) => Math.max(0, prev - 1));
+        emitNotificationUnreadSync({ delta: -1, markReadIds: [item.id] });
       }
       setPending(item.id, false);
     }
@@ -182,6 +257,7 @@ export function NotificationCenter({
         setItems(previousItems);
         return;
       }
+      setGlobalUnreadCount(0);
       emitNotificationUnreadSync({ resetTo: 0 });
     });
   };
@@ -201,7 +277,10 @@ export function NotificationCenter({
     } else {
       setItems((prev) => prev.filter((item) => item.id !== id));
       if (!target.isRead) {
-        emitNotificationUnreadSync({ delta: -1 });
+        setGlobalUnreadCount((prev) => Math.max(0, prev - 1));
+        emitNotificationUnreadSync({ delta: -1, archiveIds: [id] });
+      } else {
+        emitNotificationUnreadSync({ archiveIds: [id] });
       }
     }
 
@@ -215,7 +294,7 @@ export function NotificationCenter({
         <h1 className="tp-text-page-title mt-2 text-[#10284a]">
           내 알림
         </h1>
-        <p className="mt-2 text-sm text-[#4f678d]">미확인 알림 {unreadCount}건</p>
+        <p className="mt-2 text-sm text-[#4f678d]">미확인 알림 {globalUnreadCount}건</p>
         <p className="mt-1 text-xs text-[#5f79a0]">
           읽음 처리 후에도 목록에 남아 있으며, 보관한 알림만 목록에서 숨겨집니다.
         </p>
@@ -250,7 +329,7 @@ export function NotificationCenter({
           <button
             type="button"
             onClick={handleMarkAll}
-            disabled={isMarkAllPending || isFilterPending || unreadCount === 0}
+            disabled={isMarkAllPending || isFilterPending || globalUnreadCount === 0}
             className="tp-btn-primary tp-btn-sm disabled:cursor-not-allowed disabled:opacity-60"
           >
             모두 읽음 처리

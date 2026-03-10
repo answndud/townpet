@@ -2,8 +2,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { CommentReactionType, PostStatus, UserRole } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
+import { findUsersByNicknames } from "@/server/queries/user.queries";
 import {
   notifyCommentOnPost,
+  notifyMentionInComment,
+  notifyReactionOnComment,
   notifyReplyToComment,
 } from "@/server/services/notification.service";
 import { createComment, toggleCommentReaction } from "@/server/services/comment.service";
@@ -27,7 +30,13 @@ vi.mock("@/lib/prisma", () => ({
 
 vi.mock("@/server/services/notification.service", () => ({
   notifyCommentOnPost: vi.fn().mockResolvedValue(null),
+  notifyMentionInComment: vi.fn().mockResolvedValue(null),
+  notifyReactionOnComment: vi.fn().mockResolvedValue(null),
   notifyReplyToComment: vi.fn().mockResolvedValue(null),
+}));
+
+vi.mock("@/server/queries/user.queries", () => ({
+  findUsersByNicknames: vi.fn(),
 }));
 
 vi.mock("@/server/services/sanction.service", () => ({
@@ -48,7 +57,10 @@ const mockPrisma = vi.mocked(prisma) as unknown as {
 };
 
 const mockNotifyCommentOnPost = vi.mocked(notifyCommentOnPost);
+const mockNotifyMentionInComment = vi.mocked(notifyMentionInComment);
+const mockNotifyReactionOnComment = vi.mocked(notifyReactionOnComment);
 const mockNotifyReplyToComment = vi.mocked(notifyReplyToComment);
+const mockFindUsersByNicknames = vi.mocked(findUsersByNicknames);
 const mockAssertUserInteractionAllowed = vi.mocked(assertUserInteractionAllowed);
 
 describe("comment service notification flow", () => {
@@ -60,9 +72,15 @@ describe("comment service notification flow", () => {
     mockPrisma.siteSetting.findUnique.mockResolvedValue(null);
     mockPrisma.$transaction.mockReset();
     mockNotifyCommentOnPost.mockReset();
+    mockNotifyMentionInComment.mockReset();
+    mockNotifyReactionOnComment.mockReset();
     mockNotifyReplyToComment.mockReset();
     mockNotifyCommentOnPost.mockResolvedValue(null);
+    mockNotifyMentionInComment.mockResolvedValue(null);
+    mockNotifyReactionOnComment.mockResolvedValue(null);
     mockNotifyReplyToComment.mockResolvedValue(null);
+    mockFindUsersByNicknames.mockReset();
+    mockFindUsersByNicknames.mockResolvedValue([]);
     mockAssertUserInteractionAllowed.mockReset();
     mockAssertUserInteractionAllowed.mockResolvedValue();
     mockPrisma.user.findUnique.mockResolvedValue({
@@ -110,6 +128,7 @@ describe("comment service notification flow", () => {
       commentContent: "좋은 정보 감사합니다",
     });
     expect(mockNotifyReplyToComment).not.toHaveBeenCalled();
+    expect(mockNotifyMentionInComment).not.toHaveBeenCalled();
   });
 
   it("blocks sanctioned users before creating a comment", async () => {
@@ -181,6 +200,64 @@ describe("comment service notification flow", () => {
       commentId: "reply-1",
       postTitle: "우리동네 병원 후기",
       replyContent: "답글 남깁니다",
+    });
+  });
+
+  it("notifies mentioned users once and skips already-notified authors", async () => {
+    mockFindUsersByNicknames.mockResolvedValue([
+      { id: "owner-4", nickname: "보리맘" },
+      { id: "parent-4", nickname: "초코아빠" },
+      { id: "mention-1", nickname: "산책친구" },
+      { id: "actor-1", nickname: "actor-1" },
+    ]);
+    mockPrisma.$transaction.mockImplementation(async (callback) =>
+      callback({
+        post: {
+          findUnique: vi.fn().mockResolvedValue({
+            id: "post-4",
+            status: PostStatus.ACTIVE,
+            authorId: "owner-4",
+            title: "주말 공원 산책",
+          }),
+          update: vi.fn().mockResolvedValue({ id: "post-4" }),
+        },
+        comment: {
+          findUnique: vi.fn().mockResolvedValue({
+            id: "parent-4",
+            postId: "post-4",
+            status: PostStatus.ACTIVE,
+            authorId: "parent-4",
+          }),
+          create: vi.fn().mockResolvedValue({
+            id: "reply-4",
+            content: "@보리맘 @초코아빠 @산책친구 같이 가요",
+          }),
+        },
+      } as never),
+    );
+
+    await createComment({
+      authorId: "actor-1",
+      postId: "post-4",
+      parentId: "parent-4",
+      input: { content: "@보리맘 @초코아빠 @산책친구 같이 가요" },
+    });
+
+    expect(mockFindUsersByNicknames).toHaveBeenCalledWith([
+      "보리맘",
+      "초코아빠",
+      "산책친구",
+    ]);
+    expect(mockNotifyCommentOnPost).toHaveBeenCalledTimes(1);
+    expect(mockNotifyReplyToComment).toHaveBeenCalledTimes(1);
+    expect(mockNotifyMentionInComment).toHaveBeenCalledTimes(1);
+    expect(mockNotifyMentionInComment).toHaveBeenCalledWith({
+      recipientUserId: "mention-1",
+      actorId: "actor-1",
+      postId: "post-4",
+      commentId: "reply-4",
+      postTitle: "주말 공원 산책",
+      commentContent: "@보리맘 @초코아빠 @산책친구 같이 가요",
     });
   });
 
@@ -269,6 +346,7 @@ describe("comment service notification flow", () => {
     });
     expect(remove).not.toHaveBeenCalled();
     expect(change).not.toHaveBeenCalled();
+    expect(mockNotifyReactionOnComment).not.toHaveBeenCalled();
   });
 
   it("clears comment reaction when desired state is null", async () => {
@@ -312,6 +390,7 @@ describe("comment service notification flow", () => {
       likeCount: 0,
       dislikeCount: 0,
     });
+    expect(mockNotifyReactionOnComment).not.toHaveBeenCalled();
   });
 
   it("switches reaction from dislike to like", async () => {
@@ -321,6 +400,9 @@ describe("comment service notification flow", () => {
           findUnique: vi.fn().mockResolvedValue({
             id: "comment-20",
             status: PostStatus.ACTIVE,
+            authorId: "owner-20",
+            postId: "post-20",
+            content: "좋은 정보 감사합니다",
           }),
           update: vi.fn().mockResolvedValue({
             id: "comment-20",
@@ -359,6 +441,70 @@ describe("comment service notification flow", () => {
       reaction: CommentReactionType.LIKE,
       likeCount: 3,
       dislikeCount: 1,
+    });
+    expect(mockNotifyReactionOnComment).toHaveBeenCalledWith({
+      recipientUserId: "owner-20",
+      actorId: "user-20",
+      postId: "post-20",
+      commentId: "comment-20",
+      commentContent: "좋은 정보 감사합니다",
+      reactionType: CommentReactionType.LIKE,
+    });
+  });
+
+  it("notifies comment author when dislike is newly applied", async () => {
+    mockPrisma.$transaction.mockImplementation(async (callback) =>
+      callback({
+        comment: {
+          findUnique: vi.fn().mockResolvedValue({
+            id: "comment-30",
+            status: PostStatus.ACTIVE,
+            authorId: "owner-30",
+            postId: "post-30",
+            content: "산책 코스 저장했어요",
+          }),
+          update: vi.fn().mockResolvedValue({
+            id: "comment-30",
+            likeCount: 0,
+            dislikeCount: 1,
+          }),
+        },
+        commentReaction: {
+          findUnique: vi.fn().mockResolvedValue(null),
+          delete: vi.fn(),
+          update: vi.fn(),
+          create: vi.fn().mockResolvedValue({
+            id: "reaction-30",
+            type: CommentReactionType.DISLIKE,
+          }),
+          count: vi
+            .fn()
+            .mockImplementation(({ where }: { where: { type: CommentReactionType } }) =>
+              where.type === CommentReactionType.DISLIKE ? 1 : 0,
+            ),
+        },
+      } as never),
+    );
+
+    const result = await toggleCommentReaction({
+      commentId: "comment-30",
+      userId: "user-30",
+      type: CommentReactionType.DISLIKE,
+    });
+
+    expect(result).toEqual({
+      commentId: "comment-30",
+      reaction: CommentReactionType.DISLIKE,
+      likeCount: 0,
+      dislikeCount: 1,
+    });
+    expect(mockNotifyReactionOnComment).toHaveBeenCalledWith({
+      recipientUserId: "owner-30",
+      actorId: "user-30",
+      postId: "post-30",
+      commentId: "comment-30",
+      commentContent: "산책 코스 저장했어요",
+      reactionType: CommentReactionType.DISLIKE,
     });
   });
 

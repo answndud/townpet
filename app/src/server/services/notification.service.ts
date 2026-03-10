@@ -4,7 +4,10 @@ import {
   Prisma,
 } from "@prisma/client";
 
-import { createNotification } from "@/server/queries/notification.queries";
+import {
+  createNotificationDelivery,
+  deliverNotificationDelivery,
+} from "@/server/queries/notification.queries";
 
 type CreateUserNotificationParams = {
   userId: string;
@@ -37,11 +40,30 @@ type NotifyReplyToCommentParams = {
   replyContent: string;
 };
 
+type NotifyMentionInCommentParams = {
+  recipientUserId: string;
+  actorId: string;
+  postId: string;
+  commentId: string;
+  postTitle: string;
+  commentContent: string;
+};
+
 type NotifyReactionOnPostParams = {
   recipientUserId: string;
   actorId: string;
   postId: string;
   postTitle: string;
+  reactionType: "LIKE" | "DISLIKE";
+};
+
+type NotifyReactionOnCommentParams = {
+  recipientUserId: string;
+  actorId: string;
+  postId: string;
+  commentId: string;
+  commentContent: string;
+  reactionType: "LIKE" | "DISLIKE";
 };
 
 function clampText(value: string | null | undefined, maxLength: number) {
@@ -71,7 +93,7 @@ export async function createUserNotification({
 
   const safeTitle = clampText(title, 120) || "새 알림이 도착했어요";
 
-  return createNotification({
+  const delivery = await createNotificationDelivery({
     userId,
     actorId: actorId ?? null,
     type,
@@ -83,6 +105,14 @@ export async function createUserNotification({
     body: body ? clampText(body, 220) : null,
     metadata,
   });
+
+  try {
+    await deliverNotificationDelivery(delivery.id);
+  } catch {
+    // The outbox row remains pending/failed for later retry paths.
+  }
+
+  return delivery;
 }
 
 export async function notifyCommentOnPost({
@@ -127,11 +157,33 @@ export async function notifyReplyToComment({
   });
 }
 
+export async function notifyMentionInComment({
+  recipientUserId,
+  actorId,
+  postId,
+  commentId,
+  postTitle,
+  commentContent,
+}: NotifyMentionInCommentParams) {
+  return createUserNotification({
+    userId: recipientUserId,
+    actorId,
+    type: NotificationType.MENTION_IN_COMMENT,
+    entityType: NotificationEntityType.COMMENT,
+    entityId: commentId,
+    postId,
+    commentId,
+    title: `댓글에서 나를 언급했어요: ${clampText(postTitle, 60)}`,
+    body: clampText(commentContent, 140),
+  });
+}
+
 export async function notifyReactionOnPost({
   recipientUserId,
   actorId,
   postId,
   postTitle,
+  reactionType,
 }: NotifyReactionOnPostParams) {
   return createUserNotification({
     userId: recipientUserId,
@@ -140,6 +192,33 @@ export async function notifyReactionOnPost({
     entityType: NotificationEntityType.REACTION,
     entityId: postId,
     postId,
-    title: `내 글에 좋아요가 눌렸어요: ${clampText(postTitle, 60)}`,
+    title: `내 글에 ${reactionType === "LIKE" ? "좋아요" : "싫어요"}가 눌렸어요: ${clampText(postTitle, 60)}`,
+    metadata: {
+      reactionType,
+    },
+  });
+}
+
+export async function notifyReactionOnComment({
+  recipientUserId,
+  actorId,
+  postId,
+  commentId,
+  commentContent,
+  reactionType,
+}: NotifyReactionOnCommentParams) {
+  return createUserNotification({
+    userId: recipientUserId,
+    actorId,
+    type: NotificationType.REACTION_ON_COMMENT,
+    entityType: NotificationEntityType.REACTION,
+    entityId: commentId,
+    postId,
+    commentId,
+    title: `내 댓글에 ${reactionType === "LIKE" ? "좋아요" : "싫어요"}가 눌렸어요`,
+    body: clampText(commentContent, 140),
+    metadata: {
+      reactionType,
+    },
   });
 }

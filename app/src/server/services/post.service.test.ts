@@ -121,6 +121,56 @@ describe("post reaction toggle", () => {
       actorId: "user-1",
       postId: "post-1",
       postTitle: "강남 산책로 추천",
+      reactionType: PostReactionType.LIKE,
+    });
+  });
+
+  it("notifies post author when dislike is newly applied", async () => {
+    const create = vi.fn().mockResolvedValue(undefined);
+    const update = vi.fn().mockResolvedValue(undefined);
+
+    mockPrisma.post.findUnique.mockResolvedValue({
+      id: "post-2",
+      status: PostStatus.ACTIVE,
+      authorId: "owner-2",
+      title: "산책 코스 후기",
+    });
+    mockPrisma.$transaction.mockImplementation(async (callback) =>
+      callback({
+        postReaction: {
+          findUnique: vi.fn().mockResolvedValue(null),
+          create,
+          update: vi.fn(),
+          delete: vi.fn(),
+          count: vi
+            .fn()
+            .mockImplementation(({ where }: { where: { type: PostReactionType } }) =>
+              where.type === PostReactionType.DISLIKE ? 1 : 0,
+            ),
+        },
+        post: { update },
+      } as never),
+    );
+
+    const result = await togglePostReaction({
+      postId: "post-2",
+      userId: "user-2",
+      type: PostReactionType.DISLIKE,
+    });
+
+    expect(create).toHaveBeenCalled();
+    expect(result).toEqual({
+      likeCount: 0,
+      dislikeCount: 1,
+      reaction: PostReactionType.DISLIKE,
+      previousReaction: null,
+    });
+    expect(mockNotifyReactionOnPost).toHaveBeenCalledWith({
+      recipientUserId: "owner-2",
+      actorId: "user-2",
+      postId: "post-2",
+      postTitle: "산책 코스 후기",
+      reactionType: PostReactionType.DISLIKE,
     });
   });
 
@@ -264,6 +314,7 @@ describe("post reaction toggle", () => {
       actorId: "user-1",
       postId: "post-1",
       postTitle: "주말 산책 후기",
+      reactionType: PostReactionType.LIKE,
     });
   });
 });

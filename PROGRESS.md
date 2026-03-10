@@ -17,6 +17,44 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-10: Cycle 276 완료 (멘션/댓글 반응/싫어요 알림 규칙 확장)
+- 완료 내용
+- `app/prisma/schema.prisma`와 `app/prisma/migrations/20260310152000_expand_notification_types_for_mentions_and_comment_reactions/migration.sql`에 `MENTION_IN_COMMENT`, `REACTION_ON_COMMENT` 알림 타입을 추가해 댓글 멘션/댓글 반응 알림을 enum 차원에서 지원하도록 확장했다.
+- `app/src/server/services/notification.service.ts`는 `notifyMentionInComment`, `notifyReactionOnComment`를 추가했고, 기존 `notifyReactionOnPost`도 `reactionType` metadata를 받아 좋아요/싫어요를 모두 기록하도록 바뀌었다.
+- `app/src/server/services/comment.service.ts`는 댓글 작성 시 `@닉네임` 멘션을 파싱해 `findUsersByNicknames()`로 수신자를 찾고, post author/reply author/self와 중복되는 수신자는 건너뛰도록 `notifiedUserIds` 기반 dedupe를 추가했다.
+- 같은 파일의 `toggleCommentReaction()`는 댓글 작성자와 자신이 다른 경우에 한해 좋아요/싫어요 최종 상태를 기준으로 댓글 반응 알림을 생성하도록 바뀌었다.
+- `app/src/server/services/post.service.ts`는 게시글 반응 알림을 좋아요 전용에서 좋아요/싫어요 모두로 확장했고, `reactionType`을 알림 metadata에 남기도록 맞췄다.
+- `app/src/server/queries/notification.queries.ts`와 `app/src/components/notifications/notification-center.tsx`는 새 타입을 `COMMENT`/`REACTION` 필터에 포함시키고, 댓글 탭 라벨도 멘션을 포함하는 의미로 조정했다.
+- `app/src/server/services/comment.service.test.ts`, `app/src/server/services/post.service.test.ts`, `app/src/server/services/notification.service.test.ts`, `app/src/server/queries/notification.queries.test.ts`는 멘션 dedupe, 댓글 좋아요/싫어요 알림, 게시글 싫어요 알림, notification filter 분기를 회귀 테스트로 고정했다.
+- 검증 결과
+- `pnpm -C app exec prisma format` 통과
+- `pnpm -C app exec prisma generate` 통과
+- `pnpm -C app lint src/server/services/comment.service.ts src/server/services/comment.service.test.ts src/server/services/post.service.ts src/server/services/post.service.test.ts src/server/services/notification.service.ts src/server/services/notification.service.test.ts src/server/queries/notification.queries.ts src/server/queries/notification.queries.test.ts src/server/queries/user.queries.ts src/components/notifications/notification-center.tsx` 통과
+- `pnpm -C app test -- src/server/services/comment.service.test.ts src/server/services/post.service.test.ts src/server/services/notification.service.test.ts src/server/queries/notification.queries.test.ts` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `121 files / 619 tests` 통과
+- `pnpm -C app typecheck` 통과
+- `git diff --check` 통과
+- 메모
+- 이번 턴은 `mention/댓글 반응/싫어요` 알림 규칙을 서버·쿼리·UI 필터까지 실제 연결한 작업이다. 별도 mention syntax editor UI를 추가한 것은 아니며, plain text의 `@닉네임` 패턴만 대상으로 한다.
+
+### 2026-03-10: Cycle 275 완료 (알림 신뢰성/읽음 상태 일관화)
+- 완료 내용
+- `app/prisma/schema.prisma`와 `app/prisma/migrations/20260310144500_add_notification_delivery_outbox/migration.sql`에 `Notification.deliveryId`, `NotificationDelivery`, `NotificationDeliveryStatus`를 추가해 알림 생성이 direct insert만 의존하지 않고 delivery outbox row를 남기도록 바꿨다.
+- `app/src/server/queries/notification.queries.ts`는 `createNotificationDelivery`, `deliverNotificationDelivery`, `flushNotificationDeliveriesForUser`를 추가했고, `countUnreadNotifications`/`listNotificationsByUser` 앞단에서 pending/failed delivery를 재처리한 뒤 unread/list를 계산하도록 보강했다.
+- 같은 파일에 `archiveUnavailableNotificationsForUser`를 추가해 삭제된 게시글을 가리키는 알림을 unread/list 집계 전에 자동 보관 처리하도록 맞췄다.
+- `app/src/server/services/notification.service.ts`는 알림 생성 시 outbox enqueue 후 immediate delivery를 시도하고, 실패 시 row를 남겨 이후 bell/notifications 조회 시 재처리되게 변경했다.
+- `app/src/app/notifications/redirect/[id]/route.ts`와 테스트를 추가해 알림 클릭이 항상 redirect route를 거치도록 만들었다. 유효한 대상은 post/comment로 이동하고, 이미 사라진 대상은 `/notifications?notice=TARGET_UNAVAILABLE`로 되돌리며 목록에서도 정리된다.
+- `app/src/components/notifications/notification-center.tsx`, `app/src/components/notifications/notification-bell.tsx`, `app/src/lib/notification-unread-sync.ts`, `app/src/app/notifications/page.tsx`를 함께 수정해 bell/center가 같은 unread 기준을 쓰고, cross-tab storage sync와 focus/pageshow refresh로 읽음/보관 상태 불일치를 줄였다.
+- `NotificationCenter` 상단의 `미확인 알림 N건`은 이제 현재 페이지 unread가 아니라 server unread total을 기준으로 표시한다.
+- 검증 결과
+- `pnpm -C app exec prisma format` 통과
+- `pnpm -C app exec prisma generate` 통과
+- `pnpm -C app lint src/server/queries/notification.queries.ts src/server/queries/notification.queries.test.ts src/server/services/notification.service.ts src/server/services/notification.service.test.ts src/lib/notification-unread-sync.ts src/lib/notification-unread-sync.test.ts src/components/notifications/notification-center.tsx src/components/notifications/notification-bell.tsx src/app/notifications/page.tsx 'src/app/notifications/redirect/[id]/route.ts' 'src/app/notifications/redirect/[id]/route.test.ts'` 통과
+- `pnpm -C app test -- src/server/queries/notification.queries.test.ts src/server/services/notification.service.test.ts src/lib/notification-unread-sync.test.ts 'src/app/notifications/redirect/[id]/route.test.ts' src/app/api/viewer-shell/route.test.ts src/app/api/notifications/route.test.ts` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `121 files / 612 tests` 통과
+- `pnpm -C app typecheck` 통과
+- `git diff --check` 통과
+- 메모
+- 이번 턴은 `mention`, `댓글 반응`, `싫어요` 알림 타입 자체를 넓힌 것이 아니라, 현재 존재하는 알림 타입의 delivery/읽음/target fallback 신뢰성을 높이는 작업이다.
+
 ### 2026-03-10: Cycle 274 완료 (제재 계정의 읽기 전용 인증 API 가드 통일)
 - 완료 내용
 - `app/src/app/api/notifications/route.ts`, `app/src/app/api/profile/audience-segments/route.ts`, `app/src/app/api/users/[id]/profile-summary/route.ts`가 더 이상 `requireAuthenticatedUserId()`를 쓰지 않고 `requireCurrentUserId()`를 사용하도록 바꿨다.
