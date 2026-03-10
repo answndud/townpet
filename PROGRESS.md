@@ -17,6 +17,42 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-10: Cycle 281 완료 (비회원 게시글 신고 로그인 게이트 정렬)
+- 완료 내용
+  - 서버 `POST /api/reports`는 이미 `requireCurrentUser()`로 비회원 신고를 401 차단하고 있었고, 이번 턴에서는 guest 상세 UI가 그 정책과 어긋나게 활성 신고 폼을 노출하던 문제를 정리했다.
+  - `app/src/components/posts/post-report-form.tsx`는 `canReport/loginHref` props를 받아 신고 불가 상태에서는 폼 대신 `로그인 후 게시글 신고 가능` 안내와 로그인 링크를 보여주도록 바꿨다.
+  - `app/src/app/posts/[id]/guest/page.tsx`는 guest 상세에서 `PostReportForm`을 `canReport={false}`로 호출해 비회원 신고를 반응 제한과 같은 로그인 필요 상태로 맞췄다.
+  - `app/src/components/posts/post-report-form.test.tsx`를 추가해 guest 차단 렌더링과 로그인 사용자용 기본 렌더링을 고정했다.
+- 검증 결과
+  - `pnpm -C app lint src/components/posts/post-report-form.tsx src/components/posts/post-report-form.test.tsx 'src/app/posts/[id]/guest/page.tsx'` 통과
+  - `pnpm -C app test:unit -- src/components/posts/post-report-form.test.tsx src/app/api/reports/route.test.ts` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `126 files / 641 tests` 통과
+  - `git diff -- app/src/components/posts/post-report-form.tsx 'app/src/app/posts/[id]/guest/page.tsx' app/src/components/posts/post-report-form.test.tsx`로 변경 범위 재확인
+- 메모
+  - 현재 worktree에는 이번 턴과 무관한 다른 dirty 파일들도 함께 존재하지만, 이번 수정은 `post-report-form`/guest 상세/해당 테스트에만 한정했다.
+
+### 2026-03-10: Cycle 280 완료 (데이터 정합성 정리 - 게시글 soft delete cascade + 프로필 stale cache 완화)
+- 완료 내용
+- `app/src/server/services/post.service.ts`는 `softDeletePostDependents()`를 추가해 게시글 삭제 시 활성 댓글을 일괄 `DELETED`로 바꾸고, 댓글 반응/게시글 반응/북마크를 제거하며, 해당 게시글 알림을 즉시 archive 처리하도록 정리했다.
+- 같은 삭제 경로는 게시글의 `commentCount`, `likeCount`, `dislikeCount`를 `0`으로 재설정하고, 알림 수신자별 unread/list cache version도 함께 bump하도록 보강했다.
+- 위 정책은 일반 회원 삭제와 비회원 삭제(`deleteGuestPost`) 모두가 같은 shared soft-delete helper를 타도록 맞췄다. 신고(`Report`)는 감사/audit 데이터 성격을 유지하기 위해 이번 턴에서도 보존했다.
+- `app/src/server/actions/user.ts`는 프로필 닉네임/이미지 변경 후 `feed/search/suggest/post-detail/post-comments` query cache version을 함께 bump하고, `/feed`, `/search`, `/bookmarks` revalidate를 추가해 작성자 표시 stale TTL을 줄였다.
+- `app/src/server/services/post.service.test.ts`에는 게시글 삭제 시 댓글/반응/북마크/알림 정리와 알림 cache bump를 검증하는 회귀 테스트를 추가했고, `app/src/server/services/guest-post-management.service.test.ts`는 공유 삭제 helper에 맞게 비회원 삭제 mock을 갱신했다.
+- `app/src/server/actions/user.test.ts`는 닉네임/프로필 이미지 변경 시 새 revalidate 경로와 cache version bump가 모두 호출되는지 고정했다.
+- 검증 결과
+- `pnpm -C app lint src/server/services/post.service.ts src/server/services/post.service.test.ts src/server/services/guest-post-management.service.test.ts src/server/actions/user.ts src/server/actions/user.test.ts` 통과
+- `pnpm -C app test -- src/server/services/post.service.test.ts src/server/services/guest-post-management.service.test.ts src/server/actions/user.test.ts` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `125 files / 639 tests` 통과
+- `pnpm -C app typecheck` 통과
+- `git diff --check` 통과
+- 메모
+- 이번 턴으로 `soft delete` 후 종속 row가 무기한 방치되던 문제는 크게 줄었지만, 댓글 row 자체는 thread/audit 맥락 유지를 위해 hard delete하지 않고 `DELETED` 상태로 남긴다. 따라서 `commentCount = 활성 댓글 수`라는 의미는 그대로 유지된다.
+
+### 2026-03-10: Cycle 280 착수 (데이터 정합성 정리 - 게시글 soft delete cascade + 프로필 stale cache 완화)
+- 착수 범위
+- 게시글 soft delete가 현재 `status=DELETED`와 이미지 release만 수행해 댓글/반응/북마크/알림 정리 정책이 비어 있는 상태를 우선 보강한다.
+- 닉네임/프로필 이미지 변경 후 feed/search/post-detail/post-comments/suggest query cache가 별도 버전 bump 없이 TTL 만료를 기다리는 문제를 함께 정리한다.
+- 예정 검증
+- `app/src/server/services/post.service.ts`, `app/src/server/actions/user.ts` 중심으로 failure-path 회귀 테스트를 추가하고, lint/typecheck/test를 다시 수행한다.
+
 ### 2026-03-10: Cycle 278 완료 (서버 이미지 파이프라인 정규화 + 썸네일 파생본 추가)
 - 완료 내용
 - `app/src/server/upload.ts`는 `sharp` 기반 서버 이미지 파이프라인으로 바뀌었다. JPEG/PNG/WEBP/HEIC/HEIF/AVIF는 서버에서 autorotate + resize 후 WebP로 정규화해 저장하고, GIF만 원본 애니메이션 보존을 위해 그대로 유지한다.

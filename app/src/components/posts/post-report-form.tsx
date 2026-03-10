@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { ReportReason, ReportTarget } from "@prisma/client";
 import { useState, useTransition } from "react";
 
@@ -7,13 +8,33 @@ import { getReportReasonLabel, reportReasonOptions } from "@/lib/report-reason";
 
 type PostReportFormProps = {
   postId: string;
+  canReport?: boolean;
+  loginHref?: string;
 };
 
-export function PostReportForm({ postId }: PostReportFormProps) {
+export function PostReportForm({
+  postId,
+  canReport = true,
+  loginHref = "/login",
+}: PostReportFormProps) {
   const [isPending, startTransition] = useTransition();
   const [reason, setReason] = useState<ReportReason>(ReportReason.SPAM);
   const [description, setDescription] = useState("");
   const [message, setMessage] = useState<string | null>(null);
+
+  if (!canReport) {
+    return (
+      <div className="rounded-lg border border-[#dbe6f6] bg-[#f7fbff] px-3 py-2 text-xs text-[#355988]">
+        로그인 후 게시글 신고 가능.{" "}
+        <Link
+          href={loginHref}
+          className="font-semibold text-[#2f5da4] underline underline-offset-2"
+        >
+          로그인하기
+        </Link>
+      </div>
+    );
+  }
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();

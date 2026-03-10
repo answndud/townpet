@@ -26,6 +26,18 @@
 
 ## Active Plan
 
+### Cycle 281: 비회원 게시글 신고 로그인 게이트 정렬 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 비회원 상세 화면의 게시글 신고를 반응 제한과 같은 로그인 필요 상태로 전환 | Codex | P1 | `done` | 비회원 `/posts/[id]/guest`에서는 활성 신고 폼 대신 로그인 유도 블록이 보이고, 서버 `/api/reports`의 기존 401 가드와 UI가 모순되지 않으며 회귀 테스트가 존재한다 | `PLAN.md`, `PROGRESS.md`, `app/src/components/posts/post-report-form.tsx`, `app/src/app/posts/[id]/guest/page.tsx`, `app/src/components/posts/post-report-form.test.tsx` |
+
+### Cycle 280: 데이터 정합성 정리 - 게시글 soft delete cascade + 프로필 stale cache 완화 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 게시글 삭제 시 댓글/반응/북마크/알림 정리 정책 반영 | Codex | P0 | `done` | 게시글 삭제가 `status=DELETED`만 남기지 않고, 활성 댓글을 `DELETED`로 정리하고 반응/북마크를 제거하며 관련 알림을 즉시 archive 처리해 카운트/읽음 상태 정합성이 유지된다 | `PLAN.md`, `PROGRESS.md`, `app/src/server/services/post.service.ts`, `app/src/server/queries/notification.queries.ts`, 관련 테스트 |
+| 닉네임/프로필 이미지 변경 후 feed/search/detail/comment cache invalidation 보강 | Codex | P1 | `done` | 프로필 수정 시 피드/검색/상세/댓글/추천 query cache version이 함께 bump되어 작성자 닉네임/이미지가 stale TTL 동안 남지 않는다 | `PLAN.md`, `PROGRESS.md`, `app/src/server/actions/user.ts`, `app/src/server/cache/query-cache.ts`, 관련 테스트 |
+| 데이터 정합성 회귀 테스트와 실행 로그 정리 | Codex | P1 | `done` | 삭제 cascade 및 프로필 캐시 무효화 failure-path 테스트가 추가되고 lint/typecheck/test 결과가 `PROGRESS.md`에 기록된다 | `PLAN.md`, `PROGRESS.md`, `app/src/server/services/post.service.test.ts`, `app/src/server/actions/user.test.ts` |
+
 ### Cycle 278: 서버 이미지 파이프라인 정규화 + 썸네일 파생본 추가 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
