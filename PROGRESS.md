@@ -17,6 +17,19 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-10: Cycle 287 완료 (게시글 정합성 repair GitHub Actions 자동화)
+- 완료 내용
+  - `.github/workflows/post-integrity-maintenance.yml`를 추가해 매주 월요일 01:10 UTC에 `db:repair:post-integrity`를 dry-run으로 실행하고, drift가 감지되면 workflow를 실패시켜 운영자가 바로 인지할 수 있게 했다.
+  - 같은 workflow는 `workflow_dispatch`에서 `apply_changes`, `fail_on_changes`, `deleted_post_limit`, `notification_limit`, `count_repair_limit`, `count_repair_scope` 입력을 받아 수동 dry-run/apply와 범위 제한을 지원한다.
+  - 실행 결과는 GitHub Actions step summary와 artifact(`post-integrity-maintenance-<run_id>`)로 남기고, `DATABASE_URL` secret이 없으면 초기에 명시적으로 실패하도록 했다.
+  - `docs/개발_운영_가이드.md`에는 새 workflow의 스케줄, manual input 의미, dry-run drift fail 정책, 필요한 GitHub Actions secret(`DATABASE_URL`)을 반영했다.
+- 검증 결과
+  - `ruby -e 'require "yaml"; YAML.load_file(".github/workflows/post-integrity-maintenance.yml"); puts "YAML_OK"'` 통과
+  - `git diff --check` 통과
+- 메모
+  - scheduled run은 기본 dry-run이므로 자동으로 DB를 수정하지 않는다. 실제 반영은 운영자가 `Run workflow -> apply_changes=true`로 수동 실행할 때만 일어난다.
+  - 기존 `notification-cleanup`, `search-term-cleanup`, `auth-audit-cleanup`과 같은 `DATABASE_URL` secret을 재사용한다.
+
 ### 2026-03-10: Cycle 286 완료 (게시글 공유 UI 링크 복사 전용 단순화)
 - 완료 내용
   - `app/src/components/posts/post-share-controls.tsx`를 단일 `공유` 버튼으로 축소해 클릭 즉시 현재 URL만 복사하도록 바꿨다. 기존 드롭다운 메뉴, `X 공유`, `카카오 공유`, `새 탭에서 열기` UI는 제거했다.
