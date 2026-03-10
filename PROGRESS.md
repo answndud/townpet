@@ -17,6 +17,45 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-10: Cycle 291 완료 (검색/보드 필터링 E2E 보강)
+- 완료 내용
+  - `app/e2e/search-and-board-filtering.spec.ts`를 추가해 인증 사용자의 `/search` global/local scope 전환, 인증 검색에서 `HIDDEN` 게시글 비노출, 입양 보드에서 차단 작성자 게시글 비노출을 Playwright로 검증하도록 했다.
+  - 테스트 셋업은 Prisma로 검색/입양용 fixture를 직접 만들고, viewer 계정은 테스트마다 고유 이메일을 사용하도록 구성해 Next dev 서버 프로세스의 관계 캐시(`hiddenAuthorIds`)와 충돌하지 않게 했다.
+  - 공용 `loginWithCredentials()` helper를 그대로 사용해 실제 로그인 폼과 동일한 인증 흐름을 타도록 유지했다.
+- 검증 결과
+  - `pnpm -C app lint e2e/search-and-board-filtering.spec.ts` 통과
+  - `pnpm -C app test:e2e -- e2e/search-and-board-filtering.spec.ts --project=chromium` 통과 (`3 passed`)
+- 메모
+  - 로컬 Postgres는 이미 `localhost:5432/townpet`에 떠 있었고, `pnpm -C app db:seed` 이후 시나리오를 검증했다.
+  - `pnpm -C app db:push`는 기존 로컬 데이터의 `Notification.deliveryId` unique constraint 경고 때문에 `--accept-data-loss` 없이 중단됐지만, 이번 E2E에 필요한 범위는 시드/fixture 데이터만으로 충분했다.
+
+### 2026-03-10: Cycle 290 완료 (피드 포커스 재조회 억제)
+- 완료 내용
+  - `app/src/components/navigation/app-shell-header.tsx`는 더 이상 모든 페이지에서 `window focus`마다 `/api/viewer-shell`을 다시 읽지 않고, `/feed`와 `/feed/guest`에서는 포커스 복귀 재조회를 건너뛰도록 조정했다.
+  - `app/src/components/navigation/app-shell-header-class.ts`에 `shouldRefreshViewerShellOnFocus()`를 추가해 경로별 정책을 분리했고, 피드 외 화면에서는 기존 focus refresh 동작을 유지한다.
+  - 이번 변경은 피드 화면에서 사용자가 명시적으로 새로고침하지 않았는데 헤더/상단 셸이 다시 갱신되며 페이지가 새로고침되는 것처럼 보이는 체감을 줄이는 목적이다.
+- 검증 결과
+  - `pnpm -C app lint src/components/navigation/app-shell-header.tsx src/components/navigation/app-shell-header-class.ts src/components/navigation/app-shell-header-class.test.ts` 통과
+  - `pnpm -C app test -- src/components/navigation/app-shell-header-class.test.ts` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `131 files / 662 tests` 통과
+  - `pnpm -C app typecheck` 통과
+  - `git diff --check` 통과
+- 메모
+  - 이번 수정은 `/feed` 계열의 포커스 기반 재조회만 억제한 것이다. 만약 실제 증상이 브라우저 뒤로가기 복귀나 guest feed 재fetch 쪽이면 그 경로는 별도로 추가 확인이 필요하다.
+
+### 2026-03-10: Cycle 289 완료 (상세 상단 게시판 칩 링크화)
+- 완료 내용
+  - `app/src/lib/community-board.ts`에 `buildBoardListingHref()`를 추가해 게시글 타입별 전용 보드가 있으면 그 경로로, 없으면 `/feed?type=...&page=1` 목록으로 보내는 공용 helper를 만들었다.
+  - `app/src/components/posts/post-board-link-chip.tsx`를 추가해 게시판 타입 칩을 clickable `Link`로 바꾸고, 기존 각진 `span` 대신 `rounded-lg` 기반 스타일과 focus/hover 상태를 부여했다.
+  - `app/src/components/posts/post-detail-client.tsx`, `app/src/app/posts/[id]/guest/page.tsx`는 모두 새 칩 컴포넌트를 사용하도록 바꿔 인증/비회원 상세 화면에서 같은 이동 경험을 제공한다.
+  - `app/src/components/navigation/feed-hover-menu.tsx`도 동일 helper를 사용하도록 맞춰 게시판 이동 규칙이 한 곳에서 유지되게 정리했다.
+- 검증 결과
+  - `pnpm -C app lint src/lib/community-board.ts src/lib/community-board.test.ts src/components/posts/post-board-link-chip.tsx src/components/posts/post-detail-client.tsx 'src/app/posts/[id]/guest/page.tsx' src/components/navigation/feed-hover-menu.tsx` 통과
+  - `pnpm -C app test -- src/lib/community-board.test.ts` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `131 files / 661 tests` 통과
+  - `pnpm -C app typecheck` 통과
+  - `git diff --check` 통과
+- 메모
+  - 저장소 지침의 `docs/SPEC.md`는 이번에도 repo에서 찾을 수 없었고, 변경 범위는 게시글 상세 상단 네비게이션 UI 한정으로 진행했다.
+
 ### 2026-03-10: Cycle 288 완료 (검색/필터/정렬 일관성 보강)
 - 완료 내용
   - `app/src/server/queries/post.queries.ts`에서 메인 랭킹 검색과 자동완성 대상에서 `HIDDEN` 게시글을 제거했고, 랭킹 검색 raw SQL에 `p."id" DESC` tie-breaker를 추가해 점수/생성시각이 같은 결과의 순서를 안정화했다.

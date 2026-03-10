@@ -67,3 +67,26 @@ export function getDedicatedBoardPathByPostType(type?: PostType | null) {
 
   return DEDICATED_BOARD_PATH_BY_POST_TYPE[type] ?? null;
 }
+
+export function buildFeedHref(params: Record<string, string | null | undefined>) {
+  const search = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(params)) {
+    if (!value) {
+      continue;
+    }
+
+    search.set(key, value);
+  }
+
+  const query = search.toString();
+  return query ? `/feed?${query}` : "/feed";
+}
+
+export function buildBoardListingHref(type?: PostType | null) {
+  if (!type) {
+    return "/feed";
+  }
+
+  return getDedicatedBoardPathByPostType(type) ?? buildFeedHref({ type, page: "1" });
+}

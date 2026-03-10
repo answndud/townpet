@@ -26,6 +26,21 @@
 
 ## Active Plan
 
+### Cycle 291: 검색/보드 필터링 E2E 보강 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 검색/입양 보드 필터링 브라우저 E2E 추가 | Codex | P1 | `done` | 인증 검색에서 global/local scope 전환, `HIDDEN` 글 비노출, 입양 보드에서 차단 작성자 비노출을 Playwright로 검증하고 로컬 Chromium 시나리오가 통과한다 | `PLAN.md`, `PROGRESS.md`, `app/e2e/search-and-board-filtering.spec.ts`, `app/e2e/support/auth-helpers.ts` |
+
+### Cycle 290: 피드 포커스 재조회 억제 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| `/feed` 계열에서 헤더 포커스 기반 viewer shell 재조회를 막아 자동 새로고침 체감 완화 | Codex | P2 | `done` | `/feed`, `/feed/guest`에서는 window focus 복귀 시 header viewer shell fetch가 더 이상 자동 실행되지 않고, 다른 경로는 기존 동작을 유지하며, 경로별 focus refresh 정책 테스트가 존재한다 | `PLAN.md`, `PROGRESS.md`, `app/src/components/navigation/app-shell-header.tsx`, `app/src/components/navigation/app-shell-header-class.ts`, `app/src/components/navigation/app-shell-header-class.test.ts` |
+
+### Cycle 289: 상세 상단 게시판 칩 링크화 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 게시글 상세 상단의 게시판 타입 칩을 클릭 가능한 링크로 바꾸고 버튼 스타일과 정렬 | Codex | P2 | `done` | 인증/비회원 게시글 상세에서 게시판 타입 칩이 전용 보드 또는 해당 `/feed?type=` 목록으로 이동하고, 기존 각진 `span` 대신 `목록으로`/`북마크` 버튼과 더 가까운 rounded 링크 스타일을 사용하며, href helper 테스트가 존재한다 | `PLAN.md`, `PROGRESS.md`, `app/src/components/posts/post-board-link-chip.tsx`, `app/src/components/posts/post-detail-client.tsx`, `app/src/app/posts/[id]/guest/page.tsx`, `app/src/lib/community-board.ts`, `app/src/lib/community-board.test.ts`, `app/src/components/navigation/feed-hover-menu.tsx` |
+
 ### Cycle 288: 검색/필터/정렬 일관성 보강 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
