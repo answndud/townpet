@@ -1,0 +1,133 @@
+name: post-integrity-maintenance
+
+on:
+  schedule:
+    # Every Monday 01:10 UTC (KST 10:10)
+    - cron: "10 1 * * 1"
+  workflow_dispatch:
+    inputs:
+      apply_changes:
+        description: "Apply the repair instead of dry-run"
+        required: true
+        default: false
+        type: boolean
+      fail_on_changes:
+        description: "Fail dry-run when drift is detected"
+        required: true
+        default: true
+        type: boolean
+      deleted_post_limit:
+        description: "Optional limit for deleted post scan"
+        required: false
+        type: string
+      notification_limit:
+        description: "Optional limit for invalid notification scan"
+        required: false
+        type: string
+      count_repair_limit:
+        description: "Optional limit for count recount scan"
+        required: false
+        type: string
+      count_repair_scope:
+        description: "Count recount scope: ALL, ACTIVE, HIDDEN, DELETED"
+        required: true
+        default: "ALL"
+        type: string
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: app
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      POST_INTEGRITY_DELETED_POST_LIMIT: ${{ github.event_name == 'workflow_dispatch' && inputs.deleted_post_limit || '' }}
+      POST_INTEGRITY_NOTIFICATION_LIMIT: ${{ github.event_name == 'workflow_dispatch' && inputs.notification_limit || '' }}
+      POST_COUNT_REPAIR_LIMIT: ${{ github.event_name == 'workflow_dispatch' && inputs.count_repair_limit || '' }}
+      POST_COUNT_REPAIR_SCOPE: ${{ github.event_name == 'workflow_dispatch' && inputs.count_repair_scope || 'ALL' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: app/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm prisma generate
+
+      - name: Validate DATABASE_URL secret
+        run: |
+          if [ -z "${DATABASE_URL}" ]; then
+            echo "::error::Missing required secret: DATABASE_URL"
+            exit 1
+          fi
+
+      - name: Run post integrity maintenance
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          output_file="$RUNNER_TEMP/post-integrity-maintenance.log"
+          dry_run="1"
+          fail_on_changes="1"
+
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.apply_changes }}" == "true" ]]; then
+            dry_run="0"
+          fi
+
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.fail_on_changes }}" != "true" ]]; then
+            fail_on_changes="0"
+          fi
+
+          if [[ "$dry_run" == "1" ]]; then
+            export POST_INTEGRITY_REPAIR_DRY_RUN=1
+          fi
+
+          pnpm db:repair:post-integrity | tee "$output_file"
+
+          {
+            echo "## post-integrity-maintenance"
+            echo
+            echo "- mode: $([[ \"$dry_run\" == \"1\" ]] && echo dry-run || echo apply)"
+            echo "- scope: ${POST_COUNT_REPAIR_SCOPE:-ALL}"
+            echo
+            echo '```text'
+            cat "$output_file"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          deleted_repaired=$(awk -F': ' '/^- deletedPosts.repaired:/ {print $2}' "$output_file" | tail -n1)
+          invalid_archived=$(awk -F': ' '/^- invalidNotifications.archived:/ {print $2}' "$output_file" | tail -n1)
+          updated_posts=$(awk -F': ' '/^- recount.updatedPosts:/ {print $2}' "$output_file" | tail -n1)
+
+          deleted_repaired=${deleted_repaired:-0}
+          invalid_archived=${invalid_archived:-0}
+          updated_posts=${updated_posts:-0}
+
+          if [[ "$dry_run" == "1" && "$fail_on_changes" == "1" ]]; then
+            if [[ "$deleted_repaired" != "0" || "$invalid_archived" != "0" || "$updated_posts" != "0" ]]; then
+              echo "::error::Post integrity drift detected during dry-run."
+              exit 1
+            fi
+          fi
+
+      - name: Upload repair summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: post-integrity-maintenance-${{ github.run_id }}
+          path: ${{ runner.temp }}/post-integrity-maintenance.log

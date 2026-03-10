@@ -26,6 +26,12 @@
 
 ## Active Plan
 
+### Cycle 287: 게시글 정합성 repair GitHub Actions 자동화 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| post integrity repair를 schedule + workflow_dispatch로 실행하는 GitHub Actions workflow 추가 | Codex | P1 | `done` | `.github/workflows/post-integrity-maintenance.yml`가 추가되어 주간 dry-run과 수동 apply 실행을 지원하고, `DATABASE_URL` secret 누락 시 실패하며, 실행 로그가 step summary/artifact로 남는다 | `PLAN.md`, `PROGRESS.md`, `.github/workflows/post-integrity-maintenance.yml` |
+| 운영 가이드에 workflow 트리거/입력/실행 의미 반영 | Codex | P2 | `done` | 운영 가이드가 `post-integrity-maintenance`의 schedule/workflow_dispatch 입력, dry-run drift fail 정책, 필요한 secret을 설명한다 | `PLAN.md`, `PROGRESS.md`, `docs/개발_운영_가이드.md` |
+
 ### Cycle 286: 게시글 공유 UI 링크 복사 전용 단순화 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
