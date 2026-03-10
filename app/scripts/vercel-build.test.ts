@@ -96,6 +96,7 @@ describe("vercel-build security preflight", () => {
 
     expect(commandRunner.mock.calls).toEqual([
       ["pnpm", ["ops:check:security-env:strict"]],
+      ["pnpm", ["prisma", "generate"]],
       ["pnpm", ["ops:check:auth-email-readiness"]],
       ["pnpm", ["prisma", "migrate", "deploy"]],
       [
@@ -134,6 +135,7 @@ describe("vercel-build security preflight", () => {
     const commandRunner = vi
       .fn()
       .mockResolvedValueOnce({ code: 0, output: "security ok" })
+      .mockResolvedValueOnce({ code: 0, output: "generate ok" })
       .mockResolvedValueOnce({ code: 1, output: "duplicate normalized email" });
 
     await expect(runBuildVercel(commandRunner)).rejects.toThrow(
@@ -142,7 +144,26 @@ describe("vercel-build security preflight", () => {
 
     expect(commandRunner.mock.calls).toEqual([
       ["pnpm", ["ops:check:security-env:strict"]],
+      ["pnpm", ["prisma", "generate"]],
       ["pnpm", ["ops:check:auth-email-readiness"]],
+    ]);
+  });
+
+  it("stops the build before auth email preflight when prisma generate fails", async () => {
+    process.env.VERCEL_ENV = "production";
+
+    const commandRunner = vi
+      .fn()
+      .mockResolvedValueOnce({ code: 0, output: "security ok" })
+      .mockResolvedValueOnce({ code: 1, output: "vercel prisma generate safeguard" });
+
+    await expect(runBuildVercel(commandRunner)).rejects.toThrow(
+      "[build:vercel] prisma generate failed.",
+    );
+
+    expect(commandRunner.mock.calls).toEqual([
+      ["pnpm", ["ops:check:security-env:strict"]],
+      ["pnpm", ["prisma", "generate"]],
     ]);
   });
 });
