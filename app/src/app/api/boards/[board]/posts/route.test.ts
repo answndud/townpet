@@ -2,16 +2,23 @@ import type { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { GET } from "@/app/api/boards/[board]/posts/route";
+import { getCurrentUserId, hasSessionCookieFromRequest } from "@/server/auth";
 import { monitorUnhandledError } from "@/server/error-monitor";
 import { listCommonBoardPosts } from "@/server/queries/community.queries";
 import { getClientIp } from "@/server/request-context";
 import { enforceRateLimit } from "@/server/rate-limit";
 
+vi.mock("@/server/auth", () => ({
+  getCurrentUserId: vi.fn(),
+  hasSessionCookieFromRequest: vi.fn(),
+}));
 vi.mock("@/server/error-monitor", () => ({ monitorUnhandledError: vi.fn() }));
 vi.mock("@/server/queries/community.queries", () => ({ listCommonBoardPosts: vi.fn() }));
 vi.mock("@/server/request-context", () => ({ getClientIp: vi.fn() }));
 vi.mock("@/server/rate-limit", () => ({ enforceRateLimit: vi.fn() }));
 
+const mockGetCurrentUserId = vi.mocked(getCurrentUserId);
+const mockHasSessionCookieFromRequest = vi.mocked(hasSessionCookieFromRequest);
 const mockMonitorUnhandledError = vi.mocked(monitorUnhandledError);
 const mockListCommonBoardPosts = vi.mocked(listCommonBoardPosts);
 const mockGetClientIp = vi.mocked(getClientIp);
@@ -19,12 +26,16 @@ const mockEnforceRateLimit = vi.mocked(enforceRateLimit);
 
 describe("GET /api/boards/[board]/posts contract", () => {
   beforeEach(() => {
+    mockGetCurrentUserId.mockReset();
+    mockHasSessionCookieFromRequest.mockReset();
     mockMonitorUnhandledError.mockReset();
     mockListCommonBoardPosts.mockReset();
     mockGetClientIp.mockReset();
     mockEnforceRateLimit.mockReset();
 
     mockGetClientIp.mockReturnValue("127.0.0.1");
+    mockGetCurrentUserId.mockResolvedValue(null);
+    mockHasSessionCookieFromRequest.mockReturnValue(false);
     mockEnforceRateLimit.mockResolvedValue();
     mockListCommonBoardPosts.mockResolvedValue({
       items: [],

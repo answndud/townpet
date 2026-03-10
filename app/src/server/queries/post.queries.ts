@@ -857,6 +857,65 @@ function buildPostSearchWhere(
       nickname: { contains: trimmedQuery, mode: "insensitive" as const },
     },
   };
+  const structuredFilters: Prisma.PostWhereInput[] = [
+    { animalTags: { has: trimmedQuery } },
+    {
+      hospitalReview: {
+        is: {
+          OR: [
+            { hospitalName: { contains: trimmedQuery, mode: "insensitive" as const } },
+            { treatmentType: { contains: trimmedQuery, mode: "insensitive" as const } },
+          ],
+        },
+      },
+    },
+    {
+      placeReview: {
+        is: {
+          OR: [
+            { placeName: { contains: trimmedQuery, mode: "insensitive" as const } },
+            { placeType: { contains: trimmedQuery, mode: "insensitive" as const } },
+            { address: { contains: trimmedQuery, mode: "insensitive" as const } },
+          ],
+        },
+      },
+    },
+    {
+      walkRoute: {
+        is: {
+          OR: [
+            { routeName: { contains: trimmedQuery, mode: "insensitive" as const } },
+            { safetyTags: { has: trimmedQuery } },
+          ],
+        },
+      },
+    },
+    {
+      adoptionListing: {
+        is: {
+          OR: [
+            { shelterName: { contains: trimmedQuery, mode: "insensitive" as const } },
+            { region: { contains: trimmedQuery, mode: "insensitive" as const } },
+            { animalType: { contains: trimmedQuery, mode: "insensitive" as const } },
+            { breed: { contains: trimmedQuery, mode: "insensitive" as const } },
+            { ageLabel: { contains: trimmedQuery, mode: "insensitive" as const } },
+            { sizeLabel: { contains: trimmedQuery, mode: "insensitive" as const } },
+          ],
+        },
+      },
+    },
+    {
+      volunteerRecruitment: {
+        is: {
+          OR: [
+            { shelterName: { contains: trimmedQuery, mode: "insensitive" as const } },
+            { region: { contains: trimmedQuery, mode: "insensitive" as const } },
+            { volunteerType: { contains: trimmedQuery, mode: "insensitive" as const } },
+          ],
+        },
+      },
+    },
+  ];
 
   if (searchIn === "TITLE") {
     return titleFilter;
@@ -869,7 +928,7 @@ function buildPostSearchWhere(
   }
 
   return {
-    OR: [titleFilter, contentFilter, authorFilter],
+    OR: [titleFilter, contentFilter, authorFilter, ...structuredFilters],
   };
 }
 
@@ -3705,7 +3764,7 @@ function buildRankedSearchWhereSql({
   searchSql: Prisma.Sql;
 }) {
   const clauses: Prisma.Sql[] = [
-    Prisma.sql`p."status" IN ('ACTIVE'::"PostStatus", 'HIDDEN'::"PostStatus")`,
+    Prisma.sql`p."status" = 'ACTIVE'::"PostStatus"`,
     Prisma.sql`p."scope"::text = ${scope}`,
     searchSql,
   ];
@@ -3776,6 +3835,30 @@ function buildRankedSearchMatchSql(
     OR to_tsvector('simple', COALESCE(u."nickname", '')) @@ websearch_to_tsquery('simple', ${query})
     ${authorNicknameSimilaritySql}
   )`;
+  const structuredTextSql = Prisma.sql`concat_ws(' ',
+    COALESCE(hr."hospitalName", ''),
+    COALESCE(hr."treatmentType", ''),
+    COALESCE(pr."placeName", ''),
+    COALESCE(pr."placeType", ''),
+    COALESCE(pr."address", ''),
+    COALESCE(wr."routeName", ''),
+    COALESCE(array_to_string(wr."safetyTags", ' '), ''),
+    COALESCE(al."shelterName", ''),
+    COALESCE(al."region", ''),
+    COALESCE(al."animalType", ''),
+    COALESCE(al."breed", ''),
+    COALESCE(al."ageLabel", ''),
+    COALESCE(al."sizeLabel", ''),
+    COALESCE(vr."shelterName", ''),
+    COALESCE(vr."region", ''),
+    COALESCE(vr."volunteerType", '')
+  )`;
+  const structuredMatch = Prisma.sql`(
+    ${structuredTextSql} ILIKE ${pattern}
+    OR REPLACE(${structuredTextSql}, ' ', '') ILIKE ${compactPattern}
+    OR to_tsvector('simple', ${structuredTextSql}) @@ websearch_to_tsquery('simple', ${query})
+    OR to_tsvector('simple', REPLACE(${structuredTextSql}, ' ', '')) @@ websearch_to_tsquery('simple', ${compactQuery})
+  )`;
 
   if (searchIn === "TITLE") {
     return titleMatch;
@@ -3787,7 +3870,7 @@ function buildRankedSearchMatchSql(
     return authorMatch;
   }
 
-  return Prisma.sql`(${titleMatch} OR ${contentMatch} OR ${authorMatch})`;
+  return Prisma.sql`(${titleMatch} OR ${contentMatch} OR ${authorMatch} OR ${structuredMatch})`;
 }
 
 type RankedSearchRow = {
@@ -3856,6 +3939,11 @@ export async function listRankedSearchPosts({
       SELECT p."id"
       FROM "Post" p
       INNER JOIN "User" u ON u."id" = p."authorId"
+      LEFT JOIN "HospitalReview" hr ON hr."postId" = p."id"
+      LEFT JOIN "PlaceReview" pr ON pr."postId" = p."id"
+      LEFT JOIN "WalkRoute" wr ON wr."postId" = p."id"
+      LEFT JOIN "AdoptionListing" al ON al."postId" = p."id"
+      LEFT JOIN "VolunteerRecruitment" vr ON vr."postId" = p."id"
       WHERE ${whereSql}
       ORDER BY
         (
@@ -3876,12 +3964,35 @@ export async function listRankedSearchPosts({
               WHEN COALESCE(u."nickname", '') ILIKE ${likePattern} THEN 1.0
               ELSE 0
             END
+          + CASE
+              WHEN concat_ws(' ',
+                COALESCE(hr."hospitalName", ''),
+                COALESCE(hr."treatmentType", ''),
+                COALESCE(pr."placeName", ''),
+                COALESCE(pr."placeType", ''),
+                COALESCE(pr."address", ''),
+                COALESCE(wr."routeName", ''),
+                COALESCE(array_to_string(wr."safetyTags", ' '), ''),
+                COALESCE(al."shelterName", ''),
+                COALESCE(al."region", ''),
+                COALESCE(al."animalType", ''),
+                COALESCE(al."breed", ''),
+                COALESCE(al."ageLabel", ''),
+                COALESCE(al."sizeLabel", ''),
+                COALESCE(vr."shelterName", ''),
+                COALESCE(vr."region", ''),
+                COALESCE(vr."volunteerType", '')
+              ) ILIKE ${likePattern}
+              THEN 1.1
+              ELSE 0
+            END
           + GREATEST(
               0,
               1.2 - (EXTRACT(EPOCH FROM (NOW() - p."createdAt")) / 86400.0) / 30.0
             )
         ) DESC,
-        p."createdAt" DESC
+        p."createdAt" DESC,
+        p."id" DESC
       LIMIT ${candidateLimit}
     `);
 
@@ -4023,7 +4134,7 @@ export async function listPostSearchSuggestions({
   const runSuggestions = async () =>
     prisma.post.findMany({
       where: {
-        status: { in: [PostStatus.ACTIVE, PostStatus.HIDDEN] },
+        status: PostStatus.ACTIVE,
         ...(type
           ? (() => {
               const equivalentTypes = getEquivalentPostTypes(type);
@@ -4051,7 +4162,7 @@ export async function listPostSearchSuggestions({
           },
         },
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       take: Math.min(Math.max(limit * 3, limit), 30),
     });
 

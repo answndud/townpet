@@ -16,6 +16,7 @@ vi.mock("@/lib/env", async () => {
 
 import {
   listBestPosts,
+  listRankedSearchPosts,
   listPostSearchSuggestions,
   listPosts,
   listViewerRecentBehaviorSummaryLabels,
@@ -28,6 +29,7 @@ import { prisma } from "@/lib/prisma";
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
+    $queryRaw: vi.fn(),
     post: {
       findMany: vi.fn(),
     },
@@ -66,6 +68,7 @@ vi.mock("@/lib/prisma", () => ({
 }));
 
 const mockPrisma = vi.mocked(prisma) as unknown as {
+  $queryRaw: ReturnType<typeof vi.fn>;
   post: {
     findMany: ReturnType<typeof vi.fn>;
   };
@@ -104,6 +107,8 @@ const mockPrisma = vi.mocked(prisma) as unknown as {
 
 describe("post queries", () => {
   beforeEach(() => {
+    mockPrisma.$queryRaw.mockReset();
+    mockPrisma.$queryRaw.mockResolvedValue([]);
     mockPrisma.post.findMany.mockReset();
     mockPrisma.userAudienceSegment.findMany.mockReset();
     mockPrisma.userAudienceSegment.findMany.mockResolvedValue([]);
@@ -287,7 +292,13 @@ describe("post queries", () => {
     });
 
     const args = mockPrisma.post.findMany.mock.calls[0][0];
-    expect(args.where.OR).toHaveLength(3);
+    expect(args.where.OR).toEqual(
+      expect.arrayContaining([
+        { title: { contains: "산책", mode: "insensitive" } },
+        { content: { contains: "산책", mode: "insensitive" } },
+        { author: { nickname: { contains: "산책", mode: "insensitive" } } },
+      ]),
+    );
   });
 
   it("applies breed filter for breed lounge feed", async () => {
@@ -1272,6 +1283,69 @@ describe("post queries", () => {
     });
 
     expect(items).toEqual(["강남 산책 코스 추천", "주말 산책 후기", "산책러버"]);
+  });
+
+  it("keeps autocomplete suggestions limited to active posts with stable ordering", async () => {
+    mockPrisma.post.findMany.mockResolvedValue([]);
+
+    await listPostSearchSuggestions({
+      q: "병원",
+      limit: 5,
+      scope: PostScope.GLOBAL,
+      searchIn: "ALL",
+    });
+
+    const args = mockPrisma.post.findMany.mock.calls[0][0];
+    expect(args.where.status).toBe("ACTIVE");
+    expect(args.orderBy).toEqual([{ createdAt: "desc" }, { id: "desc" }]);
+  });
+
+  it("includes structured review fields in post search suggestions query", async () => {
+    mockPrisma.post.findMany.mockResolvedValue([]);
+
+    await listPostSearchSuggestions({
+      q: "슬개골",
+      limit: 5,
+      scope: PostScope.GLOBAL,
+      searchIn: "ALL",
+    });
+
+    const args = mockPrisma.post.findMany.mock.calls[0][0];
+    expect(args.where.OR).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          hospitalReview: {
+            is: {
+              OR: expect.arrayContaining([
+                expect.objectContaining({
+                  treatmentType: { contains: "슬개골", mode: "insensitive" },
+                }),
+              ]),
+            },
+          },
+        }),
+      ]),
+    );
+  });
+
+  it("filters ranked search to active posts and adds stable tie-breaker ordering", async () => {
+    mockPrisma.$queryRaw
+      .mockResolvedValueOnce([{ enabled: true }])
+      .mockResolvedValueOnce([]);
+
+    const items = await listRankedSearchPosts({
+      limit: 10,
+      scope: PostScope.GLOBAL,
+      q: "병원",
+      searchIn: "ALL",
+    });
+
+    expect(items).toEqual([]);
+    const sql = mockPrisma.$queryRaw.mock.calls[1]?.[0] as { strings?: TemplateStringsArray };
+    const statement = sql.strings ? Array.from(sql.strings).join(" ") : "";
+    expect(statement).toContain(`p."status" = 'ACTIVE'::"PostStatus"`);
+    expect(statement).toContain(`p."id" DESC`);
+    expect(statement).toContain(`LEFT JOIN "HospitalReview" hr`);
   });
 
   it("paginates my-posts query with limit + 1 strategy", async () => {

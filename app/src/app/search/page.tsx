@@ -49,6 +49,39 @@ function toFeedSearchIn(value?: string): FeedSearchIn {
   return "ALL";
 }
 
+function toFeedScope(value?: string): PostScope {
+  return value === PostScope.LOCAL ? PostScope.LOCAL : PostScope.GLOBAL;
+}
+
+function buildSearchHref({
+  q,
+  type,
+  searchIn,
+  scope,
+}: {
+  q?: string;
+  type?: PostType;
+  searchIn?: FeedSearchIn;
+  scope?: PostScope;
+}) {
+  const params = new URLSearchParams();
+  if (q && q.trim().length > 0) {
+    params.set("q", q.trim());
+  }
+  if (type) {
+    params.set("type", type);
+  }
+  if (searchIn && searchIn !== "ALL") {
+    params.set("searchIn", searchIn);
+  }
+  if (scope === PostScope.LOCAL) {
+    params.set("scope", PostScope.LOCAL);
+  }
+
+  const serialized = params.toString();
+  return serialized ? `/search?${serialized}` : "/search";
+}
+
 export default async function SearchPage({ searchParams }: SearchPageProps) {
   const session = await auth();
   const userId = session?.user?.id;
@@ -68,31 +101,20 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const blockedTypesForGuest = !isAuthenticated ? loginRequiredTypes : [];
 
   const resolvedParams = (await searchParams) ?? {};
-  const hasLegacyScope =
-    typeof resolvedParams.scope === "string" && resolvedParams.scope.trim().length > 0;
-  if (hasLegacyScope) {
-    const params = new URLSearchParams();
-    for (const [key, value] of Object.entries(resolvedParams)) {
-      if (key === "scope") {
-        continue;
-      }
-      if (typeof value === "string" && value.length > 0) {
-        params.set(key, value);
-      }
-    }
-    const serialized = params.toString();
-    redirect(serialized ? `/search?${serialized}` : "/search");
-  }
   const parsedParams = postListSchema.safeParse(resolvedParams);
   const listInput = parsedParams.success ? toPostListInput(parsedParams.data) : null;
   const type = listInput?.type;
-  const effectiveScope = PostScope.GLOBAL;
   const query = listInput?.q?.trim() ?? "";
   const selectedSearchIn = toFeedSearchIn(resolvedParams.searchIn);
+  const requestedScope = toFeedScope(resolvedParams.scope);
+  const primaryNeighborhood = user?.neighborhoods.find((item) => item.isPrimary);
+  const effectiveScope =
+    requestedScope === PostScope.LOCAL && primaryNeighborhood ? PostScope.LOCAL : PostScope.GLOBAL;
   const isGuestTypeBlocked =
     !isAuthenticated && isLoginRequiredPostType(type, loginRequiredTypes);
 
-  const neighborhoodId = undefined;
+  const neighborhoodId =
+    effectiveScope === PostScope.LOCAL ? primaryNeighborhood?.neighborhood.id : undefined;
 
   const resultItems =
     query.length > 0 && !isGuestTypeBlocked
@@ -124,6 +146,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
               actionPath="/search"
               query={query}
               searchIn={selectedSearchIn}
+              scope={effectiveScope}
               personalized="0"
               type={type}
               mode="ALL"
@@ -132,6 +155,44 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
               resetHref="/search"
               popularTerms={popularSearchTerms}
             />
+          </div>
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+            <Link
+              href={buildSearchHref({
+                q: query || undefined,
+                type,
+                searchIn: selectedSearchIn,
+                scope: PostScope.GLOBAL,
+              })}
+              className={`inline-flex items-center rounded-full border px-3 py-1 font-medium ${
+                effectiveScope === PostScope.GLOBAL
+                  ? "border-[#2f5da4] bg-[#edf4ff] text-[#214d8d]"
+                  : "border-[#d7e2f3] bg-white text-[#5b7398]"
+              }`}
+            >
+              전체 검색
+            </Link>
+            {primaryNeighborhood ? (
+              <Link
+                href={buildSearchHref({
+                  q: query || undefined,
+                  type,
+                  searchIn: selectedSearchIn,
+                  scope: PostScope.LOCAL,
+                })}
+                className={`inline-flex items-center rounded-full border px-3 py-1 font-medium ${
+                  effectiveScope === PostScope.LOCAL
+                    ? "border-[#2f5da4] bg-[#edf4ff] text-[#214d8d]"
+                    : "border-[#d7e2f3] bg-white text-[#5b7398]"
+                }`}
+              >
+                {primaryNeighborhood.neighborhood.name} 검색
+              </Link>
+            ) : (
+              <span className="inline-flex items-center rounded-full border border-[#e0e6f0] bg-[#f8fbff] px-3 py-1 text-[#6c7f9b]">
+                대표 동네를 설정하면 동네 검색을 사용할 수 있습니다.
+              </span>
+            )}
           </div>
         </header>
 

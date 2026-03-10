@@ -17,6 +17,23 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-10: Cycle 288 완료 (검색/필터/정렬 일관성 보강)
+- 완료 내용
+  - `app/src/server/queries/post.queries.ts`에서 메인 랭킹 검색과 자동완성 대상에서 `HIDDEN` 게시글을 제거했고, 랭킹 검색 raw SQL에 `p."id" DESC` tie-breaker를 추가해 점수/생성시각이 같은 결과의 순서를 안정화했다.
+  - 같은 파일의 `ALL` 검색 범위는 제목/본문/작성자뿐 아니라 `hospitalReview`, `placeReview`, `walkRoute`, `adoptionListing`, `volunteerRecruitment`, `animalTags`까지 포함하도록 확장해 구조화 필드가 메인 검색에도 반영되게 했다.
+  - `app/src/server/queries/community.queries.ts`는 common board와 adoption board count/list에 `viewerId -> hiddenAuthorIds` 필터를 연결했고, hospital/adoption/volunteer 보드 검색에서 구조화 relation 필드도 같이 검색하도록 보강했다.
+  - `app/src/app/api/boards/[board]/posts/route.ts`는 세션 쿠키가 있는 경우 현재 사용자 ID를 읽어 공용 보드 API에 전달하고, `app/src/app/boards/adoption/page.tsx`도 count/list 호출에 `viewerId`를 넘겨 차단/뮤트 작성자를 일관되게 숨기게 했다.
+  - `app/src/app/search/page.tsx`는 더 이상 `scope`를 legacy 파라미터로 제거하지 않고, 로그인 사용자에게 `전체 검색` / `대표 동네 검색` 토글을 제공해 실제 local/global 검색을 지원한다. 대표 동네가 없을 때는 global로 안전하게 fallback한다.
+  - 회귀 테스트는 `app/src/server/queries/post.queries.test.ts`, `app/src/server/queries/community.queries.test.ts`, `app/src/app/api/boards/[board]/posts/route.test.ts`에 추가했다.
+- 검증 결과
+  - `pnpm -C app lint src/server/queries/post.queries.ts src/server/queries/post.queries.test.ts src/server/queries/community.queries.ts src/server/queries/community.queries.test.ts src/app/search/page.tsx 'src/app/api/boards/[board]/posts/route.ts' 'src/app/api/boards/[board]/posts/route.test.ts' src/app/boards/adoption/page.tsx` 통과
+  - `pnpm -C app test -- src/server/queries/post.queries.test.ts src/server/queries/community.queries.test.ts 'src/app/api/boards/[board]/posts/route.test.ts'` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `131 files / 659 tests` 통과
+  - `pnpm -C app typecheck` 통과
+  - `git diff --check` 통과
+- 메모
+  - guest `/search/guest`는 여전히 global 전용이다. 이번 턴의 scope 지원은 인증 사용자 `/search` 흐름에 한정했다.
+  - 구조화 검색은 `ALL` 모드에만 추가했고, `TITLE/CONTENT/AUTHOR` 전용 모드는 기존 의미를 유지했다.
+
 ### 2026-03-10: Cycle 287 완료 (게시글 정합성 repair GitHub Actions 자동화)
 - 완료 내용
   - `.github/workflows/post-integrity-maintenance.yml`를 추가해 매주 월요일 01:10 UTC에 `db:repair:post-integrity`를 dry-run으로 실행하고, drift가 감지되면 workflow를 실패시켜 운영자가 바로 인지할 수 있게 했다.

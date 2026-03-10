@@ -40,13 +40,18 @@ export const metadata: Metadata = {
 function buildAdoptionBoardHref({
   q,
   page,
+  scope,
 }: {
   q?: string | null;
   page?: number | null;
+  scope?: string | null;
 }) {
   const params = new URLSearchParams();
   if (q && q.trim().length > 0) {
     params.set("q", q.trim());
+  }
+  if (scope && scope.trim().length > 0) {
+    params.set("scope", scope.trim());
   }
   if (page && page > 1) {
     params.set("page", String(page));
@@ -87,6 +92,7 @@ export default async function AdoptionBoardPage({
 
   const totalCount = await countAdoptionBoardPosts({
     q: query || undefined,
+    viewerId: userId ?? undefined,
   });
   const totalPages = Math.max(1, Math.ceil(totalCount / ADOPTION_BOARD_PAGE_SIZE));
   const resolvedPage = Math.min(currentPage, totalPages);
@@ -94,6 +100,7 @@ export default async function AdoptionBoardPage({
     page: resolvedPage,
     limit: ADOPTION_BOARD_PAGE_SIZE,
     q: query || undefined,
+    viewerId: userId ?? undefined,
   });
 
   return (
