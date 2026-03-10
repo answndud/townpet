@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { PostType } from "@prisma/client";
 
 import { BackToFeedButton } from "@/components/posts/back-to-feed-button";
+import { PostBoardLinkChip } from "@/components/posts/post-board-link-chip";
 import { GuestPostDetailActions } from "@/components/posts/guest-post-detail-actions";
 import { PostBookmarkButton } from "@/components/posts/post-bookmark-button";
 import { PostDetailActions } from "@/components/posts/post-detail-actions";
@@ -486,9 +487,7 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
         <div>
           <section className="tp-card p-4 sm:p-7">
             <div className="flex flex-wrap items-center gap-2 text-xs">
-              <span className={`border px-2.5 py-0.5 font-semibold ${meta.chipClass}`}>
-                {meta.label}
-              </span>
+              <PostBoardLinkChip type={post.type} label={meta.label} chipClass={meta.chipClass} />
               {post.neighborhood ? (
                 <span className="border border-[#dbe5f3] bg-white px-2.5 py-0.5 text-[#5d789f]">
                   {post.neighborhood.city} {post.neighborhood.name}

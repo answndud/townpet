@@ -10,7 +10,7 @@ import {
   parsePetTypePreferenceCookie,
   serializePetTypePreferenceCookie,
 } from "@/lib/pet-type-preference-cookie";
-import { getDedicatedBoardPathByPostType } from "@/lib/community-board";
+import { buildBoardListingHref, buildFeedHref } from "@/lib/community-board";
 import { getPostTypeMeta } from "@/lib/post-presenter";
 import { groupPetTypeCommunities } from "@/lib/pet-type-taxonomy";
 import { PRIMARY_POST_TYPES } from "@/lib/post-type-groups";
@@ -26,22 +26,6 @@ type FeedHoverMenuProps = {
   isAuthenticated: boolean;
   initialPreferredPetTypeIds: string[];
 };
-
-function buildFeedHref(params: Record<string, string | null | undefined>) {
-  const search = new URLSearchParams();
-  for (const [key, value] of Object.entries(params)) {
-    if (!value) {
-      continue;
-    }
-    search.set(key, value);
-  }
-  const query = search.toString();
-  return query ? `/feed?${query}` : "/feed";
-}
-
-function buildBoardListingHref(type: PostType) {
-  return getDedicatedBoardPathByPostType(type) ?? buildFeedHref({ type, page: "1" });
-}
 
 export function FeedHoverMenu({
   communities,

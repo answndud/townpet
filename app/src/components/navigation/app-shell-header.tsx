@@ -6,7 +6,10 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { AuthControls } from "@/components/auth/auth-controls";
-import { APP_SHELL_HEADER_CLASS_NAME } from "@/components/navigation/app-shell-header-class";
+import {
+  APP_SHELL_HEADER_CLASS_NAME,
+  shouldRefreshViewerShellOnFocus,
+} from "@/components/navigation/app-shell-header-class";
 import { FeedHoverMenu } from "@/components/navigation/feed-hover-menu";
 import { NotificationBell } from "@/components/notifications/notification-bell";
 import { emitViewerShellSync, subscribeViewerShellSync } from "@/lib/viewer-shell-sync";
@@ -41,6 +44,7 @@ export function AppShellHeader({ communities }: AppShellHeaderProps) {
   const pathname = usePathname();
   const navLinkClass =
     "inline-flex h-8 items-center rounded-sm px-1 text-[14px] leading-none text-[#315484] transition hover:bg-[#dcecff] hover:text-[#1f4f8f]";
+  const refreshOnFocus = shouldRefreshViewerShellOnFocus(pathname);
   const allPetTypeIds = communities.map((item) => item.id);
   const preferredPetTypeIds =
     viewerShell.preferredPetTypeIds.length > 0 ? viewerShell.preferredPetTypeIds : allPetTypeIds;
@@ -90,15 +94,19 @@ export function AppShellHeader({ communities }: AppShellHeaderProps) {
     const handleFocus = () => {
       void loadViewerShell();
     };
-    window.addEventListener("focus", handleFocus);
+    if (refreshOnFocus) {
+      window.addEventListener("focus", handleFocus);
+    }
 
     return () => {
       cancelled = true;
       controller.abort();
-      window.removeEventListener("focus", handleFocus);
+      if (refreshOnFocus) {
+        window.removeEventListener("focus", handleFocus);
+      }
       unsubscribe();
     };
-  }, [pathname]);
+  }, [pathname, refreshOnFocus]);
 
   return (
     <header className={APP_SHELL_HEADER_CLASS_NAME}>

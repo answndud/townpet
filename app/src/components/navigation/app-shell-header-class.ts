@@ -12,3 +12,7 @@ export function hasMobileStickyHeader(className: string) {
   const tokens = className.split(/\s+/).filter(Boolean);
   return tokens.includes("sticky") || tokens.includes("top-0");
 }
+
+export function shouldRefreshViewerShellOnFocus(pathname?: string | null) {
+  return !pathname?.startsWith("/feed");
+}
