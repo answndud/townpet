@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { AuthControls } from "@/components/auth/auth-controls";
+import { APP_SHELL_HEADER_CLASS_NAME } from "@/components/navigation/app-shell-header-class";
 import { FeedHoverMenu } from "@/components/navigation/feed-hover-menu";
 import { NotificationBell } from "@/components/notifications/notification-bell";
 import { emitViewerShellSync, subscribeViewerShellSync } from "@/lib/viewer-shell-sync";
@@ -100,7 +101,7 @@ export function AppShellHeader({ communities }: AppShellHeaderProps) {
   }, [pathname]);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-[#d8e4f6] bg-[#f4f8ffeb] backdrop-blur-sm">
+    <header className={APP_SHELL_HEADER_CLASS_NAME}>
       <div className="mx-auto flex w-full max-w-[1320px] flex-col gap-1.5 px-4 py-2 sm:gap-2 sm:px-6 sm:py-2.5 lg:px-10 lg:py-3 xl:flex-row xl:items-center xl:justify-between">
         <Link href="/" className="inline-flex items-center" aria-label="TownPet 홈으로 이동">
           <Image
