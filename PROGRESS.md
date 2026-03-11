@@ -17,6 +17,52 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-11: Cycle 304 완료 (폼 입력값 검증 하드닝)
+- 완료 내용
+  - `app/src/lib/input-limits.ts`, `app/src/lib/validations/text.ts`, `app/src/lib/text-normalization.ts`를 추가해 게시글/댓글/신고 입력에서 공통으로 쓰는 길이 상수와 `NFC + trim` 문자열 정규화 helper를 만들었다.
+  - `app/src/lib/validations/post.ts`, `app/src/lib/validations/comment.ts`, `app/src/lib/validations/report.ts`는 이제 제목/본문/댓글을 서버에서 `trim + 공백-only 차단`으로 검증하고, 신고 `description`은 공백-only 입력 시 `undefined`로 정규화한다.
+  - 같은 변경으로 게시글 본문에도 `20,000자` hard limit를 추가했고, `app/src/components/posts/post-create-form.tsx`, `app/src/components/posts/post-detail-edit-form.tsx`, `app/src/components/posts/post-comment-thread.tsx`, `app/src/components/posts/post-report-form.tsx`에서 동일 max length와 과다 입력 경고를 UI에 반영했다.
+  - `app/src/lib/forbidden-keyword-policy.ts`는 `NFKC` 정규화와 zero-width/control 제거, 공백/구두점/기호 compact 비교를 사용하도록 바꿔 금지어 필터의 Unicode 우회를 줄였다.
+  - 회귀 테스트는 `app/src/lib/validations/comment.test.ts`, `app/src/lib/validations/post.test.ts`, `app/src/lib/validations/report.test.ts`, `app/src/lib/forbidden-keyword-policy.test.ts`에 추가해 공백-only 차단, 조합형 한글 정규화, zero-width/구두점 우회 매칭을 고정했다.
+- 검증 결과
+  - `pnpm -C app lint src/lib/input-limits.ts src/lib/text-normalization.ts src/lib/validations/text.ts src/lib/forbidden-keyword-policy.ts src/lib/forbidden-keyword-policy.test.ts src/lib/validations/comment.ts src/lib/validations/comment.test.ts src/lib/validations/post.ts src/lib/validations/post.test.ts src/lib/validations/report.ts src/lib/validations/report.test.ts src/components/posts/post-create-form.tsx src/components/posts/post-comment-thread.tsx src/components/posts/post-report-form.tsx src/components/posts/post-detail-edit-form.tsx` 통과
+  - `pnpm -C app test -- src/lib/validations/comment.test.ts src/lib/validations/post.test.ts src/lib/validations/report.test.ts src/lib/forbidden-keyword-policy.test.ts src/server/services/post-create-policy.test.ts` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `138 files / 699 tests` 통과
+  - `pnpm -C app typecheck` 통과
+  - `git diff --check` 통과
+- 메모
+  - 구조화 필드의 자유 텍스트 자체를 catalog/enum으로 바꾸는 작업은 이번 턴 범위 밖이다. 현재는 우선 `trim/NFC` 정규화와 입력 길이 정책, 금지어 정규화 우회를 먼저 닫았다.
+  - 워크트리에는 이번 변경 외에도 이전 목록/헤더 정리 작업 파일들이 이미 남아 있었다. 이번 턴은 해당 변경을 건드리지 않고 validation 관련 파일만 추가 수정했다.
+
+### 2026-03-11: Cycle 303 완료 (헤더/모바일 네비 밀도 정리)
+- 완료 내용
+  - `app/src/components/navigation/app-shell-header-class.ts`에 공용 상단 링크, 데스크톱 그룹, 모바일 패널, 모바일 pill 스타일 상수를 추가해 헤더 주변 컴포넌트가 같은 시각 언어를 쓰도록 정리했다.
+  - `app/src/components/navigation/app-shell-header.tsx`는 기존 `|` 구분선 나열 대신 `FeedHoverMenu`, 프로필/알림, 운영 링크, 검색/로그인 영역을 그룹화된 cluster로 배치하도록 정리했다.
+  - `app/src/components/navigation/feed-hover-menu.tsx`는 모바일 `게시판 빠른 이동`/`관심 동물 설정`을 더 카드다운 summary + pill 스타일 패널로 바꾸고, 데스크톱 드롭다운 트리거와 패널 모서리/그림자도 헤더와 맞췄다.
+  - `app/src/components/notifications/notification-bell.tsx`는 헤더 공용 링크 클래스를 재사용하도록 맞춰 상단 알림 버튼도 같은 버튼 리듬을 쓰게 했다.
+  - `app/src/components/navigation/app-shell-header-class.test.ts`는 새 공용 nav/group/mobile panel 상수가 의도한 반경과 spacing을 유지하는지 회귀를 추가했다.
+- 검증 결과
+  - `pnpm -C app lint src/components/navigation/app-shell-header-class.ts src/components/navigation/app-shell-header-class.test.ts src/components/navigation/app-shell-header.tsx src/components/navigation/feed-hover-menu.tsx src/components/notifications/notification-bell.tsx` 통과
+  - `pnpm -C app test -- src/components/navigation/app-shell-header-class.test.ts` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `138 files / 699 tests` 통과
+  - `pnpm -C app typecheck` 통과
+  - `git diff --check` 통과
+- 메모
+  - 기능 제거보다는 정보 밀도와 시각적 잡음을 줄이는 것이 목적이라, 링크/알림/관심 동물 저장 흐름 자체는 유지했다.
+
+### 2026-03-11: Cycle 302 완료 (목록 카드 공통화)
+- 완료 내용
+  - `app/src/components/posts/post-list-item-shell.tsx`를 추가해 목록 카드의 좌측 본문/우측 메타 골격, 제목 링크, excerpt, 추가 하단 슬롯을 공용화했다.
+  - `app/src/components/posts/post-list-context-badges.tsx`를 추가해 게시판/지역/숨김 칩 행을 공용화했고, `feed-infinite-list`, `search`, `bookmarks`, `my-posts`가 이 공용 구조를 재사용하도록 정리했다.
+  - `app/src/components/posts/feed-infinite-list.tsx`는 읽음 처리, guest detail 분기, 광고 슬롯, 우측 메타 칩 배치를 유지한 채 공용 shell만 사용하도록 옮겼다.
+  - `app/src/app/search/page.tsx`, `app/src/app/bookmarks/page.tsx`, `app/src/app/my-posts/page.tsx`는 같은 목록 골격을 공유하게 되었고, `my-posts` 상단 필터도 `tp-filter-pill` 계열로 맞췄다.
+  - `app/src/components/posts/post-list-item-shell.test.tsx`를 추가해 optional slot 렌더링과 omission 회귀를 확인했다.
+- 검증 결과
+  - `pnpm -C app lint src/components/posts/post-list-item-shell.tsx src/components/posts/post-list-item-shell.test.tsx src/components/posts/post-list-context-badges.tsx src/components/posts/feed-infinite-list.tsx src/app/search/page.tsx src/app/bookmarks/page.tsx src/app/my-posts/page.tsx` 통과
+  - `pnpm -C app test -- src/components/posts/post-list-item-shell.test.tsx src/components/posts/feed-post-meta-badges.test.tsx` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `138 files / 691 tests` 통과
+  - `pnpm -C app typecheck` 통과
+  - `git diff --check` 통과
+- 메모
+  - 현재 턴은 화면 구조 공통화가 목적이라 데이터 쿼리나 정책 로직은 건드리지 않았다.
+
 ### 2026-03-11: Cycle 301 완료 (공용 디자인 언어 정리)
 - 완료 내용
   - `app/src/app/globals.css`에 `tp-eyebrow`, `tp-chip-base`, `tp-chip-muted`, `tp-filter-pill`, `tp-filter-pill-active`를 추가해 작은 라벨, 칩, 필터 버튼이 같은 시각 언어를 쓰도록 공용 토큰을 보강했다.

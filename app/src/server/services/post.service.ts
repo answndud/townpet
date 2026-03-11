@@ -864,7 +864,11 @@ export async function createPost({ authorId, input, guestIdentity }: CreatePostP
   };
 
   if (postData.type === "HOSPITAL_REVIEW") {
-    const reviewInput = hospitalReviewInput ?? {};
+    const reviewInput: HospitalReviewInput =
+      hospitalReviewInput ?? {
+        hospitalName: undefined,
+        treatmentType: undefined,
+      };
     const shouldCreateReview = hasAnyValue(reviewInput);
 
     const created = await prisma.post.create({

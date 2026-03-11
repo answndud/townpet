@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { PostType } from "@prisma/client";
 
+import { PostListContextBadges } from "@/components/posts/post-list-context-badges";
+import { PostListItemShell } from "@/components/posts/post-list-item-shell";
 import { PostSignalIcons } from "@/components/posts/post-signal-icons";
 import { EmptyState } from "@/components/ui/empty-state";
 import { auth } from "@/lib/auth";
@@ -225,55 +227,49 @@ export default async function BookmarksPage({ searchParams }: BookmarksPageProps
                 const meta = postTypeMeta[post.type];
 
                 return (
-                  <article
+                  <PostListItemShell
                     key={post.id}
-                    className={`grid gap-3 px-4 py-4 sm:px-5 md:grid-cols-[minmax(0,1fr)_196px] md:items-start ${
+                    href={`/posts/${post.id}`}
+                    articleClassName={`grid gap-3 px-4 py-4 sm:px-5 md:grid-cols-[minmax(0,1fr)_196px] md:items-start ${
                       post.status === "HIDDEN" ? "bg-[#fff5f5]" : ""
                     }`}
-                  >
-                    <div className="min-w-0">
-                      <div className="mb-2 flex flex-wrap items-center gap-1.5">
-                        <span className={`tp-chip-base ${meta.chipClass}`}>
-                          {meta.label}
-                        </span>
-                        <span className="tp-chip-base tp-chip-muted">
-                          {post.neighborhood
+                    topContent={
+                      <PostListContextBadges
+                        label={meta.label}
+                        chipClass={meta.chipClass}
+                        locationLabel={
+                          post.neighborhood
                             ? `${post.neighborhood.city} ${post.neighborhood.name}`
-                            : "전체"}
-                        </span>
-                        {post.status === "HIDDEN" ? (
-                          <span className="tp-chip-base border-rose-300 bg-rose-50 text-rose-700">
-                            숨김
-                          </span>
-                        ) : null}
-                      </div>
-
-                      <Link
-                        href={`/posts/${post.id}`}
-                        className="tp-text-card-title flex min-w-0 items-center gap-1 text-[#10284a] transition hover:text-[#2f5da4]"
-                      >
-                        <span className="truncate">{post.title}</span>
+                            : "전체"
+                        }
+                        status={post.status}
+                      />
+                    }
+                    title={<span className="truncate">{post.title}</span>}
+                    titleSuffix={
+                      <>
                         <PostSignalIcons signals={signals} />
                         {post.commentCount > 0 ? (
                           <span className="shrink-0 text-[#2f5da4]">[{post.commentCount}]</span>
                         ) : null}
-                      </Link>
-                      <p className="mt-1 truncate text-[13px] text-[#4c6488]">
-                        {post.content.length > 120 ? `${post.content.slice(0, 120)}...` : post.content}
-                      </p>
-                    </div>
-
-                    <div className="text-xs text-[#4f678d] md:text-right">
-                      <p className="font-semibold text-[#1f3f71]">
-                        {resolveUserDisplayName(post.author.nickname)}
-                      </p>
-                      <p className="mt-0.5">북마크 {formatRelativeDate(post.bookmarkedAt)}</p>
-                      <p className="mt-0.5 text-[11px] text-[#6a84ab]">
-                        작성 {formatRelativeDate(post.createdAt)} · 조회 {post.viewCount.toLocaleString()} · 좋아요{" "}
-                        {post.likeCount.toLocaleString()}
-                      </p>
-                    </div>
-                  </article>
+                      </>
+                    }
+                    excerpt={
+                      post.content.length > 120 ? `${post.content.slice(0, 120)}...` : post.content
+                    }
+                    meta={
+                      <>
+                        <p className="font-semibold text-[#1f3f71]">
+                          {resolveUserDisplayName(post.author.nickname)}
+                        </p>
+                        <p className="mt-0.5">북마크 {formatRelativeDate(post.bookmarkedAt)}</p>
+                        <p className="mt-0.5 text-[11px] text-[#6a84ab]">
+                          작성 {formatRelativeDate(post.createdAt)} · 조회 {post.viewCount.toLocaleString()} · 좋아요{" "}
+                          {post.likeCount.toLocaleString()}
+                        </p>
+                      </>
+                    }
+                  />
                 );
               })}
             </div>

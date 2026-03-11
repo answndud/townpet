@@ -27,6 +27,34 @@ describe("post validations", () => {
     expect(result.success).toBe(true);
   });
 
+  it("rejects whitespace-only title and content", () => {
+    const result = postCreateSchema.safeParse({
+      title: "   ",
+      content: "\n \t ",
+      type: PostType.FREE_BOARD,
+      scope: PostScope.GLOBAL,
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("normalizes composed unicode title and content", () => {
+    const result = postCreateSchema.safeParse({
+      title: "테스트",
+      content: "내용",
+      type: PostType.FREE_BOARD,
+      scope: PostScope.GLOBAL,
+    });
+
+    expect(result.success).toBe(true);
+    if (!result.success) {
+      return;
+    }
+
+    expect(result.data.title).toBe("테스트");
+    expect(result.data.content).toBe("내용");
+  });
+
   it("rejects invalid hospital review rating", () => {
     const result = hospitalReviewSchema.safeParse({
       hospitalName: "동물병원",

@@ -2,10 +2,12 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { PostType } from "@prisma/client";
 
+import { PostListContextBadges } from "@/components/posts/post-list-context-badges";
+import { PostListItemShell } from "@/components/posts/post-list-item-shell";
 import { PostSignalIcons } from "@/components/posts/post-signal-icons";
 import { EmptyState } from "@/components/ui/empty-state";
 import { auth } from "@/lib/auth";
-import { getPostSignals } from "@/lib/post-presenter";
+import { formatRelativeDate, getPostSignals, postTypeMeta } from "@/lib/post-presenter";
 import { PRIMARY_POST_TYPES, SECONDARY_POST_TYPES } from "@/lib/post-type-groups";
 import { postListSchema, toPostListInput } from "@/lib/validations/post";
 import { redirectToProfileIfNicknameMissing } from "@/server/nickname-guard";
@@ -40,22 +42,6 @@ const typeLabels: Record<PostType, string> = {
   PRODUCT_REVIEW: "용품리뷰",
   PET_SHOWCASE: "반려동물 자랑",
 };
-
-function formatRelativeDate(date: Date) {
-  const diffMs = Date.now() - date.getTime();
-  const minutes = Math.floor(diffMs / (1000 * 60));
-
-  if (minutes < 1) return "방금 전";
-  if (minutes < 60) return `${minutes}분 전`;
-
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}시간 전`;
-
-  const days = Math.floor(hours / 24);
-  if (days < 7) return `${days}일 전`;
-
-  return date.toLocaleDateString("ko-KR");
-}
 
 export default async function MyPostsPage({ searchParams }: MyPostsPageProps) {
   const session = await auth();
@@ -138,8 +124,8 @@ export default async function MyPostsPage({ searchParams }: MyPostsPageProps) {
     <div className="tp-page-bg min-h-screen pb-16">
       <main className="mx-auto flex w-full max-w-[1320px] flex-col gap-5 px-4 py-6 sm:px-6 lg:px-10">
         <header className="tp-hero p-5 sm:p-6">
-          <p className="text-[11px] uppercase tracking-[0.24em] text-[#3f5f90]">내 작성글</p>
-          <h1 className="mt-2 text-2xl font-bold tracking-tight text-[#10284a] sm:text-3xl">
+          <p className="tp-eyebrow">내 작성글</p>
+          <h1 className="tp-text-page-title mt-2 text-[#10284a]">
             내가 올린 게시글
           </h1>
           <p className="mt-2 text-sm text-[#4f678d]">
@@ -149,80 +135,80 @@ export default async function MyPostsPage({ searchParams }: MyPostsPageProps) {
 
         <section className="tp-card p-4 sm:p-5">
           <div className="space-y-3">
-              <form action="/my-posts" className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                {type ? <input type="hidden" name="type" value={type} /> : null}
-                <input
-                  name="q"
-                  defaultValue={query}
-                  placeholder="제목, 내용 검색"
-                  className="tp-input-soft h-10 w-full bg-white px-4 text-sm outline-none transition focus:border-[#4e89d8]"
-                />
-                <button
-                  type="submit"
-                  className="tp-btn-primary h-10 min-w-[76px] px-3 text-sm font-semibold"
+            <form action="/my-posts" className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              {type ? <input type="hidden" name="type" value={type} /> : null}
+              <input
+                name="q"
+                defaultValue={query}
+                placeholder="제목, 내용 검색"
+                className="tp-input-soft h-9 w-full bg-white px-3.5 text-[13px] outline-none transition focus:border-[#4e89d8]"
+              />
+              <button
+                type="submit"
+                className="tp-btn-primary tp-btn-md min-w-[72px]"
+              >
+                검색
+              </button>
+              {query ? (
+                <Link
+                  href={makeHref({ nextQuery: null })}
+                  className="tp-btn-soft tp-btn-md inline-flex min-w-[72px] items-center justify-center"
                 >
-                  검색
-                </button>
-                {query ? (
-                  <Link
-                    href={makeHref({ nextQuery: null })}
-                    className="tp-btn-soft inline-flex h-10 min-w-[76px] items-center justify-center px-3 text-sm font-semibold"
-                  >
-                    초기화
-                  </Link>
-                ) : null}
-              </form>
+                  초기화
+                </Link>
+              ) : null}
+            </form>
 
-              <div className="tp-soft-card p-3">
-                <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#4b6b9b]">
-                  주요 게시판
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
+            <div className="tp-soft-card p-3">
+              <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#4b6b9b]">
+                주요 게시판
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Link
+                  href={makeHref({ nextType: null })}
+                  className={`tp-filter-pill ${
+                    !type
+                      ? "tp-filter-pill-active"
+                      : ""
+                  }`}
+                >
+                  전체
+                </Link>
+                {PRIMARY_POST_TYPES.map((value) => (
                   <Link
-                    href={makeHref({ nextType: null })}
-                    className={`rounded-lg border px-3 py-1 text-xs font-medium transition ${
-                      !type
-                        ? "border-[#3567b5] bg-[#3567b5] text-white"
-                        : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
+                    key={value}
+                    href={makeHref({ nextType: value })}
+                    className={`tp-filter-pill ${
+                      type === value
+                        ? "tp-filter-pill-active"
+                        : ""
                     }`}
                   >
-                    전체
+                    {typeLabels[value]}
                   </Link>
-                  {PRIMARY_POST_TYPES.map((value) => (
+                ))}
+              </div>
+              <div className="mt-3 border-t border-[#dbe6f6] pt-3">
+                <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#4b6b9b]">
+                  추가 게시판
+                </p>
+                <div className="flex flex-wrap items-center gap-2">
+                  {SECONDARY_POST_TYPES.map((value) => (
                     <Link
                       key={value}
                       href={makeHref({ nextType: value })}
-                       className={`rounded-lg border px-3 py-1 text-xs font-medium transition ${
+                      className={`tp-filter-pill ${
                         type === value
-                          ? "border-[#3567b5] bg-[#3567b5] text-white"
-                          : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
+                          ? "tp-filter-pill-active"
+                          : ""
                       }`}
                     >
                       {typeLabels[value]}
                     </Link>
                   ))}
                 </div>
-                <div className="mt-3 border-t border-[#dbe6f6] pt-3">
-                  <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#4b6b9b]">
-                    추가 게시판
-                  </p>
-                  <div className="flex flex-wrap items-center gap-2">
-                    {SECONDARY_POST_TYPES.map((value) => (
-                      <Link
-                        key={value}
-                        href={makeHref({ nextType: value })}
-                        className={`rounded-lg border px-3 py-1 text-xs font-medium transition ${
-                          type === value
-                            ? "border-[#3567b5] bg-[#3567b5] text-white"
-                            : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
-                        }`}
-                      >
-                        {typeLabels[value]}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
               </div>
+            </div>
             <p className="border-t border-[#dbe6f6] pt-3 text-xs text-[#4f678d]">
               페이지 {currentPage} · 현재 {posts.length}건 표시
             </p>
@@ -245,55 +231,51 @@ export default async function MyPostsPage({ searchParams }: MyPostsPageProps) {
                   content: post.content,
                   imageCount: post.images.length,
                 });
+                const meta = postTypeMeta[post.type];
 
                 return (
-                  <article
+                  <PostListItemShell
                     key={post.id}
-                    className={`grid gap-3 px-4 py-4 sm:px-5 md:grid-cols-[minmax(0,1fr)_220px] md:items-center ${
+                    href={`/posts/${post.id}`}
+                    articleClassName={`grid gap-3 px-4 py-4 sm:px-5 md:grid-cols-[minmax(0,1fr)_196px] md:items-start ${
                       post.status === "HIDDEN" ? "bg-[#fff5f5]" : ""
                     }`}
-                  >
-                    <div className="min-w-0">
-                      <div className="mb-2 flex flex-wrap items-center gap-2 text-[11px]">
-                        <span className="border border-[#d2ddf0] bg-[#f6f9ff] px-2 py-0.5 text-[#2f548f]">
-                          {typeLabels[post.type]}
-                        </span>
-                        <span className="border border-[#dbe5f3] bg-white px-2 py-0.5 text-[#5d789f]">
-                          {post.neighborhood
+                    topContent={
+                      <PostListContextBadges
+                        label={meta.label}
+                        chipClass={meta.chipClass}
+                        locationLabel={
+                          post.neighborhood
                             ? `${post.neighborhood.city} ${post.neighborhood.name}`
-                            : "전체"}
-                        </span>
-                        {post.status === "HIDDEN" ? (
-                          <span className="border border-rose-300 bg-rose-50 px-2 py-0.5 text-rose-700">
-                            숨김
-                          </span>
-                        ) : null}
-                      </div>
-
-                      <Link
-                        href={`/posts/${post.id}`}
-                        className="flex min-w-0 items-center gap-1 text-base font-semibold text-[#10284a] transition hover:text-[#2f5da4] sm:text-lg"
-                      >
-                        <span className="truncate">{post.title}</span>
+                            : "전체"
+                        }
+                        status={post.status}
+                      />
+                    }
+                    title={<span className="truncate">{post.title}</span>}
+                    titleSuffix={
+                      <>
                         <PostSignalIcons signals={signals} />
                         {post.commentCount > 0 ? (
                           <span className="shrink-0 text-[#2f5da4]">[{post.commentCount}]</span>
                         ) : null}
-                      </Link>
-                      <p className="mt-1 truncate text-sm text-[#4c6488]">
-                        {post.content.length > 120
-                          ? `${post.content.slice(0, 120)}...`
-                          : post.content}
-                      </p>
-                    </div>
-
-                    <div className="text-xs text-[#4f678d] md:text-right">
-                      <p>{formatRelativeDate(post.createdAt)}</p>
-                      <p className="mt-2 text-[11px] text-[#6a84ab]">
-                        조회 {post.viewCount.toLocaleString()} · 좋아요 {post.likeCount.toLocaleString()}
-                      </p>
-                    </div>
-                  </article>
+                      </>
+                    }
+                    excerpt={
+                      post.content.length > 120
+                        ? `${post.content.slice(0, 120)}...`
+                        : post.content
+                    }
+                    excerptClassName="mt-1 truncate text-[13px] text-[#4c6488]"
+                    meta={
+                      <>
+                        <p>{formatRelativeDate(post.createdAt)}</p>
+                        <p className="mt-0.5 text-[11px] text-[#6a84ab]">
+                          조회 {post.viewCount.toLocaleString()} · 좋아요 {post.likeCount.toLocaleString()}
+                        </p>
+                      </>
+                    }
+                  />
                 );
               })}
             </div>
@@ -304,7 +286,7 @@ export default async function MyPostsPage({ searchParams }: MyPostsPageProps) {
             {currentPage > 1 ? (
               <Link
                 href={makeHref({ nextPage: currentPage - 1 })}
-                className="tp-btn-soft px-3 py-1.5 text-xs font-semibold text-[#315484]"
+                className="tp-btn-soft tp-btn-sm text-[#315484]"
               >
                 이전 페이지
               </Link>
@@ -313,7 +295,7 @@ export default async function MyPostsPage({ searchParams }: MyPostsPageProps) {
             {hasNext ? (
               <Link
                 href={makeHref({ nextPage: currentPage + 1 })}
-                className="tp-btn-soft px-3 py-1.5 text-xs font-semibold text-[#315484]"
+                className="tp-btn-soft tp-btn-sm text-[#315484]"
               >
                 다음 페이지
               </Link>

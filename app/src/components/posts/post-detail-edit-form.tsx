@@ -16,6 +16,7 @@ import {
   serializeEditorHtml,
 } from "@/lib/editor-content-serializer";
 import { GUEST_MAX_IMAGE_COUNT } from "@/lib/guest-post-policy";
+import { POST_CONTENT_MAX_LENGTH, POST_TITLE_MAX_LENGTH } from "@/lib/input-limits";
 import { renderLiteMarkdown } from "@/lib/markdown-lite";
 import { updatePostAction } from "@/server/actions/post";
 
@@ -353,6 +354,10 @@ export function PostDetailEditForm({
       setError("내용을 입력해 주세요.");
       return;
     }
+    if (serializedContent.length > POST_CONTENT_MAX_LENGTH) {
+      setError(`내용은 ${POST_CONTENT_MAX_LENGTH.toLocaleString("ko-KR")}자까지 입력할 수 있습니다.`);
+      return;
+    }
 
     setFormState((prev) => ({
       ...prev,
@@ -432,6 +437,7 @@ export function PostDetailEditForm({
             onChange={(event) =>
               setFormState((prev) => ({ ...prev, title: event.target.value }))
             }
+            maxLength={POST_TITLE_MAX_LENGTH}
             required
           />
         </label>
@@ -530,7 +536,13 @@ export function PostDetailEditForm({
           >
             미리보기
           </button>
-          <span className="ml-auto text-[#5a7398]">{formState.content.length.toLocaleString("ko-KR")}자</span>
+          <span
+            className={`ml-auto ${
+              formState.content.length > POST_CONTENT_MAX_LENGTH ? "text-rose-600" : "text-[#5a7398]"
+            }`}
+          >
+            {formState.content.length.toLocaleString("ko-KR")} / {POST_CONTENT_MAX_LENGTH.toLocaleString("ko-KR")}자
+          </span>
         </div>
 
         <div className="flex flex-wrap items-center gap-1.5 border-b border-[#dbe6f6] bg-white px-3 py-2 text-xs">

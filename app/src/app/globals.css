@@ -272,6 +272,46 @@ body {
   font-weight: 500;
 }
 
+.tp-text-primary {
+  color: #10284a;
+}
+
+.tp-text-heading {
+  color: #1f3f71;
+}
+
+.tp-text-muted {
+  color: #4f678d;
+}
+
+.tp-text-subtle {
+  color: #5a7398;
+}
+
+.tp-text-accent {
+  color: #315b9a;
+}
+
+.tp-text-link {
+  color: #2f5da4;
+}
+
+.tp-text-link:hover {
+  color: #244b86;
+}
+
+.tp-border-soft {
+  border-color: #dbe6f6;
+}
+
+.tp-surface-soft {
+  background: #f8fbff;
+}
+
+.tp-surface-alt {
+  background: #f7fbff;
+}
+
 @media (min-width: 640px) {
   .tp-eyebrow {
     font-size: 0.75rem;

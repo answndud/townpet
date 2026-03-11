@@ -11,20 +11,15 @@ import {
   isAnimalTagsRequiredCommonBoardPostType,
   isCommonBoardPostType,
 } from "@/lib/community-board";
+import { POST_CONTENT_MAX_LENGTH, POST_TITLE_MAX_LENGTH } from "@/lib/input-limits";
 import { isFreeBoardPostType } from "@/lib/post-type-groups";
 import { REVIEW_CATEGORY, REVIEW_CATEGORY_VALUES, type ReviewCategory } from "@/lib/review-category";
 import { isTrustedUploadUrl } from "@/lib/upload-url";
-
-const optionalTrimmedString = z.preprocess(
-  (value) => {
-    if (typeof value !== "string") {
-      return value;
-    }
-    const trimmed = value.trim();
-    return trimmed.length > 0 ? trimmed : undefined;
-  },
-  z.string().min(1).optional(),
-);
+import {
+  optionalTrimmedNonEmptyString,
+  optionalTrimmedString,
+  trimmedRequiredString,
+} from "@/lib/validations/text";
 
 const optionalInt = (options: { min: number; max?: number }) =>
   z.preprocess(
@@ -97,16 +92,16 @@ const imageUrlSchema = z
   .refine((value) => isTrustedUploadUrl(value), "허용된 업로드 이미지 URL만 사용할 수 있습니다.");
 
 export const postCreateSchema = z.object({
-  title: z.string().min(1).max(120),
-  content: z.string().min(1),
+  title: trimmedRequiredString({ max: POST_TITLE_MAX_LENGTH }),
+  content: trimmedRequiredString({ max: POST_CONTENT_MAX_LENGTH }),
   type: z.nativeEnum(PostType),
   scope: z.nativeEnum(PostScope).default(PostScope.LOCAL),
   neighborhoodId: z.string().cuid().optional(),
   petTypeId: z.string().cuid().optional(),
   reviewCategory: z.enum(REVIEW_CATEGORY_VALUES).optional(),
-  animalTags: z.array(z.string().trim().min(1).max(24)).max(5).optional().default([]),
+  animalTags: z.array(trimmedRequiredString({ max: 24 })).max(5).optional().default([]),
   imageUrls: z.array(imageUrlSchema).max(10).optional().default([]),
-  guestDisplayName: z.string().trim().min(2).max(24).optional(),
+  guestDisplayName: optionalTrimmedString({ min: 2, max: 24 }),
   guestPassword: z.string().min(4).max(32).optional(),
 })
   .superRefine((value, ctx) => {
@@ -174,23 +169,23 @@ export const postCreateSchema = z.object({
   });
 
 export const hospitalReviewSchema = z.object({
-  hospitalName: optionalTrimmedString,
-  treatmentType: optionalTrimmedString,
+  hospitalName: optionalTrimmedString(),
+  treatmentType: optionalTrimmedString(),
   totalCost: optionalInt({ min: 0 }),
   waitTime: optionalInt({ min: 0 }),
   rating: optionalInt({ min: 1, max: 5 }),
 });
 
 export const placeReviewSchema = z.object({
-  placeName: optionalTrimmedString,
-  placeType: optionalTrimmedString,
-  address: optionalTrimmedString,
+  placeName: optionalTrimmedString(),
+  placeType: optionalTrimmedString(),
+  address: optionalTrimmedString(),
   isPetAllowed: optionalBoolean,
   rating: optionalInt({ min: 1, max: 5 }),
 });
 
 export const walkRouteSchema = z.object({
-  routeName: optionalTrimmedString,
+  routeName: optionalTrimmedString(),
   distance: optionalFloat(0),
   duration: optionalInt({ min: 0 }),
   difficulty: z
@@ -206,23 +201,23 @@ export const walkRouteSchema = z.object({
 });
 
 export const adoptionListingSchema = z.object({
-  shelterName: optionalTrimmedString,
-  region: optionalTrimmedString,
-  animalType: optionalTrimmedString,
-  breed: optionalTrimmedString,
-  ageLabel: optionalTrimmedString,
+  shelterName: optionalTrimmedString(),
+  region: optionalTrimmedString(),
+  animalType: optionalTrimmedString(),
+  breed: optionalTrimmedString(),
+  ageLabel: optionalTrimmedString(),
   sex: optionalNativeEnum(AnimalSex),
   isNeutered: optionalBoolean,
   isVaccinated: optionalBoolean,
-  sizeLabel: optionalTrimmedString,
+  sizeLabel: optionalTrimmedString(),
   status: optionalNativeEnum(AdoptionStatus),
 });
 
 export const volunteerRecruitmentSchema = z.object({
-  shelterName: optionalTrimmedString,
-  region: optionalTrimmedString,
+  shelterName: optionalTrimmedString(),
+  region: optionalTrimmedString(),
   volunteerDate: optionalDate,
-  volunteerType: optionalTrimmedString,
+  volunteerType: optionalTrimmedString(),
   capacity: optionalInt({ min: 1, max: 999 }),
   status: optionalNativeEnum(VolunteerRecruitmentStatus),
 });
@@ -264,8 +259,8 @@ export const postListSchema = z.object({
 
 export const postUpdateSchema = z
   .object({
-    title: z.string().min(1).max(120).optional(),
-    content: z.string().min(1).optional(),
+    title: optionalTrimmedNonEmptyString({ max: POST_TITLE_MAX_LENGTH }),
+    content: optionalTrimmedNonEmptyString({ max: POST_CONTENT_MAX_LENGTH }),
     scope: z.nativeEnum(PostScope).optional(),
     neighborhoodId: z.string().cuid().optional().nullable(),
     imageUrls: z.array(imageUrlSchema).max(10).optional(),

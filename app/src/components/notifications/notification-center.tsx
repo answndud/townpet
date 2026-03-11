@@ -290,12 +290,12 @@ export function NotificationCenter({
   return (
     <>
       <header className="tp-hero p-5 sm:p-6">
-        <p className="text-[11px] uppercase tracking-[0.24em] text-[#3f5f90]">알림 센터</p>
-        <h1 className="tp-text-page-title mt-2 text-[#10284a]">
+        <p className="tp-eyebrow">알림 센터</p>
+        <h1 className="tp-text-page-title tp-text-primary mt-2">
           내 알림
         </h1>
-        <p className="mt-2 text-sm text-[#4f678d]">미확인 알림 {globalUnreadCount}건</p>
-        <p className="mt-1 text-xs text-[#5f79a0]">
+        <p className="tp-text-muted mt-2 text-sm">미확인 알림 {globalUnreadCount}건</p>
+        <p className="tp-text-subtle mt-1 text-xs">
           읽음 처리 후에도 목록에 남아 있으며, 보관한 알림만 목록에서 숨겨집니다.
         </p>
         <div className="mt-4 flex flex-wrap items-center gap-2">
@@ -340,7 +340,7 @@ export function NotificationCenter({
 
       <section className="tp-card overflow-hidden">
         {items.length === 0 ? (
-          <div className="px-5 py-10 text-center text-sm text-[#5f79a0]">
+          <div className="tp-text-subtle px-5 py-10 text-center text-sm">
             {unreadOnly ? "미확인 알림이 없습니다." : "도착한 알림이 없습니다."}
           </div>
         ) : (
@@ -354,15 +354,15 @@ export function NotificationCenter({
                 <article
                   key={notification.id}
                   data-testid={`notification-item-${notification.id}`}
-                  className={`px-5 py-4 ${notification.isRead ? "bg-white" : "bg-[#f7fbff]"}`}
+                  className={`px-5 py-4 ${notification.isRead ? "bg-white" : "tp-surface-alt"}`}
                 >
-                  <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-[#5f79a0]">
+                  <div className="tp-text-subtle flex flex-wrap items-center justify-between gap-2 text-xs">
                     <span>{actorLabel}</span>
                     <span>{formatKoreanDateTime(notification.createdAt)}</span>
                   </div>
-                  <p className="tp-text-card-title mt-1 text-[#163462]">{notification.title}</p>
+                  <p className="tp-text-card-title tp-text-heading mt-1">{notification.title}</p>
                   {notification.body ? (
-                    <p className="mt-1 text-[13px] text-[#4f678d]">{notification.body}</p>
+                    <p className="tp-text-muted mt-1 text-[13px]">{notification.body}</p>
                   ) : null}
                   <div className="mt-3 flex flex-wrap items-center gap-2">
                     <button
@@ -394,7 +394,7 @@ export function NotificationCenter({
                         읽음 처리
                       </button>
                     ) : (
-                      <span className="rounded-md border border-[#d7e3f5] bg-[#f4f8ff] px-2.5 py-1 text-xs text-[#5f79a0]">
+                      <span className="tp-text-subtle rounded-md border border-[#d7e3f5] bg-[#f4f8ff] px-2.5 py-1 text-xs">
                         읽음
                       </span>
                     )}
@@ -445,7 +445,7 @@ export function NotificationCenter({
           </Link>
         </div>
       ) : items.length > 0 ? (
-        <p className="text-xs text-[#5f79a0]">마지막 알림까지 모두 확인했습니다.</p>
+        <p className="tp-text-subtle text-xs">마지막 알림까지 모두 확인했습니다.</p>
       ) : null}
     </>
   );

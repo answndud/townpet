@@ -26,6 +26,22 @@
 
 ## Active Plan
 
+### Cycle 304: 폼 입력값 검증 하드닝 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 게시글/댓글/신고 입력의 공백-only 서버 검증과 길이 정책을 일관화 | Codex | P0 | `done` | 게시글 제목/본문, 댓글, 신고 추가설명이 서버에서 `trim + 공백-only 차단`을 적용하고, 게시글 본문은 hard max length가 생기며, create/edit/comment/report 폼이 같은 한도를 UI에도 반영한다 | `PLAN.md`, `PROGRESS.md`, `app/src/lib/input-limits.ts`, `app/src/lib/validations/text.ts`, `app/src/lib/validations/post.ts`, `app/src/lib/validations/comment.ts`, `app/src/lib/validations/report.ts`, `app/src/components/posts/post-create-form.tsx`, `app/src/components/posts/post-detail-edit-form.tsx`, `app/src/components/posts/post-comment-thread.tsx`, `app/src/components/posts/post-report-form.tsx` |
+| 금지어 필터의 Unicode/zero-width 우회를 줄이는 정규화 보강 | Codex | P0 | `done` | forbidden keyword matching이 NFC/NFKC 정규화와 zero-width/기호 compact 비교를 사용하고, 공백·구두점·조합형 한글 우회 회귀 테스트가 존재한다 | `PLAN.md`, `PROGRESS.md`, `docs/security/보안_진행상황.md`, `app/src/lib/text-normalization.ts`, `app/src/lib/forbidden-keyword-policy.ts`, `app/src/lib/forbidden-keyword-policy.test.ts` |
+
+### Cycle 303: 헤더/모바일 네비 밀도 정리 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 헤더 상단 링크를 그룹화하고 모바일 빠른 이동/관심 동물 패널을 더 간결하게 정리 | Codex | P2 | `done` | 데스크톱 헤더는 시각적 구분선 대신 그룹화된 nav/action cluster를 사용하고, `FeedHoverMenu`/`NotificationBell`/헤더 링크가 공용 상단 링크 클래스를 재사용하며, 모바일 `FeedHoverMenu` 패널이 더 카드다운 summary/pill 스타일로 정리되고 관련 class 테스트가 존재한다 | `PLAN.md`, `PROGRESS.md`, `app/src/components/navigation/app-shell-header-class.ts`, `app/src/components/navigation/app-shell-header-class.test.ts`, `app/src/components/navigation/app-shell-header.tsx`, `app/src/components/navigation/feed-hover-menu.tsx`, `app/src/components/notifications/notification-bell.tsx` |
+
+### Cycle 302: 목록 카드 공통화 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 피드/검색/북마크/내 글 목록 카드 골격과 컨텍스트 칩을 공용 컴포넌트로 정리 | Codex | P2 | `done` | 피드, 검색, 북마크, 내 글이 공용 목록 shell과 컨텍스트 칩 컴포넌트를 재사용하고, `내 글` 상단 필터도 정리된 공용 pill 스타일을 사용하며, 공용 목록 컴포넌트 렌더링 회귀 테스트가 존재한다 | `PLAN.md`, `PROGRESS.md`, `app/src/components/posts/post-list-item-shell.tsx`, `app/src/components/posts/post-list-item-shell.test.tsx`, `app/src/components/posts/post-list-context-badges.tsx`, `app/src/components/posts/feed-infinite-list.tsx`, `app/src/app/search/page.tsx`, `app/src/app/bookmarks/page.tsx`, `app/src/app/my-posts/page.tsx` |
+
 ### Cycle 301: 공용 디자인 언어 정리 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|

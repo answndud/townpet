@@ -27,6 +27,7 @@ import {
   markupToEditorHtml,
   serializeEditorHtml,
 } from "@/lib/editor-content-serializer";
+import { POST_CONTENT_MAX_LENGTH, POST_TITLE_MAX_LENGTH } from "@/lib/input-limits";
 import { REVIEW_CATEGORY, type ReviewCategory } from "@/lib/review-category";
 import { createPostAction } from "@/server/actions/post";
 
@@ -740,6 +741,10 @@ export function PostCreateForm({
       setError("내용을 입력해 주세요.");
       return;
     }
+    if (serializedContent.length > POST_CONTENT_MAX_LENGTH) {
+      setError(`내용은 ${POST_CONTENT_MAX_LENGTH.toLocaleString("ko-KR")}자까지 입력할 수 있습니다.`);
+      return;
+    }
 
     const normalizedAnimalTags = formState.animalTagsInput
       .split(",")
@@ -966,6 +971,7 @@ export function PostCreateForm({
               onChange={(event) =>
                 setFormState((prev) => ({ ...prev, title: event.target.value }))
               }
+              maxLength={POST_TITLE_MAX_LENGTH}
               placeholder="제목을 입력해 주세요"
               required
             />
@@ -1132,7 +1138,13 @@ export function PostCreateForm({
 
       <section className="tp-card overflow-hidden">
         <div className="flex flex-wrap items-center gap-2 border-b border-[#dbe6f6] bg-[#f8fbff] px-3 py-2 text-xs">
-          <span className="ml-auto text-[#5a7398]">{formState.content.length.toLocaleString("ko-KR")}자</span>
+          <span
+            className={`ml-auto ${
+              formState.content.length > POST_CONTENT_MAX_LENGTH ? "text-rose-600" : "text-[#5a7398]"
+            }`}
+          >
+            {formState.content.length.toLocaleString("ko-KR")} / {POST_CONTENT_MAX_LENGTH.toLocaleString("ko-KR")}자
+          </span>
         </div>
 
         <div className="flex flex-wrap items-center gap-1.5 border-b border-[#dbe6f6] bg-white px-3 py-2 text-xs sm:hidden">

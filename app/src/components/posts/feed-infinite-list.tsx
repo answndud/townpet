@@ -6,6 +6,7 @@ import type { PostType } from "@prisma/client";
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 
 import { FeedPostMetaBadges } from "@/components/posts/feed-post-meta-badges";
+import { PostListItemShell } from "@/components/posts/post-list-item-shell";
 import { PostSignalIcons } from "@/components/posts/post-signal-icons";
 import type {
   FeedAudienceSourceValue,
@@ -571,63 +572,67 @@ export function FeedInfiniteList({
                   </Link>
                 </article>
               ) : null}
-              <article
-                data-testid="feed-post-item"
-                className={`grid grid-cols-[minmax(0,1fr)_112px] items-start gap-x-2.5 gap-y-0.5 px-3 py-2 transition hover:bg-[#f8fbff] sm:grid-cols-[minmax(0,1fr)_140px] sm:gap-x-3 sm:px-4 sm:py-2 md:grid-cols-[minmax(0,1fr)_196px] md:items-center ${
+              <PostListItemShell
+                testId="feed-post-item"
+                href={preferGuestDetail ? `/posts/${post.id}/guest` : `/posts/${post.id}`}
+                prefetch={preferGuestDetail ? true : false}
+                articleClassName={`grid grid-cols-[minmax(0,1fr)_112px] items-start gap-x-2.5 gap-y-0.5 px-3 py-2 transition hover:bg-[#f8fbff] sm:grid-cols-[minmax(0,1fr)_140px] sm:gap-x-3 sm:px-4 sm:py-2 md:grid-cols-[minmax(0,1fr)_196px] md:items-center ${
                   post.status === "HIDDEN" ? "bg-[#fff5f5]" : ""
                 }`}
-              >
-                <div className="min-w-0">
-                  <Link
-                    href={
-                      preferGuestDetail ? `/posts/${post.id}/guest` : `/posts/${post.id}`
-                    }
-                    prefetch={preferGuestDetail ? true : false}
-                    className={`tp-text-card-title flex min-w-0 items-center gap-1 transition ${
-                      readPostIds.has(post.id)
-                        ? "text-[#8c9db8] hover:text-[#7589a8]"
-                        : "text-[#1e3f74] hover:text-[#2f5da4]"
-                    } visited:text-[#8c9db8]`}
-                    onClick={() => {
-                      markPostAsRead(post.id);
-                      trackPersonalizationEvent("POST_CLICK", {
-                        postId: post.id,
-                      });
-                    }}
-                  >
-                    <span className="overflow-hidden leading-[1.32] [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]">
-                      {post.title}
-                    </span>
+                title={
+                  <span className="overflow-hidden leading-[1.32] [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]">
+                    {post.title}
+                  </span>
+                }
+                titleSuffix={
+                  <>
                     <PostSignalIcons signals={signals} />
                     {post.commentCount > 0 ? (
                       <span className="shrink-0 text-[#2f5da4]">[{post.commentCount}]</span>
                     ) : null}
-                  </Link>
-                  {adoptionSummary || volunteerSummary ? (
-                    <p className="mt-px hidden truncate text-[11px] text-[#6b83a6] sm:block">
-                      {adoptionSummary ?? volunteerSummary}
-                    </p>
-                  ) : null}
-                  {locationLabel || petTypeLabel ? (
-                    <p className="hidden truncate text-[11px] text-[#6a82a6] sm:block">
-                      {[locationLabel, petTypeLabel].filter(Boolean).join(" · ")}
-                    </p>
-                  ) : null}
-                </div>
-
-                <div className="min-w-0 self-start text-right text-[10px] text-[#4f678d] sm:self-center sm:text-[11px]">
-                  <FeedPostMetaBadges
-                    label={meta.label}
-                    chipClass={meta.chipClass}
-                    status={post.status}
-                    className="mb-1 justify-end"
-                  />
-                  <div className="min-w-0">
-                    <p className="font-semibold text-[#1f3f71]">{authorNode}</p>
-                    <p className="mt-0.5 break-keep text-[#5a759c]">{statsLabel}</p>
-                  </div>
-                </div>
-              </article>
+                  </>
+                }
+                titleLinkClassName={`tp-text-card-title flex min-w-0 items-center gap-1 transition ${
+                  readPostIds.has(post.id)
+                    ? "text-[#8c9db8] hover:text-[#7589a8]"
+                    : "text-[#1e3f74] hover:text-[#2f5da4]"
+                } visited:text-[#8c9db8]`}
+                onTitleClick={() => {
+                  markPostAsRead(post.id);
+                  trackPersonalizationEvent("POST_CLICK", {
+                    postId: post.id,
+                  });
+                }}
+                bottomContent={
+                  <>
+                    {adoptionSummary || volunteerSummary ? (
+                      <p className="mt-px hidden truncate text-[11px] text-[#6b83a6] sm:block">
+                        {adoptionSummary ?? volunteerSummary}
+                      </p>
+                    ) : null}
+                    {locationLabel || petTypeLabel ? (
+                      <p className="hidden truncate text-[11px] text-[#6a82a6] sm:block">
+                        {[locationLabel, petTypeLabel].filter(Boolean).join(" · ")}
+                      </p>
+                    ) : null}
+                  </>
+                }
+                metaClassName="min-w-0 self-start text-right text-[10px] text-[#4f678d] sm:self-center sm:text-[11px]"
+                meta={
+                  <>
+                    <FeedPostMetaBadges
+                      label={meta.label}
+                      chipClass={meta.chipClass}
+                      status={post.status}
+                      className="mb-1 justify-end"
+                    />
+                    <div className="min-w-0">
+                      <p className="font-semibold text-[#1f3f71]">{authorNode}</p>
+                      <p className="mt-0.5 break-keep text-[#5a759c]">{statsLabel}</p>
+                    </div>
+                  </>
+                }
+              />
             </div>
           );
         })}

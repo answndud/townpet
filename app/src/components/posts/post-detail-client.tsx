@@ -374,8 +374,8 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
       <div className="tp-page-bg min-h-screen pb-16">
         <main className="mx-auto flex max-w-[1000px] flex-col gap-4 px-4 pb-10 pt-8 sm:px-6 lg:px-8">
           <div className="rounded-xl border border-[#f0d3d3] bg-white p-6 text-center">
-            <h2 className="text-lg font-semibold text-[#153a6a]">게시글을 불러오지 못했습니다.</h2>
-            <p className="mt-2 text-sm text-[#5a7398]">{error}</p>
+            <h2 className="tp-text-heading text-lg font-semibold">게시글을 불러오지 못했습니다.</h2>
+            <p className="tp-text-subtle mt-2 text-sm">{error}</p>
             <div className="mt-4 flex flex-wrap justify-center gap-2 text-xs">
               <button
                 type="button"
@@ -404,7 +404,7 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
     return (
       <div className="tp-page-bg min-h-screen pb-16">
         <main className="mx-auto flex max-w-[1000px] flex-col gap-4 px-4 pb-10 pt-8 sm:px-6 lg:px-8">
-          <div className="rounded-xl border border-[#dbe6f6] bg-white p-6 text-center text-sm text-[#6a84ac]">
+          <div className="tp-border-soft tp-text-subtle rounded-xl border bg-white p-6 text-center text-sm">
             게시글을 불러오는 중...
           </div>
         </main>
@@ -489,7 +489,7 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
             <div className="flex flex-wrap items-center gap-2 text-xs">
               <PostBoardLinkChip type={post.type} label={meta.label} chipClass={meta.chipClass} />
               {post.neighborhood ? (
-                <span className="border border-[#dbe5f3] bg-white px-2.5 py-0.5 text-[#5d789f]">
+                <span className="tp-chip-base tp-chip-muted">
                   {post.neighborhood.city} {post.neighborhood.name}
                 </span>
               ) : null}
@@ -497,13 +497,13 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
 
             <div className="mt-3 grid gap-3 border-b border-[#e0e9f5] pb-4 md:mt-4 md:gap-4 md:pb-5 md:grid-cols-[minmax(0,1fr)_260px] md:items-start">
               <div>
-                <h1 className="tp-text-post-title text-[#10284a]">
+                <h1 className="tp-text-post-title tp-text-primary">
                   {post.title}
                 </h1>
               </div>
-              <div className="text-[13px] text-[#4f678d] md:text-right">
+              <div className="tp-text-muted text-[13px] md:text-right">
                 <div className="flex items-start justify-between gap-3 md:flex-col md:items-end">
-                  <p className="min-w-0 break-all font-semibold text-[#1f3f71]">
+                  <p className="tp-text-heading min-w-0 break-all font-semibold">
                     {guestPostMeta.isGuestPost ? (
                       <span>
                         {displayAuthorName}
@@ -511,21 +511,21 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
                           ? ` (${guestPostMeta.guestIpLabel ?? "아이피"} ${guestPostMeta.guestIpDisplay})`
                           : ""}
                       </span>
-                    ) : (
-                      <Link href={`/users/${post.author.id}`} className="hover:text-[#2f5da4]">
+                      ) : (
+                      <Link href={`/users/${post.author.id}`} className="tp-text-link">
                         {displayAuthorName}
                       </Link>
                     )}
                   </p>
-                  <p className="text-[11px] text-[#5a759c]">{formatRelativeDate(createdAt)}</p>
+                  <p className="tp-text-subtle text-[11px]">{formatRelativeDate(createdAt)}</p>
                 </div>
-                <p className="tp-text-meta mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[#5f7da8] md:justify-end">
+                <p className="tp-text-meta tp-text-subtle mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 md:justify-end">
                   <span>조회 {resolvedViewCount.toLocaleString()}</span>
                   <span>좋아요 {resolvedLikeCount.toLocaleString()}</span>
                   <span>싫어요 {resolvedDislikeCount.toLocaleString()}</span>
                   <span>댓글 {resolvedCommentCount.toLocaleString()}</span>
                 </p>
-                <details className="mt-1 text-[11px] text-[#6b84ab] md:text-right">
+                <details className="tp-text-subtle mt-1 text-[11px] md:text-right">
                   <summary className="cursor-pointer list-none font-semibold text-[#5878a2]">상세 정보</summary>
                   <p className="mt-1 leading-5">
                     {createdAt.toLocaleDateString("ko-KR")} ·{" "}
@@ -545,7 +545,7 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
               </div>
             </div>
 
-            <section className="mt-3 rounded-xl border border-[#dbe6f6] bg-[#fcfdff] px-3 py-3.5 sm:mt-4 sm:px-5 sm:py-4">
+            <section className="tp-border-soft mt-3 rounded-xl border bg-[#fcfdff] px-3 py-3.5 sm:mt-4 sm:px-5 sm:py-4">
               <h2 className="mb-2 text-[11px] font-semibold tracking-[0.14em] text-[#4f6f9f]">내용</h2>
               <article className="tp-text-body text-[#17345f]">
                 {shouldUsePlainFallback ? (
@@ -557,7 +557,7 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
                   />
                 )}
                 {orderedImages.length > 0 ? (
-                  <div className="mt-5 border border-[#dbe6f6] bg-[#f8fbff] px-3 py-2.5">
+                  <div className="tp-border-soft tp-surface-soft mt-5 border px-3 py-2.5">
                     <p className="text-[11px] font-semibold tracking-[0.08em] text-[#4f6f9f]">첨부파일</p>
                     <ul className="mt-2 space-y-1">
                       {orderedImages.map((image, index) => {
@@ -567,7 +567,7 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
                             <Link
                               href={image.url}
                               target="_blank"
-                              className="break-all text-[#2f5da4] underline decoration-[#9db8df] underline-offset-2 hover:text-[#254e8a]"
+                              className="tp-text-link break-all underline decoration-[#9db8df] underline-offset-2"
                             >
                               {fileName}
                             </Link>
@@ -581,7 +581,7 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
             </section>
 
             <div className="mt-3 space-y-2 border-b border-[#e0e9f5] pb-3 sm:mt-4 sm:space-y-3 sm:pb-4">
-              <div className="rounded-xl border border-[#d8e4f6] bg-[#f8fbff] px-2.5 py-2.5 sm:px-3 sm:py-3">
+              <div className="tp-surface-soft rounded-xl border border-[#d8e4f6] px-2.5 py-2.5 sm:px-3 sm:py-3">
                 <div className="grid gap-2 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
                   <div className="hidden sm:block" aria-hidden="true" />
                   <div className="flex justify-center sm:justify-self-center">
@@ -624,7 +624,7 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
                     <summary className="tp-btn-soft tp-btn-sm inline-flex items-center">
                       글 관리
                     </summary>
-                    <div className="mt-2 flex flex-wrap items-center gap-2 rounded-xl border border-[#dbe6f6] bg-[#f8fbff] p-2">
+                    <div className="tp-border-soft tp-surface-soft mt-2 flex flex-wrap items-center gap-2 rounded-xl border p-2">
                       <Link
                         href={`/posts/${post.id}/edit`}
                         className="tp-btn-soft tp-btn-sm inline-flex items-center"
@@ -648,7 +648,7 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
             ) : null}
 
             {canReportPost && canInteract && !isAuthor && canInteractWithPostOwner ? (
-              <details className="mt-3 rounded-lg border border-[#d9e5f7] bg-[#fbfdff] px-3 py-2.5">
+              <details className="tp-border-soft mt-3 rounded-lg border bg-[#fbfdff] px-3 py-2.5">
                 <summary className="tp-btn-soft tp-btn-xs inline-flex cursor-pointer items-center">게시글 신고</summary>
                 <div className="mt-2 rounded-lg border border-[#e3ebf8] bg-white p-3">
                   <PostReportForm targetId={post.id} />
