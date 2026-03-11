@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { PostScope, PostType } from "@prisma/client";
 
 import { HighlightText } from "@/components/content/highlight-text";
+import { PostListContextBadges } from "@/components/posts/post-list-context-badges";
+import { PostListItemShell } from "@/components/posts/post-list-item-shell";
 import { FeedSearchForm } from "@/components/posts/feed-search-form";
 import { EmptyState } from "@/components/ui/empty-state";
 import { auth } from "@/lib/auth";
@@ -264,49 +266,43 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                   );
 
                 return (
-                  <article
+                  <PostListItemShell
                     key={post.id}
-                    className="grid gap-3 px-4 py-4 sm:px-5 md:grid-cols-[minmax(0,1fr)_168px] md:items-start"
-                  >
-                    <div className="min-w-0">
-                      <div className="mb-2 flex flex-wrap items-center gap-1.5">
-                        <span className={`tp-chip-base ${meta.chipClass}`}>
-                          <span>{meta.icon}</span>
-                          {meta.label}
-                        </span>
-                        <span className="tp-chip-base tp-chip-muted">
-                          {post.neighborhood
+                    href={isAuthenticated ? `/posts/${post.id}` : `/posts/${post.id}/guest`}
+                    articleClassName="grid gap-3 px-4 py-4 sm:px-5 md:grid-cols-[minmax(0,1fr)_168px] md:items-start"
+                    topContent={
+                      <PostListContextBadges
+                        label={meta.label}
+                        chipClass={meta.chipClass}
+                        locationLabel={
+                          post.neighborhood
                             ? `${post.neighborhood.city} ${post.neighborhood.name}`
-                            : "전체"}
-                        </span>
-                      </div>
-
-                      <Link
-                        href={
-                          isAuthenticated
-                            ? `/posts/${post.id}`
-                            : `/posts/${post.id}/guest`
+                            : "전체"
                         }
-                        className="tp-text-card-title flex min-w-0 items-center gap-1 text-[#10284a] transition hover:text-[#2f5da4]"
-                      >
-                        <span className="overflow-hidden [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]">
-                          <HighlightText text={post.title} query={query} />
-                        </span>
-                        {post.commentCount > 0 ? (
-                          <span className="shrink-0 text-[#2f5da4]">[{post.commentCount}]</span>
-                        ) : null}
-                      </Link>
-                      <p className="mt-1 line-clamp-3 text-[13px] leading-5 text-[#4c6488]">
-                        <HighlightText text={excerpt} query={query} />
-                      </p>
-                    </div>
-                    <div className="text-xs text-[#5f79a0] md:text-right">
-                      <p className="font-semibold text-[#1f3f71]">{authorNode}</p>
-                      <p className="mt-0.5 text-[11px] text-[#6a84ab]">
-                        {formatRelativeDate(post.createdAt)} · 댓글 {post.commentCount}
-                      </p>
-                    </div>
-                  </article>
+                      />
+                    }
+                    title={
+                      <span className="overflow-hidden [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]">
+                        <HighlightText text={post.title} query={query} />
+                      </span>
+                    }
+                    titleSuffix={
+                      post.commentCount > 0 ? (
+                        <span className="shrink-0 text-[#2f5da4]">[{post.commentCount}]</span>
+                      ) : null
+                    }
+                    excerpt={<HighlightText text={excerpt} query={query} />}
+                    excerptClassName="mt-1 line-clamp-3 text-[13px] leading-5 text-[#4c6488]"
+                    meta={
+                      <>
+                        <p className="font-semibold text-[#1f3f71]">{authorNode}</p>
+                        <p className="mt-0.5 text-[11px] text-[#6a84ab]">
+                          {formatRelativeDate(post.createdAt)} · 댓글 {post.commentCount}
+                        </p>
+                      </>
+                    }
+                    metaClassName="text-xs text-[#5f79a0] md:text-right"
+                  />
                 );
               })}
             </div>

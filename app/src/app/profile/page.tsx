@@ -120,11 +120,11 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
     <div className="tp-page-bg min-h-screen pb-16">
       <main className="mx-auto flex w-full max-w-[1320px] flex-col gap-5 px-4 py-6 sm:px-6 lg:px-10">
         <header className="tp-hero p-5 sm:p-6">
-          <p className="text-[11px] uppercase tracking-[0.24em] text-[#3f5f90]">내 프로필</p>
-          <h1 className="tp-text-page-title mt-2 text-[#10284a]">
+          <p className="tp-eyebrow">내 프로필</p>
+          <h1 className="tp-text-page-title tp-text-primary mt-2">
             계정 활동 요약
           </h1>
-          <p className="mt-2 text-sm text-[#4f678d]">
+          <p className="tp-text-muted mt-2 text-sm">
             작성 내역과 동네 설정 상태를 한눈에 확인할 수 있습니다.
           </p>
 
@@ -155,7 +155,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
                 <span className="sr-only">프로필 이미지 없음</span>
               </div>
             )}
-            <p className="text-xs text-[#5a7398]">프로필 사진은 내 프로필 섹션에서 수정할 수 있습니다.</p>
+            <p className="tp-text-subtle text-xs">프로필 사진은 내 프로필 섹션에서 수정할 수 있습니다.</p>
           </div>
         </header>
 
@@ -174,7 +174,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
         ) : null}
 
         {accountNotice ? (
-          <section className="rounded-xl border border-[#dbe6f6] bg-[#f8fbff] px-4 py-4 text-sm text-[#315b9a]">
+          <section className="tp-border-soft tp-surface-soft tp-text-accent rounded-xl border px-4 py-4 text-sm">
             {accountNotice}
           </section>
         ) : null}
@@ -197,8 +197,8 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
         </section>
 
         <section className="tp-card p-5 sm:p-6">
-          <h2 className="tp-text-section-title text-[#153a6a]">계정 정보</h2>
-          <div className="mt-4 grid gap-2 text-sm text-[#355988]">
+          <h2 className="tp-text-section-title tp-text-heading">계정 정보</h2>
+          <div className="tp-text-muted mt-4 grid gap-2 text-sm">
             <div>닉네임: {user.nickname ?? "미설정"}</div>
             <div>소개: {user.bio?.trim() ? user.bio : "미설정"}</div>
             <div className="break-all">이메일: {user.email}</div>
@@ -217,7 +217,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
                 {passwordSetupCopy.profileLinkLabel}
               </Link>
             ) : (
-              <p className="text-[11px] text-[#5a7398]">
+              <p className="tp-text-subtle text-[11px]">
                 {getPasswordManagementUnavailableMessage()}
               </p>
             )}
@@ -254,12 +254,12 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
               breedCatalogBySpecies={breedCatalogBySpecies}
             />
             <section className="tp-card p-5 sm:p-6">
-              <h2 className="tp-text-section-title text-[#153a6a]">개인화 세그먼트</h2>
-              <p className="mt-2 text-xs text-[#5a7398]">
+              <h2 className="tp-text-section-title tp-text-heading">개인화 세그먼트</h2>
+              <p className="tp-text-subtle mt-2 text-xs">
                 반려동물 프로필에서 계산한 맞춤 피드/품종 라운지 기준입니다.
               </p>
               {audienceSegments.length === 0 ? (
-                <p className="mt-4 text-sm text-[#5a7398]">
+                <p className="tp-text-subtle mt-4 text-sm">
                   반려동물 프로필에 품종, 체급, 생애단계를 입력하면 맞춤 세그먼트가 생성됩니다.
                 </p>
               ) : (
@@ -267,15 +267,15 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
                   {audienceSegments.map((segment) => (
                     <article
                       key={segment.id}
-                      className="rounded-lg border border-[#dbe5f3] bg-[#f8fbff] p-3"
+                      className="tp-border-soft tp-surface-soft rounded-lg border p-3"
                     >
                       <div className="flex flex-wrap items-center justify-between gap-2">
-                        <p className="tp-text-card-title text-[#1f3f71]">{segment.label}</p>
-                        <span className="rounded-full border border-[#c8daf5] bg-white px-2 py-0.5 text-[11px] font-semibold text-[#315b9a]">
+                        <p className="tp-text-card-title tp-text-heading">{segment.label}</p>
+                        <span className="tp-text-accent rounded-full border border-[#c8daf5] bg-white px-2 py-0.5 text-[11px] font-semibold">
                           신뢰도 {Math.round(segment.confidenceScore * 100)}%
                         </span>
                       </div>
-                      <p className="mt-1 text-xs text-[#5a7398]">
+                      <p className="tp-text-subtle mt-1 text-xs">
                         {[
                           segment.breedCode ? `품종 ${segment.breedCode}` : null,
                           getPetSizeClassLabel(segment.sizeClass),
@@ -299,26 +299,26 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
             </section>
 
             <section className="tp-card p-5 sm:p-6">
-              <h2 className="tp-text-section-title text-[#153a6a]">사용자 관계 관리</h2>
-              <p className="mt-2 text-xs text-[#5a7398]">
+              <h2 className="tp-text-section-title tp-text-heading">사용자 관계 관리</h2>
+              <p className="tp-text-subtle mt-2 text-xs">
                 차단/뮤트한 사용자를 여기서 바로 해제할 수 있습니다.
               </p>
 
               <div className="mt-4 grid gap-4 lg:grid-cols-2">
                 <div className="tp-soft-card p-4">
-                  <h3 className="tp-text-card-title text-[#1f3f71]">
+                  <h3 className="tp-text-card-title tp-text-heading">
                     차단 목록 ({blockedUsers.length})
                   </h3>
                   {blockedUsers.length === 0 ? (
-                    <p className="mt-3 text-xs text-[#5a7398]">차단한 사용자가 없습니다.</p>
+                    <p className="tp-text-subtle mt-3 text-xs">차단한 사용자가 없습니다.</p>
                   ) : (
                     <div className="mt-3 space-y-3">
                       {blockedUsers.map((entry) => (
                         <div key={entry.id} className="rounded-lg border border-[#c9d8ef] bg-white px-3 py-2 text-xs text-[#355988]">
-                          <p className="break-all font-semibold text-[#1f3f71]">
+                          <p className="tp-text-heading break-all font-semibold">
                             {entry.blocked?.nickname ?? entry.blocked?.email ?? entry.blockedId}
                           </p>
-                          <p className="mt-0.5 text-[11px] text-[#5a7398]">
+                          <p className="tp-text-subtle mt-0.5 text-[11px]">
                             {entry.createdAt.toLocaleString("ko-KR")}
                           </p>
                           <div className="mt-2">
@@ -342,19 +342,19 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
                 </div>
 
                 <div className="tp-soft-card p-4">
-                  <h3 className="tp-text-card-title text-[#1f3f71]">
+                  <h3 className="tp-text-card-title tp-text-heading">
                     뮤트 목록 ({mutedUsers.length})
                   </h3>
                   {mutedUsers.length === 0 ? (
-                    <p className="mt-3 text-xs text-[#5a7398]">뮤트한 사용자가 없습니다.</p>
+                    <p className="tp-text-subtle mt-3 text-xs">뮤트한 사용자가 없습니다.</p>
                   ) : (
                     <div className="mt-3 space-y-3">
                       {mutedUsers.map((entry) => (
                         <div key={entry.id} className="rounded-lg border border-[#c9d8ef] bg-white px-3 py-2 text-xs text-[#355988]">
-                          <p className="break-all font-semibold text-[#1f3f71]">
+                          <p className="tp-text-heading break-all font-semibold">
                             {entry.mutedUser?.nickname ?? entry.mutedUser?.email ?? entry.mutedUserId}
                           </p>
-                          <p className="mt-0.5 text-[11px] text-[#5a7398]">
+                          <p className="tp-text-subtle mt-0.5 text-[11px]">
                             {entry.createdAt.toLocaleString("ko-KR")}
                           </p>
                           <div className="mt-2">

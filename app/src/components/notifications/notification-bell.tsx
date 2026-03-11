@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 
+import { APP_SHELL_NAV_LINK_CLASS_NAME } from "@/components/navigation/app-shell-header-class";
 import {
   emitNotificationUnreadSync,
   subscribeNotificationUnreadSync,
@@ -330,7 +331,7 @@ export function NotificationBell({ unreadCount }: NotificationBellProps) {
       <button
         type="button"
         onClick={handleOpenToggle}
-        className="inline-flex h-8 items-center gap-1 rounded-sm px-1 text-[14px] leading-none text-[#315484] transition hover:bg-[#dcecff] hover:text-[#1f4f8f]"
+        className={`${APP_SHELL_NAV_LINK_CLASS_NAME} gap-1`}
         aria-label={localUnreadCount > 0 ? `알림 ${localUnreadCount}개 미확인` : "알림함"}
         aria-expanded={isOpen}
         aria-controls="notification-popover"

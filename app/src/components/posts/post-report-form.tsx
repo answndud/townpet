@@ -5,6 +5,7 @@ import { ReportReason, ReportTarget } from "@prisma/client";
 import { useState, useTransition } from "react";
 
 import { getClientFingerprint } from "@/lib/guest-client";
+import { REPORT_DESCRIPTION_MAX_LENGTH } from "@/lib/input-limits";
 import { getReportReasonLabel, reportReasonOptions } from "@/lib/report-reason";
 import { getReportTargetLabel } from "@/lib/report-target";
 
@@ -99,6 +100,7 @@ export function PostReportForm({
             className="tp-input-soft min-h-[72px] px-3 py-2 text-[13px]"
             value={description}
             onChange={(event) => setDescription(event.target.value)}
+            maxLength={REPORT_DESCRIPTION_MAX_LENGTH}
             placeholder="필요할 때만 입력"
           />
         </label>

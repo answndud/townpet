@@ -59,7 +59,7 @@ export default async function RootLayout({
     <html lang="ko" suppressHydrationWarning>
       <body
         suppressHydrationWarning
-        className={`${spaceGrotesk.variable} ${plexMono.variable} app-shell-bg min-h-screen text-[#10284a] antialiased`}
+        className={`${spaceGrotesk.variable} ${plexMono.variable} app-shell-bg tp-text-primary min-h-screen antialiased`}
       >
         <AppShellHeader communities={communities} />
 

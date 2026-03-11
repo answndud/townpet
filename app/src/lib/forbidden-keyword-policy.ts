@@ -1,14 +1,12 @@
+import { compactModerationText, normalizeModerationText } from "@/lib/text-normalization";
+
 export const FORBIDDEN_KEYWORDS_POLICY_KEY = "forbidden_keywords";
 export const DEFAULT_FORBIDDEN_KEYWORDS: string[] = [];
 
 const MAX_KEYWORD_LENGTH = 40;
 
 function normalizeKeyword(keyword: string) {
-  return keyword.trim().toLowerCase();
-}
-
-function compactText(value: string) {
-  return value.replace(/\s+/g, "");
+  return normalizeModerationText(keyword).trim().toLowerCase();
 }
 
 export function normalizeForbiddenKeywords(
@@ -45,8 +43,8 @@ export function findMatchedForbiddenKeywords(text: string, keywords: string[]) {
     return [];
   }
 
-  const normalizedText = text.toLowerCase();
-  const compactedText = compactText(normalizedText);
+  const normalizedText = normalizeModerationText(text).toLowerCase();
+  const compactedText = compactModerationText(text).toLowerCase();
   const matches = new Set<string>();
 
   for (const keyword of keywords) {
@@ -55,7 +53,7 @@ export function findMatchedForbiddenKeywords(text: string, keywords: string[]) {
       continue;
     }
 
-    const compactedKeyword = compactText(normalizedKeyword);
+    const compactedKeyword = compactModerationText(normalizedKeyword).toLowerCase();
     if (
       normalizedText.includes(normalizedKeyword) ||
       compactedText.includes(compactedKeyword)

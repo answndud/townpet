@@ -10,6 +10,7 @@ import { LinkifiedContent } from "@/components/content/linkified-content";
 import { PostReportForm } from "@/components/posts/post-report-form";
 import { getClientFingerprint, getGuestFingerprint } from "@/lib/guest-client";
 import { getGuestWriteHeaders } from "@/lib/guest-step-up.client";
+import { COMMENT_CONTENT_MAX_LENGTH } from "@/lib/input-limits";
 import { resolveUserDisplayName } from "@/lib/user-display";
 import {
   createCommentAction,
@@ -600,6 +601,7 @@ export function PostCommentThread({
                       [comment.id]: event.target.value,
                     }))
                   }
+                  maxLength={COMMENT_CONTENT_MAX_LENGTH}
                   onKeyDown={(event) =>
                     handleCommentSubmitShortcut(event, () => handleCreate(comment.id))
                   }
@@ -682,6 +684,7 @@ export function PostCommentThread({
                   [comment.id]: event.target.value,
                 }))
               }
+              maxLength={COMMENT_CONTENT_MAX_LENGTH}
             />
             <div className="mt-2 flex justify-end">
               <button
@@ -793,6 +796,7 @@ export function PostCommentThread({
                 onChange={(event) =>
                   setReplyContent((prev) => ({ ...prev, root: event.target.value }))
                 }
+                maxLength={COMMENT_CONTENT_MAX_LENGTH}
                 onKeyDown={(event) => handleCommentSubmitShortcut(event, () => handleCreate())}
                 placeholder="댓글을 입력해 주세요"
               />

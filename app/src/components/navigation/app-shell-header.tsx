@@ -7,8 +7,10 @@ import { useEffect, useRef, useState } from "react";
 
 import { AuthControls } from "@/components/auth/auth-controls";
 import {
+  APP_SHELL_DESKTOP_GROUP_CLASS_NAME,
   APP_SHELL_HEADER_CLASS_NAME,
   APP_SHELL_MOBILE_QUICK_LINK_CLASS_NAME,
+  APP_SHELL_NAV_LINK_CLASS_NAME,
   shouldRefreshViewerShellOnFocus,
 } from "@/components/navigation/app-shell-header-class";
 import { FeedHoverMenu } from "@/components/navigation/feed-hover-menu";
@@ -43,8 +45,6 @@ export function AppShellHeader({ communities }: AppShellHeaderProps) {
     `${DEFAULT_VIEWER_SHELL.isAuthenticated}:${DEFAULT_VIEWER_SHELL.canModerate}`,
   );
   const pathname = usePathname();
-  const navLinkClass =
-    "inline-flex h-8 items-center rounded-sm px-1 text-[14px] leading-none text-[#315484] transition hover:bg-[#dcecff] hover:text-[#1f4f8f]";
   const refreshOnFocus = shouldRefreshViewerShellOnFocus(pathname);
   const allPetTypeIds = communities.map((item) => item.id);
   const preferredPetTypeIds =
@@ -143,70 +143,79 @@ export function AppShellHeader({ communities }: AppShellHeaderProps) {
             )}
           </div>
         </div>
-        <nav className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[14px] font-medium text-[#315484] sm:gap-x-3 sm:gap-y-1.5 xl:gap-x-3.5">
-          {pathname !== "/feed" ? (
-            <Link href="/feed" className={`${navLinkClass} md:hidden`}>
-              피드
-            </Link>
-          ) : null}
-          <FeedHoverMenu
-            key={`${viewerShell.isAuthenticated ? "auth" : "guest"}:${preferredPetTypeIds.join(",")}`}
-            communities={communities}
-            isAuthenticated={viewerShell.isAuthenticated}
-            initialPreferredPetTypeIds={preferredPetTypeIds}
-          />
-          <span className="hidden px-0.5 text-[#9ab0cf] md:inline">|</span>
-          <Link href="/profile" className={`${navLinkClass} hidden md:inline-flex`}>
-            내 프로필
-          </Link>
-          {viewerShell.isAuthenticated ? (
-            <>
-              <span className="hidden px-0.5 text-[#9ab0cf] md:inline">|</span>
-              <NotificationBell unreadCount={viewerShell.unreadNotificationCount} />
-            </>
-          ) : null}
-          {viewerShell.canModerate ? (
-            <div className="flex flex-wrap items-center gap-2">
-              <Link href="/admin/reports" className={navLinkClass}>
-                신고 큐
+        <nav className="flex flex-col gap-1.5 xl:flex-row xl:items-center xl:justify-between">
+          <div className="flex flex-wrap items-center gap-1.5">
+            {pathname !== "/feed" ? (
+              <Link href="/feed" className={`${APP_SHELL_NAV_LINK_CLASS_NAME} md:hidden`}>
+                피드
               </Link>
-              <Link href="/admin/auth-audits" className={navLinkClass}>
-                인증 로그
-              </Link>
-              <Link href="/admin/policies" className={navLinkClass}>
-                권한 정책
-              </Link>
-            </div>
-          ) : null}
-          {viewerShell.isAuthenticated ? (
-            <>
-              <span className="hidden px-0.5 text-[#9ab0cf] md:inline">|</span>
-              <AuthControls className="hidden md:inline-flex h-8 items-center rounded-sm px-1 text-[14px] leading-none text-[#173963] transition hover:bg-[#dcecff] hover:text-[#0f2f56] disabled:opacity-60" label="로그아웃" />
-            </>
-          ) : (
-            <Link
-              href="/login"
-              data-testid="header-login-link"
-              className={`${navLinkClass} hidden md:inline-flex text-[#173963] hover:text-[#0f2f56]`}
-            >
-              로그인
-            </Link>
-          )}
-          <form action="/feed" method="get" className="ml-auto hidden items-center gap-2 md:flex">
-            <span className="px-0.5 text-[#9ab0cf]">|</span>
-            <input
-              name="q"
-              type="search"
-              placeholder="검색"
-              className="tp-input-soft h-8 w-[150px] bg-white px-2.5 text-xs leading-none sm:w-[190px]"
+            ) : null}
+
+            <FeedHoverMenu
+              key={`${viewerShell.isAuthenticated ? "auth" : "guest"}:${preferredPetTypeIds.join(",")}`}
+              communities={communities}
+              isAuthenticated={viewerShell.isAuthenticated}
+              initialPreferredPetTypeIds={preferredPetTypeIds}
             />
-            <button
-              type="submit"
-              className="inline-flex h-8 items-center rounded-sm px-1 text-[13px] leading-none text-[#315484] transition hover:bg-[#dcecff] hover:text-[#1f4f8f]"
+
+            <div className={`hidden md:flex ${APP_SHELL_DESKTOP_GROUP_CLASS_NAME}`}>
+              <Link href="/profile" className={APP_SHELL_NAV_LINK_CLASS_NAME}>
+                내 프로필
+              </Link>
+              {viewerShell.isAuthenticated ? (
+                <NotificationBell unreadCount={viewerShell.unreadNotificationCount} />
+              ) : null}
+            </div>
+
+            {viewerShell.canModerate ? (
+              <div className={`hidden md:flex ${APP_SHELL_DESKTOP_GROUP_CLASS_NAME}`}>
+                <Link href="/admin/reports" className={APP_SHELL_NAV_LINK_CLASS_NAME}>
+                  신고 큐
+                </Link>
+                <Link href="/admin/auth-audits" className={APP_SHELL_NAV_LINK_CLASS_NAME}>
+                  인증 로그
+                </Link>
+                <Link href="/admin/policies" className={APP_SHELL_NAV_LINK_CLASS_NAME}>
+                  권한 정책
+                </Link>
+              </div>
+            ) : null}
+          </div>
+
+          <div className="hidden md:flex md:items-center md:gap-1.5">
+            <form
+              action="/feed"
+              method="get"
+              className={`flex ${APP_SHELL_DESKTOP_GROUP_CLASS_NAME}`}
             >
-              찾기
-            </button>
-          </form>
+              <input
+                name="q"
+                type="search"
+                placeholder="검색"
+                className="tp-input-soft h-8 w-[150px] bg-white px-3 text-xs leading-none sm:w-[190px]"
+              />
+              <button
+                type="submit"
+                className={APP_SHELL_NAV_LINK_CLASS_NAME}
+              >
+                찾기
+              </button>
+            </form>
+            {viewerShell.isAuthenticated ? (
+              <AuthControls
+                className={`${APP_SHELL_NAV_LINK_CLASS_NAME} text-[#173963] hover:text-[#0f2f56] disabled:opacity-60`}
+                label="로그아웃"
+              />
+            ) : (
+              <Link
+                href="/login"
+                data-testid="header-login-link"
+                className={`${APP_SHELL_NAV_LINK_CLASS_NAME} text-[#173963] hover:text-[#0f2f56]`}
+              >
+                로그인
+              </Link>
+            )}
+          </div>
         </nav>
       </div>
     </header>

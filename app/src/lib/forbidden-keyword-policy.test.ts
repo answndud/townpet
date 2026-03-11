@@ -39,4 +39,16 @@ describe("forbidden keyword policy", () => {
 
     expect(result).toEqual(["연락처"]);
   });
+
+  it("matches keywords with zero-width and punctuation evasion", () => {
+    const result = findMatchedForbiddenKeywords("연\u200b-락.처 남겨요", ["연락처"]);
+
+    expect(result).toEqual(["연락처"]);
+  });
+
+  it("matches decomposed unicode keyword variants", () => {
+    const result = findMatchedForbiddenKeywords("연락처 문의", ["연락처"]);
+
+    expect(result).toEqual(["연락처"]);
+  });
 });

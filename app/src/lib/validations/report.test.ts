@@ -48,4 +48,20 @@ describe("report validations", () => {
     expect(emergency.success).toBe(true);
     expect(privacy.success).toBe(true);
   });
+
+  it("normalizes blank description to undefined", () => {
+    const result = reportCreateSchema.safeParse({
+      targetType: ReportTarget.POST,
+      targetId: "ckc7k5qsj0000u0t8qv6d1d7k",
+      reason: ReportReason.SPAM,
+      description: "   ",
+    });
+
+    expect(result.success).toBe(true);
+    if (!result.success) {
+      return;
+    }
+
+    expect(result.data.description).toBeUndefined();
+  });
 });
