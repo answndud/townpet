@@ -311,17 +311,19 @@ describe("post queries", () => {
     });
 
     const args = mockPrisma.post.findMany.mock.calls[0][0];
-    expect(args.where.AND).toEqual([
-      {
-        author: {
-          pets: {
-            some: {
-              breedCode: "MALTESE",
+    expect(args.where.AND).toEqual(
+      expect.arrayContaining([
+        {
+          author: {
+            pets: {
+              some: {
+                breedCode: "MALTESE",
+              },
             },
           },
         },
-      },
-    ]);
+      ]),
+    );
   });
 
   it("excludes configured post types for guest feeds", async () => {

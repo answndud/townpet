@@ -39,6 +39,15 @@ export async function listReports({ status, targetType }: ReportListOptions = {}
         },
       },
       post: { select: { id: true, title: true, status: true } },
+      comment: {
+        select: {
+          id: true,
+          content: true,
+          status: true,
+          postId: true,
+          post: { select: { id: true, title: true } },
+        },
+      },
     },
   });
 }
@@ -174,6 +183,15 @@ export async function getReportById(reportId: string) {
     include: {
       reporter: { select: { id: true, email: true, nickname: true } },
       post: { select: { id: true, title: true, status: true } },
+      comment: {
+        select: {
+          id: true,
+          content: true,
+          status: true,
+          postId: true,
+          post: { select: { id: true, title: true } },
+        },
+      },
     },
   });
 }

@@ -7,6 +7,7 @@ import { monitorUnhandledError } from "@/server/error-monitor";
 import { getGuestPostPolicy } from "@/server/queries/policy.queries";
 import { getPostReadAccessById } from "@/server/queries/post.queries";
 import { getClientIp } from "@/server/request-context";
+import { enforceAuthenticatedWriteRateLimit } from "@/server/authenticated-write-throttle";
 import { enforceRateLimit } from "@/server/rate-limit";
 import { assertGuestStepUp } from "@/server/guest-step-up";
 import { listComments } from "@/server/queries/comment.queries";
@@ -23,6 +24,9 @@ vi.mock("@/server/queries/policy.queries", () => ({ getGuestPostPolicy: vi.fn() 
 vi.mock("@/server/queries/post.queries", () => ({ getPostReadAccessById: vi.fn() }));
 vi.mock("@/server/queries/comment.queries", () => ({ listComments: vi.fn() }));
 vi.mock("@/server/request-context", () => ({ getClientIp: vi.fn() }));
+vi.mock("@/server/authenticated-write-throttle", () => ({
+  enforceAuthenticatedWriteRateLimit: vi.fn(),
+}));
 vi.mock("@/server/rate-limit", () => ({ enforceRateLimit: vi.fn() }));
 vi.mock("@/server/guest-step-up", () => ({ assertGuestStepUp: vi.fn() }));
 vi.mock("@/server/services/post-read-access.service", () => ({
@@ -54,6 +58,7 @@ const mockMonitorUnhandledError = vi.mocked(monitorUnhandledError);
 const mockGetGuestPostPolicy = vi.mocked(getGuestPostPolicy);
 const mockGetPostReadAccessById = vi.mocked(getPostReadAccessById);
 const mockGetClientIp = vi.mocked(getClientIp);
+const mockEnforceAuthenticatedWriteRateLimit = vi.mocked(enforceAuthenticatedWriteRateLimit);
 const mockEnforceRateLimit = vi.mocked(enforceRateLimit);
 const mockAssertGuestStepUp = vi.mocked(assertGuestStepUp);
 const mockListComments = vi.mocked(listComments);
@@ -89,6 +94,8 @@ describe("POST /api/posts/[id]/comments contract", () => {
       status: "ACTIVE",
     } as never);
     mockGetClientIp.mockReturnValue("127.0.0.1");
+    mockEnforceAuthenticatedWriteRateLimit.mockReset();
+    mockEnforceAuthenticatedWriteRateLimit.mockResolvedValue(undefined);
     mockEnforceRateLimit.mockResolvedValue();
     mockAssertGuestStepUp.mockResolvedValue({
       difficulty: 2,
@@ -219,6 +226,29 @@ describe("POST /api/posts/[id]/comments contract", () => {
         }),
       }),
     );
+  });
+
+  it("passes authenticated client fingerprint into comment throttling", async () => {
+    mockGetCurrentUserId.mockResolvedValue("user-1");
+    mockCreateComment.mockResolvedValue({ id: "comment-9" } as never);
+    const request = new Request("http://localhost/api/posts/post-1/comments", {
+      method: "POST",
+      body: JSON.stringify({ content: "hello" }),
+      headers: {
+        "content-type": "application/json",
+        "x-client-fingerprint": "device-fp-1",
+      },
+    }) as NextRequest;
+
+    const response = await POST(request, { params: Promise.resolve({ id: "post-1" }) });
+
+    expect(response.status).toBe(201);
+    expect(mockEnforceAuthenticatedWriteRateLimit).toHaveBeenCalledWith({
+      scope: "comment:create",
+      userId: "user-1",
+      ip: "127.0.0.1",
+      clientFingerprint: "device-fp-1",
+    });
   });
 
   it("returns service error from read access guard on comments POST", async () => {

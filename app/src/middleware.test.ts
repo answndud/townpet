@@ -1,12 +1,28 @@
-import { describe, expect, it } from "vitest";
+import { NextRequest } from "next/server";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+vi.mock("next-auth/jwt", () => ({
+  getToken: vi.fn(),
+}));
 
 import {
+  isAdminProtectedPath,
   isGuestSearchPath,
   isGuestPostDetailPath,
   isPrefetchRequest,
   isNicknameRequiredProfilePath,
+  middleware,
   resolveCspHeaders,
 } from "../middleware";
+import { getToken } from "next-auth/jwt";
+
+const getTokenMock = vi.mocked(getToken);
+
+beforeEach(() => {
+  getTokenMock.mockReset();
+  delete process.env.AUTH_SECRET;
+  delete process.env.NEXTAUTH_SECRET;
+});
 
 describe("resolveCspHeaders", () => {
   it("uses static fallback CSP with strict report-only policy in production", () => {
@@ -77,6 +93,20 @@ describe("isGuestSearchPath", () => {
   });
 });
 
+describe("isAdminProtectedPath", () => {
+  it("returns true for admin page path", () => {
+    expect(isAdminProtectedPath("/admin/reports")).toBe(true);
+  });
+
+  it("returns true for admin api path", () => {
+    expect(isAdminProtectedPath("/api/admin/auth-audits")).toBe(true);
+  });
+
+  it("returns false for unrelated path", () => {
+    expect(isAdminProtectedPath("/main")).toBe(false);
+  });
+});
+
 describe("isNicknameRequiredProfilePath", () => {
   it("allows profile path", () => {
     expect(isNicknameRequiredProfilePath("/profile")).toBe(true);
@@ -109,5 +139,33 @@ describe("isPrefetchRequest", () => {
   it("returns false for normal request headers", () => {
     const headers = new Headers();
     expect(isPrefetchRequest(headers)).toBe(false);
+  });
+});
+
+describe("middleware admin path protection", () => {
+  it("returns not found for anonymous admin page access", async () => {
+    const request = new NextRequest("https://townpet.test/admin/reports");
+
+    const response = await middleware(request);
+
+    expect(response.status).toBe(404);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(response.headers.get("x-robots-tag")).toBe("noindex, nofollow, noarchive");
+  });
+
+  it("attempts session resolution for admin paths when a session cookie exists", async () => {
+    process.env.AUTH_SECRET = "test-auth-secret";
+    getTokenMock.mockResolvedValue(null);
+    const request = new NextRequest("https://townpet.test/admin/reports", {
+      headers: {
+        cookie: "townpet.session-token=fake-session",
+      },
+    });
+
+    const response = await middleware(request);
+
+    expect(getTokenMock).toHaveBeenCalledOnce();
+    expect(response.status).toBe(404);
+    expect(response.headers.get("x-robots-tag")).toBe("noindex, nofollow, noarchive");
   });
 });

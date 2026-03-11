@@ -1,12 +1,10 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { ReportStatus, UserRole } from "@prisma/client";
+import { ReportStatus } from "@prisma/client";
 
 import { ReportActions } from "@/components/admin/report-actions";
 import { getReportReasonLabel } from "@/lib/report-reason";
 import { getReportTargetLabel, isSupportedReportTarget } from "@/lib/report-target";
-import { getCurrentUser } from "@/server/auth";
-import { redirectToProfileIfNicknameMissing } from "@/server/nickname-guard";
+import { requireModeratorPageUser } from "@/server/admin-page-access";
 import { listReportAudits } from "@/server/queries/report-audit.queries";
 import { getReportById } from "@/server/queries/report.queries";
 import { listUsersByIds } from "@/server/queries/user.queries";
@@ -23,33 +21,7 @@ const statusLabels: Record<ReportStatus, string> = {
 };
 
 export default async function ReportDetailPage({ params, searchParams }: ReportDetailPageProps) {
-  const user = await getCurrentUser();
-  if (!user) {
-    redirect("/login");
-  }
-  redirectToProfileIfNicknameMissing({
-    isAuthenticated: true,
-    nickname: user.nickname,
-  });
-
-  const isModerator =
-    user.role === UserRole.ADMIN || user.role === UserRole.MODERATOR;
-
-  if (!isModerator) {
-    return (
-      <div className="min-h-screen">
-        <main className="mx-auto flex w-full max-w-[980px] flex-col gap-4 px-4 py-10 sm:px-6">
-          <h1 className="text-xl font-semibold text-[#10284a]">접근 권한이 없습니다.</h1>
-          <p className="text-sm text-[#4f678d]">
-            신고 상세 페이지는 관리자 또는 운영자만 접근할 수 있습니다.
-          </p>
-          <Link href="/feed" className="text-xs text-[#5a7398]">
-            홈으로 돌아가기
-          </Link>
-        </main>
-      </div>
-    );
-  }
+  await requireModeratorPageUser();
 
   const report = await getReportById(params.id);
 
@@ -174,6 +146,26 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
                 </Link>
                 <span className="text-xs text-[#5a7398]">게시글로 이동</span>
               </div>
+            ) : report.comment ? (
+              <div className="flex flex-col gap-2 border border-[#d8e4f6] bg-[#f8fbff] p-4">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="rounded-md border border-[#cbdcf5] bg-white px-2 py-0.5 text-[10px] text-[#355988]">
+                    댓글
+                  </span>
+                  <span className="rounded-md border border-[#cbdcf5] bg-white px-2 py-0.5 text-[10px] text-[#355988]">
+                    {report.comment.status}
+                  </span>
+                </div>
+                <p className="font-semibold text-[#163462]">{report.comment.content}</p>
+                {report.comment.post ? (
+                  <Link
+                    href={`/posts/${report.comment.post.id}#comment-${report.comment.id}`}
+                    className="text-xs text-[#5a7398]"
+                  >
+                    상위 게시글: {report.comment.post.title}
+                  </Link>
+                ) : null}
+              </div>
             ) : !isSupportedReportTarget(report.targetType) && targetUser ? (
               <div className="flex flex-col gap-2 border border-[#d8e4f6] bg-[#f8fbff] p-4">
                 <span className="rounded-md border border-[#cbdcf5] bg-white px-2 py-0.5 text-[10px] text-[#355988]">
@@ -185,7 +177,7 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
                 <span className="text-xs text-[#5a7398]">현재 운영 범위 밖의 신고 대상입니다.</span>
               </div>
             ) : (
-              <div>현재 운영에서는 게시글 신고만 지원합니다.</div>
+              <div>현재 운영 범위 밖의 신고 대상입니다.</div>
             )}
           </div>
         </section>

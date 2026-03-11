@@ -26,6 +26,37 @@
 
 ## Active Plan
 
+### Cycle 300: admin surface 은닉 강화 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 익명 admin page/API 탐색을 middleware 404 + noindex로 은닉 | Codex | P0 | `done` | `/admin` 및 `/api/admin/*`는 세션이 없는 요청에 대해 middleware에서 `404`와 `x-robots-tag: noindex, nofollow, noarchive`를 반환하고, 관련 테스트가 존재한다 | `PLAN.md`, `PROGRESS.md`, `docs/security/보안_계획.md`, `docs/security/보안_진행상황.md`, `app/middleware.ts`, `app/src/middleware.test.ts` |
+| admin 페이지 권한 부족 응답을 visible access denied 대신 `notFound()`로 통일 | Codex | P0 | `done` | 관리자 화면들이 공통 helper를 통해 non-moderator 접근 시 `notFound()`를 사용하고, 더 이상 `/admin/*` 존재를 일반 사용자에게 노출하지 않는다 | `PLAN.md`, `PROGRESS.md`, `docs/security/보안_계획.md`, `docs/security/보안_진행상황.md`, `app/src/server/admin-page-access.ts`, `app/src/app/admin/**/page.tsx` |
+
+### Cycle 299: authenticated write client fingerprint 계약 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 로그인 글/댓글/신고 write 경로에 client fingerprint 전달 계약 추가 | Codex | P0 | `done` | 글쓰기 폼, 댓글 작성, 신고 폼이 공통 client fingerprint를 server action 인자 또는 `x-client-fingerprint` header로 전달하고, authenticated write throttle이 fingerprint 축 rate limit을 함께 적용하며 회귀 테스트가 존재한다 | `PLAN.md`, `PROGRESS.md`, `docs/security/보안_계획.md`, `docs/security/보안_진행상황.md`, `docs/policies/모더레이션_운영규칙.md`, `docs/policies/신고_운영정책.md`, `app/src/lib/guest-client.ts`, `app/src/server/authenticated-write-throttle.ts`, `app/src/server/actions/post.ts`, `app/src/server/actions/comment.ts`, `app/src/app/api/posts/route.ts`, `app/src/app/api/posts/[id]/comments/route.ts`, `app/src/app/api/reports/route.ts`, `app/src/components/posts/post-create-form.tsx`, `app/src/components/posts/post-comment-thread.tsx`, `app/src/components/posts/post-report-form.tsx` |
+
+### Cycle 298: moderation risk tier + 병원 후기 검토 큐 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| authenticated write throttling에 전역 burst와 최근 제재 기반 risk tier 반영 | Codex | P0 | `done` | 글/댓글/신고 write helper가 scope별 limit 외에 `auth-write:user`, `auth-write:ip` 전역 limit을 적용하고, 신규 계정/최근 제재 이력 사용자는 더 엄격한 threshold를 사용하며 회귀 테스트가 존재한다 | `PLAN.md`, `PROGRESS.md`, `docs/security/보안_계획.md`, `docs/security/보안_진행상황.md`, `app/src/server/authenticated-write-throttle.ts`, `app/src/server/authenticated-write-throttle.test.ts` |
+| 병원 후기 의심 신호를 운영자가 바로 보는 전용 검토 큐 추가 | Codex | P1 | `done` | `/admin/hospital-review-flags`가 `HOSPITAL_REVIEW_FLAGGED` 로그를 병원명/작성자/신호/반복 수치 기준으로 조회하고, moderation/auth admin 화면에서 해당 큐로 이동할 수 있으며 query/page 회귀 테스트가 존재한다 | `PLAN.md`, `PROGRESS.md`, `docs/policies/모더레이션_운영규칙.md`, `app/src/server/queries/moderation-action.queries.ts`, `app/src/server/queries/moderation-action.queries.test.ts`, `app/src/app/admin/hospital-review-flags/page.tsx`, `app/src/app/admin/moderation-logs/page.tsx`, `app/src/app/admin/reports/page.tsx`, `app/src/app/admin/auth-audits/page.tsx` |
+
+### Cycle 297: 회원 abuse 다축 throttling + 모더레이션 로그 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 회원 글/댓글/신고 write 경로를 `user + userIp + sharedIp` 다축 제한으로 보강 | Codex | P0 | `done` | authenticated post/comment/report create 경로가 `userId` 단일 키 대신 `user`, `user+ip`, `shared ip` 3축 rate limit을 적용하고 helper 회귀 테스트가 존재한다 | `PLAN.md`, `PROGRESS.md`, `app/src/server/authenticated-write-throttle.ts`, `app/src/server/actions/post.ts`, `app/src/server/actions/comment.ts`, `app/src/app/api/posts/route.ts`, `app/src/app/api/posts/[id]/comments/route.ts`, `app/src/app/api/reports/route.ts` |
+| 신고 처리/제재/병원후기 의심 신호를 추적하는 moderation action log 도입 | Codex | P0 | `done` | `ModerationActionLog` 스키마와 admin 조회 페이지가 추가되고, report resolve/dismiss/hide/unhide, sanction issue, hospital review suspicious flag가 로그에 남으며 query/page 회귀 테스트가 존재한다 | `PLAN.md`, `PROGRESS.md`, `docs/security/보안_계획.md`, `docs/security/보안_진행상황.md`, `app/prisma/schema.prisma`, `app/prisma/migrations/20260311100000_add_moderation_action_logs/migration.sql`, `app/src/server/moderation-action-log.ts`, `app/src/server/queries/moderation-action.queries.ts`, `app/src/app/admin/moderation-logs/page.tsx`, `app/src/server/services/report.service.ts`, `app/src/server/services/sanction.service.ts`, `app/src/server/services/post.service.ts` |
+| 모더레이션 정책 문서에 회원 abuse 방어/병원후기 의심 신호/감사 로그 기준 반영 | Codex | P1 | `done` | root PLAN/PROGRESS와 security/policy 문서가 multi-axis write limit, `ModerationActionLog`, 병원후기 의심 신호 기록 정책을 현재 코드 기준으로 설명한다 | `PLAN.md`, `PROGRESS.md`, `docs/security/보안_계획.md`, `docs/security/보안_진행상황.md`, `docs/policies/모더레이션_운영규칙.md`, `docs/policies/신고_운영정책.md` |
+
+### Cycle 296: 모더레이션 visibility 정렬 + 댓글 신고 확장 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 차단·뮤트 actor를 알림/공개 프로필/공개 활동에서 일관되게 숨김 | Codex | P0 | `done` | notification list/unread/redirect와 공개 프로필·활동 쿼리가 hidden relation과 severe sanction visibility 정책을 함께 적용하고, 차단 관계에서는 공개 프로필 summary가 404로 응답하며 회귀 테스트가 존재한다 | `PLAN.md`, `PROGRESS.md`, `docs/security/보안_진행상황.md`, `app/src/server/queries/notification.queries.ts`, `app/src/server/queries/user.queries.ts`, `app/src/server/queries/post.queries.ts`, `app/src/server/queries/community.queries.ts`, `app/src/app/users/[id]/page.tsx`, `app/src/app/api/users/[id]/profile-summary/route.ts` |
+| 신고 대상을 댓글까지 확장하고 관리자 큐/상세/댓글 UI 연결 | Codex | P0 | `done` | Prisma enum/schema, validation, report service, 관리자 신고 큐/상세, 댓글 신고 UI가 `COMMENT` target을 지원하고, 댓글 숨김/복구 시 `commentCount` 재계산과 감사 로그가 유지되며 failure-path 테스트가 존재한다 | `PLAN.md`, `PROGRESS.md`, `docs/policies/모더레이션_운영규칙.md`, `docs/policies/신고_운영정책.md`, `app/prisma/schema.prisma`, `app/prisma/migrations/20260310191000_enable_comment_reports/migration.sql`, `app/src/server/services/report.service.ts`, `app/src/server/queries/report.queries.ts`, `app/src/components/posts/post-report-form.tsx`, `app/src/components/posts/post-comment-thread.tsx`, `app/src/app/admin/reports/**` |
+| 모더레이션/신고 정책 문서와 보안 진행 로그 동기화 | Codex | P1 | `done` | root PLAN/PROGRESS와 security/policy 문서가 댓글 신고 지원, 차단 actor 비노출, severe sanction visibility 정책을 현재 코드 기준으로 설명하고 검증 로그를 남긴다 | `PLAN.md`, `PROGRESS.md`, `docs/security/보안_계획.md`, `docs/security/보안_진행상황.md`, `docs/policies/모더레이션_운영규칙.md`, `docs/policies/신고_운영정책.md` |
+
 ### Cycle 295: 피드 모바일 메타 우측 복귀 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|

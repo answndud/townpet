@@ -15,6 +15,7 @@ import { getClientIp } from "@/server/request-context";
 import { assertGuestStepUp } from "@/server/guest-step-up";
 import { isLoginRequiredPostType } from "@/lib/post-access";
 import { createPost } from "@/server/services/post.service";
+import { enforceAuthenticatedWriteRateLimit } from "@/server/authenticated-write-throttle";
 
 vi.mock("@/server/auth", () => ({
   getCurrentUserId: vi.fn(),
@@ -32,6 +33,9 @@ vi.mock("@/server/request-context", () => ({ getClientIp: vi.fn() }));
 vi.mock("@/lib/post-access", () => ({ isLoginRequiredPostType: vi.fn() }));
 vi.mock("@/server/queries/user.queries", () => ({ getUserWithNeighborhoods: vi.fn() }));
 vi.mock("@/server/services/post.service", () => ({ createPost: vi.fn() }));
+vi.mock("@/server/authenticated-write-throttle", () => ({
+  enforceAuthenticatedWriteRateLimit: vi.fn(),
+}));
 
 const mockGetCurrentUserId = vi.mocked(getCurrentUserId);
 const mockHasSessionCookieFromRequest = vi.mocked(hasSessionCookieFromRequest);
@@ -47,6 +51,7 @@ const mockGetClientIp = vi.mocked(getClientIp);
 const mockAssertGuestStepUp = vi.mocked(assertGuestStepUp);
 const mockIsLoginRequiredPostType = vi.mocked(isLoginRequiredPostType);
 const mockCreatePost = vi.mocked(createPost);
+const mockEnforceAuthenticatedWriteRateLimit = vi.mocked(enforceAuthenticatedWriteRateLimit);
 
 describe("GET /api/posts contract", () => {
   beforeEach(() => {
@@ -81,6 +86,8 @@ describe("GET /api/posts contract", () => {
     mockCountPosts.mockResolvedValue(0);
     mockListPosts.mockResolvedValue({ items: [], nextCursor: null });
     mockCreatePost.mockResolvedValue({ id: "post-1" } as never);
+    mockEnforceAuthenticatedWriteRateLimit.mockReset();
+    mockEnforceAuthenticatedWriteRateLimit.mockResolvedValue(undefined);
   });
 
   it("returns INVALID_QUERY for malformed query params", async () => {
@@ -233,6 +240,28 @@ describe("POST /api/posts contract", () => {
         fingerprint: "guest-fp-1",
         userAgent: undefined,
       },
+    });
+  });
+
+  it("passes authenticated client fingerprint into write throttling", async () => {
+    mockGetCurrentUserId.mockResolvedValue("user-1");
+    const request = new Request("http://localhost/api/posts", {
+      method: "POST",
+      body: JSON.stringify({ title: "member post" }),
+      headers: {
+        "content-type": "application/json",
+        "x-client-fingerprint": "device-fp-1",
+      },
+    }) as NextRequest;
+
+    const response = await POST(request);
+
+    expect(response.status).toBe(201);
+    expect(mockEnforceAuthenticatedWriteRateLimit).toHaveBeenCalledWith({
+      scope: "post:create",
+      userId: "user-1",
+      ip: "127.0.0.1",
+      clientFingerprint: "device-fp-1",
     });
   });
 });

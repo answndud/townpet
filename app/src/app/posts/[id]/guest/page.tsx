@@ -378,7 +378,7 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
               <details className="mt-3 rounded-lg border border-[#d9e5f7] bg-[#fbfdff] px-3 py-2.5">
                 <summary className="tp-btn-soft tp-btn-xs inline-flex cursor-pointer items-center">게시글 신고</summary>
                 <div className="mt-2 rounded-lg border border-[#e3ebf8] bg-white p-3">
-                  <PostReportForm postId={post.id} canReport={false} loginHref={loginHref} />
+                  <PostReportForm targetId={post.id} canReport={false} loginHref={loginHref} />
                 </div>
               </details>
             ) : null}

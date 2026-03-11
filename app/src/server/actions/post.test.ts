@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { revalidatePath } from "next/cache";
 
+import { enforceAuthenticatedWriteRateLimit } from "@/server/authenticated-write-throttle";
 import {
   createPostAction,
   deletePostAction,
@@ -21,9 +22,15 @@ import { ServiceError } from "@/server/services/service-error";
 vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
 }));
+vi.mock("next/headers", () => ({
+  headers: vi.fn().mockResolvedValue(new Headers()),
+}));
 
 vi.mock("@/server/auth", () => ({
   requireCurrentUser: vi.fn(),
+}));
+vi.mock("@/server/authenticated-write-throttle", () => ({
+  enforceAuthenticatedWriteRateLimit: vi.fn(),
 }));
 
 vi.mock("@/server/services/post.service", () => ({
@@ -36,6 +43,7 @@ vi.mock("@/server/services/post.service", () => ({
 
 const mockRevalidatePath = vi.mocked(revalidatePath);
 const mockRequireCurrentUser = vi.mocked(requireCurrentUser);
+const mockEnforceAuthenticatedWriteRateLimit = vi.mocked(enforceAuthenticatedWriteRateLimit);
 const mockCreatePost = vi.mocked(createPost);
 const mockDeletePost = vi.mocked(deletePost);
 const mockTogglePostBookmark = vi.mocked(togglePostBookmark);
@@ -46,6 +54,8 @@ describe("post actions", () => {
   beforeEach(() => {
     mockRevalidatePath.mockReset();
     mockRequireCurrentUser.mockReset();
+    mockEnforceAuthenticatedWriteRateLimit.mockReset();
+    mockEnforceAuthenticatedWriteRateLimit.mockResolvedValue(undefined);
     mockCreatePost.mockReset();
     mockDeletePost.mockReset();
     mockTogglePostBookmark.mockReset();
@@ -56,13 +66,23 @@ describe("post actions", () => {
   it("creates a post and only revalidates the feed page", async () => {
     mockRequireCurrentUser.mockResolvedValue({ id: "user-1" } as never);
 
-    const result = await createPostAction({ title: "새 글" });
+    const result = await createPostAction(
+      { title: "새 글" },
+      { clientFingerprint: "device-fp-1" },
+    );
 
     expect(result).toEqual({ ok: true });
     expect(mockCreatePost).toHaveBeenCalledWith({
       authorId: "user-1",
       input: { title: "새 글" },
     });
+    expect(mockEnforceAuthenticatedWriteRateLimit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        scope: "post:create",
+        userId: "user-1",
+        clientFingerprint: "device-fp-1",
+      }),
+    );
     expect(mockRevalidatePath).toHaveBeenCalledTimes(1);
     expect(mockRevalidatePath).toHaveBeenCalledWith("/feed");
   });

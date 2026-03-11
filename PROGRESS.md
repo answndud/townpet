@@ -17,6 +17,88 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-11: Cycle 300 완료 (admin surface 은닉 강화)
+- 완료 내용
+  - `app/middleware.ts`에 admin surface 판별을 추가해 `/admin`, `/admin/*`, `/api/admin/*` 요청은 세션이 없는 경우 middleware 단계에서 바로 `404`로 응답하고, `x-robots-tag: noindex, nofollow, noarchive`와 `cache-control: no-store`를 함께 내려 존재 노출과 인덱싱을 줄였다.
+  - 같은 middleware는 admin path에서 세션 쿠키가 있으면 `getToken()`을 강제로 확인하도록 바꿔, 깨진/만료된 세션 쿠키를 가진 probe도 그대로 `404`로 떨어지게 정리했다.
+  - `app/src/server/admin-page-access.ts`를 공통 helper로 두고, `auth-audits`, `breeds`, `hospital-review-flags`, `moderation-logs`, `personalization`, `policies`, `reports`, `reports/[id]` 페이지가 이제 로그인 redirect/visible access denied 대신 `notFound()` 기반 moderator gate를 사용하도록 통일했다.
+  - 이로써 익명 탐색은 middleware에서, 인증됐지만 운영 권한이 없는 접근은 page-level `notFound()`에서 끊기게 되어 `/admin` 계열의 존재를 덜 드러내는 방향으로 정리됐다.
+- 검증 결과
+  - `pnpm -C app lint app/middleware.ts app/src/middleware.test.ts app/src/server/admin-page-access.ts 'app/src/app/admin/reports/page.tsx' 'app/src/app/admin/reports/[id]/page.tsx' app/src/app/admin/auth-audits/page.tsx app/src/app/admin/breeds/page.tsx app/src/app/admin/moderation-logs/page.tsx app/src/app/admin/policies/page.tsx app/src/app/admin/hospital-review-flags/page.tsx app/src/app/admin/personalization/page.tsx` 통과
+  - `pnpm -C app test -- src/middleware.test.ts` 통과
+  - `pnpm -C app typecheck` 통과
+  - `git diff --check` 통과
+- 메모
+  - `/main`처럼 잘 알려진 문자열을 다른 경로명으로 숨기는 것보다, 존재하는 admin surface를 익명 404 + noindex + server-side role check로 일관되게 막는 것이 우선이다.
+  - 현재 JWT/session에는 role을 싣지 않기 때문에, authenticated non-admin에 대한 `/api/admin/*` 은닉은 middleware가 아니라 route/page level check에 맡겼다.
+
+### 2026-03-11: Cycle 299 완료 (authenticated write client fingerprint 계약)
+- 완료 내용
+  - `app/src/lib/guest-client.ts`에 `getClientFingerprint()`를 추가하고, 로그인 글쓰기/댓글작성/신고 폼이 같은 local client fingerprint를 재사용하도록 맞췄다.
+  - `app/src/components/posts/post-create-form.tsx`, `app/src/components/posts/post-comment-thread.tsx`는 server action 호출 시 fingerprint를 함께 넘기고, `app/src/components/posts/post-report-form.tsx`는 `/api/reports` 호출에 `x-client-fingerprint` header를 붙이도록 바꿨다.
+  - `app/src/server/actions/post.ts`, `app/src/server/actions/comment.ts`, `app/src/app/api/posts/route.ts`, `app/src/app/api/posts/[id]/comments/route.ts`, `app/src/app/api/reports/route.ts`는 fingerprint를 authenticated write throttle로 전달한다.
+  - `app/src/server/authenticated-write-throttle.ts`는 fingerprint가 있으면 `auth-write:fingerprint:*` 전역 key와 `${scope}:fingerprint:*` key를 추가로 적용해 동일 디바이스 다계정 write burst를 더 좁게 보도록 보강했다.
+- 검증 결과
+  - `pnpm -C app lint src/lib/guest-client.ts src/server/authenticated-write-throttle.ts src/server/authenticated-write-throttle.test.ts src/server/actions/post.ts src/server/actions/comment.ts src/server/actions/post.test.ts src/app/api/posts/route.ts src/app/api/posts/route.test.ts 'src/app/api/posts/[id]/comments/route.ts' 'src/app/api/posts/[id]/comments/route.test.ts' src/app/api/reports/route.ts src/app/api/reports/route.test.ts src/components/posts/post-create-form.tsx src/components/posts/post-comment-thread.tsx src/components/posts/post-report-form.tsx` 통과
+  - `pnpm -C app test -- src/server/authenticated-write-throttle.test.ts src/server/actions/post.test.ts src/app/api/posts/route.test.ts 'src/app/api/posts/[id]/comments/route.test.ts' src/app/api/reports/route.test.ts` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 전체 회귀를 함께 확인한다.
+  - `pnpm -C app typecheck` 통과
+  - `git diff --check` 통과
+- 메모
+  - 현재 fingerprint는 브라우저 local storage 기반 soft identifier라 보안 경계 그 자체는 아니며, IP만 보던 회원 write abuse 탐지를 한 단계 더 좁히는 보조 축으로 사용한다.
+
+### 2026-03-11: Cycle 298 완료 (moderation risk tier + 병원 후기 검토 큐)
+- 완료 내용
+  - `app/src/server/authenticated-write-throttle.ts`는 기존 `user`, `user+ip`, `shared ip` 제한 외에 `auth-write:user`, `auth-write:ip` 전역 burst limit을 추가했고, `신규 계정(7일)`과 `최근 90일 제재 이력`이 있으면 `ELEVATED/HIGH` risk tier로 더 엄격한 threshold를 적용하도록 보강했다.
+  - 위 helper는 `app/src/server/authenticated-write-throttle.test.ts`에서 기본 limit, elevated limit, 신규 계정+최근 제재 `HIGH` 판정을 회귀로 검증한다.
+  - `app/src/server/queries/moderation-action.queries.ts`에 `listHospitalReviewFlagLogs()`를 추가해 `HOSPITAL_REVIEW_FLAGGED` 로그를 병원명/작성자/신호 기준으로 필터링할 수 있게 했고, `app/src/app/admin/hospital-review-flags/page.tsx`로 운영자 전용 병원 후기 의심 검토 큐를 만들었다.
+  - `app/src/app/admin/reports/page.tsx`, `app/src/app/admin/moderation-logs/page.tsx`, `app/src/app/admin/auth-audits/page.tsx`에는 병원 후기 의심 큐 링크를 추가해 운영 화면 간 이동을 맞췄다.
+- 검증 결과
+  - `pnpm -C app lint app/src/server/authenticated-write-throttle.ts app/src/server/authenticated-write-throttle.test.ts app/src/server/queries/moderation-action.queries.ts app/src/server/queries/moderation-action.queries.test.ts app/src/app/admin/hospital-review-flags/page.tsx app/src/app/admin/moderation-logs/page.tsx app/src/app/admin/reports/page.tsx app/src/app/admin/auth-audits/page.tsx` 통과
+  - `pnpm -C app test -- src/server/authenticated-write-throttle.test.ts src/server/queries/moderation-action.queries.test.ts` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 전체 회귀를 함께 확인한다.
+  - `pnpm -C app typecheck` 통과
+  - `git diff --check` 통과
+- 메모
+  - 이번 턴의 abuse 강화는 fingerprint 기반까지는 아니고, 서버가 안정적으로 볼 수 있는 `계정 연령 + 최근 제재 + 공유 IP burst`를 우선 적용했다.
+  - 병원 후기 검토 큐는 signal logging을 운영자가 바로 소비하는 첫 UI이며, 자동 차단/관계자 판별은 아직 후속 범위다.
+
+### 2026-03-11: Cycle 297 완료 (회원 abuse 다축 throttling + 모더레이션 로그)
+- 완료 내용
+  - `app/src/server/authenticated-write-throttle.ts`를 추가해 authenticated write path를 `user`, `user+ip`, `shared ip` 3축 rate limit으로 묶었고, 글 작성/댓글 작성/신고 작성 경로에 연결했다.
+  - 적용 위치는 `app/src/server/actions/post.ts`, `app/src/server/actions/comment.ts`, `app/src/app/api/posts/route.ts`, `app/src/app/api/posts/[id]/comments/route.ts`, `app/src/app/api/reports/route.ts`이며, 기존 `userId` 단일 key 제한만 보던 구조를 보완했다.
+  - `app/prisma/schema.prisma`, `app/prisma/migrations/20260311100000_add_moderation_action_logs/migration.sql`에 `ModerationActionLog` 모델을 추가하고, `app/src/server/moderation-action-log.ts`와 `app/src/server/queries/moderation-action.queries.ts`, `app/src/app/admin/moderation-logs/page.tsx`로 조회 화면까지 연결했다.
+  - `app/src/server/services/report.service.ts`는 신고 승인/기각/대상 숨김/숨김 해제를, `app/src/server/services/sanction.service.ts`는 단계적 제재 발급을 action log에 남기도록 바꿨다.
+  - `app/src/server/hospital-review-risk.ts`와 `app/src/server/services/post.service.ts`를 통해 병원후기 작성 시 `신규 계정`, `같은 병원 반복 리뷰`, `단기간 병원후기 burst` 신호를 계산하고, 의심 신호가 있으면 `HOSPITAL_REVIEW_FLAGGED` 로그를 남기도록 추가했다.
+  - `app/src/app/admin/reports/page.tsx`, `app/src/app/admin/auth-audits/page.tsx`에는 `/admin/moderation-logs` 진입 링크를 추가했다.
+- 검증 결과
+  - `pnpm -C app exec prisma format` 통과
+  - `pnpm -C app exec prisma generate` 통과
+  - `pnpm -C app lint src/server/services/report.service.ts src/server/actions/post.test.ts src/server/actions/post.ts src/server/actions/comment.ts src/server/services/post.service.ts src/server/services/sanction.service.ts src/server/queries/moderation-action.queries.ts src/server/queries/moderation-action.queries.test.ts src/app/admin/moderation-logs/page.tsx src/server/authenticated-write-throttle.ts src/server/authenticated-write-throttle.test.ts src/server/hospital-review-risk.ts src/server/hospital-review-risk.test.ts src/server/services/post-create-policy.test.ts src/server/services/report.service.test.ts src/server/services/sanction.service.test.ts src/app/api/reports/route.ts src/app/api/posts/route.ts 'src/app/api/posts/[id]/comments/route.ts'` 통과
+  - `pnpm -C app test -- src/server/authenticated-write-throttle.test.ts src/server/hospital-review-risk.test.ts src/server/services/report.service.test.ts src/server/services/sanction.service.test.ts src/server/services/post-create-policy.test.ts src/server/queries/moderation-action.queries.test.ts src/server/actions/post.test.ts src/app/api/reports/route.test.ts src/app/api/posts/route.test.ts 'src/app/api/posts/[id]/comments/route.test.ts'` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `135 files / 675 tests` 통과
+  - `pnpm -C app typecheck` 통과
+  - `git diff --check` 통과
+- 메모
+  - 이번 턴의 hospital review detection은 차단이 아니라 운영자 추적용 signal logging 수준이다.
+  - 회원 다계정 도배 방지는 `shared ip` 축까지 올렸지만, 디바이스 fingerprint까지 포함한 stronger risk scoring은 후속 후보로 남겨뒀다.
+
+### 2026-03-10: Cycle 296 완료 (모더레이션 visibility 정렬 + 댓글 신고 확장)
+- 완료 내용
+  - `app/src/server/queries/notification.queries.ts`는 이제 차단/뮤트 actor를 알림 목록, unread count, redirect fallback 모두에서 제외하고, 숨겨진 actor나 삭제된 post/comment target을 가진 알림을 즉시 archive 하도록 정리했다.
+  - `app/src/lib/sanction-visibility.ts`와 `app/src/server/queries/post.queries.ts`, `app/src/server/queries/community.queries.ts`, `app/src/server/queries/user.queries.ts`를 통해 severe sanction(`SUSPEND_7D/30D`, `PERMANENT_BAN`) 대상 작성자의 공개 게시글/검색/공용 보드/공개 프로필 활동을 노출하지 않도록 visibility 정책을 공통 where로 분리했다.
+  - `app/src/app/users/[id]/page.tsx`, `app/src/app/api/users/[id]/profile-summary/route.ts`는 차단 관계의 공개 프로필 접근을 404로 정리해 댓글에는 숨김이 적용되지만 프로필/summary는 보이던 불일치를 해소했다.
+  - `app/prisma/schema.prisma`, `app/prisma/migrations/20260310191000_enable_comment_reports/migration.sql`, `app/src/server/services/report.service.ts`는 신고 대상을 `COMMENT`까지 확장했고, 관리자 큐/상세(`app/src/server/queries/report.queries.ts`, `app/src/app/admin/reports/**`)와 댓글 UI(`app/src/components/posts/post-comment-thread.tsx`, `app/src/components/posts/post-report-form.tsx`)를 연결했다.
+  - 댓글 신고는 관리자 `HIDE_TARGET/UNHIDE_TARGET` 액션과 댓글 `status` 변경, `commentCount` 재계산, `ReportAudit` 기록까지 이어지도록 맞췄고, 기존 게시글 자동 숨김 규칙은 Post target에만 유지했다.
+  - `docs/policies/모더레이션_운영규칙.md`, `docs/policies/신고_운영정책.md`, `docs/security/보안_계획.md`, `docs/security/보안_진행상황.md`도 현재 코드 기준 정책으로 동기화했다.
+- 검증 결과
+  - `pnpm -C app exec prisma format` 통과
+  - `pnpm -C app exec prisma generate` 통과
+  - `pnpm -C app lint src/server/queries/community.queries.ts src/server/queries/notification.queries.ts src/server/queries/post.queries.ts src/server/queries/user.queries.ts 'src/app/api/users/[id]/profile-summary/route.ts' 'src/app/users/[id]/page.tsx' src/lib/report-target.ts src/lib/validations/report.ts src/lib/validations/report-bulk.ts src/server/services/report.service.ts src/server/queries/report.queries.ts src/components/posts/post-report-form.tsx src/components/posts/post-comment-thread.tsx src/components/admin/report-queue-table.tsx 'src/app/admin/reports/page.tsx' 'src/app/admin/reports/[id]/page.tsx'` 통과
+  - `pnpm -C app test -- src/server/services/report.service.test.ts src/server/queries/report.queries.test.ts src/lib/validations/report.test.ts src/components/posts/post-report-form.test.tsx src/server/queries/notification.queries.test.ts src/server/queries/community.queries.test.ts src/server/queries/post.queries.test.ts 'src/app/api/users/[id]/profile-summary/route.test.ts'` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `132 files / 669 tests` 통과
+  - `pnpm -C app typecheck` 통과
+  - `git diff --check` 통과
+- 메모
+  - 이번 턴은 high-priority moderation gap인 `차단 actor 알림/프로필 노출`, `severe sanction 공개 visibility`, `댓글 신고 부재`를 우선 닫은 것이다.
+  - 회원 다계정 도배 탐지, 병원 후기 위장 리뷰 탐지, 통합 moderation action log는 후속 하드닝 후보로 남겨뒀다.
+
 ### 2026-03-10: Cycle 295 완료 (피드 모바일 메타 우측 복귀)
 - 완료 내용
   - `app/src/components/posts/feed-infinite-list.tsx`는 모바일 카드 레이아웃을 다시 2컬럼 grid로 바꿔 게시판 칩, 작성자, 시간 메타가 제목 아래 분리줄이 아니라 우측 컬럼에 유지되도록 조정했다.

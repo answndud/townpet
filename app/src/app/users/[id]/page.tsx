@@ -85,6 +85,14 @@ export async function generateMetadata({
     };
   }
 
+  const relationState = await getUserRelationState(session.user.id, profile.id);
+  if (relationState.isBlockedByMe || relationState.hasBlockedMe) {
+    return {
+      title: "사용자를 찾을 수 없습니다",
+      robots: { index: false, follow: false },
+    };
+  }
+
   const displayName = resolveUserDisplayName(profile.nickname, "익명 사용자");
   const description = profile.bio?.trim()
     ? buildBioExcerpt(profile.bio)
@@ -148,6 +156,9 @@ export default async function PublicUserProfilePage({
   const displayName = resolveUserDisplayName(profile.nickname, "익명 사용자");
 
   const relationState = await getUserRelationState(viewerId, profile.id);
+  if (relationState.isBlockedByMe || relationState.hasBlockedMe) {
+    notFound();
+  }
   const resolvedTab = resolvePublicProfileTab(tab, {
     showPublicPosts: profile.showPublicPosts,
     showPublicComments: profile.showPublicComments,

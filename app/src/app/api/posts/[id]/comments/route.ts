@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 
 import { buildGuestIpMeta } from "@/lib/guest-ip-display";
 import { getCurrentUserId } from "@/server/auth";
+import { enforceAuthenticatedWriteRateLimit } from "@/server/authenticated-write-throttle";
 import { monitorUnhandledError } from "@/server/error-monitor";
 import { assertGuestStepUp } from "@/server/guest-step-up";
 import { getGuestPostPolicy } from "@/server/queries/policy.queries";
@@ -76,6 +77,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     const forceGuestMode =
       process.env.NODE_ENV !== "production" && request.headers.get("x-guest-mode") === "1";
     const userId = forceGuestMode ? null : await getCurrentUserId();
+    const clientIp = getClientIp(request);
     const viewerId = userId ?? undefined;
     const post = await getPostReadAccessById(postId, viewerId);
     if (!post) {
@@ -88,7 +90,13 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     await assertPostReadable(post, viewerId);
 
     if (userId) {
-      await enforceRateLimit({ key: `comments:${userId}`, limit: 10, windowMs: 60_000 });
+      const clientFingerprint = request.headers.get("x-client-fingerprint")?.trim() || undefined;
+      await enforceAuthenticatedWriteRateLimit({
+        scope: "comment:create",
+        userId,
+        ip: clientIp,
+        clientFingerprint,
+      });
       const comment = await createComment({
         authorId: userId,
         postId,
@@ -99,7 +107,6 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     }
 
     const guestPostPolicy = await getGuestPostPolicy();
-    const clientIp = getClientIp(request);
     const guestFingerprint = request.headers.get("x-guest-fingerprint")?.trim() || undefined;
     const guestRateKey = `comments:guest:ip:${clientIp}:fp:${guestFingerprint ?? "none"}`;
     await enforceRateLimit({

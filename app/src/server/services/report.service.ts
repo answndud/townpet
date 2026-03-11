@@ -1,4 +1,12 @@
-import { PostStatus, Prisma, ReportStatus, ReportTarget } from "@prisma/client";
+import {
+  ModerationActionType,
+  ModerationTargetType,
+  PostStatus,
+  PostType,
+  Prisma,
+  ReportStatus,
+  ReportTarget,
+} from "@prisma/client";
 
 import { isReportablePostType } from "@/lib/post-type-groups";
 import { prisma } from "@/lib/prisma";
@@ -11,11 +19,16 @@ import { reportBulkActionSchema } from "@/lib/validations/report-bulk";
 import { reportUpdateSchema } from "@/lib/validations/report-update";
 import {
   bumpFeedCacheVersion,
+  bumpPostCommentsCacheVersion,
   bumpPostDetailCacheVersion,
   bumpSearchCacheVersion,
   bumpSuggestCacheVersion,
 } from "@/server/cache/query-cache";
 import { hasBlockingRelation } from "@/server/queries/user-relation.queries";
+import {
+  createModerationActionLogs,
+  type ModerationActionLogInput,
+} from "@/server/moderation-action-log";
 import {
   formatSanctionLevelLabel,
   issueNextUserSanction,
@@ -28,8 +41,90 @@ async function resolvePostReportTarget(
 ) {
   return tx.post.findUnique({
     where: { id: targetId },
-    select: { authorId: true, type: true },
+    select: { id: true, authorId: true, type: true, status: true },
   });
+}
+
+async function resolveCommentReportTarget(
+  tx: Prisma.TransactionClient,
+  targetId: string,
+) {
+  return tx.comment.findUnique({
+    where: { id: targetId },
+    select: {
+      id: true,
+      authorId: true,
+      postId: true,
+      status: true,
+      content: true,
+      post: {
+        select: {
+          id: true,
+          status: true,
+        },
+      },
+    },
+  });
+}
+
+function toModerationTargetType(targetType: ReportTarget) {
+  return targetType === ReportTarget.POST
+    ? ModerationTargetType.POST
+    : ModerationTargetType.COMMENT;
+}
+
+type ResolvedReportTarget = {
+  targetType: ReportTarget;
+  targetId: string;
+  targetUserId: string;
+  postTargetId: string | null;
+  commentTargetId: string | null;
+  postType?: PostType | null;
+};
+
+async function resolveReportTarget(
+  tx: Prisma.TransactionClient,
+  targetType: ReportTarget,
+  targetId: string,
+): Promise<ResolvedReportTarget | null> {
+  if (targetType === ReportTarget.POST) {
+    const targetPost = await resolvePostReportTarget(tx, targetId);
+    if (!targetPost || targetPost.status !== PostStatus.ACTIVE) {
+      return null;
+    }
+
+    return {
+      targetType,
+      targetId,
+      targetUserId: targetPost.authorId,
+      postTargetId: targetPost.id,
+      commentTargetId: null,
+      postType: targetPost.type,
+    };
+  }
+
+  if (targetType === ReportTarget.COMMENT) {
+    const targetComment = await resolveCommentReportTarget(tx, targetId);
+    if (
+      !targetComment ||
+      targetComment.status !== PostStatus.ACTIVE ||
+      !targetComment.post ||
+      targetComment.post.status !== PostStatus.ACTIVE
+    ) {
+      return null;
+    }
+
+    return {
+      targetType,
+      targetId,
+      targetUserId: targetComment.authorId,
+      postTargetId: targetComment.postId,
+      commentTargetId: targetComment.id,
+      postType: null,
+    };
+  }
+
+  return null;
 }
 
 async function listPendingPostModerationSignals(
@@ -121,7 +216,7 @@ async function issueBulkSanctions({
         moderatorId,
         reason:
           resolution?.trim() ||
-          `신고 ${value.reportCount}건 일괄 승인에 따른 단계적 제재 (대상 글 ${value.targetId})`,
+          `신고 ${value.reportCount}건 일괄 승인에 따른 단계적 제재 (대상 ${value.targetId})`,
         sourceReportId: value.anchorReportId,
       });
 
@@ -165,23 +260,30 @@ export async function createReport({ reporterId, input }: CreateReportParams) {
 
   let shouldBumpCache = false;
   const report = await prisma.$transaction(async (tx) => {
-    const targetPost = await resolvePostReportTarget(tx, parsed.data.targetId);
-    const targetUserId = targetPost?.authorId ?? null;
+    const resolvedTarget = await resolveReportTarget(
+      tx,
+      parsed.data.targetType,
+      parsed.data.targetId,
+    );
 
-    if (!targetPost || !targetUserId) {
+    if (!resolvedTarget) {
       throw new ServiceError("신고 대상을 찾을 수 없습니다.", "REPORT_TARGET_NOT_FOUND", 404);
     }
-    if (!isReportablePostType(targetPost.type)) {
+    if (
+      resolvedTarget.targetType === ReportTarget.POST &&
+      resolvedTarget.postType &&
+      !isReportablePostType(resolvedTarget.postType)
+    ) {
       throw new ServiceError(
         "운영 관리 게시글은 신고할 수 없습니다.",
         "REPORT_DISABLED_FOR_POST_TYPE",
         403,
       );
     }
-    if (targetUserId === reporterId) {
+    if (resolvedTarget.targetUserId === reporterId) {
       throw new ServiceError("자기 자신은 신고할 수 없습니다.", "INVALID_TARGET", 400);
     }
-    if (await hasBlockingRelation(reporterId, targetUserId)) {
+    if (await hasBlockingRelation(reporterId, resolvedTarget.targetUserId)) {
       throw new ServiceError(
         "차단 관계에서는 신고를 접수할 수 없습니다.",
         "USER_BLOCK_RELATION",
@@ -194,28 +296,33 @@ export async function createReport({ reporterId, input }: CreateReportParams) {
         reporterId,
         targetType: parsed.data.targetType,
         targetId: parsed.data.targetId,
-        targetUserId,
+        postTargetId: resolvedTarget.postTargetId,
+        commentTargetId: resolvedTarget.commentTargetId,
+        targetUserId: resolvedTarget.targetUserId,
         reason: parsed.data.reason,
         description: parsed.data.description,
         status: ReportStatus.PENDING,
       },
     });
 
-    const moderationSignals = await listPendingPostModerationSignals(tx, parsed.data.targetId);
-    const moderationSummary = summarizeReportModeration(moderationSignals);
+    if (parsed.data.targetType === ReportTarget.POST) {
+      const moderationSignals = await listPendingPostModerationSignals(tx, parsed.data.targetId);
+      const moderationSummary = summarizeReportModeration(moderationSignals);
 
-    if (moderationSummary.shouldAutoHide) {
-      await tx.post.update({
-        where: { id: parsed.data.targetId },
-        data: { status: PostStatus.HIDDEN },
-      });
-      shouldBumpCache = true;
+      if (moderationSummary.shouldAutoHide) {
+        await tx.post.update({
+          where: { id: parsed.data.targetId },
+          data: { status: PostStatus.HIDDEN },
+        });
+        shouldBumpCache = true;
+      }
     }
 
     return report;
   });
   if (shouldBumpCache) {
     void bumpFeedCacheVersion().catch(() => undefined);
+    void bumpPostCommentsCacheVersion().catch(() => undefined);
     void bumpSearchCacheVersion().catch(() => undefined);
     void bumpSuggestCacheVersion().catch(() => undefined);
     void bumpPostDetailCacheVersion().catch(() => undefined);
@@ -247,6 +354,9 @@ export async function updateReport({
         post: {
           select: { id: true, authorId: true },
         },
+        comment: {
+          select: { id: true, authorId: true, postId: true },
+        },
       },
     });
 
@@ -256,14 +366,6 @@ export async function updateReport({
 
     if (report.status !== ReportStatus.PENDING) {
       throw new ServiceError("이미 처리된 신고입니다.", "REPORT_ALREADY_PROCESSED", 409);
-    }
-
-    if (report.targetType !== ReportTarget.POST) {
-      throw new ServiceError(
-        "현재 운영에서는 게시글 신고만 처리할 수 있습니다.",
-        "UNSUPPORTED_REPORT_TARGET",
-        409,
-      );
     }
 
     const updated = await tx.report.update({
@@ -285,18 +387,54 @@ export async function updateReport({
       },
     });
 
-    if (report.post && parsed.data.status === ReportStatus.DISMISSED) {
+    const targetUserId =
+      report.targetUserId ?? report.post?.authorId ?? report.comment?.authorId ?? null;
+    const moderationLogs: ModerationActionLogInput[] = [
+      {
+        actorId: moderatorId,
+        action:
+          parsed.data.status === ReportStatus.RESOLVED
+            ? ModerationActionType.REPORT_RESOLVED
+            : ModerationActionType.REPORT_DISMISSED,
+        targetType: toModerationTargetType(report.targetType),
+        targetId: report.targetId,
+        targetUserId,
+        reportId: report.id,
+        metadata: {
+          resolution: parsed.data.resolution ?? null,
+          postId: report.comment?.postId ?? report.post?.id ?? null,
+        },
+      },
+    ];
+
+    if (
+      report.targetType === ReportTarget.POST &&
+      report.post &&
+      parsed.data.status === ReportStatus.DISMISSED
+    ) {
       await tx.post.update({
         where: { id: report.targetId },
         data: { status: PostStatus.ACTIVE },
       });
       shouldBumpCache = true;
+      moderationLogs.push({
+        actorId: moderatorId,
+        action: ModerationActionType.TARGET_UNHIDDEN,
+        targetType: ModerationTargetType.POST,
+        targetId: report.targetId,
+        targetUserId,
+        reportId: report.id,
+        metadata: {
+          sourceAction: "DISMISS",
+          postId: report.targetId,
+        },
+      });
     }
 
-    let targetUserId = report.targetUserId;
-    if (!targetUserId) {
-      targetUserId = report.post?.authorId ?? null;
-    }
+    await createModerationActionLogs({
+      delegate: tx.moderationActionLog,
+      inputs: moderationLogs,
+    });
 
     return {
       updated,
@@ -329,6 +467,7 @@ export async function updateReport({
 
   if (shouldBumpCache) {
     void bumpFeedCacheVersion().catch(() => undefined);
+    void bumpPostCommentsCacheVersion().catch(() => undefined);
     void bumpSearchCacheVersion().catch(() => undefined);
     void bumpSuggestCacheVersion().catch(() => undefined);
     void bumpPostDetailCacheVersion().catch(() => undefined);
@@ -362,6 +501,14 @@ export async function bulkUpdateReports({ input, moderatorId }: BulkUpdateReport
         post: {
           select: { authorId: true },
         },
+        comment: {
+          select: {
+            id: true,
+            authorId: true,
+            postId: true,
+            status: true,
+          },
+        },
       },
     });
 
@@ -375,11 +522,13 @@ export async function bulkUpdateReports({ input, moderatorId }: BulkUpdateReport
     }
 
     const unsupportedReports = reports.filter(
-      (report) => report.targetType !== ReportTarget.POST,
+      (report) =>
+        report.targetType !== ReportTarget.POST &&
+        report.targetType !== ReportTarget.COMMENT,
     );
     if (unsupportedReports.length > 0) {
       throw new ServiceError(
-        "현재 운영에서는 게시글 신고만 일괄 처리할 수 있습니다.",
+        "현재 운영 범위 밖의 신고 대상이 포함되어 있습니다.",
         "UNSUPPORTED_REPORT_TARGET",
         409,
       );
@@ -387,7 +536,7 @@ export async function bulkUpdateReports({ input, moderatorId }: BulkUpdateReport
 
     const now = new Date();
     const status =
-      action === "RESOLVE" || action === "HIDE_POST"
+      action === "RESOLVE" || action === "HIDE_TARGET"
         ? ReportStatus.RESOLVED
         : ReportStatus.DISMISSED;
 
@@ -410,29 +559,144 @@ export async function bulkUpdateReports({ input, moderatorId }: BulkUpdateReport
       })),
     });
 
+    const moderationLogs: ModerationActionLogInput[] = reports.flatMap((report) => {
+      const targetType = toModerationTargetType(report.targetType);
+      const targetUserId =
+        report.targetUserId ?? report.post?.authorId ?? report.comment?.authorId ?? null;
+      const postId =
+        report.comment?.postId ??
+        (report.targetType === ReportTarget.POST ? report.targetId : null);
+      const entries: ModerationActionLogInput[] = [
+        {
+          actorId: moderatorId,
+          action:
+            status === ReportStatus.RESOLVED
+              ? ModerationActionType.REPORT_RESOLVED
+              : ModerationActionType.REPORT_DISMISSED,
+          targetType,
+          targetId: report.targetId,
+          targetUserId,
+          reportId: report.id,
+          metadata: {
+            bulk: true,
+            sourceAction: action,
+            resolution: resolution ?? null,
+            postId,
+          },
+        },
+      ];
+
+      if (action === "HIDE_TARGET") {
+        entries.push({
+          actorId: moderatorId,
+          action: ModerationActionType.TARGET_HIDDEN,
+          targetType,
+          targetId: report.targetId,
+          targetUserId,
+          reportId: report.id,
+          metadata: {
+            bulk: true,
+            sourceAction: action,
+            resolution: resolution ?? null,
+            postId,
+          },
+        });
+      }
+
+      if (
+        action === "UNHIDE_TARGET" ||
+        (action === "DISMISS" && report.targetType === ReportTarget.POST)
+      ) {
+        entries.push({
+          actorId: moderatorId,
+          action: ModerationActionType.TARGET_UNHIDDEN,
+          targetType,
+          targetId: report.targetId,
+          targetUserId,
+          reportId: report.id,
+          metadata: {
+            bulk: true,
+            sourceAction: action,
+            resolution: resolution ?? null,
+            postId,
+          },
+        });
+      }
+
+      return entries;
+    });
+
     const postTargetIds = reports
       .filter((report) => report.targetType === ReportTarget.POST)
       .map((report) => report.targetId);
+    const commentTargets = reports.flatMap((report) =>
+      report.targetType === ReportTarget.COMMENT && report.comment ? [report.comment] : [],
+    );
 
     if (postTargetIds.length > 0) {
-      if (action === "HIDE_POST") {
+      if (action === "HIDE_TARGET") {
         await tx.post.updateMany({
           where: { id: { in: postTargetIds } },
           data: { status: PostStatus.HIDDEN },
         });
       }
 
-      if (action === "UNHIDE_POST" || action === "DISMISS") {
+      if (action === "UNHIDE_TARGET" || action === "DISMISS") {
         await tx.post.updateMany({
           where: { id: { in: postTargetIds } },
           data: { status: PostStatus.ACTIVE },
         });
       }
 
-      if (action === "HIDE_POST" || action === "UNHIDE_POST" || action === "DISMISS") {
+      if (action === "HIDE_TARGET" || action === "UNHIDE_TARGET" || action === "DISMISS") {
         shouldBumpCache = true;
       }
     }
+
+    if (commentTargets.length > 0 && (action === "HIDE_TARGET" || action === "UNHIDE_TARGET")) {
+      const commentIds = commentTargets.map((comment) => comment.id);
+      await tx.comment.updateMany({
+        where: { id: { in: commentIds } },
+        data: {
+          status: action === "HIDE_TARGET" ? PostStatus.DELETED : PostStatus.ACTIVE,
+        },
+      });
+
+      const affectedPostIds = Array.from(new Set(commentTargets.map((comment) => comment.postId)));
+      const activeComments = await tx.comment.findMany({
+        where: {
+          postId: { in: affectedPostIds },
+          status: PostStatus.ACTIVE,
+        },
+        select: {
+          postId: true,
+        },
+      });
+      const activeCountByPostId = new Map<string, number>();
+      for (const postId of affectedPostIds) {
+        activeCountByPostId.set(postId, 0);
+      }
+      for (const comment of activeComments) {
+        activeCountByPostId.set(comment.postId, (activeCountByPostId.get(comment.postId) ?? 0) + 1);
+      }
+
+      await Promise.all(
+        affectedPostIds.map((postId) =>
+          tx.post.update({
+            where: { id: postId },
+            data: {
+              commentCount: activeCountByPostId.get(postId) ?? 0,
+            },
+          }),
+        ),
+      );
+      shouldBumpCache = true;
+    }
+
+    await createModerationActionLogs({
+      delegate: tx.moderationActionLog,
+      inputs: moderationLogs,
+    });
 
     return {
       count: reports.length,
@@ -441,7 +705,7 @@ export async function bulkUpdateReports({ input, moderatorId }: BulkUpdateReport
         .map((report) => ({
           reportId: report.id,
           targetId: report.targetId,
-          targetUserId: report.targetUserId ?? report.post?.authorId ?? "",
+          targetUserId: report.targetUserId ?? report.post?.authorId ?? report.comment?.authorId ?? "",
         }))
         .filter((report): report is BulkSanctionCandidate => Boolean(report.targetUserId)),
     };
@@ -458,6 +722,7 @@ export async function bulkUpdateReports({ input, moderatorId }: BulkUpdateReport
 
   if (shouldBumpCache) {
     void bumpFeedCacheVersion().catch(() => undefined);
+    void bumpPostCommentsCacheVersion().catch(() => undefined);
     void bumpSearchCacheVersion().catch(() => undefined);
     void bumpSuggestCacheVersion().catch(() => undefined);
     void bumpPostDetailCacheVersion().catch(() => undefined);

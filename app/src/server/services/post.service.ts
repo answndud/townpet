@@ -1,5 +1,7 @@
 import {
   GuestViolationCategory,
+  ModerationActionType,
+  ModerationTargetType,
   PostReactionType,
   PostScope,
   PostStatus,
@@ -51,6 +53,8 @@ import {
   getGuestPostPolicy,
   getNewUserSafetyPolicy,
 } from "@/server/queries/policy.queries";
+import { buildHospitalReviewRiskSignals } from "@/server/hospital-review-risk";
+import { recordModerationAction } from "@/server/moderation-action-log";
 import { hasBlockingRelation } from "@/server/queries/user-relation.queries";
 import {
   assertGuestNotBanned,
@@ -612,6 +616,7 @@ export async function createPost({ authorId, input, guestIdentity }: CreatePostP
   }
 
   let resolvedAuthorId: string;
+  let resolvedAuthorAccountCreatedAt: Date | null = null;
   let guestCreateMeta:
     | {
         guestAuthorId: string;
@@ -697,6 +702,7 @@ export async function createPost({ authorId, input, guestIdentity }: CreatePostP
       });
     }
     resolvedAuthorId = author.id;
+    resolvedAuthorAccountCreatedAt = author.createdAt;
   } else {
     if (!guestIdentity) {
       throw new ServiceError("비회원 식별 정보가 필요합니다.", "INVALID_GUEST_CONTEXT", 400);
@@ -894,6 +900,66 @@ export async function createPost({ authorId, input, guestIdentity }: CreatePostP
       },
     });
     await finalizeUploadUrlChanges({ attachedUrls: normalizedImageUrls });
+    if (
+      shouldCreateReview &&
+      resolvedAuthorAccountCreatedAt &&
+      reviewInput.hospitalName?.trim().length
+    ) {
+      const normalizedHospitalName = reviewInput.hospitalName.trim();
+      const [sameHospitalReviewCount30d, recentHospitalReviewCount7d] = await Promise.all([
+        prisma.hospitalReview.count({
+          where: {
+            hospitalName: {
+              equals: normalizedHospitalName,
+              mode: "insensitive",
+            },
+            post: {
+              authorId: resolvedAuthorId,
+              status: PostStatus.ACTIVE,
+              createdAt: {
+                gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+              },
+              id: {
+                not: created.id,
+              },
+            },
+          },
+        }),
+        prisma.hospitalReview.count({
+          where: {
+            post: {
+              authorId: resolvedAuthorId,
+              status: PostStatus.ACTIVE,
+              type: PostType.HOSPITAL_REVIEW,
+              createdAt: {
+                gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+              },
+            },
+          },
+        }),
+      ]);
+      const hospitalReviewRisk = buildHospitalReviewRiskSignals({
+        accountCreatedAt: resolvedAuthorAccountCreatedAt,
+        sameHospitalReviewCount30d,
+        recentHospitalReviewCount7d,
+      });
+
+      if (hospitalReviewRisk.flagged) {
+        await recordModerationAction({
+          actorId: resolvedAuthorId,
+          action: ModerationActionType.HOSPITAL_REVIEW_FLAGGED,
+          targetType: ModerationTargetType.POST,
+          targetId: created.id,
+          targetUserId: resolvedAuthorId,
+          metadata: {
+            hospitalName: normalizedHospitalName,
+            signals: hospitalReviewRisk.signals,
+            sameHospitalReviewCount30d,
+            recentHospitalReviewCount7d,
+          },
+        });
+      }
+    }
     notifyPostCacheChange();
     return created;
   }

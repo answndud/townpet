@@ -1,6 +1,5 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { ReportReason, ReportStatus, ReportTarget, UserRole } from "@prisma/client";
+import { ReportReason, ReportStatus, ReportTarget } from "@prisma/client";
 
 import { ReportQueueTable } from "@/components/admin/report-queue-table";
 import {
@@ -16,8 +15,7 @@ import {
   getReportTargetLabel,
   isSupportedReportTarget,
 } from "@/lib/report-target";
-import { getCurrentUser } from "@/server/auth";
-import { redirectToProfileIfNicknameMissing } from "@/server/nickname-guard";
+import { requireModeratorPageUser } from "@/server/admin-page-access";
 import { listReportAuditsByReportIds } from "@/server/queries/report-audit.queries";
 import { getReportStats, listReports } from "@/server/queries/report.queries";
 import { listRecentSanctions } from "@/server/queries/sanction.queries";
@@ -35,33 +33,7 @@ const statusLabels: Record<ReportStatus, string> = {
 };
 
 export default async function ReportsPage({ searchParams }: ReportsPageProps) {
-  const user = await getCurrentUser();
-  if (!user) {
-    redirect("/login");
-  }
-  redirectToProfileIfNicknameMissing({
-    isAuthenticated: true,
-    nickname: user.nickname,
-  });
-
-  const isModerator =
-    user.role === UserRole.ADMIN || user.role === UserRole.MODERATOR;
-
-  if (!isModerator) {
-    return (
-      <div className="min-h-screen">
-        <main className="mx-auto flex w-full max-w-[980px] flex-col gap-4 px-4 py-10 sm:px-6">
-          <h1 className="text-xl font-semibold text-[#10284a]">접근 권한이 없습니다.</h1>
-          <p className="text-sm text-[#4f678d]">
-            신고 큐는 관리자 또는 운영자만 접근할 수 있습니다.
-          </p>
-          <Link href="/feed" className="text-xs text-[#5a7398]">
-            홈으로 돌아가기
-          </Link>
-        </main>
-      </div>
-    );
-  }
+  await requireModeratorPageUser();
 
   const resolvedParams = (await searchParams) ?? {};
   const statusParam = resolvedParams.status ?? ReportStatus.PENDING;
@@ -144,10 +116,20 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
       const moderationKey = `${report.targetType}:${report.targetId}`;
       const moderation =
         moderationMap.get(moderationKey) ?? summarizeReportModeration([]);
-    const targetTitle = report.post?.title ?? report.targetId;
-    const targetHref = report.post ? `/posts/${report.post.id}` : undefined;
+      const targetTitle =
+        report.targetType === ReportTarget.COMMENT
+          ? report.comment?.content?.slice(0, 60) || report.targetId
+          : report.post?.title ?? report.targetId;
+      const targetHref =
+        report.targetType === ReportTarget.COMMENT
+          ? report.comment?.postId
+            ? `/posts/${report.comment.postId}#comment-${report.comment.id}`
+            : undefined
+          : report.post
+            ? `/posts/${report.post.id}`
+            : undefined;
 
-    const auditsForReport = auditMap.get(report.id) ?? [];
+      const auditsForReport = auditMap.get(report.id) ?? [];
 
       return {
         id: report.id,
@@ -230,6 +212,12 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
             긴급 {criticalPendingCount}건 · 높은 우선순위 {highPendingCount}건
           </p>
         </header>
+
+        <div className="flex flex-wrap items-center gap-3 text-xs text-[#5a7398]">
+          <Link href="/admin/moderation-logs">모더레이션 로그</Link>
+          <Link href="/admin/hospital-review-flags">병원 후기 의심 신호</Link>
+          <Link href="/admin/auth-audits">인증 감사 로그</Link>
+        </div>
 
         {showUpdated ? (
           <ReportUpdateBanner message="신고 처리 결과가 반영되었습니다." />
@@ -416,6 +404,7 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
         <div className="flex flex-wrap items-center gap-3 text-xs text-[#5a7398]">
           <Link href="/admin/breeds">품종 사전</Link>
           <Link href="/admin/policies">운영 정책 설정</Link>
+          <Link href="/admin/moderation-logs">모더레이션 로그</Link>
           <Link href="/admin/auth-audits">인증 로그</Link>
           <Link href="/admin/personalization">개인화 지표</Link>
         </div>

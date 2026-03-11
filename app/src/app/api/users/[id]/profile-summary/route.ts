@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 
 import { requireCurrentUserId } from "@/server/auth";
 import { monitorUnhandledError } from "@/server/error-monitor";
+import { getUserRelationState } from "@/server/queries/user-relation.queries";
 import { getPublicUserProfileById } from "@/server/queries/user.queries";
 import { jsonError, jsonOk } from "@/server/response";
 import { ServiceError } from "@/server/services/service-error";
@@ -16,6 +17,13 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     viewerId = await requireCurrentUserId();
     const { id } = await params;
+    const relationState = await getUserRelationState(viewerId, id);
+    if (relationState.isBlockedByMe || relationState.hasBlockedMe) {
+      return jsonError(404, {
+        code: "NOT_FOUND",
+        message: "사용자를 찾을 수 없습니다.",
+      });
+    }
     const profile = await getPublicUserProfileById(id);
 
     if (!profile) {

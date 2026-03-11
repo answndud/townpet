@@ -6,6 +6,7 @@ import { isLoginRequiredPostType } from "@/lib/post-access";
 import { FEED_PAGE_SIZE } from "@/lib/feed";
 import { postListSchema, toPostListInput } from "@/lib/validations/post";
 import { countPosts, listPosts } from "@/server/queries/post.queries";
+import { enforceAuthenticatedWriteRateLimit } from "@/server/authenticated-write-throttle";
 import { getCurrentUserId, hasSessionCookieFromRequest } from "@/server/auth";
 import { buildCacheControlHeader } from "@/server/cache/query-cache";
 import { monitorUnhandledError } from "@/server/error-monitor";
@@ -171,17 +172,23 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    const clientIp = getClientIp(request);
     const forceGuestMode =
       process.env.NODE_ENV !== "production" && request.headers.get("x-guest-mode") === "1";
     const userId = forceGuestMode ? null : await getCurrentUserId();
 
     if (userId) {
-      await enforceRateLimit({ key: `posts:${userId}`, limit: 5, windowMs: 60_000 });
+      const clientFingerprint = request.headers.get("x-client-fingerprint")?.trim() || undefined;
+      await enforceAuthenticatedWriteRateLimit({
+        scope: "post:create",
+        userId,
+        ip: clientIp,
+        clientFingerprint,
+      });
       const post = await createPost({ authorId: userId, input: body });
       return jsonOk(post, { status: 201 });
     }
 
-    const clientIp = getClientIp(request);
     const guestFingerprint = request.headers.get("x-guest-fingerprint")?.trim() || undefined;
     const guestRateKey = `posts:guest:ip:${clientIp}:fp:${guestFingerprint ?? "none"}`;
     const guestPostPolicy = await getGuestPostPolicy();

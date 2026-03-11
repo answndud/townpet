@@ -17,6 +17,7 @@ import {
   hasBreedLoungeRoute,
 } from "@/lib/pet-profile";
 import { prisma } from "@/lib/prisma";
+import { buildVisibleAuthorFilter } from "@/lib/sanction-visibility";
 import { FEED_PAGE_SIZE } from "@/lib/feed";
 import {
   expandExcludedPostTypes,
@@ -979,6 +980,13 @@ function buildPostListWhere({
         },
       }
     : null;
+  const visibilityFilter: Prisma.PostWhereInput = {
+    author: buildVisibleAuthorFilter(),
+  };
+  const andFilters = [
+    ...(breedFilter ? [breedFilter] : []),
+    visibilityFilter,
+  ];
 
   return {
     status: PostStatus.ACTIVE,
@@ -1013,7 +1021,7 @@ function buildPostListWhere({
     ...(hiddenAuthorIds.length > 0 ? { authorId: { notIn: hiddenAuthorIds } } : {}),
     ...(since ? { createdAt: { gte: since } } : {}),
     ...buildPostSearchWhere(q, searchIn),
-    ...(breedFilter ? { AND: [breedFilter] } : {}),
+    ...(andFilters.length > 0 ? { AND: andFilters } : {}),
   };
 }
 
@@ -2373,8 +2381,10 @@ export async function getPostById(id?: string, viewerId?: string) {
   const shouldCache = !viewerId;
   const runGetPost = async () => {
     const hiddenAuthorIds = await listHiddenAuthorIdsForViewer(viewerId);
-    const visibilityFilter =
-      hiddenAuthorIds.length > 0 ? { authorId: { notIn: hiddenAuthorIds } } : {};
+    const visibilityFilter: Prisma.PostWhereInput = {
+      ...(hiddenAuthorIds.length > 0 ? { authorId: { notIn: hiddenAuthorIds } } : {}),
+      author: buildVisibleAuthorFilter(),
+    };
 
     if (!supportsPostReactionsField()) {
       const post = await prisma.post
@@ -2491,8 +2501,10 @@ export async function getPostMetadataById(id?: string, viewerId?: string) {
   const shouldCache = !viewerId;
   const runMetadata = async () => {
     const hiddenAuthorIds = await listHiddenAuthorIdsForViewer(viewerId);
-    const visibilityFilter =
-      hiddenAuthorIds.length > 0 ? { authorId: { notIn: hiddenAuthorIds } } : {};
+    const visibilityFilter: Prisma.PostWhereInput = {
+      ...(hiddenAuthorIds.length > 0 ? { authorId: { notIn: hiddenAuthorIds } } : {}),
+      author: buildVisibleAuthorFilter(),
+    };
 
     return prisma.post.findFirst({
       where: { id, ...visibilityFilter },
@@ -2533,8 +2545,10 @@ export async function getPostStatsById(id?: string, viewerId?: string) {
   const shouldCache = !viewerId;
   const runStats = async () => {
     const hiddenAuthorIds = await listHiddenAuthorIdsForViewer(viewerId);
-    const visibilityFilter =
-      hiddenAuthorIds.length > 0 ? { authorId: { notIn: hiddenAuthorIds } } : {};
+    const visibilityFilter: Prisma.PostWhereInput = {
+      ...(hiddenAuthorIds.length > 0 ? { authorId: { notIn: hiddenAuthorIds } } : {}),
+      author: buildVisibleAuthorFilter(),
+    };
 
     return prisma.post.findFirst({
       where: { id, ...visibilityFilter },
@@ -2572,8 +2586,10 @@ export async function getPostReadAccessById(id?: string, viewerId?: string) {
   const shouldCache = !viewerId;
   const runReadAccess = async () => {
     const hiddenAuthorIds = await listHiddenAuthorIdsForViewer(viewerId);
-    const visibilityFilter =
-      hiddenAuthorIds.length > 0 ? { authorId: { notIn: hiddenAuthorIds } } : {};
+    const visibilityFilter: Prisma.PostWhereInput = {
+      ...(hiddenAuthorIds.length > 0 ? { authorId: { notIn: hiddenAuthorIds } } : {}),
+      author: buildVisibleAuthorFilter(),
+    };
 
     return prisma.post.findFirst({
       where: { id, ...visibilityFilter },
@@ -2606,8 +2622,10 @@ export async function getPostContentById(id?: string, viewerId?: string) {
   const shouldCache = !viewerId;
   const runContent = async () => {
     const hiddenAuthorIds = await listHiddenAuthorIdsForViewer(viewerId);
-    const visibilityFilter =
-      hiddenAuthorIds.length > 0 ? { authorId: { notIn: hiddenAuthorIds } } : {};
+    const visibilityFilter: Prisma.PostWhereInput = {
+      ...(hiddenAuthorIds.length > 0 ? { authorId: { notIn: hiddenAuthorIds } } : {}),
+      author: buildVisibleAuthorFilter(),
+    };
 
     return prisma.post.findFirst({
       where: { id, ...visibilityFilter },
@@ -3792,6 +3810,16 @@ function buildRankedSearchWhereSql({
     clauses.push(Prisma.sql`p."authorId" NOT IN (${Prisma.join(hiddenAuthorIds)})`);
   }
 
+  clauses.push(
+    Prisma.sql`NOT EXISTS (
+      SELECT 1
+      FROM "UserSanction" us
+      WHERE us."userId" = p."authorId"
+        AND us."level" IN ('SUSPEND_7D', 'SUSPEND_30D', 'PERMANENT_BAN')
+        AND (us."expiresAt" IS NULL OR us."expiresAt" > NOW())
+    )`,
+  );
+
   return Prisma.join(clauses, " AND ");
 }
 
@@ -4011,6 +4039,7 @@ export async function listRankedSearchPosts({
       where: {
         id: { in: candidateIds },
         ...(hiddenAuthorIds.length > 0 ? { authorId: { notIn: hiddenAuthorIds } } : {}),
+        author: buildVisibleAuthorFilter(),
       },
     };
 
@@ -4152,6 +4181,7 @@ export async function listPostSearchSuggestions({
             ? { neighborhoodId: "__NO_NEIGHBORHOOD__" }
             : {}),
         ...(hiddenAuthorIds.length > 0 ? { authorId: { notIn: hiddenAuthorIds } } : {}),
+        author: buildVisibleAuthorFilter(),
         ...buildPostSearchWhere(trimmedQuery, resolvedSearchIn),
       },
       select: {

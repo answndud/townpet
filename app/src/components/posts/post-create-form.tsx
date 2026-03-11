@@ -16,6 +16,7 @@ import {
   GUEST_BLOCKED_POST_TYPES,
   GUEST_MAX_IMAGE_COUNT,
 } from "@/lib/guest-post-policy";
+import { getClientFingerprint } from "@/lib/guest-client";
 import { getGuestWriteHeaders } from "@/lib/guest-step-up.client";
 import {
   isAnimalTagsRequiredCommonBoardPostType,
@@ -834,7 +835,9 @@ export function PostCreateForm({
       };
 
       const result = isAuthenticated
-        ? await createPostAction(payload)
+        ? await createPostAction(payload, {
+            clientFingerprint: getClientFingerprint(),
+          })
         : await (async () => {
             try {
               const guestHeaders = await getGuestWriteHeaders("post:create");
