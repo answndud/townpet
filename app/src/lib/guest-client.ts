@@ -2,7 +2,7 @@
 
 const GUEST_FP_STORAGE_KEY = "townpet:guest-fingerprint:v1";
 
-export function getGuestFingerprint() {
+export function getClientFingerprint() {
   if (typeof window === "undefined") {
     return "server";
   }
@@ -15,4 +15,8 @@ export function getGuestFingerprint() {
   const created = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
   window.localStorage.setItem(GUEST_FP_STORAGE_KEY, created);
   return created;
+}
+
+export function getGuestFingerprint() {
+  return getClientFingerprint();
 }

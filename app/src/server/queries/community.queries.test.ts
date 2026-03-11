@@ -63,6 +63,13 @@ describe("community queries", () => {
     const countArgs = mockPrisma.post.count.mock.calls[0][0];
     const listArgs = mockPrisma.post.findMany.mock.calls[0][0];
     expect(countArgs.where.authorId).toEqual({ notIn: ["blocked-1"] });
+    expect(countArgs.where.author).toEqual(
+      expect.objectContaining({
+        sanctionsReceived: expect.objectContaining({
+          none: expect.any(Object),
+        }),
+      }),
+    );
     expect(countArgs.where.OR).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -93,6 +100,13 @@ describe("community queries", () => {
 
     const args = mockPrisma.post.findMany.mock.calls[0][0];
     expect(args.where.authorId).toEqual({ notIn: ["muted-1"] });
+    expect(args.where.author).toEqual(
+      expect.objectContaining({
+        sanctionsReceived: expect.objectContaining({
+          none: expect.any(Object),
+        }),
+      }),
+    );
     expect(args.where.OR).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -123,5 +137,12 @@ describe("community queries", () => {
 
     const args = mockPrisma.post.count.mock.calls[0][0];
     expect(args.where.authorId).toEqual({ notIn: ["blocked-3"] });
+    expect(args.where.author).toEqual(
+      expect.objectContaining({
+        sanctionsReceived: expect.objectContaining({
+          none: expect.any(Object),
+        }),
+      }),
+    );
   });
 });

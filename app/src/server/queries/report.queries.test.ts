@@ -77,6 +77,7 @@ describe("report stats", () => {
     expect(stats.reasonCounts[ReportReason.EMERGENCY]).toBe(0);
     expect(stats.reasonCounts[ReportReason.PRIVACY]).toBe(0);
     expect(stats.targetCounts[ReportTarget.POST]).toBe(3);
+    expect(stats.targetCounts[ReportTarget.COMMENT]).toBe(1);
     expect(stats.dailyCounts.length).toBeGreaterThanOrEqual(7);
     expect(stats.dailyCounts.reduce((sum, item) => sum + item.count, 0)).toBe(2);
     expect(stats.averageResolutionHours).toBeCloseTo(3, 2);

@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { PostType, ReportStatus, ReportTarget, SanctionLevel } from "@prisma/client";
+import { PostStatus, PostType, ReportStatus, ReportTarget, SanctionLevel } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 import { bulkUpdateReports, createReport } from "@/server/services/report.service";
-import { ServiceError } from "@/server/services/service-error";
 import { hasBlockingRelation } from "@/server/queries/user-relation.queries";
+import { createModerationActionLogs } from "@/server/moderation-action-log";
 import { issueNextUserSanction } from "@/server/services/sanction.service";
 
 vi.mock("@/lib/prisma", () => ({
@@ -22,6 +22,7 @@ vi.mock("@/server/queries/user-relation.queries", () => ({
 
 vi.mock("@/server/cache/query-cache", () => ({
   bumpFeedCacheVersion: vi.fn().mockResolvedValue(undefined),
+  bumpPostCommentsCacheVersion: vi.fn().mockResolvedValue(undefined),
   bumpPostDetailCacheVersion: vi.fn().mockResolvedValue(undefined),
   bumpSearchCacheVersion: vi.fn().mockResolvedValue(undefined),
   bumpSuggestCacheVersion: vi.fn().mockResolvedValue(undefined),
@@ -44,11 +45,15 @@ vi.mock("@/server/services/sanction.service", () => ({
   }),
   issueNextUserSanction: vi.fn(),
 }));
+vi.mock("@/server/moderation-action-log", () => ({
+  createModerationActionLogs: vi.fn(),
+}));
 
 const mockPrisma = vi.mocked(prisma);
 const mockFindFirst = prisma.report.findFirst as unknown as ReturnType<typeof vi.fn>;
 const mockHasBlockingRelation = vi.mocked(hasBlockingRelation);
 const mockIssueNextUserSanction = vi.mocked(issueNextUserSanction);
+const mockCreateModerationActionLogs = vi.mocked(createModerationActionLogs);
 
 describe("report service", () => {
   beforeEach(() => {
@@ -56,24 +61,55 @@ describe("report service", () => {
     mockFindFirst.mockReset();
     mockHasBlockingRelation.mockReset();
     mockIssueNextUserSanction.mockReset();
+    mockCreateModerationActionLogs.mockReset();
+    mockCreateModerationActionLogs.mockResolvedValue(undefined);
     mockHasBlockingRelation.mockResolvedValue(false);
   });
 
-  it("rejects non-post targets at report creation", async () => {
-    await expect(
-      createReport({
-        reporterId: "user-1",
-        input: {
-          targetType: "COMMENT",
-          targetId: "ckc7k5qsj0000u0t8qv6d1d7k",
-          reason: "SPAM",
+  it("creates comment reports without post auto-hide evaluation", async () => {
+    const createReportRow = vi.fn().mockResolvedValue({ id: "r-comment" });
+    mockFindFirst.mockResolvedValue(null);
+
+    mockPrisma.$transaction.mockImplementation(async (callback) =>
+      callback({
+        comment: {
+          findUnique: vi.fn().mockResolvedValue({
+            id: "comment-1",
+            authorId: "user-9",
+            postId: "post-1",
+            status: PostStatus.ACTIVE,
+            content: "광고 댓글",
+            post: {
+              id: "post-1",
+              status: PostStatus.ACTIVE,
+            },
+          }),
         },
-      }),
-    ).rejects.toMatchObject({
-      code: "INVALID_INPUT",
+        report: {
+          create: createReportRow,
+        },
+      } as never),
+    );
+
+    const created = await createReport({
+      reporterId: "user-1",
+      input: {
+        targetType: ReportTarget.COMMENT,
+        targetId: "ckc7k5qsj0000u0t8qv6d1d7k",
+        reason: "SPAM",
+      },
     });
 
-    expect(mockFindFirst).not.toHaveBeenCalled();
+    expect(created).toEqual({ id: "r-comment" });
+    expect(createReportRow).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        targetType: ReportTarget.COMMENT,
+        targetId: "ckc7k5qsj0000u0t8qv6d1d7k",
+        postTargetId: "post-1",
+        commentTargetId: "comment-1",
+        targetUserId: "user-9",
+      }),
+    });
   });
 
   it("auto-hides only when pending weighted score crosses the threshold", async () => {
@@ -84,8 +120,10 @@ describe("report service", () => {
       callback({
         post: {
           findUnique: vi.fn().mockResolvedValue({
+            id: "cmf0auto0000014tgtarget01",
             authorId: "user-9",
             type: PostType.FREE_BOARD,
+            status: PostStatus.ACTIVE,
           }),
           update: updatePost,
         },
@@ -140,8 +178,10 @@ describe("report service", () => {
       callback({
         post: {
           findUnique: vi.fn().mockResolvedValue({
+            id: "cmf0adopt000014tgadminpost",
             authorId: "admin-1",
             type: PostType.ADOPTION_LISTING,
+            status: PostStatus.ACTIVE,
           }),
         },
         report: {
@@ -168,7 +208,13 @@ describe("report service", () => {
     expect(createReportRow).not.toHaveBeenCalled();
   });
 
-  it("rejects bulk actions for non-post targets", async () => {
+  it("hides comment targets in bulk and recalculates post comment counts", async () => {
+    const updateMany = vi.fn().mockResolvedValue({ count: 1 });
+    const createMany = vi.fn().mockResolvedValue({ count: 1 });
+    const updateComments = vi.fn().mockResolvedValue({ count: 1 });
+    const findActiveComments = vi.fn().mockResolvedValue([{ postId: "post-1" }]);
+    const updatePost = vi.fn().mockResolvedValue({});
+
     mockPrisma.$transaction.mockImplementation(async (callback) =>
       callback({
         report: {
@@ -176,20 +222,48 @@ describe("report service", () => {
             {
               id: "r-1",
               status: ReportStatus.PENDING,
-              targetType: "COMMENT" as ReportTarget,
-              targetId: "c-1",
+              targetType: ReportTarget.COMMENT,
+              targetId: "comment-1",
+              targetUserId: "user-2",
+              post: null,
+              comment: {
+                id: "comment-1",
+                authorId: "user-2",
+                postId: "post-1",
+                status: PostStatus.ACTIVE,
+              },
             },
           ]),
+          updateMany,
         },
+        reportAudit: { createMany },
+        comment: {
+          updateMany: updateComments,
+          findMany: findActiveComments,
+        },
+        post: { update: updatePost, updateMany: vi.fn() },
       } as never),
     );
 
-    await expect(
-      bulkUpdateReports({
-        input: { reportIds: ["r-1"], action: "HIDE_POST" },
-        moderatorId: "mod-1",
-      }),
-    ).rejects.toBeInstanceOf(ServiceError);
+    const result = await bulkUpdateReports({
+      input: { reportIds: ["r-1"], action: "HIDE_TARGET" },
+      moderatorId: "mod-1",
+    });
+
+    expect(result).toEqual({
+      count: 1,
+      status: ReportStatus.RESOLVED,
+      sanctionCount: 0,
+      sanctionLabels: [],
+    });
+    expect(updateComments).toHaveBeenCalledWith({
+      where: { id: { in: ["comment-1"] } },
+      data: { status: PostStatus.DELETED },
+    });
+    expect(updatePost).toHaveBeenCalledWith({
+      where: { id: "post-1" },
+      data: { commentCount: 1 },
+    });
   });
 
   it("rejects bulk actions when already processed reports are selected", async () => {
@@ -260,6 +334,7 @@ describe("report service", () => {
     expect(createMany).toHaveBeenCalled();
     expect(updatePosts).not.toHaveBeenCalled();
     expect(mockIssueNextUserSanction).not.toHaveBeenCalled();
+    expect(mockCreateModerationActionLogs).toHaveBeenCalled();
   });
 
   it("applies one sanction per affected user in bulk resolve flow", async () => {

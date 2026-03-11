@@ -1,6 +1,12 @@
-import { Prisma, SanctionLevel } from "@prisma/client";
+import {
+  ModerationActionType,
+  ModerationTargetType,
+  Prisma,
+  SanctionLevel,
+} from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
+import { recordModerationAction } from "@/server/moderation-action-log";
 import { logger, serializeError } from "@/server/logger";
 import {
   assertSchemaDelegate,
@@ -151,7 +157,7 @@ export async function issueNextUserSanction({
   const expiresAt = calculateExpiresAt(level, now);
 
   try {
-    return await delegate.create({
+    const created = await delegate.create({
       data: {
         userId,
         moderatorId,
@@ -161,6 +167,20 @@ export async function issueNextUserSanction({
         expiresAt,
       },
     });
+    await recordModerationAction({
+      actorId: moderatorId,
+      action: ModerationActionType.SANCTION_ISSUED,
+      targetType: ModerationTargetType.USER,
+      targetId: userId,
+      targetUserId: userId,
+      reportId: sourceReportId ?? null,
+      metadata: {
+        level,
+        reason,
+        expiresAt: expiresAt?.toISOString() ?? null,
+      },
+    });
+    return created;
   } catch (error) {
     throwSanctionSchemaSyncRequired(error);
   }

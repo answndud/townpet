@@ -79,7 +79,7 @@ export function ReportQueueTable({ reports }: ReportQueueTableProps) {
     );
   };
 
-  const runBulkAction = (action: "RESOLVE" | "DISMISS" | "HIDE_POST" | "UNHIDE_POST") => {
+  const runBulkAction = (action: "RESOLVE" | "DISMISS" | "HIDE_TARGET" | "UNHIDE_TARGET") => {
     if (selectedIds.length === 0) {
       return;
     }
@@ -166,15 +166,15 @@ export function ReportQueueTable({ reports }: ReportQueueTableProps) {
           </button>
           <button
             type="button"
-            onClick={() => runBulkAction("HIDE_POST")}
+            onClick={() => runBulkAction("HIDE_TARGET")}
             className="tp-btn-soft h-8 px-3 disabled:cursor-not-allowed disabled:opacity-60"
             disabled={isPending || selectedIds.length === 0}
           >
-            게시글 숨김
+            대상 숨김
           </button>
           <button
             type="button"
-            onClick={() => runBulkAction("UNHIDE_POST")}
+            onClick={() => runBulkAction("UNHIDE_TARGET")}
             className="tp-btn-soft h-8 px-3 disabled:cursor-not-allowed disabled:opacity-60"
             disabled={isPending || selectedIds.length === 0}
           >

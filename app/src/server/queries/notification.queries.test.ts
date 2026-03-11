@@ -18,6 +18,7 @@ import {
   bumpNotificationUnreadCacheVersion,
   withQueryCache,
 } from "@/server/cache/query-cache";
+import { listHiddenAuthorIdsForViewer } from "@/server/queries/user-relation.queries";
 
 vi.mock("@/server/cache/query-cache", async () => {
   const actual = await vi.importActual<typeof import("@/server/cache/query-cache")>(
@@ -54,6 +55,10 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
+vi.mock("@/server/queries/user-relation.queries", () => ({
+  listHiddenAuthorIdsForViewer: vi.fn(),
+}));
+
 const mockPrisma = vi.mocked(prisma) as unknown as {
   notification: {
     updateMany: ReturnType<typeof vi.fn>;
@@ -73,6 +78,7 @@ const mockPrisma = vi.mocked(prisma) as unknown as {
 const mockWithQueryCache = vi.mocked(withQueryCache);
 const mockBumpUnreadVersion = vi.mocked(bumpNotificationUnreadCacheVersion);
 const mockBumpListVersion = vi.mocked(bumpNotificationListCacheVersion);
+const mockListHiddenAuthorIdsForViewer = vi.mocked(listHiddenAuthorIdsForViewer);
 
 describe("notification queries cache behavior", () => {
   beforeEach(() => {
@@ -90,6 +96,8 @@ describe("notification queries cache behavior", () => {
     mockBumpUnreadVersion.mockResolvedValue(undefined);
     mockBumpListVersion.mockReset();
     mockBumpListVersion.mockResolvedValue(undefined);
+    mockListHiddenAuthorIdsForViewer.mockReset();
+    mockListHiddenAuthorIdsForViewer.mockResolvedValue([]);
     mockPrisma.notification.count.mockResolvedValue(0);
     mockPrisma.notification.findMany.mockResolvedValue([]);
     mockPrisma.notificationDelivery.findMany.mockResolvedValue([]);
@@ -146,13 +154,18 @@ describe("notification queries cache behavior", () => {
       unreadOnly: false,
     });
 
-    expect(mockPrisma.notification.findMany).toHaveBeenCalledWith(
+    expect(mockPrisma.notification.findMany).toHaveBeenNthCalledWith(
+      2,
       expect.objectContaining({
         where: expect.objectContaining({
-          userId: "user-comment-filter",
-          type: {
-            in: ["COMMENT_ON_POST", "REPLY_TO_COMMENT", "MENTION_IN_COMMENT"],
-          },
+          AND: expect.arrayContaining([
+            expect.objectContaining({
+              userId: "user-comment-filter",
+              type: {
+                in: ["COMMENT_ON_POST", "REPLY_TO_COMMENT", "MENTION_IN_COMMENT"],
+              },
+            }),
+          ]),
         }),
       }),
     );
@@ -168,13 +181,42 @@ describe("notification queries cache behavior", () => {
       unreadOnly: false,
     });
 
+    expect(mockPrisma.notification.findMany).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        where: expect.objectContaining({
+          AND: expect.arrayContaining([
+            expect.objectContaining({
+              userId: "user-reaction-filter",
+              type: {
+                in: ["REACTION_ON_POST", "REACTION_ON_COMMENT"],
+              },
+            }),
+          ]),
+        }),
+      }),
+    );
+  });
+
+  it("filters hidden actors out of notification list queries", async () => {
+    mockListHiddenAuthorIdsForViewer.mockResolvedValue(["hidden-actor"]);
+    mockPrisma.notification.findMany.mockResolvedValue([]);
+
+    await listNotificationsByUser({
+      userId: "user-hidden-actor",
+      limit: 20,
+      kind: "ALL",
+      unreadOnly: false,
+    });
+
     expect(mockPrisma.notification.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
-          userId: "user-reaction-filter",
-          type: {
-            in: ["REACTION_ON_POST", "REACTION_ON_COMMENT"],
-          },
+          AND: expect.arrayContaining([
+            expect.objectContaining({
+              OR: [{ actorId: null }, { actorId: { notIn: ["hidden-actor"] } }],
+            }),
+          ]),
         }),
       }),
     );
@@ -216,6 +258,8 @@ describe("notification queries invalidation behavior", () => {
     mockBumpUnreadVersion.mockResolvedValue(undefined);
     mockBumpListVersion.mockReset();
     mockBumpListVersion.mockResolvedValue(undefined);
+    mockListHiddenAuthorIdsForViewer.mockReset();
+    mockListHiddenAuthorIdsForViewer.mockResolvedValue([]);
     mockPrisma.notification.count.mockResolvedValue(0);
     mockPrisma.notification.findMany.mockResolvedValue([]);
     mockPrisma.notificationDelivery.findMany.mockResolvedValue([]);

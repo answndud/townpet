@@ -1,6 +1,7 @@
 import type { AnchorHTMLAttributes, ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
+import { ReportTarget } from "@prisma/client";
 
 import { PostReportForm } from "@/components/posts/post-report-form";
 
@@ -20,7 +21,7 @@ describe("PostReportForm", () => {
   it("shows a login prompt instead of the report form for guests", () => {
     const html = renderToStaticMarkup(
       <PostReportForm
-        postId="post-1"
+        targetId="post-1"
         canReport={false}
         loginHref="/login?next=%2Fposts%2Fpost-1"
       />,
@@ -32,10 +33,22 @@ describe("PostReportForm", () => {
   });
 
   it("renders the report inputs for signed-in users", () => {
-    const html = renderToStaticMarkup(<PostReportForm postId="post-1" />);
+    const html = renderToStaticMarkup(<PostReportForm targetId="post-1" />);
 
     expect(html).toContain("추가 설명");
     expect(html).toContain("신고");
     expect(html).not.toContain("로그인 후 게시글 신고 가능.");
+  });
+
+  it("adjusts the guest prompt for comment reports", () => {
+    const html = renderToStaticMarkup(
+      <PostReportForm
+        targetId="comment-1"
+        targetType={ReportTarget.COMMENT}
+        canReport={false}
+      />,
+    );
+
+    expect(html).toContain("로그인 후 댓글 신고 가능.");
   });
 });

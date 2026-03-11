@@ -31,6 +31,8 @@ model User {
   reportAudits              ReportAudit[]                 @relation("ReportAuditResolvedBy")
   sanctionsReceived         UserSanction[]                @relation("SanctionedUser")
   sanctionsIssued           UserSanction[]                @relation("SanctionModerator")
+  moderationActionsIssued   ModerationActionLog[]         @relation("ModerationActionActor")
+  moderationActionsTargeted ModerationActionLog[]         @relation("ModerationActionTargetUser")
   blocksGiven               UserBlock[]                   @relation("UserBlocksGiven")
   blocksReceived            UserBlock[]                   @relation("UserBlocksReceived")
   mutesGiven                UserMute[]                    @relation("UserMutesGiven")
@@ -293,7 +295,7 @@ model Post {
   petType                   Community?                    @relation(fields: [petTypeId], references: [id])
   comments                  Comment[]
   images                    PostImage[]
-  reports                   Report[]
+  reports                   Report[]                      @relation("ReportedPost")
   reactions                 PostReaction[]
   bookmarks                 PostBookmark[]
   feedPersonalizationEvents FeedPersonalizationEventLog[]
@@ -653,6 +655,7 @@ model Comment {
   replies       Comment[]         @relation("CommentReplies")
   reactions     CommentReaction[]
   notifications Notification[]
+  reports       Report[]          @relation("ReportedComment")
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
 
@@ -718,24 +721,30 @@ enum UploadAssetStatus {
 }
 
 model Report {
-  id           String        @id @default(cuid())
-  reporterId   String
-  targetType   ReportTarget
-  targetId     String
-  targetUserId String?
-  reason       ReportReason
-  description  String?
-  status       ReportStatus  @default(PENDING)
-  reporter     User          @relation("ReportedBy", fields: [reporterId], references: [id])
-  targetUser   User?         @relation("ReportedUser", fields: [targetUserId], references: [id])
-  post         Post?         @relation(fields: [targetId], references: [id])
-  resolvedAt   DateTime?
-  resolvedBy   String?
-  resolution   String?
-  createdAt    DateTime      @default(now())
-  audits       ReportAudit[]
+  id                String                @id @default(cuid())
+  reporterId        String
+  targetType        ReportTarget
+  targetId          String
+  postTargetId      String?
+  commentTargetId   String?
+  targetUserId      String?
+  reason            ReportReason
+  description       String?
+  status            ReportStatus          @default(PENDING)
+  reporter          User                  @relation("ReportedBy", fields: [reporterId], references: [id])
+  targetUser        User?                 @relation("ReportedUser", fields: [targetUserId], references: [id])
+  post              Post?                 @relation("ReportedPost", fields: [postTargetId], references: [id], onDelete: SetNull)
+  comment           Comment?              @relation("ReportedComment", fields: [commentTargetId], references: [id], onDelete: SetNull)
+  resolvedAt        DateTime?
+  resolvedBy        String?
+  resolution        String?
+  createdAt         DateTime              @default(now())
+  audits            ReportAudit[]
+  moderationActions ModerationActionLog[]
 
   @@index([targetType, targetId])
+  @@index([postTargetId])
+  @@index([commentTargetId])
   @@index([status])
 }
 
@@ -754,6 +763,7 @@ model ReportAudit {
 
 enum ReportTarget {
   POST
+  COMMENT
 }
 
 enum ReportReason {
@@ -796,6 +806,42 @@ model UserSanction {
   @@index([userId, createdAt(sort: Desc)])
   @@index([userId, expiresAt])
   @@index([sourceReportId])
+}
+
+enum ModerationTargetType {
+  POST
+  COMMENT
+  USER
+}
+
+enum ModerationActionType {
+  REPORT_RESOLVED
+  REPORT_DISMISSED
+  TARGET_HIDDEN
+  TARGET_UNHIDDEN
+  SANCTION_ISSUED
+  HOSPITAL_REVIEW_FLAGGED
+}
+
+model ModerationActionLog {
+  id           String               @id @default(cuid())
+  actorId      String
+  action       ModerationActionType
+  targetType   ModerationTargetType
+  targetId     String
+  targetUserId String?
+  reportId     String?
+  metadata     Json?
+  actor        User                 @relation("ModerationActionActor", fields: [actorId], references: [id], onDelete: Cascade)
+  targetUser   User?                @relation("ModerationActionTargetUser", fields: [targetUserId], references: [id], onDelete: SetNull)
+  report       Report?              @relation(fields: [reportId], references: [id], onDelete: SetNull)
+  createdAt    DateTime             @default(now())
+
+  @@index([actorId, createdAt(sort: Desc)])
+  @@index([targetType, targetId, createdAt(sort: Desc)])
+  @@index([targetUserId, createdAt(sort: Desc)])
+  @@index([reportId, createdAt(sort: Desc)])
+  @@index([action, createdAt(sort: Desc)])
 }
 
 model UserBlock {

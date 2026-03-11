@@ -23,14 +23,14 @@ describe("report validations", () => {
     expect(result.success).toBe(false);
   });
 
-  it("rejects non-post targets", () => {
+  it("accepts comment targets", () => {
     const result = reportCreateSchema.safeParse({
-      targetType: "COMMENT",
+      targetType: ReportTarget.COMMENT,
       targetId: "ckc7k5qsj0000u0t8qv6d1d7k",
       reason: ReportReason.SPAM,
     });
 
-    expect(result.success).toBe(false);
+    expect(result.success).toBe(true);
   });
 
   it("accepts emergency and privacy reasons", () => {

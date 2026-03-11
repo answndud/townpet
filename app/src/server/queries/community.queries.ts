@@ -2,6 +2,7 @@ import { CommonBoardType, PostStatus, PostType, Prisma } from "@prisma/client";
 import { cache } from "react";
 
 import { prisma } from "@/lib/prisma";
+import { buildVisibleAuthorFilter } from "@/lib/sanction-visibility";
 import { createStaticQueryCacheKey, withQueryCache } from "@/server/cache/query-cache";
 import { listHiddenAuthorIdsForViewer } from "@/server/queries/user-relation.queries";
 
@@ -196,6 +197,7 @@ function buildAdoptionBoardWhere({
     boardScope: "COMMON",
     commonBoardType: CommonBoardType.ADOPTION,
     type: PostType.ADOPTION_LISTING,
+    author: buildVisibleAuthorFilter(),
     ...(hiddenAuthorIds.length > 0 ? { authorId: { notIn: hiddenAuthorIds } } : {}),
     ...(trimmedQ
       ? {
@@ -351,6 +353,7 @@ export async function listCommonBoardPosts({
     status: PostStatus.ACTIVE,
     boardScope: "COMMON" as const,
     commonBoardType,
+    author: buildVisibleAuthorFilter(),
     ...(hiddenAuthorIds.length > 0 ? { authorId: { notIn: hiddenAuthorIds } } : {}),
     ...(trimmedTag ? { animalTags: { has: trimmedTag } } : {}),
     ...(trimmedQ

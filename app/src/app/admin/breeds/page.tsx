@@ -1,43 +1,14 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { UserRole } from "@prisma/client";
 
 import { BreedCatalogManager } from "@/components/admin/breed-catalog-manager";
-import { getCurrentUser } from "@/server/auth";
-import { redirectToProfileIfNicknameMissing } from "@/server/nickname-guard";
+import { requireModeratorPageUser } from "@/server/admin-page-access";
 import {
   listBreedCatalogAdminEntries,
   listEffectiveBreedCatalogGroupedBySpecies,
 } from "@/server/queries/breed-catalog.queries";
 
 export default async function AdminBreedsPage() {
-  const user = await getCurrentUser();
-  if (!user) {
-    redirect("/login");
-  }
-  redirectToProfileIfNicknameMissing({
-    isAuthenticated: true,
-    nickname: user.nickname,
-  });
-
-  const isModerator =
-    user.role === UserRole.ADMIN || user.role === UserRole.MODERATOR;
-
-  if (!isModerator) {
-    return (
-      <div className="min-h-screen">
-        <main className="mx-auto flex w-full max-w-[980px] flex-col gap-4 px-4 py-10 sm:px-6">
-          <h1 className="text-xl font-semibold text-[#10284a]">접근 권한이 없습니다.</h1>
-          <p className="text-sm text-[#4f678d]">
-            품종 사전 관리는 관리자 또는 운영자만 접근할 수 있습니다.
-          </p>
-          <Link href="/feed" className="text-xs text-[#5a7398]">
-            홈으로 돌아가기
-          </Link>
-        </main>
-      </div>
-    );
-  }
+  await requireModeratorPageUser();
 
   const [effectiveCatalogBySpecies, adminEntries] = await Promise.all([
     listEffectiveBreedCatalogGroupedBySpecies(),

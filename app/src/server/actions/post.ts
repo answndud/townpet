@@ -1,8 +1,10 @@
 "use server";
 
 import { PostReactionType } from "@prisma/client";
+import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 
+import { enforceAuthenticatedWriteRateLimit } from "@/server/authenticated-write-throttle";
 import {
   createPost,
   deletePost,
@@ -11,6 +13,7 @@ import {
   updatePost,
 } from "@/server/services/post.service";
 import { logger, serializeError } from "@/server/logger";
+import { getClientIp } from "@/server/request-context";
 import { ServiceError } from "@/server/services/service-error";
 import { requireCurrentUser } from "@/server/auth";
 
@@ -43,9 +46,19 @@ function revalidatePostDetailPage(postId: string) {
   revalidatePath(`/posts/${postId}`);
 }
 
-export async function createPostAction(input: unknown): Promise<PostActionResult> {
+export async function createPostAction(
+  input: unknown,
+  options?: { clientFingerprint?: string | null },
+): Promise<PostActionResult> {
   try {
     const user = await requireCurrentUser();
+    const requestHeaders = await headers();
+    await enforceAuthenticatedWriteRateLimit({
+      scope: "post:create",
+      userId: user.id,
+      ip: getClientIp(requestHeaders),
+      clientFingerprint: options?.clientFingerprint ?? null,
+    });
 
     await createPost({ authorId: user.id, input });
     revalidateFeedPage();

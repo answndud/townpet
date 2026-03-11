@@ -1,11 +1,14 @@
 "use server";
 
 import { CommentReactionType } from "@prisma/client";
+import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 
+import { enforceAuthenticatedWriteRateLimit } from "@/server/authenticated-write-throttle";
 import { requireCurrentUser } from "@/server/auth";
 import { monitorUnhandledError } from "@/server/error-monitor";
 import { enforceRateLimit } from "@/server/rate-limit";
+import { getClientIp } from "@/server/request-context";
 import {
   createComment,
   deleteComment,
@@ -34,14 +37,20 @@ export async function createCommentAction(
   postId: string,
   input: unknown,
   parentId?: string,
+  options?: { clientFingerprint?: string | null },
 ): Promise<CommentActionResult> {
   let userId: string | undefined;
 
   try {
     const user = await requireCurrentUser();
     userId = user.id;
-
-    await enforceRateLimit({ key: `comments:${user.id}`, limit: 10, windowMs: 60_000 });
+    const requestHeaders = await headers();
+    await enforceAuthenticatedWriteRateLimit({
+      scope: "comment:create",
+      userId: user.id,
+      ip: getClientIp(requestHeaders),
+      clientFingerprint: options?.clientFingerprint ?? null,
+    });
     await createComment({ authorId: user.id, postId, input, parentId });
     revalidatePath(`/posts/${postId}`);
     return { ok: true };

@@ -4,6 +4,7 @@ import { describe, expect, it, beforeEach, vi } from "vitest";
 import { FORBIDDEN_KEYWORDS_POLICY_KEY } from "@/lib/forbidden-keyword-policy";
 import { prisma } from "@/lib/prisma";
 import { createPost } from "@/server/services/post.service";
+import { recordModerationAction } from "@/server/moderation-action-log";
 import { assertUserInteractionAllowed } from "@/server/services/sanction.service";
 import { ServiceError } from "@/server/services/service-error";
 
@@ -27,6 +28,9 @@ vi.mock("@/lib/prisma", () => ({
       findUnique: vi.fn(),
       update: vi.fn(),
     },
+    hospitalReview: {
+      count: vi.fn(),
+    },
     guestBan: {
       findFirst: vi.fn(),
       create: vi.fn(),
@@ -37,6 +41,9 @@ vi.mock("@/lib/prisma", () => ({
     },
     $transaction: vi.fn(),
   },
+}));
+vi.mock("@/server/moderation-action-log", () => ({
+  recordModerationAction: vi.fn(),
 }));
 
 vi.mock("@/server/services/sanction.service", () => ({
@@ -62,6 +69,9 @@ const mockPrisma = vi.mocked(prisma) as unknown as {
     findUnique: ReturnType<typeof vi.fn>;
     update: ReturnType<typeof vi.fn>;
   };
+  hospitalReview: {
+    count: ReturnType<typeof vi.fn>;
+  };
   guestBan: {
     findFirst: ReturnType<typeof vi.fn>;
     create: ReturnType<typeof vi.fn>;
@@ -72,6 +82,7 @@ const mockPrisma = vi.mocked(prisma) as unknown as {
   };
 };
 const mockAssertUserInteractionAllowed = vi.mocked(assertUserInteractionAllowed);
+const mockRecordModerationAction = vi.mocked(recordModerationAction);
 
 describe("createPost new-user restriction", () => {
   const petTypeId = "ckc7k5qsj0000u0t8qv6d1d7k";
@@ -101,8 +112,12 @@ describe("createPost new-user restriction", () => {
     });
     mockPrisma.user.create.mockResolvedValue({ id: "guest-user-1" });
     mockPrisma.guestAuthor.create.mockResolvedValue({ id: "guest-author-1" });
+    mockPrisma.hospitalReview.count.mockReset();
+    mockPrisma.hospitalReview.count.mockResolvedValue(0);
     mockAssertUserInteractionAllowed.mockReset();
     mockAssertUserInteractionAllowed.mockResolvedValue();
+    mockRecordModerationAction.mockReset();
+    mockRecordModerationAction.mockResolvedValue(undefined);
   });
 
   it("blocks restricted post types for new users", async () => {
@@ -220,6 +235,58 @@ describe("createPost new-user restriction", () => {
     });
 
     expect(mockPrisma.post.create).not.toHaveBeenCalled();
+  });
+
+  it("records moderation signals for suspicious hospital reviews", async () => {
+    const now = new Date();
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: "user-1",
+      role: UserRole.USER,
+      createdAt: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000),
+    });
+    mockPrisma.post.create.mockResolvedValue({
+      id: "post-hospital-1",
+      title: "병원 후기",
+      content: "본문",
+      type: PostType.HOSPITAL_REVIEW,
+      scope: PostScope.GLOBAL,
+      author: { id: "user-1", nickname: "멍집사" },
+      neighborhood: null,
+      hospitalReview: {
+        hospitalName: "튼튼동물의료원",
+        totalCost: null,
+        waitTime: null,
+        rating: 5,
+      },
+      images: [],
+    });
+    mockPrisma.hospitalReview.count
+      .mockResolvedValueOnce(1)
+      .mockResolvedValueOnce(3);
+
+    await createPost({
+      authorId: "user-1",
+      input: {
+        title: "병원 후기",
+        content: "추천합니다",
+        type: PostType.HOSPITAL_REVIEW,
+        scope: PostScope.GLOBAL,
+        animalTags: ["강아지"],
+        imageUrls: [],
+        hospitalReview: {
+          hospitalName: "튼튼동물의료원",
+          rating: 5,
+        },
+      },
+    });
+
+    expect(mockRecordModerationAction).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: "HOSPITAL_REVIEW_FLAGGED",
+        targetId: "post-hospital-1",
+        targetUserId: "user-1",
+      }),
+    );
   });
 
   it("blocks forbidden keywords in adoption listing structured fields", async () => {

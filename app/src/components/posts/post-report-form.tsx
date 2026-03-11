@@ -4,16 +4,20 @@ import Link from "next/link";
 import { ReportReason, ReportTarget } from "@prisma/client";
 import { useState, useTransition } from "react";
 
+import { getClientFingerprint } from "@/lib/guest-client";
 import { getReportReasonLabel, reportReasonOptions } from "@/lib/report-reason";
+import { getReportTargetLabel } from "@/lib/report-target";
 
 type PostReportFormProps = {
-  postId: string;
+  targetId: string;
+  targetType?: ReportTarget;
   canReport?: boolean;
   loginHref?: string;
 };
 
 export function PostReportForm({
-  postId,
+  targetId,
+  targetType = ReportTarget.POST,
   canReport = true,
   loginHref = "/login",
 }: PostReportFormProps) {
@@ -21,11 +25,12 @@ export function PostReportForm({
   const [reason, setReason] = useState<ReportReason>(ReportReason.SPAM);
   const [description, setDescription] = useState("");
   const [message, setMessage] = useState<string | null>(null);
+  const targetLabel = getReportTargetLabel(targetType);
 
   if (!canReport) {
     return (
       <div className="rounded-lg border border-[#dbe6f6] bg-[#f7fbff] px-3 py-2 text-xs text-[#355988]">
-        로그인 후 게시글 신고 가능.{" "}
+        로그인 후 {targetLabel} 신고 가능.{" "}
         <Link
           href={loginHref}
           className="font-semibold text-[#2f5da4] underline underline-offset-2"
@@ -43,10 +48,13 @@ export function PostReportForm({
     startTransition(async () => {
       const response = await fetch("/api/reports", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-client-fingerprint": getClientFingerprint(),
+        },
         body: JSON.stringify({
-          targetType: ReportTarget.POST,
-          targetId: postId,
+          targetType,
+          targetId,
           reason,
           description: description.trim() || undefined,
         }),

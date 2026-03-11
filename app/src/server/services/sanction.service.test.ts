@@ -7,6 +7,7 @@ import {
   getActiveInteractionSanction,
   issueNextUserSanction,
 } from "@/server/services/sanction.service";
+import { recordModerationAction } from "@/server/moderation-action-log";
 import { ServiceError } from "@/server/services/service-error";
 
 vi.mock("@/lib/prisma", () => ({
@@ -17,6 +18,9 @@ vi.mock("@/lib/prisma", () => ({
     },
   },
 }));
+vi.mock("@/server/moderation-action-log", () => ({
+  recordModerationAction: vi.fn(),
+}));
 
 const mockPrisma = vi.mocked(prisma) as unknown as {
   userSanction: {
@@ -24,11 +28,14 @@ const mockPrisma = vi.mocked(prisma) as unknown as {
     create: ReturnType<typeof vi.fn>;
   };
 };
+const mockRecordModerationAction = vi.mocked(recordModerationAction);
 
 describe("sanction service", () => {
   beforeEach(() => {
     mockPrisma.userSanction.findFirst.mockReset();
     mockPrisma.userSanction.create.mockReset();
+    mockRecordModerationAction.mockReset();
+    mockRecordModerationAction.mockResolvedValue(undefined);
   });
 
   it("issues warning first when user has no sanction history", async () => {
@@ -60,6 +67,13 @@ describe("sanction service", () => {
       }),
     );
     expect(result?.level).toBe(SanctionLevel.WARNING);
+    expect(mockRecordModerationAction).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: "SANCTION_ISSUED",
+        targetType: "USER",
+        targetId: "u1",
+      }),
+    );
   });
 
   it("escalates to 7-day suspension after warning", async () => {

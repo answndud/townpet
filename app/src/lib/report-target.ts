@@ -1,17 +1,18 @@
 import { ReportTarget } from "@prisma/client";
 
-export const SUPPORTED_REPORT_TARGETS = [ReportTarget.POST] as const;
+export const SUPPORTED_REPORT_TARGETS = [ReportTarget.POST, ReportTarget.COMMENT] as const;
 
 export type SupportedReportTarget = (typeof SUPPORTED_REPORT_TARGETS)[number];
 
 const reportTargetLabels: Record<SupportedReportTarget, string> = {
   POST: "게시글",
+  COMMENT: "댓글",
 };
 
 export function isSupportedReportTarget(
   value: ReportTarget | string | null | undefined,
 ): value is SupportedReportTarget {
-  return value === ReportTarget.POST;
+  return value === ReportTarget.POST || value === ReportTarget.COMMENT;
 }
 
 export function getReportTargetLabel(value: ReportTarget | string) {

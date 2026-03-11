@@ -29,6 +29,10 @@ export function isGuestSearchPath(pathname: string) {
   return segments[0] === "search" && segments.length <= 2;
 }
 
+export function isAdminProtectedPath(pathname: string) {
+  return pathname === "/admin" || pathname.startsWith("/admin/") || pathname.startsWith("/api/admin/");
+}
+
 export function isNicknameRequiredProfilePath(pathname: string) {
   if (pathname === "/profile" || pathname.startsWith("/profile/")) {
     return true;
@@ -146,6 +150,16 @@ async function resolveSessionToken(request: NextRequest) {
   }
 }
 
+function createNotFoundResponse(headers: Headers) {
+  const response = new NextResponse(null, {
+    status: 404,
+    headers,
+  });
+  response.headers.set("cache-control", "no-store");
+  response.headers.set("x-robots-tag", "noindex, nofollow, noarchive");
+  return response;
+}
+
 export async function middleware(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
   const requestId = requestHeaders.get("x-request-id") ?? crypto.randomUUID();
@@ -159,6 +173,9 @@ export async function middleware(request: NextRequest) {
   responseHeaders.set("x-nonce", cspNonce);
   responseHeaders.set("x-csp-nonce", cspNonce);
   applySecurityHeaders(responseHeaders, cspNonce);
+  if (isAdminProtectedPath(request.nextUrl.pathname)) {
+    responseHeaders.set("x-robots-tag", "noindex, nofollow, noarchive");
+  }
 
   if (request.nextUrl.pathname.startsWith("/api")) {
     applyCorsHeaders(request, responseHeaders);
@@ -172,14 +189,18 @@ export async function middleware(request: NextRequest) {
     Boolean(request.cookies.get(SESSION_COOKIE_NAME)) ||
     Boolean(request.cookies.get("next-auth.session-token")) ||
     Boolean(request.cookies.get("__Secure-next-auth.session-token"));
+  const isAdminPath = isAdminProtectedPath(request.nextUrl.pathname);
   const shouldResolveSessionToken =
-    request.method === "GET" &&
     hasSessionCookie &&
     !isPrefetchRequest(request.headers) &&
-    !isNicknameRequiredProfilePath(request.nextUrl.pathname);
+    (isAdminPath ||
+      (request.method === "GET" && !isNicknameRequiredProfilePath(request.nextUrl.pathname)));
   const sessionToken = shouldResolveSessionToken
     ? await resolveSessionToken(request)
     : null;
+  if (isAdminPath && !sessionToken) {
+    return createNotFoundResponse(responseHeaders);
+  }
   const nickname = typeof sessionToken?.nickname === "string" ? sessionToken.nickname.trim() : "";
   if (
     request.method === "GET" &&

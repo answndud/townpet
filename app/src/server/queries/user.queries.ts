@@ -2,6 +2,7 @@ import { Prisma, UserRole } from "@prisma/client";
 
 import { normalizeAuthEmail } from "@/lib/auth-email";
 import { prisma } from "@/lib/prisma";
+import { buildVisibleAuthorFilter } from "@/lib/sanction-visibility";
 
 let userPreferredPetTypesSupport: boolean | null = null;
 
@@ -301,8 +302,11 @@ export async function listUsersByIds(ids: string[]) {
 }
 
 export async function getPublicUserProfileById(id: string) {
-  const user = await prisma.user.findUnique({
-    where: { id },
+  const user = await prisma.user.findFirst({
+    where: {
+      id,
+      ...buildVisibleAuthorFilter(),
+    },
     select: {
       id: true,
       nickname: true,
@@ -333,6 +337,10 @@ export async function getPublicUserProfileById(id: string) {
           where: {
             authorId: id,
             status: "ACTIVE",
+            post: {
+              status: "ACTIVE",
+              author: buildVisibleAuthorFilter(),
+            },
           },
         })
       : Promise.resolve(null),
@@ -341,6 +349,7 @@ export async function getPublicUserProfileById(id: string) {
         userId: id,
         post: {
           status: "ACTIVE",
+          author: buildVisibleAuthorFilter(),
         },
       },
     }),
@@ -406,6 +415,7 @@ export async function listPublicUserPosts({
     authorId: userId,
     status: "ACTIVE" as const,
     scope: "GLOBAL" as const,
+    author: buildVisibleAuthorFilter(),
   };
   const totalCount = await prisma.post.count({ where });
   const totalPages = Math.max(1, Math.ceil(totalCount / safeLimit));
@@ -464,9 +474,11 @@ export async function listPublicUserComments({
   const where = {
     authorId: userId,
     status: "ACTIVE" as const,
+    author: buildVisibleAuthorFilter(),
     post: {
       status: "ACTIVE" as const,
       scope: "GLOBAL" as const,
+      author: buildVisibleAuthorFilter(),
     },
   };
   const totalCount = await prisma.comment.count({ where });
@@ -529,7 +541,9 @@ export async function listPublicUserReactions({
     post: {
       status: "ACTIVE" as const,
       scope: "GLOBAL" as const,
+      author: buildVisibleAuthorFilter(),
     },
+    user: buildVisibleAuthorFilter(),
   };
   const totalCount = await prisma.postReaction.count({ where });
   const totalPages = Math.max(1, Math.ceil(totalCount / safeLimit));

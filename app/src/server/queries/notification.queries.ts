@@ -8,6 +8,7 @@ import {
 
 import type { NotificationFilterKind } from "@/lib/notification-filter";
 import { prisma } from "@/lib/prisma";
+import { listHiddenAuthorIdsForViewer } from "@/server/queries/user-relation.queries";
 import {
   bumpNotificationListCacheVersion,
   bumpNotificationUnreadCacheVersion,
@@ -56,6 +57,7 @@ type NotificationTargetItem = Prisma.NotificationGetPayload<{
   select: {
     id: true;
     userId: true;
+    actorId: true;
     isRead: true;
     archivedAt: true;
     postId: true;
@@ -222,6 +224,16 @@ function bumpNotificationCaches(userId: string) {
   void bumpNotificationListCacheVersion(userId).catch(() => undefined);
 }
 
+function buildHiddenActorWhere(hiddenActorIds: string[]): Prisma.NotificationWhereInput {
+  if (hiddenActorIds.length === 0) {
+    return {};
+  }
+
+  return {
+    OR: [{ actorId: null }, { actorId: { notIn: hiddenActorIds } }],
+  };
+}
+
 function normalizeNotificationDeliveryError(error: unknown) {
   const fallback = "알림 전달에 실패했습니다.";
   const message =
@@ -231,9 +243,11 @@ function normalizeNotificationDeliveryError(error: unknown) {
 
 async function archiveUnavailableNotificationsForUser(userId: string) {
   const delegate = requireNotificationDelegate();
+  const hiddenActorIds = await listHiddenAuthorIdsForViewer(userId);
 
   let candidates: Array<{
     id: string;
+    actorId: string | null;
     postId: string | null;
     commentId: string | null;
     post: { id: string; status: PostStatus } | null;
@@ -244,10 +258,15 @@ async function archiveUnavailableNotificationsForUser(userId: string) {
       where: {
         userId,
         archivedAt: null,
-        postId: { not: null },
+        ...(hiddenActorIds.length > 0
+          ? {
+              OR: [{ postId: { not: null } }, { actorId: { in: hiddenActorIds } }],
+            }
+          : { postId: { not: null } }),
       },
       select: {
         id: true,
+        actorId: true,
         postId: true,
         commentId: true,
         post: {
@@ -265,6 +284,7 @@ async function archiveUnavailableNotificationsForUser(userId: string) {
       },
     })) as Array<{
       id: string;
+      actorId: string | null;
       postId: string | null;
       commentId: string | null;
       post: { id: string; status: PostStatus } | null;
@@ -277,6 +297,7 @@ async function archiveUnavailableNotificationsForUser(userId: string) {
   const invalidIds = candidates
     .filter(
       (candidate) =>
+        (candidate.actorId && hiddenActorIds.includes(candidate.actorId)) ||
         (candidate.postId && (!candidate.post || candidate.post.status !== PostStatus.ACTIVE)) ||
         (candidate.commentId &&
           (!candidate.comment || candidate.comment.status !== PostStatus.ACTIVE)),
@@ -317,6 +338,7 @@ export async function listNotificationsByUser({
   const delegate = requireNotificationDelegate();
   await flushNotificationDeliveriesForUser(userId);
   await archiveUnavailableNotificationsForUser(userId);
+  const hiddenActorIds = await listHiddenAuthorIdsForViewer(userId);
 
   const safeLimit = Math.min(Math.max(limit, 1), 50);
   const safePage = Math.max(page, 1);
@@ -333,10 +355,15 @@ export async function listNotificationsByUser({
           ? [NotificationType.SYSTEM]
           : null;
   const where: Prisma.NotificationWhereInput = {
-    userId,
-    archivedAt: null,
-    ...(unreadOnly ? { isRead: false } : {}),
-    ...(typeFilter ? { type: { in: typeFilter } } : {}),
+    AND: [
+      {
+        userId,
+        archivedAt: null,
+        ...(unreadOnly ? { isRead: false } : {}),
+        ...(typeFilter ? { type: { in: typeFilter } } : {}),
+      },
+      buildHiddenActorWhere(hiddenActorIds),
+    ],
   };
 
   const fetchNotificationItems = async (): Promise<ListNotificationsByUserResult> => {
@@ -400,6 +427,7 @@ export async function listNotificationsByUser({
       limit: safeLimit,
       kind,
       unreadOnly: unreadOnly ? "1" : "0",
+      hiddenActorIds,
     }),
     ttlSeconds: 5,
     fetcher: fetchNotificationItems,
@@ -410,14 +438,20 @@ export async function countUnreadNotifications(userId: string) {
   const delegate = requireNotificationDelegate();
   await flushNotificationDeliveriesForUser(userId);
   await archiveUnavailableNotificationsForUser(userId);
+  const hiddenActorIds = await listHiddenAuthorIdsForViewer(userId);
 
   const fetchUnreadCount = async () => {
     try {
       return await delegate.count({
         where: {
-          userId,
-          archivedAt: null,
-          isRead: false,
+          AND: [
+            {
+              userId,
+              archivedAt: null,
+              isRead: false,
+            },
+            buildHiddenActorWhere(hiddenActorIds),
+          ],
         },
       });
     } catch (error) {
@@ -428,6 +462,7 @@ export async function countUnreadNotifications(userId: string) {
   return withQueryCache({
     key: await createQueryCacheKey(`notification-unread:${userId}`, {
       type: "count",
+      hiddenActorIds,
     }),
     ttlSeconds: 5,
     fetcher: fetchUnreadCount,
@@ -722,6 +757,7 @@ export async function getNotificationNavigationTarget(userId: string, notificati
       select: {
         id: true,
         userId: true,
+        actorId: true,
         isRead: true,
         archivedAt: true,
         postId: true,
@@ -749,6 +785,16 @@ export async function getNotificationNavigationTarget(userId: string, notificati
       href: "/notifications",
       archived: false,
       found: false,
+    };
+  }
+
+  const hiddenActorIds = await listHiddenAuthorIdsForViewer(userId);
+  if (notification.actorId && hiddenActorIds.includes(notification.actorId)) {
+    await archiveNotification(userId, notification.id);
+    return {
+      href: "/notifications?notice=TARGET_UNAVAILABLE",
+      archived: true,
+      found: true,
     };
   }
 

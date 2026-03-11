@@ -1,10 +1,8 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { AuthAuditAction, UserRole } from "@prisma/client";
+import { AuthAuditAction } from "@prisma/client";
 
 import { EmptyState } from "@/components/ui/empty-state";
-import { getCurrentUser } from "@/server/auth";
-import { redirectToProfileIfNicknameMissing } from "@/server/nickname-guard";
+import { requireModeratorPageUser } from "@/server/admin-page-access";
 import { listAuthAuditLogs } from "@/server/queries/auth-audit.queries";
 
 type AuthAuditPageProps = {
@@ -40,33 +38,7 @@ const reasonLabels: Record<string, string> = {
 };
 
 export default async function AuthAuditPage({ searchParams }: AuthAuditPageProps) {
-  const user = await getCurrentUser();
-  if (!user) {
-    redirect("/login");
-  }
-  redirectToProfileIfNicknameMissing({
-    isAuthenticated: true,
-    nickname: user.nickname,
-  });
-
-  const isModerator =
-    user.role === UserRole.ADMIN || user.role === UserRole.MODERATOR;
-
-  if (!isModerator) {
-    return (
-      <div className="min-h-screen">
-        <main className="mx-auto flex w-full max-w-[980px] flex-col gap-4 px-4 py-10 sm:px-6">
-          <h1 className="text-xl font-semibold text-[#10284a]">접근 권한이 없습니다.</h1>
-          <p className="text-sm text-[#4f678d]">
-            보안 감사 로그는 관리자 또는 운영자만 접근할 수 있습니다.
-          </p>
-          <Link href="/feed" className="text-xs text-[#5a7398]">
-            홈으로 돌아가기
-          </Link>
-        </main>
-      </div>
-    );
-  }
+  await requireModeratorPageUser();
 
   const resolvedParams = (await searchParams) ?? {};
   const actionParam = resolvedParams.action ?? "ALL";
@@ -163,6 +135,12 @@ export default async function AuthAuditPage({ searchParams }: AuthAuditPageProps
           </div>
         </section>
 
+        <div className="flex flex-wrap items-center gap-3 text-xs text-[#5a7398]">
+          <Link href="/admin/reports">신고 큐</Link>
+          <Link href="/admin/moderation-logs">모더레이션 로그</Link>
+          <Link href="/admin/hospital-review-flags">병원 후기 의심 신호</Link>
+        </div>
+
         <section className="tp-card p-4 sm:p-5">
           {audits.length > 0 ? (
             <div className="overflow-x-auto">
@@ -222,6 +200,7 @@ export default async function AuthAuditPage({ searchParams }: AuthAuditPageProps
         <div className="flex flex-wrap gap-3 text-xs text-[#5a7398]">
           <Link href="/admin/breeds">품종 사전</Link>
           <Link href="/admin/reports">신고 큐</Link>
+          <Link href="/admin/hospital-review-flags">병원 후기 의심 신호</Link>
           <Link href="/admin/personalization">개인화 지표</Link>
         </div>
       </main>

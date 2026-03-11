@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { PostStatus } from "@prisma/client";
+import { PostStatus, ReportTarget } from "@prisma/client";
 import { useMemo, useRef, useState, useTransition, type KeyboardEvent } from "react";
 
 import { CommentReactionControls } from "@/components/posts/comment-reaction-controls";
 import { LinkifiedContent } from "@/components/content/linkified-content";
-import { getGuestFingerprint } from "@/lib/guest-client";
+import { PostReportForm } from "@/components/posts/post-report-form";
+import { getClientFingerprint, getGuestFingerprint } from "@/lib/guest-client";
 import { getGuestWriteHeaders } from "@/lib/guest-step-up.client";
 import { resolveUserDisplayName } from "@/lib/user-display";
 import {
@@ -87,6 +88,7 @@ export function PostCommentThread({
   const router = useRouter();
   const [replyOpen, setReplyOpen] = useState<Record<string, boolean>>({});
   const [editOpen, setEditOpen] = useState<Record<string, boolean>>({});
+  const [reportOpen, setReportOpen] = useState<Record<string, boolean>>({});
   const [replyContent, setReplyContent] = useState<CommentFormState>({});
   const [editContent, setEditContent] = useState<CommentFormState>({});
   const [collapsedReplies, setCollapsedReplies] = useState<Record<string, boolean>>({});
@@ -164,7 +166,9 @@ export function PostCommentThread({
       setMessage(null);
       try {
         const result = currentUserId
-          ? await createCommentAction(postId, { content }, parentId)
+          ? await createCommentAction(postId, { content }, parentId, {
+              clientFingerprint: getClientFingerprint(),
+            })
           : await (async () => {
               try {
                 const guestHeaders = await getGuestWriteHeaders("comment:create");
@@ -402,6 +406,7 @@ export function PostCommentThread({
     const canEdit = (isAuthor || isGuestComment) && !hasActiveReply && comment.status === "ACTIVE";
     const canOpenMenu = !isDeleted && canEdit;
     const canReply = canComment && comment.status === "ACTIVE";
+    const canReport = Boolean(currentUserId) && comment.status === "ACTIVE" && !isAuthor;
     const displayName = isGuestComment
       ? `${guestAuthorName} (${comment.guestIpLabel ?? "아이피"} ${guestIpDisplay})`
       : resolveUserDisplayName(comment.author.nickname);
@@ -521,6 +526,20 @@ export function PostCommentThread({
                       {replyOpen[comment.id] ? "답글 취소" : "답글"}
                     </button>
                   ) : null}
+                  {canReport ? (
+                    <button
+                      type="button"
+                      className={actionLinkClass}
+                      onClick={() =>
+                        setReportOpen((prev) => ({
+                          ...prev,
+                          [comment.id]: !prev[comment.id],
+                        }))
+                      }
+                    >
+                      {reportOpen[comment.id] ? "신고 닫기" : "신고"}
+                    </button>
+                  ) : null}
                   {depth === 0 && replies.length > 0 ? (
                     <button
                       type="button"
@@ -537,6 +556,17 @@ export function PostCommentThread({
                   ) : null}
                 </div>
 
+              </div>
+            ) : null}
+
+            {reportOpen[comment.id] ? (
+              <div className="mt-2 rounded-lg border border-[#dbe5f3] bg-[#f8fbff] p-2.5">
+                <PostReportForm
+                  targetId={comment.id}
+                  targetType={ReportTarget.COMMENT}
+                  canReport={Boolean(currentUserId)}
+                  loginHref={loginHref}
+                />
               </div>
             ) : null}
 
