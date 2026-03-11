@@ -24,26 +24,26 @@ export function AuthPageLayout({
   secondaryFooterLinks,
 }: AuthPageLayoutProps) {
   return (
-    <div className="min-h-screen bg-[linear-gradient(180deg,#f2f7ff_0%,#eef4ff_100%)]">
-      <main className="mx-auto flex w-full max-w-[680px] flex-col gap-6 px-4 py-10 sm:px-6 sm:py-14">
-        <header className="flex flex-col gap-3">
-          <p className="text-xs uppercase tracking-[0.24em] text-[#365885]">{eyebrow}</p>
-          <h1 className="text-3xl font-semibold text-[#10284a]">{title}</h1>
-          <p className="text-sm text-[#2f4f78]">{description}</p>
+    <div className="tp-page-bg min-h-screen">
+      <main className="mx-auto flex w-full max-w-[720px] flex-col gap-5 px-4 py-8 sm:px-6 sm:py-12">
+        <header className="tp-hero p-5 sm:p-6">
+          <p className="tp-eyebrow">{eyebrow}</p>
+          <h1 className="tp-text-page-title mt-2 text-[#10284a]">{title}</h1>
+          <p className="mt-2 text-sm text-[#4f678d]">{description}</p>
         </header>
 
-        <section className="rounded-md border border-[#adc3e6] bg-white p-5 shadow-[0_14px_30px_rgba(16,40,74,0.08)] sm:p-6">
+        <section className="tp-card p-5 sm:p-6">
           {form}
         </section>
 
-        <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-[#355885]">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <Link
             href={primaryFooterLink.href}
-            className="text-base font-semibold text-[#ff6b00] transition hover:text-[#e85f00] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff6b00]/35"
+            className="tp-btn-soft tp-btn-sm inline-flex items-center justify-center text-[#315484]"
           >
             {primaryFooterLink.label}
           </Link>
-          <div className="flex flex-wrap items-center gap-4 text-[#436089]">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-[#5a7398]">
             {secondaryFooterLinks.map((link) => (
               <Link
                 key={`${link.href}:${link.label}`}

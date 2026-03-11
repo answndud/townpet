@@ -17,6 +17,23 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-11: Cycle 301 완료 (공용 디자인 언어 정리)
+- 완료 내용
+  - `app/src/app/globals.css`에 `tp-eyebrow`, `tp-chip-base`, `tp-chip-muted`, `tp-filter-pill`, `tp-filter-pill-active`를 추가해 작은 라벨, 칩, 필터 버튼이 같은 시각 언어를 쓰도록 공용 토큰을 보강했다.
+  - `app/src/components/auth/auth-page-layout.tsx`는 메인 앱과 다른 별도 인증 톤을 버리고 `tp-page-bg`, `tp-hero`, `tp-card`, `tp-btn-soft` 기반으로 재정렬해 로그인/회원가입 계열이 메인 브랜드와 같은 표면 언어를 쓰도록 맞췄다.
+  - `app/src/components/ui/empty-state.tsx`는 shared eyebrow와 `tp-btn-primary tp-btn-md` 액션을 사용하도록 바꿔 빈 상태도 메인 버튼 시스템과 맞췄다.
+  - `app/src/app/search/page.tsx`는 scope 필터를 공용 pill 스타일로 바꾸고, 검색 결과 카드를 `좌측 본문 + 우측 메타` 구조로 정리해 피드와 더 가까운 목록 위계를 갖도록 다듬었다.
+  - `app/src/app/bookmarks/page.tsx`는 상단 게시판 필터를 공용 pill로 바꾸고, 목록 카드에서 `postTypeMeta` 기반 게시판 칩 색을 재사용하도록 정리해 피드/상세와 더 같은 제품처럼 보이도록 맞췄다.
+  - `app/src/components/posts/feed-post-meta-badges.tsx`는 새 공용 chip base를 사용하도록 바꿨고, `app/src/components/auth/auth-page-layout.test.tsx`, `app/src/components/ui/empty-state.test.tsx`를 추가해 shared surface/button 언어 회귀를 잡았다.
+- 검증 결과
+  - `pnpm -C app lint src/components/auth/auth-page-layout.tsx src/components/auth/auth-page-layout.test.tsx src/components/ui/empty-state.tsx src/components/ui/empty-state.test.tsx src/components/posts/feed-post-meta-badges.tsx src/components/posts/feed-post-meta-badges.test.tsx src/app/search/page.tsx src/app/bookmarks/page.tsx` 통과
+  - `pnpm -C app test -- src/components/auth/auth-page-layout.test.tsx src/components/ui/empty-state.test.tsx src/components/posts/feed-post-meta-badges.test.tsx` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `137 files / 689 tests` 통과
+  - `pnpm -C app typecheck` 통과
+  - `git diff --check` 통과
+- 메모
+  - 현재 워크트리에는 보안/모더레이션 관련 대규모 변경이 함께 존재하므로, 이번 턴은 clean file 위주로만 손대며 시각 일관성을 먼저 올리는 방식으로 진행했다.
+  - 실제 브라우저 캡처 비교나 모바일 실기기 확인은 아직 하지 않았다.
+
 ### 2026-03-11: Cycle 300 완료 (admin surface 은닉 강화)
 - 완료 내용
   - `app/middleware.ts`에 admin surface 판별을 추가해 `/admin`, `/admin/*`, `/api/admin/*` 요청은 세션이 없는 경우 middleware 단계에서 바로 `404`로 응답하고, `x-robots-tag: noindex, nofollow, noarchive`와 `cache-control: no-store`를 함께 내려 존재 노출과 인덱싱을 줄였다.
