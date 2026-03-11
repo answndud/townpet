@@ -24,5 +24,15 @@ describe("globals.css semantic color roles", () => {
     expect(css).toContain(".tp-text-disabled");
     expect(css).toContain(".tp-text-danger-soft");
     expect(css).toContain(".tp-btn-disabled");
+    expect(css).toContain(".tp-form-section-bar");
+    expect(css).toContain(".tp-form-section-title");
+    expect(css).toContain(".tp-form-label");
+    expect(css).toContain(".tp-form-note");
+    expect(css).toContain(".tp-form-panel");
+    expect(css).toContain(".tp-form-panel-muted");
+    expect(css).toContain(".tp-editor-toolbar");
+    expect(css).toContain(".tp-editor-toolbar-soft");
+    expect(css).toContain(".tp-editor-surface");
+    expect(css).toContain(".tp-divider-soft");
   });
 });
