@@ -2,41 +2,20 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { unwrapCommentListResponse } from "@/lib/comment-client";
+import { fetchPostComments } from "@/lib/comment-client";
 import { emitPostCommentCountSync } from "@/lib/post-comment-count-sync";
 import { subscribeViewerShellSync } from "@/lib/viewer-shell-sync";
+import {
+  shouldAutoLoadPostComments,
+  type PostCommentItem,
+  type PostCommentPrefetchState,
+} from "@/components/posts/post-comment-load-state";
 import { POST_COMMENT_SECTION_STATE_CLASS_NAME } from "@/components/posts/post-comment-layout-class";
 import { PostCommentThread } from "@/components/posts/post-comment-thread";
 import {
   getPostCommentViewerState,
   syncPostCommentViewerState,
 } from "@/components/posts/post-comment-viewer-state";
-
-type CommentItem = {
-  id: string;
-  postId: string;
-  parentId: string | null;
-  content: string;
-  status: string;
-  likeCount: number;
-  dislikeCount: number;
-  createdAt: string | Date;
-  updatedAt: string | Date;
-  authorId: string;
-  guestAuthorId?: string | null;
-  guestDisplayName?: string | null;
-  guestIpDisplay?: string | null;
-  guestIpLabel?: string | null;
-  isGuestAuthor?: boolean;
-  reactions?: Array<{ type: "LIKE" | "DISLIKE" }>;
-  author: { id: string; nickname: string | null; email?: string | null };
-};
-
-type CommentResponse = {
-  ok: boolean;
-  data?: CommentItem[];
-  error?: { message?: string };
-};
 
 type PostCommentSectionClientProps = {
   postId: string;
@@ -45,6 +24,7 @@ type PostCommentSectionClientProps = {
   canInteractWithPostOwner: boolean;
   loginHref: string;
   onCommentCountChange?: (count: number) => void;
+  initialLoadState?: PostCommentPrefetchState;
 };
 
 export function PostCommentSectionClient({
@@ -54,14 +34,12 @@ export function PostCommentSectionClient({
   canInteractWithPostOwner,
   loginHref,
   onCommentCountChange,
+  initialLoadState,
 }: PostCommentSectionClientProps) {
-  const [comments, setComments] = useState<CommentItem[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [shouldLoad, setShouldLoad] = useState(
-    () => typeof window !== "undefined" && !("IntersectionObserver" in window),
-  );
+  const [comments, setComments] = useState<PostCommentItem[] | null>(initialLoadState?.comments ?? null);
+  const [error, setError] = useState<string | null>(initialLoadState?.error ?? null);
+  const [isLoading, setIsLoading] = useState(initialLoadState?.status === "loading");
   const [forcedGuestMode, setForcedGuestMode] = useState(false);
-  const containerRef = useRef<HTMLDivElement | null>(null);
   const mountedRef = useRef(true);
   const baseViewerState = useMemo(
     () => getPostCommentViewerState({ currentUserId, canInteract, canInteractWithPostOwner }),
@@ -79,67 +57,76 @@ export function PostCommentSectionClient({
   }, []);
 
   const reloadComments = useCallback(async () => {
+    if (mountedRef.current) {
+      setIsLoading(true);
+      setError(null);
+    }
+
     try {
-      const response = await fetch(`/api/posts/${postId}/comments`, {
-        method: "GET",
-        credentials: "same-origin",
-        cache: "no-store",
-      });
-      const payload = (await response.json()) as CommentResponse;
-      const nextComments = unwrapCommentListResponse(response.ok, payload);
+      const nextComments = (await fetchPostComments(postId)) as PostCommentItem[];
       if (mountedRef.current) {
         setComments(nextComments);
         setError(null);
+        setIsLoading(false);
         onCommentCountChange?.(nextComments.length);
         emitPostCommentCountSync({ postId, count: nextComments.length });
       }
     } catch {
       if (mountedRef.current) {
         setError("댓글을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.");
+        setIsLoading(false);
       }
     }
   }, [onCommentCountChange, postId]);
 
   useEffect(() => {
-    if (shouldLoad) {
+    if (!initialLoadState) {
       return;
     }
-    if (typeof window === "undefined" || !("IntersectionObserver" in window)) {
-      return;
-    }
+    const timer = window.setTimeout(() => {
+      if (initialLoadState.status === "loading") {
+        setComments(null);
+        setError(null);
+        setIsLoading(true);
+        return;
+      }
+      if (initialLoadState.status === "ready") {
+        const nextComments = initialLoadState.comments ?? [];
+        setComments(nextComments);
+        setError(null);
+        setIsLoading(false);
+        onCommentCountChange?.(nextComments.length);
+        emitPostCommentCountSync({ postId, count: nextComments.length });
+        return;
+      }
+      if (initialLoadState.status === "error") {
+        setComments(null);
+        setError(initialLoadState.error ?? "댓글을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.");
+        setIsLoading(false);
+      }
+    }, 0);
 
-    const target = containerRef.current;
-    if (!target) {
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) {
-          setShouldLoad(true);
-        }
-      },
-      {
-        rootMargin: "240px 0px",
-      },
-    );
-
-    observer.observe(target);
-    return () => observer.disconnect();
-  }, [shouldLoad]);
+    return () => window.clearTimeout(timer);
+  }, [initialLoadState, onCommentCountChange, postId]);
 
   useEffect(() => {
-    if (!shouldLoad) {
+    if (
+      !shouldAutoLoadPostComments({
+        comments,
+        error,
+        isLoading,
+        prefetchStatus: initialLoadState?.status,
+      })
+    ) {
       return;
     }
+
     const timer = window.setTimeout(() => {
       void reloadComments();
     }, 0);
 
-    return () => {
-      window.clearTimeout(timer);
-    };
-  }, [reloadComments, shouldLoad]);
+    return () => window.clearTimeout(timer);
+  }, [comments, error, initialLoadState?.status, isLoading, reloadComments]);
 
   useEffect(() => {
     return subscribeViewerShellSync((payload) => {
@@ -155,30 +142,19 @@ export function PostCommentSectionClient({
     });
   }, [reloadComments]);
 
-  if (!shouldLoad) {
-    return (
-      <div
-        ref={containerRef}
-        className={`${POST_COMMENT_SECTION_STATE_CLASS_NAME} border-[#dbe6f6] bg-white text-[#6a84ac]`}
-      >
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <span>댓글</span>
-          <button
-            type="button"
-            onClick={() => setShouldLoad(true)}
-            className="tp-btn-soft tp-btn-xs"
-          >
-            댓글 불러오기
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
+  if (error && !comments) {
     return (
       <div className={`${POST_COMMENT_SECTION_STATE_CLASS_NAME} border-[#f0d3d3] bg-[#fff7f7] text-[#8b4b4b]`}>
-        {error}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <span>{error}</span>
+          <button
+            type="button"
+            onClick={() => void reloadComments()}
+            className="tp-btn-soft tp-btn-xs"
+          >
+            다시 시도
+          </button>
+        </div>
       </div>
     );
   }

@@ -26,6 +26,11 @@
 
 ## Active Plan
 
+### Cycle 324: 댓글 로딩 시작 시점 단축 + 상세/댓글 워터폴 완화 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 댓글 섹션의 지연 로딩을 제거하고 인증 상세에서 상세/댓글 초기 fetch를 병렬화해 첫 댓글 표시 체감을 개선 | Codex | P1 | `done` | `PostCommentSectionClient`는 `IntersectionObserver` 기반 지연 로딩 없이 진입 직후 댓글 fetch를 시작하고, 인증 상세는 댓글 fetch를 상세 fetch와 병렬로 시작해 워터폴을 줄이며, 관련 회귀 테스트와 lint/test/typecheck/diff check 검증이 기록된다 | `PLAN.md`, `PROGRESS.md`, `app/src/components/posts/post-comment-section-client.tsx`, `app/src/components/posts/post-detail-client.tsx`, 관련 테스트 |
+
 ### Cycle 323: 게스트 반응 로그인 유도 프롬프트 UX 적용 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|

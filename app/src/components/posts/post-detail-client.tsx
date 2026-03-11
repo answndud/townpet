@@ -6,6 +6,7 @@ import { PostType } from "@prisma/client";
 
 import { BackToFeedButton } from "@/components/posts/back-to-feed-button";
 import { PostBoardLinkChip } from "@/components/posts/post-board-link-chip";
+import type { PostCommentItem, PostCommentPrefetchState } from "@/components/posts/post-comment-load-state";
 import {
   PostDetailInfoItem,
   PostDetailInfoSection,
@@ -19,6 +20,7 @@ import { PostReportForm } from "@/components/posts/post-report-form";
 import { PostShareControls } from "@/components/posts/post-share-controls";
 import { PostCommentSectionClient } from "@/components/posts/post-comment-section-client";
 import { PostViewTracker } from "@/components/posts/post-view-tracker";
+import { fetchPostComments } from "@/lib/comment-client";
 import { getGuestPostMeta } from "@/lib/post-guest-meta";
 import { UserRelationControls } from "@/components/user/user-relation-controls";
 import { renderLiteMarkdown } from "@/lib/markdown-lite";
@@ -251,6 +253,12 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
   const [data, setData] = useState<PostDetailResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPostReportOpen, setIsPostReportOpen] = useState(false);
+  const [loadVersion, setLoadVersion] = useState(0);
+  const [commentLoadState, setCommentLoadState] = useState<PostCommentPrefetchState>({
+    status: "idle",
+    comments: null,
+    error: null,
+  });
 
   const handleCommentCountChange = (nextCommentCount: number) => {
     setData((current) => {
@@ -316,6 +324,35 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
         return;
       }
 
+      setError(null);
+      setData(null);
+      setCommentLoadState({
+        status: "loading",
+        comments: null,
+        error: null,
+      });
+
+      void (async () => {
+        try {
+          const nextComments = (await fetchPostComments(postId)) as PostCommentItem[];
+          if (!cancelled) {
+            setCommentLoadState({
+              status: "ready",
+              comments: nextComments,
+              error: null,
+            });
+          }
+        } catch {
+          if (!cancelled) {
+            setCommentLoadState({
+              status: "error",
+              comments: null,
+              error: "댓글을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.",
+            });
+          }
+        }
+      })();
+
       for (let attempt = 1; attempt <= 2; attempt += 1) {
         try {
           const response = await fetch(`/api/posts/${postId}/detail`, {
@@ -372,7 +409,9 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
     return () => {
       cancelled = true;
     };
-  }, [postId]);
+  }, [loadVersion, postId]);
+
+  const loginHref = `/login?next=${encodeURIComponent(`/posts/${postId}`)}`;
 
   if (error) {
     return (
@@ -385,8 +424,7 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
               <button
                 type="button"
                 onClick={() => {
-                  setError(null);
-                  setData(null);
+                  setLoadVersion((current) => current + 1);
                 }}
                 className="tp-btn-primary tp-btn-sm"
               >
@@ -405,102 +443,100 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
     );
   }
 
-  if (!data?.data) {
-    return (
-      <div className="tp-page-bg min-h-screen pb-16">
-        <main className="mx-auto flex max-w-[1000px] flex-col gap-4 px-4 pb-10 pt-8 sm:px-6 lg:px-8">
-          <div className="tp-border-soft tp-text-subtle rounded-xl border bg-white p-6 text-center text-sm">
-            게시글을 불러오는 중...
-          </div>
-        </main>
-      </div>
-    );
-  }
-
-  const { post, viewerId } = data.data;
-  const resolvedRelationState = data.data.relationState ?? {
+  const post = data?.data?.post;
+  const viewerId = data?.data?.viewerId ?? null;
+  const hasLoadedPost = Boolean(post);
+  const resolvedRelationState = data?.data?.relationState ?? {
     isBlockedByMe: false,
     hasBlockedMe: false,
     isMutedByMe: false,
   };
-  const canInteract = Boolean(viewerId);
-  const isAuthor = viewerId === post.authorId;
-  const canReportPost = isReportablePostType(post.type);
+  const canInteract = hasLoadedPost && Boolean(viewerId);
+  const isAuthor = Boolean(post && viewerId === post.authorId);
+  const canReportPost = post ? isReportablePostType(post.type) : false;
   const canInteractWithPostOwner = !(
     resolvedRelationState.hasBlockedMe || resolvedRelationState.isBlockedByMe
   );
   const showPostReportControls =
     canReportPost && canInteract && !isAuthor && canInteractWithPostOwner;
-  const meta = typeMeta[post.type];
-  const createdAt = ensureDate(post.createdAt);
-  const updatedAt = ensureDate(post.updatedAt);
-  const resolvedViewCount = Number.isFinite(post.viewCount) ? Number(post.viewCount) : 0;
-  const resolvedLikeCount = Number.isFinite(post.likeCount) ? Number(post.likeCount) : 0;
-  const resolvedDislikeCount = Number.isFinite(post.dislikeCount) ? Number(post.dislikeCount) : 0;
-  const resolvedCommentCount = Number.isFinite(post.commentCount) ? Number(post.commentCount) : 0;
-  const renderedContentHtml = post.renderedContentHtml?.trim()
-    ? post.renderedContentHtml
-    : renderLiteMarkdown(post.content);
-  const renderedContentText = post.renderedContentText?.trim()
-    ? post.renderedContentText
-    : renderedContentHtml.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+  const meta = post ? typeMeta[post.type] : null;
+  const createdAt = post ? ensureDate(post.createdAt) : null;
+  const updatedAt = post ? ensureDate(post.updatedAt) : null;
+  const resolvedViewCount = post && Number.isFinite(post.viewCount) ? Number(post.viewCount) : 0;
+  const resolvedLikeCount = post && Number.isFinite(post.likeCount) ? Number(post.likeCount) : 0;
+  const resolvedDislikeCount = post && Number.isFinite(post.dislikeCount) ? Number(post.dislikeCount) : 0;
+  const resolvedCommentCount = post && Number.isFinite(post.commentCount) ? Number(post.commentCount) : 0;
+  const renderedContentHtml = post
+    ? (post.renderedContentHtml?.trim() ? post.renderedContentHtml : renderLiteMarkdown(post.content))
+    : "";
+  const renderedContentText = post
+    ? (post.renderedContentText?.trim()
+      ? post.renderedContentText
+      : renderedContentHtml.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim())
+    : "";
   const shouldUsePlainFallback =
     renderedContentText.length === 0 || renderedContentText.includes("미리보기 내용이 없습니다");
-  const orderedImages = [...post.images].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-  const postUrl = toAbsoluteUrl(`/posts/${post.id}`);
-  const loginHref = `/login?next=${encodeURIComponent(`/posts/${post.id}`)}`;
-  const guestPostMeta = getGuestPostMeta(post);
-  const displayAuthorName = guestPostMeta.guestAuthorName
+  const orderedImages = post ? [...post.images].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)) : [];
+  const postUrl = post ? toAbsoluteUrl(`/posts/${post.id}`) : null;
+  const guestPostMeta = post ? getGuestPostMeta(post) : null;
+  const displayAuthorName = guestPostMeta?.guestAuthorName
     ? guestPostMeta.guestAuthorName
-    : resolveUserDisplayName(post.author.nickname);
-  const structuredData = {
-    "@context": "https://schema.org",
-    "@type": "SocialMediaPosting",
-    headline: post.title,
-    articleBody: buildExcerpt(post.content, 320),
-    datePublished: createdAt.toISOString(),
-    dateModified: updatedAt.toISOString(),
-    mainEntityOfPage: postUrl,
-    author: {
-      "@type": "Person",
-      name: displayAuthorName,
-    },
-    image: post.images.map((image) => toAbsoluteUrl(image.url)),
-    interactionStatistic: [
-      {
-        "@type": "InteractionCounter",
-        interactionType: "https://schema.org/LikeAction",
-        userInteractionCount: resolvedLikeCount,
-      },
-      {
-        "@type": "InteractionCounter",
-        interactionType: "https://schema.org/CommentAction",
-        userInteractionCount: resolvedCommentCount,
-      },
-    ],
-  };
+    : post
+      ? resolveUserDisplayName(post.author.nickname)
+      : null;
+  const structuredData = post && createdAt && updatedAt && postUrl && displayAuthorName
+    ? {
+        "@context": "https://schema.org",
+        "@type": "SocialMediaPosting",
+        headline: post.title,
+        articleBody: buildExcerpt(post.content, 320),
+        datePublished: createdAt.toISOString(),
+        dateModified: updatedAt.toISOString(),
+        mainEntityOfPage: postUrl,
+        author: {
+          "@type": "Person",
+          name: displayAuthorName,
+        },
+        image: post.images.map((image) => toAbsoluteUrl(image.url)),
+        interactionStatistic: [
+          {
+            "@type": "InteractionCounter",
+            interactionType: "https://schema.org/LikeAction",
+            userInteractionCount: resolvedLikeCount,
+          },
+          {
+            "@type": "InteractionCounter",
+            interactionType: "https://schema.org/CommentAction",
+            userInteractionCount: resolvedCommentCount,
+          },
+        ],
+      }
+    : null;
 
   return (
     <div className="tp-page-bg min-h-screen pb-16">
-      <PostViewTracker postId={post.id} />
-      <PostPersonalizationDwellTracker postId={post.id} enabled={Boolean(viewerId)} />
-      <script
-        nonce={cspNonce}
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
-      />
+      {post ? <PostViewTracker postId={post.id} /> : null}
+      {post ? <PostPersonalizationDwellTracker postId={post.id} enabled={Boolean(viewerId)} /> : null}
+      {structuredData ? (
+        <script
+          nonce={cspNonce}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        />
+      ) : null}
       <main className="mx-auto flex w-full max-w-[1100px] flex-col gap-4 px-4 py-5 sm:gap-5 sm:px-6 sm:py-6 lg:px-8">
-        <BackToFeedButton className="tp-btn-soft tp-btn-sm inline-flex w-fit items-center" />
-        <div>
-          <section className="tp-card p-4 sm:p-7">
-            <div className="flex flex-wrap items-center gap-2 text-xs">
-              <PostBoardLinkChip type={post.type} label={meta.label} chipClass={meta.chipClass} />
-              {post.neighborhood ? (
-                <span className="tp-chip-base tp-chip-muted">
-                  {post.neighborhood.city} {post.neighborhood.name}
-                </span>
-              ) : null}
-            </div>
+        {post ? <BackToFeedButton className="tp-btn-soft tp-btn-sm inline-flex w-fit items-center" /> : null}
+        {post ? (
+          <>
+            <section className="tp-card p-4 sm:p-7">
+              <div className="flex flex-wrap items-center gap-2 text-xs">
+                <PostBoardLinkChip type={post.type} label={meta?.label ?? ""} chipClass={meta?.chipClass ?? ""} />
+                {post.neighborhood ? (
+                  <span className="tp-chip-base tp-chip-muted">
+                    {post.neighborhood.city} {post.neighborhood.name}
+                  </span>
+                ) : null}
+              </div>
 
             <div className="tp-border-soft mt-3 grid gap-3 border-b pb-4 md:mt-4 md:gap-4 md:pb-5 md:grid-cols-[minmax(0,1fr)_260px] md:items-start">
               <div>
@@ -511,20 +547,20 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
               <div className="tp-text-muted text-[13px] md:text-right">
                 <div className="flex items-start justify-between gap-3 md:flex-col md:items-end">
                   <p className="tp-text-heading min-w-0 break-all font-semibold">
-                    {guestPostMeta.isGuestPost ? (
+                    {guestPostMeta?.isGuestPost ? (
                       <span>
                         {displayAuthorName}
-                        {guestPostMeta.guestIpDisplay
+                        {guestPostMeta?.guestIpDisplay
                           ? ` (${guestPostMeta.guestIpLabel ?? "아이피"} ${guestPostMeta.guestIpDisplay})`
                           : ""}
                       </span>
-                      ) : (
+                    ) : (
                       <Link href={`/users/${post.author.id}`} className="tp-text-link">
                         {displayAuthorName}
                       </Link>
                     )}
                   </p>
-                  <p className="tp-text-subtle text-[11px]">{formatRelativeDate(createdAt)}</p>
+                  <p className="tp-text-subtle text-[11px]">{formatRelativeDate(createdAt!)}</p>
                 </div>
                 <p className="tp-text-meta tp-text-subtle mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 md:justify-end">
                   <span>조회 {resolvedViewCount.toLocaleString()}</span>
@@ -535,7 +571,7 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
                 <details className="tp-text-subtle mt-1 text-[11px] md:text-right">
                   <summary className="tp-text-label cursor-pointer list-none font-semibold">상세 정보</summary>
                   <p className="mt-1 leading-5">
-                    {createdAt.toLocaleDateString("ko-KR")} ·{" "}
+                    {createdAt!.toLocaleDateString("ko-KR")} ·{" "}
                     {post.neighborhood ? `${post.neighborhood.city} ${post.neighborhood.name}` : "전체"}
                   </p>
                 </details>
@@ -622,7 +658,7 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
                       loginHref={loginHref}
                       compact
                     />
-                    <PostShareControls url={postUrl} compact />
+                    <PostShareControls url={postUrl!} compact />
                   </div>
                 </div>
                 {showPostReportControls && isPostReportOpen ? (
@@ -658,7 +694,7 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
                   </details>
                 </>
               ) : null}
-              {!canInteract && guestPostMeta.isGuestPost ? (
+              {!canInteract && guestPostMeta!.isGuestPost ? (
                 <GuestPostDetailActions postId={post.id} />
               ) : null}
             </div>
@@ -670,7 +706,6 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
             ) : null}
 
           </section>
-        </div>
 
         {post.hospitalReview ? (
           <PostDetailInfoSection title="병원후기 상세">
@@ -804,13 +839,21 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
           </PostDetailInfoSection>
         ) : null}
 
+          </>
+        ) : (
+          <div className="tp-border-soft tp-text-subtle rounded-xl border bg-white p-6 text-center text-sm">
+            게시글을 불러오는 중...
+          </div>
+        )}
+
         <PostCommentSectionClient
-          postId={post.id}
+          postId={postId}
           currentUserId={viewerId ?? undefined}
-          canInteract={canInteract}
-          canInteractWithPostOwner={canInteractWithPostOwner}
+          canInteract={hasLoadedPost ? canInteract : false}
+          canInteractWithPostOwner={hasLoadedPost ? canInteractWithPostOwner : false}
           loginHref={loginHref}
-          onCommentCountChange={handleCommentCountChange}
+          onCommentCountChange={hasLoadedPost ? handleCommentCountChange : undefined}
+          initialLoadState={commentLoadState}
         />
       </main>
     </div>

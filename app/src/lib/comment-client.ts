@@ -4,6 +4,16 @@ type CommentListResponse<T> = {
   error?: { message?: string };
 };
 
+export async function fetchPostComments<T>(postId: string) {
+  const response = await fetch(`/api/posts/${postId}/comments`, {
+    method: "GET",
+    credentials: "same-origin",
+    cache: "no-store",
+  });
+  const payload = (await response.json()) as CommentListResponse<T>;
+  return unwrapCommentListResponse(response.ok, payload);
+}
+
 export function unwrapCommentListResponse<T>(
   responseOk: boolean,
   payload: CommentListResponse<T>,

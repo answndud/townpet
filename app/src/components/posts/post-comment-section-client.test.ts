@@ -4,6 +4,7 @@ import {
   getPostCommentViewerState,
   syncPostCommentViewerState,
 } from "@/components/posts/post-comment-viewer-state";
+import { shouldAutoLoadPostComments } from "@/components/posts/post-comment-load-state";
 
 describe("PostCommentSectionClient viewer sync", () => {
   it("derives interactive viewer state only when comment interaction is allowed", () => {
@@ -45,5 +46,49 @@ describe("PostCommentSectionClient viewer sync", () => {
       currentUserId: undefined,
       canInteract: false,
     });
+  });
+});
+
+describe("PostCommentSectionClient loading policy", () => {
+  it("starts loading immediately when there is no prefetched state", () => {
+    expect(
+      shouldAutoLoadPostComments({
+        comments: null,
+        error: null,
+        isLoading: false,
+        prefetchStatus: "idle",
+      }),
+    ).toBe(true);
+  });
+
+  it("waits for parent prefetch when comments are already loading in the detail client", () => {
+    expect(
+      shouldAutoLoadPostComments({
+        comments: null,
+        error: null,
+        isLoading: false,
+        prefetchStatus: "loading",
+      }),
+    ).toBe(false);
+  });
+
+  it("does not auto-load again once prefetched comments are ready or failed", () => {
+    expect(
+      shouldAutoLoadPostComments({
+        comments: [],
+        error: null,
+        isLoading: false,
+        prefetchStatus: "ready",
+      }),
+    ).toBe(false);
+
+    expect(
+      shouldAutoLoadPostComments({
+        comments: null,
+        error: "댓글을 불러오지 못했습니다.",
+        isLoading: false,
+        prefetchStatus: "error",
+      }),
+    ).toBe(false);
   });
 });
