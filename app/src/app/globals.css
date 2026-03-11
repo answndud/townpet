@@ -350,6 +350,85 @@ body {
   color: #91a6c6;
 }
 
+.tp-form-section-bar {
+  border-bottom: 1px solid #dbe6f6;
+  background: #f7fbff;
+  padding: 0.625rem 1rem;
+}
+
+.tp-form-section-title {
+  color: #4b6b9b;
+  font-size: 0.75rem;
+  line-height: 1;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.tp-form-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  color: #315b9a;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  font-weight: 500;
+}
+
+.tp-form-note {
+  color: #5d789f;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+.tp-form-panel {
+  border: 1px solid #dbe6f6;
+  border-radius: 0.75rem;
+  background: #f8fbff;
+}
+
+.tp-form-panel-muted {
+  border: 1px solid #dbe6f6;
+  border-radius: 0.75rem;
+  background: #ffffff;
+}
+
+.tp-editor-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem;
+  border-bottom: 1px solid #dbe6f6;
+  background: #ffffff;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+.tp-editor-toolbar-soft {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  border-bottom: 1px solid #dbe6f6;
+  background: #f7fbff;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+.tp-editor-surface {
+  background: #fcfdff;
+  color: #1f3f71;
+}
+
+.tp-divider-soft {
+  width: 1px;
+  height: 1.25rem;
+  background: #d8e3f4;
+}
+
 @media (min-width: 640px) {
   .tp-eyebrow {
     font-size: 0.75rem;

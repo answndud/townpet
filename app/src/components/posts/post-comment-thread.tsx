@@ -413,7 +413,7 @@ export function PostCommentThread({
       : resolveUserDisplayName(comment.author.nickname);
     const avatarText = displayName.slice(0, 1).toUpperCase();
     const actionLinkClass =
-      "text-[11px] font-medium text-[#4a668f] transition hover:text-[#2f5da4] hover:underline disabled:cursor-not-allowed disabled:opacity-50";
+      "tp-text-muted text-[11px] font-medium transition hover:text-[#2f5da4] hover:underline disabled:cursor-not-allowed disabled:opacity-50";
 
     return (
       <div
@@ -421,8 +421,8 @@ export function PostCommentThread({
         id={`comment-${comment.id}`}
         className={depth > 0 ? "mt-2" : undefined}
       >
-        <article className={`flex gap-2.5 px-1 py-2.5 ${isDeleted ? "bg-[#f8fbff] opacity-80" : ""}`}>
-          <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#edf3fb] text-[11px] font-semibold text-[#44638f]">
+        <article className={`flex gap-2.5 px-1 py-2.5 ${isDeleted ? "tp-surface-soft opacity-80" : ""}`}>
+          <div className="tp-surface-alt tp-text-accent mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold">
             {avatarText}
           </div>
 
@@ -431,8 +431,8 @@ export function PostCommentThread({
               <div className="min-w-0">
                 {isGuestComment ? (
                   <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                    <p className="truncate text-[13px] font-semibold text-[#2f4f7d]">{displayName}</p>
-                    <p suppressHydrationWarning className="text-[11px] text-[#7a8eae]">
+                    <p className="tp-text-heading truncate text-[13px] font-semibold">{displayName}</p>
+                    <p suppressHydrationWarning className="tp-text-subtle text-[11px]">
                       {formatCommentDate(comment.createdAt)}
                     </p>
                   </div>
@@ -440,11 +440,11 @@ export function PostCommentThread({
                   <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                     <Link
                       href={`/users/${comment.author.id}`}
-                      className="truncate text-[13px] font-semibold text-[#2f4f7d] hover:text-[#2f5da4]"
+                      className="tp-text-heading truncate text-[13px] font-semibold hover:text-[#2f5da4]"
                     >
                       {displayName}
                     </Link>
-                    <p suppressHydrationWarning className="text-[11px] text-[#7a8eae]">
+                    <p suppressHydrationWarning className="tp-text-subtle text-[11px]">
                       {formatCommentDate(comment.createdAt)}
                     </p>
                   </div>
@@ -453,15 +453,15 @@ export function PostCommentThread({
 
               {canOpenMenu ? (
                 <details className="relative">
-                  <summary className="list-none rounded-md px-1.5 py-0.5 text-[15px] leading-none text-[#6a81a6] hover:bg-[#f1f5fb]">
+                  <summary className="tp-text-muted list-none rounded-md px-1.5 py-0.5 text-[15px] leading-none hover:bg-[#f1f5fb]">
                     ···
                   </summary>
-                  <div className="absolute right-0 z-20 mt-1.5 min-w-24 rounded-md border border-[#d6e1f3] bg-white p-1 shadow-[0_8px_18px_rgba(16,40,74,0.08)]">
+                  <div className="tp-border-muted absolute right-0 z-20 mt-1.5 min-w-24 rounded-md border bg-white p-1 shadow-[0_8px_18px_rgba(16,40,74,0.08)]">
                     {canEdit ? (
                       <>
                         <button
                           type="button"
-                          className="block w-full rounded px-2 py-1 text-left text-[11px] text-[#2f4f7d] hover:bg-[#f5f9ff]"
+                          className="tp-text-heading block w-full rounded px-2 py-1 text-left text-[11px] hover:bg-[#f5f9ff]"
                           onClick={() => {
                             if (isGuestComment) {
                               setGuestActionPrompt((prev) => ({ ...prev, [comment.id]: "EDIT" }));
@@ -494,7 +494,7 @@ export function PostCommentThread({
               ) : null}
             </header>
 
-            <div className={`mt-1 text-[14px] leading-6 ${isDeleted ? "text-[#8ba0bf]" : "text-[#27466f]"}`}>
+            <div className={`mt-1 text-[14px] leading-6 ${isDeleted ? "tp-text-placeholder" : "tp-text-primary"}`}>
               <LinkifiedContent
                 text={isDeleted ? "삭제된 댓글입니다." : comment.content}
                 showYoutubeEmbeds={!isDeleted}
@@ -561,7 +561,7 @@ export function PostCommentThread({
             ) : null}
 
             {reportOpen[comment.id] ? (
-              <div className="mt-2 rounded-lg border border-[#dbe5f3] bg-[#f8fbff] p-2.5">
+              <div className="tp-form-panel mt-2 p-2.5">
                 <PostReportForm
                   targetId={comment.id}
                   targetType={ReportTarget.COMMENT}
@@ -572,7 +572,7 @@ export function PostCommentThread({
             ) : null}
 
             {canReply && replyOpen[comment.id] ? (
-              <div className="mt-2 rounded-lg bg-[#f8fbff] p-2">
+              <div className="tp-form-panel mt-2 p-2">
                 {!currentUserId ? (
                   <div className="mb-2 grid gap-1.5 sm:grid-cols-2">
                     <input
@@ -634,73 +634,73 @@ export function PostCommentThread({
             ) : null}
 
             {isGuestComment && guestActionPrompt[comment.id] ? (
-          <div className="mt-2 rounded-lg border border-[#dbe5f3] bg-[#f8fbff] p-2">
-            <div className="flex flex-wrap items-center gap-2">
-              <input
-                type="password"
-                className="tp-input-soft h-8 bg-white px-2.5 text-[12px]"
-                placeholder="댓글 비밀번호"
-                value={guestActionPassword[comment.id] ?? ""}
-                onChange={(event) =>
-                  setGuestActionPassword((prev) => ({
-                    ...prev,
-                    [comment.id]: event.target.value,
-                  }))
-                }
-              />
-              <button
-                type="button"
-                className="tp-btn-primary tp-btn-xs"
-                onClick={() =>
-                  confirmGuestAction(
-                    comment.id,
-                    guestActionPrompt[comment.id] === "EDIT" ? "EDIT" : "DELETE",
-                  )
-                }
-                disabled={isPending}
-              >
-                확인
-              </button>
-              <button
-                type="button"
-                className="tp-btn-soft tp-btn-xs"
-                onClick={() => setGuestActionPrompt((prev) => ({ ...prev, [comment.id]: null }))}
-                disabled={isPending}
-              >
-                취소
-              </button>
-            </div>
-          </div>
-        ) : null}
+              <div className="tp-form-panel mt-2 p-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <input
+                    type="password"
+                    className="tp-input-soft h-8 bg-white px-2.5 text-[12px]"
+                    placeholder="댓글 비밀번호"
+                    value={guestActionPassword[comment.id] ?? ""}
+                    onChange={(event) =>
+                      setGuestActionPassword((prev) => ({
+                        ...prev,
+                        [comment.id]: event.target.value,
+                      }))
+                    }
+                  />
+                  <button
+                    type="button"
+                    className="tp-btn-primary tp-btn-xs"
+                    onClick={() =>
+                      confirmGuestAction(
+                        comment.id,
+                        guestActionPrompt[comment.id] === "EDIT" ? "EDIT" : "DELETE",
+                      )
+                    }
+                    disabled={isPending}
+                  >
+                    확인
+                  </button>
+                  <button
+                    type="button"
+                    className="tp-btn-soft tp-btn-xs"
+                    onClick={() => setGuestActionPrompt((prev) => ({ ...prev, [comment.id]: null }))}
+                    disabled={isPending}
+                  >
+                    취소
+                  </button>
+                </div>
+              </div>
+            ) : null}
 
             {(canInteract || isGuestComment) && editOpen[comment.id] && canEdit ? (
-          <div className="mt-2">
-            <textarea
-              className="tp-input-soft min-h-[72px] w-full px-3 py-2 text-[13px]"
-              value={editContent[comment.id] ?? comment.content}
-              onChange={(event) =>
-                setEditContent((prev) => ({
-                  ...prev,
-                  [comment.id]: event.target.value,
-                }))
-              }
-              maxLength={COMMENT_CONTENT_MAX_LENGTH}
-            />
-            <div className="mt-2 flex justify-end">
-              <button
-                type="button"
-                className="tp-btn-primary tp-btn-xs"
-                onClick={() => handleUpdate(comment.id, isGuestComment)}
-                disabled={isPending}
-              >
-                수정 저장
-              </button>
-            </div>
-          </div>
-        ) : null}
+              <div className="tp-form-panel mt-2 p-2">
+                <textarea
+                  className="tp-input-soft min-h-[72px] w-full bg-white px-3 py-2 text-[13px]"
+                  value={editContent[comment.id] ?? comment.content}
+                  onChange={(event) =>
+                    setEditContent((prev) => ({
+                      ...prev,
+                      [comment.id]: event.target.value,
+                    }))
+                  }
+                  maxLength={COMMENT_CONTENT_MAX_LENGTH}
+                />
+                <div className="mt-2 flex justify-end">
+                  <button
+                    type="button"
+                    className="tp-btn-primary tp-btn-xs"
+                    onClick={() => handleUpdate(comment.id, isGuestComment)}
+                    disabled={isPending}
+                  >
+                    수정 저장
+                  </button>
+                </div>
+              </div>
+            ) : null}
 
             {replies.length > 0 && !collapsedReplies[comment.id] ? (
-              <div className="relative mt-2 ml-8 space-y-1.5 pl-3 before:absolute before:bottom-0 before:left-0 before:top-0 before:w-px before:bg-[#d7e2f3] before:content-['']">
+              <div className="before:bg-[#d7e2f3] relative mt-2 ml-8 space-y-1.5 pl-3 before:absolute before:bottom-0 before:left-0 before:top-0 before:w-px before:content-['']">
                 {replies.map((reply) => renderComment(reply, depth + 1))}
               </div>
             ) : null}
@@ -713,24 +713,24 @@ export function PostCommentThread({
   return (
     <div className="tp-card mt-6 w-full p-4 sm:mt-8 sm:p-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="tp-text-section-title text-[#1f3f71]">댓글 {comments.length}</h2>
-        {totalPages > 1 ? <span className="text-[11px] text-[#6b84ab]">{currentPage} / {totalPages}</span> : null}
+        <h2 className="tp-text-section-title tp-text-heading">댓글 {comments.length}</h2>
+        {totalPages > 1 ? <span className="tp-text-label text-[11px]">{currentPage} / {totalPages}</span> : null}
       </div>
-      {message ? <p className="mt-2 text-[11px] text-[#5a7398]">{message}</p> : null}
+      {message ? <p className="tp-text-subtle mt-2 text-[11px]">{message}</p> : null}
 
       {roots.length === 0 ? (
-        <p className="mt-4 text-[13px] text-[#5a7398]">댓글이 없습니다.</p>
+        <p className="tp-text-subtle mt-4 text-[13px]">댓글이 없습니다.</p>
       ) : (
-        <div className="mt-3 rounded-md border border-[#dbe5f3] divide-y divide-[#dbe5f3] bg-white sm:mt-4">
+        <div className="tp-border-soft mt-3 divide-y rounded-md border bg-white sm:mt-4">
           {pagedRoots.map((comment) => renderComment(comment))}
         </div>
       )}
 
       {totalPages > 1 ? (
-        <div className="mt-2.5 flex flex-wrap items-center justify-center gap-1.5 text-xs text-[#4f678d]">
+        <div className="tp-text-muted mt-2.5 flex flex-wrap items-center justify-center gap-1.5 text-xs">
           <button
             type="button"
-            className="rounded border border-[#c7d7ef] bg-white px-2 py-0.5 text-[#315484] disabled:opacity-40"
+            className={`rounded-lg ${currentPage <= 1 ? "tp-btn-disabled" : "tp-btn-soft"} tp-btn-xs`}
             onClick={() => setPage((prev) => Math.max(1, prev - 1))}
             disabled={currentPage <= 1}
           >
@@ -738,18 +738,14 @@ export function PostCommentThread({
           </button>
           {pageItems.map((item, index) =>
             item === "..." ? (
-              <span key={`bottom-ellipsis-${index}`} className="px-1 text-[#8ca0bf]">
+              <span key={`bottom-ellipsis-${index}`} className="tp-text-placeholder px-1">
                 ...
               </span>
             ) : (
               <button
                 key={`bottom-${item}`}
                 type="button"
-                className={`min-w-7 rounded border px-2 py-0.5 ${
-                  item === currentPage
-                    ? "border-[#3567b5] bg-[#3567b5] text-white"
-                    : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
-                }`}
+                className={`min-w-7 rounded-lg ${item === currentPage ? "tp-btn-primary" : "tp-btn-soft"} tp-btn-xs`}
                 onClick={() => setPage(item)}
               >
                 {item}
@@ -758,7 +754,7 @@ export function PostCommentThread({
           )}
           <button
             type="button"
-            className="rounded border border-[#c7d7ef] bg-white px-2 py-0.5 text-[#315484] disabled:opacity-40"
+            className={`rounded-lg ${currentPage >= totalPages ? "tp-btn-disabled" : "tp-btn-soft"} tp-btn-xs`}
             onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
             disabled={currentPage >= totalPages}
           >
@@ -767,8 +763,8 @@ export function PostCommentThread({
         </div>
       ) : null}
 
-      <div className="mt-3 border-t border-[#dbe6f6] pt-2.5 sm:mt-4 sm:pt-3">
-        <div className="rounded-xl border border-[#dbe6f6] bg-[#f8fbff] p-2.5 sm:p-2.5">
+      <div className="tp-border-soft mt-3 border-t pt-2.5 sm:mt-4 sm:pt-3">
+        <div className="tp-form-panel p-2.5 sm:p-2.5">
           {canComment ? (
             <>
               {!currentUserId ? (
@@ -812,7 +808,7 @@ export function PostCommentThread({
               </div>
             </>
           ) : (
-            <div className="rounded-lg border border-[#d3e0f4] bg-white px-3 py-2 text-[13px] text-[#355988]">
+            <div className="tp-form-panel-muted tp-text-accent px-3 py-2 text-[13px]">
               {interactionDisabledMessage ? (
                 interactionDisabledMessage
               ) : (
@@ -820,7 +816,7 @@ export function PostCommentThread({
                   댓글 작성/답글/신고는 로그인 후 이용할 수 있습니다.{" "}
                   <Link
                     href={loginHref}
-                    className="font-semibold text-[#2f5da4] underline underline-offset-2"
+                    className="tp-text-link font-semibold underline underline-offset-2"
                   >
                     로그인하기
                   </Link>

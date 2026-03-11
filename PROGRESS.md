@@ -17,6 +17,20 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-11: Cycle 307 완료 (댓글/글쓰기 폼 semantic 패널 정리)
+- 완료 내용
+  - `app/src/app/globals.css`에 `tp-form-section-bar`, `tp-form-section-title`, `tp-form-label`, `tp-form-note`, `tp-form-panel`, `tp-form-panel-muted`, `tp-editor-toolbar`, `tp-editor-toolbar-soft`, `tp-editor-surface`, `tp-divider-soft`를 추가해 폼/패널/에디터 주변의 공통 semantic role을 늘렸다.
+  - `app/src/app/globals-css.test.ts`는 위 semantic role class 존재를 회귀로 고정해, 이후 다른 화면이 같은 role을 재사용할 때 전역 스타일 토큰이 빠지지 않도록 했다.
+  - `app/src/components/posts/post-comment-thread.tsx`는 댓글 카드, 메뉴, 신고/답글/비회원 액션 패널, 페이지네이션, 작성 박스 전반을 semantic panel/text/button role 위주로 정리해 상세/알림/프로필과 같은 톤을 쓰게 맞췄다.
+  - `app/src/components/posts/post-create-form.tsx`는 `StructuredFieldSection` 공용 wrapper를 추가해 병원후기/입양/봉사 같은 구조화 섹션이 동일한 section bar와 panel layout을 재사용하도록 정리했다.
+- 검증 결과
+  - `pnpm -C app lint src/app/globals-css.test.ts src/components/posts/post-comment-thread.tsx src/components/posts/post-create-form.tsx` 통과
+  - `pnpm -C app test -- src/app/globals-css.test.ts` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `140 files / 702 tests` 통과
+  - `pnpm -C app typecheck` 통과
+  - `git diff --check` 통과
+- 메모
+  - 이번 변경은 동작 추가보다 semantic class 재사용과 패널 톤 정리에 가깝고, 입력 검증/신고/댓글 정책 자체는 기존 로직을 유지했다.
+
 ### 2026-03-11: Cycle 306 완료 (게시글 상세 정보 카드 공통화)
 - 완료 내용
   - `app/src/components/posts/post-detail-info-section.tsx`를 추가해 게시글 상세 하단의 구조화 정보를 공용 `section/item` 카드 패턴으로 렌더링하도록 정리했다.

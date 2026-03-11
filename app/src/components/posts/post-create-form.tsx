@@ -4,6 +4,7 @@ import { PostScope, PostType } from "@prisma/client";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import type { ReactNode } from "react";
 
 import { ImageUploadField } from "@/components/ui/image-upload-field";
 import {
@@ -150,6 +151,23 @@ const reviewCategoryOptions: Array<{ value: ReviewCategory; label: string }> = [
 ];
 
 const DRAFT_STORAGE_KEY = "townpet:post-create-draft:v1";
+
+function StructuredFieldSection({
+  title,
+  children,
+}: {
+  title: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className="tp-card overflow-hidden">
+      <div className="tp-form-section-bar">
+        <p className="tp-form-section-title">{title}</p>
+      </div>
+      <div className="grid gap-4 p-4 md:grid-cols-2">{children}</div>
+    </section>
+  );
+}
 
 function isDraftFormState(value: unknown): value is PostCreateFormState {
   if (!value || typeof value !== "object") {
@@ -957,13 +975,13 @@ export function PostCreateForm({
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <section className="tp-card overflow-hidden">
-        <div className="border-b border-[#dbe6f6] bg-[#f7fbff] px-4 py-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#4b6b9b]">
+        <div className="tp-form-section-bar">
+          <p className="tp-form-section-title">
             글 정보
           </p>
         </div>
         <div className="grid gap-3 p-4 md:grid-cols-2">
-          <label className="flex flex-col gap-1.5 text-sm font-medium text-[#355988]">
+          <label className="tp-form-label">
             제목
             <input
               className="tp-input-soft px-3 py-2 text-sm"
@@ -977,7 +995,7 @@ export function PostCreateForm({
             />
           </label>
 
-          <label className="flex flex-col gap-1.5 text-sm font-medium text-[#355988]">
+          <label className="tp-form-label">
             분류
             <select
               className="tp-input-soft px-3 py-2 text-sm"
@@ -998,7 +1016,7 @@ export function PostCreateForm({
           </label>
 
           {showReviewCategory ? (
-            <label className="flex flex-col gap-1.5 text-sm font-medium text-[#355988]">
+            <label className="tp-form-label">
               리뷰 카테고리
               <select
                 className="tp-input-soft px-3 py-2 text-sm"
@@ -1020,13 +1038,13 @@ export function PostCreateForm({
           ) : null}
 
           {formState.type === PostType.MEETUP ? (
-            <label className="flex flex-col gap-1.5 text-sm font-medium text-[#355988]">
+            <label className="tp-form-label">
               동네
               <select
                 className={`tp-input-soft px-3 py-2 text-sm transition ${
                   showNeighborhood
                     ? ""
-                    : "cursor-not-allowed border-[#d6deea] bg-[#eef2f8] text-[#8ea1bd]"
+                    : "tp-btn-disabled cursor-not-allowed"
                 }`}
                 value={formState.neighborhoodId}
                 onChange={(event) =>
@@ -1046,9 +1064,9 @@ export function PostCreateForm({
                 ))}
               </select>
               {!canUseLocalScope ? (
-                <span className="flex items-center gap-2 text-xs font-normal text-[#5d789f]">
+                <span className="tp-form-note flex items-center gap-2">
                   <span>동네를 먼저 설정해 주세요.</span>
-                  <Link href="/profile" className="font-semibold text-[#1f4f8f] underline underline-offset-2">
+                  <Link href="/profile" className="tp-text-link font-semibold underline underline-offset-2">
                     설정 페이지로 이동
                   </Link>
                 </span>
@@ -1057,7 +1075,7 @@ export function PostCreateForm({
           ) : null}
 
           {showCommunitySelector ? (
-            <label className="flex flex-col gap-1.5 text-sm font-medium text-[#355988]">
+            <label className="tp-form-label">
               관련 동물
               <select
                 className="tp-input-soft px-3 py-2 text-sm"
@@ -1081,7 +1099,7 @@ export function PostCreateForm({
           ) : null}
 
           {showAnimalTagsInput ? (
-            <label className="flex flex-col gap-1.5 text-sm font-medium text-[#355988] md:col-span-2">
+            <label className="tp-form-label md:col-span-2">
               동물 태그
               <input
                 className="tp-input-soft px-3 py-2 text-sm"
@@ -1095,15 +1113,15 @@ export function PostCreateForm({
                 placeholder="예: 강아지, 고양이"
                 required
               />
-              <span className="text-xs font-normal text-[#5d789f]">
+              <span className="tp-form-note">
                 공용 보드 글의 노출 향상을 위해 동물 태그를 쉼표로 구분해 입력해 주세요.
               </span>
             </label>
           ) : null}
         </div>
         {!isAuthenticated ? (
-          <div className="grid gap-3 border-t border-[#dbe6f6] bg-[#f8fbff] p-4 md:grid-cols-2">
-            <label className="flex flex-col gap-1.5 text-sm font-medium text-[#355988]">
+          <div className="tp-border-soft tp-surface-soft grid gap-3 border-t p-4 md:grid-cols-2">
+            <label className="tp-form-label">
               비회원 닉네임
               <input
                 className="tp-input-soft bg-white px-3 py-2 text-sm"
@@ -1117,7 +1135,7 @@ export function PostCreateForm({
                 required
               />
             </label>
-            <label className="flex flex-col gap-1.5 text-sm font-medium text-[#355988]">
+            <label className="tp-form-label">
               글 비밀번호
               <input
                 type="password"
@@ -1137,17 +1155,18 @@ export function PostCreateForm({
       </section>
 
       <section className="tp-card overflow-hidden">
-        <div className="flex flex-wrap items-center gap-2 border-b border-[#dbe6f6] bg-[#f8fbff] px-3 py-2 text-xs">
+        <div className="tp-editor-toolbar-soft">
+          <span className="tp-form-section-title">본문</span>
           <span
             className={`ml-auto ${
-              formState.content.length > POST_CONTENT_MAX_LENGTH ? "text-rose-600" : "text-[#5a7398]"
+              formState.content.length > POST_CONTENT_MAX_LENGTH ? "text-rose-600" : "tp-text-subtle"
             }`}
           >
             {formState.content.length.toLocaleString("ko-KR")} / {POST_CONTENT_MAX_LENGTH.toLocaleString("ko-KR")}자
           </span>
         </div>
 
-        <div className="flex flex-wrap items-center gap-1.5 border-b border-[#dbe6f6] bg-white px-3 py-2 text-xs sm:hidden">
+        <div className="tp-editor-toolbar sm:hidden">
           <button
             type="button"
             onClick={() => runEditorCommand("bold")}
@@ -1168,7 +1187,7 @@ export function PostCreateForm({
             <summary className="tp-btn-soft inline-flex h-7 cursor-pointer list-none items-center px-2.5 font-semibold">
               고급
             </summary>
-            <div className="mt-2 flex flex-wrap gap-1.5 rounded-xl border border-[#dbe6f6] bg-[#f8fbff] p-2">
+            <div className="tp-form-panel mt-2 flex flex-wrap gap-1.5 p-2">
               <button
                 type="button"
                 onClick={() => applyStyledSelection("size", "large")}
@@ -1197,7 +1216,7 @@ export function PostCreateForm({
           </details>
         </div>
 
-        <div className="hidden flex-wrap items-center gap-1.5 border-b border-[#dbe6f6] bg-white px-3 py-2 text-xs sm:flex">
+        <div className="tp-editor-toolbar hidden sm:flex">
           <button
             type="button"
             onClick={() => runEditorCommand("bold")}
@@ -1230,7 +1249,7 @@ export function PostCreateForm({
           >
             밑줄
           </button>
-          <div className="mx-1 h-5 w-px bg-[#d8e3f4]" />
+          <div className="tp-divider-soft mx-1" />
           <button
             type="button"
             onClick={() => applyStyledSelection("size", "small")}
@@ -1263,7 +1282,7 @@ export function PostCreateForm({
           >
             매우 크게
           </button>
-          <div className="mx-1 h-5 w-px bg-[#d8e3f4]" />
+          <div className="tp-divider-soft mx-1" />
           <button
             type="button"
             onClick={() => applyStyledSelection("color", "blue")}
@@ -1304,10 +1323,10 @@ export function PostCreateForm({
           suppressContentEditableWarning
           onInput={syncEditorToFormState}
           onBlur={syncEditorToFormState}
-          className="min-h-[340px] w-full border-0 bg-[#fcfdff] px-4 py-3 text-sm leading-relaxed text-[#1f3f71] outline-none [&_img]:h-auto [&_img]:max-w-full"
+          className="tp-editor-surface min-h-[340px] w-full border-0 px-4 py-3 text-sm leading-relaxed outline-none [&_img]:h-auto [&_img]:max-w-full"
         />
 
-        <div className="flex flex-wrap items-center gap-2 border-t border-[#dbe6f6] bg-[#f7fbff] px-3 py-2 text-xs">
+        <div className="tp-editor-toolbar-soft border-t">
           <button
             type="button"
             onClick={clearDraft}
@@ -1315,12 +1334,12 @@ export function PostCreateForm({
           >
             임시저장 삭제
           </button>
-          <span className="text-[#5a7398]">
+          <span className="tp-text-subtle">
             {draftSavedAt
               ? `임시저장: ${new Date(draftSavedAt).toLocaleString("ko-KR")}`
               : "임시저장 없음"}
           </span>
-          {draftMessage ? <span className="text-[#3567b5]">{draftMessage}</span> : null}
+          {draftMessage ? <span className="tp-text-accent">{draftMessage}</span> : null}
         </div>
       </section>
 
@@ -1361,17 +1380,17 @@ export function PostCreateForm({
           guestWriteScope={!isAuthenticated ? "upload" : undefined}
         />
         {!isAuthenticated ? (
-          <p className="mt-2 text-xs text-[#5d789f]">비회원 이미지는 최대 1장, 파일당 2MB까지 업로드할 수 있습니다.</p>
+          <p className="tp-form-note mt-2">비회원 이미지는 최대 1장, 파일당 2MB까지 업로드할 수 있습니다.</p>
         ) : null}
       </div>
 
       {showHospitalReview ? (
-        <div className="grid gap-4 border border-[#d8e4f6] bg-[#f4f8ff] p-4 md:grid-cols-2">
-          <label className="flex flex-col gap-2 text-sm font-medium text-[#355988]">
+        <StructuredFieldSection title="병원후기 정보">
+          <label className="tp-form-label">
             병원명
             <input
-            className="tp-input-soft px-3 py-2 text-sm"
-            value={formState.hospitalReview.hospitalName}
+              className="tp-input-soft px-3 py-2 text-sm"
+              value={formState.hospitalReview.hospitalName}
               onChange={(event) =>
                 setFormState((prev) => ({
                   ...prev,
@@ -1385,7 +1404,7 @@ export function PostCreateForm({
             />
           </label>
 
-          <label className="flex flex-col gap-2 text-sm font-medium text-[#355988]">
+          <label className="tp-form-label">
             진료 항목
             <input
               className="tp-input-soft px-3 py-2 text-sm"
@@ -1403,7 +1422,7 @@ export function PostCreateForm({
             />
           </label>
 
-          <label className="flex flex-col gap-2 text-sm font-medium text-[#355988]">
+          <label className="tp-form-label">
             비용(원)
             <input
               type="number"
@@ -1423,7 +1442,7 @@ export function PostCreateForm({
             />
           </label>
 
-          <label className="flex flex-col gap-2 text-sm font-medium text-[#355988]">
+          <label className="tp-form-label">
             대기시간(분)
             <input
               type="number"
@@ -1443,7 +1462,7 @@ export function PostCreateForm({
             />
           </label>
 
-          <label className="flex flex-col gap-2 text-sm font-medium text-[#355988]">
+          <label className="tp-form-label">
             만족도
             <select
               className="tp-input-soft px-3 py-2 text-sm"
@@ -1466,12 +1485,12 @@ export function PostCreateForm({
               ))}
             </select>
           </label>
-        </div>
+        </StructuredFieldSection>
       ) : null}
 
       {showPlaceReview ? (
-        <div className="grid gap-4 border border-[#d8e4f6] bg-[#f4f8ff] p-4 md:grid-cols-2">
-          <label className="flex flex-col gap-2 text-sm font-medium text-[#355988]">
+        <StructuredFieldSection title="장소 후기 정보">
+          <label className="tp-form-label">
             장소명
             <input
               className="tp-input-soft px-3 py-2 text-sm"
@@ -1489,7 +1508,7 @@ export function PostCreateForm({
             />
           </label>
 
-          <label className="flex flex-col gap-2 text-sm font-medium text-[#355988]">
+          <label className="tp-form-label">
             장소 유형
             <input
               className="tp-input-soft px-3 py-2 text-sm"
@@ -1507,7 +1526,7 @@ export function PostCreateForm({
             />
           </label>
 
-          <label className="flex flex-col gap-2 text-sm font-medium text-[#355988]">
+          <label className="tp-form-label">
             주소
             <input
               className="tp-input-soft px-3 py-2 text-sm"
@@ -1525,7 +1544,7 @@ export function PostCreateForm({
             />
           </label>
 
-          <label className="flex flex-col gap-2 text-sm font-medium text-[#355988]">
+          <label className="tp-form-label">
             동반 가능 여부
             <select
               className="tp-input-soft px-3 py-2 text-sm"
@@ -1546,7 +1565,7 @@ export function PostCreateForm({
             </select>
           </label>
 
-          <label className="flex flex-col gap-2 text-sm font-medium text-[#355988]">
+          <label className="tp-form-label">
             만족도
             <select
               className="tp-input-soft px-3 py-2 text-sm"
@@ -1569,12 +1588,12 @@ export function PostCreateForm({
               ))}
             </select>
           </label>
-        </div>
+        </StructuredFieldSection>
       ) : null}
 
       {showWalkRoute ? (
-        <div className="grid gap-4 border border-[#d8e4f6] bg-[#f4f8ff] p-4 md:grid-cols-2">
-          <label className="flex flex-col gap-2 text-sm font-medium text-[#355988]">
+        <StructuredFieldSection title="산책 코스 정보">
+          <label className="tp-form-label">
             코스 이름
             <input
               className="tp-input-soft px-3 py-2 text-sm"
@@ -1592,7 +1611,7 @@ export function PostCreateForm({
             />
           </label>
 
-          <label className="flex flex-col gap-2 text-sm font-medium">
+          <label className="tp-form-label">
             거리(km)
             <input
               type="number"
@@ -1613,7 +1632,7 @@ export function PostCreateForm({
             />
           </label>
 
-          <label className="flex flex-col gap-2 text-sm font-medium">
+          <label className="tp-form-label">
             소요시간(분)
             <input
               type="number"
@@ -1633,7 +1652,7 @@ export function PostCreateForm({
             />
           </label>
 
-          <label className="flex flex-col gap-2 text-sm font-medium">
+          <label className="tp-form-label">
             난이도
             <select
               className="tp-input-soft px-3 py-2 text-sm"
@@ -1655,7 +1674,7 @@ export function PostCreateForm({
             </select>
           </label>
 
-          <label className="flex flex-col gap-2 text-sm font-medium">
+          <label className="tp-form-label">
             안전 태그(콤마)
             <input
               className="tp-input-soft px-3 py-2 text-sm"
@@ -1673,10 +1692,9 @@ export function PostCreateForm({
             />
           </label>
 
-
-          <div className="flex flex-col gap-2 text-sm font-medium text-[#355988]">
+          <div className="tp-form-label">
             편의 시설
-            <div className="flex flex-wrap gap-3 text-xs text-[#4f678d]">
+            <div className="tp-text-muted flex flex-wrap gap-3 text-xs">
               <label className="flex items-center gap-2">
                 <input
                   type="checkbox"
@@ -1730,12 +1748,12 @@ export function PostCreateForm({
               </label>
             </div>
           </div>
-        </div>
+        </StructuredFieldSection>
       ) : null}
 
       {showAdoptionListing ? (
-        <div className="grid gap-4 border border-[#f0dfb8] bg-[#fffaf0] p-4 md:grid-cols-2">
-          <label className="flex flex-col gap-2 text-sm font-medium text-[#7a5a16]">
+        <StructuredFieldSection title="입양 정보">
+          <label className="tp-form-label">
             보호소명
             <input
               className="tp-input-soft px-3 py-2 text-sm"
@@ -1753,7 +1771,7 @@ export function PostCreateForm({
             />
           </label>
 
-          <label className="flex flex-col gap-2 text-sm font-medium text-[#7a5a16]">
+          <label className="tp-form-label">
             지역
             <input
               className="tp-input-soft px-3 py-2 text-sm"
@@ -1771,7 +1789,7 @@ export function PostCreateForm({
             />
           </label>
 
-          <label className="flex flex-col gap-2 text-sm font-medium text-[#7a5a16]">
+          <label className="tp-form-label">
             동물 종류
             <input
               className="tp-input-soft px-3 py-2 text-sm"
@@ -1789,7 +1807,7 @@ export function PostCreateForm({
             />
           </label>
 
-          <label className="flex flex-col gap-2 text-sm font-medium text-[#7a5a16]">
+          <label className="tp-form-label">
             품종
             <input
               className="tp-input-soft px-3 py-2 text-sm"
@@ -1807,7 +1825,7 @@ export function PostCreateForm({
             />
           </label>
 
-          <label className="flex flex-col gap-2 text-sm font-medium text-[#7a5a16]">
+          <label className="tp-form-label">
             나이/추정 개월수
             <input
               className="tp-input-soft px-3 py-2 text-sm"
@@ -1825,7 +1843,7 @@ export function PostCreateForm({
             />
           </label>
 
-          <label className="flex flex-col gap-2 text-sm font-medium text-[#7a5a16]">
+          <label className="tp-form-label">
             성별
             <select
               className="tp-input-soft px-3 py-2 text-sm"
@@ -1847,7 +1865,7 @@ export function PostCreateForm({
             </select>
           </label>
 
-          <label className="flex flex-col gap-2 text-sm font-medium text-[#7a5a16]">
+          <label className="tp-form-label">
             중성화
             <select
               className="tp-input-soft px-3 py-2 text-sm"
@@ -1868,7 +1886,7 @@ export function PostCreateForm({
             </select>
           </label>
 
-          <label className="flex flex-col gap-2 text-sm font-medium text-[#7a5a16]">
+          <label className="tp-form-label">
             예방접종
             <select
               className="tp-input-soft px-3 py-2 text-sm"
@@ -1889,7 +1907,7 @@ export function PostCreateForm({
             </select>
           </label>
 
-          <label className="flex flex-col gap-2 text-sm font-medium text-[#7a5a16]">
+          <label className="tp-form-label">
             체형/크기
             <input
               className="tp-input-soft px-3 py-2 text-sm"
@@ -1907,7 +1925,7 @@ export function PostCreateForm({
             />
           </label>
 
-          <label className="flex flex-col gap-2 text-sm font-medium text-[#7a5a16]">
+          <label className="tp-form-label">
             진행 상태
             <select
               className="tp-input-soft px-3 py-2 text-sm"
@@ -1928,12 +1946,12 @@ export function PostCreateForm({
               <option value="CLOSED">마감</option>
             </select>
           </label>
-        </div>
+        </StructuredFieldSection>
       ) : null}
 
       {showVolunteerRecruitment ? (
-        <div className="grid gap-4 border border-[#d6e7b3] bg-[#f8fff0] p-4 md:grid-cols-2">
-          <label className="flex flex-col gap-2 text-sm font-medium text-[#49681d]">
+        <StructuredFieldSection title="봉사 모집 정보">
+          <label className="tp-form-label">
             보호소명
             <input
               className="tp-input-soft px-3 py-2 text-sm"
@@ -1951,7 +1969,7 @@ export function PostCreateForm({
             />
           </label>
 
-          <label className="flex flex-col gap-2 text-sm font-medium text-[#49681d]">
+          <label className="tp-form-label">
             지역
             <input
               className="tp-input-soft px-3 py-2 text-sm"
@@ -1969,7 +1987,7 @@ export function PostCreateForm({
             />
           </label>
 
-          <label className="flex flex-col gap-2 text-sm font-medium text-[#49681d]">
+          <label className="tp-form-label">
             봉사 일정
             <input
               type="datetime-local"
@@ -1987,7 +2005,7 @@ export function PostCreateForm({
             />
           </label>
 
-          <label className="flex flex-col gap-2 text-sm font-medium text-[#49681d]">
+          <label className="tp-form-label">
             봉사 유형
             <input
               className="tp-input-soft px-3 py-2 text-sm"
@@ -2005,7 +2023,7 @@ export function PostCreateForm({
             />
           </label>
 
-          <label className="flex flex-col gap-2 text-sm font-medium text-[#49681d]">
+          <label className="tp-form-label">
             모집 인원
             <input
               type="number"
@@ -2025,7 +2043,7 @@ export function PostCreateForm({
             />
           </label>
 
-          <label className="flex flex-col gap-2 text-sm font-medium text-[#49681d]">
+          <label className="tp-form-label">
             모집 상태
             <select
               className="tp-input-soft px-3 py-2 text-sm"
@@ -2046,13 +2064,13 @@ export function PostCreateForm({
               <option value="CANCELLED">취소</option>
             </select>
           </label>
-        </div>
+        </StructuredFieldSection>
       ) : null}
 
       {error ? <p className="text-sm text-rose-600">{error}</p> : null}
 
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#dbe6f6] pt-3">
-        <p className="text-xs text-[#5d769d]">
+      <div className="tp-border-soft flex flex-wrap items-center justify-between gap-3 border-t pt-3">
+        <p className="tp-form-note">
           {isAuthenticated
             ? canUseLocalScope
               ? "병원후기·유기동물 입양·보호소 봉사 모집은 온동네로 고정되고, 동네모임은 동네 범위로만 등록됩니다."
@@ -2063,20 +2081,20 @@ export function PostCreateForm({
           {isAuthenticated && !canUseLocalScope ? (
             <Link
               href="/profile"
-              className="tp-btn-soft inline-flex h-10 w-full items-center justify-center px-4 text-xs font-semibold sm:w-auto"
+              className="tp-btn-soft tp-btn-md inline-flex w-full items-center justify-center px-4 text-xs sm:w-auto"
             >
               프로필에서 동네 설정
             </Link>
           ) : null}
           <Link
             href="/feed"
-            className="inline-flex h-10 w-full items-center justify-center rounded-xl border border-[#9aa9bf] bg-[#5c677a] px-5 text-sm font-semibold text-white transition hover:bg-[#4d5666] sm:w-auto"
+            className="tp-btn-soft tp-btn-md inline-flex w-full items-center justify-center px-5 text-sm sm:w-auto"
           >
             취소
           </Link>
           <button
             type="submit"
-            className="tp-btn-primary inline-flex h-10 w-full items-center justify-center px-6 text-sm font-semibold disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0] sm:w-auto"
+            className="tp-btn-primary tp-btn-md inline-flex w-full items-center justify-center px-6 text-sm disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0] sm:w-auto"
             disabled={isPending}
           >
             {isPending ? "등록 중..." : "등록"}
