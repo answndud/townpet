@@ -17,6 +17,20 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-11: Cycle 324 완료 (댓글 로딩 시작 시점 단축 + 상세/댓글 워터폴 완화)
+- 완료 내용
+  - `app/src/components/posts/post-comment-section-client.tsx`에서 `IntersectionObserver` 기반 지연 로딩과 별도 `댓글 불러오기` 게이트를 제거하고, 게시글 상세 진입 직후 댓글 fetch가 바로 시작되도록 바꿨다.
+  - 같은 컴포넌트는 parent가 먼저 댓글을 불러오는 경우를 위해 `initialLoadState`를 받아 duplicate fetch 없이 prefetched 결과를 바로 렌더하도록 보강했고, 실패 시 즉시 `다시 시도` 버튼을 제공한다.
+  - `app/src/components/posts/post-detail-client.tsx`는 `/api/posts/[id]/detail` fetch와 동시에 `fetchPostComments()`를 병렬로 시작해, 인증 상세에서 댓글 첫 fetch가 상세 응답을 기다리지 않도록 워터폴을 줄였다.
+  - `app/src/lib/comment-client.ts`에 댓글 목록 fetch helper를 공용화했고, `app/src/components/posts/post-comment-load-state.ts`, `app/src/components/posts/post-comment-section-client.test.ts`로 eager load / parent prefetch 대기 정책을 회귀로 고정했다.
+- 검증 결과
+  - `pnpm -C app lint src/components/posts/post-comment-load-state.ts src/components/posts/post-comment-section-client.tsx src/components/posts/post-comment-section-client.test.ts src/components/posts/post-detail-client.tsx src/lib/comment-client.ts` 통과
+  - `pnpm -C app test -- src/components/posts/post-comment-section-client.test.ts` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `147 files / 727 tests` 통과
+  - `pnpm -C app typecheck` 통과
+  - `git diff --check` 통과
+- 메모
+  - 이번 사이클에서는 전체 댓글 SSR이나 API 페이지네이션은 아직 도입하지 않았고, 서버 부담을 크게 늘리지 않는 선에서 댓글 첫 로딩 시작 시점과 인증 상세 워터폴만 먼저 줄였다.
+
 ### 2026-03-11: Cycle 323 완료 (게스트 반응 로그인 유도 프롬프트 UX 적용)
 - 완료 내용
   - `app/src/components/posts/reaction-login-prompt.tsx`를 추가해 게시글/댓글 반응이 guest 상태일 때 공통으로 쓰는 로그인 유도 UI를 분리했다. 데스크톱에서는 버튼 옆 popover, 모바일에서는 하단 고정 sheet 형태로 같은 CTA를 제공한다.
