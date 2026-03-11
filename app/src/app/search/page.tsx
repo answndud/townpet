@@ -134,7 +134,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     <div className="tp-page-bg min-h-screen pb-16">
       <main className="mx-auto flex w-full max-w-[1320px] flex-col gap-5 px-4 py-6 sm:px-6 lg:px-10">
         <header className="tp-hero p-5 sm:p-6">
-          <p className="text-[11px] uppercase tracking-[0.24em] text-[#3f5f90]">검색</p>
+          <p className="tp-eyebrow">검색</p>
           <h1 className="tp-text-page-title mt-2 text-[#10284a]">
             게시글 검색
           </h1>
@@ -164,10 +164,10 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                 searchIn: selectedSearchIn,
                 scope: PostScope.GLOBAL,
               })}
-              className={`inline-flex items-center rounded-full border px-3 py-1 font-medium ${
+              className={`tp-filter-pill ${
                 effectiveScope === PostScope.GLOBAL
-                  ? "border-[#2f5da4] bg-[#edf4ff] text-[#214d8d]"
-                  : "border-[#d7e2f3] bg-white text-[#5b7398]"
+                  ? "tp-filter-pill-active"
+                  : ""
               }`}
             >
               전체 검색
@@ -180,16 +180,16 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                   searchIn: selectedSearchIn,
                   scope: PostScope.LOCAL,
                 })}
-                className={`inline-flex items-center rounded-full border px-3 py-1 font-medium ${
+                className={`tp-filter-pill ${
                   effectiveScope === PostScope.LOCAL
-                    ? "border-[#2f5da4] bg-[#edf4ff] text-[#214d8d]"
-                    : "border-[#d7e2f3] bg-white text-[#5b7398]"
+                    ? "tp-filter-pill-active"
+                    : ""
                 }`}
               >
                 {primaryNeighborhood.neighborhood.name} 검색
               </Link>
             ) : (
-              <span className="inline-flex items-center rounded-full border border-[#e0e6f0] bg-[#f8fbff] px-3 py-1 text-[#6c7f9b]">
+              <span className="tp-filter-pill border-[#e0e6f0] bg-[#f8fbff] text-[#6c7f9b]">
                 대표 동네를 설정하면 동네 검색을 사용할 수 있습니다.
               </span>
             )}
@@ -249,50 +249,62 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                   post.content.length > 180
                     ? `${post.content.slice(0, 180)}...`
                     : post.content;
-                return (
-                  <article key={post.id} className="px-4 py-4 sm:px-5">
-                    <div className="mb-2 flex flex-wrap items-center gap-2 text-[11px]">
-                      <span
-                        className={`inline-flex items-center gap-1 border px-2 py-0.5 font-semibold ${meta.chipClass}`}
-                      >
-                        <span>{meta.icon}</span>
-                        {meta.label}
-                      </span>
-                      <span className="border border-[#dbe5f3] bg-white px-2 py-0.5 text-[#5d789f]">
-                        {post.neighborhood
-                          ? `${post.neighborhood.city} ${post.neighborhood.name}`
-                          : "전체"}
-                      </span>
-                    </div>
-
-                    <Link
-                      href={
-                        isAuthenticated
-                          ? `/posts/${post.id}`
-                          : `/posts/${post.id}/guest`
-                      }
-                      className="tp-text-card-title text-[#10284a] transition hover:text-[#2f5da4]"
-                    >
-                      <HighlightText text={post.title} query={query} />
+                const authorNode =
+                  guestMeta.guestDisplayName || guestMeta.guestAuthor?.displayName ? (
+                    <span>
+                      {guestMeta.guestDisplayName ?? guestMeta.guestAuthor?.displayName}
+                      {resolvedGuestIpDisplay
+                        ? ` (${resolvedGuestIpLabel ?? "아이피"} ${resolvedGuestIpDisplay})`
+                        : ""}
+                    </span>
+                  ) : (
+                    <Link href={`/users/${post.author.id}`} className="hover:text-[#2f5da4]">
+                      {resolveUserDisplayName(post.author.nickname)}
                     </Link>
-                    <p className="mt-1 line-clamp-3 text-[13px] text-[#4c6488]">
-                      <HighlightText text={excerpt} query={query} />
-                    </p>
-                    <div className="mt-2 text-xs text-[#5f79a0]">
-                      {guestMeta.guestDisplayName || guestMeta.guestAuthor?.displayName ? (
-                        <span>
-                          {guestMeta.guestDisplayName ?? guestMeta.guestAuthor?.displayName}
-                          {resolvedGuestIpDisplay
-                            ? ` (${resolvedGuestIpLabel ?? "아이피"} ${resolvedGuestIpDisplay})`
-                            : ""}
+                  );
+
+                return (
+                  <article
+                    key={post.id}
+                    className="grid gap-3 px-4 py-4 sm:px-5 md:grid-cols-[minmax(0,1fr)_168px] md:items-start"
+                  >
+                    <div className="min-w-0">
+                      <div className="mb-2 flex flex-wrap items-center gap-1.5">
+                        <span className={`tp-chip-base ${meta.chipClass}`}>
+                          <span>{meta.icon}</span>
+                          {meta.label}
                         </span>
-                      ) : (
-                        <Link href={`/users/${post.author.id}`} className="hover:text-[#2f5da4]">
-                          {resolveUserDisplayName(post.author.nickname)}
-                        </Link>
-                      )}{" "}
-                      ·{" "}
-                      {formatRelativeDate(post.createdAt)} · 댓글 {post.commentCount}
+                        <span className="tp-chip-base tp-chip-muted">
+                          {post.neighborhood
+                            ? `${post.neighborhood.city} ${post.neighborhood.name}`
+                            : "전체"}
+                        </span>
+                      </div>
+
+                      <Link
+                        href={
+                          isAuthenticated
+                            ? `/posts/${post.id}`
+                            : `/posts/${post.id}/guest`
+                        }
+                        className="tp-text-card-title flex min-w-0 items-center gap-1 text-[#10284a] transition hover:text-[#2f5da4]"
+                      >
+                        <span className="overflow-hidden [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]">
+                          <HighlightText text={post.title} query={query} />
+                        </span>
+                        {post.commentCount > 0 ? (
+                          <span className="shrink-0 text-[#2f5da4]">[{post.commentCount}]</span>
+                        ) : null}
+                      </Link>
+                      <p className="mt-1 line-clamp-3 text-[13px] leading-5 text-[#4c6488]">
+                        <HighlightText text={excerpt} query={query} />
+                      </p>
+                    </div>
+                    <div className="text-xs text-[#5f79a0] md:text-right">
+                      <p className="font-semibold text-[#1f3f71]">{authorNode}</p>
+                      <p className="mt-0.5 text-[11px] text-[#6a84ab]">
+                        {formatRelativeDate(post.createdAt)} · 댓글 {post.commentCount}
+                      </p>
                     </div>
                   </article>
                 );

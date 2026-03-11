@@ -6,7 +6,7 @@ import { PostType } from "@prisma/client";
 import { PostSignalIcons } from "@/components/posts/post-signal-icons";
 import { EmptyState } from "@/components/ui/empty-state";
 import { auth } from "@/lib/auth";
-import { getPostSignals } from "@/lib/post-presenter";
+import { formatRelativeDate, getPostSignals, postTypeMeta } from "@/lib/post-presenter";
 import { PRIMARY_POST_TYPES, SECONDARY_POST_TYPES } from "@/lib/post-type-groups";
 import { resolveUserDisplayName } from "@/lib/user-display";
 import { postListSchema, toPostListInput } from "@/lib/validations/post";
@@ -52,22 +52,6 @@ const typeLabels: Record<PostType, string> = {
   PRODUCT_REVIEW: "용품리뷰",
   PET_SHOWCASE: "반려동물 자랑",
 };
-
-function formatRelativeDate(date: Date) {
-  const diffMs = Date.now() - date.getTime();
-  const minutes = Math.floor(diffMs / (1000 * 60));
-
-  if (minutes < 1) return "방금 전";
-  if (minutes < 60) return `${minutes}분 전`;
-
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}시간 전`;
-
-  const days = Math.floor(hours / 24);
-  if (days < 7) return `${days}일 전`;
-
-  return date.toLocaleDateString("ko-KR");
-}
 
 export default async function BookmarksPage({ searchParams }: BookmarksPageProps) {
   const session = await auth();
@@ -131,7 +115,7 @@ export default async function BookmarksPage({ searchParams }: BookmarksPageProps
     <div className="tp-page-bg min-h-screen pb-16">
       <main className="mx-auto flex w-full max-w-[1320px] flex-col gap-5 px-4 py-6 sm:px-6 lg:px-10">
         <header className="tp-hero p-5 sm:p-6">
-          <p className="text-[11px] uppercase tracking-[0.24em] text-[#3f5f90]">북마크</p>
+          <p className="tp-eyebrow">북마크</p>
           <h1 className="tp-text-page-title mt-2 text-[#10284a]">
             북마크한 게시글
           </h1>
@@ -173,10 +157,10 @@ export default async function BookmarksPage({ searchParams }: BookmarksPageProps
               <div className="flex flex-wrap items-center gap-2">
                 <Link
                   href={makeHref({ nextType: null })}
-                  className={`tp-btn-xs inline-flex items-center rounded-lg border transition ${
+                  className={`tp-filter-pill ${
                     !type
-                      ? "border-[#3567b5] bg-[#3567b5] text-white"
-                      : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
+                      ? "tp-filter-pill-active"
+                      : ""
                   }`}
                 >
                   전체
@@ -185,10 +169,10 @@ export default async function BookmarksPage({ searchParams }: BookmarksPageProps
                   <Link
                     key={value}
                     href={makeHref({ nextType: value })}
-                    className={`tp-btn-xs inline-flex items-center rounded-lg border transition ${
+                    className={`tp-filter-pill ${
                       type === value
-                        ? "border-[#3567b5] bg-[#3567b5] text-white"
-                        : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
+                        ? "tp-filter-pill-active"
+                        : ""
                     }`}
                   >
                     {typeLabels[value]}
@@ -204,10 +188,10 @@ export default async function BookmarksPage({ searchParams }: BookmarksPageProps
                     <Link
                       key={value}
                       href={makeHref({ nextType: value })}
-                      className={`tp-btn-xs inline-flex items-center rounded-lg border transition ${
+                      className={`tp-filter-pill ${
                         type === value
-                          ? "border-[#3567b5] bg-[#3567b5] text-white"
-                          : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
+                          ? "tp-filter-pill-active"
+                          : ""
                       }`}
                     >
                       {typeLabels[value]}
@@ -238,26 +222,27 @@ export default async function BookmarksPage({ searchParams }: BookmarksPageProps
                   content: post.content,
                   imageCount: post.images.length,
                 });
+                const meta = postTypeMeta[post.type];
 
                 return (
                   <article
                     key={post.id}
-                    className={`grid gap-3 px-4 py-4 sm:px-5 md:grid-cols-[minmax(0,1fr)_240px] md:items-center ${
+                    className={`grid gap-3 px-4 py-4 sm:px-5 md:grid-cols-[minmax(0,1fr)_196px] md:items-start ${
                       post.status === "HIDDEN" ? "bg-[#fff5f5]" : ""
                     }`}
                   >
                     <div className="min-w-0">
-                      <div className="mb-2 flex flex-wrap items-center gap-2 text-[11px]">
-                        <span className="border border-[#d2ddf0] bg-[#f6f9ff] px-2 py-0.5 text-[#2f548f]">
-                          {typeLabels[post.type]}
+                      <div className="mb-2 flex flex-wrap items-center gap-1.5">
+                        <span className={`tp-chip-base ${meta.chipClass}`}>
+                          {meta.label}
                         </span>
-                        <span className="border border-[#dbe5f3] bg-white px-2 py-0.5 text-[#5d789f]">
+                        <span className="tp-chip-base tp-chip-muted">
                           {post.neighborhood
                             ? `${post.neighborhood.city} ${post.neighborhood.name}`
                             : "전체"}
                         </span>
                         {post.status === "HIDDEN" ? (
-                          <span className="border border-rose-300 bg-rose-50 px-2 py-0.5 text-rose-700">
+                          <span className="tp-chip-base border-rose-300 bg-rose-50 text-rose-700">
                             숨김
                           </span>
                         ) : null}
@@ -282,8 +267,8 @@ export default async function BookmarksPage({ searchParams }: BookmarksPageProps
                       <p className="font-semibold text-[#1f3f71]">
                         {resolveUserDisplayName(post.author.nickname)}
                       </p>
-                      <p className="mt-1">북마크 {formatRelativeDate(post.bookmarkedAt)}</p>
-                      <p className="mt-1 text-[11px] text-[#6a84ab]">
+                      <p className="mt-0.5">북마크 {formatRelativeDate(post.bookmarkedAt)}</p>
+                      <p className="mt-0.5 text-[11px] text-[#6a84ab]">
                         작성 {formatRelativeDate(post.createdAt)} · 조회 {post.viewCount.toLocaleString()} · 좋아요{" "}
                         {post.likeCount.toLocaleString()}
                       </p>

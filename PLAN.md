@@ -26,6 +26,11 @@
 
 ## Active Plan
 
+### Cycle 301: 공용 디자인 언어 정리 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 공용 디자인 토큰을 보강하고 인증/빈상태/검색/북마크 화면을 같은 UI 언어로 정리 | Codex | P2 | `done` | 전역 eyebrow/chip/filter pill 스타일이 추가되고, 인증 레이아웃과 empty state가 메인 브랜드 카드/버튼 언어를 사용하며, 검색 결과/북마크 목록이 피드와 가까운 목록 구조와 칩 스타일로 정리되고 관련 렌더링 회귀 테스트가 존재한다 | `PLAN.md`, `PROGRESS.md`, `app/src/app/globals.css`, `app/src/components/auth/auth-page-layout.tsx`, `app/src/components/auth/auth-page-layout.test.tsx`, `app/src/components/ui/empty-state.tsx`, `app/src/components/ui/empty-state.test.tsx`, `app/src/app/search/page.tsx`, `app/src/app/bookmarks/page.tsx`, `app/src/components/posts/feed-post-meta-badges.tsx` |
+
 ### Cycle 300: admin surface 은닉 강화 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|

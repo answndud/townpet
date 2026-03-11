@@ -16,12 +16,12 @@ export function FeedPostMetaBadges({
       className={`flex flex-wrap items-center gap-1 text-[10px] sm:text-[11px] ${className ?? "mb-1 justify-end"}`}
     >
       <span
-        className={`inline-flex max-w-full items-center rounded-md border px-1.5 py-0.5 text-[10px] font-semibold leading-none ${chipClass}`}
+        className={`tp-chip-base max-w-full ${chipClass}`}
       >
         {label}
       </span>
       {status === "HIDDEN" ? (
-        <span className="rounded-md border border-rose-300 bg-rose-50 px-1.5 py-0.5 text-[10px] leading-none text-rose-700">
+        <span className="tp-chip-base border-rose-300 bg-rose-50 text-rose-700">
           숨김
         </span>
       ) : null}
