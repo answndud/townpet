@@ -17,6 +17,17 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-12: Cycle 357 완료 (어드민 헤더 액션 버튼 문법 재통일)
+- 완료 내용
+  - 어드민 계정 헤더의 `신고 큐`, `인증 로그`, `권한 정책` 버튼이 warm-tone 전용 스타일로 분리돼 `내 프로필`, `게시판`, `관심 동물`과 따로 노는 문제를 다시 정리했다.
+  - `app/src/components/navigation/app-shell-header.tsx`에서 어드민 버튼이 기존 헤더와 같은 `APP_SHELL_DESKTOP_GROUP_CLASS_NAME` + `APP_SHELL_NAV_LINK_CLASS_NAME` 조합을 재사용하도록 되돌렸다.
+  - `app/src/components/navigation/app-shell-header-class.ts`에서는 더 이상 쓰지 않는 admin 전용 group/link 클래스를 제거했고, `app/src/components/navigation/app-shell-header-class.test.ts`도 공용 헤더 문법 기준으로 정리했다.
+- 검증 결과
+  - `pnpm -C app lint src/components/navigation/app-shell-header.tsx src/components/navigation/app-shell-header-class.ts src/components/navigation/app-shell-header-class.test.ts` 통과
+  - `pnpm -C app test -- src/components/navigation/app-shell-header-class.test.ts` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 통과
+  - `pnpm -C app typecheck` 통과
+  - `git diff --check` 통과
+
 ### 2026-03-12: Cycle 356 완료 (어드민 헤더 액션 버튼 시각 분리)
 - 완료 내용
   - `app/src/components/navigation/app-shell-header-class.ts`에 일반 헤더 버튼과 구분되는 warm-tone admin cluster/button 클래스를 추가해, 관리 기능 버튼이 별도 영역처럼 보이도록 했다.

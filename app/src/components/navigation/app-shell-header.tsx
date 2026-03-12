@@ -7,8 +7,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { AuthControls } from "@/components/auth/auth-controls";
 import {
-  APP_SHELL_ADMIN_LINK_CLASS_NAME,
-  APP_SHELL_DESKTOP_ADMIN_GROUP_CLASS_NAME,
+  APP_SHELL_DESKTOP_GROUP_CLASS_NAME,
   APP_SHELL_DESKTOP_NAV_CLUSTER_CLASS_NAME,
   APP_SHELL_DESKTOP_SEARCH_INPUT_CLASS_NAME,
   APP_SHELL_HEADER_CLASS_NAME,
@@ -171,14 +170,14 @@ export function AppShellHeader({ communities }: AppShellHeaderProps) {
             </div>
 
             {viewerShell.canModerate ? (
-              <div className={`hidden md:flex ${APP_SHELL_DESKTOP_ADMIN_GROUP_CLASS_NAME}`}>
-                <Link href="/admin/reports" className={APP_SHELL_ADMIN_LINK_CLASS_NAME}>
+              <div className={`hidden md:flex ${APP_SHELL_DESKTOP_GROUP_CLASS_NAME}`}>
+                <Link href="/admin/reports" className={APP_SHELL_NAV_LINK_CLASS_NAME}>
                   신고 큐
                 </Link>
-                <Link href="/admin/auth-audits" className={APP_SHELL_ADMIN_LINK_CLASS_NAME}>
+                <Link href="/admin/auth-audits" className={APP_SHELL_NAV_LINK_CLASS_NAME}>
                   인증 로그
                 </Link>
-                <Link href="/admin/policies" className={APP_SHELL_ADMIN_LINK_CLASS_NAME}>
+                <Link href="/admin/policies" className={APP_SHELL_NAV_LINK_CLASS_NAME}>
                   권한 정책
                 </Link>
               </div>
