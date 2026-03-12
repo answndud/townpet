@@ -26,6 +26,16 @@
 
 ## Active Plan
 
+### Cycle 350: 베스트 댓글 thread context 추가 round-trip 축소 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 댓글 API가 베스트 댓글의 `threadPage`를 root별 `count()` 반복 대신 window function 기반 일괄 계산으로 구해 추가 round-trip을 줄이고, 관련 회귀 테스트를 보강 | Codex | P1 | `done` | `attachBestCommentThreadContext()`는 root 댓글 page rank를 raw SQL window function 1회로 계산하고, per-root `prisma.comment.count()` 루프가 제거되며, 관련 query 회귀 테스트와 lint/test/typecheck/diff check 검증이 기록된다 | `PLAN.md`, `PROGRESS.md`, `app/src/server/queries/comment.queries.ts`, `app/src/server/queries/comment.queries.test.ts` |
+
+### Cycle 349: 신고 큐/검색/피드 렌더 성능 병목 완화 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| `/admin/reports`의 전체 스캔 구조를 페이지네이션/집계 SQL로 줄이고, 랭킹 검색의 구조화 필드 조인을 필요한 경우로 축소하며, 피드 목록의 상대시간 갱신이 리스트 전체 re-render를 일으키지 않도록 leaf 렌더로 분리하고, 관련 인덱스/마이그레이션/회귀 테스트를 추가 | Codex | P1 | `done` | 신고 큐는 서버 페이지네이션과 DB 기반 평균 처리시간 집계를 사용하고, 랭킹 검색은 `TITLE/CONTENT/AUTHOR` 검색에서 구조화 조인을 생략하며 `ALL` 검색은 구조화 컬럼 직접 매칭을 사용하고, `Post`/`Report`/구조화 리뷰 필드 인덱스 마이그레이션이 추가되며, 피드 상대시간은 row leaf component에서만 갱신되고, lint/test/typecheck/Prisma validate/diff check 검증이 기록된다 | `PLAN.md`, `PROGRESS.md`, `app/src/server/queries/report.queries.ts`, `app/src/app/admin/reports/page.tsx`, `app/src/server/queries/post.queries.ts`, `app/src/components/posts/feed-infinite-list.tsx`, `app/prisma/schema.prisma`, `app/prisma/migrations/20260311121500_add_performance_indexes_for_reports_and_search/migration.sql`, 관련 테스트 |
+
 ### Cycle 348: 게시글 상세 수정/삭제 버튼 정렬과 형태 통일 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|

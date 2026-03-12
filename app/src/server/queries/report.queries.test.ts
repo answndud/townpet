@@ -1,18 +1,22 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ReportReason, ReportStatus, ReportTarget } from "@prisma/client";
 
-import { getReportStats } from "@/server/queries/report.queries";
+import { getReportStats, listReportsPage, REPORT_QUEUE_PAGE_SIZE } from "@/server/queries/report.queries";
 import { prisma } from "@/lib/prisma";
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
-    $transaction: vi.fn(),
+    $queryRaw: vi.fn(),
+    report: {
+      count: vi.fn(),
+      groupBy: vi.fn(),
+      findMany: vi.fn(),
+    },
   },
 }));
 
-const mockPrisma = vi.mocked(prisma);
-const prismaMock = mockPrisma as unknown as {
-  $transaction: ReturnType<typeof vi.fn>;
+const mockPrisma = vi.mocked(prisma) as unknown as {
+  $queryRaw: ReturnType<typeof vi.fn>;
   report: {
     count: ReturnType<typeof vi.fn>;
     groupBy: ReturnType<typeof vi.fn>;
@@ -20,52 +24,72 @@ const prismaMock = mockPrisma as unknown as {
   };
 };
 
-describe("report stats", () => {
+describe("report queries", () => {
   beforeEach(() => {
-    prismaMock.$transaction.mockReset();
-    prismaMock.report = {
-      count: vi.fn(),
-      groupBy: vi.fn(),
-      findMany: vi.fn(),
-    };
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-01-25T12:00:00Z"));
+
+    mockPrisma.$queryRaw.mockReset();
+    mockPrisma.report.count.mockReset();
+    mockPrisma.report.groupBy.mockReset();
+    mockPrisma.report.findMany.mockReset();
   });
 
-  it("aggregates counts and average resolution", async () => {
-    const recentReports = [
-      { createdAt: new Date("2026-01-23T10:00:00Z") },
-      { createdAt: new Date("2026-01-25T08:00:00Z") },
-    ];
-    const resolvedReports = [
-      {
-        createdAt: new Date("2026-01-24T08:00:00Z"),
-        resolvedAt: new Date("2026-01-24T10:00:00Z"),
-      },
-      {
-        createdAt: new Date("2026-01-25T06:00:00Z"),
-        resolvedAt: new Date("2026-01-25T10:00:00Z"),
-      },
-    ];
+  it("paginates the report queue on the server", async () => {
+    mockPrisma.report.count.mockResolvedValue(61);
+    mockPrisma.report.findMany.mockResolvedValue([{ id: "report-26" }, { id: "report-27" }]);
 
-    prismaMock.$transaction.mockResolvedValue([
-      4,
-      [
+    const result = await listReportsPage({
+      status: ReportStatus.PENDING,
+      targetType: ReportTarget.POST,
+      page: 2,
+    });
+
+    expect(mockPrisma.report.count).toHaveBeenCalledWith({
+      where: {
+        status: ReportStatus.PENDING,
+        targetType: ReportTarget.POST,
+      },
+    });
+    expect(mockPrisma.report.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          status: ReportStatus.PENDING,
+          targetType: ReportTarget.POST,
+        },
+        skip: REPORT_QUEUE_PAGE_SIZE,
+        take: REPORT_QUEUE_PAGE_SIZE,
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      }),
+    );
+    expect(result.totalCount).toBe(61);
+    expect(result.totalPages).toBe(3);
+    expect(result.page).toBe(2);
+    expect(result.items).toEqual([{ id: "report-26" }, { id: "report-27" }]);
+  });
+
+  it("aggregates counts and average resolution without scanning every row in JS", async () => {
+    mockPrisma.report.count.mockResolvedValue(4);
+    mockPrisma.report.groupBy
+      .mockResolvedValueOnce([
         { status: ReportStatus.PENDING, _count: { _all: 2 } },
         { status: ReportStatus.RESOLVED, _count: { _all: 1 } },
         { status: ReportStatus.DISMISSED, _count: { _all: 1 } },
-      ],
-      [
+      ])
+      .mockResolvedValueOnce([
         { reason: ReportReason.SPAM, _count: { _all: 2 } },
         { reason: ReportReason.OTHER, _count: { _all: 2 } },
-      ],
-      [
+      ])
+      .mockResolvedValueOnce([
         { targetType: ReportTarget.POST, _count: { _all: 3 } },
-        { targetType: "COMMENT", _count: { _all: 1 } },
-      ],
-      recentReports,
-      resolvedReports,
-    ] as never);
+        { targetType: ReportTarget.COMMENT, _count: { _all: 1 } },
+      ]);
+    mockPrisma.$queryRaw
+      .mockResolvedValueOnce([
+        { date: "2026-01-23", count: 1 },
+        { date: "2026-01-25", count: 1 },
+      ])
+      .mockResolvedValueOnce([{ averageResolutionHours: 3 }]);
 
     const stats = await getReportStats(7);
 

@@ -3869,16 +3869,65 @@ function buildStructuredSearchTextSql() {
   )`;
 }
 
-function buildStructuredSearchMatchSql(
-  structuredTextSql: Prisma.Sql,
+function buildStructuredSearchJoinSql(includeStructuredSearch: boolean) {
+  if (!includeStructuredSearch) {
+    return Prisma.sql``;
+  }
+
+  return Prisma.sql`
+    LEFT JOIN "HospitalReview" hr ON hr."postId" = p."id"
+    LEFT JOIN "PlaceReview" pr ON pr."postId" = p."id"
+    LEFT JOIN "WalkRoute" wr ON wr."postId" = p."id"
+    LEFT JOIN "AdoptionListing" al ON al."postId" = p."id"
+    LEFT JOIN "VolunteerRecruitment" vr ON vr."postId" = p."id"
+  `;
+}
+
+function buildStructuredSearchFieldSqls() {
+  return [
+    Prisma.sql`COALESCE(hr."hospitalName", '')`,
+    Prisma.sql`COALESCE(hr."treatmentType", '')`,
+    Prisma.sql`COALESCE(pr."placeName", '')`,
+    Prisma.sql`COALESCE(pr."placeType", '')`,
+    Prisma.sql`COALESCE(pr."address", '')`,
+    Prisma.sql`COALESCE(wr."routeName", '')`,
+    Prisma.sql`COALESCE(array_to_string(wr."safetyTags", ' '), '')`,
+    Prisma.sql`COALESCE(al."shelterName", '')`,
+    Prisma.sql`COALESCE(al."region", '')`,
+    Prisma.sql`COALESCE(al."animalType", '')`,
+    Prisma.sql`COALESCE(al."breed", '')`,
+    Prisma.sql`COALESCE(al."ageLabel", '')`,
+    Prisma.sql`COALESCE(al."sizeLabel", '')`,
+    Prisma.sql`COALESCE(vr."shelterName", '')`,
+    Prisma.sql`COALESCE(vr."region", '')`,
+    Prisma.sql`COALESCE(vr."volunteerType", '')`,
+  ];
+}
+
+function buildFieldSearchMatchSql(
+  fieldSql: Prisma.Sql,
   variants: StructuredSearchSqlVariant[],
 ) {
-  const clauses = variants.flatMap(({ query, pattern, compactQuery, compactPattern }) => [
+  return variants.flatMap(({ query, pattern, compactQuery, compactPattern }) => [
+    Prisma.sql`${fieldSql} ILIKE ${pattern}`,
+    Prisma.sql`REPLACE(${fieldSql}, ' ', '') ILIKE ${compactPattern}`,
+    Prisma.sql`to_tsvector('simple', ${fieldSql}) @@ websearch_to_tsquery('simple', ${query})`,
+    Prisma.sql`to_tsvector('simple', REPLACE(${fieldSql}, ' ', '')) @@ websearch_to_tsquery('simple', ${compactQuery})`,
+  ]);
+}
+
+function buildStructuredSearchMatchSql(variants: StructuredSearchSqlVariant[]) {
+  const fieldClauses = buildStructuredSearchFieldSqls().flatMap((fieldSql) =>
+    buildFieldSearchMatchSql(fieldSql, variants),
+  );
+  const structuredTextSql = buildStructuredSearchTextSql();
+  const fallbackClauses = variants.flatMap(({ query, pattern, compactQuery, compactPattern }) => [
     Prisma.sql`${structuredTextSql} ILIKE ${pattern}`,
     Prisma.sql`REPLACE(${structuredTextSql}, ' ', '') ILIKE ${compactPattern}`,
     Prisma.sql`to_tsvector('simple', ${structuredTextSql}) @@ websearch_to_tsquery('simple', ${query})`,
     Prisma.sql`to_tsvector('simple', REPLACE(${structuredTextSql}, ' ', '')) @@ websearch_to_tsquery('simple', ${compactQuery})`,
   ]);
+  const clauses = [...fieldClauses, ...fallbackClauses];
 
   return clauses.length === 1 ? clauses[0]! : Prisma.sql`(${Prisma.join(clauses, " OR ")})`;
 }
@@ -3924,8 +3973,10 @@ function buildRankedSearchMatchSql(
     OR to_tsvector('simple', COALESCE(u."nickname", '')) @@ websearch_to_tsquery('simple', ${query})
     ${authorNicknameSimilaritySql}
   )`;
-  const structuredTextSql = buildStructuredSearchTextSql();
-  const structuredMatch = buildStructuredSearchMatchSql(structuredTextSql, structuredSearchVariants);
+  const structuredMatch =
+    structuredSearchVariants.length > 0
+      ? buildStructuredSearchMatchSql(structuredSearchVariants)
+      : Prisma.sql`FALSE`;
 
   if (searchIn === "TITLE") {
     return titleMatch;
@@ -3967,11 +4018,14 @@ export async function listRankedSearchPosts({
   }
 
   const resolvedSearchIn = searchIn ?? DEFAULT_POST_SEARCH_IN;
+  const includeStructuredSearch = resolvedSearchIn === "ALL";
   const likePattern = `%${trimmedQuery}%`;
   const compactQuery = trimmedQuery.replace(/\s+/g, "");
   const compactPattern = `%${compactQuery}%`;
   const useTrigram = await supportsPgTrgm();
-  const structuredSearchVariants = buildStructuredSearchSqlVariants(trimmedQuery);
+  const structuredSearchVariants = includeStructuredSearch
+    ? buildStructuredSearchSqlVariants(trimmedQuery)
+    : [];
   const searchMatchSql = buildRankedSearchMatchSql(
     resolvedSearchIn,
     trimmedQuery,
@@ -4002,21 +4056,18 @@ export async function listRankedSearchPosts({
           similarity(COALESCE(u."nickname", ''), ${trimmedQuery})
         ) * 4.0`
     : Prisma.sql``;
-  const structuredSearchScoreSql = buildStructuredSearchMatchSql(
-    buildStructuredSearchTextSql(),
-    structuredSearchVariants,
-  );
+  const structuredSearchScoreSql =
+    includeStructuredSearch && structuredSearchVariants.length > 0
+      ? buildStructuredSearchMatchSql(structuredSearchVariants)
+      : Prisma.sql`FALSE`;
+  const structuredSearchJoinSql = buildStructuredSearchJoinSql(includeStructuredSearch);
 
   const runRankedSearch = async () => {
     const candidates = await prisma.$queryRaw<RankedSearchRow[]>(Prisma.sql`
       SELECT p."id"
       FROM "Post" p
       INNER JOIN "User" u ON u."id" = p."authorId"
-      LEFT JOIN "HospitalReview" hr ON hr."postId" = p."id"
-      LEFT JOIN "PlaceReview" pr ON pr."postId" = p."id"
-      LEFT JOIN "WalkRoute" wr ON wr."postId" = p."id"
-      LEFT JOIN "AdoptionListing" al ON al."postId" = p."id"
-      LEFT JOIN "VolunteerRecruitment" vr ON vr."postId" = p."id"
+      ${structuredSearchJoinSql}
       WHERE ${whereSql}
       ORDER BY
         (

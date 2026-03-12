@@ -1,11 +1,56 @@
-import { ReportReason, ReportStatus, ReportTarget } from "@prisma/client";
+import { Prisma, ReportReason, ReportStatus, ReportTarget } from "@prisma/client";
 
 import { SUPPORTED_REPORT_TARGETS, isSupportedReportTarget } from "@/lib/report-target";
 import { prisma } from "@/lib/prisma";
 
+export const REPORT_QUEUE_PAGE_SIZE = 25;
+
+const reportListInclude = {
+  reporter: {
+    select: {
+      id: true,
+      email: true,
+      nickname: true,
+      createdAt: true,
+      emailVerified: true,
+      _count: {
+        select: {
+          posts: true,
+          comments: true,
+          sanctionsReceived: true,
+        },
+      },
+    },
+  },
+  post: { select: { id: true, title: true, status: true } },
+  comment: {
+    select: {
+      id: true,
+      content: true,
+      status: true,
+      postId: true,
+      post: { select: { id: true, title: true } },
+    },
+  },
+} satisfies Prisma.ReportInclude;
+
+type ReportListItem = Prisma.ReportGetPayload<{
+  include: typeof reportListInclude;
+}>;
+
 type ReportListOptions = {
   status?: ReportStatus | "ALL";
   targetType?: ReportTarget | "ALL";
+  page?: number;
+  limit?: number;
+};
+
+export type ReportListResult = {
+  items: ReportListItem[];
+  totalCount: number;
+  page: number;
+  totalPages: number;
+  limit: number;
 };
 
 export async function listReports({ status, targetType }: ReportListOptions = {}) {
@@ -14,42 +59,53 @@ export async function listReports({ status, targetType }: ReportListOptions = {}
     targetType && targetType !== "ALL" && isSupportedReportTarget(targetType)
       ? targetType
       : null;
+  const where = {
+    ...(statusFilter === "ALL" ? {} : { status: statusFilter }),
+    targetType: normalizedTargetType ?? { in: [...SUPPORTED_REPORT_TARGETS] },
+  } as const;
 
   return prisma.report.findMany({
-    where: {
-      ...(statusFilter === "ALL" ? {} : { status: statusFilter }),
-      targetType: normalizedTargetType ?? { in: [...SUPPORTED_REPORT_TARGETS] },
-    },
-    orderBy: { createdAt: "desc" },
-    include: {
-      reporter: {
-        select: {
-          id: true,
-          email: true,
-          nickname: true,
-          createdAt: true,
-          emailVerified: true,
-          _count: {
-            select: {
-              posts: true,
-              comments: true,
-              sanctionsReceived: true,
-            },
-          },
-        },
-      },
-      post: { select: { id: true, title: true, status: true } },
-      comment: {
-        select: {
-          id: true,
-          content: true,
-          status: true,
-          postId: true,
-          post: { select: { id: true, title: true } },
-        },
-      },
-    },
+    where,
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    include: reportListInclude,
   });
+}
+
+export async function listReportsPage({
+  status,
+  targetType,
+  page,
+  limit,
+}: ReportListOptions = {}): Promise<ReportListResult> {
+  const statusFilter = status ?? ReportStatus.PENDING;
+  const normalizedTargetType =
+    targetType && targetType !== "ALL" && isSupportedReportTarget(targetType)
+      ? targetType
+      : null;
+  const resolvedLimit = Math.min(Math.max(limit ?? REPORT_QUEUE_PAGE_SIZE, 1), 100);
+  const requestedPage = Math.max(page ?? 1, 1);
+  const where = {
+    ...(statusFilter === "ALL" ? {} : { status: statusFilter }),
+    targetType: normalizedTargetType ?? { in: [...SUPPORTED_REPORT_TARGETS] },
+  } as const;
+  const totalCount = await prisma.report.count({ where });
+  const totalPages = Math.max(1, Math.ceil(totalCount / resolvedLimit));
+  const resolvedPage = Math.min(requestedPage, totalPages);
+  const items = await prisma.report.findMany({
+    where,
+    skip: (resolvedPage - 1) * resolvedLimit,
+    take: resolvedLimit,
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    include: reportListInclude,
+  });
+
+  return {
+    items,
+    totalCount,
+    page: resolvedPage,
+    totalPages,
+    limit: resolvedLimit,
+  };
 }
 
 export type ReportStats = {
@@ -67,8 +123,8 @@ export async function getReportStats(days = 7): Promise<ReportStats> {
   startDate.setHours(0, 0, 0, 0);
   startDate.setDate(startDate.getDate() - (days - 1));
 
-  const [totalCount, statusGroups, reasonGroups, targetGroups, recentReports, resolvedReports] =
-    await prisma.$transaction([
+  const [totalCount, statusGroups, reasonGroups, targetGroups, recentDailyGroups, resolutionStats] =
+    await Promise.all([
       prisma.report.count({
         where: { targetType: { in: [...SUPPORTED_REPORT_TARGETS] } },
       }),
@@ -90,20 +146,22 @@ export async function getReportStats(days = 7): Promise<ReportStats> {
         orderBy: { targetType: "asc" },
         _count: { _all: true },
       }),
-      prisma.report.findMany({
-        where: {
-          targetType: { in: [...SUPPORTED_REPORT_TARGETS] },
-          createdAt: { gte: startDate },
-        },
-        select: { createdAt: true },
-      }),
-      prisma.report.findMany({
-        where: {
-          targetType: { in: [...SUPPORTED_REPORT_TARGETS] },
-          resolvedAt: { not: null },
-        },
-        select: { createdAt: true, resolvedAt: true },
-      }),
+      prisma.$queryRaw<Array<{ date: string; count: number }>>`
+        SELECT to_char(date_trunc('day', "createdAt"), 'YYYY-MM-DD') AS "date",
+               COUNT(*)::int AS "count"
+        FROM "Report"
+        WHERE "targetType" IN (${Prisma.join([...SUPPORTED_REPORT_TARGETS])})
+          AND "createdAt" >= ${startDate}
+        GROUP BY 1
+        ORDER BY 1 ASC
+      `,
+      prisma.$queryRaw<Array<{ averageResolutionHours: number | null }>>`
+        SELECT AVG(EXTRACT(EPOCH FROM ("resolvedAt" - "createdAt")) / 3600.0)::float8
+          AS "averageResolutionHours"
+        FROM "Report"
+        WHERE "targetType" IN (${Prisma.join([...SUPPORTED_REPORT_TARGETS])})
+          AND "resolvedAt" IS NOT NULL
+      `,
     ]);
 
   const statusCounts = Object.values(ReportStatus).reduce(
@@ -142,9 +200,8 @@ export async function getReportStats(days = 7): Promise<ReportStats> {
     dailyMap.set(date.toISOString().slice(0, 10), 0);
   }
 
-  for (const report of recentReports) {
-    const key = report.createdAt.toISOString().slice(0, 10);
-    dailyMap.set(key, (dailyMap.get(key) ?? 0) + 1);
+  for (const report of recentDailyGroups) {
+    dailyMap.set(report.date, report.count);
   }
 
   const dailyCounts = Array.from(dailyMap.entries()).map(([date, count]) => ({
@@ -152,20 +209,7 @@ export async function getReportStats(days = 7): Promise<ReportStats> {
     count,
   }));
 
-  const resolutionDurations = resolvedReports
-    .flatMap((report) =>
-      report.resolvedAt
-        ? [report.resolvedAt.getTime() - report.createdAt.getTime()]
-        : [],
-    )
-    .filter((value) => value >= 0);
-
-  const averageResolutionHours =
-    resolutionDurations.length > 0
-      ? resolutionDurations.reduce((sum, value) => sum + value, 0) /
-        resolutionDurations.length /
-        (1000 * 60 * 60)
-      : null;
+  const averageResolutionHours = resolutionStats[0]?.averageResolutionHours ?? null;
 
   return {
     totalCount,

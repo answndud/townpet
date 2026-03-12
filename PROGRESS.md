@@ -17,6 +17,38 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-12: Cycle 350 완료 (베스트 댓글 thread context 추가 round-trip 축소)
+- 완료 내용
+  - `app/src/server/queries/comment.queries.ts`에 `listRootCommentPages()`를 추가해, 베스트 댓글이 속한 root 댓글들의 페이지 번호를 `ROW_NUMBER() OVER (ORDER BY createdAt DESC, id DESC)` 기반 raw SQL 한 번으로 계산하도록 바꿨다.
+  - 기존 `attachBestCommentThreadContext()`는 root id마다 `prisma.comment.count()`를 반복 호출했는데, 이제 root ancestor 탐색 후 root id 집합을 한 번에 넘겨 `threadPage`를 채우므로 베스트 댓글이 여러 개여도 추가 round-trip이 1회로 줄었다.
+  - 차단 작성자 필터는 기존과 동일하게 raw SQL에도 반영해, hidden author 정책이 page rank 계산과 어긋나지 않도록 유지했다.
+  - `app/src/server/queries/comment.queries.test.ts`는 더 이상 root별 `count()` 분기를 기대하지 않고, `$queryRaw` 결과로 각 root의 page를 받아 베스트 댓글 `threadPage`가 유지되는지 회귀를 고정했다.
+- 검증 결과
+  - `pnpm -C app lint src/server/queries/comment.queries.ts src/server/queries/comment.queries.test.ts` 통과
+  - `pnpm -C app test -- src/server/queries/comment.queries.test.ts` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `154 files / 756 tests` 통과
+  - `pnpm -C app typecheck` 통과
+  - `git diff --check` 통과
+
+### 2026-03-11: Cycle 349 완료 (신고 큐/검색/피드 렌더 성능 병목 완화)
+- 완료 내용
+  - `app/src/server/queries/report.queries.ts`에 `REPORT_QUEUE_PAGE_SIZE` 기반 `listReportsPage()`를 추가해 `/admin/reports`가 더 이상 필터 결과 전체를 메모리로 끌어오지 않고 현재 페이지 범위만 읽도록 바꿨다.
+  - 신고 통계의 평균 처리 시간과 최근 일별 분포는 `findMany` 전체 row scan 대신 DB 집계(`$queryRaw`/groupBy)로 계산하도록 바꿔, admin 신고 대시보드의 JS 후처리 비용을 줄였다.
+  - `app/src/app/admin/reports/page.tsx`는 `page` search param을 읽어 번호형 페이지네이션을 렌더하고, 헤더 요약도 현재 페이지 기준으로 정리했다.
+  - `app/src/server/queries/post.queries.ts`의 랭킹 검색은 `TITLE/CONTENT/AUTHOR` 검색 시 구조화 테이블 `LEFT JOIN`을 생략하고, `ALL` 검색에서도 `concat_ws(...)` 단일 문자열만 비교하던 구조를 개별 구조화 컬럼 직접 매칭 + fallback 조합으로 재구성했다.
+  - `app/prisma/schema.prisma`와 `app/prisma/migrations/20260311121500_add_performance_indexes_for_reports_and_search/migration.sql`에 베스트 피드 정렬용 `Post_scope_status_best_order_idx`, 신고 큐용 `Report_status_targetType_createdAt_idx`, 구조화 검색용 trigram index를 추가했다.
+  - `app/src/components/posts/feed-infinite-list.tsx`는 루트 리스트가 `relativeNow` store를 직접 구독하지 않도록 바꾸고, 상대시간 라벨만 `FeedStatsLabel` leaf component에서 갱신되게 분리해 분당 리스트 전체 re-render를 피했다.
+  - 회귀 테스트는 `app/src/server/queries/report.queries.test.ts`, `app/src/server/queries/post.queries.test.ts`에 추가했고, `TITLE` 전용 검색에서 구조화 join이 빠지는지와 신고 큐 페이지네이션/집계 SQL 동작을 고정했다.
+- 검증 결과
+  - `pnpm -C app exec prisma format` 통과
+  - `pnpm -C app exec prisma validate` 통과
+  - `pnpm -C app lint src/server/queries/report.queries.ts src/server/queries/report.queries.test.ts src/app/admin/reports/page.tsx src/components/posts/feed-infinite-list.tsx src/server/queries/post.queries.ts src/server/queries/post.queries.test.ts` 통과
+  - `pnpm -C app test -- src/server/queries/report.queries.test.ts src/server/queries/post.queries.test.ts` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `154 files / 756 tests` 통과
+  - `pnpm -C app typecheck` 통과
+  - `git diff --check` 통과
+- 후속 메모
+  - 이번 턴은 `/admin/reports`, 구조화 랭킹 검색, 베스트 피드 정렬 인덱스, 피드 상대시간 re-render를 우선 해결한 범위다.
+  - 댓글 베스트 thread context의 per-root page 계산은 아직 `attachBestCommentThreadContext()` 내부 추가 round-trip이 남아 있어, 다음 성능 사이클에서 window function 또는 cached thread page로 줄일 여지가 있다.
+
 ### 2026-03-11: Cycle 348 완료 (게시글 상세 수정/삭제 버튼 정렬/형태 통일)
 - 완료 내용
   - 게시글 상세에서 `수정` 링크가 일반 inline text처럼 잡혀 수직 정렬이 살짝 위로 치우쳐 보이던 문제를 확인하고, 공용 `inline-flex items-center justify-center` 기반 action button class로 정리했다.
