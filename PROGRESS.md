@@ -17,6 +17,30 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-12: Cycle 356 완료 (어드민 헤더 액션 버튼 시각 분리)
+- 완료 내용
+  - `app/src/components/navigation/app-shell-header-class.ts`에 일반 헤더 버튼과 구분되는 warm-tone admin cluster/button 클래스를 추가해, 관리 기능 버튼이 별도 영역처럼 보이도록 했다.
+  - `app/src/components/navigation/app-shell-header.tsx`에서 어드민 전용 `신고 큐`, `인증 로그`, `권한 정책` 링크가 새 admin cluster와 admin link 클래스를 사용하도록 연결했다.
+  - `app/src/components/navigation/app-shell-header-class.test.ts`에 admin group/link의 반경, warm border/background, 작은 텍스트 톤을 검증하는 회귀를 추가했다.
+- 검증 결과
+  - `pnpm -C app lint src/components/navigation/app-shell-header.tsx src/components/navigation/app-shell-header-class.ts src/components/navigation/app-shell-header-class.test.ts` 통과
+  - `pnpm -C app test -- src/components/navigation/app-shell-header-class.test.ts` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 통과
+  - `pnpm -C app typecheck` 통과
+  - `git diff --check` 통과
+
+### 2026-03-12: Cycle 355 완료 (production-safe 테스트 계정 provisioning 경로 추가)
+- 완료 내용
+  - `app/src/server/test-user-provisioning.ts`를 보강해 production-like `DATABASE_URL`에서는 `TEST_USER_PROVISION_CONFIRM=PRODUCTION`이 없으면 즉시 중단하도록 하고, owned domain 형식의 `TEST_USER_EMAIL_DOMAIN`, 계정 수 범위를 검증하도록 했다.
+  - 같은 helper는 기존 이메일/닉네임 집합과 충돌하지 않는 랜덤 이메일(local-part 20자)·닉네임·강한 비밀번호(30자)를 생성하고, 현재 `registerSchema` 비밀번호 정책을 통과하도록 보장한다.
+  - `app/scripts/provision-test-users.ts`를 추가해 production DB에서 `USER` 권한, `emailVerified=true`, `showPublicPosts/comments/pets=false` 기본값의 고정 QA 계정을 생성하도록 했다. 유니크 충돌 시에는 재생성/재시도하고, 필요하면 `TEST_USER_OUTPUT_FILE`에 0600 권한으로 credential JSON을 기록한다.
+  - `app/package.json`에 `pnpm db:provision:test-users` 스크립트를 등록했고, `docs/개발_운영_가이드.md`에 production 실행 예시와 비밀번호 관리자 보관 원칙을 추가했다.
+  - `app/src/server/test-user-provisioning.test.ts`를 추가해 production confirm guard, local 허용, credential uniqueness, 기존 이메일/닉네임 collision 회피를 회귀로 고정했다.
+- 검증 결과
+  - `pnpm -C app lint src/server/test-user-provisioning.ts src/server/test-user-provisioning.test.ts scripts/provision-test-users.ts` 통과
+  - `pnpm -C app test -- src/server/test-user-provisioning.test.ts` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `156 files / 768 tests` 통과
+  - `pnpm -C app typecheck` 통과
+  - `git diff --check` 통과
+
 ### 2026-03-12: Cycle 354 완료 (검색 자동완성에 구조화 후보 통합)
 - 완료 내용
   - `app/src/server/queries/post.queries.ts`의 `listPostSearchSuggestions()`가 `ALL` 검색일 때 `buildStructuredSearchVariants(query)`로 나온 canonical alias suggestion을 DB row보다 먼저 추가하도록 보강했다.

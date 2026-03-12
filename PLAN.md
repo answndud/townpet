@@ -26,6 +26,16 @@
 
 ## Active Plan
 
+### Cycle 356: 어드민 헤더 액션 버튼 시각 분리 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 어드민 계정 헤더의 `신고 큐`, `인증 로그`, `권한 정책` 버튼이 일반 탐색 버튼과 구분되는 별도 admin cluster/button 스타일을 사용하도록 정리하고 회귀 테스트를 추가 | Codex | P2 | `done` | 어드민 헤더 버튼은 warm-tone admin cluster와 admin link 클래스를 사용해 일반 네비게이션과 다른 시각 언어를 갖고, 관련 class 회귀 테스트와 lint/test/typecheck/diff check 검증이 `PROGRESS.md`에 기록된다 | `PLAN.md`, `PROGRESS.md`, `app/src/components/navigation/app-shell-header.tsx`, `app/src/components/navigation/app-shell-header-class.ts`, `app/src/components/navigation/app-shell-header-class.test.ts` |
+
+### Cycle 355: production-safe 테스트 계정 provisioning 경로 추가 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| production DB에 이메일 인증 없이도 `USER` 권한 고정 QA 계정을 안전하게 생성할 수 있도록 owned domain 강제, production confirm guard, 강한 랜덤 자격증명 생성, CLI 스크립트, 테스트, 운영 가이드를 추가 | Codex | P1 | `done` | `db:provision:test-users` 스크립트는 `DATABASE_URL`/`TEST_USER_EMAIL_DOMAIN`/production confirm guard를 검증하고, 기존 이메일/닉네임과 충돌하지 않는 랜덤 계정을 `emailVerified=true`, `role=USER`, 공개 범위 `false`로 생성하며, 생성 credential은 stdout 및 optional secure file로 출력되고, helper 단위 테스트와 lint/typecheck/test/diff check 결과가 `PROGRESS.md`에 기록된다 | `PLAN.md`, `PROGRESS.md`, `app/src/server/test-user-provisioning.ts`, `app/src/server/test-user-provisioning.test.ts`, `app/scripts/provision-test-users.ts`, `app/package.json`, `docs/개발_운영_가이드.md` |
+
 ### Cycle 353: 로그인 세션/댓글 auth sync 브라우저 검증 보강 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
