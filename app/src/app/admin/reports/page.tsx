@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ReportReason, ReportStatus, ReportTarget } from "@prisma/client";
 
 import { ReportQueueTable } from "@/components/admin/report-queue-table";
+import { buildPaginationWindow, parsePositivePage } from "@/lib/pagination";
 import {
   calculateReporterTrustWeight,
   getReportQueuePriorityLabel,
@@ -17,13 +18,13 @@ import {
 } from "@/lib/report-target";
 import { requireModeratorPageUser } from "@/server/admin-page-access";
 import { listReportAuditsByReportIds } from "@/server/queries/report-audit.queries";
-import { getReportStats, listReports } from "@/server/queries/report.queries";
+import { getReportStats, listReportsPage } from "@/server/queries/report.queries";
 import { listRecentSanctions } from "@/server/queries/sanction.queries";
 import { listUsersByIds } from "@/server/queries/user.queries";
 import { formatSanctionLevelLabel } from "@/server/services/sanction.service";
 
 type ReportsPageProps = {
-  searchParams?: Promise<{ status?: string; target?: string; updated?: string }>;
+  searchParams?: Promise<{ status?: string; target?: string; updated?: string; page?: string }>;
 };
 
 const statusLabels: Record<ReportStatus, string> = {
@@ -47,14 +48,15 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
       ? (targetParam as ReportTarget | "ALL")
       : "ALL";
   const showUpdated = resolvedParams.updated === "1";
+  const currentPage = parsePositivePage(resolvedParams.page);
 
-  const [reports, stats, sanctions] = await Promise.all([
-    listReports({ status, targetType }),
+  const [reportPage, stats, sanctions] = await Promise.all([
+    listReportsPage({ status, targetType, page: currentPage }),
     getReportStats(7),
     listRecentSanctions(15),
   ]);
 
-  const reportIds = reports.map((report) => report.id);
+  const reportIds = reportPage.items.map((report) => report.id);
   const audits = await listReportAuditsByReportIds(reportIds);
   const auditMap = new Map<string, typeof audits>();
   for (const audit of audits) {
@@ -65,7 +67,7 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
 
   const resolvedByIds = Array.from(
     new Set(
-      reports
+      reportPage.items
         .map((report) => report.resolvedBy)
         .filter((value): value is string => Boolean(value)),
     ),
@@ -89,7 +91,7 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
       reporterTrustWeight: number;
     }>
   >();
-  for (const report of reports) {
+  for (const report of reportPage.items) {
     const key = `${report.targetType}:${report.targetId}`;
     const existingSignals = moderationSignalsByTarget.get(key) ?? [];
     existingSignals.push({
@@ -111,7 +113,7 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
     moderationMap.set(key, summarizeReportModeration(signals));
   }
 
-  const reportRows = reports
+  const reportRows = reportPage.items
     .map((report) => {
       const moderationKey = `${report.targetType}:${report.targetId}`;
       const moderation =
@@ -184,11 +186,18 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
     (summary) => summary.priority === "HIGH",
   ).length;
 
-  const buildLink = (nextStatus: ReportStatus | "ALL", nextTarget: ReportTarget | "ALL") => {
+  const buildLink = (
+    nextStatus: ReportStatus | "ALL",
+    nextTarget: ReportTarget | "ALL",
+    nextPage = 1,
+  ) => {
     const params = new URLSearchParams();
     params.set("status", nextStatus);
     if (nextTarget !== "ALL") {
       params.set("target", nextTarget);
+    }
+    if (nextPage > 1) {
+      params.set("page", String(nextPage));
     }
     return `/admin/reports?${params.toString()}`;
   };
@@ -209,7 +218,7 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
             신고 접수 현황을 확인하고 대기 건을 처리합니다.
           </p>
           <p className="mt-3 text-xs text-[#5a7398]">
-            긴급 {criticalPendingCount}건 · 높은 우선순위 {highPendingCount}건
+            현재 목록 긴급 {criticalPendingCount}건 · 높은 우선순위 {highPendingCount}건
           </p>
         </header>
 
@@ -304,7 +313,7 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
             {["ALL", ...Object.values(ReportStatus)].map((value) => (
               <Link
                 key={value}
-                href={buildLink(value as ReportStatus | "ALL", targetType)}
+                href={buildLink(value as ReportStatus | "ALL", targetType, 1)}
                 className={`rounded-lg border px-2.5 py-1 transition ${
                   status === value
                     ? "border-[#3567b5] bg-[#3567b5] text-white"
@@ -322,7 +331,7 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
             {["ALL", ...SUPPORTED_REPORT_TARGETS].map((value) => (
               <Link
                 key={value}
-                href={buildLink(status, value as ReportTarget | "ALL")}
+                href={buildLink(status, value as ReportTarget | "ALL", 1)}
                 className={`rounded-lg border px-2.5 py-1 transition ${
                   targetType === value
                     ? "border-[#3567b5] bg-[#3567b5] text-white"
@@ -397,6 +406,52 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
               </table>
             </div>
           )}
+        </section>
+
+        <section className="flex flex-wrap items-center justify-between gap-3 text-xs text-[#5a7398]">
+          <span>
+            페이지 {reportPage.page} / {reportPage.totalPages} · 현재 {reportRows.length}건 표시 · 누적{" "}
+            {reportPage.totalCount}건
+          </span>
+          {reportPage.totalPages > 1 ? (
+            <div className="flex flex-wrap items-center gap-1.5">
+              <Link
+                href={buildLink(status, targetType, Math.max(1, reportPage.page - 1))}
+                aria-disabled={reportPage.page <= 1}
+                className={`inline-flex items-center rounded-lg ${
+                  reportPage.page <= 1 ? "tp-btn-disabled pointer-events-none" : "tp-btn-soft"
+                } tp-btn-xs transition`}
+              >
+                이전
+              </Link>
+              {buildPaginationWindow(reportPage.page, reportPage.totalPages).map((pageNumber) => (
+                <Link
+                  key={pageNumber}
+                  href={buildLink(status, targetType, pageNumber)}
+                  className={`inline-flex min-w-8 items-center justify-center rounded-lg ${
+                    pageNumber === reportPage.page ? "tp-btn-primary" : "tp-btn-soft"
+                  } tp-btn-xs transition`}
+                >
+                  {pageNumber}
+                </Link>
+              ))}
+              <Link
+                href={buildLink(
+                  status,
+                  targetType,
+                  Math.min(reportPage.totalPages, reportPage.page + 1),
+                )}
+                aria-disabled={reportPage.page >= reportPage.totalPages}
+                className={`inline-flex items-center rounded-lg ${
+                  reportPage.page >= reportPage.totalPages
+                    ? "tp-btn-disabled pointer-events-none"
+                    : "tp-btn-soft"
+                } tp-btn-xs transition`}
+              >
+                다음
+              </Link>
+            </div>
+          ) : null}
         </section>
 
         <ReportQueueTable reports={reportRows} />

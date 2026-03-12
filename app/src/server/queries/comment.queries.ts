@@ -190,6 +190,39 @@ async function findCommentThreadNodes(
   });
 }
 
+async function listRootCommentPages(
+  postId: string,
+  hiddenAuthorIds: string[],
+  rootIds: string[],
+  limit: number,
+) {
+  if (rootIds.length === 0) {
+    return new Map<string, number>();
+  }
+
+  const safeLimit = Math.max(limit, 1);
+  const hiddenAuthorSql =
+    hiddenAuthorIds.length > 0
+      ? Prisma.sql`AND c."authorId" NOT IN (${Prisma.join(hiddenAuthorIds)})`
+      : Prisma.sql``;
+  const rows = await prisma.$queryRaw<Array<{ id: string; page: number }>>(Prisma.sql`
+    SELECT ranked."id",
+           CEIL(ranked."position"::numeric / ${safeLimit})::int AS "page"
+    FROM (
+      SELECT c."id",
+             ROW_NUMBER() OVER (ORDER BY c."createdAt" DESC, c."id" DESC) AS "position"
+      FROM "Comment" c
+      WHERE c."postId" = ${postId}
+        AND c."parentId" IS NULL
+        AND c."status" IN ('ACTIVE'::"PostStatus", 'DELETED'::"PostStatus")
+        ${hiddenAuthorSql}
+    ) ranked
+    WHERE ranked."id" IN (${Prisma.join(rootIds)})
+  `);
+
+  return new Map(rows.map((row) => [row.id, row.page]));
+}
+
 async function listBestComments(
   postId: string,
   excludedAuthorIds: string[],
@@ -301,45 +334,14 @@ async function attachBestCommentThreadContext<
   }
 
   const uniqueRootIds = [...new Set([...rootIdByCommentId.values()].filter(Boolean) as string[])];
-  const pageByRootId = new Map<string, number | null>();
-
-  await Promise.all(
-    uniqueRootIds.map(async (rootId) => {
-      const rootNode = nodeMap.get(rootId);
-      if (!rootNode) {
-        pageByRootId.set(rootId, null);
-        return;
-      }
-
-      const newerRootCount = await prisma.comment.count({
-        where: buildCommentWhere(postId, hiddenAuthorIds, {
-          parentId: null,
-          OR: [
-            {
-              createdAt: {
-                gt: rootNode.createdAt,
-              },
-            },
-            {
-              createdAt: rootNode.createdAt,
-              id: {
-                gt: rootId,
-              },
-            },
-          ],
-        }),
-      });
-
-      pageByRootId.set(rootId, Math.max(1, Math.ceil((newerRootCount + 1) / Math.max(limit, 1))));
-    }),
-  );
+  const pageByRootId = await listRootCommentPages(postId, hiddenAuthorIds, uniqueRootIds, limit);
 
   return bestComments.map((comment) => {
     const threadRootId = rootIdByCommentId.get(comment.id) ?? null;
     return {
       ...comment,
       threadRootId,
-      threadPage: threadRootId ? (pageByRootId.get(threadRootId) ?? null) : null,
+      threadPage: threadRootId ? pageByRootId.get(threadRootId) ?? null : null,
     };
   });
 }

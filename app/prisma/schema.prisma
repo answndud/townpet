@@ -318,6 +318,7 @@ model Post {
   @@index([type, scope, status])
   @@index([type, scope, status, createdAt(sort: Desc)], map: "Post_type_scope_status_createdAt_idx")
   @@index([scope, status, createdAt(sort: Desc)], map: "Post_scope_status_createdAt_idx")
+  @@index([scope, status, likeCount(sort: Desc), commentCount(sort: Desc), viewCount(sort: Desc), createdAt(sort: Desc), id(sort: Desc)], map: "Post_scope_status_best_order_idx")
   @@index([boardScope, createdAt(sort: Desc)])
   @@index([petTypeId, createdAt(sort: Desc)], map: "Post_communityId_createdAt_idx")
   @@index([commonBoardType, createdAt(sort: Desc)])
@@ -746,6 +747,8 @@ model Report {
   @@index([postTargetId])
   @@index([commentTargetId])
   @@index([status])
+  @@index([status, targetType, createdAt(sort: Desc)], map: "Report_status_targetType_createdAt_idx")
+  @@index([resolvedAt])
 }
 
 model ReportAudit {

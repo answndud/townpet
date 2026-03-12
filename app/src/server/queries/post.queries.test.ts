@@ -1378,6 +1378,24 @@ describe("post queries", () => {
     expect(statement).toContain(`LEFT JOIN "HospitalReview" hr`);
   });
 
+  it("skips structured joins for title-only ranked search", async () => {
+    mockPrisma.$queryRaw
+      .mockResolvedValueOnce([{ enabled: true }])
+      .mockResolvedValueOnce([]);
+
+    await listRankedSearchPosts({
+      limit: 10,
+      scope: PostScope.GLOBAL,
+      q: "병원",
+      searchIn: "TITLE",
+    });
+
+    const sql = mockPrisma.$queryRaw.mock.calls.at(-1)?.[0] as { strings?: TemplateStringsArray };
+    const statement = sql.strings ? Array.from(sql.strings).join(" ") : "";
+    expect(statement).not.toContain(`LEFT JOIN "HospitalReview" hr`);
+    expect(statement).not.toContain(`LEFT JOIN "AdoptionListing" al`);
+  });
+
   it("includes canonical structured search variants in ranked search SQL bindings", async () => {
     mockPrisma.$queryRaw
       .mockResolvedValueOnce([{ enabled: true }])

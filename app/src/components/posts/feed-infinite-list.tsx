@@ -3,7 +3,15 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { PostType } from "@prisma/client";
-import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 
 import { FeedPostMetaBadges } from "@/components/posts/feed-post-meta-badges";
 import { PostListItemShell } from "@/components/posts/post-list-item-shell";
@@ -253,6 +261,32 @@ function parseReadPosts(raw: string | null): StoredReadPost[] {
   }
 }
 
+type FeedStatsLabelProps = {
+  createdAt: string;
+  viewCount: number;
+  reactionCount: number;
+};
+
+const FeedStatsLabel = memo(function FeedStatsLabel({
+  createdAt,
+  viewCount,
+  reactionCount,
+}: FeedStatsLabelProps) {
+  const relativeNow = useSyncExternalStore(
+    subscribeRelativeNow,
+    () => relativeNowSnapshot,
+    () => null,
+  );
+  const statsLabel = buildFeedStatsLabel({
+    createdAt,
+    relativeNow,
+    viewCount,
+    reactionCount,
+  });
+
+  return <p className="mt-0.5 break-keep text-[#5a759c]">{statsLabel}</p>;
+});
+
 export function FeedInfiniteList({
   initialItems,
   mode,
@@ -266,20 +300,11 @@ export function FeedInfiniteList({
   const [readPostIds, setReadPostIds] = useState<Set<string>>(() => new Set());
   const restoreDoneRef = useRef(false);
   const scrollStorageKey = useMemo(() => `feed:scroll:${queryKey}`, [queryKey]);
-  const relativeNow = useSyncExternalStore(
-    subscribeRelativeNow,
-    () => relativeNowSnapshot,
-    () => null,
-  );
   const showAdSlot = Boolean(adConfig && mode === "ALL" && initialItems.length >= 5);
   const trackedViewKeyRef = useRef<string | null>(null);
   const trackedAdKeyRef = useRef<string | null>(null);
   const router = useRouter();
   const isPersonalizedQuery = Boolean(query.personalized);
-
-  useEffect(() => {
-    refreshRelativeNow();
-  }, [queryKey]);
 
   useEffect(() => {
     if (typeof window === "undefined" || restoreDoneRef.current) {
@@ -509,12 +534,6 @@ export function FeedInfiniteList({
               ? post.petType.labelKo
               : `${post.petType.categoryLabelKo} · ${post.petType.labelKo}`
             : null;
-          const statsLabel = buildFeedStatsLabel({
-            createdAt: post.createdAt,
-            relativeNow,
-            viewCount: post.viewCount,
-            reactionCount: post.likeCount + post.dislikeCount,
-          });
           const adoptionSummary = post.adoptionListing
             ? [
                 post.adoptionListing.shelterName,
@@ -628,7 +647,11 @@ export function FeedInfiniteList({
                     />
                     <div className="min-w-0">
                       <p className="font-semibold text-[#1f3f71]">{authorNode}</p>
-                      <p className="mt-0.5 break-keep text-[#5a759c]">{statsLabel}</p>
+                      <FeedStatsLabel
+                        createdAt={post.createdAt}
+                        viewCount={post.viewCount}
+                        reactionCount={post.likeCount + post.dislikeCount}
+                      />
                     </div>
                   </>
                 }

@@ -20,6 +20,7 @@ vi.mock("@/server/cache/query-cache", async () => {
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
+    $queryRaw: vi.fn(),
     comment: {
       count: vi.fn(),
       findMany: vi.fn(),
@@ -32,6 +33,7 @@ vi.mock("@/server/queries/user-relation.queries", () => ({
 }));
 
 const mockPrisma = vi.mocked(prisma) as unknown as {
+  $queryRaw: ReturnType<typeof vi.fn>;
   comment: {
     count: ReturnType<typeof vi.fn>;
     findMany: ReturnType<typeof vi.fn>;
@@ -80,6 +82,7 @@ function buildComment(
 
 describe("comment queries", () => {
   beforeEach(() => {
+    mockPrisma.$queryRaw.mockReset();
     mockPrisma.comment.count.mockReset();
     mockPrisma.comment.findMany.mockReset();
     mockListHiddenAuthorGroupsForViewer.mockReset();
@@ -91,9 +94,6 @@ describe("comment queries", () => {
   });
 
   it("returns latest root comments by page and exposes best comments above the threshold", async () => {
-    const rootFive = buildComment("root-5", {
-      createdAt: new Date("2026-03-11T13:00:00Z"),
-    });
     const rootFour = buildComment("root-4", {
       createdAt: new Date("2026-03-11T12:00:00Z"),
     });
@@ -114,7 +114,6 @@ describe("comment queries", () => {
       likeCount: 10,
       createdAt: new Date("2026-03-11T12:05:00Z"),
     });
-    const rootNodes = [rootFive, rootFour, rootThree, rootTwo, rootOne];
     const bestComments = [rootOne, rootTwo, rootThree, replyBest];
 
     mockPrisma.comment.count.mockImplementation(async ({ where }) => {
@@ -122,21 +121,14 @@ describe("comment queries", () => {
         return 5 as never;
       }
 
-      if (where.parentId === null && Array.isArray(where.OR)) {
-        const targetDate = where.OR[1]?.createdAt as Date | undefined;
-        const targetId = where.OR[1]?.id?.gt as string | undefined;
-        const newerCount = rootNodes.filter((root) => {
-          const createdAt = root.createdAt as Date;
-          if (!targetDate || !targetId) {
-            return false;
-          }
-          return createdAt > targetDate || (createdAt.getTime() === targetDate.getTime() && root.id > targetId);
-        }).length;
-        return newerCount as never;
-      }
-
       return 7 as never;
     });
+    mockPrisma.$queryRaw.mockResolvedValue([
+      { id: "root-1", page: 3 },
+      { id: "root-2", page: 2 },
+      { id: "root-3", page: 2 },
+      { id: "root-4", page: 1 },
+    ]);
 
     mockPrisma.comment.findMany.mockImplementation(async ({ where, orderBy, skip, take }) => {
       if (Array.isArray(orderBy) && orderBy[0]?.likeCount === "desc") {
@@ -221,6 +213,10 @@ describe("comment queries", () => {
       expect(where.authorId).toEqual({ notIn: ["blocked-author"] });
       return 2 as never;
     });
+    mockPrisma.$queryRaw.mockResolvedValue([
+      { id: "visible-root", page: 1 },
+      { id: "muted-root", page: 1 },
+    ]);
 
     mockPrisma.comment.findMany.mockImplementation(async ({ where, orderBy, skip, take }) => {
       if (Array.isArray(orderBy) && orderBy[0]?.likeCount === "desc") {
