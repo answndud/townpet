@@ -18,6 +18,9 @@ const SESSION_COOKIE_NAMES = [
   "__Secure-next-auth.session-token",
 ];
 
+const VIEWER_SHELL_SYNC_EVENT = "townpet:viewer-shell-sync";
+const VIEWER_SHELL_SYNC_STORAGE_KEY = "townpet:viewer-shell-sync";
+
 type EnsureCredentialUserParams = {
   email: string;
   password?: string;
@@ -215,6 +218,22 @@ export async function loginWithCredentialsApi(
     .toBe(true);
 
   await page.goto(nextPath);
+  await page.evaluate(({ eventName, storageKey }) => {
+    const payload = {
+      reason: "auth-login",
+      timestamp: Date.now(),
+    };
+
+    window.dispatchEvent(
+      new CustomEvent(eventName, {
+        detail: payload,
+      }),
+    );
+    window.localStorage.setItem(storageKey, JSON.stringify(payload));
+  }, {
+    eventName: VIEWER_SHELL_SYNC_EVENT,
+    storageKey: VIEWER_SHELL_SYNC_STORAGE_KEY,
+  });
 }
 
 export async function loginWithSocialDev(
