@@ -66,6 +66,7 @@ vi.mock("@/server/actions/comment", () => ({
 
 vi.mock("@/server/actions/user-relation", () => ({
   muteUserAction: vi.fn(),
+  unmuteUserAction: vi.fn(),
 }));
 
 function buildComment(

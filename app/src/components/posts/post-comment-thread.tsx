@@ -17,6 +17,12 @@ import {
   POST_COMMENT_THREAD_CARD_CLASS_NAME,
 } from "@/components/posts/post-comment-layout-class";
 import { PostReportForm } from "@/components/posts/post-report-form";
+import {
+  canOpenUserActionMenu,
+  canToggleMuteUser,
+  shouldCloseUserActionMenu,
+  UserActionMenu,
+} from "@/components/user/user-action-menu";
 import { getClientFingerprint, getGuestFingerprint } from "@/lib/guest-client";
 import { getGuestWriteHeaders } from "@/lib/guest-step-up.client";
 import { COMMENT_CONTENT_MAX_LENGTH } from "@/lib/input-limits";
@@ -26,7 +32,7 @@ import {
   deleteCommentAction,
   updateCommentAction,
 } from "@/server/actions/comment";
-import { muteUserAction, unmuteUserAction } from "@/server/actions/user-relation";
+import { unmuteUserAction } from "@/server/actions/user-relation";
 
 type CommentItem = {
   id: string;
@@ -74,31 +80,12 @@ const COMMENT_REPLY_GUIDE_CLASS_NAME =
   "before:bg-[#edf3fb] relative mt-2 ml-8 space-y-1.5 pl-3 before:absolute before:bottom-0 before:left-0 before:top-0 before:w-px before:content-['']";
 const COMMENT_REPLY_BADGE_CLASS_NAME =
   "tp-text-muted inline-flex h-5 items-center rounded-md border border-[#e7eef9] bg-white px-1.5 text-[10px] font-medium";
-const COMMENT_AUTHOR_MENU_BUTTON_CLASS_NAME =
-  "tp-text-heading inline-flex max-w-full cursor-pointer items-center gap-1 rounded-md bg-transparent px-1 py-0.5 text-[13px] font-semibold transition hover:bg-[#f4f8ff] hover:text-[#2f5da4]";
-const COMMENT_AUTHOR_MENU_PANEL_CLASS_NAME =
-  "tp-border-muted absolute left-0 z-20 mt-1.5 min-w-[108px] rounded-md border bg-white p-1 shadow-[0_10px_24px_rgba(16,40,74,0.1)]";
 const MUTED_COMMENT_PLACEHOLDER_TEXT = "뮤트한 사용자 댓글입니다.";
 const MUTED_COMMENT_AUTHOR_NAME = "뮤트한 사용자";
 
-export function shouldCloseCommentAuthorMenu(
-  menuRoot: Pick<Node, "contains"> | null,
-  target: EventTarget | null,
-) {
-  if (!menuRoot || !target) {
-    return false;
-  }
-
-  return !menuRoot.contains(target as Node);
-}
-
-export function canOpenCommentAuthorMenu(viewerId?: string) {
-  return Boolean(viewerId);
-}
-
-export function canMuteCommentAuthor(viewerId?: string, targetUserId?: string) {
-  return Boolean(viewerId && targetUserId && viewerId !== targetUserId);
-}
+export const shouldCloseCommentAuthorMenu = shouldCloseUserActionMenu;
+export const canOpenCommentAuthorMenu = canOpenUserActionMenu;
+export const canMuteCommentAuthor = canToggleMuteUser;
 
 function formatCommentDate(value: Date | string) {
   const parsed = value instanceof Date ? value : new Date(value);
@@ -149,132 +136,6 @@ function ReactionStatIcon({ type }: { type: "LIKE" | "DISLIKE" }) {
       <path d="M12 12v3.2A2.8 2.8 0 0 1 9.2 18l-.5-3.1c-.2-1 .1-2 .7-2.8l.6-.7H5.6A2.6 2.6 0 0 1 3 8.8l.8-4.6A2.6 2.6 0 0 1 6.4 2H12z" />
       <path d="M17 12h-3V2h3z" />
     </svg>
-  );
-}
-
-function CommentAuthorMenu({
-  userId,
-  displayName,
-  commentId,
-  currentUserId,
-  onActionMessage,
-  onRelationChanged,
-}: {
-  userId: string;
-  displayName: string;
-  commentId: string;
-  currentUserId?: string;
-  onActionMessage?: (message: string) => void;
-  onRelationChanged?: (commentId: string) => Promise<void>;
-}) {
-  const menuRef = useRef<HTMLDivElement | null>(null);
-  const [isOpen, setIsOpen] = useState(false);
-  const [isMutePending, startMuteTransition] = useTransition();
-  const canMute = canMuteCommentAuthor(currentUserId, userId);
-
-  useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
-
-    const closeMenuIfOutside = (target: EventTarget | null) => {
-      if (shouldCloseCommentAuthorMenu(menuRef.current, target)) {
-        setIsOpen(false);
-      }
-    };
-
-    const handlePointerDown = (event: globalThis.PointerEvent) => {
-      closeMenuIfOutside(event.target);
-    };
-
-    const handleFocusIn = (event: globalThis.FocusEvent) => {
-      closeMenuIfOutside(event.target);
-    };
-
-    const handleKeyDown = (event: globalThis.KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener("pointerdown", handlePointerDown);
-    document.addEventListener("focusin", handleFocusIn);
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("pointerdown", handlePointerDown);
-      document.removeEventListener("focusin", handleFocusIn);
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isOpen]);
-
-  const handleMute = () => {
-    if (!canMute || isMutePending) {
-      return;
-    }
-
-    startMuteTransition(async () => {
-      const result = await muteUserAction(
-        { targetUserId: userId },
-        { revalidate: false },
-      );
-      if (!result.ok) {
-        onActionMessage?.(result.message);
-        return;
-      }
-
-      setIsOpen(false);
-      onActionMessage?.("사용자를 뮤트했습니다.");
-      if (onRelationChanged) {
-        await onRelationChanged(commentId);
-      }
-    });
-  };
-
-  return (
-    <div ref={menuRef} className="relative inline-flex max-w-full shrink-0">
-      <button
-        type="button"
-        className={COMMENT_AUTHOR_MENU_BUTTON_CLASS_NAME}
-        aria-haspopup="menu"
-        aria-expanded={isOpen}
-        onClick={() => setIsOpen((current) => !current)}
-      >
-        <span className="truncate">{displayName}</span>
-        <svg
-          aria-hidden="true"
-          viewBox="0 0 12 12"
-          className="mt-px h-3 w-3 shrink-0 text-[#6a84ac]"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.7"
-        >
-          <path d="M2.25 4.5 6 8.25 9.75 4.5" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </button>
-      {isOpen ? (
-        <div className={COMMENT_AUTHOR_MENU_PANEL_CLASS_NAME} role="menu">
-          <Link
-            href={`/users/${userId}`}
-            role="menuitem"
-            className="tp-text-heading block rounded px-2 py-1.5 text-[11px] hover:bg-[#f5f9ff]"
-            onClick={() => setIsOpen(false)}
-          >
-            프로필 보기
-          </Link>
-          {canMute ? (
-            <button
-              type="button"
-              role="menuitem"
-              className="tp-text-heading block w-full rounded px-2 py-1.5 text-left text-[11px] hover:bg-[#f5f9ff]"
-              onClick={handleMute}
-              disabled={isMutePending}
-            >
-              뮤트
-            </button>
-          ) : null}
-        </div>
-      ) : null}
-    </div>
   );
 }
 
@@ -738,13 +599,14 @@ export function PostCommentThread({
                   </div>
                 ) : (
                   <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                    <CommentAuthorMenu
+                    <UserActionMenu
                       userId={comment.author.id}
                       displayName={displayName}
-                      commentId={comment.id}
                       currentUserId={currentUserId}
                       onActionMessage={setMessage}
-                      onRelationChanged={refreshCommentsForRelationChange}
+                      onMuteStateChange={async () => {
+                        await refreshCommentsForRelationChange(comment.id);
+                      }}
                     />
                     <p suppressHydrationWarning className="tp-text-subtle text-[11px]">
                       {formatCommentDate(comment.createdAt)}
@@ -1051,13 +913,14 @@ export function PostCommentThread({
     const authorNode = isMutedPlaceholder || isGuestComment || !canOpenCommentAuthorMenu(currentUserId) ? (
       <span className="tp-text-heading truncate text-[13px] font-semibold">{displayName}</span>
     ) : (
-      <CommentAuthorMenu
+      <UserActionMenu
         userId={comment.author.id}
         displayName={displayName}
-        commentId={comment.id}
         currentUserId={currentUserId}
         onActionMessage={setMessage}
-        onRelationChanged={refreshCommentsForRelationChange}
+        onMuteStateChange={async () => {
+          await refreshCommentsForRelationChange(comment.id);
+        }}
       />
     );
 
