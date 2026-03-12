@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { PostType } from "@prisma/client";
+import { PostStatus, PostType } from "@prisma/client";
 
 import { BackToFeedButton } from "@/components/posts/back-to-feed-button";
 import { PostBoardLinkChip } from "@/components/posts/post-board-link-chip";
@@ -20,14 +20,15 @@ import { PostBookmarkButton } from "@/components/posts/post-bookmark-button";
 import { POST_DETAIL_ACTION_BUTTON_CLASS_NAME } from "@/components/posts/post-detail-action-button-class";
 import { PostDetailActions } from "@/components/posts/post-detail-actions";
 import { PostPersonalizationDwellTracker } from "@/components/posts/post-personalization-dwell-tracker";
+import { PostModerationControls } from "@/components/posts/post-moderation-controls";
 import { PostReactionControls } from "@/components/posts/post-reaction-controls";
 import { PostReportForm } from "@/components/posts/post-report-form";
 import { PostShareControls } from "@/components/posts/post-share-controls";
 import { PostCommentSectionClient } from "@/components/posts/post-comment-section-client";
 import { PostViewTracker } from "@/components/posts/post-view-tracker";
+import { UserActionMenu } from "@/components/user/user-action-menu";
 import { fetchPostCommentPage } from "@/lib/comment-client";
 import { getGuestPostMeta } from "@/lib/post-guest-meta";
-import { UserRelationControls } from "@/components/user/user-relation-controls";
 import { renderLiteMarkdown } from "@/lib/markdown-lite";
 import { formatRelativeDate } from "@/lib/post-presenter";
 import { isReportablePostType } from "@/lib/post-type-groups";
@@ -45,6 +46,7 @@ type PostDetailResponse = {
   data?: {
     post: PostDetailItem;
     viewerId: string | null;
+    canModerate: boolean;
     relationState?: RelationState;
   };
   error?: {
@@ -258,6 +260,7 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
   const [data, setData] = useState<PostDetailResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPostReportOpen, setIsPostReportOpen] = useState(false);
+  const [relationMessage, setRelationMessage] = useState<string | null>(null);
   const [loadVersion, setLoadVersion] = useState(0);
   const [commentLoadState, setCommentLoadState] = useState<PostCommentPrefetchState>({
     status: "idle",
@@ -321,6 +324,52 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
     });
   };
 
+  const handlePostStatusChange = (nextStatus: PostStatus) => {
+    setData((current) => {
+      if (!current?.ok || !current.data) {
+        return current;
+      }
+
+      if (current.data.post.status === nextStatus) {
+        return current;
+      }
+
+      return {
+        ...current,
+        data: {
+          ...current.data,
+          post: {
+            ...current.data.post,
+            status: nextStatus,
+          },
+        },
+      };
+    });
+  };
+
+  const handleAuthorMuteStateChange = (nextMuted: boolean) => {
+    setData((current) => {
+      if (!current?.ok || !current.data) {
+        return current;
+      }
+
+      return {
+        ...current,
+        data: {
+          ...current.data,
+          relationState: {
+            ...(current.data.relationState ?? {
+              isBlockedByMe: false,
+              hasBlockedMe: false,
+              isMutedByMe: false,
+            }),
+            isMutedByMe: nextMuted,
+          },
+        },
+      };
+    });
+  };
+
   useEffect(() => {
     let cancelled = false;
     const run = async () => {
@@ -331,6 +380,7 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
 
       setError(null);
       setData(null);
+      setRelationMessage(null);
       setCommentLoadState({
         status: "loading",
         pageData: null,
@@ -453,18 +503,21 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
 
   const post = data?.data?.post;
   const viewerId = data?.data?.viewerId ?? null;
+  const canModerate = data?.data?.canModerate ?? false;
   const hasLoadedPost = Boolean(post);
+  const isPostActive = post?.status === PostStatus.ACTIVE;
   const resolvedRelationState = data?.data?.relationState ?? {
     isBlockedByMe: false,
     hasBlockedMe: false,
     isMutedByMe: false,
   };
-  const canInteract = hasLoadedPost && Boolean(viewerId);
+  const canInteract = hasLoadedPost && Boolean(viewerId) && isPostActive;
   const isAuthor = Boolean(post && viewerId === post.authorId);
   const canReportPost = post ? isReportablePostType(post.type) : false;
   const canInteractWithPostOwner = !(
     resolvedRelationState.hasBlockedMe || resolvedRelationState.isBlockedByMe
   );
+  const canModeratePost = hasLoadedPost && canModerate && !isAuthor;
   const showPostReportControls =
     canReportPost && canInteract && !isAuthor && canInteractWithPostOwner;
   const meta = post ? typeMeta[post.type] : null;
@@ -523,8 +576,13 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
 
   return (
     <div className="tp-page-bg min-h-screen pb-16">
-      {post ? <PostViewTracker postId={post.id} /> : null}
-      {post ? <PostPersonalizationDwellTracker postId={post.id} enabled={Boolean(viewerId)} /> : null}
+      {post && post.status === PostStatus.ACTIVE ? <PostViewTracker postId={post.id} /> : null}
+      {post ? (
+        <PostPersonalizationDwellTracker
+          postId={post.id}
+          enabled={Boolean(viewerId) && post.status === PostStatus.ACTIVE}
+        />
+      ) : null}
       {structuredData ? (
         <script
           nonce={cspNonce}
@@ -544,6 +602,11 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
                     {post.neighborhood.city} {post.neighborhood.name}
                   </span>
                 ) : null}
+                {post.status === PostStatus.HIDDEN ? (
+                  <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 font-semibold text-amber-700">
+                    운영 숨김 상태
+                  </span>
+                ) : null}
               </div>
 
             <div className="tp-border-soft mt-3 grid gap-3 border-b pb-4 md:mt-4 md:gap-4 md:pb-5 md:grid-cols-[minmax(0,1fr)_260px] md:items-start">
@@ -554,7 +617,7 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
               </div>
               <div className="tp-text-muted text-[13px] md:text-right">
                 <div className="flex items-start justify-between gap-3 md:flex-col md:items-end">
-                  <p className="tp-text-heading min-w-0 break-all font-semibold">
+                  <div className="tp-text-heading min-w-0 break-all font-semibold">
                     {guestPostMeta?.isGuestPost ? (
                       <span>
                         {displayAuthorName}
@@ -563,11 +626,18 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
                           : ""}
                       </span>
                     ) : (
-                      <Link href={`/users/${post.author.id}`} className="tp-text-link">
-                        {displayAuthorName}
-                      </Link>
+                      <UserActionMenu
+                        userId={post.author.id}
+                        displayName={displayAuthorName ?? ""}
+                        currentUserId={viewerId ?? undefined}
+                        isMutedByViewer={resolvedRelationState.isMutedByMe}
+                        align="end"
+                        plainTextClassName="tp-text-heading"
+                        onActionMessage={setRelationMessage}
+                        onMuteStateChange={handleAuthorMuteStateChange}
+                      />
                     )}
-                  </p>
+                  </div>
                   <p className="tp-text-subtle text-[11px]">{formatRelativeDate(createdAt!)}</p>
                 </div>
                 <p className="tp-text-meta tp-text-subtle mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 md:justify-end">
@@ -583,15 +653,8 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
                     {post.neighborhood ? `${post.neighborhood.city} ${post.neighborhood.name}` : "전체"}
                   </p>
                 </details>
-                {canInteract && !isAuthor ? (
-                  <div className="mt-2 md:flex md:justify-end">
-                    <UserRelationControls
-                      key={`${post.authorId}:${resolvedRelationState.isBlockedByMe ? "1" : "0"}:${resolvedRelationState.isMutedByMe ? "1" : "0"}:${resolvedRelationState.hasBlockedMe ? "1" : "0"}`}
-                      targetUserId={post.authorId}
-                      initialState={resolvedRelationState}
-                      compact
-                    />
-                  </div>
+                {relationMessage ? (
+                  <p className="tp-text-subtle mt-2 text-[11px] md:text-right">{relationMessage}</p>
                 ) : null}
               </div>
             </div>
@@ -632,82 +695,99 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
             </section>
 
             <div className="tp-border-soft mt-3 space-y-2 border-b pb-3 sm:mt-4 sm:space-y-3 sm:pb-4">
-              <div className="tp-border-soft rounded-xl border bg-white px-2.5 py-2.5 sm:px-3 sm:py-3">
-                <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2">
-                  <div className="justify-self-start">
-                    {showPostReportControls ? (
-                      <button
-                        type="button"
-                        className="tp-btn-soft tp-btn-xs"
-                        onClick={() => setIsPostReportOpen((current) => !current)}
-                      >
-                        {isPostReportOpen ? "신고 닫기" : "신고"}
-                      </button>
+              {isPostActive ? (
+                <>
+                  <div className="tp-border-soft rounded-xl border bg-white px-2.5 py-2.5 sm:px-3 sm:py-3">
+                    <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2">
+                      <div className="justify-self-start">
+                        {showPostReportControls ? (
+                          <button
+                            type="button"
+                            className="tp-btn-soft tp-btn-xs"
+                            onClick={() => setIsPostReportOpen((current) => !current)}
+                          >
+                            {isPostReportOpen ? "신고 닫기" : "신고"}
+                          </button>
+                        ) : null}
+                      </div>
+                      <div className="flex justify-center">
+                        <PostReactionControls
+                          key={`${post.id}:${canInteract ? "viewer" : "guest"}:${canInteractWithPostOwner ? "interactive" : "blocked"}`}
+                          postId={post.id}
+                          likeCount={resolvedLikeCount}
+                          dislikeCount={resolvedDislikeCount}
+                          currentReaction={canInteract ? undefined : null}
+                          canReact={canInteract && canInteractWithPostOwner}
+                          loginHref={loginHref}
+                          onStateChange={handleReactionStateChange}
+                        />
+                      </div>
+                      <div className="flex items-center justify-self-end gap-2">
+                        <PostBookmarkButton
+                          key={`${post.id}:${canInteract ? "viewer" : "guest"}`}
+                          postId={post.id}
+                          currentBookmarked={Boolean(post.isBookmarked)}
+                          canBookmark={canInteract && canInteractWithPostOwner}
+                          loginHref={loginHref}
+                          compact
+                        />
+                        <PostShareControls url={postUrl!} compact />
+                      </div>
+                    </div>
+                    {showPostReportControls && isPostReportOpen ? (
+                      <div className="tp-border-soft mt-2 rounded-lg border bg-white p-3">
+                        <PostReportForm targetId={post.id} />
+                      </div>
                     ) : null}
                   </div>
-                  <div className="flex justify-center">
-                    <PostReactionControls
-                      key={`${post.id}:${canInteract ? "viewer" : "guest"}:${canInteractWithPostOwner ? "interactive" : "blocked"}`}
-                      postId={post.id}
-                      likeCount={resolvedLikeCount}
-                      dislikeCount={resolvedDislikeCount}
-                      currentReaction={canInteract ? undefined : null}
-                      canReact={canInteract && canInteractWithPostOwner}
-                      loginHref={loginHref}
-                      onStateChange={handleReactionStateChange}
-                    />
-                  </div>
-                  <div className="flex items-center justify-self-end gap-2">
-                    <PostBookmarkButton
-                      key={`${post.id}:${canInteract ? "viewer" : "guest"}`}
-                      postId={post.id}
-                      currentBookmarked={Boolean(post.isBookmarked)}
-                      canBookmark={canInteract && canInteractWithPostOwner}
-                      loginHref={loginHref}
-                      compact
-                    />
-                    <PostShareControls url={postUrl!} compact />
-                  </div>
-                </div>
-                {showPostReportControls && isPostReportOpen ? (
-                  <div className="tp-border-soft mt-2 rounded-lg border bg-white p-3">
-                    <PostReportForm targetId={post.id} />
-                  </div>
-                ) : null}
-              </div>
-              {isAuthor ? (
-                <>
-                  <div className="hidden flex-wrap items-center justify-end gap-2 sm:flex">
-                    <Link
-                      href={`/posts/${post.id}/edit`}
-                      className={POST_DETAIL_ACTION_BUTTON_CLASS_NAME}
-                    >
-                      수정
-                    </Link>
-                    <PostDetailActions postId={post.id} />
-                  </div>
-                  <details className="sm:hidden">
-                    <summary className={POST_DETAIL_ACTION_BUTTON_CLASS_NAME}>
-                      글 관리
-                    </summary>
-                    <div className="tp-border-soft tp-surface-soft mt-2 flex flex-wrap items-center gap-2 rounded-xl border p-2">
-                      <Link
-                        href={`/posts/${post.id}/edit`}
-                        className={POST_DETAIL_ACTION_BUTTON_CLASS_NAME}
-                      >
-                        수정
-                      </Link>
-                      <PostDetailActions postId={post.id} />
-                    </div>
-                  </details>
+                  {isAuthor ? (
+                    <>
+                      <div className="hidden flex-wrap items-center justify-end gap-2 sm:flex">
+                        <Link
+                          href={`/posts/${post.id}/edit`}
+                          className={POST_DETAIL_ACTION_BUTTON_CLASS_NAME}
+                        >
+                          수정
+                        </Link>
+                        <PostDetailActions postId={post.id} />
+                      </div>
+                      <details className="sm:hidden">
+                        <summary className={POST_DETAIL_ACTION_BUTTON_CLASS_NAME}>
+                          글 관리
+                        </summary>
+                        <div className="tp-border-soft tp-surface-soft mt-2 flex flex-wrap items-center gap-2 rounded-xl border p-2">
+                          <Link
+                            href={`/posts/${post.id}/edit`}
+                            className={POST_DETAIL_ACTION_BUTTON_CLASS_NAME}
+                          >
+                            수정
+                          </Link>
+                          <PostDetailActions postId={post.id} />
+                        </div>
+                      </details>
+                    </>
+                  ) : null}
+                  {!canInteract && guestPostMeta!.isGuestPost ? (
+                    <GuestPostDetailActions postId={post.id} />
+                  ) : null}
                 </>
-              ) : null}
-              {!canInteract && guestPostMeta!.isGuestPost ? (
-                <GuestPostDetailActions postId={post.id} />
+              ) : (
+                <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-3 text-xs text-amber-800">
+                  이 게시글은 현재 숨김 상태입니다. 관리자 검토용으로만 열람되며, 반응/북마크/신고/댓글
+                  작성은 비활성화됩니다.
+                </div>
+              )}
+              {canModeratePost ? (
+                <PostModerationControls
+                  postId={post.id}
+                  postTitle={post.title}
+                  currentStatus={post.status}
+                  onStatusChange={handlePostStatusChange}
+                />
               ) : null}
             </div>
 
-            {canInteract && !isAuthor && !canInteractWithPostOwner ? (
+            {isPostActive && canInteract && !isAuthor && !canInteractWithPostOwner ? (
               <div className="mt-4 border border-rose-300 bg-rose-50 px-3 py-2 text-xs text-rose-700">
                 차단 관계에서는 {canReportPost ? "댓글/반응/신고" : "댓글/반응"} 기능을 사용할 수 없습니다.
               </div>
