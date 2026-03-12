@@ -5,7 +5,7 @@ import { prisma } from "../src/lib/prisma";
 import { createPost } from "../src/server/services/post.service";
 import {
   ensureCredentialUser,
-  loginWithCredentials,
+  loginWithCredentialsApi,
 } from "./support/auth-helpers";
 
 test.describe("post comment auth sync", () => {
@@ -47,7 +47,7 @@ test.describe("post comment auth sync", () => {
     const commentBody = `Playwright comment auth sync ${runId}`;
 
     try {
-      await loginWithCredentials(primaryPage, {
+      await loginWithCredentialsApi(primaryPage, {
         email,
         next: "/feed",
       });
@@ -57,7 +57,14 @@ test.describe("post comment auth sync", () => {
       ).toBeVisible({
         timeout: 10_000,
       });
-      await primaryPage.goto(`/posts/${post.id}`);
+      await Promise.allSettled([
+        primaryPage.goto(`/posts/${post.id}`, {
+          waitUntil: "domcontentloaded",
+        }),
+        primaryPage.waitForURL(new RegExp(`/posts/${post.id}$`), {
+          timeout: 10_000,
+        }),
+      ]);
       await expect(primaryPage).toHaveURL(new RegExp(`/posts/${post.id}$`));
       await expect(primaryPage.getByTestId("post-comment-root-input")).toBeVisible();
       await expect(primaryPage.getByTestId("post-comment-guest-name")).toHaveCount(0);
@@ -78,7 +85,7 @@ test.describe("post comment auth sync", () => {
       });
       await expect(primaryPage.getByTestId("post-comment-guest-password")).toBeVisible();
 
-      await loginWithCredentials(secondaryPage, {
+      await loginWithCredentialsApi(secondaryPage, {
         email,
         next: "/feed",
       });

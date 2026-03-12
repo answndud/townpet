@@ -28,19 +28,18 @@
   - `pnpm -C app typecheck` 통과
   - `git diff --check` 통과
 
-### 2026-03-12: Cycle 353 진행 중 (로그인 세션/댓글 auth sync 브라우저 검증 보강)
+### 2026-03-12: Cycle 353 완료 (로그인 세션/댓글 auth sync 브라우저 검증 보강)
 - 완료 내용
   - `app/e2e/support/auth-helpers.ts`의 credentials login helper가 로그인 성공 시 세션 쿠키 존재를 확인하고 최종 페이지를 다시 로드하도록 보강했고, `loginWithCredentialsApi()`를 추가해 UI/HMR에 덜 흔들리는 credentials 세션 주입 경로를 마련했다.
   - `app/src/components/posts/post-comment-thread.tsx`에 root 댓글 입력/전송, guest 닉네임/비밀번호, 로그인 프롬프트를 식별할 수 있는 test id를 정리했고, `app/e2e/post-comment-auth-sync.spec.ts`를 추가해 탭 간 로그인/로그아웃 후 댓글 composer가 guest/auth 상태로 전환되는 시나리오를 작성했다.
   - `app/e2e/auth-session-hardening.spec.ts`는 고정 이메일 재사용을 제거하고 각 테스트가 고유 계정으로 돌아가도록 정리했으며, `app/src/components/auth/login-form.tsx`는 credentials 로그인 성공 후 viewer shell sync와 브라우저 location 이동을 즉시 수행하도록 보강했다.
+  - 후속으로 `app/e2e/post-comment-auth-sync.spec.ts`도 `loginWithCredentialsApi()`를 사용하도록 바꿨고, `app/e2e/support/auth-helpers.ts`가 API 세션 주입 뒤 `townpet:viewer-shell-sync` local event + storage sync를 직접 발생시키도록 보강해 cross-tab 로그인 복귀가 실제 브라우저에서도 재현되게 맞췄다.
 - 검증 결과
   - `pnpm -C app lint e2e/auth-session-hardening.spec.ts e2e/support/auth-helpers.ts e2e/post-comment-auth-sync.spec.ts src/app/api/health/route.ts src/app/api/health/route.test.ts src/components/auth/login-form.tsx src/components/posts/post-comment-thread.tsx src/server/cache/query-cache.ts src/server/cache/query-cache.test.ts` 통과
   - `pnpm -C app test -- src/server/cache/query-cache.test.ts src/app/api/health/route.test.ts` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `155 files / 761 tests` 통과
+  - `pnpm -C app test:e2e -- e2e/auth-session-hardening.spec.ts e2e/post-comment-auth-sync.spec.ts --project=chromium` 통과 (`3 passed`)
   - `pnpm -C app typecheck` 통과
-- 블로커
-  - `pnpm -C app test:e2e -- e2e/auth-session-hardening.spec.ts --project=chromium`의 첫 시나리오는 UI login 대신 API 세션 주입 helper를 쓰도록 바꿨지만, 이 세션의 Playwright Chromium launch permission 오류가 섞여 브라우저 기준 green 상태를 다시 확정하지 못했다.
-  - `pnpm -C app test:e2e -- e2e/post-comment-auth-sync.spec.ts --project=chromium`는 한 차례 통과했지만, 후속 재실행에서는 30초 timeout 또는 이 세션의 Playwright Chromium launch permission 오류(`bootstrap_check_in ... Permission denied (1100)`)가 섞여 브라우저 기준 green 상태를 확정하지 못했다.
-  - 따라서 이번 사이클은 코드 변경은 반영됐지만, Playwright 실행 환경이 안정화될 때까지 `blocked` 상태로 유지한다.
+  - `git diff --check` 통과
 
 ### 2026-03-12: Cycle 352 완료 (query cache bypass 상태 운영 가시화)
 - 완료 내용
