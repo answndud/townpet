@@ -155,6 +155,44 @@ describe("POST /api/auth/register contract", () => {
     });
   });
 
+  it("returns a dedicated error for reserved operator emails", async () => {
+    mockRegisterUser.mockRejectedValue(
+      new ServiceError(
+        "운영/대표 이메일은 가입에 사용할 수 없습니다. 개인 이메일을 사용해 주세요.",
+        "RESERVED_LOGIN_IDENTIFIER",
+        400,
+      ),
+    );
+    const request = new Request("http://localhost/api/auth/register", {
+      method: "POST",
+      body: JSON.stringify({
+        email: "admin@gmail.com",
+        password: "Townpet!2026",
+        nickname: "townpet_user",
+      }),
+      headers: { "content-type": "application/json" },
+    }) as NextRequest;
+
+    const response = await POST(request);
+    const payload = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(payload).toMatchObject({
+      ok: false,
+      error: {
+        code: "RESERVED_LOGIN_IDENTIFIER",
+        message: "운영/대표 이메일은 가입에 사용할 수 없습니다. 개인 이메일을 사용해 주세요.",
+      },
+    });
+    expect(mockRecordAuthAuditEvent).toHaveBeenCalledWith({
+      action: "REGISTER_REJECTED",
+      email: "admin@gmail.com",
+      ipAddress: "127.0.0.1",
+      userAgent: null,
+      reasonCode: "RESERVED_LOGIN_IDENTIFIER",
+    });
+  });
+
   it("normalizes duplicate nickname signals", async () => {
     mockRegisterUser.mockRejectedValue(
       new ServiceError("taken", "NICKNAME_TAKEN", 409),

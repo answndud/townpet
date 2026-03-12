@@ -37,4 +37,24 @@ describe("buildLoginRateLimitRules", () => {
     expect(a[1]?.key).toBe(b[1]?.key);
     expect(a[2]?.key).toBe(b[2]?.key);
   });
+
+  it("tightens account-scoped limits for reserved login identifiers", () => {
+    const rules = buildLoginRateLimitRules({
+      email: "admin@gmail.com",
+      clientIp: "203.0.113.20",
+    });
+
+    expect(rules[0]).toMatchObject({
+      key: "auth:login:ip:203.0.113.20",
+      limit: 10,
+    });
+    expect(rules[1]).toMatchObject({
+      limit: 3,
+      windowMs: 15 * 60_000,
+    });
+    expect(rules[2]).toMatchObject({
+      limit: 12,
+      windowMs: 24 * 60 * 60_000,
+    });
+  });
 });

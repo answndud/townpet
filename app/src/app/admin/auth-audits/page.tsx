@@ -31,6 +31,7 @@ const reasonLabels: Record<string, string> = {
   RATE_LIMITED: "요청 제한",
   EMAIL_TAKEN: "이메일 중복",
   NICKNAME_TAKEN: "닉네임 중복",
+  RESERVED_LOGIN_IDENTIFIER: "대표 이메일 제한",
   REGISTER_RATE_LIMIT_IP: "가입 IP 제한",
   REGISTER_RATE_LIMIT_FINGERPRINT: "가입 디바이스 제한",
   REGISTER_RATE_LIMIT_EMAIL_IP: "가입 이메일+IP 제한",

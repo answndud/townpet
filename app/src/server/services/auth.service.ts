@@ -2,6 +2,10 @@ import { randomBytes } from "crypto";
 import { Prisma } from "@prisma/client";
 
 import { normalizeAuthEmail } from "@/lib/auth-email";
+import {
+  RESERVED_AUTH_EMAIL_MESSAGE,
+  isReservedAuthEmail,
+} from "@/lib/auth-identifier-policy";
 import { prisma } from "@/lib/prisma";
 import {
   emailVerificationConfirmSchema,
@@ -28,6 +32,14 @@ export async function registerUser({ input }: RegisterUserParams) {
   }
 
   const email = normalizeAuthEmail(parsed.data.email);
+  if (isReservedAuthEmail(email)) {
+    throw new ServiceError(
+      RESERVED_AUTH_EMAIL_MESSAGE,
+      "RESERVED_LOGIN_IDENTIFIER",
+      400,
+    );
+  }
+
   const existing = await findUserByEmailInsensitive(email, { id: true });
 
   if (existing) {
