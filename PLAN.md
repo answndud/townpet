@@ -26,6 +26,11 @@
 
 ## Active Plan
 
+### Cycle 357: 어드민 헤더 액션 버튼 문법 재통일 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 어드민 계정 헤더의 `신고 큐`, `인증 로그`, `권한 정책` 버튼이 별도 warm-tone 스타일이 아니라 기존 `게시판/관심 동물/내 프로필`과 같은 group/nav-link 문법을 사용하도록 재정리 | Codex | P2 | `done` | 어드민 헤더 버튼은 `APP_SHELL_DESKTOP_GROUP_CLASS_NAME`와 `APP_SHELL_NAV_LINK_CLASS_NAME`을 재사용하고, 별도 admin 전용 클래스는 제거되며, 관련 class 회귀 테스트와 lint/test/typecheck/diff check 검증이 `PROGRESS.md`에 기록된다 | `PLAN.md`, `PROGRESS.md`, `app/src/components/navigation/app-shell-header.tsx`, `app/src/components/navigation/app-shell-header-class.ts`, `app/src/components/navigation/app-shell-header-class.test.ts` |
+
 ### Cycle 356: 어드민 헤더 액션 버튼 시각 분리 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
