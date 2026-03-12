@@ -32,6 +32,7 @@
     "db:seed:users": "tsx scripts/seed-users.ts",
     "db:seed:search-cases": "tsx scripts/seed-search-cases.ts",
     "db:seed:passwords": "tsx scripts/seed-passwords.ts",
+    "db:provision:test-users": "tsx scripts/provision-test-users.ts",
     "db:backfill:guest-authors": "tsx scripts/backfill-guest-authors.ts",
     "db:verify:guest-authors": "tsx scripts/verify-guest-author-backfill.ts",
     "db:check:guest-legacy-cleanup": "tsx scripts/check-guest-legacy-cleanup-readiness.ts",
