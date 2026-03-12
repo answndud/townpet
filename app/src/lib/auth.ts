@@ -7,6 +7,7 @@ import type { Adapter, AdapterUser } from "next-auth/adapters";
 import type { Provider } from "next-auth/providers";
 
 import { normalizeAuthEmail } from "@/lib/auth-email";
+import { isReservedAuthEmail } from "@/lib/auth-identifier-policy";
 import { assertRuntimeEnv, isSocialDevLoginEnabled, runtimeEnv } from "@/lib/env";
 import { prisma } from "@/lib/prisma";
 import { normalizeSocialAuthProvider } from "@/lib/social-auth";
@@ -79,7 +80,12 @@ type AdapterUpdateUser = Partial<AdapterUser> & Pick<AdapterUser, "id">;
 const adapter: Adapter = {
   ...baseAdapter,
   async createUser(user: AdapterUser) {
-    return baseAdapter.createUser!(stripUserName(normalizeAdapterUserEmail(user)));
+    const normalizedUser = stripUserName(normalizeAdapterUserEmail(user));
+    if (isReservedAuthEmail(normalizedUser.email)) {
+      throw new Error("RESERVED_LOGIN_IDENTIFIER");
+    }
+
+    return baseAdapter.createUser!(normalizedUser);
   },
   async updateUser(user: AdapterUpdateUser) {
     return baseAdapter.updateUser!(stripUserName(normalizeAdapterUserEmail(user)));
@@ -167,6 +173,10 @@ if (socialDevLoginEnabled) {
             image: existingUser.image,
             sessionVersion: existingUser.sessionVersion,
           };
+        }
+
+        if (isReservedAuthEmail(email)) {
+          return null;
         }
 
         const createdUser = await prisma.user.create({

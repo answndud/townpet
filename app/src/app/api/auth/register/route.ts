@@ -33,6 +33,14 @@ function toPublicRegisterError(error: ServiceError) {
     } as const;
   }
 
+  if (error.code === "RESERVED_LOGIN_IDENTIFIER") {
+    return {
+      status: 400,
+      code: error.code,
+      message: error.message,
+    } as const;
+  }
+
   return {
     status: error.status,
     code: error.code,
@@ -144,7 +152,11 @@ export async function POST(request: NextRequest) {
     return jsonOk(user, { status: 201 });
   } catch (error) {
     if (error instanceof ServiceError) {
-      if (error.code === "EMAIL_TAKEN" || error.code === "NICKNAME_TAKEN") {
+      if (
+        error.code === "EMAIL_TAKEN" ||
+        error.code === "NICKNAME_TAKEN" ||
+        error.code === "RESERVED_LOGIN_IDENTIFIER"
+      ) {
         await recordAuthAuditEvent({
           action: "REGISTER_REJECTED",
           email: auditEmail,
