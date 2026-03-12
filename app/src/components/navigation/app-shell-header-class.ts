@@ -59,6 +59,38 @@ export const APP_SHELL_DESKTOP_GROUP_CLASS_NAME = [
   "shadow-[0_8px_18px_rgba(16,40,74,0.06)]",
 ].join(" ");
 
+export const APP_SHELL_DESKTOP_ADMIN_GROUP_CLASS_NAME = [
+  "items-center",
+  "gap-1",
+  "rounded-xl",
+  "border",
+  "border-[#f0d7c4]",
+  "bg-[#fff7ef]",
+  "px-1.5",
+  "py-1",
+  "shadow-[0_8px_18px_rgba(92,52,22,0.08)]",
+].join(" ");
+
+export const APP_SHELL_ADMIN_LINK_CLASS_NAME = [
+  "inline-flex",
+  "h-8",
+  "items-center",
+  "justify-center",
+  "rounded-lg",
+  "border",
+  "border-transparent",
+  "bg-white/88",
+  "px-2.5",
+  "text-[12px]",
+  "font-semibold",
+  "leading-none",
+  "text-[#9a4c1f]",
+  "transition",
+  "hover:border-[#f0ccb0]",
+  "hover:bg-[#fffdf9]",
+  "hover:text-[#7c3f1a]",
+].join(" ");
+
 export const APP_SHELL_MOBILE_QUICK_LINK_CLASS_NAME = [
   "inline-flex",
   "h-7",
