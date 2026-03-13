@@ -20,6 +20,7 @@ import {
 } from "@/lib/feed-personalization";
 import { toFeedAudienceSourceValue } from "@/lib/feed-personalization-metrics";
 import { FEED_PAGE_SIZE, shouldStripFeedPageParam } from "@/lib/feed";
+import { sanitizePublicGuestIdentity } from "@/lib/public-guest-identity";
 import { buildPaginationWindow } from "@/lib/pagination";
 import {
   getDedicatedBoardPathByPostType,
@@ -660,7 +661,22 @@ export default async function Home({ searchParams }: HomePageProps) {
       : undefined;
   const showPersonalizedToggle =
     isAuthenticated && mode === "ALL" && effectiveScope === PostScope.GLOBAL;
-  const initialFeedItems: FeedPostItem[] = items.map((post) => ({
+  const initialFeedItems: FeedPostItem[] = items.map((rawPost) => {
+    const post = sanitizePublicGuestIdentity(rawPost as (typeof items)[number] & {
+      guestDisplayName?: string | null;
+      guestIpDisplay?: string | null;
+      guestIpLabel?: string | null;
+      guestAuthor?: { displayName?: string | null; ipDisplay?: string | null; ipLabel?: string | null } | null;
+    });
+    const petType = (post as {
+      petType?: {
+        id: string;
+        labelKo: string;
+        category: { labelKo: string };
+      } | null;
+    }).petType;
+
+    return {
     id: post.id,
     type: post.type,
     scope: post.scope,
@@ -677,19 +693,8 @@ export default async function Home({ searchParams }: HomePageProps) {
       nickname: post.author.nickname,
       image: post.author.image,
     },
-    guestDisplayName:
-      (post as { guestDisplayName?: string | null }).guestDisplayName ??
-      (post as { guestAuthor?: { displayName?: string | null } | null }).guestAuthor
-        ?.displayName ??
-      null,
-    guestIpDisplay:
-      (post as { guestIpDisplay?: string | null }).guestIpDisplay ??
-      (post as { guestAuthor?: { ipDisplay?: string | null } | null }).guestAuthor?.ipDisplay ??
-      null,
-    guestIpLabel:
-      (post as { guestIpLabel?: string | null }).guestIpLabel ??
-      (post as { guestAuthor?: { ipLabel?: string | null } | null }).guestAuthor?.ipLabel ??
-      null,
+    guestAuthorId: (post as { guestAuthorId?: string | null }).guestAuthorId ?? null,
+    guestDisplayName: (post as { guestDisplayName?: string | null }).guestDisplayName ?? null,
     neighborhood: post.neighborhood
       ? {
           id: post.neighborhood.id,
@@ -698,19 +703,11 @@ export default async function Home({ searchParams }: HomePageProps) {
           district: post.neighborhood.district,
         }
       : null,
-    petType:
-      (post as {
-        petType?: {
-          id: string;
-          labelKo: string;
-          category: { labelKo: string };
-        } | null;
-      }).petType
+    petType: petType
       ? {
-          id: (post as { petType: { id: string } }).petType.id,
-          labelKo: (post as { petType: { labelKo: string } }).petType.labelKo,
-          categoryLabelKo: (post as { petType: { category: { labelKo: string } } }).petType
-            .category.labelKo,
+          id: petType.id,
+          labelKo: petType.labelKo,
+          categoryLabelKo: petType.category.labelKo,
         }
       : null,
     images: post.images.map((image) => ({
@@ -721,7 +718,8 @@ export default async function Home({ searchParams }: HomePageProps) {
       (post as { reactions?: Array<{ type: "LIKE" | "DISLIKE" }> }).reactions?.map(
         (reaction) => ({ type: reaction.type }),
       ) ?? [],
-  }));
+    };
+  });
 
   const makeHref = ({
     nextType,

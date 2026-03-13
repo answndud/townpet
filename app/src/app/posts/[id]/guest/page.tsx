@@ -15,6 +15,7 @@ import { PostShareControls } from "@/components/posts/post-share-controls";
 import { PostCommentSectionClient } from "@/components/posts/post-comment-section-client";
 import { PostViewTracker } from "@/components/posts/post-view-tracker";
 import { getCspNonce } from "@/lib/csp-nonce";
+import { serializeJsonForScriptTag } from "@/lib/json-script";
 import { renderLiteMarkdown } from "@/lib/markdown-lite";
 import {
   buildExcerpt,
@@ -22,6 +23,7 @@ import {
   ensureDate,
 } from "@/lib/post-page-metadata";
 import { getGuestPostMeta } from "@/lib/post-guest-meta";
+import { resolvePublicGuestDisplayName } from "@/lib/public-guest-identity";
 import { formatRelativeDate } from "@/lib/post-presenter";
 import { isReportablePostType } from "@/lib/post-type-groups";
 import { toAbsoluteUrl } from "@/lib/site-url";
@@ -192,8 +194,9 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
   const loginHref = `/login?next=${encodeURIComponent(`/posts/${post.id}`)}`;
   const guestPostMeta = getGuestPostMeta(post);
   const canReportPost = isReportablePostType(post.type);
-  const displayAuthorName = guestPostMeta.guestAuthorName
-    ? guestPostMeta.guestAuthorName
+  const displayAuthorName = guestPostMeta.isGuestPost
+    ? guestPostMeta.guestPublicName ??
+      resolvePublicGuestDisplayName((post as { guestDisplayName?: string | null }).guestDisplayName)
     : resolveUserDisplayName(post.author.nickname);
   const postUrl = toAbsoluteUrl(`/posts/${post.id}`);
   const meta = typeMeta[post.type];
@@ -245,7 +248,7 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
         nonce={cspNonce}
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(structuredData),
+          __html: serializeJsonForScriptTag(structuredData),
         }}
       />
       <main className="mx-auto flex w-full max-w-[1100px] flex-col gap-4 px-4 py-5 sm:gap-5 sm:px-6 sm:py-6 lg:px-8">
@@ -271,12 +274,7 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
                 <div className="flex items-start justify-between gap-3 md:flex-col md:items-end">
                   <p className="font-semibold text-[#1f3f71]">
                     {guestPostMeta.isGuestPost ? (
-                      <span>
-                        {displayAuthorName}
-                        {guestPostMeta.guestIpDisplay
-                          ? ` (${guestPostMeta.guestIpLabel ?? "아이피"} ${guestPostMeta.guestIpDisplay})`
-                          : ""}
-                      </span>
+                      <span>{displayAuthorName}</span>
                     ) : (
                       <Link href={`/users/${post.author.id}`} className="hover:text-[#2f5da4]">
                         {displayAuthorName}

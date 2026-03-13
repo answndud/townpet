@@ -8,6 +8,7 @@ import { useMemo, useState, useTransition } from "react";
 import { KakaoSignInButton } from "@/components/auth/kakao-signin-button";
 import { NaverSignInButton } from "@/components/auth/naver-signin-button";
 import { readPendingOAuthLinkIntent } from "@/lib/oauth-link-intent";
+import { resolveSafeRedirectPath } from "@/lib/redirect-path";
 import { getPublicProfileLoginNoticeMessage } from "@/lib/public-profile";
 import { getOAuthErrorMessage, getSocialAccountNoticeMessage } from "@/lib/social-auth";
 import { emitViewerShellSync } from "@/lib/viewer-shell-sync";
@@ -39,8 +40,11 @@ export function LoginForm({
   const oauthError = searchParams.get("error");
   const notice = searchParams.get("notice");
   const nextPath = searchParams.get("next");
-  const callbackUrl =
-    nextPath && nextPath.startsWith("/") ? nextPath : "/feed";
+  const callbackUrl = resolveSafeRedirectPath(nextPath, "/feed");
+  const pendingReturnPath = resolveSafeRedirectPath(
+    pendingLinkIntent?.returnPath,
+    "/profile",
+  );
 
   const oauthMessage = useMemo(() => {
     return getOAuthErrorMessage(oauthError, {
@@ -194,7 +198,7 @@ export function LoginForm({
           {(oauthError === "OAuthAccountNotLinked" || oauthError === "AccountNotLinked") &&
           pendingLinkIntent?.returnPath ? (
             <Link
-              href={pendingLinkIntent.returnPath}
+              href={pendingReturnPath}
               className="text-xs font-medium text-[#315b9a] underline-offset-2 hover:text-[#1f3f71] hover:underline"
             >
               프로필로 돌아가 계정 연동 확인

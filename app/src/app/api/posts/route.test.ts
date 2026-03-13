@@ -156,6 +156,41 @@ describe("GET /api/posts contract", () => {
     expect(mockGetCurrentUserId).not.toHaveBeenCalled();
   });
 
+  it("strips guest network meta from post list payload", async () => {
+    mockCountPosts.mockResolvedValue(1);
+    mockListPosts.mockResolvedValue({
+      items: [
+        {
+          id: "post-1",
+          guestAuthorId: "guest-author-1",
+          guestDisplayName: null,
+          guestIpDisplay: "203.0.113",
+          guestIpLabel: "아이피",
+          guestAuthor: {
+            id: "guest-author-1",
+            displayName: "비회원",
+            ipDisplay: "203.0.113",
+            ipLabel: "아이피",
+          },
+        },
+      ],
+      nextCursor: null,
+    } as never);
+    const request = new Request("http://localhost/api/posts") as NextRequest;
+
+    const response = await GET(request);
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(payload.data.items[0]).toMatchObject({
+      guestAuthorId: "guest-author-1",
+      guestDisplayName: "비회원",
+    });
+    expect(payload.data.items[0]).not.toHaveProperty("guestIpDisplay");
+    expect(payload.data.items[0]).not.toHaveProperty("guestIpLabel");
+    expect(payload.data.items[0]).not.toHaveProperty("guestAuthor");
+  });
+
   it("returns 500 and monitors unexpected errors", async () => {
     const request = new Request("http://localhost/api/posts") as NextRequest;
     mockEnforceRateLimit.mockRejectedValue(new Error("boom"));

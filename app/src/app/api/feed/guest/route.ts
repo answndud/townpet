@@ -3,6 +3,7 @@ import { PostScope, PostType, Prisma } from "@prisma/client";
 import { z } from "zod";
 
 import { FEED_PAGE_SIZE } from "@/lib/feed";
+import { sanitizePublicGuestIdentity } from "@/lib/public-guest-identity";
 import { isCommonBoardPostType } from "@/lib/community-board";
 import { normalizeFeedPetTypeIds } from "@/lib/feed-pet-type-filter";
 import { isLoginRequiredPostType } from "@/lib/post-access";
@@ -88,7 +89,10 @@ function isDatabaseUnavailableError(error: unknown) {
 }
 
 function serializeFeedItems(items: Array<Record<string, unknown>>) {
-  return items.map((post) => ({
+  return items.map((rawPost) => {
+    const post = sanitizePublicGuestIdentity(rawPost);
+
+    return {
     id: post.id,
     type: post.type,
     scope: post.scope,
@@ -108,18 +112,8 @@ function serializeFeedItems(items: Array<Record<string, unknown>>) {
       nickname: ((post.author as { nickname?: string | null }).nickname ?? null) as string | null,
       image: ((post.author as { image?: string | null }).image ?? null) as string | null,
     },
-    guestDisplayName:
-      (post as { guestDisplayName?: string | null }).guestDisplayName ??
-      (post as { guestAuthor?: { displayName?: string | null } | null }).guestAuthor?.displayName ??
-      null,
-    guestIpDisplay:
-      (post as { guestIpDisplay?: string | null }).guestIpDisplay ??
-      (post as { guestAuthor?: { ipDisplay?: string | null } | null }).guestAuthor?.ipDisplay ??
-      null,
-    guestIpLabel:
-      (post as { guestIpLabel?: string | null }).guestIpLabel ??
-      (post as { guestAuthor?: { ipLabel?: string | null } | null }).guestAuthor?.ipLabel ??
-      null,
+    guestAuthorId: ((post as { guestAuthorId?: string | null }).guestAuthorId ?? null) as string | null,
+    guestDisplayName: ((post as { guestDisplayName?: string | null }).guestDisplayName ?? null) as string | null,
     neighborhood: post.neighborhood
       ? {
           id: (post.neighborhood as { id: string }).id,
@@ -151,7 +145,8 @@ function serializeFeedItems(items: Array<Record<string, unknown>>) {
       ((post.reactions as Array<{ type: "LIKE" | "DISLIKE" }> | undefined) ?? []).map(
         (reaction) => ({ type: reaction.type }),
       ),
-  }));
+    };
+  });
 }
 
 export async function GET(request: NextRequest) {

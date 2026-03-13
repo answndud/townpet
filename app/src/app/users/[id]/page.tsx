@@ -8,6 +8,7 @@ import { PublicProfileSummaryStats } from "@/components/user/public-profile-summ
 import { UserRelationControls } from "@/components/user/user-relation-controls";
 import { auth } from "@/lib/auth";
 import { getCspNonce } from "@/lib/csp-nonce";
+import { serializeJsonForScriptTag } from "@/lib/json-script";
 import { buildPaginationWindow, parsePositivePage } from "@/lib/pagination";
 import {
   buildPublicProfileTabHref,
@@ -208,7 +209,7 @@ export default async function PublicUserProfilePage({
       <script
         nonce={cspNonce}
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(profileJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonForScriptTag(profileJsonLd) }}
       />
       <RouteRefreshOnReturn refreshOnFocus={false} />
       <main className="mx-auto flex w-full max-w-[1320px] flex-col gap-5 px-4 py-6 sm:px-6 lg:px-10">

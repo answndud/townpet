@@ -100,6 +100,44 @@ describe("/api/posts/[id] contract", () => {
     });
   });
 
+  it("strips guest network meta from raw post GET payload", async () => {
+    mockGetPostById.mockResolvedValue({
+      id: "post-1",
+      status: "ACTIVE",
+      scope: "GLOBAL",
+      type: "FREE_POST",
+      title: "비회원 글",
+      content: "본문",
+      guestAuthorId: "guest-author-1",
+      guestDisplayName: null,
+      guestIpDisplay: "203.0.113",
+      guestIpLabel: "아이피",
+      guestAuthor: {
+        id: "guest-author-1",
+        displayName: "비회원",
+        ipDisplay: "203.0.113",
+        ipLabel: "아이피",
+      },
+      author: { id: "user-1", nickname: "writer" },
+      neighborhood: null,
+      images: [],
+      viewCount: 0,
+    } as never);
+    const request = new Request("http://localhost/api/posts/post-1") as NextRequest;
+
+    const response = await GET(request, { params: Promise.resolve({ id: "post-1" }) });
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(payload.data).toMatchObject({
+      guestAuthorId: "guest-author-1",
+      guestDisplayName: "비회원",
+    });
+    expect(payload.data).not.toHaveProperty("guestIpDisplay");
+    expect(payload.data).not.toHaveProperty("guestIpLabel");
+    expect(payload.data).not.toHaveProperty("guestAuthor");
+  });
+
   it("returns GUEST_PASSWORD_REQUIRED on guest patch without password", async () => {
     const request = new Request("http://localhost/api/posts/post-1", {
       method: "PATCH",

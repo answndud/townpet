@@ -254,4 +254,69 @@ describe("comment queries", () => {
     expect(result.bestComments[0]?.author.nickname).toBe("뮤트한 사용자");
     expect(result.comments[1]?.author.nickname).toBe("뮤트한 사용자");
   });
+
+  it("does not select author email for comment list payloads", async () => {
+    mockPrisma.comment.count.mockResolvedValue(0 as never);
+    mockPrisma.comment.findMany.mockResolvedValue([] as never);
+
+    await listComments("post-1", "viewer-1");
+
+    expect(mockPrisma.comment.findMany).toHaveBeenCalled();
+    for (const [args] of mockPrisma.comment.findMany.mock.calls) {
+      expect(args.select.author.select).toEqual({
+        id: true,
+        nickname: true,
+      });
+      expect(args.select.author.select).not.toHaveProperty("email");
+      if (args.select.guestAuthor) {
+        expect(args.select.guestAuthor.select).toEqual({
+          id: true,
+          displayName: true,
+        });
+        expect(args.select.guestAuthor.select).not.toHaveProperty("ipDisplay");
+        expect(args.select.guestAuthor.select).not.toHaveProperty("ipLabel");
+      }
+    }
+  });
+
+  it("applies hidden-author filtering for authenticated viewer even when comment payload stays guest-mode", async () => {
+    const mutedRoot = buildComment("muted-root", {
+      authorId: "muted-author",
+      content: "가려져야 하는 원문",
+    });
+
+    mockListHiddenAuthorGroupsForViewer.mockResolvedValue({
+      blockedAuthorIds: ["blocked-author"],
+      mutedAuthorIds: ["muted-author"],
+      hiddenAuthorIds: ["blocked-author", "muted-author"],
+    });
+    mockPrisma.comment.count.mockImplementation(async ({ where }) => {
+      expect(where.authorId).toEqual({ notIn: ["blocked-author"] });
+      return 1 as never;
+    });
+    mockPrisma.comment.findMany.mockImplementation(async ({ where, select }) => {
+      expect(select.reactions).toBeUndefined();
+      if (where.parentId === null) {
+        expect(where.authorId).toEqual({ notIn: ["blocked-author"] });
+        return [mutedRoot] as never;
+      }
+      return [] as never;
+    });
+
+    const result = await listComments("post-1", undefined, {
+      hiddenAuthorViewerId: "viewer-1",
+    });
+
+    expect(mockListHiddenAuthorGroupsForViewer).toHaveBeenCalledWith("viewer-1");
+    expect(result.comments).toHaveLength(1);
+    expect(result.comments[0]).toMatchObject({
+      id: "muted-root",
+      content: "뮤트한 사용자 댓글입니다.",
+      isMutedByViewer: true,
+      author: {
+        nickname: "뮤트한 사용자",
+      },
+      reactions: [],
+    });
+  });
 });

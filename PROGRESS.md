@@ -1,6 +1,6 @@
 # PROGRESS.md
 
-기준일: 2026-03-10
+기준일: 2026-03-13
 
 ## 진행 현황 요약
 - Cycle 1~20: 완료
@@ -17,6 +17,82 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-13: Cycle 366 완료 (비회원 public identifier 프라이버시 축소)
+- 완료 내용
+  - `app/src/lib/public-guest-identity.ts`를 추가해 public payload에서 `guestIpDisplay/guestIpLabel`와 nested `guestAuthor.ipDisplay/ipLabel`를 제거하고, 필요한 경우 top-level `guestDisplayName`만 남기도록 공용 sanitizer를 만들었다.
+  - 공개 API인 `app/src/app/api/feed/guest/route.ts`, `app/src/app/api/posts/route.ts`, `app/src/app/api/posts/[id]/route.ts`, `app/src/app/api/posts/[id]/detail/route.ts`, `app/src/app/api/posts/[id]/comments/route.ts`는 모두 이 sanitizer를 거쳐 네트워크 유래 guest identifier를 더 이상 응답에 실어 나르지 않는다.
+  - 댓글 GET 응답은 guestAuthor nested object까지 제거하고 `guestDisplayName`/`isGuestAuthor`만 남겨, 공개 payload가 client contract와 동일한 최소 shape를 갖도록 정리했다.
+  - `app/src/components/posts/post-detail-client.tsx`, `app/src/app/posts/[id]/guest/page.tsx`, `app/src/components/posts/post-comment-thread.tsx`, `app/src/components/posts/feed-infinite-list.tsx`, `app/src/app/feed/page.tsx`, `app/src/app/lounges/breeds/[breedCode]/page.tsx`, `app/src/app/search/page.tsx`는 더 이상 IP suffix를 렌더링하지 않고 `guestDisplayName` 또는 일반 `익명` 표기만 사용한다.
+  - `app/src/server/queries/comment.queries.ts`, `app/src/server/queries/post.queries.ts`도 guest relation select에서 `ipDisplay/ipLabel`을 읽지 않도록 줄여 defense-in-depth를 맞췄다.
+  - helper/route 회귀로 `app/src/lib/public-guest-identity.test.ts`, `app/src/lib/post-guest-meta.test.ts`, `app/src/app/api/feed/guest/route.test.ts`, `app/src/app/api/posts/route.test.ts`, `app/src/app/api/posts/[id]/route.test.ts`, `app/src/app/api/posts/[id]/detail/route.test.ts`, `app/src/app/api/posts/[id]/comments/route.test.ts`, `app/src/server/queries/comment.queries.test.ts`를 보강했다.
+- 검증 결과
+  - `pnpm -C app lint src/lib/public-guest-identity.ts src/lib/public-guest-identity.test.ts src/lib/post-guest-meta.ts src/lib/post-guest-meta.test.ts src/server/queries/comment.queries.ts src/server/queries/comment.queries.test.ts src/server/queries/post.queries.ts src/app/api/feed/guest/route.ts src/app/api/feed/guest/route.test.ts src/app/api/posts/route.ts src/app/api/posts/route.test.ts 'src/app/api/posts/[id]/detail/route.ts' 'src/app/api/posts/[id]/detail/route.test.ts' 'src/app/api/posts/[id]/route.ts' 'src/app/api/posts/[id]/route.test.ts' 'src/app/api/posts/[id]/comments/route.ts' 'src/app/api/posts/[id]/comments/route.test.ts' src/components/posts/post-comment-load-state.ts src/components/posts/post-comment-thread.tsx src/components/posts/feed-infinite-list.tsx src/components/posts/post-detail-client.tsx src/app/feed/page.tsx 'src/app/posts/[id]/guest/page.tsx' 'src/app/lounges/breeds/[breedCode]/page.tsx' src/app/search/page.tsx` 통과
+  - `pnpm -C app test -- src/lib/public-guest-identity.test.ts src/lib/post-guest-meta.test.ts src/server/queries/comment.queries.test.ts 'src/app/api/feed/guest/route.test.ts' 'src/app/api/posts/route.test.ts' 'src/app/api/posts/[id]/detail/route.test.ts' 'src/app/api/posts/[id]/route.test.ts' 'src/app/api/posts/[id]/comments/route.test.ts'` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `171 files / 827 tests` 통과
+  - `pnpm -C app typecheck` 통과
+  - `git diff --check` 통과
+
+### 2026-03-13: Cycle 367 완료 (guest-view override 권한 우회 차단)
+- 완료 내용
+  - `app/src/app/api/posts/[id]/comments/route.ts`의 GET은 더 이상 `x-guest-mode`만 보고 hidden-author filtering 기준을 버리지 않는다.
+  - 로그인 사용자가 `x-guest-mode: 1`로 guest readability를 요청해도, route는 실제 세션 사용자 ID를 별도로 읽어 `hiddenAuthorViewerId`로 전달한다.
+  - 이 구조로 guest page/readability 계약은 유지하면서도 block/mute 관계에 있는 작성자의 댓글이 다시 보이는 우회 경로를 차단했다.
+  - `app/src/server/queries/comment.queries.ts`는 `hiddenAuthorViewerId` 옵션을 받아 payload viewer와 hidden-author filtering viewer를 분리한다.
+  - guest-mode payload에서는 여전히 reactions 같은 auth 전용 payload를 싣지 않지만, 차단 작성자 제외와 뮤트 placeholder 적용은 로그인 viewer 기준으로 유지된다.
+  - `app/src/app/api/posts/[id]/comments/route.test.ts`에는 guest-mode GET이 guest readability는 유지하면서도 hidden-author filtering viewer를 전달하는 회귀를 추가했고, `app/src/server/queries/comment.queries.test.ts`에는 guest-mode payload에서도 blocked/muted author filtering이 유지되고 reactions는 선택하지 않는 계약을 추가했다.
+- 검증 결과
+  - `pnpm -C app lint 'src/app/api/posts/[id]/comments/route.ts' 'src/app/api/posts/[id]/comments/route.test.ts' src/server/queries/comment.queries.ts src/server/queries/comment.queries.test.ts` 통과
+  - `pnpm -C app test -- 'src/app/api/posts/[id]/comments/route.test.ts' src/server/queries/comment.queries.test.ts` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `170 files / 821 tests` 통과
+  - `pnpm -C app typecheck` 통과
+  - `git diff --check` 통과
+
+### 2026-03-13: Cycle 368 완료 (로그인 redirect callback strict validation)
+- 완료 내용
+  - `app/src/lib/redirect-path.ts`에 `resolveSafeRedirectPath()`를 추가해 로그인 후 이동 경로가 앱 내부 single-slash relative path일 때만 유지되도록 공용 sanitizer를 만들었다.
+  - 이 helper는 빈값, 외부 absolute URL, `//evil.example` 형태의 protocol-relative URL, backslash/mixed slash 경로, control character를 모두 fallback으로 강등한다.
+  - `app/src/components/auth/login-form.tsx`는 `next` querystring과 pending OAuth link intent의 `returnPath`를 모두 sanitizer에 통과시킨 뒤만 `callbackUrl`과 프로필 복귀 링크로 사용한다.
+  - `app/src/components/auth/kakao-signin-button.tsx`, `app/src/components/auth/naver-signin-button.tsx`도 같은 sanitizer를 재사용해 credentials 로그인뿐 아니라 소셜 로그인 callback 경로까지 동일 정책으로 묶었다.
+  - `app/src/lib/oauth-link-intent.ts`는 localStorage에 남아 있던 legacy `returnPath`도 재검증해 malformed path가 있으면 link intent 자체를 버리도록 조정했다.
+  - `app/src/lib/redirect-path.test.ts`를 추가해 internal relative path 유지, 외부 URL/protocol-relative URL/backslash/control character 차단, whitespace trim fallback을 회귀로 고정했다.
+- 검증 결과
+  - `pnpm -C app lint src/lib/redirect-path.ts src/lib/redirect-path.test.ts src/components/auth/login-form.tsx src/components/auth/kakao-signin-button.tsx src/components/auth/naver-signin-button.tsx src/lib/oauth-link-intent.ts` 통과
+  - `pnpm -C app test -- src/lib/redirect-path.test.ts` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `170 files / 820 tests` 통과
+  - `pnpm -C app typecheck` 통과
+  - `git diff --check` 통과
+
+### 2026-03-13: Cycle 369 완료 (댓글 API 민감정보/삭제 콘텐츠 응답 정리)
+- 완료 내용
+  - `app/src/server/queries/comment.queries.ts`의 댓글 list select에서 `author.email`을 제거해 comment payload가 더 이상 작성자 이메일을 읽지도, 실어 나르지도 않게 했다.
+  - `app/src/app/api/posts/[id]/comments/route.ts`에는 GET 응답 sanitizer를 추가했다. 이 경로는 legacy cached/mock shape에 `author.email`이 있어도 제거하고, `status=DELETED` 댓글은 `content="삭제된 댓글입니다."`, `reactions=[]`로 redaction한다.
+  - 이 방식으로 UI가 placeholder를 그리기 전에 API payload 자체가 원문을 잃도록 바꿔, 브라우저 네트워크 응답만으로 삭제 댓글 원문을 복구하는 경로를 막았다.
+  - `app/src/components/posts/post-comment-load-state.ts`의 댓글 타입에서도 `author.email`을 제거해 클라이언트 계약을 최소화했다.
+  - `app/src/app/api/posts/[id]/comments/route.test.ts`에는 삭제 댓글 redaction + legacy email 제거 회귀를 추가했고, `app/src/server/queries/comment.queries.test.ts`에는 query가 더 이상 `author.email` 컬럼을 select하지 않는 계약을 추가했다.
+- 검증 결과
+  - `pnpm -C app lint src/server/queries/comment.queries.ts src/server/queries/comment.queries.test.ts 'src/app/api/posts/[id]/comments/route.ts' 'src/app/api/posts/[id]/comments/route.test.ts' src/components/posts/post-comment-load-state.ts` 통과
+  - `pnpm -C app test -- src/server/queries/comment.queries.test.ts 'src/app/api/posts/[id]/comments/route.test.ts'` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `169 files / 816 tests` 통과
+  - `pnpm -C app typecheck` 통과
+
+### 2026-03-13: Cycle 370 완료 (inline JSON script escape로 JSON-LD XSS 차단)
+- 완료 내용
+  - `app/src/lib/json-script.ts`에 `serializeJsonForScriptTag()`를 추가했다. 이 serializer는 `JSON.stringify()` 결과에서 `<`, `>`, `&`, U+2028, U+2029를 이스케이프해 `</script>` breakout과 inline script parser edge case를 막는다.
+  - `app/src/components/posts/post-detail-client.tsx`, `app/src/app/posts/[id]/guest/page.tsx`, `app/src/app/users/[id]/page.tsx`의 `application/ld+json` 주입은 더 이상 `JSON.stringify(...)`를 직접 쓰지 않고 공용 serializer를 사용한다.
+  - 이 변경으로 게시글 제목/본문, 공개 프로필 bio/name에 `</script>` 문자열이 들어와도 HTML parser가 script 태그를 조기 종료하지 못하게 됐다.
+  - `app/src/lib/json-script.test.ts`를 추가해 `</script>` escaping, U+2028/U+2029 escaping, `undefined -> null` fallback을 회귀로 고정했다.
+- 검증 결과
+  - `pnpm -C app lint src/lib/json-script.ts src/lib/json-script.test.ts src/components/posts/post-detail-client.tsx 'src/app/posts/[id]/guest/page.tsx' 'src/app/users/[id]/page.tsx'` 통과
+  - `pnpm -C app test -- src/lib/json-script.test.ts` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `169 files / 814 tests` 통과
+  - `pnpm -C app typecheck` 통과
+
+### 2026-03-13: Cycle 371 완료 (레드팀 취약점 remediation 계획 수립)
+- 완료 내용
+  - 레드팀 관점 코드 리뷰에서 즉시 remediation이 필요한 항목을 5개로 압축했다: `JSON-LD script breakout 저장형 XSS`, `댓글 API author.email 노출`, `삭제 댓글 원문 API 노출`, `로그인 next open redirect`, `comment guest-mode block/mute 우회`, `비회원 부분 IP 공개`.
+  - `PLAN.md`의 현재 우선순위를 보안 remediation 기준으로 재정렬하고, 실제 구현 순서를 `Cycle 370 -> 369 -> 368 -> 367 -> 366`으로 문서화했다.
+  - 각 cycle에는 영향 범위와 DoD를 구체화했다. 순서는 `inline JSON script escape`, `댓글 응답 최소화`, `redirect validator`, `guest-view override hardening`, `비회원 identifier privacy 축소`다.
+  - `docs/security/보안_계획.md`에는 대응하는 backlog 항목 `SEC-029 ~ SEC-033`을 추가해 메인 계획과 보안 트랙 문서를 동기화했다.
+  - `docs/security/보안_진행상황.md`에는 이번 턴이 구현이 아닌 remediation triage/documentation 사이클이었다는 점과 후속 실행 순서를 기록했다.
+- 검증 결과
+  - 문서/코드 정적 리뷰 기반으로 backlog를 구성했다.
+  - 코드 변경이나 테스트 실행은 아직 하지 않았다. 다음 턴부터 cycle 단위 구현과 검증을 진행한다.
+
 ### 2026-03-13: Cycle 365 완료 (direct moderation 자동 모드 가드 추가)
 - 완료 내용
   - `app/src/lib/validations/direct-moderation.ts`에 `executionMode(MANUAL/AUTOMATED)`를 추가하고 기본값을 `AUTOMATED`로 바꿨다. 이제 direct moderation API에 mode를 생략하면 서버가 자동 모드 정책으로 처리한다.

@@ -94,4 +94,46 @@ describe("GET /api/posts/[id]/detail contract", () => {
       },
     );
   });
+
+  it("strips guest network meta from detail payload", async () => {
+    mockGetPostById.mockResolvedValue({
+      id: "post-1",
+      authorId: "user-1",
+      type: "FREE_POST",
+      scope: "GLOBAL",
+      status: "ACTIVE",
+      title: "비회원 글",
+      content: "본문",
+      guestAuthorId: "guest-author-1",
+      guestDisplayName: null,
+      guestIpDisplay: "203.0.113",
+      guestIpLabel: "아이피",
+      guestAuthor: {
+        id: "guest-author-1",
+        displayName: "비회원",
+        ipDisplay: "203.0.113",
+        ipLabel: "아이피",
+      },
+      createdAt: new Date("2026-03-12T00:00:00.000Z"),
+      updatedAt: new Date("2026-03-12T00:00:00.000Z"),
+      author: { id: "user-1", nickname: "writer" },
+      neighborhood: null,
+      images: [],
+    } as never);
+    const request = new Request("http://localhost/api/posts/post-1/detail") as NextRequest;
+
+    const response = await GET(request, {
+      params: Promise.resolve({ id: "post-1" }),
+    });
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(payload.data.post).toMatchObject({
+      guestAuthorId: "guest-author-1",
+      guestDisplayName: "비회원",
+    });
+    expect(payload.data.post).not.toHaveProperty("guestIpDisplay");
+    expect(payload.data.post).not.toHaveProperty("guestIpLabel");
+    expect(payload.data.post).not.toHaveProperty("guestAuthor");
+  });
 });

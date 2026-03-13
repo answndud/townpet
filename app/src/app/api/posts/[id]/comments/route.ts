@@ -1,7 +1,8 @@
 import { NextRequest } from "next/server";
-import { UserRole } from "@prisma/client";
+import { PostStatus, UserRole } from "@prisma/client";
 
 import { buildGuestIpMeta } from "@/lib/guest-ip-display";
+import { sanitizePublicGuestIdentity } from "@/lib/public-guest-identity";
 import { getCurrentUserIdFromRequest, getCurrentUserRole } from "@/server/auth";
 import { enforceAuthenticatedWriteRateLimit } from "@/server/authenticated-write-throttle";
 import { monitorUnhandledError } from "@/server/error-monitor";
@@ -28,14 +29,73 @@ type RouteParams = {
   params: Promise<{ id: string }>;
 };
 
+const DELETED_COMMENT_PLACEHOLDER_CONTENT = "삭제된 댓글입니다.";
+
+type CommentPageData = Awaited<ReturnType<typeof listComments>>;
+type PublicCommentItem = Omit<CommentPageData["comments"][number], "guestAuthor" | "guestIpDisplay" | "guestIpLabel"> & {
+  guestDisplayName?: string | null;
+  isGuestAuthor?: boolean;
+};
+type PublicCommentPageData = Omit<CommentPageData, "comments" | "bestComments"> & {
+  comments: PublicCommentItem[];
+  bestComments: PublicCommentItem[];
+};
+
+function sanitizeCommentPageData(pageData: CommentPageData): PublicCommentPageData {
+  const sanitizeComment = <T extends CommentPageData["comments"][number]>(comment: T) => {
+    const safeAuthor =
+      comment.author && typeof comment.author === "object"
+        ? (() => {
+            const nextAuthor = {
+              ...(comment.author as T["author"] & { email?: string | null }),
+            };
+            delete nextAuthor.email;
+            return nextAuthor as T["author"];
+          })()
+        : comment.author;
+    const sanitizedGuestIdentity = sanitizePublicGuestIdentity({
+      ...comment,
+      author: safeAuthor,
+    });
+    const publicComment = { ...sanitizedGuestIdentity } as Record<string, unknown>;
+    delete publicComment.guestAuthor;
+    const isGuestAuthor = Boolean(
+      comment.guestAuthorId ||
+        (comment as { guestAuthor?: unknown }).guestAuthor ||
+        sanitizedGuestIdentity.guestDisplayName,
+    );
+
+    if (comment.status !== PostStatus.DELETED) {
+      return {
+        ...(publicComment as PublicCommentItem),
+        isGuestAuthor,
+      };
+    }
+
+    return {
+      ...(publicComment as PublicCommentItem),
+      content: DELETED_COMMENT_PLACEHOLDER_CONTENT,
+      reactions: [],
+      isGuestAuthor,
+    };
+  };
+
+  return {
+    ...pageData,
+    comments: pageData.comments.map(sanitizeComment),
+    bestComments: pageData.bestComments.map(sanitizeComment),
+  };
+}
+
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const { id: postId } = await params;
     const forceGuestMode = request.headers.get("x-guest-mode") === "1";
-    const userId = forceGuestMode ? null : await getCurrentUserIdFromRequest(request);
-    const viewerId = userId ?? undefined;
+    const authenticatedUserId = await getCurrentUserIdFromRequest(request);
+    const viewerId = forceGuestMode ? undefined : authenticatedUserId ?? undefined;
+    const hiddenAuthorViewerId = authenticatedUserId ?? undefined;
     const viewerRole =
-      userId && !forceGuestMode ? (await getCurrentUserRole())?.role ?? null : null;
+      viewerId ? (await getCurrentUserRole())?.role ?? null : null;
     const requestUrl = new URL(request.url);
     const pageParam = Number(requestUrl.searchParams.get("page") ?? "1");
     const limitParam = Number(requestUrl.searchParams.get("limit") ?? "30");
@@ -56,8 +116,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const comments = await listComments(postId, viewerId, {
       page: Number.isFinite(pageParam) ? pageParam : 1,
       limit: Number.isFinite(limitParam) ? limitParam : 30,
+      hiddenAuthorViewerId,
     });
-    return jsonOk(comments, {
+    return jsonOk(sanitizeCommentPageData(comments), {
       headers: {
         "cache-control": "no-store",
       },

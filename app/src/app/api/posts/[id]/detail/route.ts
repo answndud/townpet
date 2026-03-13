@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { UserRole } from "@prisma/client";
 
 import { renderLiteMarkdown } from "@/lib/markdown-lite";
+import { sanitizePublicGuestIdentity } from "@/lib/public-guest-identity";
 import { getCurrentUserIdFromRequest, getCurrentUserRole } from "@/server/auth";
 import { monitorUnhandledError } from "@/server/error-monitor";
 import { getPostById } from "@/server/queries/post.queries";
@@ -49,10 +50,19 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             isMutedByMe: false,
           };
 
+    const sanitizedPost = sanitizePublicGuestIdentity(post as Record<string, unknown> & {
+      guestDisplayName?: string | null;
+      guestIpDisplay?: string | null;
+      guestIpLabel?: string | null;
+      guestAuthor?: { displayName?: string | null; ipDisplay?: string | null; ipLabel?: string | null } | null;
+    });
+    const publicPost = { ...sanitizedPost } as typeof sanitizedPost & { guestAuthor?: unknown };
+    delete publicPost.guestAuthor;
+
     return jsonOk(
       {
         post: {
-          ...post,
+          ...publicPost,
           renderedContentHtml,
           renderedContentText,
         },

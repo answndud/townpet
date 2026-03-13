@@ -29,6 +29,8 @@ import { PostViewTracker } from "@/components/posts/post-view-tracker";
 import { UserActionMenu } from "@/components/user/user-action-menu";
 import { fetchPostCommentPage } from "@/lib/comment-client";
 import { getGuestPostMeta } from "@/lib/post-guest-meta";
+import { resolvePublicGuestDisplayName } from "@/lib/public-guest-identity";
+import { serializeJsonForScriptTag } from "@/lib/json-script";
 import { renderLiteMarkdown } from "@/lib/markdown-lite";
 import { formatRelativeDate } from "@/lib/post-presenter";
 import { isReportablePostType } from "@/lib/post-type-groups";
@@ -71,11 +73,8 @@ type PostDetailItem = {
   commentCount?: number | null;
   isBookmarked?: boolean | null;
   author: { id: string; nickname: string | null; image?: string | null };
-  guestAuthor?: { displayName?: string | null; ipDisplay?: string | null; ipLabel?: string | null } | null;
   guestAuthorId?: string | null;
   guestDisplayName?: string | null;
-  guestIpDisplay?: string | null;
-  guestIpLabel?: string | null;
   neighborhood?: { id: string; name: string; city: string; district?: string } | null;
   images: Array<{ url: string; order: number }>;
   hospitalReview?: {
@@ -540,8 +539,8 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
   const orderedImages = post ? [...post.images].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)) : [];
   const postUrl = post ? toAbsoluteUrl(`/posts/${post.id}`) : null;
   const guestPostMeta = post ? getGuestPostMeta(post) : null;
-  const displayAuthorName = guestPostMeta?.guestAuthorName
-    ? guestPostMeta.guestAuthorName
+  const displayAuthorName = guestPostMeta?.isGuestPost
+    ? guestPostMeta.guestPublicName ?? resolvePublicGuestDisplayName(post?.guestDisplayName)
     : post
       ? resolveUserDisplayName(post.author.nickname)
       : null;
@@ -587,7 +586,7 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
         <script
           nonce={cspNonce}
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+          dangerouslySetInnerHTML={{ __html: serializeJsonForScriptTag(structuredData) }}
         />
       ) : null}
       <main className="mx-auto flex w-full max-w-[1100px] flex-col gap-4 px-4 py-5 sm:gap-5 sm:px-6 sm:py-6 lg:px-8">
@@ -619,12 +618,7 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
                 <div className="flex items-start justify-between gap-3 md:flex-col md:items-end">
                   <div className="tp-text-heading min-w-0 break-all font-semibold">
                     {guestPostMeta?.isGuestPost ? (
-                      <span>
-                        {displayAuthorName}
-                        {guestPostMeta?.guestIpDisplay
-                          ? ` (${guestPostMeta.guestIpLabel ?? "아이피"} ${guestPostMeta.guestIpDisplay})`
-                          : ""}
-                      </span>
+                      <span>{displayAuthorName}</span>
                     ) : (
                       <UserActionMenu
                         userId={post.author.id}

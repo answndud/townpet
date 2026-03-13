@@ -1,6 +1,6 @@
 # PLAN.md
 
-기준일: 2026-03-10
+기준일: 2026-03-13
 목표: TownPet를 기능/운영/품질 기준에서 "완성도 높은 커뮤니티" 상태로 끌어올린다.
 
 ## 운영 규칙
@@ -16,15 +16,46 @@
 - Phase 2 보류: 마켓/케어/결제/공동구매/카카오맵은 Phase 1 완료 후 착수
 
 ## 현재 우선순위
-1. 런치 준비 갭 정리: 공개 SEO/metadata/sitemap, 로딩/빈상태 polish, 보안 헤더/coverage 증거 보강
-2. 운영 안정화: 무료 주간 10분 루틴 정착(health/log/manual smoke)
-3. 운영 문서 유지: Vercel/OAuth/Secrets/데이터 관리 가이드 최신 상태 유지
-4. `oauth-real-e2e` 워크플로우 실시크릿 1회 PASS 기록 완료
-5. `ops-smoke-checks` 워크플로우 실배포 URL health PASS 기록 완료 (Sentry 검증은 선택)
-6. 품종 기반 개인화/광고/커뮤니티 기능 PRD 확정 및 구현 사이클 착수
-7. 보안 하드닝 트랙 분리 운영: `docs/security/*` 백로그/리스크/진행 로그 상시 동기화
+1. 레드팀 P0/P1 취약점 remediation: JSON-LD XSS, 댓글 응답 민감정보/삭제 원문 노출, 로그인 오픈 리다이렉트, guest-mode 우회, 비회원 식별자 프라이버시 축소
+2. 런치 준비 갭 정리: 공개 SEO/metadata/sitemap, 로딩/빈상태 polish, 보안 헤더/coverage 증거 보강
+3. 운영 안정화: 무료 주간 10분 루틴 정착(health/log/manual smoke)
+4. 운영 문서 유지: Vercel/OAuth/Secrets/데이터 관리 가이드 최신 상태 유지
+5. `oauth-real-e2e` 워크플로우 실시크릿 1회 PASS 기록 완료
+6. `ops-smoke-checks` 워크플로우 실배포 URL health PASS 기록 완료 (Sentry 검증은 선택)
+7. 품종 기반 개인화/광고/커뮤니티 기능 PRD 확정 및 구현 사이클 착수
+8. 보안 하드닝 트랙 분리 운영: `docs/security/*` 백로그/리스크/진행 로그 상시 동기화
 
 ## Active Plan
+
+### Cycle 371: 레드팀 취약점 remediation 계획 수립 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 레드팀 관점 코드 리뷰로 확인한 P0/P1 취약점의 악용 경로를 정리하고, 실행 순서·영향 범위·검증 기준이 포함된 remediation backlog를 `PLAN.md`/`PROGRESS.md`와 security track 문서에 동기화 | Codex | P0 | `done` | 저장형 XSS, 댓글 응답 과노출, 로그인 redirect validation, guest-mode 우회, 비회원 식별자 프라이버시 축소에 대한 후속 cycle과 security backlog 항목이 문서화되고, 구현 순서가 명시된다 | `PLAN.md`, `PROGRESS.md`, `docs/security/보안_계획.md`, `docs/security/보안_진행상황.md` |
+
+### Cycle 370: inline JSON script escape로 JSON-LD XSS 차단 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| JSON-LD/inline structured data 렌더링이 `</script>` 등으로 스크립트 경계를 깨지 못하도록 공용 serializer를 도입하고 모든 `application/ld+json` 주입 지점을 교체 | Codex | P0 | `done` | 공용 `serializeJsonForScriptTag` 유틸이 추가되고 게시글 상세/guest 상세/공개 프로필 등의 inline JSON script가 이를 사용하며, `</script>`, `<`, U+2028/U+2029 회귀 테스트와 lint/test/typecheck가 통과한다 | `PLAN.md`, `PROGRESS.md`, `app/src/lib/json-script.ts`, `app/src/lib/json-script.test.ts`, `app/src/components/posts/post-detail-client.tsx`, `app/src/app/posts/[id]/guest/page.tsx`, `app/src/app/users/[id]/page.tsx`, 관련 테스트 |
+
+### Cycle 369: 댓글 API 민감정보/삭제 콘텐츠 응답 정리 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 댓글 조회 응답에서 작성자 이메일을 제거하고, `DELETED` 댓글은 API 단계에서 placeholder로 redaction해 원문 복구가 불가능하도록 정리 | Codex | P0 | `done` | 댓글 query/route는 public payload에 `author.email`을 포함하지 않고, 삭제 댓글은 UI뿐 아니라 API 응답에서도 placeholder content만 반환하며, failure-path 포함 회귀 테스트와 lint/test/typecheck가 통과한다 | `PLAN.md`, `PROGRESS.md`, `app/src/server/queries/comment.queries.ts`, `app/src/app/api/posts/[id]/comments/route.ts`, `app/src/components/posts/post-comment-load-state.ts`, 관련 테스트 |
+
+### Cycle 368: 로그인 redirect callback strict validation (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| `/login?next=`와 소셜 로그인 callback 경로가 앱 내부 single-slash relative path만 허용하도록 공용 sanitizer를 도입해 `//external` 류 오픈 리다이렉트를 차단 | Codex | P1 | `done` | 공용 redirect path validator가 추가되고 credentials/social login form이 이를 재사용하며, `//evil`, mixed slash, 빈값 fallback 회귀 테스트와 lint/test/typecheck가 통과한다 | `PLAN.md`, `PROGRESS.md`, `app/src/lib/redirect-path.ts`, `app/src/lib/redirect-path.test.ts`, `app/src/components/auth/login-form.tsx`, `app/src/components/auth/kakao-signin-button.tsx`, `app/src/components/auth/naver-signin-button.tsx`, `app/src/lib/oauth-link-intent.ts`, 관련 테스트 |
+
+### Cycle 367: guest-view override 권한 우회 차단 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 댓글 guest-view 강제 경로가 차단/뮤트 relation filter까지 비활성화하지 않도록 guest readability와 viewer-specific hidden-author filtering을 분리 | Codex | P1 | `done` | `/api/posts/[id]/comments`의 guest override는 production에서 block/mute 필터를 유지하거나 안전한 별도 guest contract로 분리되고, blocked/muted author leakage 회귀 테스트와 lint/test/typecheck가 통과한다 | `PLAN.md`, `PROGRESS.md`, `app/src/app/api/posts/[id]/comments/route.ts`, `app/src/server/queries/comment.queries.ts`, 관련 테스트 |
+
+### Cycle 366: 비회원 public identifier 프라이버시 축소 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 비회원 글/댓글에 노출되는 부분 IP 기반 식별자를 제거하고, 공개 화면에는 네트워크 정보가 아닌 비공개적 guest alias만 표시하도록 정리 | Codex | P1 | `done` | feed/detail/comments의 public payload는 `guestIpDisplay/guestIpLabel`를 더 이상 노출하지 않고, UI는 네트워크 비유출 guest alias 또는 일반 익명 표기만 사용하며, 관련 회귀 테스트와 lint/test/typecheck가 통과한다 | `PLAN.md`, `PROGRESS.md`, `app/src/lib/public-guest-identity.ts`, `app/src/app/api/feed/guest/route.ts`, `app/src/app/api/posts/route.ts`, `app/src/app/api/posts/[id]/detail/route.ts`, `app/src/app/api/posts/[id]/comments/route.ts`, `app/src/components/posts/post-detail-client.tsx`, `app/src/components/posts/post-comment-thread.tsx`, 관련 테스트 |
 
 ### Cycle 365: direct moderation 자동 모드 가드 추가 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |

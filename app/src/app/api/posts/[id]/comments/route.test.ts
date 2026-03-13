@@ -180,7 +180,7 @@ describe("POST /api/posts/[id]/comments contract", () => {
     });
   });
 
-  it("treats guest-mode GET as unauthenticated even when auth helper would return a user", async () => {
+  it("keeps guest readability while preserving authenticated hidden-author filtering on guest-mode GET", async () => {
     mockGetCurrentUserIdFromRequest.mockResolvedValue("user-1");
     const request = new Request("http://localhost/api/posts/post-1/comments", {
       headers: {
@@ -190,12 +190,14 @@ describe("POST /api/posts/[id]/comments contract", () => {
 
     await GET(request, { params: Promise.resolve({ id: "post-1" }) });
 
-    expect(mockGetCurrentUserIdFromRequest).not.toHaveBeenCalled();
+    expect(mockGetCurrentUserIdFromRequest).toHaveBeenCalledWith(request);
     expect(mockGetPostReadAccessById).toHaveBeenCalledWith("post-1", undefined);
     expect(mockListComments).toHaveBeenCalledWith("post-1", undefined, {
       page: 1,
       limit: 30,
+      hiddenAuthorViewerId: "user-1",
     });
+    expect(mockGetCurrentUserRole).not.toHaveBeenCalled();
   });
 
   it("passes moderator hidden-read access options on comments GET", async () => {
@@ -224,6 +226,61 @@ describe("POST /api/posts/[id]/comments contract", () => {
         allowModeratorHiddenRead: true,
       },
     );
+  });
+
+  it("redacts deleted comment content and strips legacy author email fields on comments GET", async () => {
+    mockListComments.mockResolvedValue({
+      comments: [
+        {
+          id: "comment-1",
+          content: "삭제 전 원문",
+          status: "DELETED",
+          guestAuthorId: "guest-author-1",
+          guestIpDisplay: "203.0.113",
+          guestIpLabel: "아이피",
+          guestAuthor: {
+            id: "guest-author-1",
+            displayName: "비회원",
+            ipDisplay: "203.0.113",
+            ipLabel: "아이피",
+          },
+          author: {
+            id: "author-1",
+            nickname: "작성자",
+            email: "author-1@townpet.dev",
+          },
+          reactions: [{ type: "LIKE" }],
+        },
+      ],
+      bestComments: [],
+      totalCount: 1,
+      totalRootCount: 1,
+      page: 1,
+      totalPages: 1,
+      limit: 30,
+    } as never);
+    const request = new Request("http://localhost/api/posts/post-1/comments") as NextRequest;
+
+    const response = await GET(request, { params: Promise.resolve({ id: "post-1" }) });
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(payload.data.comments[0]).toMatchObject({
+      id: "comment-1",
+      content: "삭제된 댓글입니다.",
+      status: "DELETED",
+      reactions: [],
+      guestDisplayName: "비회원",
+      isGuestAuthor: true,
+      author: {
+        id: "author-1",
+        nickname: "작성자",
+      },
+    });
+    expect(payload.data.comments[0].author).not.toHaveProperty("email");
+    expect(payload.data.comments[0]).not.toHaveProperty("guestIpDisplay");
+    expect(payload.data.comments[0]).not.toHaveProperty("guestIpLabel");
+    expect(payload.data.comments[0]).not.toHaveProperty("guestAuthor");
   });
 
   it("returns GUEST_PASSWORD_REQUIRED for guest without password", async () => {

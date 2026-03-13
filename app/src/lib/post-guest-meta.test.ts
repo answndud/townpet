@@ -8,14 +8,11 @@ describe("getGuestPostMeta", () => {
       getGuestPostMeta({
         guestAuthorId: "guest-1",
         guestDisplayName: "비회원",
-        guestIpDisplay: "203.0.113",
-        guestIpLabel: "아이피",
       }),
     ).toEqual({
       isGuestPost: true,
       guestAuthorName: "비회원",
-      guestIpDisplay: "203.0.113",
-      guestIpLabel: "아이피",
+      guestPublicName: "비회원",
     });
   });
 
@@ -24,15 +21,12 @@ describe("getGuestPostMeta", () => {
       getGuestPostMeta({
         guestAuthor: {
           displayName: "익명",
-          ipDisplay: "198.51.100",
-          ipLabel: "아이피",
         },
       }),
     ).toEqual({
       isGuestPost: true,
       guestAuthorName: "익명",
-      guestIpDisplay: "198.51.100",
-      guestIpLabel: "아이피",
+      guestPublicName: "익명",
     });
   });
 
@@ -46,8 +40,7 @@ describe("getGuestPostMeta", () => {
     ).toEqual({
       isGuestPost: false,
       guestAuthorName: "",
-      guestIpDisplay: null,
-      guestIpLabel: null,
+      guestPublicName: null,
     });
   });
 });

@@ -32,6 +32,7 @@ import {
 import {
   buildFeedStatsLabel,
 } from "@/lib/feed-list-presenter";
+import { resolvePublicGuestDisplayName } from "@/lib/public-guest-identity";
 import { resolveUserDisplayName } from "@/lib/user-display";
 import type { ReviewCategory } from "@/lib/review-category";
 
@@ -59,9 +60,8 @@ export type FeedPostItem = {
     nickname: string | null;
     image?: string | null;
   };
+  guestAuthorId?: string | null;
   guestDisplayName?: string | null;
-  guestIpDisplay?: string | null;
-  guestIpLabel?: string | null;
   neighborhood: {
     id: string;
     name: string;
@@ -559,10 +559,11 @@ export function FeedInfiniteList({
                 .filter(Boolean)
                 .join(" · ")
             : null;
-          const authorLabel = post.guestDisplayName
-            ? `${post.guestDisplayName}${post.guestIpDisplay ? ` (${post.guestIpLabel ?? "아이피"} ${post.guestIpDisplay})` : ""}`
+          const isGuestPost = Boolean(post.guestAuthorId || post.guestDisplayName?.trim());
+          const authorLabel = isGuestPost
+            ? resolvePublicGuestDisplayName(post.guestDisplayName)
             : resolveUserDisplayName(post.author.nickname);
-          const authorNode = post.guestDisplayName ? (
+          const authorNode = isGuestPost ? (
             <span className="block truncate">{authorLabel}</span>
           ) : (
             <Link href={`/users/${post.author.id}`} className="block truncate hover:text-[#2f5da4]">
