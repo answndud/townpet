@@ -23,6 +23,7 @@ describe("direct moderation validations", () => {
     expect(result.data).toEqual({
       userKey: "admin@gmail.com",
       reason: "스팸 도배",
+      executionMode: "AUTOMATED",
     });
   });
 
@@ -38,6 +39,7 @@ describe("direct moderation validations", () => {
     }
 
     expect(result.data.scope).toBe("LAST_24H");
+    expect(result.data.executionMode).toBe("AUTOMATED");
   });
 
   it("rejects blank reasons", () => {
@@ -62,6 +64,7 @@ describe("direct moderation validations", () => {
     }
 
     expect(result.data.scope).toBe("ALL_ACTIVE");
+    expect(result.data.executionMode).toBe("AUTOMATED");
   });
 
   it("accepts a post visibility payload with trimmed reason", () => {
@@ -78,6 +81,7 @@ describe("direct moderation validations", () => {
     expect(result.data).toEqual({
       action: "HIDE",
       reason: "스팸 게시글 숨김",
+      executionMode: "AUTOMATED",
     });
   });
 

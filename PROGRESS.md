@@ -17,17 +17,18 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
-### 2026-03-12: Cycle 365 완료 (post-moderation-controls 누락으로 인한 배포 빌드 복구)
+### 2026-03-13: Cycle 365 완료 (direct moderation 자동 모드 가드 추가)
 - 완료 내용
-  - Vercel 배포 로그에서 `app/src/components/posts/post-detail-client.tsx`가 `@/components/posts/post-moderation-controls`를 찾지 못해 build가 중단되는 것을 확인했다.
-  - 누락돼 있던 `app/src/components/posts/post-moderation-controls.tsx`를 저장소에 추가했고, response parsing failure-path를 검증할 수 있도록 `parsePostModerationResponsePayload()`를 export했다.
-  - `app/src/components/posts/post-moderation-controls.test.tsx`를 추가해 ACTIVE 게시글 렌더와 moderation API 실패 payload 처리 회귀를 고정했다.
+  - `app/src/lib/validations/direct-moderation.ts`에 `executionMode(MANUAL/AUTOMATED)`를 추가하고 기본값을 `AUTOMATED`로 바꿨다. 이제 direct moderation API에 mode를 생략하면 서버가 자동 모드 정책으로 처리한다.
+  - `app/src/server/services/sanction.service.ts`의 `issueNextUserSanction()`은 optional `maxLevel`을 받아 자동 제재 ceiling을 강제할 수 있게 했고, `SUSPEND_7D`를 넘는 자동 제재는 `MODERATION_APPROVAL_REQUIRED` 409로 막도록 보강했다.
+  - `app/src/server/services/direct-moderation.service.ts`는 자동 모드에서 `hide-content`만 자유롭게 허용하고, `sanction`은 최대 7일 정지까지만 허용하도록 `maxLevel`을 연결했다. `restore-content`와 게시글 단건 `UNHIDE`는 자동 모드에서 사람이 다시 검토해야 하므로 서버에서 즉시 거절한다.
+  - moderation action log metadata에는 `executionMode`를 함께 남기도록 보강했고, 직접 제재 reason도 `직접 모더레이션(수동/자동)`으로 기록해 운영 로그에서 출처를 구분할 수 있게 했다.
+  - `app/src/components/admin/direct-moderation-panel.tsx`, `app/src/components/posts/post-moderation-controls.tsx`는 수동 관리자 UI가 명시적으로 `executionMode: "MANUAL"`을 보내도록 변경했다. `/admin/moderation/direct` 안내 문구도 `mode 미지정 = AUTOMATED` 정책과 자동 한도를 설명하도록 정리했다.
+  - 이 방식은 내부 매크로/운영 툴의 실수 방지용 서버 기본값이다. 별도 매크로 전용 토큰/actor 분리는 아직 없으므로, 동일한 moderator 세션으로 임의 요청을 보내는 도구까지 완전히 구분하는 단계는 후속 과제로 남는다.
 - 검증 결과
-  - `pnpm -C app lint src/components/posts/post-moderation-controls.tsx src/components/posts/post-moderation-controls.test.tsx src/components/posts/post-detail-client.tsx` 통과
-  - `pnpm -C app test -- src/components/posts/post-moderation-controls.test.tsx` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `168 files / 807 tests` 통과
+  - `pnpm -C app lint src/lib/validations/direct-moderation.ts src/lib/validations/direct-moderation.test.ts src/server/services/sanction.service.ts src/server/services/sanction.service.test.ts src/server/services/direct-moderation.service.ts src/server/services/direct-moderation.service.test.ts src/components/admin/direct-moderation-panel.tsx src/components/posts/post-moderation-controls.tsx src/app/admin/moderation/direct/page.tsx src/app/api/admin/moderation/users/sanction/route.test.ts src/app/api/admin/moderation/users/hide-content/route.test.ts src/app/api/admin/moderation/users/restore-content/route.test.ts 'src/app/api/admin/moderation/posts/[id]/visibility/route.test.ts'` 통과
+  - `pnpm -C app test -- src/lib/validations/direct-moderation.test.ts src/server/services/sanction.service.test.ts src/server/services/direct-moderation.service.test.ts src/app/api/admin/moderation/users/sanction/route.test.ts src/app/api/admin/moderation/users/hide-content/route.test.ts src/app/api/admin/moderation/users/restore-content/route.test.ts 'src/app/api/admin/moderation/posts/[id]/visibility/route.test.ts'` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `168 files / 811 tests` 통과
   - `pnpm -C app typecheck` 통과
-  - `git diff --check` 통과
-  - `pnpm -C app build`는 module-not-found 없이 컴파일을 통과했고, 이후 local 보안 env 부족(`AUTH_SECRET_OR_NEXTAUTH_SECRET_WEAK`, `CSP_ENFORCE_STRICT`, `GUEST_HASH_PEPPER`, `UPSTASH_REDIS_REST_URL_AND_TOKEN_PAIR`, `RESEND_API_KEY`)으로 page-data 단계에서 중단됨
 
 ### 2026-03-12: Cycle 364 완료 (게시글 작성자 이름에도 프로필/뮤트 메뉴 적용)
 - 완료 내용

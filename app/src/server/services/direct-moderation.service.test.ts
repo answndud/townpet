@@ -98,13 +98,15 @@ describe("direct moderation service", () => {
       input: {
         userKey: " spam@example.com ",
         reason: "도배성 스팸",
+        executionMode: "MANUAL",
       },
     });
 
     expect(mockIssueNextUserSanction).toHaveBeenCalledWith({
       userId: "user-2",
       moderatorId: "mod-1",
-      reason: "직접 모더레이션: 도배성 스팸",
+      reason: "직접 모더레이션(수동): 도배성 스팸",
+      maxLevel: undefined,
     });
     expect(result).toMatchObject({
       targetUser: {
@@ -114,6 +116,34 @@ describe("direct moderation service", () => {
         role: UserRole.USER,
       },
       sanctionLabel: "7일 정지",
+    });
+  });
+
+  it("applies automated sanction with a server-side 7-day ceiling", async () => {
+    mockFindUserByEmailInsensitive.mockResolvedValue({
+      id: "user-2",
+      email: "spam@example.com",
+      nickname: "spam-user",
+      role: UserRole.USER,
+    } as never);
+    mockIssueNextUserSanction.mockResolvedValue({
+      level: SanctionLevel.WARNING,
+    } as never);
+
+    await applyDirectUserSanction({
+      moderatorId: "mod-1",
+      input: {
+        userKey: "spam@example.com",
+        reason: "자동 스팸 제재",
+        executionMode: "AUTOMATED",
+      },
+    });
+
+    expect(mockIssueNextUserSanction).toHaveBeenCalledWith({
+      userId: "user-2",
+      moderatorId: "mod-1",
+      reason: "직접 모더레이션(자동): 자동 스팸 제재",
+      maxLevel: SanctionLevel.SUSPEND_7D,
     });
   });
 
@@ -147,6 +177,7 @@ describe("direct moderation service", () => {
       input: {
         action: "HIDE",
         reason: "같은 링크 반복",
+        executionMode: "MANUAL",
       },
     });
 
@@ -165,6 +196,7 @@ describe("direct moderation service", () => {
           metadata: expect.objectContaining({
             sourceAction: "DIRECT_POST_VISIBILITY_TOGGLE",
             reason: "같은 링크 반복",
+            executionMode: "MANUAL",
             previousStatus: PostStatus.ACTIVE,
             nextStatus: PostStatus.HIDDEN,
           }),
@@ -185,6 +217,37 @@ describe("direct moderation service", () => {
     });
   });
 
+  it("blocks automated post unhide until a human reviews it", async () => {
+    mockPrisma.post.findUnique.mockResolvedValue({
+      id: "post-1",
+      title: "숨김 글",
+      status: PostStatus.HIDDEN,
+      authorId: "user-9",
+      author: {
+        id: "user-9",
+        email: "spam@example.com",
+        nickname: "spam-user",
+        role: UserRole.USER,
+      },
+    });
+
+    await expect(
+      toggleDirectPostVisibility({
+        moderatorId: "mod-1",
+        postId: "post-1",
+        input: {
+          action: "UNHIDE",
+          reason: "자동 복구",
+          executionMode: "AUTOMATED",
+        },
+      }),
+    ).rejects.toMatchObject({
+      code: "MODERATION_APPROVAL_REQUIRED",
+      status: 409,
+    });
+    expect(mockPrisma.$transaction).not.toHaveBeenCalled();
+  });
+
   it("rejects direct moderation for moderator targets", async () => {
     mockPrisma.user.findUnique.mockResolvedValue({
       id: "mod-2",
@@ -199,6 +262,7 @@ describe("direct moderation service", () => {
         input: {
           userKey: "mod-2",
           reason: "테스트",
+          executionMode: "MANUAL",
         },
       }),
     ).rejects.toMatchObject({
@@ -244,6 +308,7 @@ describe("direct moderation service", () => {
         userKey: "user-9",
         reason: "동일 링크 반복",
         scope: "LAST_7D",
+        executionMode: "AUTOMATED",
       },
     });
 
@@ -282,6 +347,7 @@ describe("direct moderation service", () => {
           metadata: expect.objectContaining({
             sourceAction: "DIRECT_HIDE_USER_CONTENT",
             scope: "LAST_7D",
+            executionMode: "AUTOMATED",
             postId: "post-3",
           }),
         }),
@@ -362,6 +428,7 @@ describe("direct moderation service", () => {
         userKey: "user-9",
         reason: "오탐 복구",
         scope: "ALL_ACTIVE",
+        executionMode: "MANUAL",
       },
     });
 
@@ -387,6 +454,7 @@ describe("direct moderation service", () => {
           metadata: expect.objectContaining({
             sourceAction: "DIRECT_RESTORE_USER_CONTENT",
             restoredFrom: "DIRECT_HIDE_USER_CONTENT",
+            executionMode: "MANUAL",
           }),
         }),
         expect.objectContaining({
@@ -396,6 +464,7 @@ describe("direct moderation service", () => {
           metadata: expect.objectContaining({
             sourceAction: "DIRECT_RESTORE_USER_CONTENT",
             restoredFrom: "DIRECT_HIDE_USER_CONTENT",
+            executionMode: "MANUAL",
             postId: "post-9",
           }),
         }),
@@ -406,5 +475,30 @@ describe("direct moderation service", () => {
       restoredCommentCount: 1,
       scopeLabel: "전체 범위",
     });
+  });
+
+  it("blocks automated restore until a human reviews it", async () => {
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: "user-9",
+      email: "spam@example.com",
+      nickname: "spam-user",
+      role: UserRole.USER,
+    });
+
+    await expect(
+      restoreDirectUserContent({
+        moderatorId: "mod-1",
+        input: {
+          userKey: "user-9",
+          reason: "자동 복구 시도",
+          scope: "ALL_ACTIVE",
+          executionMode: "AUTOMATED",
+        },
+      }),
+    ).rejects.toMatchObject({
+      code: "MODERATION_APPROVAL_REQUIRED",
+      status: 409,
+    });
+    expect(mockPrisma.$transaction).not.toHaveBeenCalled();
   });
 });

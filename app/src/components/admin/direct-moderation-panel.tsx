@@ -96,6 +96,7 @@ export function DirectModerationPanel() {
         body: JSON.stringify({
           userKey: sanctionUserKey,
           reason: sanctionReason,
+          executionMode: "MANUAL",
         }),
       });
 
@@ -125,6 +126,7 @@ export function DirectModerationPanel() {
           userKey: hideUserKey,
           reason: hideReason,
           scope: hideScope,
+          executionMode: "MANUAL",
         }),
       });
 
@@ -158,6 +160,7 @@ export function DirectModerationPanel() {
           userKey: restoreUserKey,
           reason: restoreReason,
           scope: restoreScope,
+          executionMode: "MANUAL",
         }),
       });
 
@@ -188,6 +191,10 @@ export function DirectModerationPanel() {
           <p className="mt-2 text-sm text-[#4f678d]">
             일반 사용자 계정을 바로 경고/정지 단계로 넘깁니다. 운영자 계정이나 자기 자신은
             이 도구로 처리하지 않습니다.
+          </p>
+          <p className="mt-1 text-xs text-[#5f7aa3]">
+            이 화면은 수동 승인 흐름으로 호출되며, 매크로는 기본적으로 더 약한 자동 정책을
+            따릅니다.
           </p>
         </div>
 
@@ -240,6 +247,9 @@ export function DirectModerationPanel() {
           <p className="mt-2 text-sm text-[#4f678d]">
             같은 사용자의 ACTIVE 게시글과 댓글만 숨깁니다. 매크로 자동화는 먼저 숨김을 적용한
             뒤, 필요할 때만 별도 제재를 호출하는 방식이 안전합니다.
+          </p>
+          <p className="mt-1 text-xs text-[#5f7aa3]">
+            매크로 기본 모드(`AUTOMATED`)에서도 이 액션은 허용됩니다.
           </p>
         </div>
 
@@ -308,6 +318,9 @@ export function DirectModerationPanel() {
           <p className="mt-2 text-sm text-[#4f678d]">
             마지막 moderation 상태가 직접 숨김인 대상만 복구합니다. 신고 숨김이나 다른 운영
             조치가 섞인 콘텐츠는 자동 복구하지 않습니다.
+          </p>
+          <p className="mt-1 text-xs text-[#5f7aa3]">
+            복구는 항상 사람이 검토한 뒤 실행해야 하므로, 매크로 기본 모드에서는 서버가 거절합니다.
           </p>
         </div>
 

@@ -35,6 +35,7 @@ type IssueNextUserSanctionParams = {
   moderatorId: string;
   reason: string;
   sourceReportId?: string;
+  maxLevel?: SanctionLevel;
 };
 
 const SUSPENSION_LEVELS = [SanctionLevel.SUSPEND_7D, SanctionLevel.SUSPEND_30D] as const;
@@ -119,6 +120,17 @@ function calculateExpiresAt(level: SanctionLevel, now: Date) {
   return null;
 }
 
+function compareSanctionLevelSeverity(left: SanctionLevel, right: SanctionLevel) {
+  const order = [
+    SanctionLevel.WARNING,
+    SanctionLevel.SUSPEND_7D,
+    SanctionLevel.SUSPEND_30D,
+    SanctionLevel.PERMANENT_BAN,
+  ] as const;
+
+  return order.indexOf(left) - order.indexOf(right);
+}
+
 export function formatSanctionLevelLabel(level: SanctionLevel) {
   switch (level) {
     case SanctionLevel.WARNING:
@@ -139,6 +151,7 @@ export async function issueNextUserSanction({
   moderatorId,
   reason,
   sourceReportId,
+  maxLevel,
 }: IssueNextUserSanctionParams) {
   const delegate = requireUserSanctionDelegate();
 
@@ -153,6 +166,13 @@ export async function issueNextUserSanction({
   }
 
   const level = nextLevelFromPrevious(latest?.level ?? null);
+  if (maxLevel && compareSanctionLevelSeverity(level, maxLevel) > 0) {
+    throw new ServiceError(
+      "자동 제재는 경고 또는 7일 정지까지만 허용됩니다. 더 강한 제재는 사람이 직접 검토해 주세요.",
+      "MODERATION_APPROVAL_REQUIRED",
+      409,
+    );
+  }
   const now = new Date();
   const expiresAt = calculateExpiresAt(level, now);
 

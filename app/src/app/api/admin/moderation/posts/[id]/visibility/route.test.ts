@@ -52,6 +52,7 @@ describe("PATCH /api/admin/moderation/posts/[id]/visibility contract", () => {
       body: JSON.stringify({
         action: "HIDE",
         reason: "같은 링크 반복",
+        executionMode: "MANUAL",
       }),
       headers: { "content-type": "application/json" },
     }) as NextRequest;
@@ -78,6 +79,7 @@ describe("PATCH /api/admin/moderation/posts/[id]/visibility contract", () => {
       input: {
         action: "HIDE",
         reason: "같은 링크 반복",
+        executionMode: "MANUAL",
       },
     });
   });
@@ -91,6 +93,7 @@ describe("PATCH /api/admin/moderation/posts/[id]/visibility contract", () => {
       body: JSON.stringify({
         action: "UNHIDE",
         reason: "오탐",
+        executionMode: "MANUAL",
       }),
       headers: { "content-type": "application/json" },
     }) as NextRequest;

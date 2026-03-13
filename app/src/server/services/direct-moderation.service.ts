@@ -3,11 +3,13 @@ import {
   ModerationTargetType,
   PostStatus,
   Prisma,
+  SanctionLevel,
   UserRole,
 } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 import {
+  type DirectModerationExecutionMode,
   directPostVisibilitySchema,
   directUserContentHideSchema,
   directUserContentRestoreSchema,
@@ -35,6 +37,7 @@ import { ServiceError } from "@/server/services/service-error";
 const DIRECT_HIDE_USER_CONTENT_SOURCE_ACTION = "DIRECT_HIDE_USER_CONTENT";
 const DIRECT_RESTORE_USER_CONTENT_SOURCE_ACTION = "DIRECT_RESTORE_USER_CONTENT";
 const DIRECT_POST_VISIBILITY_TOGGLE_SOURCE_ACTION = "DIRECT_POST_VISIBILITY_TOGGLE";
+const AUTOMATED_SANCTION_MAX_LEVEL = SanctionLevel.SUSPEND_7D;
 
 const DIRECT_MODERATION_TARGET_USER_SELECT = {
   id: true,
@@ -147,6 +150,32 @@ async function bumpModerationTargetCaches() {
   ]);
 }
 
+function isAutomatedModerationExecution(mode: DirectModerationExecutionMode) {
+  return mode === "AUTOMATED";
+}
+
+function buildDirectModerationReasonLabel(
+  mode: DirectModerationExecutionMode,
+  reason: string,
+) {
+  return `직접 모더레이션(${mode === "MANUAL" ? "수동" : "자동"}): ${reason}`;
+}
+
+function assertDirectModerationApprovalRequired(params: {
+  executionMode: DirectModerationExecutionMode;
+  message: string;
+}) {
+  if (!isAutomatedModerationExecution(params.executionMode)) {
+    return;
+  }
+
+  throw new ServiceError(
+    params.message,
+    "MODERATION_APPROVAL_REQUIRED",
+    409,
+  );
+}
+
 function extractModerationSourceAction(metadata: Prisma.JsonValue | null | undefined) {
   if (!metadata || typeof metadata !== "object" || Array.isArray(metadata)) {
     return null;
@@ -239,7 +268,10 @@ export async function applyDirectUserSanction(params: {
   const sanction = await issueNextUserSanction({
     userId: targetUser.id,
     moderatorId: params.moderatorId,
-    reason: `직접 모더레이션: ${parsed.data.reason}`,
+    reason: buildDirectModerationReasonLabel(parsed.data.executionMode, parsed.data.reason),
+    maxLevel: isAutomatedModerationExecution(parsed.data.executionMode)
+      ? AUTOMATED_SANCTION_MAX_LEVEL
+      : undefined,
   });
 
   if (!sanction) {
@@ -281,6 +313,13 @@ export async function toggleDirectPostVisibility(params: {
     );
   }
 
+  if (parsed.data.action === "UNHIDE") {
+    assertDirectModerationApprovalRequired({
+      executionMode: parsed.data.executionMode,
+      message: "자동 매크로는 게시글 숨김 해제를 실행할 수 없습니다. 사람이 직접 검토해 주세요.",
+    });
+  }
+
   const nextStatus =
     parsed.data.action === "HIDE" ? PostStatus.HIDDEN : PostStatus.ACTIVE;
   if (targetPost.status === nextStatus) {
@@ -316,6 +355,7 @@ export async function toggleDirectPostVisibility(params: {
           metadata: {
             sourceAction: DIRECT_POST_VISIBILITY_TOGGLE_SOURCE_ACTION,
             reason: parsed.data.reason,
+            executionMode: parsed.data.executionMode,
             previousStatus: targetPost.status,
             nextStatus,
           },
@@ -453,6 +493,7 @@ export async function hideDirectUserContent(params: {
           sourceAction: DIRECT_HIDE_USER_CONTENT_SOURCE_ACTION,
           reason: parsed.data.reason,
           scope: parsed.data.scope,
+          executionMode: parsed.data.executionMode,
         },
       })),
       ...targetComments.map((comment) => ({
@@ -465,6 +506,7 @@ export async function hideDirectUserContent(params: {
           sourceAction: DIRECT_HIDE_USER_CONTENT_SOURCE_ACTION,
           reason: parsed.data.reason,
           scope: parsed.data.scope,
+          executionMode: parsed.data.executionMode,
           postId: comment.postId,
         },
       })),
@@ -511,6 +553,12 @@ export async function restoreDirectUserContent(params: {
   }
 
   assertDirectModerationTarget(targetUser, params.moderatorId);
+
+  assertDirectModerationApprovalRequired({
+    executionMode: parsed.data.executionMode,
+    message:
+      "자동 매크로는 직접 숨김 복구를 실행할 수 없습니다. 복구는 사람이 직접 검토한 뒤 진행해 주세요.",
+  });
 
   const createdAt = buildContentCreatedAtFilter(parsed.data.scope);
   const restored = await prisma.$transaction(async (tx) => {
@@ -621,6 +669,7 @@ export async function restoreDirectUserContent(params: {
           restoredFrom: DIRECT_HIDE_USER_CONTENT_SOURCE_ACTION,
           reason: parsed.data.reason,
           scope: parsed.data.scope,
+          executionMode: parsed.data.executionMode,
         },
       })),
       ...restorableComments.map((comment) => ({
@@ -634,6 +683,7 @@ export async function restoreDirectUserContent(params: {
           restoredFrom: DIRECT_HIDE_USER_CONTENT_SOURCE_ACTION,
           reason: parsed.data.reason,
           scope: parsed.data.scope,
+          executionMode: parsed.data.executionMode,
           postId: comment.postId,
         },
       })),
