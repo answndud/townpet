@@ -68,6 +68,7 @@ export function PostModerationControls({
         body: JSON.stringify({
           action,
           reason,
+          executionMode: "MANUAL",
         }),
       });
 

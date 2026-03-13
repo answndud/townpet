@@ -2,10 +2,14 @@ import { z } from "zod";
 
 const directModerationUserKeySchema = z.string().trim().min(1).max(320);
 const directModerationReasonSchema = z.string().trim().min(1).max(500);
+const directModerationExecutionModeSchema = z
+  .enum(["MANUAL", "AUTOMATED"])
+  .default("AUTOMATED");
 
 export const directUserSanctionSchema = z.object({
   userKey: directModerationUserKeySchema,
   reason: directModerationReasonSchema,
+  executionMode: directModerationExecutionModeSchema,
 });
 
 export const DIRECT_USER_CONTENT_SCOPE = [
@@ -18,12 +22,14 @@ export const directUserContentHideSchema = z.object({
   userKey: directModerationUserKeySchema,
   reason: directModerationReasonSchema,
   scope: z.enum(DIRECT_USER_CONTENT_SCOPE).default("LAST_24H"),
+  executionMode: directModerationExecutionModeSchema,
 });
 
 export const directUserContentRestoreSchema = z.object({
   userKey: directModerationUserKeySchema,
   reason: directModerationReasonSchema,
   scope: z.enum(DIRECT_USER_CONTENT_SCOPE).default("ALL_ACTIVE"),
+  executionMode: directModerationExecutionModeSchema,
 });
 
 export const DIRECT_POST_VISIBILITY_ACTION = ["HIDE", "UNHIDE"] as const;
@@ -31,6 +37,7 @@ export const DIRECT_POST_VISIBILITY_ACTION = ["HIDE", "UNHIDE"] as const;
 export const directPostVisibilitySchema = z.object({
   action: z.enum(DIRECT_POST_VISIBILITY_ACTION),
   reason: directModerationReasonSchema,
+  executionMode: directModerationExecutionModeSchema,
 });
 
 export type DirectUserSanctionInput = z.infer<typeof directUserSanctionSchema>;
@@ -38,6 +45,9 @@ export type DirectUserContentHideInput = z.infer<typeof directUserContentHideSch
 export type DirectUserContentRestoreInput = z.infer<typeof directUserContentRestoreSchema>;
 export type DirectUserContentScope = DirectUserContentHideInput["scope"];
 export type DirectPostVisibilityInput = z.infer<typeof directPostVisibilitySchema>;
+export type DirectModerationExecutionMode = z.infer<
+  typeof directModerationExecutionModeSchema
+>;
 
 export function getDirectUserContentScopeLabel(scope: DirectUserContentScope) {
   switch (scope) {

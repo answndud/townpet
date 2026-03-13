@@ -109,6 +109,32 @@ describe("sanction service", () => {
     expect(result?.expiresAt).not.toBeNull();
   });
 
+  it("requires manual approval when next sanction exceeds automated max level", async () => {
+    mockPrisma.userSanction.findFirst.mockResolvedValueOnce({
+      id: "s-prev",
+      userId: "u1",
+      moderatorId: "m1",
+      level: SanctionLevel.SUSPEND_7D,
+      reason: "prev",
+      sourceReportId: "r-prev",
+      expiresAt: new Date(),
+      createdAt: new Date(),
+    });
+
+    await expect(
+      issueNextUserSanction({
+        userId: "u1",
+        moderatorId: "m1",
+        reason: "next",
+        maxLevel: SanctionLevel.SUSPEND_7D,
+      }),
+    ).rejects.toMatchObject({
+      code: "MODERATION_APPROVAL_REQUIRED",
+      status: 409,
+    });
+    expect(mockPrisma.userSanction.create).not.toHaveBeenCalled();
+  });
+
   it("returns active suspension for interaction check", async () => {
     mockPrisma.userSanction.findFirst.mockResolvedValueOnce({
       id: "s-active",

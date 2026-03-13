@@ -49,6 +49,7 @@ describe("POST /api/admin/moderation/users/restore-content contract", () => {
         userKey: "user-9",
         reason: "오탐 복구",
         scope: "ALL_ACTIVE",
+        executionMode: "MANUAL",
       }),
       headers: { "content-type": "application/json" },
     }) as NextRequest;
@@ -71,6 +72,7 @@ describe("POST /api/admin/moderation/users/restore-content contract", () => {
         userKey: "user-9",
         reason: "오탐 복구",
         scope: "ALL_ACTIVE",
+        executionMode: "MANUAL",
       },
     });
   });
@@ -84,6 +86,7 @@ describe("POST /api/admin/moderation/users/restore-content contract", () => {
       body: JSON.stringify({
         userKey: "user-404",
         reason: "오탐 복구",
+        executionMode: "MANUAL",
       }),
       headers: { "content-type": "application/json" },
     }) as NextRequest;

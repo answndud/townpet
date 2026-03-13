@@ -48,6 +48,7 @@ describe("POST /api/admin/moderation/users/hide-content contract", () => {
         userKey: "user-9",
         reason: "링크 도배",
         scope: "LAST_24H",
+        executionMode: "MANUAL",
       }),
       headers: { "content-type": "application/json" },
     }) as NextRequest;
@@ -70,6 +71,7 @@ describe("POST /api/admin/moderation/users/hide-content contract", () => {
         userKey: "user-9",
         reason: "링크 도배",
         scope: "LAST_24H",
+        executionMode: "MANUAL",
       },
     });
   });
@@ -82,6 +84,7 @@ describe("POST /api/admin/moderation/users/hide-content contract", () => {
         userKey: "user-9",
         reason: "링크 도배",
         scope: "LAST_24H",
+        executionMode: "MANUAL",
       }),
       headers: { "content-type": "application/json" },
     }) as NextRequest;

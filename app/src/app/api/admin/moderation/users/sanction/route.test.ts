@@ -46,6 +46,7 @@ describe("POST /api/admin/moderation/users/sanction contract", () => {
       body: JSON.stringify({
         userKey: "spam@example.com",
         reason: "도배",
+        executionMode: "MANUAL",
       }),
       headers: { "content-type": "application/json" },
     }) as NextRequest;
@@ -68,6 +69,7 @@ describe("POST /api/admin/moderation/users/sanction contract", () => {
       input: {
         userKey: "spam@example.com",
         reason: "도배",
+        executionMode: "MANUAL",
       },
     });
   });
@@ -81,6 +83,7 @@ describe("POST /api/admin/moderation/users/sanction contract", () => {
       body: JSON.stringify({
         userKey: "missing@example.com",
         reason: "도배",
+        executionMode: "MANUAL",
       }),
       headers: { "content-type": "application/json" },
     }) as NextRequest;

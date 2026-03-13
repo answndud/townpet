@@ -25,16 +25,16 @@
 7. 보안 하드닝 트랙 분리 운영: `docs/security/*` 백로그/리스크/진행 로그 상시 동기화
 
 ## Active Plan
-### Cycle 365: post-moderation-controls 누락으로 인한 배포 빌드 복구 (완료)
+
+### Cycle 365: direct moderation 자동 모드 가드 추가 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
-| `post-detail-client.tsx`가 참조하는 `post-moderation-controls` 컴포넌트를 저장소에 추적 파일로 추가하고, 관련 회귀 테스트를 더해 배포 빌드의 module-not-found를 복구 | Codex | P1 | `done` | `post-moderation-controls.tsx`와 관련 테스트가 저장소에 포함되고, lint/test/typecheck가 통과하며, 로컬 `next build`는 module-not-found 없이 컴파일 단계를 통과하고 남은 실패가 있으면 `PROGRESS.md`에 환경 변수 이슈로 분리 기록된다 | `PLAN.md`, `PROGRESS.md`, `app/src/components/posts/post-moderation-controls.tsx`, `app/src/components/posts/post-moderation-controls.test.tsx`, `app/src/components/posts/post-detail-client.tsx` |
+| direct moderation 경로에 매크로 기본 자동 모드(`AUTOMATED`)를 도입하고, 자동 제재는 최대 7일 정지까지만 허용하며 직접 숨김 복구/게시글 숨김 해제는 사람 수동 승인(`MANUAL`)으로만 실행되도록 서버 정책을 강제 | Codex | P1 | `done` | direct moderation validation이 `executionMode`를 기본 `AUTOMATED`로 정규화하고, direct sanction은 자동 모드에서 `WARNING/SUSPEND_7D`까지만 허용되며, restore/post unhide는 자동 모드에서 `MODERATION_APPROVAL_REQUIRED`를 반환하고, 관리자 UI는 `MANUAL`로 호출하며, 관련 lint/test/typecheck/diff check 검증이 `PROGRESS.md`와 security log에 기록된다 | `PLAN.md`, `PROGRESS.md`, `docs/security/보안_계획.md`, `docs/security/보안_진행상황.md`, `app/src/lib/validations/direct-moderation.ts`, `app/src/server/services/direct-moderation.service.ts`, `app/src/server/services/sanction.service.ts`, `app/src/components/admin/direct-moderation-panel.tsx`, `app/src/components/posts/post-moderation-controls.tsx`, 관련 테스트 |
 
 ### Cycle 364: 게시글 작성자 이름에도 프로필/뮤트 메뉴 적용 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
 | 게시글 상세에서 작성자 닉네임 클릭 시 댓글 작성자와 같은 `프로필 보기 / 뮤트(해제)` 메뉴가 열리도록 공용 메뉴 컴포넌트를 적용하고, 관련 회귀 테스트를 추가 | Codex | P2 | `done` | 공용 `UserActionMenu`가 추가되어 댓글 스레드와 게시글 상세가 같은 작성자 메뉴를 공유하고, 상세 화면은 클릭 메뉴로 프로필 보기와 뮤트/해제를 수행하며, 관련 테스트와 lint/test/typecheck/diff check 검증이 `PROGRESS.md`에 기록된다 | `PLAN.md`, `PROGRESS.md`, `app/src/components/user/user-action-menu.tsx`, `app/src/components/posts/post-comment-thread.tsx`, `app/src/components/posts/post-detail-client.tsx`, 관련 테스트 |
-
 
 ### Cycle 363: 게시글 상세 관리자 직접 숨김/해제 추가 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |

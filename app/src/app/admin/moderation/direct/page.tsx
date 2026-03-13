@@ -19,7 +19,7 @@ export default async function DirectModerationPage() {
           </p>
           <p className="mt-3 text-xs text-[#5a7398]">
             이 도구는 일반 사용자 계정만 대상으로 하며, 매크로는 아래 moderator API만 사용해야
-            합니다.
+            합니다. `executionMode`를 보내지 않으면 서버는 기본적으로 `AUTOMATED` 정책을 적용합니다.
           </p>
         </header>
 
@@ -43,6 +43,10 @@ export default async function DirectModerationPage() {
             <code className="rounded-lg border border-[#dbe5f4] bg-white px-3 py-2 text-[11px] text-[#214b82]">
               POST /api/admin/moderation/users/restore-content
             </code>
+            <p className="mt-1 text-[11px] text-[#5b78a1]">
+              기본 `AUTOMATED`: `hide-content` 허용, `sanction`은 최대 7일 정지까지, `restore-content`
+              는 사람 승인 필요
+            </p>
           </div>
           <div className="flex flex-col gap-1.5">
             <p className="text-[10px] uppercase tracking-[0.24em] text-[#5b78a1]">
