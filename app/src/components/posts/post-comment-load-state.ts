@@ -13,12 +13,10 @@ export type PostCommentItem = {
   authorId: string;
   guestAuthorId?: string | null;
   guestDisplayName?: string | null;
-  guestIpDisplay?: string | null;
-  guestIpLabel?: string | null;
   isGuestAuthor?: boolean;
   isMutedByViewer?: boolean;
   reactions?: Array<{ type: "LIKE" | "DISLIKE" }>;
-  author: { id: string; nickname: string | null; email?: string | null };
+  author: { id: string; nickname: string | null };
 };
 
 export type PostCommentPageData = {

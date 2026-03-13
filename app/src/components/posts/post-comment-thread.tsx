@@ -26,6 +26,7 @@ import {
 import { getClientFingerprint, getGuestFingerprint } from "@/lib/guest-client";
 import { getGuestWriteHeaders } from "@/lib/guest-step-up.client";
 import { COMMENT_CONTENT_MAX_LENGTH } from "@/lib/input-limits";
+import { resolvePublicGuestDisplayName } from "@/lib/public-guest-identity";
 import { resolveUserDisplayName } from "@/lib/user-display";
 import {
   createCommentAction,
@@ -49,8 +50,6 @@ type CommentItem = {
   }>;
   guestAuthorId?: string | null;
   guestDisplayName?: string | null;
-  guestIpDisplay?: string | null;
-  guestIpLabel?: string | null;
   isGuestAuthor?: boolean;
   isMutedByViewer?: boolean;
   author: { id: string; nickname: string | null };
@@ -540,12 +539,7 @@ export function PostCommentThread({
     const isGuestComment = Boolean(
       comment.isGuestAuthor || comment.guestAuthorId || comment.guestDisplayName?.trim(),
     );
-    const guestAuthorName = comment.guestDisplayName?.trim()
-      ? comment.guestDisplayName
-      : resolveUserDisplayName(comment.author.nickname);
-    const guestIpDisplay = comment.guestIpDisplay?.trim()
-      ? comment.guestIpDisplay
-      : `0.${comment.author.id.slice(-3)}`;
+    const guestAuthorName = resolvePublicGuestDisplayName(comment.guestDisplayName);
     const isAuthor = currentUserId && comment.author.id === currentUserId;
     const hasActiveReply = replies.some((reply) => reply.status === "ACTIVE");
     const canEdit =
@@ -561,7 +555,7 @@ export function PostCommentThread({
     const displayName = isMutedPlaceholder
       ? MUTED_COMMENT_AUTHOR_NAME
       : isGuestComment
-        ? `${guestAuthorName} (${comment.guestIpLabel ?? "아이피"} ${guestIpDisplay})`
+        ? guestAuthorName
         : resolveUserDisplayName(comment.author.nickname);
     const avatarText = (isMutedPlaceholder ? "뮤" : displayName.slice(0, 1)).toUpperCase();
     const actionLinkClass =
@@ -899,16 +893,11 @@ export function PostCommentThread({
     const isGuestComment = Boolean(
       comment.isGuestAuthor || comment.guestAuthorId || comment.guestDisplayName?.trim(),
     );
-    const guestAuthorName = comment.guestDisplayName?.trim()
-      ? comment.guestDisplayName
-      : resolveUserDisplayName(comment.author.nickname);
-    const guestIpDisplay = comment.guestIpDisplay?.trim()
-      ? comment.guestIpDisplay
-      : `0.${comment.author.id.slice(-3)}`;
+    const guestAuthorName = resolvePublicGuestDisplayName(comment.guestDisplayName);
     const displayName = isMutedPlaceholder
       ? MUTED_COMMENT_AUTHOR_NAME
       : isGuestComment
-        ? `${guestAuthorName} (${comment.guestIpLabel ?? "아이피"} ${guestIpDisplay})`
+        ? guestAuthorName
         : resolveUserDisplayName(comment.author.nickname);
     const authorNode = isMutedPlaceholder || isGuestComment || !canOpenCommentAuthorMenu(currentUserId) ? (
       <span className="tp-text-heading truncate text-[13px] font-semibold">{displayName}</span>

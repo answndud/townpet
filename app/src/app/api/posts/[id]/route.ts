@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 
+import { sanitizePublicGuestIdentity } from "@/lib/public-guest-identity";
 import { getCurrentUserIdFromRequest } from "@/server/auth";
 import { monitorUnhandledError } from "@/server/error-monitor";
 import { getGuestPostPolicy } from "@/server/queries/policy.queries";
@@ -49,7 +50,16 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         ? 1
         : 0;
 
-    return jsonOk({ ...post, viewCount: safeViewCount });
+    const sanitizedPost = sanitizePublicGuestIdentity(post as Record<string, unknown> & {
+      guestDisplayName?: string | null;
+      guestIpDisplay?: string | null;
+      guestIpLabel?: string | null;
+      guestAuthor?: { displayName?: string | null; ipDisplay?: string | null; ipLabel?: string | null } | null;
+    });
+    const publicPost = { ...sanitizedPost } as typeof sanitizedPost & { guestAuthor?: unknown };
+    delete publicPost.guestAuthor;
+
+    return jsonOk({ ...publicPost, viewCount: safeViewCount });
   } catch (error) {
     if (error instanceof ServiceError) {
       return jsonError(error.status, {

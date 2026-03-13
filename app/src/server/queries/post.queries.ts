@@ -85,9 +85,7 @@ const buildPostListInclude = (
 ) =>
   ({
     author: { select: { id: true, nickname: true, image: true } },
-    ...(includeGuestAuthor
-      ? { guestAuthor: { select: { id: true, displayName: true, ipDisplay: true, ipLabel: true } } }
-      : {}),
+    ...(includeGuestAuthor ? { guestAuthor: { select: { id: true, displayName: true } } } : {}),
     neighborhood: {
       select: { id: true, name: true, city: true, district: true },
     },
@@ -135,9 +133,7 @@ const buildPostListIncludeWithoutReactions = (
 ) =>
   ({
     author: { select: { id: true, nickname: true, image: true } },
-    ...(includeGuestAuthor
-      ? { guestAuthor: { select: { id: true, displayName: true, ipDisplay: true, ipLabel: true } } }
-      : {}),
+    ...(includeGuestAuthor ? { guestAuthor: { select: { id: true, displayName: true } } } : {}),
     neighborhood: {
       select: { id: true, name: true, city: true, district: true },
     },
@@ -276,9 +272,7 @@ type PostDetailExtras = {
 const buildPostDetailBaseInclude = (includeGuestAuthor = supportsPostGuestAuthorField()) =>
   ({
     author: { select: { id: true, nickname: true } },
-    ...(includeGuestAuthor
-      ? { guestAuthor: { select: { id: true, displayName: true, ipDisplay: true, ipLabel: true } } }
-      : {}),
+    ...(includeGuestAuthor ? { guestAuthor: { select: { id: true, displayName: true } } } : {}),
     neighborhood: {
       select: { id: true, name: true, city: true },
     },
@@ -292,9 +286,7 @@ const buildPostDetailBaseIncludeWithoutReactions = (
 ) =>
   ({
     author: { select: { id: true, nickname: true } },
-    ...(includeGuestAuthor
-      ? { guestAuthor: { select: { id: true, displayName: true, ipDisplay: true, ipLabel: true } } }
-      : {}),
+    ...(includeGuestAuthor ? { guestAuthor: { select: { id: true, displayName: true } } } : {}),
     neighborhood: {
       select: { id: true, name: true, city: true },
     },

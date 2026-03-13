@@ -16,6 +16,7 @@ import {
 } from "@/lib/feed-personalization";
 import { toFeedAudienceSourceValue } from "@/lib/feed-personalization-metrics";
 import { FEED_PAGE_SIZE } from "@/lib/feed";
+import { sanitizePublicGuestIdentity } from "@/lib/public-guest-identity";
 import { postTypeMeta } from "@/lib/post-presenter";
 import { toAbsoluteUrl } from "@/lib/site-url";
 import {
@@ -206,7 +207,15 @@ export default async function BreedLoungePage({ params, searchParams }: BreedLou
     authorBreedCode: breedCode,
   });
 
-  const initialItems: FeedPostItem[] = data.items.map((post) => ({
+  const initialItems: FeedPostItem[] = data.items.map((rawPost) => {
+    const post = sanitizePublicGuestIdentity(rawPost as (typeof data.items)[number] & {
+      guestDisplayName?: string | null;
+      guestIpDisplay?: string | null;
+      guestIpLabel?: string | null;
+      guestAuthor?: { displayName?: string | null; ipDisplay?: string | null; ipLabel?: string | null } | null;
+    });
+
+    return {
     id: post.id,
     type: post.type,
     scope: post.scope,
@@ -223,23 +232,8 @@ export default async function BreedLoungePage({ params, searchParams }: BreedLou
       nickname: post.author.nickname,
       image: post.author.image,
     },
-    guestDisplayName:
-      (post as { guestDisplayName?: string | null }).guestDisplayName ??
-      (post as { guestAuthor?: { displayName?: string | null } | null }).guestAuthor
-        ?.displayName ??
-      null,
-    guestIpDisplay:
-      (post as { guestIpDisplay?: string | null }).guestIpDisplay ??
-      (post as {
-        guestAuthor?: { ipDisplay?: string | null; ipLabel?: string | null } | null;
-      }).guestAuthor?.ipDisplay ??
-      null,
-    guestIpLabel:
-      (post as { guestIpLabel?: string | null }).guestIpLabel ??
-      (post as {
-        guestAuthor?: { ipDisplay?: string | null; ipLabel?: string | null } | null;
-      }).guestAuthor?.ipLabel ??
-      null,
+    guestAuthorId: (post as { guestAuthorId?: string | null }).guestAuthorId ?? null,
+    guestDisplayName: (post as { guestDisplayName?: string | null }).guestDisplayName ?? null,
     neighborhood: post.neighborhood
       ? {
           id: post.neighborhood.id,
@@ -254,7 +248,8 @@ export default async function BreedLoungePage({ params, searchParams }: BreedLou
       (post as { reactions?: Array<{ type: "LIKE" | "DISLIKE" }> }).reactions?.map(
         (reaction) => ({ type: reaction.type }),
       ) ?? [],
-  }));
+    };
+  });
 
   const queryKey = [
     "breed-lounge",

@@ -84,6 +84,10 @@ describe("GET /api/feed/guest", () => {
             nickname: "알렉스",
             image: null,
           },
+          guestAuthorId: "guest-author-1",
+          guestDisplayName: "비회원",
+          guestIpDisplay: "203.0.113",
+          guestIpLabel: "아이피",
           neighborhood: null,
           petType: null,
           images: [],
@@ -107,6 +111,12 @@ describe("GET /api/feed/guest", () => {
     expect(payload.data.view).toBe("feed");
     expect(payload.data.feed.selectedSort).toBe("LIKE");
     expect(payload.data.feed.items).toHaveLength(1);
+    expect(payload.data.feed.items[0]).toMatchObject({
+      guestAuthorId: "guest-author-1",
+      guestDisplayName: "비회원",
+    });
+    expect(payload.data.feed.items[0]).not.toHaveProperty("guestIpDisplay");
+    expect(payload.data.feed.items[0]).not.toHaveProperty("guestIpLabel");
   });
 
   it("returns gate payload for local-only board types", async () => {

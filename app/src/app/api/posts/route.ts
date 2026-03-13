@@ -4,6 +4,7 @@ import { z } from "zod";
 
 import { isLoginRequiredPostType } from "@/lib/post-access";
 import { FEED_PAGE_SIZE } from "@/lib/feed";
+import { sanitizePublicGuestIdentityList } from "@/lib/public-guest-identity";
 import { postListSchema, toPostListInput } from "@/lib/validations/post";
 import { countPosts, listPosts } from "@/server/queries/post.queries";
 import { enforceAuthenticatedWriteRateLimit } from "@/server/authenticated-write-throttle";
@@ -145,6 +146,18 @@ export async function GET(request: NextRequest) {
       resolvedPage === 1;
     return jsonOk({
       ...data,
+      items: sanitizePublicGuestIdentityList(
+        data.items as Array<Record<string, unknown> & {
+          guestDisplayName?: string | null;
+          guestIpDisplay?: string | null;
+          guestIpLabel?: string | null;
+          guestAuthor?: { displayName?: string | null; ipDisplay?: string | null; ipLabel?: string | null } | null;
+        }>,
+      ).map((item) => {
+        const publicItem = { ...item } as typeof item & { guestAuthor?: unknown };
+        delete publicItem.guestAuthor;
+        return publicItem;
+      }),
       page: resolvedPage,
       totalPages,
       totalCount,

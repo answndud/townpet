@@ -11,6 +11,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { auth } from "@/lib/auth";
 import { isLoginRequiredPostType } from "@/lib/post-access";
 import { formatRelativeDate, postTypeMeta } from "@/lib/post-presenter";
+import { resolvePublicGuestDisplayName, sanitizePublicGuestIdentity } from "@/lib/public-guest-identity";
 import { resolveUserDisplayName } from "@/lib/user-display";
 import { postListSchema, toPostListInput } from "@/lib/validations/post";
 import { redirectToProfileIfNicknameMissing } from "@/server/nickname-guard";
@@ -232,7 +233,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
             </div>
             <div className="divide-y divide-[#e1e9f5]">
               {resultItems.map((post) => {
-                const guestMeta = post as {
+                const guestMeta = sanitizePublicGuestIdentity(post as {
                   guestDisplayName?: string | null;
                   guestAuthor?: {
                     displayName?: string | null;
@@ -241,29 +242,23 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                   } | null;
                   guestIpDisplay?: string | null;
                   guestIpLabel?: string | null;
-                };
-                const resolvedGuestIpDisplay =
-                  guestMeta.guestIpDisplay ?? guestMeta.guestAuthor?.ipDisplay ?? null;
-                const resolvedGuestIpLabel =
-                  guestMeta.guestIpLabel ?? guestMeta.guestAuthor?.ipLabel ?? null;
+                });
                 const meta = postTypeMeta[post.type];
                 const excerpt =
                   post.content.length > 180
                     ? `${post.content.slice(0, 180)}...`
                     : post.content;
-                const authorNode =
-                  guestMeta.guestDisplayName || guestMeta.guestAuthor?.displayName ? (
-                    <span>
-                      {guestMeta.guestDisplayName ?? guestMeta.guestAuthor?.displayName}
-                      {resolvedGuestIpDisplay
-                        ? ` (${resolvedGuestIpLabel ?? "아이피"} ${resolvedGuestIpDisplay})`
-                        : ""}
-                    </span>
-                  ) : (
-                    <Link href={`/users/${post.author.id}`} className="hover:text-[#2f5da4]">
-                      {resolveUserDisplayName(post.author.nickname)}
-                    </Link>
-                  );
+                const isGuestPost = Boolean(
+                  (post as { guestAuthorId?: string | null }).guestAuthorId ||
+                    guestMeta.guestDisplayName,
+                );
+                const authorNode = isGuestPost ? (
+                  <span>{resolvePublicGuestDisplayName(guestMeta.guestDisplayName)}</span>
+                ) : (
+                  <Link href={`/users/${post.author.id}`} className="hover:text-[#2f5da4]">
+                    {resolveUserDisplayName(post.author.nickname)}
+                  </Link>
+                );
 
                 return (
                   <PostListItemShell

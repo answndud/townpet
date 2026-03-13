@@ -38,15 +38,13 @@ const buildCommentSelect = (
   updatedAt: true,
   authorId: true,
   guestAuthorId: true,
-  author: { select: { id: true, nickname: true, email: true } },
+  author: { select: { id: true, nickname: true } },
   ...(includeGuestAuthor
     ? {
         guestAuthor: {
           select: {
             id: true,
             displayName: true,
-            ipDisplay: true,
-            ipLabel: true,
           },
         },
       }
@@ -352,9 +350,13 @@ export async function listComments(
   options?: {
     page?: number;
     limit?: number;
+    hiddenAuthorViewerId?: string;
   },
 ) {
-  const { blockedAuthorIds, mutedAuthorIds } = await listHiddenAuthorGroupsForViewer(viewerId);
+  const hiddenAuthorViewerId = options?.hiddenAuthorViewerId ?? viewerId;
+  const { blockedAuthorIds, mutedAuthorIds } = await listHiddenAuthorGroupsForViewer(
+    hiddenAuthorViewerId,
+  );
   const requestedPage = normalizeCommentPageParam(options?.page);
   const limit = normalizeCommentLimitParam(options?.limit);
 
@@ -411,7 +413,11 @@ export async function listComments(
     };
   };
 
-  const shouldCache = !viewerId && blockedAuthorIds.length === 0 && mutedAuthorIds.length === 0;
+  const shouldCache =
+    !viewerId &&
+    !options?.hiddenAuthorViewerId &&
+    blockedAuthorIds.length === 0 &&
+    mutedAuthorIds.length === 0;
   if (shouldCache) {
     const cacheKey = await createQueryCacheKey("post-comments", { postId, page: requestedPage, limit });
     return withQueryCache({

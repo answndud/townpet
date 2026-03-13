@@ -3,6 +3,8 @@
 import { signIn } from "next-auth/react";
 import { useTransition } from "react";
 
+import { resolveSafeRedirectPath } from "@/lib/redirect-path";
+
 type NaverSignInButtonProps = {
   label?: string;
   callbackUrl?: string;
@@ -17,26 +19,27 @@ export function NaverSignInButton({
   socialDevEnabled = false,
 }: NaverSignInButtonProps) {
   const [isPending, startTransition] = useTransition();
+  const safeCallbackUrl = resolveSafeRedirectPath(callbackUrl, "/onboarding");
 
   const handleClick = () => {
     if (devMode && socialDevEnabled) {
       startTransition(async () => {
         await signIn("social-dev", {
           socialProvider: "naver",
-          callbackUrl,
+          callbackUrl: safeCallbackUrl,
         });
       });
       return;
     }
 
     if (devMode) {
-      const query = new URLSearchParams({ callbackUrl });
+      const query = new URLSearchParams({ callbackUrl: safeCallbackUrl });
       window.location.assign(`/api/auth/signin/naver?${query.toString()}`);
       return;
     }
 
     startTransition(async () => {
-      await signIn("naver", { callbackUrl });
+      await signIn("naver", { callbackUrl: safeCallbackUrl });
     });
   };
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { resolveSafeRedirectPath } from "@/lib/redirect-path";
 import type { SocialAuthProvider } from "@/lib/social-auth";
 
 export const OAUTH_LINK_INTENT_KEY = "townpet:oauth-link-intent";
@@ -29,12 +30,15 @@ export function readPendingOAuthLinkIntent(): PendingOAuthLinkIntent | null {
 
   try {
     const parsed = JSON.parse(raw) as PendingOAuthLinkIntent;
+    const returnPath = resolveSafeRedirectPath(parsed?.returnPath, "");
     if (
       typeof parsed?.provider === "string" &&
-      typeof parsed?.returnPath === "string" &&
-      parsed.returnPath.startsWith("/")
+      returnPath.length > 0
     ) {
-      return parsed;
+      return {
+        provider: parsed.provider,
+        returnPath,
+      };
     }
   } catch {
     // Ignore malformed client storage and clear it below.
