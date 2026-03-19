@@ -946,18 +946,30 @@ model SiteSetting {
   updatedAt DateTime @updatedAt
 }
 
-model SearchTermStat {
-  termNormalized   String   @id
-  termDisplay      String
-  count            Int      @default(1)
-  lastResultCount  Int?
-  totalResultCount Int      @default(0)
-  zeroResultCount  Int      @default(0)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+enum SearchTermSearchIn {
+  ALL
+  TITLE
+  CONTENT
+  AUTHOR
+}
 
-  @@index([count(sort: Desc), updatedAt(sort: Desc)])
-  @@index([zeroResultCount(sort: Desc), updatedAt(sort: Desc)])
+model SearchTermStat {
+  statKey          String             @id
+  termNormalized   String
+  termDisplay      String
+  scope            PostScope          @default(GLOBAL)
+  typeKey          String             @default("ALL")
+  searchIn         SearchTermSearchIn @default(ALL)
+  count            Int                @default(1)
+  lastResultCount  Int?
+  totalResultCount Int                @default(0)
+  zeroResultCount  Int                @default(0)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  @@index([termNormalized, scope, typeKey, searchIn])
+  @@index([scope, typeKey, searchIn, count(sort: Desc), updatedAt(sort: Desc)])
+  @@index([scope, typeKey, searchIn, zeroResultCount(sort: Desc), updatedAt(sort: Desc)])
   @@index([updatedAt(sort: Desc)])
 }
 

@@ -1,6 +1,10 @@
+import { PostScope, PostType, SearchTermSearchIn } from "@prisma/client";
+
 import { prisma } from "@/lib/prisma";
 import {
+  buildSearchTermStatVariants,
   normalizeSearchTerm,
+  normalizeSearchTermForStats,
   shouldExcludeSearchTermFromStats,
   type SearchTermSkipReason,
 } from "@/lib/search-term-privacy";
@@ -8,7 +12,11 @@ import { logger } from "@/server/logger";
 import { bumpPopularCacheVersion, createQueryCacheKey, withQueryCache } from "@/server/cache/query-cache";
 
 type SearchTermStatRecord = {
+  termNormalized?: string;
   termDisplay: string;
+  scope?: PostScope;
+  typeKey?: string;
+  searchIn?: SearchTermSearchIn;
   count?: number;
   zeroResultCount?: number;
   totalResultCount?: number;
@@ -21,8 +29,33 @@ type SearchTermStatDelegate = {
   upsert(args: Record<string, unknown>): Promise<unknown>;
 };
 
+export type SearchTermContext = {
+  scope?: PostScope | null;
+  type?: PostType | null;
+  searchIn?: SearchTermSearchIn | "ALL" | "TITLE" | "CONTENT" | "AUTHOR" | null;
+};
+
+type NormalizedSearchTermContext = {
+  scope: PostScope;
+  typeKey: string;
+  searchIn: SearchTermSearchIn;
+};
+
+type SearchTermContextInput = SearchTermContext | NormalizedSearchTermContext;
+
+type RecordSearchTermOptions = SearchTermContext & {
+  resultCount?: number | null;
+  incrementQueryCount?: boolean;
+};
+
 let missingSearchTermStatDelegateWarned = false;
 let missingSearchTermStatTableWarned = false;
+
+const GLOBAL_SEARCH_TERM_CONTEXT: NormalizedSearchTermContext = {
+  scope: PostScope.GLOBAL,
+  typeKey: "ALL",
+  searchIn: SearchTermSearchIn.ALL,
+};
 
 function getSearchTermStatDelegate() {
   const delegate = (
@@ -80,10 +113,95 @@ export type SearchInsightsOverview = {
   lowResultTerms: SearchTermInsight[];
 };
 
-type RecordSearchTermOptions = {
-  resultCount?: number | null;
-  incrementQueryCount?: boolean;
-};
+function normalizeSearchIn(
+  value: SearchTermContext["searchIn"],
+): SearchTermSearchIn {
+  if (value === SearchTermSearchIn.TITLE) {
+    return SearchTermSearchIn.TITLE;
+  }
+  if (value === SearchTermSearchIn.CONTENT) {
+    return SearchTermSearchIn.CONTENT;
+  }
+  if (value === SearchTermSearchIn.AUTHOR) {
+    return SearchTermSearchIn.AUTHOR;
+  }
+  return SearchTermSearchIn.ALL;
+}
+
+function normalizeSearchTermContext(
+  context?: SearchTermContextInput,
+): NormalizedSearchTermContext {
+  if (context && "typeKey" in context) {
+    return {
+      scope: context.scope === PostScope.LOCAL ? PostScope.LOCAL : PostScope.GLOBAL,
+      typeKey: context.typeKey || "ALL",
+      searchIn: normalizeSearchIn(context.searchIn),
+    };
+  }
+
+  return {
+    scope: context?.scope === PostScope.LOCAL ? PostScope.LOCAL : PostScope.GLOBAL,
+    typeKey: context?.type ?? "ALL",
+    searchIn: normalizeSearchIn(context?.searchIn),
+  };
+}
+
+function isGlobalSearchTermContext(context: NormalizedSearchTermContext) {
+  return (
+    context.scope === GLOBAL_SEARCH_TERM_CONTEXT.scope &&
+    context.typeKey === GLOBAL_SEARCH_TERM_CONTEXT.typeKey &&
+    context.searchIn === GLOBAL_SEARCH_TERM_CONTEXT.searchIn
+  );
+}
+
+function buildSearchTermStatKey(
+  termNormalized: string,
+  context: NormalizedSearchTermContext,
+) {
+  const encodedTerm = Buffer.from(termNormalized, "utf8").toString("hex");
+  return `${context.scope}|${context.typeKey}|${context.searchIn}|${encodedTerm}`;
+}
+
+function buildSearchTermContextWhere(context: NormalizedSearchTermContext) {
+  return {
+    scope: context.scope,
+    typeKey: context.typeKey,
+    searchIn: context.searchIn,
+  };
+}
+
+function buildSearchTermContexts(context?: SearchTermContextInput) {
+  const normalizedContext = normalizeSearchTermContext(context);
+  if (isGlobalSearchTermContext(normalizedContext)) {
+    return [normalizedContext];
+  }
+
+  return [normalizedContext, GLOBAL_SEARCH_TERM_CONTEXT];
+}
+
+function matchesSearchTermContext(
+  row: SearchTermStatRecord,
+  context: NormalizedSearchTermContext,
+) {
+  return (
+    (row.scope ?? PostScope.GLOBAL) === context.scope &&
+    (row.typeKey ?? "ALL") === context.typeKey &&
+    (row.searchIn ?? SearchTermSearchIn.ALL) === context.searchIn
+  );
+}
+
+function resolveSearchTermContextRank(
+  row: SearchTermStatRecord,
+  context: NormalizedSearchTermContext,
+) {
+  if (matchesSearchTermContext(row, context)) {
+    return 0;
+  }
+  if (matchesSearchTermContext(row, GLOBAL_SEARCH_TERM_CONTEXT)) {
+    return 1;
+  }
+  return 2;
+}
 
 function isTrackableSearchTerm(term: string) {
   return !shouldExcludeSearchTermFromStats(term);
@@ -98,7 +216,7 @@ function normalizeResultCount(value: number | null | undefined) {
 }
 
 function mapSearchTermInsight(row: SearchTermStatRecord): SearchTermInsight | null {
-  const term = normalizeSearchTerm(row.termDisplay);
+  const term = normalizeSearchTermForStats(row.termDisplay);
   if (!term || !isTrackableSearchTerm(term)) {
     return null;
   }
@@ -118,14 +236,95 @@ function mapSearchTermInsight(row: SearchTermStatRecord): SearchTermInsight | nu
   };
 }
 
-export async function getPopularSearchTerms(limit = 8) {
+function mapSearchTermString(row: SearchTermStatRecord) {
+  return normalizeSearchTermForStats(row.termDisplay);
+}
+
+function dedupeSearchTerms(
+  rows: Array<{
+    term: string;
+    contextRank: number;
+    count: number;
+    updatedAt: number;
+  }>,
+  limit: number,
+) {
+  const deduped = new Map<string, { term: string }>();
+
+  for (const row of rows) {
+    if (!deduped.has(row.term)) {
+      deduped.set(row.term, { term: row.term });
+    }
+    if (deduped.size >= limit) {
+      break;
+    }
+  }
+
+  return Array.from(deduped.values()).map((row) => row.term);
+}
+
+function buildTermSearchWhere(variants: string[]) {
+  const normalizedVariants = variants
+    .map((item) => item.toLowerCase())
+    .filter((item, index, items) => items.indexOf(item) === index);
+
+  return {
+    OR: [
+      ...normalizedVariants.map((item) => ({
+        termNormalized: {
+          contains: item,
+        },
+      })),
+      ...variants.map((item) => ({
+        termDisplay: {
+          contains: item,
+          mode: "insensitive" as const,
+        },
+      })),
+    ],
+  };
+}
+
+function resolveMatchRank(term: string, variants: string[]) {
+  const lowered = term.toLowerCase();
+  const compact = lowered.replace(/\s+/g, "");
+
+  let bestRank = 3;
+  for (const variant of variants) {
+    const normalizedVariant = variant.toLowerCase();
+    const compactVariant = normalizedVariant.replace(/\s+/g, "");
+    if (lowered.startsWith(normalizedVariant)) {
+      bestRank = Math.min(bestRank, 0);
+      continue;
+    }
+    if (compact.startsWith(compactVariant)) {
+      bestRank = Math.min(bestRank, 1);
+      continue;
+    }
+    if (compact.includes(compactVariant) || lowered.includes(normalizedVariant)) {
+      bestRank = Math.min(bestRank, 2);
+    }
+  }
+
+  return bestRank;
+}
+
+export async function getPopularSearchTerms(limit = 8, context?: SearchTermContext) {
   const safeLimit = Math.min(Math.max(limit, 1), 20);
   const statsDelegate = getSearchTermStatDelegate();
   if (!statsDelegate) {
     return [] as string[];
   }
 
-  const cacheKey = await createQueryCacheKey("popular", { limit: safeLimit });
+  const contexts = buildSearchTermContexts(context);
+  const primaryContext = normalizeSearchTermContext(context);
+  const cacheKey = await createQueryCacheKey("popular", {
+    limit: safeLimit,
+    scope: primaryContext.scope,
+    typeKey: primaryContext.typeKey,
+    searchIn: primaryContext.searchIn,
+  });
+
   return withQueryCache({
     key: cacheKey,
     ttlSeconds: 300,
@@ -133,9 +332,19 @@ export async function getPopularSearchTerms(limit = 8) {
       let rows: SearchTermStatRecord[];
       try {
         rows = await statsDelegate.findMany({
-          take: safeLimit,
+          where: {
+            OR: contexts.map(buildSearchTermContextWhere),
+          },
+          take: Math.max(40, safeLimit * 4),
           orderBy: [{ count: "desc" }, { updatedAt: "desc" }],
-          select: { termDisplay: true },
+          select: {
+            termDisplay: true,
+            count: true,
+            updatedAt: true,
+            scope: true,
+            typeKey: true,
+            searchIn: true,
+          },
         });
       } catch (error) {
         if (!isSearchTermStatSchemaSyncError(error)) {
@@ -145,15 +354,45 @@ export async function getPopularSearchTerms(limit = 8) {
         return [] as string[];
       }
 
-      return rows
-        .map((row) => normalizeSearchTerm(row.termDisplay))
-        .filter((term): term is string => Boolean(term))
-        .filter((term) => isTrackableSearchTerm(term));
+      const scored = rows
+        .map((row) => ({
+          term: mapSearchTermString(row),
+          count: row.count ?? 0,
+          updatedAt: row.updatedAt instanceof Date ? row.updatedAt.getTime() : 0,
+          contextRank: resolveSearchTermContextRank(row, primaryContext),
+        }))
+        .filter(
+          (row): row is {
+            term: string;
+            count: number;
+            updatedAt: number;
+            contextRank: number;
+          } => typeof row.term === "string" && row.term.length > 0,
+        )
+        .filter((row) => isTrackableSearchTerm(row.term))
+        .sort((left, right) => {
+          if (left.contextRank !== right.contextRank) {
+            return left.contextRank - right.contextRank;
+          }
+          if (right.count !== left.count) {
+            return right.count - left.count;
+          }
+          if (right.updatedAt !== left.updatedAt) {
+            return right.updatedAt - left.updatedAt;
+          }
+          return left.term.localeCompare(right.term, "ko");
+        });
+
+      return dedupeSearchTerms(scored, safeLimit);
     },
   });
 }
 
-export async function listSearchTermSuggestions(rawTerm: string, limit = 5) {
+export async function listSearchTermSuggestions(
+  rawTerm: string,
+  limit = 5,
+  context?: SearchTermContext,
+) {
   const normalizedTerm = normalizeSearchTerm(rawTerm);
   if (!normalizedTerm) {
     return [] as string[];
@@ -165,24 +404,28 @@ export async function listSearchTermSuggestions(rawTerm: string, limit = 5) {
   }
 
   const safeLimit = Math.min(Math.max(limit, 1), 10);
-  const normalizedKey = normalizedTerm.toLowerCase();
-  const compactKey = normalizedKey.replace(/\s+/g, "");
+  const searchVariants = buildSearchTermStatVariants(normalizedTerm);
+  const contexts = buildSearchTermContexts(context);
+  const primaryContext = normalizeSearchTermContext(context);
 
   let rows: SearchTermStatRecord[];
   try {
     rows = await statsDelegate.findMany({
       where: {
-        OR: [
-          { termNormalized: { contains: normalizedKey } },
-          { termDisplay: { contains: normalizedTerm, mode: "insensitive" as const } },
+        AND: [
+          { OR: contexts.map(buildSearchTermContextWhere) },
+          buildTermSearchWhere(searchVariants),
         ],
       },
-      take: 40,
+      take: 60,
       orderBy: [{ count: "desc" }, { updatedAt: "desc" }],
       select: {
         termDisplay: true,
         count: true,
         updatedAt: true,
+        scope: true,
+        typeKey: true,
+        searchIn: true,
       },
     });
   } catch (error) {
@@ -194,34 +437,37 @@ export async function listSearchTermSuggestions(rawTerm: string, limit = 5) {
   }
 
   const scored = rows
-    .map((row) => ({
-      term: normalizeSearchTerm(row.termDisplay),
-      count: row.count ?? 0,
-      updatedAt: row.updatedAt instanceof Date ? row.updatedAt.getTime() : 0,
-    }))
-    .filter(
-      (row): row is { term: string; count: number; updatedAt: number } =>
-        typeof row.term === "string" && row.term.length > 0,
-    )
-    .filter((row) => isTrackableSearchTerm(row.term))
     .map((row) => {
-      const lowered = row.term.toLowerCase();
-      const compact = lowered.replace(/\s+/g, "");
-      let matchRank = 3;
-      if (lowered.startsWith(normalizedKey)) {
-        matchRank = 0;
-      } else if (compact.startsWith(compactKey)) {
-        matchRank = 1;
-      } else if (compact.includes(compactKey) || lowered.includes(normalizedKey)) {
-        matchRank = 2;
+      const term = mapSearchTermString(row);
+      if (!term) {
+        return null;
       }
+
       return {
-        ...row,
-        matchRank,
+        term,
+        count: row.count ?? 0,
+        updatedAt: row.updatedAt instanceof Date ? row.updatedAt.getTime() : 0,
+        contextRank: resolveSearchTermContextRank(row, primaryContext),
+        matchRank: resolveMatchRank(term, searchVariants),
       };
     })
+    .filter(
+      (
+        row,
+      ): row is {
+        term: string;
+        count: number;
+        updatedAt: number;
+        contextRank: number;
+        matchRank: number;
+      } => row !== null,
+    )
+    .filter((row) => isTrackableSearchTerm(row.term))
     .filter((row) => row.matchRank < 3)
     .sort((left, right) => {
+      if (left.contextRank !== right.contextRank) {
+        return left.contextRank - right.contextRank;
+      }
       if (left.matchRank !== right.matchRank) {
         return left.matchRank - right.matchRank;
       }
@@ -234,7 +480,7 @@ export async function listSearchTermSuggestions(rawTerm: string, limit = 5) {
       return left.term.localeCompare(right.term, "ko");
     });
 
-  return Array.from(new Set(scored.map((row) => row.term))).slice(0, safeLimit);
+  return dedupeSearchTerms(scored, safeLimit);
 }
 
 export async function getSearchInsightsOverview(limit = 8): Promise<SearchInsightsOverview> {
@@ -251,6 +497,7 @@ export async function getSearchInsightsOverview(limit = 8): Promise<SearchInsigh
   let rows: SearchTermStatRecord[];
   try {
     rows = await statsDelegate.findMany({
+      where: buildSearchTermContextWhere(GLOBAL_SEARCH_TERM_CONTEXT),
       take: 100,
       orderBy: [{ count: "desc" }, { updatedAt: "desc" }],
       select: {
@@ -308,7 +555,7 @@ export async function getSearchInsightsOverview(limit = 8): Promise<SearchInsigh
 }
 
 export async function recordSearchTerm(rawTerm: string, options: RecordSearchTermOptions = {}) {
-  const normalizedTerm = normalizeSearchTerm(rawTerm);
+  const normalizedTerm = normalizeSearchTermForStats(rawTerm);
   if (!normalizedTerm) {
     return { ok: true, recorded: false, reason: "INVALID_TERM" } as const;
   }
@@ -325,37 +572,52 @@ export async function recordSearchTerm(rawTerm: string, options: RecordSearchTer
     return { ok: false, reason: "SCHEMA_SYNC_REQUIRED" } as const;
   }
 
+  const primaryContext = normalizeSearchTermContext(options);
+  const contexts = buildSearchTermContexts(primaryContext);
+
   try {
-    await statsDelegate.upsert({
-      where: { termNormalized: normalizedKey },
-      update: {
-        termDisplay: normalizedTerm,
-        ...(incrementQueryCount ? { count: { increment: 1 } } : {}),
-        ...(resultCount !== null
-          ? {
-              lastResultCount: resultCount,
-              totalResultCount: { increment: resultCount },
-              ...(resultCount === 0
-                ? {
-                    zeroResultCount: { increment: 1 },
-                  }
-                : {}),
-            }
-          : {}),
-      },
-      create: {
-        termNormalized: normalizedKey,
-        termDisplay: normalizedTerm,
-        count: 1,
-        ...(resultCount !== null
-          ? {
-              lastResultCount: resultCount,
-              totalResultCount: resultCount,
-              zeroResultCount: resultCount === 0 ? 1 : 0,
-            }
-          : {}),
-      },
-    });
+    await Promise.all(
+      contexts.map((context) =>
+        statsDelegate.upsert({
+          where: { statKey: buildSearchTermStatKey(normalizedKey, context) },
+          update: {
+            termNormalized: normalizedKey,
+            termDisplay: normalizedTerm,
+            scope: context.scope,
+            typeKey: context.typeKey,
+            searchIn: context.searchIn,
+            ...(incrementQueryCount ? { count: { increment: 1 } } : {}),
+            ...(resultCount !== null
+              ? {
+                  lastResultCount: resultCount,
+                  totalResultCount: { increment: resultCount },
+                  ...(resultCount === 0
+                    ? {
+                        zeroResultCount: { increment: 1 },
+                      }
+                    : {}),
+                }
+              : {}),
+          },
+          create: {
+            statKey: buildSearchTermStatKey(normalizedKey, context),
+            termNormalized: normalizedKey,
+            termDisplay: normalizedTerm,
+            scope: context.scope,
+            typeKey: context.typeKey,
+            searchIn: context.searchIn,
+            count: incrementQueryCount ? 1 : 0,
+            ...(resultCount !== null
+              ? {
+                  lastResultCount: resultCount,
+                  totalResultCount: resultCount,
+                  zeroResultCount: resultCount === 0 ? 1 : 0,
+                }
+              : {}),
+          },
+        }),
+      ),
+    );
   } catch (error) {
     if (!isSearchTermStatSchemaSyncError(error)) {
       throw error;

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import type { PostType } from "@prisma/client";
 
 import { HighlightText } from "@/components/content/highlight-text";
@@ -13,6 +13,7 @@ import { formatRelativeDate, postTypeMeta } from "@/lib/post-presenter";
 import { resolveUserDisplayName } from "@/lib/user-display";
 
 type FeedSearchIn = "ALL" | "TITLE" | "CONTENT" | "AUTHOR";
+type FeedScope = "LOCAL" | "GLOBAL";
 
 type GuestSearchPostItem = {
   id: string;
@@ -33,6 +34,9 @@ type GuestSearchResponse =
       data: {
         query: string;
         type: PostType | null;
+        requestedScope: "LOCAL" | "GLOBAL";
+        effectiveScope: "LOCAL" | "GLOBAL";
+        isGuestScopeBlocked: boolean;
         searchIn: FeedSearchIn;
         isGuestTypeBlocked: boolean;
         popularTerms: string[];
@@ -50,6 +54,9 @@ type GuestSearchResponse =
 const DEFAULT_DATA = {
   query: "",
   type: null as PostType | null,
+  requestedScope: "GLOBAL" as FeedScope,
+  effectiveScope: "GLOBAL" as FeedScope,
+  isGuestScopeBlocked: false,
   searchIn: "ALL" as FeedSearchIn,
   isGuestTypeBlocked: false,
   popularTerms: [] as string[],
@@ -58,29 +65,12 @@ const DEFAULT_DATA = {
 
 export function GuestSearchPageClient() {
   const searchParams = useSearchParams();
-  const router = useRouter();
-  const pathname = usePathname();
   const [data, setData] = useState(DEFAULT_DATA);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [reloadToken, setReloadToken] = useState(0);
 
   const queryString = searchParams.toString();
-
-  useEffect(() => {
-    if (!pathname?.startsWith("/search")) {
-      return;
-    }
-
-    if (!searchParams.get("scope")) {
-      return;
-    }
-
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete("scope");
-    const serialized = params.toString();
-    router.replace(serialized ? `/search?${serialized}` : "/search");
-  }, [pathname, router, searchParams]);
 
   useEffect(() => {
     const handlePageShow = (event: PageTransitionEvent) => {
@@ -155,10 +145,12 @@ export function GuestSearchPageClient() {
 
   const query = data.query;
   const type = data.type;
+  const effectiveScope = data.effectiveScope;
   const popularTerms = data.popularTerms;
   const selectedSearchIn = data.searchIn;
   const items = data.items;
   const isGuestTypeBlocked = data.isGuestTypeBlocked;
+  const isGuestScopeBlocked = data.isGuestScopeBlocked;
   const hasQuery = query.trim().length > 0;
 
   const blockedLoginHref = useMemo(() => {
@@ -181,7 +173,7 @@ export function GuestSearchPageClient() {
           </p>
           <div className="mt-4">
             <FeedSearchForm
-              actionPath="/search"
+              actionPath="/search/guest"
               query={query}
               searchIn={selectedSearchIn}
               personalized="0"
@@ -195,7 +187,29 @@ export function GuestSearchPageClient() {
           </div>
         </header>
 
-        {hasQuery ? <SearchResultTelemetry query={query} resultCount={items.length} /> : null}
+        {hasQuery ? (
+          <SearchResultTelemetry
+            query={query}
+            resultCount={items.length}
+            scope={effectiveScope}
+            type={type}
+            searchIn={selectedSearchIn}
+          />
+        ) : null}
+
+        {isGuestScopeBlocked ? (
+          <div className="border border-[#d9c38b] bg-[#fff8e5] px-4 py-3 text-sm text-[#6c5319]">
+            동네 검색은 로그인 후 사용할 수 있습니다. 현재는{" "}
+            <span className="font-semibold text-[#1f4f8f]">전체 검색</span> 결과를 보여주고
+            있습니다.{" "}
+            <Link
+              href={`/login?next=${encodeURIComponent(`/search?scope=LOCAL${type ? `&type=${type}` : ""}`)}`}
+              className="font-semibold text-[#2f5da4] underline underline-offset-2"
+            >
+              로그인하고 동네 검색하기
+            </Link>
+          </div>
+        ) : null}
 
         {isGuestTypeBlocked && type ? (
           <div className="border border-[#d9c38b] bg-[#fff8e5] px-4 py-3 text-sm text-[#6c5319]">

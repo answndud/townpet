@@ -1,10 +1,14 @@
 "use client";
 
 import { useEffect } from "react";
+import type { PostType } from "@prisma/client";
 
 type SearchResultTelemetryProps = {
   query: string;
   resultCount: number;
+  scope?: "LOCAL" | "GLOBAL";
+  type?: PostType | null;
+  searchIn?: "ALL" | "TITLE" | "CONTENT" | "AUTHOR";
 };
 
 const SEARCH_RESULT_TELEMETRY_PREFIX = "townpet:search-result-telemetry:v1:";
@@ -20,6 +24,9 @@ function normalizeSearchQuery(value: string) {
 export function SearchResultTelemetry({
   query,
   resultCount,
+  scope,
+  type,
+  searchIn = "ALL",
 }: SearchResultTelemetryProps) {
   useEffect(() => {
     const normalizedQuery = normalizeSearchQuery(query);
@@ -28,7 +35,7 @@ export function SearchResultTelemetry({
     }
 
     const safeResultCount = Math.min(Math.max(Math.floor(resultCount), 0), 500);
-    const key = `${SEARCH_RESULT_TELEMETRY_PREFIX}${normalizedQuery}:${safeResultCount}`;
+    const key = `${SEARCH_RESULT_TELEMETRY_PREFIX}${scope ?? "GLOBAL"}:${type ?? "ALL"}:${searchIn}:${normalizedQuery}:${safeResultCount}`;
     if (window.sessionStorage.getItem(key) === "1") {
       return;
     }
@@ -38,6 +45,9 @@ export function SearchResultTelemetry({
       q: normalizedQuery,
       stage: "RESULT",
       resultCount: safeResultCount,
+      scope,
+      type,
+      searchIn,
     });
 
     if (navigator.sendBeacon) {
@@ -55,7 +65,7 @@ export function SearchResultTelemetry({
       body: payload,
       keepalive: true,
     });
-  }, [query, resultCount]);
+  }, [query, resultCount, scope, type, searchIn]);
 
   return null;
 }

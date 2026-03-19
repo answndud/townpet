@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { PostScope, PostType } from "@prisma/client";
 
 import { POST } from "@/app/api/search/log/route";
 import { getCurrentUserId } from "@/server/auth";
@@ -197,7 +198,14 @@ describe("POST /api/search/log contract", () => {
   it("passes result-stage telemetry without incrementing query count", async () => {
     const request = new Request("http://localhost/api/search/log", {
       method: "POST",
-      body: JSON.stringify({ q: "노령견 케어", stage: "RESULT", resultCount: 0 }),
+      body: JSON.stringify({
+        q: "노령견 케어",
+        stage: "RESULT",
+        resultCount: 0,
+        scope: PostScope.LOCAL,
+        type: PostType.HOSPITAL_REVIEW,
+        searchIn: "TITLE",
+      }),
       headers: { "content-type": "application/json" },
     }) as NextRequest;
 
@@ -207,6 +215,9 @@ describe("POST /api/search/log contract", () => {
     expect(mockRecordSearchTerm).toHaveBeenCalledWith("노령견 케어", {
       incrementQueryCount: false,
       resultCount: 0,
+      scope: "LOCAL",
+      type: "HOSPITAL_REVIEW",
+      searchIn: "TITLE",
     });
   });
 });

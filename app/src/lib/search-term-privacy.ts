@@ -2,6 +2,7 @@ import {
   detectContactSignals,
   type ContactSignalType,
 } from "@/lib/contact-policy";
+import { buildStructuredSearchVariants } from "@/lib/structured-field-normalization";
 
 export type SearchTermSkipReason = "INVALID_TERM" | "SENSITIVE_TERM";
 
@@ -27,8 +28,32 @@ export function normalizeSearchTerm(value: string) {
   return normalized;
 }
 
-export function detectSensitiveSearchSignals(value: string) {
+export function buildSearchTermStatVariants(value: string) {
   const normalized = normalizeSearchTerm(value);
+  if (!normalized) {
+    return [] as string[];
+  }
+
+  return Array.from(
+    new Set(
+      [normalized, ...buildStructuredSearchVariants(normalized)]
+        .map((item) => normalizeSearchTerm(item))
+        .filter((item): item is string => Boolean(item)),
+    ),
+  );
+}
+
+export function normalizeSearchTermForStats(value: string) {
+  const variants = buildSearchTermStatVariants(value);
+  if (variants.length === 0) {
+    return null;
+  }
+
+  return variants.find((item) => item !== variants[0]) ?? variants[0]!;
+}
+
+export function detectSensitiveSearchSignals(value: string) {
+  const normalized = normalizeSearchTermForStats(value);
   if (!normalized) {
     return [] as ContactSignalType[];
   }

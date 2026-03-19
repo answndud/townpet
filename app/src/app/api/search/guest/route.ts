@@ -15,6 +15,7 @@ import { ServiceError } from "@/server/services/service-error";
 const guestSearchSchema = z.object({
   q: z.string().trim().min(0).max(100).default(""),
   type: z.nativeEnum(PostType).optional(),
+  scope: z.nativeEnum(PostScope).optional(),
   searchIn: z.enum(["ALL", "TITLE", "CONTENT", "AUTHOR"]).default("ALL"),
   limit: z.coerce.number().int().min(1).max(30).default(30),
 });
@@ -25,6 +26,7 @@ export async function GET(request: NextRequest) {
     const parsed = guestSearchSchema.safeParse({
       q: searchParams.get("q") ?? undefined,
       type: searchParams.get("type") ?? undefined,
+      scope: searchParams.get("scope") ?? undefined,
       searchIn: searchParams.get("searchIn") ?? undefined,
       limit: searchParams.get("limit") ?? undefined,
     });
@@ -44,10 +46,17 @@ export async function GET(request: NextRequest) {
       cacheMs: 1_000,
     });
 
-    const { q, type, searchIn, limit } = parsed.data;
+    const { q, type, scope, searchIn, limit } = parsed.data;
+    const requestedScope = scope ?? PostScope.GLOBAL;
+    const effectiveScope = PostScope.GLOBAL;
+    const isGuestScopeBlocked = requestedScope === PostScope.LOCAL;
     const [loginRequiredTypes, popularTerms] = await Promise.all([
       getGuestReadLoginRequiredPostTypes(),
-      getPopularSearchTerms(10),
+      getPopularSearchTerms(10, {
+        scope: effectiveScope,
+        type,
+        searchIn,
+      }),
     ]);
     const isGuestTypeBlocked = isLoginRequiredPostType(type, loginRequiredTypes);
     const query = q.trim();
@@ -55,7 +64,7 @@ export async function GET(request: NextRequest) {
       query.length > 0 && !isGuestTypeBlocked
         ? await listRankedSearchPosts({
             limit,
-            scope: PostScope.GLOBAL,
+            scope: effectiveScope,
             type,
             q: query,
             searchIn,
@@ -69,6 +78,9 @@ export async function GET(request: NextRequest) {
       {
         query,
         type: type ?? null,
+        requestedScope,
+        effectiveScope,
+        isGuestScopeBlocked,
         searchIn,
         isGuestTypeBlocked,
         popularTerms,
