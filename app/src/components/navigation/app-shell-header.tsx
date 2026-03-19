@@ -124,15 +124,30 @@ export function AppShellHeader({ communities }: AppShellHeaderProps) {
               className="h-[34px] w-auto sm:h-[40px]"
             />
           </Link>
-          <div className="flex items-center gap-1.5 md:hidden">
+          <div className="flex flex-wrap items-center justify-end gap-1.5 md:hidden">
             {viewerShell.canModerate ? (
               <Link href="/admin" className={APP_SHELL_MOBILE_QUICK_LINK_CLASS_NAME}>
                 관리자
               </Link>
             ) : null}
+            <Link href="/search" className={APP_SHELL_MOBILE_QUICK_LINK_CLASS_NAME}>
+              검색
+            </Link>
             <Link href="/profile" className={APP_SHELL_MOBILE_QUICK_LINK_CLASS_NAME}>
               내 프로필
             </Link>
+            {viewerShell.isAuthenticated ? (
+              <Link href="/notifications" className={APP_SHELL_MOBILE_QUICK_LINK_CLASS_NAME}>
+                알림
+                {viewerShell.unreadNotificationCount > 0 ? (
+                  <span className="ml-1 inline-flex min-w-4 items-center justify-center rounded-full bg-[#dcecff] px-1 text-[10px] font-semibold text-[#1f4f8f]">
+                    {viewerShell.unreadNotificationCount > 99
+                      ? "99+"
+                      : viewerShell.unreadNotificationCount}
+                  </span>
+                ) : null}
+              </Link>
+            ) : null}
             {viewerShell.isAuthenticated ? (
               <AuthControls
                 label="로그아웃"

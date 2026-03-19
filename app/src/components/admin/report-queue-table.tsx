@@ -124,8 +124,8 @@ export function ReportQueueTable({ reports }: ReportQueueTableProps) {
 
   return (
     <section className="tp-card overflow-hidden">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#dde7f5] bg-[#f6f9ff] px-4 py-2.5 text-[11px] sm:px-5">
-        <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-col gap-3 border-b border-[#dde7f5] bg-[#f6f9ff] px-4 py-2.5 text-[11px] sm:px-5 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
           <span className="rounded-lg border border-[#cbdcf5] bg-white px-3 py-1 text-[#315b9a]">
             선택 {selectedIds.length}건
           </span>
@@ -189,7 +189,102 @@ export function ReportQueueTable({ reports }: ReportQueueTableProps) {
           선택한 상태의 신고가 없습니다.
         </div>
       ) : (
-        <div className="overflow-x-auto">
+        <>
+        <div className="grid gap-3 p-4 md:hidden">
+          {reports.map((report) => (
+            <article key={report.id} className="rounded-2xl border border-[#dde7f5] bg-white p-4 text-sm text-[#1f3f71] shadow-[0_8px_18px_rgba(16,40,74,0.04)]">
+              <div className="flex items-start justify-between gap-3">
+                <div className="space-y-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span
+                      className={`rounded-md border px-2 py-0.5 text-[10px] font-semibold ${
+                        report.priority === "CRITICAL"
+                          ? "border-rose-300 bg-rose-50 text-rose-700"
+                          : report.priority === "HIGH"
+                            ? "border-amber-300 bg-amber-50 text-amber-700"
+                            : report.priority === "NORMAL"
+                              ? "border-[#cbdcf5] bg-[#f6f9ff] text-[#315b9a]"
+                              : "border-[#d8e4f6] bg-white text-[#5a7398]"
+                      }`}
+                    >
+                      {report.priorityLabel}
+                    </span>
+                    <span
+                      className={`rounded-md border px-2 py-0.5 text-[10px] font-semibold ${
+                        report.status === ReportStatus.PENDING
+                          ? "border-amber-300 bg-amber-50 text-amber-700"
+                          : report.status === ReportStatus.RESOLVED
+                            ? "border-[#3567b5] bg-[#3567b5] text-white"
+                            : "border-rose-300 bg-rose-50 text-rose-700"
+                      }`}
+                    >
+                      {statusLabels[report.status]}
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#5a7398]">
+                    {getReportTargetLabel(report.targetType)} · 점수 {report.weightedScoreLabel}
+                  </p>
+                  {report.targetHref ? (
+                    <Link href={report.targetHref} className="font-semibold text-[#163462] hover:text-[#2f5da4]">
+                      {report.targetTitle}
+                    </Link>
+                  ) : (
+                    <p className="font-semibold text-[#163462]">{report.targetTitle}</p>
+                  )}
+                  <Link href={`/admin/reports/${report.id}`} className="text-[11px] text-[#5a7398]">
+                    상세 보기
+                  </Link>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={selectedIds.includes(report.id)}
+                  onChange={() => toggleSelection(report.id)}
+                  aria-label={`신고 ${report.id} 선택`}
+                  disabled={report.status !== ReportStatus.PENDING}
+                />
+              </div>
+
+              <div className="mt-3 grid gap-2 text-xs text-[#4f678d]">
+                <p>사유: {report.reason}</p>
+                <p>설명: {report.description ?? "-"}</p>
+                <p>신고자: {report.reporterLabel}</p>
+                <p>처리 메모: {report.resolution ?? "-"}</p>
+                <p>처리자: {report.resolvedByLabel ?? "-"}</p>
+                <p>처리 시간: {report.resolvedAtLabel ?? "-"}</p>
+                <p>{report.signalSummary.join(" · ")}</p>
+              </div>
+
+              <div className="mt-4 border-t border-[#e6edf8] pt-3">
+                <ReportActions reportId={report.id} status={report.status} />
+              </div>
+
+              <div className="mt-4 border-t border-[#e6edf8] pt-3">
+                <p className="text-[10px] uppercase tracking-[0.24em] text-[#5b78a1]">처리 이력</p>
+                <div className="mt-2 space-y-2 text-xs text-[#4f678d]">
+                  {report.audits.length > 0 ? (
+                    report.audits.map((audit) => (
+                      <div key={audit.id} className="rounded-xl border border-[#e1e9f5] bg-[#f8fbff] p-2.5">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="rounded-md border border-[#cbdcf5] bg-white px-2 py-0.5 text-[10px] text-[#355988]">
+                            {statusLabels[audit.status]}
+                          </span>
+                          <span>{audit.resolution ?? "메모 없음"}</span>
+                        </div>
+                        <p className="mt-1 text-[11px] text-[#5a7398]">
+                          {audit.resolverLabel} · {audit.createdAt ?? "-"}
+                        </p>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-[#5a7398]">이력 없음</p>
+                  )}
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+
+        <div className="hidden overflow-x-auto md:block">
           <table className="w-full min-w-[1080px] text-left text-[13px]">
             <thead className="bg-[#f6f9ff] text-[11px] uppercase tracking-[0.14em] text-[#5b78a1]">
               <tr>
@@ -345,6 +440,7 @@ export function ReportQueueTable({ reports }: ReportQueueTableProps) {
             </tbody>
           </table>
         </div>
+        </>
       )}
     </section>
   );

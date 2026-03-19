@@ -377,8 +377,39 @@ export function FeedSearchForm({
         ) : null}
       </div>
 
+      {showKeywordChips && isKeywordPanelOpen && popularTerms.length > 0 ? (
+        <div className="rounded-lg border border-[#d4e2f7] bg-white p-2.5 shadow-[0_10px_20px_rgba(30,63,116,0.08)] sm:hidden">
+          <p className="px-1 pb-1 text-[11px] font-semibold text-[#5b7398]">인기 검색어 TOP 10</p>
+          <div className="grid grid-cols-1 gap-1">
+            {popularTerms.slice(0, 10).map((term, index) => (
+              <Link
+                key={`mobile-popular-${term}`}
+                href={buildTermHref(term)}
+                onClick={() => {
+                  persistRecentSearchTerm(term);
+                  logSearchTerm(term);
+                  setIsKeywordPanelOpen(false);
+                }}
+                className="inline-flex items-center gap-2 rounded-md border border-[#d8e4f7] bg-[#f8fbff] px-2.5 py-1.5 text-xs text-[#315b9a] transition hover:bg-white"
+              >
+                <span className="inline-flex min-w-4 justify-center text-[11px] font-semibold text-[#1d64c4]">
+                  {index + 1}
+                </span>
+                <span className="truncate">{term}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
       {showKeywordChips && recentTerms.length > 0 ? (
-        <div className={density === "ULTRA" ? "hidden flex-wrap items-center gap-1 text-[11px] sm:flex" : "hidden flex-wrap items-center gap-1.5 text-xs sm:flex"}>
+        <div
+          className={
+            density === "ULTRA"
+              ? "flex flex-wrap items-center gap-1 text-[11px]"
+              : "flex flex-wrap items-center gap-1.5 text-xs"
+          }
+        >
           <span className="text-[#5b7398]">최근 검색어</span>
           {recentTerms.map((term) => (
               <span
