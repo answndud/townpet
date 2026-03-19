@@ -5,6 +5,10 @@ import { prisma } from "@/lib/prisma";
 
 export const REPORT_QUEUE_PAGE_SIZE = 25;
 
+const SUPPORTED_REPORT_TARGET_SQL = Prisma.join(
+  [...SUPPORTED_REPORT_TARGETS].map((targetType) => Prisma.sql`${targetType}::"ReportTarget"`),
+);
+
 const reportListInclude = {
   reporter: {
     select: {
@@ -150,7 +154,7 @@ export async function getReportStats(days = 7): Promise<ReportStats> {
         SELECT to_char(date_trunc('day', "createdAt"), 'YYYY-MM-DD') AS "date",
                COUNT(*)::int AS "count"
         FROM "Report"
-        WHERE "targetType" IN (${Prisma.join([...SUPPORTED_REPORT_TARGETS])})
+        WHERE "targetType" IN (${SUPPORTED_REPORT_TARGET_SQL})
           AND "createdAt" >= ${startDate}
         GROUP BY 1
         ORDER BY 1 ASC
@@ -159,7 +163,7 @@ export async function getReportStats(days = 7): Promise<ReportStats> {
         SELECT AVG(EXTRACT(EPOCH FROM ("resolvedAt" - "createdAt")) / 3600.0)::float8
           AS "averageResolutionHours"
         FROM "Report"
-        WHERE "targetType" IN (${Prisma.join([...SUPPORTED_REPORT_TARGETS])})
+        WHERE "targetType" IN (${SUPPORTED_REPORT_TARGET_SQL})
           AND "resolvedAt" IS NOT NULL
       `,
     ]);

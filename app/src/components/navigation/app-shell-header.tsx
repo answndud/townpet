@@ -125,6 +125,11 @@ export function AppShellHeader({ communities }: AppShellHeaderProps) {
             />
           </Link>
           <div className="flex items-center gap-1.5 md:hidden">
+            {viewerShell.canModerate ? (
+              <Link href="/admin" className={APP_SHELL_MOBILE_QUICK_LINK_CLASS_NAME}>
+                관리자
+              </Link>
+            ) : null}
             <Link href="/profile" className={APP_SHELL_MOBILE_QUICK_LINK_CLASS_NAME}>
               내 프로필
             </Link>
@@ -170,17 +175,8 @@ export function AppShellHeader({ communities }: AppShellHeaderProps) {
 
             {viewerShell.canModerate ? (
               <div className={`hidden md:flex ${APP_SHELL_DESKTOP_NAV_CLUSTER_CLASS_NAME}`}>
-                <Link href="/admin/reports" className={APP_SHELL_NAV_LINK_CLASS_NAME}>
-                  신고 큐
-                </Link>
-                <Link href="/admin/moderation/direct" className={APP_SHELL_NAV_LINK_CLASS_NAME}>
-                  직접 모더레이션
-                </Link>
-                <Link href="/admin/auth-audits" className={APP_SHELL_NAV_LINK_CLASS_NAME}>
-                  인증 로그
-                </Link>
-                <Link href="/admin/policies" className={APP_SHELL_NAV_LINK_CLASS_NAME}>
-                  권한 정책
+                <Link href="/admin" className={APP_SHELL_NAV_LINK_CLASS_NAME}>
+                  관리자
                 </Link>
               </div>
             ) : null}

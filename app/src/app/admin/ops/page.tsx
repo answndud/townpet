@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { AuthAuditAction, ReportStatus } from "@prisma/client";
 
+import { AdminSectionNav } from "@/components/admin/admin-section-nav";
 import { EmptyState } from "@/components/ui/empty-state";
 import { requireModeratorPageUser } from "@/server/admin-page-access";
 import { getAdminOpsOverview } from "@/server/queries/ops-overview.queries";
@@ -286,13 +287,7 @@ export default async function AdminOpsPage() {
           </div>
         </section>
 
-        <div className="flex flex-wrap gap-3 text-xs text-[#5a7398]">
-          <Link href="/admin/reports">신고 큐</Link>
-          <Link href="/admin/auth-audits">인증 감사 로그</Link>
-          <Link href="/admin/personalization">개인화 지표</Link>
-          <Link href="/admin/hospital-review-flags">병원 후기 의심 신호</Link>
-          <Link href="/admin/breeds">품종 사전</Link>
-        </div>
+        <AdminSectionNav />
       </main>
     </div>
   );

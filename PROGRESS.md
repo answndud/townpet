@@ -17,6 +17,32 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-19: Cycle 374 완료 (관리자 헤더 단일 허브화 + `/admin` 랜딩 추가)
+- 완료 내용
+  - `app/src/components/navigation/app-shell-header.tsx`에서 관리자 계정의 상단 헤더는 이제 `신고 큐`, `직접 모더레이션`, `인증 로그`, `권한 정책` 개별 링크 대신 `관리자` 단일 링크만 노출한다.
+  - 모바일 상단 quick link에도 같은 `관리자` 진입 링크를 추가해 관리자 계정이 헤더에서 일관되게 `/admin`으로 이동하도록 맞췄다.
+  - `app/src/components/admin/admin-section-nav.tsx`를 추가해 공용 관리자 메뉴 링크 집합을 한 곳으로 모았고, `관리자 홈`, `Ops 대시보드`, `신고 큐`, `직접 모더레이션`, `인증 로그`, `권한 정책`을 포함한 운영 목적지들을 재사용 가능하게 정리했다.
+  - `app/src/app/admin/page.tsx`를 새로 추가해 `/admin` 자체를 관리자 허브 페이지로 만들었다. 이 페이지에서 각 운영 화면으로 다시 이동할 수 있다.
+  - `app/src/app/admin/ops/page.tsx`도 기존 하단 링크 묶음 대신 공용 관리자 메뉴를 사용하도록 바꿔, `Ops 대시보드`에서도 `직접 모더레이션`과 `권한 정책` सहित 전체 관리자 화면으로 이동할 수 있게 했다.
+  - `app/src/components/admin/admin-section-nav.test.tsx`를 추가해 핵심 관리자 목적지(`/admin`, `/admin/ops`, `/admin/reports`, `/admin/moderation/direct`, `/admin/auth-audits`, `/admin/policies`)가 공용 메뉴에 항상 포함되는지 회귀로 고정했다.
+- 검증 결과
+  - `corepack pnpm -C app lint src/components/navigation/app-shell-header.tsx src/components/admin/admin-section-nav.tsx src/components/admin/admin-section-nav.test.tsx src/app/admin/page.tsx src/app/admin/ops/page.tsx` 통과
+  - `corepack pnpm -C app test -- src/components/admin/admin-section-nav.test.tsx` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `git diff --check` 통과
+
+### 2026-03-19: Cycle 373 완료 (`/admin/ops` ReportTarget enum raw SQL 오류 복구)
+- 완료 내용
+  - `app/src/server/queries/report.queries.ts`에서 `getReportStats()`가 raw SQL로 `Report.targetType`를 비교할 때 text 바인딩을 그대로 `IN (...)`에 넣지 않도록 수정했다.
+  - 지원 대상 목록(`POST`, `COMMENT`)은 이제 `Prisma.sql\`${target}::"ReportTarget"\`` 조각으로 조립되어 Postgres enum 컬럼과 같은 타입으로 비교된다.
+  - 이 변경으로 로컬/운영 `/admin/ops` 로딩 시 `ERROR: operator does not exist: "ReportTarget" = text` (`42883`)가 더 이상 발생하지 않는다.
+  - `app/src/server/queries/report.queries.test.ts`에는 raw SQL statement가 실제 `::"ReportTarget"` cast를 포함하는지 확인하는 회귀를 추가했다.
+- 검증 결과
+  - `corepack pnpm -C app lint src/server/queries/report.queries.ts src/server/queries/report.queries.test.ts src/server/queries/ops-overview.queries.ts src/server/queries/ops-overview.queries.test.ts src/app/admin/ops/page.tsx` 통과
+  - `corepack pnpm -C app test -- src/server/queries/report.queries.test.ts src/server/queries/ops-overview.queries.test.ts` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `git diff --check` 통과
+
 ### 2026-03-19: Cycle 372 완료 (검색 운영 telemetry + Ops 대시보드 + Phase 2 로드맵)
 - 완료 내용
   - `app/prisma/schema.prisma`와 `app/prisma/migrations/20260319102000_expand_search_term_stats_for_ops/migration.sql`로 `SearchTermStat`에 `lastResultCount`, `totalResultCount`, `zeroResultCount`를 추가해 검색 실패/저성과 검색어를 운영에서 볼 수 있는 기반을 만들었다.
