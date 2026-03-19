@@ -64,6 +64,30 @@ export const APP_SHELL_MOBILE_QUICK_LINK_CLASS_NAME = [
   "hover:bg-[#eef5ff]",
 ].join(" ");
 
+export const APP_SHELL_MOBILE_DISCLOSURE_ROW_CLASS_NAME = [
+  "flex",
+  "flex-wrap",
+  "gap-1.5",
+].join(" ");
+
+export const APP_SHELL_MOBILE_DISCLOSURE_TRIGGER_CLASS_NAME = [
+  "inline-flex",
+  "h-8",
+  "items-center",
+  "justify-center",
+  "rounded-full",
+  "border",
+  "border-[#d7e4f8]",
+  "bg-white/92",
+  "px-3",
+  "text-[11px]",
+  "font-semibold",
+  "leading-none",
+  "text-[#315484]",
+  "transition",
+  "hover:bg-[#eef5ff]",
+].join(" ");
+
 export const APP_SHELL_MOBILE_PANEL_CLASS_NAME = [
   "overflow-hidden",
   "rounded-xl",

@@ -7,9 +7,10 @@ import { PostType } from "@prisma/client";
 
 import {
   APP_SHELL_DESKTOP_NAV_CLUSTER_CLASS_NAME,
+  APP_SHELL_MOBILE_DISCLOSURE_ROW_CLASS_NAME,
+  APP_SHELL_MOBILE_DISCLOSURE_TRIGGER_CLASS_NAME,
   APP_SHELL_MOBILE_PANEL_CLASS_NAME,
   APP_SHELL_MOBILE_PANEL_PILL_CLASS_NAME,
-  APP_SHELL_MOBILE_PANEL_SUMMARY_CLASS_NAME,
   APP_SHELL_NAV_LINK_CLASS_NAME,
 } from "@/components/navigation/app-shell-header-class";
 import {
@@ -55,6 +56,7 @@ export function FeedHoverMenu({
     PostType.PET_SHOWCASE,
   ];
   const [openMenu, setOpenMenu] = useState<"board" | "pet" | null>(null);
+  const [mobileOpenMenu, setMobileOpenMenu] = useState<"board" | "pet" | null>(null);
   const [selectedPetTypeIds, setSelectedPetTypeIds] = useState<string[]>(() => {
     if (typeof document === "undefined" || isAuthenticated) {
       return initialPreferredPetTypeIds;
@@ -155,18 +157,41 @@ export function FeedHoverMenu({
   return (
     <>
       <div className="w-full space-y-1.5 md:hidden">
-        <details className={APP_SHELL_MOBILE_PANEL_CLASS_NAME}>
-          <summary className={APP_SHELL_MOBILE_PANEL_SUMMARY_CLASS_NAME}>
-            <div>
-              <p className="text-[11px] font-semibold text-[#204477]">게시판 빠른 이동</p>
-              <p className="mt-0.5 text-[10px] text-[#6a84ab]">자주 가는 보드를 바로 엽니다.</p>
-            </div>
-            <span className="tp-chip-base tp-chip-muted">열기</span>
-          </summary>
-          <div className="flex flex-wrap gap-1.5 border-t border-[#dbe6f6] bg-white p-2.5">
+        <div className={APP_SHELL_MOBILE_DISCLOSURE_ROW_CLASS_NAME}>
+          <button
+            type="button"
+            className={APP_SHELL_MOBILE_DISCLOSURE_TRIGGER_CLASS_NAME}
+            onClick={() =>
+              setMobileOpenMenu((prev) => (prev === "board" ? null : "board"))
+            }
+            aria-expanded={mobileOpenMenu === "board"}
+          >
+            게시판
+          </button>
+          <button
+            type="button"
+            className={APP_SHELL_MOBILE_DISCLOSURE_TRIGGER_CLASS_NAME}
+            onClick={() =>
+              setMobileOpenMenu((prev) => (prev === "pet" ? null : "pet"))
+            }
+            aria-expanded={mobileOpenMenu === "pet"}
+          >
+            관심 동물
+            {isAuthenticated ? (
+              <span className="ml-1 inline-flex min-w-4 items-center justify-center rounded-full bg-[#dcecff] px-1 text-[10px] font-semibold text-[#1f4f8f]">
+                {selectedPetTypeIds.length}
+              </span>
+            ) : null}
+          </button>
+        </div>
+
+        {mobileOpenMenu === "board" ? (
+          <div className={APP_SHELL_MOBILE_PANEL_CLASS_NAME}>
+          <div className="flex flex-wrap gap-1.5 bg-white p-2.5">
             <Link
               href={buildFeedHref({ page: "1" })}
               className={APP_SHELL_MOBILE_PANEL_PILL_CLASS_NAME}
+              onClick={() => setMobileOpenMenu(null)}
             >
               전체
             </Link>
@@ -175,28 +200,18 @@ export function FeedHoverMenu({
                 key={`mobile-nav-type-${value}`}
                 href={buildBoardListingHref(value)}
                 className={APP_SHELL_MOBILE_PANEL_PILL_CLASS_NAME}
+                onClick={() => setMobileOpenMenu(null)}
               >
                 {getPostTypeMeta(value).label}
               </Link>
             ))}
           </div>
-        </details>
+          </div>
+        ) : null}
 
-        <details className={APP_SHELL_MOBILE_PANEL_CLASS_NAME}>
-          <summary className={APP_SHELL_MOBILE_PANEL_SUMMARY_CLASS_NAME}>
-            <div>
-              <p className="text-[11px] font-semibold text-[#204477]">관심 동물 설정</p>
-              <p className="mt-0.5 text-[10px] text-[#6a84ab]">피드에 보고 싶은 동물을 고릅니다.</p>
-            </div>
-            {isAuthenticated ? (
-              <span className="tp-chip-base border-[#c9daf4] bg-[#eef5ff] text-[#1f4f8f]">
-                {selectedPetTypeIds.length}개
-              </span>
-            ) : (
-              <span className="tp-chip-base tp-chip-muted">열기</span>
-            )}
-          </summary>
-          <div className="border-t border-[#dbe6f6] bg-white p-2.5">
+        {mobileOpenMenu === "pet" ? (
+          <div className={APP_SHELL_MOBILE_PANEL_CLASS_NAME}>
+          <div className="bg-white p-2.5">
             <p className="px-1 pb-1 text-[11px] text-[#5a7398]">보고 싶은 동물을 체크하고 저장하세요.</p>
             <div className="max-h-[44vh] space-y-0.5 overflow-y-auto pr-1">
               {groupedCommunities.map((group) => (
@@ -252,7 +267,8 @@ export function FeedHoverMenu({
             </div>
             {message ? <p className="mt-1 text-[11px] text-[#4f678d]">{message}</p> : null}
           </div>
-        </details>
+          </div>
+        ) : null}
       </div>
 
       <div className={`hidden md:flex ${APP_SHELL_DESKTOP_NAV_CLUSTER_CLASS_NAME}`} onMouseLeave={scheduleClose}>

@@ -17,6 +17,22 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-19: Cycle 377 완료 (모바일 헤더/검색/관리자 신고 큐 사용성 정리)
+- 완료 내용
+  - production 모바일 viewport 점검에서 모든 페이지 상단에 `게시판 빠른 이동`/`관심 동물 설정` 대형 카드가 먼저 렌더되어 본문 첫 화면을 과도하게 밀어내는 문제를 확인했다.
+  - `app/src/components/navigation/feed-hover-menu.tsx`는 모바일에서 대형 summary 카드 2개 대신 compact trigger(`게시판`, `관심 동물`) row를 사용하도록 바꿨다. 펼친 뒤에만 패널이 열리므로 로그인/검색/상세 페이지 첫 화면 밀도가 크게 줄었다.
+  - `app/src/components/navigation/app-shell-header.tsx`는 모바일 quick link에 `검색`을 추가하고, 인증 사용자에게는 unread count가 반영된 `알림` 진입 링크를 노출하도록 보강했다.
+  - `app/src/components/posts/feed-search-form.tsx`는 기존 desktop 전용이던 인기 검색어 패널/최근 검색어 칩을 모바일에서도 노출하도록 조정해 검색 재진입과 suggestion 활용성을 높였다.
+  - `app/src/components/admin/report-queue-table.tsx`는 `md` 미만에서 가로 스크롤 table 대신 카드형 요약/처리 UI를 함께 렌더하도록 바꿔 신고 큐를 모바일에서도 읽고 처리할 수 있게 정리했다.
+  - `app/src/components/navigation/app-shell-header-class.ts`, `app/src/components/navigation/app-shell-header-class.test.ts`에는 새 mobile compact disclosure class와 회귀 테스트를 추가했다.
+- 검증 결과
+  - `corepack pnpm -C app lint src/components/navigation/app-shell-header.tsx src/components/navigation/feed-hover-menu.tsx src/components/navigation/app-shell-header-class.ts src/components/navigation/app-shell-header-class.test.ts src/components/posts/feed-search-form.tsx src/components/admin/report-queue-table.tsx` 통과
+  - `corepack pnpm -C app test -- src/components/navigation/app-shell-header-class.test.ts src/components/admin/admin-section-nav.test.tsx` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `174 files / 841 tests` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - 로컬 mobile viewport 캡처에서 `/login` 헤더 상단 카드가 compact trigger 형태로 축소되고, `검색` quick link가 추가된 것을 확인했다.
+- 메모
+  - local `next dev` 인스턴스는 오래 떠 있던 서버 상태 때문에 `/search`에서 stale runtime error를 한 번 보였지만, production 기준 점검에서는 검색 페이지가 정상 렌더되었다. 이번 cycle은 실제 모바일 레이아웃/진입성 개선에 집중했다.
+
 ### 2026-03-19: Cycle 376 완료 (fresh DB migration chain self-healing 검증)
 - 완료 내용
   - `app/prisma/migrations/20260306133000_expand_auth_audit_for_login_events/migration.sql`를 fresh DB self-healing 형태로 보강했다. 이제 이 migration은 `AuthAuditAction` enum과 `AuthAuditLog` table이 아직 없는 깨끗한 DB에서도 필요한 baseline enum/table/index를 만들고, 기존 DB에서는 `IF NOT EXISTS`/안전한 `ALTER`만 수행한다.

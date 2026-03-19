@@ -27,6 +27,13 @@
 
 ## Active Plan
 
+### Cycle 377: 모바일 헤더/검색/관리자 신고 큐 사용성 정리 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 모바일 헤더 상단 밀도 축소 + 검색/알림 진입 보강 | Codex | P1 | `done` | 모바일 헤더는 더 이상 `게시판 빠른 이동/관심 동물 설정` 대형 카드 2개를 첫 화면에 항상 노출하지 않고, compact trigger 형태로 축소되며, 모바일에서도 `검색`과 인증 사용자 `알림` 진입 링크가 헤더에 직접 노출된다 | `PLAN.md`, `PROGRESS.md`, `app/src/components/navigation/app-shell-header.tsx`, `app/src/components/navigation/feed-hover-menu.tsx`, `app/src/components/navigation/app-shell-header-class.ts`, 관련 테스트 |
+| 모바일 검색 보조 UX 보강 | Codex | P1 | `done` | 모바일에서도 검색 입력 포커스 시 인기 검색어 패널이 보이고, 최근 검색어 칩이 desktop 전용이 아니라 mobile에서도 노출되어 검색 재진입이 쉬워진다 | `app/src/components/posts/feed-search-form.tsx` |
+| 관리자 신고 큐 모바일 fallback 추가 | Codex | P1 | `done` | `/admin/reports`는 모바일에서 가로 스크롤 table만 보여주지 않고 카드형 요약/처리 UI를 함께 제공하여 신고 처리 핵심 작업이 화면 폭 390px 수준에서도 수행 가능하다 | `app/src/components/admin/report-queue-table.tsx` |
+
 ### Cycle 376: fresh DB migration chain self-healing 검증 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
