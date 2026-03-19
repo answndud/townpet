@@ -106,4 +106,35 @@ describe("report queries", () => {
     expect(stats.dailyCounts.reduce((sum, item) => sum + item.count, 0)).toBe(2);
     expect(stats.averageResolutionHours).toBeCloseTo(3, 2);
   });
+
+  it("casts supported report targets to the enum type inside raw SQL", async () => {
+    mockPrisma.report.count.mockResolvedValue(0);
+    mockPrisma.report.groupBy
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([]);
+    mockPrisma.$queryRaw.mockResolvedValueOnce([]).mockResolvedValueOnce([
+      { averageResolutionHours: null },
+    ]);
+
+    await getReportStats(7);
+
+    const dailyFragment = mockPrisma.$queryRaw.mock.calls[0]?.[1] as
+      | { strings?: string[]; values?: unknown[] }
+      | undefined;
+    const resolutionFragment = mockPrisma.$queryRaw.mock.calls[1]?.[1] as
+      | { strings?: string[]; values?: unknown[] }
+      | undefined;
+    const dailyFragmentStatement = dailyFragment?.strings?.join(" ") ?? "";
+    const resolutionFragmentStatement = resolutionFragment?.strings?.join(" ") ?? "";
+
+    expect(dailyFragmentStatement).toContain(`::"ReportTarget"`);
+    expect(resolutionFragmentStatement).toContain(`::"ReportTarget"`);
+    expect(dailyFragment?.values).toEqual(
+      expect.arrayContaining([ReportTarget.POST, ReportTarget.COMMENT]),
+    );
+    expect(resolutionFragment?.values).toEqual(
+      expect.arrayContaining([ReportTarget.POST, ReportTarget.COMMENT]),
+    );
+  });
 });

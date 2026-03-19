@@ -27,6 +27,16 @@
 
 ## Active Plan
 
+### Cycle 374: 관리자 헤더를 단일 허브로 축소하고 `/admin` 랜딩 추가 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 관리자 계정 헤더에서 `신고 큐/직접 모더레이션/인증 로그/권한 정책` 개별 링크를 제거하고 `관리자` 단일 링크만 남긴 뒤, `/admin` 랜딩 페이지와 `/admin/ops` 공용 관리자 메뉴를 추가 | Codex | P1 | `done` | 헤더는 관리자에게 `/admin` 단일 진입 링크만 노출하고, `/admin`은 신고 큐/직접 모더레이션/인증 로그/권한 정책/Ops 등을 선택할 수 있는 허브를 제공하며, `/admin/ops`도 같은 관리자 메뉴를 노출하고, 관련 lint/test/typecheck/diff check 검증이 `PROGRESS.md`에 기록된다 | `PLAN.md`, `PROGRESS.md`, `app/src/components/navigation/app-shell-header.tsx`, `app/src/components/admin/admin-section-nav.tsx`, `app/src/app/admin/page.tsx`, `app/src/app/admin/ops/page.tsx`, 관련 테스트 |
+
+### Cycle 373: `/admin/ops` 신고 통계 enum raw SQL 오류 복구 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| `/admin/ops`가 로컬/운영에서 `ReportTarget` enum 비교 오류(`42883`)로 깨지지 않도록 신고 통계 raw SQL의 targetType 비교를 enum-safe cast로 바꾸고 회귀 테스트를 추가 | Codex | P0 | `done` | `getReportStats()`의 raw SQL은 `ReportTarget` enum cast를 사용해 `POST/COMMENT` 비교를 수행하고, `/admin/ops` 로딩이 더 이상 enum/text 연산자 오류로 실패하지 않으며, `report.queries`/`ops-overview` 관련 lint/test/typecheck/diff check 검증이 `PROGRESS.md`에 기록된다 | `PLAN.md`, `PROGRESS.md`, `app/src/server/queries/report.queries.ts`, `app/src/server/queries/report.queries.test.ts`, `app/src/server/queries/ops-overview.queries.ts` |
+
 ### Cycle 372: 검색 품질 운영 루프 + Ops 대시보드 + Phase 2 로드맵 정리 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
