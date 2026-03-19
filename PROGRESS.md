@@ -17,6 +17,38 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-19: Cycle 376 완료 (fresh DB migration chain self-healing 검증)
+- 완료 내용
+  - `app/prisma/migrations/20260306133000_expand_auth_audit_for_login_events/migration.sql`를 fresh DB self-healing 형태로 보강했다. 이제 이 migration은 `AuthAuditAction` enum과 `AuthAuditLog` table이 아직 없는 깨끗한 DB에서도 필요한 baseline enum/table/index를 만들고, 기존 DB에서는 `IF NOT EXISTS`/안전한 `ALTER`만 수행한다.
+  - 새 검색 통계 migration(`20260319143000_add_context_to_search_term_stats`)이 기존 로컬 drift DB가 아니라 깨끗한 임시 PostgreSQL DB에서 전체 migration chain과 함께 끝까지 적용되는지 검증했다.
+- 검증 결과
+  - 임시 DB `townpet_migrate_verify_20260319_0140` 생성 후 `DATABASE_URL='postgresql://townpet:townpet@localhost:5432/townpet_migrate_verify_20260319_0140?schema=public' corepack pnpm -C app exec prisma migrate deploy` 실행
+  - 결과: `20260123025834_init`부터 `20260319143000_add_context_to_search_term_stats`까지 전체 49개 migration이 순차 적용되며 성공
+  - 참고: 기존 로컬 개발 DB `townpet`은 과거 `db push`/drift 이력 때문에 `migrate deploy` 기준으로는 여전히 baseline mismatch가 남아 있었고, 이번 검증은 fresh DB에서 migration chain 자체의 유효성을 확인하는 방식으로 수행했다.
+- 메모
+  - 배포 환경에서는 기존처럼 `prisma migrate deploy`가 이번 새 migration까지 정상 적용 가능한 상태다.
+  - fresh DB 검증에서 드러난 auth audit chain 결함은 이번 old migration self-healing 패치로 함께 정리했다.
+
+### 2026-03-19: Cycle 375 완료 (검색/필터 문맥 통계 + 공용 보드 구조화 검색 통일)
+- 완료 내용
+  - `app/prisma/schema.prisma`, `app/prisma/migrations/20260319143000_add_context_to_search_term_stats/migration.sql`에서 `SearchTermStat`를 `statKey + scope + typeKey + searchIn` 구조로 확장하고, 기존 row를 `GLOBAL/ALL/ALL` 전역 집계 컨텍스트로 backfill 하도록 마이그레이션을 추가했다.
+  - `app/src/lib/search-term-privacy.ts`는 검색 통계용 canonical normalization을 도입해 구조화 alias(`건강검진 -> 건강 검진`, 지역 alias 등)를 suggestion/telemetry 단계에서 같은 key로 모으도록 바꿨다.
+  - `app/src/server/queries/search.queries.ts`는 문맥별 row와 전역 집계 row를 함께 기록/조회하도록 재작성했고, popular terms/suggestions가 현재 `scope/type/searchIn` 문맥을 우선 반영하도록 정리했다.
+  - `app/src/app/api/search/log/route.ts`, `app/src/components/posts/feed-search-form.tsx`, `app/src/components/posts/search-result-telemetry.tsx`는 query/result telemetry에 `scope/type/searchIn`를 함께 보내도록 맞췄다.
+  - `app/src/app/search/page.tsx`는 비로그인 사용자를 `/search/guest`로 보낼 때 기존 `q/type/searchIn/scope`를 유지하도록 수정했고, 인증 검색의 popular terms도 현재 문맥을 기준으로 읽도록 바꿨다.
+  - `app/src/app/api/search/guest/route.ts`, `app/src/components/posts/guest-search-page-client.tsx`는 guest search의 `scope` 계약을 명시화했다. guest가 `scope=LOCAL`로 들어와도 서버는 `GLOBAL`로 fallback하고, UI는 로그인 후 동네 검색 가능하다는 안내를 노출한다.
+  - `app/src/server/queries/community.queries.ts`는 공용 보드 검색을 relation별 자유 OR tree 대신 `structuredSearchText` shadow column 중심으로 통일해 메인 검색과 구조화 검색 품질을 맞췄다.
+- 검증 결과
+  - `corepack pnpm -C app exec prisma format` 통과
+  - `corepack pnpm -C app exec prisma generate` 통과
+  - `corepack pnpm -C app test -- src/server/queries/search.queries.test.ts src/app/api/search/log/route.test.ts src/app/api/posts/suggestions/route.test.ts src/app/api/search/guest/route.test.ts src/server/queries/community.queries.test.ts src/lib/search-term-privacy.test.ts` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `174 files / 840 tests` 통과
+  - `corepack pnpm -C app lint src/lib/search-term-privacy.ts src/lib/search-term-privacy.test.ts src/server/queries/search.queries.ts src/server/queries/search.queries.test.ts src/app/api/search/log/route.ts src/app/api/search/log/route.test.ts src/app/api/posts/suggestions/route.ts src/app/api/posts/suggestions/route.test.ts src/app/api/search/guest/route.ts src/app/api/search/guest/route.test.ts src/app/search/page.tsx src/components/posts/feed-search-form.tsx src/components/posts/search-result-telemetry.tsx src/components/posts/guest-search-page-client.tsx src/server/queries/community.queries.ts src/server/queries/community.queries.test.ts` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `git diff --check` 통과
+- 메모
+  - `SearchTermStat` migration은 deploy 시 `prisma migrate deploy`가 필요하다.
+  - guest 검색은 여전히 동네 검색을 직접 제공하지 않지만, 기존처럼 무음으로 scope를 버리는 대신 `GLOBAL fallback + 로그인 안내` 계약으로 명시화했다.
+
 ### 2026-03-19: Cycle 374 완료 (관리자 헤더 단일 허브화 + `/admin` 랜딩 추가)
 - 완료 내용
   - `app/src/components/navigation/app-shell-header.tsx`에서 관리자 계정의 상단 헤더는 이제 `신고 큐`, `직접 모더레이션`, `인증 로그`, `권한 정책` 개별 링크 대신 `관리자` 단일 링크만 노출한다.

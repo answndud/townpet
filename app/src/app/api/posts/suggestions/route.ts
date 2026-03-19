@@ -84,7 +84,11 @@ export async function GET(request: NextRequest) {
     }
 
     const [termItems, postItems] = await Promise.all([
-      listSearchTermSuggestions(parsed.data.q, Math.min(parsed.data.limit, 5)),
+      listSearchTermSuggestions(parsed.data.q, Math.min(parsed.data.limit, 5), {
+        scope,
+        type: parsed.data.type,
+        searchIn: parsed.data.searchIn,
+      }),
       listPostSearchSuggestions({
         q: parsed.data.q,
         limit: parsed.data.limit,

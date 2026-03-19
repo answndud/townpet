@@ -27,6 +27,16 @@
 
 ## Active Plan
 
+### Cycle 376: fresh DB migration chain self-healing 검증 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 깨끗한 PostgreSQL DB에서 전체 migration chain이 `20260319143000_add_context_to_search_term_stats`까지 끝까지 적용되도록 검증하고, 누락돼 있던 `AuthAuditLog` 생성 전제를 old migration에서 self-healing으로 보강 | Codex | P0 | `done` | 임시 fresh DB에서 `prisma migrate deploy`가 초기 migration부터 최신 migration까지 모두 성공하고, `20260306133000_expand_auth_audit_for_login_events`는 `AuthAuditAction` enum/`AuthAuditLog` table이 없는 fresh 환경에서도 안전하게 통과하며, 결과가 `PROGRESS.md`에 기록된다 | `PLAN.md`, `PROGRESS.md`, `app/prisma/migrations/20260306133000_expand_auth_audit_for_login_events/migration.sql`, `app/prisma/migrations/20260319143000_add_context_to_search_term_stats/migration.sql` |
+
+### Cycle 375: 검색/필터 문맥 통계와 공용 보드 검색 엔진 정렬 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| `SearchTermStat`를 `scope/type/searchIn` 문맥별 row + 전역 집계 row로 확장하고, 검색 로그/자동완성/결과 telemetry가 현재 문맥을 함께 기록하며, 공용 보드 검색도 `structuredSearchText` 기반으로 메인 검색과 같은 구조화 엔진을 사용하도록 정리 | Codex | P1 | `done` | 검색 로그 route와 결과 telemetry는 `scope/type/searchIn`를 함께 기록하고, term suggestions/popular terms는 현재 문맥 row와 전역 집계 row를 함께 사용해 순위를 정하며, guest 검색은 local 요청 시 global fallback + 로그인 안내 계약을 명시하고, 공용 보드 검색은 relation field 직접 OR 대신 `structuredSearchText`를 사용하며, Prisma migration/lint/test/typecheck/diff check 검증이 `PROGRESS.md`에 기록된다 | `PLAN.md`, `PROGRESS.md`, `app/prisma/schema.prisma`, `app/prisma/migrations/20260319143000_add_context_to_search_term_stats/migration.sql`, `app/src/server/queries/search.queries.ts`, `app/src/app/api/search/log/route.ts`, `app/src/app/api/posts/suggestions/route.ts`, `app/src/app/api/search/guest/route.ts`, `app/src/components/posts/feed-search-form.tsx`, `app/src/components/posts/search-result-telemetry.tsx`, `app/src/server/queries/community.queries.ts`, 관련 테스트 |
+
 ### Cycle 374: 관리자 헤더를 단일 허브로 축소하고 `/admin` 랜딩 추가 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|

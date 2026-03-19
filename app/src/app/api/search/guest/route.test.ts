@@ -73,14 +73,23 @@ describe("GET /api/search/guest", () => {
     expect(mockListRankedSearchPosts).toHaveBeenCalledWith(
       expect.objectContaining({
         q: "강아지",
+        scope: "GLOBAL",
         searchIn: "TITLE",
       }),
     );
+    expect(mockGetPopularSearchTerms).toHaveBeenCalledWith(10, {
+      scope: "GLOBAL",
+      type: undefined,
+      searchIn: "TITLE",
+    });
     expect(payload).toEqual({
       ok: true,
       data: {
         query: "강아지",
         type: null,
+        requestedScope: "GLOBAL",
+        effectiveScope: "GLOBAL",
+        isGuestScopeBlocked: false,
         searchIn: "TITLE",
         isGuestTypeBlocked: false,
         popularTerms: ["강아지 산책", "고양이 병원"],
@@ -114,10 +123,37 @@ describe("GET /api/search/guest", () => {
       data: {
         query: "test",
         type: "MEETUP",
+        requestedScope: "GLOBAL",
+        effectiveScope: "GLOBAL",
+        isGuestScopeBlocked: false,
         searchIn: "ALL",
         isGuestTypeBlocked: true,
         popularTerms: ["강아지 산책", "고양이 병원"],
         items: [],
+      },
+    });
+  });
+
+  it("keeps guest local requests on global search and surfaces the scope block", async () => {
+    mockListRankedSearchPosts.mockResolvedValue([] as never);
+
+    const response = await GET(
+      new Request("http://localhost/api/search/guest?q=%EB%B3%91%EC%9B%90&scope=LOCAL") as NextRequest,
+    );
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(mockListRankedSearchPosts).toHaveBeenCalledWith(
+      expect.objectContaining({
+        scope: "GLOBAL",
+      }),
+    );
+    expect(payload).toMatchObject({
+      ok: true,
+      data: {
+        requestedScope: "LOCAL",
+        effectiveScope: "GLOBAL",
+        isGuestScopeBlocked: true,
       },
     });
   });

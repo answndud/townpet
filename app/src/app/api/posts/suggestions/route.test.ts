@@ -145,5 +145,10 @@ describe("GET /api/posts/suggestions contract", () => {
       ok: true,
       data: { items: ["병원 후기", "병원비", "병원 추천"] },
     });
+    expect(mockListSearchTermSuggestions).toHaveBeenCalledWith("병원", 5, {
+      scope: "GLOBAL",
+      type: undefined,
+      searchIn: undefined,
+    });
   });
 });

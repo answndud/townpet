@@ -149,7 +149,12 @@ export function FeedSearchForm({
       return;
     }
 
-    const payload = JSON.stringify({ q: term });
+    const payload = JSON.stringify({
+      q: term,
+      scope,
+      type,
+      searchIn: searchInValue,
+    });
     if (navigator.sendBeacon) {
       const blob = new Blob([payload], { type: "application/json" });
       navigator.sendBeacon("/api/search/log", blob);

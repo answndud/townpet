@@ -48,7 +48,7 @@ describe("community queries", () => {
     mockPrisma.userMute.findMany.mockResolvedValue([]);
   });
 
-  it("filters hidden authors and structured hospital fields in common board queries", async () => {
+  it("filters hidden authors and structured shadow search fields in common board queries", async () => {
     mockPrisma.userBlock.findMany.mockResolvedValue([
       { blockerId: "viewer-1", blockedId: "blocked-1" },
     ]);
@@ -73,14 +73,9 @@ describe("community queries", () => {
     expect(countArgs.where.OR).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          hospitalReview: {
-            is: {
-              OR: expect.arrayContaining([
-                expect.objectContaining({
-                  treatmentType: { contains: "중성화 수술", mode: "insensitive" },
-                }),
-              ]),
-            },
+          structuredSearchText: {
+            contains: "중성화 수술",
+            mode: "insensitive",
           },
         }),
       ]),
@@ -110,14 +105,9 @@ describe("community queries", () => {
     expect(args.where.OR).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          adoptionListing: {
-            is: {
-              OR: expect.arrayContaining([
-                expect.objectContaining({
-                  breed: { contains: "웰시코기", mode: "insensitive" },
-                }),
-              ]),
-            },
+          structuredSearchText: {
+            contains: "웰시코기",
+            mode: "insensitive",
           },
         }),
       ]),

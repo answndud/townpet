@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { PostScope, PostType } from "@prisma/client";
 import { z } from "zod";
 
 import { getCurrentUserId } from "@/server/auth";
@@ -13,6 +14,9 @@ const searchLogSchema = z.object({
   q: z.string().min(2).max(100),
   stage: z.enum(["QUERY", "RESULT"]).default("QUERY"),
   resultCount: z.number().int().min(0).max(500).optional(),
+  scope: z.nativeEnum(PostScope).optional(),
+  type: z.nativeEnum(PostType).optional(),
+  searchIn: z.enum(["ALL", "TITLE", "CONTENT", "AUTHOR"]).optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -48,6 +52,9 @@ export async function POST(request: NextRequest) {
     const result = await recordSearchTerm(parsed.data.q, {
       incrementQueryCount: parsed.data.stage !== "RESULT",
       resultCount: parsed.data.resultCount,
+      scope: parsed.data.scope,
+      type: parsed.data.type,
+      searchIn: parsed.data.searchIn,
     });
     if (!result.ok) {
       throw new ServiceError(

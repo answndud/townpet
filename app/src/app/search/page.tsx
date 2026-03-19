@@ -87,6 +87,13 @@ function buildSearchHref({
 }
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {
+  const resolvedParams = (await searchParams) ?? {};
+  const parsedParams = postListSchema.safeParse(resolvedParams);
+  const listInput = parsedParams.success ? toPostListInput(parsedParams.data) : null;
+  const type = listInput?.type;
+  const query = listInput?.q?.trim() ?? "";
+  const selectedSearchIn = toFeedSearchIn(resolvedParams.searchIn);
+  const requestedScope = toFeedScope(resolvedParams.scope);
   const session = await auth();
   const userId = session?.user?.id;
   redirectToProfileIfNicknameMissing({
@@ -95,25 +102,35 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   });
   const user = userId ? await getUserWithNeighborhoods(userId) : null;
   if (!user) {
-    redirect("/search/guest");
+    const guestParams = new URLSearchParams();
+    if (query) {
+      guestParams.set("q", query);
+    }
+    if (type) {
+      guestParams.set("type", type);
+    }
+    if (selectedSearchIn !== "ALL") {
+      guestParams.set("searchIn", selectedSearchIn);
+    }
+    if (requestedScope === PostScope.LOCAL) {
+      guestParams.set("scope", PostScope.LOCAL);
+    }
+    const serialized = guestParams.toString();
+    redirect(serialized ? `/search/guest?${serialized}` : "/search/guest");
   }
-  const [loginRequiredTypes, popularSearchTerms] = await Promise.all([
-    getGuestReadLoginRequiredPostTypes(),
-    getPopularSearchTerms(10),
-  ]);
   const isAuthenticated = Boolean(user);
-  const blockedTypesForGuest = !isAuthenticated ? loginRequiredTypes : [];
-
-  const resolvedParams = (await searchParams) ?? {};
-  const parsedParams = postListSchema.safeParse(resolvedParams);
-  const listInput = parsedParams.success ? toPostListInput(parsedParams.data) : null;
-  const type = listInput?.type;
-  const query = listInput?.q?.trim() ?? "";
-  const selectedSearchIn = toFeedSearchIn(resolvedParams.searchIn);
-  const requestedScope = toFeedScope(resolvedParams.scope);
   const primaryNeighborhood = user?.neighborhoods.find((item) => item.isPrimary);
   const effectiveScope =
     requestedScope === PostScope.LOCAL && primaryNeighborhood ? PostScope.LOCAL : PostScope.GLOBAL;
+  const [loginRequiredTypes, popularSearchTerms] = await Promise.all([
+    getGuestReadLoginRequiredPostTypes(),
+    getPopularSearchTerms(10, {
+      scope: effectiveScope,
+      type,
+      searchIn: selectedSearchIn,
+    }),
+  ]);
+  const blockedTypesForGuest = !isAuthenticated ? loginRequiredTypes : [];
   const isGuestTypeBlocked =
     !isAuthenticated && isLoginRequiredPostType(type, loginRequiredTypes);
 
@@ -201,7 +218,13 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         </header>
 
         {query.length > 0 ? (
-          <SearchResultTelemetry query={query} resultCount={resultItems.length} />
+          <SearchResultTelemetry
+            query={query}
+            resultCount={resultItems.length}
+            scope={effectiveScope}
+            type={type}
+            searchIn={selectedSearchIn}
+          />
         ) : null}
 
         {isGuestTypeBlocked && type ? (
