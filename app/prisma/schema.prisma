@@ -947,13 +947,17 @@ model SiteSetting {
 }
 
 model SearchTermStat {
-  termNormalized String   @id
-  termDisplay    String
-  count          Int      @default(1)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  termNormalized   String   @id
+  termDisplay      String
+  count            Int      @default(1)
+  lastResultCount  Int?
+  totalResultCount Int      @default(0)
+  zeroResultCount  Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   @@index([count(sort: Desc), updatedAt(sort: Desc)])
+  @@index([zeroResultCount(sort: Desc), updatedAt(sort: Desc)])
   @@index([updatedAt(sort: Desc)])
 }
 

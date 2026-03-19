@@ -7,6 +7,7 @@ import type { PostType } from "@prisma/client";
 
 import { HighlightText } from "@/components/content/highlight-text";
 import { FeedSearchForm } from "@/components/posts/feed-search-form";
+import { SearchResultTelemetry } from "@/components/posts/search-result-telemetry";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatRelativeDate, postTypeMeta } from "@/lib/post-presenter";
 import { resolveUserDisplayName } from "@/lib/user-display";
@@ -193,6 +194,8 @@ export function GuestSearchPageClient() {
             />
           </div>
         </header>
+
+        {hasQuery ? <SearchResultTelemetry query={query} resultCount={items.length} /> : null}
 
         {isGuestTypeBlocked && type ? (
           <div className="border border-[#d9c38b] bg-[#fff8e5] px-4 py-3 text-sm text-[#6c5319]">

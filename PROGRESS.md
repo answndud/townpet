@@ -1,6 +1,6 @@
 # PROGRESS.md
 
-기준일: 2026-03-13
+기준일: 2026-03-19
 
 ## 진행 현황 요약
 - Cycle 1~20: 완료
@@ -17,6 +17,24 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-19: Cycle 372 완료 (검색 운영 telemetry + Ops 대시보드 + Phase 2 로드맵)
+- 완료 내용
+  - `app/prisma/schema.prisma`와 `app/prisma/migrations/20260319102000_expand_search_term_stats_for_ops/migration.sql`로 `SearchTermStat`에 `lastResultCount`, `totalResultCount`, `zeroResultCount`를 추가해 검색 실패/저성과 검색어를 운영에서 볼 수 있는 기반을 만들었다.
+  - `app/src/app/api/search/log/route.ts`, `app/src/server/queries/search.queries.ts`는 `QUERY`/`RESULT` stage를 구분해 검색 제출 count와 결과 telemetry를 분리 기록하도록 바꿨고, `listSearchTermSuggestions()`와 `getSearchInsightsOverview()`를 추가했다.
+  - `app/src/components/posts/search-result-telemetry.tsx`, `app/src/app/search/page.tsx`, `app/src/components/posts/guest-search-page-client.tsx`는 검색 결과 페이지에서 query/resultCount를 세션당 1회씩 result-stage telemetry로 기록하도록 연결했다.
+  - `app/src/app/api/posts/suggestions/route.ts`는 SearchTermStat 기반 suggestion과 게시글 기반 suggestion을 merge하도록 바뀌어, 인기 검색어/구조화 검색어가 자동완성에 더 자연스럽게 노출된다.
+  - `app/src/server/health-overview.ts`로 `/api/health` 공용 snapshot 로직을 분리했고, `app/src/server/queries/ops-overview.queries.ts`와 `app/src/app/admin/ops/page.tsx`를 추가해 system health, cache/search 상태, 인증 실패 24시간, 신고 큐 요약, 개인화 CTR, 검색 실패어를 한 화면에서 보는 `/admin/ops` 대시보드를 만들었다.
+  - `app/src/server/queries/auth-audit.queries.ts`에는 24시간 action/reason 집계를 반환하는 `getAuthAuditOverview()`를 추가했고, 기존 admin 페이지들(`reports`, `auth-audits`, `personalization`)에서 `/admin/ops` 진입 링크를 노출하도록 맞췄다.
+  - `docs/product/Phase2_로드맵_PRD.md`를 추가해 Phase 2 후보(검색/개인화 증폭, 마켓 상태 머신, 케어 요청, 카카오맵, 결제/정산)를 현재 코드 기준 우선순위와 선행조건으로 재정리했고, `docs/문서_안내.md`, `docs/개발_운영_가이드.md`, `PLAN.md`를 동기화했다.
+- 검증 결과
+  - `corepack pnpm -C app exec prisma format` 통과
+  - `corepack pnpm -C app exec prisma generate` 통과
+  - `corepack pnpm -C app exec prisma validate` 통과
+  - `corepack pnpm -C app lint src/app/api/search/log/route.ts src/app/api/search/log/route.test.ts src/app/api/posts/suggestions/route.ts src/app/api/posts/suggestions/route.test.ts src/app/api/health/route.ts src/app/admin/ops/page.tsx src/app/admin/auth-audits/page.tsx src/app/admin/reports/page.tsx src/app/admin/personalization/page.tsx src/app/search/page.tsx src/components/posts/guest-search-page-client.tsx src/components/posts/search-result-telemetry.tsx src/server/health-overview.ts src/server/queries/search.queries.ts src/server/queries/search.queries.test.ts src/server/queries/auth-audit.queries.ts src/server/queries/auth-audit.queries.test.ts src/server/queries/ops-overview.queries.ts src/server/queries/ops-overview.queries.test.ts` 통과
+  - `corepack pnpm -C app test -- src/server/queries/search.queries.test.ts src/server/queries/auth-audit.queries.test.ts src/server/queries/ops-overview.queries.test.ts src/app/api/search/log/route.test.ts src/app/api/posts/suggestions/route.test.ts src/app/api/health/route.test.ts` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `173 files / 834 tests` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `git diff --check` 통과
+
 ### 2026-03-13: Cycle 366 완료 (비회원 public identifier 프라이버시 축소)
 - 완료 내용
   - `app/src/lib/public-guest-identity.ts`를 추가해 public payload에서 `guestIpDisplay/guestIpLabel`와 nested `guestAuthor.ipDisplay/ipLabel`를 제거하고, 필요한 경우 top-level `guestDisplayName`만 남기도록 공용 sanitizer를 만들었다.

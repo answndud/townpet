@@ -7,6 +7,7 @@ import { HighlightText } from "@/components/content/highlight-text";
 import { PostListContextBadges } from "@/components/posts/post-list-context-badges";
 import { PostListItemShell } from "@/components/posts/post-list-item-shell";
 import { FeedSearchForm } from "@/components/posts/feed-search-form";
+import { SearchResultTelemetry } from "@/components/posts/search-result-telemetry";
 import { EmptyState } from "@/components/ui/empty-state";
 import { auth } from "@/lib/auth";
 import { isLoginRequiredPostType } from "@/lib/post-access";
@@ -198,6 +199,10 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
             )}
           </div>
         </header>
+
+        {query.length > 0 ? (
+          <SearchResultTelemetry query={query} resultCount={resultItems.length} />
+        ) : null}
 
         {isGuestTypeBlocked && type ? (
           <div className="border border-[#d9c38b] bg-[#fff8e5] px-4 py-3 text-sm text-[#6c5319]">

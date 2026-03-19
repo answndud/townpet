@@ -193,4 +193,20 @@ describe("POST /api/search/log contract", () => {
       },
     });
   });
+
+  it("passes result-stage telemetry without incrementing query count", async () => {
+    const request = new Request("http://localhost/api/search/log", {
+      method: "POST",
+      body: JSON.stringify({ q: "노령견 케어", stage: "RESULT", resultCount: 0 }),
+      headers: { "content-type": "application/json" },
+    }) as NextRequest;
+
+    const response = await POST(request);
+
+    expect(response.status).toBe(200);
+    expect(mockRecordSearchTerm).toHaveBeenCalledWith("노령견 케어", {
+      incrementQueryCount: false,
+      resultCount: 0,
+    });
+  });
 });

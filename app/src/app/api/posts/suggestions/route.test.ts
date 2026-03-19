@@ -7,6 +7,7 @@ import { getCurrentUserId, hasSessionCookieFromRequest } from "@/server/auth";
 import { monitorUnhandledError } from "@/server/error-monitor";
 import { getGuestReadLoginRequiredPostTypes } from "@/server/queries/policy.queries";
 import { listPostSearchSuggestions } from "@/server/queries/post.queries";
+import { listSearchTermSuggestions } from "@/server/queries/search.queries";
 import { getUserWithNeighborhoods } from "@/server/queries/user.queries";
 import { getClientIp } from "@/server/request-context";
 import { enforceRateLimit } from "@/server/rate-limit";
@@ -21,6 +22,7 @@ vi.mock("@/server/queries/policy.queries", () => ({
   getGuestReadLoginRequiredPostTypes: vi.fn(),
 }));
 vi.mock("@/server/queries/post.queries", () => ({ listPostSearchSuggestions: vi.fn() }));
+vi.mock("@/server/queries/search.queries", () => ({ listSearchTermSuggestions: vi.fn() }));
 vi.mock("@/server/queries/user.queries", () => ({ getUserWithNeighborhoods: vi.fn() }));
 vi.mock("@/server/request-context", () => ({ getClientIp: vi.fn() }));
 vi.mock("@/server/rate-limit", () => ({ enforceRateLimit: vi.fn() }));
@@ -31,6 +33,7 @@ const mockHasSessionCookieFromRequest = vi.mocked(hasSessionCookieFromRequest);
 const mockMonitorUnhandledError = vi.mocked(monitorUnhandledError);
 const mockGetGuestReadLoginRequiredPostTypes = vi.mocked(getGuestReadLoginRequiredPostTypes);
 const mockListPostSearchSuggestions = vi.mocked(listPostSearchSuggestions);
+const mockListSearchTermSuggestions = vi.mocked(listSearchTermSuggestions);
 const mockGetUserWithNeighborhoods = vi.mocked(getUserWithNeighborhoods);
 const mockGetClientIp = vi.mocked(getClientIp);
 const mockEnforceRateLimit = vi.mocked(enforceRateLimit);
@@ -43,6 +46,7 @@ describe("GET /api/posts/suggestions contract", () => {
     mockMonitorUnhandledError.mockReset();
     mockGetGuestReadLoginRequiredPostTypes.mockReset();
     mockListPostSearchSuggestions.mockReset();
+    mockListSearchTermSuggestions.mockReset();
     mockGetUserWithNeighborhoods.mockReset();
     mockGetClientIp.mockReset();
     mockEnforceRateLimit.mockReset();
@@ -52,6 +56,7 @@ describe("GET /api/posts/suggestions contract", () => {
     mockHasSessionCookieFromRequest.mockReturnValue(false);
     mockGetGuestReadLoginRequiredPostTypes.mockResolvedValue([]);
     mockListPostSearchSuggestions.mockResolvedValue(["강아지 산책"]);
+    mockListSearchTermSuggestions.mockResolvedValue([]);
     mockGetClientIp.mockReturnValue("127.0.0.1");
     mockEnforceRateLimit.mockResolvedValue();
   });
@@ -124,5 +129,21 @@ describe("GET /api/posts/suggestions contract", () => {
       error: { code: "INTERNAL_SERVER_ERROR" },
     });
     expect(mockMonitorUnhandledError).toHaveBeenCalledOnce();
+  });
+
+  it("merges search-term telemetry suggestions ahead of content suggestions", async () => {
+    mockListSearchTermSuggestions.mockResolvedValue(["병원 후기", "병원비"]);
+    mockListPostSearchSuggestions.mockResolvedValue(["병원비", "병원 추천"]);
+
+    const request = new Request("http://localhost/api/posts/suggestions?q=%EB%B3%91%EC%9B%90") as NextRequest;
+
+    const response = await GET(request);
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(payload).toEqual({
+      ok: true,
+      data: { items: ["병원 후기", "병원비", "병원 추천"] },
+    });
   });
 });
