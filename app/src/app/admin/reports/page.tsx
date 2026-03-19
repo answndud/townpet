@@ -223,6 +223,7 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
         </header>
 
         <div className="flex flex-wrap items-center gap-3 text-xs text-[#5a7398]">
+          <Link href="/admin/ops">Ops 대시보드</Link>
           <Link href="/admin/moderation-logs">모더레이션 로그</Link>
           <Link href="/admin/moderation/direct">직접 모더레이션</Link>
           <Link href="/admin/hospital-review-flags">병원 후기 의심 신호</Link>
@@ -458,6 +459,7 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
         <ReportQueueTable reports={reportRows} />
 
         <div className="flex flex-wrap items-center gap-3 text-xs text-[#5a7398]">
+          <Link href="/admin/ops">Ops 대시보드</Link>
           <Link href="/admin/breeds">품종 사전</Link>
           <Link href="/admin/policies">운영 정책 설정</Link>
           <Link href="/admin/moderation-logs">모더레이션 로그</Link>

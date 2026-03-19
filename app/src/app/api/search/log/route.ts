@@ -11,6 +11,8 @@ import { ServiceError } from "@/server/services/service-error";
 
 const searchLogSchema = z.object({
   q: z.string().min(2).max(100),
+  stage: z.enum(["QUERY", "RESULT"]).default("QUERY"),
+  resultCount: z.number().int().min(0).max(500).optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -43,7 +45,10 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const result = await recordSearchTerm(parsed.data.q);
+    const result = await recordSearchTerm(parsed.data.q, {
+      incrementQueryCount: parsed.data.stage !== "RESULT",
+      resultCount: parsed.data.resultCount,
+    });
     if (!result.ok) {
       throw new ServiceError(
         "검색 통계 저장소 동기화가 필요합니다. prisma generate 및 migrate deploy 후 다시 시도해 주세요.",

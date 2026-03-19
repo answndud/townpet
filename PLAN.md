@@ -1,6 +1,6 @@
 # PLAN.md
 
-기준일: 2026-03-13
+기준일: 2026-03-19
 목표: TownPet를 기능/운영/품질 기준에서 "완성도 높은 커뮤니티" 상태로 끌어올린다.
 
 ## 운영 규칙
@@ -26,6 +26,11 @@
 8. 보안 하드닝 트랙 분리 운영: `docs/security/*` 백로그/리스크/진행 로그 상시 동기화
 
 ## Active Plan
+
+### Cycle 372: 검색 품질 운영 루프 + Ops 대시보드 + Phase 2 로드맵 정리 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 검색 자동완성이 실제 검색 통계를 활용하도록 `SearchTermStat`에 결과 건수 telemetry를 확장하고, `/api/posts/suggestions`가 인기/저성과 검색어 힌트를 함께 반영하도록 개선하며, `/admin/ops` 대시보드와 Phase 2 로드맵 문서를 추가 | Codex | P1 | `done` | `SearchTermStat`가 `lastResultCount/totalResultCount/zeroResultCount`를 저장하고 검색 결과 페이지가 result telemetry를 기록하며, suggestions route가 term-stat 기반 suggestion을 merge하고, `/admin/ops`가 health/search/report/auth/personalization 요약을 노출하며, `docs/product/Phase2_로드맵_PRD.md`와 `PLAN.md`/`PROGRESS.md`/운영 문서가 동기화되고 lint/test/typecheck/diff check가 통과한다 | `PLAN.md`, `PROGRESS.md`, `app/prisma/schema.prisma`, `app/prisma/migrations/20260319102000_expand_search_term_stats_for_ops/migration.sql`, `app/src/app/api/search/log/route.ts`, `app/src/app/api/posts/suggestions/route.ts`, `app/src/app/admin/ops/page.tsx`, `docs/product/Phase2_로드맵_PRD.md`, 관련 테스트 |
 
 ### Cycle 371: 레드팀 취약점 remediation 계획 수립 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |

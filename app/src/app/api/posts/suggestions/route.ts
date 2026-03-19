@@ -8,6 +8,7 @@ import { buildCacheControlHeader } from "@/server/cache/query-cache";
 import { monitorUnhandledError } from "@/server/error-monitor";
 import { getGuestReadLoginRequiredPostTypes } from "@/server/queries/policy.queries";
 import { listPostSearchSuggestions } from "@/server/queries/post.queries";
+import { listSearchTermSuggestions } from "@/server/queries/search.queries";
 import { getUserWithNeighborhoods } from "@/server/queries/user.queries";
 import { getClientIp } from "@/server/request-context";
 import { enforceRateLimit } from "@/server/rate-limit";
@@ -82,16 +83,20 @@ export async function GET(request: NextRequest) {
       neighborhoodId = primaryNeighborhood.neighborhood.id;
     }
 
-    const items = await listPostSearchSuggestions({
-      q: parsed.data.q,
-      limit: parsed.data.limit,
-      type: parsed.data.type,
-      scope,
-      searchIn: parsed.data.searchIn,
-      excludeTypes: currentUserId ? undefined : loginRequiredTypes,
-      neighborhoodId,
-      viewerId,
-    });
+    const [termItems, postItems] = await Promise.all([
+      listSearchTermSuggestions(parsed.data.q, Math.min(parsed.data.limit, 5)),
+      listPostSearchSuggestions({
+        q: parsed.data.q,
+        limit: parsed.data.limit,
+        type: parsed.data.type,
+        scope,
+        searchIn: parsed.data.searchIn,
+        excludeTypes: currentUserId ? undefined : loginRequiredTypes,
+        neighborhoodId,
+        viewerId,
+      }),
+    ]);
+    const items = Array.from(new Set([...termItems, ...postItems])).slice(0, parsed.data.limit);
     const canCache = !currentUserId && scope === PostScope.GLOBAL;
     return jsonOk(
       { items },
