@@ -27,6 +27,11 @@
 
 ## Active Plan
 
+### Cycle 380: 검색 daily metrics와 관리자 모바일 fallback 정리 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| `SearchTermDailyMetric`로 일자별 검색량/0건 수를 저장하고 `/admin/ops`에 최근 7일 추이 카드를 추가하며, `listSearchTermSuggestions()`도 search-document fallback을 사용하도록 통일하고, `auth-audits`/`moderation-logs`/`policies` 페이지의 모바일 사용성을 정리 | Codex | P1 | `done` | 검색 로그 기록 시 context별 daily metric row가 함께 upsert되고 `/admin/ops`는 최근 7일 검색 추이를 문맥 기준으로 렌더하며, search-term suggestion은 compact/초성 query에 search-document fallback을 사용하고, `auth-audits`/`moderation-logs`는 모바일 카드 fallback을 제공하며 `policies`는 모바일 quick summary + 공용 관리자 nav를 노출하고, Prisma format/generate/validate, lint, test, typecheck, diff check 결과가 `PROGRESS.md`에 기록된다 | `PLAN.md`, `PROGRESS.md`, `app/prisma/schema.prisma`, `app/prisma/migrations/20260321130000_add_search_term_daily_metrics/migration.sql`, `app/src/server/queries/search.queries.ts`, `app/src/app/admin/ops/page.tsx`, `app/src/app/admin/auth-audits/page.tsx`, `app/src/app/admin/moderation-logs/page.tsx`, `app/src/app/admin/policies/page.tsx`, 관련 테스트 |
+
 ### Cycle 379: 검색 자동완성과 랭킹 검색에 compact/초성 fallback 추가 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|

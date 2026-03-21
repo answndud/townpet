@@ -128,6 +128,7 @@ describe("ops overview queries", () => {
         totalZeroResultCount: 0,
         zeroResultRate: 0,
       },
+      dailyMetrics: [],
       popularTerms: [],
       zeroResultTerms: [],
       lowResultTerms: [],
