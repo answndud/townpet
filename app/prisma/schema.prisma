@@ -973,6 +973,22 @@ model SearchTermStat {
   @@index([updatedAt(sort: Desc)])
 }
 
+model SearchTermDailyMetric {
+  metricKey        String             @id
+  day              DateTime
+  scope            PostScope          @default(GLOBAL)
+  typeKey          String             @default("ALL")
+  searchIn         SearchTermSearchIn @default(ALL)
+  queryCount       Int                @default(0)
+  zeroResultCount  Int                @default(0)
+  totalResultCount Int                @default(0)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  @@index([scope, typeKey, searchIn, day(sort: Desc)])
+  @@index([day(sort: Desc)])
+}
+
 model Notification {
   id         String                 @id @default(cuid())
   deliveryId String?                @unique

@@ -2,6 +2,12 @@ import { PostScope, PostType, SearchTermSearchIn } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 import {
+  buildSearchDocumentParts,
+  hasChoseongSearchSignal,
+  matchesSearchDocumentQuery,
+  resolveSearchDocumentMatchRank,
+} from "@/lib/search-document";
+import {
   buildSearchTermStatVariants,
   normalizeSearchTerm,
   normalizeSearchTermForStats,
@@ -29,6 +35,18 @@ type SearchTermStatDelegate = {
   upsert(args: Record<string, unknown>): Promise<unknown>;
 };
 
+type SearchTermDailyMetricRecord = {
+  day?: Date;
+  queryCount?: number;
+  zeroResultCount?: number;
+  totalResultCount?: number;
+};
+
+type SearchTermDailyMetricDelegate = {
+  findMany(args: Record<string, unknown>): Promise<SearchTermDailyMetricRecord[]>;
+  upsert(args: Record<string, unknown>): Promise<unknown>;
+};
+
 export type SearchTermContext = {
   scope?: PostScope | null;
   type?: PostType | null;
@@ -50,6 +68,13 @@ type RecordSearchTermOptions = SearchTermContext & {
 
 let missingSearchTermStatDelegateWarned = false;
 let missingSearchTermStatTableWarned = false;
+let missingSearchTermDailyMetricDelegateWarned = false;
+let missingSearchTermDailyMetricTableWarned = false;
+
+const SEARCH_DAILY_METRIC_DEFAULT_DAYS = 7;
+const SEARCH_DAILY_METRIC_MAX_DAYS = 14;
+const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 const GLOBAL_SEARCH_TERM_CONTEXT: NormalizedSearchTermContext = {
   scope: PostScope.GLOBAL,
@@ -66,6 +91,21 @@ function getSearchTermStatDelegate() {
     missingSearchTermStatDelegateWarned = true;
     logger.warn(
       "Prisma Client에 SearchTermStat 모델이 없어 검색 통계를 기록할 수 없습니다.",
+    );
+  }
+
+  return delegate ?? null;
+}
+
+function getSearchTermDailyMetricDelegate() {
+  const delegate = (
+    prisma as unknown as { searchTermDailyMetric?: SearchTermDailyMetricDelegate }
+  ).searchTermDailyMetric;
+
+  if (!delegate && !missingSearchTermDailyMetricDelegateWarned) {
+    missingSearchTermDailyMetricDelegateWarned = true;
+    logger.warn(
+      "Prisma Client에 SearchTermDailyMetric 모델이 없어 검색 일일 통계를 기록할 수 없습니다.",
     );
   }
 
@@ -93,6 +133,17 @@ function warnMissingSearchTermStatTable(error: unknown) {
   });
 }
 
+function warnMissingSearchTermDailyMetricTable(error: unknown) {
+  if (missingSearchTermDailyMetricTableWarned) {
+    return;
+  }
+
+  missingSearchTermDailyMetricTableWarned = true;
+  logger.warn("SearchTermDailyMetric 테이블/컬럼이 없어 검색 일일 통계를 기록할 수 없습니다.", {
+    error: error instanceof Error ? error.message : String(error),
+  });
+}
+
 export type RecordSearchTermResult =
   | { ok: true; recorded: true }
   | { ok: true; recorded: false; reason: SearchTermSkipReason }
@@ -114,6 +165,15 @@ export type SearchInsightsSummary = {
   zeroResultRate: number;
 };
 
+export type SearchInsightsDailyMetric = {
+  date: string;
+  queryCount: number;
+  zeroResultCount: number;
+  totalResultCount: number;
+  averageResultCount: number;
+  zeroResultRate: number;
+};
+
 export type SearchInsightsOverview = {
   context: {
     scope: PostScope;
@@ -121,6 +181,7 @@ export type SearchInsightsOverview = {
     searchIn: SearchTermSearchIn;
   };
   summary: SearchInsightsSummary;
+  dailyMetrics: SearchInsightsDailyMetric[];
   popularTerms: SearchTermInsight[];
   zeroResultTerms: SearchTermInsight[];
   lowResultTerms: SearchTermInsight[];
@@ -181,6 +242,22 @@ function buildSearchTermContextWhere(context: NormalizedSearchTermContext) {
     typeKey: context.typeKey,
     searchIn: context.searchIn,
   };
+}
+
+function getSearchMetricDayStart(date = new Date()) {
+  const kstDay = Math.floor((date.getTime() + KST_OFFSET_MS) / DAY_MS);
+  return new Date(kstDay * DAY_MS - KST_OFFSET_MS);
+}
+
+function formatSearchMetricDate(date: Date) {
+  return new Date(date.getTime() + KST_OFFSET_MS).toISOString().slice(0, 10);
+}
+
+function buildSearchTermDailyMetricKey(
+  day: Date,
+  context: NormalizedSearchTermContext,
+) {
+  return `${formatSearchMetricDate(day)}|${context.scope}|${context.typeKey}|${context.searchIn}`;
 }
 
 function buildSearchTermContexts(context?: SearchTermContextInput) {
@@ -264,6 +341,7 @@ function buildEmptySearchInsightsOverview(
       totalZeroResultCount: 0,
       zeroResultRate: 0,
     },
+    dailyMetrics: [],
     popularTerms: [],
     zeroResultTerms: [],
     lowResultTerms: [],
@@ -315,28 +393,35 @@ function buildTermSearchWhere(variants: string[]) {
   };
 }
 
-function resolveMatchRank(term: string, variants: string[]) {
-  const lowered = term.toLowerCase();
-  const compact = lowered.replace(/\s+/g, "");
+function buildSearchInsightDailyMetrics(
+  rows: SearchTermDailyMetricRecord[],
+  days: number,
+): SearchInsightsDailyMetric[] {
+  const safeDays = Math.min(Math.max(days, 1), SEARCH_DAILY_METRIC_MAX_DAYS);
+  const today = getSearchMetricDayStart(new Date());
+  const rowByDate = new Map(
+    rows
+      .filter((row): row is SearchTermDailyMetricRecord & { day: Date } => row.day instanceof Date)
+      .map((row) => [formatSearchMetricDate(row.day), row]),
+  );
 
-  let bestRank = 3;
-  for (const variant of variants) {
-    const normalizedVariant = variant.toLowerCase();
-    const compactVariant = normalizedVariant.replace(/\s+/g, "");
-    if (lowered.startsWith(normalizedVariant)) {
-      bestRank = Math.min(bestRank, 0);
-      continue;
-    }
-    if (compact.startsWith(compactVariant)) {
-      bestRank = Math.min(bestRank, 1);
-      continue;
-    }
-    if (compact.includes(compactVariant) || lowered.includes(normalizedVariant)) {
-      bestRank = Math.min(bestRank, 2);
-    }
-  }
+  return Array.from({ length: safeDays }, (_, index) => {
+    const day = new Date(today.getTime() - (safeDays - index - 1) * DAY_MS);
+    const date = formatSearchMetricDate(day);
+    const row = rowByDate.get(date);
+    const queryCount = Math.max(row?.queryCount ?? 0, 0);
+    const zeroResultCount = Math.max(row?.zeroResultCount ?? 0, 0);
+    const totalResultCount = Math.max(row?.totalResultCount ?? 0, 0);
 
-  return bestRank;
+    return {
+      date,
+      queryCount,
+      zeroResultCount,
+      totalResultCount,
+      averageResultCount: queryCount > 0 ? totalResultCount / queryCount : 0,
+      zeroResultRate: queryCount > 0 ? zeroResultCount / queryCount : 0,
+    };
+  });
 }
 
 export async function getPopularSearchTerms(limit = 8, context?: SearchTermContext) {
@@ -435,6 +520,10 @@ export async function listSearchTermSuggestions(
 
   const safeLimit = Math.min(Math.max(limit, 1), 10);
   const searchVariants = buildSearchTermStatVariants(normalizedTerm);
+  const queryDocument = buildSearchDocumentParts(normalizedTerm);
+  const shouldTryDocumentFallback =
+    hasChoseongSearchSignal(normalizedTerm) ||
+    (!normalizedTerm.includes(" ") && queryDocument.compactText.length >= 3);
   const contexts = buildSearchTermContexts(context);
   const primaryContext = normalizeSearchTermContext(context);
 
@@ -466,7 +555,36 @@ export async function listSearchTermSuggestions(
     return [] as string[];
   }
 
-  const scored = rows
+  const fallbackRows =
+    rows.length === 0 && shouldTryDocumentFallback
+      ? await statsDelegate
+          .findMany({
+            where: {
+              OR: contexts.map(buildSearchTermContextWhere),
+            },
+            take: 80,
+            orderBy: [{ count: "desc" }, { updatedAt: "desc" }],
+            select: {
+              termDisplay: true,
+              count: true,
+              updatedAt: true,
+              scope: true,
+              typeKey: true,
+              searchIn: true,
+            },
+          })
+          .catch((error) => {
+            if (!isSearchTermStatSchemaSyncError(error)) {
+              throw error;
+            }
+            warnMissingSearchTermStatTable(error);
+            return [] as SearchTermStatRecord[];
+          })
+      : [];
+
+  const candidateRows = rows.length > 0 ? rows : fallbackRows;
+
+  const scored = candidateRows
     .map((row) => {
       const term = mapSearchTermString(row);
       if (!term) {
@@ -478,7 +596,7 @@ export async function listSearchTermSuggestions(
         count: row.count ?? 0,
         updatedAt: row.updatedAt instanceof Date ? row.updatedAt.getTime() : 0,
         contextRank: resolveSearchTermContextRank(row, primaryContext),
-        matchRank: resolveMatchRank(term, searchVariants),
+        matchRank: resolveSearchDocumentMatchRank(term, queryDocument),
       };
     })
     .filter(
@@ -493,7 +611,7 @@ export async function listSearchTermSuggestions(
       } => row !== null,
     )
     .filter((row) => isTrackableSearchTerm(row.term))
-    .filter((row) => row.matchRank < 3)
+    .filter((row) => matchesSearchDocumentQuery(row.term, queryDocument))
     .sort((left, right) => {
       if (left.contextRank !== right.contextRank) {
         return left.contextRank - right.contextRank;
@@ -516,9 +634,12 @@ export async function listSearchTermSuggestions(
 export async function getSearchInsightsOverview(
   limit = 8,
   context?: SearchTermContext,
+  days = SEARCH_DAILY_METRIC_DEFAULT_DAYS,
 ): Promise<SearchInsightsOverview> {
   const safeLimit = Math.min(Math.max(limit, 1), 20);
+  const safeDays = Math.min(Math.max(days, 1), SEARCH_DAILY_METRIC_MAX_DAYS);
   const statsDelegate = getSearchTermStatDelegate();
+  const dailyMetricDelegate = getSearchTermDailyMetricDelegate();
   const primaryContext = normalizeSearchTermContext(context);
   if (!statsDelegate) {
     return buildEmptySearchInsightsOverview(primaryContext);
@@ -558,6 +679,34 @@ export async function getSearchInsightsOverview(
         return buildEmptySearchInsightsOverview(primaryContext);
       }
 
+      let dailyRows: SearchTermDailyMetricRecord[] = [];
+      if (dailyMetricDelegate) {
+        try {
+          const startDay = getSearchMetricDayStart(
+            new Date(Date.now() - (safeDays - 1) * DAY_MS),
+          );
+          dailyRows = await dailyMetricDelegate.findMany({
+            where: {
+              ...buildSearchTermContextWhere(primaryContext),
+              day: { gte: startDay },
+            },
+            orderBy: [{ day: "asc" }],
+            take: safeDays,
+            select: {
+              day: true,
+              queryCount: true,
+              zeroResultCount: true,
+              totalResultCount: true,
+            },
+          });
+        } catch (error) {
+          if (!isSearchTermStatSchemaSyncError(error)) {
+            throw error;
+          }
+          warnMissingSearchTermDailyMetricTable(error);
+        }
+      }
+
       const insights = rows
         .map(mapSearchTermInsight)
         .filter((row): row is SearchTermInsight => Boolean(row));
@@ -573,6 +722,7 @@ export async function getSearchInsightsOverview(
           totalZeroResultCount,
           zeroResultRate: totalQueryCount > 0 ? totalZeroResultCount / totalQueryCount : 0,
         },
+        dailyMetrics: buildSearchInsightDailyMetrics(dailyRows, safeDays),
         popularTerms: insights.slice(0, safeLimit),
         zeroResultTerms: insights
           .filter((row) => row.zeroResultCount > 0)
@@ -617,12 +767,14 @@ export async function recordSearchTerm(rawTerm: string, options: RecordSearchTer
   const resultCount = normalizeResultCount(options.resultCount);
   const incrementQueryCount = options.incrementQueryCount !== false;
   const statsDelegate = getSearchTermStatDelegate();
+  const dailyMetricDelegate = getSearchTermDailyMetricDelegate();
   if (!statsDelegate) {
     return { ok: false, reason: "SCHEMA_SYNC_REQUIRED" } as const;
   }
 
   const primaryContext = normalizeSearchTermContext(options);
   const contexts = buildSearchTermContexts(primaryContext);
+  const metricDay = getSearchMetricDayStart(new Date());
 
   try {
     await Promise.all(
@@ -673,6 +825,50 @@ export async function recordSearchTerm(rawTerm: string, options: RecordSearchTer
     }
     warnMissingSearchTermStatTable(error);
     return { ok: false, reason: "SCHEMA_SYNC_REQUIRED" } as const;
+  }
+
+  if (dailyMetricDelegate) {
+    try {
+      await Promise.all(
+        contexts.map((context) =>
+          dailyMetricDelegate.upsert({
+            where: { metricKey: buildSearchTermDailyMetricKey(metricDay, context) },
+            update: {
+              day: metricDay,
+              scope: context.scope,
+              typeKey: context.typeKey,
+              searchIn: context.searchIn,
+              ...(incrementQueryCount ? { queryCount: { increment: 1 } } : {}),
+              ...(resultCount !== null
+                ? {
+                    totalResultCount: { increment: resultCount },
+                    ...(resultCount === 0
+                      ? {
+                          zeroResultCount: { increment: 1 },
+                        }
+                      : {}),
+                  }
+                : {}),
+            },
+            create: {
+              metricKey: buildSearchTermDailyMetricKey(metricDay, context),
+              day: metricDay,
+              scope: context.scope,
+              typeKey: context.typeKey,
+              searchIn: context.searchIn,
+              queryCount: incrementQueryCount ? 1 : 0,
+              totalResultCount: resultCount ?? 0,
+              zeroResultCount: resultCount === 0 ? 1 : 0,
+            },
+          }),
+        ),
+      );
+    } catch (error) {
+      if (!isSearchTermStatSchemaSyncError(error)) {
+        throw error;
+      }
+      warnMissingSearchTermDailyMetricTable(error);
+    }
   }
 
   void bumpPopularCacheVersion().catch(() => undefined);

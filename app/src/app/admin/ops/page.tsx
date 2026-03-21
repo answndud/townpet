@@ -284,6 +284,45 @@ export default async function AdminOpsPage({ searchParams }: AdminOpsPageProps) 
           </form>
         </section>
 
+        <section className="tp-card flex flex-col gap-4 p-4 sm:p-5">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-semibold text-[#10284a]">최근 7일 검색 추이</h2>
+              <p className="text-xs text-[#5a7398]">
+                현재 문맥 기준 일자별 검색량과 0건 비율을 빠르게 확인합니다.
+              </p>
+            </div>
+            <Link
+              href={buildSearchHref({
+                searchScope: selectedSearchScope,
+                searchType: selectedSearchType,
+                searchIn: selectedSearchIn,
+              })}
+              className="text-xs font-semibold text-[#3567b5]"
+            >
+              검색 열기
+            </Link>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-7">
+            {overview.search.dailyMetrics.map((metric) => (
+              <article
+                key={metric.date}
+                className="rounded-2xl border border-[#dbe6f6] bg-[#f8fbff] p-4 text-xs text-[#4f678d]"
+              >
+                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#5b78a1]">
+                  {metric.date.slice(5)}
+                </p>
+                <p className="mt-3 text-lg font-semibold text-[#163462]">
+                  {formatCount(metric.queryCount)}건
+                </p>
+                <p className="mt-1">0건 {formatCount(metric.zeroResultCount)}건</p>
+                <p className="mt-1">0건 비율 {formatPercent(metric.zeroResultRate)}</p>
+                <p className="mt-1">평균 결과 {metric.averageResultCount.toFixed(1)}건</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
         <section className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
           <article className="tp-card p-4 sm:p-5">
             <div className="flex items-center justify-between gap-2">

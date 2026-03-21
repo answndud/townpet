@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { AdminSectionNav } from "@/components/admin/admin-section-nav";
 import { FeedPersonalizationPolicyForm } from "@/components/admin/feed-personalization-policy-form";
 import { ForbiddenKeywordPolicyForm } from "@/components/admin/forbidden-keyword-policy-form";
 import { GuestPostPolicyForm } from "@/components/admin/guest-post-policy-form";
@@ -44,6 +45,31 @@ export default async function AdminPoliciesPage() {
             비회원 열람 범위와 금칙어 정책을 조정합니다.
           </p>
         </header>
+
+        <AdminSectionNav />
+
+        <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <article className="rounded-2xl border border-[#dbe6f6] bg-[#f8fbff] p-4 text-xs text-[#4f678d]">
+            <p className="text-[11px] uppercase tracking-[0.22em] text-[#5b78a1]">로그인 필수</p>
+            <p className="mt-2 text-2xl font-bold text-[#10284a]">{loginRequiredTypes.length}</p>
+            <p className="mt-1">카테고리</p>
+          </article>
+          <article className="rounded-2xl border border-[#dbe6f6] bg-[#f8fbff] p-4 text-xs text-[#4f678d]">
+            <p className="text-[11px] uppercase tracking-[0.22em] text-[#5b78a1]">금칙어</p>
+            <p className="mt-2 text-2xl font-bold text-[#10284a]">{forbiddenKeywords.length}</p>
+            <p className="mt-1">등록 키워드</p>
+          </article>
+          <article className="rounded-2xl border border-[#dbe6f6] bg-[#f8fbff] p-4 text-xs text-[#4f678d]">
+            <p className="text-[11px] uppercase tracking-[0.22em] text-[#5b78a1]">비회원 작성</p>
+            <p className="mt-2 text-2xl font-bold text-[#10284a]">{guestPostPolicy.maxImageCount}</p>
+            <p className="mt-1">최대 이미지 · 차단 카테고리 {guestPostPolicy.blockedPostTypes.length}개</p>
+          </article>
+          <article className="rounded-2xl border border-[#dbe6f6] bg-[#f8fbff] p-4 text-xs text-[#4f678d]">
+            <p className="text-[11px] uppercase tracking-[0.22em] text-[#5b78a1]">신규 계정</p>
+            <p className="mt-2 text-2xl font-bold text-[#10284a]">{newUserSafetyPolicy.minAccountAgeHours}h</p>
+            <p className="mt-1">연락처 차단 {newUserSafetyPolicy.contactBlockWindowHours}h</p>
+          </article>
+        </section>
 
         <section className="tp-card p-5 sm:p-6">
           <h2 className="text-lg font-semibold text-[#153a6a]">현재 로그인 필수 카테고리</h2>
@@ -189,12 +215,7 @@ export default async function AdminPoliciesPage() {
             />
           </div>
         </section>
-
         <div className="flex flex-wrap items-center gap-3 text-xs text-[#5a7398]">
-          <Link href="/admin/breeds">품종 사전</Link>
-          <Link href="/admin/reports">신고 큐</Link>
-          <Link href="/admin/auth-audits">인증 로그</Link>
-          <Link href="/admin/personalization">개인화 지표</Link>
           <Link href="/feed">피드로 이동</Link>
         </div>
       </main>

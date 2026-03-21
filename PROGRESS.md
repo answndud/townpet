@@ -17,6 +17,26 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-21: Cycle 380 완료 (검색 daily metrics + 관리자 모바일 fallback 정리)
+- 완료 내용
+  - `app/prisma/schema.prisma`, `app/prisma/migrations/20260321130000_add_search_term_daily_metrics/migration.sql`에 `SearchTermDailyMetric`를 추가했다. `scope/typeKey/searchIn`별 일자 row에 query/zero-result/totalResultCount를 저장하는 구조다.
+  - `app/src/server/queries/search.queries.ts`는 검색 로그 기록 시 `SearchTermStat`와 별개로 day bucket(`KST`) 기준 `SearchTermDailyMetric`도 함께 upsert하도록 보강했다. 일일 metric delegate/table이 없을 때는 검색 로그 자체를 실패시키지 않고 warn 후 continue한다.
+  - 같은 파일의 `getSearchInsightsOverview()`는 최근 7일 daily metrics를 같이 반환하고, `listSearchTermSuggestions()`는 query stat candidate가 비어 있을 때도 compact/초성 search-document fallback으로 인기 검색어를 다시 매칭하도록 통일했다.
+  - `app/src/app/admin/ops/page.tsx`는 현재 문맥 기준 최근 7일 검색량/0건 수/0건 비율/평균 결과 수를 카드형으로 노출해 운영자가 추이를 바로 볼 수 있게 했다.
+  - `app/src/app/admin/auth-audits/page.tsx`, `app/src/app/admin/moderation-logs/page.tsx`에는 mobile 카드 fallback을 추가해 작은 화면에서도 주요 로그를 읽을 수 있게 정리했고, 두 페이지 모두 공용 `AdminSectionNav`를 사용하도록 통일했다.
+  - `app/src/app/admin/policies/page.tsx`는 공용 관리자 nav와 모바일 quick summary grid를 추가해 정책 페이지 첫 화면에서 핵심 운영 수치를 바로 볼 수 있게 했다.
+- 검증 결과
+  - `corepack pnpm -C app exec prisma format` 통과
+  - `corepack pnpm -C app exec prisma generate` 통과
+  - `corepack pnpm -C app exec prisma validate` 통과
+  - `corepack pnpm -C app test -- src/server/queries/search.queries.test.ts src/server/queries/ops-overview.queries.test.ts` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `175 files / 852 tests` 통과
+  - `corepack pnpm -C app lint src/server/queries/search.queries.ts src/server/queries/search.queries.test.ts src/server/queries/ops-overview.queries.ts src/server/queries/ops-overview.queries.test.ts src/app/admin/ops/page.tsx src/app/admin/auth-audits/page.tsx src/app/admin/moderation-logs/page.tsx src/app/admin/policies/page.tsx` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `git diff --check` 통과
+- 메모
+  - 일일 검색 지표는 이번 migration 이후부터 누적되므로, 초기 `/admin/ops` 추이 카드는 배포 직후 며칠간 빈 값이 많을 수 있다.
+  - `auth-audits`/`moderation-logs`는 모바일 카드 fallback을 추가했고, `policies`는 원래 폼이 세로 스택 구조라 테이블 fallback보다는 요약 카드와 관리자 nav 정리에 집중했다.
+
 ### 2026-03-21: Cycle 379 완료 (검색 자동완성/랭킹 검색 compact·초성 fallback 추가)
 - 완료 내용
   - `app/src/lib/search-document.ts`를 추가해 normalized/compact/choseong search document helper를 만들었다. `normalizeStoredText` 기반 정규화 뒤 공백/기호 제거 text와 한글 초성 추출 text를 함께 만들고, prefix/contains rank 계산까지 한 곳에서 처리한다.

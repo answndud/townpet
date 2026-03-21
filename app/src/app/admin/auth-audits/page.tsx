@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { AuthAuditAction } from "@prisma/client";
 
+import { AdminSectionNav } from "@/components/admin/admin-section-nav";
 import { EmptyState } from "@/components/ui/empty-state";
 import { requireModeratorPageUser } from "@/server/admin-page-access";
 import { listAuthAuditLogs } from "@/server/queries/auth-audit.queries";
@@ -136,16 +137,63 @@ export default async function AuthAuditPage({ searchParams }: AuthAuditPageProps
           </div>
         </section>
 
-        <div className="flex flex-wrap items-center gap-3 text-xs text-[#5a7398]">
-          <Link href="/admin/ops">Ops 대시보드</Link>
-          <Link href="/admin/reports">신고 큐</Link>
-          <Link href="/admin/moderation-logs">모더레이션 로그</Link>
-          <Link href="/admin/hospital-review-flags">병원 후기 의심 신호</Link>
-        </div>
+        <AdminSectionNav />
 
         <section className="tp-card p-4 sm:p-5">
           {audits.length > 0 ? (
-            <div className="overflow-x-auto">
+            <>
+              <div className="grid gap-3 md:hidden">
+                {audits.map((audit) => (
+                  <article
+                    key={audit.id}
+                    className="rounded-2xl border border-[#dbe6f6] bg-[#f8fbff] p-4 text-xs text-[#4f678d]"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-semibold text-[#163462]">{actionLabels[audit.action]}</p>
+                        <p className="mt-1 text-[11px] text-[#6a7f9f]">
+                          {audit.reasonCode ? reasonLabels[audit.reasonCode] ?? audit.reasonCode : "사유 없음"}
+                        </p>
+                      </div>
+                      <span className="text-[11px] text-[#6a7f9f]">
+                        {formatDateTime(audit.createdAt)}
+                      </span>
+                    </div>
+                    <div className="mt-3 space-y-2">
+                      <div>
+                        <p className="text-[10px] uppercase tracking-[0.18em] text-[#5b78a1]">사용자</p>
+                        {audit.user ? (
+                          <>
+                            <p className="mt-1 text-[#1f3f71]">{audit.user.nickname ?? audit.user.email}</p>
+                            <p className="text-[11px] text-[#6a7f9f]">{audit.user.id}</p>
+                          </>
+                        ) : (
+                          <>
+                            <p className="mt-1 text-[#1f3f71]">{audit.identifierLabel ?? "미연결 식별자"}</p>
+                            <p className="text-[11px] text-[#6a7f9f]">계정 미연결</p>
+                          </>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <p className="text-[10px] uppercase tracking-[0.18em] text-[#5b78a1]">IP</p>
+                          <p className="mt-1 break-all text-[#1f3f71]">{audit.ipAddress ?? "-"}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] uppercase tracking-[0.18em] text-[#5b78a1]">식별자</p>
+                          <p className="mt-1 break-all text-[#1f3f71]">{audit.identifierLabel ?? "-"}</p>
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase tracking-[0.18em] text-[#5b78a1]">User Agent</p>
+                        <p className="mt-1 break-words text-[#1f3f71]">{audit.userAgent ?? "-"}</p>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+
+              <div className="hidden overflow-x-auto md:block">
               <table className="w-full min-w-[980px] text-left text-xs text-[#355988]">
                 <thead className="border-b border-[#dbe6f6] text-[10px] uppercase tracking-[0.24em] text-[#5b78a1]">
                   <tr>
@@ -190,7 +238,8 @@ export default async function AuthAuditPage({ searchParams }: AuthAuditPageProps
                   ))}
                 </tbody>
               </table>
-            </div>
+              </div>
+            </>
           ) : (
             <EmptyState
               title="인증 감사 로그가 없습니다"
@@ -198,14 +247,6 @@ export default async function AuthAuditPage({ searchParams }: AuthAuditPageProps
             />
           )}
         </section>
-
-        <div className="flex flex-wrap gap-3 text-xs text-[#5a7398]">
-          <Link href="/admin/ops">Ops 대시보드</Link>
-          <Link href="/admin/breeds">품종 사전</Link>
-          <Link href="/admin/reports">신고 큐</Link>
-          <Link href="/admin/hospital-review-flags">병원 후기 의심 신호</Link>
-          <Link href="/admin/personalization">개인화 지표</Link>
-        </div>
       </main>
     </div>
   );
