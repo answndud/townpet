@@ -12,6 +12,12 @@ import {
 } from "@/lib/breed-catalog";
 import type { FeedPersonalizationPolicy } from "@/lib/feed-personalization-policy";
 import {
+  buildSearchDocumentParts,
+  hasChoseongSearchSignal,
+  matchesSearchDocumentQuery,
+  resolveSearchDocumentMatchRank,
+} from "@/lib/search-document";
+import {
   extractAudienceSegmentBreedLabel,
   getPetBreedDisplayLabel,
   hasBreedLoungeRoute,
@@ -877,6 +883,7 @@ function buildPostSearchWhere(
 
 type PostSearchSuggestionRow = {
   title: string;
+  content?: string;
   animalTags?: string[];
   author: {
     nickname: string | null;
@@ -3846,6 +3853,36 @@ function buildStructuredSearchTextSql() {
   return Prisma.sql`COALESCE(p."structuredSearchText", '')`;
 }
 
+type RankedSearchFallbackCandidateRow = {
+  id: string;
+  title: string;
+  content: string;
+  structuredSearchText: string;
+  createdAt: Date;
+  author: {
+    nickname: string | null;
+  };
+};
+
+function buildRankedSearchFallbackSource(
+  row: RankedSearchFallbackCandidateRow,
+  searchIn: PostSearchIn,
+) {
+  if (searchIn === "TITLE") {
+    return row.title;
+  }
+  if (searchIn === "CONTENT") {
+    return row.content;
+  }
+  if (searchIn === "AUTHOR") {
+    return row.author.nickname ?? "";
+  }
+
+  return [row.title, row.content, row.author.nickname, row.structuredSearchText]
+    .filter((value): value is string => typeof value === "string" && value.length > 0)
+    .join(" ");
+}
+
 function buildFieldSearchMatchSql(fieldSql: Prisma.Sql, variants: StructuredSearchSqlVariant[]) {
   return variants.flatMap(({ query, pattern, compactQuery, compactPattern }) => [
     Prisma.sql`${fieldSql} ILIKE ${pattern}`,
@@ -3948,6 +3985,10 @@ export async function listRankedSearchPosts({
 
   const resolvedSearchIn = searchIn ?? DEFAULT_POST_SEARCH_IN;
   const includeStructuredSearch = resolvedSearchIn === "ALL";
+  const queryDocument = buildSearchDocumentParts(trimmedQuery);
+  const shouldTryDocumentFallback =
+    hasChoseongSearchSignal(trimmedQuery) ||
+    (!trimmedQuery.includes(" ") && queryDocument.compactText.length >= 3);
   const likePattern = `%${trimmedQuery}%`;
   const compactQuery = trimmedQuery.replace(/\s+/g, "");
   const compactPattern = `%${compactQuery}%`;
@@ -3989,6 +4030,61 @@ export async function listRankedSearchPosts({
     includeStructuredSearch && structuredSearchVariants.length > 0
       ? buildStructuredSearchMatchSql(structuredSearchVariants)
       : Prisma.sql`FALSE`;
+  const includeViewerReactions = Boolean(viewerId);
+  const hydratePostsByIds = async (candidateIds: string[]) => {
+    if (candidateIds.length === 0) {
+      return [];
+    }
+
+    const baseArgs: Omit<Prisma.PostFindManyArgs, "include"> = {
+      where: {
+        id: { in: candidateIds },
+        ...(hiddenAuthorIds.length > 0 ? { authorId: { notIn: hiddenAuthorIds } } : {}),
+        author: buildVisibleAuthorFilter(),
+      },
+    };
+
+    const fetchedPosts = !supportsPostReactionsField() || !includeViewerReactions
+      ? withEmptyReactions(
+          await prisma.post.findMany({
+            ...baseArgs,
+            include: buildPostListIncludeWithoutReactions(),
+          }),
+        )
+      : await prisma.post
+          .findMany({
+            ...baseArgs,
+            include: buildPostListInclude(viewerId),
+          })
+          .catch(async (error) => {
+            if (!isUnavailableReactionsIncludeError(error) && !isUnknownGuestAuthorIncludeError(error)) {
+              throw error;
+            }
+
+            if (isUnavailableReactionsIncludeError(error)) {
+              postReactionsFieldSupport = false;
+            }
+
+            if (isUnknownGuestAuthorIncludeError(error)) {
+              return prisma.post.findMany({
+                ...baseArgs,
+                include: buildPostListInclude(viewerId, false),
+              });
+            }
+
+            const fallbackItems = await prisma.post.findMany({
+              ...baseArgs,
+              include: buildPostListIncludeWithoutReactions(),
+            });
+            return withEmptyReactions(fallbackItems);
+          });
+
+    const byId = new Map(fetchedPosts.map((item) => [item.id, item]));
+    return candidateIds
+      .map((id) => byId.get(id))
+      .filter((item): item is (typeof fetchedPosts)[number] => Boolean(item))
+      .slice(0, safeLimit);
+  };
   const runRankedSearch = async () => {
     const candidates = await prisma.$queryRaw<RankedSearchRow[]>(Prisma.sql`
       SELECT p."id"
@@ -4036,59 +4132,80 @@ export async function listRankedSearchPosts({
           .filter((value): value is string => typeof value === "string"),
       ),
     );
-    if (candidateIds.length === 0) {
-      return [];
-    }
+    return hydratePostsByIds(candidateIds);
+  };
 
-    const baseArgs: Omit<Prisma.PostFindManyArgs, "include"> = {
+  const runSearchDocumentFallback = async () => {
+    const fallbackCandidates = await prisma.post.findMany({
       where: {
-        id: { in: candidateIds },
+        status: PostStatus.ACTIVE,
+        ...(type
+          ? (() => {
+              const equivalentTypes = getEquivalentPostTypes(type);
+              return equivalentTypes.length === 1
+                ? { type: equivalentTypes[0] }
+                : { type: { in: equivalentTypes } };
+            })()
+          : normalizedExcludeTypes.length > 0
+            ? { type: { notIn: normalizedExcludeTypes } }
+            : {}),
+        scope,
+        ...(scope === PostScope.LOCAL && neighborhoodId
+          ? { neighborhoodId }
+          : scope === PostScope.LOCAL
+            ? { neighborhoodId: "__NO_NEIGHBORHOOD__" }
+            : {}),
         ...(hiddenAuthorIds.length > 0 ? { authorId: { notIn: hiddenAuthorIds } } : {}),
         author: buildVisibleAuthorFilter(),
       },
-    };
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        structuredSearchText: true,
+        createdAt: true,
+        author: {
+          select: {
+            nickname: true,
+          },
+        },
+      },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      take: Math.min(Math.max(safeLimit * 12, 60), 180),
+    });
 
-    const includeViewerReactions = Boolean(viewerId);
-    const fetchedPosts = !supportsPostReactionsField() || !includeViewerReactions
-      ? withEmptyReactions(
-          await prisma.post.findMany({
-            ...baseArgs,
-            include: buildPostListIncludeWithoutReactions(),
-          }),
-        )
-      : await prisma.post
-          .findMany({
-            ...baseArgs,
-            include: buildPostListInclude(viewerId),
-          })
-          .catch(async (error) => {
-            if (!isUnavailableReactionsIncludeError(error) && !isUnknownGuestAuthorIncludeError(error)) {
-              throw error;
-            }
+    const candidateIds = fallbackCandidates
+      .map((row) => ({
+        id: row.id,
+        rank: resolveSearchDocumentMatchRank(
+          buildRankedSearchFallbackSource(row, resolvedSearchIn),
+          queryDocument,
+        ),
+        createdAt: row.createdAt.getTime(),
+      }))
+      .filter((row) => row.rank < 4)
+      .sort((left, right) => {
+        if (left.rank !== right.rank) {
+          return left.rank - right.rank;
+        }
+        if (right.createdAt !== left.createdAt) {
+          return right.createdAt - left.createdAt;
+        }
+        return right.id.localeCompare(left.id, "ko");
+      })
+      .slice(0, safeLimit)
+      .map((row) => row.id);
 
-            if (isUnavailableReactionsIncludeError(error)) {
-              postReactionsFieldSupport = false;
-            }
+    return hydratePostsByIds(candidateIds);
+  };
 
-            if (isUnknownGuestAuthorIncludeError(error)) {
-              return prisma.post.findMany({
-                ...baseArgs,
-                include: buildPostListInclude(viewerId, false),
-              });
-            }
+  const runSearch = async () => {
+    const rankedItems = await runRankedSearch();
+    if (rankedItems.length > 0 || !shouldTryDocumentFallback) {
+      return rankedItems;
+    }
 
-            const fallbackItems = await prisma.post.findMany({
-              ...baseArgs,
-              include: buildPostListIncludeWithoutReactions(),
-            });
-            return withEmptyReactions(fallbackItems);
-          });
-
-    const byId = new Map(fetchedPosts.map((item) => [item.id, item]));
-    return candidateIds
-      .map((id) => byId.get(id))
-      .filter((item): item is (typeof fetchedPosts)[number] => Boolean(item))
-      .slice(0, safeLimit);
+    return runSearchDocumentFallback();
   };
 
   const shouldCache = true;
@@ -4103,12 +4220,13 @@ export async function listRankedSearchPosts({
       neighborhoodId: neighborhoodId ?? "",
       viewerId: viewerId ?? "guest",
       hiddenAuthorIds,
+      hasChoseongFallback: shouldTryDocumentFallback,
     });
     try {
       return await withQueryCache({
         key: cacheKey,
         ttlSeconds: 45,
-        fetcher: runRankedSearch,
+        fetcher: runSearch,
       });
     } catch (error) {
       logger.warn("검색 캐시 실패로 원본 검색을 사용합니다.", {
@@ -4120,7 +4238,7 @@ export async function listRankedSearchPosts({
   }
 
   try {
-    return await runRankedSearch();
+    return await runSearch();
   } catch (error) {
     logger.warn("고급 검색 쿼리 실패로 기본 검색으로 fallback합니다.", {
       query: trimmedQuery,
@@ -4163,6 +4281,10 @@ export async function listPostSearchSuggestions({
   }
 
   const resolvedSearchIn = searchIn ?? DEFAULT_POST_SEARCH_IN;
+  const queryDocument = buildSearchDocumentParts(trimmedQuery);
+  const shouldTryDocumentFallback =
+    hasChoseongSearchSignal(trimmedQuery) ||
+    (!trimmedQuery.includes(" ") && queryDocument.compactText.length >= 3);
   const canonicalSuggestionCandidates =
     resolvedSearchIn === "ALL"
       ? buildStructuredSearchVariants(trimmedQuery).filter(
@@ -4198,6 +4320,7 @@ export async function listPostSearchSuggestions({
       },
       select: {
         title: true,
+        content: true,
         ...(includeStructuredSuggestionFields ? { animalTags: true } : {}),
         author: {
           select: {
@@ -4249,6 +4372,83 @@ export async function listPostSearchSuggestions({
       take: Math.min(Math.max(limit * 3, limit), 30),
     });
 
+  const runSuggestionFallback = async () =>
+    prisma.post.findMany({
+      where: {
+        status: PostStatus.ACTIVE,
+        ...(type
+          ? (() => {
+              const equivalentTypes = getEquivalentPostTypes(type);
+              return equivalentTypes.length === 1
+                ? { type: equivalentTypes[0] }
+                : { type: { in: equivalentTypes } };
+            })()
+          : normalizedExcludeTypes.length > 0
+            ? { type: { notIn: normalizedExcludeTypes } }
+            : {}),
+        scope,
+        ...(scope === PostScope.LOCAL && neighborhoodId
+          ? { neighborhoodId }
+          : scope === PostScope.LOCAL
+            ? { neighborhoodId: "__NO_NEIGHBORHOOD__" }
+            : {}),
+        ...(hiddenAuthorIds.length > 0 ? { authorId: { notIn: hiddenAuthorIds } } : {}),
+        author: buildVisibleAuthorFilter(),
+      },
+      select: {
+        title: true,
+        content: true,
+        ...(includeStructuredSuggestionFields ? { animalTags: true } : {}),
+        author: {
+          select: {
+            nickname: true,
+          },
+        },
+        ...(includeStructuredSuggestionFields
+          ? {
+              hospitalReview: {
+                select: {
+                  hospitalName: true,
+                  treatmentType: true,
+                },
+              },
+              placeReview: {
+                select: {
+                  placeName: true,
+                  placeType: true,
+                  address: true,
+                },
+              },
+              walkRoute: {
+                select: {
+                  routeName: true,
+                  safetyTags: true,
+                },
+              },
+              adoptionListing: {
+                select: {
+                  shelterName: true,
+                  region: true,
+                  animalType: true,
+                  breed: true,
+                  ageLabel: true,
+                  sizeLabel: true,
+                },
+              },
+              volunteerRecruitment: {
+                select: {
+                  shelterName: true,
+                  region: true,
+                  volunteerType: true,
+                },
+              },
+            }
+          : {}),
+      },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      take: Math.min(Math.max(limit * 8, 40), 80),
+    });
+
   const shouldCache = true;
   const rows = shouldCache
     ? await withQueryCache({
@@ -4262,23 +4462,30 @@ export async function listPostSearchSuggestions({
           neighborhoodId: neighborhoodId ?? "",
           viewerId: viewerId ?? "guest",
           hiddenAuthorIds,
+          hasChoseongFallback: shouldTryDocumentFallback,
         }),
         ttlSeconds: 60,
         fetcher: runSuggestions,
       })
     : await runSuggestions();
 
-  const lowerQuery = trimmedQuery.toLowerCase();
+  const fallbackRows =
+    rows.length === 0 && shouldTryDocumentFallback ? await runSuggestionFallback() : [];
+  const candidateRows = rows.length > 0 ? rows : fallbackRows;
   const suggestions: string[] = [];
   const seen = new Set<string>();
-  const addSuggestion = (value?: string | null, options?: { requireContains?: boolean }) => {
+  const addSuggestion = (
+    value?: string | null,
+    options?: { requireContains?: boolean; sourceValue?: string | null },
+  ) => {
     const requireContains = options?.requireContains ?? true;
     const normalized = value?.trim();
     if (!normalized) {
       return;
     }
     const lower = normalized.toLowerCase();
-    if ((requireContains && !lower.includes(lowerQuery)) || seen.has(lower)) {
+    const sourceValue = options?.sourceValue ?? normalized;
+    if ((requireContains && !matchesSearchDocumentQuery(sourceValue, queryDocument)) || seen.has(lower)) {
       return;
     }
 
@@ -4293,11 +4500,13 @@ export async function listPostSearchSuggestions({
     }
   }
 
-  for (const row of rows) {
+  for (const row of candidateRows) {
     if (resolvedSearchIn === "AUTHOR") {
       addSuggestion(row.author.nickname);
     } else {
-      addSuggestion(row.title);
+      addSuggestion(row.title, {
+        sourceValue: resolvedSearchIn === "CONTENT" ? row.content : row.title,
+      });
       if (resolvedSearchIn === "ALL") {
         addSuggestion(row.author.nickname);
         for (const candidate of listStructuredSuggestionCandidates(row as PostSearchSuggestionRow)) {
