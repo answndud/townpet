@@ -107,7 +107,20 @@ export type SearchTermInsight = {
   updatedAt: string | null;
 };
 
+export type SearchInsightsSummary = {
+  trackedTermCount: number;
+  totalQueryCount: number;
+  totalZeroResultCount: number;
+  zeroResultRate: number;
+};
+
 export type SearchInsightsOverview = {
+  context: {
+    scope: PostScope;
+    typeKey: string;
+    searchIn: SearchTermSearchIn;
+  };
+  summary: SearchInsightsSummary;
   popularTerms: SearchTermInsight[];
   zeroResultTerms: SearchTermInsight[];
   lowResultTerms: SearchTermInsight[];
@@ -238,6 +251,23 @@ function mapSearchTermInsight(row: SearchTermStatRecord): SearchTermInsight | nu
 
 function mapSearchTermString(row: SearchTermStatRecord) {
   return normalizeSearchTermForStats(row.termDisplay);
+}
+
+function buildEmptySearchInsightsOverview(
+  context: NormalizedSearchTermContext = GLOBAL_SEARCH_TERM_CONTEXT,
+): SearchInsightsOverview {
+  return {
+    context,
+    summary: {
+      trackedTermCount: 0,
+      totalQueryCount: 0,
+      totalZeroResultCount: 0,
+      zeroResultRate: 0,
+    },
+    popularTerms: [],
+    zeroResultTerms: [],
+    lowResultTerms: [],
+  };
 }
 
 function dedupeSearchTerms(
@@ -483,75 +513,94 @@ export async function listSearchTermSuggestions(
   return dedupeSearchTerms(scored, safeLimit);
 }
 
-export async function getSearchInsightsOverview(limit = 8): Promise<SearchInsightsOverview> {
+export async function getSearchInsightsOverview(
+  limit = 8,
+  context?: SearchTermContext,
+): Promise<SearchInsightsOverview> {
   const safeLimit = Math.min(Math.max(limit, 1), 20);
   const statsDelegate = getSearchTermStatDelegate();
+  const primaryContext = normalizeSearchTermContext(context);
   if (!statsDelegate) {
-    return {
-      popularTerms: [],
-      zeroResultTerms: [],
-      lowResultTerms: [],
-    };
+    return buildEmptySearchInsightsOverview(primaryContext);
   }
 
-  let rows: SearchTermStatRecord[];
-  try {
-    rows = await statsDelegate.findMany({
-      where: buildSearchTermContextWhere(GLOBAL_SEARCH_TERM_CONTEXT),
-      take: 100,
-      orderBy: [{ count: "desc" }, { updatedAt: "desc" }],
-      select: {
-        termDisplay: true,
-        count: true,
-        zeroResultCount: true,
-        totalResultCount: true,
-        lastResultCount: true,
-        updatedAt: true,
-      },
-    });
-  } catch (error) {
-    if (!isSearchTermStatSchemaSyncError(error)) {
-      throw error;
-    }
-    warnMissingSearchTermStatTable(error);
-    return {
-      popularTerms: [],
-      zeroResultTerms: [],
-      lowResultTerms: [],
-    };
-  }
+  const cacheKey = await createQueryCacheKey("search-insights", {
+    limit: safeLimit,
+    scope: primaryContext.scope,
+    typeKey: primaryContext.typeKey,
+    searchIn: primaryContext.searchIn,
+  });
 
-  const insights = rows
-    .map(mapSearchTermInsight)
-    .filter((row): row is SearchTermInsight => Boolean(row));
+  return withQueryCache({
+    key: cacheKey,
+    ttlSeconds: 300,
+    fetcher: async () => {
+      let rows: SearchTermStatRecord[];
+      try {
+        rows = await statsDelegate.findMany({
+          where: buildSearchTermContextWhere(primaryContext),
+          take: 100,
+          orderBy: [{ count: "desc" }, { updatedAt: "desc" }],
+          select: {
+            termDisplay: true,
+            count: true,
+            zeroResultCount: true,
+            totalResultCount: true,
+            lastResultCount: true,
+            updatedAt: true,
+          },
+        });
+      } catch (error) {
+        if (!isSearchTermStatSchemaSyncError(error)) {
+          throw error;
+        }
+        warnMissingSearchTermStatTable(error);
+        return buildEmptySearchInsightsOverview(primaryContext);
+      }
 
-  return {
-    popularTerms: insights.slice(0, safeLimit),
-    zeroResultTerms: insights
-      .filter((row) => row.zeroResultCount > 0)
-      .sort((left, right) => {
-        if (right.zeroResultCount !== left.zeroResultCount) {
-          return right.zeroResultCount - left.zeroResultCount;
-        }
-        if (right.count !== left.count) {
-          return right.count - left.count;
-        }
-        return left.term.localeCompare(right.term, "ko");
-      })
-      .slice(0, safeLimit),
-    lowResultTerms: insights
-      .filter((row) => row.count >= 2 && row.averageResultCount <= 2)
-      .sort((left, right) => {
-        if (left.averageResultCount !== right.averageResultCount) {
-          return left.averageResultCount - right.averageResultCount;
-        }
-        if (right.count !== left.count) {
-          return right.count - left.count;
-        }
-        return left.term.localeCompare(right.term, "ko");
-      })
-      .slice(0, safeLimit),
-  };
+      const insights = rows
+        .map(mapSearchTermInsight)
+        .filter((row): row is SearchTermInsight => Boolean(row));
+
+      const totalQueryCount = insights.reduce((sum, row) => sum + row.count, 0);
+      const totalZeroResultCount = insights.reduce((sum, row) => sum + row.zeroResultCount, 0);
+
+      return {
+        context: primaryContext,
+        summary: {
+          trackedTermCount: insights.length,
+          totalQueryCount,
+          totalZeroResultCount,
+          zeroResultRate: totalQueryCount > 0 ? totalZeroResultCount / totalQueryCount : 0,
+        },
+        popularTerms: insights.slice(0, safeLimit),
+        zeroResultTerms: insights
+          .filter((row) => row.zeroResultCount > 0)
+          .sort((left, right) => {
+            if (right.zeroResultCount !== left.zeroResultCount) {
+              return right.zeroResultCount - left.zeroResultCount;
+            }
+            if (right.count !== left.count) {
+              return right.count - left.count;
+            }
+            return left.term.localeCompare(right.term, "ko");
+          })
+          .slice(0, safeLimit),
+        lowResultTerms: insights
+          .filter((row) => row.count >= 2 && row.averageResultCount <= 2)
+          .sort((left, right) => {
+            if (left.averageResultCount !== right.averageResultCount) {
+              return left.averageResultCount - right.averageResultCount;
+            }
+            if (right.count !== left.count) {
+              return right.count - left.count;
+            }
+            return left.term.localeCompare(right.term, "ko");
+          })
+          .slice(0, safeLimit),
+      };
+    },
+  });
 }
 
 export async function recordSearchTerm(rawTerm: string, options: RecordSearchTermOptions = {}) {

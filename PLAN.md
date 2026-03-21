@@ -27,6 +27,16 @@
 
 ## Active Plan
 
+### Cycle 379: 검색 자동완성과 랭킹 검색에 compact/초성 fallback 추가 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 공백 제거형 검색어와 한글 초성 검색어가 no-result일 때도 자동완성과 랭킹 검색에서 최근 활성 게시글을 대상으로 compact/choseong search document fallback을 수행하도록 보강 | Codex | P1 | `done` | `app/src/lib/search-document.ts`에 normalized/compact/choseong search document helper가 추가되고, `listPostSearchSuggestions()`와 `listRankedSearchPosts()`는 SQL 기반 결과가 없을 때 compact/초성 query를 search document로 다시 매칭해 제목/작성자/구조화 텍스트 후보를 복구하며, 관련 lint/test/typecheck/diff check 검증이 `PROGRESS.md`에 기록된다 | `PLAN.md`, `PROGRESS.md`, `app/src/lib/search-document.ts`, `app/src/server/queries/post.queries.ts`, 관련 테스트 |
+
+### Cycle 378: `/admin/ops` 검색 문맥 필터와 zero-result 운영 루프 보강 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 검색 인사이트를 전역 집계만 보지 않고 현재 문맥(`scope/type/searchIn`) 기준으로 집계·요약하고, `/admin/ops`에서 검색 범위/글 유형/검색 위치 필터와 zero-result rate/추적 키워드 요약을 함께 확인할 수 있도록 보강 | Codex | P1 | `done` | `getSearchInsightsOverview()`는 현재 문맥 기준 exact row를 읽고 summary(`trackedTermCount/totalQueryCount/totalZeroResultCount/zeroResultRate`)를 반환하며, `/admin/ops`는 `searchScope/searchType/searchIn` query filter를 받고 현재 문맥 라벨/요약 카드/필터 form을 렌더하고, 관련 lint/test/typecheck/diff check 검증이 `PROGRESS.md`에 기록된다 | `PLAN.md`, `PROGRESS.md`, `app/src/server/queries/search.queries.ts`, `app/src/server/queries/ops-overview.queries.ts`, `app/src/app/admin/ops/page.tsx`, 관련 테스트 |
+
 ### Cycle 377: 모바일 헤더/검색/관리자 신고 큐 사용성 정리 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|

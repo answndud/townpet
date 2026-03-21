@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { PostScope, PostType, SearchTermSearchIn } from "@prisma/client";
 
 import { getHealthSnapshot } from "@/server/health-overview";
 import { getAuthAuditOverview } from "@/server/queries/auth-audit.queries";
@@ -116,14 +117,36 @@ describe("ops overview queries", () => {
       topAudienceSummaries: [],
     });
     mockGetSearchInsightsOverview.mockResolvedValue({
+      context: {
+        scope: PostScope.GLOBAL,
+        typeKey: "ALL",
+        searchIn: SearchTermSearchIn.ALL,
+      },
+      summary: {
+        trackedTermCount: 0,
+        totalQueryCount: 0,
+        totalZeroResultCount: 0,
+        zeroResultRate: 0,
+      },
       popularTerms: [],
       zeroResultTerms: [],
       lowResultTerms: [],
     });
 
-    const overview = await getAdminOpsOverview();
+    const overview = await getAdminOpsOverview({
+      searchContext: {
+        scope: PostScope.LOCAL,
+        type: PostType.HOSPITAL_REVIEW,
+        searchIn: SearchTermSearchIn.TITLE,
+      },
+    });
 
     expect(mockGetHealthSnapshot).toHaveBeenCalledWith({ includeDetailedHealth: true });
+    expect(mockGetSearchInsightsOverview).toHaveBeenCalledWith(8, {
+      scope: PostScope.LOCAL,
+      type: PostType.HOSPITAL_REVIEW,
+      searchIn: SearchTermSearchIn.TITLE,
+    });
     expect(overview.health.status).toBe("ok");
     expect(overview.authAudit.totalEvents).toBe(5);
     expect(overview.reports.totalCount).toBe(7);

@@ -17,6 +17,37 @@
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
 ## 실행 로그
+### 2026-03-21: Cycle 379 완료 (검색 자동완성/랭킹 검색 compact·초성 fallback 추가)
+- 완료 내용
+  - `app/src/lib/search-document.ts`를 추가해 normalized/compact/choseong search document helper를 만들었다. `normalizeStoredText` 기반 정규화 뒤 공백/기호 제거 text와 한글 초성 추출 text를 함께 만들고, prefix/contains rank 계산까지 한 곳에서 처리한다.
+  - `app/src/server/queries/post.queries.ts`의 `listRankedSearchPosts()`는 기존 SQL 랭킹 검색이 결과를 주지 못할 때, 공백 없는 3자 이상 query 또는 초성 query에 한해 최근 활성 게시글 후보를 읽고 `title/content/author/structuredSearchText`를 search document로 다시 랭킹하는 fallback을 수행하도록 보강했다.
+  - 같은 파일의 `listPostSearchSuggestions()`도 normal `contains` query가 비어 있을 때 search document fallback으로 recent active post title/content를 다시 스캔해 `건강검진 -> 건강 검진 후기`, `ㄱㄱㄱ -> 건강 검진 후기` 같은 suggestion을 복구하도록 바꿨다.
+  - `app/src/server/queries/post.queries.test.ts`, `app/src/lib/search-document.test.ts`에 compact query, 초성 query, ranked search fallback 회귀를 추가했다.
+- 검증 결과
+  - `corepack pnpm -C app test -- src/lib/search-document.test.ts src/server/queries/post.queries.test.ts src/server/queries/search.queries.test.ts src/server/queries/ops-overview.queries.test.ts` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `175 files / 850 tests` 통과
+  - `corepack pnpm -C app lint src/lib/search-document.ts src/lib/search-document.test.ts src/server/queries/post.queries.ts src/server/queries/post.queries.test.ts src/server/queries/search.queries.ts src/server/queries/search.queries.test.ts src/server/queries/ops-overview.queries.ts src/server/queries/ops-overview.queries.test.ts src/app/admin/ops/page.tsx` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `git diff --check` 통과
+- 메모
+  - 이번 cycle은 DB 컬럼 추가 없이 runtime fallback으로 compact/초성 검색을 먼저 붙인 단계다.
+  - fallback은 no-result 경로에서만 recent active post 후보를 다시 읽으므로, 기본 SQL 랭킹 검색의 hot path 비용은 그대로 유지했다.
+
+### 2026-03-20: Cycle 378 완료 (`/admin/ops` 검색 문맥 필터 + zero-result 운영 루프 보강)
+- 완료 내용
+  - `app/src/server/queries/search.queries.ts`의 `getSearchInsightsOverview()`를 문맥 인자(`scope/type/searchIn`)를 받는 형태로 확장했다. 이제 `/admin/ops`가 특정 검색 범위/글 유형/검색 위치를 선택하면 전역 fallback row가 아니라 해당 문맥 row만 exact 집계한다.
+  - 검색 인사이트 응답에 `context`, `summary(trackedTermCount/totalQueryCount/totalZeroResultCount/zeroResultRate)`를 추가해 운영자가 현재 문맥의 검색 볼륨과 zero-result 비율을 바로 볼 수 있게 했다.
+  - `app/src/server/queries/ops-overview.queries.ts`는 새 `searchContext` 옵션을 받아 검색 인사이트 호출에 그대로 전달하도록 보강했다.
+  - `app/src/app/admin/ops/page.tsx`는 `searchScope/searchType/searchIn` query filter를 파싱해 검색 품질 섹션 상단에 현재 문맥 라벨, 필터 form, 검색 볼륨/0건 비율/추적 키워드/0건 누적 summary card를 렌더하도록 바꿨다.
+  - `/admin/ops`의 `검색 열기` 링크도 현재 filter를 `/search` query로 이어주도록 맞췄다.
+- 검증 결과
+  - `corepack pnpm -C app test -- src/server/queries/search.queries.test.ts src/server/queries/ops-overview.queries.test.ts` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `174 files / 842 tests` 통과
+  - `corepack pnpm -C app lint src/app/admin/ops/page.tsx src/server/queries/search.queries.ts src/server/queries/search.queries.test.ts src/server/queries/ops-overview.queries.ts src/server/queries/ops-overview.queries.test.ts` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `git diff --check` 통과
+- 메모
+  - 이번 cycle은 Phase 2A의 “검색 실패어/저성과 검색어 운영 루프”를 실제 운영자가 문맥별로 볼 수 있게 만드는 첫 보강이다.
+  - 아직 일자별 search trend는 cumulative `SearchTermStat` 모델만으로는 직접 계산할 수 없으므로, 이후 cycle에서 daily metric 테이블이 필요하면 별도 추가가 맞다.
+
 ### 2026-03-19: Cycle 377 완료 (모바일 헤더/검색/관리자 신고 큐 사용성 정리)
 - 완료 내용
   - production 모바일 viewport 점검에서 모든 페이지 상단에 `게시판 빠른 이동`/`관심 동물 설정` 대형 카드가 먼저 렌더되어 본문 첫 화면을 과도하게 밀어내는 문제를 확인했다.

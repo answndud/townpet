@@ -274,6 +274,17 @@ describe("search queries", () => {
 
     const overview = await getSearchInsightsOverview(5);
 
+    expect(overview.context).toEqual({
+      scope: PostScope.GLOBAL,
+      typeKey: "ALL",
+      searchIn: SearchTermSearchIn.ALL,
+    });
+    expect(overview.summary).toEqual({
+      trackedTermCount: 2,
+      totalQueryCount: 14,
+      totalZeroResultCount: 2,
+      zeroResultRate: 2 / 14,
+    });
     expect(overview.popularTerms[0]).toMatchObject({
       term: "산책",
       count: 10,
@@ -294,6 +305,46 @@ describe("search queries", () => {
           scope: "GLOBAL",
           typeKey: "ALL",
           searchIn: "ALL",
+        },
+      }),
+    );
+  });
+
+  it("builds search insights for an exact ops context without global fallback rows", async () => {
+    mockPrisma.searchTermStat?.findMany.mockResolvedValue([
+      {
+        termDisplay: "건강 검진",
+        count: 6,
+        zeroResultCount: 3,
+        totalResultCount: 5,
+        lastResultCount: 0,
+        updatedAt: new Date("2026-03-20T00:00:00.000Z"),
+      },
+    ]);
+
+    const overview = await getSearchInsightsOverview(5, {
+      scope: PostScope.LOCAL,
+      type: PostType.HOSPITAL_REVIEW,
+      searchIn: SearchTermSearchIn.TITLE,
+    });
+
+    expect(overview.context).toEqual({
+      scope: PostScope.LOCAL,
+      typeKey: PostType.HOSPITAL_REVIEW,
+      searchIn: SearchTermSearchIn.TITLE,
+    });
+    expect(overview.summary).toEqual({
+      trackedTermCount: 1,
+      totalQueryCount: 6,
+      totalZeroResultCount: 3,
+      zeroResultRate: 0.5,
+    });
+    expect(mockPrisma.searchTermStat?.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          scope: "LOCAL",
+          typeKey: "HOSPITAL_REVIEW",
+          searchIn: "TITLE",
         },
       }),
     );

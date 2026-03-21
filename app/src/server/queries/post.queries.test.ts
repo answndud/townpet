@@ -1327,6 +1327,7 @@ describe("post queries", () => {
     mockPrisma.post.findMany.mockResolvedValue([
       {
         title: "수술 후기",
+        content: "병원 후기",
         animalTags: ["중성화 수술"],
         author: { nickname: "튼튼견주" },
         hospitalReview: {
@@ -1397,6 +1398,61 @@ describe("post queries", () => {
     );
   });
 
+  it("falls back to compact search document matching for autocomplete suggestions", async () => {
+    mockPrisma.post.findMany
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([
+        {
+          title: "건강 검진 후기",
+          content: "병원에서 건강 검진을 받았어요.",
+          animalTags: [],
+          author: { nickname: "보리엄마" },
+          hospitalReview: null,
+          placeReview: null,
+          walkRoute: null,
+          adoptionListing: null,
+          volunteerRecruitment: null,
+        },
+      ]);
+
+    const items = await listPostSearchSuggestions({
+      q: "건강검진",
+      limit: 5,
+      scope: PostScope.GLOBAL,
+      searchIn: "TITLE",
+    });
+
+    expect(items).toEqual(["건강 검진 후기"]);
+    expect(mockPrisma.post.findMany).toHaveBeenCalledTimes(2);
+  });
+
+  it("falls back to choseong search document matching for autocomplete suggestions", async () => {
+    mockPrisma.post.findMany
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([
+        {
+          title: "건강 검진 후기",
+          content: "병원에서 건강 검진을 받았어요.",
+          animalTags: [],
+          author: { nickname: "보리엄마" },
+          hospitalReview: null,
+          placeReview: null,
+          walkRoute: null,
+          adoptionListing: null,
+          volunteerRecruitment: null,
+        },
+      ]);
+
+    const items = await listPostSearchSuggestions({
+      q: "ㄱㄱㄱ",
+      limit: 5,
+      scope: PostScope.GLOBAL,
+      searchIn: "TITLE",
+    });
+
+    expect(items).toEqual(["건강 검진 후기"]);
+  });
+
   it("filters ranked search to active posts and adds stable tie-breaker ordering", async () => {
     mockPrisma.$queryRaw
       .mockResolvedValueOnce([{ enabled: true }])
@@ -1451,6 +1507,55 @@ describe("post queries", () => {
     const sql = mockPrisma.$queryRaw.mock.calls.at(-1)?.[0] as { values?: unknown[] };
     expect(sql).toBeDefined();
     expect(sql.values).toEqual(expect.arrayContaining(["%웰시코기%"]));
+  });
+
+  it("falls back to search-document ranking for choseong queries with no SQL matches", async () => {
+    mockPrisma.$queryRaw
+      .mockResolvedValueOnce([{ enabled: true }])
+      .mockResolvedValueOnce([]);
+    mockPrisma.post.findMany
+      .mockResolvedValueOnce([
+        {
+          id: "post-1",
+          title: "건강 검진 후기",
+          content: "병원에서 건강 검진을 받았어요.",
+          structuredSearchText: "건강 검진",
+          createdAt: new Date("2026-03-21T00:00:00.000Z"),
+          author: { nickname: "보리엄마" },
+        },
+      ])
+      .mockResolvedValueOnce([
+        {
+          id: "post-1",
+          type: PostType.HOSPITAL_REVIEW,
+          title: "건강 검진 후기",
+          content: "병원에서 건강 검진을 받았어요.",
+          likeCount: 0,
+          dislikeCount: 0,
+          commentCount: 0,
+          viewCount: 0,
+          createdAt: new Date("2026-03-21T00:00:00.000Z"),
+          updatedAt: new Date("2026-03-21T00:00:00.000Z"),
+          author: { id: "user-1", nickname: "보리엄마", image: null },
+          neighborhood: null,
+          petType: null,
+          reactions: [],
+          images: [],
+          adoptionListing: null,
+          volunteerRecruitment: null,
+        },
+      ]);
+
+    const items = await listRankedSearchPosts({
+      limit: 10,
+      scope: PostScope.GLOBAL,
+      q: "ㄱㄱㄱ",
+      searchIn: "ALL",
+    });
+
+    expect(items).toHaveLength(1);
+    expect(items[0]?.id).toBe("post-1");
+    expect(mockPrisma.post.findMany).toHaveBeenCalledTimes(2);
   });
 
   it("paginates my-posts query with limit + 1 strategy", async () => {

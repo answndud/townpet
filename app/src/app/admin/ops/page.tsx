@@ -1,10 +1,46 @@
 import Link from "next/link";
-import { AuthAuditAction, ReportStatus } from "@prisma/client";
+import { AuthAuditAction, PostScope, PostType, ReportStatus, SearchTermSearchIn } from "@prisma/client";
+import { z } from "zod";
 
 import { AdminSectionNav } from "@/components/admin/admin-section-nav";
 import { EmptyState } from "@/components/ui/empty-state";
+import { getPostTypeMeta } from "@/lib/post-presenter";
 import { requireModeratorPageUser } from "@/server/admin-page-access";
 import { getAdminOpsOverview } from "@/server/queries/ops-overview.queries";
+
+type AdminOpsPageProps = {
+  searchParams?: Promise<{
+    searchScope?: string;
+    searchType?: string;
+    searchIn?: string;
+  }>;
+};
+
+const adminOpsSearchFilterSchema = z.object({
+  searchScope: z.nativeEnum(PostScope).optional(),
+  searchType: z.nativeEnum(PostType).optional(),
+  searchIn: z.nativeEnum(SearchTermSearchIn).optional(),
+});
+
+const SEARCH_IN_LABELS: Record<SearchTermSearchIn, string> = {
+  ALL: "전체",
+  TITLE: "제목",
+  CONTENT: "내용",
+  AUTHOR: "작성자",
+};
+
+const OPS_SEARCH_TYPE_OPTIONS: PostType[] = [
+  PostType.HOSPITAL_REVIEW,
+  PostType.PLACE_REVIEW,
+  PostType.WALK_ROUTE,
+  PostType.ADOPTION_LISTING,
+  PostType.SHELTER_VOLUNTEER,
+  PostType.MARKET_LISTING,
+  PostType.LOST_FOUND,
+  PostType.QA_QUESTION,
+  PostType.FREE_BOARD,
+  PostType.PET_SHOWCASE,
+];
 
 function formatPercent(value: number) {
   return `${(value * 100).toFixed(1)}%`;
@@ -32,6 +68,69 @@ function normalizeDashboardState(value: string): "ok" | "warn" | "error" | "degr
   return "warn";
 }
 
+function buildOpsHref({
+  searchScope,
+  searchType,
+  searchIn,
+}: {
+  searchScope?: PostScope;
+  searchType?: PostType;
+  searchIn?: SearchTermSearchIn;
+}) {
+  const params = new URLSearchParams();
+  if (searchScope === PostScope.LOCAL) {
+    params.set("searchScope", PostScope.LOCAL);
+  }
+  if (searchType) {
+    params.set("searchType", searchType);
+  }
+  if (searchIn && searchIn !== SearchTermSearchIn.ALL) {
+    params.set("searchIn", searchIn);
+  }
+
+  const serialized = params.toString();
+  return serialized ? `/admin/ops?${serialized}` : "/admin/ops";
+}
+
+function buildSearchHref({
+  searchScope,
+  searchType,
+  searchIn,
+}: {
+  searchScope: PostScope;
+  searchType?: PostType;
+  searchIn: SearchTermSearchIn;
+}) {
+  const params = new URLSearchParams();
+  if (searchScope === PostScope.LOCAL) {
+    params.set("scope", PostScope.LOCAL);
+  }
+  if (searchType) {
+    params.set("type", searchType);
+  }
+  if (searchIn !== SearchTermSearchIn.ALL) {
+    params.set("searchIn", searchIn);
+  }
+
+  const serialized = params.toString();
+  return serialized ? `/search?${serialized}` : "/search";
+}
+
+function describeSearchContext({
+  searchScope,
+  searchType,
+  searchIn,
+}: {
+  searchScope: PostScope;
+  searchType?: PostType;
+  searchIn: SearchTermSearchIn;
+}) {
+  const scopeLabel = searchScope === PostScope.LOCAL ? "동네 검색" : "전역 검색";
+  const typeLabel = searchType ? getPostTypeMeta(searchType).label : "전체 글 유형";
+  const searchInLabel = SEARCH_IN_LABELS[searchIn];
+  return `${scopeLabel} · ${typeLabel} · ${searchInLabel}`;
+}
+
 const authActionLabels: Record<AuthAuditAction, string> = {
   PASSWORD_SET: "비밀번호 설정",
   PASSWORD_CHANGE: "비밀번호 변경",
@@ -44,9 +143,25 @@ const authActionLabels: Record<AuthAuditAction, string> = {
   REGISTER_RATE_LIMITED: "회원가입 제한",
 };
 
-export default async function AdminOpsPage() {
+export default async function AdminOpsPage({ searchParams }: AdminOpsPageProps) {
   await requireModeratorPageUser();
-  const overview = await getAdminOpsOverview();
+  const resolvedParams = (await searchParams) ?? {};
+  const parsedFilters = adminOpsSearchFilterSchema.safeParse({
+    searchScope: resolvedParams.searchScope ?? undefined,
+    searchType: resolvedParams.searchType ?? undefined,
+    searchIn: resolvedParams.searchIn ?? undefined,
+  });
+  const selectedSearchScope =
+    parsedFilters.data?.searchScope === PostScope.LOCAL ? PostScope.LOCAL : PostScope.GLOBAL;
+  const selectedSearchType = parsedFilters.data?.searchType;
+  const selectedSearchIn = parsedFilters.data?.searchIn ?? SearchTermSearchIn.ALL;
+  const overview = await getAdminOpsOverview({
+    searchContext: {
+      scope: selectedSearchScope,
+      type: selectedSearchType,
+      searchIn: selectedSearchIn,
+    },
+  });
 
   const cacheState = normalizeDashboardState(overview.health.checks.cache.state);
   const databaseState = normalizeDashboardState(overview.health.checks.database.state);
@@ -56,6 +171,11 @@ export default async function AdminOpsPage() {
   const controlPlaneChecks =
     "checks" in overview.health.checks.controlPlane ? overview.health.checks.controlPlane.checks : [];
   const dailySummaries = overview.personalization.dailySummaries.slice(-7);
+  const searchContextLabel = describeSearchContext({
+    searchScope: selectedSearchScope,
+    searchType: selectedSearchType,
+    searchIn: selectedSearchIn,
+  });
 
   return (
     <div className="tp-page-bg min-h-screen pb-16">
@@ -92,17 +212,76 @@ export default async function AdminOpsPage() {
           <article className={`rounded-2xl border p-4 ${formatStateClass(controlPlaneState)}`}>
             <p className="text-[11px] uppercase tracking-[0.22em]">Control plane</p>
             <p className="mt-2 text-2xl font-bold">{controlPlaneState.toUpperCase()}</p>
-            <p className="mt-1 text-xs">
-              {controlPlaneChecks.length} checks
-            </p>
+            <p className="mt-1 text-xs">{controlPlaneChecks.length} checks</p>
           </article>
           <article className={`rounded-2xl border p-4 ${formatStateClass(cacheState)}`}>
             <p className="text-[11px] uppercase tracking-[0.22em]">Cache / Search</p>
             <p className="mt-2 text-2xl font-bold">{overview.health.checks.cache.backend}</p>
-            <p className="mt-1 text-xs">
-              cache {cacheState} · pg_trgm {pgTrgmState}
-            </p>
+            <p className="mt-1 text-xs">cache {cacheState} · pg_trgm {pgTrgmState}</p>
           </article>
+        </section>
+
+        <section className="tp-card flex flex-col gap-4 p-4 sm:p-5">
+          <div>
+            <h2 className="text-lg font-semibold text-[#10284a]">검색 품질 필터</h2>
+            <p className="text-xs text-[#5a7398]">
+              현재 문맥: {searchContextLabel}
+            </p>
+          </div>
+          <form method="get" className="grid gap-3 lg:grid-cols-[1fr_1fr_1fr_auto_auto] lg:items-end">
+            <label className="flex flex-col gap-1 text-xs text-[#4f678d]">
+              검색 범위
+              <select
+                name="searchScope"
+                defaultValue={selectedSearchScope}
+                className="rounded-xl border border-[#d3def1] bg-white px-3 py-2 text-sm text-[#163462]"
+              >
+                <option value={PostScope.GLOBAL}>전역 검색</option>
+                <option value={PostScope.LOCAL}>동네 검색</option>
+              </select>
+            </label>
+            <label className="flex flex-col gap-1 text-xs text-[#4f678d]">
+              글 유형
+              <select
+                name="searchType"
+                defaultValue={selectedSearchType ?? ""}
+                className="rounded-xl border border-[#d3def1] bg-white px-3 py-2 text-sm text-[#163462]"
+              >
+                <option value="">전체 글 유형</option>
+                {OPS_SEARCH_TYPE_OPTIONS.map((type) => (
+                  <option key={type} value={type}>
+                    {getPostTypeMeta(type).label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="flex flex-col gap-1 text-xs text-[#4f678d]">
+              검색 위치
+              <select
+                name="searchIn"
+                defaultValue={selectedSearchIn}
+                className="rounded-xl border border-[#d3def1] bg-white px-3 py-2 text-sm text-[#163462]"
+              >
+                {Object.values(SearchTermSearchIn).map((searchIn) => (
+                  <option key={searchIn} value={searchIn}>
+                    {SEARCH_IN_LABELS[searchIn]}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button
+              type="submit"
+              className="rounded-xl border border-[#3567b5] bg-[#3567b5] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#2f5ca3]"
+            >
+              필터 적용
+            </button>
+            <Link
+              href={buildOpsHref({})}
+              className="rounded-xl border border-[#d3def1] bg-white px-4 py-2 text-center text-sm font-semibold text-[#315b9a] transition hover:bg-[#f5f9ff]"
+            >
+              초기화
+            </Link>
+          </form>
         </section>
 
         <section className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
@@ -111,12 +290,46 @@ export default async function AdminOpsPage() {
               <div>
                 <h2 className="text-lg font-semibold text-[#10284a]">검색 품질 신호</h2>
                 <p className="text-xs text-[#5a7398]">
-                  최근 누적 검색어 기준 인기어와 결과 부족 검색어를 같이 봅니다.
+                  현재 문맥 기준 인기어와 zero-result, low-result 검색어를 같이 봅니다.
                 </p>
               </div>
-              <Link href="/search" className="text-xs text-[#3567b5]">
+              <Link
+                href={buildSearchHref({
+                  searchScope: selectedSearchScope,
+                  searchType: selectedSearchType,
+                  searchIn: selectedSearchIn,
+                })}
+                className="text-xs text-[#3567b5]"
+              >
                 검색 열기
               </Link>
+            </div>
+
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <div className="rounded-xl border border-[#dbe6f6] bg-[#f8fbff] p-3">
+                <p className="text-xs text-[#5a7398]">누적 검색 수</p>
+                <p className="mt-2 text-2xl font-bold text-[#10284a]">
+                  {formatCount(overview.search.summary.totalQueryCount)}
+                </p>
+              </div>
+              <div className="rounded-xl border border-[#dbe6f6] bg-[#f8fbff] p-3">
+                <p className="text-xs text-[#5a7398]">0건 비율</p>
+                <p className="mt-2 text-2xl font-bold text-[#10284a]">
+                  {formatPercent(overview.search.summary.zeroResultRate)}
+                </p>
+              </div>
+              <div className="rounded-xl border border-[#dbe6f6] bg-[#f8fbff] p-3">
+                <p className="text-xs text-[#5a7398]">추적 키워드</p>
+                <p className="mt-2 text-2xl font-bold text-[#10284a]">
+                  {formatCount(overview.search.summary.trackedTermCount)}
+                </p>
+              </div>
+              <div className="rounded-xl border border-[#dbe6f6] bg-[#f8fbff] p-3">
+                <p className="text-xs text-[#5a7398]">0건 누적</p>
+                <p className="mt-2 text-2xl font-bold text-[#10284a]">
+                  {formatCount(overview.search.summary.totalZeroResultCount)}
+                </p>
+              </div>
             </div>
 
             <div className="mt-4 grid gap-4 lg:grid-cols-3">
@@ -133,7 +346,7 @@ export default async function AdminOpsPage() {
                   ) : (
                     <EmptyState
                       title="검색 통계가 없습니다"
-                      description="검색 로그가 쌓이면 인기 검색어가 여기에 표시됩니다."
+                      description="선택한 문맥에 검색 로그가 쌓이면 인기 검색어가 여기에 표시됩니다."
                     />
                   )}
                 </div>
@@ -157,7 +370,7 @@ export default async function AdminOpsPage() {
                   ) : (
                     <EmptyState
                       title="0건 검색어가 없습니다"
-                      description="검색 결과 telemetry가 쌓이면 여기서 실패 검색을 바로 확인할 수 있습니다."
+                      description="선택한 문맥에 실패 검색이 쌓이면 여기서 바로 확인할 수 있습니다."
                     />
                   )}
                 </div>
