@@ -2,28 +2,33 @@ import type { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { GET } from "@/app/api/admin/auth-audits/route";
-import { requireModeratorUserId } from "@/server/auth";
+import { requireAdminUserId } from "@/server/auth";
 import { monitorUnhandledError } from "@/server/error-monitor";
+import { recordAuthAuditViewed } from "@/server/moderation-action-log";
 import { listAuthAuditLogs } from "@/server/queries/auth-audit.queries";
 import { ServiceError } from "@/server/services/service-error";
 
-vi.mock("@/server/auth", () => ({ requireModeratorUserId: vi.fn() }));
+vi.mock("@/server/auth", () => ({ requireAdminUserId: vi.fn() }));
 vi.mock("@/server/error-monitor", () => ({ monitorUnhandledError: vi.fn() }));
+vi.mock("@/server/moderation-action-log", () => ({ recordAuthAuditViewed: vi.fn() }));
 vi.mock("@/server/queries/auth-audit.queries", () => ({
   AUTH_AUDIT_LOG_LIMIT_MAX: 200,
   listAuthAuditLogs: vi.fn(),
 }));
 
-const mockRequireModeratorUserId = vi.mocked(requireModeratorUserId);
+const mockRequireAdminUserId = vi.mocked(requireAdminUserId);
 const mockMonitorUnhandledError = vi.mocked(monitorUnhandledError);
+const mockRecordAuthAuditViewed = vi.mocked(recordAuthAuditViewed);
 const mockListAuthAuditLogs = vi.mocked(listAuthAuditLogs);
 
 describe("GET /api/admin/auth-audits contract", () => {
   beforeEach(() => {
-    mockRequireModeratorUserId.mockReset();
+    mockRequireAdminUserId.mockReset();
     mockMonitorUnhandledError.mockReset();
+    mockRecordAuthAuditViewed.mockReset();
     mockListAuthAuditLogs.mockReset();
-    mockRequireModeratorUserId.mockResolvedValue("admin-1");
+    mockRequireAdminUserId.mockResolvedValue("admin-1");
+    mockRecordAuthAuditViewed.mockResolvedValue(undefined);
     mockListAuthAuditLogs.mockResolvedValue([]);
   });
 
@@ -41,7 +46,7 @@ describe("GET /api/admin/auth-audits contract", () => {
   });
 
   it("maps auth service error", async () => {
-    mockRequireModeratorUserId.mockRejectedValue(
+    mockRequireAdminUserId.mockRejectedValue(
       new ServiceError("auth", "AUTH_REQUIRED", 401),
     );
     const request = new Request("http://localhost/api/admin/auth-audits") as NextRequest;
@@ -101,6 +106,13 @@ describe("GET /api/admin/auth-audits contract", () => {
           reasonCode: "USER_NOT_FOUND",
         },
       ],
+    });
+    expect(mockRecordAuthAuditViewed).toHaveBeenCalledWith({
+      actorId: "admin-1",
+      source: "api",
+      actionFilter: null,
+      query: null,
+      limit: null,
     });
   });
 });

@@ -26,7 +26,7 @@ export default async function AdminHomePage() {
             신고 처리, 직접 제재, 인증 감사, 권한 정책, 검색/운영 지표를 여기서 이동합니다.
           </p>
           <div className="mt-4">
-            <AdminSectionNav variant="grid" />
+            <AdminSectionNav variant="grid" role={user.role} />
           </div>
         </section>
       </main>

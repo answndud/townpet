@@ -95,6 +95,11 @@ function hasTruthyFlag(value: string | undefined) {
   return normalized === "1" || normalized === "true" || normalized === "yes";
 }
 
+function isStrictVercelTarget(env: NodeJS.ProcessEnv = process.env) {
+  const targetEnv = (env.VERCEL_TARGET_ENV ?? env.VERCEL_ENV ?? "").trim().toLowerCase();
+  return targetEnv === "production" || targetEnv === "preview" || targetEnv === "staging";
+}
+
 export function shouldRunSecurityEnvPreflight(env: NodeJS.ProcessEnv = process.env) {
   if (hasTruthyFlag(env.DEPLOY_SECURITY_PREFLIGHT_SKIP)) {
     return false;
@@ -104,8 +109,7 @@ export function shouldRunSecurityEnvPreflight(env: NodeJS.ProcessEnv = process.e
     return true;
   }
 
-  const targetEnv = (env.VERCEL_TARGET_ENV ?? env.VERCEL_ENV ?? "").trim().toLowerCase();
-  return targetEnv === "production";
+  return isStrictVercelTarget(env);
 }
 
 export function shouldRunAuthEmailReadinessPreflight(env: NodeJS.ProcessEnv = process.env) {
@@ -117,8 +121,7 @@ export function shouldRunAuthEmailReadinessPreflight(env: NodeJS.ProcessEnv = pr
     return true;
   }
 
-  const targetEnv = (env.VERCEL_TARGET_ENV ?? env.VERCEL_ENV ?? "").trim().toLowerCase();
-  return targetEnv === "production";
+  return isStrictVercelTarget(env);
 }
 
 async function listMigrationNames() {
@@ -156,7 +159,7 @@ async function baselineMigrations(commandRunner: CommandRunner = runCommand) {
 export async function runSecurityEnvPreflight(commandRunner: CommandRunner = runCommand) {
   if (!shouldRunSecurityEnvPreflight()) {
     console.log(
-      "[build:vercel] skipping strict security env preflight (non-production target or opt-out).",
+      "[build:vercel] skipping strict security env preflight (non-strict target or explicit opt-out).",
     );
     return;
   }
@@ -172,7 +175,7 @@ export async function runAuthEmailReadinessPreflight(
 ) {
   if (!shouldRunAuthEmailReadinessPreflight()) {
     console.log(
-      "[build:vercel] skipping auth email readiness preflight (non-production target or opt-out).",
+      "[build:vercel] skipping auth email readiness preflight (non-strict target or explicit opt-out).",
     );
     return;
   }

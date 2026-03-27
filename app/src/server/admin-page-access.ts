@@ -21,3 +21,21 @@ export async function requireModeratorPageUser() {
 
   return user;
 }
+
+export async function requireAdminPageUser() {
+  const user = await getCurrentUser();
+  if (!user) {
+    notFound();
+  }
+
+  redirectToProfileIfNicknameMissing({
+    isAuthenticated: true,
+    nickname: user.nickname,
+  });
+
+  if (user.role !== UserRole.ADMIN) {
+    notFound();
+  }
+
+  return user;
+}

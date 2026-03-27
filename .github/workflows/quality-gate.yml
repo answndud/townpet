@@ -74,8 +74,11 @@ jobs:
           UPSTASH_REDIS_REST_TOKEN='ci-upstash-token' \
           pnpm ops:check:security-env
 
-      - name: Sync schema
-        run: pnpm db:push
+      - name: Apply Prisma migrations
+        run: pnpm prisma migrate deploy
+
+      - name: Generate Prisma client
+        run: pnpm prisma generate
 
       - name: Verify guest author backfill safety
         run: GUEST_AUTHOR_BACKFILL_DRY_RUN=1 pnpm db:backfill:guest-authors

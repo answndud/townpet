@@ -3,28 +3,33 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AuthAuditAction } from "@prisma/client";
 
 import { GET } from "@/app/api/admin/auth-audits/export/route";
-import { requireModeratorUserId } from "@/server/auth";
+import { requireAdminUserId } from "@/server/auth";
 import { monitorUnhandledError } from "@/server/error-monitor";
+import { recordAuthAuditExported } from "@/server/moderation-action-log";
 import { listAuthAuditLogs } from "@/server/queries/auth-audit.queries";
 import { ServiceError } from "@/server/services/service-error";
 
-vi.mock("@/server/auth", () => ({ requireModeratorUserId: vi.fn() }));
+vi.mock("@/server/auth", () => ({ requireAdminUserId: vi.fn() }));
 vi.mock("@/server/error-monitor", () => ({ monitorUnhandledError: vi.fn() }));
+vi.mock("@/server/moderation-action-log", () => ({ recordAuthAuditExported: vi.fn() }));
 vi.mock("@/server/queries/auth-audit.queries", () => ({
   AUTH_AUDIT_LOG_LIMIT_MAX: 200,
   listAuthAuditLogs: vi.fn(),
 }));
 
-const mockRequireModeratorUserId = vi.mocked(requireModeratorUserId);
+const mockRequireAdminUserId = vi.mocked(requireAdminUserId);
 const mockMonitorUnhandledError = vi.mocked(monitorUnhandledError);
+const mockRecordAuthAuditExported = vi.mocked(recordAuthAuditExported);
 const mockListAuthAuditLogs = vi.mocked(listAuthAuditLogs);
 
 describe("GET /api/admin/auth-audits/export contract", () => {
   beforeEach(() => {
-    mockRequireModeratorUserId.mockReset();
+    mockRequireAdminUserId.mockReset();
     mockMonitorUnhandledError.mockReset();
+    mockRecordAuthAuditExported.mockReset();
     mockListAuthAuditLogs.mockReset();
-    mockRequireModeratorUserId.mockResolvedValue("admin-1");
+    mockRequireAdminUserId.mockResolvedValue("admin-1");
+    mockRecordAuthAuditExported.mockResolvedValue(undefined);
     mockListAuthAuditLogs.mockResolvedValue([
       {
         action: AuthAuditAction.PASSWORD_SET,
@@ -54,10 +59,17 @@ describe("GET /api/admin/auth-audits/export contract", () => {
     expect(text).toContain("action,reasonCode,userId,identifierLabel,email,nickname,ipAddress,userAgent,createdAt");
     expect(text).toContain("PASSWORD_SET");
     expect(text).toContain("u1@test.dev");
+    expect(mockRecordAuthAuditExported).toHaveBeenCalledWith({
+      actorId: "admin-1",
+      actionFilter: null,
+      query: null,
+      limit: 200,
+      rowCount: 1,
+    });
   });
 
   it("maps auth service error", async () => {
-    mockRequireModeratorUserId.mockRejectedValue(
+    mockRequireAdminUserId.mockRejectedValue(
       new ServiceError("forbidden", "FORBIDDEN", 403),
     );
     const request = new Request("http://localhost/api/admin/auth-audits/export") as NextRequest;

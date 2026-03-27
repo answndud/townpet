@@ -1,6 +1,6 @@
 # PROGRESS.md
 
-기준일: 2026-03-19
+기준일: 2026-03-27
 
 ## 진행 현황 요약
 - Cycle 1~20: 완료
@@ -16,7 +16,105 @@
 - Cycle 33: 신규 계정 안전 정책 관리자 설정화 + DB/UI E2E 플로우 완료
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
+### 2026-03-27: Cycle 387 완료 (admin 전용 권한 분리와 운영 감사 로그 강화)
+- 완료 내용
+  - `app/src/server/auth.ts`, `app/src/server/admin-page-access.ts`에 `requireAdmin`, `requireAdminUserId`, `requireAdminPageUser`를 추가해 admin-only 경로를 별도 helper로 분리했다.
+  - `app/src/server/actions/policy.ts`, `app/src/server/services/policy.service.ts`, `app/src/server/moderation-action-log.ts`, `app/prisma/schema.prisma`, `app/prisma/migrations/20260327113000_expand_moderation_logs_for_admin_actions/migration.sql`를 통해 정책 변경과 auth audit 열람/export를 `ModerationActionLog`에 남기도록 확장했다.
+  - `/admin/auth-audits`, `/admin/policies`, `/admin/ops`, `/admin/personalization`, `/admin/breeds`와 `breed-catalog`/`auth-audits` 관련 route·action은 이제 `ADMIN`만 접근 가능하다.
+  - `app/src/components/admin/admin-section-nav.tsx`는 역할별 링크 필터를 추가해 moderator에게 admin-only 목적지를 숨기고, `/admin` 허브와 관련 page에서 현재 역할 기준 nav를 사용하게 맞췄다.
+- 검증 결과
+  - `corepack pnpm -C app test -- src/server/auth.test.ts src/app/api/admin/auth-audits/route.test.ts src/app/api/admin/auth-audits/export/route.test.ts src/components/admin/admin-section-nav.test.tsx` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `git diff --check` 통과
+
+### 2026-03-27: Cycle 385 완료 (공개 법적/상업 표면 페이지와 전역 footer 추가)
+- 완료 내용
+  - 공개 이용약관, 개인정보처리방침, 광고·제휴 고지 페이지를 앱 표면에 추가하고, 전역 footer에서 누구나 찾을 수 있게 연결했다.
+  - sitemap에도 `/terms`, `/privacy`, `/commercial`을 포함해 검색 엔진과 내부 링크 모두에서 discoverable 하게 만들었다.
+  - 관리자 모더레이션 로그의 새 enum 라벨도 함께 정리해 타입체크가 통과하도록 맞췄다.
+- 검증 결과
+  - `corepack pnpm -C app lint src/components/legal/legal-document-page.tsx src/components/navigation/app-shell-footer.tsx src/components/navigation/app-shell-footer.test.tsx 'src/app/(legal)/terms/page.tsx' 'src/app/(legal)/privacy/page.tsx' 'src/app/(legal)/commercial/page.tsx' src/app/layout.tsx src/app/sitemap.ts src/app/sitemap.test.ts src/app/admin/moderation-logs/page.tsx src/server/moderation-action-log.ts` 통과
+  - `corepack pnpm -C app exec vitest run src/components/navigation/app-shell-footer.test.tsx src/app/sitemap.test.ts src/app/api/admin/auth-audits/route.test.ts src/app/api/admin/auth-audits/export/route.test.ts` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `git diff --check` 통과
+
+
 ## 실행 로그
+### 2026-03-27: Cycle 386 완료 (배포/운영 하드닝 및 검색 retention 보강)
+- 완료 내용
+  - write-capable maintenance workflows `post-integrity-maintenance`, `search-term-cleanup`, `auth-audit-cleanup`, `notification-cleanup`에 GitHub environment `production`을 연결해 환경 보호/승인 흐름을 타도록 정리했다.
+  - `SearchTermDailyMetric` retention helper/script를 추가하고, 기존 `search-term-cleanup` workflow가 `SearchTermStat`와 `SearchTermDailyMetric`을 함께 정리하도록 확장했다.
+  - `app/scripts/vercel-build.ts`는 production뿐 아니라 preview/staging target에서도 보안 env preflight와 auth email readiness preflight를 기본 실행하도록 바꿨고, 관련 안내 문구를 운영/배포 가이드와 Vercel/OAuth 체크리스트에 동기화했다.
+  - `quality-gate.yml`은 `db:push` 대신 `prisma migrate deploy` + `prisma generate`를 사용해 migration chain 자체를 CI에서 검증하도록 hardening했다.
+- 검증 결과
+  - `corepack pnpm -C app lint src/server/search-term-daily-metric-retention.ts src/server/search-term-daily-metric-retention.test.ts scripts/cleanup-search-term-daily-metrics.ts scripts/vercel-build.ts scripts/vercel-build.test.ts` 통과
+  - `corepack pnpm -C app test -- src/server/search-term-daily-metric-retention.test.ts scripts/vercel-build.test.ts src/server/search-term-stat-retention.test.ts` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `178 files / 857 tests` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `git diff --check` 통과
+- 메모
+  - 기존 작업 영역에 legal/footer/sitemap/admin 관련 다른 로컬 변경이 함께 남아 있었지만, 이번 사이클은 그 변경을 건드리지 않고 deployment/ops hardening 범위만 반영했다.
+
+### 2026-03-23: Cycle 384 완료 (로컬 DB 한 번에 복구하는 restore script 추가)
+- 완료 내용
+  - `app/scripts/restore-local-dev.ts`를 추가해 로컬 Docker Postgres 기동, readiness polling, `db:push`, `prisma generate`, 그리고 전체 seed 체인을 한 번에 실행하는 복구 스크립트를 만들었다.
+  - 이 스크립트가 실행하는 seed 순서는 `db:seed -> db:seed:users -> db:seed:local-test-accounts -> db:seed:board-posts -> db:seed:adoption-demo -> db:seed:comment-best-demo -> db:seed:search-cases -> db:seed:reports -> db:seed:engagement`다.
+  - `app/package.json`에는 `db:restore:local`를 추가했고, `docs/개발_운영_가이드.md`에는 앞으로는 여러 명령을 수동으로 치지 않고 `corepack pnpm db:restore:local` 한 줄로 복구하는 경로와, `docker compose down`은 volume을 유지하지만 `down -v`/volume 삭제는 데이터를 없앤다는 주의사항을 적었다.
+- 검증 결과
+  - `corepack pnpm -C app lint scripts/restore-local-dev.ts` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `SEED_DEFAULT_PASSWORD=townpet123 corepack pnpm -C app db:restore:local` 실행 후 요약 카운트가 출력되고, 기존 로컬 기준선인 `User=87`, `withPassword=70`, `withoutPassword=17`과 게시물/댓글/반응 더미데이터가 유지되는 것을 확인했다.
+  - `git diff --check` 통과
+- 메모
+  - 완전히 동일한 상태를 유지하려면 데이터 복구를 스크립트화하는 것과 별개로 `postgres_data` volume 자체를 지우지 않는 습관이 필요하다. 컨테이너만 재시작할 때는 `docker compose down`만 쓰고 `-v`는 피하는 것이 맞다.
+
+### 2026-03-23: Cycle 383 완료 (로컬 87계정 테스트 계정 셋 복구)
+- 완료 내용
+  - 사용자가 제공한 이전 로컬 기준선(`User=87`, `withPassword=70`, `withoutPassword=17`)에 맞추기 위해 `app/scripts/seed-local-test-accounts.ts`를 추가했다.
+  - 이 스크립트는 core seed로 이미 복구한 계정 세트 위에 E2E/로컬 검증용 보조 계정을 보강하는 역할이다. `e2e.profile.*`, `e2e.search.author.*`, `e2e.search.adoption.*`, `e2e.global-first`, `e2e.upload`, `perf.scroll` 같은 고정 테스트 계정과, `pw-auth-case-*`, `pw-comment-auth-*`, `e2e.search.viewer.*`, `pw-auth-suspended-*-moderator` 샘플 계정을 함께 만든다.
+  - 비밀번호가 없어야 하는 계정은 `e2e.kakao@townpet.dev`, `e2e.naver@townpet.dev`, `guest.system@townpet.local`로 별도 보강했고, 기존 no-password 계정(`adoption-demo`, `comment.demo.*`, `newbie.day1`, `reporter1/2`, `search.case`, `moderator`)은 그대로 유지되도록 맞췄다.
+  - `app/package.json`에 `db:seed:local-test-accounts`를 추가했고, `docs/개발_운영_가이드.md`의 로컬 복구 절차도 실제 기본 비밀번호 `townpet123`와 새 스크립트 기준으로 갱신했다.
+- 검증 결과
+  - `SEED_DEFAULT_PASSWORD=townpet123 corepack pnpm -C app db:seed:local-test-accounts` 실행 결과 `seededAccounts=52`, `actual.users=87`, `actual.withPassword=70`, `actual.withoutPassword=17`을 확인했다.
+  - `psql "postgresql://townpet:townpet@localhost:5432/townpet" -c 'SELECT COUNT(*) ...'` 결과도 동일하게 `User=87`, `withPassword=70`, `withoutPassword=17`이었다.
+  - 샘플 계정 검증으로 `demo/admin/mod.*`는 비밀번호 있음, `e2e.kakao`, `e2e.naver`, `guest.system`, `reporter1/2`, `search.case`, `adoption-demo`, `newbie.day1`은 비밀번호 없음 상태를 확인했다.
+  - `corepack pnpm -C app lint scripts/seed-local-test-accounts.ts` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `git diff --check` 통과
+- 메모
+  - 이 스크립트는 현재 복구된 core seed DB 위에 추가 계정을 더하는 방식이다. base 35계정이 없는 완전 빈 DB에서는 먼저 `db:seed`, `db:seed:users`, `db:seed:comment-best-demo`, `db:seed:adoption-demo`, `db:seed:search-cases`, `db:seed:reports` 등을 돌린 뒤 실행하는 것이 맞다.
+
+### 2026-03-23: Cycle 382 완료 (로컬 engagement 더미데이터 시드 추가)
+- 완료 내용
+  - `app/scripts/seed-engagement.ts`를 추가해 로컬 dummy user를 이용한 댓글/게시글 반응/댓글 반응/조회수 더미데이터를 한 번에 채우는 재실행 가능한 engagement seed를 만들었다.
+  - 이 스크립트는 기존 `"[seed-engagement]"` 댓글만 정리하고, dummy user가 남긴 기존 `PostReaction`/`CommentReaction`을 비운 뒤 다시 채우는 방식이라 재실행 시 총량이 안정적으로 유지된다.
+  - 게시글 반응은 ACTIVE post 전체를 대상으로 현재 `likeCount/dislikeCount` 또는 fallback 목표치 기준으로 다시 생성하고, 게시글 aggregate(`likeCount/dislikeCount/commentCount/viewCount`)를 실제 seed 결과에 맞춰 갱신한다.
+  - 댓글은 댓글 데모 글을 제외한 최근 ACTIVE post 24개에 루트 댓글 2개 + 답글 1개씩 총 72개를 추가하고, 새로 만든 댓글에는 `CommentReaction`도 함께 넣어 reaction row가 비어 있지 않도록 보강했다.
+  - `app/package.json`에 `db:seed:engagement` 스크립트를 추가했고, `docs/개발_운영_가이드.md`의 로컬 복구 블록에도 같은 명령을 연결했다.
+- 검증 결과
+  - `corepack pnpm -C app lint scripts/seed-engagement.ts` 통과
+  - `corepack pnpm -C app db:seed:engagement` 2회 연속 실행 결과 첫 실행은 `createdComments=72`, `createdPostReactions=442`, `createdCommentReactions=192`였고, 두 번째 실행은 `deletedSeedComments=72`, `deletedPostReactions=442` 후 동일한 총량으로 다시 생성되어 재실행 가능성을 확인했다.
+  - `psql "postgresql://townpet:townpet@localhost:5432/townpet" -c 'SELECT COUNT(*) ...'` 결과 `Comment=110`, `PostReaction=442`, `CommentReaction=192`, `SUM(Post.viewCount)=5839`, `SUM(Post.likeCount)=428`, `SUM(Post.commentCount)=110`, `SUM(Comment.likeCount)=347`, `SUM(Comment.dislikeCount)=32`로 확인됐다.
+  - `git diff --check` 통과
+- 메모
+  - 조회수는 별도 view event table이 아니라 `Post.viewCount` aggregate만 존재하므로, engagement seed는 reaction/comment 밀도에 맞춰 `viewCount`를 현실적인 범위로 보정하는 방식으로 더미 데이터를 채운다.
+
+### 2026-03-23: Cycle 381 완료 (로컬 Docker Postgres/더미데이터 복구)
+- 완료 내용
+  - Docker Desktop을 다시 기동하고 `docker compose up -d`로 `townpet-postgres-1`를 복구했다. 현재 로컬 Postgres는 `0.0.0.0:5432->5432/tcp`로 올라와 있다.
+  - 새 컨테이너의 DB는 비어 있었고, 초기 확인 시 `"User"` relation이 없어 더미데이터가 모두 유실된 상태를 확인했다.
+  - `corepack pnpm -C app db:migrate`로 기존 migration chain을 먼저 적용했지만, `prisma migrate dev`가 마지막에 새 migration name을 묻는 interactive prompt로 남았고, 이어서 `db:seed`를 돌리면 현재 schema 대비 `passwordHash` column이 없다는 `P2022`가 발생했다.
+  - 로컬 disposable DB 복구 원칙에 맞춰 `corepack pnpm -C app db:push`와 `corepack pnpm -C app exec prisma generate`로 현재 Prisma schema를 DB와 다시 동기화했다.
+  - 이후 `SEED_DEFAULT_PASSWORD=townpet123 corepack pnpm -C app db:seed`, `db:seed:users`, `db:seed:board-posts`, `db:seed:adoption-demo`, `db:seed:comment-best-demo`, `db:seed:search-cases`, `db:seed:reports`를 순서대로 재실행해 계정/게시물/댓글/신고 더미데이터를 복구했다.
+- 검증 결과
+  - `docker compose ps`에서 `townpet-postgres-1`가 `Up` 상태로 확인됐다.
+  - `psql "postgresql://townpet:townpet@localhost:5432/townpet" -c 'SELECT COUNT(*) ...'` 결과 `User=35`, `Post=95`, `Comment=38`, `Report=7`, `ReportAudit=4`로 복구됐다.
+  - `SELECT role, COUNT(*) FROM "User" GROUP BY role` 결과 `USER=29`, `ADMIN=2`, `MODERATOR=4`다.
+  - `SELECT COUNT(*) FILTER (WHERE "passwordHash" IS NOT NULL) ...` 결과 비밀번호가 있는 계정은 21개, 없는 계정은 14개다.
+  - `git diff --check` 통과
+- 메모
+  - 이번 작업은 코드/정책 변경이 아니라 로컬 인프라 복구와 재시드 작업이므로 lint/typecheck/test는 별도로 돌리지 않았다.
+  - 현재 셸에는 `pnpm` 바이너리가 PATH에 없어, 패키지 명령은 모두 `corepack pnpm -C app ...` 형태로 실행했다.
+
 ### 2026-03-21: Cycle 380 완료 (검색 daily metrics + 관리자 모바일 fallback 정리)
 - 완료 내용
   - `app/prisma/schema.prisma`, `app/prisma/migrations/20260321130000_add_search_term_daily_metrics/migration.sql`에 `SearchTermDailyMetric`를 추가했다. `scope/typeKey/searchIn`별 일자 row에 query/zero-result/totalResultCount를 저장하는 구조다.

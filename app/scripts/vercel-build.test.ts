@@ -31,17 +31,36 @@ describe("vercel-build security preflight", () => {
     ).toBe(true);
   });
 
-  it("skips strict preflight for preview unless explicitly forced", () => {
+  it("enables strict preflight for preview and staging vercel targets", () => {
     expect(
       shouldRunSecurityEnvPreflight({
         NODE_ENV: "production",
         VERCEL_ENV: "preview",
       }),
+    ).toBe(true);
+    expect(
+      shouldRunSecurityEnvPreflight({
+        NODE_ENV: "production",
+        VERCEL_TARGET_ENV: "staging",
+      }),
+    ).toBe(true);
+  });
+
+  it("skips strict preflight outside Vercel targets unless explicitly forced", () => {
+    expect(
+      shouldRunSecurityEnvPreflight({
+        NODE_ENV: "production",
+      }),
     ).toBe(false);
     expect(
       shouldRunSecurityEnvPreflight({
         NODE_ENV: "production",
-        VERCEL_ENV: "preview",
+        VERCEL_ENV: "development",
+      }),
+    ).toBe(false);
+    expect(
+      shouldRunSecurityEnvPreflight({
+        NODE_ENV: "production",
         DEPLOY_SECURITY_PREFLIGHT_STRICT: "1",
       }),
     ).toBe(true);
@@ -57,13 +76,27 @@ describe("vercel-build security preflight", () => {
     expect(
       shouldRunAuthEmailReadinessPreflight({
         NODE_ENV: "production",
-        VERCEL_ENV: "preview",
+        VERCEL_TARGET_ENV: "preview",
+      }),
+    ).toBe(true);
+    expect(
+      shouldRunAuthEmailReadinessPreflight({
+        NODE_ENV: "production",
+        VERCEL_ENV: "staging",
+      }),
+    ).toBe(true);
+  });
+
+  it("skips auth email readiness preflight outside Vercel targets unless explicitly forced", () => {
+    expect(
+      shouldRunAuthEmailReadinessPreflight({
+        NODE_ENV: "production",
       }),
     ).toBe(false);
     expect(
       shouldRunAuthEmailReadinessPreflight({
         NODE_ENV: "production",
-        VERCEL_ENV: "preview",
+        VERCEL_ENV: "development",
         DEPLOY_AUTH_EMAIL_PREFLIGHT_STRICT: "1",
       }),
     ).toBe(true);

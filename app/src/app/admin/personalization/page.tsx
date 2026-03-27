@@ -6,7 +6,7 @@ import {
   FEED_PERSONALIZATION_SURFACE_LABELS,
 } from "@/lib/feed-personalization-metrics";
 import { adminFeedPersonalizationQuerySchema } from "@/lib/validations/feed-personalization";
-import { requireModeratorPageUser } from "@/server/admin-page-access";
+import { requireAdminPageUser } from "@/server/admin-page-access";
 import { getFeedPersonalizationOverview } from "@/server/queries/feed-personalization-metrics.queries";
 
 type PersonalizationPageProps = {
@@ -22,7 +22,7 @@ function formatPercent(value: number) {
 export default async function PersonalizationPage({
   searchParams,
 }: PersonalizationPageProps) {
-  await requireModeratorPageUser();
+  await requireAdminPageUser();
 
   const resolvedParams = (await searchParams) ?? {};
   const parsed = adminFeedPersonalizationQuerySchema.safeParse({

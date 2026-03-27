@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
-import { requireModerator } from "@/server/auth";
+import { requireAdmin } from "@/server/auth";
 import {
   deleteBreedCatalogEntry,
   upsertBreedCatalogEntry,
@@ -17,7 +17,7 @@ export async function upsertBreedCatalogEntryAction(
   input: unknown,
 ): Promise<BreedCatalogActionResult> {
   try {
-    await requireModerator();
+    await requireAdmin();
     await upsertBreedCatalogEntry({ input });
     revalidatePath("/profile");
     revalidatePath("/admin/breeds");
@@ -39,7 +39,7 @@ export async function deleteBreedCatalogEntryAction(
   input: unknown,
 ): Promise<BreedCatalogActionResult> {
   try {
-    await requireModerator();
+    await requireAdmin();
     await deleteBreedCatalogEntry({ input });
     revalidatePath("/profile");
     revalidatePath("/admin/breeds");

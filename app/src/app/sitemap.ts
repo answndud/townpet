@@ -65,6 +65,21 @@ export default async function sitemap({
             changeFrequency: "daily",
             priority: 0.7,
           },
+          {
+            url: `${siteOrigin}/terms`,
+            changeFrequency: "yearly",
+            priority: 0.2,
+          },
+          {
+            url: `${siteOrigin}/privacy`,
+            changeFrequency: "yearly",
+            priority: 0.2,
+          },
+          {
+            url: `${siteOrigin}/commercial`,
+            changeFrequency: "yearly",
+            priority: 0.2,
+          },
         ]
       : [];
 

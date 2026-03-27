@@ -9,6 +9,7 @@ jobs:
   cleanup:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    environment: production
     defaults:
       run:
         working-directory: app

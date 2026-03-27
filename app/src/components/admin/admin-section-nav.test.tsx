@@ -1,10 +1,11 @@
+import { UserRole } from "@prisma/client";
 import { describe, expect, it } from "vitest";
 
-import { ADMIN_SECTION_LINKS } from "@/components/admin/admin-section-nav";
+import { getAdminSectionLinks } from "@/components/admin/admin-section-nav";
 
 describe("admin section nav", () => {
-  it("includes the core moderator destinations including ops", () => {
-    const hrefs = ADMIN_SECTION_LINKS.map((item) => item.href);
+  it("shows admin-only destinations for admins", () => {
+    const hrefs = getAdminSectionLinks(UserRole.ADMIN).map((item) => item.href);
 
     expect(hrefs).toEqual(
       expect.arrayContaining([
@@ -16,5 +17,24 @@ describe("admin section nav", () => {
         "/admin/policies",
       ]),
     );
+  });
+
+  it("hides admin-only destinations for moderators", () => {
+    const hrefs = getAdminSectionLinks(UserRole.MODERATOR).map((item) => item.href);
+
+    expect(hrefs).toEqual(
+      expect.arrayContaining([
+        "/admin",
+        "/admin/reports",
+        "/admin/moderation/direct",
+        "/admin/moderation-logs",
+        "/admin/hospital-review-flags",
+      ]),
+    );
+    expect(hrefs).not.toContain("/admin/ops");
+    expect(hrefs).not.toContain("/admin/auth-audits");
+    expect(hrefs).not.toContain("/admin/policies");
+    expect(hrefs).not.toContain("/admin/personalization");
+    expect(hrefs).not.toContain("/admin/breeds");
   });
 });

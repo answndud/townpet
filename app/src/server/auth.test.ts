@@ -8,6 +8,8 @@ import {
   getCurrentUserIdFromRequest,
   getCurrentUserRole,
   hasSessionCookieFromRequest,
+  requireAdmin,
+  requireAdminUserId,
   requireAuthenticatedUserId,
   requireCurrentUser,
   requireModerator,
@@ -254,6 +256,26 @@ describe("auth helpers", () => {
     await expect(requireModeratorUserId()).rejects.toBeInstanceOf(ServiceError);
   });
 
+  it("requireAdminUserId returns id for admin", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "admin-1" } } as never);
+    mockGetUserRoleById.mockResolvedValue({
+      id: "admin-1",
+      role: UserRole.ADMIN,
+    });
+
+    await expect(requireAdminUserId()).resolves.toBe("admin-1");
+  });
+
+  it("requireAdminUserId throws forbidden for moderator", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "mod-1" } } as never);
+    mockGetUserRoleById.mockResolvedValue({
+      id: "mod-1",
+      role: UserRole.MODERATOR,
+    });
+
+    await expect(requireAdminUserId()).rejects.toBeInstanceOf(ServiceError);
+  });
+
   it("requireModerator allows admin", async () => {
     mockAuth.mockResolvedValue({ user: { id: "admin-1" } } as never);
     mockGetUserById.mockResolvedValue({
@@ -282,6 +304,36 @@ describe("auth helpers", () => {
     });
 
     await expect(requireModerator()).rejects.toBeInstanceOf(ServiceError);
+  });
+
+  it("requireAdmin allows admin", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "admin-2" } } as never);
+    mockGetUserById.mockResolvedValue({
+      id: "admin-2",
+      email: "admin2@townpet.dev",
+      nickname: "admin2",
+      bio: null,
+      image: null,
+      role: UserRole.ADMIN,
+    });
+
+    const user = await requireAdmin();
+
+    expect(user.id).toBe("admin-2");
+  });
+
+  it("requireAdmin rejects moderator", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "mod-2" } } as never);
+    mockGetUserById.mockResolvedValue({
+      id: "mod-2",
+      email: "mod2@townpet.dev",
+      nickname: "mod2",
+      bio: null,
+      image: null,
+      role: UserRole.MODERATOR,
+    });
+
+    await expect(requireAdmin()).rejects.toBeInstanceOf(ServiceError);
   });
 
   it("requireCurrentUser rejects suspended user", async () => {

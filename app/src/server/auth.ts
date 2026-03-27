@@ -101,6 +101,19 @@ export async function requireModeratorUserId() {
   return user.id;
 }
 
+export async function requireAdminUserId() {
+  const user = await getCurrentUserRole();
+  if (!user) {
+    throw new ServiceError("로그인이 필요합니다.", "AUTH_REQUIRED", 401);
+  }
+
+  if (user.role !== UserRole.ADMIN) {
+    throw new ServiceError("권한이 없습니다.", "FORBIDDEN", 403);
+  }
+
+  return user.id;
+}
+
 export async function getCurrentUser() {
   const session = await auth();
   if (session?.user?.id) {
@@ -132,6 +145,16 @@ export async function requireModerator() {
   const user = await requireCurrentUser();
 
   if (user.role !== UserRole.ADMIN && user.role !== UserRole.MODERATOR) {
+    throw new ServiceError("권한이 없습니다.", "FORBIDDEN", 403);
+  }
+
+  return user;
+}
+
+export async function requireAdmin() {
+  const user = await requireCurrentUser();
+
+  if (user.role !== UserRole.ADMIN) {
     throw new ServiceError("권한이 없습니다.", "FORBIDDEN", 403);
   }
 
