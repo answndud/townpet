@@ -27,6 +27,11 @@
 
 ## Active Plan
 
+### Cycle 388: quality-gate fresh DB auth/reaction migration chain 복구 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| `quality-gate` fresh PostgreSQL DB에서 `User.emailVerified` 누락으로 깨지는 auth/reaction 스키마 drift를 복구하기 위해 `User.emailVerified/passwordHash`, `PostReaction`, `PasswordResetToken` 누락 migration을 self-healing 형태로 추가하고 fresh DB `migrate deploy` + Prisma smoke로 검증 | Codex | P0 | `done` | 새 migration이 기존 production-like DB에서도 안전하게 적용되고, fresh DB에서 `prisma migrate deploy`가 끝까지 통과하며, Prisma smoke가 `user.upsert(emailVerified/passwordHash)`, `postReaction.create`, `passwordResetToken.create`까지 성공하고 결과가 `PROGRESS.md`에 기록된다 | `PLAN.md`, `PROGRESS.md`, `app/prisma/migrations/20260327164000_repair_auth_and_reaction_migrations/migration.sql`, `quality-gate` 실패 run `23633927220` |
+
 ### Cycle 387: admin 전용 권한 분리와 운영 감사 로그 강화 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|

@@ -16,6 +16,18 @@
 - Cycle 33: 신규 계정 안전 정책 관리자 설정화 + DB/UI E2E 플로우 완료
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
+### 2026-03-27: Cycle 388 완료 (quality-gate fresh DB auth/reaction migration chain 복구)
+- 완료 내용
+  - GitHub Actions run [23633927220](https://github.com/answndud/townpet/actions/runs/23633927220)의 실패 로그를 확인해, `quality-gate`의 E2E smoke 단계가 fresh DB에서 `User.emailVerified` column missing으로 깨지는 것을 재현 원인으로 특정했다.
+  - `app/prisma/migrations/20260327164000_repair_auth_and_reaction_migrations/migration.sql`를 추가해 migration chain에 누락돼 있던 `User.emailVerified`, `User.passwordHash`, `PostReactionType` enum + `PostReaction` table, `PasswordResetToken` table을 self-healing 방식(`IF NOT EXISTS`/constraint 존재 검사)으로 복구했다.
+  - 이 migration은 production-like DB에서 이미 일부 객체가 존재하더라도 안전하게 통과하도록 작성했고, fresh DB에서는 `prisma migrate deploy`만으로 auth/reaction baseline이 완성되게 맞췄다.
+- 검증 결과
+  - 임시 Docker PostgreSQL(`127.0.0.1:55432/townpet_diff`)에서 `corepack pnpm -C app exec prisma migrate reset --force --skip-generate --skip-seed` 후 `corepack pnpm -C app exec prisma migrate deploy`를 실행해 전체 migration chain이 최신까지 성공하는 것을 확인했다.
+  - 같은 fresh DB에서 Prisma smoke를 실행해 `user.upsert({ emailVerified, passwordHash })`, `postReaction.create()`, `passwordResetToken.create()`가 모두 성공했다.
+  - `corepack pnpm -C app exec prisma migrate diff --from-migrations prisma/migrations --to-schema-datamodel prisma/schema.prisma --shadow-database-url ... --script` 재확인 결과, 이번 CI를 깨던 auth/reaction 누락은 사라졌고 남은 drift는 trigram index/drop-default/rename 수준의 비차단 항목만 남았다.
+- 메모
+  - 이 cycle은 `quality-gate`의 fresh DB migration blocker를 복구한 작업이다. 이후 rerun에서는 최소한 `User.emailVerified` missing 류의 auth/reaction schema 오류는 재발하지 않아야 한다.
+
 ### 2026-03-27: Cycle 387 완료 (admin 전용 권한 분리와 운영 감사 로그 강화)
 - 완료 내용
   - `app/src/server/auth.ts`, `app/src/server/admin-page-access.ts`에 `requireAdmin`, `requireAdminUserId`, `requireAdminPageUser`를 추가해 admin-only 경로를 별도 helper로 분리했다.
