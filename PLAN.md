@@ -1,6 +1,6 @@
 # PLAN.md
 
-기준일: 2026-03-19
+기준일: 2026-03-27
 목표: TownPet를 기능/운영/품질 기준에서 "완성도 높은 커뮤니티" 상태로 끌어올린다.
 
 ## 운영 규칙
@@ -26,6 +26,41 @@
 8. 보안 하드닝 트랙 분리 운영: `docs/security/*` 백로그/리스크/진행 로그 상시 동기화
 
 ## Active Plan
+
+### Cycle 387: admin 전용 권한 분리와 운영 감사 로그 강화 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 정책/인증감사/ops/개인화/품종 사전을 `ADMIN` 전용으로 분리하고, auth audit 열람·export 및 정책 변경을 moderation log에 남기며, 관리자 허브/nav가 역할별 링크만 노출하도록 정리한다 | Codex | P1 | `done` | `requireAdmin*` helper가 추가되고 `/admin/auth-audits`, `/admin/policies`, `/admin/ops`, `/admin/personalization`, `/admin/breeds` 및 관련 action/route가 admin-only가 되며, policy/auth-audit view/export가 `ModerationActionLog`에 기록되고, 관리자 nav는 moderator에게 admin-only 링크를 숨기고, 관련 lint/test/typecheck/diff check 검증이 `PROGRESS.md`에 기록된다 | `PLAN.md`, `PROGRESS.md`, `app/src/server/auth.ts`, `app/src/server/admin-page-access.ts`, `app/src/server/moderation-action-log.ts`, `app/src/server/actions/policy.ts`, `app/src/server/actions/breed-catalog.ts`, `app/src/app/admin/**`, `app/src/app/api/admin/auth-audits/**`, 관련 테스트 |
+
+### Cycle 386: deployment/ops hardening for production workflows and search retention (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| write-capable maintenance workflows를 GitHub environment `production`에 연결하고, SearchTermDailyMetric retention cleanup script/workflow를 추가하며, preview/staging build preflight 기본값과 관련 운영 문서를 최신화한다 | Codex | P1 | `done` | `.github/workflows/*`의 write-capable maintenance job이 `environment: production`을 사용하고, `db:cleanup:search-term-daily-metrics`가 추가되어 `search-term-cleanup` workflow가 daily metric까지 정리하며, `build:vercel`의 preview/staging preflight 기본값과 문서/검증이 `PROGRESS.md`에 반영된다 | `PLAN.md`, `PROGRESS.md`, `.github/workflows/*`, `app/scripts/vercel-build.ts`, `app/scripts/cleanup-search-term-daily-metrics.ts`, `app/src/server/search-term-daily-metric-retention.ts`, `docs/개발_운영_가이드.md`, `docs/operations/manual-checks/배포_보안_체크리스트.md`, `docs/operations/Vercel_OAuth_초기설정_가이드.md`, `docs/operations/검색 통계 전환 가이드.md` |
+
+### Cycle 385: 공개 법적/상업 표면 페이지와 전역 footer 추가 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 이용약관, 개인정보처리방침, 광고·제휴 고지의 공개 페이지를 추가하고 앱 전역 footer에서 링크를 노출하며 sitemap에 포함한다 | Codex | P1 | `done` | `/terms`, `/privacy`, `/commercial` 공개 페이지가 생성되고, 앱 레이아웃/footer에서 discoverable 하며, sitemap/테스트/문서가 함께 갱신된다 | `PLAN.md`, `PROGRESS.md`, `app/src/app/(legal)/**`, `app/src/app/layout.tsx`, `app/src/components/navigation/app-shell-footer.tsx`, `app/src/app/sitemap.ts`, 관련 테스트 |
+
+### Cycle 384: 로컬 DB 한 번에 복구하는 restore script 추가 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 컨테이너/볼륨이 다시 사라져도 같은 더미데이터를 한 명령으로 복구할 수 있도록 local restore script를 추가하고, 운영 가이드에 사용법과 볼륨 주의사항을 기록한다 | Codex | P1 | `done` | `db:restore:local`가 추가되고, 이 명령이 docker postgres 기동 -> ready 대기 -> `db:push` -> 전체 seed 체인을 순서대로 실행하며, 결과와 주의사항이 `PROGRESS.md`/`docs/개발_운영_가이드.md`에 기록된다 | `PLAN.md`, `PROGRESS.md`, `docs/개발_운영_가이드.md`, `app/package.json`, `app/scripts/restore-local-dev.ts` |
+
+### Cycle 383: 로컬 87계정 테스트 계정 셋 복구 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 이전 로컬 더미데이터와 동일한 계정 구성을 위해 core seed 외에 E2E/로컬 검증용 보조 계정 셋을 재실행 가능한 스크립트로 복구하고, 총 사용자 수와 비밀번호 보유 수를 `87 / 70 / 17`로 맞춘다 | Codex | P1 | `done` | `db:seed:local-test-accounts`가 추가되고, `e2e.kakao`/`e2e.naver`/`guest.system` 등 no-password 계정과 `pw-auth-case-*`/`pw-comment-auth-*`/`e2e.search.viewer.*` 샘플 계정이 함께 복구되며, 실행 후 `User=87`, `withPassword=70`, `withoutPassword=17`이 확인되고 결과가 `PROGRESS.md`와 `docs/개발_운영_가이드.md`에 기록된다 | `PLAN.md`, `PROGRESS.md`, `docs/개발_운영_가이드.md`, `app/package.json`, `app/scripts/seed-local-test-accounts.ts` |
+
+### Cycle 382: 로컬 engagement 더미데이터 시드 추가 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 로컬 복구 DB에 조회수/게시글 반응/댓글/댓글 반응까지 한 번에 채울 수 있는 재실행 가능한 engagement seed 스크립트를 추가하고, package script와 운영 가이드에 연결한다 | Codex | P1 | `done` | `db:seed:engagement`가 추가되고, 재실행 시 기존 script-generated comment/reaction을 정리한 뒤 같은 총량으로 댓글/게시글 반응/댓글 반응/조회수 집계를 다시 채우며, 결과가 `PROGRESS.md`와 `docs/개발_운영_가이드.md`에 기록된다 | `PLAN.md`, `PROGRESS.md`, `docs/개발_운영_가이드.md`, `app/package.json`, `app/scripts/seed-engagement.ts` |
+
+### Cycle 381: 로컬 Docker Postgres/더미데이터 복구 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 도커 컨테이너가 사라진 로컬 개발 환경에서 Postgres 컨테이너를 재기동하고, local DB 스키마를 복구한 뒤 공식 seed 스크립트로 계정/게시물/댓글/신고 더미데이터를 다시 채운다 | Codex | P1 | `done` | `docker compose up -d` 후 `townpet-postgres-1`가 정상 기동되고, local DB는 현재 Prisma schema와 sync되며, `db:seed`, `db:seed:users`, `db:seed:board-posts`, `db:seed:adoption-demo`, `db:seed:comment-best-demo`, `db:seed:search-cases`, `db:seed:reports` 재실행 뒤 `User/Post/Comment/Report` 개수가 복구되어 결과가 `PROGRESS.md`에 기록된다 | `PLAN.md`, `PROGRESS.md`, `docker-compose.yml`, `docs/개발_운영_가이드.md`, `app/prisma/schema.prisma`, `app/prisma/seed.ts`, `app/scripts/seed-users.ts`, `app/scripts/seed-board-posts.ts`, `app/scripts/seed-adoption-demo.ts`, `app/scripts/seed-comment-best-demo.ts`, `app/scripts/seed-search-cases.ts`, `app/scripts/seed-reports.ts` |
 
 ### Cycle 380: 검색 daily metrics와 관리자 모바일 fallback 정리 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |

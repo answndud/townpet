@@ -7,7 +7,7 @@ import { GuestPostPolicyForm } from "@/components/admin/guest-post-policy-form";
 import { GuestReadPolicyForm } from "@/components/admin/guest-read-policy-form";
 import { NewUserSafetyPolicyForm } from "@/components/admin/new-user-safety-policy-form";
 import { postTypeMeta } from "@/lib/post-presenter";
-import { requireModeratorPageUser } from "@/server/admin-page-access";
+import { requireAdminPageUser } from "@/server/admin-page-access";
 import {
   getForbiddenKeywords,
   getFeedPersonalizationPolicy,
@@ -17,7 +17,7 @@ import {
 } from "@/server/queries/policy.queries";
 
 export default async function AdminPoliciesPage() {
-  await requireModeratorPageUser();
+  const user = await requireAdminPageUser();
 
   const [
     loginRequiredTypes,
@@ -46,7 +46,7 @@ export default async function AdminPoliciesPage() {
           </p>
         </header>
 
-        <AdminSectionNav />
+        <AdminSectionNav role={user.role} />
 
         <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <article className="rounded-2xl border border-[#dbe6f6] bg-[#f8fbff] p-4 text-xs text-[#4f678d]">

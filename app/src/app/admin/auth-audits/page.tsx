@@ -3,7 +3,8 @@ import { AuthAuditAction } from "@prisma/client";
 
 import { AdminSectionNav } from "@/components/admin/admin-section-nav";
 import { EmptyState } from "@/components/ui/empty-state";
-import { requireModeratorPageUser } from "@/server/admin-page-access";
+import { requireAdminPageUser } from "@/server/admin-page-access";
+import { recordAuthAuditViewed } from "@/server/moderation-action-log";
 import { listAuthAuditLogs } from "@/server/queries/auth-audit.queries";
 
 type AuthAuditPageProps = {
@@ -40,7 +41,7 @@ const reasonLabels: Record<string, string> = {
 };
 
 export default async function AuthAuditPage({ searchParams }: AuthAuditPageProps) {
-  await requireModeratorPageUser();
+  const user = await requireAdminPageUser();
 
   const resolvedParams = (await searchParams) ?? {};
   const actionParam = resolvedParams.action ?? "ALL";
@@ -53,6 +54,14 @@ export default async function AuthAuditPage({ searchParams }: AuthAuditPageProps
 
   const audits = await listAuthAuditLogs({
     action: action === "ALL" ? null : action,
+    query: query || null,
+    limit: 100,
+  });
+
+  await recordAuthAuditViewed({
+    actorId: user.id,
+    source: "page",
+    actionFilter: action === "ALL" ? null : action,
     query: query || null,
     limit: 100,
   });
@@ -137,7 +146,7 @@ export default async function AuthAuditPage({ searchParams }: AuthAuditPageProps
           </div>
         </section>
 
-        <AdminSectionNav />
+        <AdminSectionNav role={user.role} />
 
         <section className="tp-card p-4 sm:p-5">
           {audits.length > 0 ? (

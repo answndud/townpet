@@ -2,8 +2,9 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 import { AuthAuditAction } from "@prisma/client";
 
-import { requireModeratorUserId } from "@/server/auth";
+import { requireAdminUserId } from "@/server/auth";
 import { monitorUnhandledError } from "@/server/error-monitor";
+import { recordAuthAuditViewed } from "@/server/moderation-action-log";
 import {
   AUTH_AUDIT_LOG_LIMIT_MAX,
   listAuthAuditLogs,
@@ -19,7 +20,7 @@ const querySchema = z.object({
 
 export async function GET(request: NextRequest) {
   try {
-    await requireModeratorUserId();
+    const userId = await requireAdminUserId();
 
     const { searchParams } = new URL(request.url);
     const parsed = querySchema.safeParse({
@@ -45,6 +46,14 @@ export async function GET(request: NextRequest) {
       action,
       query: parsed.data.q ?? null,
       limit: parsed.data.limit,
+    });
+
+    await recordAuthAuditViewed({
+      actorId: userId,
+      source: "api",
+      actionFilter: action,
+      query: parsed.data.q ?? null,
+      limit: parsed.data.limit ?? null,
     });
 
     return jsonOk(audits);

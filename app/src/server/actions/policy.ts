@@ -2,7 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 
-import { requireModerator } from "@/server/auth";
+import { requireAdmin } from "@/server/auth";
+import { recordAdminPolicyUpdated } from "@/server/moderation-action-log";
 import {
   updateFeedPersonalizationPolicy,
   updateForbiddenKeywordPolicy,
@@ -20,8 +21,9 @@ export async function updateGuestReadPolicyAction(
   input: unknown,
 ): Promise<PolicyActionResult> {
   try {
-    await requireModerator();
-    await updateGuestReadPolicy({ input });
+    const user = await requireAdmin();
+    const audit = await updateGuestReadPolicy({ input });
+    await recordAdminPolicyUpdated({ actorId: user.id, ...audit });
     revalidatePath("/feed");
     revalidatePath("/admin/policies");
     return { ok: true };
@@ -42,8 +44,9 @@ export async function updateForbiddenKeywordPolicyAction(
   input: unknown,
 ): Promise<PolicyActionResult> {
   try {
-    await requireModerator();
-    await updateForbiddenKeywordPolicy({ input });
+    const user = await requireAdmin();
+    const audit = await updateForbiddenKeywordPolicy({ input });
+    await recordAdminPolicyUpdated({ actorId: user.id, ...audit });
     revalidatePath("/feed");
     revalidatePath("/posts/[id]", "page");
     revalidatePath("/admin/policies");
@@ -65,8 +68,9 @@ export async function updateNewUserSafetyPolicyAction(
   input: unknown,
 ): Promise<PolicyActionResult> {
   try {
-    await requireModerator();
-    await updateNewUserSafetyPolicy({ input });
+    const user = await requireAdmin();
+    const audit = await updateNewUserSafetyPolicy({ input });
+    await recordAdminPolicyUpdated({ actorId: user.id, ...audit });
     revalidatePath("/admin/policies");
     return { ok: true };
   } catch (error) {
@@ -86,8 +90,9 @@ export async function updateGuestPostPolicyAction(
   input: unknown,
 ): Promise<PolicyActionResult> {
   try {
-    await requireModerator();
-    await updateGuestPostPolicy({ input });
+    const user = await requireAdmin();
+    const audit = await updateGuestPostPolicy({ input });
+    await recordAdminPolicyUpdated({ actorId: user.id, ...audit });
     revalidatePath("/posts/new");
     revalidatePath("/admin/policies");
     return { ok: true };
@@ -108,8 +113,9 @@ export async function updateFeedPersonalizationPolicyAction(
   input: unknown,
 ): Promise<PolicyActionResult> {
   try {
-    await requireModerator();
-    await updateFeedPersonalizationPolicy({ input });
+    const user = await requireAdmin();
+    const audit = await updateFeedPersonalizationPolicy({ input });
+    await recordAdminPolicyUpdated({ actorId: user.id, ...audit });
     revalidatePath("/feed");
     revalidatePath("/admin/policies");
     revalidatePath("/admin/personalization");

@@ -816,6 +816,7 @@ enum ModerationTargetType {
   POST
   COMMENT
   USER
+  SYSTEM
 }
 
 enum ModerationActionType {
@@ -825,6 +826,9 @@ enum ModerationActionType {
   TARGET_UNHIDDEN
   SANCTION_ISSUED
   HOSPITAL_REVIEW_FLAGGED
+  POLICY_UPDATED
+  AUTH_AUDIT_VIEWED
+  AUTH_AUDIT_EXPORTED
 }
 
 model ModerationActionLog {

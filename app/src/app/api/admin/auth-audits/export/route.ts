@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { AuthAuditAction } from "@prisma/client";
 
-import { requireModeratorUserId } from "@/server/auth";
+import { requireAdminUserId } from "@/server/auth";
 import { monitorUnhandledError } from "@/server/error-monitor";
+import { recordAuthAuditExported } from "@/server/moderation-action-log";
 import {
   AUTH_AUDIT_LOG_LIMIT_MAX,
   listAuthAuditLogs,
@@ -28,7 +29,7 @@ function toCsvValue(value: string | null) {
 
 export async function GET(request: NextRequest) {
   try {
-    await requireModeratorUserId();
+    const userId = await requireAdminUserId();
 
     const { searchParams } = new URL(request.url);
     const parsed = querySchema.safeParse({
@@ -85,6 +86,14 @@ export async function GET(request: NextRequest) {
     );
 
     const csv = [header, ...rows].join("\n");
+
+    await recordAuthAuditExported({
+      actorId: userId,
+      actionFilter: action,
+      query: parsed.data.q ?? null,
+      limit: parsed.data.limit ?? AUTH_AUDIT_LOG_LIMIT_MAX,
+      rowCount: audits.length,
+    });
 
     return new NextResponse(csv, {
       headers: {

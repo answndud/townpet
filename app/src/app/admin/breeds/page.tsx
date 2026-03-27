@@ -1,14 +1,14 @@
 import Link from "next/link";
 
 import { BreedCatalogManager } from "@/components/admin/breed-catalog-manager";
-import { requireModeratorPageUser } from "@/server/admin-page-access";
+import { requireAdminPageUser } from "@/server/admin-page-access";
 import {
   listBreedCatalogAdminEntries,
   listEffectiveBreedCatalogGroupedBySpecies,
 } from "@/server/queries/breed-catalog.queries";
 
 export default async function AdminBreedsPage() {
-  await requireModeratorPageUser();
+  await requireAdminPageUser();
 
   const [effectiveCatalogBySpecies, adminEntries] = await Promise.all([
     listEffectiveBreedCatalogGroupedBySpecies(),

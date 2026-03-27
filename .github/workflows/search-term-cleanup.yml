@@ -9,6 +9,7 @@ jobs:
   cleanup:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    environment: production
     defaults:
       run:
         working-directory: app
@@ -39,3 +40,9 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           SEARCH_TERM_RETENTION_DAYS: "90"
         run: pnpm db:cleanup:search-terms
+
+      - name: Cleanup stale search term daily metrics
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SEARCH_TERM_DAILY_METRIC_RETENTION_DAYS: "90"
+        run: pnpm db:cleanup:search-term-daily-metrics

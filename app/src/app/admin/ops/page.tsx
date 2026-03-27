@@ -5,7 +5,7 @@ import { z } from "zod";
 import { AdminSectionNav } from "@/components/admin/admin-section-nav";
 import { EmptyState } from "@/components/ui/empty-state";
 import { getPostTypeMeta } from "@/lib/post-presenter";
-import { requireModeratorPageUser } from "@/server/admin-page-access";
+import { requireAdminPageUser } from "@/server/admin-page-access";
 import { getAdminOpsOverview } from "@/server/queries/ops-overview.queries";
 
 type AdminOpsPageProps = {
@@ -144,7 +144,7 @@ const authActionLabels: Record<AuthAuditAction, string> = {
 };
 
 export default async function AdminOpsPage({ searchParams }: AdminOpsPageProps) {
-  await requireModeratorPageUser();
+  const user = await requireAdminPageUser();
   const resolvedParams = (await searchParams) ?? {};
   const parsedFilters = adminOpsSearchFilterSchema.safeParse({
     searchScope: resolvedParams.searchScope ?? undefined,
@@ -539,7 +539,7 @@ export default async function AdminOpsPage({ searchParams }: AdminOpsPageProps) 
           </div>
         </section>
 
-        <AdminSectionNav />
+        <AdminSectionNav role={user.role} />
       </main>
     </div>
   );

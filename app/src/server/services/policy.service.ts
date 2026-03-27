@@ -18,6 +18,11 @@ type UpdateGuestReadPolicyParams = {
   input: unknown;
 };
 
+export type PolicyAuditRecord = {
+  policyKey: string;
+  metadata: Record<string, boolean | number | string | null>;
+};
+
 export async function updateGuestReadPolicy({
   input,
 }: UpdateGuestReadPolicyParams) {
@@ -37,6 +42,13 @@ export async function updateGuestReadPolicy({
       503,
     );
   }
+
+  return {
+    policyKey: "guest-read-policy",
+    metadata: {
+      loginRequiredTypeCount: parsed.data.loginRequiredTypes.length,
+    },
+  } satisfies PolicyAuditRecord;
 }
 
 type UpdateForbiddenKeywordPolicyParams = {
@@ -60,6 +72,13 @@ export async function updateForbiddenKeywordPolicy({
       503,
     );
   }
+
+  return {
+    policyKey: "forbidden-keyword-policy",
+    metadata: {
+      keywordCount: parsed.data.keywords.length,
+    },
+  } satisfies PolicyAuditRecord;
 }
 
 type UpdateNewUserSafetyPolicyParams = {
@@ -83,6 +102,15 @@ export async function updateNewUserSafetyPolicy({
       503,
     );
   }
+
+  return {
+    policyKey: "new-user-safety-policy",
+    metadata: {
+      minAccountAgeHours: parsed.data.minAccountAgeHours,
+      contactBlockWindowHours: parsed.data.contactBlockWindowHours,
+      restrictedPostTypeCount: parsed.data.restrictedPostTypes.length,
+    },
+  } satisfies PolicyAuditRecord;
 }
 
 type UpdateGuestPostPolicyParams = {
@@ -104,6 +132,16 @@ export async function updateGuestPostPolicy({ input }: UpdateGuestPostPolicyPara
       503,
     );
   }
+
+  return {
+    policyKey: "guest-post-policy",
+    metadata: {
+      blockedPostTypeCount: parsed.data.blockedPostTypes.length,
+      allowLinks: parsed.data.allowLinks,
+      allowContact: parsed.data.allowContact,
+      maxImageCount: parsed.data.maxImageCount,
+    },
+  } satisfies PolicyAuditRecord;
 }
 
 type UpdateFeedPersonalizationPolicyParams = {
@@ -127,4 +165,14 @@ export async function updateFeedPersonalizationPolicy({
       503,
     );
   }
+
+  return {
+    policyKey: "feed-personalization-policy",
+    metadata: {
+      personalizedRatio: parsed.data.personalizedRatio,
+      personalizedThreshold: parsed.data.personalizedThreshold,
+      clickSignalCap: parsed.data.clickSignalCap,
+      adSignalCap: parsed.data.adSignalCap,
+    },
+  } satisfies PolicyAuditRecord;
 }

@@ -20,12 +20,16 @@ const actionLabels: Record<ModerationActionType, string> = {
   TARGET_UNHIDDEN: "숨김 해제",
   SANCTION_ISSUED: "제재 부여",
   HOSPITAL_REVIEW_FLAGGED: "병원후기 의심 신호",
+  POLICY_UPDATED: "권한 정책 변경",
+  AUTH_AUDIT_VIEWED: "인증 로그 조회",
+  AUTH_AUDIT_EXPORTED: "인증 로그 내보내기",
 };
 
 const targetLabels: Record<ModerationTargetType, string> = {
   POST: "게시글",
   COMMENT: "댓글",
   USER: "사용자",
+  SYSTEM: "시스템",
 };
 
 function buildTargetHref(targetType: ModerationTargetType, targetId: string, metadata: unknown) {
@@ -76,7 +80,7 @@ function summarizeMetadata(metadata: unknown) {
 }
 
 export default async function ModerationLogsPage({ searchParams }: ModerationLogsPageProps) {
-  await requireModeratorPageUser();
+  const user = await requireModeratorPageUser();
 
   const resolvedParams = (await searchParams) ?? {};
   const actionParam = resolvedParams.action ?? "ALL";
@@ -153,7 +157,7 @@ export default async function ModerationLogsPage({ searchParams }: ModerationLog
           </div>
         </section>
 
-        <AdminSectionNav />
+        <AdminSectionNav role={user.role} />
 
         <section className="tp-card p-4 sm:p-5">
           {logs.length > 0 ? (
