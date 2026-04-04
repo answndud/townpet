@@ -209,6 +209,14 @@ describe("GET /api/posts contract", () => {
 
 describe("POST /api/posts contract", () => {
   beforeEach(() => {
+    mockGetCurrentUserId.mockReset();
+    mockGetGuestPostPolicy.mockReset();
+    mockEnforceRateLimit.mockReset();
+    mockGetClientIp.mockReset();
+    mockAssertGuestStepUp.mockReset();
+    mockCreatePost.mockReset();
+    mockEnforceAuthenticatedWriteRateLimit.mockReset();
+
     mockGetCurrentUserId.mockResolvedValue(null);
     mockGetGuestPostPolicy.mockResolvedValue({
       postRateLimit10m: 5,
@@ -222,6 +230,7 @@ describe("POST /api/posts contract", () => {
       riskLevel: "NORMAL",
     } as never);
     mockCreatePost.mockResolvedValue({ id: "post-1" } as never);
+    mockEnforceAuthenticatedWriteRateLimit.mockResolvedValue(undefined);
   });
 
   it("returns guest step-up errors for unauthenticated writes", async () => {
@@ -286,17 +295,23 @@ describe("POST /api/posts contract", () => {
       headers: {
         "content-type": "application/json",
         "x-client-fingerprint": "device-fp-1",
+        "x-guest-mode": "1",
       },
     }) as NextRequest;
 
     const response = await POST(request);
 
     expect(response.status).toBe(201);
+    expect(mockAssertGuestStepUp).not.toHaveBeenCalled();
     expect(mockEnforceAuthenticatedWriteRateLimit).toHaveBeenCalledWith({
       scope: "post:create",
       userId: "user-1",
       ip: "127.0.0.1",
       clientFingerprint: "device-fp-1",
+    });
+    expect(mockCreatePost).toHaveBeenCalledWith({
+      authorId: "user-1",
+      input: { title: "member post" },
     });
   });
 });

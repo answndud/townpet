@@ -1,5 +1,6 @@
 type CspPolicyParams = {
   scriptSrc: string;
+  styleSrc?: string;
   connectSrc: string;
   includeUnsafeEval: boolean;
 };
@@ -10,10 +11,14 @@ type ResolveCspHeadersParams = {
   nonce?: string;
 };
 
-type StaticSecurityHeadersParams = Omit<ResolveCspHeadersParams, "nonce">;
+type StaticSecurityHeadersParams = Pick<ResolveCspHeadersParams, "nodeEnv">;
 
 const PERMISSIONS_POLICY = "camera=(), geolocation=(), microphone=()";
 const HSTS_HEADER_VALUE = "max-age=31536000";
+const STRICT_STYLE_HASHES = [
+  `'sha256-zlqnbDt84zf1iSefLU/ImC54isoprH/MRiVZGskwexk='`,
+  `'sha256-32t0bJPIyxns/QqsW8RE3JGUERKnHL5RygHBgJvEanc='`,
+];
 
 function buildCspPolicy(params: CspPolicyParams) {
   const scriptSrc = params.includeUnsafeEval
@@ -27,24 +32,47 @@ function buildCspPolicy(params: CspPolicyParams) {
     "object-src 'none'",
     "img-src 'self' data: blob: https:",
     `script-src ${scriptSrc}`,
-    "style-src 'self' 'unsafe-inline'",
+    `style-src ${params.styleSrc ?? "'self' 'unsafe-inline'"}`,
     `connect-src ${params.connectSrc}`,
     "report-uri /api/security/csp-report",
   ].join("; ");
 }
 
+export function isStrictCspEnforced(value?: string) {
+  const normalized = value?.trim().toLowerCase();
+  return normalized === "1" || normalized === "true" || normalized === "yes";
+}
+
 function buildNonceScriptSrc(nonce: string, isStrict: boolean) {
   const strictSources = [`'self'`, `'nonce-${nonce}'`];
   if (isStrict) {
-    return strictSources.join(" ");
+    return [...strictSources, `'strict-dynamic'`].join(" ");
   }
 
   return [...strictSources, `'unsafe-inline'`].join(" ");
 }
 
+function buildNonceStyleSrc(nonce: string, isStrict: boolean) {
+  if (isStrict) {
+    return [`'self'`, `'nonce-${nonce}'`, `'unsafe-hashes'`, ...STRICT_STYLE_HASHES].join(" ");
+  }
+
+  return `'self' 'nonce-${nonce}' 'unsafe-inline'`;
+}
+
+function buildStrictNonceEnforcedPolicy(nonce: string) {
+  return buildCspPolicy({
+    scriptSrc: buildNonceScriptSrc(nonce, true),
+    styleSrc: buildNonceStyleSrc(nonce, true),
+    connectSrc: "'self' https:",
+    includeUnsafeEval: false,
+  });
+}
+
 function buildStrictNonceReportOnlyPolicy(nonce: string) {
   return buildCspPolicy({
     scriptSrc: buildNonceScriptSrc(nonce, true),
+    styleSrc: buildNonceStyleSrc(nonce, true),
     connectSrc: "'self' https:",
     includeUnsafeEval: false,
   });
@@ -61,6 +89,7 @@ function buildStaticScriptSrc(isDevelopment: boolean) {
 
 export function resolveCspHeaders(params: ResolveCspHeadersParams) {
   const isProduction = params.nodeEnv === "production";
+  const enforceStrictCsp = isStrictCspEnforced(params.cspEnforceStrict);
   const nonce = params.nonce?.trim();
 
   if (!nonce) {
@@ -76,6 +105,7 @@ export function resolveCspHeaders(params: ResolveCspHeadersParams) {
     return {
       csp: buildCspPolicy({
         scriptSrc: `${buildNonceScriptSrc(nonce, false)} http: https:`,
+        styleSrc: buildNonceStyleSrc(nonce, false),
         connectSrc: "'self' https: http: ws: wss:",
         includeUnsafeEval: true,
       }),
@@ -83,14 +113,15 @@ export function resolveCspHeaders(params: ResolveCspHeadersParams) {
     };
   }
 
-  // Next.js app router still emits framework inline bootstrap scripts without nonce
-  // on this stack. Browsers ignore 'unsafe-inline' whenever nonce/hash sources are
-  // present, so enforcing a nonce-based script-src breaks hydration and yields a
-  // blank shell. Keep the enforced CSP on the static fallback and use the strict
-  // nonce policy in report-only until nonce propagation is end-to-end.
+  if (enforceStrictCsp) {
+    return {
+      csp: buildStrictNonceEnforcedPolicy(nonce),
+      cspReportOnly: null,
+    };
+  }
+
   const staticProductionCsp = buildStaticSecurityHeaders({
     nodeEnv: params.nodeEnv,
-    cspEnforceStrict: params.cspEnforceStrict,
   }).find((header) => header.key === "Content-Security-Policy")?.value ?? "";
   const strictReportOnlyCsp = buildStrictNonceReportOnlyPolicy(nonce);
 

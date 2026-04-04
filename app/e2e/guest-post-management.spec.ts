@@ -57,7 +57,6 @@ test.describe("guest post management", () => {
       data: { guestPassword: GUEST_PASSWORD },
       headers: {
         "x-guest-fingerprint": "e2e-guest-management",
-        "x-guest-mode": "1",
       },
     });
     expect(deleteResponse.ok()).toBe(true);

@@ -324,7 +324,6 @@ export function PostCommentThread({
                   headers: {
                     "content-type": "application/json",
                     ...guestHeaders,
-                    "x-guest-mode": "1",
                   },
                   body: JSON.stringify({
                     content,
@@ -411,7 +410,6 @@ export function PostCommentThread({
                 headers: {
                   "content-type": "application/json",
                   "x-guest-fingerprint": getGuestFingerprint(),
-                  "x-guest-mode": "1",
                 },
                 body: JSON.stringify({ content, guestPassword: password }),
               });
@@ -480,7 +478,6 @@ export function PostCommentThread({
                 headers: {
                   "content-type": "application/json",
                   "x-guest-fingerprint": getGuestFingerprint(),
-                  "x-guest-mode": "1",
                 },
                 body: JSON.stringify({ guestPassword: password }),
               });

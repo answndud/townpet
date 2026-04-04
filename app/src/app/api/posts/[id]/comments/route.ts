@@ -149,9 +149,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       guestPassword?: string;
     };
 
-    const forceGuestMode =
-      process.env.NODE_ENV !== "production" && request.headers.get("x-guest-mode") === "1";
-    const userId = forceGuestMode ? null : await getCurrentUserIdFromRequest(request);
+    const userId = await getCurrentUserIdFromRequest(request);
     const clientIp = getClientIp(request);
     const viewerId = userId ?? undefined;
     const post = await getPostReadAccessById(postId, viewerId);

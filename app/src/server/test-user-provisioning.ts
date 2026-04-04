@@ -2,6 +2,7 @@ import { randomInt } from "crypto";
 
 import { normalizeAuthEmail } from "@/lib/auth-email";
 import { registerSchema } from "@/lib/validations/auth";
+import { assertDatabaseAccess } from "@/server/local-database-guard";
 
 const EMAIL_LOCAL_ALPHABET = "abcdefghijklmnopqrstuvwxyz0123456789";
 const PASSWORD_LOWER_ALPHABET = "abcdefghjkmnpqrstuvwxyz";
@@ -112,30 +113,15 @@ function generateStrongPassword() {
   }
 }
 
-function isProductionLikeDatabaseUrl(databaseUrl: string) {
-  return !/(localhost|127\.0\.0\.1)/i.test(databaseUrl);
-}
-
 export function resolveProvisionTestUsersConfig(
   env: NodeJS.ProcessEnv,
 ): ProvisionTestUsersConfig {
-  const databaseUrl = env.DATABASE_URL?.trim();
-  if (!databaseUrl) {
-    throw new Error("DATABASE_URL is required.");
-  }
-
-  if (!databaseUrl.startsWith("postgresql://") && !databaseUrl.startsWith("postgres://")) {
-    throw new Error("DATABASE_URL must start with postgresql:// or postgres://.");
-  }
-
-  if (
-    isProductionLikeDatabaseUrl(databaseUrl) &&
-    env.TEST_USER_PROVISION_CONFIRM !== TEST_USER_PROVISION_CONFIRM_VALUE
-  ) {
-    throw new Error(
-      `TEST_USER_PROVISION_CONFIRM=${TEST_USER_PROVISION_CONFIRM_VALUE} is required for non-local database provisioning.`,
-    );
-  }
+  const databaseUrl = assertDatabaseAccess({
+    env,
+    confirmEnvKey: "TEST_USER_PROVISION_CONFIRM",
+    confirmValue: TEST_USER_PROVISION_CONFIRM_VALUE,
+    operationLabel: "non-local database provisioning",
+  });
 
   const emailDomain = env.TEST_USER_EMAIL_DOMAIN?.trim().toLowerCase();
   if (!emailDomain || !EMAIL_DOMAIN_REGEX.test(emailDomain)) {

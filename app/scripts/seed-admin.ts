@@ -1,10 +1,13 @@
 import "dotenv/config";
 import { PrismaClient, UserRole } from "@prisma/client";
+import { assertLocalDevelopmentDatabase } from "../src/server/local-database-guard";
 import { hashPassword } from "../src/server/password";
 
 const prisma = new PrismaClient();
 
 async function main() {
+  assertLocalDevelopmentDatabase(process.env, "demo/admin account seeding");
+
   const email = process.env.DEMO_USER_EMAIL ?? "demo@townpet.dev";
   const seedPassword = process.env.SEED_DEFAULT_PASSWORD;
   if (!seedPassword) {

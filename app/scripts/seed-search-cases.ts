@@ -1,4 +1,6 @@
+import "dotenv/config";
 import { PostScope, PostType, PrismaClient } from "@prisma/client";
+import { assertLocalDevelopmentDatabase } from "../src/server/local-database-guard";
 
 const prisma = new PrismaClient();
 
@@ -150,6 +152,8 @@ const SEARCH_SEED_POSTS: SearchSeedPost[] = [
 ];
 
 async function main() {
+  assertLocalDevelopmentDatabase(process.env, "search case seeding");
+
   const user = await prisma.user.upsert({
     where: { email: SEARCH_CASE_AUTHOR.email },
     update: {

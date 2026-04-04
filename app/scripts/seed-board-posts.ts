@@ -17,6 +17,7 @@ import {
 } from "@prisma/client";
 
 import { resolveBoardByPostType } from "../src/lib/community-board";
+import { assertLocalDevelopmentDatabase } from "../src/server/local-database-guard";
 
 const prisma = new PrismaClient();
 
@@ -1216,6 +1217,8 @@ async function createSeedPost(seedPost: SeedPost, lookupMaps: LookupMaps, index:
 }
 
 async function main() {
+  assertLocalDevelopmentDatabase(process.env, "board dummy post seeding");
+
   const [authorIdByEmail, neighborhoodIdByKey, communityIdBySlug] = await Promise.all([
     ensureAuthors(),
     ensureNeighborhoods(),

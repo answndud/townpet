@@ -4,7 +4,6 @@ import { buildStaticSecurityHeaders } from "./src/lib/security-headers";
 
 const staticSecurityHeaders = buildStaticSecurityHeaders({
   nodeEnv: process.env.NODE_ENV,
-  cspEnforceStrict: process.env.CSP_ENFORCE_STRICT,
 });
 
 const nextConfig: NextConfig = {

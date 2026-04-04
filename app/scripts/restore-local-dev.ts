@@ -5,6 +5,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { PrismaClient } from "@prisma/client";
+import { assertLocalDevelopmentDatabase } from "../src/server/local-database-guard";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const appRoot = resolve(__dirname, "..");
@@ -82,6 +83,8 @@ async function waitForPostgres() {
 }
 
 async function main() {
+  assertLocalDevelopmentDatabase(process.env, "local restore/bootstrap");
+
   console.log("[restore-local-dev] starting docker postgres...");
   runCommand("docker", ["compose", "up", "-d", "postgres"], { cwd: repoRoot });
 
@@ -141,7 +144,6 @@ async function main() {
   console.log(
     JSON.stringify(
       {
-        seedPassword: LOCAL_SEED_PASSWORD,
         users: userCount,
         withPassword,
         withoutPassword,

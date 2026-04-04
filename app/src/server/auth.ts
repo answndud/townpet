@@ -30,14 +30,31 @@ export function hasSessionCookieFromRequest(request: Pick<Request, "headers">) {
   );
 }
 
+function hasTruthyFlag(value: string | undefined) {
+  const normalized = value?.trim().toLowerCase();
+  return normalized === "1" || normalized === "true" || normalized === "yes";
+}
+
+function resolveDemoUserEmail() {
+  if (process.env.NODE_ENV === "production") {
+    return "";
+  }
+
+  if (!hasTruthyFlag(process.env.ENABLE_DEMO_AUTH_FALLBACK)) {
+    return "";
+  }
+
+  return process.env.DEMO_USER_EMAIL?.trim() ?? "";
+}
+
 export async function getCurrentUserId() {
   const session = await auth();
   if (session?.user?.id) {
     return session.user.id;
   }
 
-  const demoEmail = process.env.DEMO_USER_EMAIL;
-  if (demoEmail && process.env.NODE_ENV !== "production") {
+  const demoEmail = resolveDemoUserEmail();
+  if (demoEmail) {
     const demoUser = await getUserByEmail(demoEmail);
     return demoUser?.id ?? null;
   }
@@ -80,8 +97,8 @@ export async function getCurrentUserRole() {
     return getUserRoleById(session.user.id);
   }
 
-  const demoEmail = process.env.DEMO_USER_EMAIL;
-  if (demoEmail && process.env.NODE_ENV !== "production") {
+  const demoEmail = resolveDemoUserEmail();
+  if (demoEmail) {
     return getUserRoleByEmail(demoEmail);
   }
 
@@ -120,8 +137,8 @@ export async function getCurrentUser() {
     return getUserById(session.user.id);
   }
 
-  const demoEmail = process.env.DEMO_USER_EMAIL;
-  if (demoEmail && process.env.NODE_ENV !== "production") {
+  const demoEmail = resolveDemoUserEmail();
+  if (demoEmail) {
     return getUserByEmail(demoEmail);
   }
 
