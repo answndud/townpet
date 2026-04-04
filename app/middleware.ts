@@ -94,10 +94,11 @@ function applySecurityHeaders(headers: Headers, nonce: string) {
 
   if (cspHeaders.cspReportOnly) {
     headers.set("content-security-policy-report-only", cspHeaders.cspReportOnly);
-    return;
+    return cspHeaders;
   }
 
   headers.delete("content-security-policy-report-only");
+  return cspHeaders;
 }
 
 function applyCorsHeaders(request: NextRequest, headers: Headers) {
@@ -172,7 +173,8 @@ export async function middleware(request: NextRequest) {
   responseHeaders.set("x-request-id", requestId);
   responseHeaders.set("x-nonce", cspNonce);
   responseHeaders.set("x-csp-nonce", cspNonce);
-  applySecurityHeaders(responseHeaders, cspNonce);
+  const cspHeaders = applySecurityHeaders(responseHeaders, cspNonce);
+  requestHeaders.set("content-security-policy", cspHeaders.csp);
   if (isAdminProtectedPath(request.nextUrl.pathname)) {
     responseHeaders.set("x-robots-tag", "noindex, nofollow, noarchive");
   }

@@ -51,7 +51,6 @@ export function GuestPostDetailActions({ postId }: GuestPostDetailActionsProps) 
         headers: {
           "content-type": "application/json",
           "x-guest-fingerprint": getGuestFingerprint(),
-          "x-guest-mode": "1",
         },
         body: JSON.stringify({ guestPassword: password.trim() }),
       });

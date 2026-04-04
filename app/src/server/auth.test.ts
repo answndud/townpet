@@ -58,10 +58,12 @@ describe("auth helpers", () => {
     mockAssertUserInteractionAllowed.mockReset();
     mockAssertUserInteractionAllowed.mockResolvedValue();
     delete process.env.DEMO_USER_EMAIL;
+    delete process.env.ENABLE_DEMO_AUTH_FALLBACK;
   });
 
   afterEach(() => {
     delete process.env.DEMO_USER_EMAIL;
+    delete process.env.ENABLE_DEMO_AUTH_FALLBACK;
   });
 
   it("returns current user from session", async () => {
@@ -114,6 +116,7 @@ describe("auth helpers", () => {
 
   it("falls back to demo user when no session", async () => {
     process.env.DEMO_USER_EMAIL = demoEmail;
+    process.env.ENABLE_DEMO_AUTH_FALLBACK = "1";
     mockAuth.mockResolvedValue(null as never);
     mockGetUserByEmail.mockResolvedValue({
       id: "demo-1",
@@ -132,6 +135,7 @@ describe("auth helpers", () => {
 
   it("falls back to demo user id when no session", async () => {
     process.env.DEMO_USER_EMAIL = demoEmail;
+    process.env.ENABLE_DEMO_AUTH_FALLBACK = "1";
     mockAuth.mockResolvedValue(null as never);
     mockGetUserByEmail.mockResolvedValue({
       id: "demo-id-only",
@@ -150,6 +154,7 @@ describe("auth helpers", () => {
 
   it("does not use demo fallback for request helper when session cookie is missing", async () => {
     process.env.DEMO_USER_EMAIL = demoEmail;
+    process.env.ENABLE_DEMO_AUTH_FALLBACK = "1";
     mockAuth.mockResolvedValue(null as never);
     const request = new Request("http://localhost/api/posts/post-1/comments");
 
@@ -175,6 +180,7 @@ describe("auth helpers", () => {
   it("does not use demo fallback in production", async () => {
     vi.stubEnv("NODE_ENV", "production");
     process.env.DEMO_USER_EMAIL = demoEmail;
+    process.env.ENABLE_DEMO_AUTH_FALLBACK = "1";
     mockAuth.mockResolvedValue(null as never);
 
     try {
@@ -190,6 +196,7 @@ describe("auth helpers", () => {
   it("does not use demo id fallback in production", async () => {
     vi.stubEnv("NODE_ENV", "production");
     process.env.DEMO_USER_EMAIL = demoEmail;
+    process.env.ENABLE_DEMO_AUTH_FALLBACK = "1";
     mockAuth.mockResolvedValue(null as never);
 
     try {
@@ -200,6 +207,16 @@ describe("auth helpers", () => {
     } finally {
       vi.unstubAllEnvs();
     }
+  });
+
+  it("keeps demo fallback disabled by default without explicit opt-in", async () => {
+    process.env.DEMO_USER_EMAIL = demoEmail;
+    mockAuth.mockResolvedValue(null as never);
+
+    const user = await getCurrentUser();
+
+    expect(user).toBeNull();
+    expect(mockGetUserByEmail).not.toHaveBeenCalled();
   });
 
   it("requireCurrentUser throws when missing", async () => {

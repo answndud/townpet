@@ -6,6 +6,7 @@ import {
   ReportTarget,
   UserRole,
 } from "@prisma/client";
+import { assertLocalDevelopmentDatabase } from "../src/server/local-database-guard";
 
 const prisma = new PrismaClient();
 const seedTag = "seed:report";
@@ -67,6 +68,8 @@ async function createReport(input: SeedReportInput) {
 }
 
 async function main() {
+  assertLocalDevelopmentDatabase(process.env, "report dummy data seeding");
+
   const existing = await prisma.report.findFirst({
     where: { description: { contains: seedTag } },
   });

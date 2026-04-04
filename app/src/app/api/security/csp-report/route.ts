@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { monitorUnhandledError } from "@/server/error-monitor";
+import { canAccessInternalDiagnostics } from "@/server/internal-diagnostics-access";
 import { logger } from "@/server/logger";
 import { getClientIp } from "@/server/request-context";
 import { enforceRateLimit } from "@/server/rate-limit";
@@ -136,30 +137,11 @@ function trackCspReportStat(report: ReturnType<typeof sanitizeCspReport>) {
   });
 }
 
-function resolveBearerToken(authorizationHeader: string | null) {
-  if (!authorizationHeader) {
-    return "";
-  }
-
-  const [scheme, token] = authorizationHeader.trim().split(/\s+/, 2);
-  if (scheme?.toLowerCase() !== "bearer" || !token) {
-    return "";
-  }
-
-  return token.trim();
-}
-
 function isAuthorizedInternalRequest(request: NextRequest) {
-  const configuredToken = process.env.HEALTH_INTERNAL_TOKEN?.trim();
-  if (!configuredToken) {
-    return process.env.NODE_ENV !== "production";
-  }
-
-  const tokenFromHeader = request.headers.get("x-health-token")?.trim() ?? "";
-  const tokenFromBearer = resolveBearerToken(request.headers.get("authorization"));
-  const providedToken = tokenFromHeader || tokenFromBearer;
-
-  return providedToken.length > 0 && providedToken === configuredToken;
+  return canAccessInternalDiagnostics(request, {
+    configuredToken: process.env.HEALTH_INTERNAL_TOKEN?.trim() ?? "",
+    isProduction: process.env.NODE_ENV === "production",
+  });
 }
 
 function getTopCspStats(limit = 30) {

@@ -186,9 +186,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const clientIp = getClientIp(request);
-    const forceGuestMode =
-      process.env.NODE_ENV !== "production" && request.headers.get("x-guest-mode") === "1";
-    const userId = forceGuestMode ? null : await getCurrentUserId();
+    const userId = await getCurrentUserId();
 
     if (userId) {
       const clientFingerprint = request.headers.get("x-client-fingerprint")?.trim() || undefined;

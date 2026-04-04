@@ -3,32 +3,27 @@ import { NextResponse } from "next/server";
 import { runtimeEnv, validateRuntimeEnv } from "@/lib/env";
 import { logger } from "@/server/logger";
 import { getHealthSnapshot } from "@/server/health-overview";
+import { canAccessInternalDiagnostics } from "@/server/internal-diagnostics-access";
 
-function resolveBearerToken(authorizationHeader: string | null) {
-  if (!authorizationHeader) {
-    return "";
-  }
-
-  const [scheme, token] = authorizationHeader.trim().split(/\s+/, 2);
-  if (scheme?.toLowerCase() !== "bearer" || !token) {
-    return "";
-  }
-
-  return token.trim();
-}
+type PublicHealthResponse = {
+  ok: boolean;
+  status: "ok" | "degraded";
+  timestamp: string;
+};
 
 function shouldIncludeDetailedHealth(request: Request) {
-  const internalToken = runtimeEnv.healthInternalToken.trim();
+  return canAccessInternalDiagnostics(request, {
+    configuredToken: runtimeEnv.healthInternalToken,
+    isProduction: runtimeEnv.isProduction,
+  });
+}
 
-  if (!internalToken) {
-    return !runtimeEnv.isProduction;
-  }
-
-  const tokenFromHeader = request.headers.get("x-health-token")?.trim() ?? "";
-  const tokenFromBearer = resolveBearerToken(request.headers.get("authorization"));
-  const providedToken = tokenFromHeader || tokenFromBearer;
-
-  return providedToken.length > 0 && providedToken === internalToken;
+function toPublicHealthResponse(snapshot: Awaited<ReturnType<typeof getHealthSnapshot>>): PublicHealthResponse {
+  return {
+    ok: snapshot.ok,
+    status: snapshot.status,
+    timestamp: snapshot.timestamp,
+  };
 }
 
 export async function GET(request: Request) {
@@ -45,5 +40,7 @@ export async function GET(request: Request) {
     });
   }
 
-  return NextResponse.json(snapshot, { status: httpStatus });
+  return NextResponse.json(includeDetailedHealth ? snapshot : toPublicHealthResponse(snapshot), {
+    status: httpStatus,
+  });
 }

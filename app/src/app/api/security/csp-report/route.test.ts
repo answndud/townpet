@@ -127,9 +127,61 @@ describe("POST /api/security/csp-report contract", () => {
     });
   });
 
+  it("allows localhost stats access without a token only in non-production when no token is configured", async () => {
+    vi.stubEnv("NODE_ENV", "development");
+    vi.stubEnv("HEALTH_INTERNAL_TOKEN", "");
+    mockGetClientIp.mockReturnValue("anonymous");
+
+    const reportRequest = new Request("http://localhost/api/security/csp-report", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        "csp-report": {
+          "document-uri": "http://localhost:3000/feed",
+          "violated-directive": "script-src",
+          "blocked-uri": "https://evil.example/script.js",
+        },
+      }),
+    }) as NextRequest;
+    await POST(reportRequest);
+
+    const statsRequest = new Request("http://localhost/api/security/csp-report", {
+      method: "GET",
+    }) as NextRequest;
+
+    const response = await GET(statsRequest);
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(payload.ok).toBe(true);
+    expect(payload.data.totalBuckets).toBe(1);
+  });
+
   it("rejects stats access without internal token", async () => {
     const request = new Request("http://localhost/api/security/csp-report", {
       method: "GET",
+    }) as NextRequest;
+
+    const response = await GET(request);
+    const payload = await response.json();
+
+    expect(response.status).toBe(403);
+    expect(payload).toMatchObject({
+      ok: false,
+      error: { code: "FORBIDDEN" },
+    });
+  });
+
+  it("rejects non-local stats access without a token even in non-production", async () => {
+    vi.stubEnv("NODE_ENV", "development");
+    vi.stubEnv("HEALTH_INTERNAL_TOKEN", "");
+    mockGetClientIp.mockReturnValue("203.0.113.10");
+
+    const request = new Request("https://preview.townpet.dev/api/security/csp-report", {
+      method: "GET",
+      headers: {
+        "x-forwarded-for": "203.0.113.10",
+      },
     }) as NextRequest;
 
     const response = await GET(request);

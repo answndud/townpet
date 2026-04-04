@@ -882,7 +882,6 @@ export function PostCreateForm({
                 headers: {
                   "content-type": "application/json",
                   ...guestHeaders,
-                  "x-guest-mode": "1",
                 },
                 body: JSON.stringify(payload),
               });
