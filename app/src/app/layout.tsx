@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { IBM_Plex_Mono, Space_Grotesk } from "next/font/google";
 
 import { AppShellFooter } from "@/components/navigation/app-shell-footer";
 import { AppShellHeader } from "@/components/navigation/app-shell-header";
 import { ScrollToTopButton } from "@/components/ui/scroll-to-top-button";
+import { isStrictCspEnforced } from "@/lib/security-headers";
 import { getSiteOrigin } from "@/lib/site-url";
 import { listCommunityNavItems } from "@/server/queries/community.queries";
 import "./globals.css";
@@ -54,6 +56,10 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  if (isStrictCspEnforced(process.env.CSP_ENFORCE_STRICT)) {
+    await connection();
+  }
+
   const communities = await listCommunityNavItems(50).catch(() => []);
 
   return (

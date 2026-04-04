@@ -34,16 +34,19 @@ describe("resolveCspHeaders", () => {
     expect(result.cspReportOnly).not.toContain("script-src 'self' 'unsafe-inline'");
   });
 
-  it("keeps production hydration-safe CSP even when CSP_ENFORCE_STRICT is enabled", () => {
+  it("enforces strict nonce CSP in production when the flag is enabled", () => {
     const result = resolveCspHeaders({
       nodeEnv: "production",
       cspEnforceStrict: "1",
       nonce: "nonce-b",
     });
 
-    expect(result.csp).toContain("script-src 'self' 'unsafe-inline'");
-    expect(result.csp).not.toContain("'nonce-nonce-b'");
-    expect(result.cspReportOnly).toContain("script-src 'self' 'nonce-nonce-b'");
+    expect(result.csp).toContain("script-src 'self' 'nonce-nonce-b' 'strict-dynamic'");
+    expect(result.csp).not.toContain("'unsafe-inline'");
+    expect(result.csp).toContain("style-src 'self' 'nonce-nonce-b' 'unsafe-hashes'");
+    expect(result.csp).toContain("'sha256-zlqnbDt84zf1iSefLU/ImC54isoprH/MRiVZGskwexk='");
+    expect(result.csp).toContain("'sha256-32t0bJPIyxns/QqsW8RE3JGUERKnHL5RygHBgJvEanc='");
+    expect(result.cspReportOnly).toBeNull();
   });
 
   it("keeps development CSP without report-only", () => {

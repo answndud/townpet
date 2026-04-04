@@ -80,48 +80,46 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
     const body = await request.json();
-    const forceGuestMode =
-      process.env.NODE_ENV !== "production" && request.headers.get("x-guest-mode") === "1";
-    const userId = forceGuestMode ? null : await getCurrentUserIdFromRequest(request);
+    const guestPassword =
+      typeof body?.guestPassword === "string" ? body.guestPassword.trim() : "";
+    if (guestPassword) {
+      const clientIp = getClientIp(request);
+      const guestFingerprint = request.headers.get("x-guest-fingerprint")?.trim() || undefined;
+      const guestRateKey = `posts:guest-update:ip:${clientIp}:fp:${guestFingerprint ?? "none"}`;
+      const guestPostPolicy = await getGuestPostPolicy();
+      await enforceRateLimit({
+        key: `${guestRateKey}:10m`,
+        limit: Math.max(5, guestPostPolicy.postRateLimit10m),
+        windowMs: 10 * 60_000,
+      });
+      await enforceRateLimit({
+        key: `${guestRateKey}:1h`,
+        limit: guestPostPolicy.postRateLimit1h,
+        windowMs: 60 * 60_000,
+      });
+
+      const post = await updateGuestPost({
+        postId: id,
+        input: body,
+        guestPassword,
+        guestIdentity: {
+          ip: clientIp,
+          fingerprint: guestFingerprint,
+        },
+      });
+      return jsonOk(post);
+    }
+
+    const userId = await getCurrentUserIdFromRequest(request);
     if (userId) {
       const post = await updatePost({ postId: id, authorId: userId, input: body });
       return jsonOk(post);
     }
 
-    const guestPassword =
-      typeof body?.guestPassword === "string" ? body.guestPassword.trim() : "";
-    if (!guestPassword) {
-      return jsonError(400, {
-        code: "GUEST_PASSWORD_REQUIRED",
-        message: "비회원 수정에는 글 비밀번호가 필요합니다.",
-      });
-    }
-
-    const clientIp = getClientIp(request);
-    const guestFingerprint = request.headers.get("x-guest-fingerprint")?.trim() || undefined;
-    const guestRateKey = `posts:guest-update:ip:${clientIp}:fp:${guestFingerprint ?? "none"}`;
-    const guestPostPolicy = await getGuestPostPolicy();
-    await enforceRateLimit({
-      key: `${guestRateKey}:10m`,
-      limit: Math.max(5, guestPostPolicy.postRateLimit10m),
-      windowMs: 10 * 60_000,
+    return jsonError(400, {
+      code: "GUEST_PASSWORD_REQUIRED",
+      message: "비회원 수정에는 글 비밀번호가 필요합니다.",
     });
-    await enforceRateLimit({
-      key: `${guestRateKey}:1h`,
-      limit: guestPostPolicy.postRateLimit1h,
-      windowMs: 60 * 60_000,
-    });
-
-    const post = await updateGuestPost({
-      postId: id,
-      input: body,
-      guestPassword,
-      guestIdentity: {
-        ip: clientIp,
-        fingerprint: guestFingerprint,
-      },
-    });
-    return jsonOk(post);
   } catch (error) {
     if (error instanceof ServiceError) {
       return jsonError(error.status, {
@@ -141,13 +139,6 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
-    const forceGuestMode =
-      process.env.NODE_ENV !== "production" && request.headers.get("x-guest-mode") === "1";
-    const userId = forceGuestMode ? null : await getCurrentUserIdFromRequest(request);
-    if (userId) {
-      const result = await deletePost({ postId: id, authorId: userId });
-      return jsonOk(result);
-    }
 
     let guestPassword = request.headers.get("x-guest-password")?.trim() || "";
     if (!guestPassword) {
@@ -159,37 +150,43 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       }
     }
 
-    if (!guestPassword) {
-      return jsonError(400, {
-        code: "GUEST_PASSWORD_REQUIRED",
-        message: "비회원 삭제에는 글 비밀번호가 필요합니다.",
+    if (guestPassword) {
+      const clientIp = getClientIp(request);
+      const guestFingerprint = request.headers.get("x-guest-fingerprint")?.trim() || undefined;
+      const guestRateKey = `posts:guest-delete:ip:${clientIp}:fp:${guestFingerprint ?? "none"}`;
+      const guestPostPolicy = await getGuestPostPolicy();
+      await enforceRateLimit({
+        key: `${guestRateKey}:10m`,
+        limit: Math.max(5, guestPostPolicy.postRateLimit10m),
+        windowMs: 10 * 60_000,
       });
+      await enforceRateLimit({
+        key: `${guestRateKey}:1h`,
+        limit: guestPostPolicy.postRateLimit1h,
+        windowMs: 60 * 60_000,
+      });
+
+      const result = await deleteGuestPost({
+        postId: id,
+        guestPassword,
+        guestIdentity: {
+          ip: clientIp,
+          fingerprint: guestFingerprint,
+        },
+      });
+      return jsonOk(result);
     }
 
-    const clientIp = getClientIp(request);
-    const guestFingerprint = request.headers.get("x-guest-fingerprint")?.trim() || undefined;
-    const guestRateKey = `posts:guest-delete:ip:${clientIp}:fp:${guestFingerprint ?? "none"}`;
-    const guestPostPolicy = await getGuestPostPolicy();
-    await enforceRateLimit({
-      key: `${guestRateKey}:10m`,
-      limit: Math.max(5, guestPostPolicy.postRateLimit10m),
-      windowMs: 10 * 60_000,
-    });
-    await enforceRateLimit({
-      key: `${guestRateKey}:1h`,
-      limit: guestPostPolicy.postRateLimit1h,
-      windowMs: 60 * 60_000,
-    });
+    const userId = await getCurrentUserIdFromRequest(request);
+    if (userId) {
+      const result = await deletePost({ postId: id, authorId: userId });
+      return jsonOk(result);
+    }
 
-    const result = await deleteGuestPost({
-      postId: id,
-      guestPassword,
-      guestIdentity: {
-        ip: clientIp,
-        fingerprint: guestFingerprint,
-      },
+    return jsonError(400, {
+      code: "GUEST_PASSWORD_REQUIRED",
+      message: "비회원 삭제에는 글 비밀번호가 필요합니다.",
     });
-    return jsonOk(result);
   } catch (error) {
     if (error instanceof ServiceError) {
       return jsonError(error.status, {

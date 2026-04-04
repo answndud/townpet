@@ -10,7 +10,12 @@ import { getClientIp } from "@/server/request-context";
 import { enforceRateLimit } from "@/server/rate-limit";
 import { assertPostReadable } from "@/server/services/post-read-access.service";
 import { ServiceError } from "@/server/services/service-error";
-import { deleteGuestPost, updateGuestPost } from "@/server/services/post.service";
+import {
+  deleteGuestPost,
+  deletePost,
+  updateGuestPost,
+  updatePost,
+} from "@/server/services/post.service";
 
 vi.mock("@/server/auth", () => ({ getCurrentUserIdFromRequest: vi.fn() }));
 vi.mock("@/server/error-monitor", () => ({ monitorUnhandledError: vi.fn() }));
@@ -40,6 +45,8 @@ const mockEnforceRateLimit = vi.mocked(enforceRateLimit);
 const mockAssertPostReadable = vi.mocked(assertPostReadable);
 const mockUpdateGuestPost = vi.mocked(updateGuestPost);
 const mockDeleteGuestPost = vi.mocked(deleteGuestPost);
+const mockUpdatePost = vi.mocked(updatePost);
+const mockDeletePost = vi.mocked(deletePost);
 
 describe("/api/posts/[id] contract", () => {
   beforeEach(() => {
@@ -52,6 +59,8 @@ describe("/api/posts/[id] contract", () => {
     mockAssertPostReadable.mockReset();
     mockUpdateGuestPost.mockReset();
     mockDeleteGuestPost.mockReset();
+    mockUpdatePost.mockReset();
+    mockDeletePost.mockReset();
 
     mockGetCurrentUserIdFromRequest.mockResolvedValue(null);
     mockGetGuestPostPolicy.mockResolvedValue({
@@ -156,6 +165,7 @@ describe("/api/posts/[id] contract", () => {
   });
 
   it("uses updateGuestPost when guest password is provided", async () => {
+    mockGetCurrentUserIdFromRequest.mockResolvedValue("user-1");
     mockUpdateGuestPost.mockResolvedValue({ id: "post-1", title: "edited" } as never);
     const request = new Request("http://localhost/api/posts/post-1", {
       method: "PATCH",
@@ -166,6 +176,8 @@ describe("/api/posts/[id] contract", () => {
     const response = await PATCH(request, { params: Promise.resolve({ id: "post-1" }) });
 
     expect(response.status).toBe(200);
+    expect(mockGetCurrentUserIdFromRequest).not.toHaveBeenCalled();
+    expect(mockUpdatePost).not.toHaveBeenCalled();
     expect(mockUpdateGuestPost).toHaveBeenCalledWith(
       expect.objectContaining({
         postId: "post-1",
@@ -192,6 +204,7 @@ describe("/api/posts/[id] contract", () => {
   });
 
   it("uses deleteGuestPost when guest password header exists", async () => {
+    mockGetCurrentUserIdFromRequest.mockResolvedValue("user-1");
     mockDeleteGuestPost.mockResolvedValue({ ok: true } as never);
     const request = new Request("http://localhost/api/posts/post-1", {
       method: "DELETE",
@@ -203,6 +216,8 @@ describe("/api/posts/[id] contract", () => {
     const response = await DELETE(request, { params: Promise.resolve({ id: "post-1" }) });
 
     expect(response.status).toBe(200);
+    expect(mockGetCurrentUserIdFromRequest).not.toHaveBeenCalled();
+    expect(mockDeletePost).not.toHaveBeenCalled();
     expect(mockDeleteGuestPost).toHaveBeenCalledWith(
       expect.objectContaining({
         postId: "post-1",

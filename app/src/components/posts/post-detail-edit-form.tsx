@@ -387,7 +387,6 @@ export function PostDetailEditForm({
             headers: {
               "content-type": "application/json",
               "x-guest-fingerprint": getGuestFingerprint(),
-              "x-guest-mode": "1",
             },
             body: JSON.stringify(payload),
           })

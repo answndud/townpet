@@ -16,6 +16,107 @@
 - Cycle 33: 신규 계정 안전 정책 관리자 설정화 + DB/UI E2E 플로우 완료
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
+### 2026-04-04: Cycle 393 완료 (social dev login security preflight parity 보강)
+- 완료 내용
+  - `app/scripts/check-security-env.ts`에 `SOCIAL_DEV_LOGIN` 항목을 추가해 production/strict preflight가 `ENABLE_SOCIAL_DEV_LOGIN=1` 상태를 즉시 `FAIL`로 잡도록 정렬했다.
+  - `app/src/lib/env.test.ts`에는 production validation이 social dev login을 거부하는 회귀 케이스를 추가했다.
+- 검증 결과
+  - `corepack pnpm -C app lint src/lib/env.test.ts scripts/check-security-env.ts` 통과
+  - `corepack pnpm -C app test -- src/lib/env.test.ts` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `179 files / 869 tests` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `NODE_ENV=production SECURITY_ENV_STRICT=1 ENABLE_SOCIAL_DEV_LOGIN=1 ... corepack pnpm -C app ops:check:security-env` 결과 `SOCIAL_DEV_LOGIN`가 `FAIL`로 잡히고 exit code 1 확인
+  - `NODE_ENV=production SECURITY_ENV_STRICT=1 CSP_ENFORCE_STRICT=1 ... ENABLE_SOCIAL_DEV_LOGIN=0 corepack pnpm -C app ops:check:security-env` 결과 `pass=9, warn=1, fail=0` 확인
+- 메모
+  - 이제 shared preview/staging에서 개발용 소셜 로그인 플래그가 남아 있으면 build 전 preflight 단계에서 바로 드러난다.
+
+### 2026-04-04: Cycle 395 완료 (internal diagnostics localhost-only fallback hardening)
+- 완료 내용
+  - `app/src/server/internal-diagnostics-access.ts`를 추가해 내부 토큰 검증을 timing-safe compare로 공통화하고, 토큰이 아예 없을 때는 `localhost/127.0.0.1/::1` 기반 non-production 요청만 무토큰 상세 진단을 허용하도록 축소했다.
+  - `app/src/app/api/health/route.ts`와 `app/src/app/api/security/csp-report/route.ts`는 같은 helper를 사용하도록 정리해 shared/public dev host에서 토큰 없는 상세 상태 접근이 다시 public contract로 떨어지게 했다.
+  - `app/src/server/internal-diagnostics-access.test.ts`, `app/src/app/api/health/route.test.ts`, `app/src/app/api/security/csp-report/route.test.ts`에 localhost-only fallback 회귀를 추가했다.
+- 검증 결과
+  - `corepack pnpm -C app lint src/server/internal-diagnostics-access.ts src/server/internal-diagnostics-access.test.ts src/app/api/health/route.ts src/app/api/health/route.test.ts src/app/api/security/csp-report/route.ts src/app/api/security/csp-report/route.test.ts` 통과
+  - `corepack pnpm -C app test -- src/server/internal-diagnostics-access.test.ts src/app/api/health/route.test.ts src/app/api/security/csp-report/route.test.ts` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `181 files / 883 tests` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `git diff --check` 통과
+- 메모
+  - 이제 `HEALTH_INTERNAL_TOKEN`이 비어 있어도 로컬 개발 localhost에서는 기존 디버깅 편의가 유지되지만, shared/public dev host에서는 내부 토큰 없이 상세 진단을 읽을 수 없다.
+
+### 2026-04-04: Cycle 394 완료 (guest write override hardening)
+- 완료 내용
+  - `app/src/app/api/posts/route.ts`, `app/src/app/api/posts/[id]/route.ts`, `app/src/app/api/posts/[id]/comments/route.ts`, `app/src/app/api/comments/[id]/route.ts`에서 write path의 `x-guest-mode` 신뢰를 제거했다.
+  - guest post/comment 생성은 현재 세션 기준으로만 auth/guest를 나누고, guest 수정/삭제는 `guestPassword`가 있을 때만 guest branch를 우선 사용하도록 정리했다.
+  - `app/src/components/posts/post-create-form.tsx`, `app/src/components/posts/post-comment-thread.tsx`, `app/src/components/posts/post-detail-edit-form.tsx`, `app/src/components/posts/guest-post-detail-actions.tsx`, `app/e2e/guest-post-management.spec.ts`에서는 guest write 요청에서 더 이상 `x-guest-mode` 헤더를 보내지 않게 했다.
+  - `app/src/app/api/comments/[id]/route.test.ts`를 새로 추가했고, 관련 route tests는 `x-guest-mode`가 있어도 authenticated write는 auth branch를 유지하고 guest password 경로는 auth cookie보다 우선한다는 회귀를 고정했다.
+- 검증 결과
+  - `corepack pnpm -C app lint 'src/app/api/posts/route.ts' 'src/app/api/posts/route.test.ts' 'src/app/api/posts/[id]/route.ts' 'src/app/api/posts/[id]/route.test.ts' 'src/app/api/posts/[id]/comments/route.ts' 'src/app/api/posts/[id]/comments/route.test.ts' 'src/app/api/comments/[id]/route.ts' 'src/app/api/comments/[id]/route.test.ts' src/components/posts/post-detail-edit-form.tsx src/components/posts/guest-post-detail-actions.tsx src/components/posts/post-comment-thread.tsx src/components/posts/post-create-form.tsx e2e/guest-post-management.spec.ts` 통과
+  - `corepack pnpm -C app test -- 'src/app/api/posts/route.test.ts' 'src/app/api/posts/[id]/route.test.ts' 'src/app/api/posts/[id]/comments/route.test.ts' 'src/app/api/comments/[id]/route.test.ts'` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `180 files / 875 tests` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `git diff --check` 통과
+- 메모
+  - guest read 전용 `x-guest-mode` GET contract는 유지했다. 이번 변경은 write path에서 헤더 기반 우회를 제거하는 데만 집중했다.
+
+### 2026-04-04: Cycle 392 완료 (demo auth fallback explicit opt-in hardening)
+- 완료 내용
+  - `app/src/server/auth.ts`에서 `DEMO_USER_EMAIL` 단독 설정으로는 더 이상 인증 fallback이 열리지 않게 하고, 비프로덕션에서도 `ENABLE_DEMO_AUTH_FALLBACK=1`이 함께 있을 때만 fallback을 허용하도록 축소했다.
+  - `app/src/lib/env.ts` production validation에 `ENABLE_DEMO_AUTH_FALLBACK_MUST_BE_DISABLED`를 추가했다.
+  - `app/scripts/check-security-env.ts`에 `DEMO_AUTH_FALLBACK` 항목을 추가해 production/strict 환경에서 active demo fallback을 `FAIL`로 잡도록 했다.
+  - 운영/보안 문서는 local-only 사용 조건(`DEMO_USER_EMAIL` + `ENABLE_DEMO_AUTH_FALLBACK=1`)과 production 금지 정책에 맞게 갱신했다.
+- 검증 결과
+  - `corepack pnpm -C app lint src/server/auth.ts src/server/auth.test.ts src/lib/env.ts src/lib/env.test.ts scripts/check-security-env.ts` 통과
+  - `corepack pnpm -C app test -- src/server/auth.test.ts src/lib/env.test.ts` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `179 files / 868 tests` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `NODE_ENV=production SECURITY_ENV_STRICT=1 ENABLE_DEMO_AUTH_FALLBACK=1 DEMO_USER_EMAIL=demo@townpet.dev ... corepack pnpm -C app ops:check:security-env` 결과 `DEMO_AUTH_FALLBACK`가 `FAIL`로 잡히고 전체 exit code 1 확인
+  - `NODE_ENV=production SECURITY_ENV_STRICT=1 CSP_ENFORCE_STRICT=1 ... corepack pnpm -C app ops:check:security-env` 결과 `pass=8, warn=1, fail=0` 확인
+- 메모
+  - 이제 demo auth fallback은 명시적 opt-in이 없는 한 기본 비활성화다. shared dev/staging 환경에는 `DEMO_USER_EMAIL`, `ENABLE_DEMO_AUTH_FALLBACK` 둘 다 두지 않는 것이 기준선이다.
+
+### 2026-04-04: Cycle 391 완료 (strict CSP runtime enforce 복구와 운영 정합성 갱신)
+- 완료 내용
+  - `app/src/lib/security-headers.ts`, `app/middleware.ts`, `app/src/app/layout.tsx`에서 `CSP_ENFORCE_STRICT=1`일 때 production enforce CSP가 nonce + `strict-dynamic`로 동작하도록 복구했다.
+  - Next.js가 현재 강제로 주입하는 inline style 2종(`color:transparent`, `position: absolute;`)만 `'unsafe-hashes'` + exact SHA-256 allowlist로 허용해 strict `style-src`를 최소 예외로 맞췄다.
+  - Turbopack build에서 무시되던 `experimental.sri` 설정은 제거했다.
+  - `app/scripts/check-security-env.ts`는 strict enabled 시 `CSP_RUNTIME_MODE=PASS`, disabled 시 fallback WARN을 내도록 바꿨고, `.env.production.example`/운영 가이드/배포 체크리스트/Vercel 가이드/보안 backlog·risk·decision·progress 문서를 같은 상태로 정렬했다.
+- 검증 결과
+  - `corepack pnpm -C app lint src/lib/security-headers.ts src/lib/security-headers.test.ts src/middleware.test.ts next.config.ts` 통과
+  - `corepack pnpm -C app test -- src/lib/security-headers.test.ts src/middleware.test.ts` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `179 files / 866 tests` 통과
+  - 임시 Postgres(`127.0.0.1:55432`)에 `corepack pnpm -C app exec prisma db push` + `DATABASE_URL=... SEED_DEFAULT_PASSWORD=townpet123 corepack pnpm -C app db:seed`로 runtime 검증용 DB를 준비했다.
+  - placeholder production env + `CSP_ENFORCE_STRICT=1`로 `corepack pnpm -C app build` 통과
+  - 같은 env로 `corepack pnpm -C app start` 후 `curl -I http://127.0.0.1:3105/feed`에서 `script-src 'self' 'nonce-...' 'strict-dynamic'`와 strict `style-src` hash allowlist가 실려 내려오는 것을 확인했다.
+  - `corepack pnpm -C app exec node` + `@playwright/test` headless smoke에서 `/feed` 페이지 title 렌더, 로그인 링크 노출, CSP console/page error 0건을 확인했다.
+- 메모
+  - strict CSP는 이제 runtime에서 실제 동작하지만, framework inline style hash 2종에 의존하므로 Next.js 업그레이드 시 hash drift 재검증이 필요하다.
+
+### 2026-04-04: Cycle 389 완료 (local seed DB guard와 CSP preflight 정합성 보정)
+- 완료 내용
+  - `app/src/server/local-database-guard.ts`를 추가해 local/dev 더미데이터 경로가 `localhost`, `127.0.0.1`, `postgres`, `host.docker.internal` 같은 로컬 DB에만 무확인 실행되도록 제한했다.
+  - `db:restore:local`, `db:seed`, `db:seed:users`, `db:seed:passwords`, `db:seed:local-test-accounts`와 게시글/댓글/신고/검색/engagement 시드 스크립트가 모두 `LOCAL_DB_SEED_CONFIRM=NON_LOCAL_DB` 확인 가드를 공유하도록 정리했다.
+  - `db:restore:local` stdout에서는 더 이상 기본 시드 비밀번호를 출력하지 않도록 수정했다.
+  - `app/src/lib/env.ts`와 `app/scripts/check-security-env.ts`는 더 이상 `CSP_ENFORCE_STRICT`를 production PASS/FAIL 기준으로 다루지 않고, 현재 runtime 사실대로 `CSP_RUNTIME_MODE` 경고만 남기게 바꿨다.
+  - `app/src/lib/security-headers.ts`, `app/next.config.ts`, `app/middleware.ts`에서는 실효성 없는 `cspEnforceStrict` plumbing을 제거했고, 운영 가이드/배포 체크리스트/보안 backlog·risk 문서도 현재 상태에 맞게 갱신했다.
+- 검증 결과
+  - `corepack pnpm -C app lint src/server/local-database-guard.ts src/server/local-database-guard.test.ts src/server/test-user-provisioning.ts src/server/test-user-provisioning.test.ts src/lib/env.ts src/lib/env.test.ts src/lib/security-headers.ts src/lib/security-headers.test.ts src/middleware.test.ts scripts/check-security-env.ts scripts/restore-local-dev.ts scripts/seed-admin.ts scripts/seed-adoption-demo.ts scripts/seed-board-posts.ts scripts/seed-comment-best-demo.ts scripts/seed-engagement.ts scripts/seed-local-test-accounts.ts scripts/seed-passwords.ts scripts/seed-reports.ts scripts/seed-search-cases.ts scripts/seed-users.ts prisma/seed.ts` 통과
+  - `corepack pnpm -C app test -- src/server/local-database-guard.test.ts src/server/test-user-provisioning.test.ts src/lib/env.test.ts src/lib/security-headers.test.ts src/middleware.test.ts` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `179 files / 864 tests` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `NODE_ENV=production SECURITY_ENV_STRICT=1 DATABASE_URL=postgres://db AUTH_SECRET=abcdefghijklmnopqrstuvwxyz1234567890ABCD APP_BASE_URL=https://townpet.dev GUEST_HASH_PEPPER=pepper-secret HEALTH_INTERNAL_TOKEN=health-secret UPSTASH_REDIS_REST_URL=https://upstash.example.com UPSTASH_REDIS_REST_TOKEN=upstash-token RESEND_API_KEY=resend-token BLOB_READ_WRITE_TOKEN=blob-token ENABLE_SOCIAL_DEV_LOGIN=0 corepack pnpm -C app ops:check:security-env` 결과 `pass=6, warn=2, fail=0` 확인 (`CSP_RUNTIME_MODE`, `MODERATION_CONTROL_PLANE_HEALTH` warn 예상)
+  - `DATABASE_URL=postgresql://seed:pw@db.example.com:5432/townpet SEED_DEFAULT_PASSWORD=townpet123 corepack pnpm -C app db:seed:passwords` 실행 시 `LOCAL_DB_SEED_CONFIRM=NON_LOCAL_DB is required ...`로 즉시 중단되는 것을 확인
+  - `git diff --check` 통과
+- 메모
+  - 실제 strict CSP enforce 전환은 아직 미완료다. 현재 production은 hydration-safe fallback CSP를 enforce하고 strict nonce 정책은 report-only에 머물며, 이 상태를 보안 문서와 preflight 출력에 그대로 반영했다.
+
+### 2026-04-04: Cycle 390 완료 (public `/api/health` 응답 최소화 재정렬)
+- 완료 내용
+  - `app/src/app/api/health/route.ts`에서 public `/api/health` 응답을 `ok/status/timestamp`만 남기는 최소 계약으로 축소했다.
+  - `HEALTH_INTERNAL_TOKEN`이 유효한 요청은 기존처럼 `env`, `checks`, `search.pgTrgm`, cache/rate-limit/control-plane 상세 진단을 계속 받는다.
+  - 운영 가이드와 Vercel 초기설정 가이드는 public health는 최소 응답만 보고, 원인 파악은 `ops:check:health` 또는 내부 토큰이 포함된 상세 health로 보게 정리했다.
+- 검증 결과
+  - `corepack pnpm -C app lint src/app/api/health/route.ts src/app/api/health/route.test.ts` 통과
+  - `corepack pnpm -C app test -- src/app/api/health/route.test.ts` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `git diff --check` 통과
+- 메모
+  - public health는 이제 availability 확인 전용이다. DB/Redis/control-plane 원인 진단이 필요하면 반드시 `HEALTH_INTERNAL_TOKEN` 기반 상세 경로를 사용해야 한다.
+
 ### 2026-03-27: Cycle 388 완료 (quality-gate fresh DB auth/reaction migration chain 복구)
 - 완료 내용
   - GitHub Actions run [23633927220](https://github.com/answndud/townpet/actions/runs/23633927220)의 실패 로그를 확인해, `quality-gate`의 E2E smoke 단계가 fresh DB에서 `User.emailVerified` column missing으로 깨지는 것을 재현 원인으로 특정했다.
@@ -25,7 +126,7 @@
   - 임시 Docker PostgreSQL(`127.0.0.1:55432/townpet_diff`)에서 `corepack pnpm -C app exec prisma migrate reset --force --skip-generate --skip-seed` 후 `corepack pnpm -C app exec prisma migrate deploy`를 실행해 전체 migration chain이 최신까지 성공하는 것을 확인했다.
   - 같은 fresh DB에서 Prisma smoke를 실행해 `user.upsert({ emailVerified, passwordHash })`, `postReaction.create()`, `passwordResetToken.create()`가 모두 성공했다.
   - `corepack pnpm -C app exec prisma migrate diff --from-migrations prisma/migrations --to-schema-datamodel prisma/schema.prisma --shadow-database-url ... --script` 재확인 결과, 이번 CI를 깨던 auth/reaction 누락은 사라졌고 남은 drift는 trigram index/drop-default/rename 수준의 비차단 항목만 남았다.
-- 메모
+  - 메모
   - 이 cycle은 `quality-gate`의 fresh DB migration blocker를 복구한 작업이다. 이후 rerun에서는 최소한 `User.emailVerified` missing 류의 auth/reaction schema 오류는 재발하지 않아야 한다.
 
 ### 2026-03-27: Cycle 387 완료 (admin 전용 권한 분리와 운영 감사 로그 강화)
