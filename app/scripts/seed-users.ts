@@ -1,5 +1,6 @@
 import "dotenv/config";
 import { PrismaClient, UserRole } from "@prisma/client";
+import { assertLocalDevelopmentDatabase } from "../src/server/local-database-guard";
 import { hashPassword } from "../src/server/password";
 
 const prisma = new PrismaClient();
@@ -225,6 +226,8 @@ const seedUsers: SeedUser[] = [
 ];
 
 async function main() {
+  assertLocalDevelopmentDatabase(process.env, "seed user provisioning");
+
   const seedPassword = process.env.SEED_DEFAULT_PASSWORD;
   if (!seedPassword) {
     throw new Error("SEED_DEFAULT_PASSWORD is required.");

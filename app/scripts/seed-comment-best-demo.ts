@@ -2,6 +2,7 @@ import "dotenv/config";
 import { PostScope, PostStatus, PostType, PrismaClient, UserRole } from "@prisma/client";
 
 import { resolveBoardByPostType } from "../src/lib/community-board";
+import { assertLocalDevelopmentDatabase } from "../src/server/local-database-guard";
 
 const prisma = new PrismaClient();
 
@@ -248,6 +249,8 @@ async function seedDemoComments(postId: string, userIdByEmail: Map<string, strin
 }
 
 async function main() {
+  assertLocalDevelopmentDatabase(process.env, "comment best demo seeding");
+
   const [communityId, userIdByEmail] = await Promise.all([ensureCommunityId(), ensureDemoUsers()]);
   const authorId = userIdByEmail.get(DEMO_USERS[0].email);
 

@@ -50,6 +50,7 @@ async function main() {
   const nodeEnv = read("NODE_ENV") || "development"
   const strictMode = hasTruthyFlag(read("SECURITY_ENV_STRICT"))
   const enforceProdRules = nodeEnv === "production" || strictMode
+  const strictCspEnabled = hasTruthyFlag(read("CSP_ENFORCE_STRICT"))
   const results: CheckResult[] = []
 
   const authSecret = resolveAuthSecret()
@@ -73,13 +74,55 @@ async function main() {
     })
   }
 
-  const cspStrict = hasTruthyFlag(read("CSP_ENFORCE_STRICT"))
   results.push({
-    key: "CSP_ENFORCE_STRICT",
-    status: cspStrict ? "PASS" : enforceProdRules ? "FAIL" : "WARN",
-    detail: cspStrict
-      ? "strict CSP enforce 활성화"
-      : "strict CSP enforce 비활성화(완화 CSP 경로 동작)",
+    key: "CSP_RUNTIME_MODE",
+    status: !enforceProdRules ? "PASS" : strictCspEnabled ? "PASS" : "WARN",
+    detail: !enforceProdRules
+      ? "development/test에서는 local tooling 호환을 위해 완화된 CSP가 사용됩니다."
+      : strictCspEnabled
+        ? "production은 strict nonce CSP를 enforce합니다. framework inline style 2종은 'unsafe-hashes' + 고정 SHA-256 hash allowlist로만 예외 허용됩니다."
+      : "현재 production은 hydration-safe fallback CSP를 enforce합니다. `CSP_ENFORCE_STRICT=1`을 설정하면 `script-src`에서 `unsafe-inline`이 제거된 strict nonce CSP로 전환됩니다.",
+  })
+
+  const demoAuthFallbackEnabled = hasTruthyFlag(read("ENABLE_DEMO_AUTH_FALLBACK"))
+  const demoUserEmail = read("DEMO_USER_EMAIL")
+  results.push({
+    key: "DEMO_AUTH_FALLBACK",
+    status: enforceProdRules
+      ? demoAuthFallbackEnabled
+        ? "FAIL"
+        : "PASS"
+      : demoAuthFallbackEnabled && !demoUserEmail
+        ? "WARN"
+        : "PASS",
+    detail: enforceProdRules
+      ? demoAuthFallbackEnabled
+        ? "production/strict 환경에서는 demo auth fallback을 사용할 수 없습니다."
+        : "비활성화됨"
+      : demoAuthFallbackEnabled
+        ? demoUserEmail
+          ? "비프로덕션에서 explicit opt-in으로 활성화됨"
+          : "ENABLE_DEMO_AUTH_FALLBACK=1 이지만 DEMO_USER_EMAIL이 비어 있어 fallback 계정을 찾을 수 없습니다."
+        : "기본 비활성화됨",
+  })
+
+  const socialDevLoginEnabled = hasTruthyFlag(read("ENABLE_SOCIAL_DEV_LOGIN"))
+  results.push({
+    key: "SOCIAL_DEV_LOGIN",
+    status: enforceProdRules
+      ? socialDevLoginEnabled
+        ? "FAIL"
+        : "PASS"
+      : socialDevLoginEnabled
+        ? "PASS"
+        : "PASS",
+    detail: enforceProdRules
+      ? socialDevLoginEnabled
+        ? "production/strict 환경에서는 개발용 소셜 로그인을 사용할 수 없습니다."
+        : "비활성화됨"
+      : socialDevLoginEnabled
+        ? "비프로덕션에서 explicit opt-in으로 활성화됨"
+        : "기본 비활성화됨",
   })
 
   const guestHashPepper = read("GUEST_HASH_PEPPER")

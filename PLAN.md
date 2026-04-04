@@ -27,6 +27,41 @@
 
 ## Active Plan
 
+### Cycle 395: internal diagnostics localhost-only fallback hardening (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| `/api/health` 상세 진단과 `/api/security/csp-report` 통계가 `HEALTH_INTERNAL_TOKEN` 미설정 non-production 환경에서 shared/public host로 노출되지 않도록 localhost-only fallback 기준으로 축소하고, 공통 접근 헬퍼/회귀 테스트/보안 기록을 추가한다 | Codex | P1 | `done` | internal diagnostics 접근은 유효한 내부 토큰이 있거나 `localhost/127.0.0.1/::1` 기반 non-production 요청일 때만 허용되고, health/CSP stats route가 같은 helper를 사용하며, 관련 lint/test/typecheck 및 `PLAN.md`/`PROGRESS.md`/security docs 기록이 남는다 | `PLAN.md`, `PROGRESS.md`, `app/src/server/internal-diagnostics-access.ts`, `app/src/app/api/health/route.ts`, `app/src/app/api/security/csp-report/route.ts`, 관련 테스트, `docs/security/*`, `docs/개발_운영_가이드.md` |
+
+### Cycle 394: guest write override hardening (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| non-production에서 `x-guest-mode` 헤더만으로 guest write branch를 강제할 수 있는 경로를 제거하고, guest 수정/삭제는 guest 비밀번호 기준으로만, 생성은 현재 세션 기준으로만 분기되도록 정리한다 | Codex | P1 | `done` | post/comment guest write route들이 더 이상 `x-guest-mode`를 신뢰하지 않고, guest 비밀번호가 있는 수정/삭제만 guest branch를 우선 사용하며, 관련 client/e2e 호출부와 route tests가 회귀를 고정하고 `PROGRESS.md`에 검증 결과가 기록된다 | `PLAN.md`, `PROGRESS.md`, `app/src/app/api/posts/**`, `app/src/app/api/comments/[id]/route.ts`, `app/src/components/posts/*.tsx`, `app/e2e/guest-post-management.spec.ts`, 관련 테스트, `docs/security/보안_진행상황.md` |
+
+### Cycle 393: social dev login security preflight parity 보강 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| production validation에서 이미 금지하던 `ENABLE_SOCIAL_DEV_LOGIN=1` 상태를 `ops:check:security-env`도 동일하게 fail 하도록 맞추고, 관련 보안 진행 로그에 검증 결과를 남긴다 | Codex | P1 | `done` | production/strict `ops:check:security-env`가 `ENABLE_SOCIAL_DEV_LOGIN=1`일 때 `SOCIAL_DEV_LOGIN` fail을 반환하고, 정상 설정에서는 PASS로 돌아오며, 관련 lint/test/typecheck 및 `PROGRESS.md` 기록이 남는다 | `PLAN.md`, `PROGRESS.md`, `app/scripts/check-security-env.ts`, `app/src/lib/env.test.ts`, `docs/security/보안_진행상황.md` |
+
+### Cycle 392: demo auth fallback explicit opt-in hardening (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| `DEMO_USER_EMAIL`만으로 열리던 비프로덕션 인증 fallback을 explicit opt-in으로 축소하고, production validation/preflight와 운영 문서가 이 정책을 강제하도록 정리한다 | Codex | P1 | `done` | `DEMO_USER_EMAIL` alone로는 auth fallback이 동작하지 않고 `ENABLE_DEMO_AUTH_FALLBACK=1`이 함께 있어야 하며, production validation/`ops:check:security-env`는 active demo fallback을 fail 처리하고, 관련 테스트/문서/보안 트랙 기록이 `PROGRESS.md`에 반영된다 | `PLAN.md`, `PROGRESS.md`, `app/src/server/auth.ts`, `app/src/server/auth.test.ts`, `app/src/lib/env.ts`, `app/src/lib/env.test.ts`, `app/scripts/check-security-env.ts`, `docs/security/*`, `docs/개발_운영_가이드.md`, `docs/operations/manual-checks/배포_보안_체크리스트.md`, `docs/operations/Vercel_OAuth_초기설정_가이드.md` |
+
+### Cycle 391: strict CSP runtime enforce 복구와 운영 정합성 갱신 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| production strict CSP를 실제 nonce enforce 경로로 복구하고, framework inline style 예외를 최소 해시 allowlist로 제한한 뒤 preflight/운영 문서/보안 트랙 기록을 검증 결과에 맞게 갱신한다 | Codex | P1 | `done` | `CSP_ENFORCE_STRICT=1`에서 production build/start가 통과하고 `/feed` 응답 헤더가 nonce + `strict-dynamic` CSP를 enforce하며, headless browser smoke에서 CSP console/page error 없이 렌더되고, `ops:check:security-env`/운영 문서/보안 backlog·risk·decision·progress가 이 상태를 반영한다 | `PLAN.md`, `PROGRESS.md`, `app/src/lib/security-headers.ts`, `app/middleware.ts`, `app/src/app/layout.tsx`, `app/scripts/check-security-env.ts`, `app/.env.production.example`, `docs/개발_운영_가이드.md`, `docs/operations/manual-checks/배포_보안_체크리스트.md`, `docs/operations/Vercel_OAuth_초기설정_가이드.md`, `docs/security/*` |
+
+### Cycle 390: public `/api/health` 응답 최소화 재정렬 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 공개 `/api/health`가 component state를 노출하지 않도록 public contract를 `ok/status/timestamp` 수준으로 축소하고, 내부 토큰 경로와 운영 문서를 그 계약에 맞게 정리한다 | Codex | P1 | `done` | public `/api/health`는 `ok/status/timestamp`만 반환하고, `HEALTH_INTERNAL_TOKEN` 경로에서만 `env/checks/search/cache` 상세 진단이 유지되며, 관련 테스트와 문서/검증 결과가 `PROGRESS.md`에 기록된다 | `PLAN.md`, `PROGRESS.md`, `app/src/app/api/health/route.ts`, `app/src/app/api/health/route.test.ts`, `docs/개발_운영_가이드.md`, `docs/operations/Vercel_OAuth_초기설정_가이드.md`, `docs/security/보안_진행상황.md` |
+
+### Cycle 389: local seed DB guard와 CSP preflight 정합성 보정 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| local/dev 더미데이터 시드가 non-local DB에 오발사되지 않도록 공통 확인 가드를 추가하고, production 보안 env/preflight가 실제 CSP runtime 상태(report-only strict + fallback enforce)를 과장하지 않도록 코드/문서/체크리스트를 정렬한다 | Codex | P1 | `done` | `db:restore:local` 및 `db:seed*` 로컬 더미데이터 스크립트가 non-local DB에서 `LOCAL_DB_SEED_CONFIRM=NON_LOCAL_DB` 없이 실패하고, production env validation/`ops:check:security-env`가 더 이상 `CSP_ENFORCE_STRICT`를 필수 PASS로 다루지 않으며, 관련 테스트/문서/보안 문서/검증 결과가 `PROGRESS.md`에 기록된다 | `PLAN.md`, `PROGRESS.md`, `app/src/server/local-database-guard.ts`, `app/scripts/restore-local-dev.ts`, `app/scripts/seed-*.ts`, `app/prisma/seed.ts`, `app/src/lib/env.ts`, `app/scripts/check-security-env.ts`, `docs/개발_운영_가이드.md`, `docs/operations/manual-checks/배포_보안_체크리스트.md`, `docs/security/*` |
+
 ### Cycle 388: quality-gate fresh DB auth/reaction migration chain 복구 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|

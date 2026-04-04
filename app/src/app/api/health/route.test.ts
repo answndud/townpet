@@ -5,14 +5,19 @@ import { validateRuntimeEnv } from "@/lib/env";
 import { prisma } from "@/lib/prisma";
 import { getQueryCacheHealth } from "@/server/cache/query-cache";
 import { checkModerationControlPlaneHealth } from "@/server/moderation-control-plane";
+import { getClientIp } from "@/server/request-context";
 import { checkRateLimitHealth } from "@/server/rate-limit";
 
-vi.mock("@/lib/env", () => ({
-  runtimeEnv: {
+const { mockRuntimeEnv } = vi.hoisted(() => ({
+  mockRuntimeEnv: {
     nodeEnv: "production",
     isProduction: true,
     healthInternalToken: "health-secret",
   },
+}));
+
+vi.mock("@/lib/env", () => ({
+  runtimeEnv: mockRuntimeEnv,
   validateRuntimeEnv: vi.fn(),
 }));
 
@@ -24,6 +29,10 @@ vi.mock("@/lib/prisma", () => ({
 
 vi.mock("@/server/rate-limit", () => ({
   checkRateLimitHealth: vi.fn(),
+}));
+
+vi.mock("@/server/request-context", () => ({
+  getClientIp: vi.fn(),
 }));
 
 vi.mock("@/server/moderation-control-plane", () => ({
@@ -45,6 +54,7 @@ const mockQueryRaw = vi.mocked(prisma.$queryRaw);
 const mockCheckRateLimitHealth = vi.mocked(checkRateLimitHealth);
 const mockCheckModerationControlPlaneHealth = vi.mocked(checkModerationControlPlaneHealth);
 const mockGetQueryCacheHealth = vi.mocked(getQueryCacheHealth);
+const mockGetClientIp = vi.mocked(getClientIp);
 
 describe("GET /api/health", () => {
   beforeEach(() => {
@@ -52,7 +62,11 @@ describe("GET /api/health", () => {
     mockQueryRaw.mockReset();
     mockCheckRateLimitHealth.mockReset();
     mockCheckModerationControlPlaneHealth.mockReset();
+    mockGetClientIp.mockReset();
 
+    mockRuntimeEnv.nodeEnv = "production";
+    mockRuntimeEnv.isProduction = true;
+    mockRuntimeEnv.healthInternalToken = "health-secret";
     mockValidateRuntimeEnv.mockReturnValue({ ok: false, missing: ["AUTH_SECRET"] });
     mockQueryRaw.mockRejectedValue(new Error("db down: secret detail"));
     mockCheckRateLimitHealth.mockResolvedValue({
@@ -80,7 +94,7 @@ describe("GET /api/health", () => {
       lastFailureAt: null,
       message: "distributed query cache healthy",
     });
-
+    mockGetClientIp.mockReturnValue("127.0.0.1");
   });
 
   it("hides detailed diagnostics on public request", async () => {
@@ -92,25 +106,11 @@ describe("GET /api/health", () => {
     expect(response.status).toBe(503);
     expect(payload.ok).toBe(false);
     expect(payload.status).toBe("degraded");
-    expect(payload.env).toMatchObject({
-      nodeEnv: "production",
-      state: "error",
-    });
-    expect(payload.env.missing).toBeUndefined();
-    expect(payload.checks.database).toMatchObject({ state: "error" });
-    expect(payload.checks.database.message).toBeUndefined();
-    expect(payload.checks.search).toBeUndefined();
-    expect(payload.checks.rateLimit).toEqual({
-      backend: "redis",
-      status: "error",
-    });
-    expect(payload.checks.controlPlane).toEqual({
-      state: "error",
-    });
-    expect(payload.checks.cache).toEqual({
-      state: "ok",
-      backend: "upstash",
-    });
+    expect(payload.timestamp).toEqual(expect.any(String));
+    expect(payload.env).toBeUndefined();
+    expect(payload.checks).toBeUndefined();
+    expect(payload.uptimeSec).toBeUndefined();
+    expect(payload.durationMs).toBeUndefined();
   });
 
   it("includes detailed diagnostics with valid internal token", async () => {
@@ -147,6 +147,43 @@ describe("GET /api/health", () => {
       lastFailureAt: null,
       message: "distributed query cache healthy",
     });
+  });
+
+  it("includes detailed diagnostics on localhost without a token only in non-production", async () => {
+    mockRuntimeEnv.nodeEnv = "development";
+    mockRuntimeEnv.isProduction = false;
+    mockRuntimeEnv.healthInternalToken = "";
+    mockGetClientIp.mockReturnValue("anonymous");
+
+    const request = new Request("http://localhost/api/health");
+
+    const response = await GET(request);
+    const payload = await response.json();
+
+    expect(response.status).toBe(503);
+    expect(payload.env.missing).toEqual(["AUTH_SECRET"]);
+    expect(payload.checks.database.message).toContain("db down");
+  });
+
+  it("keeps non-local non-production requests on the public contract when no token is configured", async () => {
+    mockRuntimeEnv.nodeEnv = "development";
+    mockRuntimeEnv.isProduction = false;
+    mockRuntimeEnv.healthInternalToken = "";
+    mockGetClientIp.mockReturnValue("203.0.113.10");
+
+    const request = new Request("https://preview.townpet.dev/api/health", {
+      headers: {
+        "x-forwarded-for": "203.0.113.10",
+      },
+    });
+
+    const response = await GET(request);
+    const payload = await response.json();
+
+    expect(response.status).toBe(503);
+    expect(payload.ok).toBe(false);
+    expect(payload.checks).toBeUndefined();
+    expect(payload.env).toBeUndefined();
   });
 
   it("reports pg_trgm warning in detailed diagnostics when extension is missing", async () => {

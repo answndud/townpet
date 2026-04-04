@@ -47,13 +47,15 @@ Vercel 프로젝트 -> `Settings` -> `Environment Variables`에서 입력:
 - `AUTH_SECRET` (또는 `NEXTAUTH_SECRET`)
 - `APP_BASE_URL` (초기에는 임시 Vercel 도메인)
 - `NEXTAUTH_URL` (동일하게 `APP_BASE_URL` 값)
-- `CSP_ENFORCE_STRICT=1`
 - `GUEST_HASH_PEPPER`
 - `HEALTH_INTERNAL_TOKEN`
 - `UPSTASH_REDIS_REST_URL`
 - `UPSTASH_REDIS_REST_TOKEN`
 - `RESEND_API_KEY`
 - `BLOB_READ_WRITE_TOKEN`
+
+권장(보안 강화):
+- `CSP_ENFORCE_STRICT=1`
 
 OAuth 연결 전 임시로 비워도 되는 값:
 - `KAKAO_CLIENT_ID`, `KAKAO_CLIENT_SECRET`
@@ -63,9 +65,13 @@ OAuth 연결 전 임시로 비워도 되는 값:
 - `SENTRY_DSN`
 - `DIRECT_URL` (현재 runtime 필수는 아니지만 migration/debug 용도로 둘 수 있음)
 
+넣지 말아야 하는 값:
+- `ENABLE_DEMO_AUTH_FALLBACK`
+- `DEMO_USER_EMAIL`
+
 현재 사용자가 공유한 Vercel 키:
 - `UPSTASH_REDIS_REST_TOKEN`
-- `CSP_ENFORCE_STRICT`
+- `CSP_ENFORCE_STRICT` (권장: production strict nonce CSP enforce)
 - `GUEST_HASH_PEPPER`
 - `APP_BASE_URL`
 - `NEXTAUTH_URL`
@@ -234,7 +240,7 @@ GitHub 저장소 -> `Settings` -> `Secrets and variables` -> `Actions` -> `New r
 
 health 503(degraded)
 - 원인: 런타임 env 누락 또는 DB/Redis 상태 이슈
-- 조치: `/api/health` 응답 JSON의 `missing`, `checks` 필드 확인
+- 조치: public `/api/health`는 최소 응답만 주므로, `HEALTH_INTERNAL_TOKEN`을 넣은 `pnpm ops:check:health` 또는 내부 토큰이 포함된 `/api/health` 상세 응답으로 원인 확인
 
 Sentry 검증 실패
 - 원인: `SENTRY_AUTH_TOKEN` 권한(scope) 부족 또는 org/project slug 오타

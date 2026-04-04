@@ -20,12 +20,12 @@ describe("resolveProvisionTestUsersConfig", () => {
     expect(() =>
       resolveProvisionTestUsersConfig(
         makeTestEnv({
-        DATABASE_URL: "postgresql://prod-user:pw@db.example.com:5432/townpet",
-        TEST_USER_EMAIL_DOMAIN: "qa-login.example.com",
+          DATABASE_URL: "postgresql://prod-user:pw@db.example.com:5432/townpet",
+          TEST_USER_EMAIL_DOMAIN: "qa-login.example.com",
         }),
       ),
     ).toThrow(
-      `TEST_USER_PROVISION_CONFIRM=${TEST_USER_PROVISION_CONFIRM_VALUE} is required for non-local database provisioning.`,
+      `TEST_USER_PROVISION_CONFIRM=${TEST_USER_PROVISION_CONFIRM_VALUE} is required for non-local database provisioning against a non-local database.`,
     );
   });
 
@@ -33,11 +33,11 @@ describe("resolveProvisionTestUsersConfig", () => {
     expect(
       resolveProvisionTestUsersConfig(
         makeTestEnv({
-        DATABASE_URL: "postgresql://prod-user:pw@db.example.com:5432/townpet",
-        TEST_USER_PROVISION_CONFIRM: TEST_USER_PROVISION_CONFIRM_VALUE,
-        TEST_USER_EMAIL_DOMAIN: "qa-login.example.com",
-        TEST_USER_COUNT: "3",
-        TEST_USER_OUTPUT_FILE: "/tmp/townpet-qa-users.json",
+          DATABASE_URL: "postgresql://prod-user:pw@db.example.com:5432/townpet",
+          TEST_USER_PROVISION_CONFIRM: TEST_USER_PROVISION_CONFIRM_VALUE,
+          TEST_USER_EMAIL_DOMAIN: "qa-login.example.com",
+          TEST_USER_COUNT: "3",
+          TEST_USER_OUTPUT_FILE: "/tmp/townpet-qa-users.json",
         }),
       ),
     ).toEqual({
@@ -52,8 +52,8 @@ describe("resolveProvisionTestUsersConfig", () => {
     expect(
       resolveProvisionTestUsersConfig(
         makeTestEnv({
-        DATABASE_URL: "postgresql://townpet:townpet@localhost:5432/townpet",
-        TEST_USER_EMAIL_DOMAIN: "qa-login.example.com",
+          DATABASE_URL: "postgresql://townpet:townpet@localhost:5432/townpet",
+          TEST_USER_EMAIL_DOMAIN: "qa-login.example.com",
         }),
       ),
     ).toMatchObject({

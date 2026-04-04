@@ -5,6 +5,7 @@ import {
   PostType,
   PrismaClient,
 } from "@prisma/client";
+import { assertLocalDevelopmentDatabase } from "../src/server/local-database-guard";
 
 const prisma = new PrismaClient();
 
@@ -87,6 +88,8 @@ const adoptionPosts = [
 ];
 
 async function main() {
+  assertLocalDevelopmentDatabase(process.env, "adoption demo seeding");
+
   const user = await prisma.user.upsert({
     where: { email: DEMO_USER_EMAIL },
     update: {

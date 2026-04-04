@@ -5,6 +5,7 @@ import {
   PostStatus,
   PrismaClient,
 } from "@prisma/client";
+import { assertLocalDevelopmentDatabase } from "../src/server/local-database-guard";
 
 const prisma = new PrismaClient();
 
@@ -51,6 +52,8 @@ function replyCommentContent(template: string) {
 }
 
 async function main() {
+  assertLocalDevelopmentDatabase(process.env, "engagement dummy data seeding");
+
   const users = await prisma.user.findMany({
     where: {
       OR: [

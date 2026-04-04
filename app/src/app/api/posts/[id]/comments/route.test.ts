@@ -376,17 +376,26 @@ describe("POST /api/posts/[id]/comments contract", () => {
       headers: {
         "content-type": "application/json",
         "x-client-fingerprint": "device-fp-1",
+        "x-guest-mode": "1",
       },
     }) as NextRequest;
 
     const response = await POST(request, { params: Promise.resolve({ id: "post-1" }) });
 
     expect(response.status).toBe(201);
+    expect(mockAssertGuestStepUp).not.toHaveBeenCalled();
+    expect(mockCreateGuestAuthor).not.toHaveBeenCalled();
     expect(mockEnforceAuthenticatedWriteRateLimit).toHaveBeenCalledWith({
       scope: "comment:create",
       userId: "user-1",
       ip: "127.0.0.1",
       clientFingerprint: "device-fp-1",
+    });
+    expect(mockCreateComment).toHaveBeenCalledWith({
+      authorId: "user-1",
+      postId: "post-1",
+      parentId: undefined,
+      input: { content: "hello" },
     });
   });
 
