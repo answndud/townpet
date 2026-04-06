@@ -27,6 +27,11 @@
 
 ## Active Plan
 
+### Cycle 396: 지원용 README 포트폴리오 랜딩 정리 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 루트 README를 설치 안내 중심 문서에서 한국어 기준의 compact한 지원용 포트폴리오 랜딩으로 재작성하고, 대표 스크린샷·핵심 기능·AI-native 개발 방식·핵심 링크만 남기도록 정리한다 | Codex | P1 | `done` | `README.md`는 한국어 소개/대표 화면/핵심 기능/AI-native workflow/빠른 실행 위주로 재구성되고, README용 스크린샷 자산이 `docs/assets/readme`에 추가되며, 결과가 `PROGRESS.md`에 기록된다 | `README.md`, `docs/assets/readme/*`, `PLAN.md`, `PROGRESS.md` |
+
 ### Cycle 395: internal diagnostics localhost-only fallback hardening (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
