@@ -29,6 +29,30 @@
 - 메모
   - README는 계속 지원용 랜딩 문서 성격을 유지해야 하므로, 사업 배경은 길게 늘리지 않고 문제/접근/차별화만 바로 읽히게 두었다.
 
+### 2026-04-06: Cycle 402 완료 (README 사업 아이디어 강조 및 2열 화면 구성 정리)
+- 완료 내용
+  - 루트 [README.md](/Users/alex/project/townpet/README.md)에서 직접적인 지원사업 언급을 제거했다.
+  - README 상단 메시지를 `기술 소개`보다 `제품 아이디어`, `왜 사업적으로 흥미로운가`가 먼저 보이도록 재배치했다.
+  - 대표 화면 섹션은 큰 단일 이미지 나열 대신 한 줄 두 장씩 보는 2열 레이아웃으로 재구성했다.
+  - 기술적 설명은 `제품으로서 보여주는 것`, `기술적으로 한 일`, `AI-native 개발 방식` 순서로 뒤로 내렸다.
+- 검증 결과
+  - `git diff --check` 통과
+- 메모
+  - README는 이제 지원용 포트폴리오 관점에서 `무엇을 만들었는가`보다 `왜 이 아이디어가 흥미로운가`가 먼저 읽히도록 정리했다.
+
+### 2026-04-06: Cycle 401 완료 (README 입양 게시판 웹/모바일 캡처 최종 갱신)
+- 완료 내용
+  - production 데모 콘텐츠 재시드 이후 실제 공개 사이트 기준으로 README용 입양 게시판 캡처를 다시 생성했다.
+    - [adoption-desktop.png](/Users/alex/project/townpet/docs/assets/readme/adoption-desktop.png)
+    - [adoption-mobile.png](/Users/alex/project/townpet/docs/assets/readme/adoption-mobile.png)
+  - 웹/모바일 캡처 모두 카드 이미지가 깨진 SVG placeholder 대신 실제 로컬 래스터 예시 사진으로 노출되는 상태를 확인했다.
+  - 이번 요청 범위는 입양 게시판 웹/모바일 캡처 복구였기 때문에, 상세 화면 스크린샷은 기존 버전을 유지했다.
+- 검증 결과
+  - production 공개 페이지에서 입양 게시판 카드 이미지의 `naturalWidth > 0`를 확인했다.
+  - `git diff --check` 통과
+- 메모
+  - README의 입양 게시판 대표 화면 두 장은 이제 실제 더미 사진이 보이는 최신 production 상태와 일치한다.
+
 ### 2026-04-06: Cycle 399 완료 (README 대표 화면 스크린샷 확대 및 다양화)
 - 완료 내용
   - 루트 [README.md](/Users/alex/project/townpet/README.md)의 `대표 화면` 섹션을 작은 3칸 표에서 큰 섹션형 레이아웃으로 바꿨다.
