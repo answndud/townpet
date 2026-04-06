@@ -16,6 +16,20 @@
 - Cycle 33: 신규 계정 안전 정책 관리자 설정화 + DB/UI E2E 플로우 완료
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
+### 2026-04-06: Cycle 396 완료 (지원용 README 포트폴리오 랜딩 정리)
+- 완료 내용
+  - 루트 [README.md](/Users/alex/project/townpet/README.md)를 설치 안내 중심 문서에서 한국어 기준의 지원용 포트폴리오 랜딩으로 전면 재작성했다.
+  - 첫 화면에서 바로 보이도록 `한 줄 소개`, `라이브 데모`, `대표 화면`, `핵심 기능`, `AI-native 개발 방식`, `빠른 실행`만 남기고 장황한 설치/스크립트 목록은 제거했다.
+  - README용 스크린샷 자산을 [docs/assets/readme](/Users/alex/project/townpet/docs/assets/readme)에 추가했다.
+    - [feed-desktop.png](/Users/alex/project/townpet/docs/assets/readme/feed-desktop.png)
+    - [search-desktop.png](/Users/alex/project/townpet/docs/assets/readme/search-desktop.png)
+    - [feed-mobile.png](/Users/alex/project/townpet/docs/assets/readme/feed-mobile.png)
+- 검증 결과
+  - `git diff --check` 통과
+- 메모
+  - README는 “무엇을 만들었는지”보다 “AI agent 기반으로 설계·구현·검증·운영까지 끝까지 밀어붙인 프로젝트”라는 메시지가 30초 안에 보이도록 압축했다.
+  - public 화면 기준으로 캡처했기 때문에 관리자 화면은 스크린샷보다 본문 설명에 무게를 두었다.
+
 ### 2026-04-04: Cycle 393 완료 (social dev login security preflight parity 보강)
 - 완료 내용
   - `app/scripts/check-security-env.ts`에 `SOCIAL_DEV_LOGIN` 항목을 추가해 production/strict preflight가 `ENABLE_SOCIAL_DEV_LOGIN=1` 상태를 즉시 `FAIL`로 잡도록 정렬했다.
