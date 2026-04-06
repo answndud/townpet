@@ -7,6 +7,12 @@
 TownPet은 단순 CRUD 토이 프로젝트가 아니라, 실제 서비스처럼 `피드 · 검색 · 인증 · 신고/제재 · 관리자 도구 · 운영 대시보드`까지 한 흐름으로 닫은 프로젝트입니다.
 특히 이 프로젝트는 AI를 자동완성 도구가 아니라, **문제 분해 → 구현 → 테스트 → 배포 → 운영 개선**까지 함께 돌리는 개발 시스템으로 사용한 점이 핵심입니다.
 
+## 왜 시작했는가
+
+- 예비창업패키지 관점에서, 지역 반려인은 병원·돌봄·산책·분실·거래 정보를 여러 채널에서 따로 찾아야 해서 시간과 신뢰 비용이 크다는 문제를 먼저 봤습니다.
+- TownPet은 범용 반려 앱이 아니라, `지역 + 상황` 중심으로 지금 바로 실행 가능한 정보를 더 빨리 찾게 만드는 로컬 반려 커뮤니티/플랫폼을 목표로 했습니다.
+- 그래서 기능 수를 늘리기보다 `템플릿 기반 글쓰기`, `Local / Global 분리`, `신고/제재/운영 로그` 같은 신뢰 장치를 제품 기본값으로 먼저 설계했습니다.
+
 ## 한눈에 보기
 
 - `LOCAL / GLOBAL` 정책이 분리된 커뮤니티 피드와 검색
@@ -17,13 +23,43 @@ TownPet은 단순 CRUD 토이 프로젝트가 아니라, 실제 서비스처럼 
 
 ## 대표 화면
 
-| 피드 | 검색 | 모바일 |
-|---|---|---|
-| ![TownPet 피드](./docs/assets/readme/feed-desktop.png) | ![TownPet 검색](./docs/assets/readme/search-desktop.png) | ![TownPet 모바일 피드](./docs/assets/readme/feed-mobile.png) |
+**전체 피드**
 
-- 피드: 게시판/정렬/기간 필터를 가진 커뮤니티 기본 화면
-- 검색: 검색 범위와 자동완성, zero-result 운영 개선을 반영한 검색 화면
-- 모바일: 헤더 밀도와 진입성을 정리한 모바일 사용성 대응 화면
+<img src="./docs/assets/readme/feed-desktop.png" alt="TownPet 전체 피드" width="1100" />
+
+- 게시판 태그, 정렬, 기간 필터가 한 화면에 보이는 커뮤니티 기본 화면
+
+**게시글 검색**
+
+<img src="./docs/assets/readme/search-desktop.png" alt="TownPet 게시글 검색" width="1100" />
+
+- 검색 결과, 자동완성, zero-result 운영 개선이 연결되는 검색 화면
+
+**유기동물 입양 게시판**
+
+<img src="./docs/assets/readme/adoption-desktop.png" alt="TownPet 유기동물 입양 게시판" width="1100" />
+
+- 보호소, 지역, 품종 같은 구조화 정보를 카드 중심으로 보여주는 전용 게시판
+
+**중고 · 공동구매 게시판**
+
+<img src="./docs/assets/readme/market-desktop.png" alt="TownPet 중고 공동구매 게시판" width="1100" />
+
+- 장터/공동구매 타입이 피드 필터와 함께 동작하는 거래형 게시판 화면
+
+**글 상세와 댓글/반응**
+
+<img src="./docs/assets/readme/post-detail-desktop.png" alt="TownPet 글 상세와 댓글" width="1100" />
+
+- 글 본문, 구조화 메타 정보, 댓글, 반응까지 한 흐름으로 보여주는 상세 화면
+
+**모바일 사용성**
+
+<p align="center">
+  <img src="./docs/assets/readme/adoption-mobile.png" alt="TownPet 모바일 입양 게시판" width="420" />
+</p>
+
+- 모바일에서도 검색과 게시판 탐색이 바로 가능하도록 헤더 밀도와 진입성을 정리했다.
 
 ## 이 프로젝트가 보여주는 것
 

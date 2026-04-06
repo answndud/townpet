@@ -16,6 +16,34 @@
 - Cycle 33: 신규 계정 안전 정책 관리자 설정화 + DB/UI E2E 플로우 완료
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
+### 2026-04-06: Cycle 398 완료 (README에 예비창업패키지 맥락의 프로젝트 목적 보강)
+- 완료 내용
+  - 루트 [README.md](/Users/alex/project/townpet/README.md)에 `왜 시작했는가` 섹션을 추가했다.
+  - 예비창업패키지 제출용 문서 톤과 맞추기 위해 아래 사업 문서를 근거로 README 문구를 압축했다.
+    - [지원사업_제출용_1페이지.md](/Users/alex/project/townpet/docs/business/지원사업_제출용_1페이지.md)
+    - [외부_서비스_개요.md](/Users/alex/project/townpet/docs/business/외부_서비스_개요.md)
+    - [경쟁_대체재_분석.md](/Users/alex/project/townpet/docs/business/경쟁_대체재_분석.md)
+  - 추가 문구는 `지역 반려 정보 분산 문제`, `지역 + 상황 중심 접근`, `신뢰 장치를 제품 기본값으로 둔 이유`만 남기고 3개 bullet로 제한했다.
+- 검증 결과
+  - `git diff --check` 통과
+- 메모
+  - README는 계속 지원용 랜딩 문서 성격을 유지해야 하므로, 사업 배경은 길게 늘리지 않고 문제/접근/차별화만 바로 읽히게 두었다.
+
+### 2026-04-06: Cycle 399 완료 (README 대표 화면 스크린샷 확대 및 다양화)
+- 완료 내용
+  - 루트 [README.md](/Users/alex/project/townpet/README.md)의 `대표 화면` 섹션을 작은 3칸 표에서 큰 섹션형 레이아웃으로 바꿨다.
+  - 실제 배포 사이트 기준으로 README용 스크린샷을 다시 캡처하고 반영했다.
+    - [feed-desktop.png](/Users/alex/project/townpet/docs/assets/readme/feed-desktop.png)
+    - [search-desktop.png](/Users/alex/project/townpet/docs/assets/readme/search-desktop.png)
+    - [adoption-desktop.png](/Users/alex/project/townpet/docs/assets/readme/adoption-desktop.png)
+    - [post-detail-desktop.png](/Users/alex/project/townpet/docs/assets/readme/post-detail-desktop.png)
+    - [adoption-mobile.png](/Users/alex/project/townpet/docs/assets/readme/adoption-mobile.png)
+  - 기존보다 더 다양한 제품 면이 보이도록 `피드`, `검색`, `입양 게시판`, `중고/공동구매 게시판`, `글 상세(댓글/반응)`, `모바일` 기준으로 화면을 구성했다.
+- 검증 결과
+  - `git diff --check` 통과
+- 메모
+  - 기존 `feed-mobile.png`는 보존했지만 README 대표 화면에서는 더미데이터가 잘 보이는 `adoption-mobile.png`를 사용하도록 교체했다.
+
 ### 2026-04-06: Cycle 397 완료 (production 공개 화면용 데모 콘텐츠 시드 경로 추가)
 - 완료 내용
   - non-local DB에서 명시적 확인 없이는 실행되지 않는 production 데모 콘텐츠 설정 helper를 추가했다.
