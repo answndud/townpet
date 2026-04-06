@@ -4,6 +4,7 @@ import {
   PRODUCTION_DEMO_CONTENT_CONFIRM_ENV_KEY,
   PRODUCTION_DEMO_CONTENT_CONFIRM_VALUE,
   buildDemoAccountEmail,
+  buildDemoPostImageUrl,
   resolveDemoContentSeedConfig,
 } from "@/server/demo-content-seeding";
 
@@ -59,5 +60,17 @@ describe("buildDemoAccountEmail", () => {
     expect(() => buildDemoAccountEmail("샘플", "demo.example.com")).toThrow(
       "Invalid demo account local-part",
     );
+  });
+});
+
+describe("buildDemoPostImageUrl", () => {
+  it("maps known demo seeds to local raster assets", () => {
+    expect(buildDemoPostImageUrl("adoption-maru")).toBe("/demo/adoption/maru.jpg");
+    expect(buildDemoPostImageUrl("pet-showcase-coco")).toBe("/demo/adoption/moka.jpg");
+  });
+
+  it("falls back to a stable local asset for unknown seeds", () => {
+    expect(buildDemoPostImageUrl("unknown-seed")).toBe("/demo/adoption/coco.jpg");
+    expect(buildDemoPostImageUrl("")).toBe("/demo/adoption/coco.jpg");
   });
 });

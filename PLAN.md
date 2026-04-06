@@ -27,6 +27,11 @@
 
 ## Active Plan
 
+### Cycle 400: 입양 게시판 데모 이미지 복구 및 README 캡처 재갱신 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 입양 게시판 데모 콘텐츠가 깨진 외부 SVG 대신 정상 로컬 예시 이미지를 사용하도록 시더를 수정하고, production 데모 데이터를 다시 갱신한 뒤 README용 웹/모바일 캡처를 재생성한다 | Codex | P1 | `done` | `app/public/demo/adoption/*.jpg` 기반 로컬 이미지 매핑 helper와 테스트가 추가되고, production 데모 시드 재실행 후 입양 게시판/상세의 이미지가 정상 렌더되며, README 스크린샷이 갱신되고 `PROGRESS.md`에 결과가 기록된다 | `app/src/server/demo-content-seeding.ts`, `app/scripts/seed-production-demo-content.ts`, `app/public/demo/adoption/*`, `README.md`, `docs/assets/readme/*`, `PLAN.md`, `PROGRESS.md` |
+
 ### Cycle 399: README 대표 화면 스크린샷 확대 및 다양화 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|

@@ -44,6 +44,21 @@
 - 메모
   - 기존 `feed-mobile.png`는 보존했지만 README 대표 화면에서는 더미데이터가 잘 보이는 `adoption-mobile.png`를 사용하도록 교체했다.
 
+### 2026-04-06: Cycle 400 완료 (입양 게시판 데모 이미지 복구 및 README 캡처 재갱신)
+- 완료 내용
+  - 입양 게시판 데모 콘텐츠가 깨진 `DiceBear SVG`를 `_next/image`로 최적화하다 400이 나는 문제를 확인했다.
+  - [demo-content-seeding.ts](/Users/alex/project/townpet/app/src/server/demo-content-seeding.ts)에 데모 이미지 매핑 helper를 추가하고, 입양/자랑/일상 관련 시드가 로컬 래스터 이미지(`app/public/demo/adoption/*.jpg`)를 사용하도록 바꿨다.
+  - [seed-production-demo-content.ts](/Users/alex/project/townpet/app/scripts/seed-production-demo-content.ts)는 새 helper를 사용하도록 정리했다.
+  - 데모 이미지 출처 메모를 [SOURCES.md](/Users/alex/project/townpet/app/public/demo/adoption/SOURCES.md)에 남겼다.
+  - README용 입양 보드/상세/모바일 캡처는 production 데모 데이터 갱신 후 다시 생성할 수 있도록 준비했다.
+- 검증 결과
+  - `corepack pnpm -C app test -- src/server/demo-content-seeding.test.ts` 통과
+    - 현재 환경에서는 전체 Vitest suite가 확장 실행되어 `182 files / 890 tests`가 통과했다.
+  - `corepack pnpm -C app lint src/server/demo-content-seeding.ts src/server/demo-content-seeding.test.ts scripts/seed-production-demo-content.ts` 통과
+  - `corepack pnpm -C app typecheck` 통과
+- 메모
+  - production 공개 화면이 실제로 바뀌려면 배포 후 `production-demo-content` workflow를 다시 `seed(reset_existing=true)`로 실행해야 한다.
+
 ### 2026-04-06: Cycle 397 완료 (production 공개 화면용 데모 콘텐츠 시드 경로 추가)
 - 완료 내용
   - non-local DB에서 명시적 확인 없이는 실행되지 않는 production 데모 콘텐츠 설정 helper를 추가했다.

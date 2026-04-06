@@ -16,6 +16,16 @@ export type DemoContentSeedConfig = {
   includeLostFound: boolean;
 };
 
+const DEMO_POST_IMAGE_PATHS: Record<string, string> = {
+  "daily-share-mangwon": "/demo/adoption/coco.jpg",
+  "pet-showcase-coco": "/demo/adoption/moka.jpg",
+  "adoption-coco": "/demo/adoption/coco.jpg",
+  "adoption-maru": "/demo/adoption/maru.jpg",
+  "adoption-moka": "/demo/adoption/moka.jpg",
+};
+
+const DEFAULT_DEMO_POST_IMAGE_PATH = "/demo/adoption/coco.jpg";
+
 function parseBooleanFlag(value: string | undefined, defaultValue: boolean) {
   if (typeof value !== "string") {
     return defaultValue;
@@ -70,4 +80,13 @@ export function buildDemoAccountEmail(localPart: string, emailDomain: string) {
   }
 
   return `${normalizedLocalPart}@${emailDomain}`;
+}
+
+export function buildDemoPostImageUrl(seed: string) {
+  const normalizedSeed = seed.trim().toLowerCase();
+  if (!normalizedSeed) {
+    return DEFAULT_DEMO_POST_IMAGE_PATH;
+  }
+
+  return DEMO_POST_IMAGE_PATHS[normalizedSeed] ?? DEFAULT_DEMO_POST_IMAGE_PATH;
 }

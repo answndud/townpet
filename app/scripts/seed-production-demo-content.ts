@@ -21,6 +21,7 @@ import { resolveBoardByPostType } from "../src/lib/community-board";
 import { buildPostStructuredSearchText } from "../src/lib/post-structured-search";
 import {
   buildDemoAccountEmail,
+  buildDemoPostImageUrl,
   resolveDemoContentSeedConfig,
   type DemoContentSeedMode,
 } from "../src/server/demo-content-seeding";
@@ -518,10 +519,6 @@ function buildAvatarUrl(seed: string) {
   return `https://api.dicebear.com/9.x/fun-emoji/svg?seed=${encodeURIComponent(seed)}`;
 }
 
-function buildPostImageUrl(seed: string) {
-  return `https://api.dicebear.com/9.x/shapes/svg?seed=${encodeURIComponent(seed)}`;
-}
-
 function toStringArray(
   value:
     | readonly string[]
@@ -934,7 +931,7 @@ async function seedPosts(params: {
       index % 5 === 0
         ? pickParticipantKeys([spec.author, ...postLikeBy], index + 5, 1)
         : [];
-    const imageUrls = (spec.imageSeeds ?? []).map((seed) => buildPostImageUrl(seed));
+    const imageUrls = (spec.imageSeeds ?? []).map((seed) => buildDemoPostImageUrl(seed));
 
     const post = await prisma.post.create({
       data: {
