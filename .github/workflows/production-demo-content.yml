@@ -1,0 +1,93 @@
+name: production-demo-content
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Run mode: seed or cleanup"
+        required: true
+        default: "seed"
+        type: choice
+        options:
+          - seed
+          - cleanup
+      email_domain:
+        description: "Owned demo email domain for public sample authors"
+        required: true
+        default: "demo.townpet.co.kr"
+        type: string
+      reset_existing:
+        description: "Delete existing demo posts before reseeding"
+        required: true
+        default: true
+        type: boolean
+      include_lost_found:
+        description: "Include explicit sample LOST_FOUND content"
+        required: true
+        default: false
+        type: boolean
+
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production
+    defaults:
+      run:
+        working-directory: app
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      PRODUCTION_DEMO_CONTENT_CONFIRM: PRODUCTION_DEMO_CONTENT
+      DEMO_CONTENT_MODE: ${{ inputs.mode }}
+      DEMO_CONTENT_EMAIL_DOMAIN: ${{ inputs.email_domain }}
+      DEMO_CONTENT_RESET_EXISTING: ${{ inputs.reset_existing }}
+      DEMO_CONTENT_INCLUDE_LOST_FOUND: ${{ inputs.include_lost_found }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: app/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm prisma generate
+
+      - name: Seed production demo content
+        shell: bash
+        run: |
+          set -euo pipefail
+          output_file="$RUNNER_TEMP/production-demo-content.log"
+
+          pnpm db:seed:production-demo-content | tee "$output_file"
+
+          {
+            echo "## production-demo-content"
+            echo
+            echo "- mode: ${DEMO_CONTENT_MODE}"
+            echo "- email_domain: ${DEMO_CONTENT_EMAIL_DOMAIN}"
+            echo "- reset_existing: ${DEMO_CONTENT_RESET_EXISTING}"
+            echo "- include_lost_found: ${DEMO_CONTENT_INCLUDE_LOST_FOUND}"
+            echo
+            echo '```text'
+            cat "$output_file"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload seed summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-demo-content-${{ github.run_id }}
+          path: ${{ runner.temp }}/production-demo-content.log

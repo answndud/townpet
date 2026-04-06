@@ -32,6 +32,7 @@
     "db:seed:comment-best-demo": "tsx scripts/seed-comment-best-demo.ts",
     "db:seed:engagement": "tsx scripts/seed-engagement.ts",
     "db:seed:local-test-accounts": "tsx scripts/seed-local-test-accounts.ts",
+    "db:seed:production-demo-content": "tsx scripts/seed-production-demo-content.ts",
     "db:seed:users": "tsx scripts/seed-users.ts",
     "db:seed:search-cases": "tsx scripts/seed-search-cases.ts",
     "db:seed:passwords": "tsx scripts/seed-passwords.ts",
