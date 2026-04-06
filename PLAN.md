@@ -27,6 +27,12 @@
 
 ## Active Plan
 
+### Cycle 397: production 공개 화면용 데모 콘텐츠 시드 경로 추가 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| production-safe 데모 콘텐츠 시더와 cleanup 모드 추가 | Codex | P1 | `done` | owned demo 도메인 + explicit confirm env 없이는 non-local DB에 실행되지 않는 공개 데모 게시글/댓글/반응 시더가 추가되고, cleanup 모드로 되돌릴 수 있으며, 최소 한 개의 실패 경로 테스트가 존재한다 | `app/src/server/demo-content-seeding.ts`, `app/src/server/demo-content-seeding.test.ts`, `app/scripts/seed-production-demo-content.ts` |
+| production environment에서 실행 가능한 GitHub workflow와 운영 가이드 추가 | Codex | P1 | `done` | `workflow_dispatch` 기반 production workflow가 추가되고, 운영 가이드에 seed/cleanup 절차가 문서화되며, `PLAN.md`/`PROGRESS.md`에 검증 결과가 기록된다 | `.github/workflows/production-demo-content.yml`, `app/package.json`, `docs/개발_운영_가이드.md`, `PLAN.md`, `PROGRESS.md` |
+
 ### Cycle 396: 지원용 README 포트폴리오 랜딩 정리 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|

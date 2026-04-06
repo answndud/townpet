@@ -16,6 +16,28 @@
 - Cycle 33: 신규 계정 안전 정책 관리자 설정화 + DB/UI E2E 플로우 완료
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
+### 2026-04-06: Cycle 397 완료 (production 공개 화면용 데모 콘텐츠 시드 경로 추가)
+- 완료 내용
+  - non-local DB에서 명시적 확인 없이는 실행되지 않는 production 데모 콘텐츠 설정 helper를 추가했다.
+    - `app/src/server/demo-content-seeding.ts`
+    - `app/src/server/demo-content-seeding.test.ts`
+  - 공개 사이트 화면 캡처용 샘플 게시글/댓글/반응을 넣는 전용 시더를 추가했다.
+    - `app/scripts/seed-production-demo-content.ts`
+    - 기본 범위는 자유글/일상공유/자랑/리뷰/질문/병원후기/장소후기/산책코스/장터/모임/입양/봉사이며, `LOST_FOUND`는 기본 제외로 두었다.
+    - demo 작성자 계정은 owned 도메인 기반 샘플 계정으로 upsert하고, cleanup 모드에서는 샘플 게시글과 샘플 계정을 함께 제거할 수 있게 했다.
+  - production environment에서 직접 실행할 수 있는 수동 workflow와 운영 문서를 추가했다.
+    - `.github/workflows/production-demo-content.yml`
+    - `app/package.json`
+    - `docs/개발_운영_가이드.md`
+- 검증 결과
+  - `corepack pnpm -C app lint src/server/demo-content-seeding.ts src/server/demo-content-seeding.test.ts scripts/seed-production-demo-content.ts` 통과
+  - `corepack pnpm -C app test -- src/server/demo-content-seeding.test.ts` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `182 files / 888 tests` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `git diff --check` 통과
+- 메모
+  - 실제 production 데이터 주입은 `production-demo-content` workflow를 수동 실행해 seed/cleanup 할 수 있다.
+  - `DEMO_CONTENT_EMAIL_DOMAIN`은 반드시 본인이 소유한 도메인/서브도메인을 사용해야 한다.
+
 ### 2026-04-06: Cycle 396 완료 (지원용 README 포트폴리오 랜딩 정리)
 - 완료 내용
   - 루트 [README.md](/Users/alex/project/townpet/README.md)를 설치 안내 중심 문서에서 한국어 기준의 지원용 포트폴리오 랜딩으로 전면 재작성했다.
