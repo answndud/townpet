@@ -27,6 +27,16 @@
 
 ## Active Plan
 
+### Cycle 402: README 사업 아이디어 강조 및 2열 화면 구성 정리 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 루트 README에서 직접적인 지원사업 언급을 제거하고, 사업 아이디어/제품 차별화 메시지를 앞에 배치한 뒤 대표 화면은 2열 레이아웃으로 줄여 가독성을 높인다 | Codex | P2 | `done` | `README.md` 상단에는 사업 아이디어와 제품 차별화가 먼저 보이고, 대표 화면은 한 줄 2장 배열로 재구성되며, 관련 결과가 `PROGRESS.md`에 기록된다 | `README.md`, `PLAN.md`, `PROGRESS.md`, `docs/assets/readme/*` |
+
+### Cycle 401: README 입양 게시판 웹/모바일 캡처 최종 갱신 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| production 데모 콘텐츠 재시드 후 README에 쓰는 입양 게시판 웹/모바일 스크린샷을 실제 렌더 기준으로 다시 캡처하고, 깨지던 이미지가 더 이상 보이지 않도록 갱신한다 | Codex | P2 | `done` | `docs/assets/readme/adoption-desktop.png`, `docs/assets/readme/adoption-mobile.png`가 production 기준 최신 캡처로 갱신되고, 카드 이미지가 실제 사진으로 정상 노출되며 `PROGRESS.md`에 결과가 기록된다 | `docs/assets/readme/adoption-desktop.png`, `docs/assets/readme/adoption-mobile.png`, `PLAN.md`, `PROGRESS.md` |
+
 ### Cycle 400: 입양 게시판 데모 이미지 복구 및 README 캡처 재갱신 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
