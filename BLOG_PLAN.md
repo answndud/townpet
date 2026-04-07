@@ -25,7 +25,28 @@
 | `blog/00_js_for_backend_engineers.md` | Python/Java 개발자를 위한 JS/Next 번역 가이드 | `done` |
 | `blog/02-how-townpet-is-structured.md` | 저장소 전체 구조와 읽는 순서 설명 | `done` |
 | `blog/03-nextjs-app-router-for-backend-engineers.md` | App Router를 백엔드 관점으로 번역 | `done` |
+| `blog/04-server-component-and-client-component-boundary.md` | Server Component / Client Component 경계 설명 | `done` |
 | `blog/05-prisma-zod-service-route-order.md` | Prisma -> Zod -> Service -> Route/UI 읽기 순서 설명 | `done` |
+| `blog/06-feed-and-board-architecture.md` | 피드, 보드, read model 구조 설명 | `done` |
+| `blog/07-post-create-edit-delete-flow.md` | 글 작성/수정/삭제 흐름 설명 | `done` |
+| `blog/08-comments-and-reactions-architecture.md` | 댓글, reply, best comment, 반응 구조 설명 | `done` |
+| `blog/09-search-structured-search-and-suggestions.md` | 검색, 구조화 검색, suggestion 설명 | `done` |
+| `blog/11-credentials-kakao-naver-auth.md` | Credentials/Kakao/Naver 인증 구조 설명 | `done` |
+| `blog/12-session-role-and-admin-surface.md` | 세션, role, 관리자 surface 설명 | `done` |
+| `blog/13-social-account-link-unlink-lifecycle.md` | 소셜 계정 연결/해제 lifecycle 설명 | `done` |
+| `blog/14-report-block-sanction-direct-moderation.md` | 신고/차단/제재/직접 모더레이션 설명 | `done` |
+| `blog/15-admin-hub-and-ops-dashboard.md` | 관리자 허브와 `/admin/ops` 운영 대시보드 설명 | `done` |
+| `blog/16-rate-limit-guest-safety-and-abuse-defense.md` | rate limit, guest safety, abuse defense 설명 | `done` |
+| `blog/10-notification-center-and-unread-sync.md` | 알림 센터, unread sync, redirect 흐름 설명 | `done` |
+| `blog/17-prisma-migrations-and-schema-drift-response.md` | Prisma migration과 schema drift 대응 설명 | `done` |
+| `blog/18-health-check-retention-cleanup-and-maintenance-workflows.md` | health/cleanup/maintenance workflow 설명 | `done` |
+| `blog/19-testing-and-quality-gate.md` | Vitest/Playwright/quality gate/ops smoke 전략 설명 | `done` |
+| `blog/20-performance-story-search-cache-pagination.md` | 캐시/검색/페이지네이션 기반 성능 개선 설명 | `done` |
+| `blog/21-business-idea-and-expansion-axes.md` | TownPet의 비즈니스 아이디어와 확장축 설명 | `done` |
+| `blog/22-phase2-roadmap-and-product-expansion.md` | Phase 2 로드맵과 제품 확장 방향 설명 | `done` |
+| `blog/01-why-townpet-exists.md` | TownPet 문제 정의와 출발점 설명 | `done` |
+| `blog/23-how-ai-agents-were-used-in-real-development.md` | AI agent 기반 개발 방식 설명 | `done` |
+| `blog/24-demo-docs-and-interview-pack.md` | README/데모/문서/면접 패키지 설명 | `done` |
 
 ## 실제 연재 구조 초안
 
@@ -68,15 +89,13 @@
 24. 데모/문서/면접 패키지로 프로젝트를 마감하기
 
 ## 집필 우선순위
-1. `11` Credentials + Kakao + Naver 인증 구조
-2. `14` 신고, 차단, 제재, 직접 모더레이션
-3. `09` 검색, 구조화 검색, suggestion
-4. `15` 관리자 허브와 운영 대시보드
-5. `19` Vitest / Playwright / quality-gate 전략
+1. `01 / 21 / 22 / 24` 사이의 제품-사업 서사 연결 문장 보강
+2. `09 / 15 / 19 / 20` 다이어그램 및 운영 캡처 보강
+3. 주요 글에 면접 Q&A 부록 추가
 
 이유:
-- 구조와 프레임워크를 먼저 번역해야 이후 글이 읽힌다.
-- TownPet의 강점은 CRUD보다 인증, 검색, 운영, 모더레이션까지 닫았다는 점이라 그 축을 빨리 보여주는 편이 좋다.
+- 핵심 본문 `01`부터 `24`까지 초안이 모두 채워졌다.
+- 이제는 새 글 추가보다, 제품 서사와 시각 자료, 면접 대응 밀도를 높이는 보강 단계가 더 중요하다.
 
 ## 각 글에 꼭 들어가야 할 것
 - 이번 글에서 풀 문제

@@ -16,6 +16,42 @@
 - Cycle 33: 신규 계정 안전 정책 관리자 설정화 + DB/UI E2E 플로우 완료
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
+### 2026-04-07: Cycle 420 완료 (TownPet blog 댓글/사업 아이디어/Phase 2 본문 3개 작성)
+- 완료 내용
+  - [08-comments-and-reactions-architecture.md](/Users/alex/project/townpet/blog/08-comments-and-reactions-architecture.md)를 추가해 댓글 create/update/delete, guest/auth 분기, root 기준 페이지네이션, best comment jump, reaction optimistic UI 구조를 정리했다.
+  - [21-business-idea-and-expansion-axes.md](/Users/alex/project/townpet/blog/21-business-idea-and-expansion-axes.md)를 추가해 TownPet의 `지역 + 상황` 구조, structured board, ops/moderation, B2B 초기 수익화 아이디어가 어떻게 한 제품 논리로 이어지는지 설명했다.
+  - [22-phase2-roadmap-and-product-expansion.md](/Users/alex/project/townpet/blog/22-phase2-roadmap-and-product-expansion.md)를 추가해 검색/개인화 우선, 마켓 상태 머신, 케어 요청, 지도, 결제를 어떤 리스크 순서로 여는지 정리했다.
+  - [blog/README.md](/Users/alex/project/townpet/blog/README.md), [00_series_plan.md](/Users/alex/project/townpet/blog/00_series_plan.md), [BLOG_PLAN.md](/Users/alex/project/townpet/BLOG_PLAN.md), [BLOG_PROGRESS.md](/Users/alex/project/townpet/BLOG_PROGRESS.md)도 새 본문 링크와 다음 우선순위에 맞게 갱신했다.
+- 검증 결과
+  - 본문에서 참조한 핵심 route/action/service/query/file, 제품/사업 문서 존재 여부를 직접 확인했다.
+  - `git diff --check` 통과
+- 메모
+  - 다음 블로그 우선순위는 `AI agent를 실제 개발 방식에 어떻게 녹였는가`, `데모/문서/면접 패키지`, `왜 TownPet를 만들었는가`다.
+
+### 2026-04-07: Cycle 421 완료 (TownPet blog 문제 정의/AI agent/데모 패키지 본문 3개 작성)
+- 완료 내용
+  - [01-why-townpet-exists.md](/Users/alex/project/townpet/blog/01-why-townpet-exists.md)를 추가해 TownPet가 해결하려는 문제, `지역 + 상황` 구조, 구조화 입력과 moderation/ops를 제품 기본값으로 둔 이유를 정리했다.
+  - [23-how-ai-agents-were-used-in-real-development.md](/Users/alex/project/townpet/blog/23-how-ai-agents-were-used-in-real-development.md)를 추가해 `PLAN.md`/`PROGRESS.md`, 에이전트 운영 가이드, 프롬프트 템플릿, quality gate를 중심으로 TownPet의 AI-native 개발 방식을 설명했다.
+  - [24-demo-docs-and-interview-pack.md](/Users/alex/project/townpet/blog/24-demo-docs-and-interview-pack.md)를 추가해 README, 라이브 데모, `/admin/ops`, 운영/보안 문서, 블로그 시리즈를 하나의 데모/문서/면접 패키지로 묶는 방법을 정리했다.
+  - [blog/README.md](/Users/alex/project/townpet/blog/README.md), [00_series_plan.md](/Users/alex/project/townpet/blog/00_series_plan.md), [BLOG_PLAN.md](/Users/alex/project/townpet/BLOG_PLAN.md), [BLOG_PROGRESS.md](/Users/alex/project/townpet/BLOG_PROGRESS.md)도 새 본문 링크와 이후 보강 우선순위에 맞게 갱신했다.
+- 검증 결과
+  - 본문에서 참조한 핵심 README, 운영 문서, 보안 문서, workflow, route/action/service/query 파일 존재 여부를 직접 확인했다.
+  - `git diff --check` 통과
+- 메모
+  - 핵심 블로그 시리즈 `01`부터 `24`까지 초안이 모두 채워졌고, 다음 보강 축은 다이어그램/캡처/면접 Q&A 확장이다.
+
+### 2026-04-07: Cycle 419 완료 (TownPet blog Server/Client 경계/피드 구조/글 CRUD 본문 3개 작성)
+- 완료 내용
+  - [04-server-component-and-client-component-boundary.md](/Users/alex/project/townpet/blog/04-server-component-and-client-component-boundary.md)를 추가해 `page.tsx`, client component, server action, route handler가 TownPet에서 어떻게 역할을 나누는지 정리했다.
+  - [06-feed-and-board-architecture.md](/Users/alex/project/townpet/blog/06-feed-and-board-architecture.md)를 추가해 `/feed`, guest feed, `/boards/adoption`, `post.queries.ts`, `community.queries.ts`가 각각 어떤 읽기 표면을 담당하는지 설명했다.
+  - [07-post-create-edit-delete-flow.md](/Users/alex/project/townpet/blog/07-post-create-edit-delete-flow.md)를 추가해 `post.ts` validation, `post.service.ts`, `server/actions/post.ts`, `/api/posts` route, create/edit/delete UI가 어떤 순서로 연결되는지 정리했다.
+  - [blog/README.md](/Users/alex/project/townpet/blog/README.md), [00_series_plan.md](/Users/alex/project/townpet/blog/00_series_plan.md), [BLOG_PLAN.md](/Users/alex/project/townpet/BLOG_PLAN.md), [BLOG_PROGRESS.md](/Users/alex/project/townpet/BLOG_PROGRESS.md)도 새 본문 링크와 다음 우선순위에 맞게 갱신했다.
+- 검증 결과
+  - 본문에서 참조한 핵심 page, component, action, route, service, query 파일 존재 여부를 직접 확인했다.
+  - `git diff --check` 통과
+- 메모
+  - 다음 블로그 우선순위는 `댓글과 반응 구조`, `비즈니스 아이디어와 확장축`, `Phase 2 로드맵`, `AI agent 개발 방식`, `데모/면접 패키지`다.
+
 ### 2026-04-07: Cycle 418 완료 (TownPet blog 세션/abuse 방어/migration drift 본문 3개 작성)
 - 완료 내용
   - [12-session-role-and-admin-surface.md](/Users/alex/project/townpet/blog/12-session-role-and-admin-surface.md)를 추가해 NextAuth callback, `sessionVersion`, `server/auth.ts`, `admin-page-access.ts`, `middleware.ts`, `AdminSectionNav`, admin-only API/action이 role과 surface를 어떻게 나누는지 정리했다.
