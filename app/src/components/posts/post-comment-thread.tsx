@@ -15,6 +15,11 @@ import {
   POST_COMMENT_FORM_MUTED_CLASS_NAME,
   POST_COMMENT_FORM_PANEL_CLASS_NAME,
   POST_COMMENT_THREAD_CARD_CLASS_NAME,
+  POST_COMMENT_THREAD_ACTIONS_CLASS_NAME,
+  POST_COMMENT_THREAD_FOOTER_CLASS_NAME,
+  POST_COMMENT_THREAD_META_ROW_CLASS_NAME,
+  POST_COMMENT_THREAD_REPLY_CARD_CLASS_NAME,
+  POST_COMMENT_REPLY_GUIDE_CLASS_NAME,
 } from "@/components/posts/post-comment-layout-class";
 import { PostReportForm } from "@/components/posts/post-report-form";
 import {
@@ -75,8 +80,6 @@ type CommentFormState = {
 
 const COMMENT_DIVIDER_CLASS_NAME = "divide-[#edf3fb]";
 const COMMENT_BORDER_CLASS_NAME = "border-[#eaf1fb]";
-const COMMENT_REPLY_GUIDE_CLASS_NAME =
-  "before:bg-[#edf3fb] relative mt-2 ml-8 space-y-1.5 pl-3 before:absolute before:bottom-0 before:left-0 before:top-0 before:w-px before:content-['']";
 const COMMENT_REPLY_BADGE_CLASS_NAME =
   "tp-text-muted inline-flex h-5 items-center rounded-md border border-[#e7eef9] bg-white px-1.5 text-[10px] font-medium";
 const MUTED_COMMENT_PLACEHOLDER_TEXT = "뮤트한 사용자 댓글입니다.";
@@ -556,7 +559,11 @@ export function PostCommentThread({
         : resolveUserDisplayName(comment.author.nickname);
     const avatarText = (isMutedPlaceholder ? "뮤" : displayName.slice(0, 1)).toUpperCase();
     const actionLinkClass =
-      "tp-text-muted text-[11px] font-medium transition hover:text-[#2f5da4] hover:underline disabled:cursor-not-allowed disabled:opacity-50";
+      "tp-text-muted rounded-md px-1 py-0.5 text-[11px] font-medium transition hover:bg-[#f4f8ff] hover:text-[#2f5da4] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
+    const commentCardClassName =
+      depth > 0
+        ? `flex gap-2.5 ${POST_COMMENT_THREAD_REPLY_CARD_CLASS_NAME}`
+        : "flex gap-2.5 px-1 py-3";
     const commentBodyText = isDeleted
       ? "삭제된 댓글입니다."
       : isMutedPlaceholder
@@ -569,27 +576,20 @@ export function PostCommentThread({
         id={`comment-${comment.id}`}
         className={depth > 0 ? "mt-2" : undefined}
       >
-        <article
-          className={`flex gap-2.5 px-1 py-2.5 ${
-            isDeleted ? "tp-surface-soft opacity-80" : isMutedPlaceholder ? "tp-surface-soft rounded-md" : ""
-          }`}
-        >
+        <article className={commentCardClassName}>
           <div className="tp-surface-alt tp-text-accent mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold">
             {avatarText}
           </div>
 
           <div className="min-w-0 flex-1">
-            <header className="flex items-start gap-2">
+            <header className="flex items-start justify-between gap-2">
               <div className="min-w-0 flex-1">
-                {isMutedPlaceholder || isGuestComment || !canOpenCommentAuthorMenu(currentUserId) ? (
-                  <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                    <p className="tp-text-heading truncate text-[13px] font-semibold">{displayName}</p>
-                    <p suppressHydrationWarning className="tp-text-subtle text-[11px]">
-                      {formatCommentDate(comment.createdAt)}
+                <div className={POST_COMMENT_THREAD_META_ROW_CLASS_NAME}>
+                  {isMutedPlaceholder || isGuestComment || !canOpenCommentAuthorMenu(currentUserId) ? (
+                    <p className="tp-text-heading truncate text-[14px] font-semibold leading-5">
+                      {displayName}
                     </p>
-                  </div>
-                ) : (
-                  <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                  ) : (
                     <UserActionMenu
                       userId={comment.author.id}
                       displayName={displayName}
@@ -598,32 +598,23 @@ export function PostCommentThread({
                       onMuteStateChange={async () => {
                         await refreshCommentsForRelationChange(comment.id);
                       }}
+                      plainTextClassName="tp-text-heading truncate text-[14px] font-semibold leading-5"
                     />
+                  )}
                     <p suppressHydrationWarning className="tp-text-subtle text-[11px]">
                       {formatCommentDate(comment.createdAt)}
                     </p>
-                  </div>
-                )}
+                  {comment.parentId ? (
+                    <span className={COMMENT_REPLY_BADGE_CLASS_NAME}>답글</span>
+                  ) : null}
+                </div>
               </div>
 
               {!isDeleted && !isMutedPlaceholder ? (
-                <div className="ml-auto flex shrink-0 items-start gap-1.5">
-                  <CommentReactionControls
-                    key={`${comment.id}:${comment.likeCount}:${comment.dislikeCount}:${comment.reactions?.[0]?.type ?? "NONE"}`}
-                    postId={postId}
-                    commentId={comment.id}
-                    likeCount={comment.likeCount}
-                    dislikeCount={comment.dislikeCount}
-                    currentReaction={comment.reactions?.[0]?.type ?? null}
-                    canReact={canReactToComment}
-                    loginHref={loginHref}
-                    compact
-                    className="justify-end"
-                    loginHintAlign="end"
-                  />
+                <div className="ml-auto shrink-0">
                   {canOpenMenu ? (
                     <details className="relative">
-                      <summary className="tp-text-muted list-none rounded-md px-1.5 py-0.5 text-[15px] leading-none hover:bg-[#f1f5fb]">
+                      <summary className="tp-text-muted list-none rounded-md px-1.5 py-0.5 text-[15px] leading-none hover:bg-[#f1f5fb] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2">
                         ···
                       </summary>
                       <div className="tp-border-muted absolute right-0 z-20 mt-1.5 min-w-24 rounded-md border bg-white p-1 shadow-[0_8px_18px_rgba(16,40,74,0.08)]">
@@ -631,7 +622,7 @@ export function PostCommentThread({
                           <>
                             <button
                               type="button"
-                              className="tp-text-heading block w-full rounded px-2 py-1 text-left text-[11px] hover:bg-[#f5f9ff]"
+                              className="tp-text-heading block w-full rounded px-2 py-1 text-left text-[11px] hover:bg-[#f5f9ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1"
                               onClick={() => {
                                 if (isGuestComment) {
                                   setGuestActionPrompt((prev) => ({ ...prev, [comment.id]: "EDIT" }));
@@ -645,7 +636,7 @@ export function PostCommentThread({
                             </button>
                             <button
                               type="button"
-                              className="block w-full rounded px-2 py-1 text-left text-[11px] text-rose-700 hover:bg-rose-50"
+                              className="block w-full rounded px-2 py-1 text-left text-[11px] text-rose-700 hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200 focus-visible:ring-offset-1"
                               onClick={() => {
                                 if (isGuestComment) {
                                   setGuestActionPrompt((prev) => ({ ...prev, [comment.id]: "DELETE" }));
@@ -665,21 +656,19 @@ export function PostCommentThread({
                 </div>
               ) : null}
               {!isDeleted && isMutedPlaceholder && canMuteCommentAuthor(currentUserId, comment.author.id) ? (
-                <div className="ml-auto flex shrink-0 items-start gap-1.5">
-                  <button
-                    type="button"
-                    className="tp-text-muted rounded-md px-1.5 py-0.5 text-[11px] font-medium transition hover:bg-white hover:text-[#2f5da4] hover:underline"
-                    onClick={() => handleUnmute(comment.id, comment.author.id)}
-                    disabled={isPending}
-                  >
-                    뮤트 해제
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  className="tp-text-muted shrink-0 rounded-md px-1.5 py-0.5 text-[11px] font-medium transition hover:bg-white hover:text-[#2f5da4] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2"
+                  onClick={() => handleUnmute(comment.id, comment.author.id)}
+                  disabled={isPending}
+                >
+                  뮤트 해제
+                </button>
               ) : null}
             </header>
 
             <div
-              className={`mt-1 text-[14px] leading-6 ${
+              className={`mt-1.5 text-[14px] leading-6 ${
                 isDeleted || isMutedPlaceholder ? "tp-text-placeholder" : "tp-text-primary"
               }`}
             >
@@ -689,9 +678,9 @@ export function PostCommentThread({
               />
             </div>
 
-            {!isDeleted && (canReply || canReport || (depth === 0 && replies.length > 0)) ? (
-              <div className="mt-2 flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2.5">
+            {!isDeleted && (canReply || canReport || (depth === 0 && replies.length > 0) || !isMutedPlaceholder) ? (
+              <div className={POST_COMMENT_THREAD_FOOTER_CLASS_NAME}>
+                <div className={POST_COMMENT_THREAD_ACTIONS_CLASS_NAME}>
                   {canReply ? (
                     <button
                       type="button"
@@ -732,6 +721,22 @@ export function PostCommentThread({
                     </button>
                   ) : null}
                 </div>
+
+                {!isMutedPlaceholder ? (
+                  <CommentReactionControls
+                    key={`${comment.id}:${comment.likeCount}:${comment.dislikeCount}:${comment.reactions?.[0]?.type ?? "NONE"}`}
+                    postId={postId}
+                    commentId={comment.id}
+                    likeCount={comment.likeCount}
+                    dislikeCount={comment.dislikeCount}
+                    currentReaction={comment.reactions?.[0]?.type ?? null}
+                    canReact={canReactToComment}
+                    loginHref={loginHref}
+                    compact
+                    className="w-full justify-start sm:w-auto sm:justify-end"
+                    loginHintAlign="end"
+                  />
+                ) : null}
               </div>
             ) : null}
 
@@ -749,7 +754,7 @@ export function PostCommentThread({
             {canReply && replyOpen[comment.id] ? (
               <div className={`${POST_COMMENT_FORM_PANEL_CLASS_NAME} mt-2 p-2`}>
                 {!currentUserId ? (
-                  <div className="mb-2 grid gap-1.5 sm:grid-cols-2">
+                  <div className="mb-1.5 grid gap-1.5 sm:grid-cols-2">
                     <input
                       className={`tp-input-soft ${POST_COMMENT_FORM_FIELD_CLASS_NAME} w-full px-2.5 py-1.5 text-[13px]`}
                       value={guestDisplayName}
@@ -768,7 +773,7 @@ export function PostCommentThread({
                   </div>
                 ) : null}
                 <textarea
-                  className={`tp-input-soft ${POST_COMMENT_FORM_FIELD_CLASS_NAME} min-h-[64px] w-full px-2.5 py-1.5 text-[13px]`}
+                  className={`tp-input-soft ${POST_COMMENT_FORM_FIELD_CLASS_NAME} min-h-[56px] w-full px-2.5 py-1.5 text-[13px]`}
                   value={replyContent[comment.id] ?? ""}
                   onChange={(event) =>
                     setReplyContent((prev) => ({
@@ -851,7 +856,7 @@ export function PostCommentThread({
             {(canInteract || isGuestComment) && editOpen[comment.id] && canEdit ? (
               <div className={`${POST_COMMENT_FORM_PANEL_CLASS_NAME} mt-2 p-2`}>
                 <textarea
-                  className={`tp-input-soft ${POST_COMMENT_FORM_FIELD_CLASS_NAME} min-h-[72px] w-full px-3 py-2 text-[13px]`}
+                  className={`tp-input-soft ${POST_COMMENT_FORM_FIELD_CLASS_NAME} min-h-[64px] w-full px-3 py-2 text-[13px]`}
                   value={editContent[comment.id] ?? comment.content}
                   onChange={(event) =>
                     setEditContent((prev) => ({
@@ -875,7 +880,7 @@ export function PostCommentThread({
             ) : null}
 
             {replies.length > 0 && !collapsedReplies[comment.id] ? (
-              <div className={COMMENT_REPLY_GUIDE_CLASS_NAME}>
+              <div className={POST_COMMENT_REPLY_GUIDE_CLASS_NAME}>
                 {replies.map((reply) => renderComment(reply, depth + 1))}
               </div>
             ) : null}
@@ -897,7 +902,7 @@ export function PostCommentThread({
         ? guestAuthorName
         : resolveUserDisplayName(comment.author.nickname);
     const authorNode = isMutedPlaceholder || isGuestComment || !canOpenCommentAuthorMenu(currentUserId) ? (
-      <span className="tp-text-heading truncate text-[13px] font-semibold">{displayName}</span>
+      <span className="tp-text-heading truncate text-[14px] font-semibold leading-5">{displayName}</span>
     ) : (
       <UserActionMenu
         userId={comment.author.id}
@@ -914,11 +919,11 @@ export function PostCommentThread({
       <article
         key={`best-${comment.id}`}
         id={`best-comment-${comment.id}`}
-        className="flex flex-col gap-2.5 px-3 py-3.5 sm:px-4"
+        className="flex flex-col gap-2 px-3 py-3.5 sm:px-4"
       >
         <div className="flex flex-wrap items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
               <span className="inline-flex h-5 items-center rounded-md bg-[#2f6fda] px-1.5 text-[10px] font-semibold tracking-[0.03em] text-white">
                 BEST
               </span>
@@ -932,7 +937,7 @@ export function PostCommentThread({
                 {formatCommentDate(comment.createdAt)}
               </span>
             </div>
-            <p className="tp-text-primary mt-2 overflow-hidden whitespace-pre-line text-[13px] leading-6 [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:3]">
+            <p className="tp-text-primary mt-1.5 overflow-hidden whitespace-pre-line text-[13px] leading-6 [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:3]">
               {isMutedPlaceholder ? MUTED_COMMENT_PLACEHOLDER_TEXT : comment.content}
             </p>
           </div>
@@ -951,7 +956,7 @@ export function PostCommentThread({
             {isMutedPlaceholder && canMuteCommentAuthor(currentUserId, comment.author.id) ? (
               <button
                 type="button"
-                className="tp-text-muted rounded-md px-1.5 py-0.5 text-[11px] font-medium transition hover:bg-white hover:text-[#2f5da4] hover:underline"
+                className="tp-text-muted rounded-md px-1.5 py-0.5 text-[11px] font-medium transition hover:bg-white hover:text-[#2f5da4] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2"
                 onClick={() => handleUnmute(comment.id, comment.author.id)}
                 disabled={isPending}
               >
@@ -961,7 +966,7 @@ export function PostCommentThread({
             {comment.threadPage && (comment.threadPage === currentPage || onCommentsChanged) ? (
               <button
                 type="button"
-                className="tp-text-muted rounded-md px-1.5 py-0.5 text-[11px] font-medium transition hover:bg-white hover:text-[#2f5da4] hover:underline"
+                className="tp-text-muted rounded-md px-1.5 py-0.5 text-[11px] font-medium transition hover:bg-white hover:text-[#2f5da4] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2"
                 onClick={() => {
                   void handleBestCommentJump(comment);
                 }}
@@ -1077,7 +1082,7 @@ export function PostCommentThread({
               ) : null}
               <textarea
                 data-testid="post-comment-root-input"
-                className={`tp-input-soft ${POST_COMMENT_FORM_FIELD_CLASS_NAME} min-h-[72px] w-full px-2.5 py-1.5 text-[13px] sm:min-h-[84px]`}
+                className={`tp-input-soft ${POST_COMMENT_FORM_FIELD_CLASS_NAME} min-h-[64px] w-full px-2.5 py-1.5 text-[13px] sm:min-h-[72px]`}
                 value={replyContent.root ?? ""}
                 onChange={(event) =>
                   setReplyContent((prev) => ({ ...prev, root: event.target.value }))
@@ -1086,7 +1091,7 @@ export function PostCommentThread({
                 onKeyDown={(event) => handleCommentSubmitShortcut(event, () => handleCreate())}
                 placeholder="댓글을 입력해 주세요"
               />
-              <div className="mt-1.5 flex justify-end">
+              <div className="mt-1 flex justify-end">
                 <button
                   data-testid="post-comment-root-submit"
                   type="button"

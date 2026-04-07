@@ -16,6 +16,124 @@
 - Cycle 33: 신규 계정 안전 정책 관리자 설정화 + DB/UI E2E 플로우 완료
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
+### 2026-04-07: Cycle 412 완료 (TownPet blog 구조/라우팅/계층 분리 본문 3개 작성)
+- 완료 내용
+  - [02-how-townpet-is-structured.md](/Users/alex/project/townpet/blog/02-how-townpet-is-structured.md)를 추가해 `app/src/app`, `components`, `lib`, `server`, `prisma`, `docs`, `blog`의 역할과 추천 읽기 순서를 정리했다.
+  - [03-nextjs-app-router-for-backend-engineers.md](/Users/alex/project/townpet/blog/03-nextjs-app-router-for-backend-engineers.md)를 추가해 `page.tsx`, `route.ts`, `layout.tsx`, `loading.tsx`, `error.tsx`, `Server Action`을 백엔드 관점에서 번역했다.
+  - [05-prisma-zod-service-route-order.md](/Users/alex/project/townpet/blog/05-prisma-zod-service-route-order.md)를 추가해 게시글 생성 흐름을 기준으로 `Prisma -> Zod -> Service -> Route/UI` 읽기 순서를 설명했다.
+  - [blog/README.md](/Users/alex/project/townpet/blog/README.md), [00_series_plan.md](/Users/alex/project/townpet/blog/00_series_plan.md), [BLOG_PLAN.md](/Users/alex/project/townpet/BLOG_PLAN.md), [BLOG_PROGRESS.md](/Users/alex/project/townpet/BLOG_PROGRESS.md)도 새 본문과 다음 우선순위에 맞게 갱신했다.
+- 검증 결과
+  - 본문에서 참조한 핵심 코드 파일을 직접 읽고 링크를 맞췄다.
+  - `git diff --check` 통과
+- 메모
+  - 다음 블로그 우선순위는 `인증 구조`, `모더레이션`, `검색 구조`다.
+
+### 2026-04-07: Cycle 408 완료 (TownPet blog 작업공간 메타 문서 초기화)
+- 완료 내용
+  - 루트에 [BLOG_PLAN.md](/Users/alex/project/townpet/BLOG_PLAN.md), [BLOG_PROGRESS.md](/Users/alex/project/townpet/BLOG_PROGRESS.md)를 추가해 블로그 시리즈용 SSOT를 분리했다.
+  - [blog](/Users/alex/project/townpet/blog) 디렉터리를 만들고 아래 메타 문서를 추가했다.
+    - [README.md](/Users/alex/project/townpet/blog/README.md)
+    - [00_series_plan.md](/Users/alex/project/townpet/blog/00_series_plan.md)
+    - [00_rebuild_guide.md](/Users/alex/project/townpet/blog/00_rebuild_guide.md)
+    - [00_quality_checklist.md](/Users/alex/project/townpet/blog/00_quality_checklist.md)
+    - [00_js_for_backend_engineers.md](/Users/alex/project/townpet/blog/00_js_for_backend_engineers.md)
+  - 문서 방향은 Kindergarten ERP의 시리즈형 `blog/` 구조를 참고하되, TownPet는 `Python/Java 백엔드 경험자는 있지만 JS/Next는 낯선 독자`를 기준으로 재설계했다.
+  - 특히 `00_js_for_backend_engineers.md`에 `Route Handler = Controller`, `Zod = DTO validation`, `Prisma = ORM/Schema layer` 같은 번역표를 두어 진입장벽을 낮추도록 했다.
+- 검증 결과
+  - 메타 문서 간 링크를 모두 repo-relative 경로로 작성했다.
+  - `git diff --check` 통과
+- 메모
+  - 다음 우선순위는 개별 본문 시리즈 초안 작성이다. 추천 시작점은 `TownPet 전체 구조`, `App Router 번역`, `Prisma -> Zod -> Service -> Route/UI 읽는 법`이다.
+
+### 2026-04-07: Cycle 411 완료 (게시글 반응 우세 요약 문구 제거)
+- 완료 내용
+  - [post-reaction-controls.tsx](/Users/alex/project/townpet/app/src/components/posts/post-reaction-controls.tsx)에서 `좋아요 n개 우세`, `싫어요 n개 우세`, `균형` 요약 텍스트를 제거했다.
+  - 우세도 계산에만 쓰이던 `post-reaction-score` import도 함께 제거해, 게시글 상세 반응 영역이 버튼과 카운트만 남는 더 단순한 구조가 됐다.
+- 검증 결과
+  - `corepack pnpm -C app lint src/components/posts/post-reaction-controls.tsx src/components/posts/post-reaction-controls.test.tsx` 통과
+  - `corepack pnpm -C app test -- src/components/posts/post-reaction-controls.test.tsx` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `git diff --check` 통과
+- 메모
+  - 반응 영역은 이제 좋아요/싫어요 버튼과 에러 메시지만 남고, 별도 sentiment 요약 텍스트는 표시하지 않는다.
+
+### 2026-04-07: Cycle 410 완료 (상세/댓글 접근성 포커스 상태 및 모바일 QA 마감)
+- 완료 내용
+  - [post-reaction-controls.tsx](/Users/alex/project/townpet/app/src/components/posts/post-reaction-controls.tsx), [comment-reaction-controls.tsx](/Users/alex/project/townpet/app/src/components/posts/comment-reaction-controls.tsx), [post-detail-media-gallery.tsx](/Users/alex/project/townpet/app/src/components/posts/post-detail-media-gallery.tsx), [user-action-menu.tsx](/Users/alex/project/townpet/app/src/components/user/user-action-menu.tsx), [post-comment-thread.tsx](/Users/alex/project/townpet/app/src/components/posts/post-comment-thread.tsx)에 `focus-visible` ring을 추가해 키보드 포커스 가시성을 맞췄다.
+  - [page.tsx](/Users/alex/project/townpet/app/src/app/posts/[id]/guest/page.tsx)에서는 guest 상세 작성자 링크/신고 disclosure에도 포커스 상태를 추가하고, 날짜/메타 보조 텍스트 톤을 한 단계 진하게 조정했다.
+  - 댓글 날짜 텍스트는 `10px`에서 `11px`로 올려 모바일 고해상도 환경에서 가독성을 조금 더 확보했다.
+  - 로컬 `http://localhost:3000/posts/cmmlwiyy30009wkpga7l0lyq9/guest` 기준으로 Playwright desktop/mobile 캡처를 실행했고, 두 뷰포트 모두 horizontal overflow 없이 렌더되는 것을 확인했다.
+- 검증 결과
+  - `corepack pnpm -C app lint src/components/posts/post-detail-media-gallery.tsx src/components/posts/post-detail-media-gallery.test.tsx src/components/posts/post-reaction-controls.tsx src/components/posts/post-reaction-controls.test.tsx src/components/posts/comment-reaction-controls.tsx src/components/posts/comment-reaction-controls.test.tsx src/components/user/user-action-menu.tsx src/components/user/user-action-menu.test.tsx src/components/posts/post-comment-thread.tsx 'src/app/posts/[id]/guest/page.tsx'` 통과
+  - `corepack pnpm -C app test -- src/components/posts/post-detail-media-gallery.test.tsx src/components/posts/post-reaction-controls.test.tsx src/components/posts/comment-reaction-controls.test.tsx src/components/user/user-action-menu.test.tsx` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `183 files / 895 tests` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `git diff --check` 통과
+  - 로컬 QA 캡처: `/tmp/townpet-detail-polish-1775542062912/detail-desktop.png`, `/tmp/townpet-detail-polish-1775542062912/detail-mobile.png`
+- 메모
+  - 이번 QA는 guest 상세 기준이며, 인증 상세/운영자 패널 경로의 실기기 확인은 아직 별도로 남아 있다.
+
+### 2026-04-07: Cycle 409 완료 (게시글 첨부 이미지 라이트박스/모바일 뷰잉 완성)
+- 완료 내용
+  - [post-detail-media-gallery.tsx](/Users/alex/project/townpet/app/src/components/posts/post-detail-media-gallery.tsx)를 client gallery로 전환해, 썸네일 클릭 시 overlay lightbox가 열리도록 바꿨다.
+  - lightbox 내부에는 `이전/다음` 버튼, 썸네일 strip, `원본 새 탭으로 열기`, `ESC/좌우 방향키` 안내를 넣어 데스크톱과 모바일 모두에서 큰 이미지 보기 흐름을 완성했다.
+  - lightbox가 열려 있을 때는 body scroll을 잠그고, 배경 클릭이나 닫기 버튼으로 overlay를 바로 닫을 수 있게 했다.
+  - guest/auth 상세는 기존처럼 [post-detail-client.tsx](/Users/alex/project/townpet/app/src/components/posts/post-detail-client.tsx), [page.tsx](/Users/alex/project/townpet/app/src/app/posts/[id]/guest/page.tsx)에서 같은 gallery를 공유하도록 유지했다.
+- 검증 결과
+  - `corepack pnpm -C app lint src/components/posts/post-detail-media-gallery.tsx src/components/posts/post-detail-media-gallery.test.tsx` 통과
+  - `corepack pnpm -C app test -- src/components/posts/post-detail-media-gallery.test.tsx` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `183 files / 895 tests` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `git diff --check` 통과
+- 메모
+  - 현재는 overlay lightbox + 원본 새 탭 열기까지 반영했고, 이미지 다운로드/줌 같은 추가 컨트롤은 아직 넣지 않았다.
+
+### 2026-04-07: Cycle 407 완료 (게시글 상세 상단/첨부/반응 흐름 재구성)
+- 완료 내용
+  - [post-detail-client.tsx](/Users/alex/project/townpet/app/src/components/posts/post-detail-client.tsx)에서 게시글 상세 상단을 우측 메타 컬럼 구조에서 단일 읽기 흐름 구조로 바꿨다.
+    - 제목 아래에 `작성자 · 시간`
+    - 그 아래에 `조회 · 좋아요 · 댓글`
+    - 기존 `상세 정보` disclosure 제거
+  - [page.tsx](/Users/alex/project/townpet/app/src/app/posts/[id]/guest/page.tsx)도 같은 메타 구조로 맞춰 인증/비회원 상세의 시각 언어를 정리했다.
+  - [post-detail-media-gallery.tsx](/Users/alex/project/townpet/app/src/components/posts/post-detail-media-gallery.tsx)를 추가해 첨부파일 텍스트 링크를 썸네일 중심 gallery로 전환했다.
+  - [post-reaction-controls.tsx](/Users/alex/project/townpet/app/src/components/posts/post-reaction-controls.tsx)는 중앙 점수 pill을 제거하고 `아이콘 + 카운트` 기반 좋아요/싫어요 1차 액션으로 다시 정리했다.
+  - 상세 액션 영역은 `좋아요/싫어요`를 왼쪽, `북마크/공유/신고`를 오른쪽에 두는 구조로 재배치했다.
+  - guest 상세의 신고 disclosure는 별도 버튼처럼 튀지 않도록 작은 보조 disclosure로 톤을 낮췄다.
+- 검증 결과
+  - `corepack pnpm -C app lint src/components/posts/post-detail-client.tsx 'src/app/posts/[id]/guest/page.tsx' src/components/posts/post-reaction-controls.tsx src/components/posts/post-reaction-controls.test.tsx src/components/posts/post-detail-media-gallery.tsx src/components/posts/post-detail-media-gallery.test.tsx src/components/posts/post-moderation-controls.tsx src/components/posts/post-moderation-controls.test.tsx src/components/posts/post-comment-thread.tsx src/components/posts/comment-reaction-controls.tsx src/components/posts/post-comment-layout-class.ts src/components/posts/post-comment-thread.test.tsx src/components/posts/comment-reaction-controls.test.tsx` 통과
+  - `corepack pnpm -C app test -- src/components/posts/post-reaction-controls.test.tsx src/components/posts/post-detail-media-gallery.test.tsx src/components/posts/post-moderation-controls.test.tsx src/components/posts/post-comment-thread.test.tsx src/components/posts/comment-reaction-controls.test.tsx` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `183 files / 893 tests` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `git diff --check` 통과
+- 메모
+  - 이미지 라이트박스까지는 아직 넣지 않았고, 현재는 썸네일 preview + 원본 보기까지 반영한 상태다.
+  - 다음 확인 포인트는 모바일 실기기에서 반응 영역의 실제 줄바꿈 감각과 gallery 썸네일 밀도 정도다.
+
+### 2026-04-07: Cycle 406 완료 (댓글 계층/반응/입력창 가독성 재정리)
+- 완료 내용
+  - [post-comment-thread.tsx](/Users/alex/project/townpet/app/src/components/posts/post-comment-thread.tsx)에서 댓글 헤더를 `작성자/날짜/답글 배지` 중심으로 재배치하고, 반응 버튼을 footer로 내려 시선 흐름을 정리했다.
+  - [post-comment-layout-class.ts](/Users/alex/project/townpet/app/src/components/posts/post-comment-layout-class.ts)에는 reply card/reply guide/footer/meta row용 공용 class를 추가해 대댓글 구분을 더 분명하게 만들었다.
+  - [comment-reaction-controls.tsx](/Users/alex/project/townpet/app/src/components/posts/comment-reaction-controls.tsx)의 compact 버튼을 pill 스타일로 바꿔 댓글 footer와 더 잘 어울리게 조정했다.
+  - root/reply/edit 입력창의 기본 높이를 줄이고, reply/edit panel의 여백과 버튼 결속감을 정리했다.
+  - 모바일에서는 댓글 footer를 세로 정렬 우선으로 바꾸고, reply guide의 좌측 여백/들여쓰기를 줄여 반응 영역과 답글 카드가 덜 눌려 보이게 다듬었다.
+- 검증 결과
+  - `corepack pnpm -C /Users/alex/project/townpet/app lint src/components/posts/post-comment-thread.tsx src/components/posts/comment-reaction-controls.tsx src/components/posts/post-comment-layout-class.ts src/components/posts/post-comment-thread.test.tsx src/components/posts/comment-reaction-controls.test.tsx`
+  - `corepack pnpm -C /Users/alex/project/townpet/app test -- src/components/posts/post-comment-thread.test.tsx src/components/posts/comment-reaction-controls.test.tsx`
+  - `git -C /Users/alex/project/townpet diff --check`
+  - 모두 통과
+- 메모
+  - 현재 구현은 모바일 우선 footer/reply guide spacing까지 반영된 상태다. 남은 확인은 실기기에서 터치 영역과 줄바꿈 감각을 보는 정도다.
+
+### 2026-04-07: Cycle 405 완료 (게시글 상세 운영자 패널 기본 접힘으로 축소)
+- 완료 내용
+  - [post-moderation-controls.tsx](/Users/alex/project/townpet/app/src/components/posts/post-moderation-controls.tsx)를 기본 접힘 구조로 바꿔, 상세 화면에서 운영자 도구가 본문보다 먼저 튀지 않도록 정리했다.
+  - 접힌 상태에서는 상태 배지와 `운영자 도구 보기`만 노출하고, 펼쳤을 때만 사유 입력 textarea와 `게시글 숨김/숨김 해제` 버튼이 보이도록 바꿨다.
+  - 테스트 [post-moderation-controls.test.tsx](/Users/alex/project/townpet/app/src/components/posts/post-moderation-controls.test.tsx)는 기본 collapsed 스냅샷을 검증하도록 갱신했다.
+- 검증 결과
+  - `corepack pnpm -C app lint src/components/posts/post-moderation-controls.tsx src/components/posts/post-moderation-controls.test.tsx` 통과
+  - `corepack pnpm -C app test -- src/components/posts/post-moderation-controls.test.tsx` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `git diff --check` 통과
+- 메모
+  - 이 작업은 `post-detail-client.tsx`를 건드리지 않고 운영자 패널 자체를 축소하는 방향으로만 처리했다.
+
 ### 2026-04-06: Cycle 404 완료 (README 작업 부산물/로컬 산출물 정리)
 - 완료 내용
   - 현재 [README.md](/Users/alex/project/townpet/README.md)와 코드에서 참조하지 않는 잔여 스크린샷 2장을 확인했다.

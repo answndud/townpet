@@ -42,6 +42,7 @@ describe("UserActionMenu", () => {
     expect(html).toContain('href="/users/author-1"');
     expect(html).toContain("프로필 보기");
     expect(html).toContain(">뮤트<");
+    expect(html).toContain("focus-visible:ring-2");
   });
 
   it("renders unmute when the author is already muted", () => {

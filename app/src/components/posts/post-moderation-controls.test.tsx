@@ -8,7 +8,7 @@ import {
 } from "@/components/posts/post-moderation-controls";
 
 describe("PostModerationControls", () => {
-  it("renders a hide action surface for active posts", () => {
+  it("renders a collapsed moderator tool entry by default", () => {
     const html = renderToStaticMarkup(
       <PostModerationControls
         postId="post-1"
@@ -18,9 +18,10 @@ describe("PostModerationControls", () => {
       />,
     );
 
-    expect(html).toContain("게시글 직접 숨김/해제");
-    expect(html).toContain("현재 상태: 공개");
-    expect(html).toContain("게시글 숨김");
+    expect(html).toContain("운영자 도구 보기");
+    expect(html).toContain("공개");
+    expect(html).not.toContain("사유");
+    expect(html).not.toContain("게시글 숨김");
   });
 
   it("returns an error payload message when the moderation API fails", async () => {

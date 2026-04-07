@@ -6,7 +6,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { muteUserAction, unmuteUserAction } from "@/server/actions/user-relation";
 
 const USER_ACTION_MENU_BUTTON_CLASS_NAME =
-  "tp-text-heading inline-flex max-w-full cursor-pointer items-center gap-1 rounded-md bg-transparent px-1 py-0.5 text-[13px] font-semibold transition hover:bg-[#f4f8ff] hover:text-[#2f5da4]";
+  "tp-text-heading inline-flex max-w-full cursor-pointer items-center gap-1 rounded-md bg-transparent px-1 py-0.5 text-[13px] font-semibold transition hover:bg-[#f4f8ff] hover:text-[#2f5da4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2";
 const USER_ACTION_MENU_PANEL_BASE_CLASS_NAME =
   "tp-border-muted absolute z-20 mt-1.5 min-w-[108px] rounded-md border bg-white p-1 shadow-[0_10px_24px_rgba(16,40,74,0.1)]";
 const USER_ACTION_MENU_PANEL_POSITION_CLASS_NAME = {
@@ -157,7 +157,7 @@ export function UserActionMenu({
           <Link
             href={`/users/${userId}`}
             role="menuitem"
-            className="tp-text-heading block rounded px-2 py-1.5 text-[11px] hover:bg-[#f5f9ff]"
+            className="tp-text-heading block rounded px-2 py-1.5 text-[11px] hover:bg-[#f5f9ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1"
             onClick={() => setIsOpen(false)}
           >
             프로필 보기
@@ -166,7 +166,7 @@ export function UserActionMenu({
             <button
               type="button"
               role="menuitem"
-              className="tp-text-heading block w-full rounded px-2 py-1.5 text-left text-[11px] hover:bg-[#f5f9ff]"
+              className="tp-text-heading block w-full rounded px-2 py-1.5 text-left text-[11px] hover:bg-[#f5f9ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1"
               onClick={handleMuteToggle}
               disabled={isActionPending}
             >

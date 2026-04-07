@@ -9,6 +9,10 @@ import {
   PostCommentThread,
   shouldCloseCommentAuthorMenu,
 } from "@/components/posts/post-comment-thread";
+import {
+  POST_COMMENT_THREAD_FOOTER_CLASS_NAME,
+  POST_COMMENT_THREAD_REPLY_CARD_CLASS_NAME,
+} from "@/components/posts/post-comment-layout-class";
 
 vi.mock("next/link", () => ({
   default: ({
@@ -105,7 +109,13 @@ describe("PostCommentThread", () => {
     const html = renderToStaticMarkup(
       <PostCommentThread
         postId="post-1"
-        comments={[buildComment("latest-root", { content: "최신 댓글 본문" })]}
+        comments={[
+          buildComment("latest-root", { content: "최신 댓글 본문" }),
+          buildComment("latest-reply", {
+            content: "최신 댓글의 답글",
+            parentId: "latest-root",
+          }),
+        ]}
         bestComments={[
           buildComment("best-1", {
             content: "베스트 댓글 본문",
@@ -127,9 +137,18 @@ describe("PostCommentThread", () => {
     expect(html).toContain("최신 댓글");
     expect(html).toContain("베스트 댓글 본문");
     expect(html).toContain("최신 댓글 본문");
+    expect(html).toContain("최신 댓글의 답글");
     expect(html).toContain("원댓글로 가기");
     expect(html).toContain('aria-haspopup="menu"');
     expect(html).toContain("best-1닉네임");
+    expect(html).toContain(POST_COMMENT_THREAD_FOOTER_CLASS_NAME);
+    expect(html).toContain(POST_COMMENT_THREAD_REPLY_CARD_CLASS_NAME);
+    expect(html).toContain("before:bg-[#dfe9f8]");
+    expect(html).toContain("relative mt-2 ml-5");
+    expect(html).toContain("sm:ml-7");
+    expect(html).toContain("before:absolute");
+    expect(html).toContain("space-y-1.5 pl-3");
+    expect(html).toContain("sm:pl-4");
     expect(html).not.toContain('href="/users/user-best-1"');
     expect(html).not.toContain("프로필 보기");
     expect(html).not.toContain("뮤트");
@@ -220,6 +239,8 @@ describe("PostCommentThread", () => {
     expect(html).toContain("뮤트한 사용자 댓글입니다.");
     expect(html).toContain("뮤트 해제");
     expect(html).not.toContain("숨겨져야 하는 원문");
+    expect(html).toContain(POST_COMMENT_THREAD_FOOTER_CLASS_NAME);
+    expect(html).toContain(POST_COMMENT_THREAD_REPLY_CARD_CLASS_NAME);
     expect(html).toContain("보이는 답글");
     expect(html).not.toContain('data-comment-reaction="muted-root"');
     expect(html).toContain('data-comment-reaction="visible-reply"');

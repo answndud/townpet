@@ -27,6 +27,46 @@
 
 ## Active Plan
 
+### Cycle 412: TownPet blog 구조/라우팅/계층 분리 본문 3개 작성 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| `blog/` 작업공간에 `TownPet 전체 구조`, `App Router를 백엔드 관점에서 이해하기`, `Prisma -> Zod -> Service -> Route/UI 읽는 법` 본문을 추가하고, Python/Java 개발자가 실제 코드 추적이 가능하도록 링크/읽는 순서를 정리한다 | Codex | P2 | `done` | `blog/02-how-townpet-is-structured.md`, `blog/03-nextjs-app-router-for-backend-engineers.md`, `blog/05-prisma-zod-service-route-order.md`가 추가되고, `blog/README.md`, `blog/00_series_plan.md`, `BLOG_PLAN.md`, `BLOG_PROGRESS.md`, `PLAN.md`, `PROGRESS.md`가 동기화되며, `git diff --check` 검증 결과가 기록된다 | `blog/*`, `BLOG_PLAN.md`, `BLOG_PROGRESS.md`, `PLAN.md`, `PROGRESS.md` |
+
+### Cycle 411: 게시글 반응 우세 요약 문구 제거 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 게시글 상세 반응 컨트롤에서 `좋아요 n개 우세` 같은 요약 텍스트를 제거해 시선을 좋아요/싫어요 버튼 자체에만 남기고, 관련 테스트와 진행 기록을 정리한다 | Codex | P2 | `done` | `post-reaction-controls`는 더 이상 우세/균형 요약을 렌더하지 않고, 관련 계산 import가 제거되며, 회귀 테스트와 `PLAN.md`/`PROGRESS.md` 기록이 남는다 | `app/src/components/posts/post-reaction-controls.tsx`, `app/src/components/posts/post-reaction-controls.test.tsx`, `PLAN.md`, `PROGRESS.md` |
+
+### Cycle 410: 상세/댓글 접근성 포커스 상태 및 모바일 QA 마감 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 게시글 상세/댓글의 커스텀 인터랙션에 포커스 가시성을 보강하고, 너무 옅은 보조 텍스트 톤을 소폭 올린 뒤 로컬 3000 포트 기준 데스크톱/모바일 뷰포트 QA로 overflow 여부를 확인한다 | Codex | P1 | `done` | `post-detail-media-gallery`, `post-reaction-controls`, `comment-reaction-controls`, `user-action-menu`, `post-comment-thread`, guest detail 메타/신고 disclosure에 focus-visible ring 및 대비 보정이 들어가고, 로컬 desktop/mobile 캡처와 overflow 확인 결과가 `PROGRESS.md`에 기록되며 관련 테스트/검증이 남는다 | `app/src/components/posts/post-detail-media-gallery.tsx`, `app/src/components/posts/post-reaction-controls.tsx`, `app/src/components/posts/comment-reaction-controls.tsx`, `app/src/components/user/user-action-menu.tsx`, `app/src/components/posts/post-comment-thread.tsx`, `app/src/app/posts/[id]/guest/page.tsx`, `PLAN.md`, `PROGRESS.md` |
+
+### Cycle 409: 게시글 첨부 이미지 라이트박스/모바일 뷰잉 완성 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 게시글 상세와 guest 상세의 첨부 이미지 gallery를 라이트박스 방식으로 확장하고, 모바일에서도 full-width에 가까운 큰 이미지 보기/썸네일 전환/원본 열기를 지원한다 | Codex | P1 | `done` | `post-detail-media-gallery`는 썸네일 클릭 시 overlay lightbox를 열고, ESC/좌우 키/이전·다음 버튼/썸네일 strip으로 이미지를 전환할 수 있으며, body scroll lock과 원본 새 탭 열기가 동작하고, 관련 테스트 및 `PLAN.md`/`PROGRESS.md` 검증 기록이 남는다 | `app/src/components/posts/post-detail-media-gallery.tsx`, `app/src/components/posts/post-detail-media-gallery.test.tsx`, `app/src/components/posts/post-detail-client.tsx`, `app/src/app/posts/[id]/guest/page.tsx`, `PLAN.md`, `PROGRESS.md` |
+
+### Cycle 408: TownPet blog 작업공간 메타 문서 초기화 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| Kindergarten ERP의 `blog/`처럼 TownPet도 별도 블로그 작업공간을 만들고, `BLOG_PLAN.md`, `BLOG_PROGRESS.md`, `blog/README.md`, `00_series_plan.md`, `00_rebuild_guide.md`, `00_quality_checklist.md`, `00_js_for_backend_engineers.md`를 추가한다 | Codex | P2 | `done` | 루트에 블로그 SSOT 2개와 `blog/` 메타 문서 5개가 생성되고, 내용은 TownPet 구조와 Python/Java 개발자 관점의 JS/Next 번역을 중심으로 작성되며, 결과가 `PROGRESS.md`에 기록된다 | `BLOG_PLAN.md`, `BLOG_PROGRESS.md`, `blog/*`, `PLAN.md`, `PROGRESS.md` |
+
+### Cycle 407: 게시글 상세 상단/첨부/반응 흐름 재구성 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 게시글 상세와 guest 상세의 상단 메타를 단일 흐름으로 재배치하고, 첨부 이미지를 썸네일 중심 gallery로 전환하며, 좋아요/싫어요와 북마크/공유/신고의 액션 위계를 다시 정리한다 | Codex | P1 | `done` | 게시글 상세/guest 상세는 제목 아래에 `작성자 · 시간`, `조회 · 좋아요 · 댓글` 메타가 2줄로 정리되고, `상세 정보` disclosure가 제거되며, 첨부 이미지는 미리보기 gallery로 노출되고, 반응 영역은 1차 액션(좋아요/싫어요)과 2차 액션(북마크/공유/신고) 구조로 재배치되며, 관련 테스트 및 `PLAN.md`/`PROGRESS.md` 검증 기록이 남는다 | `app/src/components/posts/post-detail-client.tsx`, `app/src/app/posts/[id]/guest/page.tsx`, `app/src/components/posts/post-reaction-controls.tsx`, `app/src/components/posts/post-detail-media-gallery.tsx`, 관련 테스트, `PLAN.md`, `PROGRESS.md` |
+
+### Cycle 406: 댓글 계층/반응/입력창 가독성 재정리 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 댓글 thread의 작성자/날짜/본문/액션/반응 계층을 재배치하고, 대댓글 구분과 입력창 밀도를 줄여 모바일/데스크톱 모두에서 스캔 속도를 높인다 | Codex | P1 | `done` | 댓글 작성자명과 날짜가 더 명확하게 분리되고, reply는 좌측 guide + 카드 톤으로 구분되며, 반응 버튼은 footer로 이동하고, root/reply/edit 입력창 높이가 줄어들고, 관련 테스트 및 `PLAN.md`/`PROGRESS.md`가 갱신된다 | `app/src/components/posts/post-comment-thread.tsx`, `app/src/components/posts/comment-reaction-controls.tsx`, `app/src/components/posts/post-comment-layout-class.ts`, `app/src/components/posts/post-comment-thread.test.tsx`, `app/src/components/posts/comment-reaction-controls.test.tsx` |
+
+### Cycle 405: 게시글 상세 운영자 패널 기본 접힘으로 축소 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 게시글 상세에서 운영자 패널을 기본 접힘 상태로 바꾸고, 접힌 상태에는 상태 배지와 `운영자 도구 보기`만 노출되도록 정리한다 | Codex | P2 | `done` | `post-moderation-controls`가 기본 collapsed 상태로 렌더되고, 접힌 상태에는 간결한 상태 배지와 `운영자 도구 보기`만 보이며, 펼쳤을 때만 사유 textarea와 숨김/해제 버튼이 나타나고, 회귀 테스트 및 `PROGRESS.md` 기록이 남는다 | `app/src/components/posts/post-moderation-controls.tsx`, `app/src/components/posts/post-moderation-controls.test.tsx`, `PLAN.md`, `PROGRESS.md` |
+
 ### Cycle 404: README 작업 부산물/로컬 산출물 정리 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|

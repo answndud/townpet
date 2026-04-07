@@ -36,5 +36,10 @@ describe("PostReactionControls", () => {
     expect(html).not.toContain('disabled=""');
     expect(html).toContain("좋아요");
     expect(html).toContain("싫어요");
+    expect(html).not.toContain("우세");
+    expect(html).not.toContain("균형");
+    expect(html).toContain(">8<");
+    expect(html).toContain(">3<");
+    expect(html).toContain("focus-visible:ring-2");
   });
 });

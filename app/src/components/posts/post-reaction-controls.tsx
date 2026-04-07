@@ -4,11 +4,6 @@ import { useEffect, useRef, useState, useTransition } from "react";
 
 import { ReactionLoginPrompt } from "@/components/posts/reaction-login-prompt";
 import { subscribeViewerShellSync } from "@/lib/viewer-shell-sync";
-import {
-  calculatePostReactionScore,
-  getPostReactionScoreMagnitude,
-  getPostReactionScoreTone,
-} from "@/lib/post-reaction-score";
 import { togglePostReactionAction } from "@/server/actions/post";
 
 const REACTION_TYPE = {
@@ -27,6 +22,7 @@ type PostReactionControlsProps = {
   canReact?: boolean;
   loginHref?: string;
   showLoginHint?: boolean;
+  align?: "start" | "center" | "end";
   onStateChange?: (nextState: {
     reaction: ReactionType | null;
     likeCount: number;
@@ -84,6 +80,7 @@ export function PostReactionControls({
   canReact = true,
   loginHref = "/login",
   showLoginHint = true,
+  align = "center",
   onStateChange,
 }: PostReactionControlsProps) {
   const initialLikeCount =
@@ -205,27 +202,10 @@ export function PostReactionControls({
   }, [effectiveCanReact, hasInteracted, postId, reactionLoaded]);
 
   const buttonClass = compact
-    ? "inline-flex tp-btn-xs min-w-[60px] items-center justify-center rounded-lg border transition disabled:cursor-not-allowed disabled:opacity-60"
-    : "inline-flex tp-btn-sm min-w-[76px] items-center justify-center rounded-lg border transition disabled:cursor-not-allowed disabled:opacity-60";
-  const reactionScore = calculatePostReactionScore(likes, dislikes);
-  const reactionScoreMagnitude = getPostReactionScoreMagnitude(reactionScore);
-  const reactionScoreTone = getPostReactionScoreTone(reactionScore);
-  const reactionScoreDirectionLabel =
-    reactionScore > 0 ? "좋아요 우세" : reactionScore < 0 ? "싫어요 우세" : "반응 균형";
-  const reactionScoreClass =
-    reactionScoreTone === "positiveStrong"
-      ? "border-[#739de7] bg-[#e1edff] text-[#184f9c]"
-      : reactionScoreTone === "positive"
-        ? "border-[#a5c1ee] bg-[#eef5ff] text-[#275ea8]"
-        : reactionScoreTone === "positiveSoft"
-          ? "border-[#cbdcf7] bg-[#f5f9ff] text-[#3567b5]"
-          : reactionScoreTone === "negativeStrong"
-            ? "border-[#e47e93] bg-[#ffe7eb] text-[#b52639]"
-            : reactionScoreTone === "negative"
-              ? "border-[#ec9dad] bg-[#fff0f2] text-[#c73b4d]"
-              : reactionScoreTone === "negativeSoft"
-                ? "border-[#f3cbd2] bg-[#fff6f7] text-[#d14a5b]"
-                : "border-[#d8e4f6] bg-white text-[#5d7499]";
+    ? "inline-flex min-h-[32px] items-center gap-1.5 rounded-lg border px-2.5 text-[12px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+    : "inline-flex min-h-[36px] items-center gap-1.5 rounded-lg border px-3 text-[13px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60";
+  const rootAlignmentClass =
+    align === "start" ? "justify-start" : align === "end" ? "justify-end" : "justify-center";
 
   const handleToggle = (target: ReactionType) => {
     if (actionLockRef.current) {
@@ -285,7 +265,7 @@ export function PostReactionControls({
   };
 
   return (
-    <div className={`flex flex-wrap items-center gap-2 ${compact ? "justify-end" : "justify-center"}`}>
+    <div className={`flex flex-wrap items-center gap-2 ${rootAlignmentClass}`}>
       <div className="relative">
         <button
           type="button"
@@ -300,26 +280,29 @@ export function PostReactionControls({
               : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
           }`}
         >
-          좋아요
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 20 20"
+            className="h-3.5 w-3.5 shrink-0"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+          >
+            <path d="M8 8V4.8A2.8 2.8 0 0 1 10.8 2l.5 3.1c.2 1-.1 2-.7 2.8L10 8.6h4.4A2.6 2.6 0 0 1 17 11.2l-.8 4.6a2.6 2.6 0 0 1-2.6 2.2H8z" />
+            <path d="M3 8h3v10H3z" />
+          </svg>
+          <span className="hidden sm:inline">좋아요</span>
+          <span className="tabular-nums">{likes.toLocaleString()}</span>
         </button>
         {!effectiveCanReact && showLoginHint && loginIntent === REACTION_TYPE.LIKE ? (
           <ReactionLoginPrompt
             isOpen
             message={loginPromptMessage}
             loginHref={loginHref}
-            align="center"
+            align={align}
             onClose={() => setLoginIntent(null)}
           />
         ) : null}
-      </div>
-      <div
-        aria-label={`${reactionScoreDirectionLabel} ${reactionScoreMagnitude.toLocaleString()}`}
-        title={`좋아요 ${likes.toLocaleString()}개, 싫어요 ${dislikes.toLocaleString()}개`}
-        className={`inline-flex min-w-[64px] items-center justify-center rounded-lg border px-2.5 py-1 text-[15px] font-semibold leading-none tabular-nums ${reactionScoreClass} ${
-          compact ? "min-h-[1.875rem] text-xs" : "min-h-[2rem]"
-        }`}
-      >
-        {reactionScoreMagnitude.toLocaleString()}
       </div>
       <div className="relative">
         <button
@@ -335,14 +318,26 @@ export function PostReactionControls({
               : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
           }`}
         >
-          싫어요
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 20 20"
+            className="h-3.5 w-3.5 shrink-0"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+          >
+            <path d="M12 12v3.2A2.8 2.8 0 0 1 9.2 18l-.5-3.1c-.2-1 .1-2 .7-2.8l.6-.7H5.6A2.6 2.6 0 0 1 3 8.8l.8-4.6A2.6 2.6 0 0 1 6.4 2H12z" />
+            <path d="M17 12h-3V2h3z" />
+          </svg>
+          <span className="hidden sm:inline">싫어요</span>
+          <span className="tabular-nums">{dislikes.toLocaleString()}</span>
         </button>
         {!effectiveCanReact && showLoginHint && loginIntent === REACTION_TYPE.DISLIKE ? (
           <ReactionLoginPrompt
             isOpen
             message={loginPromptMessage}
             loginHref={loginHref}
-            align="center"
+            align={align}
             onClose={() => setLoginIntent(null)}
           />
         ) : null}
