@@ -114,7 +114,9 @@ const buildPostListInclude = (
       select: { type: true },
     },
     images: {
-      select: { id: true },
+      orderBy: { order: "asc" },
+      take: 1,
+      select: { id: true, url: true },
     },
     adoptionListing: {
       select: {
@@ -156,7 +158,9 @@ const buildPostListIncludeWithoutReactions = (
       },
     },
     images: {
-      select: { id: true },
+      orderBy: { order: "asc" },
+      take: 1,
+      select: { id: true, url: true },
     },
     adoptionListing: {
       select: {
@@ -457,7 +461,9 @@ const buildLegacyPostListSelect = (viewerId?: string) =>
       select: { id: true, name: true, city: true, district: true },
     },
     images: {
-      select: { id: true },
+      orderBy: { order: "asc" },
+      take: 1,
+      select: { id: true, url: true },
     },
     reactions: {
       where: {
@@ -475,7 +481,9 @@ const buildLegacyPostListSelectWithoutReactions = () =>
       select: { id: true, name: true, city: true, district: true },
     },
     images: {
-      select: { id: true },
+      orderBy: { order: "asc" },
+      take: 1,
+      select: { id: true, url: true },
     },
   }) as const;
 

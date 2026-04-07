@@ -12,21 +12,21 @@ type BuildFeedMobileStatsLabelParams = {
   createdAt: string;
   relativeNow: number | null;
   viewCount: number;
-  reactionCount: number;
+  likeCount: number;
 };
 
 export function buildFeedStatsLabel({
   createdAt,
   relativeNow,
   viewCount,
-  reactionCount,
+  likeCount,
 }: BuildFeedMobileStatsLabelParams) {
   const dateLabel =
     relativeNow === null
       ? getStableFeedDateLabel(createdAt)
       : formatRelativeDate(createdAt, relativeNow);
 
-  return [dateLabel, `조회 ${formatCount(viewCount)}`, `반응 ${formatCount(reactionCount)}`]
+  return [dateLabel, `조회 ${formatCount(viewCount)}`, `좋아요 ${formatCount(likeCount)}`]
     .filter((part) => part.length > 0)
     .join(" · ");
 }

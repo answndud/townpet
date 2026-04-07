@@ -1,18 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { PostType } from "@prisma/client";
 
 import { NeighborhoodGateNotice } from "@/components/neighborhood/neighborhood-gate-notice";
+import { FeedControlPanel } from "@/components/posts/feed-control-panel";
 import { FeedInfiniteList, type FeedPostItem } from "@/components/posts/feed-infinite-list";
 import { EmptyState } from "@/components/ui/empty-state";
 import { isCommonBoardPostType } from "@/lib/community-board";
 import { buildPaginationWindow } from "@/lib/pagination";
 import { isFreeBoardPostType } from "@/lib/post-type-groups";
 import { postTypeMeta } from "@/lib/post-presenter";
-import { REVIEW_CATEGORY, type ReviewCategory } from "@/lib/review-category";
+import { type ReviewCategory } from "@/lib/review-category";
 
 type FeedMode = "ALL" | "BEST";
 type FeedSort = "LATEST" | "LIKE" | "COMMENT";
@@ -20,19 +21,6 @@ type FeedSearchIn = "ALL" | "TITLE" | "CONTENT" | "AUTHOR";
 type FeedDensity = "DEFAULT" | "ULTRA";
 type FeedPeriod = 3 | 7 | 30;
 type BestDay = 3 | 7 | 30;
-
-const BEST_DAY_OPTIONS = [3, 7, 30] as const;
-const FEED_PERIOD_OPTIONS = [3, 7, 30] as const;
-const REVIEW_FILTER_OPTIONS: Array<{ label: string; value?: ReviewCategory }> = [
-  { label: "전체" },
-  { label: "용품", value: REVIEW_CATEGORY.SUPPLIES },
-  { label: "사료", value: REVIEW_CATEGORY.FEED },
-  { label: "간식", value: REVIEW_CATEGORY.SNACK },
-  { label: "장난감", value: REVIEW_CATEGORY.TOY },
-  { label: "장소", value: REVIEW_CATEGORY.PLACE },
-  { label: "기타", value: REVIEW_CATEGORY.ETC },
-];
-
 type GuestFeedGate = {
   view: "gate";
   gate: {
@@ -98,6 +86,7 @@ function buildGuestFeedHref({
   nextSort,
   nextSearchIn,
   nextDensity,
+  nextPersonalized,
 }: {
   type: PostType | null;
   reviewBoard: boolean;
@@ -122,7 +111,9 @@ function buildGuestFeedHref({
   nextSort?: FeedSort | null;
   nextSearchIn?: FeedSearchIn | null;
   nextDensity?: FeedDensity | null;
+  nextPersonalized?: "0" | "1" | null;
 }) {
+  void nextPersonalized;
   const params = new URLSearchParams();
   const resolvedType = nextType === undefined ? type : nextType;
   const resolvedPetTypeIds =
@@ -283,17 +274,6 @@ export function GuestFeedPageClient() {
     };
   }, [queryString, reloadToken, shouldNormalizeLegacy]);
 
-  const selectedSortLabel = useMemo(() => {
-    if (!data || data.view !== "feed") {
-      return "최신";
-    }
-    return data.feed.selectedSort === "LIKE"
-      ? "좋아요"
-      : data.feed.selectedSort === "COMMENT"
-        ? "댓글"
-        : "최신";
-  }, [data]);
-
   useEffect(() => {
     if (data?.view !== "feed" || typeof window === "undefined") {
       return;
@@ -403,6 +383,7 @@ export function GuestFeedPageClient() {
     nextSort?: FeedSort | null;
     nextSearchIn?: FeedSearchIn | null;
     nextDensity?: FeedDensity | null;
+    nextPersonalized?: "0" | "1" | null;
   }) =>
     buildGuestFeedHref({
       type,
@@ -477,129 +458,17 @@ export function GuestFeedPageClient() {
             </div>
           ) : null}
 
+          <FeedControlPanel
+            mode={mode}
+            selectedSort={selectedSort}
+            bestDays={bestDays}
+            periodDays={periodDays}
+            reviewBoard={reviewBoard}
+            reviewCategory={reviewCategory}
+            makeHref={makeHref}
+          />
+
           <section id="feed-list" className="tp-card animate-fade-up overflow-hidden">
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#e2ebf8] bg-[#f8fbff] px-3 py-2 text-xs text-[#4c6f9e] sm:px-5 sm:py-2.5">
-              <div className="flex flex-wrap items-center gap-1.5">
-                <Link
-                  href={makeHref({ nextMode: "ALL", nextPage: 1 })}
-                  className={`rounded-md border px-2 py-0.5 font-medium transition ${
-                    mode === "ALL"
-                      ? "border-[#3567b5] bg-[#3567b5] text-white"
-                      : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
-                  }`}
-                >
-                  전체글
-                </Link>
-                <Link
-                  href={makeHref({ nextMode: "BEST", nextPage: 1 })}
-                  className={`rounded-md border px-2 py-0.5 font-medium transition ${
-                    mode === "BEST"
-                      ? "border-[#3567b5] bg-[#3567b5] text-white"
-                      : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
-                  }`}
-                >
-                  베스트글
-                </Link>
-              </div>
-              <div className="flex items-center gap-1 text-[11px] text-[#5a7398] sm:hidden">
-                <span className="rounded border border-[#d2e0f3] bg-white px-1.5 py-0.5">
-                  {selectedSortLabel}
-                </span>
-                <span className="rounded border border-[#d2e0f3] bg-white px-1.5 py-0.5">
-                  {mode === "BEST" ? "베스트" : "전체"}
-                </span>
-              </div>
-              {reviewBoard ? (
-                <div className="hidden items-center gap-1.5 sm:flex">
-                  <span className="px-0.5 text-[#b5c7e3]">|</span>
-                  <span className="font-semibold text-[#4b6b9b]">리뷰</span>
-                  {REVIEW_FILTER_OPTIONS.map((option) => {
-                    const isActive = (option.value ?? null) === (reviewCategory ?? null);
-                    return (
-                      <Link
-                        key={`review-filter-${option.value ?? "all"}`}
-                        href={makeHref({
-                          nextType: PostType.PRODUCT_REVIEW,
-                          nextReviewCategory: option.value ?? null,
-                          nextPage: 1,
-                        })}
-                        className={`px-1 py-0.5 text-[11px] font-semibold transition ${
-                          isActive
-                            ? "text-[#204f8a] underline underline-offset-2"
-                            : "text-[#5173a3] hover:text-[#204f8a]"
-                        }`}
-                      >
-                        {option.label}
-                      </Link>
-                    );
-                  })}
-                </div>
-              ) : null}
-            </div>
-            {mode === "ALL" ? (
-              <div className="hidden flex-wrap items-center gap-1.5 border-b border-[#e2ebf8] bg-white px-4 py-2 text-[11px] text-[#5a7398] sm:flex sm:px-5">
-                <span className="mr-1 font-semibold text-[#4b6b9b]">정렬</span>
-                {([
-                  { value: "LATEST", label: "최신" },
-                  { value: "LIKE", label: "좋아요" },
-                  { value: "COMMENT", label: "댓글" },
-                ] as const).map((option) => (
-                  <Link
-                    key={`inline-sort-${option.value}`}
-                    href={makeHref({ nextSort: option.value, nextPage: 1 })}
-                    className={`rounded-md border px-2 py-0.5 font-medium transition ${
-                      selectedSort === option.value
-                        ? "border-[#3567b5] bg-[#3567b5] text-white"
-                        : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
-                    }`}
-                  >
-                    {option.label}
-                  </Link>
-                ))}
-                <span className="mx-1 text-[#c0cfe5]">|</span>
-                <span className="mr-1 font-semibold text-[#4b6b9b]">기간</span>
-                <Link
-                  href={makeHref({ nextPeriod: null, nextPage: 1 })}
-                  className={`rounded-md border px-2 py-0.5 font-medium transition ${
-                    !periodDays
-                      ? "border-[#3567b5] bg-[#3567b5] text-white"
-                      : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
-                  }`}
-                >
-                  전체
-                </Link>
-                {FEED_PERIOD_OPTIONS.map((day) => (
-                  <Link
-                    key={`inline-period-${day}`}
-                    href={makeHref({ nextPeriod: day, nextPage: 1 })}
-                    className={`rounded-md border px-2 py-0.5 font-medium transition ${
-                      periodDays === day
-                        ? "border-[#3567b5] bg-[#3567b5] text-white"
-                        : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
-                    }`}
-                  >
-                    {day}일
-                  </Link>
-                ))}
-              </div>
-            ) : (
-              <div className="hidden flex-wrap items-center gap-1.5 border-b border-[#e2ebf8] bg-white px-4 py-2 text-[11px] text-[#5a7398] sm:flex sm:px-5">
-                <span className="mr-1 font-semibold text-[#4b6b9b]">집계 기간</span>
-                {BEST_DAY_OPTIONS.map((day) => (
-                  <Link
-                    key={`inline-best-day-${day}`}
-                    href={makeHref({ nextDays: day, nextPage: 1 })}
-                    className={`rounded-md border px-2 py-0.5 font-medium transition ${
-                      bestDays === day
-                        ? "border-[#3567b5] bg-[#3567b5] text-white"
-                        : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
-                    }`}
-                  >
-                    최근 {day}일
-                  </Link>
-                ))}
-              </div>
-            )}
             {items.length === 0 ? (
               <EmptyState
                 title={mode === "BEST" ? "베스트글이 없습니다" : "게시글이 없습니다"}
