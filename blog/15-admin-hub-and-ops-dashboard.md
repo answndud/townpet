@@ -13,7 +13,7 @@ TownPet의 관리자 화면은 "숨김 처리 페이지 몇 개"가 아닙니다
 - `/api/health` 기반 상태 점검
 - 검색/신고/인증/개인화 지표 집계
 
-이 글의 목표는 관리자 표면을 **페이지 모음이 아니라 운영 시스템의 입구**로 이해하는 것입니다.
+이 글은 관리자 표면을 **페이지 모음이 아니라 운영 시스템의 입구**로 읽는 기준을 정리합니다.
 
 ## 왜 이 글이 중요한가
 
@@ -49,6 +49,23 @@ TownPet의 관리자 화면은 "숨김 처리 페이지 몇 개"가 아닙니다
 - [`app/src/server/queries/auth-audit.queries.ts`](/Users/alex/project/townpet/app/src/server/queries/auth-audit.queries.ts)
 - [`app/src/server/queries/report.queries.ts`](/Users/alex/project/townpet/app/src/server/queries/report.queries.ts)
 - [`app/src/server/queries/search.queries.ts`](/Users/alex/project/townpet/app/src/server/queries/search.queries.ts)
+
+## 관리자 표면을 먼저 그림으로 보면
+
+```mermaid
+flowchart TD
+  A["/admin"] --> B["admin-section-nav.tsx"]
+  A --> C["admin-page-access.ts"]
+  C --> D["role gate / notFound concealment"]
+  B --> E["/admin/ops"]
+  B --> F["/admin/reports 등 개별 운영 화면"]
+  E --> G["ops-overview.queries.ts"]
+  G --> H["health-overview.ts"]
+  G --> I["report/auth/search/personalization queries"]
+  H --> J["/api/health와 공용 snapshot"]
+```
+
+핵심은 `/admin`이 단순 링크 모음이 아니라, 권한 게이트와 운영 집계 진입점을 같이 제공하는 허브라는 점입니다.
 
 ## 1. `/admin`은 왜 허브 페이지가 필요한가
 

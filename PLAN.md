@@ -27,6 +27,11 @@
 
 ## Active Plan
 
+### Cycle 422: TownPet blog 문체 통일 및 핵심 다이어그램 보강 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| `blog/` 시리즈 전반의 도입 문장과 완충 표현을 단정형으로 통일하고, 이해 부담이 큰 핵심 본문에 mermaid 다이어그램을 추가해 읽기 난도를 낮춘다 | Codex | P2 | `done` | `blog/00_rebuild_guide.md`에 문체 원칙이 반영되고, `blog/01~24` 주요 본문의 도입 문장/완충 표현이 정리되며, `05`, `09`, `11`, `14`, `15`, `19`에 mermaid 다이어그램이 추가되고, `BLOG_PLAN.md`, `BLOG_PROGRESS.md`, `PLAN.md`, `PROGRESS.md`가 동기화되며 `git diff --check`가 통과한다 | `blog/*`, `BLOG_PLAN.md`, `BLOG_PROGRESS.md`, `PLAN.md`, `PROGRESS.md` |
+
 ### Cycle 421: TownPet blog 문제 정의/AI agent/데모 패키지 본문 3개 작성 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|

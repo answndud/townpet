@@ -5,7 +5,7 @@
 TownPet는 Next.js App Router를 사용합니다.  
 이 구조를 처음 보면 가장 먼저 막히는 지점이 `어디까지 서버에서 렌더링하고, 어디부터 클라이언트에서 상태를 잡는가`입니다.
 
-이 글은 TownPet에서 Server Component와 Client Component 경계를 어떻게 나눴는지 설명합니다.
+이 글은 TownPet에서 Server Component와 Client Component 경계를 어떻게 나눴는지 정리합니다.
 
 특히 아래 질문에 답합니다.
 

@@ -40,6 +40,17 @@
 - 메모
   - 핵심 블로그 시리즈 `01`부터 `24`까지 초안이 모두 채워졌고, 다음 보강 축은 다이어그램/캡처/면접 Q&A 확장이다.
 
+### 2026-04-07: Cycle 422 완료 (TownPet blog 문체 통일 및 핵심 다이어그램 보강)
+- 완료 내용
+  - [00_rebuild_guide.md](/Users/alex/project/townpet/blog/00_rebuild_guide.md)에 블로그 문체 원칙을 추가해 단정형 도입 문장, 완충 표현 축소, 강조 문장 절제 기준을 명시했다.
+  - `01`부터 `24`까지 핵심 본문의 도입 문장과 반복되는 완충 표현을 `이 글은 ...를 정리합니다` 중심의 단정형으로 통일했다.
+  - [05-prisma-zod-service-route-order.md](/Users/alex/project/townpet/blog/05-prisma-zod-service-route-order.md), [09-search-structured-search-and-suggestions.md](/Users/alex/project/townpet/blog/09-search-structured-search-and-suggestions.md), [11-credentials-kakao-naver-auth.md](/Users/alex/project/townpet/blog/11-credentials-kakao-naver-auth.md), [14-report-block-sanction-direct-moderation.md](/Users/alex/project/townpet/blog/14-report-block-sanction-direct-moderation.md), [15-admin-hub-and-ops-dashboard.md](/Users/alex/project/townpet/blog/15-admin-hub-and-ops-dashboard.md), [19-testing-and-quality-gate.md](/Users/alex/project/townpet/blog/19-testing-and-quality-gate.md)에 핵심 흐름 mermaid 다이어그램을 추가했다.
+  - [BLOG_PLAN.md](/Users/alex/project/townpet/BLOG_PLAN.md), [BLOG_PROGRESS.md](/Users/alex/project/townpet/BLOG_PROGRESS.md), [PLAN.md](/Users/alex/project/townpet/PLAN.md), [PROGRESS.md](/Users/alex/project/townpet/PROGRESS.md)도 보강 단계 기준으로 갱신했다.
+- 검증 결과
+  - `git diff --check` 통과
+- 메모
+  - 다음 보강 우선순위는 `/admin/ops`와 검색/운영 화면 캡처 추가, 그리고 면접용 Q&A 부록 정리다.
+
 ### 2026-04-07: Cycle 419 완료 (TownPet blog Server/Client 경계/피드 구조/글 CRUD 본문 3개 작성)
 - 완료 내용
   - [04-server-component-and-client-component-boundary.md](/Users/alex/project/townpet/blog/04-server-component-and-client-component-boundary.md)를 추가해 `page.tsx`, client component, server action, route handler가 TownPet에서 어떻게 역할을 나누는지 정리했다.

@@ -10,8 +10,8 @@ TownPet는 “반려동물 커뮤니티를 하나 더 만든 프로젝트”가 
 - 왜 병원 후기, 입양 공고, 산책 정보, 중고 거래, 실종 제보가 한 타임라인 안에서 경쟁해야 할까?
 - 왜 이런 제품은 검색, 신뢰 장치, 운영 구조보다 먼저 자유게시판부터 커지는 경우가 많을까?
 
-이 글은 TownPet의 출발점을 설명합니다.  
-즉 “무엇을 만들었는가”보다 먼저 “왜 이런 구조를 택했는가”를 정리합니다.
+이 글은 TownPet의 출발점을 정리합니다.
+핵심은 “무엇을 만들었는가”보다 먼저 “왜 이런 구조를 택했는가”를 분명히 잡는 것입니다.
 
 ## 왜 이 글이 중요한가
 
@@ -220,7 +220,7 @@ TownPet는 콘텐츠를 많이 모으는 것만으로 끝나지 않습니다.
 
 ## 테스트는 어떻게 읽어야 하는가
 
-이 글은 제품 문제 정의 문서라서 unit test보다 아래 자료와 함께 보는 편이 좋습니다.
+이 글은 제품 문제 정의 문서라서 unit test보다 아래 자료를 함께 보면 됩니다.
 
 - [README.md](/Users/alex/project/townpet/README.md)
 - [blog/21-business-idea-and-expansion-axes.md](/Users/alex/project/townpet/blog/21-business-idea-and-expansion-axes.md)

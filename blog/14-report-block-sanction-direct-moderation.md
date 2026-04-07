@@ -13,7 +13,7 @@ TownPet의 trust & safety는 한 기능이 아닙니다.
 
 이 여섯 가지가 같이 움직입니다.
 
-이 글의 목표는 “나쁜 사용자를 막는다” 수준이 아니라, **어떤 레이어가 어떤 종류의 위험을 막는가**를 설명하는 것입니다.
+이 글은 “나쁜 사용자를 막는다”가 아니라, **어떤 레이어가 어떤 종류의 위험을 막는가**를 정리합니다.
 
 ## 왜 이 글이 중요한가
 
@@ -57,6 +57,23 @@ TownPet의 trust & safety는 한 기능이 아닙니다.
 
 1. 사용자 간 관계 제어
 2. 운영자 개입과 제재
+
+## moderation 흐름을 먼저 그림으로 보면
+
+```mermaid
+flowchart TD
+  A["사용자 신고 / 차단 / 뮤트"] --> B["report.service.ts / user-relation.service.ts"]
+  B --> C["Report / UserBlock / UserMute 저장"]
+  C --> D["auto-hide / sanction trigger"]
+  D --> E["sanction.service.ts"]
+  E --> F["auth.ts / write gate에서 상호작용 차단"]
+  B --> G["ModerationActionLog / ReportAudit"]
+  H["운영자 직접 개입"] --> I["direct-moderation.service.ts"]
+  I --> G
+  I --> E
+```
+
+TownPet moderation은 신고 inbox 하나가 아니라, 사용자 관계 제어와 운영자 개입이 같이 움직이는 구조입니다.
 
 ## 1. 신고는 어디서 시작되는가
 
@@ -214,7 +231,7 @@ TownPet의 제재는 대략:
 - 제재 발급
 - 정책 변경
 
-커뮤니티 운영에서 이건 굉장히 중요합니다.
+커뮤니티 운영에서 핵심 포인트는 이 지점입니다.
 
 이유:
 
