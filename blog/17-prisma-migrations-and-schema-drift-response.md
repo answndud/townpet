@@ -31,15 +31,15 @@ TownPet는 이런 문제를 다음 세 층으로 다룹니다.
 
 ## 먼저 볼 핵심 파일
 
-- [`app/prisma/schema.prisma`](/Users/alex/project/townpet/app/prisma/schema.prisma)
-- [`app/prisma/migrations`](/Users/alex/project/townpet/app/prisma/migrations)
-- [`app/src/server/schema-sync.ts`](/Users/alex/project/townpet/app/src/server/schema-sync.ts)
-- [`app/scripts/vercel-build.ts`](/Users/alex/project/townpet/app/scripts/vercel-build.ts)
-- [`/.github/workflows/quality-gate.yml`](/Users/alex/project/townpet/.github/workflows/quality-gate.yml)
-- [`app/prisma/migrations/20260306133000_expand_auth_audit_for_login_events/migration.sql`](/Users/alex/project/townpet/app/prisma/migrations/20260306133000_expand_auth_audit_for_login_events/migration.sql)
-- [`app/prisma/migrations/20260327164000_repair_auth_and_reaction_migrations/migration.sql`](/Users/alex/project/townpet/app/prisma/migrations/20260327164000_repair_auth_and_reaction_migrations/migration.sql)
-- [`app/src/server/queries/notification.queries.ts`](/Users/alex/project/townpet/app/src/server/queries/notification.queries.ts)
-- [`app/src/server/services/sanction.service.ts`](/Users/alex/project/townpet/app/src/server/services/sanction.service.ts)
+- [`app/prisma/schema.prisma`](../app/prisma/schema.prisma)
+- [`app/prisma/migrations`](../app/prisma/migrations)
+- [`app/src/server/schema-sync.ts`](../app/src/server/schema-sync.ts)
+- [`app/scripts/vercel-build.ts`](../app/scripts/vercel-build.ts)
+- [`/.github/workflows/quality-gate.yml`](../.github/workflows/quality-gate.yml)
+- [`app/prisma/migrations/20260306133000_expand_auth_audit_for_login_events/migration.sql`](../app/prisma/migrations/20260306133000_expand_auth_audit_for_login_events/migration.sql)
+- [`app/prisma/migrations/20260327164000_repair_auth_and_reaction_migrations/migration.sql`](../app/prisma/migrations/20260327164000_repair_auth_and_reaction_migrations/migration.sql)
+- [`app/src/server/queries/notification.queries.ts`](../app/src/server/queries/notification.queries.ts)
+- [`app/src/server/services/sanction.service.ts`](../app/src/server/services/sanction.service.ts)
 
 ## 먼저 알아둘 개념
 
@@ -73,8 +73,8 @@ TownPet는 이런 문제를 다음 세 층으로 다룹니다.
 
 핵심 파일:
 
-- [`quality-gate.yml`](/Users/alex/project/townpet/.github/workflows/quality-gate.yml)
-- [`vercel-build.ts`](/Users/alex/project/townpet/app/scripts/vercel-build.ts)
+- [`quality-gate.yml`](../.github/workflows/quality-gate.yml)
+- [`vercel-build.ts`](../app/scripts/vercel-build.ts)
 
 두 경로가 중요합니다.
 
@@ -122,7 +122,7 @@ TownPet는 이런 문제를 다음 세 층으로 다룹니다.
 
 핵심 파일:
 
-- [`schema-sync.ts`](/Users/alex/project/townpet/app/src/server/schema-sync.ts)
+- [`schema-sync.ts`](../app/src/server/schema-sync.ts)
 
 주요 함수:
 
@@ -146,8 +146,8 @@ TownPet는 이런 문제를 다음 세 층으로 다룹니다.
 
 대표 예:
 
-- [`notification.queries.ts`](/Users/alex/project/townpet/app/src/server/queries/notification.queries.ts)
-- [`sanction.service.ts`](/Users/alex/project/townpet/app/src/server/services/sanction.service.ts)
+- [`notification.queries.ts`](../app/src/server/queries/notification.queries.ts)
+- [`sanction.service.ts`](../app/src/server/services/sanction.service.ts)
 
 예를 들어 `notification.queries.ts`는:
 
@@ -169,8 +169,8 @@ TownPet는 이런 문제를 다음 세 층으로 다룹니다.
 
 대표 사례:
 
-- [`20260306133000_expand_auth_audit_for_login_events`](/Users/alex/project/townpet/app/prisma/migrations/20260306133000_expand_auth_audit_for_login_events/migration.sql)
-- [`20260327164000_repair_auth_and_reaction_migrations`](/Users/alex/project/townpet/app/prisma/migrations/20260327164000_repair_auth_and_reaction_migrations/migration.sql)
+- [`20260306133000_expand_auth_audit_for_login_events`](../app/prisma/migrations/20260306133000_expand_auth_audit_for_login_events/migration.sql)
+- [`20260327164000_repair_auth_and_reaction_migrations`](../app/prisma/migrations/20260327164000_repair_auth_and_reaction_migrations/migration.sql)
 
 TownPet는 migration history가 길어지면서, fresh DB와 오래된 DB 사이 차이를 실제로 겪었습니다.
 
@@ -273,7 +273,7 @@ TownPet를 기준으로는 이 순서가 좋습니다.
 
 그래도 같이 보면 좋은 곳:
 
-- [`notification.queries.test.ts`](/Users/alex/project/townpet/app/src/server/queries/notification.queries.test.ts)
+- [`notification.queries.test.ts`](../app/src/server/queries/notification.queries.test.ts)
 
 이 테스트는 schema delegate가 없을 때 `SCHEMA_SYNC_REQUIRED`로 fail closed하는 계약을 확인합니다.
 
@@ -314,3 +314,17 @@ corepack pnpm -C app exec prisma migrate deploy
 ## 면접에서 이렇게 설명할 수 있다
 
 > TownPet에서는 Prisma를 단순 ORM으로만 쓰지 않았습니다. CI에서 fresh DB 기준으로 `migrate deploy`를 돌려 migration chain을 검증하고, 배포 스크립트에서도 migrate deploy와 baseline 복구를 orchestration했고, 그래도 drift가 생기면 `schema-sync.ts`가 `SCHEMA_SYNC_REQUIRED` 에러로 fail loudly 하도록 만들었습니다. 필요할 때는 idempotent repair migration으로 실제 환경을 복구했습니다.
+
+## 면접 Q&A
+
+### Q1. 왜 `db push` 대신 `migrate deploy`를 강조하나요?
+
+실제 운영 환경은 migration chain으로 진화합니다. fresh DB에서 `migrate deploy`가 통과해야 history가 건강하다는 뜻입니다.
+
+### Q2. repair migration은 왜 필요한가요?
+
+현실 운영에서는 이미 일부 환경이 어긋난 상태일 수 있습니다. 그때는 idempotent repair migration이 가장 안전한 복구 수단입니다.
+
+### Q3. 런타임 schema guard가 왜 필요한가요?
+
+배포와 DB 적용이 어긋난 순간을 조기에 크게 실패시키기 위해서입니다. 조용히 이상 동작하는 것보다 낫습니다.

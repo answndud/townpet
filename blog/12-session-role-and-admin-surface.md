@@ -34,16 +34,16 @@ TownPet는 이 문제를 여러 층으로 나눠서 다룹니다.
 
 ## 먼저 볼 핵심 파일
 
-- [`app/src/lib/auth.ts`](/Users/alex/project/townpet/app/src/lib/auth.ts)
-- [`app/src/lib/session-version.ts`](/Users/alex/project/townpet/app/src/lib/session-version.ts)
-- [`app/src/server/auth.ts`](/Users/alex/project/townpet/app/src/server/auth.ts)
-- [`app/src/server/admin-page-access.ts`](/Users/alex/project/townpet/app/src/server/admin-page-access.ts)
-- [`app/middleware.ts`](/Users/alex/project/townpet/app/middleware.ts)
-- [`app/src/components/admin/admin-section-nav.tsx`](/Users/alex/project/townpet/app/src/components/admin/admin-section-nav.tsx)
-- [`app/src/app/api/admin/auth-audits/export/route.ts`](/Users/alex/project/townpet/app/src/app/api/admin/auth-audits/export/route.ts)
-- [`app/src/server/actions/policy.ts`](/Users/alex/project/townpet/app/src/server/actions/policy.ts)
-- [`app/src/server/services/sanction.service.ts`](/Users/alex/project/townpet/app/src/server/services/sanction.service.ts)
-- [`app/src/server/auth.test.ts`](/Users/alex/project/townpet/app/src/server/auth.test.ts)
+- [`app/src/lib/auth.ts`](../app/src/lib/auth.ts)
+- [`app/src/lib/session-version.ts`](../app/src/lib/session-version.ts)
+- [`app/src/server/auth.ts`](../app/src/server/auth.ts)
+- [`app/src/server/admin-page-access.ts`](../app/src/server/admin-page-access.ts)
+- [`app/middleware.ts`](../app/middleware.ts)
+- [`app/src/components/admin/admin-section-nav.tsx`](../app/src/components/admin/admin-section-nav.tsx)
+- [`app/src/app/api/admin/auth-audits/export/route.ts`](../app/src/app/api/admin/auth-audits/export/route.ts)
+- [`app/src/server/actions/policy.ts`](../app/src/server/actions/policy.ts)
+- [`app/src/server/services/sanction.service.ts`](../app/src/server/services/sanction.service.ts)
+- [`app/src/server/auth.test.ts`](../app/src/server/auth.test.ts)
 
 ## 먼저 알아둘 개념
 
@@ -81,7 +81,7 @@ TownPet는 이 둘을 일부러 다르게 씁니다.
 
 핵심 파일:
 
-- [`lib/auth.ts`](/Users/alex/project/townpet/app/src/lib/auth.ts)
+- [`lib/auth.ts`](../app/src/lib/auth.ts)
 
 먼저 볼 callback:
 
@@ -124,7 +124,7 @@ TownPet는 이 둘을 일부러 다르게 씁니다.
 
 핵심 파일:
 
-- [`session-version.ts`](/Users/alex/project/townpet/app/src/lib/session-version.ts)
+- [`session-version.ts`](../app/src/lib/session-version.ts)
 
 주요 함수:
 
@@ -177,7 +177,7 @@ TownPet는 여기에:
 
 핵심 파일:
 
-- [`server/auth.ts`](/Users/alex/project/townpet/app/src/server/auth.ts)
+- [`server/auth.ts`](../app/src/server/auth.ts)
 
 먼저 볼 함수:
 
@@ -220,7 +220,7 @@ TownPet는 여기에:
 
 핵심 파일:
 
-- [`admin-page-access.ts`](/Users/alex/project/townpet/app/src/server/admin-page-access.ts)
+- [`admin-page-access.ts`](../app/src/server/admin-page-access.ts)
 
 주요 함수:
 
@@ -251,7 +251,7 @@ Spring으로 치환하면:
 
 핵심 파일:
 
-- [`middleware.ts`](/Users/alex/project/townpet/app/middleware.ts)
+- [`middleware.ts`](../app/middleware.ts)
 
 먼저 볼 함수:
 
@@ -280,7 +280,7 @@ Spring으로 치환하면:
 
 핵심 파일:
 
-- [`admin-section-nav.tsx`](/Users/alex/project/townpet/app/src/components/admin/admin-section-nav.tsx)
+- [`admin-section-nav.tsx`](../app/src/components/admin/admin-section-nav.tsx)
 
 주요 함수:
 
@@ -305,8 +305,8 @@ Spring으로 치환하면:
 
 대표 예시:
 
-- [`/api/admin/auth-audits/export/route.ts`](/Users/alex/project/townpet/app/src/app/api/admin/auth-audits/export/route.ts)
-- [`server/actions/policy.ts`](/Users/alex/project/townpet/app/src/server/actions/policy.ts)
+- [`/api/admin/auth-audits/export/route.ts`](../app/src/app/api/admin/auth-audits/export/route.ts)
+- [`server/actions/policy.ts`](../app/src/server/actions/policy.ts)
 
 여기서:
 
@@ -369,7 +369,7 @@ flowchart TD
 
 핵심 테스트:
 
-- [`app/src/server/auth.test.ts`](/Users/alex/project/townpet/app/src/server/auth.test.ts)
+- [`app/src/server/auth.test.ts`](../app/src/server/auth.test.ts)
 
 여기서 보면:
 
@@ -382,7 +382,7 @@ flowchart TD
 
 가능하면 같이 볼 파일:
 
-- [`app/src/middleware.test.ts`](/Users/alex/project/townpet/app/src/middleware.test.ts)
+- [`app/src/middleware.test.ts`](../app/src/middleware.test.ts)
 
 이 테스트는 admin path concealment가 익명 기준으로 어떻게 동작하는지 확인하는 데 좋습니다.
 
@@ -424,3 +424,17 @@ corepack pnpm test -- src/server/auth.test.ts src/middleware.test.ts
 ## 면접에서 이렇게 설명할 수 있다
 
 > TownPet는 권한을 한 곳에서만 검사하지 않았습니다. NextAuth callback에서 세션과 제재 상태를 정리하고, server auth helper에서 role을 판정하고, middleware에서는 admin surface를 익명에게 숨기고, 페이지와 API에서 다시 admin/moderator 권한을 확인하도록 나눴습니다. 그래서 세션, UI, API가 같은 권한 모델을 공유하면서도 각 계층이 다른 책임을 가집니다.
+
+## 면접 Q&A
+
+### Q1. 왜 middleware만으로 권한 검사를 끝내지 않았나요?
+
+middleware는 빠른 은닉과 1차 차단에 적합하지만, 최종 role 판정은 페이지와 API에서 다시 해야 안전합니다. TownPet는 concealment와 authorization을 분리했습니다.
+
+### Q2. `sessionVersion`이 꼭 필요한 이유는 무엇인가요?
+
+비밀번호 변경, 소셜 연결 해제, 제재 같은 이벤트 후 현재 세션을 강제로 무효화해야 할 때가 있습니다. `sessionVersion`은 그걸 단순하게 풀어줍니다.
+
+### Q3. `ADMIN`과 `MODERATOR`를 나눈 이유는 무엇인가요?
+
+신고 처리와 직접 모더레이션은 moderator도 가능하지만, 정책 변경, auth audit, ops 같은 민감 표면은 admin만 접근하도록 분리했습니다.

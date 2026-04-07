@@ -8,13 +8,13 @@ TownPet는 기능이 많지만, 실제로 코드를 읽는 가장 안전한 순�
 
 이 글은 왜 이 순서가 중요한지, 그리고 게시글 생성 흐름을 예시로 어떻게 읽으면 되는지 정리합니다.
 
-## 왜 이 순서가 필요한가
+## 왜 이 글이 중요한가
 
 처음 TownPet를 보면 보통 UI부터 보게 됩니다.
 
 예:
 
-- [`app/src/components/posts/post-create-form.tsx`](/Users/alex/project/townpet/app/src/components/posts/post-create-form.tsx)
+- [`app/src/components/posts/post-create-form.tsx`](../app/src/components/posts/post-create-form.tsx)
 
 하지만 UI부터 읽으면 오히려 헷갈립니다.
 
@@ -26,6 +26,19 @@ TownPet는 기능이 많지만, 실제로 코드를 읽는 가장 안전한 순�
 - 업로드, moderation, cache invalidation까지 뒤에서 이어집니다.
 
 그래서 TownPet는 **바깥이 아니라 안쪽부터 읽는 방식**이 훨씬 효율적입니다.
+
+## 먼저 알아둘 개념
+
+- `Prisma`
+  - 저장할 데이터 구조와 관계를 정합니다.
+- `Zod`
+  - 외부 입력 계약을 정합니다.
+- `Service`
+  - 정책 검사, 트랜잭션, cache invalidation 같은 쓰기 로직을 닫습니다.
+- `Route Handler / Server Action`
+  - 서비스 계층을 HTTP나 폼 호출에 연결합니다.
+- `UI`
+  - 입력 상태와 사용자 상호작용을 담당합니다.
 
 ## 권장 읽기 순서
 
@@ -46,19 +59,19 @@ TownPet는 기능이 많지만, 실제로 코드를 읽는 가장 안전한 순�
 
 을 안쪽에서 바깥으로 이해할 수 있습니다.
 
+## 먼저 볼 핵심 파일
+
+- [`app/prisma/schema.prisma`](../app/prisma/schema.prisma)
+- [`app/src/lib/validations/post.ts`](../app/src/lib/validations/post.ts)
+- [`app/src/server/services/post.service.ts`](../app/src/server/services/post.service.ts)
+- [`app/src/app/api/posts/route.ts`](../app/src/app/api/posts/route.ts)
+- [`app/src/server/actions/post.ts`](../app/src/server/actions/post.ts)
+- [`app/src/components/posts/post-create-form.tsx`](../app/src/components/posts/post-create-form.tsx)
+- [`app/src/server/services/post.service.test.ts`](../app/src/server/services/post.service.test.ts)
+
 ## 예시로 볼 기능: 게시글 생성
 
 이번 글은 게시글 생성을 예시로 설명합니다.
-
-주요 파일:
-
-- [`app/prisma/schema.prisma`](/Users/alex/project/townpet/app/prisma/schema.prisma)
-- [`app/src/lib/validations/post.ts`](/Users/alex/project/townpet/app/src/lib/validations/post.ts)
-- [`app/src/server/services/post.service.ts`](/Users/alex/project/townpet/app/src/server/services/post.service.ts)
-- [`app/src/app/api/posts/route.ts`](/Users/alex/project/townpet/app/src/app/api/posts/route.ts)
-- [`app/src/server/actions/post.ts`](/Users/alex/project/townpet/app/src/server/actions/post.ts)
-- [`app/src/components/posts/post-create-form.tsx`](/Users/alex/project/townpet/app/src/components/posts/post-create-form.tsx)
-- [`app/src/server/services/post.service.test.ts`](/Users/alex/project/townpet/app/src/server/services/post.service.test.ts)
 
 ## 흐름을 먼저 그림으로 보면
 
@@ -77,7 +90,7 @@ flowchart LR
 
 가장 먼저 볼 파일은:
 
-- [`app/prisma/schema.prisma`](/Users/alex/project/townpet/app/prisma/schema.prisma)
+- [`app/prisma/schema.prisma`](../app/prisma/schema.prisma)
 
 게시글 생성 흐름에서 최소한 알아야 하는 모델은:
 
@@ -106,7 +119,7 @@ flowchart LR
 
 다음은:
 
-- [`app/src/lib/validations/post.ts`](/Users/alex/project/townpet/app/src/lib/validations/post.ts)
+- [`app/src/lib/validations/post.ts`](../app/src/lib/validations/post.ts)
 
 핵심 스키마는 이 셋입니다.
 
@@ -141,7 +154,7 @@ flowchart LR
 
 핵심 파일:
 
-- [`app/src/server/services/post.service.ts`](/Users/alex/project/townpet/app/src/server/services/post.service.ts)
+- [`app/src/server/services/post.service.ts`](../app/src/server/services/post.service.ts)
 
 이 파일에서 게시글 생성 엔트리는:
 
@@ -176,7 +189,7 @@ flowchart LR
 
 파일:
 
-- [`app/src/app/api/posts/route.ts`](/Users/alex/project/townpet/app/src/app/api/posts/route.ts)
+- [`app/src/app/api/posts/route.ts`](../app/src/app/api/posts/route.ts)
 
 여기서 `POST`는 게시글 생성 API입니다.
 
@@ -204,7 +217,7 @@ flowchart LR
 
 파일:
 
-- [`app/src/server/actions/post.ts`](/Users/alex/project/townpet/app/src/server/actions/post.ts)
+- [`app/src/server/actions/post.ts`](../app/src/server/actions/post.ts)
 
 여기에는:
 
@@ -235,7 +248,7 @@ flowchart LR
 
 파일:
 
-- [`app/src/components/posts/post-create-form.tsx`](/Users/alex/project/townpet/app/src/components/posts/post-create-form.tsx)
+- [`app/src/components/posts/post-create-form.tsx`](../app/src/components/posts/post-create-form.tsx)
 
 이 파일은 길고 복잡합니다. 하지만 앞 단계를 알고 보면 훨씬 읽기 쉬워집니다.
 
@@ -301,12 +314,29 @@ TownPet를 이해할 때는 성공 흐름만 보면 부족합니다.
 
 이 실패 경로는 주로:
 
-- [`app/src/server/services/post.service.test.ts`](/Users/alex/project/townpet/app/src/server/services/post.service.test.ts)
-- [`app/src/server/actions/post.test.ts`](/Users/alex/project/townpet/app/src/server/actions/post.test.ts)
+- [`app/src/server/services/post.service.test.ts`](../app/src/server/services/post.service.test.ts)
+- [`app/src/server/actions/post.test.ts`](../app/src/server/actions/post.test.ts)
 
 에서 확인할 수 있습니다.
 
 즉 TownPet는 “무엇이 안 되게 했는가”를 보는 것도 중요합니다.
+
+## 테스트와 검증
+
+대표 검증 파일은 아래 둘입니다.
+
+- [`app/src/server/services/post.service.test.ts`](../app/src/server/services/post.service.test.ts)
+- [`app/src/server/actions/post.test.ts`](../app/src/server/actions/post.test.ts)
+
+전자는 정책과 쓰기 로직, 후자는 호출 표면과 revalidation 계약을 보여줍니다.
+
+## 직접 실행해 보고 싶다면
+
+```bash
+corepack pnpm -C app test -- src/server/services/post.service.test.ts
+corepack pnpm -C app test -- src/server/actions/post.test.ts
+corepack pnpm -C app test -- src/lib/validations/post.test.ts
+```
 
 ## Java/Spring으로 치환하면
 
@@ -349,20 +379,20 @@ TownPet를 이해할 때는 성공 흐름만 보면 부족합니다.
 
 ### 게시글 생성
 
-1. [`app/prisma/schema.prisma`](/Users/alex/project/townpet/app/prisma/schema.prisma)
-2. [`app/src/lib/validations/post.ts`](/Users/alex/project/townpet/app/src/lib/validations/post.ts)
-3. [`app/src/server/services/post.service.ts`](/Users/alex/project/townpet/app/src/server/services/post.service.ts)
-4. [`app/src/server/actions/post.ts`](/Users/alex/project/townpet/app/src/server/actions/post.ts)
-5. [`app/src/components/posts/post-create-form.tsx`](/Users/alex/project/townpet/app/src/components/posts/post-create-form.tsx)
-6. [`app/src/server/services/post.service.test.ts`](/Users/alex/project/townpet/app/src/server/services/post.service.test.ts)
+1. [`app/prisma/schema.prisma`](../app/prisma/schema.prisma)
+2. [`app/src/lib/validations/post.ts`](../app/src/lib/validations/post.ts)
+3. [`app/src/server/services/post.service.ts`](../app/src/server/services/post.service.ts)
+4. [`app/src/server/actions/post.ts`](../app/src/server/actions/post.ts)
+5. [`app/src/components/posts/post-create-form.tsx`](../app/src/components/posts/post-create-form.tsx)
+6. [`app/src/server/services/post.service.test.ts`](../app/src/server/services/post.service.test.ts)
 
 ### 게시글 목록/피드
 
-1. [`app/prisma/schema.prisma`](/Users/alex/project/townpet/app/prisma/schema.prisma)
-2. [`app/src/lib/validations/post.ts`](/Users/alex/project/townpet/app/src/lib/validations/post.ts)
-3. [`app/src/server/queries/post.queries.ts`](/Users/alex/project/townpet/app/src/server/queries/post.queries.ts)
-4. [`app/src/app/feed/page.tsx`](/Users/alex/project/townpet/app/src/app/feed/page.tsx)
-5. [`app/src/components/posts/feed-infinite-list.tsx`](/Users/alex/project/townpet/app/src/components/posts/feed-infinite-list.tsx)
+1. [`app/prisma/schema.prisma`](../app/prisma/schema.prisma)
+2. [`app/src/lib/validations/post.ts`](../app/src/lib/validations/post.ts)
+3. [`app/src/server/queries/post.queries.ts`](../app/src/server/queries/post.queries.ts)
+4. [`app/src/app/feed/page.tsx`](../app/src/app/feed/page.tsx)
+5. [`app/src/components/posts/feed-infinite-list.tsx`](../app/src/components/posts/feed-infinite-list.tsx)
 
 ## 현재 구조의 장점
 

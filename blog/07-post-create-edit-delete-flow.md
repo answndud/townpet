@@ -400,3 +400,17 @@ corepack pnpm -C app dev
 ## 면접에서 이렇게 설명할 수 있다
 
 > TownPet의 글 CRUD는 단순 컨트롤러-서비스-리포지토리 구조가 아니라, 게시글 타입별 structured input, guest/auth 분기, 금칙어/연락처 moderation, 신규 계정 제한, 업로드 수명주기, 캐시 invalidation까지 한 흐름으로 묶여 있습니다. 로그인 사용자의 쓰기는 Server Action으로 단순화했고, guest 쓰기처럼 헤더와 rate limit이 중요한 경로는 Route Handler로 분리했습니다.
+
+## 면접 Q&A
+
+### Q1. 왜 로그인 사용자는 Server Action, 비회원은 Route Handler를 썼나요?
+
+로그인 사용자는 폼과 세션이 이미 붙어 있어서 Server Action이 단순합니다. 비회원 경로는 헤더, step-up, rate limit, 공개 API 계약이 중요해서 Route Handler가 더 적합했습니다.
+
+### Q2. 왜 삭제를 hard delete가 아니라 soft delete로 했나요?
+
+댓글, 신고, 알림, 감사 로그 같은 주변 데이터가 많아서 실제 운영 추적성과 정합성을 유지하려면 soft delete가 더 안전했습니다.
+
+### Q3. 글 생성 서비스가 큰 이유는 무엇인가요?
+
+게시글 타입별 structured input, moderation, 신규 사용자 제한, 업로드 attach, 캐시 invalidation까지 모두 쓰기 흐름 안에 있어서 service가 자연스럽게 커졌습니다.

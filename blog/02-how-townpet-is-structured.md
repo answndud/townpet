@@ -24,14 +24,14 @@ Python/Java 백엔드 개발자가 TownPet를 처음 열면 보통 이런 지점
 ## 먼저 알아둘 개념
 
 - TownPet는 **Next.js App Router** 기반 프로젝트입니다.
-- UI와 라우트 진입점은 주로 [`app/src/app`](/Users/alex/project/townpet/app/src/app)에 있습니다.
-- 비즈니스 로직은 주로 [`app/src/server`](/Users/alex/project/townpet/app/src/server)에 있습니다.
-- 검증과 순수 헬퍼는 주로 [`app/src/lib`](/Users/alex/project/townpet/app/src/lib)에 있습니다.
-- DB 스키마와 migration은 [`app/prisma`](/Users/alex/project/townpet/app/prisma)에 있습니다.
+- UI와 라우트 진입점은 주로 [`app/src/app`](../app/src/app)에 있습니다.
+- 비즈니스 로직은 주로 [`app/src/server`](../app/src/server)에 있습니다.
+- 검증과 순수 헬퍼는 주로 [`app/src/lib`](../app/src/lib)에 있습니다.
+- DB 스키마와 migration은 [`app/prisma`](../app/prisma)에 있습니다.
 
 ## 가장 먼저 볼 폴더
 
-### 1. [`app/src/app`](/Users/alex/project/townpet/app/src/app)
+### 1. [`app/src/app`](../app/src/app)
 
 이 폴더는 **라우트 진입점**입니다.
 
@@ -44,16 +44,16 @@ Python/Java 백엔드 개발자가 TownPet를 처음 열면 보통 이런 지점
 
 예시:
 
-- [`app/src/app/page.tsx`](/Users/alex/project/townpet/app/src/app/page.tsx)
+- [`app/src/app/page.tsx`](../app/src/app/page.tsx)
   - `/` 요청을 받으면 `/feed`로 리다이렉트합니다.
-- [`app/src/app/layout.tsx`](/Users/alex/project/townpet/app/src/app/layout.tsx)
+- [`app/src/app/layout.tsx`](../app/src/app/layout.tsx)
   - 앱 전체의 헤더, 푸터, 글로벌 메타데이터를 정의합니다.
-- [`app/src/app/feed/page.tsx`](/Users/alex/project/townpet/app/src/app/feed/page.tsx)
+- [`app/src/app/feed/page.tsx`](../app/src/app/feed/page.tsx)
   - 실제 피드 화면을 렌더링합니다.
-- [`app/src/app/api/posts/route.ts`](/Users/alex/project/townpet/app/src/app/api/posts/route.ts)
+- [`app/src/app/api/posts/route.ts`](../app/src/app/api/posts/route.ts)
   - 게시글 목록 조회와 게시글 생성 API를 담당합니다.
 
-### 2. [`app/src/components`](/Users/alex/project/townpet/app/src/components)
+### 2. [`app/src/components`](../app/src/components)
 
 이 폴더는 **UI 조립 블록**입니다.
 
@@ -63,58 +63,58 @@ Python/Java 백엔드 개발자가 TownPet를 처음 열면 보통 이런 지점
 
 예시:
 
-- [`app/src/components/posts/feed-infinite-list.tsx`](/Users/alex/project/townpet/app/src/components/posts/feed-infinite-list.tsx)
-- [`app/src/components/posts/post-create-form.tsx`](/Users/alex/project/townpet/app/src/components/posts/post-create-form.tsx)
-- [`app/src/components/navigation/app-shell-header.tsx`](/Users/alex/project/townpet/app/src/components/navigation/app-shell-header.tsx)
+- [`app/src/components/posts/feed-infinite-list.tsx`](../app/src/components/posts/feed-infinite-list.tsx)
+- [`app/src/components/posts/post-create-form.tsx`](../app/src/components/posts/post-create-form.tsx)
+- [`app/src/components/navigation/app-shell-header.tsx`](../app/src/components/navigation/app-shell-header.tsx)
 
-### 3. [`app/src/lib`](/Users/alex/project/townpet/app/src/lib)
+### 3. [`app/src/lib`](../app/src/lib)
 
 이 폴더는 **순수 함수, 공용 유틸, validation**이 모이는 곳입니다.
 
 대표적으로:
 
 - 검증
-  - [`app/src/lib/validations`](/Users/alex/project/townpet/app/src/lib/validations)
+  - [`app/src/lib/validations`](../app/src/lib/validations)
 - 입력 정규화
-  - [`app/src/lib/structured-field-normalization.ts`](/Users/alex/project/townpet/app/src/lib/structured-field-normalization.ts)
+  - [`app/src/lib/structured-field-normalization.ts`](../app/src/lib/structured-field-normalization.ts)
 - 검색 문서 생성
-  - [`app/src/lib/search-document.ts`](/Users/alex/project/townpet/app/src/lib/search-document.ts)
+  - [`app/src/lib/search-document.ts`](../app/src/lib/search-document.ts)
 - 인증/보안 관련 순수 헬퍼
-  - [`app/src/lib/auth.ts`](/Users/alex/project/townpet/app/src/lib/auth.ts)
-  - [`app/src/lib/security-headers.ts`](/Users/alex/project/townpet/app/src/lib/security-headers.ts)
+  - [`app/src/lib/auth.ts`](../app/src/lib/auth.ts)
+  - [`app/src/lib/security-headers.ts`](../app/src/lib/security-headers.ts)
 
-### 4. [`app/src/server`](/Users/alex/project/townpet/app/src/server)
+### 4. [`app/src/server`](../app/src/server)
 
 이 폴더는 TownPet의 **실질적인 백엔드 계층**입니다.
 
 하위 폴더를 보면 의도가 더 명확합니다.
 
-- [`app/src/server/actions`](/Users/alex/project/townpet/app/src/server/actions)
+- [`app/src/server/actions`](../app/src/server/actions)
   - Server Action
   - React/Next 폼이나 버튼에서 바로 호출하는 서버 함수
-- [`app/src/server/services`](/Users/alex/project/townpet/app/src/server/services)
+- [`app/src/server/services`](../app/src/server/services)
   - 쓰기 중심 비즈니스 로직
   - 정책 검사, validation 연결, 트랜잭션, cache bump
-- [`app/src/server/queries`](/Users/alex/project/townpet/app/src/server/queries)
+- [`app/src/server/queries`](../app/src/server/queries)
   - 읽기 전용 조회 로직
   - 목록, 상세, 통계, 관리자 화면 데이터
-- [`app/src/server/cache`](/Users/alex/project/townpet/app/src/server/cache)
+- [`app/src/server/cache`](../app/src/server/cache)
   - query cache, 버전 bump, 운영 cache 상태
 - 그 외
   - auth, rate limit, request context, error monitor, retention job
 
-### 5. [`app/prisma`](/Users/alex/project/townpet/app/prisma)
+### 5. [`app/prisma`](../app/prisma)
 
 DB 구조의 기준입니다.
 
-- [`app/prisma/schema.prisma`](/Users/alex/project/townpet/app/prisma/schema.prisma)
+- [`app/prisma/schema.prisma`](../app/prisma/schema.prisma)
   - 모델, enum, index
-- [`app/prisma/migrations`](/Users/alex/project/townpet/app/prisma/migrations)
+- [`app/prisma/migrations`](../app/prisma/migrations)
   - 변경 이력
 
 TownPet는 기능이 커질수록 `schema.prisma`를 먼저 읽는 편이 이해가 빠릅니다.
 
-### 6. [`docs`](/Users/alex/project/townpet/docs) 와 [`blog`](/Users/alex/project/townpet/blog)
+### 6. [`docs`](../docs) 와 [`blog`](./)
 
 둘의 역할은 다릅니다.
 
@@ -149,14 +149,14 @@ flowchart TD
 
 ### 1단계. 루트 진입점 보기
 
-- [`app/src/app/page.tsx`](/Users/alex/project/townpet/app/src/app/page.tsx)
-- [`app/src/app/layout.tsx`](/Users/alex/project/townpet/app/src/app/layout.tsx)
+- [`app/src/app/page.tsx`](../app/src/app/page.tsx)
+- [`app/src/app/layout.tsx`](../app/src/app/layout.tsx)
 
 여기서 앱이 어디로 시작하고, 공통 레이아웃이 어떻게 붙는지 봅니다.
 
 ### 2단계. 가장 대표적인 페이지 하나 보기
 
-- [`app/src/app/feed/page.tsx`](/Users/alex/project/townpet/app/src/app/feed/page.tsx)
+- [`app/src/app/feed/page.tsx`](../app/src/app/feed/page.tsx)
 
 이 파일은 TownPet의 성격을 가장 잘 보여줍니다.
 
@@ -170,7 +170,7 @@ flowchart TD
 
 ### 3단계. 같은 도메인의 API 보기
 
-- [`app/src/app/api/posts/route.ts`](/Users/alex/project/townpet/app/src/app/api/posts/route.ts)
+- [`app/src/app/api/posts/route.ts`](../app/src/app/api/posts/route.ts)
 
 이 파일은 같은 게시글 도메인에서:
 
@@ -180,7 +180,7 @@ flowchart TD
 
 ### 4단계. 실제 쓰기 로직 보기
 
-- [`app/src/server/services/post.service.ts`](/Users/alex/project/townpet/app/src/server/services/post.service.ts)
+- [`app/src/server/services/post.service.ts`](../app/src/server/services/post.service.ts)
 
 이 파일이 사실상 게시글 도메인의 핵심입니다.
 
@@ -196,7 +196,7 @@ flowchart TD
 
 ### 5단계. 읽기 전용 query 보기
 
-- [`app/src/server/queries/post.queries.ts`](/Users/alex/project/townpet/app/src/server/queries/post.queries.ts)
+- [`app/src/server/queries/post.queries.ts`](../app/src/server/queries/post.queries.ts)
 
 이 파일은 목록/상세/검색/랭킹/베스트피드 같은 조회를 담당합니다.
 
@@ -210,7 +210,7 @@ flowchart TD
 
 ### 6단계. validation 보기
 
-- [`app/src/lib/validations/post.ts`](/Users/alex/project/townpet/app/src/lib/validations/post.ts)
+- [`app/src/lib/validations/post.ts`](../app/src/lib/validations/post.ts)
 
 여기서:
 
@@ -225,7 +225,7 @@ flowchart TD
 
 ### 7단계. DB 스키마 보기
 
-- [`app/prisma/schema.prisma`](/Users/alex/project/townpet/app/prisma/schema.prisma)
+- [`app/prisma/schema.prisma`](../app/prisma/schema.prisma)
 
 최소한 아래 모델은 초반에 꼭 보면 좋습니다.
 
@@ -265,24 +265,24 @@ Spring과 가장 다른 점은:
 
 ### 예시 1. 피드가 어떻게 보이는지 이해하고 싶다
 
-1. [`app/src/app/feed/page.tsx`](/Users/alex/project/townpet/app/src/app/feed/page.tsx)
-2. [`app/src/server/queries/post.queries.ts`](/Users/alex/project/townpet/app/src/server/queries/post.queries.ts)
-3. [`app/src/components/posts/feed-infinite-list.tsx`](/Users/alex/project/townpet/app/src/components/posts/feed-infinite-list.tsx)
+1. [`app/src/app/feed/page.tsx`](../app/src/app/feed/page.tsx)
+2. [`app/src/server/queries/post.queries.ts`](../app/src/server/queries/post.queries.ts)
+3. [`app/src/components/posts/feed-infinite-list.tsx`](../app/src/components/posts/feed-infinite-list.tsx)
 
 ### 예시 2. 게시글 생성이 어떻게 되는지 이해하고 싶다
 
-1. [`app/src/components/posts/post-create-form.tsx`](/Users/alex/project/townpet/app/src/components/posts/post-create-form.tsx)
-2. [`app/src/server/actions/post.ts`](/Users/alex/project/townpet/app/src/server/actions/post.ts)
-3. [`app/src/server/services/post.service.ts`](/Users/alex/project/townpet/app/src/server/services/post.service.ts)
-4. [`app/src/lib/validations/post.ts`](/Users/alex/project/townpet/app/src/lib/validations/post.ts)
-5. [`app/prisma/schema.prisma`](/Users/alex/project/townpet/app/prisma/schema.prisma)
+1. [`app/src/components/posts/post-create-form.tsx`](../app/src/components/posts/post-create-form.tsx)
+2. [`app/src/server/actions/post.ts`](../app/src/server/actions/post.ts)
+3. [`app/src/server/services/post.service.ts`](../app/src/server/services/post.service.ts)
+4. [`app/src/lib/validations/post.ts`](../app/src/lib/validations/post.ts)
+5. [`app/prisma/schema.prisma`](../app/prisma/schema.prisma)
 
 ### 예시 3. 검색이 어떻게 되는지 이해하고 싶다
 
-1. [`app/src/app/search/page.tsx`](/Users/alex/project/townpet/app/src/app/search/page.tsx)
-2. [`app/src/server/queries/post.queries.ts`](/Users/alex/project/townpet/app/src/server/queries/post.queries.ts)
-3. [`app/src/server/queries/search.queries.ts`](/Users/alex/project/townpet/app/src/server/queries/search.queries.ts)
-4. [`app/src/lib/search-document.ts`](/Users/alex/project/townpet/app/src/lib/search-document.ts)
+1. [`app/src/app/search/page.tsx`](../app/src/app/search/page.tsx)
+2. [`app/src/server/queries/post.queries.ts`](../app/src/server/queries/post.queries.ts)
+3. [`app/src/server/queries/search.queries.ts`](../app/src/server/queries/search.queries.ts)
+4. [`app/src/lib/search-document.ts`](../app/src/lib/search-document.ts)
 
 ## 테스트는 어디를 보면 되는가
 
@@ -290,9 +290,9 @@ TownPet는 코드 가까이에 테스트를 두는 편입니다.
 
 예시:
 
-- [`app/src/server/services/post.service.test.ts`](/Users/alex/project/townpet/app/src/server/services/post.service.test.ts)
-- [`app/src/server/queries/post.queries.test.ts`](/Users/alex/project/townpet/app/src/server/queries/post.queries.test.ts)
-- [`app/src/server/actions/post.test.ts`](/Users/alex/project/townpet/app/src/server/actions/post.test.ts)
+- [`app/src/server/services/post.service.test.ts`](../app/src/server/services/post.service.test.ts)
+- [`app/src/server/queries/post.queries.test.ts`](../app/src/server/queries/post.queries.test.ts)
+- [`app/src/server/actions/post.test.ts`](../app/src/server/actions/post.test.ts)
 
 즉 어떤 기능을 읽을 때는:
 

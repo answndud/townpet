@@ -25,15 +25,15 @@ TownPet는 이 포인트를 의식적으로 정리한 프로젝트입니다.
 
 ## 먼저 볼 문서와 파일
 
-- [README.md](/Users/alex/project/townpet/README.md)
-- [docs/개발_운영_가이드.md](/Users/alex/project/townpet/docs/%EA%B0%9C%EB%B0%9C_%EC%9A%B4%EC%98%81_%EA%B0%80%EC%9D%B4%EB%93%9C.md)
-- [PLAN.md](/Users/alex/project/townpet/PLAN.md)
-- [PROGRESS.md](/Users/alex/project/townpet/PROGRESS.md)
-- [docs/security/보안_계획.md](/Users/alex/project/townpet/docs/security/%EB%B3%B4%EC%95%88_%EA%B3%84%ED%9A%8D.md)
-- [docs/security/보안_진행상황.md](/Users/alex/project/townpet/docs/security/%EB%B3%B4%EC%95%88_%EC%A7%84%ED%96%89%EC%83%81%ED%99%A9.md)
-- [app/src/app/admin/ops/page.tsx](/Users/alex/project/townpet/app/src/app/admin/ops/page.tsx)
-- [app/src/server/demo-content-seeding.ts](/Users/alex/project/townpet/app/src/server/demo-content-seeding.ts)
-- [blog/README.md](/Users/alex/project/townpet/blog/README.md)
+- [README.md](../README.md)
+- [docs/개발_운영_가이드.md](../docs/%EA%B0%9C%EB%B0%9C_%EC%9A%B4%EC%98%81_%EA%B0%80%EC%9D%B4%EB%93%9C.md)
+- [PLAN.md](../PLAN.md)
+- [PROGRESS.md](../PROGRESS.md)
+- [docs/security/보안_계획.md](../docs/security/%EB%B3%B4%EC%95%88_%EA%B3%84%ED%9A%8D.md)
+- [docs/security/보안_진행상황.md](../docs/security/%EB%B3%B4%EC%95%88_%EC%A7%84%ED%96%89%EC%83%81%ED%99%A9.md)
+- [app/src/app/admin/ops/page.tsx](../app/src/app/admin/ops/page.tsx)
+- [app/src/server/demo-content-seeding.ts](../app/src/server/demo-content-seeding.ts)
+- [blog/README.md](./README.md)
 
 ## 먼저 알아둘 개념
 
@@ -62,7 +62,7 @@ TownPet는 README, 배포 사이트, 관리자 대시보드, health endpoint, de
 
 ## 1. README가 왜 첫 번째 패키지인가
 
-[README.md](/Users/alex/project/townpet/README.md)는 TownPet를 처음 여는 사람이 가장 먼저 보는 문서입니다.
+[README.md](../README.md)는 TownPet를 처음 여는 사람이 가장 먼저 보는 문서입니다.
 
 여기서 하는 일:
 
@@ -89,7 +89,7 @@ TownPet는 배포 사이트가 있습니다.
 
 관련 코드:
 
-- [app/src/server/demo-content-seeding.ts](/Users/alex/project/townpet/app/src/server/demo-content-seeding.ts)
+- [app/src/server/demo-content-seeding.ts](../app/src/server/demo-content-seeding.ts)
 
 즉 TownPet는 README 스크린샷과 실제 배포 화면이 어느 정도 일치하도록 관리합니다.
 
@@ -122,25 +122,25 @@ TownPet는 문서가 많습니다.
 
 핵심만 보면 됩니다.
 
-### 1) [PLAN.md](/Users/alex/project/townpet/PLAN.md)
+### 1) [PLAN.md](../PLAN.md)
 
 - 어떤 문제를 어떤 사이클로 해결했는지
 - 작업을 어떻게 쪼갰는지
 
-### 2) [PROGRESS.md](/Users/alex/project/townpet/PROGRESS.md)
+### 2) [PROGRESS.md](../PROGRESS.md)
 
 - 실제로 무엇을 바꿨는지
 - 어떤 검증을 돌렸는지
 
 ### 3) 보안 문서
 
-- [보안 계획](/Users/alex/project/townpet/docs/security/%EB%B3%B4%EC%95%88_%EA%B3%84%ED%9A%8D.md)
-- [보안 진행상황](/Users/alex/project/townpet/docs/security/%EB%B3%B4%EC%95%88_%EC%A7%84%ED%96%89%EC%83%81%ED%99%A9.md)
+- [보안 계획](../docs/security/%EB%B3%B4%EC%95%88_%EA%B3%84%ED%9A%8D.md)
+- [보안 진행상황](../docs/security/%EB%B3%B4%EC%95%88_%EC%A7%84%ED%96%89%EC%83%81%ED%99%A9.md)
 
 이 문서들은 “기능만 만들었다”가 아니라  
 운영/보안까지 같이 밀었다는 증거가 됩니다.
 
-### 4) [docs/개발_운영_가이드.md](/Users/alex/project/townpet/docs/%EA%B0%9C%EB%B0%9C_%EC%9A%B4%EC%98%81_%EA%B0%80%EC%9D%B4%EB%93%9C.md)
+### 4) [docs/개발_운영_가이드.md](../docs/%EA%B0%9C%EB%B0%9C_%EC%9A%B4%EC%98%81_%EA%B0%80%EC%9D%B4%EB%93%9C.md)
 
 - 로컬 복구
 - 시드
@@ -180,10 +180,10 @@ TownPet는 다릅니다.
 
 예를 들어:
 
-- [02-how-townpet-is-structured.md](/Users/alex/project/townpet/blog/02-how-townpet-is-structured.md)
-- [09-search-structured-search-and-suggestions.md](/Users/alex/project/townpet/blog/09-search-structured-search-and-suggestions.md)
-- [14-report-block-sanction-direct-moderation.md](/Users/alex/project/townpet/blog/14-report-block-sanction-direct-moderation.md)
-- [19-testing-and-quality-gate.md](/Users/alex/project/townpet/blog/19-testing-and-quality-gate.md)
+- [02-how-townpet-is-structured.md](./02-how-townpet-is-structured.md)
+- [09-search-structured-search-and-suggestions.md](./09-search-structured-search-and-suggestions.md)
+- [14-report-block-sanction-direct-moderation.md](./14-report-block-sanction-direct-moderation.md)
+- [19-testing-and-quality-gate.md](./19-testing-and-quality-gate.md)
 
 이런 글들은 “어디서부터 읽어야 하는가”까지 설명해주기 때문에,  
 리뷰어나 면접관이 저장소를 더 쉽게 파고들 수 있게 만듭니다.
@@ -217,23 +217,23 @@ TownPet를 설명할 때 가장 좋은 순서는 보통 이렇습니다.
 
 ### 제품 구조
 
-- [app/src/app/feed/page.tsx](/Users/alex/project/townpet/app/src/app/feed/page.tsx)
-- [app/src/server/queries/post.queries.ts](/Users/alex/project/townpet/app/src/server/queries/post.queries.ts)
+- [app/src/app/feed/page.tsx](../app/src/app/feed/page.tsx)
+- [app/src/server/queries/post.queries.ts](../app/src/server/queries/post.queries.ts)
 
 ### 쓰기 정책
 
-- [app/src/server/services/post.service.ts](/Users/alex/project/townpet/app/src/server/services/post.service.ts)
-- [app/src/lib/validations/post.ts](/Users/alex/project/townpet/app/src/lib/validations/post.ts)
+- [app/src/server/services/post.service.ts](../app/src/server/services/post.service.ts)
+- [app/src/lib/validations/post.ts](../app/src/lib/validations/post.ts)
 
 ### 운영/모더레이션
 
-- [app/src/server/services/report.service.ts](/Users/alex/project/townpet/app/src/server/services/report.service.ts)
-- [app/src/app/admin/ops/page.tsx](/Users/alex/project/townpet/app/src/app/admin/ops/page.tsx)
+- [app/src/server/services/report.service.ts](../app/src/server/services/report.service.ts)
+- [app/src/app/admin/ops/page.tsx](../app/src/app/admin/ops/page.tsx)
 
 ### 품질/운영
 
-- [.github/workflows/quality-gate.yml](/Users/alex/project/townpet/.github/workflows/quality-gate.yml)
-- [app/src/app/api/health/route.ts](/Users/alex/project/townpet/app/src/app/api/health/route.ts)
+- [.github/workflows/quality-gate.yml](../.github/workflows/quality-gate.yml)
+- [app/src/app/api/health/route.ts](../app/src/app/api/health/route.ts)
 
 이 파일들만 잘 설명해도 TownPet의 깊이를 꽤 잘 보여줄 수 있습니다.
 
@@ -249,14 +249,27 @@ TownPet는 단순히 “기능이 많은 개인 프로젝트”가 아닙니다.
 
 이 글 자체는 데모/문서 패키지 글이라 test 파일 하나보다 아래 묶음을 같이 보는 것이 좋습니다.
 
-- [README.md](/Users/alex/project/townpet/README.md)
-- [PLAN.md](/Users/alex/project/townpet/PLAN.md)
-- [PROGRESS.md](/Users/alex/project/townpet/PROGRESS.md)
-- [docs/개발_운영_가이드.md](/Users/alex/project/townpet/docs/%EA%B0%9C%EB%B0%9C_%EC%9A%B4%EC%98%81_%EA%B0%80%EC%9D%B4%EB%93%9C.md)
-- [blog/README.md](/Users/alex/project/townpet/blog/README.md)
+- [README.md](../README.md)
+- [PLAN.md](../PLAN.md)
+- [PROGRESS.md](../PROGRESS.md)
+- [docs/개발_운영_가이드.md](../docs/%EA%B0%9C%EB%B0%9C_%EC%9A%B4%EC%98%81_%EA%B0%80%EC%9D%B4%EB%93%9C.md)
+- [blog/README.md](./README.md)
 
 즉 TownPet는 테스트만으로 보여지는 프로젝트가 아니라,  
 문서와 데모 패키지가 함께 작동하는 프로젝트로 읽는 편이 맞습니다.
+
+## 직접 실행해 보고 싶다면
+
+```bash
+corepack pnpm -C app dev
+```
+
+그 뒤 아래 순서로 직접 열어보면 이 글이 말하는 패키지 구조가 바로 연결됩니다.
+
+1. `http://localhost:3000/`
+2. `http://localhost:3000/feed`
+3. `http://localhost:3000/search`
+4. `http://localhost:3000/admin/ops`
 
 ## 현재 구현의 한계
 

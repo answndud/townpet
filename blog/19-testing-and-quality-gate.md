@@ -37,14 +37,23 @@ TownPet는 실제로 이런 위험이 있습니다.
 
 으로 나눠 둡니다.
 
+## 먼저 알아둘 개념
+
+- `Vitest`
+  - service, query, route, component의 빠른 회귀 테스트입니다.
+- `Playwright`
+  - 브라우저 사용자 흐름을 검증합니다.
+- `quality-gate`
+  - 테스트뿐 아니라 migration, rehearsal, smoke를 묶는 CI 게이트입니다.
+
 ## 먼저 볼 핵심 파일
 
-- [`app/package.json`](/Users/alex/project/townpet/app/package.json)
-- [`.github/workflows/quality-gate.yml`](/Users/alex/project/townpet/.github/workflows/quality-gate.yml)
-- [`.github/workflows/ops-smoke-checks.yml`](/Users/alex/project/townpet/.github/workflows/ops-smoke-checks.yml)
-- [`app/e2e/profile-social-account-linking.spec.ts`](/Users/alex/project/townpet/app/e2e/profile-social-account-linking.spec.ts)
-- [`app/src/server/queries/ops-overview.queries.test.ts`](/Users/alex/project/townpet/app/src/server/queries/ops-overview.queries.test.ts)
-- [`app/src/app/api/health/route.test.ts`](/Users/alex/project/townpet/app/src/app/api/health/route.test.ts)
+- [`app/package.json`](../app/package.json)
+- [`.github/workflows/quality-gate.yml`](../.github/workflows/quality-gate.yml)
+- [`.github/workflows/ops-smoke-checks.yml`](../.github/workflows/ops-smoke-checks.yml)
+- [`app/e2e/profile-social-account-linking.spec.ts`](../app/e2e/profile-social-account-linking.spec.ts)
+- [`app/src/server/queries/ops-overview.queries.test.ts`](../app/src/server/queries/ops-overview.queries.test.ts)
+- [`app/src/app/api/health/route.test.ts`](../app/src/app/api/health/route.test.ts)
 
 ## 품질 게이트를 먼저 그림으로 보면
 
@@ -90,7 +99,7 @@ TownPet는 크게 두 도구를 씁니다.
 
 핵심 파일:
 
-- [`app/package.json`](/Users/alex/project/townpet/app/package.json)
+- [`app/package.json`](../app/package.json)
 
 여기서 먼저 봐야 하는 스크립트는 이 6개입니다.
 
@@ -153,7 +162,7 @@ TownPet는 크게 두 도구를 씁니다.
 
 핵심 파일:
 
-- [`.github/workflows/quality-gate.yml`](/Users/alex/project/townpet/.github/workflows/quality-gate.yml)
+- [`.github/workflows/quality-gate.yml`](../.github/workflows/quality-gate.yml)
 
 이 워크플로우는 단순히 `pnpm test`만 하지 않습니다.
 
@@ -224,7 +233,7 @@ Python/Django로 치환하면:
 
 핵심 파일:
 
-- [`.github/workflows/ops-smoke-checks.yml`](/Users/alex/project/townpet/.github/workflows/ops-smoke-checks.yml)
+- [`.github/workflows/ops-smoke-checks.yml`](../.github/workflows/ops-smoke-checks.yml)
 
 이 워크플로우는 production/preview 배포 뒤 외부에서 다시 확인합니다.
 
@@ -250,26 +259,26 @@ Python/Django로 치환하면:
 
 ### 로직 테스트 예
 
-- [`app/src/server/services/auth-account-link.service.test.ts`](/Users/alex/project/townpet/app/src/server/services/auth-account-link.service.test.ts)
-- [`app/src/server/queries/ops-overview.queries.test.ts`](/Users/alex/project/townpet/app/src/server/queries/ops-overview.queries.test.ts)
+- [`app/src/server/services/auth-account-link.service.test.ts`](../app/src/server/services/auth-account-link.service.test.ts)
+- [`app/src/server/queries/ops-overview.queries.test.ts`](../app/src/server/queries/ops-overview.queries.test.ts)
 
 이 레벨은 service/query 규칙을 빠르게 고정합니다.
 
 ### route 테스트 예
 
-- [`app/src/app/api/health/route.test.ts`](/Users/alex/project/townpet/app/src/app/api/health/route.test.ts)
+- [`app/src/app/api/health/route.test.ts`](../app/src/app/api/health/route.test.ts)
 
 이 레벨은 JSON contract와 권한/토큰 분기를 고정합니다.
 
 ### component 테스트 예
 
-- [`app/src/components/admin/admin-section-nav.test.tsx`](/Users/alex/project/townpet/app/src/components/admin/admin-section-nav.test.tsx)
+- [`app/src/components/admin/admin-section-nav.test.tsx`](../app/src/components/admin/admin-section-nav.test.tsx)
 
 이 레벨은 권한별 UI 노출 계약을 고정합니다.
 
 ### E2E 예
 
-- [`app/e2e/profile-social-account-linking.spec.ts`](/Users/alex/project/townpet/app/e2e/profile-social-account-linking.spec.ts)
+- [`app/e2e/profile-social-account-linking.spec.ts`](../app/e2e/profile-social-account-linking.spec.ts)
 
 이 레벨은 브라우저 사용자 흐름을 끝까지 검증합니다.
 
