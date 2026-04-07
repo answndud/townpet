@@ -16,6 +16,59 @@
 - Cycle 33: 신규 계정 안전 정책 관리자 설정화 + DB/UI E2E 플로우 완료
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
+### 2026-04-07: Cycle 416 완료 (TownPet blog 알림/운영 유지보수/성능 본문 3개 작성)
+- 완료 내용
+  - [10-notification-center-and-unread-sync.md](/Users/alex/project/townpet/blog/10-notification-center-and-unread-sync.md)를 추가해 `NotificationBell`, `NotificationCenter`, `notification-unread-sync`, 서버 action, `notification.queries.ts`, redirect route가 unread sync와 target navigation을 어떻게 나누는지 정리했다.
+  - [18-health-check-retention-cleanup-and-maintenance-workflows.md](/Users/alex/project/townpet/blog/18-health-check-retention-cleanup-and-maintenance-workflows.md)를 추가해 `/api/health`, retention helper, cleanup script, `post-integrity-maintenance`, `ops-latency-snapshots` workflow를 운영 안정화 관점에서 설명했다.
+  - [20-performance-story-search-cache-pagination.md](/Users/alex/project/townpet/blog/20-performance-story-search-cache-pagination.md)를 추가해 versioned query cache, denormalized count, structured search shadow column, root comment pagination, `ROW_NUMBER()` 기반 best comment page 계산, 피드 상대시간 re-render 분리를 정리했다.
+  - [blog/README.md](/Users/alex/project/townpet/blog/README.md), [00_series_plan.md](/Users/alex/project/townpet/blog/00_series_plan.md), [BLOG_PLAN.md](/Users/alex/project/townpet/BLOG_PLAN.md), [BLOG_PROGRESS.md](/Users/alex/project/townpet/BLOG_PROGRESS.md)도 새 본문 링크와 다음 우선순위에 맞게 갱신했다.
+- 검증 결과
+  - 본문에서 참조한 핵심 코드 파일, workflow, script, 테스트 파일 존재 여부를 직접 확인했다.
+  - `git diff --check` 통과
+- 메모
+  - 다음 블로그 우선순위는 `세션/role/관리자 surface`, `rate limit/guest safety/abuse defense`, `Prisma migration과 schema drift 대응`이다.
+
+### 2026-04-07: Cycle 415 완료 (`/feed` 메인 피드 계층/미디어 힌트 리디자인)
+- 완료 내용
+  - [feed-control-panel.tsx](/Users/alex/project/townpet/app/src/components/posts/feed-control-panel.tsx)를 추가해 `/feed`와 게스트 피드가 같은 필터 헤더를 쓰도록 정리했다. 이제 `전체글/베스트글` 1차 탭, `추천 방식`, `정렬`, `기간`, `리뷰`가 시각적으로 분리된다.
+  - [page.tsx](/Users/alex/project/townpet/app/src/app/feed/page.tsx), [guest-feed-page-client.tsx](/Users/alex/project/townpet/app/src/components/posts/guest-feed-page-client.tsx)에서 기존 monolithic 피드 카드 상단 제어부를 제거하고, 공용 `FeedControlPanel` + 별도 리스트 카드 구조로 재배치했다.
+  - [feed-infinite-list.tsx](/Users/alex/project/townpet/app/src/components/posts/feed-infinite-list.tsx)에서는 카테고리 배지를 제목 위 좌측으로 옮기고, 작성자/시간/조회/좋아요를 한 줄 메타로 묶었으며, 댓글 수는 제목 옆 badge로 정리했다.
+  - 이미지가 있는 글은 mixed list 스타일로 작은 썸네일 preview를 노출하게 했고, 이를 위해 [post.queries.ts](/Users/alex/project/townpet/app/src/server/queries/post.queries.ts), [guest/route.ts](/Users/alex/project/townpet/app/src/app/api/feed/guest/route.ts), [page.tsx](/Users/alex/project/townpet/app/src/app/feed/page.tsx)에서 첫 이미지 URL을 피드 payload로 전달하도록 조정했다.
+  - [post-list-item-shell.tsx](/Users/alex/project/townpet/app/src/components/posts/post-list-item-shell.tsx)는 optional meta를 허용하도록 바꿔, 썸네일이 없는 피드 행이 불필요한 우측 빈 칸 없이 1열 흐름을 유지하게 했다.
+- 검증 결과
+  - `corepack pnpm -C app lint src/app/feed/page.tsx src/components/posts/feed-control-panel.tsx src/components/posts/feed-control-panel.test.tsx src/components/posts/feed-infinite-list.tsx src/components/posts/guest-feed-page-client.tsx src/components/posts/post-list-item-shell.tsx src/components/posts/post-list-item-shell.test.tsx src/lib/feed-list-presenter.ts src/lib/feed-list-presenter.test.ts src/app/api/feed/guest/route.ts src/server/queries/post.queries.ts` 통과
+  - `corepack pnpm -C app test -- src/components/posts/feed-control-panel.test.tsx src/components/posts/post-list-item-shell.test.tsx src/lib/feed-list-presenter.test.ts src/app/api/feed/guest/route.test.ts` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `184 files / 897 tests` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `git diff --check` 통과
+  - 로컬 `http://localhost:3000/feed` 기준으로 Playwright guest desktop/mobile 캡처를 다시 떠서 확인했고, `/tmp/townpet-feed-qa-1775544020771/feed-guest-desktop.png`, `/tmp/townpet-feed-qa-1775544020771/feed-guest-mobile.png` 모두 horizontal overflow 없이 렌더됐다.
+- 메모
+  - guest 기준 시각 QA는 마쳤고, 인증 피드의 personalized panel은 아직 별도 캡처하지 않았다.
+  - 다음 확인 포인트는 모바일에서 썸네일이 붙은 행과 없는 행이 섞일 때 세로 리듬이 안정적인지 여부다.
+
+### 2026-04-07: Cycle 414 완료 (TownPet blog 운영/소셜 lifecycle/품질 게이트 본문 3개 작성)
+- 완료 내용
+  - [13-social-account-link-unlink-lifecycle.md](/Users/alex/project/townpet/blog/13-social-account-link-unlink-lifecycle.md)를 추가해 `Account` 모델, `linkSocialAccountForUser`, `unlinkSocialAccountForUser`, `sessionVersion`, `OAuthAccountNotLinked` 회복 흐름을 설명했다.
+  - [15-admin-hub-and-ops-dashboard.md](/Users/alex/project/townpet/blog/15-admin-hub-and-ops-dashboard.md)를 추가해 `/admin` 허브, `AdminSectionNav`, `requireAdminPageUser`/`requireModeratorPageUser`, `/admin/ops`, `/api/health`, `getHealthSnapshot`의 관계를 설명했다.
+  - [19-testing-and-quality-gate.md](/Users/alex/project/townpet/blog/19-testing-and-quality-gate.md)를 추가해 Vitest, Playwright, `quality-gate.yml`, `ops-smoke-checks.yml`, migration/ops rehearsal이 품질 게이트에서 어떤 의미를 가지는지 정리했다.
+  - [blog/README.md](/Users/alex/project/townpet/blog/README.md), [00_series_plan.md](/Users/alex/project/townpet/blog/00_series_plan.md), [BLOG_PLAN.md](/Users/alex/project/townpet/BLOG_PLAN.md), [BLOG_PROGRESS.md](/Users/alex/project/townpet/BLOG_PROGRESS.md)도 새 본문 링크와 다음 우선순위에 맞게 갱신했다.
+- 검증 결과
+  - 본문에서 참조한 핵심 코드 파일, 테스트 파일, workflow 파일을 직접 확인했다.
+  - `git diff --check` 통과
+- 메모
+  - 다음 블로그 우선순위는 `알림 센터와 unread sync`, `health check / retention cleanup / maintenance workflow`, `성능 개선을 코드 구조와 함께 설명하기`다.
+
+### 2026-04-07: Cycle 413 완료 (TownPet blog 인증/검색/모더레이션 본문 3개 작성)
+- 완료 내용
+  - [11-credentials-kakao-naver-auth.md](/Users/alex/project/townpet/blog/11-credentials-kakao-naver-auth.md)를 추가해 NextAuth 설정, credentials 로그인, 카카오/네이버 로그인, sessionVersion, 이메일 인증/비밀번호 재설정, 소셜 계정 연결/해제 흐름을 정리했다.
+  - [09-search-structured-search-and-suggestions.md](/Users/alex/project/townpet/blog/09-search-structured-search-and-suggestions.md)를 추가해 본검색, 구조화 검색, suggestion, compact/초성 fallback, `SearchTermStat`/`SearchTermDailyMetric` 운영 루프를 설명했다.
+  - [14-report-block-sanction-direct-moderation.md](/Users/alex/project/townpet/blog/14-report-block-sanction-direct-moderation.md)를 추가해 신고, block/mute, 제재, 직접 모더레이션, 운영자 action log의 관계를 정리했다.
+  - [blog/README.md](/Users/alex/project/townpet/blog/README.md), [00_series_plan.md](/Users/alex/project/townpet/blog/00_series_plan.md), [BLOG_PLAN.md](/Users/alex/project/townpet/BLOG_PLAN.md), [BLOG_PROGRESS.md](/Users/alex/project/townpet/BLOG_PROGRESS.md)도 새 본문 링크와 다음 집필 우선순위에 맞게 갱신했다.
+- 검증 결과
+  - 본문에서 참조한 핵심 코드 파일과 함수 위치를 직접 확인했다.
+  - `git diff --check` 통과
+- 메모
+  - 다음 블로그 우선순위는 `관리자 허브/운영 대시보드`, `테스트/quality gate`, `소셜 계정 연결/해제 lifecycle`이다.
+
 ### 2026-04-07: Cycle 412 완료 (TownPet blog 구조/라우팅/계층 분리 본문 3개 작성)
 - 완료 내용
   - [02-how-townpet-is-structured.md](/Users/alex/project/townpet/blog/02-how-townpet-is-structured.md)를 추가해 `app/src/app`, `components`, `lib`, `server`, `prisma`, `docs`, `blog`의 역할과 추천 읽기 순서를 정리했다.

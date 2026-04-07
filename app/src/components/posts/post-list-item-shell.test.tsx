@@ -39,11 +39,11 @@ describe("PostListItemShell", () => {
       <PostListItemShell
         href="/posts/post-2"
         title={<span>제목만</span>}
-        meta={<p>메타</p>}
       />,
     );
 
     expect(html).toContain("제목만");
+    expect(html).not.toContain("메타");
     expect(html).not.toContain("숨김");
     expect(html).not.toContain("요약 내용");
   });

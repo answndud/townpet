@@ -13,7 +13,7 @@ export function FeedPostMetaBadges({
 }: FeedPostMetaBadgesProps) {
   return (
     <div
-      className={`flex flex-wrap items-center gap-1 text-[10px] sm:text-[11px] ${className ?? "mb-1 justify-end"}`}
+      className={`flex flex-wrap items-center gap-1.5 text-[11px] sm:text-[12px] ${className ?? "mb-1 justify-end"}`}
     >
       <span
         className={`tp-chip-base max-w-full ${chipClass}`}

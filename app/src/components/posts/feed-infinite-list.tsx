@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { PostType } from "@prisma/client";
@@ -75,6 +76,7 @@ export type FeedPostItem = {
   } | null;
   images: Array<{
     id: string;
+    url?: string | null;
   }>;
   adoptionListing?: {
     shelterName?: string | null;
@@ -264,13 +266,13 @@ function parseReadPosts(raw: string | null): StoredReadPost[] {
 type FeedStatsLabelProps = {
   createdAt: string;
   viewCount: number;
-  reactionCount: number;
+  likeCount: number;
 };
 
 const FeedStatsLabel = memo(function FeedStatsLabel({
   createdAt,
   viewCount,
-  reactionCount,
+  likeCount,
 }: FeedStatsLabelProps) {
   const relativeNow = useSyncExternalStore(
     subscribeRelativeNow,
@@ -281,10 +283,46 @@ const FeedStatsLabel = memo(function FeedStatsLabel({
     createdAt,
     relativeNow,
     viewCount,
-    reactionCount,
+    likeCount,
   });
 
-  return <p className="mt-0.5 break-keep text-[#5a759c]">{statsLabel}</p>;
+  return <span className="break-keep text-[#5a759c]">{statsLabel}</span>;
+});
+
+function shouldRenderFeedThumbnail(post: FeedPostItem) {
+  return typeof post.images[0]?.url === "string" && post.images[0].url.length > 0;
+}
+
+const FeedPostThumbnail = memo(function FeedPostThumbnail({
+  href,
+  title,
+  imageUrl,
+  onClick,
+}: {
+  href: string;
+  title: string;
+  imageUrl: string;
+  onClick?: () => void;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group/thumb relative block aspect-square overflow-hidden rounded-2xl border border-[#dce7f6] bg-[linear-gradient(145deg,#eef5ff,#f8fbff)] shadow-[0_10px_22px_rgba(16,40,74,0.06)] transition hover:-translate-y-0.5 hover:border-[#bfd4ef]"
+      onClick={onClick}
+    >
+      <Image
+        src={imageUrl}
+        alt={title}
+        fill
+        sizes="(min-width: 768px) 104px, 80px"
+        className="object-cover transition duration-300 group-hover/thumb:scale-[1.03]"
+      />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-[linear-gradient(180deg,transparent_0%,rgba(16,40,74,0.42)_100%)]" />
+      <span className="pointer-events-none absolute bottom-2 left-2 inline-flex items-center rounded-full border border-white/70 bg-white/88 px-2 py-0.5 text-[10px] font-semibold text-[#315b9a] shadow-[0_4px_10px_rgba(16,40,74,0.08)]">
+        사진 글
+      </span>
+    </Link>
+  );
 });
 
 export function FeedInfiniteList({
@@ -570,6 +608,12 @@ export function FeedInfiniteList({
               {authorLabel}
             </Link>
           );
+          const detailHref = preferGuestDetail ? `/posts/${post.id}/guest` : `/posts/${post.id}`;
+          const hasThumbnail = shouldRenderFeedThumbnail(post);
+          const thumbnailUrl = hasThumbnail ? post.images[0]?.url ?? "" : "";
+          const nonThumbnailSignals = hasThumbnail
+            ? signals.filter((signal) => signal !== "image")
+            : signals;
 
           return (
             <div key={post.id}>
@@ -594,11 +638,28 @@ export function FeedInfiniteList({
               ) : null}
               <PostListItemShell
                 testId="feed-post-item"
-                href={preferGuestDetail ? `/posts/${post.id}/guest` : `/posts/${post.id}`}
+                href={detailHref}
                 prefetch={preferGuestDetail ? true : false}
-                articleClassName={`grid grid-cols-[minmax(0,1fr)_112px] items-start gap-x-2.5 gap-y-0.5 px-3 py-2 transition hover:bg-[#f8fbff] sm:grid-cols-[minmax(0,1fr)_140px] sm:gap-x-3 sm:px-4 sm:py-2 md:grid-cols-[minmax(0,1fr)_196px] md:items-center ${
-                  post.status === "HIDDEN" ? "bg-[#fff5f5]" : ""
-                }`}
+                articleClassName={`group grid items-start gap-x-3 gap-y-1.5 px-3 py-3.5 transition hover:bg-[#fbfdff] sm:px-4 sm:py-4 md:gap-x-4 ${
+                  hasThumbnail
+                    ? "grid-cols-[minmax(0,1fr)_80px] sm:grid-cols-[minmax(0,1fr)_92px] md:grid-cols-[minmax(0,1fr)_104px] md:items-center"
+                    : "grid-cols-1"
+                } ${post.status === "HIDDEN" ? "bg-[#fff7f7]" : ""}`}
+                topContent={
+                  <div className="mb-1.5 flex flex-wrap items-center gap-1.5">
+                    <FeedPostMetaBadges
+                      label={meta.label}
+                      chipClass={meta.chipClass}
+                      status={post.status}
+                      className="mb-0 justify-start"
+                    />
+                    {locationLabel || petTypeLabel ? (
+                      <span className="truncate text-[12px] font-medium text-[#6280aa]">
+                        {[locationLabel, petTypeLabel].filter(Boolean).join(" · ")}
+                      </span>
+                    ) : null}
+                  </div>
+                }
                 title={
                   <span className="overflow-hidden leading-[1.32] [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]">
                     {post.title}
@@ -606,16 +667,18 @@ export function FeedInfiniteList({
                 }
                 titleSuffix={
                   <>
-                    <PostSignalIcons signals={signals} />
+                    <PostSignalIcons signals={nonThumbnailSignals} />
                     {post.commentCount > 0 ? (
-                      <span className="shrink-0 text-[#2f5da4]">[{post.commentCount}]</span>
+                      <span className="inline-flex shrink-0 items-center rounded-full bg-[#edf5ff] px-2 py-0.5 text-[11px] font-semibold text-[#2f5da4]">
+                        댓글 {post.commentCount}
+                      </span>
                     ) : null}
                   </>
                 }
-                titleLinkClassName={`tp-text-card-title flex min-w-0 items-center gap-1 transition ${
+                titleLinkClassName={`flex min-w-0 items-center gap-1.5 text-[15px] font-semibold leading-[1.4] transition sm:text-[16px] ${
                   readPostIds.has(post.id)
                     ? "text-[#8c9db8] hover:text-[#7589a8]"
-                    : "text-[#1e3f74] hover:text-[#2f5da4]"
+                    : "text-[#163764] hover:text-[#2f5da4]"
                 } visited:text-[#8c9db8]`}
                 onTitleClick={() => {
                   markPostAsRead(post.id);
@@ -626,35 +689,36 @@ export function FeedInfiniteList({
                 bottomContent={
                   <>
                     {adoptionSummary || volunteerSummary ? (
-                      <p className="mt-px hidden truncate text-[11px] text-[#6b83a6] sm:block">
+                      <p className="mt-1 truncate text-[12px] text-[#5d779e]">
                         {adoptionSummary ?? volunteerSummary}
                       </p>
                     ) : null}
-                    {locationLabel || petTypeLabel ? (
-                      <p className="hidden truncate text-[11px] text-[#6a82a6] sm:block">
-                        {[locationLabel, petTypeLabel].filter(Boolean).join(" · ")}
-                      </p>
-                    ) : null}
-                  </>
-                }
-                metaClassName="min-w-0 self-start text-right text-[10px] text-[#4f678d] sm:self-center sm:text-[11px]"
-                meta={
-                  <>
-                    <FeedPostMetaBadges
-                      label={meta.label}
-                      chipClass={meta.chipClass}
-                      status={post.status}
-                      className="mb-1 justify-end"
-                    />
-                    <div className="min-w-0">
-                      <p className="font-semibold text-[#1f3f71]">{authorNode}</p>
+                    <div className="mt-2 flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1 text-[12px] text-[#5f789d]">
+                      <span className="font-semibold text-[#1f3f71]">{authorNode}</span>
+                      <span className="text-[#bfd0e4]">·</span>
                       <FeedStatsLabel
                         createdAt={post.createdAt}
                         viewCount={post.viewCount}
-                        reactionCount={post.likeCount + post.dislikeCount}
+                        likeCount={post.likeCount}
                       />
                     </div>
                   </>
+                }
+                metaClassName={hasThumbnail ? "min-w-0 self-center" : "hidden"}
+                meta={
+                  hasThumbnail ? (
+                    <FeedPostThumbnail
+                      href={detailHref}
+                      title={post.title}
+                      imageUrl={thumbnailUrl}
+                      onClick={() => {
+                        markPostAsRead(post.id);
+                        trackPersonalizationEvent("POST_CLICK", {
+                          postId: post.id,
+                        });
+                      }}
+                    />
+                  ) : null
                 }
               />
             </div>

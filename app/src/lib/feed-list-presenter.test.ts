@@ -19,9 +19,9 @@ describe("buildFeedStatsLabel", () => {
         createdAt: "2026-03-07T12:00:00.000Z",
         relativeNow: null,
         viewCount: 31,
-        reactionCount: 4,
+        likeCount: 4,
       }),
-    ).toBe("2026.03.07 · 조회 31 · 반응 4");
+    ).toBe("2026.03.07 · 조회 31 · 좋아요 4");
   });
 
   it("omits invalid date fragments instead of rendering empty separators", () => {
@@ -30,8 +30,8 @@ describe("buildFeedStatsLabel", () => {
         createdAt: "bad-date",
         relativeNow: null,
         viewCount: 31,
-        reactionCount: 4,
+        likeCount: 4,
       }),
-    ).toBe("조회 31 · 반응 4");
+    ).toBe("조회 31 · 좋아요 4");
   });
 });

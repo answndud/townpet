@@ -4,7 +4,7 @@ import Link from "next/link";
 type PostListItemShellProps = {
   href: string;
   title: ReactNode;
-  meta: ReactNode;
+  meta?: ReactNode;
   topContent?: ReactNode;
   titleSuffix?: ReactNode;
   excerpt?: ReactNode;
@@ -61,7 +61,9 @@ export function PostListItemShell({
         ) : null}
         {bottomContent}
       </div>
-      <div className={metaClassName ?? "text-xs text-[#4f678d] md:text-right"}>{meta}</div>
+      {meta ? (
+        <div className={metaClassName ?? "text-xs text-[#4f678d] md:text-right"}>{meta}</div>
+      ) : null}
     </article>
   );
 }

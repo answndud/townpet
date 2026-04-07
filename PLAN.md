@@ -27,6 +27,26 @@
 
 ## Active Plan
 
+### Cycle 416: TownPet blog 알림/운영 유지보수/성능 본문 3개 작성 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| `blog/` 작업공간에 `알림 센터와 unread sync`, `health check / retention cleanup / maintenance workflow`, `성능 개선을 코드 구조와 함께 설명하기` 본문을 추가하고, Python/Java 개발자가 운영/성능 구조까지 실제 코드와 함께 따라갈 수 있도록 링크와 읽는 순서를 정리한다 | Codex | P2 | `done` | `blog/10-notification-center-and-unread-sync.md`, `blog/18-health-check-retention-cleanup-and-maintenance-workflows.md`, `blog/20-performance-story-search-cache-pagination.md`가 추가되고, `blog/README.md`, `blog/00_series_plan.md`, `BLOG_PLAN.md`, `BLOG_PROGRESS.md`, `PLAN.md`, `PROGRESS.md`가 동기화되며, `git diff --check` 검증 결과가 기록된다 | `blog/*`, `BLOG_PLAN.md`, `BLOG_PROGRESS.md`, `PLAN.md`, `PROGRESS.md` |
+
+### Cycle 415: `/feed` 메인 피드 계층/미디어 힌트 리디자인 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 인증/비회원 `/feed`의 필터 계층을 1차 탭/추천 방식/정렬·기간 구조로 재배치하고, 피드 행 정보를 제목 중심으로 다시 묶은 뒤 이미지 첨부 글에 소형 썸네일 힌트를 추가해 메인 피드의 스캔 속도와 클릭 유도를 높인다 | Codex | P1 | `done` | `feed/page.tsx`, `guest-feed-page-client.tsx`는 공용 `FeedControlPanel`을 사용해 필터 계층이 분리되고, `feed-infinite-list.tsx`는 카테고리/위치/작성자·시간·조회·좋아요를 제목 주변의 두 줄 흐름으로 재배치하며, 이미지가 있는 글은 mixed list 썸네일을 노출하고, 관련 테스트/검증 및 `PLAN.md`/`PROGRESS.md` 기록이 남는다 | `app/src/components/posts/feed-control-panel.tsx`, `app/src/components/posts/feed-infinite-list.tsx`, `app/src/app/feed/page.tsx`, `app/src/components/posts/guest-feed-page-client.tsx`, `app/src/app/api/feed/guest/route.ts`, `app/src/server/queries/post.queries.ts`, `PLAN.md`, `PROGRESS.md` |
+
+### Cycle 414: TownPet blog 운영/소셜 lifecycle/품질 게이트 본문 3개 작성 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| `blog/` 작업공간에 `소셜 계정 연결/해제 lifecycle`, `관리자 허브와 운영 대시보드`, `Vitest / Playwright / quality-gate 전략` 본문을 추가하고, Python/Java 개발자가 운영/인증/테스트 구조까지 따라갈 수 있도록 링크와 읽는 순서를 정리한다 | Codex | P2 | `done` | `blog/13-social-account-link-unlink-lifecycle.md`, `blog/15-admin-hub-and-ops-dashboard.md`, `blog/19-testing-and-quality-gate.md`가 추가되고, `blog/README.md`, `blog/00_series_plan.md`, `BLOG_PLAN.md`, `BLOG_PROGRESS.md`, `PLAN.md`, `PROGRESS.md`가 동기화되며, `git diff --check` 검증 결과가 기록된다 | `blog/*`, `BLOG_PLAN.md`, `BLOG_PROGRESS.md`, `PLAN.md`, `PROGRESS.md` |
+
+### Cycle 413: TownPet blog 인증/검색/모더레이션 본문 3개 작성 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| `blog/` 작업공간에 `검색`, `Credentials + Kakao + Naver 인증 구조`, `신고/차단/제재/직접 모더레이션` 본문을 추가하고, Python/Java 개발자가 실제 코드와 운영 흐름을 추적할 수 있도록 링크/읽는 순서를 정리한다 | Codex | P2 | `done` | `blog/09-search-structured-search-and-suggestions.md`, `blog/11-credentials-kakao-naver-auth.md`, `blog/14-report-block-sanction-direct-moderation.md`가 추가되고, `blog/README.md`, `blog/00_series_plan.md`, `BLOG_PLAN.md`, `BLOG_PROGRESS.md`, `PLAN.md`, `PROGRESS.md`가 동기화되며, `git diff --check` 검증 결과가 기록된다 | `blog/*`, `BLOG_PLAN.md`, `BLOG_PROGRESS.md`, `PLAN.md`, `PROGRESS.md` |
+
 ### Cycle 412: TownPet blog 구조/라우팅/계층 분리 본문 3개 작성 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|

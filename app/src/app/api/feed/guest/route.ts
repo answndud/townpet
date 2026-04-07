@@ -137,8 +137,9 @@ function serializeFeedItems(items: Array<Record<string, unknown>>) {
               .category.labelKo,
           }
         : null,
-    images: ((post.images as Array<{ id: string }>) ?? []).map((image) => ({
+    images: ((post.images as Array<{ id: string; url?: string | null }>) ?? []).map((image) => ({
       id: image.id,
+      url: image.url ?? null,
     })),
     isBookmarked: false,
     reactions:
