@@ -9,6 +9,7 @@ import { PostBoardLinkChip } from "@/components/posts/post-board-link-chip";
 import { GuestPostDetailActions } from "@/components/posts/guest-post-detail-actions";
 import { PostBookmarkButton } from "@/components/posts/post-bookmark-button";
 import { PostCommentCountStat } from "@/components/posts/post-comment-count-stat";
+import { PostDetailMediaGallery } from "@/components/posts/post-detail-media-gallery";
 import { PostReactionControls } from "@/components/posts/post-reaction-controls";
 import { PostReportForm } from "@/components/posts/post-report-form";
 import { PostShareControls } from "@/components/posts/post-share-controls";
@@ -38,19 +39,6 @@ export const dynamic = "force-dynamic";
 type PostDetailPageProps = {
   params?: Promise<{ id?: string }>;
 };
-
-function extractAttachmentName(url: string, fallbackIndex: number) {
-  try {
-    const parsed = url.startsWith("http://") || url.startsWith("https://")
-      ? new URL(url)
-      : new URL(url, "https://townpet.local");
-    const name = decodeURIComponent(parsed.pathname.split("/").filter(Boolean).pop() ?? "").trim();
-    return name.length > 0 ? name : `첨부파일-${fallbackIndex + 1}`;
-  } catch {
-    const name = decodeURIComponent(url.split("?")[0]?.split("/").filter(Boolean).pop() ?? "").trim();
-    return name.length > 0 ? name : `첨부파일-${fallbackIndex + 1}`;
-  }
-}
 
 export async function generateMetadata({
   params,
@@ -258,55 +246,46 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
             <div className="flex flex-wrap items-center gap-2 text-xs">
               <PostBoardLinkChip type={post.type} label={meta.label} chipClass={meta.chipClass} />
               {post.neighborhood ? (
-                <span className="border border-[#dbe5f3] bg-white px-2.5 py-0.5 text-[#5d789f]">
+                <span className="tp-chip-base tp-chip-muted">
                   {post.neighborhood.city} {post.neighborhood.name}
                 </span>
               ) : null}
             </div>
 
-            <div className="mt-3 grid gap-3 border-b border-[#e0e9f5] pb-4 md:mt-4 md:gap-4 md:pb-5 md:grid-cols-[minmax(0,1fr)_260px] md:items-start">
-              <div>
-                <h1 className="tp-text-post-title text-[#10284a]">
-                  {post.title}
-                </h1>
-              </div>
-              <div className="text-[13px] text-[#4f678d] md:text-right">
-                <div className="flex items-start justify-between gap-3 md:flex-col md:items-end">
+            <div className="tp-border-soft mt-4 border-b pb-4 sm:pb-5">
+              <h1 className="tp-text-post-title text-[#10284a]">
+                {post.title}
+              </h1>
+              <div className="mt-3 flex flex-col gap-1.5">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-[#4f678d]">
                   <p className="font-semibold text-[#1f3f71]">
                     {guestPostMeta.isGuestPost ? (
                       <span>{displayAuthorName}</span>
                     ) : (
-                      <Link href={`/users/${post.author.id}`} className="hover:text-[#2f5da4]">
+                      <Link
+                        href={`/users/${post.author.id}`}
+                        className="rounded-sm transition hover:text-[#2f5da4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2"
+                      >
                         {displayAuthorName}
                       </Link>
                     )}
                   </p>
-                  <p className="text-[11px] text-[#5a759c]">{formatRelativeDate(createdAt)}</p>
+                  <span className="text-[#90a4c2]">·</span>
+                  <p className="text-[12px] text-[#516d96]">{formatRelativeDate(createdAt)}</p>
                 </div>
-                <p className="tp-text-meta mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[#5f7da8] md:justify-end">
+                <p className="tp-text-meta flex flex-wrap items-center gap-x-2 gap-y-1 text-[#56739c]">
                   <span>조회 {safeViewCount.toLocaleString()}</span>
                   <span>좋아요 {safeLikeCount.toLocaleString()}</span>
-                  <span>싫어요 {safeDislikeCount.toLocaleString()}</span>
                   <PostCommentCountStat
                     key={`${post.id}:${safeCommentCount}`}
                     postId={post.id}
                     initialCount={safeCommentCount}
                   />
                 </p>
-                <details className="mt-1 text-[11px] text-[#6b84ab] md:text-right">
-                  <summary className="cursor-pointer list-none font-semibold text-[#5878a2]">상세 정보</summary>
-                  <p className="mt-1 leading-5">
-                    {createdAt.toLocaleDateString("ko-KR")} ·{" "}
-                    {post.neighborhood ? `${post.neighborhood.city} ${post.neighborhood.name}` : "전체"}
-                  </p>
-                </details>
               </div>
             </div>
 
-            <section className="mt-3 rounded-xl border border-[#dbe6f6] bg-[#fcfdff] px-3 py-3.5 sm:mt-4 sm:px-5 sm:py-4">
-              <h2 className="mb-2 text-[11px] font-semibold tracking-[0.14em] text-[#4f6f9f]">
-                내용
-              </h2>
+            <div className="mt-5 sm:mt-6">
               <article className="tp-text-body text-[#17345f]">
                 {shouldUsePlainFallback ? (
                   <div className="whitespace-pre-wrap">{post.content}</div>
@@ -316,66 +295,53 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
                     dangerouslySetInnerHTML={{ __html: renderedContentHtml }}
                   />
                 )}
-
-                {orderedImages.length > 0 ? (
-                  <div className="mt-5 border border-[#dbe6f6] bg-[#f8fbff] px-3 py-2.5">
-                    <p className="text-[11px] font-semibold tracking-[0.08em] text-[#4f6f9f]">첨부파일</p>
-                    <ul className="mt-2 space-y-1">
-                      {orderedImages.map((image, index) => {
-                        const fileName = extractAttachmentName(image.url, index);
-                        return (
-                          <li key={`${image.url}-${index}`} className="text-sm">
-                            <Link
-                              href={image.url}
-                              target="_blank"
-                              className="text-[#2f5da4] underline decoration-[#9db8df] underline-offset-2 hover:text-[#254e8a]"
-                            >
-                              {fileName}
-                            </Link>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </div>
-                ) : null}
               </article>
-            </section>
+              <PostDetailMediaGallery images={orderedImages} />
+            </div>
 
-            <div className="mt-3 space-y-2 border-b border-[#e0e9f5] pb-3 sm:mt-4 sm:space-y-3 sm:pb-4">
-              <div className="rounded-xl border border-[#d8e4f6] bg-[#f8fbff] px-2.5 py-2.5 sm:px-3 sm:py-3">
-                <div className="grid gap-2 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
-                  <div className="hidden sm:block" aria-hidden="true" />
-                  <div className="flex justify-center sm:justify-self-center">
-                    <PostReactionControls
-                      key={`${post.id}:guest`}
-                      postId={post.id}
-                      likeCount={safeLikeCount}
-                      dislikeCount={safeDislikeCount}
-                      currentReaction={null}
-                      canReact={false}
-                      loginHref={loginHref}
-                    />
-                  </div>
-                  <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-self-end">
-                    <PostBookmarkButton
-                      key={`${post.id}:guest-bookmark`}
-                      postId={post.id}
-                      currentBookmarked={false}
-                      canBookmark={false}
-                      loginHref={loginHref}
-                      compact
-                    />
-                    <PostShareControls url={postUrl} compact />
-                  </div>
+            <div className="tp-border-soft mt-6 space-y-3 border-t pt-4 sm:mt-7 sm:pt-5">
+              <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
+                <PostReactionControls
+                  key={`${post.id}:guest`}
+                  postId={post.id}
+                  likeCount={safeLikeCount}
+                  dislikeCount={safeDislikeCount}
+                  currentReaction={null}
+                  canReact={false}
+                  loginHref={loginHref}
+                  align="start"
+                />
+                <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end">
+                  <PostBookmarkButton
+                    key={`${post.id}:guest-bookmark`}
+                    postId={post.id}
+                    currentBookmarked={false}
+                    canBookmark={false}
+                    loginHref={loginHref}
+                    compact
+                  />
+                  <PostShareControls url={postUrl} compact />
                 </div>
               </div>
               {guestPostMeta.isGuestPost ? <GuestPostDetailActions postId={post.id} /> : null}
             </div>
 
             {canReportPost ? (
-              <details className="mt-3 rounded-lg border border-[#d9e5f7] bg-[#fbfdff] px-3 py-2.5">
-                <summary className="tp-btn-soft tp-btn-xs inline-flex cursor-pointer items-center">게시글 신고</summary>
-                <div className="mt-2 rounded-lg border border-[#e3ebf8] bg-white p-3">
+              <details className="group mt-3 text-left">
+                <summary className="inline-flex cursor-pointer items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-medium text-[#8d5a68] transition hover:bg-rose-50 hover:text-rose-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200 focus-visible:ring-offset-2">
+                  <svg
+                    aria-hidden="true"
+                    viewBox="0 0 12 12"
+                    className="h-3 w-3 text-current transition group-open:rotate-90"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                  >
+                    <path d="M4 2.5 8 6 4 9.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  게시글 신고
+                </summary>
+                <div className="mt-2 rounded-[14px] border border-[#e8eff9] bg-[#fbfdff] p-3">
                   <PostReportForm targetId={post.id} canReport={false} loginHref={loginHref} />
                 </div>
               </details>

@@ -15,6 +15,7 @@ import {
   PostDetailInfoItem,
   PostDetailInfoSection,
 } from "@/components/posts/post-detail-info-section";
+import { PostDetailMediaGallery } from "@/components/posts/post-detail-media-gallery";
 import { GuestPostDetailActions } from "@/components/posts/guest-post-detail-actions";
 import { PostBookmarkButton } from "@/components/posts/post-bookmark-button";
 import { POST_DETAIL_ACTION_BUTTON_CLASS_NAME } from "@/components/posts/post-detail-action-button-class";
@@ -229,19 +230,6 @@ function ensureDate(value: unknown) {
     if (Number.isFinite(parsed)) return new Date(parsed);
   }
   return new Date();
-}
-
-function extractAttachmentName(url: string, fallbackIndex: number) {
-  try {
-    const parsed = url.startsWith("http://") || url.startsWith("https://")
-      ? new URL(url)
-      : new URL(url, "https://townpet.local");
-    const name = decodeURIComponent(parsed.pathname.split("/").filter(Boolean).pop() ?? "").trim();
-    return name.length > 0 ? name : `첨부파일-${fallbackIndex + 1}`;
-  } catch {
-    const name = decodeURIComponent(url.split("?")[0]?.split("/").filter(Boolean).pop() ?? "").trim();
-    return name.length > 0 ? name : `첨부파일-${fallbackIndex + 1}`;
-  }
 }
 
 function buildExcerpt(text: string, maxLength = 160) {
@@ -608,14 +596,12 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
                 ) : null}
               </div>
 
-            <div className="tp-border-soft mt-3 grid gap-3 border-b pb-4 md:mt-4 md:gap-4 md:pb-5 md:grid-cols-[minmax(0,1fr)_260px] md:items-start">
-              <div>
-                <h1 className="tp-text-post-title tp-text-primary">
-                  {post.title}
-                </h1>
-              </div>
-              <div className="tp-text-muted text-[13px] md:text-right">
-                <div className="flex items-start justify-between gap-3 md:flex-col md:items-end">
+            <div className="tp-border-soft mt-4 border-b pb-4 sm:pb-5">
+              <h1 className="tp-text-post-title tp-text-primary">
+                {post.title}
+              </h1>
+              <div className="mt-3 flex flex-col gap-1.5">
+                <div className="tp-text-muted flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px]">
                   <div className="tp-text-heading min-w-0 break-all font-semibold">
                     {guestPostMeta?.isGuestPost ? (
                       <span>{displayAuthorName}</span>
@@ -625,36 +611,28 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
                         displayName={displayAuthorName ?? ""}
                         currentUserId={viewerId ?? undefined}
                         isMutedByViewer={resolvedRelationState.isMutedByMe}
-                        align="end"
+                        align="start"
                         plainTextClassName="tp-text-heading"
                         onActionMessage={setRelationMessage}
                         onMuteStateChange={handleAuthorMuteStateChange}
                       />
                     )}
                   </div>
-                  <p className="tp-text-subtle text-[11px]">{formatRelativeDate(createdAt!)}</p>
+                  <span className="tp-text-subtle">·</span>
+                  <p className="tp-text-subtle text-[12px]">{formatRelativeDate(createdAt!)}</p>
                 </div>
-                <p className="tp-text-meta tp-text-subtle mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 md:justify-end">
+                <p className="tp-text-meta tp-text-subtle flex flex-wrap items-center gap-x-2 gap-y-1">
                   <span>조회 {resolvedViewCount.toLocaleString()}</span>
                   <span>좋아요 {resolvedLikeCount.toLocaleString()}</span>
-                  <span>싫어요 {resolvedDislikeCount.toLocaleString()}</span>
                   <span>댓글 {resolvedCommentCount.toLocaleString()}</span>
                 </p>
-                <details className="tp-text-subtle mt-1 text-[11px] md:text-right">
-                  <summary className="tp-text-label cursor-pointer list-none font-semibold">상세 정보</summary>
-                  <p className="mt-1 leading-5">
-                    {createdAt!.toLocaleDateString("ko-KR")} ·{" "}
-                    {post.neighborhood ? `${post.neighborhood.city} ${post.neighborhood.name}` : "전체"}
-                  </p>
-                </details>
                 {relationMessage ? (
-                  <p className="tp-text-subtle mt-2 text-[11px] md:text-right">{relationMessage}</p>
+                  <p className="tp-text-subtle text-[11px]">{relationMessage}</p>
                 ) : null}
               </div>
             </div>
 
-            <section className="tp-border-soft tp-surface-page-soft mt-3 rounded-xl border px-3 py-3.5 sm:mt-4 sm:px-5 sm:py-4">
-              <h2 className="tp-text-label mb-2 text-[11px] font-semibold tracking-[0.14em]">내용</h2>
+            <div className="mt-5 sm:mt-6">
               <article className="tp-text-body tp-text-primary">
                 {shouldUsePlainFallback ? (
                   <div className="whitespace-pre-wrap">{post.content}</div>
@@ -664,76 +642,51 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
                     dangerouslySetInnerHTML={{ __html: renderedContentHtml }}
                   />
                 )}
-                {orderedImages.length > 0 ? (
-                  <div className="tp-border-soft tp-surface-soft mt-5 border px-3 py-2.5">
-                    <p className="tp-text-label text-[11px] font-semibold tracking-[0.08em]">첨부파일</p>
-                    <ul className="mt-2 space-y-1">
-                      {orderedImages.map((image, index) => {
-                        const fileName = extractAttachmentName(image.url, index);
-                        return (
-                          <li key={`${image.url}-${index}`} className="text-sm">
-                            <Link
-                              href={image.url}
-                              target="_blank"
-                              className="tp-text-link break-all underline decoration-[#9db8df] underline-offset-2"
-                            >
-                              {fileName}
-                            </Link>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </div>
-                ) : null}
               </article>
-            </section>
+              <PostDetailMediaGallery images={orderedImages} />
+            </div>
 
-            <div className="tp-border-soft mt-3 space-y-2 border-b pb-3 sm:mt-4 sm:space-y-3 sm:pb-4">
+            <div className="tp-border-soft mt-6 space-y-3 border-t pt-4 sm:mt-7 sm:pt-5">
               {isPostActive ? (
                 <>
-                  <div className="tp-border-soft rounded-xl border bg-white px-2.5 py-2.5 sm:px-3 sm:py-3">
-                    <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2">
-                      <div className="justify-self-start">
-                        {showPostReportControls ? (
-                          <button
-                            type="button"
-                            className="tp-btn-soft tp-btn-xs"
-                            onClick={() => setIsPostReportOpen((current) => !current)}
-                          >
-                            {isPostReportOpen ? "신고 닫기" : "신고"}
-                          </button>
-                        ) : null}
-                      </div>
-                      <div className="flex justify-center">
-                        <PostReactionControls
-                          key={`${post.id}:${canInteract ? "viewer" : "guest"}:${canInteractWithPostOwner ? "interactive" : "blocked"}`}
-                          postId={post.id}
-                          likeCount={resolvedLikeCount}
-                          dislikeCount={resolvedDislikeCount}
-                          currentReaction={canInteract ? undefined : null}
-                          canReact={canInteract && canInteractWithPostOwner}
-                          loginHref={loginHref}
-                          onStateChange={handleReactionStateChange}
-                        />
-                      </div>
-                      <div className="flex items-center justify-self-end gap-2">
-                        <PostBookmarkButton
-                          key={`${post.id}:${canInteract ? "viewer" : "guest"}`}
-                          postId={post.id}
-                          currentBookmarked={Boolean(post.isBookmarked)}
-                          canBookmark={canInteract && canInteractWithPostOwner}
-                          loginHref={loginHref}
-                          compact
-                        />
-                        <PostShareControls url={postUrl!} compact />
-                      </div>
+                  <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
+                    <PostReactionControls
+                      key={`${post.id}:${canInteract ? "viewer" : "guest"}:${canInteractWithPostOwner ? "interactive" : "blocked"}`}
+                      postId={post.id}
+                      likeCount={resolvedLikeCount}
+                      dislikeCount={resolvedDislikeCount}
+                      currentReaction={canInteract ? undefined : null}
+                      canReact={canInteract && canInteractWithPostOwner}
+                      loginHref={loginHref}
+                      align="start"
+                      onStateChange={handleReactionStateChange}
+                    />
+                    <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end">
+                      <PostBookmarkButton
+                        key={`${post.id}:${canInteract ? "viewer" : "guest"}`}
+                        postId={post.id}
+                        currentBookmarked={Boolean(post.isBookmarked)}
+                        canBookmark={canInteract && canInteractWithPostOwner}
+                        loginHref={loginHref}
+                        compact
+                      />
+                      <PostShareControls url={postUrl!} compact />
+                      {showPostReportControls ? (
+                        <button
+                          type="button"
+                          className="tp-btn-soft tp-btn-xs border-rose-300 text-rose-700 hover:bg-rose-50"
+                          onClick={() => setIsPostReportOpen((current) => !current)}
+                        >
+                          {isPostReportOpen ? "신고 닫기" : "신고"}
+                        </button>
+                      ) : null}
                     </div>
-                    {showPostReportControls && isPostReportOpen ? (
-                      <div className="tp-border-soft mt-2 rounded-lg border bg-white p-3">
-                        <PostReportForm targetId={post.id} />
-                      </div>
-                    ) : null}
                   </div>
+                  {showPostReportControls && isPostReportOpen ? (
+                    <div className="tp-border-soft rounded-lg border bg-white p-3">
+                      <PostReportForm targetId={post.id} />
+                    </div>
+                  ) : null}
                   {isAuthor ? (
                     <>
                       <div className="hidden flex-wrap items-center justify-end gap-2 sm:flex">
