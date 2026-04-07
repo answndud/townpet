@@ -37,10 +37,30 @@
 2. [00_quality_checklist.md](./00_quality_checklist.md)
 3. [00_js_for_backend_engineers.md](./00_js_for_backend_engineers.md)
 4. [00_series_plan.md](./00_series_plan.md)
-5. [02-how-townpet-is-structured.md](./02-how-townpet-is-structured.md)
-6. [03-nextjs-app-router-for-backend-engineers.md](./03-nextjs-app-router-for-backend-engineers.md)
-7. [05-prisma-zod-service-route-order.md](./05-prisma-zod-service-route-order.md)
-8. 이후 각 본문을 순서대로 읽기
+5. [01-why-townpet-exists.md](./01-why-townpet-exists.md)
+6. [02-how-townpet-is-structured.md](./02-how-townpet-is-structured.md)
+7. [03-nextjs-app-router-for-backend-engineers.md](./03-nextjs-app-router-for-backend-engineers.md)
+8. [04-server-component-and-client-component-boundary.md](./04-server-component-and-client-component-boundary.md)
+9. [05-prisma-zod-service-route-order.md](./05-prisma-zod-service-route-order.md)
+10. [06-feed-and-board-architecture.md](./06-feed-and-board-architecture.md)
+11. [07-post-create-edit-delete-flow.md](./07-post-create-edit-delete-flow.md)
+12. [08-comments-and-reactions-architecture.md](./08-comments-and-reactions-architecture.md)
+13. [09-search-structured-search-and-suggestions.md](./09-search-structured-search-and-suggestions.md)
+14. [11-credentials-kakao-naver-auth.md](./11-credentials-kakao-naver-auth.md)
+15. [12-session-role-and-admin-surface.md](./12-session-role-and-admin-surface.md)
+16. [13-social-account-link-unlink-lifecycle.md](./13-social-account-link-unlink-lifecycle.md)
+17. [14-report-block-sanction-direct-moderation.md](./14-report-block-sanction-direct-moderation.md)
+18. [15-admin-hub-and-ops-dashboard.md](./15-admin-hub-and-ops-dashboard.md)
+19. [16-rate-limit-guest-safety-and-abuse-defense.md](./16-rate-limit-guest-safety-and-abuse-defense.md)
+20. [10-notification-center-and-unread-sync.md](./10-notification-center-and-unread-sync.md)
+21. [17-prisma-migrations-and-schema-drift-response.md](./17-prisma-migrations-and-schema-drift-response.md)
+22. [18-health-check-retention-cleanup-and-maintenance-workflows.md](./18-health-check-retention-cleanup-and-maintenance-workflows.md)
+23. [19-testing-and-quality-gate.md](./19-testing-and-quality-gate.md)
+24. [20-performance-story-search-cache-pagination.md](./20-performance-story-search-cache-pagination.md)
+25. [21-business-idea-and-expansion-axes.md](./21-business-idea-and-expansion-axes.md)
+26. [22-phase2-roadmap-and-product-expansion.md](./22-phase2-roadmap-and-product-expansion.md)
+27. [23-how-ai-agents-were-used-in-real-development.md](./23-how-ai-agents-were-used-in-real-development.md)
+28. [24-demo-docs-and-interview-pack.md](./24-demo-docs-and-interview-pack.md)
 
 ## 이 시리즈가 다루는 범위
 
@@ -53,4 +73,6 @@
 - 신고, 차단, 제재, 모더레이션
 - 운영 대시보드, health check, retention cleanup
 - 테스트, quality gate, 배포
+- 성능 개선과 캐시/페이지네이션 구조
 - AI agent 기반 개발 방식
+- README/데모/문서/면접 패키지 정리

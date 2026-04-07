@@ -27,6 +27,21 @@
 
 ## Active Plan
 
+### Cycle 421: TownPet blog 문제 정의/AI agent/데모 패키지 본문 3개 작성 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| `blog/` 작업공간에 `왜 TownPet를 만들었는가`, `AI agent를 실제 개발 방식에 어떻게 녹였는가`, `데모/문서/면접 패키지로 프로젝트를 마감하기` 본문을 추가하고, 시리즈 인덱스와 블로그/루트 계획 문서를 동기화해 제품 문제 정의부터 AI-native 개발 방식, 포트폴리오 마감 패키지까지 이어지는 최종 초안을 완성한다 | Codex | P2 | `done` | `blog/01-why-townpet-exists.md`, `blog/23-how-ai-agents-were-used-in-real-development.md`, `blog/24-demo-docs-and-interview-pack.md`가 추가되고, `blog/README.md`, `blog/00_series_plan.md`, `BLOG_PLAN.md`, `BLOG_PROGRESS.md`, `PLAN.md`, `PROGRESS.md`가 동기화되며, `git diff --check` 검증 결과가 기록된다 | `blog/*`, `BLOG_PLAN.md`, `BLOG_PROGRESS.md`, `PLAN.md`, `PROGRESS.md`, `README.md`, `docs/operations/*`, `docs/business/*` |
+
+### Cycle 420: TownPet blog 댓글/사업 아이디어/Phase 2 본문 3개 작성 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| `blog/` 작업공간에 `댓글과 반응 구조`, `TownPet의 비즈니스 아이디어와 확장축`, `Phase 2 로드맵과 제품 확장 방향` 본문을 추가하고, Python/Java 개발자가 커뮤니티 상호작용 구조와 제품/사업 로직까지 함께 이해할 수 있도록 링크와 읽는 순서를 정리한다 | Codex | P2 | `done` | `blog/08-comments-and-reactions-architecture.md`, `blog/21-business-idea-and-expansion-axes.md`, `blog/22-phase2-roadmap-and-product-expansion.md`가 추가되고, `blog/README.md`, `blog/00_series_plan.md`, `BLOG_PLAN.md`, `BLOG_PROGRESS.md`, `PLAN.md`, `PROGRESS.md`가 동기화되며, `git diff --check` 검증 결과가 기록된다 | `blog/*`, `BLOG_PLAN.md`, `BLOG_PROGRESS.md`, `PLAN.md`, `PROGRESS.md`, `docs/product/Phase2_로드맵_PRD.md`, `docs/business/수익화_실험_전략.md` |
+
+### Cycle 419: TownPet blog Server/Client 경계/피드 구조/글 CRUD 본문 3개 작성 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| `blog/` 작업공간에 `Server Component와 Client Component 경계`, `피드와 게시판 구조`, `글 작성/수정/삭제 흐름` 본문을 추가하고, Python/Java 개발자가 Next.js의 UI 경계와 TownPet의 핵심 커뮤니티 쓰기/읽기 흐름을 실제 코드와 함께 추적할 수 있도록 링크와 읽는 순서를 정리한다 | Codex | P2 | `done` | `blog/04-server-component-and-client-component-boundary.md`, `blog/06-feed-and-board-architecture.md`, `blog/07-post-create-edit-delete-flow.md`가 추가되고, `blog/README.md`, `blog/00_series_plan.md`, `BLOG_PLAN.md`, `BLOG_PROGRESS.md`, `PLAN.md`, `PROGRESS.md`가 동기화되며, `git diff --check` 검증 결과가 기록된다 | `blog/*`, `BLOG_PLAN.md`, `BLOG_PROGRESS.md`, `PLAN.md`, `PROGRESS.md` |
+
 ### Cycle 418: TownPet blog 세션/abuse 방어/migration drift 본문 3개 작성 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
