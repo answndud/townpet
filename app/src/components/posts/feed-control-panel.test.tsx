@@ -32,6 +32,7 @@ describe("FeedControlPanel", () => {
     expect(html).toContain("리뷰");
     expect(html).toContain("댓글");
     expect(html).toContain("30일");
+    expect(html).toContain("data-testid=\"feed-sort-range-row\"");
   });
 
   it("omits personalization summary when the section is not provided", () => {
