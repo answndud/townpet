@@ -16,10 +16,10 @@
 
 ### 2026-04-07: Cycle B10 완료 (블로그 문체 통일 + 핵심 흐름 다이어그램 추가)
 - 완료 내용
-  - [00_rebuild_guide.md](/Users/alex/project/townpet/blog/00_rebuild_guide.md)에 문체 원칙을 추가해 `이 글은 ...를 정리합니다` 형태, 완충 표현 축소, 강조 문장 절제 기준을 명시했다.
+  - [00_rebuild_guide.md](./blog/00_rebuild_guide.md)에 문체 원칙을 추가해 `이 글은 ...를 정리합니다` 형태, 완충 표현 축소, 강조 문장 절제 기준을 명시했다.
   - `01`, `02`, `03`, `04`, `05`, `06`, `07`, `08`, `09`, `10`, `11`, `12`, `13`, `14`, `15`, `16`, `17`, `18`, `19`, `20`, `21`, `22`, `23`, `24` 본문의 도입 문장과 반복되는 완충 표현을 단정형으로 정리했다.
-  - [05-prisma-zod-service-route-order.md](/Users/alex/project/townpet/blog/05-prisma-zod-service-route-order.md), [09-search-structured-search-and-suggestions.md](/Users/alex/project/townpet/blog/09-search-structured-search-and-suggestions.md), [11-credentials-kakao-naver-auth.md](/Users/alex/project/townpet/blog/11-credentials-kakao-naver-auth.md), [14-report-block-sanction-direct-moderation.md](/Users/alex/project/townpet/blog/14-report-block-sanction-direct-moderation.md), [15-admin-hub-and-ops-dashboard.md](/Users/alex/project/townpet/blog/15-admin-hub-and-ops-dashboard.md), [19-testing-and-quality-gate.md](/Users/alex/project/townpet/blog/19-testing-and-quality-gate.md)에 핵심 흐름 mermaid 다이어그램을 추가했다.
-  - [BLOG_PLAN.md](/Users/alex/project/townpet/BLOG_PLAN.md)도 현재 보강 우선순위 기준으로 갱신했다.
+  - [05-prisma-zod-service-route-order.md](./blog/05-prisma-zod-service-route-order.md), [09-search-structured-search-and-suggestions.md](./blog/09-search-structured-search-and-suggestions.md), [11-credentials-kakao-naver-auth.md](./blog/11-credentials-kakao-naver-auth.md), [14-report-block-sanction-direct-moderation.md](./blog/14-report-block-sanction-direct-moderation.md), [15-admin-hub-and-ops-dashboard.md](./blog/15-admin-hub-and-ops-dashboard.md), [19-testing-and-quality-gate.md](./blog/19-testing-and-quality-gate.md)에 핵심 흐름 mermaid 다이어그램을 추가했다.
+  - [BLOG_PLAN.md](./BLOG_PLAN.md)도 현재 보강 우선순위 기준으로 갱신했다.
 - 검증 결과
   - `git diff --check` 통과
 - 메모
@@ -27,10 +27,10 @@
 
 ### 2026-04-07: Cycle B9 완료 (문제 정의, AI agent 개발 방식, 데모/면접 패키지 본문 3개 추가)
 - 완료 내용
-  - [01-why-townpet-exists.md](/Users/alex/project/townpet/blog/01-why-townpet-exists.md)를 추가해 TownPet가 풀고자 한 문제, `지역 + 상황` 구조, 구조화 게시판과 moderation/ops가 왜 제품 기본값으로 들어갔는지 정리했다.
-  - [23-how-ai-agents-were-used-in-real-development.md](/Users/alex/project/townpet/blog/23-how-ai-agents-were-used-in-real-development.md)를 추가해 `PLAN.md`/`PROGRESS.md`, 에이전트 운영 가이드, 프롬프트 템플릿, quality gate를 중심으로 TownPet의 AI-native 개발 방식을 설명했다.
-  - [24-demo-docs-and-interview-pack.md](/Users/alex/project/townpet/blog/24-demo-docs-and-interview-pack.md)를 추가해 README, 라이브 데모, `/admin/ops`, 운영/보안 문서, 블로그 시리즈를 하나의 포트폴리오/면접 패키지로 묶는 방법을 정리했다.
-  - [blog/README.md](/Users/alex/project/townpet/blog/README.md), [00_series_plan.md](/Users/alex/project/townpet/blog/00_series_plan.md), [BLOG_PLAN.md](/Users/alex/project/townpet/BLOG_PLAN.md)도 `01`, `23`, `24` 링크와 보강 우선순위 기준으로 갱신했다.
+  - [01-why-townpet-exists.md](./blog/01-why-townpet-exists.md)를 추가해 TownPet가 풀고자 한 문제, `지역 + 상황` 구조, 구조화 게시판과 moderation/ops가 왜 제품 기본값으로 들어갔는지 정리했다.
+  - [23-how-ai-agents-were-used-in-real-development.md](./blog/23-how-ai-agents-were-used-in-real-development.md)를 추가해 `PLAN.md`/`PROGRESS.md`, 에이전트 운영 가이드, 프롬프트 템플릿, quality gate를 중심으로 TownPet의 AI-native 개발 방식을 설명했다.
+  - [24-demo-docs-and-interview-pack.md](./blog/24-demo-docs-and-interview-pack.md)를 추가해 README, 라이브 데모, `/admin/ops`, 운영/보안 문서, 블로그 시리즈를 하나의 포트폴리오/면접 패키지로 묶는 방법을 정리했다.
+  - [blog/README.md](./blog/README.md), [00_series_plan.md](./blog/00_series_plan.md), [BLOG_PLAN.md](./BLOG_PLAN.md)도 `01`, `23`, `24` 링크와 보강 우선순위 기준으로 갱신했다.
 - 검증 결과
   - 본문에서 참조한 핵심 README, 운영 문서, 보안 문서, workflow, route/action/service/query 파일 존재 여부를 직접 확인했다.
   - `git diff --check` 통과
@@ -39,10 +39,10 @@
 
 ### 2026-04-07: Cycle B8 완료 (댓글/반응, 비즈니스 아이디어, Phase 2 본문 3개 추가)
 - 완료 내용
-  - [08-comments-and-reactions-architecture.md](/Users/alex/project/townpet/blog/08-comments-and-reactions-architecture.md)를 추가해 `comment.service.ts`, `comment.queries.ts`, `comment.ts` action, `/api/posts/[id]/comments` route, `PostCommentThread`, `CommentReactionControls`를 중심으로 댓글/반응 구조를 정리했다.
-  - [21-business-idea-and-expansion-axes.md](/Users/alex/project/townpet/blog/21-business-idea-and-expansion-axes.md)를 추가해 TownPet의 `지역 + 상황` 구조, structured board, moderation/ops, B2B 초기 수익화 아이디어를 제품 관점에서 설명했다.
-  - [22-phase2-roadmap-and-product-expansion.md](/Users/alex/project/townpet/blog/22-phase2-roadmap-and-product-expansion.md)를 추가해 검색/개인화 우선, 마켓 상태 머신, 케어 요청, 지도, 결제를 어떤 리스크 순서로 여는지 정리했다.
-  - [blog/README.md](/Users/alex/project/townpet/blog/README.md), [00_series_plan.md](/Users/alex/project/townpet/blog/00_series_plan.md), [BLOG_PLAN.md](/Users/alex/project/townpet/BLOG_PLAN.md)도 새 본문 링크와 다음 우선순위에 맞게 갱신했다.
+  - [08-comments-and-reactions-architecture.md](./blog/08-comments-and-reactions-architecture.md)를 추가해 `comment.service.ts`, `comment.queries.ts`, `comment.ts` action, `/api/posts/[id]/comments` route, `PostCommentThread`, `CommentReactionControls`를 중심으로 댓글/반응 구조를 정리했다.
+  - [21-business-idea-and-expansion-axes.md](./blog/21-business-idea-and-expansion-axes.md)를 추가해 TownPet의 `지역 + 상황` 구조, structured board, moderation/ops, B2B 초기 수익화 아이디어를 제품 관점에서 설명했다.
+  - [22-phase2-roadmap-and-product-expansion.md](./blog/22-phase2-roadmap-and-product-expansion.md)를 추가해 검색/개인화 우선, 마켓 상태 머신, 케어 요청, 지도, 결제를 어떤 리스크 순서로 여는지 정리했다.
+  - [blog/README.md](./blog/README.md), [00_series_plan.md](./blog/00_series_plan.md), [BLOG_PLAN.md](./BLOG_PLAN.md)도 새 본문 링크와 다음 우선순위에 맞게 갱신했다.
 - 검증 결과
   - 본문에서 참조한 핵심 route/action/service/query/file, 제품/사업 문서 존재 여부를 직접 확인했다.
   - `git diff --check` 통과
@@ -51,10 +51,10 @@
 
 ### 2026-04-07: Cycle B7 완료 (Server/Client 경계, 피드/보드, 글 CRUD 본문 3개 추가)
 - 완료 내용
-  - [04-server-component-and-client-component-boundary.md](/Users/alex/project/townpet/blog/04-server-component-and-client-component-boundary.md)를 추가해 `page.tsx`, client component, server action, route handler를 TownPet 실제 파일 기준으로 나눠 설명했다.
-  - [06-feed-and-board-architecture.md](/Users/alex/project/townpet/blog/06-feed-and-board-architecture.md)를 추가해 `/feed`, guest feed, 입양 게시판, `post.queries.ts`, `community.queries.ts`가 서로 다른 읽기 표면으로 어떻게 나뉘는지 정리했다.
-  - [07-post-create-edit-delete-flow.md](/Users/alex/project/townpet/blog/07-post-create-edit-delete-flow.md)를 추가해 `post.ts` validation, `post.service.ts`, `server/actions/post.ts`, `/api/posts` route, `post-create-form.tsx`, `post-detail-edit-form.tsx` 흐름을 CRUD 관점으로 정리했다.
-  - [blog/README.md](/Users/alex/project/townpet/blog/README.md), [00_series_plan.md](/Users/alex/project/townpet/blog/00_series_plan.md), [BLOG_PLAN.md](/Users/alex/project/townpet/BLOG_PLAN.md)도 새 본문 링크와 다음 우선순위에 맞게 갱신했다.
+  - [04-server-component-and-client-component-boundary.md](./blog/04-server-component-and-client-component-boundary.md)를 추가해 `page.tsx`, client component, server action, route handler를 TownPet 실제 파일 기준으로 나눠 설명했다.
+  - [06-feed-and-board-architecture.md](./blog/06-feed-and-board-architecture.md)를 추가해 `/feed`, guest feed, 입양 게시판, `post.queries.ts`, `community.queries.ts`가 서로 다른 읽기 표면으로 어떻게 나뉘는지 정리했다.
+  - [07-post-create-edit-delete-flow.md](./blog/07-post-create-edit-delete-flow.md)를 추가해 `post.ts` validation, `post.service.ts`, `server/actions/post.ts`, `/api/posts` route, `post-create-form.tsx`, `post-detail-edit-form.tsx` 흐름을 CRUD 관점으로 정리했다.
+  - [blog/README.md](./blog/README.md), [00_series_plan.md](./blog/00_series_plan.md), [BLOG_PLAN.md](./BLOG_PLAN.md)도 새 본문 링크와 다음 우선순위에 맞게 갱신했다.
 - 검증 결과
   - 본문에서 참조한 핵심 page, component, action, route, service, query 파일 존재 여부를 직접 확인했다.
   - `git diff --check` 통과
@@ -63,10 +63,10 @@
 
 ### 2026-04-07: Cycle B6 완료 (세션/abuse 방어/migration drift 본문 3개 추가)
 - 완료 내용
-  - [12-session-role-and-admin-surface.md](/Users/alex/project/townpet/blog/12-session-role-and-admin-surface.md)를 추가해 NextAuth `signIn/jwt/session` callback, `sessionVersion`, `server/auth.ts`, `admin-page-access.ts`, `middleware.ts`, `AdminSectionNav`, admin-only API/action이 어떻게 역할별 surface를 나누는지 정리했다.
-  - [16-rate-limit-guest-safety-and-abuse-defense.md](/Users/alex/project/townpet/blog/16-rate-limit-guest-safety-and-abuse-defense.md)를 추가해 `rate-limit.ts`, `authenticated-write-throttle.ts`, `guest-safety.service.ts`, `guest-step-up.ts`, `sanction.service.ts`, 실제 게시글/댓글/신고 route의 방어 순서를 설명했다.
-  - [17-prisma-migrations-and-schema-drift-response.md](/Users/alex/project/townpet/blog/17-prisma-migrations-and-schema-drift-response.md)를 추가해 `quality-gate.yml`, `vercel-build.ts`, `schema-sync.ts`, repair migration, runtime `SCHEMA_SYNC_REQUIRED` 계약을 한 흐름으로 정리했다.
-  - [blog/README.md](/Users/alex/project/townpet/blog/README.md), [00_series_plan.md](/Users/alex/project/townpet/blog/00_series_plan.md), [BLOG_PLAN.md](/Users/alex/project/townpet/BLOG_PLAN.md)도 새 본문 링크와 다음 우선순위에 맞게 갱신했다.
+  - [12-session-role-and-admin-surface.md](./blog/12-session-role-and-admin-surface.md)를 추가해 NextAuth `signIn/jwt/session` callback, `sessionVersion`, `server/auth.ts`, `admin-page-access.ts`, `middleware.ts`, `AdminSectionNav`, admin-only API/action이 어떻게 역할별 surface를 나누는지 정리했다.
+  - [16-rate-limit-guest-safety-and-abuse-defense.md](./blog/16-rate-limit-guest-safety-and-abuse-defense.md)를 추가해 `rate-limit.ts`, `authenticated-write-throttle.ts`, `guest-safety.service.ts`, `guest-step-up.ts`, `sanction.service.ts`, 실제 게시글/댓글/신고 route의 방어 순서를 설명했다.
+  - [17-prisma-migrations-and-schema-drift-response.md](./blog/17-prisma-migrations-and-schema-drift-response.md)를 추가해 `quality-gate.yml`, `vercel-build.ts`, `schema-sync.ts`, repair migration, runtime `SCHEMA_SYNC_REQUIRED` 계약을 한 흐름으로 정리했다.
+  - [blog/README.md](./blog/README.md), [00_series_plan.md](./blog/00_series_plan.md), [BLOG_PLAN.md](./BLOG_PLAN.md)도 새 본문 링크와 다음 우선순위에 맞게 갱신했다.
 - 검증 결과
   - 본문에서 참조한 핵심 코드 파일, route/action, workflow, migration 파일 존재 여부를 직접 확인했다.
   - `git diff --check` 통과
@@ -75,10 +75,10 @@
 
 ### 2026-04-07: Cycle B5 완료 (알림/운영 유지보수/성능 개선 본문 3개 추가)
 - 완료 내용
-  - [10-notification-center-and-unread-sync.md](/Users/alex/project/townpet/blog/10-notification-center-and-unread-sync.md)를 추가해 `NotificationBell`, `NotificationCenter`, `notification-unread-sync`, 서버 action, `notification.queries.ts`, redirect route가 어떻게 하나의 unread/redirect 계약으로 묶이는지 정리했다.
-  - [18-health-check-retention-cleanup-and-maintenance-workflows.md](/Users/alex/project/townpet/blog/18-health-check-retention-cleanup-and-maintenance-workflows.md)를 추가해 `/api/health`, retention helper, cleanup script, `post-integrity-maintenance`, `ops-latency-snapshots` workflow를 운영 관점에서 설명했다.
-  - [20-performance-story-search-cache-pagination.md](/Users/alex/project/townpet/blog/20-performance-story-search-cache-pagination.md)를 추가해 versioned query cache, structured search shadow column, root comment pagination, best comment page 계산, 피드 상대시간 re-render 분리, latency snapshot을 한 흐름으로 정리했다.
-  - [blog/README.md](/Users/alex/project/townpet/blog/README.md), [00_series_plan.md](/Users/alex/project/townpet/blog/00_series_plan.md), [BLOG_PLAN.md](/Users/alex/project/townpet/BLOG_PLAN.md)도 새 본문 링크와 다음 집필 우선순위에 맞게 갱신했다.
+  - [10-notification-center-and-unread-sync.md](./blog/10-notification-center-and-unread-sync.md)를 추가해 `NotificationBell`, `NotificationCenter`, `notification-unread-sync`, 서버 action, `notification.queries.ts`, redirect route가 어떻게 하나의 unread/redirect 계약으로 묶이는지 정리했다.
+  - [18-health-check-retention-cleanup-and-maintenance-workflows.md](./blog/18-health-check-retention-cleanup-and-maintenance-workflows.md)를 추가해 `/api/health`, retention helper, cleanup script, `post-integrity-maintenance`, `ops-latency-snapshots` workflow를 운영 관점에서 설명했다.
+  - [20-performance-story-search-cache-pagination.md](./blog/20-performance-story-search-cache-pagination.md)를 추가해 versioned query cache, structured search shadow column, root comment pagination, best comment page 계산, 피드 상대시간 re-render 분리, latency snapshot을 한 흐름으로 정리했다.
+  - [blog/README.md](./blog/README.md), [00_series_plan.md](./blog/00_series_plan.md), [BLOG_PLAN.md](./BLOG_PLAN.md)도 새 본문 링크와 다음 집필 우선순위에 맞게 갱신했다.
 - 검증 결과
   - 본문에서 참조한 핵심 코드 파일, maintenance workflow, script, 테스트 파일 존재 여부를 직접 확인했다.
   - `git diff --check` 통과
@@ -87,10 +87,10 @@
 
 ### 2026-04-07: Cycle B4 완료 (소셜 연동/운영 대시보드/테스트 전략 본문 3개 추가)
 - 완료 내용
-  - [13-social-account-link-unlink-lifecycle.md](/Users/alex/project/townpet/blog/13-social-account-link-unlink-lifecycle.md)를 추가해 `Account` 모델, `auth.ts` callback, `linkSocialAccountForUser`, `unlinkSocialAccountForUser`, `sessionVersion`, `OAuthAccountNotLinked` 복구 흐름을 정리했다.
-  - [15-admin-hub-and-ops-dashboard.md](/Users/alex/project/townpet/blog/15-admin-hub-and-ops-dashboard.md)를 추가해 `/admin` 허브, `AdminSectionNav`, 역할별 접근 제어, `/admin/ops`, `getHealthSnapshot`, `getAdminOpsOverview`의 관계를 정리했다.
-  - [19-testing-and-quality-gate.md](/Users/alex/project/townpet/blog/19-testing-and-quality-gate.md)를 추가해 Vitest, Playwright, `quality-gate.yml`, `ops-smoke-checks.yml`, migration/ops rehearsal의 의미를 설명했다.
-  - [blog/README.md](/Users/alex/project/townpet/blog/README.md), [00_series_plan.md](/Users/alex/project/townpet/blog/00_series_plan.md), [BLOG_PLAN.md](/Users/alex/project/townpet/BLOG_PLAN.md)도 새 본문 링크와 다음 집필 우선순위에 맞게 갱신했다.
+  - [13-social-account-link-unlink-lifecycle.md](./blog/13-social-account-link-unlink-lifecycle.md)를 추가해 `Account` 모델, `auth.ts` callback, `linkSocialAccountForUser`, `unlinkSocialAccountForUser`, `sessionVersion`, `OAuthAccountNotLinked` 복구 흐름을 정리했다.
+  - [15-admin-hub-and-ops-dashboard.md](./blog/15-admin-hub-and-ops-dashboard.md)를 추가해 `/admin` 허브, `AdminSectionNav`, 역할별 접근 제어, `/admin/ops`, `getHealthSnapshot`, `getAdminOpsOverview`의 관계를 정리했다.
+  - [19-testing-and-quality-gate.md](./blog/19-testing-and-quality-gate.md)를 추가해 Vitest, Playwright, `quality-gate.yml`, `ops-smoke-checks.yml`, migration/ops rehearsal의 의미를 설명했다.
+  - [blog/README.md](./blog/README.md), [00_series_plan.md](./blog/00_series_plan.md), [BLOG_PLAN.md](./BLOG_PLAN.md)도 새 본문 링크와 다음 집필 우선순위에 맞게 갱신했다.
 - 검증 결과
   - 본문에서 참조한 핵심 코드 파일, workflow, 테스트 파일 존재 여부를 직접 확인했다.
   - `git diff --check` 통과
@@ -116,10 +116,10 @@
 
 ### 2026-04-07: Cycle B2 완료 (구조/라우팅/계층 분리 본문 3개 추가)
 - 완료 내용
-  - [02-how-townpet-is-structured.md](/Users/alex/project/townpet/blog/02-how-townpet-is-structured.md)를 작성해 저장소 전체 지도, 폴더 역할, 추천 읽기 순서를 정리했다.
-  - [03-nextjs-app-router-for-backend-engineers.md](/Users/alex/project/townpet/blog/03-nextjs-app-router-for-backend-engineers.md)를 작성해 `page.tsx`, `route.ts`, `layout.tsx`, `Server Action`을 Python/Java 개발자 기준으로 번역했다.
-  - [05-prisma-zod-service-route-order.md](/Users/alex/project/townpet/blog/05-prisma-zod-service-route-order.md)를 작성해 TownPet의 대표 구현 순서인 `Prisma -> Zod -> Service -> Route/UI`를 게시글 생성 흐름으로 설명했다.
-  - [blog/README.md](/Users/alex/project/townpet/blog/README.md), [00_series_plan.md](/Users/alex/project/townpet/blog/00_series_plan.md), [BLOG_PLAN.md](/Users/alex/project/townpet/BLOG_PLAN.md)도 새 본문 링크와 다음 집필 우선순위에 맞게 갱신했다.
+  - [02-how-townpet-is-structured.md](./blog/02-how-townpet-is-structured.md)를 작성해 저장소 전체 지도, 폴더 역할, 추천 읽기 순서를 정리했다.
+  - [03-nextjs-app-router-for-backend-engineers.md](./blog/03-nextjs-app-router-for-backend-engineers.md)를 작성해 `page.tsx`, `route.ts`, `layout.tsx`, `Server Action`을 Python/Java 개발자 기준으로 번역했다.
+  - [05-prisma-zod-service-route-order.md](./blog/05-prisma-zod-service-route-order.md)를 작성해 TownPet의 대표 구현 순서인 `Prisma -> Zod -> Service -> Route/UI`를 게시글 생성 흐름으로 설명했다.
+  - [blog/README.md](./blog/README.md), [00_series_plan.md](./blog/00_series_plan.md), [BLOG_PLAN.md](./BLOG_PLAN.md)도 새 본문 링크와 다음 집필 우선순위에 맞게 갱신했다.
 - 검증 결과
   - 본문에서 참조한 핵심 코드 파일 존재 여부를 직접 확인했다.
   - `git diff --check` 통과
@@ -128,12 +128,31 @@
 
 ### 2026-04-07: Cycle B3 완료 (인증/검색/모더레이션 본문 3개 추가)
 - 완료 내용
-  - [11-credentials-kakao-naver-auth.md](/Users/alex/project/townpet/blog/11-credentials-kakao-naver-auth.md)를 추가해 NextAuth 설정, credentials 로그인, 카카오/네이버 로그인, sessionVersion, 이메일 인증/비밀번호 재설정, 소셜 계정 연결/해제 흐름을 정리했다.
-  - [09-search-structured-search-and-suggestions.md](/Users/alex/project/townpet/blog/09-search-structured-search-and-suggestions.md)를 추가해 본검색, 구조화 검색, suggestion, compact/초성 fallback, `SearchTermStat`/`SearchTermDailyMetric` 운영 루프를 설명했다.
-  - [14-report-block-sanction-direct-moderation.md](/Users/alex/project/townpet/blog/14-report-block-sanction-direct-moderation.md)를 추가해 신고, block/mute, 제재, 직접 모더레이션, 운영자 action log의 관계를 정리했다.
-  - [blog/README.md](/Users/alex/project/townpet/blog/README.md), [00_series_plan.md](/Users/alex/project/townpet/blog/00_series_plan.md), [BLOG_PLAN.md](/Users/alex/project/townpet/BLOG_PLAN.md)도 새 본문 링크와 다음 집필 우선순위에 맞게 갱신했다.
+  - [11-credentials-kakao-naver-auth.md](./blog/11-credentials-kakao-naver-auth.md)를 추가해 NextAuth 설정, credentials 로그인, 카카오/네이버 로그인, sessionVersion, 이메일 인증/비밀번호 재설정, 소셜 계정 연결/해제 흐름을 정리했다.
+  - [09-search-structured-search-and-suggestions.md](./blog/09-search-structured-search-and-suggestions.md)를 추가해 본검색, 구조화 검색, suggestion, compact/초성 fallback, `SearchTermStat`/`SearchTermDailyMetric` 운영 루프를 설명했다.
+  - [14-report-block-sanction-direct-moderation.md](./blog/14-report-block-sanction-direct-moderation.md)를 추가해 신고, block/mute, 제재, 직접 모더레이션, 운영자 action log의 관계를 정리했다.
+  - [blog/README.md](./blog/README.md), [00_series_plan.md](./blog/00_series_plan.md), [BLOG_PLAN.md](./BLOG_PLAN.md)도 새 본문 링크와 다음 집필 우선순위에 맞게 갱신했다.
 - 검증 결과
   - 본문에서 참조한 핵심 코드 파일과 함수 위치를 직접 확인했다.
   - `git diff --check` 통과
 - 메모
   - 다음 블로그 우선순위는 `관리자 허브/운영 대시보드`, `테스트/quality gate`, `소셜 계정 연결/해제 lifecycle`이다.
+### 2026-04-07: Cycle B11 완료 (외부 공개용 링크/템플릿/검증 명령 보강)
+- 완료 내용
+  - `blog/*.md` 전반의 로컬 절대경로 링크를 repo-relative 링크로 바꿔 GitHub와 외부 독자 환경에서도 그대로 읽을 수 있게 정리했다.
+  - [03-nextjs-app-router-for-backend-engineers.md](./blog/03-nextjs-app-router-for-backend-engineers.md), [05-prisma-zod-service-route-order.md](./blog/05-prisma-zod-service-route-order.md), [11-credentials-kakao-naver-auth.md](./blog/11-credentials-kakao-naver-auth.md), [13-social-account-link-unlink-lifecycle.md](./blog/13-social-account-link-unlink-lifecycle.md), [14-report-block-sanction-direct-moderation.md](./blog/14-report-block-sanction-direct-moderation.md), [15-admin-hub-and-ops-dashboard.md](./blog/15-admin-hub-and-ops-dashboard.md), [19-testing-and-quality-gate.md](./blog/19-testing-and-quality-gate.md), [24-demo-docs-and-interview-pack.md](./blog/24-demo-docs-and-interview-pack.md)에 `먼저 알아둘 개념`, `테스트와 검증`, `직접 실행해 보고 싶다면` 같은 공통 섹션을 보강했다.
+  - [BLOG_PLAN.md](./BLOG_PLAN.md)도 현재 보강 우선순위 기준으로 갱신했다.
+- 검증 결과
+  - `blog/`와 `BLOG_*.md`에서 `/Users/alex/project/townpet/...` 절대경로 링크가 남아 있지 않음을 확인했다.
+  - `git diff --check` 통과
+- 메모
+  - 다음 보강 우선순위는 운영 캡처, 면접 Q&A 부록, 핵심 글의 실행 체크리스트 강화다.
+### 2026-04-07: Cycle B12 완료 (면접 Q&A 부록 보강)
+- 완료 내용
+  - [06-feed-and-board-architecture.md](./blog/06-feed-and-board-architecture.md), [07-post-create-edit-delete-flow.md](./blog/07-post-create-edit-delete-flow.md), [08-comments-and-reactions-architecture.md](./blog/08-comments-and-reactions-architecture.md), [10-notification-center-and-unread-sync.md](./blog/10-notification-center-and-unread-sync.md), [12-session-role-and-admin-surface.md](./blog/12-session-role-and-admin-surface.md), [16-rate-limit-guest-safety-and-abuse-defense.md](./blog/16-rate-limit-guest-safety-and-abuse-defense.md), [17-prisma-migrations-and-schema-drift-response.md](./blog/17-prisma-migrations-and-schema-drift-response.md), [18-health-check-retention-cleanup-and-maintenance-workflows.md](./blog/18-health-check-retention-cleanup-and-maintenance-workflows.md), [20-performance-story-search-cache-pagination.md](./blog/20-performance-story-search-cache-pagination.md)에 면접 Q&A 부록을 추가했다.
+  - [BLOG_PLAN.md](./BLOG_PLAN.md)도 현재 보강 우선순위 기준으로 갱신했다.
+- 검증 결과
+  - 각 문서에 `면접에서 이렇게 설명할 수 있다` 뒤에 `면접 Q&A` 부록이 붙었는지 확인했다.
+  - `git diff --check` 통과
+- 메모
+  - 다음 보강 우선순위는 운영 캡처, 제품-사업 서사 문장 정리, 시리즈 입구 추천 순서 추가다.

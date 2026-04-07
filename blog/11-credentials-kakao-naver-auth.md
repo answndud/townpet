@@ -31,6 +31,17 @@ TownPet 인증은 단순 로그인 폼이 아닙니다.
 
 이 네 층으로 같이 다룹니다.
 
+## 먼저 알아둘 개념
+
+- `NextAuth`
+  - provider 등록과 callback, session 직렬화의 중심입니다.
+- `sessionVersion`
+  - 현재 세션을 강제로 만료시키는 TownPet 전용 축입니다.
+- `Account`
+  - 카카오/네이버 같은 소셜 연결 정보를 저장합니다.
+- `server/auth.ts`
+  - 앱 안에서 실제 권한 게이트를 거는 helper 계층입니다.
+
 ## 인증 흐름을 먼저 그림으로 보면
 
 ```mermaid
@@ -48,15 +59,15 @@ flowchart TD
 
 ## 먼저 볼 핵심 파일
 
-- [`app/src/lib/auth.ts`](/Users/alex/project/townpet/app/src/lib/auth.ts)
-- [`app/src/server/auth.ts`](/Users/alex/project/townpet/app/src/server/auth.ts)
-- [`app/src/server/auth-credentials.ts`](/Users/alex/project/townpet/app/src/server/auth-credentials.ts)
-- [`app/src/server/services/auth.service.ts`](/Users/alex/project/townpet/app/src/server/services/auth.service.ts)
-- [`app/src/components/auth/login-form.tsx`](/Users/alex/project/townpet/app/src/components/auth/login-form.tsx)
-- [`app/src/components/auth/kakao-signin-button.tsx`](/Users/alex/project/townpet/app/src/components/auth/kakao-signin-button.tsx)
-- [`app/src/components/auth/naver-signin-button.tsx`](/Users/alex/project/townpet/app/src/components/auth/naver-signin-button.tsx)
-- [`app/src/app/login/page.tsx`](/Users/alex/project/townpet/app/src/app/login/page.tsx)
-- [`app/prisma/schema.prisma`](/Users/alex/project/townpet/app/prisma/schema.prisma)
+- [`app/src/lib/auth.ts`](../app/src/lib/auth.ts)
+- [`app/src/server/auth.ts`](../app/src/server/auth.ts)
+- [`app/src/server/auth-credentials.ts`](../app/src/server/auth-credentials.ts)
+- [`app/src/server/services/auth.service.ts`](../app/src/server/services/auth.service.ts)
+- [`app/src/components/auth/login-form.tsx`](../app/src/components/auth/login-form.tsx)
+- [`app/src/components/auth/kakao-signin-button.tsx`](../app/src/components/auth/kakao-signin-button.tsx)
+- [`app/src/components/auth/naver-signin-button.tsx`](../app/src/components/auth/naver-signin-button.tsx)
+- [`app/src/app/login/page.tsx`](../app/src/app/login/page.tsx)
+- [`app/prisma/schema.prisma`](../app/prisma/schema.prisma)
 
 ## Prisma에서 먼저 봐야 하는 모델
 
@@ -83,7 +94,7 @@ flowchart TD
 
 핵심 파일:
 
-- [`app/src/lib/auth.ts`](/Users/alex/project/townpet/app/src/lib/auth.ts)
+- [`app/src/lib/auth.ts`](../app/src/lib/auth.ts)
 
 여기서 TownPet는 `NextAuth(...)`를 직접 구성합니다.
 
@@ -112,7 +123,7 @@ flowchart TD
 
 핵심 파일:
 
-- [`app/src/server/auth-credentials.ts`](/Users/alex/project/townpet/app/src/server/auth-credentials.ts)
+- [`app/src/server/auth-credentials.ts`](../app/src/server/auth-credentials.ts)
 
 핵심 함수:
 
@@ -141,8 +152,8 @@ flowchart TD
 
 UI 진입점:
 
-- [`app/src/app/login/page.tsx`](/Users/alex/project/townpet/app/src/app/login/page.tsx)
-- [`app/src/components/auth/login-form.tsx`](/Users/alex/project/townpet/app/src/components/auth/login-form.tsx)
+- [`app/src/app/login/page.tsx`](../app/src/app/login/page.tsx)
+- [`app/src/components/auth/login-form.tsx`](../app/src/components/auth/login-form.tsx)
 
 페이지는:
 
@@ -166,8 +177,8 @@ UI 진입점:
 
 소셜 버튼:
 
-- [`kakao-signin-button.tsx`](/Users/alex/project/townpet/app/src/components/auth/kakao-signin-button.tsx)
-- [`naver-signin-button.tsx`](/Users/alex/project/townpet/app/src/components/auth/naver-signin-button.tsx)
+- [`kakao-signin-button.tsx`](../app/src/components/auth/kakao-signin-button.tsx)
+- [`naver-signin-button.tsx`](../app/src/components/auth/naver-signin-button.tsx)
 
 이 버튼은 내부적으로:
 
@@ -182,7 +193,7 @@ UI 진입점:
 
 ## 5. 소셜 로그인에서 가장 중요한 보호 장치
 
-다시 [`app/src/lib/auth.ts`](/Users/alex/project/townpet/app/src/lib/auth.ts)을 보면 `callbacks.signIn`이 중요합니다.
+다시 [`app/src/lib/auth.ts`](../app/src/lib/auth.ts)을 보면 `callbacks.signIn`이 중요합니다.
 
 여기서 TownPet는:
 
@@ -235,7 +246,7 @@ TownPet 인증에서 가장 중요한 값 중 하나가:
 
 파일:
 
-- [`app/src/server/auth.ts`](/Users/alex/project/townpet/app/src/server/auth.ts)
+- [`app/src/server/auth.ts`](../app/src/server/auth.ts)
 
 이 파일은 TownPet 내부의 인증 접근 게이트입니다.
 
@@ -257,7 +268,7 @@ TownPet 인증에서 가장 중요한 값 중 하나가:
 
 핵심 파일:
 
-- [`app/src/server/services/auth.service.ts`](/Users/alex/project/townpet/app/src/server/services/auth.service.ts)
+- [`app/src/server/services/auth.service.ts`](../app/src/server/services/auth.service.ts)
 
 이 서비스는:
 
@@ -343,14 +354,34 @@ flowchart TD
 
 ## 추천 읽기 순서
 
-1. [`app/prisma/schema.prisma`](/Users/alex/project/townpet/app/prisma/schema.prisma)
-2. [`app/src/lib/auth.ts`](/Users/alex/project/townpet/app/src/lib/auth.ts)
-3. [`app/src/server/auth-credentials.ts`](/Users/alex/project/townpet/app/src/server/auth-credentials.ts)
-4. [`app/src/server/auth.ts`](/Users/alex/project/townpet/app/src/server/auth.ts)
-5. [`app/src/server/services/auth.service.ts`](/Users/alex/project/townpet/app/src/server/services/auth.service.ts)
-6. [`app/src/components/auth/login-form.tsx`](/Users/alex/project/townpet/app/src/components/auth/login-form.tsx)
-7. [`app/src/components/auth/kakao-signin-button.tsx`](/Users/alex/project/townpet/app/src/components/auth/kakao-signin-button.tsx)
-8. [`app/src/components/auth/naver-signin-button.tsx`](/Users/alex/project/townpet/app/src/components/auth/naver-signin-button.tsx)
+1. [`app/prisma/schema.prisma`](../app/prisma/schema.prisma)
+2. [`app/src/lib/auth.ts`](../app/src/lib/auth.ts)
+3. [`app/src/server/auth-credentials.ts`](../app/src/server/auth-credentials.ts)
+4. [`app/src/server/auth.ts`](../app/src/server/auth.ts)
+5. [`app/src/server/services/auth.service.ts`](../app/src/server/services/auth.service.ts)
+6. [`app/src/components/auth/login-form.tsx`](../app/src/components/auth/login-form.tsx)
+7. [`app/src/components/auth/kakao-signin-button.tsx`](../app/src/components/auth/kakao-signin-button.tsx)
+8. [`app/src/components/auth/naver-signin-button.tsx`](../app/src/components/auth/naver-signin-button.tsx)
+
+## 테스트와 검증
+
+인증 구조는 아래 세 층을 같이 보는 편이 좋습니다.
+
+- credentials 검증
+  - [`app/src/server/auth-credentials.test.ts`](../app/src/server/auth-credentials.test.ts)
+- 계정 lifecycle
+  - [`app/src/server/services/auth.service.test.ts`](../app/src/server/services/auth.service.test.ts)
+- 브라우저 로그인 흐름
+  - [`app/e2e/social-onboarding-flow.spec.ts`](../app/e2e/social-onboarding-flow.spec.ts)
+  - [`app/e2e/auth-session-hardening.spec.ts`](../app/e2e/auth-session-hardening.spec.ts)
+
+## 직접 실행해 보고 싶다면
+
+```bash
+corepack pnpm -C app test -- src/server/auth-credentials.test.ts
+corepack pnpm -C app test -- src/server/services/auth.service.test.ts
+corepack pnpm -C app test:e2e -- e2e/auth-session-hardening.spec.ts --project=chromium
+```
 
 ## 현재 구조의 장점
 

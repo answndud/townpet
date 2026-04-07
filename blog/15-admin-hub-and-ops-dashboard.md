@@ -37,18 +37,27 @@ TownPet의 관리자 화면은 "숨김 처리 페이지 몇 개"가 아닙니다
 
 으로 나눠 설계합니다.
 
+## 먼저 알아둘 개념
+
+- `/admin`
+  - 역할별 운영 진입 허브입니다.
+- `/admin/ops`
+  - health와 운영 지표를 한 화면에서 묶는 대시보드입니다.
+- `health snapshot`
+  - 여러 운영 체크의 공통 상태 표면입니다.
+
 ## 먼저 볼 핵심 파일
 
-- [`app/src/app/admin/page.tsx`](/Users/alex/project/townpet/app/src/app/admin/page.tsx)
-- [`app/src/components/admin/admin-section-nav.tsx`](/Users/alex/project/townpet/app/src/components/admin/admin-section-nav.tsx)
-- [`app/src/server/admin-page-access.ts`](/Users/alex/project/townpet/app/src/server/admin-page-access.ts)
-- [`app/src/app/admin/ops/page.tsx`](/Users/alex/project/townpet/app/src/app/admin/ops/page.tsx)
-- [`app/src/server/queries/ops-overview.queries.ts`](/Users/alex/project/townpet/app/src/server/queries/ops-overview.queries.ts)
-- [`app/src/server/health-overview.ts`](/Users/alex/project/townpet/app/src/server/health-overview.ts)
-- [`app/src/app/api/health/route.ts`](/Users/alex/project/townpet/app/src/app/api/health/route.ts)
-- [`app/src/server/queries/auth-audit.queries.ts`](/Users/alex/project/townpet/app/src/server/queries/auth-audit.queries.ts)
-- [`app/src/server/queries/report.queries.ts`](/Users/alex/project/townpet/app/src/server/queries/report.queries.ts)
-- [`app/src/server/queries/search.queries.ts`](/Users/alex/project/townpet/app/src/server/queries/search.queries.ts)
+- [`app/src/app/admin/page.tsx`](../app/src/app/admin/page.tsx)
+- [`app/src/components/admin/admin-section-nav.tsx`](../app/src/components/admin/admin-section-nav.tsx)
+- [`app/src/server/admin-page-access.ts`](../app/src/server/admin-page-access.ts)
+- [`app/src/app/admin/ops/page.tsx`](../app/src/app/admin/ops/page.tsx)
+- [`app/src/server/queries/ops-overview.queries.ts`](../app/src/server/queries/ops-overview.queries.ts)
+- [`app/src/server/health-overview.ts`](../app/src/server/health-overview.ts)
+- [`app/src/app/api/health/route.ts`](../app/src/app/api/health/route.ts)
+- [`app/src/server/queries/auth-audit.queries.ts`](../app/src/server/queries/auth-audit.queries.ts)
+- [`app/src/server/queries/report.queries.ts`](../app/src/server/queries/report.queries.ts)
+- [`app/src/server/queries/search.queries.ts`](../app/src/server/queries/search.queries.ts)
 
 ## 관리자 표면을 먼저 그림으로 보면
 
@@ -71,7 +80,7 @@ flowchart TD
 
 진입점:
 
-- [`app/src/app/admin/page.tsx`](/Users/alex/project/townpet/app/src/app/admin/page.tsx)
+- [`app/src/app/admin/page.tsx`](../app/src/app/admin/page.tsx)
 
 이 페이지는 단순한 인덱스가 아닙니다.
 
@@ -91,7 +100,7 @@ flowchart TD
 
 핵심 파일:
 
-- [`app/src/components/admin/admin-section-nav.tsx`](/Users/alex/project/townpet/app/src/components/admin/admin-section-nav.tsx)
+- [`app/src/components/admin/admin-section-nav.tsx`](../app/src/components/admin/admin-section-nav.tsx)
 
 여기에는 `ADMIN_SECTION_LINKS`가 있고, 각 항목에는 `adminOnly` 플래그가 붙습니다.
 
@@ -110,7 +119,7 @@ flowchart TD
 
 핵심 파일:
 
-- [`app/src/server/admin-page-access.ts`](/Users/alex/project/townpet/app/src/server/admin-page-access.ts)
+- [`app/src/server/admin-page-access.ts`](../app/src/server/admin-page-access.ts)
 
 주요 함수:
 
@@ -135,7 +144,7 @@ Spring 관점으로 치환하면:
 
 핵심 함수:
 
-- [`getAdminOpsOverview`](/Users/alex/project/townpet/app/src/server/queries/ops-overview.queries.ts)
+- [`getAdminOpsOverview`](../app/src/server/queries/ops-overview.queries.ts)
 
 이 함수는 여러 overview를 병렬로 묶습니다.
 
@@ -157,7 +166,7 @@ Java/Spring으로 치환하면:
 
 핵심 파일:
 
-- [`app/src/server/health-overview.ts`](/Users/alex/project/townpet/app/src/server/health-overview.ts)
+- [`app/src/server/health-overview.ts`](../app/src/server/health-overview.ts)
 
 이 파일은 시스템 상태를 한 번에 읽는 공용 함수입니다.
 
@@ -198,7 +207,7 @@ Java/Spring으로 치환하면:
 
 ## 7. `/admin/ops`에서 검색 필터가 중요한 이유
 
-[`app/src/app/admin/ops/page.tsx`](/Users/alex/project/townpet/app/src/app/admin/ops/page.tsx)를 보면 검색 관련 필터가 별도로 있습니다.
+[`app/src/app/admin/ops/page.tsx`](../app/src/app/admin/ops/page.tsx)를 보면 검색 관련 필터가 별도로 있습니다.
 
 - `searchScope`
 - `searchType`
@@ -261,7 +270,7 @@ flowchart TD
 
 ### 관리자 메뉴 테스트
 
-- [`app/src/components/admin/admin-section-nav.test.tsx`](/Users/alex/project/townpet/app/src/components/admin/admin-section-nav.test.tsx)
+- [`app/src/components/admin/admin-section-nav.test.tsx`](../app/src/components/admin/admin-section-nav.test.tsx)
 
 이 테스트는:
 
@@ -272,7 +281,7 @@ flowchart TD
 
 ### ops overview 테스트
 
-- [`app/src/server/queries/ops-overview.queries.test.ts`](/Users/alex/project/townpet/app/src/server/queries/ops-overview.queries.test.ts)
+- [`app/src/server/queries/ops-overview.queries.test.ts`](../app/src/server/queries/ops-overview.queries.test.ts)
 
 이 테스트는 각 overview 함수가 어떻게 합쳐지는지 확인합니다.
 
@@ -280,7 +289,7 @@ flowchart TD
 
 ### health route 테스트
 
-- [`app/src/app/api/health/route.test.ts`](/Users/alex/project/townpet/app/src/app/api/health/route.test.ts)
+- [`app/src/app/api/health/route.test.ts`](../app/src/app/api/health/route.test.ts)
 
 이 테스트는:
 

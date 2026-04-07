@@ -9413,3 +9413,37 @@
 1. `pnpm -C app exec prisma migrate deploy`로 운영 DB에 `20260307030000_expand_report_reason_triage` 적용
 2. Vercel 재배포 후 guest 글/댓글/이미지 업로드 smoke 확인
 3. 새 오픈 사이클이 없으므로 이후 백로그는 blocked 상태의 Cycle 188 재개 또는 신규 운영 과제 등록 기준으로 판단
+### 2026-04-07: Cycle 423 블로그 외부 공개성/재현성 보강
+- 완료 내용
+- `blog/*.md`와 `BLOG_*.md`에서 로컬 절대경로(`/Users/alex/project/townpet/...`) 링크를 repo-relative 링크로 바꿨다.
+- 구조가 약했던 블로그 글들에 `먼저 알아둘 개념`, `테스트와 검증`, `직접 실행해 보고 싶다면` 섹션을 추가했다.
+  - `blog/03-nextjs-app-router-for-backend-engineers.md`
+  - `blog/05-prisma-zod-service-route-order.md`
+  - `blog/11-credentials-kakao-naver-auth.md`
+  - `blog/13-social-account-link-unlink-lifecycle.md`
+  - `blog/14-report-block-sanction-direct-moderation.md`
+  - `blog/15-admin-hub-and-ops-dashboard.md`
+  - `blog/19-testing-and-quality-gate.md`
+  - `blog/24-demo-docs-and-interview-pack.md`
+- 검증 결과
+- `blog/`와 `BLOG_*.md`에 절대경로 링크가 남아 있지 않음을 확인했다.
+- `git diff --check` 통과
+- 메모
+- 이번 보강은 블로그 문서 자체의 외부 공개성과 재현성을 높이는 작업이다.
+- 다음 단계는 운영 캡처, 면접 Q&A 부록, 핵심 글 체크리스트 보강이다.
+### 2026-04-07: Cycle 424 블로그 면접 대응력 보강
+- 완료 내용
+- 블로그 대표 설계 글 9편에 `면접 Q&A` 부록을 추가했다.
+  - `blog/06-feed-and-board-architecture.md`
+  - `blog/07-post-create-edit-delete-flow.md`
+  - `blog/08-comments-and-reactions-architecture.md`
+  - `blog/10-notification-center-and-unread-sync.md`
+  - `blog/12-session-role-and-admin-surface.md`
+  - `blog/16-rate-limit-guest-safety-and-abuse-defense.md`
+  - `blog/17-prisma-migrations-and-schema-drift-response.md`
+  - `blog/18-health-check-retention-cleanup-and-maintenance-workflows.md`
+  - `blog/20-performance-story-search-cache-pagination.md`
+- 검증 결과
+- `git diff --check` 통과
+- 메모
+- 다음 블로그 보강 우선순위는 운영 캡처, 제품-사업 서사 연결, 시리즈 입구 추천 순서 정리다.

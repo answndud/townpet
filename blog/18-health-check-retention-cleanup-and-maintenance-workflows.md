@@ -35,22 +35,22 @@ TownPet는 이 문제를
 
 ## 먼저 볼 핵심 파일
 
-- [`app/src/server/health-overview.ts`](/Users/alex/project/townpet/app/src/server/health-overview.ts)
-- [`app/src/app/api/health/route.ts`](/Users/alex/project/townpet/app/src/app/api/health/route.ts)
-- [`app/src/server/notification-retention.ts`](/Users/alex/project/townpet/app/src/server/notification-retention.ts)
-- [`app/src/server/auth-audit-retention.ts`](/Users/alex/project/townpet/app/src/server/auth-audit-retention.ts)
-- [`app/src/server/search-term-stat-retention.ts`](/Users/alex/project/townpet/app/src/server/search-term-stat-retention.ts)
-- [`app/src/server/search-term-daily-metric-retention.ts`](/Users/alex/project/townpet/app/src/server/search-term-daily-metric-retention.ts)
-- [`app/scripts/cleanup-notifications.ts`](/Users/alex/project/townpet/app/scripts/cleanup-notifications.ts)
-- [`app/scripts/cleanup-auth-audits.ts`](/Users/alex/project/townpet/app/scripts/cleanup-auth-audits.ts)
-- [`app/scripts/cleanup-search-terms.ts`](/Users/alex/project/townpet/app/scripts/cleanup-search-terms.ts)
-- [`app/scripts/cleanup-search-term-daily-metrics.ts`](/Users/alex/project/townpet/app/scripts/cleanup-search-term-daily-metrics.ts)
-- [`app/scripts/repair-post-integrity.ts`](/Users/alex/project/townpet/app/scripts/repair-post-integrity.ts)
-- [`/.github/workflows/notification-cleanup.yml`](/Users/alex/project/townpet/.github/workflows/notification-cleanup.yml)
-- [`/.github/workflows/auth-audit-cleanup.yml`](/Users/alex/project/townpet/.github/workflows/auth-audit-cleanup.yml)
-- [`/.github/workflows/search-term-cleanup.yml`](/Users/alex/project/townpet/.github/workflows/search-term-cleanup.yml)
-- [`/.github/workflows/post-integrity-maintenance.yml`](/Users/alex/project/townpet/.github/workflows/post-integrity-maintenance.yml)
-- [`/.github/workflows/ops-latency-snapshots.yml`](/Users/alex/project/townpet/.github/workflows/ops-latency-snapshots.yml)
+- [`app/src/server/health-overview.ts`](../app/src/server/health-overview.ts)
+- [`app/src/app/api/health/route.ts`](../app/src/app/api/health/route.ts)
+- [`app/src/server/notification-retention.ts`](../app/src/server/notification-retention.ts)
+- [`app/src/server/auth-audit-retention.ts`](../app/src/server/auth-audit-retention.ts)
+- [`app/src/server/search-term-stat-retention.ts`](../app/src/server/search-term-stat-retention.ts)
+- [`app/src/server/search-term-daily-metric-retention.ts`](../app/src/server/search-term-daily-metric-retention.ts)
+- [`app/scripts/cleanup-notifications.ts`](../app/scripts/cleanup-notifications.ts)
+- [`app/scripts/cleanup-auth-audits.ts`](../app/scripts/cleanup-auth-audits.ts)
+- [`app/scripts/cleanup-search-terms.ts`](../app/scripts/cleanup-search-terms.ts)
+- [`app/scripts/cleanup-search-term-daily-metrics.ts`](../app/scripts/cleanup-search-term-daily-metrics.ts)
+- [`app/scripts/repair-post-integrity.ts`](../app/scripts/repair-post-integrity.ts)
+- [`/.github/workflows/notification-cleanup.yml`](../.github/workflows/notification-cleanup.yml)
+- [`/.github/workflows/auth-audit-cleanup.yml`](../.github/workflows/auth-audit-cleanup.yml)
+- [`/.github/workflows/search-term-cleanup.yml`](../.github/workflows/search-term-cleanup.yml)
+- [`/.github/workflows/post-integrity-maintenance.yml`](../.github/workflows/post-integrity-maintenance.yml)
+- [`/.github/workflows/ops-latency-snapshots.yml`](../.github/workflows/ops-latency-snapshots.yml)
 
 ## 먼저 알아둘 개념
 
@@ -63,7 +63,7 @@ TownPet는 이 둘을 섞지 않습니다.
 
 ### 2. retention helper는 pure function에 가깝다
 
-예를 들어 [`notification-retention.ts`](/Users/alex/project/townpet/app/src/server/notification-retention.ts)는:
+예를 들어 [`notification-retention.ts`](../app/src/server/notification-retention.ts)는:
 
 - retention days 해석
 - cutoff 계산
@@ -87,7 +87,7 @@ GitHub Actions YAML은 여기서 별도 DevOps 세계가 아니라,
 
 핵심 파일:
 
-- [`health-overview.ts`](/Users/alex/project/townpet/app/src/server/health-overview.ts)
+- [`health-overview.ts`](../app/src/server/health-overview.ts)
 
 핵심 함수:
 
@@ -106,8 +106,8 @@ GitHub Actions YAML은 여기서 별도 DevOps 세계가 아니라,
 
 ## 2. 왜 health 로직을 route 밖으로 뺐는가
 
-[`/api/health/route.ts`](/Users/alex/project/townpet/app/src/app/api/health/route.ts) 자체는 얇고,
-실제 계산은 [`getHealthSnapshot`](/Users/alex/project/townpet/app/src/server/health-overview.ts)로 나갑니다.
+[`/api/health/route.ts`](../app/src/app/api/health/route.ts) 자체는 얇고,
+실제 계산은 [`getHealthSnapshot`](../app/src/server/health-overview.ts)로 나갑니다.
 
 이 구조의 장점:
 
@@ -126,10 +126,10 @@ Spring으로 치환하면:
 
 대표 파일:
 
-- [`notification-retention.ts`](/Users/alex/project/townpet/app/src/server/notification-retention.ts)
-- [`auth-audit-retention.ts`](/Users/alex/project/townpet/app/src/server/auth-audit-retention.ts)
-- [`search-term-stat-retention.ts`](/Users/alex/project/townpet/app/src/server/search-term-stat-retention.ts)
-- [`search-term-daily-metric-retention.ts`](/Users/alex/project/townpet/app/src/server/search-term-daily-metric-retention.ts)
+- [`notification-retention.ts`](../app/src/server/notification-retention.ts)
+- [`auth-audit-retention.ts`](../app/src/server/auth-audit-retention.ts)
+- [`search-term-stat-retention.ts`](../app/src/server/search-term-stat-retention.ts)
+- [`search-term-daily-metric-retention.ts`](../app/src/server/search-term-daily-metric-retention.ts)
 
 패턴은 거의 같습니다.
 
@@ -147,7 +147,7 @@ Spring으로 치환하면:
 
 ## 4. 왜 search term daily metric만 KST day boundary를 따로 쓰는가
 
-[`search-term-daily-metric-retention.ts`](/Users/alex/project/townpet/app/src/server/search-term-daily-metric-retention.ts)는 다른 retention helper와 조금 다릅니다.
+[`search-term-daily-metric-retention.ts`](../app/src/server/search-term-daily-metric-retention.ts)는 다른 retention helper와 조금 다릅니다.
 
 여기에는:
 
@@ -171,10 +171,10 @@ Spring으로 치환하면:
 
 대표 스크립트:
 
-- [`cleanup-notifications.ts`](/Users/alex/project/townpet/app/scripts/cleanup-notifications.ts)
-- [`cleanup-auth-audits.ts`](/Users/alex/project/townpet/app/scripts/cleanup-auth-audits.ts)
-- [`cleanup-search-terms.ts`](/Users/alex/project/townpet/app/scripts/cleanup-search-terms.ts)
-- [`cleanup-search-term-daily-metrics.ts`](/Users/alex/project/townpet/app/scripts/cleanup-search-term-daily-metrics.ts)
+- [`cleanup-notifications.ts`](../app/scripts/cleanup-notifications.ts)
+- [`cleanup-auth-audits.ts`](../app/scripts/cleanup-auth-audits.ts)
+- [`cleanup-search-terms.ts`](../app/scripts/cleanup-search-terms.ts)
+- [`cleanup-search-term-daily-metrics.ts`](../app/scripts/cleanup-search-term-daily-metrics.ts)
 
 패턴은 동일합니다.
 
@@ -197,8 +197,8 @@ Spring으로 치환하면:
 
 핵심 파일:
 
-- [`repair-post-integrity.ts`](/Users/alex/project/townpet/app/scripts/repair-post-integrity.ts)
-- [`post-integrity-maintenance.yml`](/Users/alex/project/townpet/.github/workflows/post-integrity-maintenance.yml)
+- [`repair-post-integrity.ts`](../app/scripts/repair-post-integrity.ts)
+- [`post-integrity-maintenance.yml`](../.github/workflows/post-integrity-maintenance.yml)
 
 이 작업은 cleanup보다 한 단계 무겁습니다.
 
@@ -275,7 +275,7 @@ cleanup / repair workflow YAML을 보면 공통으로:
 
 ## 9. `package.json` script를 보면 운영 명령 지도가 보인다
 
-[`app/package.json`](/Users/alex/project/townpet/app/package.json)에서 먼저 볼 script:
+[`app/package.json`](../app/package.json)에서 먼저 볼 script:
 
 - `db:cleanup:notifications`
 - `db:cleanup:auth-audits`
@@ -340,7 +340,7 @@ flowchart TD
 
 그래도 같이 보면 좋은 파일:
 
-- [`app/src/server/cache/query-cache.test.ts`](/Users/alex/project/townpet/app/src/server/cache/query-cache.test.ts)
+- [`app/src/server/cache/query-cache.test.ts`](../app/src/server/cache/query-cache.test.ts)
 
 왜냐하면 health snapshot이 보는 `cache` 상태는 결국 query cache health와 이어지기 때문입니다.
 
@@ -386,3 +386,17 @@ corepack pnpm ops:perf:snapshot
 ## 면접에서 이렇게 설명할 수 있다
 
 > TownPet는 운영 작업을 수동 SQL이나 감에 의존하지 않게 하려고, health snapshot, retention helper, cleanup script, repair workflow, latency snapshot을 전부 저장소 안에 코드로 넣었습니다. 그래서 “지금 상태 확인”, “오래된 데이터 정리”, “정합성 복구”, “성능 관측”이 각각 독립된 실행 경로를 갖습니다.
+
+## 면접 Q&A
+
+### Q1. 왜 cleanup과 repair를 분리했나요?
+
+cleanup은 오래된 데이터를 지우는 housekeeping이고, repair는 이미 어긋난 정합성을 복구하는 작업입니다. 위험도와 실행 기준이 다릅니다.
+
+### Q2. 왜 maintenance workflow에 environment gate를 붙였나요?
+
+production DB를 건드리는 작업은 코드보다 승인 절차가 더 중요할 때가 많습니다. 그래서 GitHub environment approval을 걸었습니다.
+
+### Q3. `/api/health`만 있으면 운영이 충분하지 않나요?
+
+아닙니다. health는 현재 상태 확인이고, retention/repair/latency snapshot은 시간이 흐르면서 생기는 운영 문제를 다루는 별도 축입니다.

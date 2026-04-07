@@ -428,3 +428,17 @@ corepack pnpm -C app dev
 ## 면접에서 이렇게 설명할 수 있다
 
 > TownPet의 댓글은 단순 CRUD가 아니라 thread, guest/auth 분기, 차단 관계, 금칙어, best comment, reaction, 알림이 한꺼번에 붙는 구조입니다. 그래서 write는 `comment.service.ts`, read는 `comment.queries.ts`로 분리했고, UI에서는 `PostCommentSectionClient`와 `PostCommentThread`를 나눠 페이지네이션과 상호작용을 관리했습니다.
+
+## 면접 Q&A
+
+### Q1. 왜 댓글 read와 write를 분리했나요?
+
+댓글은 쓰기보다 읽기에서 thread, best comment, pagination, hidden author 필터가 훨씬 복잡합니다. 그래서 `comment.service.ts`와 `comment.queries.ts`를 분리했습니다.
+
+### Q2. 왜 댓글 페이지네이션을 루트 기준으로 했나요?
+
+thread 문맥을 유지하려면 reply까지 포함한 전체 row보다 루트 댓글 단위 페이지가 더 안정적입니다. UI와 DB 둘 다 이 기준이 더 자연스럽습니다.
+
+### Q3. 댓글 반응은 왜 optimistic UI를 썼나요?
+
+추천/싫어요는 사용자 피드백 속도가 중요해서 UI는 먼저 반응하고, 서버에서 transaction과 count 재계산으로 정합성을 맞추는 방식이 적합했습니다.

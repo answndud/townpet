@@ -2476,3 +2476,14 @@
 | 업로드 URL canonical proxy 경로 도입 | Codex | P0 | `done` | 신규 업로드 응답과 게시글/프로필/반려동물 저장 경로가 raw blob/local URL 대신 `/media/uploads/...` canonical 경로를 저장하고, trusted URL 검증이 proxy 경로를 허용함 | `app/src/lib/upload-url.ts`, `app/src/server/upload.ts`, `app/src/server/services/post.service.ts`, `app/src/server/services/user.service.ts`, `app/src/server/services/pet.service.ts` |
 | 앱 경유 미디어 proxy route 추가 | Codex | P0 | `done` | `/media/[...path]` route가 local 파일과 blob source를 서버 경유로 제공하고, cache/CORP 헤더가 적용됨 | `app/src/app/media/[...path]/route.ts`, `app/next.config.ts` |
 | 레거시 raw upload reference backfill 스크립트 추가 | Codex | P1 | `done` | 기존 `postImage/user.image/pet.imageUrl/post.content`의 raw upload URL을 proxy 경로로 바꾸고 upload asset row를 보강하는 운영 스크립트가 추가됨 | `app/scripts/backfill-upload-media-proxy.ts`, `app/package.json`, `docs/개발_운영_가이드.md` |
+### Cycle 423: 블로그 외부 공개성/재현성 보강
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 블로그 로컬 절대경로 링크 정리 | Codex | P1 | `done` | `blog/`와 `BLOG_*.md`에서 `/Users/alex/project/townpet/...` 링크가 제거되고 repo-relative 링크로 통일 | `blog/*.md`, `BLOG_PLAN.md`, `BLOG_PROGRESS.md` |
+| 블로그 공통 템플릿 보강 | Codex | P1 | `done` | 구조가 약한 대표 글에 `먼저 알아둘 개념`, `테스트와 검증`, `직접 실행` 섹션이 추가되어 시리즈 리듬이 맞춰짐 | `blog/03-nextjs-app-router-for-backend-engineers.md`, `blog/05-prisma-zod-service-route-order.md`, `blog/11-credentials-kakao-naver-auth.md`, `blog/13-social-account-link-unlink-lifecycle.md`, `blog/14-report-block-sanction-direct-moderation.md`, `blog/15-admin-hub-and-ops-dashboard.md`, `blog/19-testing-and-quality-gate.md`, `blog/24-demo-docs-and-interview-pack.md` |
+| 블로그 보강 계획 동기화 | Codex | P2 | `done` | root/BLOG 계획·진행 문서에 이번 보강 결과와 다음 우선순위가 기록됨 | `BLOG_PLAN.md`, `BLOG_PROGRESS.md`, `PROGRESS.md` |
+### Cycle 424: 블로그 면접 대응력 보강
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 대표 글 면접 Q&A 부록 추가 | Codex | P2 | `done` | 핵심 설계 글들에 예상 질문 3개 수준의 `면접 Q&A` 부록이 추가됨 | `blog/06-feed-and-board-architecture.md`, `blog/07-post-create-edit-delete-flow.md`, `blog/08-comments-and-reactions-architecture.md`, `blog/10-notification-center-and-unread-sync.md`, `blog/12-session-role-and-admin-surface.md`, `blog/16-rate-limit-guest-safety-and-abuse-defense.md`, `blog/17-prisma-migrations-and-schema-drift-response.md`, `blog/18-health-check-retention-cleanup-and-maintenance-workflows.md`, `blog/20-performance-story-search-cache-pagination.md` |
+| 블로그 보강 계획 재정렬 | Codex | P3 | `done` | BLOG/root 계획 문서에 남은 보강 우선순위가 갱신됨 | `BLOG_PLAN.md`, `BLOG_PROGRESS.md`, `PROGRESS.md` |

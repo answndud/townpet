@@ -11,7 +11,7 @@ Python/Java 개발자가 Next.js 프로젝트를 읽을 때 가장 먼저 부딪
 
 TownPet를 읽으려면 이 질문부터 정리해야 합니다.
 
-## 왜 지금 이 글이 필요한가
+## 왜 이 글이 중요한가
 
 TownPet는 기능이 많은 프로젝트입니다.
 
@@ -24,7 +24,7 @@ TownPet는 기능이 많은 프로젝트입니다.
 
 그런데 이 모든 기능이 결국 **App Router 파일 구조** 위에 올라갑니다. 즉 App Router를 모르면 기능별 코드도 제대로 읽기 어렵습니다.
 
-## 핵심 요약
+## 먼저 알아둘 개념
 
 App Router에서 가장 중요한 규칙은 이것입니다.
 
@@ -33,14 +33,22 @@ App Router에서 가장 중요한 규칙은 이것입니다.
 
 예를 들어:
 
-- [`app/src/app/page.tsx`](/Users/alex/project/townpet/app/src/app/page.tsx)
+- [`app/src/app/page.tsx`](../app/src/app/page.tsx)
   - `/`
-- [`app/src/app/feed/page.tsx`](/Users/alex/project/townpet/app/src/app/feed/page.tsx)
+- [`app/src/app/feed/page.tsx`](../app/src/app/feed/page.tsx)
   - `/feed`
-- [`app/src/app/search/page.tsx`](/Users/alex/project/townpet/app/src/app/search/page.tsx)
+- [`app/src/app/search/page.tsx`](../app/src/app/search/page.tsx)
   - `/search`
-- [`app/src/app/api/posts/route.ts`](/Users/alex/project/townpet/app/src/app/api/posts/route.ts)
+- [`app/src/app/api/posts/route.ts`](../app/src/app/api/posts/route.ts)
   - `/api/posts`
+
+## 먼저 볼 핵심 파일
+
+- [`app/src/app/page.tsx`](../app/src/app/page.tsx)
+- [`app/src/app/feed/page.tsx`](../app/src/app/feed/page.tsx)
+- [`app/src/app/search/page.tsx`](../app/src/app/search/page.tsx)
+- [`app/src/app/api/posts/route.ts`](../app/src/app/api/posts/route.ts)
+- [`app/src/app/api/health/route.ts`](../app/src/app/api/health/route.ts)
 
 ## 파일별 역할
 
@@ -56,7 +64,7 @@ Spring MVC로 치환하면:
 
 예시:
 
-- [`app/src/app/feed/page.tsx`](/Users/alex/project/townpet/app/src/app/feed/page.tsx)
+- [`app/src/app/feed/page.tsx`](../app/src/app/feed/page.tsx)
 
 이 파일은:
 
@@ -78,7 +86,7 @@ Spring MVC로 치환하면:
 
 예시:
 
-- [`app/src/app/api/posts/route.ts`](/Users/alex/project/townpet/app/src/app/api/posts/route.ts)
+- [`app/src/app/api/posts/route.ts`](../app/src/app/api/posts/route.ts)
 
 이 파일은:
 
@@ -100,7 +108,7 @@ Spring MVC로 치환하면:
 
 예시:
 
-- [`app/src/app/layout.tsx`](/Users/alex/project/townpet/app/src/app/layout.tsx)
+- [`app/src/app/layout.tsx`](../app/src/app/layout.tsx)
 
 이 파일은:
 
@@ -123,7 +131,7 @@ Spring/Thymeleaf 경험으로 비유하면:
 
 예:
 
-- [`app/src/app/feed/loading.tsx`](/Users/alex/project/townpet/app/src/app/feed/loading.tsx)
+- [`app/src/app/feed/loading.tsx`](../app/src/app/feed/loading.tsx)
 
 ### `error.tsx`
 
@@ -131,8 +139,8 @@ Spring/Thymeleaf 경험으로 비유하면:
 
 예:
 
-- [`app/src/app/feed/error.tsx`](/Users/alex/project/townpet/app/src/app/feed/error.tsx)
-- [`app/src/app/admin/error.tsx`](/Users/alex/project/townpet/app/src/app/admin/error.tsx)
+- [`app/src/app/feed/error.tsx`](../app/src/app/feed/error.tsx)
+- [`app/src/app/admin/error.tsx`](../app/src/app/admin/error.tsx)
 
 ### `not-found.tsx`
 
@@ -140,20 +148,20 @@ Spring/Thymeleaf 경험으로 비유하면:
 
 예:
 
-- [`app/src/app/not-found.tsx`](/Users/alex/project/townpet/app/src/app/not-found.tsx)
+- [`app/src/app/not-found.tsx`](../app/src/app/not-found.tsx)
 
 ## TownPet에서 라우트가 실제로 어떻게 생기는가
 
 ### `/`
 
-- 파일: [`app/src/app/page.tsx`](/Users/alex/project/townpet/app/src/app/page.tsx)
+- 파일: [`app/src/app/page.tsx`](../app/src/app/page.tsx)
 - 역할: `/feed`로 즉시 리다이렉트
 
 이 프로젝트는 랜딩보다 피드가 중심이기 때문에 홈이 사실상 feed 입구입니다.
 
 ### `/feed`
 
-- 파일: [`app/src/app/feed/page.tsx`](/Users/alex/project/townpet/app/src/app/feed/page.tsx)
+- 파일: [`app/src/app/feed/page.tsx`](../app/src/app/feed/page.tsx)
 - 역할: 핵심 커뮤니티 목록 화면
 
 여기서:
@@ -165,14 +173,14 @@ Spring/Thymeleaf 경험으로 비유하면:
 
 ### `/api/posts`
 
-- 파일: [`app/src/app/api/posts/route.ts`](/Users/alex/project/townpet/app/src/app/api/posts/route.ts)
+- 파일: [`app/src/app/api/posts/route.ts`](../app/src/app/api/posts/route.ts)
 - 역할:
   - GET: 게시글 목록 조회
   - POST: 게시글 생성
 
 ### `/admin`
 
-- 파일: [`app/src/app/admin/page.tsx`](/Users/alex/project/townpet/app/src/app/admin/page.tsx)
+- 파일: [`app/src/app/admin/page.tsx`](../app/src/app/admin/page.tsx)
 - 역할: 관리자 허브
 
 여기서 TownPet는 “여러 관리자 화면을 상단 헤더에 직접 뿌리지 않고 `/admin` 단일 허브에서 다시 선택”하는 구조를 씁니다.
@@ -193,7 +201,7 @@ App Router에서는 기본이 **Server Component**입니다.
 
 예시:
 
-- [`app/src/components/posts/post-create-form.tsx`](/Users/alex/project/townpet/app/src/components/posts/post-create-form.tsx)
+- [`app/src/components/posts/post-create-form.tsx`](../app/src/components/posts/post-create-form.tsx)
 
 이 파일은:
 
@@ -210,7 +218,7 @@ TownPet에는 API route와 별개로 **Server Action**도 있습니다.
 
 예시:
 
-- [`app/src/server/actions/post.ts`](/Users/alex/project/townpet/app/src/server/actions/post.ts)
+- [`app/src/server/actions/post.ts`](../app/src/server/actions/post.ts)
 
 이 파일은 맨 위에:
 
@@ -241,7 +249,7 @@ Server Action은 보통 이런 상황에서 씁니다.
 
 예시:
 
-- [`app/src/app/api/posts/route.ts`](/Users/alex/project/townpet/app/src/app/api/posts/route.ts)
+- [`app/src/app/api/posts/route.ts`](../app/src/app/api/posts/route.ts)
 
 장점:
 
@@ -253,7 +261,7 @@ Server Action은 보통 이런 상황에서 씁니다.
 
 예시:
 
-- [`app/src/server/actions/post.ts`](/Users/alex/project/townpet/app/src/server/actions/post.ts)
+- [`app/src/server/actions/post.ts`](../app/src/server/actions/post.ts)
 
 장점:
 
@@ -385,6 +393,29 @@ flowchart TD
 - router push
 
 같은 로직이 들어 있을 가능성이 큽니다.
+
+## 테스트와 검증
+
+App Router 자체를 “라우팅 규칙”과 “route handler contract” 두 층으로 나눠서 보면 이해가 쉽습니다.
+
+- 라우팅/검색 파라미터 해석
+  - [`app/src/lib/feed.test.ts`](../app/src/lib/feed.test.ts)
+- route handler contract
+  - [`app/src/app/api/health/route.test.ts`](../app/src/app/api/health/route.test.ts)
+
+## 직접 실행해 보고 싶다면
+
+```bash
+corepack pnpm -C app test -- src/lib/feed.test.ts
+corepack pnpm -C app test -- src/app/api/health/route.test.ts
+corepack pnpm -C app dev
+```
+
+그 뒤 아래 경로를 같이 비교해 보면 `page.tsx`와 `route.ts`의 차이가 바로 보입니다.
+
+- `/feed`
+- `/search`
+- `/api/health`
 
 ## 현재 구조의 장점
 
