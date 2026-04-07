@@ -27,6 +27,16 @@
 
 ## Active Plan
 
+### Cycle 418: TownPet blog 세션/abuse 방어/migration drift 본문 3개 작성 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| `blog/` 작업공간에 `세션, role, 관리자 surface`, `rate limit / guest safety / abuse defense`, `Prisma migration과 schema drift 대응` 본문을 추가하고, Python/Java 개발자가 권한 모델과 운영 안정화 구조까지 실제 코드와 함께 추적할 수 있도록 링크와 읽는 순서를 정리한다 | Codex | P2 | `done` | `blog/12-session-role-and-admin-surface.md`, `blog/16-rate-limit-guest-safety-and-abuse-defense.md`, `blog/17-prisma-migrations-and-schema-drift-response.md`가 추가되고, `blog/README.md`, `blog/00_series_plan.md`, `BLOG_PLAN.md`, `BLOG_PROGRESS.md`, `PLAN.md`, `PROGRESS.md`가 동기화되며, `git diff --check` 검증 결과가 기록된다 | `blog/*`, `BLOG_PLAN.md`, `BLOG_PROGRESS.md`, `PLAN.md`, `PROGRESS.md` |
+
+### Cycle 417: `/feed` 정렬/기간 필터 한 줄 압축 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| `/feed` 상단 필터에서 `정렬`과 `기간`이 각각 별도 라인/카드로 서 있던 구성을 하나의 수평 필터 줄로 합쳐 공간 낭비를 줄이고, 공용 `FeedControlPanel` 테스트와 진행 문서를 갱신한다 | Codex | P2 | `done` | `feed-control-panel`은 `정렬`과 `기간/집계 기간`을 같은 filter row 안에 렌더하고, 회귀 테스트와 `PLAN.md`/`PROGRESS.md` 기록이 남으며 lint/typecheck/git diff 검증이 통과한다 | `app/src/components/posts/feed-control-panel.tsx`, `app/src/components/posts/feed-control-panel.test.tsx`, `PLAN.md`, `PROGRESS.md` |
+
 ### Cycle 416: TownPet blog 알림/운영 유지보수/성능 본문 3개 작성 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|

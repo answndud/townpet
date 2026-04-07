@@ -16,6 +16,31 @@
 - Cycle 33: 신규 계정 안전 정책 관리자 설정화 + DB/UI E2E 플로우 완료
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
+### 2026-04-07: Cycle 418 완료 (TownPet blog 세션/abuse 방어/migration drift 본문 3개 작성)
+- 완료 내용
+  - [12-session-role-and-admin-surface.md](/Users/alex/project/townpet/blog/12-session-role-and-admin-surface.md)를 추가해 NextAuth callback, `sessionVersion`, `server/auth.ts`, `admin-page-access.ts`, `middleware.ts`, `AdminSectionNav`, admin-only API/action이 role과 surface를 어떻게 나누는지 정리했다.
+  - [16-rate-limit-guest-safety-and-abuse-defense.md](/Users/alex/project/townpet/blog/16-rate-limit-guest-safety-and-abuse-defense.md)를 추가해 `rate-limit.ts`, `authenticated-write-throttle.ts`, `guest-safety.service.ts`, `guest-step-up.ts`, `sanction.service.ts`, 게시글/댓글/신고 route에서 방어가 어떤 순서로 쌓이는지 설명했다.
+  - [17-prisma-migrations-and-schema-drift-response.md](/Users/alex/project/townpet/blog/17-prisma-migrations-and-schema-drift-response.md)를 추가해 `quality-gate.yml`, `vercel-build.ts`, `schema-sync.ts`, repair migration, runtime `SCHEMA_SYNC_REQUIRED` 에러 표준화 흐름을 정리했다.
+  - [blog/README.md](/Users/alex/project/townpet/blog/README.md), [00_series_plan.md](/Users/alex/project/townpet/blog/00_series_plan.md), [BLOG_PLAN.md](/Users/alex/project/townpet/BLOG_PLAN.md), [BLOG_PROGRESS.md](/Users/alex/project/townpet/BLOG_PROGRESS.md)도 새 본문 링크와 다음 우선순위에 맞게 갱신했다.
+- 검증 결과
+  - 본문에서 참조한 핵심 코드 파일, route/action, workflow, migration 파일 존재 여부를 직접 확인했다.
+  - `git diff --check` 통과
+- 메모
+  - 다음 블로그 우선순위는 `Server Component와 Client Component`, `피드와 게시판 구조`, `글 작성/수정/삭제 흐름`, `댓글과 반응 구조`다.
+
+### 2026-04-07: Cycle 417 완료 (`/feed` 정렬/기간 필터 한 줄 압축)
+- 완료 내용
+  - [feed-control-panel.tsx](/Users/alex/project/townpet/app/src/components/posts/feed-control-panel.tsx)에서 `정렬`과 `기간/집계 기간`을 각각 별도 카드로 두던 구성을 하나의 수평 필터 row로 합쳤다.
+  - 데스크톱에서는 두 그룹이 같은 줄에 보이고, 좁은 화면에서는 한 카드 안에서만 줄바꿈되도록 조정해 공간 낭비를 줄였다.
+  - [feed-control-panel.test.tsx](/Users/alex/project/townpet/app/src/components/posts/feed-control-panel.test.tsx)에 `feed-sort-range-row` 회귀 식별자를 추가해 해당 구조가 계속 유지되도록 고정했다.
+- 검증 결과
+  - `corepack pnpm -C app lint src/components/posts/feed-control-panel.tsx src/components/posts/feed-control-panel.test.tsx` 통과
+  - `corepack pnpm -C app test -- src/components/posts/feed-control-panel.test.tsx` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `git diff --check` 통과
+- 메모
+  - 이 변경은 공용 `FeedControlPanel`에만 적용돼 인증/비회원 `/feed`에 동시에 반영된다.
+
 ### 2026-04-07: Cycle 416 완료 (TownPet blog 알림/운영 유지보수/성능 본문 3개 작성)
 - 완료 내용
   - [10-notification-center-and-unread-sync.md](/Users/alex/project/townpet/blog/10-notification-center-and-unread-sync.md)를 추가해 `NotificationBell`, `NotificationCenter`, `notification-unread-sync`, 서버 action, `notification.queries.ts`, redirect route가 unread sync와 target navigation을 어떻게 나누는지 정리했다.
