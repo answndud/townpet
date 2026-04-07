@@ -10,7 +10,7 @@ TownPet는 개발이 길어지면서 migration chain, 환경 차이, schema drif
 - schema가 어긋났을 때 앱 코드는 어떻게 반응하는가
 - 이미 drift가 생긴 DB를 어떻게 복구하는가
 
-이 글의 목표는 TownPet의 Prisma 운용을 **ORM 사용법이 아니라, migration chain + runtime fallback + repair workflow**로 이해하는 것입니다.
+이 글은 TownPet의 Prisma 운용을 **ORM 사용법이 아니라, migration chain + runtime fallback + repair workflow** 관점으로 정리합니다.
 
 ## 왜 이 글이 중요한가
 
@@ -215,7 +215,7 @@ TownPet는 이걸 repair migration으로 닫았습니다.
 
 ## 7. quality gate는 왜 `db push`가 아니라 `migrate deploy`를 쓰는가
 
-이건 매우 중요합니다.
+핵심은 이 지점입니다.
 
 `db push`는 현재 schema를 강제로 맞추는 데 가깝고,
 `migrate deploy`는 **실제 migration history가 재생 가능한지**를 검증합니다.

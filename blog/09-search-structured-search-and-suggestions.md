@@ -13,7 +13,7 @@ TownPet 검색은 단순한 `title LIKE '%q%'` 수준이 아닙니다.
 - compact/초성 fallback
 - 운영 대시보드 집계
 
-이 글의 목표는 검색을 “한 함수”가 아니라 **여러 계층이 연결된 시스템**으로 이해하는 것입니다.
+이 글은 검색을 “한 함수”가 아니라 **여러 계층이 연결된 시스템**으로 정리합니다.
 
 ## 왜 이 글이 중요한가
 
@@ -47,6 +47,21 @@ TownPet 검색은 크게 3층입니다.
 - [`app/src/lib/search-document.ts`](/Users/alex/project/townpet/app/src/lib/search-document.ts)
 - [`app/src/lib/post-structured-search.ts`](/Users/alex/project/townpet/app/src/lib/post-structured-search.ts)
 - [`app/prisma/schema.prisma`](/Users/alex/project/townpet/app/prisma/schema.prisma)
+
+## 검색 흐름을 먼저 그림으로 보면
+
+```mermaid
+flowchart TD
+  A["/search 또는 suggestion request"] --> B["page.tsx / suggestions route"]
+  B --> C["post.queries.ts"]
+  B --> D["search.queries.ts"]
+  C --> E["Post.structuredSearchText + search-document fallback"]
+  D --> F["SearchTermStat / SearchTermDailyMetric"]
+  C --> G["검색 결과"]
+  D --> H["인기어 / zero-result / ops insight"]
+```
+
+TownPet 검색은 본검색, suggestion, telemetry가 분리돼 있지만 운영 기준에서는 한 시스템처럼 묶여 있습니다.
 
 ## 검색에서 먼저 봐야 하는 Prisma 모델
 

@@ -4,7 +4,7 @@
 
 TownPet는 파일 수가 많고, Next.js App Router와 React Server Component가 섞여 있어서 처음 보면 어디서부터 읽어야 할지 감이 잘 오지 않습니다.
 
-이 글의 목표는 한 가지입니다.
+이 글은 TownPet 전체 구조를 한 장의 지도처럼 정리합니다.
 
 - `이 프로젝트는 어떤 폴더가 어떤 역할을 맡고 있는가`
 

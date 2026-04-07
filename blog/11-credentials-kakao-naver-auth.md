@@ -13,7 +13,7 @@ TownPet 인증은 단순 로그인 폼이 아닙니다.
 - 세션 강제 무효화
 - 제재 사용자 차단
 
-이 글의 목표는 인증 구조를 “버튼 몇 개”가 아니라 **세션, provider, 보안 정책, 계정 lifecycle** 관점으로 설명하는 것입니다.
+이 글은 인증 구조를 “버튼 몇 개”가 아니라 **세션, provider, 보안 정책, 계정 lifecycle** 관점으로 정리합니다.
 
 ## 왜 이 글이 중요한가
 
@@ -30,6 +30,21 @@ TownPet 인증은 단순 로그인 폼이 아닙니다.
 - 제재 정책
 
 이 네 층으로 같이 다룹니다.
+
+## 인증 흐름을 먼저 그림으로 보면
+
+```mermaid
+flowchart TD
+  A["Login form / Kakao / Naver button"] --> B["NextAuth providers"]
+  B --> C["callbacks.signIn / jwt / session"]
+  C --> D["User / Account / Session / VerificationToken"]
+  C --> E["auth-credentials.ts / auth.service.ts"]
+  E --> F["rate limit / email verification / sanction gate"]
+  C --> G["sessionVersion 동기화"]
+  G --> H["server/auth.ts 보호 helper"]
+```
+
+핵심은 로그인 버튼보다 `callback + sessionVersion + server/auth.ts` 조합이 인증의 실제 중심이라는 점입니다.
 
 ## 먼저 볼 핵심 파일
 
