@@ -27,6 +27,11 @@
 
 ## Active Plan
 
+### Cycle 428: 게시글 에디터 inline typing 격리/이미지 직렬화 중복 정리 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 게시글 작성/수정 에디터에서 선택 텍스트에 적용한 크기/색상이 다음 입력까지 고착되는 문제를 막고, 툴바가 interaction 시작 시 selection을 즉시 저장하도록 보강하며, 이미지 업로드 후 저장 시 같은 이미지 markdown이 인접 중복으로 늘어나는 직렬화 버그를 정리하고 회귀 테스트/장애 기록을 남긴다 | Codex | P0 | `done` | create/edit 에디터는 styled span 뒤 plain typing 위치를 보장하고, 링크/인용/목록/이미지 업로드를 포함한 툴바가 selection을 interaction 시작 시 저장하며, root inline content 직렬화가 paragraph/image block을 안정적으로 분리하고, 인접한 동일 이미지 토큰은 저장 전에 collapse되며, `app/e2e/post-editor-toolbar.spec.ts`와 기존 `app/e2e/image-upload-flow.spec.ts` 검증이 통과하고, `app/src/lib/editor-image-markup.test.ts`, `docs/errors/2026-04-14_post-editor-inline-typing-and-image-serialization.md`, `PLAN.md`, `PROGRESS.md`가 갱신된다 | `PLAN.md`, `PROGRESS.md`, `app/src/lib/editor-inline-image.ts`, `app/src/lib/editor-content-serializer.ts`, `app/src/lib/editor-image-markup.ts`, `app/src/components/posts/post-create-form.tsx`, `app/src/components/posts/post-detail-edit-form.tsx`, `app/src/components/posts/post-editor-toolbar-controls.tsx`, `app/e2e/post-editor-toolbar.spec.ts`, `app/e2e/image-upload-flow.spec.ts`, `docs/errors/2026-04-14_post-editor-inline-typing-and-image-serialization.md` |
+
 ### Cycle 427: 게시글 에디터 툴바 selection regression 복구 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|

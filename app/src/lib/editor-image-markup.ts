@@ -1,4 +1,5 @@
 const IMAGE_TOKEN_REGEX = /!\[[^\]]*\]\(([^)\s]+)\)(?:\{\s*width\s*=\s*\d{2,4}\s*\})?/g;
+const IMAGE_BLOCK_REGEX = /^!\[[^\]]*\]\(([^)\s]+)\)(?:\{\s*width\s*=\s*\d{2,4}\s*\})?$/;
 
 function normalizeUrls(urls: string[]) {
   return Array.from(
@@ -19,6 +20,41 @@ export function extractImageUrlsFromMarkup(markup: string) {
     }
   }
   return normalizeUrls(urls);
+}
+
+export function collapseAdjacentDuplicateImageTokens(markup: string) {
+  if (!markup.trim()) {
+    return "";
+  }
+
+  const normalized = markup.replace(/\r\n?/g, "\n");
+  const blocks = normalized.split(/\n{2,}/);
+  const nextBlocks: string[] = [];
+  let previousImageUrl: string | null = null;
+
+  for (const rawBlock of blocks) {
+    const block = rawBlock.trim();
+    if (!block) {
+      continue;
+    }
+
+    const imageMatch = block.match(IMAGE_BLOCK_REGEX);
+    if (!imageMatch) {
+      previousImageUrl = null;
+      nextBlocks.push(block);
+      continue;
+    }
+
+    const imageUrl = imageMatch[1]?.trim() ?? "";
+    if (!imageUrl || imageUrl === previousImageUrl) {
+      continue;
+    }
+
+    previousImageUrl = imageUrl;
+    nextBlocks.push(block);
+  }
+
+  return nextBlocks.join("\n\n").trim();
 }
 
 export function removeImageTokensByUrls(markup: string, removedUrls: string[]) {

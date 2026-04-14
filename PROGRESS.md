@@ -16,6 +16,23 @@
 - Cycle 33: 신규 계정 안전 정책 관리자 설정화 + DB/UI E2E 플로우 완료
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
+### 2026-04-14: Cycle 428 완료 (게시글 에디터 inline typing 격리/이미지 직렬화 중복 정리)
+- 완료 내용
+  - [editor-inline-image.ts](/Users/alex/project/townpet/app/src/lib/editor-inline-image.ts)에 styled span 뒤 plain typing 위치를 강제로 만드는 helper를 추가하고, create/edit 에디터가 크기/색상 적용 직후 caret을 그 위치로 옮기도록 정리했다. 이로써 문단 끝에서 18px/색상 서식을 적용한 뒤 다시 클릭해 입력해도 다음 텍스트가 같은 span 안으로 계속 붙지 않게 했다.
+  - [post-create-form.tsx](/Users/alex/project/townpet/app/src/components/posts/post-create-form.tsx), [post-detail-edit-form.tsx](/Users/alex/project/townpet/app/src/components/posts/post-detail-edit-form.tsx), [post-editor-toolbar-controls.tsx](/Users/alex/project/townpet/app/src/components/posts/post-editor-toolbar-controls.tsx)에서 버튼/셀렉트/컬러 피커/이미지 액션이 interaction 시작 시 현재 selection을 즉시 캡처하도록 보강했다. 링크/인용/글머리/번호/이미지 업로드가 같은 경로를 쓰도록 맞췄다.
+  - [editor-content-serializer.ts](/Users/alex/project/townpet/app/src/lib/editor-content-serializer.ts)는 editor root의 text/inline node를 문단 단위로 직렬화하도록 바꿔 본문 텍스트와 이미지 block이 한 줄에 섞이지 않게 했고, [editor-image-markup.ts](/Users/alex/project/townpet/app/src/lib/editor-image-markup.ts)에는 인접한 동일 이미지 markdown token을 저장 전에 collapse하는 정규화 helper를 추가했다.
+  - [post-editor-toolbar.spec.ts](/Users/alex/project/townpet/app/e2e/post-editor-toolbar.spec.ts)는 contenteditable 전체 선택 기반으로 갱신해 크기/색상 적용 후 plain typing, 링크, 인용, 글머리/번호가 실제 브라우저 selection 경로에서 동작하는지 고정했고, [editor-image-markup.test.ts](/Users/alex/project/townpet/app/src/lib/editor-image-markup.test.ts)에는 adjacent duplicate image token collapse 회귀를 추가했다.
+  - 원인과 재발 방지 포인트를 [2026-04-14_post-editor-inline-typing-and-image-serialization.md](/Users/alex/project/townpet/docs/errors/2026-04-14_post-editor-inline-typing-and-image-serialization.md)에 기록했다.
+- 검증 결과
+  - `corepack pnpm -C app lint src/components/posts/post-create-form.tsx src/components/posts/post-detail-edit-form.tsx src/components/posts/post-editor-toolbar-controls.tsx src/lib/editor-inline-image.ts src/lib/editor-content-serializer.ts src/lib/editor-image-markup.ts src/lib/editor-image-markup.test.ts e2e/post-editor-toolbar.spec.ts e2e/image-upload-flow.spec.ts` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `corepack pnpm -C app exec vitest run src/lib/editor-image-markup.test.ts` 통과
+  - `corepack pnpm -C app test:e2e -- e2e/post-editor-toolbar.spec.ts --project=chromium` 통과 (`4 passed`)
+  - `corepack pnpm -C app test:e2e -- e2e/image-upload-flow.spec.ts --project=chromium` 통과 (`1 passed`)
+- 메모
+  - 이번 배치에서 발견된 추가 문제는 contenteditable root의 plain text와 image insertion DOM이 섞이면서 submit 시 같은 이미지 token이 인접 중복으로 저장될 수 있다는 점이었다.
+  - 현재 에디터는 여전히 `contentEditable + execCommand` 기반이라, 더 복잡한 block transform/history 일관성은 장기적으로 editor engine 교체 또는 custom command 계층으로 옮기는 편이 안전하다.
+
 ### 2026-04-14: Cycle 427 완료 (게시글 에디터 툴바 selection regression 복구)
 - 완료 내용
   - [editor-inline-image.ts](/Users/alex/project/townpet/app/src/lib/editor-inline-image.ts)에 저장된 selection을 우선 복원하는 공용 helper를 추가하고, create/edit 에디터가 toolbar action 실행 전에 이 경로를 사용하도록 바꿨다.

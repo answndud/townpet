@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   areSameStringArray,
   buildImageMarkdown,
+  collapseAdjacentDuplicateImageTokens,
   extractImageUrlsFromMarkup,
   removeImageTokensByUrls,
 } from "@/lib/editor-image-markup";
@@ -29,6 +30,30 @@ describe("editor-image-markup", () => {
     const markup = buildImageMarkdown(["/uploads/a.jpg", "/uploads/b.jpg"], 3);
     expect(markup).toContain("![첨부 이미지 3](/uploads/a.jpg)");
     expect(markup).toContain("![첨부 이미지 4](/uploads/b.jpg)");
+  });
+
+  it("collapses adjacent duplicate image tokens", () => {
+    const markup = collapseAdjacentDuplicateImageTokens(
+      [
+        "문단",
+        "![첨부 이미지 1](/uploads/a.jpg)",
+        "![첨부 이미지](/uploads/a.jpg)",
+        "![첨부 이미지](/uploads/b.jpg)",
+        "![첨부 이미지](/uploads/b.jpg)",
+        "다음 문단",
+        "![첨부 이미지](/uploads/a.jpg)",
+      ].join("\n\n"),
+    );
+
+    expect(markup).toBe(
+      [
+        "문단",
+        "![첨부 이미지 1](/uploads/a.jpg)",
+        "![첨부 이미지](/uploads/b.jpg)",
+        "다음 문단",
+        "![첨부 이미지](/uploads/a.jpg)",
+      ].join("\n\n"),
+    );
   });
 
   it("compares arrays by order and value", () => {

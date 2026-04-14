@@ -8,7 +8,34 @@ export function markupToEditorHtml(markup: string) {
 }
 
 function normalizeWhitespace(value: string) {
-  return value.replace(/\u00a0/g, " ");
+  return value.replace(/\u00a0/g, " ").replace(/\u200b/g, "");
+}
+
+const TOP_LEVEL_INLINE_TAGS = new Set([
+  "A",
+  "B",
+  "BR",
+  "CODE",
+  "DEL",
+  "EM",
+  "I",
+  "S",
+  "SPAN",
+  "STRONG",
+  "U",
+]);
+
+function isTopLevelInlineNode(node: Node) {
+  if (node.nodeType === Node.TEXT_NODE) {
+    return true;
+  }
+
+  return node instanceof HTMLElement && TOP_LEVEL_INLINE_TAGS.has(node.tagName);
+}
+
+function serializeTopLevelInlineBuffer(nodes: Node[]) {
+  const text = nodes.map(serializeEditorNode).join("").trim();
+  return text ? `${text}\n\n` : "";
 }
 
 function normalizeColorToken(value: string | null | undefined) {
@@ -182,9 +209,28 @@ export function serializeEditorHtml(html: string) {
 
   const container = document.createElement("div");
   container.innerHTML = html;
-  return Array.from(container.childNodes)
-    .map(serializeEditorNode)
-    .join("")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
+  const output: string[] = [];
+  const inlineBuffer: Node[] = [];
+
+  const flushInlineBuffer = () => {
+    if (inlineBuffer.length === 0) {
+      return;
+    }
+    output.push(serializeTopLevelInlineBuffer(inlineBuffer));
+    inlineBuffer.length = 0;
+  };
+
+  for (const child of Array.from(container.childNodes)) {
+    if (isTopLevelInlineNode(child)) {
+      inlineBuffer.push(child);
+      continue;
+    }
+
+    flushInlineBuffer();
+    output.push(serializeEditorNode(child));
+  }
+
+  flushInlineBuffer();
+
+  return output.join("").replace(/\n{3,}/g, "\n\n").trim();
 }

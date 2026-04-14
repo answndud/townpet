@@ -27,6 +27,7 @@ import {
 import {
   areSameStringArray,
   buildImageMarkdown,
+  collapseAdjacentDuplicateImageTokens,
   extractImageUrlsFromMarkup,
   removeImageTokensByUrls,
 } from "@/lib/editor-image-markup";
@@ -47,7 +48,11 @@ import {
 } from "@/lib/editor-content-serializer";
 import {
   cloneSelectionRangeWithin,
+  DEFAULT_EDITOR_FONT_SIZE,
+  DEFAULT_EDITOR_TEXT_COLOR,
+  getSelectionInlineStyleState,
   insertImagesAtSavedSelection,
+  moveCaretAfterStyledNode,
   restoreSelectionRangeWithin,
 } from "@/lib/editor-inline-image";
 import { POST_CONTENT_MAX_LENGTH, POST_TITLE_MAX_LENGTH } from "@/lib/input-limits";
@@ -242,8 +247,8 @@ export function PostCreateForm({
   const [draftMessage, setDraftMessage] = useState<string | null>(null);
   const [draftSavedAt, setDraftSavedAt] = useState<string | null>(null);
   const [editorHtml, setEditorHtml] = useState("");
-  const [fontSizeValue, setFontSizeValue] = useState(14);
-  const [textColorValue, setTextColorValue] = useState("#111827");
+  const [fontSizeValue, setFontSizeValue] = useState(DEFAULT_EDITOR_FONT_SIZE);
+  const [textColorValue, setTextColorValue] = useState(DEFAULT_EDITOR_TEXT_COLOR);
   const [formState, setFormState] = useState<PostCreateFormState>({
     title: "",
     content: "",
@@ -301,6 +306,20 @@ export function PostCreateForm({
     guestDisplayName: "",
     guestPassword: "",
   });
+
+  function syncToolbarStyleState(range: Range | null) {
+    const editor = contentRef.current;
+    if (!editor) {
+      return;
+    }
+
+    const nextStyle = getSelectionInlineStyleState({
+      editor,
+      range,
+    });
+    setFontSizeValue((prev) => (prev === nextStyle.fontSize ? prev : nextStyle.fontSize));
+    setTextColorValue((prev) => (prev === nextStyle.textColor ? prev : nextStyle.textColor));
+  }
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -370,6 +389,7 @@ export function PostCreateForm({
       const nextRange = cloneSelectionRangeWithin(editor);
       if (nextRange) {
         selectionRangeRef.current = nextRange;
+        syncToolbarStyleState(nextRange);
       }
     };
 
@@ -700,13 +720,28 @@ export function PostCreateForm({
       return;
     }
     const html = element.innerHTML;
-    const serialized = serializeEditorHtml(html);
+    const serialized = collapseAdjacentDuplicateImageTokens(serializeEditorHtml(html));
     const nextImageUrls = extractImageUrlsFromMarkup(serialized);
     setFormState((prev) =>
       prev.content === serialized && areSameStringArray(prev.imageUrls, nextImageUrls)
         ? prev
         : { ...prev, content: serialized, imageUrls: nextImageUrls },
     );
+  };
+
+  const captureToolbarSelection = () => {
+    const editor = contentRef.current;
+    if (!editor) {
+      return;
+    }
+
+    const nextRange = cloneSelectionRangeWithin(editor);
+    if (!nextRange) {
+      return;
+    }
+
+    selectionRangeRef.current = nextRange;
+    syncToolbarStyleState(nextRange);
   };
 
   const runEditorCommand = (command: string, value?: string) => {
@@ -737,11 +772,14 @@ export function PostCreateForm({
     } else {
       document.execCommand(command, false, value);
     }
-    selectionRangeRef.current = cloneSelectionRangeWithin(editor);
+    const nextRange = cloneSelectionRangeWithin(editor);
+    selectionRangeRef.current = nextRange;
+    syncToolbarStyleState(nextRange);
     syncEditorToFormState();
   };
 
   const preserveToolbarSelection = (event: MouseEvent<HTMLButtonElement>) => {
+    captureToolbarSelection();
     event.preventDefault();
   };
 
@@ -785,27 +823,37 @@ export function PostCreateForm({
       span.dataset.color = options.color.toLowerCase();
       span.style.color = options.color.toLowerCase();
     }
+    const insertedNode: HTMLElement = span;
     try {
       range.surroundContents(span);
     } catch {
       span.appendChild(range.extractContents());
       range.insertNode(span);
     }
-    selectionRangeRef.current = cloneSelectionRangeWithin(editor);
+    const nextRange = moveCaretAfterStyledNode({
+      editor,
+      insertedNode,
+    });
+    if (nextRange) {
+      selection.removeAllRanges();
+      selection.addRange(nextRange);
+    }
+    selectionRangeRef.current = nextRange;
+    syncToolbarStyleState(nextRange);
     syncEditorToFormState();
-    return true;
+    return nextRange;
   };
 
   const applyFontSizeSelection = (size: number) => {
-    if (wrapSelectionWithSpan({ fontSizePx: size })) {
-      setFontSizeValue(size);
+    if (!wrapSelectionWithSpan({ fontSizePx: size })) {
+      syncToolbarStyleState(selectionRangeRef.current);
     }
   };
 
   const applyTextColorSelection = (color: string) => {
     const normalized = color.toLowerCase();
-    if (wrapSelectionWithSpan({ color: normalized })) {
-      setTextColorValue(normalized);
+    if (!wrapSelectionWithSpan({ color: normalized })) {
+      syncToolbarStyleState(selectionRangeRef.current);
     }
   };
 
@@ -822,7 +870,7 @@ export function PostCreateForm({
     event.preventDefault();
     setError(null);
     const serializedContent = contentRef.current
-      ? serializeEditorHtml(contentRef.current.innerHTML)
+      ? collapseAdjacentDuplicateImageTokens(serializeEditorHtml(contentRef.current.innerHTML))
       : formState.content;
     const serializedImageUrls = extractImageUrlsFromMarkup(serializedContent);
     if (!serializedContent.trim()) {
@@ -1237,6 +1285,7 @@ export function PostCreateForm({
               }
               runEditorCommand("createLink", url.trim());
             }}
+            onToolbarSelectionCapture={captureToolbarSelection}
             onToolbarMouseDown={preserveToolbarSelection}
             endContent={(
               <span
@@ -1263,6 +1312,7 @@ export function PostCreateForm({
             onRedo={() => runEditorCommand("redo")}
             onFontSizeChange={applyFontSizeSelection}
             onTextColorChange={applyTextColorSelection}
+            onToolbarSelectionCapture={captureToolbarSelection}
             onToolbarMouseDown={preserveToolbarSelection}
           />
         )}
@@ -1304,7 +1354,9 @@ export function PostCreateForm({
               });
               selectionRangeRef.current = insertedRange;
 
-              const nextContent = serializeEditorHtml(contentRef.current.innerHTML);
+              const nextContent = collapseAdjacentDuplicateImageTokens(
+                serializeEditorHtml(contentRef.current.innerHTML),
+              );
               const finalImageUrls = extractImageUrlsFromMarkup(nextContent);
               setEditorHtml(contentRef.current.innerHTML);
 
@@ -1325,6 +1377,7 @@ export function PostCreateForm({
               const separator = nextContent.trim().length > 0 ? "\n\n" : "";
               nextContent = `${nextContent}${separator}${imageMarkdown}`;
             }
+            nextContent = collapseAdjacentDuplicateImageTokens(nextContent);
 
             const finalImageUrls = extractImageUrlsFromMarkup(nextContent);
             const nextHtml = markupToEditorHtml(nextContent);
