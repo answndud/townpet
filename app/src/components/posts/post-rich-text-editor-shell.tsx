@@ -7,6 +7,7 @@ import type {
 type PostRichTextEditorShellProps = {
   title?: string;
   headerContent?: ReactNode;
+  topToolbar?: ReactNode;
   mobileToolbar?: ReactNode;
   toolbar?: ReactNode;
   children: ReactNode;
@@ -15,7 +16,7 @@ type PostRichTextEditorShellProps = {
 
 type PostEditorToolbarButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   tone?: "soft" | "primary";
-  scale?: "toolbar" | "bar";
+  scale?: "toolbar" | "bar" | "action";
 };
 
 type PostEditorToolbarDividerProps = HTMLAttributes<HTMLDivElement>;
@@ -23,6 +24,7 @@ type PostEditorToolbarDividerProps = HTMLAttributes<HTMLDivElement>;
 export function PostRichTextEditorShell({
   title = "본문",
   headerContent,
+  topToolbar,
   mobileToolbar,
   toolbar,
   children,
@@ -35,9 +37,10 @@ export function PostRichTextEditorShell({
         {headerContent}
       </div>
 
+      {topToolbar ? <div className="tp-editor-toolbar-soft tp-editor-toolbar-scroll">{topToolbar}</div> : null}
       {mobileToolbar ? <div className="tp-editor-toolbar sm:hidden">{mobileToolbar}</div> : null}
       {toolbar ? (
-        <div className={`tp-editor-toolbar ${mobileToolbar ? "hidden sm:flex" : ""}`}>{toolbar}</div>
+        <div className={`tp-editor-toolbar tp-editor-toolbar-scroll ${mobileToolbar ? "hidden sm:flex" : ""}`}>{toolbar}</div>
       ) : null}
 
       {children}
@@ -56,7 +59,11 @@ export function PostEditorToolbarButton({
 }: PostEditorToolbarButtonProps) {
   const toneClassName = tone === "primary" ? "tp-btn-primary" : "tp-btn-soft";
   const scaleClassName =
-    scale === "bar" ? "tp-btn-sm px-3" : "h-7 px-2.5";
+    scale === "bar"
+      ? "tp-btn-sm px-3"
+      : scale === "action"
+        ? "h-10 rounded-xl px-4"
+        : "h-7 px-2.5";
 
   return (
     <button

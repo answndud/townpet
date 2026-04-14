@@ -13,6 +13,7 @@ describe("PostRichTextEditorShell", () => {
       <PostRichTextEditorShell
         title="본문"
         headerContent={<span className="ml-auto">10 / 100자</span>}
+        topToolbar={<div>quick actions</div>}
         mobileToolbar={<PostEditorToolbarButton>B</PostEditorToolbarButton>}
         toolbar={
           <>
@@ -31,9 +32,12 @@ describe("PostRichTextEditorShell", () => {
 
     expect(html).toContain("본문");
     expect(html).toContain("10 / 100자");
+    expect(html).toContain("quick actions");
     expect(html).toContain("contenteditable area");
     expect(html).toContain("임시저장 없음");
     expect(html).toContain("tp-editor-toolbar sm:hidden");
+    expect(html).toContain("tp-editor-toolbar-soft tp-editor-toolbar-scroll");
+    expect(html).toContain("tp-editor-toolbar tp-editor-toolbar-scroll");
     expect(html).toContain("tp-btn-primary");
   });
 
@@ -44,6 +48,9 @@ describe("PostRichTextEditorShell", () => {
         <PostEditorToolbarButton tone="primary" scale="bar">
           활성
         </PostEditorToolbarButton>
+        <PostEditorToolbarButton scale="action">
+          빠른 동작
+        </PostEditorToolbarButton>
       </>,
     );
 
@@ -51,5 +58,6 @@ describe("PostRichTextEditorShell", () => {
     expect(html).toContain("h-7 px-2.5");
     expect(html).toContain("tp-btn-primary");
     expect(html).toContain("tp-btn-sm px-3");
+    expect(html).toContain("h-10 rounded-xl px-4");
   });
 });

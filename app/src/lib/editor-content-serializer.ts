@@ -11,6 +11,29 @@ function normalizeWhitespace(value: string) {
   return value.replace(/\u00a0/g, " ");
 }
 
+function normalizeColorToken(value: string | null | undefined) {
+  if (!value) {
+    return null;
+  }
+
+  const trimmed = value.trim().toLowerCase();
+  if (/^#[0-9a-f]{6}$/.test(trimmed)) {
+    return trimmed;
+  }
+
+  const rgbMatch = trimmed.match(/^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/);
+  if (!rgbMatch) {
+    return null;
+  }
+
+  const channels = rgbMatch.slice(1).map((channel) => Number(channel));
+  if (channels.some((channel) => !Number.isFinite(channel) || channel < 0 || channel > 255)) {
+    return null;
+  }
+
+  return `#${channels.map((channel) => channel.toString(16).padStart(2, "0")).join("")}`;
+}
+
 function serializeEditorNode(node: Node): string {
   if (node.nodeType === Node.TEXT_NODE) {
     return normalizeWhitespace(node.textContent ?? "");
@@ -110,7 +133,10 @@ function serializeEditorNode(node: Node): string {
   if (node.tagName === "SPAN") {
     const className = node.className;
     const text = serializeChildren();
-    const sizeToken = className.includes("text-xs")
+    const dataSize = node.dataset.size?.trim();
+    const sizeToken = dataSize && /^\d{1,2}$/.test(dataSize)
+      ? dataSize
+      : className.includes("text-xs")
       ? "small"
       : className.includes("text-lg")
         ? "large"
@@ -119,7 +145,9 @@ function serializeEditorNode(node: Node): string {
           : className.includes("text-base")
             ? "normal"
             : null;
-    const colorToken = className.includes("text-rose-600")
+    const dataColor = normalizeColorToken(node.dataset.color) ?? normalizeColorToken(node.style.color);
+    const colorToken = dataColor
+      ?? (className.includes("text-rose-600")
       ? "red"
       : className.includes("text-emerald-700")
         ? "green"
@@ -127,7 +155,7 @@ function serializeEditorNode(node: Node): string {
           ? "gray"
           : className.includes("text-[#2f5da4]")
             ? "blue"
-            : null;
+            : null);
 
     let output = text;
     if (sizeToken) {

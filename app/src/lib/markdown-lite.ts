@@ -94,8 +94,12 @@ function renderInline(value: string) {
   const { transformed, restore } = replaceLinkToken(escaped);
 
   const withInlineStyle = transformed
-    .replace(/\[size=(small|normal|large|xlarge)\]([\s\S]*?)\[\/size\]/gi, (_, rawSize: string, inner: string) => {
+    .replace(/\[size=(small|normal|large|xlarge|\d{1,2})\]([\s\S]*?)\[\/size\]/gi, (_, rawSize: string, inner: string) => {
       const size = rawSize.toLowerCase();
+      if (/^\d{1,2}$/.test(size)) {
+        return `<span data-size="${size}" style="font-size:${size}px">${inner}</span>`;
+      }
+
       const className =
         size === "small"
           ? "text-xs"
@@ -107,9 +111,13 @@ function renderInline(value: string) {
       return `<span class="${className}">${inner}</span>`;
     })
     .replace(
-      /\[color=(blue|red|green|gray)\]([\s\S]*?)\[\/color\]/gi,
+      /\[color=(blue|red|green|gray|#[0-9a-fA-F]{6})\]([\s\S]*?)\[\/color\]/gi,
       (_, rawColor: string, inner: string) => {
         const color = rawColor.toLowerCase();
+        if (/^#[0-9a-f]{6}$/.test(color)) {
+          return `<span data-color="${color}" style="color:${color}">${inner}</span>`;
+        }
+
         const className =
           color === "red"
             ? "text-rose-600"

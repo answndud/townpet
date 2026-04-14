@@ -30,6 +30,8 @@ type ImageUploadFieldProps = {
   label?: string;
   maxFiles?: number;
   guestWriteScope?: GuestWriteScope;
+  inputId?: string;
+  showPickerSurface?: boolean;
 };
 
 type FailedUploadItem = {
@@ -188,6 +190,8 @@ export function ImageUploadField({
   label = "이미지",
   maxFiles = 10,
   guestWriteScope,
+  inputId,
+  showPickerSurface = true,
 }: ImageUploadFieldProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [isRetryingAll, setIsRetryingAll] = useState(false);
@@ -415,41 +419,75 @@ export function ImageUploadField({
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex items-center justify-between">
-        <p className="text-sm font-medium text-[#355988]">{label}</p>
-        <span className="text-xs text-[#5d789f]">
-          {value.length}/{maxFiles}
-        </span>
-      </div>
+      {showPickerSurface ? (
+        <>
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium text-[#355988]">{label}</p>
+            <span className="text-xs text-[#5d789f]">
+              {value.length}/{maxFiles}
+            </span>
+          </div>
 
-      <div className="rounded-lg border border-dashed border-[#cbdcf5] bg-[#f8fbff] p-3">
-        <input
-          data-testid="image-upload-input"
-          ref={inputRef}
-          type="file"
-          accept={ACCEPTED_IMAGE_MIME_TYPES.join(",")}
-          multiple
-          onClick={(event) => {
-            event.currentTarget.value = "";
-          }}
-          onChange={handleFileChange}
-          disabled={isBusy}
-          className="w-full text-xs text-[#355988] file:mr-3 file:rounded-md file:border file:border-[#3567b5] file:bg-[#3567b5] file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white file:transition hover:file:bg-[#2f5da4]"
-        />
-        <p className="mt-2 text-xs text-[#5d789f]">
-          JPG/PNG/WEBP/GIF/HEIC/AVIF, 파일당 최대 12MB(비회원 5MB). 업로드 후 서버에서 회전/최적화됩니다.
-        </p>
-        {remainCount <= 0 ? (
-          <p className="mt-1 text-xs text-[#5d789f]">현재 첨부 한도에 도달했습니다. 기존 이미지를 삭제한 뒤 다시 선택해 주세요.</p>
-        ) : null}
-        {isUploading ? (
-          <p className="mt-2 text-xs font-medium text-[#3567b5]">업로드 중...</p>
-        ) : null}
-        {isRetryingAll ? (
-          <p className="mt-2 text-xs font-medium text-[#3567b5]">실패 파일 재업로드 중...</p>
-        ) : null}
-        {error ? <p className="mt-2 text-xs text-rose-600">{error}</p> : null}
-      </div>
+          <div className="rounded-lg border border-dashed border-[#cbdcf5] bg-[#f8fbff] p-3">
+            <input
+              id={inputId}
+              data-testid="image-upload-input"
+              ref={inputRef}
+              type="file"
+              accept={ACCEPTED_IMAGE_MIME_TYPES.join(",")}
+              multiple
+              onClick={(event) => {
+                event.currentTarget.value = "";
+              }}
+              onChange={handleFileChange}
+              disabled={isBusy}
+              className="w-full text-xs text-[#355988] file:mr-3 file:rounded-md file:border file:border-[#3567b5] file:bg-[#3567b5] file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white file:transition hover:file:bg-[#2f5da4]"
+            />
+            <p className="mt-2 text-xs text-[#5d789f]">
+              JPG/PNG/WEBP/GIF/HEIC/AVIF, 파일당 최대 12MB(비회원 5MB). 업로드 후 서버에서 회전/최적화됩니다.
+            </p>
+            {remainCount <= 0 ? (
+              <p className="mt-1 text-xs text-[#5d789f]">현재 첨부 한도에 도달했습니다. 기존 이미지를 삭제한 뒤 다시 선택해 주세요.</p>
+            ) : null}
+            {isUploading ? (
+              <p className="mt-2 text-xs font-medium text-[#3567b5]">업로드 중...</p>
+            ) : null}
+            {isRetryingAll ? (
+              <p className="mt-2 text-xs font-medium text-[#3567b5]">실패 파일 재업로드 중...</p>
+            ) : null}
+            {error ? <p className="mt-2 text-xs text-rose-600">{error}</p> : null}
+          </div>
+        </>
+      ) : (
+        <>
+          <input
+            id={inputId}
+            data-testid="image-upload-input"
+            ref={inputRef}
+            type="file"
+            accept={ACCEPTED_IMAGE_MIME_TYPES.join(",")}
+            multiple
+            onClick={(event) => {
+              event.currentTarget.value = "";
+            }}
+            onChange={handleFileChange}
+            disabled={isBusy}
+            className="sr-only"
+          />
+          {(value.length > 0 || isUploading || isRetryingAll || error || remainCount <= 0) ? (
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-[#dbe6f6] bg-[#f8fbff] px-3 py-2 text-[11px] text-[#5d789f]">
+              <span className="font-semibold text-[#355988]">
+                {label} {value.length}/{maxFiles}
+              </span>
+              <span>JPG/PNG/WEBP/GIF/HEIC/AVIF</span>
+              {remainCount <= 0 ? <span>첨부 한도 도달</span> : null}
+              {isUploading ? <span className="font-medium text-[#3567b5]">업로드 중...</span> : null}
+              {isRetryingAll ? <span className="font-medium text-[#3567b5]">재업로드 중...</span> : null}
+              {error ? <span className="text-rose-600">{error}</span> : null}
+            </div>
+          ) : null}
+        </>
+      )}
 
       {failedUploads.length > 0 ? (
         <div className="rounded-lg border border-amber-300 bg-amber-50 p-3">
