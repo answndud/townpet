@@ -24,31 +24,38 @@ async function setEditorText(editor: Locator, text: string) {
   await editor.page().keyboard.type(text);
 }
 
-async function selectEditorText(editor: Locator, selectedText: string) {
-  await editor.evaluate((element, targetText) => {
-    (element as HTMLElement).focus();
+async function readEditorSegments(editor: Locator) {
+  return editor.evaluate((element) => {
+    const segments: Array<{
+      text: string;
+      size: string | null;
+      color: string | null;
+      href: string | null;
+    }> = [];
     const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
 
     while (walker.nextNode()) {
       const currentNode = walker.currentNode;
-      const content = currentNode.textContent ?? "";
-      const startIndex = content.indexOf(targetText);
-      if (startIndex < 0) {
+      const text = (currentNode.textContent ?? "").replace(/\u200b/g, "");
+      if (text.trim().length === 0) {
         continue;
       }
 
-      const range = document.createRange();
-      range.setStart(currentNode, startIndex);
-      range.setEnd(currentNode, startIndex + targetText.length);
-      const selection = window.getSelection();
-      selection?.removeAllRanges();
-      selection?.addRange(range);
-      document.dispatchEvent(new Event("selectionchange"));
-      return;
+      const parentElement = currentNode.parentElement;
+      const sizeSpan = parentElement?.closest("span[data-size]") as HTMLElement | null;
+      const colorSpan = parentElement?.closest("span[data-color]") as HTMLElement | null;
+      const link = parentElement?.closest("a") as HTMLAnchorElement | null;
+
+      segments.push({
+        text,
+        size: sizeSpan?.dataset.size ?? null,
+        color: colorSpan?.dataset.color ?? null,
+        href: link?.getAttribute("href") ?? null,
+      });
     }
 
-    throw new Error(`text not found: ${targetText}`);
-  }, selectedText);
+    return segments;
+  });
 }
 
 test.describe("post editor toolbar", () => {
@@ -110,27 +117,61 @@ test.describe("post editor toolbar", () => {
 
   test("applies font size and color to selected text without inserting placeholder text", async ({ page }) => {
     const editor = page.locator('[contenteditable="true"]').first();
+    const fontSizeSelect = page.getByLabel("글자 크기");
 
-    await setEditorText(editor, "alpha beta gamma");
-    await selectEditorText(editor, "beta");
-    await page.getByLabel("글자 크기").selectOption("18");
+    await setEditorText(editor, "beta");
+    await editor.selectText();
+    await fontSizeSelect.click();
+    await fontSizeSelect.selectOption("18");
 
     await expect(editor).not.toContainText("텍스트");
-    await expect(editor).toContainText("alpha beta gamma");
+    await expect(editor).toContainText("beta");
     await expect(editor.evaluate((element) => element.innerHTML)).resolves.toContain('data-size="18"');
 
-    await selectEditorText(editor, "beta");
+    await editor.selectText();
     await page.getByRole("button", { name: "파랑 색상" }).click();
+    await expect(editor.evaluate((element) => element.innerHTML)).resolves.toContain('data-color="#2563eb"');
+
+    await editor.click();
+    await expect(fontSizeSelect).toHaveValue("14");
+    await page.keyboard.type(" delta");
 
     await expect(editor).not.toContainText("텍스트");
-    await expect(editor.evaluate((element) => element.innerHTML)).resolves.toContain('data-color="#2563eb"');
+    const segments = await readEditorSegments(editor);
+    expect(segments).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ text: "beta", size: "18", color: "#2563eb" }),
+        expect.objectContaining({ text: " delta", size: null, color: null }),
+      ]),
+    );
+  });
+
+  test("applies links to the selected text", async ({ page }) => {
+    const editor = page.locator('[contenteditable="true"]').first();
+
+    await setEditorText(editor, "link me");
+    await editor.selectText();
+    page.once("dialog", (dialog) => {
+      void dialog.accept("https://example.com");
+    });
+    await page.getByRole("button", { name: "링크" }).click();
+
+    const segments = await readEditorSegments(editor);
+    expect(segments).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          text: "link me",
+          href: "https://example.com",
+        }),
+      ]),
+    );
   });
 
   test("applies blockquote to the selected text", async ({ page }) => {
     const editor = page.locator('[contenteditable="true"]').first();
 
     await setEditorText(editor, "quoted line");
-    await selectEditorText(editor, "quoted line");
+    await editor.selectText();
     await page.getByRole("button", { name: "인용" }).click();
 
     await expect(editor.evaluate((element) => element.innerHTML)).resolves.toContain("<blockquote>");
@@ -140,12 +181,12 @@ test.describe("post editor toolbar", () => {
     const editor = page.locator('[contenteditable="true"]').first();
 
     await setEditorText(editor, "first item");
-    await selectEditorText(editor, "first item");
+    await editor.selectText();
     await page.getByRole("button", { name: "글머리" }).click();
     await expect(editor.evaluate((element) => element.innerHTML)).resolves.toContain("<ul>");
 
     await setEditorText(editor, "ordered item");
-    await selectEditorText(editor, "ordered item");
+    await editor.selectText();
     await page.getByRole("button", { name: "번호" }).click();
     await expect(editor.evaluate((element) => element.innerHTML)).resolves.toContain("<ol>");
   });

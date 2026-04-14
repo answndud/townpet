@@ -12,10 +12,16 @@ const FONT_SIZE_OPTIONS = [12, 14, 16, 18, 20, 24, 28, 32];
 const COLOR_OPTIONS = [
   { label: "검정", value: "#111827" },
   { label: "회색", value: "#475569" },
-  { label: "파랑", value: "#2563eb" },
+  { label: "갈색", value: "#92400e" },
   { label: "빨강", value: "#dc2626" },
-  { label: "초록", value: "#16a34a" },
   { label: "주황", value: "#ea580c" },
+  { label: "노랑", value: "#ca8a04" },
+  { label: "초록", value: "#16a34a" },
+  { label: "청록", value: "#0f766e" },
+  { label: "파랑", value: "#2563eb" },
+  { label: "남색", value: "#4338ca" },
+  { label: "보라", value: "#7c3aed" },
+  { label: "분홍", value: "#db2777" },
 ] as const;
 
 type EditorMode = "write" | "preview";
@@ -26,6 +32,7 @@ type PostEditorQuickActionBarProps = {
   onBulletList: () => void;
   onOrderedList: () => void;
   onLink: () => void;
+  onToolbarSelectionCapture: () => void;
   onToolbarMouseDown: (event: MouseEvent<HTMLButtonElement>) => void;
   mode?: EditorMode;
   onModeChange?: (mode: EditorMode) => void;
@@ -43,6 +50,7 @@ type PostEditorFormatBarProps = {
   onRedo: () => void;
   onFontSizeChange: (size: number) => void;
   onTextColorChange: (color: string) => void;
+  onToolbarSelectionCapture: () => void;
   onToolbarMouseDown: (event: MouseEvent<HTMLButtonElement>) => void;
 };
 
@@ -67,14 +75,17 @@ function QuickActionLabel({
   htmlFor,
   icon,
   children,
+  onMouseDownCapture,
 }: {
   htmlFor: string;
   icon: ReactNode;
   children: ReactNode;
+  onMouseDownCapture?: () => void;
 }) {
   return (
     <label
       htmlFor={htmlFor}
+      onMouseDownCapture={onMouseDownCapture}
       className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl border border-[#d7e1f0] bg-white px-4 text-[13px] font-semibold text-[#1f3558] shadow-[inset_0_1px_0_rgba(255,255,255,0.85)] transition hover:bg-[#f7fbff]"
     >
       {icon}
@@ -89,6 +100,7 @@ export function PostEditorQuickActionBar({
   onBulletList,
   onOrderedList,
   onLink,
+  onToolbarSelectionCapture,
   onToolbarMouseDown,
   mode,
   onModeChange,
@@ -98,6 +110,7 @@ export function PostEditorQuickActionBar({
     <div className="flex min-w-max items-center gap-2">
       <QuickActionLabel
         htmlFor={imageInputId}
+        onMouseDownCapture={onToolbarSelectionCapture}
         icon={
           <ToolbarIcon>
             <svg viewBox="0 0 20 20" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.7">
@@ -206,6 +219,7 @@ export function PostEditorFormatBar({
   onRedo,
   onFontSizeChange,
   onTextColorChange,
+  onToolbarSelectionCapture,
   onToolbarMouseDown,
 }: PostEditorFormatBarProps) {
   return (
@@ -213,6 +227,8 @@ export function PostEditorFormatBar({
       <div className="inline-flex items-center rounded-lg border border-[#d7e1f0] bg-white px-2">
         <select
           value={String(fontSizeValue)}
+          onMouseDownCapture={onToolbarSelectionCapture}
+          onFocus={onToolbarSelectionCapture}
           onChange={(event) => onFontSizeChange(Number(event.target.value))}
           className="h-8 bg-transparent pr-6 text-[13px] font-semibold text-[#203a62] outline-none"
           aria-label="글자 크기"
@@ -238,31 +254,39 @@ export function PostEditorFormatBar({
         S
       </PostEditorToolbarButton>
       <PostEditorToolbarDivider />
-      {COLOR_OPTIONS.map((color) => (
-        <PostEditorToolbarButton
-          key={color.value}
-          onClick={() => onTextColorChange(color.value)}
-          onMouseDown={onToolbarMouseDown}
-          className={`h-8 w-8 rounded-lg border px-0 text-[18px] ${colorValue === color.value ? "border-[#8fa8cf] bg-[#eef5ff]" : "border-[#d7e1f0] bg-white"}`}
-          aria-label={`${color.label} 색상`}
-          title={color.label}
-        >
-          <span style={{ color: color.value }}>가</span>
-        </PostEditorToolbarButton>
-      ))}
+      <div className="inline-flex items-center gap-1 rounded-xl border border-[#d7e1f0] bg-white px-1.5 py-1">
+        {COLOR_OPTIONS.map((color) => (
+          <PostEditorToolbarButton
+            key={color.value}
+            onClick={() => onTextColorChange(color.value)}
+            onMouseDown={onToolbarMouseDown}
+            className={`h-8 w-8 rounded-full border px-0 ${colorValue === color.value ? "border-[#8fa8cf] bg-[#eef5ff]" : "border-transparent bg-white"}`}
+            aria-label={`${color.label} 색상`}
+            title={color.label}
+          >
+            <span
+              aria-hidden="true"
+              className="h-5 w-5 rounded-full border border-white shadow-[0_0_0_1px_rgba(71,85,105,0.16)]"
+              style={{ backgroundColor: color.value }}
+            />
+          </PostEditorToolbarButton>
+        ))}
+      </div>
       <label
+        onMouseDownCapture={onToolbarSelectionCapture}
         className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-[#d7e1f0] bg-white"
         title="사용자 지정 색상"
         aria-label="사용자 지정 색상"
       >
         <span
           aria-hidden="true"
-          className="h-4 w-4 rounded-full border border-white shadow-[0_0_0_1px_rgba(71,85,105,0.18)]"
+          className="h-5 w-5 rounded-md border border-white shadow-[0_0_0_1px_rgba(71,85,105,0.18)]"
           style={{ backgroundColor: colorValue }}
         />
         <input
           type="color"
           value={colorValue}
+          onFocus={onToolbarSelectionCapture}
           onChange={(event) => onTextColorChange(event.target.value)}
           className="sr-only"
         />
