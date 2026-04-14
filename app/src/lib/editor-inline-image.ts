@@ -83,6 +83,42 @@ export function cloneSelectionRangeWithin(editor: HTMLElement) {
   return isRangeWithinEditor(editor, range) ? range.cloneRange() : null;
 }
 
+export function restoreSelectionRangeWithin(params: {
+  editor: HTMLElement;
+  savedRange: Range | null;
+  preferSaved?: boolean;
+}) {
+  const { editor, savedRange, preferSaved = false } = params;
+
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const selection = window.getSelection();
+  if (!selection) {
+    return null;
+  }
+
+  const currentRange =
+    selection.rangeCount > 0 && isRangeWithinEditor(editor, selection.getRangeAt(0))
+      ? selection.getRangeAt(0).cloneRange()
+      : null;
+  const safeSavedRange =
+    savedRange && isRangeWithinEditor(editor, savedRange) ? savedRange.cloneRange() : null;
+  const targetRange = preferSaved
+    ? safeSavedRange ?? currentRange
+    : currentRange ?? safeSavedRange;
+
+  if (!targetRange) {
+    return null;
+  }
+
+  editor.focus();
+  selection.removeAllRanges();
+  selection.addRange(targetRange);
+  return targetRange.cloneRange();
+}
+
 export function insertImagesAtSavedSelection(params: {
   editor: HTMLElement;
   imageUrls: string[];
