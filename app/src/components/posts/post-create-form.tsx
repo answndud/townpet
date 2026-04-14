@@ -48,6 +48,7 @@ import {
 import {
   cloneSelectionRangeWithin,
   insertImagesAtSavedSelection,
+  restoreSelectionRangeWithin,
 } from "@/lib/editor-inline-image";
 import { POST_CONTENT_MAX_LENGTH, POST_TITLE_MAX_LENGTH } from "@/lib/input-limits";
 import { REVIEW_CATEGORY, type ReviewCategory } from "@/lib/review-category";
@@ -708,40 +709,24 @@ export function PostCreateForm({
     );
   };
 
-  const restoreEditorSelection = () => {
-    if (typeof window === "undefined") {
-      return null;
-    }
-
-    const editor = contentRef.current;
-    const selection = window.getSelection();
-    if (!editor || !selection) {
-      return null;
-    }
-
-    if (selection.rangeCount > 0) {
-      const currentRange = selection.getRangeAt(0);
-      if (editor.contains(currentRange.commonAncestorContainer)) {
-        return currentRange;
-      }
-    }
-
-    if (!selectionRangeRef.current) {
-      return null;
-    }
-
-    const restoredRange = selectionRangeRef.current.cloneRange();
-    selection.removeAllRanges();
-    selection.addRange(restoredRange);
-    return restoredRange;
-  };
-
   const runEditorCommand = (command: string, value?: string) => {
     if (typeof document === "undefined") {
       return;
     }
-    contentRef.current?.focus();
-    restoreEditorSelection();
+    const editor = contentRef.current;
+    if (!editor) {
+      return;
+    }
+
+    const restoredRange = restoreSelectionRangeWithin({
+      editor,
+      savedRange: selectionRangeRef.current,
+      preferSaved: true,
+    });
+    if (!restoredRange) {
+      return;
+    }
+
     if (command === "formatBlock" && value) {
       const normalized = value.trim().replace(/[<>]/g, "");
       const withTag = `<${normalized}>`;
@@ -752,6 +737,7 @@ export function PostCreateForm({
     } else {
       document.execCommand(command, false, value);
     }
+    selectionRangeRef.current = cloneSelectionRangeWithin(editor);
     syncEditorToFormState();
   };
 
@@ -769,11 +755,22 @@ export function PostCreateForm({
     }
     const selection = window.getSelection();
     if (!selection) {
-      return;
+      return false;
     }
-    const range = restoreEditorSelection();
+    const editor = contentRef.current;
+    if (!editor) {
+      return false;
+    }
+    const range = restoreSelectionRangeWithin({
+      editor,
+      savedRange: selectionRangeRef.current,
+      preferSaved: true,
+    });
     if (!range || !contentRef.current?.contains(range.commonAncestorContainer)) {
-      return;
+      return false;
+    }
+    if (range.collapsed) {
+      return false;
     }
 
     const span = document.createElement("span");
@@ -788,33 +785,28 @@ export function PostCreateForm({
       span.dataset.color = options.color.toLowerCase();
       span.style.color = options.color.toLowerCase();
     }
-    if (range.collapsed) {
-      span.textContent = "텍스트";
+    try {
+      range.surroundContents(span);
+    } catch {
+      span.appendChild(range.extractContents());
       range.insertNode(span);
-      const nextRange = document.createRange();
-      nextRange.selectNodeContents(span);
-      selection.removeAllRanges();
-      selection.addRange(nextRange);
-    } else {
-      try {
-        range.surroundContents(span);
-      } catch {
-        span.appendChild(range.extractContents());
-        range.insertNode(span);
-      }
     }
+    selectionRangeRef.current = cloneSelectionRangeWithin(editor);
     syncEditorToFormState();
+    return true;
   };
 
   const applyFontSizeSelection = (size: number) => {
-    setFontSizeValue(size);
-    wrapSelectionWithSpan({ fontSizePx: size });
+    if (wrapSelectionWithSpan({ fontSizePx: size })) {
+      setFontSizeValue(size);
+    }
   };
 
   const applyTextColorSelection = (color: string) => {
     const normalized = color.toLowerCase();
-    setTextColorValue(normalized);
-    wrapSelectionWithSpan({ color: normalized });
+    if (wrapSelectionWithSpan({ color: normalized })) {
+      setTextColorValue(normalized);
+    }
   };
 
   const clearDraft = () => {

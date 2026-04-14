@@ -27,17 +27,20 @@
 
 ## Active Plan
 
+### Cycle 427: 게시글 에디터 툴바 selection regression 복구 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 426에서 추가한 에디터 툴바가 선택 범위를 잃으면서 글자 크기/색상/인용/글머리/번호 명령이 placeholder 삽입 또는 무반응으로 깨진 회귀를 복구하고, 선택 복원 로직을 공용화하며 브라우저 회귀 스펙과 에러 기록을 남긴다 | Codex | P0 | `done` | create/edit 에디터는 toolbar action 전에 저장된 selection을 우선 복원하고, inline size/color는 collapsed selection에서 placeholder를 만들지 않으며, block/list command가 같은 복원 경로를 사용하고, `app/e2e/post-editor-toolbar.spec.ts`, `docs/errors/2026-04-14_post-editor-toolbar-selection-regression.md`, `PLAN.md`, `PROGRESS.md`가 갱신된다 | `PLAN.md`, `PROGRESS.md`, `app/src/lib/editor-inline-image.ts`, `app/src/components/posts/post-create-form.tsx`, `app/src/components/posts/post-detail-edit-form.tsx`, `app/e2e/post-editor-toolbar.spec.ts`, `docs/errors/2026-04-14_post-editor-toolbar-selection-regression.md` |
+
 ### Cycle 426: 게시글 에디터 상단 툴바/서식 UX 정리 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
 | 게시글 작성/수정 에디터에서 겹치던 서식 버튼을 2열 툴바로 재구성하고, 이미지 업로드를 상단 액션으로 끌어올리며, 폰트 크기를 숫자값으로 선택하고, 색상은 스와치/컬러 피커로 적용되도록 정리한다 | Codex | P1 | `done` | create/edit 폼이 공용 상단 액션 바와 서식 바를 사용하고, 상단에서 이미지 업로드/링크/인용/목록/미리보기를 제어하며, 본문 직렬화/렌더러가 `[size=12]`, `[color=#2563eb]` 같은 숫자/hex 토큰을 지원하고, 관련 lint/test/typecheck/git diff check 결과가 `PROGRESS.md`에 기록된다 | `PLAN.md`, `PROGRESS.md`, `app/src/components/posts/post-create-form.tsx`, `app/src/components/posts/post-detail-edit-form.tsx`, `app/src/components/posts/post-editor-toolbar-controls.tsx`, `app/src/components/posts/post-rich-text-editor-shell.tsx`, `app/src/components/ui/image-upload-field.tsx`, `app/src/lib/editor-content-serializer.ts`, `app/src/lib/markdown-lite.ts`, `app/src/app/globals.css`, 관련 테스트 |
 
-
-### Cycle 426: 게시글 에디터 상단 툴바/서식 UX 정리 (완료)
+### Cycle 425: public read degraded-mode hardening for Prisma init failures (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
-| 게시글 작성/수정 에디터에서 겹치던 서식 버튼을 2열 툴바로 재구성하고, 이미지 업로드를 상단 액션으로 끌어올리며, 폰트 크기를 숫자값으로 선택하고, 색상은 스와치/컬러 피커로 적용되도록 정리한다 | Codex | P1 | `done` | create/edit 폼이 공용 상단 액션 바와 서식 바를 사용하고, 상단에서 이미지 업로드/링크/인용/목록/미리보기를 제어하며, 본문 직렬화/렌더러가 `[size=12]`, `[color=#2563eb]` 같은 숫자/hex 토큰을 지원하고, 관련 lint/test/typecheck/git diff check 결과가 `PROGRESS.md`에 기록된다 | `PLAN.md`, `PROGRESS.md`, `app/src/components/posts/post-create-form.tsx`, `app/src/components/posts/post-detail-edit-form.tsx`, `app/src/components/posts/post-editor-toolbar-controls.tsx`, `app/src/components/posts/post-rich-text-editor-shell.tsx`, `app/src/components/ui/image-upload-field.tsx`, `app/src/lib/editor-content-serializer.ts`, `app/src/lib/markdown-lite.ts`, `app/src/app/globals.css`, 관련 테스트 |
-
+| Neon/DB 연결 불가로 `PrismaClientInitializationError`가 발생해도 public read surface(`/feed`, guest feed API, guest search, sitemap, post metadata)가 정책 조회 하나 때문에 먼저 500으로 죽지 않도록 fail-closed/empty/static fallback을 추가하고, 공통 DB-unavailable helper, 회귀 테스트, 장애 기록을 남긴다 | Codex | P0 | `done` | guest read policy는 DB init 실패 시 `DEFAULT_LOGIN_REQUIRED_POST_TYPES`로 fallback하고, public feed/search/sitemap/post metadata 경로는 Prisma init error를 empty/static/null redirect-friendly 결과로 degrade하며, `app/src/server/prisma-database-error.ts`, 관련 테스트, `docs/errors/2026-04-14_public-read-db-outage-fallbacks.md`, `PLAN.md`, `PROGRESS.md`가 갱신되고 lint/test/typecheck/git diff check가 통과한다 | `PLAN.md`, `PROGRESS.md`, `app/src/server/queries/policy.queries.ts`, `app/src/app/feed/page.tsx`, `app/src/app/api/feed/guest/route.ts`, `app/src/app/search/page.tsx`, `app/src/app/api/search/guest/route.ts`, `app/src/app/sitemap.ts`, `app/src/app/posts/[id]/page.tsx`, `app/src/app/posts/[id]/guest/page.tsx`, 관련 테스트, `docs/errors/2026-04-14_public-read-db-outage-fallbacks.md` |
 
 ### Cycle 422: TownPet blog 문체 통일 및 핵심 다이어그램 보강 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |

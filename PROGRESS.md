@@ -16,6 +16,21 @@
 - Cycle 33: 신규 계정 안전 정책 관리자 설정화 + DB/UI E2E 플로우 완료
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
+### 2026-04-14: Cycle 427 완료 (게시글 에디터 툴바 selection regression 복구)
+- 완료 내용
+  - [editor-inline-image.ts](/Users/alex/project/townpet/app/src/lib/editor-inline-image.ts)에 저장된 selection을 우선 복원하는 공용 helper를 추가하고, create/edit 에디터가 toolbar action 실행 전에 이 경로를 사용하도록 바꿨다.
+  - [post-create-form.tsx](/Users/alex/project/townpet/app/src/components/posts/post-create-form.tsx), [post-detail-edit-form.tsx](/Users/alex/project/townpet/app/src/components/posts/post-detail-edit-form.tsx)에서 `focus()`가 먼저 걸리며 선택 범위가 collapsed caret로 덮이던 흐름을 제거했고, 글자 크기/색상 서식은 실제 선택 영역이 있을 때만 적용되도록 바꿨다. 이로써 `텍스트` placeholder가 임의로 생성되는 경로를 없앴다.
+  - 브라우저 회귀를 고정하기 위해 [post-editor-toolbar.spec.ts](/Users/alex/project/townpet/app/e2e/post-editor-toolbar.spec.ts)를 추가해 글자 크기/색상 적용, 인용, 글머리/번호 목록 시나리오를 명시했다.
+  - 원인과 재발 방지 포인트를 [2026-04-14_post-editor-toolbar-selection-regression.md](/Users/alex/project/townpet/docs/errors/2026-04-14_post-editor-toolbar-selection-regression.md)에 기록했다.
+- 검증 결과
+  - `corepack pnpm -C app lint src/components/posts/post-create-form.tsx src/components/posts/post-detail-edit-form.tsx src/lib/editor-inline-image.ts e2e/post-editor-toolbar.spec.ts` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - Docker Desktop 기동 후 `docker compose -f /Users/alex/project/townpet/docker-compose.yml up -d postgres`, `corepack pnpm -C app db:push`, `corepack pnpm -C app exec playwright install chromium`를 실행해 로컬 E2E 환경을 정리했다.
+  - `corepack pnpm -C app test:e2e -- e2e/post-editor-toolbar.spec.ts --project=chromium` 통과 (`3 passed`)
+- 메모
+  - 이번 회귀의 직접 원인은 toolbar command가 저장된 selection을 복원하기 전에 editor `focus()`를 호출하면서 selectionchange가 collapsed caret로 덮어쓴 점이다.
+  - block/list command는 여전히 브라우저 `execCommand`에 의존하므로, 장기적으로는 커스텀 block transform 또는 editor engine 교체를 별도 사이클로 검토해야 한다.
+
 ### 2026-04-14: Cycle 426 완료 (게시글 에디터 상단 툴바/서식 UX 정리)
 - 완료 내용
   - [post-create-form.tsx](/Users/alex/project/townpet/app/src/components/posts/post-create-form.tsx)와 [post-detail-edit-form.tsx](/Users/alex/project/townpet/app/src/components/posts/post-detail-edit-form.tsx)의 본문 에디터를 공용 상단 액션 바 + 하단 서식 바 구조로 재구성하고, 이미지 업로드를 툴바 상단의 `이미지` 액션으로 이동했다.
@@ -32,23 +47,20 @@
   - 현재 서식 적용은 여전히 `contentEditable + execCommand` 기반이라 selection edge case가 완전히 사라진 것은 아니다.
   - 전체 WYSIWYG 라이브러리 교체는 저장 포맷 migration, 상세 렌더러, excerpt/OG/검색 인덱싱 경로를 함께 바꿔야 하므로 별도 사이클로 분리하는 편이 안전하다.
 
-
-### 2026-04-14: Cycle 426 완료 (게시글 에디터 상단 툴바/서식 UX 정리)
+### 2026-04-14: Cycle 425 완료 (public read degraded-mode hardening for Prisma init failures)
 - 완료 내용
-  - [post-create-form.tsx](/Users/alex/project/townpet/app/src/components/posts/post-create-form.tsx)와 [post-detail-edit-form.tsx](/Users/alex/project/townpet/app/src/components/posts/post-detail-edit-form.tsx)의 본문 에디터를 공용 상단 액션 바 + 하단 서식 바 구조로 재구성하고, 이미지 업로드를 툴바 상단의 `이미지` 액션으로 이동했다.
-  - 공용 컨트롤 컴포넌트 [post-editor-toolbar-controls.tsx](/Users/alex/project/townpet/app/src/components/posts/post-editor-toolbar-controls.tsx)를 추가해 숫자 폰트 크기 선택, 색상 스와치/컬러 피커, 링크/인용/목록, 수정 화면의 작성/미리보기 토글을 한 구조로 맞췄다.
-  - [image-upload-field.tsx](/Users/alex/project/townpet/app/src/components/ui/image-upload-field.tsx)는 숨김 input + 컴팩트 상태 바 모드를 지원하도록 확장해 기존 대시드 업로드 박스를 상단 툴바 트리거와 연결할 수 있게 했다.
-  - [editor-content-serializer.ts](/Users/alex/project/townpet/app/src/lib/editor-content-serializer.ts)와 [markdown-lite.ts](/Users/alex/project/townpet/app/src/lib/markdown-lite.ts)에 숫자 크기/hex 색상 토큰 직렬화와 렌더링을 추가해 `[size=12]`, `[color=#2563eb]` 형태도 저장/미리보기에서 유지되도록 했다.
-  - 외부 에디터 라이브러리(Tiptap/Lexical 계열) 도입 가능성은 검토했지만, 현재 TownPet 저장 포맷과 렌더러/메타데이터/검색 파이프라인이 커스텀 markup에 직접 결합돼 있어 이번 사이클에서는 라이브러리 교체 대신 기존 스택의 UX를 정리하는 쪽으로 범위를 제한했다.
+  - production Sentry issue `7410432423` 기준으로 [policy.queries.ts](/Users/alex/project/townpet/app/src/server/queries/policy.queries.ts)의 guest read 정책 조회가 `PrismaClientInitializationError`에서 SSR 전체를 깨뜨리던 경로를 확인했고, DB init 실패 시 `DEFAULT_LOGIN_REQUIRED_POST_TYPES`로 fail-closed fallback 하도록 정리했다.
+  - 공용 판별 헬퍼 [prisma-database-error.ts](/Users/alex/project/townpet/app/src/server/prisma-database-error.ts)를 추가하고, [feed/page.tsx](/Users/alex/project/townpet/app/src/app/feed/page.tsx), [feed/guest/route.ts](/Users/alex/project/townpet/app/src/app/api/feed/guest/route.ts), [search/page.tsx](/Users/alex/project/townpet/app/src/app/search/page.tsx), [search/guest/route.ts](/Users/alex/project/townpet/app/src/app/api/search/guest/route.ts), [sitemap.ts](/Users/alex/project/townpet/app/src/app/sitemap.ts), [posts/[id]/page.tsx](/Users/alex/project/townpet/app/src/app/posts/[id]/page.tsx), [posts/[id]/guest/page.tsx](/Users/alex/project/townpet/app/src/app/posts/[id]/guest/page.tsx)에서 DB unavailable 시 empty/static/null 기반 degraded response를 반환하도록 보강했다.
+  - guest search와 sitemap, policy helper에 회귀 테스트를 추가했고, Prisma init 에러 판별 자체도 [prisma-database-error.test.ts](/Users/alex/project/townpet/app/src/server/prisma-database-error.test.ts)로 고정했다.
+  - 실제 장애 기록과 재발 방지 포인트를 [2026-04-14_public-read-db-outage-fallbacks.md](/Users/alex/project/townpet/docs/errors/2026-04-14_public-read-db-outage-fallbacks.md)에 남겼다.
 - 검증 결과
-  - `corepack pnpm -C app lint src/components/posts/post-create-form.tsx src/components/posts/post-detail-edit-form.tsx src/components/posts/post-editor-toolbar-controls.tsx src/components/posts/post-rich-text-editor-shell.tsx src/components/posts/post-rich-text-editor-shell.test.tsx src/components/ui/image-upload-field.tsx src/lib/editor-content-serializer.ts src/lib/markdown-lite.ts src/lib/markdown-lite.test.ts` 통과
-  - `corepack pnpm -C app test -- src/lib/markdown-lite.test.ts src/components/posts/post-rich-text-editor-shell.test.tsx` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `186 files / 905 tests` 통과
+  - `corepack pnpm -C app lint src/server/prisma-database-error.ts src/server/prisma-database-error.test.ts src/server/queries/policy.queries.ts src/server/queries/policy.queries.test.ts src/app/feed/page.tsx src/app/api/feed/guest/route.ts src/app/search/page.tsx src/app/api/search/guest/route.ts src/app/api/search/guest/route.test.ts src/app/sitemap.ts src/app/sitemap.test.ts 'src/app/posts/[id]/page.tsx' 'src/app/posts/[id]/guest/page.tsx'` 통과
+  - `corepack pnpm -C app test -- src/server/prisma-database-error.test.ts src/server/queries/policy.queries.test.ts src/app/api/search/guest/route.test.ts src/app/sitemap.test.ts` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `186 files / 904 tests` 통과
   - `corepack pnpm -C app typecheck` 통과
-  - `git diff --check -- app/src/components/posts/post-create-form.tsx app/src/components/posts/post-detail-edit-form.tsx app/src/components/posts/post-editor-toolbar-controls.tsx app/src/components/posts/post-rich-text-editor-shell.tsx app/src/components/posts/post-rich-text-editor-shell.test.tsx app/src/components/ui/image-upload-field.tsx app/src/lib/editor-content-serializer.ts app/src/lib/markdown-lite.ts app/src/lib/markdown-lite.test.ts app/src/app/globals.css` 통과
+  - `git diff --check` 통과
 - 메모
-  - 현재 서식 적용은 여전히 `contentEditable + execCommand` 기반이라 selection edge case가 완전히 사라진 것은 아니다.
-  - 전체 WYSIWYG 라이브러리 교체는 저장 포맷 migration, 상세 렌더러, excerpt/OG/검색 인덱싱 경로를 함께 바꿔야 하므로 별도 사이클로 분리하는 편이 안전하다.
-
+  - 이번 수정은 public read surface가 정책 조회/보조 metadata 때문에 먼저 500으로 죽는 문제를 줄인 것이다.
+  - 실제 본문 데이터가 필수인 경로는 DB outage 시 여전히 empty/static 수준으로만 degrade할 수 있으므로, 이후에는 read-only shell 범위를 어디까지 넓힐지 별도 판단이 필요하다.
 
 ### 2026-04-07: Cycle 420 완료 (TownPet blog 댓글/사업 아이디어/Phase 2 본문 3개 작성)
 - 완료 내용
