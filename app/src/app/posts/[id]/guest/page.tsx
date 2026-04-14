@@ -293,7 +293,7 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
                   <div className="whitespace-pre-wrap">{post.content}</div>
                 ) : (
                   <div
-                    className="prose prose-sm max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0"
+                    className="prose prose-sm max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&_img]:!ml-0 [&_img]:!mr-auto [&_img]:block [&_img]:border-0 [&_img]:bg-transparent [&_img]:rounded-none"
                     dangerouslySetInnerHTML={{ __html: renderedContentHtml }}
                   />
                 )}
