@@ -29,7 +29,9 @@ import { PostCommentSectionClient } from "@/components/posts/post-comment-sectio
 import { PostViewTracker } from "@/components/posts/post-view-tracker";
 import { UserActionMenu } from "@/components/user/user-action-menu";
 import { fetchPostCommentPage } from "@/lib/comment-client";
+import { extractImageUrlsFromMarkup } from "@/lib/editor-image-markup";
 import { getGuestPostMeta } from "@/lib/post-guest-meta";
+import { buildPostContentExcerpt } from "@/lib/post-content-text";
 import { resolvePublicGuestDisplayName } from "@/lib/public-guest-identity";
 import { serializeJsonForScriptTag } from "@/lib/json-script";
 import { renderLiteMarkdown } from "@/lib/markdown-lite";
@@ -230,12 +232,6 @@ function ensureDate(value: unknown) {
     if (Number.isFinite(parsed)) return new Date(parsed);
   }
   return new Date();
-}
-
-function buildExcerpt(text: string, maxLength = 160) {
-  const normalized = text.replace(/\s+/g, " ").trim();
-  if (normalized.length <= maxLength) return normalized;
-  return `${normalized.slice(0, maxLength)}...`;
 }
 
 type PostDetailClientProps = {
@@ -525,6 +521,7 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
   const shouldUsePlainFallback =
     renderedContentText.length === 0 || renderedContentText.includes("미리보기 내용이 없습니다");
   const orderedImages = post ? [...post.images].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)) : [];
+  const hasInlineImages = post ? extractImageUrlsFromMarkup(post.content).length > 0 : false;
   const postUrl = post ? toAbsoluteUrl(`/posts/${post.id}`) : null;
   const guestPostMeta = post ? getGuestPostMeta(post) : null;
   const displayAuthorName = guestPostMeta?.isGuestPost
@@ -537,7 +534,7 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
         "@context": "https://schema.org",
         "@type": "SocialMediaPosting",
         headline: post.title,
-        articleBody: buildExcerpt(post.content, 320),
+        articleBody: buildPostContentExcerpt(post.content, 320),
         datePublished: createdAt.toISOString(),
         dateModified: updatedAt.toISOString(),
         mainEntityOfPage: postUrl,
@@ -643,7 +640,7 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
                   />
                 )}
               </article>
-              <PostDetailMediaGallery images={orderedImages} />
+              {!hasInlineImages ? <PostDetailMediaGallery images={orderedImages} /> : null}
             </div>
 
             <div className="tp-border-soft mt-6 space-y-3 border-t pt-4 sm:mt-7 sm:pt-5">
