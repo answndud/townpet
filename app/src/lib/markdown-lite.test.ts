@@ -46,6 +46,15 @@ describe("renderLiteMarkdown", () => {
     expect(html).toContain('style="width:min(100%, 320px);height:auto"');
   });
 
+  it("renders numeric size and hex color tokens", () => {
+    const html = renderLiteMarkdown("[size=12][color=#2563eb]본문[/color][/size]");
+
+    expect(html).toContain('data-size="12"');
+    expect(html).toContain('style="font-size:12px"');
+    expect(html).toContain('data-color="#2563eb"');
+    expect(html).toContain('style="color:#2563eb"');
+  });
+
   it("does not render external markdown images", () => {
     const html = renderLiteMarkdown("![추적 픽셀](https://example.com/pixel.png)");
 

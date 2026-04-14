@@ -1,15 +1,27 @@
 "use client";
 
 import { PostScope, PostType } from "@prisma/client";
-import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import {
+  type FormEvent,
+  type MouseEvent,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 
+import {
+  PostEditorFormatBar,
+  PostEditorQuickActionBar,
+} from "@/components/posts/post-editor-toolbar-controls";
 import { ImageUploadField } from "@/components/ui/image-upload-field";
 import {
   PostEditorToolbarButton,
-  PostEditorToolbarDivider,
   PostRichTextEditorShell,
 } from "@/components/posts/post-rich-text-editor-shell";
 import {
@@ -222,12 +234,15 @@ export function PostCreateForm({
   const router = useRouter();
   const contentRef = useRef<HTMLDivElement>(null);
   const selectionRangeRef = useRef<Range | null>(null);
+  const imageUploadInputId = useId();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [draftLoaded, setDraftLoaded] = useState(false);
   const [draftMessage, setDraftMessage] = useState<string | null>(null);
   const [draftSavedAt, setDraftSavedAt] = useState<string | null>(null);
   const [editorHtml, setEditorHtml] = useState("");
+  const [fontSizeValue, setFontSizeValue] = useState(14);
+  const [textColorValue, setTextColorValue] = useState("#111827");
   const [formState, setFormState] = useState<PostCreateFormState>({
     title: "",
     content: "",
@@ -693,11 +708,40 @@ export function PostCreateForm({
     );
   };
 
+  const restoreEditorSelection = () => {
+    if (typeof window === "undefined") {
+      return null;
+    }
+
+    const editor = contentRef.current;
+    const selection = window.getSelection();
+    if (!editor || !selection) {
+      return null;
+    }
+
+    if (selection.rangeCount > 0) {
+      const currentRange = selection.getRangeAt(0);
+      if (editor.contains(currentRange.commonAncestorContainer)) {
+        return currentRange;
+      }
+    }
+
+    if (!selectionRangeRef.current) {
+      return null;
+    }
+
+    const restoredRange = selectionRangeRef.current.cloneRange();
+    selection.removeAllRanges();
+    selection.addRange(restoredRange);
+    return restoredRange;
+  };
+
   const runEditorCommand = (command: string, value?: string) => {
     if (typeof document === "undefined") {
       return;
     }
     contentRef.current?.focus();
+    restoreEditorSelection();
     if (command === "formatBlock" && value) {
       const normalized = value.trim().replace(/[<>]/g, "");
       const withTag = `<${normalized}>`;
@@ -711,25 +755,39 @@ export function PostCreateForm({
     syncEditorToFormState();
   };
 
-  const preserveToolbarSelection = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const preserveToolbarSelection = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
   };
 
-  const wrapSelectionWithSpan = (className: string) => {
+  const wrapSelectionWithSpan = (options: {
+    className?: string;
+    fontSizePx?: number;
+    color?: string;
+  }) => {
     if (typeof window === "undefined") {
       return;
     }
     const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0) {
+    if (!selection) {
       return;
     }
-    const range = selection.getRangeAt(0);
-    if (!contentRef.current?.contains(range.commonAncestorContainer)) {
+    const range = restoreEditorSelection();
+    if (!range || !contentRef.current?.contains(range.commonAncestorContainer)) {
       return;
     }
 
     const span = document.createElement("span");
-    span.className = className;
+    if (options.className) {
+      span.className = options.className;
+    }
+    if (options.fontSizePx) {
+      span.dataset.size = String(options.fontSizePx);
+      span.style.fontSize = `${options.fontSizePx}px`;
+    }
+    if (options.color) {
+      span.dataset.color = options.color.toLowerCase();
+      span.style.color = options.color.toLowerCase();
+    }
     if (range.collapsed) {
       span.textContent = "텍스트";
       range.insertNode(span);
@@ -748,32 +806,15 @@ export function PostCreateForm({
     syncEditorToFormState();
   };
 
-  const applyStyledSelection = (
-    kind: "size" | "color",
-    value: "small" | "normal" | "large" | "xlarge" | "blue" | "red" | "green" | "gray",
-  ) => {
-    if (kind === "size") {
-      const sizeClass =
-        value === "small"
-          ? "text-xs"
-          : value === "large"
-            ? "text-lg"
-            : value === "xlarge"
-              ? "text-xl font-semibold"
-              : "text-base";
-      wrapSelectionWithSpan(sizeClass);
-      return;
-    }
+  const applyFontSizeSelection = (size: number) => {
+    setFontSizeValue(size);
+    wrapSelectionWithSpan({ fontSizePx: size });
+  };
 
-    const colorClass =
-      value === "red"
-        ? "text-rose-600"
-        : value === "green"
-          ? "text-emerald-700"
-          : value === "gray"
-            ? "text-slate-600"
-            : "text-[#2f5da4]";
-    wrapSelectionWithSpan(colorClass);
+  const applyTextColorSelection = (color: string) => {
+    const normalized = color.toLowerCase();
+    setTextColorValue(normalized);
+    wrapSelectionWithSpan({ color: normalized });
   };
 
   const clearDraft = () => {
@@ -785,7 +826,7 @@ export function PostCreateForm({
     setDraftMessage("임시저장을 삭제했습니다.");
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
     const serializedContent = contentRef.current
@@ -1191,145 +1232,47 @@ export function PostCreateForm({
       </section>
 
       <PostRichTextEditorShell
-        headerContent={(
-          <span
-            className={`ml-auto ${
-              formState.content.length > POST_CONTENT_MAX_LENGTH ? "text-rose-600" : "tp-text-subtle"
-            }`}
-          >
-            {formState.content.length.toLocaleString("ko-KR")} / {POST_CONTENT_MAX_LENGTH.toLocaleString("ko-KR")}자
-          </span>
-        )}
-        mobileToolbar={(
-          <>
-            <PostEditorToolbarButton
-              onClick={() => runEditorCommand("bold")}
-              onMouseDown={preserveToolbarSelection}
-            >
-              B
-            </PostEditorToolbarButton>
-            <PostEditorToolbarButton
-              onClick={() => runEditorCommand("italic")}
-              onMouseDown={preserveToolbarSelection}
-              className="italic"
-            >
-              I
-            </PostEditorToolbarButton>
-            <details className="ml-auto">
-              <summary className="tp-btn-soft inline-flex h-7 cursor-pointer list-none items-center px-2.5 font-semibold">
-                고급
-              </summary>
-              <div className="tp-form-panel mt-2 flex flex-wrap gap-1.5 p-2">
-                <PostEditorToolbarButton
-                  onClick={() => applyStyledSelection("size", "large")}
-                  onMouseDown={preserveToolbarSelection}
-                >
-                  크게
-                </PostEditorToolbarButton>
-                <PostEditorToolbarButton
-                  onClick={() => runEditorCommand("underline")}
-                  onMouseDown={preserveToolbarSelection}
-                  className="underline"
-                >
-                  밑줄
-                </PostEditorToolbarButton>
-                <PostEditorToolbarButton
-                  onClick={() => runEditorCommand("strikeThrough")}
-                  onMouseDown={preserveToolbarSelection}
-                >
-                  취소선
-                </PostEditorToolbarButton>
-              </div>
-            </details>
-          </>
+        topToolbar={(
+          <PostEditorQuickActionBar
+            imageInputId={imageUploadInputId}
+            onBlockquote={() => runEditorCommand("formatBlock", "blockquote")}
+            onBulletList={() => runEditorCommand("insertUnorderedList")}
+            onOrderedList={() => runEditorCommand("insertOrderedList")}
+            onLink={async () => {
+              const url = window.prompt("링크 주소를 입력해 주세요.", "https://");
+              if (!url || !/^https?:\/\//i.test(url.trim())) {
+                return;
+              }
+              runEditorCommand("createLink", url.trim());
+            }}
+            onToolbarMouseDown={preserveToolbarSelection}
+            endContent={(
+              <span
+                className={
+                  formState.content.length > POST_CONTENT_MAX_LENGTH
+                    ? "text-rose-600"
+                    : "tp-text-subtle"
+                }
+              >
+                {formState.content.length.toLocaleString("ko-KR")} / {POST_CONTENT_MAX_LENGTH.toLocaleString("ko-KR")}자
+              </span>
+            )}
+          />
         )}
         toolbar={(
-          <>
-            <PostEditorToolbarButton
-              onClick={() => runEditorCommand("bold")}
-              onMouseDown={preserveToolbarSelection}
-            >
-              B
-            </PostEditorToolbarButton>
-            <PostEditorToolbarButton
-              onClick={() => runEditorCommand("italic")}
-              onMouseDown={preserveToolbarSelection}
-              className="italic"
-            >
-              I
-            </PostEditorToolbarButton>
-            <PostEditorToolbarButton
-              onClick={() => runEditorCommand("strikeThrough")}
-              onMouseDown={preserveToolbarSelection}
-            >
-              취소선
-            </PostEditorToolbarButton>
-            <PostEditorToolbarButton
-              onClick={() => runEditorCommand("underline")}
-              onMouseDown={preserveToolbarSelection}
-              className="underline"
-            >
-              밑줄
-            </PostEditorToolbarButton>
-            <PostEditorToolbarDivider />
-            <PostEditorToolbarButton
-              onClick={() => applyStyledSelection("size", "small")}
-              onMouseDown={preserveToolbarSelection}
-              className="px-2 text-[11px]"
-            >
-              작게
-            </PostEditorToolbarButton>
-            <PostEditorToolbarButton
-              onClick={() => applyStyledSelection("size", "normal")}
-              onMouseDown={preserveToolbarSelection}
-              className="px-2 text-[12px]"
-            >
-              보통
-            </PostEditorToolbarButton>
-            <PostEditorToolbarButton
-              onClick={() => applyStyledSelection("size", "large")}
-              onMouseDown={preserveToolbarSelection}
-              className="px-2 text-sm"
-            >
-              크게
-            </PostEditorToolbarButton>
-            <PostEditorToolbarButton
-              onClick={() => applyStyledSelection("size", "xlarge")}
-              onMouseDown={preserveToolbarSelection}
-              className="px-2 text-base"
-            >
-              매우 크게
-            </PostEditorToolbarButton>
-            <PostEditorToolbarDivider />
-            <PostEditorToolbarButton
-              onClick={() => applyStyledSelection("color", "blue")}
-              onMouseDown={preserveToolbarSelection}
-              className="tp-text-link"
-            >
-              파랑
-            </PostEditorToolbarButton>
-            <PostEditorToolbarButton
-              onClick={() => applyStyledSelection("color", "red")}
-              onMouseDown={preserveToolbarSelection}
-              className="text-rose-600"
-            >
-              빨강
-            </PostEditorToolbarButton>
-            <PostEditorToolbarButton
-              onClick={() => applyStyledSelection("color", "green")}
-              onMouseDown={preserveToolbarSelection}
-              className="text-emerald-700"
-            >
-              초록
-            </PostEditorToolbarButton>
-            <PostEditorToolbarButton
-              onClick={() => applyStyledSelection("color", "gray")}
-              onMouseDown={preserveToolbarSelection}
-              className="text-slate-600"
-            >
-              회색
-            </PostEditorToolbarButton>
-          </>
+          <PostEditorFormatBar
+            fontSizeValue={fontSizeValue}
+            colorValue={textColorValue}
+            onBold={() => runEditorCommand("bold")}
+            onItalic={() => runEditorCommand("italic")}
+            onUnderline={() => runEditorCommand("underline")}
+            onStrike={() => runEditorCommand("strikeThrough")}
+            onUndo={() => runEditorCommand("undo")}
+            onRedo={() => runEditorCommand("redo")}
+            onFontSizeChange={applyFontSizeSelection}
+            onTextColorChange={applyTextColorSelection}
+            onToolbarMouseDown={preserveToolbarSelection}
+          />
         )}
         footerContent={(
           <>
@@ -1353,65 +1296,65 @@ export function PostCreateForm({
         />
       </PostRichTextEditorShell>
 
-      <div id="post-image-upload" className="tp-card p-4">
-        <ImageUploadField
-          value={formState.imageUrls}
-          onChange={(nextUrls) => {
-            setFormState((prev) => {
-              const addedUrls = nextUrls.filter((url) => !prev.imageUrls.includes(url));
-              const removedUrls = prev.imageUrls.filter((url) => !nextUrls.includes(url));
-              if (addedUrls.length > 0 && removedUrls.length === 0 && contentRef.current) {
-                const insertedRange = insertImagesAtSavedSelection({
-                  editor: contentRef.current,
-                  imageUrls: addedUrls,
-                  savedRange: selectionRangeRef.current,
-                });
-                selectionRangeRef.current = insertedRange;
+      <ImageUploadField
+        inputId={imageUploadInputId}
+        showPickerSurface={false}
+        value={formState.imageUrls}
+        onChange={(nextUrls) => {
+          setFormState((prev) => {
+            const addedUrls = nextUrls.filter((url) => !prev.imageUrls.includes(url));
+            const removedUrls = prev.imageUrls.filter((url) => !nextUrls.includes(url));
+            if (addedUrls.length > 0 && removedUrls.length === 0 && contentRef.current) {
+              const insertedRange = insertImagesAtSavedSelection({
+                editor: contentRef.current,
+                imageUrls: addedUrls,
+                savedRange: selectionRangeRef.current,
+              });
+              selectionRangeRef.current = insertedRange;
 
-                const nextContent = serializeEditorHtml(contentRef.current.innerHTML);
-                const finalImageUrls = extractImageUrlsFromMarkup(nextContent);
-                setEditorHtml(contentRef.current.innerHTML);
-
-                return {
-                  ...prev,
-                  imageUrls: finalImageUrls,
-                  content: nextContent,
-                };
-              }
-
-              let nextContent = removedUrls.length > 0
-                ? removeImageTokensByUrls(prev.content, removedUrls)
-                : prev.content;
-
-              if (addedUrls.length > 0) {
-                const existingCount = extractImageUrlsFromMarkup(nextContent).length;
-                const imageMarkdown = buildImageMarkdown(addedUrls, existingCount + 1);
-                const separator = nextContent.trim().length > 0 ? "\n\n" : "";
-                nextContent = `${nextContent}${separator}${imageMarkdown}`;
-              }
-
+              const nextContent = serializeEditorHtml(contentRef.current.innerHTML);
               const finalImageUrls = extractImageUrlsFromMarkup(nextContent);
-              const nextHtml = markupToEditorHtml(nextContent);
-              setEditorHtml(nextHtml);
-              if (contentRef.current) {
-                contentRef.current.innerHTML = nextHtml;
-                selectionRangeRef.current = cloneSelectionRangeWithin(contentRef.current);
-              }
+              setEditorHtml(contentRef.current.innerHTML);
+
               return {
                 ...prev,
                 imageUrls: finalImageUrls,
                 content: nextContent,
               };
-            });
-          }}
-          label="이미지 첨부"
-          maxFiles={isAuthenticated ? 10 : GUEST_MAX_IMAGE_COUNT}
-          guestWriteScope={!isAuthenticated ? "upload" : undefined}
-        />
-        {!isAuthenticated ? (
-          <p className="tp-form-note mt-2">비회원 이미지는 최대 1장, 파일당 2MB까지 업로드할 수 있습니다.</p>
-        ) : null}
-      </div>
+            }
+
+            let nextContent = removedUrls.length > 0
+              ? removeImageTokensByUrls(prev.content, removedUrls)
+              : prev.content;
+
+            if (addedUrls.length > 0) {
+              const existingCount = extractImageUrlsFromMarkup(nextContent).length;
+              const imageMarkdown = buildImageMarkdown(addedUrls, existingCount + 1);
+              const separator = nextContent.trim().length > 0 ? "\n\n" : "";
+              nextContent = `${nextContent}${separator}${imageMarkdown}`;
+            }
+
+            const finalImageUrls = extractImageUrlsFromMarkup(nextContent);
+            const nextHtml = markupToEditorHtml(nextContent);
+            setEditorHtml(nextHtml);
+            if (contentRef.current) {
+              contentRef.current.innerHTML = nextHtml;
+              selectionRangeRef.current = cloneSelectionRangeWithin(contentRef.current);
+            }
+            return {
+              ...prev,
+              imageUrls: finalImageUrls,
+              content: nextContent,
+            };
+          });
+        }}
+        label="본문 이미지"
+        maxFiles={isAuthenticated ? 10 : GUEST_MAX_IMAGE_COUNT}
+        guestWriteScope={!isAuthenticated ? "upload" : undefined}
+      />
+      {!isAuthenticated ? (
+        <p className="tp-form-note -mt-2">비회원 이미지는 최대 1장, 파일당 2MB까지 업로드할 수 있습니다.</p>
+      ) : null}
 
       {showHospitalReview ? (
         <StructuredFieldSection title="병원후기 정보">

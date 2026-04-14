@@ -418,6 +418,17 @@ body {
   line-height: 1;
 }
 
+.tp-editor-toolbar-scroll {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.tp-editor-toolbar-scroll::-webkit-scrollbar {
+  display: none;
+}
+
 .tp-editor-toolbar-soft {
   display: flex;
   flex-wrap: wrap;
