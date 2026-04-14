@@ -33,6 +33,12 @@
 | 게시글 작성/수정 에디터에서 겹치던 서식 버튼을 2열 툴바로 재구성하고, 이미지 업로드를 상단 액션으로 끌어올리며, 폰트 크기를 숫자값으로 선택하고, 색상은 스와치/컬러 피커로 적용되도록 정리한다 | Codex | P1 | `done` | create/edit 폼이 공용 상단 액션 바와 서식 바를 사용하고, 상단에서 이미지 업로드/링크/인용/목록/미리보기를 제어하며, 본문 직렬화/렌더러가 `[size=12]`, `[color=#2563eb]` 같은 숫자/hex 토큰을 지원하고, 관련 lint/test/typecheck/git diff check 결과가 `PROGRESS.md`에 기록된다 | `PLAN.md`, `PROGRESS.md`, `app/src/components/posts/post-create-form.tsx`, `app/src/components/posts/post-detail-edit-form.tsx`, `app/src/components/posts/post-editor-toolbar-controls.tsx`, `app/src/components/posts/post-rich-text-editor-shell.tsx`, `app/src/components/ui/image-upload-field.tsx`, `app/src/lib/editor-content-serializer.ts`, `app/src/lib/markdown-lite.ts`, `app/src/app/globals.css`, 관련 테스트 |
 
 
+### Cycle 426: 게시글 에디터 상단 툴바/서식 UX 정리 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 게시글 작성/수정 에디터에서 겹치던 서식 버튼을 2열 툴바로 재구성하고, 이미지 업로드를 상단 액션으로 끌어올리며, 폰트 크기를 숫자값으로 선택하고, 색상은 스와치/컬러 피커로 적용되도록 정리한다 | Codex | P1 | `done` | create/edit 폼이 공용 상단 액션 바와 서식 바를 사용하고, 상단에서 이미지 업로드/링크/인용/목록/미리보기를 제어하며, 본문 직렬화/렌더러가 `[size=12]`, `[color=#2563eb]` 같은 숫자/hex 토큰을 지원하고, 관련 lint/test/typecheck/git diff check 결과가 `PROGRESS.md`에 기록된다 | `PLAN.md`, `PROGRESS.md`, `app/src/components/posts/post-create-form.tsx`, `app/src/components/posts/post-detail-edit-form.tsx`, `app/src/components/posts/post-editor-toolbar-controls.tsx`, `app/src/components/posts/post-rich-text-editor-shell.tsx`, `app/src/components/ui/image-upload-field.tsx`, `app/src/lib/editor-content-serializer.ts`, `app/src/lib/markdown-lite.ts`, `app/src/app/globals.css`, 관련 테스트 |
+
+
 ### Cycle 422: TownPet blog 문체 통일 및 핵심 다이어그램 보강 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|

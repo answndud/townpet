@@ -33,6 +33,23 @@
   - 전체 WYSIWYG 라이브러리 교체는 저장 포맷 migration, 상세 렌더러, excerpt/OG/검색 인덱싱 경로를 함께 바꿔야 하므로 별도 사이클로 분리하는 편이 안전하다.
 
 
+### 2026-04-14: Cycle 426 완료 (게시글 에디터 상단 툴바/서식 UX 정리)
+- 완료 내용
+  - [post-create-form.tsx](/Users/alex/project/townpet/app/src/components/posts/post-create-form.tsx)와 [post-detail-edit-form.tsx](/Users/alex/project/townpet/app/src/components/posts/post-detail-edit-form.tsx)의 본문 에디터를 공용 상단 액션 바 + 하단 서식 바 구조로 재구성하고, 이미지 업로드를 툴바 상단의 `이미지` 액션으로 이동했다.
+  - 공용 컨트롤 컴포넌트 [post-editor-toolbar-controls.tsx](/Users/alex/project/townpet/app/src/components/posts/post-editor-toolbar-controls.tsx)를 추가해 숫자 폰트 크기 선택, 색상 스와치/컬러 피커, 링크/인용/목록, 수정 화면의 작성/미리보기 토글을 한 구조로 맞췄다.
+  - [image-upload-field.tsx](/Users/alex/project/townpet/app/src/components/ui/image-upload-field.tsx)는 숨김 input + 컴팩트 상태 바 모드를 지원하도록 확장해 기존 대시드 업로드 박스를 상단 툴바 트리거와 연결할 수 있게 했다.
+  - [editor-content-serializer.ts](/Users/alex/project/townpet/app/src/lib/editor-content-serializer.ts)와 [markdown-lite.ts](/Users/alex/project/townpet/app/src/lib/markdown-lite.ts)에 숫자 크기/hex 색상 토큰 직렬화와 렌더링을 추가해 `[size=12]`, `[color=#2563eb]` 형태도 저장/미리보기에서 유지되도록 했다.
+  - 외부 에디터 라이브러리(Tiptap/Lexical 계열) 도입 가능성은 검토했지만, 현재 TownPet 저장 포맷과 렌더러/메타데이터/검색 파이프라인이 커스텀 markup에 직접 결합돼 있어 이번 사이클에서는 라이브러리 교체 대신 기존 스택의 UX를 정리하는 쪽으로 범위를 제한했다.
+- 검증 결과
+  - `corepack pnpm -C app lint src/components/posts/post-create-form.tsx src/components/posts/post-detail-edit-form.tsx src/components/posts/post-editor-toolbar-controls.tsx src/components/posts/post-rich-text-editor-shell.tsx src/components/posts/post-rich-text-editor-shell.test.tsx src/components/ui/image-upload-field.tsx src/lib/editor-content-serializer.ts src/lib/markdown-lite.ts src/lib/markdown-lite.test.ts` 통과
+  - `corepack pnpm -C app test -- src/lib/markdown-lite.test.ts src/components/posts/post-rich-text-editor-shell.test.tsx` 실행 시 현재 환경에서는 Vitest 전체 suite로 확장되어 `186 files / 905 tests` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `git diff --check -- app/src/components/posts/post-create-form.tsx app/src/components/posts/post-detail-edit-form.tsx app/src/components/posts/post-editor-toolbar-controls.tsx app/src/components/posts/post-rich-text-editor-shell.tsx app/src/components/posts/post-rich-text-editor-shell.test.tsx app/src/components/ui/image-upload-field.tsx app/src/lib/editor-content-serializer.ts app/src/lib/markdown-lite.ts app/src/lib/markdown-lite.test.ts app/src/app/globals.css` 통과
+- 메모
+  - 현재 서식 적용은 여전히 `contentEditable + execCommand` 기반이라 selection edge case가 완전히 사라진 것은 아니다.
+  - 전체 WYSIWYG 라이브러리 교체는 저장 포맷 migration, 상세 렌더러, excerpt/OG/검색 인덱싱 경로를 함께 바꿔야 하므로 별도 사이클로 분리하는 편이 안전하다.
+
+
 ### 2026-04-07: Cycle 420 완료 (TownPet blog 댓글/사업 아이디어/Phase 2 본문 3개 작성)
 - 완료 내용
   - [08-comments-and-reactions-architecture.md](/Users/alex/project/townpet/blog/08-comments-and-reactions-architecture.md)를 추가해 댓글 create/update/delete, guest/auth 분기, root 기준 페이지네이션, best comment jump, reaction optimistic UI 구조를 정리했다.
