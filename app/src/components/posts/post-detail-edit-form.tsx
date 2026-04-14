@@ -696,7 +696,7 @@ export function PostDetailEditForm({
           ) : (
             <div className="tp-editor-surface min-h-[260px] px-4 py-3 text-sm">
               <div
-                className="prose prose-sm max-w-none space-y-2 tp-text-primary"
+                className="prose prose-sm max-w-none space-y-2 tp-text-primary [&_img]:!ml-0 [&_img]:!mr-auto [&_img]:block [&_img]:border-0 [&_img]:bg-transparent [&_img]:rounded-none"
                 dangerouslySetInnerHTML={{ __html: previewHtml }}
               />
             </div>

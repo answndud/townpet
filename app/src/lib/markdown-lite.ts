@@ -48,7 +48,7 @@ function replaceLinkToken(value: string) {
         ? ` style="width:min(100%, ${Math.max(80, width)}px);height:auto"`
         : "";
       return createToken(
-        `<img src="${safeUrl}" alt="${alt}" loading="lazy" class="my-2 w-full max-h-[520px] rounded border border-[#d7e3f5] bg-white object-contain"${widthStyle} />`,
+        `<img src="${safeUrl}" alt="${alt}" loading="lazy" class="block h-auto max-h-[520px] max-w-full border-0 bg-transparent object-contain"${widthStyle} />`,
       );
     },
   );
@@ -131,6 +131,8 @@ function renderInline(value: string) {
 
   return restore(withStyles);
 }
+
+const IMAGE_LINE_PATTERN = /^!\[[^\]]*\]\([^\s)]+\)(?:\{\s*width\s*=\s*\d{2,4}\s*\})?$/i;
 
 export function renderLiteMarkdown(value: string) {
   const normalized = value.replace(/\r\n?/g, "\n").trim();
@@ -222,6 +224,11 @@ export function renderLiteMarkdown(value: string) {
           trimmed.slice(2).trim(),
         )}</blockquote>`,
       );
+      continue;
+    }
+
+    if (IMAGE_LINE_PATTERN.test(trimmed)) {
+      blocks.push(`<div class="my-2">${renderInline(trimmed)}</div>`);
       continue;
     }
 
