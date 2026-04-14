@@ -20,6 +20,10 @@ import {
   markupToEditorHtml,
   serializeEditorHtml,
 } from "@/lib/editor-content-serializer";
+import {
+  cloneSelectionRangeWithin,
+  insertImagesAtSavedSelection,
+} from "@/lib/editor-inline-image";
 import { GUEST_MAX_IMAGE_COUNT } from "@/lib/guest-post-policy";
 import { POST_CONTENT_MAX_LENGTH, POST_TITLE_MAX_LENGTH } from "@/lib/input-limits";
 import { renderLiteMarkdown } from "@/lib/markdown-lite";
@@ -75,6 +79,7 @@ export function PostDetailEditForm({
 }: PostDetailEditFormProps) {
   const router = useRouter();
   const contentRef = useRef<HTMLDivElement>(null);
+  const selectionRangeRef = useRef<Range | null>(null);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [editorTab, setEditorTab] = useState<EditorTab>("write");
@@ -100,6 +105,25 @@ export function PostDetailEditForm({
       element.innerHTML = editorHtml;
     }
   }, [editorHtml, editorTab]);
+
+  useEffect(() => {
+    const captureSelection = () => {
+      const editor = contentRef.current;
+      if (!editor) {
+        return;
+      }
+
+      const nextRange = cloneSelectionRangeWithin(editor);
+      if (nextRange) {
+        selectionRangeRef.current = nextRange;
+      }
+    };
+
+    document.addEventListener("selectionchange", captureSelection);
+    return () => {
+      document.removeEventListener("selectionchange", captureSelection);
+    };
+  }, []);
 
   useEffect(() => {
     const editor = contentRef.current;
@@ -687,6 +711,30 @@ export function PostDetailEditForm({
             setFormState((prev) => {
               const addedUrls = nextUrls.filter((url) => !prev.imageUrls.includes(url));
               const removedUrls = prev.imageUrls.filter((url) => !nextUrls.includes(url));
+              if (
+                addedUrls.length > 0 &&
+                removedUrls.length === 0 &&
+                editorTab === "write" &&
+                contentRef.current
+              ) {
+                const insertedRange = insertImagesAtSavedSelection({
+                  editor: contentRef.current,
+                  imageUrls: addedUrls,
+                  savedRange: selectionRangeRef.current,
+                });
+                selectionRangeRef.current = insertedRange;
+
+                const nextContent = serializeEditorHtml(contentRef.current.innerHTML);
+                const finalImageUrls = extractImageUrlsFromMarkup(nextContent);
+                setEditorHtml(contentRef.current.innerHTML);
+
+                return {
+                  ...prev,
+                  imageUrls: finalImageUrls,
+                  content: nextContent,
+                };
+              }
+
               let nextContent = removedUrls.length > 0
                 ? removeImageTokensByUrls(prev.content, removedUrls)
                 : prev.content;
@@ -702,6 +750,7 @@ export function PostDetailEditForm({
               const nextHtml = markupToEditorHtml(nextContent);
               if (contentRef.current) {
                 contentRef.current.innerHTML = nextHtml;
+                selectionRangeRef.current = cloneSelectionRangeWithin(contentRef.current);
               }
               setEditorHtml(nextHtml);
 

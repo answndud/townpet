@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import type { PostScope, PostStatus, PostType } from "@prisma/client";
 
 import { canGuestReadPost } from "@/lib/post-access";
+import { buildPostContentExcerpt } from "@/lib/post-content-text";
 import { toAbsoluteUrl } from "@/lib/site-url";
 
 type PostImageMetadata = {
@@ -21,11 +22,7 @@ export type PostMetadataRecord = {
 };
 
 export function buildExcerpt(text: string, maxLength = 160) {
-  const normalized = text.replace(/\s+/g, " ").trim();
-  if (normalized.length <= maxLength) {
-    return normalized;
-  }
-  return `${normalized.slice(0, maxLength)}...`;
+  return buildPostContentExcerpt(text, maxLength);
 }
 
 export function ensureDate(value: unknown) {

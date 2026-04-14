@@ -118,13 +118,8 @@ test.describe("image upload flow", () => {
     const createdPostId = await findPostIdByTitle(title);
     await page.goto(`/posts/${createdPostId}`);
     await expect(page).toHaveURL(new RegExp(`/posts/${createdPostId}$`));
-    await expect(page.getByText("첨부파일")).toBeVisible();
-    const attachmentLinks = page
-      .locator("p")
-      .filter({ hasText: "첨부파일" })
-      .locator("xpath=..")
-      .locator("a");
-    await expect(attachmentLinks).toHaveCount(2);
+    await expect(page.locator("article img")).toHaveCount(2);
+    await expect(page.getByText("첨부 이미지")).toHaveCount(0);
 
     await page.getByRole("link", { name: "수정" }).click();
     await expect(page).toHaveURL(new RegExp(`/posts/${createdPostId}/edit$`));
@@ -138,7 +133,8 @@ test.describe("image upload flow", () => {
     await page.getByRole("button", { name: "수정 저장" }).click();
 
     await expect(page).toHaveURL(new RegExp(`/posts/${createdPostId}$`));
-    await expect(attachmentLinks).toHaveCount(1);
+    await expect(page.locator("article img")).toHaveCount(1);
+    await expect(page.getByText("첨부 이미지")).toHaveCount(0);
 
     page.once("dialog", (dialog) => {
       void dialog.accept();

@@ -33,6 +33,10 @@ import {
   markupToEditorHtml,
   serializeEditorHtml,
 } from "@/lib/editor-content-serializer";
+import {
+  cloneSelectionRangeWithin,
+  insertImagesAtSavedSelection,
+} from "@/lib/editor-inline-image";
 import { POST_CONTENT_MAX_LENGTH, POST_TITLE_MAX_LENGTH } from "@/lib/input-limits";
 import { REVIEW_CATEGORY, type ReviewCategory } from "@/lib/review-category";
 import {
@@ -217,6 +221,7 @@ export function PostCreateForm({
 }: PostCreateFormProps) {
   const router = useRouter();
   const contentRef = useRef<HTMLDivElement>(null);
+  const selectionRangeRef = useRef<Range | null>(null);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [draftLoaded, setDraftLoaded] = useState(false);
@@ -338,6 +343,25 @@ export function PostCreateForm({
       element.innerHTML = editorHtml;
     }
   }, [editorHtml]);
+
+  useEffect(() => {
+    const captureSelection = () => {
+      const editor = contentRef.current;
+      if (!editor) {
+        return;
+      }
+
+      const nextRange = cloneSelectionRangeWithin(editor);
+      if (nextRange) {
+        selectionRangeRef.current = nextRange;
+      }
+    };
+
+    document.addEventListener("selectionchange", captureSelection);
+    return () => {
+      document.removeEventListener("selectionchange", captureSelection);
+    };
+  }, []);
 
   useEffect(() => {
     const editor = contentRef.current;
@@ -1336,6 +1360,25 @@ export function PostCreateForm({
             setFormState((prev) => {
               const addedUrls = nextUrls.filter((url) => !prev.imageUrls.includes(url));
               const removedUrls = prev.imageUrls.filter((url) => !nextUrls.includes(url));
+              if (addedUrls.length > 0 && removedUrls.length === 0 && contentRef.current) {
+                const insertedRange = insertImagesAtSavedSelection({
+                  editor: contentRef.current,
+                  imageUrls: addedUrls,
+                  savedRange: selectionRangeRef.current,
+                });
+                selectionRangeRef.current = insertedRange;
+
+                const nextContent = serializeEditorHtml(contentRef.current.innerHTML);
+                const finalImageUrls = extractImageUrlsFromMarkup(nextContent);
+                setEditorHtml(contentRef.current.innerHTML);
+
+                return {
+                  ...prev,
+                  imageUrls: finalImageUrls,
+                  content: nextContent,
+                };
+              }
+
               let nextContent = removedUrls.length > 0
                 ? removeImageTokensByUrls(prev.content, removedUrls)
                 : prev.content;
@@ -1352,8 +1395,8 @@ export function PostCreateForm({
               setEditorHtml(nextHtml);
               if (contentRef.current) {
                 contentRef.current.innerHTML = nextHtml;
+                selectionRangeRef.current = cloneSelectionRangeWithin(contentRef.current);
               }
-
               return {
                 ...prev,
                 imageUrls: finalImageUrls,

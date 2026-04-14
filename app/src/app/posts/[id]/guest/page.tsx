@@ -16,6 +16,7 @@ import { PostShareControls } from "@/components/posts/post-share-controls";
 import { PostCommentSectionClient } from "@/components/posts/post-comment-section-client";
 import { PostViewTracker } from "@/components/posts/post-view-tracker";
 import { getCspNonce } from "@/lib/csp-nonce";
+import { extractImageUrlsFromMarkup } from "@/lib/editor-image-markup";
 import { serializeJsonForScriptTag } from "@/lib/json-script";
 import { renderLiteMarkdown } from "@/lib/markdown-lite";
 import {
@@ -202,6 +203,7 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
   const shouldUsePlainFallback =
     renderedContentText.length === 0 || renderedContentText.includes("미리보기 내용이 없습니다");
   const orderedImages = [...post.images].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  const hasInlineImages = extractImageUrlsFromMarkup(post.content).length > 0;
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "SocialMediaPosting",
@@ -296,7 +298,7 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
                   />
                 )}
               </article>
-              <PostDetailMediaGallery images={orderedImages} />
+              {!hasInlineImages ? <PostDetailMediaGallery images={orderedImages} /> : null}
             </div>
 
             <div className="tp-border-soft mt-6 space-y-3 border-t pt-4 sm:mt-7 sm:pt-5">
