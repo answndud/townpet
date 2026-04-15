@@ -7,7 +7,13 @@ import {
 } from "@/lib/post-editor-color-palette";
 
 type MockButton = {
+  children: MockElement[];
+  ownerDocument: {
+    createElement: (tagName: string) => MockElement;
+  };
   getAttribute: (name: string) => string | null;
+  querySelector: (selector: string) => MockElement | null;
+  replaceChildren: (...children: MockElement[]) => void;
   setAttribute: (name: string, value: string) => void;
   style: {
     getPropertyValue: (name: string) => string;
@@ -15,12 +21,46 @@ type MockButton = {
   };
 };
 
+type MockElement = {
+  className: string;
+  attributes: Map<string, string>;
+  setAttribute: (name: string, value: string) => void;
+  style: {
+    backgroundColor: string;
+  };
+};
+
+function createMockElement(): MockElement {
+  return {
+    className: "",
+    attributes: new Map<string, string>(),
+    setAttribute(name, value) {
+      this.attributes.set(name, value);
+    },
+    style: {
+      backgroundColor: "",
+    },
+  };
+}
+
 function createMockButton(initialColor: string): MockButton {
   const attributes = new Map<string, string>([["data-value", initialColor]]);
   const styleProperties = new Map<string, string>();
-
-  return {
+  const button: MockButton = {
+    children: [],
+    ownerDocument: {
+      createElement: () => createMockElement(),
+    },
     getAttribute: (name) => attributes.get(name) ?? null,
+    querySelector: (selector) => {
+      if (selector !== ".tp-se-color-swatch-fill") {
+        return null;
+      }
+      return (button.children.find((child) => child.className === "tp-se-color-swatch-fill") ?? null) as MockElement | null;
+    },
+    replaceChildren: (...children) => {
+      button.children = children;
+    },
     setAttribute: (name, value) => {
       attributes.set(name, value);
     },
@@ -31,6 +71,8 @@ function createMockButton(initialColor: string): MockButton {
       },
     },
   };
+
+  return button;
 }
 
 describe("post editor color palette", () => {
@@ -51,9 +93,10 @@ describe("post editor color palette", () => {
 
     syncSunEditorColorSwatches(root);
 
-    expect(redButton.style.getPropertyValue("--tp-color-swatch")).toBe("#ff0000");
     expect(redButton.getAttribute("data-tp-swatch")).toBe("#ff0000");
-    expect(whiteButton.style.getPropertyValue("--tp-color-swatch")).toBe("#ffffff");
+    expect(redButton.children[0]?.className).toBe("tp-se-color-swatch-fill");
+    expect(redButton.children[0]?.style.backgroundColor).toBe("#ff0000");
     expect(whiteButton.getAttribute("data-tp-swatch")).toBe("#ffffff");
+    expect(whiteButton.children[0]?.style.backgroundColor).toBe("#ffffff");
   });
 });

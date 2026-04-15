@@ -78,7 +78,16 @@ export function syncSunEditorColorSwatches(root: ParentNode) {
       return;
     }
 
-    button.style.setProperty("--tp-color-swatch", colorValue);
     button.setAttribute("data-tp-swatch", colorValue);
+
+    let fill = button.querySelector<HTMLElement>(".tp-se-color-swatch-fill");
+    if (!fill) {
+      fill = button.ownerDocument.createElement("span");
+      fill.className = "tp-se-color-swatch-fill";
+      fill.setAttribute("aria-hidden", "true");
+      button.replaceChildren(fill);
+    }
+
+    fill.style.backgroundColor = colorValue;
   });
 }

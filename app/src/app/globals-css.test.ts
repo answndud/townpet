@@ -47,10 +47,9 @@ describe("globals.css semantic color roles", () => {
     expect(css).toContain(".se-selector-color + .se-form-group");
     expect(css).toContain("appearance: none");
     expect(css).toContain("aspect-ratio: 1 / 1");
-    expect(css).toContain("--tp-color-swatch");
     expect(css).toContain("data-tp-swatch");
     expect(css).toContain("background: transparent !important");
-    expect(css).toContain("button::before");
+    expect(css).toContain(".tp-se-color-swatch-fill");
     expect(css).toContain(".tp-divider-soft");
   });
 });

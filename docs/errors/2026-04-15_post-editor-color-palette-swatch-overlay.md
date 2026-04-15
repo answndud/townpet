@@ -11,13 +11,13 @@
 
 ## 수정
 - `app/src/lib/post-editor-color-palette.ts`에 64색(8열) palette를 분리하고 SunEditor 옵션에서 이를 사용하도록 변경했다.
-- 같은 파일의 `syncSunEditorColorSwatches`로 각 `button[data-value]`에 `--tp-color-swatch`와 `data-tp-swatch`를 직접 주입했다.
-- `app/src/app/globals.css`에서 swatch 버튼 본체 배경은 숨기고 `::before` overlay가 실제 색 타일을 그리도록 바꿨다.
-- hover/active/focus 상태도 pseudo element 기준으로 다시 그려 square swatch가 깨지지 않게 했다.
+- 같은 파일의 `syncSunEditorColorSwatches`로 각 `button[data-value]`에 `data-tp-swatch`를 남기고, 실제 `.tp-se-color-swatch-fill` child node를 주입해 색을 inline background로 직접 그리도록 바꿨다.
+- `app/src/app/globals.css`에서 swatch 버튼 본체 배경은 숨기고, child node가 실제 색 타일을 그리도록 바꿨다.
+- hover/active/focus 상태도 button box-shadow 기준으로 다시 그려 square swatch가 깨지지 않게 했다.
 
 ## 회귀 방지
 - `app/src/lib/post-editor-color-palette.test.ts`에서 palette 크기(64색)와 swatch decoration helper를 검증한다.
-- `app/src/app/globals-css.test.ts`에서 8열 grid, `--tp-color-swatch`, pseudo-element 기반 스타일 문자열 존재를 확인한다.
+- `app/src/app/globals-css.test.ts`에서 8열 grid, `data-tp-swatch`, child swatch 스타일 문자열 존재를 확인한다.
 
 ## 검증
 - `corepack pnpm -C app typecheck`
