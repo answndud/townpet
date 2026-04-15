@@ -54,20 +54,12 @@ const COLOR_PALETTE = [
   "#ffffff",
 ];
 const FONT_COLOR_ICON = `
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
-    <path
-      d="M12.15 4.5c-4.3 0-7.65 3.16-7.65 7.14 0 3.81 3.07 6.86 6.88 6.86h1.24c.8 0 1.45-.65 1.45-1.45 0-.33-.11-.64-.31-.89-.23-.3-.35-.65-.35-1.03 0-.94.76-1.7 1.7-1.7h1.26c2.27 0 4.13-1.83 4.13-4.09 0-3.26-3.73-5.84-8.35-5.84Z"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="1.8"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-    />
-    <circle cx="8.35" cy="10.05" r="1.05" fill="#ef4444" />
-    <circle cx="11.85" cy="8.25" r="1.05" fill="#f59e0b" />
-    <circle cx="15.25" cy="9.9" r="1.05" fill="#10b981" />
-    <circle cx="8.95" cy="14.15" r="1.05" fill="#2563eb" />
-  </svg>
+  <span class="tp-se-font-color-icon" aria-hidden="true">
+    <span class="tp-se-font-color-icon__swatch tp-se-font-color-icon__swatch--ink"></span>
+    <span class="tp-se-font-color-icon__swatch tp-se-font-color-icon__swatch--red"></span>
+    <span class="tp-se-font-color-icon__swatch tp-se-font-color-icon__swatch--amber"></span>
+    <span class="tp-se-font-color-icon__swatch tp-se-font-color-icon__swatch--blue"></span>
+  </span>
 `.trim();
 
 type UploadApiResponse = {

@@ -500,6 +500,42 @@ body {
   border-radius: 0.55rem;
 }
 
+.tp-sun-editor-wrap .sun-editor .tp-se-font-color-icon,
+.tp-sun-editor-wrap .sun-editor .tp-se-font-color-icon * {
+  pointer-events: none;
+}
+
+.tp-sun-editor-wrap .sun-editor .tp-se-font-color-icon {
+  display: inline-grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2px;
+  width: 15px;
+  height: 15px;
+}
+
+.tp-sun-editor-wrap .sun-editor .tp-se-font-color-icon__swatch {
+  display: block;
+  border-radius: 3px;
+  border: 1px solid rgba(31, 63, 113, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.24);
+}
+
+.tp-sun-editor-wrap .sun-editor .tp-se-font-color-icon__swatch--ink {
+  background: #111827;
+}
+
+.tp-sun-editor-wrap .sun-editor .tp-se-font-color-icon__swatch--red {
+  background: #dc2626;
+}
+
+.tp-sun-editor-wrap .sun-editor .tp-se-font-color-icon__swatch--amber {
+  background: #f59e0b;
+}
+
+.tp-sun-editor-wrap .sun-editor .tp-se-font-color-icon__swatch--blue {
+  background: #2563eb;
+}
+
 .tp-sun-editor-wrap .sun-editor .se-wrapper {
   background: #ffffff;
 }
