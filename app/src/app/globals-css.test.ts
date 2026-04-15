@@ -39,6 +39,9 @@ describe("globals.css semantic color roles", () => {
     expect(css).toContain(".tp-editor-toolbar");
     expect(css).toContain(".tp-editor-toolbar-soft");
     expect(css).toContain(".tp-editor-surface");
+    expect(css).toContain(".tp-se-font-color-icon");
+    expect(css).toContain("pointer-events: none");
+    expect(css).toContain(".tp-se-font-color-icon__swatch--blue");
     expect(css).toContain(".tp-divider-soft");
   });
 });
