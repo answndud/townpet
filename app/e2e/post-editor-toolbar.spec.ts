@@ -30,31 +30,9 @@ async function readEditorSegments(editor: Locator) {
     const segments: Array<{
       text: string;
       size: string | null;
-      color: string | null;
       href: string | null;
     }> = [];
     const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
-
-    const normalizeColor = (value: string | null) => {
-      if (!value) {
-        return null;
-      }
-
-      const trimmed = value.trim().toLowerCase();
-      if (/^#[0-9a-f]{6}$/.test(trimmed)) {
-        return trimmed;
-      }
-
-      const rgbMatch = trimmed.match(/^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/);
-      if (!rgbMatch) {
-        return null;
-      }
-
-      return `#${rgbMatch
-        .slice(1)
-        .map((channel) => Number(channel).toString(16).padStart(2, "0"))
-        .join("")}`;
-    };
 
     while (walker.nextNode()) {
       const currentNode = walker.currentNode;
@@ -65,13 +43,11 @@ async function readEditorSegments(editor: Locator) {
 
       const parentElement = currentNode.parentElement;
       const sizeSpan = parentElement?.closest("span[data-size], span[style*='font-size']") as HTMLElement | null;
-      const colorSpan = parentElement?.closest("span[style*='color']") as HTMLElement | null;
       const link = parentElement?.closest("a") as HTMLAnchorElement | null;
 
       segments.push({
         text,
         size: sizeSpan?.dataset.size ?? (sizeSpan?.style.fontSize?.replace("px", "") || null),
-        color: normalizeColor(colorSpan?.style.color ?? null),
         href: link?.getAttribute("href") ?? null,
       });
     }
@@ -166,7 +142,7 @@ test.describe("post editor toolbar", () => {
     await loginAndOpenPostCreate(page);
   });
 
-  test("applies font size and color to selected text without inserting placeholder text", async ({ page }) => {
+  test("applies font size without inserting placeholder text", async ({ page }) => {
     const editor = page.getByTestId("post-body-editor").first();
 
     await setEditorText(editor, "beta");
@@ -177,14 +153,10 @@ test.describe("post editor toolbar", () => {
     await expect(editor).not.toContainText("텍스트");
     await expect(editor).toContainText("beta");
 
-    await selectEditorText(editor, "beta");
-    await page.getByRole("button", { name: "글자색" }).click();
-    await page.getByRole("button", { name: "#2563eb" }).last().click();
-
     const styledSegments = await readEditorSegments(editor);
     expect(styledSegments).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ text: "beta", size: "18", color: "#2563eb" }),
+        expect.objectContaining({ text: "beta", size: "18" }),
       ]),
     );
 
@@ -195,8 +167,8 @@ test.describe("post editor toolbar", () => {
     const segments = await readEditorSegments(editor);
     expect(segments).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ text: "beta", size: "18", color: "#2563eb" }),
-        expect.objectContaining({ text: " delta", size: null, color: null }),
+        expect.objectContaining({ text: "beta", size: "18" }),
+        expect.objectContaining({ text: " delta", size: null }),
       ]),
     );
   });

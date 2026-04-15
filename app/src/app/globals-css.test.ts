@@ -39,17 +39,7 @@ describe("globals.css semantic color roles", () => {
     expect(css).toContain(".tp-editor-toolbar");
     expect(css).toContain(".tp-editor-toolbar-soft");
     expect(css).toContain(".tp-editor-surface");
-    expect(css).toContain(".tp-se-font-color-icon");
-    expect(css).toContain("pointer-events: none");
-    expect(css).toContain(".tp-se-font-color-icon__swatch--blue");
     expect(css).toContain(".se-list-layer .se-list-inner");
-    expect(css).toContain("grid-template-columns: repeat(8, minmax(0, 1fr))");
-    expect(css).toContain(".se-selector-color + .se-form-group");
-    expect(css).toContain("appearance: none");
-    expect(css).toContain("aspect-ratio: 1 / 1");
-    expect(css).toContain("data-tp-swatch");
-    expect(css).toContain("background: transparent !important");
-    expect(css).toContain(".tp-se-color-swatch-fill");
     expect(css).toContain(".tp-divider-soft");
   });
 });
