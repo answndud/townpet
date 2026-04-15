@@ -488,16 +488,55 @@ body {
   box-shadow: 0 18px 40px rgba(16, 40, 74, 0.16);
 }
 
+.tp-sun-editor-wrap .sun-editor .se-list-layer .se-list-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.25rem;
+}
+
 .tp-sun-editor-wrap .sun-editor .se-list-layer .se-btn-list {
   color: #1f3558;
 }
 
 .tp-sun-editor-wrap .sun-editor .se-list-layer .se-selector-color {
-  padding: 0.25rem;
+  display: block;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
 }
 
-.tp-sun-editor-wrap .sun-editor .se-list-layer .se-selector-color .se-color-pallet button {
+.tp-sun-editor-wrap .sun-editor .se-list-layer .se-selector-color .se-color-pallet {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.5rem;
+  width: 100%;
+  height: auto;
+}
+
+.tp-sun-editor-wrap .sun-editor .se-list-layer .se-selector-color .se-color-pallet li {
+  display: block;
+  float: none;
+  margin: 0;
+}
+
+.tp-sun-editor-wrap .sun-editor .se-list-layer .se-selector-color .se-color-pallet li > button {
+  min-width: 0;
+  width: 100%;
+  height: 2rem;
   border-radius: 0.55rem;
+  border: 1px solid rgba(31, 63, 113, 0.14);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.24);
+}
+
+.tp-sun-editor-wrap .sun-editor .se-list-layer .se-selector-color .se-color-pallet li > button[style*="#ffffff"] {
+  border-color: #c7d6eb;
+}
+
+.tp-sun-editor-wrap .sun-editor .se-list-layer .se-selector-color + .se-form-group {
+  width: 100%;
+  padding: 0;
 }
 
 .tp-sun-editor-wrap .sun-editor .tp-se-font-color-icon,

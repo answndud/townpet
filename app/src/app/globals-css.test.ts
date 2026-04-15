@@ -42,6 +42,9 @@ describe("globals.css semantic color roles", () => {
     expect(css).toContain(".tp-se-font-color-icon");
     expect(css).toContain("pointer-events: none");
     expect(css).toContain(".tp-se-font-color-icon__swatch--blue");
+    expect(css).toContain(".se-list-layer .se-list-inner");
+    expect(css).toContain("grid-template-columns: repeat(6, minmax(0, 1fr))");
+    expect(css).toContain(".se-selector-color + .se-form-group");
     expect(css).toContain(".tp-divider-soft");
   });
 });
