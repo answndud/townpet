@@ -522,12 +522,18 @@ body {
 }
 
 .tp-sun-editor-wrap .sun-editor .se-list-layer .se-selector-color .se-color-pallet li > button {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
   min-width: 0;
   width: 100%;
-  height: 2rem;
-  border-radius: 0.55rem;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  padding: 0;
+  border-radius: 0.5rem;
   border: 1px solid rgba(31, 63, 113, 0.14);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.24);
+  background-clip: padding-box;
 }
 
 .tp-sun-editor-wrap .sun-editor .se-list-layer .se-selector-color .se-color-pallet li > button[style*="#ffffff"] {
