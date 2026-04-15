@@ -33,26 +33,16 @@ import {
   DEFAULT_POST_EDITOR_FONT_SIZE,
   DEFAULT_POST_EDITOR_TEXT_COLOR,
 } from "@/lib/post-editor-font-size";
+import {
+  POST_EDITOR_COLOR_PALETTE,
+  syncSunEditorColorSwatches,
+} from "@/lib/post-editor-color-palette";
 import { type GuestWriteScope, getGuestWriteHeaders } from "@/lib/guest-step-up.client";
 import { renderLiteMarkdown } from "@/lib/markdown-lite";
 
 const SunEditor = dynamic(() => import("suneditor-react"), { ssr: false });
 
 const FONT_SIZE_OPTIONS = [12, 14, 16, 18, 20, 24, 28, 32];
-const COLOR_PALETTE = [
-  "#111827",
-  "#475569",
-  "#dc2626",
-  "#ea580c",
-  "#ca8a04",
-  "#16a34a",
-  "#0f766e",
-  "#2563eb",
-  "#4338ca",
-  "#7c3aed",
-  "#db2777",
-  "#ffffff",
-];
 const FONT_COLOR_ICON = `
   <span class="tp-se-font-color-icon" aria-hidden="true">
     <span class="tp-se-font-color-icon__swatch tp-se-font-color-icon__swatch--ink"></span>
@@ -185,7 +175,7 @@ export const PostBodyRichEditor = forwardRef<PostBodyRichEditorHandle, PostBodyR
       ],
       fontSize: FONT_SIZE_OPTIONS,
       fontSizeUnit: "px",
-      colorList: COLOR_PALETTE,
+      colorList: Array.from(POST_EDITOR_COLOR_PALETTE),
       icons: {
         font_color: FONT_COLOR_ICON,
       },
@@ -345,6 +335,10 @@ export const PostBodyRichEditor = forwardRef<PostBodyRichEditorHandle, PostBodyR
     editable.setAttribute("aria-label", "본문");
 
     const editorRoot = editable.closest(".sun-editor");
+    if (editorRoot) {
+      syncSunEditorColorSwatches(editorRoot);
+    }
+
     const imageFileInputs = editorRoot?.querySelectorAll<HTMLInputElement>("input._se_image_file");
     imageFileInputs?.forEach((input) => {
       input.setAttribute("data-testid", "post-editor-image-file-input");
@@ -387,6 +381,8 @@ export const PostBodyRichEditor = forwardRef<PostBodyRichEditorHandle, PostBodyR
       if (!control.closest(".se-toolbar") && !control.closest(".se-submenu")) {
         return;
       }
+
+      syncSunEditorColorSwatches(editorRoot);
 
       if (
         control.closest(".se-list-font-size") ||
