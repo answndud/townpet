@@ -30,6 +30,7 @@ import { formatRelativeDate } from "@/lib/post-presenter";
 import { isReportablePostType } from "@/lib/post-type-groups";
 import { toAbsoluteUrl } from "@/lib/site-url";
 import { resolveUserDisplayName } from "@/lib/user-display";
+import { isPrismaDatabaseUnavailableError } from "@/server/prisma-database-error";
 import { getGuestReadLoginRequiredPostTypes } from "@/server/queries/policy.queries";
 import { getPostById, getPostMetadataById } from "@/server/queries/post.queries";
 import { assertPostReadable } from "@/server/services/post-read-access.service";
@@ -46,7 +47,12 @@ export async function generateMetadata({
 }: PostDetailPageProps): Promise<Metadata> {
   const resolvedParams = (await params) ?? {};
   const [post, loginRequiredTypes] = await Promise.all([
-    getPostMetadataById(resolvedParams.id),
+    getPostMetadataById(resolvedParams.id).catch((error) => {
+      if (isPrismaDatabaseUnavailableError(error)) {
+        return null;
+      }
+      throw error;
+    }),
     getGuestReadLoginRequiredPostTypes(),
   ]);
 

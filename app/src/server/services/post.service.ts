@@ -89,7 +89,7 @@ type CreatePostParams = {
 
 const MAX_POST_IMAGES = 10;
 const GUEST_LINK_PATTERN = /https?:\/\/[\S]+/i;
-const GUEST_IMAGE_MARKDOWN_PATTERN = /!\[[^\]]*\]\(([^)\s]+)\)(?:\{\s*width\s*=\s*\d{2,4}\s*\})?/gi;
+const GUEST_IMAGE_MARKDOWN_PATTERN = /!\[[^\]]*\]\(([^)\s]+)\)(?:\{\s*width\s*=\s*\d{1,4}\s*\})?/gi;
 const POST_VIEW_TTL_SECONDS = 60 * 60 * 6;
 const postViewStore = new Map<string, number>();
 let postViewRedisFailureLoggedAt = 0;

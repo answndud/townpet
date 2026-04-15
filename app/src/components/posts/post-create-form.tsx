@@ -3,9 +3,7 @@
 import { PostScope, PostType } from "@prisma/client";
 import {
   type FormEvent,
-  type MouseEvent,
   useEffect,
-  useId,
   useMemo,
   useRef,
   useState,
@@ -15,22 +13,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 
-import {
-  PostEditorFormatBar,
-  PostEditorQuickActionBar,
-} from "@/components/posts/post-editor-toolbar-controls";
-import { ImageUploadField } from "@/components/ui/image-upload-field";
+import { PostBodyRichEditor } from "@/components/posts/post-body-rich-editor";
+import type { PostBodyRichEditorHandle } from "@/components/posts/post-body-rich-editor";
+import { areSameStringArray } from "@/lib/editor-image-markup";
 import {
   PostEditorToolbarButton,
-  PostRichTextEditorShell,
 } from "@/components/posts/post-rich-text-editor-shell";
-import {
-  areSameStringArray,
-  buildImageMarkdown,
-  collapseAdjacentDuplicateImageTokens,
-  extractImageUrlsFromMarkup,
-  removeImageTokensByUrls,
-} from "@/lib/editor-image-markup";
 import {
   GUEST_BLOCKED_POST_TYPES,
   GUEST_MAX_IMAGE_COUNT,
@@ -42,19 +30,6 @@ import {
   isCommonBoardPostType,
 } from "@/lib/community-board";
 import { isFreeBoardPostType } from "@/lib/post-type-groups";
-import {
-  markupToEditorHtml,
-  serializeEditorHtml,
-} from "@/lib/editor-content-serializer";
-import {
-  cloneSelectionRangeWithin,
-  DEFAULT_EDITOR_FONT_SIZE,
-  DEFAULT_EDITOR_TEXT_COLOR,
-  getSelectionInlineStyleState,
-  insertImagesAtSavedSelection,
-  moveCaretAfterStyledNode,
-  restoreSelectionRangeWithin,
-} from "@/lib/editor-inline-image";
 import { POST_CONTENT_MAX_LENGTH, POST_TITLE_MAX_LENGTH } from "@/lib/input-limits";
 import { REVIEW_CATEGORY, type ReviewCategory } from "@/lib/review-category";
 import {
@@ -238,17 +213,14 @@ export function PostCreateForm({
   canCreateAdoptionListing = false,
 }: PostCreateFormProps) {
   const router = useRouter();
-  const contentRef = useRef<HTMLDivElement>(null);
-  const selectionRangeRef = useRef<Range | null>(null);
-  const imageUploadInputId = useId();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [draftLoaded, setDraftLoaded] = useState(false);
   const [draftMessage, setDraftMessage] = useState<string | null>(null);
   const [draftSavedAt, setDraftSavedAt] = useState<string | null>(null);
-  const [editorHtml, setEditorHtml] = useState("");
-  const [fontSizeValue, setFontSizeValue] = useState(DEFAULT_EDITOR_FONT_SIZE);
-  const [textColorValue, setTextColorValue] = useState(DEFAULT_EDITOR_TEXT_COLOR);
+  const editorHandleRef = useRef<PostBodyRichEditorHandle | null>(null);
+  const latestEditorContentRef = useRef("");
+  const latestEditorImageUrlsRef = useRef<string[]>([]);
   const [formState, setFormState] = useState<PostCreateFormState>({
     title: "",
     content: "",
@@ -307,19 +279,10 @@ export function PostCreateForm({
     guestPassword: "",
   });
 
-  function syncToolbarStyleState(range: Range | null) {
-    const editor = contentRef.current;
-    if (!editor) {
-      return;
-    }
-
-    const nextStyle = getSelectionInlineStyleState({
-      editor,
-      range,
-    });
-    setFontSizeValue((prev) => (prev === nextStyle.fontSize ? prev : nextStyle.fontSize));
-    setTextColorValue((prev) => (prev === nextStyle.textColor ? prev : nextStyle.textColor));
-  }
+  useEffect(() => {
+    latestEditorContentRef.current = formState.content;
+    latestEditorImageUrlsRef.current = formState.imageUrls;
+  }, [formState.content, formState.imageUrls]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -348,7 +311,6 @@ export function PostCreateForm({
           guestDisplayName: draftForm.guestDisplayName ?? "",
           guestPassword: "",
         }));
-        setEditorHtml(markupToEditorHtml(draftForm.content ?? ""));
       }
       if (parsed.savedAt) {
         setDraftSavedAt(parsed.savedAt);
@@ -360,165 +322,6 @@ export function PostCreateForm({
     } finally {
       setDraftLoaded(true);
     }
-  }, []);
-
-  useEffect(() => {
-    if (draftLoaded) {
-      return;
-    }
-    setEditorHtml(markupToEditorHtml(formState.content));
-  }, [draftLoaded, formState.content]);
-
-  useEffect(() => {
-    const element = contentRef.current;
-    if (!element) {
-      return;
-    }
-    if (element.innerHTML !== editorHtml) {
-      element.innerHTML = editorHtml;
-    }
-  }, [editorHtml]);
-
-  useEffect(() => {
-    const captureSelection = () => {
-      const editor = contentRef.current;
-      if (!editor) {
-        return;
-      }
-
-      const nextRange = cloneSelectionRangeWithin(editor);
-      if (nextRange) {
-        selectionRangeRef.current = nextRange;
-        syncToolbarStyleState(nextRange);
-      }
-    };
-
-    document.addEventListener("selectionchange", captureSelection);
-    return () => {
-      document.removeEventListener("selectionchange", captureSelection);
-    };
-  }, []);
-
-  useEffect(() => {
-    const editor = contentRef.current;
-    if (!editor) {
-      return;
-    }
-
-    editor.style.position = "relative";
-    const cornerSize = 16;
-    let hoveredImage: HTMLImageElement | null = null;
-
-    const handle = document.createElement("span");
-    handle.setAttribute("aria-hidden", "true");
-    handle.style.position = "absolute";
-    handle.style.width = "12px";
-    handle.style.height = "12px";
-    handle.style.borderRadius = "2px";
-    handle.style.border = "1px solid #8ea9cf";
-    handle.style.background = "linear-gradient(135deg, #f7fbff 0%, #dbe8fa 100%)";
-    handle.style.boxShadow = "0 1px 2px rgba(16, 40, 74, 0.18)";
-    handle.style.pointerEvents = "none";
-    handle.style.display = "none";
-    editor.appendChild(handle);
-
-    const isNearBottomRight = (event: PointerEvent, image: HTMLImageElement) => {
-      const rect = image.getBoundingClientRect();
-      return event.clientX >= rect.right - cornerSize && event.clientY >= rect.bottom - cornerSize;
-    };
-
-    const positionHandle = (image: HTMLImageElement) => {
-      const editorRect = editor.getBoundingClientRect();
-      const imageRect = image.getBoundingClientRect();
-      handle.style.left = `${imageRect.right - editorRect.left - 10}px`;
-      handle.style.top = `${imageRect.bottom - editorRect.top - 10}px`;
-      handle.style.display = "block";
-    };
-
-    const clearHoverState = () => {
-      if (hoveredImage) {
-        hoveredImage.style.outline = "";
-      }
-      hoveredImage = null;
-      handle.style.display = "none";
-      editor.style.cursor = "text";
-    };
-
-    const handlePointerMove = (event: PointerEvent) => {
-      const target = event.target;
-      if (!(target instanceof HTMLImageElement) || !editor.contains(target)) {
-        clearHoverState();
-        return;
-      }
-
-      if (hoveredImage && hoveredImage !== target) {
-        hoveredImage.style.outline = "";
-      }
-      hoveredImage = target;
-      target.style.outline = "1px dashed #8ea9cf";
-      positionHandle(target);
-
-      if (isNearBottomRight(event, target)) {
-        editor.style.cursor = "nwse-resize";
-      } else {
-        editor.style.cursor = "text";
-      }
-    };
-
-    const handlePointerDown = (event: PointerEvent) => {
-      const target = event.target;
-      if (!(target instanceof HTMLImageElement) || !editor.contains(target)) {
-        return;
-      }
-      if (!isNearBottomRight(event, target)) {
-        return;
-      }
-
-      event.preventDefault();
-      const startX = event.clientX;
-      const startWidth = target.getBoundingClientRect().width;
-      const maxWidth = Math.max(240, editor.getBoundingClientRect().width - 24);
-
-      const handleMove = (moveEvent: PointerEvent) => {
-        const deltaX = moveEvent.clientX - startX;
-        const nextWidth = Math.min(maxWidth, Math.max(120, Math.round(startWidth + deltaX)));
-        target.style.width = `${nextWidth}px`;
-        target.style.height = "auto";
-        positionHandle(target);
-      };
-
-      const handleUp = () => {
-        window.removeEventListener("pointermove", handleMove);
-        window.removeEventListener("pointerup", handleUp);
-        syncEditorToFormState();
-      };
-
-      window.addEventListener("pointermove", handleMove);
-      window.addEventListener("pointerup", handleUp);
-    };
-
-    const handlePointerLeave = () => {
-      clearHoverState();
-    };
-
-    const handleScroll = () => {
-      if (hoveredImage) {
-        positionHandle(hoveredImage);
-      }
-    };
-
-    editor.addEventListener("pointermove", handlePointerMove);
-    editor.addEventListener("pointerdown", handlePointerDown);
-    editor.addEventListener("pointerleave", handlePointerLeave);
-    editor.addEventListener("scroll", handleScroll);
-    return () => {
-      clearHoverState();
-      editor.removeEventListener("pointermove", handlePointerMove);
-      editor.removeEventListener("pointerdown", handlePointerDown);
-      editor.removeEventListener("pointerleave", handlePointerLeave);
-      editor.removeEventListener("scroll", handleScroll);
-      handle.remove();
-    };
   }, []);
 
   useEffect(() => {
@@ -714,149 +517,6 @@ export function PostCreateForm({
       formState.volunteerRecruitment.capacity.trim().length > 0 ||
       formState.volunteerRecruitment.status.trim().length > 0);
 
-  const syncEditorToFormState = () => {
-    const element = contentRef.current;
-    if (!element) {
-      return;
-    }
-    const html = element.innerHTML;
-    const serialized = collapseAdjacentDuplicateImageTokens(serializeEditorHtml(html));
-    const nextImageUrls = extractImageUrlsFromMarkup(serialized);
-    setFormState((prev) =>
-      prev.content === serialized && areSameStringArray(prev.imageUrls, nextImageUrls)
-        ? prev
-        : { ...prev, content: serialized, imageUrls: nextImageUrls },
-    );
-  };
-
-  const captureToolbarSelection = () => {
-    const editor = contentRef.current;
-    if (!editor) {
-      return;
-    }
-
-    const nextRange = cloneSelectionRangeWithin(editor);
-    if (!nextRange) {
-      return;
-    }
-
-    selectionRangeRef.current = nextRange;
-    syncToolbarStyleState(nextRange);
-  };
-
-  const runEditorCommand = (command: string, value?: string) => {
-    if (typeof document === "undefined") {
-      return;
-    }
-    const editor = contentRef.current;
-    if (!editor) {
-      return;
-    }
-
-    const restoredRange = restoreSelectionRangeWithin({
-      editor,
-      savedRange: selectionRangeRef.current,
-      preferSaved: true,
-    });
-    if (!restoredRange) {
-      return;
-    }
-
-    if (command === "formatBlock" && value) {
-      const normalized = value.trim().replace(/[<>]/g, "");
-      const withTag = `<${normalized}>`;
-      const ok = document.execCommand(command, false, withTag);
-      if (!ok) {
-        document.execCommand(command, false, normalized);
-      }
-    } else {
-      document.execCommand(command, false, value);
-    }
-    const nextRange = cloneSelectionRangeWithin(editor);
-    selectionRangeRef.current = nextRange;
-    syncToolbarStyleState(nextRange);
-    syncEditorToFormState();
-  };
-
-  const preserveToolbarSelection = (event: MouseEvent<HTMLButtonElement>) => {
-    captureToolbarSelection();
-    event.preventDefault();
-  };
-
-  const wrapSelectionWithSpan = (options: {
-    className?: string;
-    fontSizePx?: number;
-    color?: string;
-  }) => {
-    if (typeof window === "undefined") {
-      return;
-    }
-    const selection = window.getSelection();
-    if (!selection) {
-      return false;
-    }
-    const editor = contentRef.current;
-    if (!editor) {
-      return false;
-    }
-    const range = restoreSelectionRangeWithin({
-      editor,
-      savedRange: selectionRangeRef.current,
-      preferSaved: true,
-    });
-    if (!range || !contentRef.current?.contains(range.commonAncestorContainer)) {
-      return false;
-    }
-    if (range.collapsed) {
-      return false;
-    }
-
-    const span = document.createElement("span");
-    if (options.className) {
-      span.className = options.className;
-    }
-    if (options.fontSizePx) {
-      span.dataset.size = String(options.fontSizePx);
-      span.style.fontSize = `${options.fontSizePx}px`;
-    }
-    if (options.color) {
-      span.dataset.color = options.color.toLowerCase();
-      span.style.color = options.color.toLowerCase();
-    }
-    const insertedNode: HTMLElement = span;
-    try {
-      range.surroundContents(span);
-    } catch {
-      span.appendChild(range.extractContents());
-      range.insertNode(span);
-    }
-    const nextRange = moveCaretAfterStyledNode({
-      editor,
-      insertedNode,
-    });
-    if (nextRange) {
-      selection.removeAllRanges();
-      selection.addRange(nextRange);
-    }
-    selectionRangeRef.current = nextRange;
-    syncToolbarStyleState(nextRange);
-    syncEditorToFormState();
-    return nextRange;
-  };
-
-  const applyFontSizeSelection = (size: number) => {
-    if (!wrapSelectionWithSpan({ fontSizePx: size })) {
-      syncToolbarStyleState(selectionRangeRef.current);
-    }
-  };
-
-  const applyTextColorSelection = (color: string) => {
-    const normalized = color.toLowerCase();
-    if (!wrapSelectionWithSpan({ color: normalized })) {
-      syncToolbarStyleState(selectionRangeRef.current);
-    }
-  };
-
   const clearDraft = () => {
     if (typeof window === "undefined") {
       return;
@@ -869,10 +529,9 @@ export function PostCreateForm({
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
-    const serializedContent = contentRef.current
-      ? collapseAdjacentDuplicateImageTokens(serializeEditorHtml(contentRef.current.innerHTML))
-      : formState.content;
-    const serializedImageUrls = extractImageUrlsFromMarkup(serializedContent);
+    const editorSnapshot = editorHandleRef.current?.getSerializedState();
+    const serializedContent = editorSnapshot?.content ?? latestEditorContentRef.current;
+    const serializedImageUrls = editorSnapshot?.imageUrls ?? latestEditorImageUrlsRef.current;
     if (!serializedContent.trim()) {
       setError("내용을 입력해 주세요.");
       return;
@@ -1027,7 +686,6 @@ export function PostCreateForm({
       setDraftMessage("게시글을 등록해 임시저장을 비웠습니다.");
       router.push("/feed");
       router.refresh();
-      setEditorHtml("");
       setFormState((prev) => ({
         ...prev,
         title: "",
@@ -1271,51 +929,26 @@ export function PostCreateForm({
         ) : null}
       </section>
 
-      <PostRichTextEditorShell
-        topToolbar={(
-          <PostEditorQuickActionBar
-            imageInputId={imageUploadInputId}
-            onBlockquote={() => runEditorCommand("formatBlock", "blockquote")}
-            onBulletList={() => runEditorCommand("insertUnorderedList")}
-            onOrderedList={() => runEditorCommand("insertOrderedList")}
-            onLink={async () => {
-              const url = window.prompt("링크 주소를 입력해 주세요.", "https://");
-              if (!url || !/^https?:\/\//i.test(url.trim())) {
-                return;
-              }
-              runEditorCommand("createLink", url.trim());
-            }}
-            onToolbarSelectionCapture={captureToolbarSelection}
-            onToolbarMouseDown={preserveToolbarSelection}
-            endContent={(
-              <span
-                className={
-                  formState.content.length > POST_CONTENT_MAX_LENGTH
-                    ? "text-rose-600"
-                    : "tp-text-subtle"
-                }
-              >
-                {formState.content.length.toLocaleString("ko-KR")} / {POST_CONTENT_MAX_LENGTH.toLocaleString("ko-KR")}자
-              </span>
-            )}
-          />
-        )}
-        toolbar={(
-          <PostEditorFormatBar
-            fontSizeValue={fontSizeValue}
-            colorValue={textColorValue}
-            onBold={() => runEditorCommand("bold")}
-            onItalic={() => runEditorCommand("italic")}
-            onUnderline={() => runEditorCommand("underline")}
-            onStrike={() => runEditorCommand("strikeThrough")}
-            onUndo={() => runEditorCommand("undo")}
-            onRedo={() => runEditorCommand("redo")}
-            onFontSizeChange={applyFontSizeSelection}
-            onTextColorChange={applyTextColorSelection}
-            onToolbarSelectionCapture={captureToolbarSelection}
-            onToolbarMouseDown={preserveToolbarSelection}
-          />
-        )}
+        <PostBodyRichEditor
+          ref={editorHandleRef}
+          value={formState.content}
+          imageUrls={formState.imageUrls}
+          onChange={(nextContent, nextImageUrls) => {
+            latestEditorContentRef.current = nextContent;
+            latestEditorImageUrlsRef.current = nextImageUrls;
+            setFormState((prev) =>
+              prev.content === nextContent && areSameStringArray(prev.imageUrls, nextImageUrls)
+                ? prev
+              : {
+                  ...prev,
+                  content: nextContent,
+                  imageUrls: nextImageUrls,
+                },
+          );
+        }}
+        maxFiles={isAuthenticated ? 10 : GUEST_MAX_IMAGE_COUNT}
+        guestWriteScope={!isAuthenticated ? "upload" : undefined}
+        contentMaxLength={POST_CONTENT_MAX_LENGTH}
         footerContent={(
           <>
             <PostEditorToolbarButton onClick={clearDraft}>임시저장 삭제</PostEditorToolbarButton>
@@ -1327,75 +960,6 @@ export function PostCreateForm({
             {draftMessage ? <span className="tp-text-accent">{draftMessage}</span> : null}
           </>
         )}
-      >
-        <div
-          ref={contentRef}
-          contentEditable
-          suppressContentEditableWarning
-          onInput={syncEditorToFormState}
-          onBlur={syncEditorToFormState}
-          className="tp-editor-surface min-h-[340px] w-full border-0 px-4 py-3 text-sm leading-relaxed outline-none [&_img]:h-auto [&_img]:max-w-full"
-        />
-      </PostRichTextEditorShell>
-
-      <ImageUploadField
-        inputId={imageUploadInputId}
-        showPickerSurface={false}
-        value={formState.imageUrls}
-        onChange={(nextUrls) => {
-          setFormState((prev) => {
-            const addedUrls = nextUrls.filter((url) => !prev.imageUrls.includes(url));
-            const removedUrls = prev.imageUrls.filter((url) => !nextUrls.includes(url));
-            if (addedUrls.length > 0 && removedUrls.length === 0 && contentRef.current) {
-              const insertedRange = insertImagesAtSavedSelection({
-                editor: contentRef.current,
-                imageUrls: addedUrls,
-                savedRange: selectionRangeRef.current,
-              });
-              selectionRangeRef.current = insertedRange;
-
-              const nextContent = collapseAdjacentDuplicateImageTokens(
-                serializeEditorHtml(contentRef.current.innerHTML),
-              );
-              const finalImageUrls = extractImageUrlsFromMarkup(nextContent);
-              setEditorHtml(contentRef.current.innerHTML);
-
-              return {
-                ...prev,
-                imageUrls: finalImageUrls,
-                content: nextContent,
-              };
-            }
-
-            let nextContent = removedUrls.length > 0
-              ? removeImageTokensByUrls(prev.content, removedUrls)
-              : prev.content;
-
-            if (addedUrls.length > 0) {
-              const existingCount = extractImageUrlsFromMarkup(nextContent).length;
-              const imageMarkdown = buildImageMarkdown(addedUrls, existingCount + 1);
-              const separator = nextContent.trim().length > 0 ? "\n\n" : "";
-              nextContent = `${nextContent}${separator}${imageMarkdown}`;
-            }
-            nextContent = collapseAdjacentDuplicateImageTokens(nextContent);
-
-            const finalImageUrls = extractImageUrlsFromMarkup(nextContent);
-            const nextHtml = markupToEditorHtml(nextContent);
-            setEditorHtml(nextHtml);
-            if (contentRef.current) {
-              contentRef.current.innerHTML = nextHtml;
-              selectionRangeRef.current = cloneSelectionRangeWithin(contentRef.current);
-            }
-            return {
-              ...prev,
-              imageUrls: finalImageUrls,
-              content: nextContent,
-            };
-          });
-        }}
-        label="본문 이미지"
-        maxFiles={isAuthenticated ? 10 : GUEST_MAX_IMAGE_COUNT}
-        guestWriteScope={!isAuthenticated ? "upload" : undefined}
       />
       {!isAuthenticated ? (
         <p className="tp-form-note -mt-2">비회원 이미지는 최대 1장, 파일당 2MB까지 업로드할 수 있습니다.</p>

@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "suneditor/dist/css/suneditor.min.css";
 
 :root {
   --background: #f8fafd;
@@ -444,6 +445,146 @@ body {
 .tp-editor-surface {
   background: #fcfdff;
   color: #1f3f71;
+}
+
+.tp-sun-editor-wrap .sun-editor {
+  border: 1px solid #d7e1f0;
+  border-radius: 1rem;
+  background: #ffffff;
+  color: #1f3558;
+  overflow: hidden;
+}
+
+.tp-sun-editor-wrap .sun-editor .se-toolbar {
+  outline: none;
+  border-bottom: 1px solid #dbe6f6;
+  background: linear-gradient(180deg, #fbfdff 0%, #f3f8ff 100%);
+  padding: 0.5rem;
+}
+
+.tp-sun-editor-wrap .sun-editor .se-btn,
+.tp-sun-editor-wrap .sun-editor .se-btn-select {
+  border-radius: 0.75rem;
+  color: #274b7a;
+}
+
+.tp-sun-editor-wrap .sun-editor .se-btn:enabled:hover,
+.tp-sun-editor-wrap .sun-editor .se-btn-select:enabled:hover,
+.tp-sun-editor-wrap .sun-editor .se-btn:enabled:focus,
+.tp-sun-editor-wrap .sun-editor .se-btn-select:enabled:focus {
+  background: #eaf1ff;
+}
+
+.tp-sun-editor-wrap .sun-editor .se-btn:enabled.active,
+.tp-sun-editor-wrap .sun-editor .se-btn:enabled.on,
+.tp-sun-editor-wrap .sun-editor .se-btn-select.active {
+  background: #dce9ff;
+  color: #1f4fa0;
+}
+
+.tp-sun-editor-wrap .sun-editor .se-list-layer {
+  border-color: #d7e1f0;
+  border-radius: 0.9rem;
+  box-shadow: 0 18px 40px rgba(16, 40, 74, 0.16);
+}
+
+.tp-sun-editor-wrap .sun-editor .se-list-layer .se-btn-list {
+  color: #1f3558;
+}
+
+.tp-sun-editor-wrap .sun-editor .se-list-layer .se-selector-color {
+  padding: 0.25rem;
+}
+
+.tp-sun-editor-wrap .sun-editor .se-list-layer .se-selector-color .se-color-pallet button {
+  border-radius: 0.55rem;
+}
+
+.tp-sun-editor-wrap .sun-editor .se-wrapper {
+  background: #ffffff;
+}
+
+.tp-sun-editor-wrap .sun-editor .sun-editor-editable {
+  min-height: 340px;
+  padding: 1rem;
+  background: #ffffff;
+  color: #1f3f71;
+  font-size: 14px;
+  line-height: 1.75;
+}
+
+.tp-sun-editor-wrap .sun-editor .sun-editor-editable blockquote {
+  margin: 1rem 0;
+  border-left: 3px solid #bfd0ec;
+  padding-left: 0.9rem;
+  color: #4f678d;
+}
+
+.tp-sun-editor-wrap .sun-editor .sun-editor-editable img {
+  display: block;
+  margin-left: 0;
+  margin-right: auto;
+  max-width: 100%;
+  height: auto;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.tp-editor-prosemirror {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.tp-editor-prosemirror:focus {
+  outline: none;
+}
+
+.tp-editor-prosemirror > * + * {
+  margin-top: 0.75rem;
+}
+
+.tp-editor-prosemirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: #8da3c2;
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+.tp-editor-prosemirror ul,
+.tp-editor-prosemirror ol {
+  padding-left: 1.5rem;
+}
+
+.tp-editor-prosemirror blockquote {
+  border-left: 2px solid #bfd0ec;
+  color: #4f678d;
+  padding-left: 0.75rem;
+}
+
+.tp-editor-prosemirror a {
+  color: #2f5da4;
+  text-decoration: underline;
+}
+
+.tp-editor-prosemirror code {
+  border-radius: 0.25rem;
+  background: #eef4ff;
+  padding: 0.125rem 0.25rem;
+}
+
+.tp-editor-image {
+  display: block;
+  margin-left: 0;
+  margin-right: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: 520px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  object-fit: contain;
 }
 
 .tp-divider-soft {

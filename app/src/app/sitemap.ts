@@ -4,6 +4,7 @@ import { PostScope, PostStatus } from "@prisma/client";
 import { hasBreedLoungeRoute } from "@/lib/pet-profile";
 import { prisma } from "@/lib/prisma";
 import { getSiteOrigin } from "@/lib/site-url";
+import { isPrismaDatabaseUnavailableError } from "@/server/prisma-database-error";
 import { listEffectiveBreedCatalogGroupedBySpecies } from "@/server/queries/breed-catalog.queries";
 import { getGuestReadLoginRequiredPostTypes } from "@/server/queries/policy.queries";
 
@@ -22,7 +23,12 @@ async function getPublicSitemapPostWhere() {
 
 export async function generateSitemaps() {
   const where = await getPublicSitemapPostWhere();
-  const totalCount = await prisma.post.count({ where });
+  const totalCount = await prisma.post.count({ where }).catch((error) => {
+    if (isPrismaDatabaseUnavailableError(error)) {
+      return 0;
+    }
+    throw error;
+  });
   const totalPages = Math.max(1, Math.ceil(totalCount / SITEMAP_POST_PAGE_SIZE));
 
   return Array.from({ length: totalPages }, (_, id) => ({ id }));
@@ -45,6 +51,11 @@ export default async function sitemap({
     orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
     skip: resolvedId * SITEMAP_POST_PAGE_SIZE,
     take: SITEMAP_POST_PAGE_SIZE,
+  }).catch((error) => {
+    if (isPrismaDatabaseUnavailableError(error)) {
+      return [];
+    }
+    throw error;
   });
 
   const staticRoutes: MetadataRoute.Sitemap =
@@ -94,7 +105,14 @@ export default async function sitemap({
     resolvedId === 0
       ? Array.from(
           new Set(
-            Object.values(await listEffectiveBreedCatalogGroupedBySpecies())
+            Object.values(
+              await listEffectiveBreedCatalogGroupedBySpecies().catch((error) => {
+                if (isPrismaDatabaseUnavailableError(error)) {
+                  return {};
+                }
+                throw error;
+              }),
+            )
               .flat()
               .map((entry) => entry.code)
               .filter((breedCode) => hasBreedLoungeRoute(breedCode)),

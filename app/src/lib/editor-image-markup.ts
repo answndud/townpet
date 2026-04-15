@@ -1,5 +1,5 @@
-const IMAGE_TOKEN_REGEX = /!\[[^\]]*\]\(([^)\s]+)\)(?:\{\s*width\s*=\s*\d{2,4}\s*\})?/g;
-const IMAGE_BLOCK_REGEX = /^!\[[^\]]*\]\(([^)\s]+)\)(?:\{\s*width\s*=\s*\d{2,4}\s*\})?$/;
+const IMAGE_TOKEN_REGEX = /!\[[^\]]*\]\(([^)\s]+)\)(?:\{\s*width\s*=\s*\d{1,4}\s*\})?/g;
+const IMAGE_BLOCK_REGEX = /^!\[[^\]]*\]\(([^)\s]+)\)(?:\{\s*width\s*=\s*\d{1,4}\s*\})?$/;
 
 function normalizeUrls(urls: string[]) {
   return Array.from(

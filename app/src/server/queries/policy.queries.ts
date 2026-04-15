@@ -33,6 +33,7 @@ import {
 import { prisma } from "@/lib/prisma";
 import { bumpCacheVersion, createQueryCacheKey, withQueryCache } from "@/server/cache/query-cache";
 import { logger, serializeError } from "@/server/logger";
+import { isPrismaDatabaseUnavailableError } from "@/server/prisma-database-error";
 import { assertSchemaDelegate, rethrowSchemaSyncRequired } from "@/server/schema-sync";
 
 type SiteSettingRecord = {
@@ -58,6 +59,7 @@ type SetGuestReadPolicyResult =
 
 let missingDelegateWarned = false;
 let missingTableWarned = false;
+let databaseUnavailableWarned = false;
 
 function isSiteSettingTableMissingError(error: unknown) {
   return (
@@ -73,6 +75,17 @@ function warnMissingSiteSettingTable(error: unknown) {
 
   missingTableWarned = true;
   logger.warn("SiteSetting 테이블이 없어 기본 정책 fallback을 사용합니다.", {
+    error: serializeError(error),
+  });
+}
+
+function warnDatabaseUnavailableFallback(error: unknown) {
+  if (databaseUnavailableWarned || process.env.NODE_ENV === "test") {
+    return;
+  }
+
+  databaseUnavailableWarned = true;
+  logger.warn("SiteSetting 조회 중 DB 연결 실패로 guest read policy 기본값 fallback을 사용합니다.", {
     error: serializeError(error),
   });
 }
@@ -123,6 +136,10 @@ export async function getGuestReadLoginRequiredPostTypes() {
           select: { value: true },
         });
       } catch (error) {
+        if (isPrismaDatabaseUnavailableError(error)) {
+          warnDatabaseUnavailableFallback(error);
+          return [...DEFAULT_LOGIN_REQUIRED_POST_TYPES];
+        }
         throwPolicySchemaSyncRequired(error);
       }
 

@@ -35,6 +35,12 @@ importers:
       sharp:
         specifier: ^0.34.5
         version: 0.34.5
+      suneditor:
+        specifier: ^2.47.10
+        version: 2.47.10
+      suneditor-react:
+        specifier: ^3.6.1
+        version: 3.6.1(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(suneditor@2.47.10)
       zod:
         specifier: ^4.3.6
         version: 4.3.6
@@ -2501,6 +2507,17 @@ packages:
         optional: true
       babel-plugin-macros:
         optional: true
+
+  suneditor-react@3.6.1:
+    resolution: {integrity: sha512-12f9KLnEB6pAdyHJINTzRBg3UOWVZZ+jVYSEtwdBTDYQW4amUZr0xOnpikbBAlxb9rcTYV5RHAsad3gnNhLsuA==}
+    peerDependencies:
+      react: '>= 16.8.0'
+      react-dom: '>= 16.8.0'
+      suneditor: ^2.44.10
+
+  suneditor@2.47.10:
+    resolution: {integrity: sha512-FGpb4r9wXq4YfQ7QiY4Prw4SWiqohYWhxzDhMTJoJhGvUubiPCP8yEDMw01cUBe7itGY9q0OWZbaKlgidf9b1w==}
+    engines: {node: <13.0.0}
 
   supports-color@7.2.0:
     resolution: {integrity: sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw==}
@@ -5215,6 +5232,14 @@ snapshots:
       react: 19.2.3
     optionalDependencies:
       '@babel/core': 7.29.0
+
+  suneditor-react@3.6.1(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(suneditor@2.47.10):
+    dependencies:
+      react: 19.2.3
+      react-dom: 19.2.3(react@19.2.3)
+      suneditor: 2.47.10
+
+  suneditor@2.47.10: {}
 
   supports-color@7.2.0:
     dependencies:

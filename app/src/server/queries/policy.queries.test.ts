@@ -1,6 +1,8 @@
+import { Prisma } from "@prisma/client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { DEFAULT_FEED_PERSONALIZATION_POLICY } from "@/lib/feed-personalization-policy";
+import { DEFAULT_LOGIN_REQUIRED_POST_TYPES } from "@/lib/post-access";
 import { prisma } from "@/lib/prisma";
 import {
   getFeedPersonalizationPolicy,
@@ -58,6 +60,16 @@ describe("policy queries", () => {
 
     await expect(getFeedPersonalizationPolicy()).resolves.toEqual(
       DEFAULT_FEED_PERSONALIZATION_POLICY,
+    );
+  });
+
+  it("returns fail-closed guest read defaults when the database is unavailable", async () => {
+    mockPrisma.siteSetting?.findUnique.mockRejectedValue(
+      new Prisma.PrismaClientInitializationError("db down", "5.22.0"),
+    );
+
+    await expect(getGuestReadLoginRequiredPostTypes()).resolves.toEqual(
+      DEFAULT_LOGIN_REQUIRED_POST_TYPES,
     );
   });
 

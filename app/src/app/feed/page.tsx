@@ -56,6 +56,7 @@ import {
   getUserWithNeighborhoods,
   listPetsByUserId,
 } from "@/server/queries/user.queries";
+import { isPrismaDatabaseUnavailableError } from "@/server/prisma-database-error";
 
 type FeedMode = "ALL" | "BEST";
 type FeedSort = "LATEST" | "LIKE" | "COMMENT";
@@ -174,10 +175,6 @@ function toFeedDensity(value?: string): FeedDensity {
   return value === "ULTRA" ? "ULTRA" : "DEFAULT";
 }
 
-function isDatabaseUnavailableError(error: unknown) {
-  return error instanceof Prisma.PrismaClientInitializationError;
-}
-
 function isMissingAudienceSegmentQueryError(error: unknown) {
   if (!(error instanceof Prisma.PrismaClientKnownRequestError)) {
     return false;
@@ -225,7 +222,7 @@ export default async function Home({ searchParams }: HomePageProps) {
   ).filter((id) => allPetTypeIds.includes(id));
   const user = userId
     ? await getUserWithNeighborhoods(userId).catch((error) => {
-        if (isDatabaseUnavailableError(error)) {
+        if (isPrismaDatabaseUnavailableError(error)) {
           return null;
         }
         throw error;
@@ -457,7 +454,7 @@ export default async function Home({ searchParams }: HomePageProps) {
             minLikes: 1,
             viewerId: user?.id,
           }).catch((error) => {
-            if (isDatabaseUnavailableError(error)) {
+            if (isPrismaDatabaseUnavailableError(error)) {
               return 0;
             }
             throw error;
@@ -476,7 +473,7 @@ export default async function Home({ searchParams }: HomePageProps) {
             neighborhoodId,
             viewerId: user?.id,
           }).catch((error) => {
-            if (isDatabaseUnavailableError(error)) {
+            if (isPrismaDatabaseUnavailableError(error)) {
               return 0;
             }
             throw error;
@@ -506,7 +503,7 @@ export default async function Home({ searchParams }: HomePageProps) {
           viewerId: user?.id,
           personalized: usePersonalizedFeed,
         }).catch((error) => {
-          if (isDatabaseUnavailableError(error)) {
+          if (isPrismaDatabaseUnavailableError(error)) {
             return { items: [], nextCursor: null };
           }
           throw error;
@@ -532,7 +529,7 @@ export default async function Home({ searchParams }: HomePageProps) {
           minLikes: 1,
           viewerId: user?.id,
         }).catch((error) => {
-          if (isDatabaseUnavailableError(error)) {
+          if (isPrismaDatabaseUnavailableError(error)) {
             return [];
           }
           throw error;
@@ -580,7 +577,7 @@ export default async function Home({ searchParams }: HomePageProps) {
       ? await Promise.all([
           listAudienceSegmentsByUserId(viewerUserId).catch((error) => {
             if (
-              isDatabaseUnavailableError(error) ||
+              isPrismaDatabaseUnavailableError(error) ||
               isMissingAudienceSegmentQueryError(error)
             ) {
               return [];
@@ -588,14 +585,14 @@ export default async function Home({ searchParams }: HomePageProps) {
             throw error;
           }),
           listPetsByUserId(viewerUserId, { limit: 1, cacheTtlMs: 60_000 }).catch((error) => {
-            if (isDatabaseUnavailableError(error)) {
+            if (isPrismaDatabaseUnavailableError(error)) {
               return [];
             }
             throw error;
           }),
           listViewerRecentEngagementSummaryLabels(viewerUserId).catch((error) => {
             if (
-              isDatabaseUnavailableError(error) ||
+              isPrismaDatabaseUnavailableError(error) ||
               error instanceof Prisma.PrismaClientKnownRequestError
             ) {
               return [];
@@ -604,7 +601,7 @@ export default async function Home({ searchParams }: HomePageProps) {
           }),
           listViewerRecentBehaviorSummaryLabels(viewerUserId).catch((error) => {
             if (
-              isDatabaseUnavailableError(error) ||
+              isPrismaDatabaseUnavailableError(error) ||
               error instanceof Prisma.PrismaClientKnownRequestError
             ) {
               return [];
@@ -613,7 +610,7 @@ export default async function Home({ searchParams }: HomePageProps) {
           }),
           listViewerRecentDwellSummaryLabels(viewerUserId).catch((error) => {
             if (
-              isDatabaseUnavailableError(error) ||
+              isPrismaDatabaseUnavailableError(error) ||
               error instanceof Prisma.PrismaClientKnownRequestError
             ) {
               return [];
@@ -622,7 +619,7 @@ export default async function Home({ searchParams }: HomePageProps) {
           }),
           listViewerRecentBookmarkSummaryLabels(viewerUserId).catch((error) => {
             if (
-              isDatabaseUnavailableError(error) ||
+              isPrismaDatabaseUnavailableError(error) ||
               error instanceof Prisma.PrismaClientKnownRequestError
             ) {
               return [];

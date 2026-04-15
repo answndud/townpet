@@ -4,6 +4,7 @@ import { z } from "zod";
 
 import { isLoginRequiredPostType } from "@/lib/post-access";
 import { monitorUnhandledError } from "@/server/error-monitor";
+import { isPrismaDatabaseUnavailableError } from "@/server/prisma-database-error";
 import { getGuestReadLoginRequiredPostTypes } from "@/server/queries/policy.queries";
 import { listRankedSearchPosts } from "@/server/queries/post.queries";
 import { getPopularSearchTerms } from "@/server/queries/search.queries";
@@ -56,6 +57,11 @@ export async function GET(request: NextRequest) {
         scope: effectiveScope,
         type,
         searchIn,
+      }).catch((error) => {
+        if (isPrismaDatabaseUnavailableError(error)) {
+          return [];
+        }
+        throw error;
       }),
     ]);
     const isGuestTypeBlocked = isLoginRequiredPostType(type, loginRequiredTypes);
@@ -71,6 +77,11 @@ export async function GET(request: NextRequest) {
             excludeTypes: loginRequiredTypes,
             neighborhoodId: undefined,
             viewerId: undefined,
+          }).catch((error) => {
+            if (isPrismaDatabaseUnavailableError(error)) {
+              return [];
+            }
+            throw error;
           })
         : [];
 
