@@ -26,19 +26,23 @@
   - [post-body-rich-editor.tsx](/Users/alex/project/townpet/app/src/components/posts/post-body-rich-editor.tsx)를 SunEditor 기반으로 다시 작성해 내장 툴바의 숫자 폰트 크기, 색상 팔레트, 이미지, 링크, 인용, 목록을 그대로 사용하도록 바꿨다. 작성/수정 폼은 이 공용 컴포넌트를 공유한다.
   - [post-body-rich-editor.tsx](/Users/alex/project/townpet/app/src/components/posts/post-body-rich-editor.tsx)에서 `fontColor` 기본 아이콘을 팔레트 모양 SVG로 교체해, 밑줄 아이콘과 바로 붙어 있어도 기능 구분이 더 명확해지도록 정리했다.
   - 이후 실제 클릭 타깃이 SVG 내부 노드로 분산되면서 색상 submenu가 열리지 않는 회귀가 생겨, 같은 파일의 `fontColor` 아이콘을 HTML swatch grid markup으로 다시 교체하고 [globals.css](/Users/alex/project/townpet/app/src/app/globals.css)에서 `pointer-events: none`으로 아이콘 내부 클릭을 모두 버튼으로 귀속시켰다.
-  - 색상 submenu가 열려도 실제 swatch palette가 빈 흰 박스로 보이는 회귀가 있어, [globals.css](/Users/alex/project/townpet/app/src/app/globals.css)에서 SunEditor color picker를 grid 기반 레이아웃으로 다시 정의했다. 이제 `.se-color-pallet`은 6열 swatch grid로 강제되고, 각 버튼 높이/테두리도 명시해서 흰 타일까지 포함해 보이게 맞췄다.
+  - 색상 submenu가 열려도 실제 swatch palette가 빈 흰 박스로 보이는 회귀가 있어, [globals.css](/Users/alex/project/townpet/app/src/app/globals.css)에서 SunEditor color picker를 grid 기반 레이아웃으로 다시 정의했다. 현재 `.se-color-pallet`은 8열 swatch grid로 강제되고, 각 버튼 높이/테두리도 명시해서 흰 타일까지 포함해 보이게 맞췄다.
   - 일부 브라우저에서 색 타일이 실제 색이 아니라 시스템 기본 pill 버튼으로 보이는 문제가 있어, 같은 CSS에서 swatch 버튼에 `appearance: none`과 `aspect-ratio: 1 / 1`을 추가했다. 이로써 기본 버튼 외형을 제거하고 각 타일을 정사각형 컬러칩으로 고정했다.
+  - 여전히 inline `background-color`가 브라우저별 버튼 외형에 가려지는 케이스가 남아 있어, [post-editor-color-palette.ts](/Users/alex/project/townpet/app/src/lib/post-editor-color-palette.ts)로 8열 64색 팔레트 데이터를 분리하고 SunEditor swatch 버튼마다 `--tp-color-swatch`/`data-tp-swatch`를 직접 주입하도록 바꿨다. [globals.css](/Users/alex/project/townpet/app/src/app/globals.css)는 버튼 본체 대신 `::before` overlay가 실제 색 타일을 그리도록 바꿔, 예시 이미지처럼 더 많은 색이 확실히 보이게 정리했다.
   - [post-create-form.tsx](/Users/alex/project/townpet/app/src/components/posts/post-create-form.tsx), [post-detail-edit-form.tsx](/Users/alex/project/townpet/app/src/components/posts/post-detail-edit-form.tsx)는 submit 시 React state 지연에 기대지 않고 에디터 인스턴스에서 직렬화된 본문/이미지 목록을 직접 읽도록 바꿨다. 이로써 비회원 작성/수정 플로우의 false negative를 줄였다.
   - [globals.css](/Users/alex/project/townpet/app/src/app/globals.css)에 SunEditor 스킨 오버라이드와 본문 surface 스타일을 추가했고, 죽은 커스텀 툴바 파일 [post-editor-toolbar-controls.tsx](/Users/alex/project/townpet/app/src/components/posts/post-editor-toolbar-controls.tsx)는 제거했다.
   - [editor-image-markup.ts](/Users/alex/project/townpet/app/src/lib/editor-image-markup.ts), [markdown-lite.ts](/Users/alex/project/townpet/app/src/lib/markdown-lite.ts), [post.service.ts](/Users/alex/project/townpet/app/src/server/services/post.service.ts)의 이미지 width token 정규식을 `1~4`자리로 넓혀 1px 이미지 업로드 시 `{width=1}` 문자열이 본문에 그대로 남는 문제를 막았다.
   - [post-editor-toolbar.spec.ts](/Users/alex/project/townpet/app/e2e/post-editor-toolbar.spec.ts), [image-upload-flow.spec.ts](/Users/alex/project/townpet/app/e2e/image-upload-flow.spec.ts), [guest-post-management.spec.ts](/Users/alex/project/townpet/app/e2e/guest-post-management.spec.ts)를 SunEditor DOM/다이얼로그 흐름에 맞게 갱신했다.
 - 검증 결과
+  - `corepack pnpm -C app exec vitest run src/lib/post-editor-color-palette.test.ts src/app/globals-css.test.ts` 통과
   - `corepack pnpm -C app typecheck` 통과
+  - `corepack pnpm -C app exec eslint src/components/posts/post-body-rich-editor.tsx src/lib/post-editor-color-palette.ts src/lib/post-editor-color-palette.test.ts src/app/globals-css.test.ts` 통과
   - `corepack pnpm -C app lint src/components/posts/post-body-rich-editor.tsx src/components/posts/post-create-form.tsx src/components/posts/post-detail-edit-form.tsx src/lib/editor-image-markup.ts src/lib/markdown-lite.ts src/server/services/post.service.ts e2e/post-editor-toolbar.spec.ts e2e/image-upload-flow.spec.ts e2e/guest-post-management.spec.ts` 통과
   - `corepack pnpm -C app test:e2e -- e2e/image-upload-flow.spec.ts --project=chromium` 통과
   - `corepack pnpm -C app test:e2e -- e2e/guest-post-management.spec.ts --project=chromium` 통과
 - 남은 블로커
   - `corepack pnpm -C app test:e2e -- e2e/post-editor-toolbar.spec.ts --project=chromium`에서 `폰트 크기/색상 적용 후 다음 입력이 기본 스타일로 분리돼야 한다` 케이스가 아직 실패한다. SunEditor 내장 서식 적용 뒤 caret이 styled span 안에 남는 기본 동작이 있어, 현재 boundary 보정 훅을 붙이는 중이다.
+  - 이번 턴에 다시 돌린 `corepack pnpm -C app test:e2e -- e2e/post-editor-toolbar.spec.ts --project=chromium`은 코드 오류가 아니라 로컬 PostgreSQL(`localhost:5432`) 미기동 때문에 시작 단계에서 중단됐다.
   - 원격 API를 붙이는 방식은 이 문제에 맞지 않는다. 필요한 것은 WYSIWYG 편집 엔진이고, 현재 무료 오픈소스 라이브러리로는 SunEditor가 가장 빠른 정리 경로다. 다만 styled typing carry-over 하나는 추가 마무리가 필요하다.
 
 ### 2026-04-14: Cycle 429 완료 (게시글 에디터 Tiptap 재작성 및 서식 안정화)
