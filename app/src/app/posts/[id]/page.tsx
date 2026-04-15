@@ -6,6 +6,7 @@ import { getCspNonce } from "@/lib/csp-nonce";
 import { buildPostDetailMetadata } from "@/lib/post-page-metadata";
 import { getCurrentUser } from "@/server/auth";
 import { redirectToProfileIfNicknameMissing } from "@/server/nickname-guard";
+import { isPrismaDatabaseUnavailableError } from "@/server/prisma-database-error";
 import { getGuestReadLoginRequiredPostTypes } from "@/server/queries/policy.queries";
 import { getPostMetadataById } from "@/server/queries/post.queries";
 
@@ -20,7 +21,12 @@ export async function generateMetadata({
 }: PostDetailPageProps): Promise<Metadata> {
   const resolvedParams = (await params) ?? {};
   const [post, loginRequiredTypes] = await Promise.all([
-    getPostMetadataById(resolvedParams.id),
+    getPostMetadataById(resolvedParams.id).catch((error) => {
+      if (isPrismaDatabaseUnavailableError(error)) {
+        return null;
+      }
+      throw error;
+    }),
     getGuestReadLoginRequiredPostTypes(),
   ]);
 

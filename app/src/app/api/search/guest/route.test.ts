@@ -1,4 +1,4 @@
-import { PostType } from "@prisma/client";
+import { PostType, Prisma } from "@prisma/client";
 import type { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -156,6 +156,31 @@ describe("GET /api/search/guest", () => {
         isGuestScopeBlocked: true,
       },
     });
+  });
+
+  it("degrades to empty suggestions/results when the database is unavailable", async () => {
+    mockGetPopularSearchTerms.mockRejectedValue(
+      new Prisma.PrismaClientInitializationError("db down", "5.22.0"),
+    );
+    mockListRankedSearchPosts.mockRejectedValue(
+      new Prisma.PrismaClientInitializationError("db down", "5.22.0"),
+    );
+
+    const response = await GET(
+      new Request("http://localhost/api/search/guest?q=%EB%B3%91%EC%9B%90") as NextRequest,
+    );
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(payload).toMatchObject({
+      ok: true,
+      data: {
+        query: "병원",
+        popularTerms: [],
+        items: [],
+      },
+    });
+    expect(mockMonitorUnhandledError).not.toHaveBeenCalled();
   });
 
   it("returns 500 when unexpected errors occur", async () => {

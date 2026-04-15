@@ -16,6 +16,7 @@ import { resolvePublicGuestDisplayName, sanitizePublicGuestIdentity } from "@/li
 import { resolveUserDisplayName } from "@/lib/user-display";
 import { postListSchema, toPostListInput } from "@/lib/validations/post";
 import { redirectToProfileIfNicknameMissing } from "@/server/nickname-guard";
+import { isPrismaDatabaseUnavailableError } from "@/server/prisma-database-error";
 import { getGuestReadLoginRequiredPostTypes } from "@/server/queries/policy.queries";
 import { listRankedSearchPosts } from "@/server/queries/post.queries";
 import { getPopularSearchTerms } from "@/server/queries/search.queries";
@@ -100,7 +101,14 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     isAuthenticated: Boolean(userId),
     nickname: session?.user?.nickname,
   });
-  const user = userId ? await getUserWithNeighborhoods(userId) : null;
+  const user = userId
+    ? await getUserWithNeighborhoods(userId).catch((error) => {
+        if (isPrismaDatabaseUnavailableError(error)) {
+          return null;
+        }
+        throw error;
+      })
+    : null;
   if (!user) {
     const guestParams = new URLSearchParams();
     if (query) {
@@ -128,6 +136,11 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       scope: effectiveScope,
       type,
       searchIn: selectedSearchIn,
+    }).catch((error) => {
+      if (isPrismaDatabaseUnavailableError(error)) {
+        return [];
+      }
+      throw error;
     }),
   ]);
   const blockedTypesForGuest = !isAuthenticated ? loginRequiredTypes : [];
@@ -148,6 +161,11 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           excludeTypes: isAuthenticated ? undefined : blockedTypesForGuest,
           neighborhoodId,
           viewerId: user?.id,
+        }).catch((error) => {
+          if (isPrismaDatabaseUnavailableError(error)) {
+            return [];
+          }
+          throw error;
         })
       : [];
 

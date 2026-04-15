@@ -160,9 +160,16 @@ function serializeEditorNode(node: Node): string {
   if (node.tagName === "SPAN") {
     const className = node.className;
     const text = serializeChildren();
+    if (!text) {
+      return "";
+    }
     const dataSize = node.dataset.size?.trim();
+    const styleSize = node.style.fontSize?.trim();
+    const styleSizeToken = styleSize?.match(/^(\d{1,2})px$/i)?.[1] ?? null;
     const sizeToken = dataSize && /^\d{1,2}$/.test(dataSize)
       ? dataSize
+      : styleSizeToken
+        ? styleSizeToken
       : className.includes("text-xs")
       ? "small"
       : className.includes("text-lg")

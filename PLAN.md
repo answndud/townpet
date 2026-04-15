@@ -27,6 +27,16 @@
 
 ## Active Plan
 
+### Cycle 430: 게시글 에디터 SunEditor 전환 및 styled typing boundary 안정화
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| `contentEditable + execCommand`/실패한 Tiptap 보수 경로를 버리고 무료 외부 라이브러리 SunEditor로 게시글 작성/수정 에디터를 재구성하며, 숫자 폰트 크기/색상/이미지/링크/인용/목록을 내장 툴바 기준으로 안정화하고, 선택 텍스트만 스타일이 적용된 뒤 다음 입력은 기본 스타일로 분리되도록 마무리한다 | Codex | P0 | `in_progress` | create/edit 폼이 공용 `PostBodyRichEditor` 기반 SunEditor를 사용하고, 상단/내장 툴바에서 폰트 크기 숫자 선택과 색상 팔레트가 동작하며, `fontColor`와 `underline` 같은 인접 툴바 액션도 시각적으로 명확히 구분되고, 이미지 업로드/링크/인용/목록/게스트 수정 플로우가 새 에디터 기준 E2E로 고정되고, 저장 포맷은 기존 TownPet markup을 유지하며, 스타일 적용 뒤 다음 입력은 기본 스타일로 분리되고, `PLAN.md`/`PROGRESS.md`가 최신 상태를 반영한다 | `PLAN.md`, `PROGRESS.md`, `app/package.json`, `app/pnpm-lock.yaml`, `app/src/components/posts/post-body-rich-editor.tsx`, `app/src/components/posts/post-create-form.tsx`, `app/src/components/posts/post-detail-edit-form.tsx`, `app/src/app/globals.css`, `app/src/lib/editor-content-serializer.ts`, `app/src/lib/editor-image-markup.ts`, `app/src/lib/markdown-lite.ts`, `app/src/server/services/post.service.ts`, `app/e2e/post-editor-toolbar.spec.ts`, `app/e2e/image-upload-flow.spec.ts`, `app/e2e/guest-post-management.spec.ts` |
+
+### Cycle 429: 게시글 에디터 Tiptap 재작성 및 서식 안정화 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 반복적으로 회귀하던 `contentEditable + execCommand` 기반 게시글 에디터를 무료 외부 라이브러리인 Tiptap으로 교체하고, 숫자 폰트 크기 선택이 선택 텍스트에만 적용되며 다음 입력은 기본 크기로 돌아오도록 만들고, `가` 색상 버튼 대신 클릭 가능한 팔레트 타일 + 컬러 피커를 제공하며, 이미지 업로드/링크/인용/목록 동작을 같은 상단 툴바 구조에서 안정화하고 회귀 테스트를 갱신한다 | Codex | P0 | `done` | create/edit 폼이 공용 `PostBodyRichEditor` 기반 Tiptap 에디터를 사용하고, 폰트 크기 변경은 선택 텍스트만 바꾸며 이후 typing은 기본 크기(`14`)로 분리되고, 색상 UI는 클릭 가능한 palette tile과 스펙트럼 picker를 함께 제공하며 기존 `가` 색상 버튼 묶음이 제거되고, 이미지 업로드는 상단 액션에서 동작하며, 기존 커스텀 markup 직렬화가 유지되고, `app/e2e/post-editor-toolbar.spec.ts`, `app/e2e/image-upload-flow.spec.ts`, `app/e2e/guest-post-management.spec.ts`, `app/src/lib/editor-image-markup.test.ts`, `PLAN.md`, `PROGRESS.md`가 갱신된다 | `PLAN.md`, `PROGRESS.md`, `app/package.json`, `app/pnpm-lock.yaml`, `app/src/components/posts/post-body-rich-editor.tsx`, `app/src/components/posts/post-create-form.tsx`, `app/src/components/posts/post-detail-edit-form.tsx`, `app/src/components/posts/post-editor-toolbar-controls.tsx`, `app/src/lib/editor-content-serializer.ts`, `app/src/lib/post-editor-font-size.ts`, `app/src/app/globals.css`, `app/e2e/post-editor-toolbar.spec.ts`, `app/e2e/image-upload-flow.spec.ts`, `app/e2e/guest-post-management.spec.ts` |
+
 ### Cycle 428: 게시글 에디터 inline typing 격리/이미지 직렬화 중복 정리 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|

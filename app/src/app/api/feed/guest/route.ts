@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { PostScope, PostType, Prisma } from "@prisma/client";
+import { PostScope, PostType } from "@prisma/client";
 import { z } from "zod";
 
 import { FEED_PAGE_SIZE } from "@/lib/feed";
@@ -13,6 +13,7 @@ import { isLocalRequiredPostType } from "@/lib/post-scope-policy";
 import { postListSchema, toPostListInput } from "@/lib/validations/post";
 import { buildCacheControlHeader } from "@/server/cache/query-cache";
 import { monitorUnhandledError } from "@/server/error-monitor";
+import { isPrismaDatabaseUnavailableError } from "@/server/prisma-database-error";
 import { getGuestReadLoginRequiredPostTypes } from "@/server/queries/policy.queries";
 import { listCommunityNavItems } from "@/server/queries/community.queries";
 import {
@@ -82,10 +83,6 @@ function toFeedSearchIn(value?: string): FeedSearchIn {
 
 function toFeedDensity(value?: string): FeedDensity {
   return value === "ULTRA" ? "ULTRA" : "DEFAULT";
-}
-
-function isDatabaseUnavailableError(error: unknown) {
-  return error instanceof Prisma.PrismaClientInitializationError;
 }
 
 function serializeFeedItems(items: Array<Record<string, unknown>>) {
@@ -198,7 +195,7 @@ export async function GET(request: NextRequest) {
     const communities = isCursorPagination
       ? []
       : await listCommunityNavItems(50).catch((error) => {
-          if (isDatabaseUnavailableError(error)) {
+          if (isPrismaDatabaseUnavailableError(error)) {
             return [];
           }
           throw error;
@@ -292,7 +289,7 @@ export async function GET(request: NextRequest) {
             viewerId: undefined,
             personalized: false,
           }).catch((error) => {
-            if (isDatabaseUnavailableError(error)) {
+            if (isPrismaDatabaseUnavailableError(error)) {
               return { items: [], nextCursor: null };
             }
             throw error;
@@ -330,7 +327,7 @@ export async function GET(request: NextRequest) {
               minLikes: 1,
               viewerId: undefined,
             }).catch((error) => {
-              if (isDatabaseUnavailableError(error)) {
+              if (isPrismaDatabaseUnavailableError(error)) {
                 return 0;
               }
               throw error;
@@ -349,7 +346,7 @@ export async function GET(request: NextRequest) {
               neighborhoodId: undefined,
               viewerId: undefined,
             }).catch((error) => {
-              if (isDatabaseUnavailableError(error)) {
+              if (isPrismaDatabaseUnavailableError(error)) {
                 return 0;
               }
               throw error;
@@ -379,7 +376,7 @@ export async function GET(request: NextRequest) {
             viewerId: undefined,
             personalized: false,
           }).catch((error) => {
-            if (isDatabaseUnavailableError(error)) {
+            if (isPrismaDatabaseUnavailableError(error)) {
               return { items: [], nextCursor: null };
             }
             throw error;
@@ -405,7 +402,7 @@ export async function GET(request: NextRequest) {
             minLikes: 1,
             viewerId: undefined,
           }).catch((error) => {
-            if (isDatabaseUnavailableError(error)) {
+            if (isPrismaDatabaseUnavailableError(error)) {
               return [];
             }
             throw error;

@@ -16,6 +16,44 @@
 - Cycle 33: 신규 계정 안전 정책 관리자 설정화 + DB/UI E2E 플로우 완료
 - Cycle 22 잔여: 업로드 재시도 UX + 업로드 E2E + 느린 네트워크 skeleton 확인까지 완료
 
+### 2026-04-14: Cycle 429 완료 (게시글 에디터 Tiptap 재작성 및 서식 안정화)
+- 후속 메모
+  - Cycle 429 완료 직후 Tiptap 기반 툴바 경로가 실제 선택 복원/입력 경계 처리에서 다시 불안정해져, 같은 날짜에 Cycle 430으로 외부 라이브러리 방향을 SunEditor로 재정리했다. 아래 항목이 현재 최신 상태다.
+
+### 2026-04-14: Cycle 430 진행 중 (게시글 에디터 SunEditor 전환 및 styled typing boundary 안정화)
+- 완료 내용
+  - [package.json](/Users/alex/project/townpet/app/package.json), [pnpm-lock.yaml](/Users/alex/project/townpet/app/pnpm-lock.yaml)에서 `@tiptap/*` 의존성을 제거하고, 무료 오픈소스 에디터 [SunEditor](https://github.com/JiHong88/suneditor)와 `suneditor-react` 조합으로 전환했다.
+  - [post-body-rich-editor.tsx](/Users/alex/project/townpet/app/src/components/posts/post-body-rich-editor.tsx)를 SunEditor 기반으로 다시 작성해 내장 툴바의 숫자 폰트 크기, 색상 팔레트, 이미지, 링크, 인용, 목록을 그대로 사용하도록 바꿨다. 작성/수정 폼은 이 공용 컴포넌트를 공유한다.
+  - [post-body-rich-editor.tsx](/Users/alex/project/townpet/app/src/components/posts/post-body-rich-editor.tsx)에서 `fontColor` 기본 아이콘을 팔레트 모양 SVG로 교체해, 밑줄 아이콘과 바로 붙어 있어도 기능 구분이 더 명확해지도록 정리했다.
+  - [post-create-form.tsx](/Users/alex/project/townpet/app/src/components/posts/post-create-form.tsx), [post-detail-edit-form.tsx](/Users/alex/project/townpet/app/src/components/posts/post-detail-edit-form.tsx)는 submit 시 React state 지연에 기대지 않고 에디터 인스턴스에서 직렬화된 본문/이미지 목록을 직접 읽도록 바꿨다. 이로써 비회원 작성/수정 플로우의 false negative를 줄였다.
+  - [globals.css](/Users/alex/project/townpet/app/src/app/globals.css)에 SunEditor 스킨 오버라이드와 본문 surface 스타일을 추가했고, 죽은 커스텀 툴바 파일 [post-editor-toolbar-controls.tsx](/Users/alex/project/townpet/app/src/components/posts/post-editor-toolbar-controls.tsx)는 제거했다.
+  - [editor-image-markup.ts](/Users/alex/project/townpet/app/src/lib/editor-image-markup.ts), [markdown-lite.ts](/Users/alex/project/townpet/app/src/lib/markdown-lite.ts), [post.service.ts](/Users/alex/project/townpet/app/src/server/services/post.service.ts)의 이미지 width token 정규식을 `1~4`자리로 넓혀 1px 이미지 업로드 시 `{width=1}` 문자열이 본문에 그대로 남는 문제를 막았다.
+  - [post-editor-toolbar.spec.ts](/Users/alex/project/townpet/app/e2e/post-editor-toolbar.spec.ts), [image-upload-flow.spec.ts](/Users/alex/project/townpet/app/e2e/image-upload-flow.spec.ts), [guest-post-management.spec.ts](/Users/alex/project/townpet/app/e2e/guest-post-management.spec.ts)를 SunEditor DOM/다이얼로그 흐름에 맞게 갱신했다.
+- 검증 결과
+  - `corepack pnpm -C app typecheck` 통과
+  - `corepack pnpm -C app lint src/components/posts/post-body-rich-editor.tsx src/components/posts/post-create-form.tsx src/components/posts/post-detail-edit-form.tsx src/lib/editor-image-markup.ts src/lib/markdown-lite.ts src/server/services/post.service.ts e2e/post-editor-toolbar.spec.ts e2e/image-upload-flow.spec.ts e2e/guest-post-management.spec.ts` 통과
+  - `corepack pnpm -C app test:e2e -- e2e/image-upload-flow.spec.ts --project=chromium` 통과
+  - `corepack pnpm -C app test:e2e -- e2e/guest-post-management.spec.ts --project=chromium` 통과
+- 남은 블로커
+  - `corepack pnpm -C app test:e2e -- e2e/post-editor-toolbar.spec.ts --project=chromium`에서 `폰트 크기/색상 적용 후 다음 입력이 기본 스타일로 분리돼야 한다` 케이스가 아직 실패한다. SunEditor 내장 서식 적용 뒤 caret이 styled span 안에 남는 기본 동작이 있어, 현재 boundary 보정 훅을 붙이는 중이다.
+  - 원격 API를 붙이는 방식은 이 문제에 맞지 않는다. 필요한 것은 WYSIWYG 편집 엔진이고, 현재 무료 오픈소스 라이브러리로는 SunEditor가 가장 빠른 정리 경로다. 다만 styled typing carry-over 하나는 추가 마무리가 필요하다.
+
+### 2026-04-14: Cycle 429 완료 (게시글 에디터 Tiptap 재작성 및 서식 안정화)
+- 완료 내용
+  - 무료 외부 라이브러리 Tiptap을 도입하기 위해 [package.json](/Users/alex/project/townpet/app/package.json), [pnpm-lock.yaml](/Users/alex/project/townpet/app/pnpm-lock.yaml)에 `@tiptap/react`, `starter-kit`, `link`, `image`, `color`, `text-style`, `underline` 계열 의존성을 추가하고, 새 공용 에디터 [post-body-rich-editor.tsx](/Users/alex/project/townpet/app/src/components/posts/post-body-rich-editor.tsx)를 만들었다. 작성/수정 폼은 더 이상 `contentEditable + execCommand`를 직접 다루지 않고 이 컴포넌트를 통해 같은 편집 엔진을 사용한다.
+  - [post-create-form.tsx](/Users/alex/project/townpet/app/src/components/posts/post-create-form.tsx), [post-detail-edit-form.tsx](/Users/alex/project/townpet/app/src/components/posts/post-detail-edit-form.tsx), [post-editor-toolbar-controls.tsx](/Users/alex/project/townpet/app/src/components/posts/post-editor-toolbar-controls.tsx)를 새 에디터 계약으로 정리해, 숫자 폰트 크기 선택은 선택된 텍스트에만 적용되고 다음 입력은 기본 크기 `14`로 분리되도록 바꿨다. 기존 `가` 색상 버튼 묶음은 제거했고, 클릭 가능한 색상 타일과 스펙트럼 컬러 피커를 함께 제공하도록 바꿨다.
+  - 이미지 업로드/링크/인용/글머리/번호 목록은 모두 Tiptap command 경로로 통일했고, 이미지 업로드 트리거는 상단 액션 바에 유지했다. [editor-content-serializer.ts](/Users/alex/project/townpet/app/src/lib/editor-content-serializer.ts)는 새 에디터 DOM을 기존 TownPet 커스텀 markup으로 다시 직렬화하도록 보강해 저장 포맷과 상세/미리보기 렌더러 계약은 유지했다.
+  - [globals.css](/Users/alex/project/townpet/app/src/app/globals.css)에 Tiptap ProseMirror surface/list/blockquote/link/image 스타일을 추가해 본문 이미지가 왼쪽 정렬되고, 문단/목록/인용 스타일이 editor/detail surface에서 더 일관되게 보이도록 맞췄다.
+  - 회귀 테스트도 새 에디터 셀렉터와 실제 동작에 맞게 갱신했다. [post-editor-toolbar.spec.ts](/Users/alex/project/townpet/app/e2e/post-editor-toolbar.spec.ts)는 숫자 크기/색상/링크/인용/목록을 새 툴바 기준으로 검증하고, [image-upload-flow.spec.ts](/Users/alex/project/townpet/app/e2e/image-upload-flow.spec.ts)는 create-edit-detail 이미지 동기화를 새 에디터에서 다시 고정했으며, [guest-post-management.spec.ts](/Users/alex/project/townpet/app/e2e/guest-post-management.spec.ts)는 개발 서버 기준 전체 타임아웃을 60초로 늘려 게스트 수정/삭제 플로우의 false negative를 줄였다.
+- 검증 결과
+  - `corepack pnpm -C app lint src/components/posts/post-body-rich-editor.tsx src/components/posts/post-create-form.tsx src/components/posts/post-detail-edit-form.tsx src/components/posts/post-editor-toolbar-controls.tsx src/lib/editor-content-serializer.ts src/lib/post-editor-font-size.ts e2e/post-editor-toolbar.spec.ts e2e/image-upload-flow.spec.ts e2e/guest-post-management.spec.ts` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `corepack pnpm -C app exec vitest run src/lib/editor-image-markup.test.ts` 통과 (`5 passed`)
+  - `corepack pnpm -C app test:e2e -- e2e/post-editor-toolbar.spec.ts e2e/image-upload-flow.spec.ts e2e/guest-post-management.spec.ts --project=chromium` 통과 (`6 passed`)
+- 메모
+  - 426~428에서 `execCommand` 기반 편집기를 보수하는 방식으로는 font-size carry-over, palette interaction, block transform 회귀를 계속 닫기 어려웠다. 이번 사이클은 그 전제를 버리고 편집 엔진 자체를 교체한 배치다.
+  - 저장 포맷은 아직 TownPet 커스텀 markup이므로, 장기적으로는 renderer/search/metadata 파이프라인까지 포함한 document model 정리가 남아 있다.
+
 ### 2026-04-14: Cycle 428 완료 (게시글 에디터 inline typing 격리/이미지 직렬화 중복 정리)
 - 완료 내용
   - [editor-inline-image.ts](/Users/alex/project/townpet/app/src/lib/editor-inline-image.ts)에 styled span 뒤 plain typing 위치를 강제로 만드는 helper를 추가하고, create/edit 에디터가 크기/색상 적용 직후 caret을 그 위치로 옮기도록 정리했다. 이로써 문단 끝에서 18px/색상 서식을 적용한 뒤 다시 클릭해 입력해도 다음 텍스트가 같은 span 안으로 계속 붙지 않게 했다.

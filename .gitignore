@@ -27,6 +27,7 @@ app/.npmrc
 
 # local agent/tooling artifacts
 .opencode/
+.codex/
 opencode.json
 AGENTS.md
 AGENTS.local.md

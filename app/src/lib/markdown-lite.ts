@@ -35,7 +35,7 @@ function replaceLinkToken(value: string) {
   };
 
   let transformed = value.replace(
-    /!\[([^\]]*)\]\(([^\s)]+)\)(?:\{\s*width\s*=\s*(\d{2,4})\s*\})?/gi,
+    /!\[([^\]]*)\]\(([^\s)]+)\)(?:\{\s*width\s*=\s*(\d{1,4})\s*\})?/gi,
     (_, rawAlt: string, rawUrl: string, rawWidth?: string) => {
       const safeUrl = sanitizeImageUrl(rawUrl.trim());
       if (!safeUrl) {
@@ -140,7 +140,7 @@ function renderInline(value: string) {
   return restore(withStyles);
 }
 
-const IMAGE_LINE_PATTERN = /^!\[[^\]]*\]\([^\s)]+\)(?:\{\s*width\s*=\s*\d{2,4}\s*\})?$/i;
+const IMAGE_LINE_PATTERN = /^!\[[^\]]*\]\([^\s)]+\)(?:\{\s*width\s*=\s*\d{1,4}\s*\})?$/i;
 
 export function renderLiteMarkdown(value: string) {
   const normalized = value.replace(/\r\n?/g, "\n").trim();
