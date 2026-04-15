@@ -33,24 +33,12 @@ import {
   DEFAULT_POST_EDITOR_FONT_SIZE,
   DEFAULT_POST_EDITOR_TEXT_COLOR,
 } from "@/lib/post-editor-font-size";
-import {
-  POST_EDITOR_COLOR_PALETTE,
-  syncSunEditorColorSwatches,
-} from "@/lib/post-editor-color-palette";
 import { type GuestWriteScope, getGuestWriteHeaders } from "@/lib/guest-step-up.client";
 import { renderLiteMarkdown } from "@/lib/markdown-lite";
 
 const SunEditor = dynamic(() => import("suneditor-react"), { ssr: false });
 
 const FONT_SIZE_OPTIONS = [12, 14, 16, 18, 20, 24, 28, 32];
-const FONT_COLOR_ICON = `
-  <span class="tp-se-font-color-icon" aria-hidden="true">
-    <span class="tp-se-font-color-icon__swatch tp-se-font-color-icon__swatch--ink"></span>
-    <span class="tp-se-font-color-icon__swatch tp-se-font-color-icon__swatch--red"></span>
-    <span class="tp-se-font-color-icon__swatch tp-se-font-color-icon__swatch--amber"></span>
-    <span class="tp-se-font-color-icon__swatch tp-se-font-color-icon__swatch--blue"></span>
-  </span>
-`.trim();
 
 type UploadApiResponse = {
   ok: boolean;
@@ -169,16 +157,12 @@ export const PostBodyRichEditor = forwardRef<PostBodyRichEditorHandle, PostBodyR
         ["image", "link"],
         ["undo", "redo", "removeFormat"],
         "/",
-        ["fontSize", "fontColor"],
+        ["fontSize"],
         ["bold", "underline", "italic", "strike"],
         ["list", "blockquote"],
       ],
       fontSize: FONT_SIZE_OPTIONS,
       fontSizeUnit: "px",
-      colorList: Array.from(POST_EDITOR_COLOR_PALETTE),
-      icons: {
-        font_color: FONT_COLOR_ICON,
-      },
       formats: ["p", "blockquote"],
       resizingBar: false,
       showPathLabel: false,
@@ -335,10 +319,6 @@ export const PostBodyRichEditor = forwardRef<PostBodyRichEditorHandle, PostBodyR
     editable.setAttribute("aria-label", "본문");
 
     const editorRoot = editable.closest(".sun-editor");
-    if (editorRoot) {
-      syncSunEditorColorSwatches(editorRoot);
-    }
-
     const imageFileInputs = editorRoot?.querySelectorAll<HTMLInputElement>("input._se_image_file");
     imageFileInputs?.forEach((input) => {
       input.setAttribute("data-testid", "post-editor-image-file-input");
@@ -382,13 +362,7 @@ export const PostBodyRichEditor = forwardRef<PostBodyRichEditorHandle, PostBodyR
         return;
       }
 
-      syncSunEditorColorSwatches(editorRoot);
-
-      if (
-        control.closest(".se-list-font-size") ||
-        control.closest(".se-color-pallet") ||
-        control.classList.contains("_se_color_picker_submit")
-      ) {
+      if (control.closest(".se-list-font-size")) {
         scheduleDeferredStyleBoundaryCorrection();
       }
 
