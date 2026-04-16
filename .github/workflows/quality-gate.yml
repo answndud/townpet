@@ -5,12 +5,14 @@ on:
     branches: ["main"]
     paths:
       - "app/**"
+      - "docs/**"
       - "scripts/**"
       - ".github/workflows/quality-gate.yml"
   push:
     branches: ["main"]
     paths:
       - "app/**"
+      - "docs/**"
       - "scripts/**"
       - ".github/workflows/quality-gate.yml"
 
