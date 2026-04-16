@@ -26,12 +26,13 @@
 - 검증 결과: `git diff --check` 통과.
 
 ### 2026-04-16: Cycle 446 완료 (배포 파이프라인 경량화와 workflow 분리)
-- 완료 내용: [quality-gate.yml](/Users/alex/project/townpet/.github/workflows/quality-gate.yml)을 PR/manual 기준 fresh DB `prisma migrate deploy + pnpm quality:check`만 보는 small hot path로 줄였다.
+- 완료 내용: [quality-gate.yml](/Users/alex/project/townpet/.github/workflows/quality-gate.yml)을 PR/manual 기준 fresh DB `prisma migrate deploy -> prisma generate -> pnpm quality:check`만 보는 small hot path로 줄였다.
 - 완료 내용: [docs-quality.yml](/Users/alex/project/townpet/.github/workflows/docs-quality.yml)에 docs/API/migration/script inventory freshness를 모았고, [browser-smoke.yml](/Users/alex/project/townpet/.github/workflows/browser-smoke.yml), [guest-legacy-maintenance.yml](/Users/alex/project/townpet/.github/workflows/guest-legacy-maintenance.yml)로 무거운 browser smoke와 maintenance rehearsal을 on-demand workflow로 분리했다.
 - 완료 내용: [vercel-build.ts](/Users/alex/project/townpet/app/scripts/vercel-build.ts)를 `security env preflight -> prisma migrate deploy -> prisma generate -> next build`만 수행하도록 줄였고, auth email readiness / neighborhood sync / repair SQL은 deploy hot path에서 제거했다.
 - 완료 내용: [README.md](/Users/alex/project/townpet/README.md), [app/README.md](/Users/alex/project/townpet/app/README.md), [운영_문서_안내.md](/Users/alex/project/townpet/docs/operations/운영_문서_안내.md), [Vercel_OAuth_초기설정_가이드.md](/Users/alex/project/townpet/docs/operations/Vercel_OAuth_초기설정_가이드.md), [배포_보안_체크리스트.md](/Users/alex/project/townpet/docs/operations/manual-checks/배포_보안_체크리스트.md), [17-prisma-migrations-and-schema-drift-response.md](/Users/alex/project/townpet/blog/17-prisma-migrations-and-schema-drift-response.md), [19-testing-and-quality-gate.md](/Users/alex/project/townpet/blog/19-testing-and-quality-gate.md), [25-overengineering-ci-and-deploy-pipelines.md](/Users/alex/project/townpet/blog/25-overengineering-ci-and-deploy-pipelines.md)까지 현재 판단 기준으로 동기화했다.
 - 검증 결과: `corepack pnpm -C app quality:check` 통과 (`190 files / 919 tests`, eslint warnings only).
 - 검증 결과: `corepack pnpm -C app exec vitest run scripts/vercel-build.test.ts` 통과 (`1 file / 7 tests`).
+- 검증 결과: GitHub Actions `quality-gate` 첫 실행에서 fresh runner에 `prisma generate`가 빠져 `@prisma/client` 타입 export 누락으로 실패한 것을 확인했고, workflow에 generate 단계를 추가해 hot path 정의를 `migrate deploy -> prisma generate -> quality:check`로 고정했다.
 - 검증 결과: `git diff --check` 통과.
 - 메모: hot path에서 빠진 coverage, browser smoke, auth email readiness, maintenance rehearsal은 삭제가 아니라 on-demand/manual 영역으로 이동한 것이다.
 
@@ -53,7 +54,7 @@
 ## 완료 요약
 
 - 2026-04-16: Cycle 447 완료 - guest `/feed` 문서 응답이 server-first self-fetch 때문에 `private, no-store`가 되던 문제를 확인한 뒤 `/feed/guest/page.tsx`를 static shell로 되돌리고, 데이터는 다시 cacheable `/api/feed/guest`에서만 읽게 정리했으며, 관련 테스트와 블로그를 함께 갱신했다.
-- 2026-04-16: Cycle 446 완료 - `quality-gate`를 fresh DB `migrate deploy + quality:check` 중심의 small hot path로 줄이고, docs/browser/maintenance 검증을 별도 workflow로 분리했으며, `build:vercel`을 deploy-essential only로 단순화하고 관련 운영 문서와 블로그 회고를 갱신했다.
+- 2026-04-16: Cycle 446 완료 - `quality-gate`를 fresh DB `migrate deploy -> prisma generate -> quality:check` 중심의 small hot path로 줄이고, docs/browser/maintenance 검증을 별도 workflow로 분리했으며, `build:vercel`을 deploy-essential only로 단순화하고 관련 운영 문서와 블로그 회고를 갱신했다.
 - 2026-04-16: Cycle 445 완료 - guest `/feed` 첫 진입이 `fetchGuestFeedInitialData`를 통해 서버에서 초기 payload를 받아 `GuestFeedPageClient`에 주입하도록 바뀌었고, initial query와 같을 때 client 첫 fetch를 건너뛰게 했으며, 이번 redirect loop/계측/병목 판단 과정을 블로그에 경험 축적으로 남겼다.
 - 2026-04-16: Cycle 444 완료 - guest `/feed` 실경로인 `/api/feed/guest`에 `perf=1` 응답 `meta.timings`와 `Server-Timing` 헤더를 추가했고, guest count/list 조회도 `resolveFeedPageSlice` helper로 병렬화해 브라우저/`curl`에서 바로 병목을 확인할 수 있게 했다.
 - 2026-04-16: Cycle 443 완료 - `/feed` 서버 렌더에 `feed-page-performance.service.ts` 기반 분해 계측을 넣어 bootstrap/page-query/personalization 시간을 slow request warn 또는 `?perf=1` info 로그로 남기게 했고, `ops:perf:snapshot`에 canonical `/feed` 페이지 측정(`page_feed`)을 추가했다.

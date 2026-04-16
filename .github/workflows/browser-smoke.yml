@@ -54,6 +54,9 @@ jobs:
       - name: Apply Prisma migrations
         run: pnpm prisma migrate deploy
 
+      - name: Generate Prisma client
+        run: pnpm prisma generate
+
       - name: Install Playwright browser
         run: pnpm exec playwright install --with-deps chromium
 

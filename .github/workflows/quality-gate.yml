@@ -59,5 +59,8 @@ jobs:
       - name: Apply Prisma migrations
         run: pnpm prisma migrate deploy
 
+      - name: Generate Prisma client
+        run: pnpm prisma generate
+
       - name: Quality check
         run: pnpm quality:check

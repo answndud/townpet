@@ -83,6 +83,7 @@ TownPet는 이런 문제를 다음 세 층으로 다룹니다.
 `quality-gate.yml`는 fresh Postgres service를 띄우고:
 
 - `pnpm prisma migrate deploy`
+- `pnpm prisma generate`
 
 를 실행합니다.
 

@@ -36,7 +36,7 @@
 ### Cycle 446: 배포 파이프라인 경량화와 workflow 분리 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
-| 혼자 개발하는 현재 운영 모델에 맞춰 `quality-gate`에서 중복 unit 실행과 maintenance rehearsal을 제거하고, docs 전용 lightweight workflow와 manual maintenance workflow를 분리하며, `build:vercel`은 배포 필수 단계만 남기고 관련 문서/블로그를 현재 동작과 맞춘다 | Codex | P1 | `done` | `quality-gate`가 fresh DB `migrate deploy + quality:check` 중심의 small hot path로 정리되고, docs freshness는 별도 workflow가 처리되며, browser smoke와 maintenance rehearsal은 on-demand workflow로 분리되고, `build:vercel`가 `security env preflight -> prisma migrate deploy -> prisma generate -> next build`로 단순화되며, 관련 테스트/문서/블로그/상태 문서가 최신 상태를 반영한다 | `PLAN.md`, `PROGRESS.md`, `.github/workflows/quality-gate.yml`, `.github/workflows/docs-quality.yml`, `.github/workflows/browser-smoke.yml`, `.github/workflows/guest-legacy-maintenance.yml`, `app/scripts/vercel-build.ts`, `app/scripts/vercel-build.test.ts`, `docs/operations/*`, `blog/17-prisma-migrations-and-schema-drift-response.md`, `blog/19-testing-and-quality-gate.md`, `blog/25-overengineering-ci-and-deploy-pipelines.md` |
+| 혼자 개발하는 현재 운영 모델에 맞춰 `quality-gate`에서 중복 unit 실행과 maintenance rehearsal을 제거하고, docs 전용 lightweight workflow와 manual maintenance workflow를 분리하며, `build:vercel`은 배포 필수 단계만 남기고 관련 문서/블로그를 현재 동작과 맞춘다 | Codex | P1 | `done` | `quality-gate`가 fresh DB `migrate deploy -> prisma generate -> quality:check` 중심의 small hot path로 정리되고, docs freshness는 별도 workflow가 처리되며, browser smoke와 maintenance rehearsal은 on-demand workflow로 분리되고, `build:vercel`가 `security env preflight -> prisma migrate deploy -> prisma generate -> next build`로 단순화되며, 관련 테스트/문서/블로그/상태 문서가 최신 상태를 반영한다 | `PLAN.md`, `PROGRESS.md`, `.github/workflows/quality-gate.yml`, `.github/workflows/docs-quality.yml`, `.github/workflows/browser-smoke.yml`, `.github/workflows/guest-legacy-maintenance.yml`, `app/scripts/vercel-build.ts`, `app/scripts/vercel-build.test.ts`, `docs/operations/*`, `blog/17-prisma-migrations-and-schema-drift-response.md`, `blog/19-testing-and-quality-gate.md`, `blog/25-overengineering-ci-and-deploy-pipelines.md` |
 
 ### Cycle 430: 게시글 에디터 SunEditor 전환 및 styled typing boundary 안정화
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
@@ -46,7 +46,7 @@
 ## Completed Summary
 
 - Cycle 447 (2026-04-16): guest `/feed`의 server-first 내부 fetch를 제거하고 `/feed/guest`를 static shell + cached guest API 구조로 되돌려 문서 응답이 `no-store`로 무거워지는 병목을 줄였으며, 그 시행착오와 판단 근거를 블로그에 반영했다.
-- Cycle 446 (2026-04-16): `quality-gate`를 fresh DB `migrate deploy + quality:check` 중심의 small hot path로 줄이고, docs/browser/maintenance 검증을 별도 workflow로 분리했으며, `build:vercel`을 deploy-essential only로 단순화하고 관련 운영 문서와 블로그 회고를 갱신했다.
+- Cycle 446 (2026-04-16): `quality-gate`를 fresh DB `migrate deploy -> prisma generate -> quality:check` 중심의 small hot path로 줄이고, docs/browser/maintenance 검증을 별도 workflow로 분리했으며, `build:vercel`을 deploy-essential only로 단순화하고 관련 운영 문서와 블로그 회고를 갱신했다.
 - Cycle 445 (2026-04-16): guest `/feed` 첫 진입을 server-first로 바꿔 `/feed/guest/page.tsx`가 초기 payload를 서버에서 주입하고 `GuestFeedPageClient`가 초기 query 일치 시 첫 fetch를 건너뛰게 했으며, 허탕 친 redirect/계측/병목 판단 과정까지 블로그에 정리했다.
 - Cycle 444 (2026-04-16): guest `/feed`의 실제 데이터 경로인 `/api/feed/guest`에 `perf=1` 응답 meta와 `Server-Timing` 헤더를 추가하고, guest count/list 조회도 공통 helper로 병렬화해 브라우저/`curl`에서 바로 병목을 볼 수 있게 했다.
 - Cycle 443 (2026-04-16): `/feed` 서버 렌더에 bootstrap/page-query/personalization 분해 계측을 추가하고 slow request만 warn으로 남기며 `?perf=1`은 info로 강제 로그하도록 했고, `ops:perf:snapshot`에 canonical `/feed` 측정(`page_feed`)을 포함했다.
