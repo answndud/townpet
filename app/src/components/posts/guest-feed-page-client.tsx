@@ -8,6 +8,7 @@ import { PostType } from "@prisma/client";
 import { NeighborhoodGateNotice } from "@/components/neighborhood/neighborhood-gate-notice";
 import { FeedControlPanel } from "@/components/posts/feed-control-panel";
 import { FeedInfiniteList, type FeedPostItem } from "@/components/posts/feed-infinite-list";
+import { FeedLoadingSkeleton } from "@/components/posts/feed-loading-skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { isCommonBoardPostType } from "@/lib/community-board";
 import { buildPaginationWindow } from "@/lib/pagination";
@@ -313,15 +314,7 @@ export function GuestFeedPageClient() {
   }
 
   if (isLoading || shouldNormalizeLegacy || !data) {
-    return (
-      <div className="min-h-screen bg-[linear-gradient(180deg,#ffffff_0%,#fdfefe_55%,#fbfdff_100%)] pb-16">
-        <main className="mx-auto flex w-full max-w-[1320px] flex-col gap-3 px-4 py-3 sm:px-6 lg:px-10">
-          <section className="tp-card overflow-hidden">
-            <EmptyState title="피드를 준비 중입니다" description="게시글 목록을 불러오고 있습니다." />
-          </section>
-        </main>
-      </div>
-    );
+    return <FeedLoadingSkeleton />;
   }
 
   if (loadError) {

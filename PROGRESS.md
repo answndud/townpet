@@ -34,6 +34,7 @@
 
 ## 완료 요약
 
+- 2026-04-16: Cycle 442 완료 - `/feed` 첫 페이지가 `feed-page-query.service.ts` helper로 count/list 조회를 page=1 기준 병렬 처리하고 page overflow 때만 재조회하도록 바꿨으며, guest/streaming 로딩 상태를 공통 `FeedLoadingSkeleton`으로 통일하고 관련 테스트와 블로그를 동기화했다.
 - 2026-04-16: Cycle 441 완료 - `Coverage report`가 테스트 실패가 아니라 threshold 설정값 때문에 막혀 `app/vitest.config.ts` global threshold를 현재 측정 베이스라인 바로 아래로 재조정하고 `docs/errors/2026-04-16_coverage-threshold-baseline-mismatch.md`를 추가했다.
 - 2026-04-16: Cycle 440 완료 - production `/feed`에서 self-redirect loop가 발생해 guest feed redirect 단순화를 롤백했고, guest page non-redirect 회귀 테스트와 `docs/errors/2026-04-16_guest-feed-redirect-loop.md` 기록을 추가했다.
 - 2026-04-16: Cycle 438 완료 - `refresh-docs-index.mjs`가 docs/API/migration 목록을 `git ls-files` 기준으로 수집하게 바꿔 checkout 파일시스템 차이와 무관하게 동일한 docs report를 생성하도록 고정했다.
