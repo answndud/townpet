@@ -1,0 +1,10 @@
+import { z } from "zod";
+
+export const reportBulkActionSchema = z.object({
+  reportIds: z.array(z.string().min(1)).min(1),
+  action: z.enum(["RESOLVE", "DISMISS", "HIDE_TARGET", "UNHIDE_TARGET"]),
+  resolution: z.string().min(1).max(500).optional(),
+  applySanction: z.boolean().optional().default(false),
+});
+
+export type ReportBulkActionInput = z.infer<typeof reportBulkActionSchema>;
