@@ -1,14 +1,14 @@
-import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname, join, relative, resolve } from "node:path";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
+import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 const args = new Set(process.argv.slice(2));
 const checkMode = args.has("--check");
 
 const repoRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
-const docsDir = join(repoRoot, "docs");
 const appDir = join(repoRoot, "app");
-const reportPath = join(docsDir, "archive", "operations", "문서 동기화 리포트.md");
+const reportPath = join(repoRoot, "docs", "archive", "operations", "문서 동기화 리포트.md");
 
 function stableSort(items) {
   return [...items].sort((a, b) => {
@@ -18,24 +18,15 @@ function stableSort(items) {
   });
 }
 
-function walk(dir, predicate) {
-  const results = [];
-  const entries = readdirSync(dir, { withFileTypes: true });
-  for (const entry of entries) {
-    const fullPath = join(dir, entry.name);
-    if (entry.isDirectory()) {
-      results.push(...walk(fullPath, predicate));
-      continue;
-    }
-    if (predicate(fullPath)) {
-      results.push(fullPath);
-    }
-  }
-  return results;
-}
-
-function toRel(path) {
-  return relative(repoRoot, path).replaceAll("\\", "/").normalize("NFC");
+function gitLsFiles(...paths) {
+  return execFileSync("git", ["ls-files", ...paths], {
+    cwd: repoRoot,
+    encoding: "utf8",
+  })
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => line.normalize("NFC"));
 }
 
 function readJson(path) {
@@ -46,21 +37,25 @@ function normalizeContent(content) {
   return content.replaceAll("\r\n", "\n").normalize("NFC");
 }
 
-const docsFiles = stableSort(walk(docsDir, (p) => p.endsWith(".md")).map(toRel));
+const docsFiles = stableSort(gitLsFiles("docs").filter((path) => path.endsWith(".md")));
 
 const packageJson = readJson(join(appDir, "package.json"));
 const scripts = stableSort(Object.keys(packageJson.scripts ?? {}));
 
-const migrationDirs = readdirSync(join(appDir, "prisma", "migrations"), {
-  withFileTypes: true,
-})
-  .filter((entry) => entry.isDirectory())
-  .map((entry) => entry.name);
-const sortedMigrationDirs = stableSort(migrationDirs);
+const sortedMigrationDirs = stableSort(
+  Array.from(
+    new Set(
+      gitLsFiles("app/prisma/migrations")
+        .filter((path) => path.startsWith("app/prisma/migrations/"))
+        .map((path) => path.split("/")[3])
+        .filter(Boolean),
+    ),
+  ),
+);
 
 const apiRoutes = stableSort(
-  walk(join(appDir, "src", "app", "api"), (p) => p.endsWith("/route.ts") || p.endsWith("/route.tsx")).map(
-    toRel,
+  gitLsFiles("app/src/app/api").filter(
+    (path) => path.endsWith("/route.ts") || path.endsWith("/route.tsx"),
   ),
 );
 
@@ -107,4 +102,4 @@ if (checkMode) {
 
 mkdirSync(dirname(reportPath), { recursive: true });
 writeFileSync(reportPath, nextContent, "utf8");
-console.log(`Updated ${toRel(reportPath)}`);
+console.log("Updated docs/archive/operations/문서 동기화 리포트.md");
