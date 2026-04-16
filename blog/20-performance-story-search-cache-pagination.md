@@ -282,6 +282,79 @@ TownPet는 그래서 guest `/feed`의 실제 데이터 경로인 `/api/feed/gues
 
 게다가 guest route도 `count -> list` 직렬 흐름을 공통 helper로 줄여, **측정과 최적화를 같은 경로에서 같이 진행**할 수 있게 했습니다.
 
+## 4.9. 실제로는 어떤 허탕을 쳤는가
+
+이번 최적화는 한 번에 정답으로 간 게 아닙니다.
+
+오히려 아래 순서로 틀린 가설을 지웠습니다.
+
+### 1. “guest route를 `/feed`로 합치면 빨라질 것”이라고 생각했다
+
+처음에는 guest `/feed`를 canonical `/feed`로 더 단순하게 합치면 경로가 짧아지고 빨라질 거라고 봤습니다.
+
+하지만 production에서는 이 시도가 self-redirect loop로 이어졌습니다.
+
+로컬에서는 안 보이는데 배포에서만 `NEXT_REDIRECT`가 섞이는 전형적인 Next.js/App Router 함정이었습니다.
+
+즉 이 단계에서 배운 건:
+
+- 경로가 단순해진다고 항상 빨라지는 건 아니다
+- App Router rewrite/redirect는 production 동작을 별도로 검증해야 한다
+
+였습니다.
+
+### 2. “DB query가 느려서 `/feed`가 느린 것”이라고 생각했다
+
+그 다음 가설은 더 흔합니다.
+
+- count query가 느리다
+- list query가 느리다
+- personalization query가 느리다
+
+그래서 `/feed`와 `/api/feed/guest`에 단계별 계측을 넣었습니다.
+
+실제 `GET /api/feed/guest?perf=1&nonce=...` 결과는 대략 이랬습니다.
+
+- `totalMs ≈ 58`
+- `bootstrap.policy_and_communities ≈ 11`
+- `page_query.all ≈ 36`
+
+여기서 중요한 건 `page_query.all`이 가장 크더라도 **절대 시간이 수십 ms 수준**이었다는 점입니다.
+
+즉 guest 피드 API는 “가장 큰 비중”과 “실제 병목”이 다른 사례였습니다.
+
+- 비중상 제일 큼: `page_query.all`
+- 하지만 절대 시간은 여전히 작음
+
+그래서 이 단계에서 배운 건:
+
+- 가장 큰 구간이 있다고 해서 그게 진짜 병목은 아닐 수 있다
+- 퍼센트보다 절대 시간으로 판단해야 한다
+
+였습니다.
+
+### 3. 그래서 방향을 “query 최적화”에서 “첫 화면 구조 변경”으로 바꿨다
+
+API가 이미 충분히 빠르다면, 사용자가 느끼는 지연은 다른 곳에 있습니다.
+
+- 문서 응답 자체
+- App Router/RSC 경로
+- 첫 HTML 이후 다시 API를 기다리는 구조
+- cold start
+
+그래서 최종 방향은 guest `/feed`의 첫 렌더를 **server-first**로 바꾸는 것이었습니다.
+
+지금 구조는:
+
+1. `/feed/guest/page.tsx`가 서버에서 초기 payload를 가져온다
+2. 그 payload를 `GuestFeedPageClient`에 주입한다
+3. 클라이언트는 첫 fetch를 건너뛴다
+4. 이후 필터 변경/무한 스크롤만 client가 담당한다
+
+이건 아주 중요한 교훈입니다.
+
+성능 작업은 종종 “더 빠른 SQL”보다 **어디서 기다림을 없앨지**를 찾는 일에 더 가깝습니다.
+
 ## 5. 검색 성능은 왜 structured shadow column으로 옮겼는가
 
 메인 검색은 예전처럼 relation table을 매번 크게 조인하면 비싸집니다.
