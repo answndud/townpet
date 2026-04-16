@@ -323,6 +323,52 @@ TownPet는 그래서 guest `/feed`의 실제 데이터 경로인 `/api/feed/gues
 - public read 표면은 HTML보다 API 캐시가 더 큰 승부처일 수 있다
 
 즉 TownPet의 이번 피드 최적화는 “더 많은 서버 작업”이 아니라, **어디를 static으로 두고 어디를 cacheable API로 둘지 다시 경계 그리기**에 가까웠습니다.
+
+## 4.10. strict nonce를 전역으로 걸면 public `/feed`도 같이 느려진다
+
+핵심 파일:
+
+- [`layout.tsx`](../app/src/app/layout.tsx)
+- [`middleware.ts`](../app/middleware.ts)
+- [`posts/[id]/page.tsx`](../app/src/app/posts/[id]/page.tsx)
+- [`posts/[id]/guest/page.tsx`](../app/src/app/posts/[id]/guest/page.tsx)
+- [`users/[id]/page.tsx`](../app/src/app/users/[id]/page.tsx)
+
+한 번 더 허탕 친 지점은 CSP였습니다.
+
+처음에는 `/feed`가 느린 이유를 계속 피드 쿼리나 guest API에서 찾았습니다.
+그런데 응답 헤더를 다시 보니, public `/feed`도 계속 `private, no-store`였습니다.
+
+원인을 따라가 보니 구조가 이랬습니다.
+
+1. production에서 `CSP_ENFORCE_STRICT=1`
+2. `RootLayout`이 전역 `connection()`을 호출
+3. middleware가 매 요청마다 nonce를 발급
+4. 결과적으로 public `/feed`도 strict nonce 기반 동적 경로를 같이 탐
+
+즉 “보안 하드닝을 전역으로 단순하게 건 선택”이 public feed 캐시를 같이 죽이고 있었습니다.
+
+이 문제는 쿼리 튜닝으로는 안 풀립니다.
+
+- `page_query.all`을 30ms 줄여도
+- 문서 자체가 dynamic/no-store면
+- cold/warm 편차와 캐시 손해는 그대로 남습니다.
+
+그래서 최종 수정은 범위를 줄이는 방식이었습니다.
+
+- `RootLayout`: 전역 `connection()` 제거
+- `posts/[id]`, `posts/[id]/guest`, `users/[id]`: nonce가 실제 필요한 페이지에서만 `connection()`
+- guest `/feed` rewrite: static CSP 사용, nonce 헤더 미주입
+
+이렇게 바꾸면 보안 경계를 없애는 것이 아니라, **nonce가 꼭 필요한 surface만 strict nonce 경로에 남기고 public feed는 static shell로 분리**할 수 있습니다.
+
+이번 경험의 교훈:
+
+- 성능 문제는 종종 피드 쿼리가 아니라 레이아웃/보안 계층에서 생긴다
+- 전역 hardening은 이해하기 쉽지만, public caching과 충돌할 수 있다
+- “더 안전하게”가 항상 “더 단순하게”와 같은 뜻은 아니다
+
+즉 TownPet의 이번 최적화는 결국 feed 코드보다도, **보안 경계를 어디까지 전역으로 걸 것인가를 다시 설계한 작업**이었습니다.
 - `page_query.cursor`
 
 게다가 guest route도 `count -> list` 직렬 흐름을 공통 helper로 줄여, **측정과 최적화를 같은 경로에서 같이 진행**할 수 있게 했습니다.

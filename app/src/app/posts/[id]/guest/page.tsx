@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { notFound } from "next/navigation";
 import { PostType } from "@prisma/client";
 
@@ -157,6 +158,7 @@ const volunteerStatusLabel: Record<string, string> = {
 };
 
 export default async function GuestPostDetailPage({ params }: PostDetailPageProps) {
+  await connection();
   const cspNonce = await getCspNonce();
   const resolvedParams = (await params) ?? {};
   const post = await getPostById(resolvedParams.id);

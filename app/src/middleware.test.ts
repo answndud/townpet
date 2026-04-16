@@ -172,3 +172,20 @@ describe("middleware admin path protection", () => {
     expect(response.headers.get("x-robots-tag")).toBe("noindex, nofollow, noarchive");
   });
 });
+
+describe("middleware guest feed rewrite", () => {
+  it("uses static CSP for guest feed shell rewrites", async () => {
+    process.env.CSP_ENFORCE_STRICT = "1";
+
+    const request = new NextRequest("https://townpet.test/feed");
+    const response = await middleware(request);
+
+    expect(response.headers.get("cache-control")).toBe(
+      "public, s-maxage=60, stale-while-revalidate=300",
+    );
+    expect(response.headers.get("content-security-policy")).toContain("script-src 'self' 'unsafe-inline'");
+    expect(response.headers.get("content-security-policy")).not.toContain("'strict-dynamic'");
+    expect(response.headers.get("x-nonce")).toBeNull();
+    expect(response.headers.get("x-csp-nonce")).toBeNull();
+  });
+});
