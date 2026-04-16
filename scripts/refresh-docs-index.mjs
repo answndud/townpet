@@ -10,7 +10,11 @@ const appDir = join(repoRoot, "app");
 const reportPath = join(docsDir, "archive", "operations", "문서 동기화 리포트.md");
 
 function stableSort(items) {
-  return [...items].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+  return [...items].sort((a, b) => {
+    const left = a.normalize("NFC");
+    const right = b.normalize("NFC");
+    return left < right ? -1 : left > right ? 1 : 0;
+  });
 }
 
 function walk(dir, predicate) {
@@ -30,7 +34,7 @@ function walk(dir, predicate) {
 }
 
 function toRel(path) {
-  return relative(repoRoot, path).replaceAll("\\", "/");
+  return relative(repoRoot, path).replaceAll("\\", "/").normalize("NFC");
 }
 
 function readJson(path) {
