@@ -2,14 +2,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   runBuildVercel,
-  shouldRunAuthEmailReadinessPreflight,
   shouldRunSecurityEnvPreflight,
 } from "@/../scripts/vercel-build";
 
 describe("vercel-build security preflight", () => {
   beforeEach(() => {
-    delete process.env.DEPLOY_AUTH_EMAIL_PREFLIGHT_SKIP;
-    delete process.env.DEPLOY_AUTH_EMAIL_PREFLIGHT_STRICT;
     delete process.env.DEPLOY_SECURITY_PREFLIGHT_SKIP;
     delete process.env.DEPLOY_SECURITY_PREFLIGHT_STRICT;
     delete process.env.VERCEL_ENV;
@@ -66,42 +63,6 @@ describe("vercel-build security preflight", () => {
     ).toBe(true);
   });
 
-  it("enables auth email readiness preflight for production vercel targets", () => {
-    expect(
-      shouldRunAuthEmailReadinessPreflight({
-        NODE_ENV: "production",
-        VERCEL_ENV: "production",
-      }),
-    ).toBe(true);
-    expect(
-      shouldRunAuthEmailReadinessPreflight({
-        NODE_ENV: "production",
-        VERCEL_TARGET_ENV: "preview",
-      }),
-    ).toBe(true);
-    expect(
-      shouldRunAuthEmailReadinessPreflight({
-        NODE_ENV: "production",
-        VERCEL_ENV: "staging",
-      }),
-    ).toBe(true);
-  });
-
-  it("skips auth email readiness preflight outside Vercel targets unless explicitly forced", () => {
-    expect(
-      shouldRunAuthEmailReadinessPreflight({
-        NODE_ENV: "production",
-      }),
-    ).toBe(false);
-    expect(
-      shouldRunAuthEmailReadinessPreflight({
-        NODE_ENV: "production",
-        VERCEL_ENV: "development",
-        DEPLOY_AUTH_EMAIL_PREFLIGHT_STRICT: "1",
-      }),
-    ).toBe(true);
-  });
-
   it("stops the build before prisma deploy when security preflight fails", async () => {
     process.env.VERCEL_ENV = "production";
 
@@ -129,65 +90,37 @@ describe("vercel-build security preflight", () => {
 
     expect(commandRunner.mock.calls).toEqual([
       ["pnpm", ["ops:check:security-env:strict"]],
-      ["pnpm", ["prisma", "generate"]],
-      ["pnpm", ["ops:check:auth-email-readiness"]],
       ["pnpm", ["prisma", "migrate", "deploy"]],
-      [
-        "pnpm",
-        [
-          "prisma",
-          "db",
-          "execute",
-          "--schema",
-          "prisma/schema.prisma",
-          "--file",
-          "scripts/sql/community-board-repair.sql",
-        ],
-      ],
-      [
-        "pnpm",
-        [
-          "prisma",
-          "db",
-          "execute",
-          "--schema",
-          "prisma/schema.prisma",
-          "--file",
-          "scripts/sql/notification-archive-repair.sql",
-        ],
-      ],
       ["pnpm", ["prisma", "generate"]],
-      ["pnpm", ["db:sync:neighborhoods"]],
       ["pnpm", ["next", "build"]],
     ]);
   });
 
-  it("stops the build before prisma deploy when auth email preflight fails", async () => {
+  it("stops the build before prisma generate when prisma deploy fails", async () => {
     process.env.VERCEL_ENV = "production";
 
     const commandRunner = vi
       .fn()
       .mockResolvedValueOnce({ code: 0, output: "security ok" })
-      .mockResolvedValueOnce({ code: 0, output: "generate ok" })
-      .mockResolvedValueOnce({ code: 1, output: "duplicate normalized email" });
+      .mockResolvedValueOnce({ code: 1, output: "migration failed" });
 
     await expect(runBuildVercel(commandRunner)).rejects.toThrow(
-      "[build:vercel] auth email readiness preflight failed.",
+      "[build:vercel] prisma migrate deploy failed.",
     );
 
     expect(commandRunner.mock.calls).toEqual([
       ["pnpm", ["ops:check:security-env:strict"]],
-      ["pnpm", ["prisma", "generate"]],
-      ["pnpm", ["ops:check:auth-email-readiness"]],
+      ["pnpm", ["prisma", "migrate", "deploy"]],
     ]);
   });
 
-  it("stops the build before auth email preflight when prisma generate fails", async () => {
+  it("stops the build before next build when prisma generate fails", async () => {
     process.env.VERCEL_ENV = "production";
 
     const commandRunner = vi
       .fn()
       .mockResolvedValueOnce({ code: 0, output: "security ok" })
+      .mockResolvedValueOnce({ code: 0, output: "deploy ok" })
       .mockResolvedValueOnce({ code: 1, output: "vercel prisma generate safeguard" });
 
     await expect(runBuildVercel(commandRunner)).rejects.toThrow(
@@ -196,6 +129,7 @@ describe("vercel-build security preflight", () => {
 
     expect(commandRunner.mock.calls).toEqual([
       ["pnpm", ["ops:check:security-env:strict"]],
+      ["pnpm", ["prisma", "migrate", "deploy"]],
       ["pnpm", ["prisma", "generate"]],
     ]);
   });

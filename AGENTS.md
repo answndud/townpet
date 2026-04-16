@@ -258,6 +258,12 @@ Codex가 저장소에 처음 들어왔을 때 이 파일 하나만 읽어도 현
   - `.github/workflows/quality-gate.yml`
   - `.github/workflows/ops-smoke-checks.yml`
 
+브라우저 smoke는 hot path에서 분리됐습니다.
+
+- 필요할 때만:
+  - `.github/workflows/browser-smoke.yml`
+  - `pnpm -C app test:e2e:smoke`
+
 나머지 `db:*`, `ops:*`, `test:e2e:*`, cleanup/backfill 스크립트와 주기 워크플로우는 필요할 때만 여는 on-demand 유지보수 도구로 취급합니다.
 
 ## 11. 명령의 소스 오브 트루스
@@ -325,6 +331,7 @@ pnpm -C app dev
 - 포함 패턴:
   - `src/**/*.test.ts`
   - `src/**/*.test.tsx`
+  - `scripts/**/*.test.ts`
 
 자주 쓰는 방식:
 

@@ -14,6 +14,17 @@
 - Cycle B9: 문제 정의, AI agent 개발 방식, 데모/면접 패키지 본문 3개 추가 완료
 - Cycle B10: 블로그 문체 통일 + 핵심 흐름 다이어그램 추가 완료
 
+### 2026-04-16: Cycle B13 완료 (quality gate/deploy pipeline 회고 + current workflow refresh)
+- 완료 내용
+  - [19-testing-and-quality-gate.md](./blog/19-testing-and-quality-gate.md)를 현재 구조 기준으로 다시 써서 PR hot path, docs-only workflow, on-demand browser smoke, post-deploy ops smoke, deploy-essential `build:vercel` 모델을 반영했다.
+  - [25-overengineering-ci-and-deploy-pipelines.md](./blog/25-overengineering-ci-and-deploy-pipelines.md)를 추가해 quality gate/deploy pipeline 과설계가 배포 속도 지연, unrelated failure coupling, flaky gate 증가, 우회 행동 유도 같은 리스크를 만드는 과정을 회고했다.
+  - [blog/README.md](./blog/README.md), [00_series_plan.md](./blog/00_series_plan.md), [BLOG_PLAN.md](./BLOG_PLAN.md)도 `25` 링크와 최신 보강 우선순위에 맞게 갱신했다.
+- 검증 결과
+  - 본문에서 참조한 workflow/script/doc 경로가 현재 저장소에 실제 존재하는지 확인했다.
+  - `git diff --check` 기준으로 블로그/문서 변경 포맷을 함께 점검했다.
+- 메모
+  - 이제 테스트/quality gate 글은 “검증을 많이 한다”보다 “검증을 어디에 배치하는가”를 설명하는 글로 성격이 바뀌었다.
+
 ### 2026-04-07: Cycle B10 완료 (블로그 문체 통일 + 핵심 흐름 다이어그램 추가)
 - 완료 내용
   - [00_rebuild_guide.md](./blog/00_rebuild_guide.md)에 문체 원칙을 추가해 `이 글은 ...를 정리합니다` 형태, 완충 표현 축소, 강조 문장 절제 기준을 명시했다.

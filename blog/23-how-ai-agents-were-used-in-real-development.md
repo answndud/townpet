@@ -92,7 +92,7 @@ flowchart TD
   B --> C["구현 범위/레이어 결정"]
   C --> D["AI agent로 구현/수정 진행"]
   D --> E["lint / typecheck / targeted test"]
-  E --> F["quality-gate / ops smoke 확인"]
+  E --> F["quality-check / 필요 시 browser smoke / ops smoke 확인"]
   F --> G["PROGRESS.md에 결과 기록"]
 ```
 

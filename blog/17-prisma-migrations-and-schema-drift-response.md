@@ -94,12 +94,15 @@ TownPet는 이런 문제를 다음 세 층으로 다룹니다.
 `vercel-build.ts`는 배포 중:
 
 - security env preflight
-- auth email readiness preflight
 - `runPrismaDeploy()`
+- `pnpm prisma generate`
 
 를 수행합니다.
 
 즉 build와 migration이 분리되지 않고, **배포 파이프라인의 일부**로 묶입니다.
+
+auth email readiness는 더 이상 모든 배포의 기본 게이트가 아닙니다.
+이제는 auth/email 정규화나 관련 migration을 건드릴 때만 수동 preflight로 확인하는 쪽이 현재 TownPet 운영 모델에 더 맞습니다.
 
 ## 2. `vercel-build.ts`는 왜 baseline 로직까지 가지는가
 
