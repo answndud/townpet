@@ -28,6 +28,16 @@
 
 ## Active Plan
 
+### Cycle 447: guest `/feed` 문서 응답 캐시 복원 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| guest `/feed`의 server-first 내부 fetch가 문서 응답을 `no-store`로 만드는 문제를 걷어내고, `/feed/guest`는 static shell + cached guest API 모델로 되돌리며, 관련 테스트와 블로그를 현재 병목 판단 기준에 맞춘다 | Codex | P1 | `done` | `/feed/guest/page.tsx`가 서버 self-fetch 없이 static shell을 렌더하고, `fetchGuestFeedInitialData` 경로가 제거되며, guest page 테스트/문서/블로그가 갱신되고, 타입체크와 관련 테스트가 통과하며, `PLAN.md`/`PROGRESS.md`가 최신 상태를 반영한다 | `PLAN.md`, `PROGRESS.md`, `app/src/app/feed/guest/page.tsx`, `app/src/components/posts/guest-feed-page-client.tsx`, `app/src/server/services/posts/guest-feed-page-fetch.service.ts`, `blog/06-feed-and-board-architecture.md`, `blog/20-performance-story-search-cache-pagination.md` |
+
+### Cycle 446: 배포 파이프라인 경량화와 workflow 분리
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 혼자 개발하는 현재 운영 모델에 맞춰 `quality-gate`에서 중복 unit 실행과 maintenance rehearsal을 제거하고, docs 전용 lightweight workflow와 manual maintenance workflow를 분리하며, `build:vercel`은 배포 필수 단계만 남기고 관련 문서/블로그를 현재 동작과 맞춘다 | Codex | P1 | `in_progress` | `quality-gate`가 lint/typecheck/coverage/smoke 중심으로 단순화되고, docs-only 변경은 별도 workflow가 처리되며, moved maintenance checks는 manual workflow로 보존되고, `build:vercel`가 security preflight -> migrate/repair -> prisma generate -> next build 수준으로 정리되며, 관련 테스트/문서/블로그/상태 문서가 최신 상태를 반영한다 | `PLAN.md`, `PROGRESS.md`, `.github/workflows/quality-gate.yml`, `.github/workflows/*.yml`, `app/scripts/vercel-build.ts`, `app/scripts/vercel-build.test.ts`, `docs/operations/*`, `blog/19-testing-and-quality-gate.md` |
+
 ### Cycle 430: 게시글 에디터 SunEditor 전환 및 styled typing boundary 안정화
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
@@ -35,6 +45,7 @@
 
 ## Completed Summary
 
+- Cycle 447 (2026-04-16): guest `/feed`의 server-first 내부 fetch를 제거하고 `/feed/guest`를 static shell + cached guest API 구조로 되돌려 문서 응답이 `no-store`로 무거워지는 병목을 줄였으며, 그 시행착오와 판단 근거를 블로그에 반영했다.
 - Cycle 445 (2026-04-16): guest `/feed` 첫 진입을 server-first로 바꿔 `/feed/guest/page.tsx`가 초기 payload를 서버에서 주입하고 `GuestFeedPageClient`가 초기 query 일치 시 첫 fetch를 건너뛰게 했으며, 허탕 친 redirect/계측/병목 판단 과정까지 블로그에 정리했다.
 - Cycle 444 (2026-04-16): guest `/feed`의 실제 데이터 경로인 `/api/feed/guest`에 `perf=1` 응답 meta와 `Server-Timing` 헤더를 추가하고, guest count/list 조회도 공통 helper로 병렬화해 브라우저/`curl`에서 바로 병목을 볼 수 있게 했다.
 - Cycle 443 (2026-04-16): `/feed` 서버 렌더에 bootstrap/page-query/personalization 분해 계측을 추가하고 slow request만 warn으로 남기며 `?perf=1`은 info로 강제 로그하도록 했고, `ops:perf:snapshot`에 canonical `/feed` 측정(`page_feed`)을 포함했다.

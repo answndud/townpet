@@ -17,6 +17,19 @@
 
 ## 현재 진행
 
+### 2026-04-16: Cycle 447 완료 (guest `/feed` 문서 응답 캐시 복원)
+- 완료 내용: `/feed/guest/page.tsx`에서 server self-fetch를 제거하고 `dynamic = "force-static"` guest shell만 렌더하도록 되돌렸다.
+- 완료 내용: `guest-feed-page-fetch.service.ts`를 제거하고, guest 첫 진입 데이터는 다시 cacheable `/api/feed/guest`가 담당하도록 경계를 정리했다.
+- 완료 내용: `GuestFeedPage` 회귀 테스트를 현재 구조에 맞춰 갱신하고, 블로그에 “server-first가 항상 빠른 것은 아니었다”는 시행착오와 판단 기준을 반영했다.
+- 검증 결과: `corepack pnpm -C app exec vitest run src/app/feed/guest/page.test.tsx src/app/api/feed/guest/route.test.ts` 통과.
+- 검증 결과: `corepack pnpm -C app typecheck` 통과.
+- 검증 결과: `git diff --check` 통과.
+
+### 2026-04-16: Cycle 446 진행 중 (배포 파이프라인 경량화와 workflow 분리)
+- 계획: `quality-gate`에서 중복 unit 실행과 guest legacy maintenance rehearsal을 분리한다.
+- 계획: docs-only 변경은 lightweight workflow로 분리하고, maintenance checks는 manual workflow로 이동한다.
+- 계획: `build:vercel`는 배포 필수 단계만 남기고, 관련 테스트/문서/블로그를 현재 구조와 맞춘다.
+
 ### 2026-04-14: Cycle 430 진행 중 (게시글 에디터 SunEditor 전환 및 styled typing boundary 안정화)
 - 완료 내용: `@tiptap/*` 의존성을 제거하고 `suneditor-react` 기반 공용 `PostBodyRichEditor`로 전환했다.
 - 완료 내용: 작성/수정 폼이 같은 에디터 컴포넌트를 공유하고, 숫자 폰트 크기/이미지/링크/인용/목록을 SunEditor 내장 툴바 기준으로 재구성했다.
@@ -34,6 +47,7 @@
 
 ## 완료 요약
 
+- 2026-04-16: Cycle 447 완료 - guest `/feed` 문서 응답이 server-first self-fetch 때문에 `private, no-store`가 되던 문제를 확인한 뒤 `/feed/guest/page.tsx`를 static shell로 되돌리고, 데이터는 다시 cacheable `/api/feed/guest`에서만 읽게 정리했으며, 관련 테스트와 블로그를 함께 갱신했다.
 - 2026-04-16: Cycle 445 완료 - guest `/feed` 첫 진입이 `fetchGuestFeedInitialData`를 통해 서버에서 초기 payload를 받아 `GuestFeedPageClient`에 주입하도록 바뀌었고, initial query와 같을 때 client 첫 fetch를 건너뛰게 했으며, 이번 redirect loop/계측/병목 판단 과정을 블로그에 경험 축적으로 남겼다.
 - 2026-04-16: Cycle 444 완료 - guest `/feed` 실경로인 `/api/feed/guest`에 `perf=1` 응답 `meta.timings`와 `Server-Timing` 헤더를 추가했고, guest count/list 조회도 `resolveFeedPageSlice` helper로 병렬화해 브라우저/`curl`에서 바로 병목을 확인할 수 있게 했다.
 - 2026-04-16: Cycle 443 완료 - `/feed` 서버 렌더에 `feed-page-performance.service.ts` 기반 분해 계측을 넣어 bootstrap/page-query/personalization 시간을 slow request warn 또는 `?perf=1` info 로그로 남기게 했고, `ops:perf:snapshot`에 canonical `/feed` 페이지 측정(`page_feed`)을 추가했다.

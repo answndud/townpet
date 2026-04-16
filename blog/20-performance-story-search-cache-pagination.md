@@ -278,6 +278,51 @@ TownPet는 그래서 guest `/feed`의 실제 데이터 경로인 `/api/feed/gues
 - `bootstrap.policy_and_communities`
 - `page_query.all`
 - `page_query.best`
+
+실제로 이 계측을 넣고 보니 중요한 사실이 하나 드러났습니다.
+
+- `/api/feed/guest` 자체는 `totalMs` 수십 ms 수준으로 빨랐고
+- 진짜 병목은 문서 응답 경로 쪽이었습니다.
+
+즉 처음에는 “guest API가 느려서 첫 화면이 느리다”고 추정했지만, 계측 결과는 반대였습니다.
+
+## 4.9. server-first가 항상 더 빠른 것은 아니었다
+
+핵심 파일:
+
+- [`feed/guest/page.tsx`](../app/src/app/feed/guest/page.tsx)
+- [`guest-feed-page-client.tsx`](../app/src/components/posts/guest-feed-page-client.tsx)
+- [`api/feed/guest/route.ts`](../app/src/app/api/feed/guest/route.ts)
+
+한 번은 guest `/feed`의 첫 체감을 줄이려고, 서버가 먼저 `/api/feed/guest`를 호출해서 초기 payload를 `GuestFeedPageClient`에 넣는 구조로 바꿨습니다.
+
+처음 가설은 그럴듯했습니다.
+
+1. 문서 응답에 첫 페이지 데이터까지 같이 실으면
+2. 브라우저가 추가 API를 기다리지 않아도 되고
+3. 따라서 첫 화면이 더 빨라질 것
+
+하지만 배포 응답을 다시 확인하니, 결과는 기대와 달랐습니다.
+
+- `/feed` 문서 응답은 `private, no-cache, no-store`가 되었고
+- guest rewrite 경로의 CDN 이점을 잃었고
+- 서버는 같은 앱의 `/api/feed/guest`를 한 번 더 내부 fetch하게 됐습니다.
+
+즉 API는 빨랐지만, **문서가 더 무거워진 것**입니다.
+
+그래서 최종 구조는 다시 단순하게 정리했습니다.
+
+- `/feed/guest/page.tsx`: static shell만 렌더
+- `GuestFeedPageClient`: skeleton을 먼저 보여주고 client fetch 수행
+- `/api/feed/guest`: cacheable public read endpoint + `perf=1` 계측
+
+이 경험에서 얻은 교훈은 단순합니다.
+
+- SSR이 있다고 항상 빠른 것이 아니다
+- 같은 앱 내부 self-fetch는 쉽게 “조용한 병목”이 된다
+- public read 표면은 HTML보다 API 캐시가 더 큰 승부처일 수 있다
+
+즉 TownPet의 이번 피드 최적화는 “더 많은 서버 작업”이 아니라, **어디를 static으로 두고 어디를 cacheable API로 둘지 다시 경계 그리기**에 가까웠습니다.
 - `page_query.cursor`
 
 게다가 guest route도 `count -> list` 직렬 흐름을 공통 helper로 줄여, **측정과 최적화를 같은 경로에서 같이 진행**할 수 있게 했습니다.
