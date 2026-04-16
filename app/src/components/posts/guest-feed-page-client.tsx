@@ -29,6 +29,7 @@ import { postTypeMeta } from "@/lib/post-presenter";
 import { type ReviewCategory } from "@/lib/review-category";
 
 function buildGuestFeedHref({
+  basePath,
   type,
   reviewBoard,
   reviewCategory,
@@ -54,6 +55,7 @@ function buildGuestFeedHref({
   nextDensity,
   nextPersonalized,
 }: {
+  basePath: string;
   type: PostType | null;
   reviewBoard: boolean;
   reviewCategory: ReviewCategory | null;
@@ -140,7 +142,7 @@ function buildGuestFeedHref({
     params.set("page", String(effectivePage));
   }
   const serialized = params.toString();
-  return serialized ? `/feed?${serialized}` : "/feed";
+  return serialized ? `${basePath}?${serialized}` : basePath;
 }
 
 type GuestFeedPageClientProps = {
@@ -161,6 +163,7 @@ export function GuestFeedPageClient({
   const [reloadToken, setReloadToken] = useState(0);
 
   const queryString = searchParams.toString();
+  const feedBasePath = pathname?.startsWith("/feed/guest") ? "/feed/guest" : "/feed";
   const legacyCommunityId = searchParams.get("communityId")?.trim() ?? "";
   const hasLegacyScope = Boolean(searchParams.get("scope")?.trim());
   const hasPetType = searchParams.getAll("petType").some((value) => value.trim().length > 0);
@@ -178,8 +181,8 @@ export function GuestFeedPageClient({
     }
     params.delete("communityId");
     const serialized = params.toString();
-    router.replace(serialized ? `/feed?${serialized}` : "/feed");
-  }, [hasPetType, legacyCommunityId, pathname, router, searchParams, shouldNormalizeLegacy]);
+    router.replace(serialized ? `${feedBasePath}?${serialized}` : feedBasePath);
+  }, [feedBasePath, hasPetType, legacyCommunityId, pathname, router, searchParams, shouldNormalizeLegacy]);
 
   useEffect(() => {
     const handlePageShow = (event: PageTransitionEvent) => {
@@ -261,6 +264,7 @@ export function GuestFeedPageClient({
     }
 
     const canonicalHref = buildGuestFeedHref({
+      basePath: feedBasePath,
       type: data.feed.type,
       reviewBoard: data.feed.reviewBoard,
       reviewCategory: data.feed.reviewCategory,
@@ -278,7 +282,7 @@ export function GuestFeedPageClient({
     if (canonicalHref !== currentHref) {
       router.replace(canonicalHref);
     }
-  }, [data, queryString, router]);
+  }, [data, feedBasePath, queryString, router]);
 
   if (data?.view === "gate") {
     return (
@@ -359,6 +363,7 @@ export function GuestFeedPageClient({
     nextPersonalized?: "0" | "1" | null;
   }) =>
     buildGuestFeedHref({
+      basePath: feedBasePath,
       type,
       reviewBoard,
       reviewCategory,
@@ -456,7 +461,7 @@ export function GuestFeedPageClient({
                   isGuestTypeBlocked
                     ? loginHref(`/feed${type ? `?type=${type}` : ""}`)
                     : mode === "BEST"
-                      ? "/feed?mode=ALL"
+                      ? `${feedBasePath}?mode=ALL`
                       : "/posts/new"
                 }
                 actionLabel={

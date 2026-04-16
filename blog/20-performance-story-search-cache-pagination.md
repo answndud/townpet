@@ -369,6 +369,38 @@ TownPet는 그래서 guest `/feed`의 실제 데이터 경로인 `/api/feed/gues
 - “더 안전하게”가 항상 “더 단순하게”와 같은 뜻은 아니다
 
 즉 TownPet의 이번 최적화는 결국 feed 코드보다도, **보안 경계를 어디까지 전역으로 걸 것인가를 다시 설계한 작업**이었습니다.
+
+## 4.11. rewrite보다 redirect가 더 빨랐던 이유
+
+여기서 한 번 더 의외의 결과가 나왔습니다.
+
+헤더와 실측을 같이 보니:
+
+- `/feed/guest` 직접 요청은 `x-nextjs-prerender: 1`, `x-vercel-cache: HIT`
+- `/feed/guest`는 `ttfb 0.14s~0.22s`로 안정적
+- 반면 `/feed`는 guest rewrite 경로에서만 계속 느렸습니다
+
+즉 guest 피드의 느린 부분은 “guest 페이지”가 아니라, **원래 URL `/feed`를 유지한 rewrite 방식**이었습니다.
+
+그래서 최종 선택은 rewrite를 고집하지 않는 것이었습니다.
+
+- guest `/feed` 요청은 `/feed/guest`로 redirect
+- `GuestFeedPageClient` 내부 navigation/canonical도 `/feed/guest` 기준으로 유지
+
+이렇게 하면 URL은 하나 더 생기지만, 실제 빠른 경로를 그대로 활용할 수 있습니다.
+
+이 결정은 “URL이 더 예쁘냐”보다 “실제로 더 빠르냐”를 우선한 선택입니다.
+
+정리하면 이번 feed 최적화의 흐름은 이렇습니다.
+
+1. guest API가 느릴 것이라 추정했다
+2. 계측해 보니 API는 빨랐다
+3. server-first self-fetch를 붙였더니 문서가 더 무거워졌다
+4. strict nonce 범위를 줄였지만 rewrite 경로는 여전히 느렸다
+5. 직접 `/feed/guest`를 재보니 이미 충분히 빨랐다
+6. 그래서 rewrite 대신 redirect로 바꿨다
+
+즉 TownPet에서 이번 성능 개선은 “더 많은 캐시를 붙인다”보다, **실제로 빠른 경로를 인정하고 그 경로로 단순하게 보내는 작업**에 가까웠습니다.
 - `page_query.cursor`
 
 게다가 guest route도 `count -> list` 직렬 흐름을 공통 helper로 줄여, **측정과 최적화를 같은 경로에서 같이 진행**할 수 있게 했습니다.
