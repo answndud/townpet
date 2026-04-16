@@ -35,6 +35,7 @@ TownPet는 기능이 늘어나면서 성능 문제도 같이 다뤘습니다.
 - [`app/src/server/cache/query-cache.ts`](../app/src/server/cache/query-cache.ts)
 - [`app/src/server/cache/query-cache.test.ts`](../app/src/server/cache/query-cache.test.ts)
 - [`app/src/server/queries/post.queries.ts`](../app/src/server/queries/post.queries.ts)
+- [`app/src/server/services/posts/feed-page-performance.service.ts`](../app/src/server/services/posts/feed-page-performance.service.ts)
 - [`app/src/server/services/posts/feed-page-query.service.ts`](../app/src/server/services/posts/feed-page-query.service.ts)
 - [`app/src/server/queries/comment.queries.ts`](../app/src/server/queries/comment.queries.ts)
 - [`app/src/server/queries/comment.queries.test.ts`](../app/src/server/queries/comment.queries.test.ts)
@@ -42,6 +43,7 @@ TownPet는 기능이 늘어나면서 성능 문제도 같이 다뤘습니다.
 - [`app/src/components/posts/feed-infinite-list.tsx`](../app/src/components/posts/feed-infinite-list.tsx)
 - [`app/src/lib/feed-list-presenter.ts`](../app/src/lib/feed-list-presenter.ts)
 - [`app/src/lib/post-structured-search.ts`](../app/src/lib/post-structured-search.ts)
+- [`app/scripts/collect-latency-snapshot.ts`](../app/scripts/collect-latency-snapshot.ts)
 - [`/.github/workflows/ops-latency-snapshots.yml`](../.github/workflows/ops-latency-snapshots.yml)
 
 ## 먼저 알아둘 개념
@@ -217,6 +219,38 @@ Spring/Java 식으로 보면, 컨트롤러에 pagination edge case를 직접 적
 TownPet는 그래서 feed loading UI를 공통 skeleton으로 맞췄습니다.
 
 이건 단순 디자인 수정이 아니라, 운영 중 느린 구간이 있더라도 사용자가 보는 첫 인상을 더 안정적으로 만드는 선택입니다.
+
+## 4.7. 느린 구간은 왜 `/feed` 안에서 단계별로 로그를 남기는가
+
+핵심 파일:
+
+- [`feed/page.tsx`](../app/src/app/feed/page.tsx)
+- [`feed-page-performance.service.ts`](../app/src/server/services/posts/feed-page-performance.service.ts)
+- [`collect-latency-snapshot.ts`](../app/scripts/collect-latency-snapshot.ts)
+
+페이지가 느릴 때 중요한 건 “느리다”가 아니라 **어디가 느린가**입니다.
+
+TownPet는 `/feed` 서버 렌더에서 아래 단계를 분리해 기록합니다.
+
+- `bootstrap.session_and_communities`
+- `bootstrap.viewer_context`
+- `page_query.all` 또는 `page_query.best`
+- `personalization.context`
+
+기본 동작은 단순합니다.
+
+- 전체 시간이 threshold를 넘는 slow request만 `warn` 로그로 남긴다.
+- 운영 중 특정 요청을 바로 보고 싶으면 `?perf=1`로 강제 `info` 로그를 남긴다.
+
+즉 평소에는 로그를 과하게 늘리지 않고, 필요할 때만 `/feed?perf=1` 요청 하나로 배포 로그에서 병목 위치를 바로 볼 수 있습니다.
+
+여기에 운영 snapshot도 같이 맞췄습니다.
+
+- `ops:perf:snapshot`
+- `ops-latency-snapshots.yml`
+- `page_feed` label
+
+이제 API만 재지 않고 **canonical `/feed` 페이지 자체도 주기적으로 측정**합니다.
 
 ## 5. 검색 성능은 왜 structured shadow column으로 옮겼는가
 
