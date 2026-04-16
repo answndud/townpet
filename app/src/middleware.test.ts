@@ -174,15 +174,14 @@ describe("middleware admin path protection", () => {
 });
 
 describe("middleware guest feed rewrite", () => {
-  it("uses static CSP for guest feed shell rewrites", async () => {
+  it("redirects guest /feed requests to /feed/guest with static CSP", async () => {
     process.env.CSP_ENFORCE_STRICT = "1";
 
     const request = new NextRequest("https://townpet.test/feed");
     const response = await middleware(request);
 
-    expect(response.headers.get("cache-control")).toBe(
-      "public, s-maxage=60, stale-while-revalidate=300",
-    );
+    expect(response.status).toBe(307);
+    expect(response.headers.get("location")).toBe("https://townpet.test/feed/guest");
     expect(response.headers.get("content-security-policy")).toContain("script-src 'self' 'unsafe-inline'");
     expect(response.headers.get("content-security-policy")).not.toContain("'strict-dynamic'");
     expect(response.headers.get("x-nonce")).toBeNull();
