@@ -33,14 +33,9 @@
 |---|---|---|---|---|---|
 | `contentEditable + execCommand`/실패한 Tiptap 보수 경로를 버리고 무료 외부 라이브러리 SunEditor로 게시글 작성/수정 에디터를 재구성하며, 숫자 폰트 크기/이미지/링크/인용/목록을 내장 툴바 기준으로 안정화하고, 반복적으로 깨지던 색상 커스텀 UI는 제거하며, 선택 텍스트만 스타일이 적용된 뒤 다음 입력은 기본 스타일로 분리되도록 마무리한다 | Codex | P0 | `in_progress` | create/edit 폼이 공용 `PostBodyRichEditor` 기반 SunEditor를 사용하고, 상단/내장 툴바에서 폰트 크기 숫자 선택과 이미지 업로드/링크/인용/목록이 동작하며, 불안정했던 글자색 커스텀 UI는 작성/수정 툴바에서 제거되고, 기존 TownPet `[color=#...]` markup은 과거 글 호환성을 위해 렌더/직렬화 경로에서 계속 지원되며, 이미지 업로드/링크/인용/목록/게스트 수정 플로우가 새 에디터 기준 E2E로 고정되고, 저장 포맷은 기존 TownPet markup을 유지하며, 스타일 적용 뒤 다음 입력은 기본 스타일로 분리되고, `PLAN.md`/`PROGRESS.md`가 최신 상태를 반영한다 | `PLAN.md`, `PROGRESS.md`, `app/package.json`, `app/pnpm-lock.yaml`, `app/src/components/posts/post-body-rich-editor.tsx`, `app/src/components/posts/post-create-form.tsx`, `app/src/components/posts/post-detail-edit-form.tsx`, `app/src/app/globals.css`, `app/src/app/globals-css.test.ts`, `app/src/lib/editor-content-serializer.ts`, `app/src/lib/editor-image-markup.ts`, `app/src/lib/markdown-lite.ts`, `app/src/server/services/post.service.ts`, `app/e2e/post-editor-toolbar.spec.ts`, `app/e2e/image-upload-flow.spec.ts`, `app/e2e/guest-post-management.spec.ts`, `local PostgreSQL (Playwright verification)` |
 
-### Cycle 434: 운영/품질 루틴 경량화 (병렬 유지보수 트랙)
-| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
-|---|---|---|---|---|---|
-| 커버리지 임계값과 문서 인덱스 드리프트 체크를 추가해 복잡도를 크게 늘리지 않으면서 품질 하락을 막는 최소 CI 가드를 도입한다 | Codex | P1 | `done` | `app/vitest.config.ts`에 실측 baseline을 기준으로 한 global coverage threshold가 추가되고, shim 재배치 파일은 coverage noise에서 제외되며, `.github/workflows/quality-gate.yml`이 `docs:refresh:check`를 실행하고, `typecheck`/`test:coverage`/`git diff --check`가 통과한다 | `PLAN.md`, `PROGRESS.md`, `app/vitest.config.ts`, `.github/workflows/quality-gate.yml`, `app/package.json` |
-| 일상 운영 표면을 `quality:check`, `ops:check:health`, `db:restore:local`과 `quality-gate`, `ops-smoke-checks` 중심으로 재정의해 solo 운영 mental model을 더 작게 만든다 | Codex | P1 | `in_progress` | `README.md`, `AGENTS.md`, `app/README.md`, `docs/operations/운영_문서_안내.md`가 최소 운영 루틴과 on-demand maintenance 명령 구분을 명시하고, 나머지 스크립트/워크플로우는 필요 시 찾는 보조 도구로 설명된다 | `README.md`, `AGENTS.md`, `app/README.md`, `docs/operations/운영_문서_안내.md` |
-
 ## Completed Summary
 
+- Cycle 434 (2026-04-16): coverage threshold와 `docs:refresh:check`를 기존 CI에 추가하고, 운영 문서를 `quality:check`/`ops:check:health`/`db:restore:local` + `quality-gate`/`ops-smoke-checks` 중심 최소 루틴으로 재정리했다.
 - Cycle 433 (2026-04-16): `auth`/`notifications` validation-service-query-action을 도메인 하위 폴더로 옮기고 기존 경로는 shim으로 유지했으며, 관련 구조 문서의 canonical path를 동기화했다.
 - Cycle 432 (2026-04-16): `posts`/`moderation` validation-query-service를 도메인 하위 폴더로 옮기고 기존 경로는 shim으로 유지했으며, `README.md`, `AGENTS.md`, `app/README.md`에 canonical path와 계층 경계를 반영했다.
 - Cycle 431 (2026-04-16): `AGENTS.md` 단일 하네스 통합, 중복 하네스 문서 제거, 활성 문서 링크 재정리.

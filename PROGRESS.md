@@ -32,18 +32,9 @@
 - 블로커: `e2e/post-editor-toolbar.spec.ts`의 “서식 적용 후 다음 입력이 기본 스타일로 분리돼야 한다” 케이스가 아직 실패한다.
 - 블로커: 같은 E2E를 재실행한 최근 시도는 코드 오류가 아니라 로컬 PostgreSQL(`localhost:5432`) 미기동 때문에 시작 단계에서 중단됐다.
 
-### 2026-04-16: Cycle 434 진행 중 (운영/품질 루틴 경량화)
-- 계획: 1차로 coverage threshold + `docs:refresh:check` CI 가드를 추가하고, 2차로 solo 운영 기준 최소 명령/워크플로우만 남는 문서 레이어를 정리한다.
-- 기준: 운영 복잡도를 키우는 새 채널/새 워크플로우는 만들지 않고, 현재 자산 위에 guardrail만 얇게 올린다.
-- baseline: `corepack pnpm -C app test:coverage` 실측 기준 전체 coverage는 statements 68.73 / branches 59.55 / functions 70.34 / lines 69.28 이다.
-- 1차 완료: `app/vitest.config.ts`에 global coverage threshold를 statements 68 / branches 59 / functions 70 / lines 69로 추가했다.
-- 1차 완료: domain re-export shim 파일을 coverage exclude에 넣어 경량 구조 정리로 생긴 noise가 지표를 왜곡하지 않게 했다.
-- 1차 완료: `.github/workflows/quality-gate.yml`에 `pnpm docs:refresh:check`를 추가했다.
-- 1차 완료: 새 CI 가드가 `docs/archive/operations/문서 동기화 리포트.md` stale 상태를 실제로 잡았고, `corepack pnpm -C app docs:refresh`로 동기화했다.
-- 검증 결과: `corepack pnpm -C app typecheck`, `corepack pnpm -C app test:coverage`, `corepack pnpm -C app docs:refresh:check`, `git diff --check` 통과.
-
 ## 완료 요약
 
+- 2026-04-16: Cycle 434 완료 - coverage threshold와 `docs:refresh:check`를 기존 CI에 추가하고, 운영 문서를 `quality:check`/`ops:check:health`/`db:restore:local` + `quality-gate`/`ops-smoke-checks` 중심 최소 루틴으로 재정리했다.
 - 2026-04-16: Cycle 433 완료 - `auth`/`notifications` validation-service-query-action을 도메인 하위 폴더로 옮기고 기존 경로는 shim으로 유지했으며, 관련 구조 문서의 canonical path를 동기화했다.
 - 2026-04-16: Cycle 432 완료 - `posts`/`moderation` validation-query-service를 도메인 하위 폴더로 옮기고 기존 경로는 shim으로 유지했으며, `README.md`, `AGENTS.md`, `app/README.md`에 canonical path와 계층 경계를 반영했다.
 - 2026-04-16: Cycle 431 완료 - `AGENTS.md` 단일 하네스로 통합하고 `FORcodex.md`, `docs/개발_운영_가이드.md`, `docs/operations/Codex_작업_지도.md`를 제거했으며 활성 문서 링크를 재정리했다.
