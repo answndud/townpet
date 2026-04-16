@@ -5,10 +5,15 @@ type ErrorPayload = {
   message: string;
 };
 
-export function jsonOk<T>(data: T, init?: ResponseInit) {
-  const response = NextResponse.json({ ok: true, data }, init);
-  if (init?.headers) {
-    const headers = new Headers(init.headers);
+type JsonOkInit = ResponseInit & {
+  meta?: Record<string, unknown>;
+};
+
+export function jsonOk<T>(data: T, init?: JsonOkInit) {
+  const { meta, ...responseInit } = init ?? {};
+  const response = NextResponse.json(meta ? { ok: true, data, meta } : { ok: true, data }, responseInit);
+  if (responseInit.headers) {
+    const headers = new Headers(responseInit.headers);
     headers.forEach((value, key) => {
       response.headers.set(key, value);
     });

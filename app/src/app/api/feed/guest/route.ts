@@ -25,15 +25,30 @@ import {
 import { getClientIp } from "@/server/request-context";
 import { enforceRateLimit } from "@/server/rate-limit";
 import { jsonError, jsonOk } from "@/server/response";
+import { createFeedPagePerformanceTracker } from "@/server/services/posts/feed-page-performance.service";
+import { resolveFeedPageSlice } from "@/server/services/posts/feed-page-query.service";
 import { ServiceError } from "@/server/services/service-error";
 
 type FeedMode = "ALL" | "BEST";
 type FeedSort = "LATEST" | "LIKE" | "COMMENT";
 type FeedSearchIn = "ALL" | "TITLE" | "CONTENT" | "AUTHOR";
 type FeedDensity = "DEFAULT" | "ULTRA";
+type GuestFeedListResult = Awaited<ReturnType<typeof listPosts>>;
+type GuestFeedListItem = GuestFeedListResult["items"][number];
+type GuestBestFeedItems = Awaited<ReturnType<typeof listBestPosts>>;
+type GuestBestFeedItem = GuestBestFeedItems[number];
 
 const BEST_DAY_OPTIONS = [3, 7, 30] as const;
 const FEED_PERIOD_OPTIONS = [3, 7, 30] as const;
+const PERF_QUERY_VALUE = "1";
+
+function buildServerTimingHeader(phases: Record<string, number>, totalMs: number) {
+  const entries = Object.entries(phases).map(
+    ([name, durationMs]) => `${name};dur=${durationMs.toFixed(1)}`,
+  );
+  entries.push(`total;dur=${totalMs.toFixed(1)}`);
+  return entries.join(", ");
+}
 
 const guestFeedQuerySchema = z.object({
   type: z.nativeEnum(PostType).optional(),
@@ -149,6 +164,10 @@ function serializeFeedItems(items: Array<Record<string, unknown>>) {
 
 export async function GET(request: NextRequest) {
   try {
+    const tracker = createFeedPagePerformanceTracker({
+      forceLog: false,
+      slowThresholdMs: 300,
+    });
     const clientIp = getClientIp(request);
     await enforceRateLimit({
       key: `feed-guest:ip:${clientIp}`,
@@ -158,6 +177,7 @@ export async function GET(request: NextRequest) {
     });
 
     const { searchParams } = new URL(request.url);
+    const perfRequested = searchParams.get("perf") === PERF_QUERY_VALUE;
     const petTypeQueryValues = searchParams
       .getAll("petType")
       .map((value) => value.trim())
@@ -191,15 +211,19 @@ export async function GET(request: NextRequest) {
     }
 
     const isCursorPagination = Boolean(parsed.data.cursor?.trim());
-    const loginRequiredTypes = await getGuestReadLoginRequiredPostTypes();
-    const communities = isCursorPagination
-      ? []
-      : await listCommunityNavItems(50).catch((error) => {
-          if (isPrismaDatabaseUnavailableError(error)) {
-            return [];
-          }
-          throw error;
-        });
+    const [loginRequiredTypes, communities] = await tracker.measure("bootstrap.policy_and_communities", async () => {
+      const resolvedLoginRequiredTypes = await getGuestReadLoginRequiredPostTypes();
+      const resolvedCommunities = isCursorPagination
+        ? []
+        : await listCommunityNavItems(50).catch((error) => {
+            if (isPrismaDatabaseUnavailableError(error)) {
+              return [];
+            }
+            throw error;
+          });
+
+      return [resolvedLoginRequiredTypes, resolvedCommunities] as const;
+    });
     const allPetTypeIds = communities.map((item) => item.id);
     const parsedParams = postListSchema.safeParse({
       ...parsed.data,
@@ -249,6 +273,17 @@ export async function GET(request: NextRequest) {
     const cursor = parsed.data.cursor?.trim() || undefined;
 
     if (isLocalRequiredType && type) {
+      const perfSummary = tracker.flush({
+        route: "/api/feed/guest",
+        mode,
+        page: currentPage,
+        isAuthenticated: false,
+        isGuestTypeBlocked: false,
+        feedScope: effectiveScope,
+        personalized: false,
+        requestedType: type ?? null,
+        reviewBoard,
+      });
       return jsonOk(
         {
           view: "gate" as const,
@@ -264,37 +299,63 @@ export async function GET(request: NextRequest) {
         {
           headers: {
             "cache-control": buildCacheControlHeader(30, 300),
+            ...(perfRequested
+              ? { "server-timing": buildServerTimingHeader(perfSummary.phases, perfSummary.totalMs) }
+              : {}),
           },
+          ...(perfRequested
+            ? {
+                meta: {
+                  timings: {
+                    totalMs: perfSummary.totalMs,
+                    phases: perfSummary.phases,
+                  },
+                },
+              }
+            : {}),
         },
       );
     }
 
     if (isCursorPagination) {
       const posts = !isGuestTypeBlocked
-        ? await listPosts({
-            cursor,
-            limit: FEED_PAGE_SIZE,
-            type: type ?? undefined,
-            reviewBoard,
-            reviewCategory,
-            scope: effectiveScope,
-            petTypeId: requestedPetTypeIds[0] ?? undefined,
-            petTypeIds: requestedPetTypeIds,
-            q: query || undefined,
-            searchIn: selectedSearchIn,
-            days: periodDays ?? undefined,
-            sort: selectedSort,
-            excludeTypes: loginRequiredTypes,
-            neighborhoodId: undefined,
-            viewerId: undefined,
-            personalized: false,
-          }).catch((error) => {
-            if (isPrismaDatabaseUnavailableError(error)) {
-              return { items: [], nextCursor: null };
-            }
-            throw error;
-          })
+        ? await tracker.measure("page_query.cursor", () =>
+            listPosts({
+              cursor,
+              limit: FEED_PAGE_SIZE,
+              type: type ?? undefined,
+              reviewBoard,
+              reviewCategory,
+              scope: effectiveScope,
+              petTypeId: requestedPetTypeIds[0] ?? undefined,
+              petTypeIds: requestedPetTypeIds,
+              q: query || undefined,
+              searchIn: selectedSearchIn,
+              days: periodDays ?? undefined,
+              sort: selectedSort,
+              excludeTypes: loginRequiredTypes,
+              neighborhoodId: undefined,
+              viewerId: undefined,
+              personalized: false,
+            }).catch((error) => {
+              if (isPrismaDatabaseUnavailableError(error)) {
+                return { items: [], nextCursor: null };
+              }
+              throw error;
+            }),
+          )
         : { items: [], nextCursor: null };
+      const perfSummary = tracker.flush({
+        route: "/api/feed/guest",
+        mode,
+        page: currentPage,
+        isAuthenticated: false,
+        isGuestTypeBlocked,
+        feedScope: effectiveScope,
+        personalized: false,
+        requestedType: type ?? null,
+        reviewBoard,
+      });
 
       return jsonOk(
         {
@@ -304,110 +365,149 @@ export async function GET(request: NextRequest) {
         {
           headers: {
             "cache-control": buildCacheControlHeader(30, 300),
+            ...(perfRequested
+              ? { "server-timing": buildServerTimingHeader(perfSummary.phases, perfSummary.totalMs) }
+              : {}),
           },
+          ...(perfRequested
+            ? {
+                meta: {
+                  timings: {
+                    totalMs: perfSummary.totalMs,
+                    phases: perfSummary.phases,
+                  },
+                },
+              }
+            : {}),
         },
       );
     }
 
-    const totalItemCount =
-      !isGuestTypeBlocked
-        ? mode === "BEST"
-          ? await countBestPosts({
-              days: bestDays,
-              type: type ?? undefined,
-              reviewBoard,
-              reviewCategory,
-              scope: effectiveScope,
-              petTypeId: petTypeId ?? undefined,
-              petTypeIds,
-              q: query || undefined,
-              searchIn: selectedSearchIn,
-              excludeTypes: loginRequiredTypes,
-              neighborhoodId: undefined,
-              minLikes: 1,
-              viewerId: undefined,
-            }).catch((error) => {
-              if (isPrismaDatabaseUnavailableError(error)) {
-                return 0;
-              }
-              throw error;
-            })
-          : await countPosts({
-              type: type ?? undefined,
-              reviewBoard,
-              reviewCategory,
-              scope: effectiveScope,
-              petTypeId: petTypeId ?? undefined,
-              petTypeIds,
-              q: query || undefined,
-              searchIn: selectedSearchIn,
-              days: periodDays ?? undefined,
-              excludeTypes: loginRequiredTypes,
-              neighborhoodId: undefined,
-              viewerId: undefined,
-            }).catch((error) => {
-              if (isPrismaDatabaseUnavailableError(error)) {
-                return 0;
-              }
-              throw error;
-            })
-        : 0;
+    let totalItemCount = 0;
+    let totalPages = 1;
+    let resolvedPage = currentPage;
+    let posts: GuestFeedListResult = { items: [], nextCursor: null };
+    let bestItems: GuestBestFeedItems = [];
 
-    const totalPages = Math.max(1, Math.ceil(totalItemCount / FEED_PAGE_SIZE));
-    const resolvedPage = Math.min(currentPage, totalPages);
-
-    const posts =
-      mode === "ALL" && !isGuestTypeBlocked
-        ? await listPosts({
-            page: resolvedPage,
+    if (!isGuestTypeBlocked) {
+      if (mode === "BEST") {
+        const bestPage = await tracker.measure("page_query.best", () =>
+          resolveFeedPageSlice<GuestBestFeedItem>({
+            currentPage,
             limit: FEED_PAGE_SIZE,
-            type: type ?? undefined,
-            reviewBoard,
-            reviewCategory,
-            scope: effectiveScope,
-            petTypeId: petTypeId ?? undefined,
-            petTypeIds,
-            q: query || undefined,
-            searchIn: selectedSearchIn,
-            days: periodDays ?? undefined,
-            sort: selectedSort,
-            excludeTypes: loginRequiredTypes,
-            neighborhoodId: undefined,
-            viewerId: undefined,
-            personalized: false,
-          }).catch((error) => {
-            if (isPrismaDatabaseUnavailableError(error)) {
-              return { items: [], nextCursor: null };
-            }
-            throw error;
-          })
-        : { items: [], nextCursor: null };
+            countItems: () =>
+              countBestPosts({
+                days: bestDays,
+                type: type ?? undefined,
+                reviewBoard,
+                reviewCategory,
+                scope: effectiveScope,
+                petTypeId: petTypeId ?? undefined,
+                petTypeIds,
+                q: query || undefined,
+                searchIn: selectedSearchIn,
+                excludeTypes: loginRequiredTypes,
+                neighborhoodId: undefined,
+                minLikes: 1,
+                viewerId: undefined,
+              }).catch((error) => {
+                if (isPrismaDatabaseUnavailableError(error)) {
+                  return 0;
+                }
+                throw error;
+              }),
+            listPage: async (page) => {
+              const items: GuestBestFeedItems = await listBestPosts({
+                limit: FEED_PAGE_SIZE,
+                page,
+                days: bestDays,
+                type: type ?? undefined,
+                reviewBoard,
+                reviewCategory,
+                scope: effectiveScope,
+                petTypeId: petTypeId ?? undefined,
+                petTypeIds,
+                q: query || undefined,
+                searchIn: selectedSearchIn,
+                excludeTypes: loginRequiredTypes,
+                neighborhoodId: undefined,
+                minLikes: 1,
+                viewerId: undefined,
+              }).catch((error) => {
+                if (isPrismaDatabaseUnavailableError(error)) {
+                  return [];
+                }
+                throw error;
+              });
 
-    const bestItems =
-      mode === "BEST" && !isGuestTypeBlocked
-        ? await listBestPosts({
+              return { items, nextCursor: null };
+            },
+          }),
+        );
+        totalItemCount = bestPage.totalItemCount;
+        totalPages = bestPage.totalPages;
+        resolvedPage = bestPage.resolvedPage;
+        bestItems = bestPage.page.items;
+      } else {
+        const allPage = await tracker.measure("page_query.all", () =>
+          resolveFeedPageSlice<GuestFeedListItem>({
+            currentPage,
             limit: FEED_PAGE_SIZE,
-            page: resolvedPage,
-            days: bestDays,
-            type: type ?? undefined,
-            reviewBoard,
-            reviewCategory,
-            scope: effectiveScope,
-            petTypeId: petTypeId ?? undefined,
-            petTypeIds,
-            q: query || undefined,
-            searchIn: selectedSearchIn,
-            excludeTypes: loginRequiredTypes,
-            neighborhoodId: undefined,
-            minLikes: 1,
-            viewerId: undefined,
-          }).catch((error) => {
-            if (isPrismaDatabaseUnavailableError(error)) {
-              return [];
-            }
-            throw error;
-          })
-        : [];
+            countItems: () =>
+              countPosts({
+                type: type ?? undefined,
+                reviewBoard,
+                reviewCategory,
+                scope: effectiveScope,
+                petTypeId: petTypeId ?? undefined,
+                petTypeIds,
+                q: query || undefined,
+                searchIn: selectedSearchIn,
+                days: periodDays ?? undefined,
+                excludeTypes: loginRequiredTypes,
+                neighborhoodId: undefined,
+                viewerId: undefined,
+              }).catch((error) => {
+                if (isPrismaDatabaseUnavailableError(error)) {
+                  return 0;
+                }
+                throw error;
+              }),
+            listPage: async (page) => {
+              const result: GuestFeedListResult = await listPosts({
+                page,
+                limit: FEED_PAGE_SIZE,
+                type: type ?? undefined,
+                reviewBoard,
+                reviewCategory,
+                scope: effectiveScope,
+                petTypeId: petTypeId ?? undefined,
+                petTypeIds,
+                q: query || undefined,
+                searchIn: selectedSearchIn,
+                days: periodDays ?? undefined,
+                sort: selectedSort,
+                excludeTypes: loginRequiredTypes,
+                neighborhoodId: undefined,
+                viewerId: undefined,
+                personalized: false,
+              }).catch((error) => {
+                if (isPrismaDatabaseUnavailableError(error)) {
+                  return { items: [], nextCursor: null };
+                }
+                throw error;
+              });
+
+              return result;
+            },
+          }),
+        );
+        totalItemCount = allPage.totalItemCount;
+        totalPages = allPage.totalPages;
+        resolvedPage = allPage.resolvedPage;
+        posts = allPage.page;
+      }
+    }
 
     const items = mode === "BEST" ? bestItems : posts.items;
     const feedTitle = reviewBoard
@@ -431,6 +531,21 @@ export async function GET(request: NextRequest) {
       query || "__EMPTY__",
       resolvedPage,
     ].join("|");
+
+    const perfSummary = tracker.flush({
+      route: "/api/feed/guest",
+      mode,
+      page: currentPage,
+      resolvedPage,
+      totalPages,
+      itemCount: items.length,
+      isAuthenticated: false,
+      isGuestTypeBlocked,
+      feedScope: effectiveScope,
+      personalized: false,
+      requestedType: type ?? null,
+      reviewBoard,
+    });
 
     return jsonOk(
       {
@@ -460,7 +575,20 @@ export async function GET(request: NextRequest) {
       {
         headers: {
           "cache-control": buildCacheControlHeader(30, 300),
+          ...(perfRequested
+            ? { "server-timing": buildServerTimingHeader(perfSummary.phases, perfSummary.totalMs) }
+            : {}),
         },
+        ...(perfRequested
+          ? {
+              meta: {
+                timings: {
+                  totalMs: perfSummary.totalMs,
+                  phases: perfSummary.phases,
+                },
+              },
+            }
+          : {}),
       },
     );
   } catch (error) {

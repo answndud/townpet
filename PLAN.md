@@ -35,6 +35,7 @@
 
 ## Completed Summary
 
+- Cycle 444 (2026-04-16): guest `/feed`의 실제 데이터 경로인 `/api/feed/guest`에 `perf=1` 응답 meta와 `Server-Timing` 헤더를 추가하고, guest count/list 조회도 공통 helper로 병렬화해 브라우저/`curl`에서 바로 병목을 볼 수 있게 했다.
 - Cycle 443 (2026-04-16): `/feed` 서버 렌더에 bootstrap/page-query/personalization 분해 계측을 추가하고 slow request만 warn으로 남기며 `?perf=1`은 info로 강제 로그하도록 했고, `ops:perf:snapshot`에 canonical `/feed` 측정(`page_feed`)을 포함했다.
 - Cycle 442 (2026-04-16): `/feed` 첫 페이지에서 count/list 조회를 공통 helper로 병렬화하고 page overflow 때만 재조회하도록 바꿨으며, guest/streaming 로딩 상태를 공통 skeleton으로 통일하고 관련 테스트/블로그를 동기화했다.
 - Cycle 441 (2026-04-16): coverage threshold가 현재 테스트 베이스라인보다 높아 CI가 계속 실패해 `vitest` global threshold를 측정값 바로 아래로 재조정했다.
