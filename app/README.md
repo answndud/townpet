@@ -1,52 +1,146 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TownPet app workspace
 
-## Getting Started
+이 디렉터리는 TownPet의 실제 실행 워크스페이스입니다.
+앱 코드, Prisma 스키마, 시드/운영 스크립트, 테스트 설정이 모두 여기 있습니다.
 
-First, run the development server:
+이 문서는 `app/` 워크스페이스 빠른 참조만 다룹니다.
+구조/규칙/도메인 읽기 순서는 루트 [`AGENTS.md`](/Users/alex/project/townpet/AGENTS.md)를 우선합니다.
+
+루트 문서 역할:
+
+- 프로젝트 소개/빠른 실행:
+  - `../README.md`
+- Codex 진입점:
+  - `../AGENTS.md`
+- 현재 작업 상태:
+  - `../PLAN.md`
+  - `../PROGRESS.md`
+
+## 디렉터리 구조
+
+- `src/app`
+  - App Router 페이지와 route handler
+- `src/components`
+  - UI 컴포넌트
+- `src/lib`
+  - validation, helper, policy 보조 로직
+- `src/server`
+  - services, queries, auth, rate limit, ops 로직
+- `prisma`
+  - schema와 migrations
+- `scripts`
+  - 시드, 운영 점검, 리페어, 보고서 스크립트
+- `e2e`
+  - Playwright 시나리오
+
+## 도메인 묶음 빠른 참조
+
+- `posts/feed`
+  - `src/lib/validations/posts/post.ts`
+  - `src/server/services/posts/post.service.ts`
+  - `src/server/services/posts/post-read-access.service.ts`
+  - `src/server/queries/posts/post.queries.ts`
+  - `src/app/feed`
+  - `src/components/posts`
+- `auth/session`
+  - `src/lib/validations/auth/index.ts`
+  - `src/server/services/auth/auth.service.ts`
+  - `src/server/auth.ts`
+  - `src/server/admin-page-access.ts`
+  - `src/lib/auth.ts`
+  - `src/lib/social-auth.ts`
+  - `src/app/login`, `src/app/register`, `src/app/onboarding`
+- `notifications`
+  - `src/lib/notifications/notification-unread-sync.ts`
+  - `src/server/services/notifications/notification.service.ts`
+  - `src/server/queries/notifications/notification.queries.ts`
+  - `src/server/actions/notifications/notification.ts`
+  - `src/components/notifications`
+  - `src/app/notifications`
+- `moderation/ops`
+  - `src/lib/validations/moderation/report.ts`
+  - `src/lib/validations/moderation/policy.ts`
+  - `src/server/services/moderation/report.service.ts`
+  - `src/server/services/moderation/sanction.service.ts`
+  - `src/server/services/moderation/policy.service.ts`
+  - `src/server/services/moderation/direct-moderation.service.ts`
+  - `src/server/services/moderation/guest-safety.service.ts`
+  - `src/server/queries/moderation/report.queries.ts`
+  - `src/server/queries/moderation/policy.queries.ts`
+  - `src/server/queries/ops-overview.queries.ts`
+  - `src/app/admin`
+
+## 계층 책임 요약
+
+- `src/lib/validations`
+  - 외부 입력 계약만 다룹니다.
+  - canonical path는 `src/lib/validations/posts/*`, `src/lib/validations/moderation/*`, `src/lib/validations/auth/*`를 우선합니다.
+- `src/server/queries`
+  - read-only 조회와 집계만 다룹니다.
+  - canonical path는 `src/server/queries/posts/*`, `src/server/queries/moderation/*`, `src/server/queries/notifications/*`를 우선합니다.
+- `src/server/services`
+  - 정책, 권한, transaction, write orchestration을 다룹니다.
+  - canonical path는 `src/server/services/posts/*`, `src/server/services/moderation/*`, `src/server/services/auth/*`, `src/server/services/notifications/*`를 우선합니다.
+- `src/server/actions`, `src/app/api`, `src/app`, `src/components`
+  - validation/service/query 연결과 UI orchestration을 다룹니다.
+
+## 공용 개발 루틴
+
+팀 공용 기본 루틴:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
 pnpm dev
-# or
-bun dev
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm test:e2e
+pnpm quality:check
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 유지보수/운영 루틴
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+아래는 필요할 때만 쓰는 명령입니다.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+pnpm build
+pnpm test:coverage
+pnpm quality:gate
+pnpm db:migrate
+pnpm db:seed
+pnpm db:restore:local
+pnpm ops:check:health
+pnpm ops:check:security-env
+pnpm ops:check:security-env:strict
+pnpm ops:check:auth-email-readiness
+pnpm ops:perf:snapshot
+```
 
-## Learn More
+## 특정 테스트만 돌릴 때
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+pnpm test -- src/server/services/post.service.test.ts
+pnpm test -- -t "partial test name"
+pnpm test:e2e -- e2e/profile-social-account-linking.spec.ts
+pnpm test:e2e -- --project=chromium
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 테스트 설정 참고 파일
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `vitest.config.ts`
+- `playwright.config.ts`
 
-## Deploy on Vercel
+현재 Playwright 기본값:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- base URL: `http://localhost:3000`
+- 기본 web server command: `./node_modules/.bin/next dev --webpack --port 3000`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 작업 순서 기준
 
-## Free Ops Weekly Routine (10 minutes)
+정책/서버 동작을 바꿀 때는 아래 순서를 기본으로 봅니다.
 
-Use this routine to keep operations simple without adding new external services.
+`Prisma -> Zod -> Service -> Action/Route -> UI -> Tests`
 
-1. Check recent Vercel deployments (last 3).
-2. Run GitHub Actions `ops-smoke-checks` with:
-   - `target_base_url=https://townpet.vercel.app`
-   - `verify_sentry=false` (default)
-3. Review Vercel function logs for repeated `500`/timeout errors.
-4. Manual smoke: `/feed` -> open a post -> click `목록으로`.
-5. Record run URL and issues in your local operation notes.
+## 메모
 
-Notes:
-- Sentry is optional and not required for this weekly routine.
-- If you later enable Sentry, set repo secrets and run `verify_sentry=true` monthly.
+- 실제 명령은 `package.json`, 테스트 동작은 `vitest.config.ts`와 `playwright.config.ts`를 기준으로 봅니다.
+- OpenCode 관련 운영 문서는 `../docs/operations/에이전트_*`에 있지만, Codex 기준 하네스는 `../AGENTS.md`를 먼저 봅니다.

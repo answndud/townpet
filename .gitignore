@@ -29,7 +29,6 @@ app/.npmrc
 .opencode/
 .codex/
 opencode.json
-AGENTS.md
 AGENTS.local.md
 AGENTS.backup.md
 docs/agent-memory/

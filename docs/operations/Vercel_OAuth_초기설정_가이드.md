@@ -277,5 +277,5 @@ Sentry 검증 실패
 
 중요:
 - 비밀번호는 평문 조회 불가(해시만 저장)
-- 운영 데이터 관리 상세는 `docs/개발_운영_가이드.md`의 11번 섹션 참고
+- 운영 데이터 관리와 기본 실행 명령은 루트 `AGENTS.md` 참고
 - Resend 도메인 인증/과금/Vercel 연동 상세는 `docs/operations/Resend_Vercel_이메일_설정_가이드.md` 참고
