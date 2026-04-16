@@ -17,6 +17,10 @@
 
 ## 현재 진행
 
+### 2026-04-16: Cycle 451 완료 (`/feed` 성능 측정 근거와 stop line 문서화)
+- 완료 내용: `blog/20-performance-story-search-cache-pagination.md`에 헤더 확인, 5회 반복 실측, `curl -L` redirect chain 측정, `perf=1` API 타이밍 확인 순서와 실제 수치를 정리했다.
+- 완료 내용: 현재 `/feed`는 redirect 포함 체인 기준 `0.26s~0.30s`, `/feed/guest`는 `0.14s~0.15s`, guest API warmed는 `0.13s~0.22s` 수준이며, 추가 최적화보다 회귀 방지가 더 적절하다는 stop line 판단을 남겼다.
+
 ### 2026-04-16: Cycle 450 완료 (push 기반 workflow 트리거 복구)
 - 완료 내용: `quality-gate.yml`과 `docs-quality.yml`이 `pull_request`/`workflow_dispatch`만 듣고 있어 `main` push 후 Actions가 비어 보이던 상태를 확인했다.
 - 완료 내용: 두 workflow에 `push` on `main` trigger를 다시 추가했다.
@@ -76,6 +80,7 @@
 
 ## 완료 요약
 
+- 2026-04-16: Cycle 451 완료 - `/feed` 최적화 과정에서 무엇을 어떻게 측정했고 왜 여기서 멈추는지를 블로그와 상태 문서에 정리해, 다음에 다시 볼 때도 같은 판단 기준을 재사용할 수 있게 했다.
 - 2026-04-16: Cycle 450 완료 - `quality-gate`와 `docs-quality`가 `push`를 듣지 않아 `main` 푸시 후 Actions가 뜨지 않던 문제를 확인하고, 두 workflow에 `push` on `main` trigger를 복구했다.
 - 2026-04-16: Cycle 449 완료 - `/feed/guest`는 이미 cache HIT와 `ttfb 0.14s~0.22s`로 빠른 반면 `/feed` rewrite 경로만 느리다는 점을 확인한 뒤, guest `/feed`는 `/feed/guest` redirect로 전환하고 guest client 내부 링크도 `/feed/guest` 기준으로 맞췄다.
 - 2026-04-16: Cycle 448 완료 - 루트 레이아웃의 전역 `connection()`이 strict nonce 경로를 앱 전체에 퍼뜨려 public `/feed`까지 dynamic/no-store로 몰아넣는 문제를 확인한 뒤, nonce가 필요한 상세/프로필 페이지만 별도 `connection()`을 쓰고 guest `/feed` rewrite는 static CSP를 적용하도록 분리했다.
