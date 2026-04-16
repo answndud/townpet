@@ -10,6 +10,15 @@ on:
       - "app/prisma/migrations/**"
       - "app/src/app/api/**"
       - ".github/workflows/docs-quality.yml"
+  push:
+    branches: ["main"]
+    paths:
+      - "docs/**"
+      - "scripts/refresh-docs-index.mjs"
+      - "app/package.json"
+      - "app/prisma/migrations/**"
+      - "app/src/app/api/**"
+      - ".github/workflows/docs-quality.yml"
   workflow_dispatch:
 
 jobs:

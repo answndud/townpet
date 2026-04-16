@@ -28,6 +28,11 @@
 
 ## Active Plan
 
+### Cycle 450: push 기반 workflow 트리거 복구 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| `main` push 후 Actions가 비어 보이던 문제를 없애기 위해 `quality-gate`와 `docs-quality`에 `push` trigger를 복구하고, 관련 상태 문서를 동기화한다 | Codex | P1 | `done` | `quality-gate.yml`, `docs-quality.yml`이 `push` on `main`을 다시 듣고, `PLAN.md`/`PROGRESS.md`가 최신 상태를 반영한다 | `PLAN.md`, `PROGRESS.md`, `.github/workflows/quality-gate.yml`, `.github/workflows/docs-quality.yml` |
+
 ### Cycle 449: guest `/feed` rewrite를 redirect로 전환 (완료)
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
@@ -55,6 +60,7 @@
 
 ## Completed Summary
 
+- Cycle 450 (2026-04-16): `quality-gate`와 `docs-quality`가 `push`를 듣지 않아 `main` 푸시 후 Actions가 비어 보이던 문제를 확인하고, 두 workflow에 `push` on `main` trigger를 복구했다.
 - Cycle 449 (2026-04-16): 실측상 빠른 `/feed/guest` 캐시 경로를 살리기 위해 guest `/feed`를 rewrite 대신 `/feed/guest` redirect로 전환하고, guest client의 canonical/navigation base path도 `/feed/guest` 기준으로 정리했다.
 - Cycle 448 (2026-04-16): 루트 레이아웃의 전역 `connection()`과 strict nonce 경로를 public guest `/feed`에서 분리해, guest `/feed`는 static CSP를 쓰고 nonce가 필요한 post/user detail만 별도 `connection()`을 사용하도록 재구성했다.
 - Cycle 447 (2026-04-16): guest `/feed`의 server-first 내부 fetch를 제거하고 `/feed/guest`를 static shell + cached guest API 구조로 되돌려 문서 응답이 `no-store`로 무거워지는 병목을 줄였으며, 그 시행착오와 판단 근거를 블로그에 반영했다.
