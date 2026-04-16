@@ -281,6 +281,18 @@ export const PostBodyRichEditor = forwardRef<PostBodyRichEditorHandle, PostBodyR
       return false;
     }
 
+    try {
+      editor.core.setRange(
+        nextRange.startContainer,
+        nextRange.startOffset,
+        nextRange.endContainer,
+        nextRange.endOffset,
+      );
+      editor.core.focus();
+    } catch {
+      return false;
+    }
+
     latestSelectionRangeRef.current = nextRange;
     return true;
   }, []);
