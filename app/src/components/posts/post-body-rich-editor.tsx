@@ -33,6 +33,7 @@ import {
   DEFAULT_POST_EDITOR_FONT_SIZE,
   DEFAULT_POST_EDITOR_TEXT_COLOR,
 } from "@/lib/post-editor-font-size";
+import { moveCaretAfterStyledNode } from "@/lib/editor-inline-image";
 import { type GuestWriteScope, getGuestWriteHeaders } from "@/lib/guest-step-up.client";
 import { renderLiteMarkdown } from "@/lib/markdown-lite";
 
@@ -127,6 +128,7 @@ export const PostBodyRichEditor = forwardRef<PostBodyRichEditorHandle, PostBodyR
   const latestOnChangeRef = useRef(onChange);
   const latestSelectionRangeRef = useRef<Range | null>(null);
   const pendingStyleBoundaryTimeoutRef = useRef<number | null>(null);
+  const pendingStyleBoundaryCorrectionRef = useRef(false);
   const [isMounted, setIsMounted] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -235,7 +237,7 @@ export const PostBodyRichEditor = forwardRef<PostBodyRichEditorHandle, PostBodyR
   const moveCaretOutsideStyledSpan = useCallback(() => {
     const editor = editorRef.current;
     const editable = editor?.core.context.element.wysiwyg;
-    if (!editor || !editable) {
+    if (!editor || !(editable instanceof HTMLElement)) {
       return false;
     }
 
@@ -271,31 +273,19 @@ export const PostBodyRichEditor = forwardRef<PostBodyRichEditorHandle, PostBodyR
       return false;
     }
 
-    const parent = styledSpan.parentNode;
-    const nextSibling = styledSpan.nextSibling;
-    const boundaryNode = nextSibling instanceof Text &&
-      (nextSibling.textContent ?? "").replace(/\u200b/g, "").length === 0
-      ? nextSibling
-      : document.createTextNode("\u200b");
-
-    if (boundaryNode !== nextSibling) {
-      parent.insertBefore(boundaryNode, nextSibling);
-    } else if (!(boundaryNode.textContent ?? "").includes("\u200b")) {
-      boundaryNode.textContent = `\u200b${boundaryNode.textContent ?? ""}`;
-    }
-
-    try {
-      const offset = boundaryNode.textContent?.length ?? 1;
-      editor.core.setRange(boundaryNode, offset, boundaryNode, offset);
-      captureSelectionRange();
-      return true;
-    } catch {
-      // Ignore boundary reset failures and keep the applied style.
+    const nextRange = moveCaretAfterStyledNode({
+      editor: editable,
+      insertedNode: styledSpan,
+    });
+    if (!nextRange) {
       return false;
     }
-  }, [captureSelectionRange]);
 
-  const scheduleDeferredStyleBoundaryCorrection = useCallback(() => {
+    latestSelectionRangeRef.current = nextRange;
+    return true;
+  }, []);
+
+  const scheduleDeferredStyleBoundaryCorrection = useCallback((remainingAttempts = 4) => {
     if (typeof window === "undefined") {
       return;
     }
@@ -305,8 +295,17 @@ export const PostBodyRichEditor = forwardRef<PostBodyRichEditorHandle, PostBodyR
 
     pendingStyleBoundaryTimeoutRef.current = window.setTimeout(() => {
       pendingStyleBoundaryTimeoutRef.current = null;
-      moveCaretOutsideStyledSpan();
-    }, 60);
+      if (!pendingStyleBoundaryCorrectionRef.current) {
+        return;
+      }
+      if (moveCaretOutsideStyledSpan()) {
+        pendingStyleBoundaryCorrectionRef.current = false;
+        return;
+      }
+      if (remainingAttempts > 1) {
+        scheduleDeferredStyleBoundaryCorrection(remainingAttempts - 1);
+      }
+    }, 24);
   }, [moveCaretOutsideStyledSpan]);
 
   const syncEditableAttributes = useCallback(() => {
@@ -334,7 +333,7 @@ export const PostBodyRichEditor = forwardRef<PostBodyRichEditorHandle, PostBodyR
     const editor = editorRef.current;
     const editable = editor?.core.context.element.wysiwyg;
     const editorRoot = editable?.closest(".sun-editor");
-    if (!editor || !editable || !editorRoot) {
+    if (!editor || !(editable instanceof HTMLElement) || !editorRoot) {
       return;
     }
 
@@ -363,6 +362,7 @@ export const PostBodyRichEditor = forwardRef<PostBodyRichEditorHandle, PostBodyR
       }
 
       if (control.closest(".se-list-font-size")) {
+        pendingStyleBoundaryCorrectionRef.current = true;
         scheduleDeferredStyleBoundaryCorrection();
       }
 
@@ -372,9 +372,27 @@ export const PostBodyRichEditor = forwardRef<PostBodyRichEditorHandle, PostBodyR
       }
     };
 
+    const handleBeforeInput: EventListener = (event) => {
+      if (!(event instanceof InputEvent)) {
+        return;
+      }
+      if (!pendingStyleBoundaryCorrectionRef.current) {
+        return;
+      }
+
+      if (!event.inputType.startsWith("insert")) {
+        return;
+      }
+
+      if (moveCaretOutsideStyledSpan()) {
+        pendingStyleBoundaryCorrectionRef.current = false;
+      }
+    };
+
     editable.addEventListener("mouseup", handleSelectionChange);
     editable.addEventListener("keyup", handleSelectionChange);
     editable.addEventListener("touchend", handleSelectionChange);
+    editable.addEventListener("beforeinput", handleBeforeInput);
     document.addEventListener("selectionchange", handleSelectionChange);
     document.addEventListener("mousedown", handleToolbarMouseDownCapture, true);
 
@@ -382,10 +400,17 @@ export const PostBodyRichEditor = forwardRef<PostBodyRichEditorHandle, PostBodyR
       editable.removeEventListener("mouseup", handleSelectionChange);
       editable.removeEventListener("keyup", handleSelectionChange);
       editable.removeEventListener("touchend", handleSelectionChange);
+      editable.removeEventListener("beforeinput", handleBeforeInput);
       document.removeEventListener("selectionchange", handleSelectionChange);
       document.removeEventListener("mousedown", handleToolbarMouseDownCapture, true);
     };
-  }, [captureSelectionRange, isMounted, restoreSelectionRange, scheduleDeferredStyleBoundaryCorrection]);
+  }, [
+    captureSelectionRange,
+    isMounted,
+    moveCaretOutsideStyledSpan,
+    restoreSelectionRange,
+    scheduleDeferredStyleBoundaryCorrection,
+  ]);
 
   const pushEditorChange = (html: string) => {
     const serialized = serializeEditorContent(html);
@@ -534,6 +559,9 @@ export const PostBodyRichEditor = forwardRef<PostBodyRichEditorHandle, PostBodyR
               }}
               onChange={(html) => {
                 pushEditorChange(html);
+                if (pendingStyleBoundaryCorrectionRef.current) {
+                  scheduleDeferredStyleBoundaryCorrection();
+                }
               }}
               onImageUploadBefore={handleImageUploadBefore}
               onImageUploadError={(message) => {
