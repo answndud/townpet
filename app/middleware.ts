@@ -2,7 +2,10 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
-import { resolveCspHeaders as resolveSecurityCspHeaders } from "@/lib/security-headers";
+import {
+  buildStaticSecurityHeaders,
+  resolveCspHeaders as resolveSecurityCspHeaders,
+} from "@/lib/security-headers";
 
 const CORS_METHODS = "GET,POST,PUT,PATCH,DELETE,OPTIONS";
 const CORS_HEADERS = "Content-Type, Authorization, X-Requested-With, X-Request-Id";
@@ -101,6 +104,18 @@ function applySecurityHeaders(headers: Headers, nonce: string) {
   return cspHeaders;
 }
 
+function applyStaticSecurityHeaders(headers: Headers) {
+  const staticHeaders = buildStaticSecurityHeaders({
+    nodeEnv: process.env.NODE_ENV,
+  });
+
+  for (const header of staticHeaders) {
+    headers.set(header.key.toLowerCase(), header.value);
+  }
+
+  headers.delete("content-security-policy-report-only");
+}
+
 function applyCorsHeaders(request: NextRequest, headers: Headers) {
   const origin = request.headers.get("origin");
   if (!origin) {
@@ -161,20 +176,38 @@ function createNotFoundResponse(headers: Headers) {
   return response;
 }
 
+function shouldUseStaticGuestFeedCsp(request: NextRequest) {
+  if (request.method !== "GET" || request.nextUrl.pathname !== "/feed") {
+    return false;
+  }
+
+  const scope = request.nextUrl.searchParams.get("scope");
+  const personalized = request.nextUrl.searchParams.get("personalized");
+  return scope !== "LOCAL" && personalized !== "1";
+}
+
 export async function middleware(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
   const requestId = requestHeaders.get("x-request-id") ?? crypto.randomUUID();
-  const cspNonce = crypto.randomUUID().replaceAll("-", "");
   requestHeaders.set("x-request-id", requestId);
-  requestHeaders.set("x-nonce", cspNonce);
-  requestHeaders.set("x-csp-nonce", cspNonce);
 
   const responseHeaders = new Headers();
   responseHeaders.set("x-request-id", requestId);
-  responseHeaders.set("x-nonce", cspNonce);
-  responseHeaders.set("x-csp-nonce", cspNonce);
-  const cspHeaders = applySecurityHeaders(responseHeaders, cspNonce);
-  requestHeaders.set("content-security-policy", cspHeaders.csp);
+  if (shouldUseStaticGuestFeedCsp(request)) {
+    applyStaticSecurityHeaders(responseHeaders);
+    requestHeaders.set(
+      "content-security-policy",
+      responseHeaders.get("content-security-policy") ?? "",
+    );
+  } else {
+    const cspNonce = crypto.randomUUID().replaceAll("-", "");
+    requestHeaders.set("x-nonce", cspNonce);
+    requestHeaders.set("x-csp-nonce", cspNonce);
+    responseHeaders.set("x-nonce", cspNonce);
+    responseHeaders.set("x-csp-nonce", cspNonce);
+    const cspHeaders = applySecurityHeaders(responseHeaders, cspNonce);
+    requestHeaders.set("content-security-policy", cspHeaders.csp);
+  }
   if (isAdminProtectedPath(request.nextUrl.pathname)) {
     responseHeaders.set("x-robots-tag", "noindex, nofollow, noarchive");
   }

@@ -17,6 +17,14 @@
 
 ## 현재 진행
 
+### 2026-04-16: Cycle 448 완료 (public `/feed` strict nonce 범위 축소)
+- 완료 내용: `RootLayout`의 전역 `connection()`을 제거하고, nonce가 필요한 `posts/[id]`, `posts/[id]/guest`, `users/[id]`만 각각 `connection()`을 호출하도록 분리했다.
+- 완료 내용: `middleware.ts`에서 guest `/feed` rewrite는 static CSP를 적용하고 nonce 헤더를 주입하지 않도록 바꿔 public shell이 strict nonce 경로를 같이 타지 않게 했다.
+- 완료 내용: middleware 회귀 테스트를 추가하고, 블로그에 “strict nonce를 전역으로 걸면 public feed 캐시가 막힌다”는 판단 과정을 반영했다.
+- 검증 결과: `corepack pnpm -C app exec vitest run src/middleware.test.ts src/app/feed/guest/page.test.tsx src/app/api/feed/guest/route.test.ts` 통과.
+- 검증 결과: `corepack pnpm -C app typecheck` 통과.
+- 검증 결과: `git diff --check` 통과.
+
 ### 2026-04-16: Cycle 447 완료 (guest `/feed` 문서 응답 캐시 복원)
 - 완료 내용: `/feed/guest/page.tsx`에서 server self-fetch를 제거하고 `dynamic = "force-static"` guest shell만 렌더하도록 되돌렸다.
 - 완료 내용: `guest-feed-page-fetch.service.ts`를 제거하고, guest 첫 진입 데이터는 다시 cacheable `/api/feed/guest`가 담당하도록 경계를 정리했다.
@@ -54,6 +62,7 @@
 
 ## 완료 요약
 
+- 2026-04-16: Cycle 448 완료 - 루트 레이아웃의 전역 `connection()`이 strict nonce 경로를 앱 전체에 퍼뜨려 public `/feed`까지 dynamic/no-store로 몰아넣는 문제를 확인한 뒤, nonce가 필요한 상세/프로필 페이지만 별도 `connection()`을 쓰고 guest `/feed` rewrite는 static CSP를 적용하도록 분리했다.
 - 2026-04-16: Cycle 447 완료 - guest `/feed` 문서 응답이 server-first self-fetch 때문에 `private, no-store`가 되던 문제를 확인한 뒤 `/feed/guest/page.tsx`를 static shell로 되돌리고, 데이터는 다시 cacheable `/api/feed/guest`에서만 읽게 정리했으며, 관련 테스트와 블로그를 함께 갱신했다.
 - 2026-04-16: Cycle 446 완료 - `quality-gate`를 fresh DB `migrate deploy -> prisma generate -> quality:check` 중심의 small hot path로 줄이고, docs/browser/maintenance 검증을 별도 workflow로 분리했으며, `build:vercel`을 deploy-essential only로 단순화하고 관련 운영 문서와 블로그 회고를 갱신했다.
 - 2026-04-16: Cycle 445 완료 - guest `/feed` 첫 진입이 `fetchGuestFeedInitialData`를 통해 서버에서 초기 payload를 받아 `GuestFeedPageClient`에 주입하도록 바뀌었고, initial query와 같을 때 client 첫 fetch를 건너뛰게 했으며, 이번 redirect loop/계측/병목 판단 과정을 블로그에 경험 축적으로 남겼다.

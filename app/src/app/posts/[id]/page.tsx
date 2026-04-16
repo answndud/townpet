@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { redirect } from "next/navigation";
 
 import { PostDetailClient } from "@/components/posts/post-detail-client";
@@ -34,6 +35,7 @@ export async function generateMetadata({
 }
 
 export default async function PostDetailPage({ params }: PostDetailPageProps) {
+  await connection();
   const resolvedParams = (await params) ?? {};
   const postId = resolvedParams.id ?? "";
   const user = await getCurrentUser();

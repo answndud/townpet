@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { notFound, redirect } from "next/navigation";
 import { cache } from "react";
 
@@ -124,6 +125,7 @@ export default async function PublicUserProfilePage({
   params,
   searchParams,
 }: UserProfilePageProps) {
+  await connection();
   const cspNonce = await getCspNonce();
   const [{ id }, resolvedSearchParams] = await Promise.all([
     params,
