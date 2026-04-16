@@ -246,7 +246,21 @@ Codex가 저장소에 처음 들어왔을 때 이 파일 하나만 읽어도 현
 - `pnpm -C app quality:gate`
 - 시드/리페어/백필 스크립트
 
-## 10. 명령의 소스 오브 트루스
+## 10. 최소 운영 표면
+
+혼자 개발하거나 짧은 점검 루틴만 돌릴 때는 아래만 기억합니다.
+
+- 일상 명령 3개:
+  - `pnpm -C app quality:check`
+  - `pnpm -C app ops:check:health`
+  - `pnpm -C app db:restore:local`
+- 먼저 볼 워크플로우 2개:
+  - `.github/workflows/quality-gate.yml`
+  - `.github/workflows/ops-smoke-checks.yml`
+
+나머지 `db:*`, `ops:*`, `test:e2e:*`, cleanup/backfill 스크립트와 주기 워크플로우는 필요할 때만 여는 on-demand 유지보수 도구로 취급합니다.
+
+## 11. 명령의 소스 오브 트루스
 
 - 명령은 `app/package.json`을 기준으로만 판단합니다.
 - 앱 명령은 `app/`에서 실행하거나 `pnpm -C app ...` 형식을 사용합니다.
@@ -278,7 +292,7 @@ Codex가 저장소에 처음 들어왔을 때 이 파일 하나만 읽어도 현
 - `pnpm -C app ops:check:auth-email-readiness`
 - `pnpm -C app ops:perf:snapshot`
 
-## 11. 로컬 실행과 기본 복구
+## 12. 로컬 실행과 기본 복구
 
 가장 빠른 로컬 복구:
 
@@ -302,7 +316,7 @@ pnpm -C app dev
 - `http://localhost:3000`
 - `http://localhost:3000/api/health`
 
-## 12. 테스트 흐름
+## 13. 테스트 흐름
 
 ### Vitest
 
@@ -337,7 +351,7 @@ pnpm -C app dev
 - 프로젝트 지정:
   - `pnpm -C app test:e2e -- --project=chromium`
 
-## 13. lint/typecheck/품질 게이트
+## 14. lint/typecheck/품질 게이트
 
 - lint:
   - `pnpm -C app lint`
@@ -350,7 +364,7 @@ pnpm -C app dev
   - `pnpm -C app quality:gate`
   - 현재 흐름은 `quality:check -> e2e smoke`
 
-## 14. 자주 헷갈리는 포인트
+## 15. 자주 헷갈리는 포인트
 
 - 앱 명령은 `app/` 기준이고, 계획 문서는 루트 기준입니다.
 - `PLAN.md`, `PROGRESS.md`는 구조 설명 문서가 아니라 현재 작업 상태 문서입니다.
@@ -362,7 +376,7 @@ pnpm -C app dev
 - 테스트 동작 충돌이 나면 `app/vitest.config.ts`, `app/playwright.config.ts`를 우선합니다.
 - 과거 초안/기록은 `docs/archive/`를 참고하되 현재 기준으로 직접 사용하지 않습니다.
 
-## 15. 작업 중 흔한 문제와 확인 순서
+## 16. 작업 중 흔한 문제와 확인 순서
 
 ### 개발 서버가 안 뜰 때
 
@@ -398,7 +412,7 @@ docker compose ps
 docker compose logs --no-color postgres | tail -n 80
 ```
 
-## 16. 운영 확인 기준
+## 17. 운영 확인 기준
 
 public health 확인:
 
@@ -424,7 +438,7 @@ OPS_BASE_URL=https://townpet.vercel.app OPS_HEALTH_INTERNAL_TOKEN=<HEALTH_INTERN
 pnpm -C app ops:check:security-env:strict
 ```
 
-## 17. PLAN / PROGRESS 운영 규칙
+## 18. PLAN / PROGRESS 운영 규칙
 
 - 항상 루트 `PLAN.md`, `PROGRESS.md`를 사용합니다.
 - 하위 디렉터리에 중복 계획 문서를 만들지 않습니다.
@@ -432,7 +446,7 @@ pnpm -C app ops:check:security-env:strict
 - 작업 종료 후에는 `PROGRESS.md`에 결과/검증/블로커를 기록하고 `PLAN.md` 상태를 맞춥니다.
 - 블로커가 생기면 두 파일을 즉시 함께 업데이트합니다.
 
-## 18. 완료 기준
+## 19. 완료 기준
 
 최소 완료 기준:
 
@@ -442,7 +456,7 @@ pnpm -C app ops:check:security-env:strict
   - 최소: `PLAN.md`, `PROGRESS.md`
   - 필요 시: `docs/security/*`, `docs/policies/*`, 운영 문서
 
-## 19. 파일 우선순위 규칙
+## 20. 파일 우선순위 규칙
 
 - 명령:
   - `app/package.json`

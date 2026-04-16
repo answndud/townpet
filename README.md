@@ -71,6 +71,12 @@
 - 시드, 복구, 백필, 운영 점검 명령은 필요할 때만 쓰는 유지보수 루틴입니다.
 - 세부 작업 규칙과 계층 경계는 [`AGENTS.md`](/Users/alex/project/townpet/AGENTS.md)를 기준으로 봅니다.
 
+## 최소 운영 루틴
+
+- solo 운영에서 매일 기억할 명령은 `corepack pnpm -C app quality:check`, `corepack pnpm -C app ops:check:health`, `corepack pnpm -C app db:restore:local` 세 개면 충분합니다.
+- CI/배포 mental model도 [`quality-gate.yml`](/Users/alex/project/townpet/.github/workflows/quality-gate.yml) 과 [`ops-smoke-checks.yml`](/Users/alex/project/townpet/.github/workflows/ops-smoke-checks.yml) 두 개만 먼저 보면 됩니다.
+- 나머지 `db:*`, `ops:*`, `test:e2e:*`, cleanup/backfill 스크립트는 평소 루틴이 아니라 필요할 때 찾는 유지보수 도구입니다.
+
 TownPet은 단순 커뮤니티가 아니라, 반려인이 `병원 · 입양 · 산책 · 거래 · 분실` 같은 상황별 정보를 더 빨리 찾고 더 신뢰할 수 있게 만드는 로컬 반려 플랫폼을 목표로 한 프로젝트입니다.
 AI Agent를 **문제 분해 → 구현 → 테스트 → 배포 → 운영 개선**까지 연결하는 개발 시스템으로 활용했습니다.
 

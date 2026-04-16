@@ -97,6 +97,12 @@ pnpm test:e2e
 pnpm quality:check
 ```
 
+## 최소 운영 루틴
+
+- 매일 기억할 명령은 `pnpm quality:check`, `pnpm ops:check:health`, `pnpm db:restore:local` 세 개면 충분합니다.
+- 먼저 볼 워크플로우는 `../.github/workflows/quality-gate.yml` 과 `../.github/workflows/ops-smoke-checks.yml` 두 개입니다.
+- 나머지 `db:*`, `ops:*`, `test:e2e:*`, cleanup/backfill 스크립트는 on-demand 유지보수 도구로 봅니다.
+
 ## 유지보수/운영 루틴
 
 아래는 필요할 때만 쓰는 명령입니다.
