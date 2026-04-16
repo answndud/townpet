@@ -35,6 +35,7 @@
 
 ## Completed Summary
 
+- Cycle 442 (2026-04-16): `/feed` 첫 페이지에서 count/list 조회를 공통 helper로 병렬화하고 page overflow 때만 재조회하도록 바꿨으며, guest/streaming 로딩 상태를 공통 skeleton으로 통일하고 관련 테스트/블로그를 동기화했다.
 - Cycle 441 (2026-04-16): coverage threshold가 현재 테스트 베이스라인보다 높아 CI가 계속 실패해 `vitest` global threshold를 측정값 바로 아래로 재조정했다.
 - Cycle 440 (2026-04-16): production `/feed`에서 self-redirect loop가 발생해 guest feed redirect 단순화를 되돌리고, guest page non-redirect 회귀 테스트와 에러 기록을 추가했다.
 - Cycle 438 (2026-04-16): 문서 인덱스 목록 수집을 파일시스템 walk 대신 `git ls-files` 기준으로 바꿔 checkout 환경 차이와 무관하게 동일한 report를 생성하도록 고정했다.

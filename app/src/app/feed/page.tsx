@@ -57,12 +57,17 @@ import {
   listPetsByUserId,
 } from "@/server/queries/user.queries";
 import { isPrismaDatabaseUnavailableError } from "@/server/prisma-database-error";
+import { resolveFeedPageSlice } from "@/server/services/posts/feed-page-query.service";
 
 type FeedMode = "ALL" | "BEST";
 type FeedSort = "LATEST" | "LIKE" | "COMMENT";
 type FeedSearchIn = "ALL" | "TITLE" | "CONTENT" | "AUTHOR";
 type FeedPersonalized = "0" | "1";
 type FeedDensity = "DEFAULT" | "ULTRA";
+type FeedListResult = Awaited<ReturnType<typeof listPosts>>;
+type FeedListItem = FeedListResult["items"][number];
+type BestFeedItems = Awaited<ReturnType<typeof listBestPosts>>;
+type BestFeedItem = BestFeedItems[number];
 const BEST_DAY_OPTIONS = [3, 7, 30] as const;
 const FEED_PERIOD_OPTIONS = [3, 7, 30] as const;
 const MAX_DEBUG_DELAY_MS = 5_000;
@@ -436,10 +441,19 @@ export default async function Home({ searchParams }: HomePageProps) {
       ? primaryNeighborhood?.neighborhood.id
       : undefined;
 
-  const totalItemCount =
-    !isGuestTypeBlocked
-      ? mode === "BEST"
-        ? await countBestPosts({
+  let totalItemCount = 0;
+  let totalPages = 1;
+  let resolvedPage = currentPage;
+  let posts: FeedListResult = { items: [], nextCursor: null };
+  let bestItems: BestFeedItems = [];
+
+  if (!isGuestTypeBlocked) {
+    if (mode === "BEST") {
+      const bestPage = await resolveFeedPageSlice<BestFeedItem>({
+        currentPage,
+        limit,
+        countItems: () =>
+          countBestPosts({
             days: bestDays,
             type,
             reviewBoard,
@@ -458,8 +472,45 @@ export default async function Home({ searchParams }: HomePageProps) {
               return 0;
             }
             throw error;
-          })
-        : await countPosts({
+          }),
+        listPage: async (page) => {
+          const items: BestFeedItems = await listBestPosts({
+            limit,
+            page,
+            days: bestDays,
+            type,
+            reviewBoard,
+            reviewCategory,
+            scope: effectiveScope,
+            petTypeId,
+            petTypeIds,
+            q: query || undefined,
+            searchIn: selectedSearchIn,
+            excludeTypes: isAuthenticated ? undefined : blockedTypesForGuest,
+            neighborhoodId,
+            minLikes: 1,
+            viewerId: user?.id,
+          }).catch((error) => {
+            if (isPrismaDatabaseUnavailableError(error)) {
+              return [];
+            }
+            throw error;
+          });
+
+          return { items, nextCursor: null };
+        },
+      });
+
+      totalItemCount = bestPage.totalItemCount;
+      totalPages = bestPage.totalPages;
+      resolvedPage = bestPage.resolvedPage;
+      bestItems = bestPage.page.items;
+    } else {
+      const allPage = await resolveFeedPageSlice<FeedListItem>({
+        currentPage,
+        limit,
+        countItems: () =>
+          countPosts({
             type,
             reviewBoard,
             reviewCategory,
@@ -477,64 +528,42 @@ export default async function Home({ searchParams }: HomePageProps) {
               return 0;
             }
             throw error;
-          })
-      : 0;
+          }),
+        listPage: async (page) => {
+          const result: FeedListResult = await listPosts({
+            page,
+            limit,
+            type,
+            reviewBoard,
+            reviewCategory,
+            scope: effectiveScope,
+            petTypeId,
+            petTypeIds,
+            q: query || undefined,
+            searchIn: selectedSearchIn,
+            days: periodDays ?? undefined,
+            sort: selectedSort,
+            excludeTypes: isAuthenticated ? undefined : blockedTypesForGuest,
+            neighborhoodId,
+            viewerId: user?.id,
+            personalized: usePersonalizedFeed,
+          }).catch((error) => {
+            if (isPrismaDatabaseUnavailableError(error)) {
+              return { items: [], nextCursor: null };
+            }
+            throw error;
+          });
 
-  const totalPages = Math.max(1, Math.ceil(totalItemCount / limit));
-  const resolvedPage = Math.min(currentPage, totalPages);
+          return result;
+        },
+      });
 
-  const posts =
-    mode === "ALL" && !isGuestTypeBlocked
-      ? await listPosts({
-          page: resolvedPage,
-          limit,
-          type,
-          reviewBoard,
-          reviewCategory,
-          scope: effectiveScope,
-          petTypeId,
-          petTypeIds,
-          q: query || undefined,
-          searchIn: selectedSearchIn,
-          days: periodDays ?? undefined,
-          sort: selectedSort,
-          excludeTypes: isAuthenticated ? undefined : blockedTypesForGuest,
-          neighborhoodId,
-          viewerId: user?.id,
-          personalized: usePersonalizedFeed,
-        }).catch((error) => {
-          if (isPrismaDatabaseUnavailableError(error)) {
-            return { items: [], nextCursor: null };
-          }
-          throw error;
-        })
-      : { items: [], nextCursor: null };
-
-  const bestItems =
-    mode === "BEST" && !isGuestTypeBlocked
-      ? await listBestPosts({
-          limit,
-          page: resolvedPage,
-          days: bestDays,
-          type,
-          reviewBoard,
-          reviewCategory,
-          scope: effectiveScope,
-          petTypeId,
-          petTypeIds,
-          q: query || undefined,
-          searchIn: selectedSearchIn,
-          excludeTypes: isAuthenticated ? undefined : blockedTypesForGuest,
-          neighborhoodId,
-          minLikes: 1,
-          viewerId: user?.id,
-        }).catch((error) => {
-          if (isPrismaDatabaseUnavailableError(error)) {
-            return [];
-          }
-          throw error;
-        })
-      : [];
+      totalItemCount = allPage.totalItemCount;
+      totalPages = allPage.totalPages;
+      resolvedPage = allPage.resolvedPage;
+      posts = allPage.page;
+    }
+  }
 
   const items = mode === "BEST" ? bestItems : posts.items;
   const feedTitle = reviewBoard

@@ -1,15 +1,14 @@
 import { Suspense } from "react";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import GuestFeedPage from "@/app/feed/guest/page";
+import { FeedLoadingSkeleton } from "@/components/posts/feed-loading-skeleton";
 
 describe("GuestFeedPage", () => {
   it("keeps a suspense fallback instead of throwing a redirect", () => {
     const tree = GuestFeedPage();
-    const fallbackTitle =
-      tree.props.fallback?.props?.children?.props?.children?.props?.children?.props?.title;
 
     expect(tree.type).toBe(Suspense);
-    expect(String(fallbackTitle ?? "")).toContain("피드를 준비 중입니다");
+    expect(tree.props.fallback.type).toBe(FeedLoadingSkeleton);
   });
 });
