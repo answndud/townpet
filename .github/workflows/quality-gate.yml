@@ -60,6 +60,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Check docs index freshness
+        run: pnpm docs:refresh:check
+
       - name: Security env preflight
         run: |
           NODE_ENV=production \
