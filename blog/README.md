@@ -61,6 +61,7 @@
 26. [22-phase2-roadmap-and-product-expansion.md](./22-phase2-roadmap-and-product-expansion.md)
 27. [23-how-ai-agents-were-used-in-real-development.md](./23-how-ai-agents-were-used-in-real-development.md)
 28. [24-demo-docs-and-interview-pack.md](./24-demo-docs-and-interview-pack.md)
+29. [25-overengineering-ci-and-deploy-pipelines.md](./25-overengineering-ci-and-deploy-pipelines.md)
 
 ## 이 시리즈가 다루는 범위
 
@@ -76,3 +77,4 @@
 - 성능 개선과 캐시/페이지네이션 구조
 - AI agent 기반 개발 방식
 - README/데모/문서/면접 패키지 정리
+- CI/CD 과설계 회고와 운영 판단

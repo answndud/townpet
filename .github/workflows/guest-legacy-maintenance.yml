@@ -1,11 +1,6 @@
-name: quality-gate
+name: guest-legacy-maintenance
 
 on:
-  pull_request:
-    branches: ["main"]
-    paths:
-      - "app/**"
-      - ".github/workflows/quality-gate.yml"
   workflow_dispatch:
 
 jobs:
@@ -59,5 +54,17 @@ jobs:
       - name: Apply Prisma migrations
         run: pnpm prisma migrate deploy
 
-      - name: Quality check
-        run: pnpm quality:check
+      - name: Generate Prisma client
+        run: pnpm prisma generate
+
+      - name: Verify guest author backfill safety
+        run: GUEST_AUTHOR_BACKFILL_DRY_RUN=1 pnpm db:backfill:guest-authors
+
+      - name: Verify guest author backfill completion
+        run: pnpm db:verify:guest-authors
+
+      - name: Check guest legacy cleanup readiness
+        run: GUEST_LEGACY_CLEANUP_STRICT=1 pnpm db:check:guest-legacy-cleanup
+
+      - name: Rehearse guest legacy cleanup rollback
+        run: pnpm db:rehearse:guest-legacy-cleanup

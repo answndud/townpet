@@ -1,0 +1,29 @@
+name: docs-quality
+
+on:
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "docs/**"
+      - "scripts/refresh-docs-index.mjs"
+      - "app/package.json"
+      - "app/prisma/migrations/**"
+      - "app/src/app/api/**"
+      - ".github/workflows/docs-quality.yml"
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Check docs index freshness
+        run: node scripts/refresh-docs-index.mjs --check
