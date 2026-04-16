@@ -35,6 +35,7 @@
 
 ## Completed Summary
 
+- Cycle 437 (2026-04-16): 문서 인덱스 체크 비교를 `LF + NFC` 기준으로 정규화하고 `fileURLToPath`로 경로 해석을 고정해 CI 환경 차이에도 흔들리지 않게 했다.
 - Cycle 436 (2026-04-16): 문서 인덱스 생성에서 경로 문자열을 NFC로 정규화해 macOS/Linux 간 한글 파일명 차이로 `docs:refresh:check`가 흔들리지 않게 했다.
 - Cycle 435 (2026-04-16): `docs:refresh:check`가 macOS/Linux 간 정렬 차이로 흔들리지 않도록 문서 인덱스 생성 정렬을 환경 독립적으로 고정했다.
 - Cycle 434 (2026-04-16): coverage threshold와 `docs:refresh:check`를 기존 CI에 추가하고, 운영 문서를 `quality:check`/`ops:check:health`/`db:restore:local` + `quality-gate`/`ops-smoke-checks` 중심 최소 루틴으로 재정리했다.
