@@ -76,7 +76,8 @@
 - 검증 결과: `corepack pnpm -C app test:e2e -- e2e/guest-post-management.spec.ts --project=chromium` 통과.
 - 검증 결과: `PLAYWRIGHT_SKIP_WEBSERVER=1 ENABLE_SOCIAL_DEV_LOGIN=1 corepack pnpm -C app exec playwright test e2e/post-editor-toolbar.spec.ts --project=chromium` 통과 (`4 passed`).
 - 검증 결과: `corepack pnpm -C app quality:check` 통과 (`190 files / 921 tests`, 기존 eslint warning 5개 유지).
-- 메모: 로컬 `test:e2e:smoke`는 editor 관련 4개 시나리오가 모두 green이었고, 남은 red는 social onboarding dev env 편차였다. editor 안정화의 최종 close 여부는 원격 `browser-smoke` 1회 PASS로 확인한다.
+- 검증 결과: GitHub Actions `browser-smoke` workflow_dispatch (`run 24509145867`) 통과. editor toolbar 4개를 포함한 on-demand browser smoke 전체가 green이었다.
+- 메모: 로컬 `test:e2e:smoke`는 editor 관련 4개 시나리오가 모두 green이었고, 재사용 dev 서버 env 차이 때문에 social onboarding 편차가 있었지만, branch 기준 원격 `browser-smoke` PASS로 editor 안정화 최종 close를 확인했다.
 
 ## 완료 요약
 
