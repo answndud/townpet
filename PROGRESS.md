@@ -34,6 +34,7 @@
 
 ## 완료 요약
 
+- 2026-04-16: Cycle 435 완료 - `refresh-docs-index.mjs` 정렬을 기본 `localeCompare()` 대신 환경 독립적인 stable sort로 바꿔 `docs:refresh:check`가 macOS/Linux 간 순서 차이로 깨지지 않게 했다.
 - 2026-04-16: Cycle 434 완료 - coverage threshold와 `docs:refresh:check`를 기존 CI에 추가하고, 운영 문서를 `quality:check`/`ops:check:health`/`db:restore:local` + `quality-gate`/`ops-smoke-checks` 중심 최소 루틴으로 재정리했다.
 - 2026-04-16: Cycle 433 완료 - `auth`/`notifications` validation-service-query-action을 도메인 하위 폴더로 옮기고 기존 경로는 shim으로 유지했으며, 관련 구조 문서의 canonical path를 동기화했다.
 - 2026-04-16: Cycle 432 완료 - `posts`/`moderation` validation-query-service를 도메인 하위 폴더로 옮기고 기존 경로는 shim으로 유지했으며, `README.md`, `AGENTS.md`, `app/README.md`에 canonical path와 계층 경계를 반영했다.

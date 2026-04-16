@@ -9,6 +9,10 @@ const docsDir = join(repoRoot, "docs");
 const appDir = join(repoRoot, "app");
 const reportPath = join(docsDir, "archive", "operations", "문서 동기화 리포트.md");
 
+function stableSort(items) {
+  return [...items].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+}
+
 function walk(dir, predicate) {
   const results = [];
   const entries = readdirSync(dir, { withFileTypes: true });
@@ -33,27 +37,23 @@ function readJson(path) {
   return JSON.parse(readFileSync(path, "utf8"));
 }
 
-const docsFiles = walk(docsDir, (p) => p.endsWith(".md"))
-  .map(toRel)
-  .sort((a, b) => a.localeCompare(b));
+const docsFiles = stableSort(walk(docsDir, (p) => p.endsWith(".md")).map(toRel));
 
 const packageJson = readJson(join(appDir, "package.json"));
-const scripts = Object.keys(packageJson.scripts ?? {}).sort((a, b) =>
-  a.localeCompare(b),
-);
+const scripts = stableSort(Object.keys(packageJson.scripts ?? {}));
 
 const migrationDirs = readdirSync(join(appDir, "prisma", "migrations"), {
   withFileTypes: true,
 })
   .filter((entry) => entry.isDirectory())
-  .map((entry) => entry.name)
-  .sort((a, b) => a.localeCompare(b));
+  .map((entry) => entry.name);
+const sortedMigrationDirs = stableSort(migrationDirs);
 
-const apiRoutes = walk(join(appDir, "src", "app", "api"),
-  (p) => p.endsWith("/route.ts") || p.endsWith("/route.tsx"),
-)
-  .map(toRel)
-  .sort((a, b) => a.localeCompare(b));
+const apiRoutes = stableSort(
+  walk(join(appDir, "src", "app", "api"), (p) => p.endsWith("/route.ts") || p.endsWith("/route.tsx")).map(
+    toRel,
+  ),
+);
 
 const lines = [
   "# Docs Sync Report",
@@ -69,8 +69,8 @@ const lines = [
   ...scripts.map((name) => `- ${name}`),
   "",
   "## Prisma migrations",
-  `- Total migrations: ${migrationDirs.length}`,
-  ...migrationDirs.map((name) => `- ${name}`),
+  `- Total migrations: ${sortedMigrationDirs.length}`,
+  ...sortedMigrationDirs.map((name) => `- ${name}`),
   "",
   "## API route handlers",
   `- Total route handlers: ${apiRoutes.length}`,
