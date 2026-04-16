@@ -277,14 +277,9 @@ export async function middleware(request: NextRequest) {
       const scope = request.nextUrl.searchParams.get("scope");
       const personalized = request.nextUrl.searchParams.get("personalized");
       if (scope !== "LOCAL" && personalized !== "1") {
-        responseHeaders.set(
-          "cache-control",
-          "public, s-maxage=60, stale-while-revalidate=300",
-        );
-        const rewrittenUrl = request.nextUrl.clone();
-        rewrittenUrl.pathname = "/feed/guest";
-        return NextResponse.rewrite(rewrittenUrl, {
-          request: { headers: requestHeaders },
+        const redirectUrl = request.nextUrl.clone();
+        redirectUrl.pathname = "/feed/guest";
+        return NextResponse.redirect(redirectUrl, {
           headers: responseHeaders,
         });
       }

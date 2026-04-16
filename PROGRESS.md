@@ -17,6 +17,13 @@
 
 ## 현재 진행
 
+### 2026-04-16: Cycle 449 완료 (guest `/feed` rewrite를 redirect로 전환)
+- 완료 내용: 실측상 빠른 `/feed/guest` 경로를 살리기 위해 guest `/feed` middleware 동작을 rewrite에서 `/feed/guest` redirect로 바꿨다.
+- 완료 내용: `GuestFeedPageClient`의 canonical/navigation base path를 `/feed/guest` 기준으로 바꿔, direct `/feed/guest` 진입 후 다시 `/feed`로 되돌아가는 루프를 막았다.
+- 검증 결과: `corepack pnpm -C app exec vitest run src/middleware.test.ts` 통과.
+- 검증 결과: `corepack pnpm -C app typecheck` 통과.
+- 검증 결과: `git diff --check` 통과.
+
 ### 2026-04-16: Cycle 448 완료 (public `/feed` strict nonce 범위 축소)
 - 완료 내용: `RootLayout`의 전역 `connection()`을 제거하고, nonce가 필요한 `posts/[id]`, `posts/[id]/guest`, `users/[id]`만 각각 `connection()`을 호출하도록 분리했다.
 - 완료 내용: `middleware.ts`에서 guest `/feed` rewrite는 static CSP를 적용하고 nonce 헤더를 주입하지 않도록 바꿔 public shell이 strict nonce 경로를 같이 타지 않게 했다.
@@ -64,6 +71,7 @@
 
 ## 완료 요약
 
+- 2026-04-16: Cycle 449 완료 - `/feed/guest`는 이미 cache HIT와 `ttfb 0.14s~0.22s`로 빠른 반면 `/feed` rewrite 경로만 느리다는 점을 확인한 뒤, guest `/feed`는 `/feed/guest` redirect로 전환하고 guest client 내부 링크도 `/feed/guest` 기준으로 맞췄다.
 - 2026-04-16: Cycle 448 완료 - 루트 레이아웃의 전역 `connection()`이 strict nonce 경로를 앱 전체에 퍼뜨려 public `/feed`까지 dynamic/no-store로 몰아넣는 문제를 확인한 뒤, nonce가 필요한 상세/프로필 페이지만 별도 `connection()`을 쓰고 guest `/feed` rewrite는 static CSP를 적용하도록 분리했다.
 - 2026-04-16: Cycle 447 완료 - guest `/feed` 문서 응답이 server-first self-fetch 때문에 `private, no-store`가 되던 문제를 확인한 뒤 `/feed/guest/page.tsx`를 static shell로 되돌리고, 데이터는 다시 cacheable `/api/feed/guest`에서만 읽게 정리했으며, 관련 테스트와 블로그를 함께 갱신했다.
 - 2026-04-16: Cycle 446 완료 - `quality-gate`를 fresh DB `migrate deploy -> prisma generate -> quality:check` 중심의 small hot path로 줄이고, docs/browser/maintenance 검증을 별도 workflow로 분리했으며, `build:vercel`을 deploy-essential only로 단순화하고 관련 운영 문서와 블로그 회고를 갱신했다.

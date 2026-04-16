@@ -28,6 +28,11 @@
 
 ## Active Plan
 
+### Cycle 449: guest `/feed` rewrite를 redirect로 전환 (완료)
+| 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
+|---|---|---|---|---|---|
+| 실측상 빠른 `/feed/guest` 캐시 경로를 살리기 위해 guest `/feed` middleware rewrite를 redirect로 바꾸고, guest client의 canonical/navigation base path도 `/feed/guest` 기준으로 정리하며, 관련 테스트와 블로그를 현재 판단 기준에 맞춘다 | Codex | P1 | `done` | guest `/feed` 요청이 `/feed/guest`로 redirect되고, guest page 내 canonical/navigation이 `/feed/guest` 기준으로 동작하며, middleware/guest feed 테스트와 블로그/상태 문서가 갱신되고, 타입체크와 관련 테스트가 통과한다 | `PLAN.md`, `PROGRESS.md`, `app/middleware.ts`, `app/src/middleware.test.ts`, `app/src/components/posts/guest-feed-page-client.tsx`, `blog/20-performance-story-search-cache-pagination.md` |
+
 ### Cycle 448: public `/feed` strict nonce 범위 축소
 | 작업명 | 담당 에이전트 | 우선순위 | 상태 | 완료기준(DoD) | 의존성 |
 |---|---|---|---|---|---|
@@ -50,6 +55,7 @@
 
 ## Completed Summary
 
+- Cycle 449 (2026-04-16): 실측상 빠른 `/feed/guest` 캐시 경로를 살리기 위해 guest `/feed`를 rewrite 대신 `/feed/guest` redirect로 전환하고, guest client의 canonical/navigation base path도 `/feed/guest` 기준으로 정리했다.
 - Cycle 448 (2026-04-16): 루트 레이아웃의 전역 `connection()`과 strict nonce 경로를 public guest `/feed`에서 분리해, guest `/feed`는 static CSP를 쓰고 nonce가 필요한 post/user detail만 별도 `connection()`을 사용하도록 재구성했다.
 - Cycle 447 (2026-04-16): guest `/feed`의 server-first 내부 fetch를 제거하고 `/feed/guest`를 static shell + cached guest API 구조로 되돌려 문서 응답이 `no-store`로 무거워지는 병목을 줄였으며, 그 시행착오와 판단 근거를 블로그에 반영했다.
 - Cycle 446 (2026-04-16): `quality-gate`를 fresh DB `migrate deploy -> prisma generate -> quality:check` 중심의 small hot path로 줄이고, docs/browser/maintenance 검증을 별도 workflow로 분리했으며, `build:vercel`을 deploy-essential only로 단순화하고, 이후 GitHub Actions deprecation 경고를 없애기 위해 workflow action 버전을 `checkout/setup-node/pnpm` 최신 major로 올렸다.
