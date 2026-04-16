@@ -33,6 +33,7 @@
 - 검증 결과: `corepack pnpm -C app quality:check` 통과 (`190 files / 919 tests`, eslint warnings only).
 - 검증 결과: `corepack pnpm -C app exec vitest run scripts/vercel-build.test.ts` 통과 (`1 file / 7 tests`).
 - 검증 결과: GitHub Actions `quality-gate` 첫 실행에서 fresh runner에 `prisma generate`가 빠져 `@prisma/client` 타입 export 누락으로 실패한 것을 확인했고, workflow에 generate 단계를 추가해 hot path 정의를 `migrate deploy -> prisma generate -> quality:check`로 고정했다.
+- 완료 내용: GitHub Actions 공식 latest release 기준으로 workflow action 버전을 `actions/checkout@v6`, `actions/setup-node@v6`, `pnpm/action-setup@v5`로 올려 Node 20 JavaScript action deprecation 경고를 제거하는 follow-up을 반영했다.
 - 검증 결과: `git diff --check` 통과.
 - 메모: hot path에서 빠진 coverage, browser smoke, auth email readiness, maintenance rehearsal은 삭제가 아니라 on-demand/manual 영역으로 이동한 것이다.
 
