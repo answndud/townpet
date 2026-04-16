@@ -176,8 +176,12 @@ function createNotFoundResponse(headers: Headers) {
   return response;
 }
 
+function isGuestFeedShellPath(pathname: string) {
+  return pathname === "/feed" || pathname === "/feed/guest";
+}
+
 function shouldUseStaticGuestFeedCsp(request: NextRequest) {
-  if (request.method !== "GET" || request.nextUrl.pathname !== "/feed") {
+  if (request.method !== "GET" || !isGuestFeedShellPath(request.nextUrl.pathname)) {
     return false;
   }
 

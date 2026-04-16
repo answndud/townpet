@@ -20,8 +20,10 @@
 ### 2026-04-16: Cycle 448 완료 (public `/feed` strict nonce 범위 축소)
 - 완료 내용: `RootLayout`의 전역 `connection()`을 제거하고, nonce가 필요한 `posts/[id]`, `posts/[id]/guest`, `users/[id]`만 각각 `connection()`을 호출하도록 분리했다.
 - 완료 내용: `middleware.ts`에서 guest `/feed` rewrite는 static CSP를 적용하고 nonce 헤더를 주입하지 않도록 바꿔 public shell이 strict nonce 경로를 같이 타지 않게 했다.
+- 완료 내용: 배포 후에도 `/feed` 응답에 nonce가 남아, rewritten `/feed/guest` 내부 경로도 static guest shell 경로로 묶도록 middleware 분기를 한 번 더 좁혔다.
 - 완료 내용: middleware 회귀 테스트를 추가하고, 블로그에 “strict nonce를 전역으로 걸면 public feed 캐시가 막힌다”는 판단 과정을 반영했다.
 - 검증 결과: `corepack pnpm -C app exec vitest run src/middleware.test.ts src/app/feed/guest/page.test.tsx src/app/api/feed/guest/route.test.ts` 통과.
+- 검증 결과: `corepack pnpm -C app exec vitest run src/middleware.test.ts` follow-up 회귀 통과.
 - 검증 결과: `corepack pnpm -C app typecheck` 통과.
 - 검증 결과: `git diff --check` 통과.
 
