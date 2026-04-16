@@ -34,6 +34,7 @@
 
 ## 완료 요약
 
+- 2026-04-16: Cycle 445 완료 - guest `/feed` 첫 진입이 `fetchGuestFeedInitialData`를 통해 서버에서 초기 payload를 받아 `GuestFeedPageClient`에 주입하도록 바뀌었고, initial query와 같을 때 client 첫 fetch를 건너뛰게 했으며, 이번 redirect loop/계측/병목 판단 과정을 블로그에 경험 축적으로 남겼다.
 - 2026-04-16: Cycle 444 완료 - guest `/feed` 실경로인 `/api/feed/guest`에 `perf=1` 응답 `meta.timings`와 `Server-Timing` 헤더를 추가했고, guest count/list 조회도 `resolveFeedPageSlice` helper로 병렬화해 브라우저/`curl`에서 바로 병목을 확인할 수 있게 했다.
 - 2026-04-16: Cycle 443 완료 - `/feed` 서버 렌더에 `feed-page-performance.service.ts` 기반 분해 계측을 넣어 bootstrap/page-query/personalization 시간을 slow request warn 또는 `?perf=1` info 로그로 남기게 했고, `ops:perf:snapshot`에 canonical `/feed` 페이지 측정(`page_feed`)을 추가했다.
 - 2026-04-16: Cycle 442 완료 - `/feed` 첫 페이지가 `feed-page-query.service.ts` helper로 count/list 조회를 page=1 기준 병렬 처리하고 page overflow 때만 재조회하도록 바꿨으며, guest/streaming 로딩 상태를 공통 `FeedLoadingSkeleton`으로 통일하고 관련 테스트와 블로그를 동기화했다.
