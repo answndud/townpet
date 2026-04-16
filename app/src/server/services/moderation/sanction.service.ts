@@ -1,0 +1,258 @@
+import {
+  ModerationActionType,
+  ModerationTargetType,
+  Prisma,
+  SanctionLevel,
+} from "@prisma/client";
+
+import { prisma } from "@/lib/prisma";
+import { recordModerationAction } from "@/server/moderation-action-log";
+import { logger, serializeError } from "@/server/logger";
+import {
+  assertSchemaDelegate,
+  rethrowSchemaSyncRequired,
+} from "@/server/schema-sync";
+import { ServiceError } from "@/server/services/service-error";
+
+type UserSanctionRecord = {
+  id: string;
+  userId: string;
+  moderatorId: string;
+  level: SanctionLevel;
+  reason: string;
+  sourceReportId: string | null;
+  expiresAt: Date | null;
+  createdAt: Date;
+};
+
+type UserSanctionDelegate = {
+  findFirst(args: Prisma.UserSanctionFindFirstArgs): Promise<UserSanctionRecord | null>;
+  create(args: Prisma.UserSanctionCreateArgs): Promise<UserSanctionRecord>;
+};
+
+type IssueNextUserSanctionParams = {
+  userId: string;
+  moderatorId: string;
+  reason: string;
+  sourceReportId?: string;
+  maxLevel?: SanctionLevel;
+};
+
+const SUSPENSION_LEVELS = [SanctionLevel.SUSPEND_7D, SanctionLevel.SUSPEND_30D] as const;
+const RESTRICTED_LEVELS = [...SUSPENSION_LEVELS, SanctionLevel.PERMANENT_BAN] as const;
+
+let missingDelegateWarned = false;
+let missingTableWarned = false;
+
+function getUserSanctionDelegate() {
+  const delegate = (
+    prisma as unknown as { userSanction?: UserSanctionDelegate }
+  ).userSanction;
+
+  if (!delegate && !missingDelegateWarned && process.env.NODE_ENV !== "test") {
+    missingDelegateWarned = true;
+    logger.warn("Prisma Client에 UserSanction 모델이 없어 제재 기능을 비활성화합니다.");
+  }
+
+  return delegate ?? null;
+}
+
+function isUserSanctionTableMissingError(error: unknown) {
+  return (
+    error instanceof Prisma.PrismaClientKnownRequestError &&
+    error.code === "P2021"
+  );
+}
+
+function warnMissingSanctionTable(error: unknown) {
+  if (missingTableWarned || process.env.NODE_ENV === "test") {
+    return;
+  }
+  missingTableWarned = true;
+  logger.warn("UserSanction 테이블이 없어 제재 기능을 비활성화합니다.", {
+    error: serializeError(error),
+  });
+}
+
+function requireUserSanctionDelegate() {
+  return assertSchemaDelegate(
+    getUserSanctionDelegate(),
+    "UserSanction 모델이 누락되어 제재 상태를 확인할 수 없습니다. prisma generate 및 migrate deploy 후 다시 시도해 주세요.",
+  );
+}
+
+function throwSanctionSchemaSyncRequired(error: unknown): never {
+  if (isUserSanctionTableMissingError(error)) {
+    warnMissingSanctionTable(error);
+  }
+
+  rethrowSchemaSyncRequired(
+    error,
+    "UserSanction 스키마가 누락되어 제재 기능을 사용할 수 없습니다. prisma generate 및 migrate deploy 후 다시 시도해 주세요.",
+  );
+}
+
+function nextLevelFromPrevious(level: SanctionLevel | null) {
+  if (level === null) {
+    return SanctionLevel.WARNING;
+  }
+
+  if (level === SanctionLevel.WARNING) {
+    return SanctionLevel.SUSPEND_7D;
+  }
+
+  if (level === SanctionLevel.SUSPEND_7D) {
+    return SanctionLevel.SUSPEND_30D;
+  }
+
+  return SanctionLevel.PERMANENT_BAN;
+}
+
+function calculateExpiresAt(level: SanctionLevel, now: Date) {
+  if (level === SanctionLevel.SUSPEND_7D) {
+    return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+  }
+
+  if (level === SanctionLevel.SUSPEND_30D) {
+    return new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+  }
+
+  return null;
+}
+
+function compareSanctionLevelSeverity(left: SanctionLevel, right: SanctionLevel) {
+  const order = [
+    SanctionLevel.WARNING,
+    SanctionLevel.SUSPEND_7D,
+    SanctionLevel.SUSPEND_30D,
+    SanctionLevel.PERMANENT_BAN,
+  ] as const;
+
+  return order.indexOf(left) - order.indexOf(right);
+}
+
+export function formatSanctionLevelLabel(level: SanctionLevel) {
+  switch (level) {
+    case SanctionLevel.WARNING:
+      return "경고";
+    case SanctionLevel.SUSPEND_7D:
+      return "7일 정지";
+    case SanctionLevel.SUSPEND_30D:
+      return "30일 정지";
+    case SanctionLevel.PERMANENT_BAN:
+      return "영구 정지";
+    default:
+      return level;
+  }
+}
+
+export async function issueNextUserSanction({
+  userId,
+  moderatorId,
+  reason,
+  sourceReportId,
+  maxLevel,
+}: IssueNextUserSanctionParams) {
+  const delegate = requireUserSanctionDelegate();
+
+  let latest: UserSanctionRecord | null = null;
+  try {
+    latest = await delegate.findFirst({
+      where: { userId },
+      orderBy: [{ createdAt: "desc" }],
+    });
+  } catch (error) {
+    throwSanctionSchemaSyncRequired(error);
+  }
+
+  const level = nextLevelFromPrevious(latest?.level ?? null);
+  if (maxLevel && compareSanctionLevelSeverity(level, maxLevel) > 0) {
+    throw new ServiceError(
+      "자동 제재는 경고 또는 7일 정지까지만 허용됩니다. 더 강한 제재는 사람이 직접 검토해 주세요.",
+      "MODERATION_APPROVAL_REQUIRED",
+      409,
+    );
+  }
+  const now = new Date();
+  const expiresAt = calculateExpiresAt(level, now);
+
+  try {
+    const created = await delegate.create({
+      data: {
+        userId,
+        moderatorId,
+        level,
+        reason,
+        sourceReportId,
+        expiresAt,
+      },
+    });
+    await recordModerationAction({
+      actorId: moderatorId,
+      action: ModerationActionType.SANCTION_ISSUED,
+      targetType: ModerationTargetType.USER,
+      targetId: userId,
+      targetUserId: userId,
+      reportId: sourceReportId ?? null,
+      metadata: {
+        level,
+        reason,
+        expiresAt: expiresAt?.toISOString() ?? null,
+      },
+    });
+    return created;
+  } catch (error) {
+    throwSanctionSchemaSyncRequired(error);
+  }
+}
+
+export async function getActiveInteractionSanction(userId: string) {
+  const delegate = requireUserSanctionDelegate();
+
+  try {
+    return await delegate.findFirst({
+      where: {
+        userId,
+        level: {
+          in: [...RESTRICTED_LEVELS],
+        },
+        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+      },
+      orderBy: [{ createdAt: "desc" }],
+    });
+  } catch (error) {
+    throwSanctionSchemaSyncRequired(error);
+  }
+}
+
+export async function assertSanctionControlPlaneReady() {
+  const delegate = requireUserSanctionDelegate();
+
+  try {
+    await delegate.findFirst({
+      where: { userId: "__schema_probe__" },
+      orderBy: [{ createdAt: "desc" }],
+    });
+  } catch (error) {
+    throwSanctionSchemaSyncRequired(error);
+  }
+}
+
+export async function assertUserInteractionAllowed(userId: string) {
+  const activeSanction = await getActiveInteractionSanction(userId);
+  if (!activeSanction) {
+    return;
+  }
+
+  const expiresLabel = activeSanction.expiresAt
+    ? ` (${activeSanction.expiresAt.toLocaleString("ko-KR")} 까지)`
+    : "";
+
+  throw new ServiceError(
+    `현재 계정은 ${formatSanctionLevelLabel(activeSanction.level)} 상태로 기능 사용이 제한됩니다.${expiresLabel}`,
+    activeSanction.level === SanctionLevel.PERMANENT_BAN
+      ? "ACCOUNT_PERMANENTLY_BANNED"
+      : "ACCOUNT_SUSPENDED",
+    403,
+  );
+}
