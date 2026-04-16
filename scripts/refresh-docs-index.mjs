@@ -1,10 +1,11 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const args = new Set(process.argv.slice(2));
 const checkMode = args.has("--check");
 
-const repoRoot = resolve(new URL("..", import.meta.url).pathname);
+const repoRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const docsDir = join(repoRoot, "docs");
 const appDir = join(repoRoot, "app");
 const reportPath = join(docsDir, "archive", "operations", "문서 동기화 리포트.md");
@@ -39,6 +40,10 @@ function toRel(path) {
 
 function readJson(path) {
   return JSON.parse(readFileSync(path, "utf8"));
+}
+
+function normalizeContent(content) {
+  return content.replaceAll("\r\n", "\n").normalize("NFC");
 }
 
 const docsFiles = stableSort(walk(docsDir, (p) => p.endsWith(".md")).map(toRel));
@@ -86,9 +91,9 @@ const lines = [
   "",
 ];
 
-const nextContent = `${lines.join("\n")}`;
+const nextContent = normalizeContent(`${lines.join("\n")}`);
 const prevContent = existsSync(reportPath)
-  ? readFileSync(reportPath, "utf8")
+  ? normalizeContent(readFileSync(reportPath, "utf8"))
   : null;
 
 if (checkMode) {
