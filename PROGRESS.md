@@ -34,6 +34,7 @@
 
 ## 완료 요약
 
+- 2026-04-16: Cycle 439 완료 - `/feed/guest`의 별도 client fetch 페이지를 제거하고 canonical `/feed` redirect로 통합해 guest 피드 첫 진입 로딩 문구와 중복 경로를 없앴다.
 - 2026-04-16: Cycle 438 완료 - `refresh-docs-index.mjs`가 docs/API/migration 목록을 `git ls-files` 기준으로 수집하게 바꿔 checkout 파일시스템 차이와 무관하게 동일한 docs report를 생성하도록 고정했다.
 - 2026-04-16: Cycle 437 완료 - `refresh-docs-index.mjs`의 check 비교를 `LF + NFC` 기준으로 정규화하고 `fileURLToPath`를 적용해 CI 환경 차이에도 `docs:refresh:check`가 흔들리지 않게 했다.
 - 2026-04-16: Cycle 436 완료 - `refresh-docs-index.mjs`에서 상대 경로 문자열을 NFC로 정규화해 macOS/Linux 간 한글 파일명 표현 차이로 `docs:refresh:check`가 흔들리지 않게 했다.
