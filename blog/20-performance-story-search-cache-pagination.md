@@ -288,6 +288,17 @@ TownPet는 그래서 guest `/feed`의 실제 데이터 경로인 `/api/feed/gues
 
 ## 4.9. 실제로는 어떤 허탕을 쳤는가
 
+핵심 파일:
+
+- [`feed/guest/page.tsx`](../app/src/app/feed/guest/page.tsx)
+- [`guest-feed-page-client.tsx`](../app/src/components/posts/guest-feed-page-client.tsx)
+- [`api/feed/guest/route.ts`](../app/src/app/api/feed/guest/route.ts)
+- [`layout.tsx`](../app/src/app/layout.tsx)
+- [`middleware.ts`](../app/middleware.ts)
+- [`posts/[id]/page.tsx`](../app/src/app/posts/[id]/page.tsx)
+- [`posts/[id]/guest/page.tsx`](../app/src/app/posts/[id]/guest/page.tsx)
+- [`users/[id]/page.tsx`](../app/src/app/users/[id]/page.tsx)
+
 이번 최적화는 한 번에 정답으로 간 게 아닙니다.
 
 오히려 아래 순서로 틀린 가설을 지웠습니다.

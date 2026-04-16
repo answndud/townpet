@@ -46,10 +46,11 @@
 
 ### Part H. 회고와 운영 판단
 25. [quality gate와 deploy pipeline을 과하게 설계하면 생기는 일](./25-overengineering-ci-and-deploy-pipelines.md)
+26. [SunEditor 전환에서 selection과 typing boundary를 끝까지 고정하기](./26-suneditor-selection-and-typing-boundary.md)
 
 ## 현재 상태
 
-- 핵심 시리즈 `01`부터 `25`까지 초안 작성 완료
+- 핵심 시리즈 `01`부터 `26`까지 초안 작성 완료
 
 ## 다음 보강 우선순위
 1. `09`, `15`, `19`, `20`, `25`에 다이어그램/수치 캡처 추가

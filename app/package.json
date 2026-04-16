@@ -15,7 +15,7 @@
     "test:coverage": "vitest run --coverage",
     "test:unit:notifications": "vitest run src/app/api/notifications/route.test.ts src/server/actions/notification.test.ts src/server/queries/notification.queries.test.ts src/server/auth.test.ts",
     "test:e2e": "playwright test",
-    "test:e2e:smoke": "ENABLE_SOCIAL_DEV_LOGIN=1 playwright test e2e/feed-loading-skeleton.spec.ts e2e/kakao-login-entry.spec.ts e2e/naver-login-entry.spec.ts e2e/social-onboarding-flow.spec.ts --project=chromium",
+    "test:e2e:smoke": "ENABLE_SOCIAL_DEV_LOGIN=1 playwright test e2e/feed-loading-skeleton.spec.ts e2e/kakao-login-entry.spec.ts e2e/naver-login-entry.spec.ts e2e/social-onboarding-flow.spec.ts e2e/post-editor-toolbar.spec.ts --project=chromium",
     "test:e2e:auth": "ENABLE_SOCIAL_DEV_LOGIN=1 PLAYWRIGHT_BASE_URL=http://localhost:3000 playwright test e2e/auth-session-hardening.spec.ts e2e/profile-social-account-linking.spec.ts --project=chromium --workers=1",
     "quality:check": "eslint && tsc --noEmit && vitest run",
     "quality:gate": "eslint && tsc --noEmit && vitest run && ENABLE_SOCIAL_DEV_LOGIN=1 playwright test e2e/feed-loading-skeleton.spec.ts e2e/kakao-login-entry.spec.ts e2e/naver-login-entry.spec.ts e2e/social-onboarding-flow.spec.ts --project=chromium",

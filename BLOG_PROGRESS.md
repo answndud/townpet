@@ -1,6 +1,6 @@
 # BLOG_PROGRESS.md
 
-기준일: 2026-04-07
+기준일: 2026-04-16
 
 ## 진행 현황 요약
 - Cycle B1: 블로그 작업공간 초기화 완료
@@ -13,6 +13,20 @@
 - Cycle B8: 댓글/반응, 비즈니스 아이디어, Phase 2 본문 3개 추가 완료
 - Cycle B9: 문제 정의, AI agent 개발 방식, 데모/면접 패키지 본문 3개 추가 완료
 - Cycle B10: 블로그 문체 통일 + 핵심 흐름 다이어그램 추가 완료
+- Cycle B11: 외부 공개용 링크/템플릿/검증 명령 보강 완료
+- Cycle B12: 면접 Q&A 부록 보강 완료
+- Cycle B13: quality gate/deploy pipeline 회고 + current workflow refresh 완료
+
+### 2026-04-16: Cycle B14 완료 (SunEditor selection/boundary stabilization 회고)
+- 완료 내용
+  - [26-suneditor-selection-and-typing-boundary.md](./blog/26-suneditor-selection-and-typing-boundary.md)를 추가해 TownPet 게시글 에디터가 `execCommand -> Tiptap 보수 -> SunEditor`로 이동한 이유와, styled typing boundary가 왜 브라우저 selection만으로는 해결되지 않았는지 정리했다.
+  - [19-testing-and-quality-gate.md](./blog/19-testing-and-quality-gate.md)에 `post-editor-toolbar.spec.ts`를 browser smoke 대상 예시로 반영하고, selection restore / submenu target / styled typing boundary 같은 editor regression은 browser-level smoke로 고정해야 한다는 이유를 추가했다.
+  - [blog/README.md](./blog/README.md), [00_series_plan.md](./blog/00_series_plan.md), [BLOG_PLAN.md](./BLOG_PLAN.md)도 `26` 링크와 최신 시리즈 범위에 맞게 갱신했다.
+- 검증 결과
+  - 본문에서 참조한 editor component, serializer, E2E, error docs 경로가 현재 저장소에 실제 존재하는지 확인했다.
+  - `git diff --check` 기준으로 블로그/문서 포맷을 함께 점검했다.
+- 메모
+  - 이번 글은 라이브러리 교체 자체보다, editor 버그를 “DOM 구조 + selection attach timing + browser smoke 회귀” 관점에서 어떻게 닫았는지에 초점을 둔다.
 
 ### 2026-04-16: Cycle B13 완료 (quality gate/deploy pipeline 회고 + current workflow refresh)
 - 완료 내용

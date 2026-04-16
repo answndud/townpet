@@ -63,20 +63,25 @@
 - 검증 결과: `git diff --check` 통과.
 - 메모: hot path에서 빠진 coverage, browser smoke, auth email readiness, maintenance rehearsal은 삭제가 아니라 on-demand/manual 영역으로 이동한 것이다.
 
-### 2026-04-14: Cycle 430 진행 중 (게시글 에디터 SunEditor 전환 및 styled typing boundary 안정화)
+### 2026-04-16: Cycle 430 완료 (게시글 에디터 SunEditor 전환 및 styled typing boundary 안정화)
 - 완료 내용: `@tiptap/*` 의존성을 제거하고 `suneditor-react` 기반 공용 `PostBodyRichEditor`로 전환했다.
 - 완료 내용: 작성/수정 폼이 같은 에디터 컴포넌트를 공유하고, 숫자 폰트 크기/이미지/링크/인용/목록을 SunEditor 내장 툴바 기준으로 재구성했다.
 - 완료 내용: 반복적으로 깨지던 글자색 커스텀 UI는 제거했고, 기존 `[color=#...]` markup 렌더링은 과거 글 호환성을 위해 유지했다.
 - 완료 내용: submit 시 React state 지연 대신 에디터 인스턴스에서 직렬화된 본문/이미지 목록을 직접 읽도록 바꿨다.
 - 완료 내용: 이미지 width token 정규식을 `1~4`자리로 넓혀 `{width=1}` 문자열이 본문에 남는 문제를 막았다.
 - 완료 내용: `post-editor-toolbar`, `image-upload-flow`, `guest-post-management` E2E를 SunEditor DOM 기준으로 갱신했다.
+- 완료 내용: SunEditor instance 준비 전 effect가 먼저 끝나 selection/beforeinput listener가 붙지 않던 문제를 `editorInstanceVersion` state로 고쳐 listener attach 타이밍을 안정화했다.
+- 완료 내용: styled span 뒤에 zero-width sentinel text node를 직접 주입하고 caret을 그 텍스트 노드 안으로 이동시켜, font-size 적용 뒤 다음 입력이 기본 스타일로 분리되도록 수정했다.
+- 완료 내용: `post-editor-toolbar.spec.ts`의 segment reader가 `&nbsp;`를 일반 공백으로 정규화하도록 보강해 SunEditor의 outside-span 입력 표현과 실제 기대 동작을 맞췄다.
 - 검증 결과: `corepack pnpm -C app typecheck` 통과.
 - 검증 결과: `corepack pnpm -C app exec vitest run src/app/globals-css.test.ts` 통과.
 - 검증 결과: 관련 ESLint/lint 통과.
 - 검증 결과: `corepack pnpm -C app test:e2e -- e2e/image-upload-flow.spec.ts --project=chromium` 통과.
 - 검증 결과: `corepack pnpm -C app test:e2e -- e2e/guest-post-management.spec.ts --project=chromium` 통과.
-- 블로커: `e2e/post-editor-toolbar.spec.ts`의 “서식 적용 후 다음 입력이 기본 스타일로 분리돼야 한다” 케이스가 아직 실패한다.
-- 블로커: 같은 E2E를 재실행한 최근 시도는 코드 오류가 아니라 로컬 PostgreSQL(`localhost:5432`) 미기동 때문에 시작 단계에서 중단됐다.
+- 검증 결과: `PLAYWRIGHT_SKIP_WEBSERVER=1 ENABLE_SOCIAL_DEV_LOGIN=1 corepack pnpm -C app exec playwright test e2e/post-editor-toolbar.spec.ts --project=chromium` 통과 (`4 passed`).
+- 검증 결과: `corepack pnpm -C app quality:check` 통과 (`190 files / 921 tests`, 기존 eslint warning 5개 유지).
+- 검증 결과: GitHub Actions `browser-smoke` workflow_dispatch (`run 24509145867`) 통과. editor toolbar 4개를 포함한 on-demand browser smoke 전체가 green이었다.
+- 메모: 로컬 `test:e2e:smoke`는 editor 관련 4개 시나리오가 모두 green이었고, 재사용 dev 서버 env 차이 때문에 social onboarding 편차가 있었지만, branch 기준 원격 `browser-smoke` PASS로 editor 안정화 최종 close를 확인했다.
 
 ## 완료 요약
 

@@ -36,7 +36,9 @@ async function readEditorSegments(editor: Locator) {
 
     while (walker.nextNode()) {
       const currentNode = walker.currentNode;
-      const text = (currentNode.textContent ?? "").replace(/\u200b/g, "");
+      const text = (currentNode.textContent ?? "")
+        .replace(/\u200b/g, "")
+        .replace(/\u00a0/g, " ");
       if (text.trim().length === 0) {
         continue;
       }
