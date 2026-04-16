@@ -1,14 +1,53 @@
-import { Suspense } from "react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import GuestFeedPage from "@/app/feed/guest/page";
-import { FeedLoadingSkeleton } from "@/components/posts/feed-loading-skeleton";
+import { GuestFeedPageClient } from "@/components/posts/guest-feed-page-client";
+
+vi.mock("@/server/services/posts/guest-feed-page-fetch.service", () => ({
+  fetchGuestFeedInitialData: vi.fn(),
+}));
+
+import { fetchGuestFeedInitialData } from "@/server/services/posts/guest-feed-page-fetch.service";
+
+const mockFetchGuestFeedInitialData = vi.mocked(fetchGuestFeedInitialData);
 
 describe("GuestFeedPage", () => {
-  it("keeps a suspense fallback instead of throwing a redirect", () => {
-    const tree = GuestFeedPage();
+  it("passes server-fetched initial data into the guest client", async () => {
+    mockFetchGuestFeedInitialData.mockResolvedValueOnce({
+      view: "feed",
+      feed: {
+        mode: "ALL",
+        type: null,
+        reviewBoard: false,
+        reviewCategory: null,
+        petTypeId: null,
+        petTypeIds: [],
+        query: "",
+        selectedSort: "LATEST",
+        selectedSearchIn: "ALL",
+        density: "DEFAULT",
+        bestDays: 7,
+        periodDays: null,
+        isGuestTypeBlocked: false,
+        feedTitle: "전체 게시판",
+        totalPages: 1,
+        resolvedPage: 1,
+        feedQueryKey: "test",
+        items: [],
+        nextCursor: null,
+      },
+    });
 
-    expect(tree.type).toBe(Suspense);
-    expect(tree.props.fallback.type).toBe(FeedLoadingSkeleton);
+    const tree = await GuestFeedPage({
+      searchParams: Promise.resolve({ type: "SHELTER_VOLUNTEER", page: "1" }),
+    });
+
+    expect(mockFetchGuestFeedInitialData).toHaveBeenCalledWith("type=SHELTER_VOLUNTEER&page=1");
+    expect(tree.type).toBe(GuestFeedPageClient);
+    expect(tree.props.initialQueryString).toBe("type=SHELTER_VOLUNTEER&page=1");
+    expect(tree.props.initialData).toMatchObject({
+      view: "feed",
+      feed: { feedTitle: "전체 게시판" },
+    });
   });
 });

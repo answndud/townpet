@@ -12,56 +12,21 @@ import { FeedLoadingSkeleton } from "@/components/posts/feed-loading-skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { isCommonBoardPostType } from "@/lib/community-board";
 import { buildPaginationWindow } from "@/lib/pagination";
+import type {
+  BestDay,
+  FeedDensity,
+  FeedMode,
+  FeedPeriod,
+  FeedSearchIn,
+  FeedSort,
+  GuestFeedGate,
+  GuestFeedPayload,
+  GuestFeedResponse,
+  GuestFeedView,
+} from "@/lib/posts/guest-feed-types";
 import { isFreeBoardPostType } from "@/lib/post-type-groups";
 import { postTypeMeta } from "@/lib/post-presenter";
 import { type ReviewCategory } from "@/lib/review-category";
-
-type FeedMode = "ALL" | "BEST";
-type FeedSort = "LATEST" | "LIKE" | "COMMENT";
-type FeedSearchIn = "ALL" | "TITLE" | "CONTENT" | "AUTHOR";
-type FeedDensity = "DEFAULT" | "ULTRA";
-type FeedPeriod = 3 | 7 | 30;
-type BestDay = 3 | 7 | 30;
-type GuestFeedGate = {
-  view: "gate";
-  gate: {
-    title: string;
-    description: string;
-    primaryLink: string;
-    primaryLabel: string;
-    secondaryLink: string;
-    secondaryLabel: string;
-  };
-};
-
-type GuestFeedView = {
-  view: "feed";
-  feed: {
-    mode: FeedMode;
-    type: PostType | null;
-    reviewBoard: boolean;
-    reviewCategory: ReviewCategory | null;
-    petTypeId: string | null;
-    petTypeIds: string[];
-    query: string;
-    selectedSort: FeedSort;
-    selectedSearchIn: FeedSearchIn;
-    density: FeedDensity;
-    bestDays: BestDay;
-    periodDays: FeedPeriod | null;
-    isGuestTypeBlocked: boolean;
-    feedTitle: string;
-    totalPages: number;
-    resolvedPage: number;
-    feedQueryKey: string;
-    items: FeedPostItem[];
-    nextCursor: string | null;
-  };
-};
-
-type GuestFeedResponse =
-  | { ok: true; data: GuestFeedGate | GuestFeedView }
-  | { ok: false; error: { code: string; message: string } };
 
 function buildGuestFeedHref({
   type,
@@ -178,12 +143,20 @@ function buildGuestFeedHref({
   return serialized ? `/feed?${serialized}` : "/feed";
 }
 
-export function GuestFeedPageClient() {
+type GuestFeedPageClientProps = {
+  initialData?: GuestFeedPayload | null;
+  initialQueryString?: string;
+};
+
+export function GuestFeedPageClient({
+  initialData = null,
+  initialQueryString = "",
+}: GuestFeedPageClientProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
-  const [data, setData] = useState<GuestFeedGate | GuestFeedView | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [data, setData] = useState<GuestFeedGate | GuestFeedView | null>(initialData);
+  const [isLoading, setIsLoading] = useState(initialData === null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [reloadToken, setReloadToken] = useState(0);
 
@@ -223,6 +196,13 @@ export function GuestFeedPageClient() {
 
   useEffect(() => {
     if (shouldNormalizeLegacy) {
+      return;
+    }
+
+    if (reloadToken === 0 && initialData && initialQueryString === queryString) {
+      setData(initialData);
+      setIsLoading(false);
+      setLoadError(null);
       return;
     }
 
@@ -273,7 +253,7 @@ export function GuestFeedPageClient() {
       cancelled = true;
       controller.abort();
     };
-  }, [queryString, reloadToken, shouldNormalizeLegacy]);
+  }, [initialData, initialQueryString, queryString, reloadToken, shouldNormalizeLegacy]);
 
   useEffect(() => {
     if (data?.view !== "feed" || typeof window === "undefined") {
