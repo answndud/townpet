@@ -76,6 +76,11 @@ const DEFAULT_THRESHOLD: EndpointThreshold = {
   maxNon200Count: 0,
 }
 const DEFAULT_ENDPOINT_THRESHOLDS: Record<string, EndpointThreshold> = {
+  page_feed: {
+    maxP95TotalMs: 900,
+    maxSlowCount: 3,
+    maxNon200Count: 0,
+  },
   api_posts_global: {
     maxP95TotalMs: 400,
     maxSlowCount: 1,
@@ -456,6 +461,13 @@ async function main() {
   const summaryPath = process.env.OPS_PERF_SUMMARY_OUT ?? `${outputPath}.summary.md`
 
   const endpoints: EndpointConfig[] = [
+    {
+      label: "page_feed",
+      method: "GET",
+      path: "/feed",
+      samples: getSamples,
+      pauseMs,
+    },
     {
       label: "api_posts_global",
       method: "GET",

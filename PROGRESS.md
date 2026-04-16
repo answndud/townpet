@@ -34,6 +34,7 @@
 
 ## 완료 요약
 
+- 2026-04-16: Cycle 443 완료 - `/feed` 서버 렌더에 `feed-page-performance.service.ts` 기반 분해 계측을 넣어 bootstrap/page-query/personalization 시간을 slow request warn 또는 `?perf=1` info 로그로 남기게 했고, `ops:perf:snapshot`에 canonical `/feed` 페이지 측정(`page_feed`)을 추가했다.
 - 2026-04-16: Cycle 442 완료 - `/feed` 첫 페이지가 `feed-page-query.service.ts` helper로 count/list 조회를 page=1 기준 병렬 처리하고 page overflow 때만 재조회하도록 바꿨으며, guest/streaming 로딩 상태를 공통 `FeedLoadingSkeleton`으로 통일하고 관련 테스트와 블로그를 동기화했다.
 - 2026-04-16: Cycle 441 완료 - `Coverage report`가 테스트 실패가 아니라 threshold 설정값 때문에 막혀 `app/vitest.config.ts` global threshold를 현재 측정 베이스라인 바로 아래로 재조정하고 `docs/errors/2026-04-16_coverage-threshold-baseline-mismatch.md`를 추가했다.
 - 2026-04-16: Cycle 440 완료 - production `/feed`에서 self-redirect loop가 발생해 guest feed redirect 단순화를 롤백했고, guest page non-redirect 회귀 테스트와 `docs/errors/2026-04-16_guest-feed-redirect-loop.md` 기록을 추가했다.
