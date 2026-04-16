@@ -6,6 +6,71 @@
 ---
 [개발 계획](./PLAN.md) · [실행 로그](./PROGRESS.md)
 
+## 개발자 구조
+
+- 실행 코드와 명령의 소스 오브 트루스는 `app/`입니다.
+- 저장소 진입점은 [`AGENTS.md`](/Users/alex/project/townpet/AGENTS.md)입니다.
+- 제품/정책 기준은 [`docs/제품_기술_개요.md`](/Users/alex/project/townpet/docs/제품_기술_개요.md), `docs/policies/*`, `docs/security/*`를 우선합니다.
+- `PLAN.md`, `PROGRESS.md`는 저장소 구조 설명 문서가 아니라 현재 맡은 작업의 상태 문서입니다.
+
+## 빠른 구조 파악
+
+- 먼저 [`AGENTS.md`](/Users/alex/project/townpet/AGENTS.md), [`docs/제품_기술_개요.md`](/Users/alex/project/townpet/docs/제품_기술_개요.md), [`app/package.json`](/Users/alex/project/townpet/app/package.json)을 읽습니다.
+- 그다음 코드는 `app/prisma -> app/src/lib/validations -> app/src/server -> app/src/app -> app/src/components` 순서로 보는 편이 빠릅니다.
+- 특정 기능을 볼 때는 route/page보다 service/query와 validation을 먼저 읽는 편이 구조를 더 빨리 이해하게 해줍니다.
+
+## 저장소 지도
+
+- `app/src/app`
+  - App Router 페이지와 API route
+- `app/src/components`
+  - 화면 컴포넌트
+- `app/src/lib`
+  - validation, presenter, policy, helper
+- `app/src/server`
+  - service, query, auth, rate-limit, ops
+- `app/prisma`
+  - schema와 migrations
+- `docs`
+  - 제품/운영/보안 기준 문서
+
+## 대표 도메인 묶음
+
+- `posts/feed`
+  - `app/src/lib/validations/posts/post.ts`
+  - `app/src/server/services/posts/post.service.ts`
+  - `app/src/server/queries/posts/post.queries.ts`
+  - `app/src/app/feed`
+  - `app/src/components/posts`
+- `auth/session`
+  - `app/src/lib/validations/auth/index.ts`
+  - `app/src/server/services/auth/auth.service.ts`
+  - `app/src/server/auth.ts`
+  - `app/src/server/admin-page-access.ts`
+  - `app/src/lib/auth.ts`
+  - `app/src/lib/social-auth.ts`
+  - `app/src/app/login`, `app/src/app/register`, `app/src/app/onboarding`
+- `notifications`
+  - `app/src/lib/notifications/notification-unread-sync.ts`
+  - `app/src/server/services/notifications/notification.service.ts`
+  - `app/src/server/queries/notifications/notification.queries.ts`
+  - `app/src/server/actions/notifications/notification.ts`
+  - `app/src/components/notifications`
+  - `app/src/app/notifications`
+- `moderation/ops`
+  - `app/src/server/services/moderation/report.service.ts`
+  - `app/src/server/services/moderation/sanction.service.ts`
+  - `app/src/server/services/moderation/policy.service.ts`
+  - `app/src/server/queries/moderation/report.queries.ts`
+  - `app/src/server/queries/ops-overview.queries.ts`
+  - `app/src/app/admin`
+
+## 공용 개발 루틴
+
+- 기본 루틴은 `corepack pnpm -C app dev`, `lint`, `typecheck`, `test`, `test:e2e`, `quality:check`만 공용으로 봅니다.
+- 시드, 복구, 백필, 운영 점검 명령은 필요할 때만 쓰는 유지보수 루틴입니다.
+- 세부 작업 규칙과 계층 경계는 [`AGENTS.md`](/Users/alex/project/townpet/AGENTS.md)를 기준으로 봅니다.
+
 TownPet은 단순 커뮤니티가 아니라, 반려인이 `병원 · 입양 · 산책 · 거래 · 분실` 같은 상황별 정보를 더 빨리 찾고 더 신뢰할 수 있게 만드는 로컬 반려 플랫폼을 목표로 한 프로젝트입니다.
 AI Agent를 **문제 분해 → 구현 → 테스트 → 배포 → 운영 개선**까지 연결하는 개발 시스템으로 활용했습니다.
 

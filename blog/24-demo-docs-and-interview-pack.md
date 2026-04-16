@@ -26,7 +26,7 @@ TownPet는 이 포인트를 의식적으로 정리한 프로젝트입니다.
 ## 먼저 볼 문서와 파일
 
 - [README.md](../README.md)
-- [docs/개발_운영_가이드.md](../docs/%EA%B0%9C%EB%B0%9C_%EC%9A%B4%EC%98%81_%EA%B0%80%EC%9D%B4%EB%93%9C.md)
+- [AGENTS.md](../AGENTS.md)
 - [PLAN.md](../PLAN.md)
 - [PROGRESS.md](../PROGRESS.md)
 - [docs/security/보안_계획.md](../docs/security/%EB%B3%B4%EC%95%88_%EA%B3%84%ED%9A%8D.md)
@@ -140,7 +140,7 @@ TownPet는 문서가 많습니다.
 이 문서들은 “기능만 만들었다”가 아니라  
 운영/보안까지 같이 밀었다는 증거가 됩니다.
 
-### 4) [docs/개발_운영_가이드.md](../docs/%EA%B0%9C%EB%B0%9C_%EC%9A%B4%EC%98%81_%EA%B0%80%EC%9D%B4%EB%93%9C.md)
+### 4) [AGENTS.md](../AGENTS.md)
 
 - 로컬 복구
 - 시드
@@ -252,7 +252,7 @@ TownPet는 단순히 “기능이 많은 개인 프로젝트”가 아닙니다.
 - [README.md](../README.md)
 - [PLAN.md](../PLAN.md)
 - [PROGRESS.md](../PROGRESS.md)
-- [docs/개발_운영_가이드.md](../docs/%EA%B0%9C%EB%B0%9C_%EC%9A%B4%EC%98%81_%EA%B0%80%EC%9D%B4%EB%93%9C.md)
+- [AGENTS.md](../AGENTS.md)
 - [blog/README.md](./README.md)
 
 즉 TownPet는 테스트만으로 보여지는 프로젝트가 아니라,  
