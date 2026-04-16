@@ -35,8 +35,10 @@ TownPet는 기능이 늘어나면서 성능 문제도 같이 다뤘습니다.
 - [`app/src/server/cache/query-cache.ts`](../app/src/server/cache/query-cache.ts)
 - [`app/src/server/cache/query-cache.test.ts`](../app/src/server/cache/query-cache.test.ts)
 - [`app/src/server/queries/post.queries.ts`](../app/src/server/queries/post.queries.ts)
+- [`app/src/server/services/posts/feed-page-query.service.ts`](../app/src/server/services/posts/feed-page-query.service.ts)
 - [`app/src/server/queries/comment.queries.ts`](../app/src/server/queries/comment.queries.ts)
 - [`app/src/server/queries/comment.queries.test.ts`](../app/src/server/queries/comment.queries.test.ts)
+- [`app/src/components/posts/feed-loading-skeleton.tsx`](../app/src/components/posts/feed-loading-skeleton.tsx)
 - [`app/src/components/posts/feed-infinite-list.tsx`](../app/src/components/posts/feed-infinite-list.tsx)
 - [`app/src/lib/feed-list-presenter.ts`](../app/src/lib/feed-list-presenter.ts)
 - [`app/src/lib/post-structured-search.ts`](../app/src/lib/post-structured-search.ts)
@@ -167,6 +169,54 @@ TownPet의 해결:
 - 큰 리스트 전체가 아니라 **작은 label leaf만 다시 계산**됩니다.
 
 이건 React에서 매우 중요한 패턴입니다.
+
+## 4.5. 첫 페이지는 왜 count와 list를 겹쳐서 가져오는가
+
+핵심 파일:
+
+- [`feed/page.tsx`](../app/src/app/feed/page.tsx)
+- [`feed-page-query.service.ts`](../app/src/server/services/posts/feed-page-query.service.ts)
+
+피드 첫 진입에서 흔한 흐름은 `page=1`입니다.
+
+이 경우 `countPosts`로 전체 개수를 구한 뒤 `listPosts`를 다시 기다리면, 첫 화면은 항상 직렬 비용을 그대로 받습니다.
+
+TownPet는 이 비용을 줄이기 위해 helper 하나로 아래 규칙을 고정했습니다.
+
+1. total count 조회와 requested page 조회를 먼저 병렬로 시작한다.
+2. count 결과로 `totalPages`를 계산한다.
+3. 요청한 page가 유효하면 첫 조회 결과를 그대로 쓴다.
+4. page overflow일 때만 resolved page를 다시 조회한다.
+
+즉 “항상 두 번 조회”가 아니라, **흔한 경로를 빠르게 하고 예외 경로만 보정하는 구조**입니다.
+
+백엔드 관점에서는 이게 중요합니다.
+
+- 정합성: page 범위는 여전히 안전하게 보정
+- 성능: 첫 페이지의 직렬 대기 시간을 줄임
+- 코드 관리: page overflow 보정 규칙을 page 컴포넌트 여기저기에 흩뿌리지 않음
+
+Spring/Java 식으로 보면, 컨트롤러에 pagination edge case를 직접 적는 대신 **read-model orchestration helper**로 공통화한 셈입니다.
+
+## 4.6. 로딩 문구보다 skeleton을 먼저 보여주는 이유
+
+핵심 파일:
+
+- [`feed-loading-skeleton.tsx`](../app/src/components/posts/feed-loading-skeleton.tsx)
+- [`feed/loading.tsx`](../app/src/app/feed/loading.tsx)
+- [`feed/guest/page.tsx`](../app/src/app/feed/guest/page.tsx)
+- [`guest-feed-page-client.tsx`](../app/src/components/posts/guest-feed-page-client.tsx)
+
+체감 성능은 서버 시간만의 문제가 아닙니다.
+
+같은 500ms라도:
+
+- “피드를 준비 중입니다” 같은 빈상태 문구를 먼저 보면 느리게 느껴지고
+- 실제 카드 레이아웃 skeleton을 먼저 보면 곧 채워질 화면처럼 느껴집니다.
+
+TownPet는 그래서 feed loading UI를 공통 skeleton으로 맞췄습니다.
+
+이건 단순 디자인 수정이 아니라, 운영 중 느린 구간이 있더라도 사용자가 보는 첫 인상을 더 안정적으로 만드는 선택입니다.
 
 ## 5. 검색 성능은 왜 structured shadow column으로 옮겼는가
 
