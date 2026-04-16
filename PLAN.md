@@ -35,7 +35,7 @@
 
 ## Completed Summary
 
-- Cycle 439 (2026-04-16): 레거시 `/feed/guest` client-fetch 진입점을 제거하고 canonical `/feed` redirect로 단순화해 guest 피드 첫 진입 로딩 표면과 유지 포인트를 줄였다.
+- Cycle 440 (2026-04-16): production `/feed`에서 self-redirect loop가 발생해 guest feed redirect 단순화를 되돌리고, guest page non-redirect 회귀 테스트와 에러 기록을 추가했다.
 - Cycle 438 (2026-04-16): 문서 인덱스 목록 수집을 파일시스템 walk 대신 `git ls-files` 기준으로 바꿔 checkout 환경 차이와 무관하게 동일한 report를 생성하도록 고정했다.
 - Cycle 437 (2026-04-16): 문서 인덱스 체크 비교를 `LF + NFC` 기준으로 정규화하고 `fileURLToPath`로 경로 해석을 고정해 CI 환경 차이에도 흔들리지 않게 했다.
 - Cycle 436 (2026-04-16): 문서 인덱스 생성에서 경로 문자열을 NFC로 정규화해 macOS/Linux 간 한글 파일명 차이로 `docs:refresh:check`가 흔들리지 않게 했다.
