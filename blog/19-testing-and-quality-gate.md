@@ -189,6 +189,7 @@ TownPet는 docs sync report를 유지합니다.
 - `kakao-login-entry`
 - `naver-login-entry`
 - `social-onboarding-flow`
+- `post-editor-toolbar`
 
 하지만 이 계층은:
 
@@ -200,6 +201,17 @@ TownPet는 docs sync report를 유지합니다.
 **PR마다 강제하지 않는 on-demand workflow**로 옮겼습니다.
 
 이게 solo 프로젝트에는 더 현실적입니다.
+
+특히 contenteditable / SunEditor 같은 브라우저 의존 회귀는 unit test만으로는 끝나지 않습니다.
+
+- selection restore
+- toolbar submenu target
+- styled typing boundary
+
+같은 문제는 실제 브라우저에서만 확실히 드러나는 경우가 많습니다.
+
+그래서 TownPet는 editor toolbar regression도 hot path가 아니라 `test:e2e:smoke`에 넣어,
+필요할 때 실제 브라우저로 다시 확인하는 방식을 택했습니다.
 
 ## 6. `build:vercel`에는 무엇만 남겨야 하는가
 
