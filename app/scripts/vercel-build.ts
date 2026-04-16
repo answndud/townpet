@@ -15,9 +15,6 @@ type CommandRunner = (
 
 const PRISMA_DEPLOY_MAX_ATTEMPTS = 4;
 const PRISMA_DEPLOY_RETRY_DELAY_MS = 4_000;
-const NEIGHBORHOOD_SYNC_MAX_ATTEMPTS = 3;
-const NEIGHBORHOOD_SYNC_RETRY_DELAY_MS = 3_000;
-const NEIGHBORHOOD_SYNC_STRICT = process.env.NEIGHBORHOOD_SYNC_STRICT === "1";
 const CURRENT_FILE_PATH = fileURLToPath(import.meta.url);
 
 function runCommand(command: string, args: string[]) {
@@ -74,18 +71,6 @@ function isTransientPrismaDeployError(output: string) {
   );
 }
 
-function isTransientNeighborhoodSyncError(output: string) {
-  return (
-    output.includes("Error: P1001") ||
-    output.includes("Error: P1002") ||
-    output.includes("Can't reach database server") ||
-    output.includes("Timed out") ||
-    output.includes("ETIMEDOUT") ||
-    output.includes("ECONNRESET") ||
-    output.includes("Connection terminated")
-  );
-}
-
 async function sleep(ms: number) {
   await new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -106,18 +91,6 @@ export function shouldRunSecurityEnvPreflight(env: NodeJS.ProcessEnv = process.e
   }
 
   if (hasTruthyFlag(env.DEPLOY_SECURITY_PREFLIGHT_STRICT)) {
-    return true;
-  }
-
-  return isStrictVercelTarget(env);
-}
-
-export function shouldRunAuthEmailReadinessPreflight(env: NodeJS.ProcessEnv = process.env) {
-  if (hasTruthyFlag(env.DEPLOY_AUTH_EMAIL_PREFLIGHT_SKIP)) {
-    return false;
-  }
-
-  if (hasTruthyFlag(env.DEPLOY_AUTH_EMAIL_PREFLIGHT_STRICT)) {
     return true;
   }
 
@@ -170,22 +143,6 @@ export async function runSecurityEnvPreflight(commandRunner: CommandRunner = run
   }
 }
 
-export async function runAuthEmailReadinessPreflight(
-  commandRunner: CommandRunner = runCommand,
-) {
-  if (!shouldRunAuthEmailReadinessPreflight()) {
-    console.log(
-      "[build:vercel] skipping auth email readiness preflight (non-strict target or explicit opt-out).",
-    );
-    return;
-  }
-
-  const result = await commandRunner("pnpm", ["ops:check:auth-email-readiness"]);
-  if (result.code !== 0) {
-    throw new Error("[build:vercel] auth email readiness preflight failed.");
-  }
-}
-
 async function runPrismaDeploy(commandRunner: CommandRunner = runCommand) {
   let baselineAttempted = false;
 
@@ -215,82 +172,6 @@ async function runPrismaDeploy(commandRunner: CommandRunner = runCommand) {
   throw new Error("[build:vercel] prisma migrate deploy exhausted retry attempts.");
 }
 
-async function runNeighborhoodSync(commandRunner: CommandRunner = runCommand) {
-  let lastOutput = "";
-
-  for (let attempt = 1; attempt <= NEIGHBORHOOD_SYNC_MAX_ATTEMPTS; attempt += 1) {
-    const syncNeighborhoodResult = await commandRunner("pnpm", ["db:sync:neighborhoods"]);
-    lastOutput = syncNeighborhoodResult.output;
-
-    if (syncNeighborhoodResult.code === 0) {
-      return;
-    }
-
-    if (
-      isTransientNeighborhoodSyncError(syncNeighborhoodResult.output) &&
-      attempt < NEIGHBORHOOD_SYNC_MAX_ATTEMPTS
-    ) {
-      console.log(
-        `[build:vercel] neighborhood sync transient failure (attempt ${attempt}/${NEIGHBORHOOD_SYNC_MAX_ATTEMPTS}). Retrying...`,
-      );
-      await sleep(NEIGHBORHOOD_SYNC_RETRY_DELAY_MS * attempt);
-      continue;
-    }
-
-    if (NEIGHBORHOOD_SYNC_STRICT) {
-      throw new Error("[build:vercel] neighborhood sync failed.");
-    }
-
-    console.warn(
-      "[build:vercel] neighborhood sync failed. Continuing build because NEIGHBORHOOD_SYNC_STRICT is not enabled.",
-    );
-    return;
-  }
-
-  if (NEIGHBORHOOD_SYNC_STRICT) {
-    throw new Error("[build:vercel] neighborhood sync exhausted retry attempts.");
-  }
-
-  console.warn(
-    `[build:vercel] neighborhood sync exhausted retry attempts. Continuing build because NEIGHBORHOOD_SYNC_STRICT is not enabled.`,
-  );
-  if (lastOutput.trim().length > 0) {
-    console.warn(lastOutput);
-  }
-}
-
-async function repairCommunityBoardSchema(commandRunner: CommandRunner = runCommand) {
-  const repairResult = await commandRunner("pnpm", [
-    "prisma",
-    "db",
-    "execute",
-    "--schema",
-    "prisma/schema.prisma",
-    "--file",
-    "scripts/sql/community-board-repair.sql",
-  ]);
-
-  if (repairResult.code !== 0) {
-    throw new Error("[build:vercel] community-board schema repair failed.");
-  }
-}
-
-async function repairNotificationArchiveSchema(commandRunner: CommandRunner = runCommand) {
-  const repairResult = await commandRunner("pnpm", [
-    "prisma",
-    "db",
-    "execute",
-    "--schema",
-    "prisma/schema.prisma",
-    "--file",
-    "scripts/sql/notification-archive-repair.sql",
-  ]);
-
-  if (repairResult.code !== 0) {
-    throw new Error("[build:vercel] notification archive schema repair failed.");
-  }
-}
-
 async function runPrismaGenerate(commandRunner: CommandRunner = runCommand) {
   const generateResult = await commandRunner("pnpm", ["prisma", "generate"]);
   if (generateResult.code !== 0) {
@@ -300,17 +181,8 @@ async function runPrismaGenerate(commandRunner: CommandRunner = runCommand) {
 
 export async function runBuildVercel(commandRunner: CommandRunner = runCommand) {
   await runSecurityEnvPreflight(commandRunner);
-  // Vercel dependency cache can keep an outdated Prisma Client.
-  // Generate before running TS preflights that instantiate PrismaClient.
-  await runPrismaGenerate(commandRunner);
-  await runAuthEmailReadinessPreflight(commandRunner);
   await runPrismaDeploy(commandRunner);
-  await repairCommunityBoardSchema(commandRunner);
-  await repairNotificationArchiveSchema(commandRunner);
-
-  // Run generate again after deploy/repair in case the schema changed during migrate.
   await runPrismaGenerate(commandRunner);
-  await runNeighborhoodSync(commandRunner);
 
   const buildResult = await commandRunner("pnpm", ["next", "build"]);
   if (buildResult.code !== 0) {

@@ -1,17 +1,12 @@
-name: quality-gate
+name: browser-smoke
 
 on:
-  pull_request:
-    branches: ["main"]
-    paths:
-      - "app/**"
-      - ".github/workflows/quality-gate.yml"
   workflow_dispatch:
 
 jobs:
-  verify:
+  smoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     defaults:
       run:
         working-directory: app
@@ -62,5 +57,8 @@ jobs:
       - name: Generate Prisma client
         run: pnpm prisma generate
 
-      - name: Quality check
-        run: pnpm quality:check
+      - name: Install Playwright browser
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run browser smoke
+        run: pnpm test:e2e:smoke

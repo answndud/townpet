@@ -13,29 +13,29 @@ TownPet는 기능이 많은 커뮤니티 서비스입니다.
 - migration
 - 운영 스크립트
 
-이런 서비스는 "테스트가 있다"만으로는 부족합니다.
+문제는 검증 항목이 많다고 해서, 그걸 **매 push와 매 deploy에 전부 묶는 것**이 항상 좋은 설계는 아니라는 점입니다.
 
-이 글은 TownPet가 품질을 어떻게 나누어 검증하는지, 즉 **단위 테스트 -> E2E -> CI gate -> 배포 후 smoke** 순서를 정리합니다.
+이 글은 TownPet가 현재 품질 검증을 어떻게 나누는지, 즉 **로컬 빠른 검증 -> PR hot path -> on-demand browser smoke -> 배포 후 ops smoke** 구조를 정리합니다.
 
 ## 왜 이 글이 중요한가
 
-프로젝트를 혼자 오래 끌고 가려면, 기능보다 "안전하게 바꿀 수 있는 구조"가 더 중요합니다.
+혼자 오래 운영하는 프로젝트에서 가장 비싼 자원은 CPU가 아니라 **피드백 시간**입니다.
 
-TownPet는 실제로 이런 위험이 있습니다.
+TownPet는 실제로 이런 위험을 동시에 가집니다.
 
 - schema는 바뀌었는데 migration chain이 깨짐
-- 검색은 고쳤는데 E2E 로그인 진입이 깨짐
+- 검색은 고쳤는데 브라우저 진입 흐름이 깨짐
 - 운영 cleanup 스크립트가 production에서 다른 결과를 냄
-- health endpoint는 괜찮아도 admin/ops 데이터가 틀림
+- health endpoint는 괜찮아도 실제 deploy 환경 설정이 틀림
 
-그래서 TownPet는 테스트를
+그래서 TownPet는 검증을 한 곳에 다 몰아넣지 않고, 아래처럼 나눕니다.
 
-- 코드 로직 검증
-- 사용자 흐름 검증
-- CI 품질 게이트
-- 배포 후 운영 검증
+- 코드 회귀 검증
+- 브라우저 smoke 검증
+- 배포 필수 preflight
+- 배포 후 운영 smoke
 
-으로 나눠 둡니다.
+핵심은 “검증을 줄인다”가 아니라, **검증을 hot path와 on-demand path로 분리한다**는 점입니다.
 
 ## 먼저 알아둘 개념
 
@@ -44,30 +44,34 @@ TownPet는 실제로 이런 위험이 있습니다.
 - `Playwright`
   - 브라우저 사용자 흐름을 검증합니다.
 - `quality-gate`
-  - 테스트뿐 아니라 migration, rehearsal, smoke를 묶는 CI 게이트입니다.
+  - PR hot path에서 lint, typecheck, unit, migration sanity만 보는 작은 CI 게이트입니다.
+- `browser-smoke`
+  - Playwright smoke를 on-demand로 돌리는 별도 workflow입니다.
+- `ops-smoke-checks`
+  - 배포된 URL을 다시 확인하는 post-deploy smoke입니다.
 
 ## 먼저 볼 핵심 파일
 
 - [`app/package.json`](../app/package.json)
 - [`.github/workflows/quality-gate.yml`](../.github/workflows/quality-gate.yml)
+- [`.github/workflows/browser-smoke.yml`](../.github/workflows/browser-smoke.yml)
+- [`.github/workflows/docs-quality.yml`](../.github/workflows/docs-quality.yml)
 - [`.github/workflows/ops-smoke-checks.yml`](../.github/workflows/ops-smoke-checks.yml)
-- [`app/e2e/profile-social-account-linking.spec.ts`](../app/e2e/profile-social-account-linking.spec.ts)
-- [`app/src/server/queries/ops-overview.queries.test.ts`](../app/src/server/queries/ops-overview.queries.test.ts)
-- [`app/src/app/api/health/route.test.ts`](../app/src/app/api/health/route.test.ts)
+- [`app/scripts/vercel-build.ts`](../app/scripts/vercel-build.ts)
+- [`25-overengineering-ci-and-deploy-pipelines.md`](./25-overengineering-ci-and-deploy-pipelines.md)
 
-## 품질 게이트를 먼저 그림으로 보면
+## 품질 흐름을 먼저 그림으로 보면
 
 ```mermaid
-flowchart LR
-  A["Vitest / component / route test"] --> B["quality:check"]
-  C["Playwright smoke"] --> D["quality:gate"]
-  B --> D
-  E["prisma migrate deploy + rehearsal"] --> D
-  D --> F["deploy"]
-  F --> G["ops-smoke-checks / health / prewarm"]
+flowchart TD
+  A["로컬 quality:check"] --> B["PR quality-gate"]
+  B --> C["Vercel build: security preflight -> migrate deploy -> prisma generate -> next build"]
+  C --> D["ops-smoke-checks"]
+  A --> E["on-demand browser-smoke"]
+  D --> F["health / prewarm / optional pg_trgm / optional sentry"]
 ```
 
-TownPet 품질 게이트는 테스트만이 아니라 migration, rehearsal, 배포 후 smoke까지 한 줄로 이어집니다.
+TownPet는 이제 PR hot path를 작게 유지하고, 무거운 browser smoke는 필요할 때만 별도로 실행합니다.
 
 ## 1. 테스트 스택은 어떻게 나뉘는가
 
@@ -81,19 +85,18 @@ TownPet는 크게 두 도구를 씁니다.
 - component
 - helper
 
-즉 대부분의 로직 테스트는 Vitest로 갑니다.
+즉 대부분의 로직 회귀는 Vitest로 빠르게 봅니다.
 
 ### Playwright
 
-- 로그인
-- 검색
-- 소셜 온보딩
+- 로그인 진입
+- social onboarding
 - 업로드
 - 관리자 정책
 
 같이 브라우저 상호작용이 중요한 흐름은 Playwright가 담당합니다.
 
-즉 "서버 계산이 맞는가"와 "브라우저에서 실제로 되느냐"를 도구 단위로 나눴습니다.
+즉 "서버 계산이 맞는가"와 "브라우저에서 실제로 되느냐"를 도구 단위로 나눕니다.
 
 ## 2. `package.json`을 보면 어떤 전략이 보이는가
 
@@ -101,141 +104,159 @@ TownPet는 크게 두 도구를 씁니다.
 
 - [`app/package.json`](../app/package.json)
 
-여기서 먼저 봐야 하는 스크립트는 이 6개입니다.
+여기서 먼저 봐야 하는 스크립트는 이 정도입니다.
 
 - `lint`
 - `typecheck`
-- `test`
-- `test:e2e`
+- `test:unit`
+- `test:coverage`
+- `test:e2e:smoke`
 - `quality:check`
 - `quality:gate`
 
-이 중 `quality:check`는:
-
-- `pnpm lint`
-- `pnpm typecheck`
-- `pnpm test:unit`
-
-을 묶습니다.
-
-즉 코드 레벨에서 최소한 "문법, 타입, 단위 테스트"는 한 번에 통과하게 만듭니다.
-
-그리고 `quality:gate`는:
+현재 기준에서:
 
 - `quality:check`
-- `test:e2e:smoke`
+  - `lint + typecheck + test:unit`
+- `quality:gate`
+  - `quality:check + test:e2e:smoke`
 
-를 합칩니다.
+중요한 점은 `quality:gate`가 더 이상 매 PR hot path를 뜻하지 않는다는 것입니다.
 
-즉 CI에서 중요한 건 "unit만 green"이 아니라 "핵심 smoke E2E까지 green"입니다.
+이제 `quality:gate`는 **로컬이나 on-demand full gate**에 가깝고,
+GitHub Actions의 PR hot path는 `quality:check` 중심으로 더 작게 유지합니다.
 
-## 3. 왜 `test:e2e:smoke`를 따로 두는가
+## 3. 왜 PR hot path를 작게 유지하는가
 
-모든 E2E를 매 push마다 돌리면 느리고 flaky할 수 있습니다.
+핵심 파일:
 
-그래서 TownPet는 smoke 세트를 따로 둡니다.
+- [`.github/workflows/quality-gate.yml`](../.github/workflows/quality-gate.yml)
 
-현재 smoke 예:
+현재 PR hot path는 매우 단순합니다.
+
+1. checkout / pnpm / node setup
+2. install
+3. `prisma migrate deploy`
+4. `prisma generate`
+5. `pnpm quality:check`
+
+즉 PR gate는 아래 두 질문에만 집중합니다.
+
+- fresh DB에서 migration chain이 실제로 적용되는가
+- fresh runner에서 Prisma client가 schema와 맞게 다시 생성되는가
+- lint / typecheck / unit이 모두 green인가
+
+여기서 더 무거운 검증을 빼는 이유는 단순합니다.
+
+- PR마다 coverage를 다시 계산하면 피드백이 느려짐
+- Playwright browser 설치는 가장 비싼 단계 중 하나임
+- docs freshness, env preflight, rehearsal까지 같이 넣으면 실패 원인이 흐려짐
+
+즉 hot path는 **merge safety와 직접 연결된 것만** 남기는 쪽이 맞습니다.
+
+## 4. docs freshness는 왜 별도 workflow로 분리하는가
+
+핵심 파일:
+
+- [`.github/workflows/docs-quality.yml`](../.github/workflows/docs-quality.yml)
+- [`scripts/refresh-docs-index.mjs`](../scripts/refresh-docs-index.mjs)
+
+TownPet는 docs sync report를 유지합니다.
+
+그런데 이 검사는:
+
+- docs 변경
+- `app/package.json` 변경
+- migration 추가
+- API route 추가
+
+같은 경우에만 필요합니다.
+
+즉 앱 전체 CI에 항상 붙이는 것보다,
+해당 경로에만 반응하는 **lightweight workflow**로 분리하는 편이 훨씬 낫습니다.
+
+## 5. Playwright smoke는 왜 on-demand로 옮겼는가
+
+핵심 파일:
+
+- [`.github/workflows/browser-smoke.yml`](../.github/workflows/browser-smoke.yml)
+
+브라우저 smoke는 여전히 중요합니다.
+
+예:
 
 - `feed-loading-skeleton`
 - `kakao-login-entry`
 - `naver-login-entry`
 - `social-onboarding-flow`
 
-즉 "서비스 진입이 가능한가"를 빠르게 보는 최소 브라우저 경로입니다.
+하지만 이 계층은:
 
-반면 더 무거운 흐름은 별도 명령으로 둡니다.
+- 브라우저 설치 비용이 크고
+- CI 환경 의존성이 강하고
+- flaky 원인이 코드 자체가 아닐 수도 있습니다
 
-- `test:e2e:auth`
-- `test:e2e:upload`
-- `test:e2e:notification-filters`
-- `test:e2e:admin-policies`
+그래서 TownPet는 browser smoke를 없애지 않고,
+**PR마다 강제하지 않는 on-demand workflow**로 옮겼습니다.
 
-이 구조는 실무적으로 매우 중요합니다.
+이게 solo 프로젝트에는 더 현실적입니다.
 
-- smoke는 자주
-- heavy suite는 목적별로
-
-돌릴 수 있기 때문입니다.
-
-## 4. `quality-gate.yml`은 어떤 순서로 실패를 막는가
+## 6. `build:vercel`에는 무엇만 남겨야 하는가
 
 핵심 파일:
 
-- [`.github/workflows/quality-gate.yml`](../.github/workflows/quality-gate.yml)
+- [`app/scripts/vercel-build.ts`](../app/scripts/vercel-build.ts)
 
-이 워크플로우는 단순히 `pnpm test`만 하지 않습니다.
+현재 TownPet의 deploy build는 이 순서입니다.
 
-순서를 보면 TownPet가 무엇을 위험하다고 보는지 드러납니다.
+1. `security env preflight`
+2. `prisma migrate deploy`
+3. `prisma generate`
+4. `next build`
 
-1. checkout / pnpm / node setup
-2. install
-3. `Security env preflight`
-4. `prisma migrate deploy`
-5. `prisma generate`
-6. guest author/backfill 관련 rehearsal
-7. `quality:check`
-8. coverage
-9. notification contract suite
-10. Playwright browser install
-11. `test:e2e:smoke`
+즉 배포 경로는 **deploy-essential only**로 줄였습니다.
 
-즉 이 CI는 "코드가 빌드되는가"보다 먼저
+반대로 deploy hot path에서 뺀 것:
 
-- security env가 production-like 한가
-- migration chain이 처음부터 적용 가능한가
-- 데이터 보정 스크립트가 위험하지 않은가
+- auth email readiness 전체 스캔
+- neighborhood sync
+- browser smoke
+- coverage 계산
+- guest legacy maintenance rehearsal
 
-를 확인합니다.
+이 항목들은 중요할 수는 있지만, **모든 deploy가 실패해야 하는 이유**는 아닙니다.
 
-TownPet가 커뮤니티 운영 서비스라서, 코드보다 migration/ops 스크립트가 더 큰 사고를 낼 수 있다는 판단이 반영된 구조입니다.
+## 7. auth email readiness는 왜 every deploy에서 뺐는가
 
-## 5. 왜 CI에서 `prisma db push`가 아니라 `migrate deploy`를 쓰는가
+핵심 파일:
 
-핵심은 이 지점입니다.
+- [`app/scripts/check-auth-email-readiness.ts`](../app/scripts/check-auth-email-readiness.ts)
 
-`db push`는 현재 schema를 맞추는 데는 편하지만, migration chain이 실제로 살아 있는지는 보장하지 못합니다.
+이 검사는 여전히 유효합니다.
 
-TownPet는 이미 migration repair 경험이 있었기 때문에, CI에서도:
+다만 모든 배포마다:
 
-- `prisma migrate deploy`
+- 전체 user email
+- verification identifier
+- normalization drift
 
-를 표준 경로로 씁니다.
+를 스캔하는 것은, 현재 TownPet 운영 모델에서는 과합니다.
 
-즉 "현재 schema가 맞다"보다 "처음부터 지금까지 migration history가 실행된다"를 더 중요한 품질 기준으로 둡니다.
+이 검사는 이제 이런 시점에만 수동으로 돌리는 것이 맞습니다.
 
-Python/Django로 치환하면:
+- `User.email` 정규화 규칙을 건드릴 때
+- auth/email migration을 배포하기 직전
+- 운영 데이터 정합성이 의심될 때
 
-- `makemigrations` 결과만 보는 게 아니라
-- clean DB에 `migrate`를 실제로 끝까지 실행하는 것
+즉 중요한 검사를 없앤 것이 아니라, **항상 필요한 검사가 아닌 것을 항상 실행하던 위치에서 뺀 것**입니다.
 
-과 같은 철학입니다.
-
-## 6. 운영 스크립트 rehearsal은 왜 CI에 들어가 있는가
-
-`quality-gate.yml`에는 일반 앱 테스트 외에도 이런 단계가 있습니다.
-
-- `db:backfill:guest-authors`
-- `db:verify:guest-authors`
-- `db:check:guest-legacy-cleanup`
-- `db:rehearse:guest-legacy-cleanup`
-
-즉 TownPet는 "앱 코드"만 검증하지 않고, **운영 데이터 보정 스크립트**도 품질 게이트에 포함시킵니다.
-
-이게 중요한 이유:
-
-- production 문제는 배포 코드보다 데이터 repair script에서 자주 납니다.
-- 혼자 운영할수록 이런 스크립트 실수가 치명적입니다.
-
-즉 TownPet의 quality gate는 CI라기보다 `engineering + ops gate`에 가깝습니다.
-
-## 7. 배포 후 smoke는 어디서 보는가
+## 8. 배포 후 smoke는 어디서 보는가
 
 핵심 파일:
 
 - [`.github/workflows/ops-smoke-checks.yml`](../.github/workflows/ops-smoke-checks.yml)
 
-이 워크플로우는 production/preview 배포 뒤 외부에서 다시 확인합니다.
+TownPet는 CI와 deploy build가 green이어도, 실제 URL을 다시 봅니다.
 
 대표 단계:
 
@@ -244,98 +265,88 @@ Python/Django로 치환하면:
 - optional `pg_trgm` 확인
 - optional Sentry ingestion 확인
 
-즉 CI가 끝났다고 바로 끝내지 않고, 배포된 URL에서도
+즉 “코드 검증”과 “실제 배포 확인”을 분리해서 다룹니다.
 
-- health endpoint
-- route prewarm
-- search extension
-- sentry ingestion
+이 구조가 중요한 이유는:
 
-을 다시 봅니다.
+- CI 성공 != deploy 성공
+- build 성공 != runtime env 정상
 
-이건 "로컬/CI 성공"과 "실제 배포 성공"을 분리해서 다루는 구조입니다.
+이기 때문입니다.
 
-## 8. 실제 테스트 파일은 어떻게 읽는가
+## 9. 왜 이 구조가 solo 프로젝트에 맞는가
 
-### 로직 테스트 예
+핵심은 세 가지입니다.
 
-- [`app/src/server/services/auth-account-link.service.test.ts`](../app/src/server/services/auth-account-link.service.test.ts)
-- [`app/src/server/queries/ops-overview.queries.test.ts`](../app/src/server/queries/ops-overview.queries.test.ts)
+### 1) 피드백이 빠르다
 
-이 레벨은 service/query 규칙을 빠르게 고정합니다.
+PR gate가 작으면 수정 -> push -> 결과 확인 루프가 짧아집니다.
 
-### route 테스트 예
+### 2) 실패 원인이 더 선명하다
 
-- [`app/src/app/api/health/route.test.ts`](../app/src/app/api/health/route.test.ts)
+PR gate는 code/migration, browser smoke는 브라우저, ops smoke는 배포 URL을 봅니다.
 
-이 레벨은 JSON contract와 권한/토큰 분기를 고정합니다.
+즉 실패했을 때 “어느 계층 문제인가”가 더 빨리 드러납니다.
 
-### component 테스트 예
+### 3) 무거운 검증을 버리지 않는다
 
-- [`app/src/components/admin/admin-section-nav.test.tsx`](../app/src/components/admin/admin-section-nav.test.tsx)
+TownPet는 무거운 검증을 포기하지 않았습니다.
 
-이 레벨은 권한별 UI 노출 계약을 고정합니다.
+다만:
 
-### E2E 예
+- hot path
+- on-demand
+- post-deploy
 
-- [`app/e2e/profile-social-account-linking.spec.ts`](../app/e2e/profile-social-account-linking.spec.ts)
+로 자리를 다시 나눴습니다.
 
-이 레벨은 브라우저 사용자 흐름을 끝까지 검증합니다.
+## 10. 관련 회고 글
 
-즉 TownPet는 "테스트 종류"를 기술 스택 기준으로 나눈 게 아니라, **깨질 수 있는 계층 기준**으로 나눕니다.
+이 판단의 배경과 과설계 리스크는 아래 글에 별도로 정리했습니다.
 
-## 9. 전체 흐름을 그림으로 보면
+- [`25-overengineering-ci-and-deploy-pipelines.md`](./25-overengineering-ci-and-deploy-pipelines.md)
 
-```mermaid
-flowchart TD
-  A["로컬 개발"] --> B["Vitest: helper/service/query/route/component"]
-  A --> C["Playwright: 브라우저 플로우"]
-  B --> D["quality:check"]
-  C --> E["test:e2e:smoke 또는 목적별 e2e"]
-  D --> F["quality-gate.yml"]
-  E --> F
-  F --> G["security env preflight"]
-  F --> H["prisma migrate deploy"]
-  F --> I["ops/data repair rehearsal"]
-  F --> J["coverage + notification contract"]
-  F --> K["smoke E2E"]
-  K --> L["배포"]
-  L --> M["ops-smoke-checks.yml"]
-  M --> N["health / prewarm / pg_trgm / sentry"]
-```
+핵심 주제:
 
-## 10. 직접 실행해 보고 싶다면
+- 배포 속도 지연
+- unrelated failure coupling
+- flaky gate 증가
+- 우회 push 유도
+- 팀이 CI를 신뢰하지 않게 되는 문제
+
+## 11. 직접 실행해 보고 싶다면
 
 가장 자주 쓰는 명령은 이 정도입니다.
 
 ```bash
-corepack pnpm -C app lint
-corepack pnpm -C app typecheck
-corepack pnpm -C app test
-corepack pnpm -C app test:e2e -- e2e/profile-social-account-linking.spec.ts --project=chromium
+corepack pnpm -C app quality:check
+corepack pnpm -C app test:e2e:smoke
 corepack pnpm -C app exec prisma migrate deploy
+corepack pnpm -C app ops:check:security-env:strict
+corepack pnpm -C app ops:check:health
 ```
 
-특정 파일만 보고 싶다면:
+GitHub Actions 기준으로는:
 
-```bash
-corepack pnpm -C app test -- src/server/queries/ops-overview.queries.test.ts
-corepack pnpm -C app test -- src/app/api/health/route.test.ts
-```
+- PR hot path: `quality-gate.yml`
+- browser smoke: `browser-smoke.yml`
+- deploy 후 smoke: `ops-smoke-checks.yml`
 
-## 11. 현재 구현의 한계
+이 세 개만 보면 현재 구조가 보입니다.
 
-- Playwright는 브라우저/CI 환경 의존성이 있어서 가끔 launch 문제를 별도로 다뤄야 합니다.
-- smoke E2E는 빠르지만 모든 운영 edge case를 덮지는 못합니다.
-- coverage가 높아도 migration/ops script 위험을 완전히 대체하지 못하므로, TownPet는 rehearsal step을 계속 유지해야 합니다.
+## 현재 구현의 한계
+
+- browser smoke를 PR마다 강제하지 않기 때문에, UI 회귀는 release 직전 수동 확인 책임이 더 커집니다.
+- coverage는 hot path에서 빠졌기 때문에 수치 관리는 별도 시점에 의식적으로 봐야 합니다.
+- auth email readiness를 manual로 내렸기 때문에, 해당 영역을 건드릴 때는 사람이 체크 시점을 명시적으로 판단해야 합니다.
 
 ## Python/Java 개발자용 요약
 
-- `Vitest`는 JUnit + Mockito 성격의 빠른 로직 테스트 묶음으로 읽으면 됩니다.
-- `Playwright`는 Selenium보다 더 modern한 브라우저 E2E 층입니다.
-- `quality-gate.yml`은 단순 test workflow가 아니라 migration/ops safety까지 묶은 release gate입니다.
-- `ops-smoke-checks.yml`은 배포 후 실제 URL을 다시 검증하는 post-deploy smoke입니다.
+- `quality-gate.yml`은 JUnit 전체 풀스캔이 아니라, **fast merge gate**로 이해하면 됩니다.
+- `browser-smoke.yml`은 Selenium smoke를 필요할 때만 돌리는 on-demand job에 가깝습니다.
+- `ops-smoke-checks.yml`은 배포 후 실제 URL에 붙는 post-deploy smoke입니다.
+- 핵심은 검증을 줄인 것이 아니라, **어디서 무엇을 볼지 다시 나눈 것**입니다.
 
 ## 면접에서 이렇게 설명할 수 있다
 
-> TownPet는 unit test만 많은 프로젝트가 아니라, migration chain과 운영 스크립트까지 CI에서 검증하는 구조로 만들었습니다. `quality-gate`는 security env preflight, `prisma migrate deploy`, data repair rehearsal, coverage, notification contract, Playwright smoke까지 포함하고, 배포 후에는 별도의 ops smoke workflow로 health와 search extension까지 다시 점검합니다.
+> TownPet는 한때 migration, maintenance rehearsal, coverage, browser smoke를 hot path에 많이 얹었지만, solo 운영에서는 피드백 지연이 더 큰 비용이라는 판단을 했습니다. 그래서 PR gate는 lint/typecheck/unit과 fresh DB migration sanity만 남기고, browser smoke와 운영성 검증은 on-demand/manual/post-deploy로 분리했습니다. 핵심은 검증을 버린 것이 아니라 배치 위치를 다시 설계한 것입니다.

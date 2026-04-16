@@ -47,6 +47,7 @@
 | `blog/01-why-townpet-exists.md` | TownPet 문제 정의와 출발점 설명 | `done` |
 | `blog/23-how-ai-agents-were-used-in-real-development.md` | AI agent 기반 개발 방식 설명 | `done` |
 | `blog/24-demo-docs-and-interview-pack.md` | README/데모/문서/면접 패키지 설명 | `done` |
+| `blog/25-overengineering-ci-and-deploy-pipelines.md` | quality gate/deploy pipeline 과설계 회고와 hot path 재설계 판단 설명 | `done` |
 
 ## 실제 연재 구조 초안
 
@@ -88,14 +89,17 @@
 23. AI agent를 실제 개발 방식에 어떻게 녹였는가
 24. 데모/문서/면접 패키지로 프로젝트를 마감하기
 
+### Part H. 회고와 운영 판단
+25. quality gate와 deploy pipeline을 과하게 설계하면 생기는 일
+
 ## 집필 우선순위
-1. `09 / 15 / 19 / 20` 운영 캡처 추가
+1. `09 / 15 / 19 / 20 / 25` 운영 캡처 추가
 2. `01 / 21 / 22 / 24` 제품-사업 서사 연결 문장 추가 보강
 3. 핵심 글 5편 정도는 본문 안에 실제 명령 블록과 체크리스트를 더 촘촘히 넣기
 4. 시리즈 입구에 `처음 읽는 사람 추천 순서` 추가
 
 이유:
-- 핵심 본문 `01`부터 `24`까지 초안이 모두 채워졌다.
+- 핵심 본문 `01`부터 `25`까지 초안이 모두 채워졌다.
 - 링크 외부 공개성, 공통 템플릿, 검증 명령, 면접 Q&A 부록까지 1차 정리가 끝났다.
 - 이제는 새 글 추가보다, 시각 자료와 면접 대응 밀도를 높이는 보강 단계가 더 중요하다.
 
