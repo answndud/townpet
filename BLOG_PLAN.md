@@ -48,6 +48,7 @@
 | `blog/23-how-ai-agents-were-used-in-real-development.md` | AI agent 기반 개발 방식 설명 | `done` |
 | `blog/24-demo-docs-and-interview-pack.md` | README/데모/문서/면접 패키지 설명 | `done` |
 | `blog/25-overengineering-ci-and-deploy-pipelines.md` | quality gate/deploy pipeline 과설계 회고와 hot path 재설계 판단 설명 | `done` |
+| `blog/26-suneditor-selection-and-typing-boundary.md` | SunEditor 전환 후 selection/typing boundary 회귀와 on-demand browser smoke 판단 설명 | `done` |
 
 ## 실제 연재 구조 초안
 
@@ -91,6 +92,7 @@
 
 ### Part H. 회고와 운영 판단
 25. quality gate와 deploy pipeline을 과하게 설계하면 생기는 일
+26. SunEditor 전환에서 selection과 typing boundary를 끝까지 고정하기
 
 ## 집필 우선순위
 1. `09 / 15 / 19 / 20 / 25` 운영 캡처 추가

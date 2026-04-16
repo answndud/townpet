@@ -37,6 +37,8 @@ import { type GuestWriteScope, getGuestWriteHeaders } from "@/lib/guest-step-up.
 import { renderLiteMarkdown } from "@/lib/markdown-lite";
 
 const SunEditor = dynamic(() => import("suneditor-react"), { ssr: false });
+const STYLED_SPAN_SELECTOR = "span[style*='font-size'], span[style*='color']";
+const STYLE_BOUNDARY_SENTINEL = "\u200b";
 
 const FONT_SIZE_OPTIONS = [12, 14, 16, 18, 20, 24, 28, 32];
 
@@ -127,7 +129,9 @@ export const PostBodyRichEditor = forwardRef<PostBodyRichEditorHandle, PostBodyR
   const latestOnChangeRef = useRef(onChange);
   const latestSelectionRangeRef = useRef<Range | null>(null);
   const pendingStyleBoundaryTimeoutRef = useRef<number | null>(null);
+  const pendingStyleBoundaryCorrectionRef = useRef(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [editorInstanceVersion, setEditorInstanceVersion] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
@@ -232,70 +236,93 @@ export const PostBodyRichEditor = forwardRef<PostBodyRichEditorHandle, PostBodyR
     }
   }, []);
 
+  const resolveStyledSpanFromSelection = useCallback((selection: Selection | null) => {
+    const editable = editorRef.current?.core.context.element.wysiwyg;
+    if (!(editable instanceof HTMLElement) || !selection || selection.rangeCount === 0) {
+      return null;
+    }
+
+    const range = selection.getRangeAt(0);
+    const resolveStyledSpan = (node: Node | null): HTMLElement | null => {
+      const element = node instanceof HTMLElement ? node : node?.parentElement;
+      const matched = element?.closest(STYLED_SPAN_SELECTOR);
+      return matched instanceof HTMLElement && editable.contains(matched) ? matched : null;
+    };
+
+    const container = range.startContainer;
+    let styledSpan =
+      resolveStyledSpan(container) ?? resolveStyledSpan(range.commonAncestorContainer);
+
+    if (!styledSpan && container instanceof HTMLElement && range.startOffset > 0) {
+      styledSpan = resolveStyledSpan(container.childNodes[range.startOffset - 1] ?? null);
+    }
+
+    return styledSpan;
+  }, []);
+
+  const isSelectionAtStyledSpanEnd = useCallback((selection: Selection | null) => {
+    const styledSpan = resolveStyledSpanFromSelection(selection);
+    if (!styledSpan || !selection || selection.rangeCount === 0) {
+      return false;
+    }
+
+    const range = selection.getRangeAt(0);
+    if (!range.collapsed) {
+      return false;
+    }
+
+    if (range.startContainer.nodeType === Node.TEXT_NODE) {
+      return range.startOffset === (range.startContainer.textContent ?? "").length;
+    }
+
+    return range.startOffset === range.startContainer.childNodes.length;
+  }, [resolveStyledSpanFromSelection]);
+
   const moveCaretOutsideStyledSpan = useCallback(() => {
     const editor = editorRef.current;
     const editable = editor?.core.context.element.wysiwyg;
-    if (!editor || !editable) {
+    if (!editor || !(editable instanceof HTMLElement)) {
       return false;
     }
 
-    const selection = editor.core.getSelection();
-    const selector = "span[style*='font-size'], span[style*='color']";
-    let styledSpan: HTMLElement | null = null;
-
-    if (selection && selection.rangeCount > 0) {
-      const range = selection.getRangeAt(0);
-      const container = range.startContainer;
-      const resolveStyledSpan = (node: Node | null): HTMLElement | null => {
-        const element = node instanceof HTMLElement ? node : node?.parentElement;
-        const matched = element?.closest(selector);
-        return matched instanceof HTMLElement ? matched : null;
-      };
-
-      styledSpan = resolveStyledSpan(container) ?? resolveStyledSpan(range.commonAncestorContainer);
-
-      if (!styledSpan && container instanceof HTMLElement && range.startOffset > 0) {
-        const previousNode = container.childNodes[range.startOffset - 1];
-        styledSpan = previousNode instanceof HTMLElement
-          ? previousNode.closest(selector)
-          : null;
-      }
-    }
-
-    if (!styledSpan) {
-      const styledNodes = editable.querySelectorAll<HTMLElement>(selector);
-      styledSpan = styledNodes.item(styledNodes.length - 1);
-    }
-
-    if (!styledSpan || !editable.contains(styledSpan) || !styledSpan.parentNode) {
+    const selection = window.getSelection();
+    const styledSpan = resolveStyledSpanFromSelection(selection);
+    if (!styledSpan || !styledSpan.parentNode) {
       return false;
     }
 
-    const parent = styledSpan.parentNode;
     const nextSibling = styledSpan.nextSibling;
-    const boundaryNode = nextSibling instanceof Text &&
-      (nextSibling.textContent ?? "").replace(/\u200b/g, "").length === 0
-      ? nextSibling
-      : document.createTextNode("\u200b");
+    const sentinel =
+      nextSibling?.nodeType === Node.TEXT_NODE &&
+      (nextSibling.textContent ?? "").startsWith(STYLE_BOUNDARY_SENTINEL)
+        ? nextSibling
+        : document.createTextNode(STYLE_BOUNDARY_SENTINEL);
 
-    if (boundaryNode !== nextSibling) {
-      parent.insertBefore(boundaryNode, nextSibling);
-    } else if (!(boundaryNode.textContent ?? "").includes("\u200b")) {
-      boundaryNode.textContent = `\u200b${boundaryNode.textContent ?? ""}`;
+    if (sentinel !== nextSibling) {
+      styledSpan.parentNode.insertBefore(sentinel, nextSibling);
     }
 
     try {
-      const offset = boundaryNode.textContent?.length ?? 1;
-      editor.core.setRange(boundaryNode, offset, boundaryNode, offset);
-      captureSelectionRange();
-      return true;
+      editor.core.setRange(
+        sentinel,
+        STYLE_BOUNDARY_SENTINEL.length,
+        sentinel,
+        STYLE_BOUNDARY_SENTINEL.length,
+      );
+      editor.core.focus();
     } catch {
-      // Ignore boundary reset failures and keep the applied style.
       return false;
     }
-  }, [captureSelectionRange]);
 
-  const scheduleDeferredStyleBoundaryCorrection = useCallback(() => {
+    const nextSelection = editor.core.getSelection();
+    latestSelectionRangeRef.current =
+      nextSelection && nextSelection.rangeCount > 0
+        ? nextSelection.getRangeAt(0).cloneRange()
+        : null;
+    return true;
+  }, [resolveStyledSpanFromSelection]);
+
+  const scheduleDeferredStyleBoundaryCorrection = useCallback((remainingAttempts = 4) => {
     if (typeof window === "undefined") {
       return;
     }
@@ -305,8 +332,16 @@ export const PostBodyRichEditor = forwardRef<PostBodyRichEditorHandle, PostBodyR
 
     pendingStyleBoundaryTimeoutRef.current = window.setTimeout(() => {
       pendingStyleBoundaryTimeoutRef.current = null;
-      moveCaretOutsideStyledSpan();
-    }, 60);
+      if (!pendingStyleBoundaryCorrectionRef.current) {
+        return;
+      }
+      if (moveCaretOutsideStyledSpan()) {
+        return;
+      }
+      if (remainingAttempts > 1) {
+        scheduleDeferredStyleBoundaryCorrection(remainingAttempts - 1);
+      }
+    }, 24);
   }, [moveCaretOutsideStyledSpan]);
 
   const syncEditableAttributes = useCallback(() => {
@@ -334,12 +369,21 @@ export const PostBodyRichEditor = forwardRef<PostBodyRichEditorHandle, PostBodyR
     const editor = editorRef.current;
     const editable = editor?.core.context.element.wysiwyg;
     const editorRoot = editable?.closest(".sun-editor");
-    if (!editor || !editable || !editorRoot) {
+    if (!editor || !(editable instanceof HTMLElement) || !editorRoot) {
       return;
     }
 
     const handleSelectionChange = () => {
       captureSelectionRange();
+      const selection = window.getSelection();
+      const range = selection && selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
+      if (
+        pendingStyleBoundaryCorrectionRef.current &&
+        resolveStyledSpanFromSelection(selection) &&
+        (Boolean(range && !range.collapsed) || isSelectionAtStyledSpanEnd(selection))
+      ) {
+        scheduleDeferredStyleBoundaryCorrection();
+      }
     };
 
     const handleToolbarMouseDownCapture = (event: Event) => {
@@ -363,6 +407,7 @@ export const PostBodyRichEditor = forwardRef<PostBodyRichEditorHandle, PostBodyR
       }
 
       if (control.closest(".se-list-font-size")) {
+        pendingStyleBoundaryCorrectionRef.current = true;
         scheduleDeferredStyleBoundaryCorrection();
       }
 
@@ -372,9 +417,33 @@ export const PostBodyRichEditor = forwardRef<PostBodyRichEditorHandle, PostBodyR
       }
     };
 
+    const handleBeforeInput: EventListener = (event) => {
+      if (!(event instanceof InputEvent)) {
+        return;
+      }
+      if (!event.inputType.startsWith("insert")) {
+        return;
+      }
+
+      const selection = window.getSelection();
+      const shouldExitStyledSpan =
+        pendingStyleBoundaryCorrectionRef.current
+          ? Boolean(resolveStyledSpanFromSelection(selection))
+          : isSelectionAtStyledSpanEnd(selection);
+
+      if (!shouldExitStyledSpan) {
+        return;
+      }
+
+      if (moveCaretOutsideStyledSpan() || !resolveStyledSpanFromSelection(window.getSelection())) {
+        pendingStyleBoundaryCorrectionRef.current = false;
+      }
+    };
+
     editable.addEventListener("mouseup", handleSelectionChange);
     editable.addEventListener("keyup", handleSelectionChange);
     editable.addEventListener("touchend", handleSelectionChange);
+    editable.addEventListener("beforeinput", handleBeforeInput);
     document.addEventListener("selectionchange", handleSelectionChange);
     document.addEventListener("mousedown", handleToolbarMouseDownCapture, true);
 
@@ -382,10 +451,20 @@ export const PostBodyRichEditor = forwardRef<PostBodyRichEditorHandle, PostBodyR
       editable.removeEventListener("mouseup", handleSelectionChange);
       editable.removeEventListener("keyup", handleSelectionChange);
       editable.removeEventListener("touchend", handleSelectionChange);
+      editable.removeEventListener("beforeinput", handleBeforeInput);
       document.removeEventListener("selectionchange", handleSelectionChange);
       document.removeEventListener("mousedown", handleToolbarMouseDownCapture, true);
     };
-  }, [captureSelectionRange, isMounted, restoreSelectionRange, scheduleDeferredStyleBoundaryCorrection]);
+  }, [
+    captureSelectionRange,
+    editorInstanceVersion,
+    isSelectionAtStyledSpanEnd,
+    isMounted,
+    moveCaretOutsideStyledSpan,
+    resolveStyledSpanFromSelection,
+    restoreSelectionRange,
+    scheduleDeferredStyleBoundaryCorrection,
+  ]);
 
   const pushEditorChange = (html: string) => {
     const serialized = serializeEditorContent(html);
@@ -527,13 +606,18 @@ export const PostBodyRichEditor = forwardRef<PostBodyRichEditorHandle, PostBodyR
               setOptions={editorOptions}
               getSunEditorInstance={(instance) => {
                 editorRef.current = instance;
+                setEditorInstanceVersion((current) => current + 1);
                 syncEditableAttributes();
               }}
               onLoad={() => {
+                setEditorInstanceVersion((current) => current + 1);
                 syncEditableAttributes();
               }}
               onChange={(html) => {
                 pushEditorChange(html);
+                if (pendingStyleBoundaryCorrectionRef.current) {
+                  scheduleDeferredStyleBoundaryCorrection();
+                }
               }}
               onImageUploadBefore={handleImageUploadBefore}
               onImageUploadError={(message) => {
