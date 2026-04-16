@@ -119,6 +119,32 @@ describe("GET /api/feed/guest", () => {
     expect(payload.data.feed.items[0]).not.toHaveProperty("guestIpLabel");
   });
 
+  it("includes timings meta and server-timing header when perf=1 is requested", async () => {
+    mockCountPosts.mockResolvedValue(1);
+    mockListPosts.mockResolvedValue({
+      items: [],
+      nextCursor: null,
+    } as never);
+
+    const response = await GET(
+      new Request("http://localhost/api/feed/guest?perf=1") as NextRequest,
+    );
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("server-timing")).toContain("bootstrap.policy_and_communities");
+    expect(response.headers.get("server-timing")).toContain("page_query.all");
+    expect(payload.meta).toEqual({
+      timings: {
+        totalMs: expect.any(Number),
+        phases: expect.objectContaining({
+          "bootstrap.policy_and_communities": expect.any(Number),
+          "page_query.all": expect.any(Number),
+        }),
+      },
+    });
+  });
+
   it("returns gate payload for local-only board types", async () => {
     const response = await GET(
       new Request("http://localhost/api/feed/guest?type=MEETUP") as NextRequest,
