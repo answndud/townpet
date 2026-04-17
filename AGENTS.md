@@ -6,7 +6,7 @@ Codex가 저장소에 처음 들어왔을 때 이 파일 하나만 읽어도 현
 ## 1. 저장소 개요
 
 - 실제 앱 코드는 `app/` 아래에 있습니다.
-- 계획과 실행 로그는 루트 `PLAN.md`, `PROGRESS.md`에 있습니다.
+- 계획과 실행 로그는 루트 `PLAN.md`, `PROGRESS.md`에 있고, 완료 이력 archive는 루트 `COMPLETED.md`에 있습니다.
 - 운영/제품/보안 기준 문서는 `docs/`에 있습니다.
 - `blog/`는 코드 해설용 시리즈이며, 현재 동작의 소스 오브 트루스는 아닙니다.
 
@@ -30,7 +30,7 @@ Codex가 저장소에 처음 들어왔을 때 이 파일 하나만 읽어도 현
 - `PLAN.md`
 - `PROGRESS.md`
 - 현재 맡은 사이클에 직접 연결된 파일만 추가로 읽습니다.
-- 완료된 과거 사이클 전체를 처음부터 읽지 않습니다.
+- 완료된 과거 사이클 전체는 기본값으로 읽지 않고, 필요할 때만 `COMPLETED.md`를 엽니다.
 
 ### 보안/정책 변경 시
 
@@ -56,7 +56,11 @@ Codex가 저장소에 처음 들어왔을 때 이 파일 하나만 읽어도 현
 - `AGENTS.md`
   - 현재 하네스 단일 진입점
 - `PLAN.md`, `PROGRESS.md`
-  - 작업 계획과 실행 로그
+  - active 작업 계획과 실행 로그
+- `COMPLETED.md`
+  - 완료된 app 작업 상세와 과거 검증 archive
+- `BLOG_PLAN.md`, `BLOG_PROGRESS.md`, `BLOG_COMPLETED.md`
+  - 블로그 active 상태와 완료 이력 archive
 
 ### `app/`
 
@@ -98,6 +102,12 @@ Codex가 저장소에 처음 들어왔을 때 이 파일 하나만 읽어도 현
   - `app/` 워크스페이스 로컬 실행/검증용 빠른 참조
 - `PLAN.md`, `PROGRESS.md`
   - 현재 작업 상태 기록
+- `COMPLETED.md`
+  - 완료된 app 작업 상세 archive
+- `BLOG_PLAN.md`, `BLOG_PROGRESS.md`
+  - 블로그 active 상태 기록
+- `BLOG_COMPLETED.md`
+  - 완료된 블로그 작업 상세 archive
 
 `app/README.md`는 로컬 실행 참고만 다루고, 구조/규칙의 소스 오브 트루스는 `AGENTS.md`를 우선합니다.
 
@@ -374,7 +384,8 @@ pnpm -C app dev
 ## 15. 자주 헷갈리는 포인트
 
 - 앱 명령은 `app/` 기준이고, 계획 문서는 루트 기준입니다.
-- `PLAN.md`, `PROGRESS.md`는 구조 설명 문서가 아니라 현재 작업 상태 문서입니다.
+- `PLAN.md`, `PROGRESS.md`는 구조 설명 문서가 아니라 현재 작업 상태만 남기는 active 문서입니다.
+- 완료된 작업 상세는 `COMPLETED.md`, 블로그 완료 이력은 `BLOG_COMPLETED.md`에서만 확인합니다.
 - `app/README.md`는 워크스페이스 quick reference이고, 저장소 규칙/읽기 순서는 `AGENTS.md`를 우선합니다.
 - `blog/` 문서는 설명 자료이지 구현 기준 문서가 아닙니다.
 - OpenCode 관련 문서 `docs/operations/에이전트_*`는 Codex 전용 하네스가 아닙니다.
@@ -448,10 +459,17 @@ pnpm -C app ops:check:security-env:strict
 ## 18. PLAN / PROGRESS 운영 규칙
 
 - 항상 루트 `PLAN.md`, `PROGRESS.md`를 사용합니다.
+- 완료된 app 작업 상세는 루트 `COMPLETED.md`로 이동합니다.
+- 블로그 완료 이력은 루트 `BLOG_COMPLETED.md`로 이동합니다.
+- `COMPLETED.md`, `BLOG_COMPLETED.md` 항목 형식은 `완료일 -> 배경 -> 변경내용 -> 코드문서 -> 검증 -> 결과`를 사용하고, heading은 `완료일 | 작업명`만 남깁니다.
 - 하위 디렉터리에 중복 계획 문서를 만들지 않습니다.
 - 작업 시작 전에는 `pending`, `in_progress`, `blocked` 상태와 현재 맡은 사이클만 읽습니다.
-- 작업 종료 후에는 `PROGRESS.md`에 결과/검증/블로커를 기록하고 `PLAN.md` 상태를 맞춥니다.
+- 작업 종료 후에는 `PROGRESS.md` 또는 `BLOG_PROGRESS.md`에 실행 결과를 먼저 정리하고, 완료 상세와 긴 검증 로그는 `COMPLETED.md` 또는 `BLOG_COMPLETED.md` 맨 아래에 시간 오름차순으로 append한 뒤 `PLAN.md` 상태를 맞춥니다.
 - 블로커가 생기면 두 파일을 즉시 함께 업데이트합니다.
+- active 문서 목표 길이:
+  - `PLAN.md` 60줄 이하
+  - `PROGRESS.md` 70줄 이하
+  - `BLOG_PLAN.md`, `BLOG_PROGRESS.md` 각 80줄 이하
 
 ## 19. 완료 기준
 
@@ -461,7 +479,7 @@ pnpm -C app ops:check:security-env:strict
 - 변경한 동작에 failure-path test가 최소 1개 존재
 - 관련 문서가 동기화됨
   - 최소: `PLAN.md`, `PROGRESS.md`
-  - 필요 시: `docs/security/*`, `docs/policies/*`, 운영 문서
+  - 필요 시: `COMPLETED.md`, `BLOG_COMPLETED.md`, `docs/security/*`, `docs/policies/*`, 운영 문서
 
 ## 20. 파일 우선순위 규칙
 

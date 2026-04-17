@@ -15,6 +15,8 @@
 - 현재 작업 상태:
   - `../PLAN.md`
   - `../PROGRESS.md`
+- 완료 이력 archive:
+  - `../COMPLETED.md`
 
 ## 디렉터리 구조
 

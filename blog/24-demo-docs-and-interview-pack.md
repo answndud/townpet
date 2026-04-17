@@ -29,6 +29,7 @@ TownPet는 이 포인트를 의식적으로 정리한 프로젝트입니다.
 - [AGENTS.md](../AGENTS.md)
 - [PLAN.md](../PLAN.md)
 - [PROGRESS.md](../PROGRESS.md)
+- [COMPLETED.md](../COMPLETED.md)
 - [docs/security/보안_계획.md](../docs/security/%EB%B3%B4%EC%95%88_%EA%B3%84%ED%9A%8D.md)
 - [docs/security/보안_진행상황.md](../docs/security/%EB%B3%B4%EC%95%88_%EC%A7%84%ED%96%89%EC%83%81%ED%99%A9.md)
 - [app/src/app/admin/ops/page.tsx](../app/src/app/admin/ops/page.tsx)
@@ -124,15 +125,20 @@ TownPet는 문서가 많습니다.
 
 ### 1) [PLAN.md](../PLAN.md)
 
-- 어떤 문제를 어떤 사이클로 해결했는지
-- 작업을 어떻게 쪼갰는지
+- 지금 무엇을 해야 하는지
+- 다음 작업을 어떤 사이클로 쪼개야 하는지
 
 ### 2) [PROGRESS.md](../PROGRESS.md)
 
-- 실제로 무엇을 바꿨는지
-- 어떤 검증을 돌렸는지
+- 현재 상태와 최근 검증이 어떤지
+- 다음 액션과 blocker가 무엇인지
 
-### 3) 보안 문서
+### 3) [COMPLETED.md](../COMPLETED.md)
+
+- 완료된 사이클 상세
+- 과거 검증 로그와 판단 근거
+
+### 4) 보안 문서
 
 - [보안 계획](../docs/security/%EB%B3%B4%EC%95%88_%EA%B3%84%ED%9A%8D.md)
 - [보안 진행상황](../docs/security/%EB%B3%B4%EC%95%88_%EC%A7%84%ED%96%89%EC%83%81%ED%99%A9.md)
@@ -140,7 +146,7 @@ TownPet는 문서가 많습니다.
 이 문서들은 “기능만 만들었다”가 아니라  
 운영/보안까지 같이 밀었다는 증거가 됩니다.
 
-### 4) [AGENTS.md](../AGENTS.md)
+### 5) [AGENTS.md](../AGENTS.md)
 
 - 로컬 복구
 - 시드
@@ -252,6 +258,7 @@ TownPet는 단순히 “기능이 많은 개인 프로젝트”가 아닙니다.
 - [README.md](../README.md)
 - [PLAN.md](../PLAN.md)
 - [PROGRESS.md](../PROGRESS.md)
+- [COMPLETED.md](../COMPLETED.md)
 - [AGENTS.md](../AGENTS.md)
 - [blog/README.md](./README.md)
 
@@ -285,4 +292,4 @@ corepack pnpm -C app dev
 
 ## 면접에서 이렇게 설명할 수 있다
 
-> TownPet는 코드만 쌓아둔 저장소가 아니라, README로 첫인상을 만들고, 배포 사이트에서 실제 화면을 보여주고, `/admin/ops`로 운영 깊이를 증명하고, PLAN/PROGRESS와 보안 문서로 구현 과정을 추적할 수 있게 만든 프로젝트입니다. 그래서 데모와 코드 설명, 운영 설명을 하나의 패키지처럼 보여줄 수 있습니다.
+> TownPet는 코드만 쌓아둔 저장소가 아니라, README로 첫인상을 만들고, 배포 사이트에서 실제 화면을 보여주고, `/admin/ops`로 운영 깊이를 증명하고, PLAN/PROGRESS는 active 상태를, COMPLETED는 완료 이력을 추적하게 만든 프로젝트입니다. 그래서 데모와 코드 설명, 운영 설명을 하나의 패키지처럼 보여줄 수 있습니다.

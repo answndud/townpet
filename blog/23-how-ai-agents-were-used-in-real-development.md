@@ -35,6 +35,7 @@ TownPet의 핵심은 AI를 코드 생성기처럼 쓴 것이 아니라,
 - [README.md](../README.md)
 - [PLAN.md](../PLAN.md)
 - [PROGRESS.md](../PROGRESS.md)
+- [COMPLETED.md](../COMPLETED.md)
 - [docs/operations/에이전트_운영_가이드.md](../docs/operations/%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8_%EC%9A%B4%EC%98%81_%EA%B0%80%EC%9D%B4%EB%93%9C.md)
 - [docs/operations/에이전트_프롬프트_템플릿.md](../docs/operations/%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8_%ED%94%84%EB%A1%AC%ED%94%84%ED%8A%B8_%ED%85%9C%ED%94%8C%EB%A6%BF.md)
 - [docs/operations/에이전트_도구_거버넌스.md](../docs/operations/%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8_%EB%8F%84%EA%B5%AC_%EA%B1%B0%EB%B2%84%EB%84%8C%EC%8A%A4.md)
@@ -93,13 +94,13 @@ flowchart TD
   C --> D["AI agent로 구현/수정 진행"]
   D --> E["lint / typecheck / targeted test"]
   E --> F["quality-check / 필요 시 browser smoke / ops smoke 확인"]
-  F --> G["PROGRESS.md에 결과 기록"]
+  F --> G["PROGRESS.md 요약 + COMPLETED.md 상세 기록"]
 ```
 
 핵심은 AI가 `D`에만 있는 것이 아니라,  
 `B`, `C`, `G`에도 깊게 관여한다는 점입니다.
 
-## 2. `PLAN.md`와 `PROGRESS.md`가 왜 중요한가
+## 2. `PLAN.md`, `PROGRESS.md`, `COMPLETED.md`가 왜 중요한가
 
 TownPet의 개발 방식에서 가장 중요한 산출물은 코드만이 아닙니다.
 
@@ -115,12 +116,18 @@ TownPet의 개발 방식에서 가장 중요한 산출물은 코드만이 아닙
 
 - 실제로 무엇을 바꿨는지
 - 어떤 검증을 돌렸는지
-- 어떤 리스크나 후속이 남았는지
+- 어떤 리스크나 후속이 남았는지의 active snapshot을 남깁니다
+
+### [COMPLETED.md](../COMPLETED.md)
+
+- 완료된 사이클 상세
+- 긴 검증 로그
+- 과거 판단 근거
 
 를 남깁니다.
 
 즉 TownPet는 AI가 생성한 코드보다,  
-그 코드를 어떤 문맥에서 만들고 검증했는지를 기록으로 남기는 방식을 택했습니다.
+그 코드를 어떤 문맥에서 만들고 검증했는지를 active 문서와 archive로 나눠 남기는 방식을 택했습니다.
 
 이게 중요한 이유는:
 
