@@ -27,11 +27,11 @@ TownPet는 이 포인트를 의식적으로 정리한 프로젝트입니다.
 
 - [README.md](../README.md)
 - [AGENTS.md](../AGENTS.md)
-- [PLAN.md](../PLAN.md)
-- [PROGRESS.md](../PROGRESS.md)
-- [COMPLETED.md](../COMPLETED.md)
-- [docs/security/보안_계획.md](../docs/security/%EB%B3%B4%EC%95%88_%EA%B3%84%ED%9A%8D.md)
-- [docs/security/보안_진행상황.md](../docs/security/%EB%B3%B4%EC%95%88_%EC%A7%84%ED%96%89%EC%83%81%ED%99%A9.md)
+- [PLAN.md](../docs/PLAN.md)
+- [PROGRESS.md](../docs/PROGRESS.md)
+- [COMPLETED.md](../docs/COMPLETED.md)
+- [business/security/보안_계획.md](../business/security/%EB%B3%B4%EC%95%88_%EA%B3%84%ED%9A%8D.md)
+- [business/security/보안_진행상황.md](../business/security/%EB%B3%B4%EC%95%88_%EC%A7%84%ED%96%89%EC%83%81%ED%99%A9.md)
 - [app/src/app/admin/ops/page.tsx](../app/src/app/admin/ops/page.tsx)
 - [app/src/server/demo-content-seeding.ts](../app/src/server/demo-content-seeding.ts)
 - [blog/README.md](./README.md)
@@ -123,25 +123,25 @@ TownPet는 문서가 많습니다.
 
 핵심만 보면 됩니다.
 
-### 1) [PLAN.md](../PLAN.md)
+### 1) [PLAN.md](../docs/PLAN.md)
 
 - 지금 무엇을 해야 하는지
 - 다음 작업을 어떤 사이클로 쪼개야 하는지
 
-### 2) [PROGRESS.md](../PROGRESS.md)
+### 2) [PROGRESS.md](../docs/PROGRESS.md)
 
 - 현재 상태와 최근 검증이 어떤지
 - 다음 액션과 blocker가 무엇인지
 
-### 3) [COMPLETED.md](../COMPLETED.md)
+### 3) [COMPLETED.md](../docs/COMPLETED.md)
 
 - 완료된 사이클 상세
 - 과거 검증 로그와 판단 근거
 
 ### 4) 보안 문서
 
-- [보안 계획](../docs/security/%EB%B3%B4%EC%95%88_%EA%B3%84%ED%9A%8D.md)
-- [보안 진행상황](../docs/security/%EB%B3%B4%EC%95%88_%EC%A7%84%ED%96%89%EC%83%81%ED%99%A9.md)
+- [보안 계획](../business/security/%EB%B3%B4%EC%95%88_%EA%B3%84%ED%9A%8D.md)
+- [보안 진행상황](../business/security/%EB%B3%B4%EC%95%88_%EC%A7%84%ED%96%89%EC%83%81%ED%99%A9.md)
 
 이 문서들은 “기능만 만들었다”가 아니라  
 운영/보안까지 같이 밀었다는 증거가 됩니다.
@@ -256,9 +256,9 @@ TownPet는 단순히 “기능이 많은 개인 프로젝트”가 아닙니다.
 이 글 자체는 데모/문서 패키지 글이라 test 파일 하나보다 아래 묶음을 같이 보는 것이 좋습니다.
 
 - [README.md](../README.md)
-- [PLAN.md](../PLAN.md)
-- [PROGRESS.md](../PROGRESS.md)
-- [COMPLETED.md](../COMPLETED.md)
+- [PLAN.md](../docs/PLAN.md)
+- [PROGRESS.md](../docs/PROGRESS.md)
+- [COMPLETED.md](../docs/COMPLETED.md)
 - [AGENTS.md](../AGENTS.md)
 - [blog/README.md](./README.md)
 

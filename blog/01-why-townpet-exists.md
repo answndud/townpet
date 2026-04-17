@@ -30,8 +30,8 @@ TownPet의 코드는 제품 아이디어를 그대로 반영합니다.
 ## 먼저 볼 문서와 화면
 
 - [README.md](../README.md)
-- [docs/business/내부_개발_운영_개요.md](../docs/business/%EB%82%B4%EB%B6%80_%EA%B0%9C%EB%B0%9C_%EC%9A%B4%EC%98%81_%EA%B0%9C%EC%9A%94.md)
-- [docs/business/수익화_실험_전략.md](../docs/business/%EC%88%98%EC%9D%B5%ED%99%94_%EC%8B%A4%ED%97%98_%EC%A0%84%EB%9E%B5.md)
+- [business/analytics/내부_개발_운영_개요.md](../business/analytics/%EB%82%B4%EB%B6%80_%EA%B0%9C%EB%B0%9C_%EC%9A%B4%EC%98%81_%EA%B0%9C%EC%9A%94.md)
+- [business/analytics/수익화_실험_전략.md](../business/analytics/%EC%88%98%EC%9D%B5%ED%99%94_%EC%8B%A4%ED%97%98_%EC%A0%84%EB%9E%B5.md)
 - [app/src/app/feed/page.tsx](../app/src/app/feed/page.tsx)
 - [app/src/app/search/page.tsx](../app/src/app/search/page.tsx)
 - [app/src/app/boards/adoption/page.tsx](../app/src/app/boards/adoption/page.tsx)
@@ -225,7 +225,7 @@ TownPet는 콘텐츠를 많이 모으는 것만으로 끝나지 않습니다.
 - [README.md](../README.md)
 - [blog/21-business-idea-and-expansion-axes.md](./21-business-idea-and-expansion-axes.md)
 - [blog/22-phase2-roadmap-and-product-expansion.md](./22-phase2-roadmap-and-product-expansion.md)
-- [docs/business/수익화_실험_전략.md](../docs/business/%EC%88%98%EC%9D%B5%ED%99%94_%EC%8B%A4%ED%97%98_%EC%A0%84%EB%9E%B5.md)
+- [business/analytics/수익화_실험_전략.md](../business/analytics/%EC%88%98%EC%9D%B5%ED%99%94_%EC%8B%A4%ED%97%98_%EC%A0%84%EB%9E%B5.md)
 
 그리고 실제 화면은 아래 순서로 보는 것이 좋습니다.
 

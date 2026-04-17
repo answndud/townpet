@@ -2,7 +2,7 @@
 
 이 문서는 공개용 목차입니다.
 
-현재 보강 전략과 진행 상태는 [BLOG_PLAN.md](../BLOG_PLAN.md), [BLOG_PROGRESS.md](../BLOG_PROGRESS.md)를 active SSOT로 사용하고, 완료 이력은 [BLOG_COMPLETED.md](../BLOG_COMPLETED.md)에 보관합니다.
+현재 보강 전략과 진행 상태는 이 문서와 각 글 원고를 기준으로 관리합니다.
 
 ## 공개 순서
 

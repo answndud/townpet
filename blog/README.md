@@ -10,20 +10,16 @@
 
 ## 블로그 작업 SSOT
 
-- [BLOG_PLAN.md](../BLOG_PLAN.md)
-- [BLOG_PROGRESS.md](../BLOG_PROGRESS.md)
-- [BLOG_COMPLETED.md](../BLOG_COMPLETED.md)
 - [00_series_plan.md](./00_series_plan.md)
 - [00_rebuild_guide.md](./00_rebuild_guide.md)
 - [00_quality_checklist.md](./00_quality_checklist.md)
 - [00_js_for_backend_engineers.md](./00_js_for_backend_engineers.md)
 
-기존 [PLAN.md](../PLAN.md), [PROGRESS.md](../PROGRESS.md)는 계속 **앱 개발용 active SSOT**로 유지하고, 완료 이력은 [COMPLETED.md](../COMPLETED.md)에 둡니다.
+기존 [PLAN.md](../docs/PLAN.md), [PROGRESS.md](../docs/PROGRESS.md)는 계속 **앱 개발용 active SSOT**로 유지하고, 완료 이력은 [COMPLETED.md](../docs/COMPLETED.md)에 둡니다.
 
 ## active / archive 규칙
 
-- `BLOG_PLAN.md`, `BLOG_PROGRESS.md`는 지금 남은 보강 작업만 남기는 active 문서입니다.
-- 완료 로그와 과거 집필/보강 이력은 `BLOG_PROGRESS.md`에서 정리한 뒤 `BLOG_COMPLETED.md` 맨 아래에 시간 오름차순으로 이동합니다.
+- 별도 `BLOG_*` 상태 문서는 두지 않고, 시리즈 방향은 `00_series_plan.md`와 각 글 원고에서 관리합니다.
 
 ## 독자 기준
 

@@ -33,12 +33,12 @@ TownPet의 핵심은 AI를 코드 생성기처럼 쓴 것이 아니라,
 ## 먼저 볼 문서와 파일
 
 - [README.md](../README.md)
-- [PLAN.md](../PLAN.md)
-- [PROGRESS.md](../PROGRESS.md)
-- [COMPLETED.md](../COMPLETED.md)
-- [docs/operations/에이전트_운영_가이드.md](../docs/operations/%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8_%EC%9A%B4%EC%98%81_%EA%B0%80%EC%9D%B4%EB%93%9C.md)
-- [docs/operations/에이전트_프롬프트_템플릿.md](../docs/operations/%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8_%ED%94%84%EB%A1%AC%ED%94%84%ED%8A%B8_%ED%85%9C%ED%94%8C%EB%A6%BF.md)
-- [docs/operations/에이전트_도구_거버넌스.md](../docs/operations/%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8_%EB%8F%84%EA%B5%AC_%EA%B1%B0%EB%B2%84%EB%84%8C%EC%8A%A4.md)
+- [PLAN.md](../docs/PLAN.md)
+- [PROGRESS.md](../docs/PROGRESS.md)
+- [COMPLETED.md](../docs/COMPLETED.md)
+- [business/operations/에이전트_운영_가이드.md](../business/operations/%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8_%EC%9A%B4%EC%98%81_%EA%B0%80%EC%9D%B4%EB%93%9C.md)
+- [business/operations/에이전트_프롬프트_템플릿.md](../business/operations/%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8_%ED%94%84%EB%A1%AC%ED%94%84%ED%8A%B8_%ED%85%9C%ED%94%8C%EB%A6%BF.md)
+- [business/operations/에이전트_도구_거버넌스.md](../business/operations/%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8_%EB%8F%84%EA%B5%AC_%EA%B1%B0%EB%B2%84%EB%84%8C%EC%8A%A4.md)
 - [.github/workflows/quality-gate.yml](../.github/workflows/quality-gate.yml)
 - [.github/workflows/ops-smoke-checks.yml](../.github/workflows/ops-smoke-checks.yml)
 
@@ -104,7 +104,7 @@ flowchart TD
 
 TownPet의 개발 방식에서 가장 중요한 산출물은 코드만이 아닙니다.
 
-### [PLAN.md](../PLAN.md)
+### [PLAN.md](../docs/PLAN.md)
 
 - 어떤 문제를 왜 고치는지
 - 완료 기준이 무엇인지
@@ -112,13 +112,13 @@ TownPet의 개발 방식에서 가장 중요한 산출물은 코드만이 아닙
 
 를 먼저 고정합니다.
 
-### [PROGRESS.md](../PROGRESS.md)
+### [PROGRESS.md](../docs/PROGRESS.md)
 
 - 실제로 무엇을 바꿨는지
 - 어떤 검증을 돌렸는지
 - 어떤 리스크나 후속이 남았는지의 active snapshot을 남깁니다
 
-### [COMPLETED.md](../COMPLETED.md)
+### [COMPLETED.md](../docs/COMPLETED.md)
 
 - 완료된 사이클 상세
 - 긴 검증 로그
@@ -137,7 +137,7 @@ TownPet의 개발 방식에서 가장 중요한 산출물은 코드만이 아닙
 
 ## 3. 에이전트 역할은 어떻게 나눴는가
 
-[docs/operations/에이전트_운영_가이드.md](../docs/operations/%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8_%EC%9A%B4%EC%98%81_%EA%B0%80%EC%9D%B4%EB%93%9C.md)를 보면 역할이 분리돼 있습니다.
+[business/operations/에이전트_운영_가이드.md](../business/operations/%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8_%EC%9A%B4%EC%98%81_%EA%B0%80%EC%9D%B4%EB%93%9C.md)를 보면 역할이 분리돼 있습니다.
 
 - 구현
 - 검증
@@ -171,7 +171,7 @@ TownPet는 단순 기능 구현이 아니라:
 
 ## 4. 프롬프트도 자유형이 아니라 템플릿을 썼다
 
-[docs/operations/에이전트_프롬프트_템플릿.md](../docs/operations/%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8_%ED%94%84%EB%A1%AC%ED%94%84%ED%8A%B8_%ED%85%9C%ED%94%8C%EB%A6%BF.md)를 보면 TownPet는 프롬프트까지 표준화했습니다.
+[business/operations/에이전트_프롬프트_템플릿.md](../business/operations/%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8_%ED%94%84%EB%A1%AC%ED%94%84%ED%8A%B8_%ED%85%9C%ED%94%8C%EB%A6%BF.md)를 보면 TownPet는 프롬프트까지 표준화했습니다.
 
 중요한 항목:
 
@@ -194,7 +194,7 @@ TownPet는 단순 기능 구현이 아니라:
 
 ## 5. 도구 선택도 AI에게 완전히 맡기지 않았다
 
-[docs/operations/에이전트_도구_거버넌스.md](../docs/operations/%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8_%EB%8F%84%EA%B5%AC_%EA%B1%B0%EB%B2%84%EB%84%8C%EC%8A%A4.md)를 보면 더 분명합니다.
+[business/operations/에이전트_도구_거버넌스.md](../business/operations/%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8_%EB%8F%84%EA%B5%AC_%EA%B1%B0%EB%B2%84%EB%84%8C%EC%8A%A4.md)를 보면 더 분명합니다.
 
 TownPet는 AI에게 “새로운 도구를 자유롭게 도입하라”고 하지 않았습니다.
 
@@ -272,8 +272,8 @@ TownPet는 이 구조 덕분에:
 
 이 글은 단일 test 파일보다 아래 묶음을 함께 보면 됩니다.
 
-- [PLAN.md](../PLAN.md)
-- [PROGRESS.md](../PROGRESS.md)
+- [PLAN.md](../docs/PLAN.md)
+- [PROGRESS.md](../docs/PROGRESS.md)
 - [.github/workflows/quality-gate.yml](../.github/workflows/quality-gate.yml)
 - [.github/workflows/ops-smoke-checks.yml](../.github/workflows/ops-smoke-checks.yml)
 - [blog/19-testing-and-quality-gate.md](./19-testing-and-quality-gate.md)
