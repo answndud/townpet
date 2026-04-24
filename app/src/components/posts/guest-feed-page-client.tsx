@@ -399,10 +399,10 @@ export function GuestFeedPageClient({
         <div className={isUltraDense ? "space-y-2" : "space-y-3"}>
           <header
             className={`animate-float-in rounded-xl border border-[#d9e5f7] bg-[#f8fbff] ${
-              isUltraDense ? "px-3 py-3 sm:px-4 sm:py-3" : "px-4 py-4 sm:px-5 sm:py-4"
+              isUltraDense ? "px-3 py-3 sm:px-4 sm:py-3" : "px-4 py-3 sm:px-5 sm:py-3"
             }`}
           >
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex flex-col gap-2.5 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0">
                 <p className="tp-eyebrow">공개 피드</p>
                 <h1
@@ -414,7 +414,7 @@ export function GuestFeedPageClient({
                 >
                   {feedTitle}
                 </h1>
-                <p className="mt-2 max-w-[640px] text-sm leading-6 text-[#4f678d]">
+                <p className="mt-1.5 max-w-[640px] text-sm leading-6 text-[#4f678d]">
                   비회원에게 공개된 커뮤니티 글을 최신순, 인기순으로 확인할 수 있습니다.
                 </p>
               </div>
