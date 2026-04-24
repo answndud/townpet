@@ -26,16 +26,16 @@
 
 ## Active Plan
 
-### 품종 기반 개인화 / 광고 / 커뮤니티 PRD 착수
+### 개인화 운영 판단 기준 문서화
 
 상태: `pending`
 
-- 목표: 품종 기반 개인화/광고/커뮤니티 기능 PRD의 첫 구현 후보와 운영 정책 전제를 확정한다.
-- 범위: PRD/정책/실행 순서 문서화만 다루고 기능 구현은 시작하지 않는다.
-- 사용할 skill 순서: `cycle-kickoff` -> 필요 시 `policy-abuse-gate`.
-- 완료 기준: 대상 PRD/PLAN/PROGRESS 동기화, 필요한 문서 검증.
+- 목표: `/admin/personalization` 지표를 보고 운영자가 어떤 조치를 할지 판정 기준을 문서화한다.
+- 범위: product/operations 문서와 필요 시 관리자 화면 copy만 다루고 추천 로직은 변경하지 않는다.
+- 사용할 skill 순서: `cycle-kickoff` -> `policy-abuse-gate` -> 필요 시 `impeccable`.
+- 완료 기준: CTR/ad CTR/audience concentration/zero-data 판정 기준, 검증 명령, 다음 UI 보강 범위 확정.
 
 ## 다음 실행 순서
 
-1. 관련 product/business 문서를 확인해 첫 구현 후보를 하나로 좁힌다.
-2. 구현 전 정책/운영 전제와 검증 기준을 문서에 정리한다.
+1. `business/product/품종_개인화_광고_커뮤니티_실행계획.md`의 A1 범위를 운영 문서로 구체화한다.
+2. `/admin/personalization` UI 보강이 필요한 copy/state를 별도 A2 후보로 분리한다.

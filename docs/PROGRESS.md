@@ -12,22 +12,23 @@
 - 로딩 / 빈상태 polish 잔여 점검을 완료했다
 - 레드팀 P0/P1 잔여 remediation 확인을 완료했다
 - 운영 문서 최신성 점검을 완료했다
-- 다음 작업: 품종 기반 개인화/광고/커뮤니티 PRD 착수
+- 품종 기반 개인화/광고/커뮤니티 PRD 착수를 완료했다
+- 다음 작업: 개인화 운영 판단 기준 문서화
 
 ## 열린 blocker
 - 없음. 기존 `db:restore:local` local test account count mismatch는 managed account count 검증으로 수정했고 restore 통과를 확인했다.
 
 ## 직전 검증
-- 운영 문서 최신성 점검:
-  - 추가: `scripts/ops-doc-scripts-consistency.test.ts`로 README/AGENTS/운영 문서의 대표 `pnpm` script 참조를 `app/package.json` scripts와 대조한다.
-  - 갱신: `docs:refresh:check`가 stale report를 감지해 `docs:refresh`로 `business/archive/operations/문서 동기화 리포트.md`를 최신화했다.
-  - 유지: 앱 기능 로직, 운영 스크립트 동작, 디자인 UI는 변경 없음.
-  - 통과: targeted Vitest 2개, `corepack pnpm -C app docs:refresh:check`, `corepack pnpm -C app lint`, `corepack pnpm -C app typecheck`, `corepack pnpm -C app quality:check` 198 files / 937 tests, placeholder env `corepack pnpm -C app build`.
+- 품종 개인화/광고/커뮤니티 PRD 착수:
+  - 결정: 첫 구현 후보를 `개인화/광고 운영 튜닝 루프`로 좁혔다.
+  - 추가: `business/product/품종_개인화_광고_커뮤니티_실행계획.md`에 A1-A4 순서, 제외 범위, 정책 게이트, 검증 명령을 정리했다.
+  - 유지: 앱 기능 로직, 추천 알고리즘, 관리자 UI는 변경 없음.
+  - 통과: `corepack pnpm -C app docs:refresh:check`, `corepack pnpm -C app lint`, `corepack pnpm -C app typecheck`.
 - 과거 Phase 0-5와 checkpoint/push 상세는 [COMPLETED.md](./COMPLETED.md)에 보관했다.
 
 ## 다음 액션
-1. 품종 기반 개인화/광고/커뮤니티 관련 PRD와 정책 문서를 확인한다.
-2. 첫 구현 후보와 구현 전 검증 기준을 문서로 확정한다.
+1. `/admin/personalization` 지표별 운영 판정 기준을 문서화한다.
+2. zero-data, 낮은 CTR, audience 쏠림 상태에서 필요한 UI copy/state 보강 범위를 A2 후보로 분리한다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)

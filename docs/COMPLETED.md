@@ -745,3 +745,29 @@
   - 대표 운영 문서의 `pnpm` script 참조가 package scripts 변경과 함께 회귀 검증된다.
   - 생성형 운영 문서 리포트가 현재 markdown 파일 집합과 다시 동기화됐다.
   - 변경은 문서/테스트에 한정했고 앱 기능 로직과 운영 스크립트 동작은 변경하지 않았다.
+
+### 2026-04-24 | Breed personalization monetization cycle kickoff
+- 완료일: `2026-04-24`
+- 배경:
+  - `business/product/품종_개인화_기획서.md`는 프로필 품종 신호, 세그먼트, 맞춤 피드, 품종 라운지, 광고 지표까지 MVP 구현 상태 메모가 쌓여 있었다.
+  - `business/product/Phase2_로드맵_PRD.md`는 다음 Phase 2를 검색/개인화/운영 증폭으로 두고, 마켓/케어/지도/결제는 이후로 보류했다.
+- 변경내용:
+  - 첫 구현 후보를 `개인화/광고 운영 튜닝 루프`로 확정했다.
+  - `business/product/품종_개인화_광고_커뮤니티_실행계획.md`를 추가해 A1 운영 판단 기준 문서화, A2 관리자 진단 UX 보강, A3 광고/추천 정책 분리 증거, A4 품종 라운지 고위험 write gate 점검 순서로 쪼갰다.
+  - 광고 라벨/frequency cap, 건강 민감정보 타겟팅 금지, 공동구매/거래성 글 정책 게이트를 문서에 고정했다.
+  - 기존 품종 개인화 PRD와 Phase 2 로드맵에서 최신 실행계획으로 링크했다.
+  - active plan/progress를 다음 작업인 개인화 운영 판단 기준 문서화로 갱신했다.
+- 코드문서:
+  - [business/product/품종_개인화_광고_커뮤니티_실행계획.md](../business/product/품종_개인화_광고_커뮤니티_실행계획.md)
+  - [business/product/품종_개인화_기획서.md](../business/product/품종_개인화_기획서.md)
+  - [business/product/Phase2_로드맵_PRD.md](../business/product/Phase2_로드맵_PRD.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app docs:refresh:check` 통과
+  - `corepack pnpm -C app lint` 통과
+  - `corepack pnpm -C app typecheck` 통과
+- 결과:
+  - 다음 구현은 새 대형 기능이 아니라 기존 개인화/광고 운영 루프의 판단 가능성을 높이는 작은 사이클로 시작한다.
+  - 마켓/케어/지도/결제는 이번 흐름에서 명시적으로 제외했다.
+  - 변경은 문서에 한정했고 앱 기능 로직, 추천 알고리즘, 관리자 UI는 변경하지 않았다.
