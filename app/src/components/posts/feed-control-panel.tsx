@@ -52,13 +52,13 @@ const REVIEW_FILTER_OPTIONS: Array<{ label: string; value?: ReviewCategory }> = 
 ];
 
 const PRIMARY_TAB_CLASS_NAME =
-  "inline-flex min-h-11 items-center rounded-lg border px-3.5 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25";
+  "inline-flex min-h-8 items-center rounded-lg border px-2.5 text-[12px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25";
 const ACTIVE_PRIMARY_TAB_CLASS_NAME =
   "border-[#3567b5] bg-[#3567b5] text-white";
 const INACTIVE_PRIMARY_TAB_CLASS_NAME =
   "border-[#d5e3f5] bg-white text-[#315b9a] hover:border-[#b8cceb] hover:bg-[#f5f9ff]";
 const FILTER_CHIP_CLASS_NAME =
-  "inline-flex min-h-10 items-center rounded-lg border px-2.5 text-[12px] font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25 sm:min-h-8";
+  "inline-flex min-h-8 items-center rounded-lg border px-2 text-[11px] font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25";
 const ACTIVE_FILTER_CHIP_CLASS_NAME = "border-[#3567b5] bg-[#3567b5] text-white";
 const INACTIVE_FILTER_CHIP_CLASS_NAME =
   "border-[#d4e1f3] bg-white text-[#355f99] hover:border-[#bdd2ed] hover:bg-[#f6faff]";
@@ -87,7 +87,7 @@ function getRangeLabel(mode: FeedMode, periodDays: FeedPeriod | null, bestDays: 
 
 function SummaryPill({ label }: { label: string }) {
   return (
-    <span className="inline-flex items-center rounded-full border border-[#d7e4f6] bg-white px-2.5 py-1 text-[11px] font-medium text-[#4f6e97]">
+    <span className="inline-flex items-center rounded-full border border-[#d7e4f6] bg-white px-2 py-0.5 text-[10px] font-medium text-[#4f6e97]">
       {label}
     </span>
   );
@@ -95,7 +95,7 @@ function SummaryPill({ label }: { label: string }) {
 
 function SectionLabel({ children }: { children: ReactNode }) {
   return (
-    <p className="min-w-[52px] text-[12px] font-semibold text-[#4f6e97]">
+    <p className="min-w-[44px] text-[11px] font-semibold text-[#4f6e97]">
       {children}
     </p>
   );
@@ -116,13 +116,13 @@ export function FeedControlPanel({
 
   return (
     <section className="overflow-hidden rounded-xl border border-[#dce7f7] bg-white">
-      <div className="border-b border-[#dde8f7] bg-[#f8fbff] px-3 py-3.5 sm:px-5">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-          <div className="space-y-2">
+      <div className="border-b border-[#dde8f7] bg-[#f8fbff] px-3 py-2 sm:px-5">
+        <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
+          <div className="space-y-1">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#6b86ab]">
               피드 보기
             </p>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-1.5">
               <Link
                 href={makeHref({ nextMode: "ALL", nextPage: 1 })}
                 className={`${PRIMARY_TAB_CLASS_NAME} ${
@@ -157,8 +157,8 @@ export function FeedControlPanel({
         </div>
 
         {personalized ? (
-          <div className="mt-3 border-t border-[#d9e6f7] pt-3">
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+          <div className="mt-2 border-t border-[#d9e6f7] pt-2">
+            <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
               <div className="space-y-1.5">
                 <SectionLabel>추천 방식</SectionLabel>
                 <div className="flex flex-wrap items-center gap-1.5">
@@ -187,14 +187,14 @@ export function FeedControlPanel({
 
               <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-[#5a7398]">
                 <span className="font-semibold text-[#4b6b9b]">현재 기준</span>
-                <span className="rounded-full border border-[#d7e4f6] bg-[#f6faff] px-2.5 py-1 font-medium text-[#476892]">
+                <span className="rounded-full border border-[#d7e4f6] bg-[#f6faff] px-2 py-0.5 font-medium text-[#476892]">
                   {personalized.currentLabel ?? "프로필 보강 필요"}
                 </span>
               </div>
             </div>
 
             {personalized.active ? (
-              <div className="mt-3 space-y-1.5 border-t border-[#edf3fb] pt-3">
+              <div className="mt-2 space-y-1.5 border-t border-[#edf3fb] pt-2">
                 {personalized.title ? (
                   <p className="text-sm font-semibold text-[#173b6a]">{personalized.title}</p>
                 ) : null}
@@ -203,7 +203,7 @@ export function FeedControlPanel({
                 ) : null}
                 <div className="flex flex-wrap items-center gap-2 text-[11px]">
                   {personalized.emphasis ? (
-                    <span className="rounded-full border border-[#c8daf5] bg-[#f3f8ff] px-2.5 py-1 font-semibold text-[#2f5da4]">
+                    <span className="rounded-full border border-[#c8daf5] bg-[#f3f8ff] px-2 py-0.5 font-semibold text-[#2f5da4]">
                       {personalized.emphasis}
                     </span>
                   ) : null}
@@ -222,14 +222,14 @@ export function FeedControlPanel({
         ) : null}
       </div>
 
-      <div className="grid bg-white px-3 py-2 sm:px-5">
+      <div className="grid bg-white px-3 py-1 sm:px-5">
         <div
           data-testid="feed-sort-range-row"
-          className="flex flex-col gap-3 border-b border-[#e8f0fa] py-3 lg:flex-row lg:flex-wrap lg:items-center lg:gap-4"
+          className="flex flex-col gap-2 border-b border-[#e8f0fa] py-2 lg:flex-row lg:flex-wrap lg:items-center lg:gap-4"
         >
-          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-2.5">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
             <SectionLabel>정렬</SectionLabel>
-            <div className="flex flex-wrap items-center gap-1.5">
+            <div className="flex flex-wrap items-center gap-1">
               {([
                 { value: "LATEST", label: "최신" },
                 { value: "LIKE", label: "좋아요" },
@@ -252,9 +252,9 @@ export function FeedControlPanel({
 
           <div className="hidden h-6 w-px bg-[#dbe6f6] lg:block" aria-hidden="true" />
 
-          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-2.5">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
             <SectionLabel>{mode === "ALL" ? "기간" : "집계 기간"}</SectionLabel>
-            <div className="flex flex-wrap items-center gap-1.5">
+            <div className="flex flex-wrap items-center gap-1">
               {mode === "ALL" ? (
                 <>
                   <Link
@@ -303,9 +303,9 @@ export function FeedControlPanel({
         </div>
 
         {reviewBoard ? (
-          <div className="flex flex-col gap-2 py-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-2.5">
+          <div className="flex flex-wrap items-center gap-1.5 py-2 sm:gap-2">
             <SectionLabel>리뷰</SectionLabel>
-            <div className="flex flex-wrap items-center gap-1.5">
+            <div className="flex flex-wrap items-center gap-1">
               {REVIEW_FILTER_OPTIONS.map((option) => {
                 const isActive = (option.value ?? null) === (reviewCategory ?? null);
                 return (
