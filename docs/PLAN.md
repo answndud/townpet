@@ -37,21 +37,21 @@
 - phase 완료 시 상세 결과와 검증 로그는 [COMPLETED.md](./COMPLETED.md)에 append하고, active 문서에서는 완료 phase를 제거하거나 다음 phase만 남긴다.
 - Impeccable detector finding은 실패로만 보지 않고, phase backlog의 입력으로 기록한다.
 - 완료 archive: Phase 0-1 상세는 [COMPLETED.md](./COMPLETED.md)에 정리한다.
-- 현재 blocker: `design:detect` 기존 5건 중 Phase 3 범위 4건, `build` 로컬 필수 env 누락.
+- 현재 blocker: `design:detect` 기존 1건(`globals.css` blockquote side border), `build` 로컬 필수 env 누락.
 
-#### Phase 3: 상세 / 쓰기 / form 흐름 정리
+#### Phase 4: admin / dashboard / list density 개선
 - 상태: `in_progress`
-- 목표: post detail media/editor/form 흐름의 detector finding과 모바일 사용성을 정리한다.
-- 현재 대상 화면군: post detail media/gallery overlay, linkified external content overlay.
-- 사용할 skill 순서: `$impeccable audit` -> `$impeccable distill` -> `$impeccable clarify` -> `$impeccable adapt`.
-- 수정 범위: `design:detect`의 `bg-black` 4건 제거, overlay contrast/focus/copy 확인.
-- 하지 않을 것: editor 라이브러리 교체, 게시글 schema 변경, moderation/write policy 완화, OAuth 실제 연동 변경.
-- 완료 기준: media/content overlay detector finding이 제거되고, desktop/mobile screenshot에서 media/detail 흐름이 읽힌다.
-- 검증 명령: `corepack pnpm -C app design:detect`, `corepack pnpm -C app test -- src/components/posts/post-detail-media-gallery.test.tsx`, `corepack pnpm -C app lint`, `corepack pnpm -C app typecheck`.
-- screenshot 확인 지점: `/posts/[id]/guest` 또는 관련 컴포넌트 상태의 media overlay desktop/mobile.
+- 목표: 운영자가 신고, 정책, 인증 로그, Ops 지표를 빠르게 스캔하도록 card-heavy 화면을 조용한 작업 화면으로 정리한다.
+- 현재 대상 화면군: `/admin/ops` 또는 `/admin/reports` 중 하나만 선택.
+- 사용할 skill 순서: `$impeccable distill` -> `$impeccable layout` -> `$impeccable audit` -> `$impeccable adapt`.
+- 수정 범위: metric card hierarchy, table/list density, filter bars, mobile admin fallback.
+- 하지 않을 것: admin 권한 모델 변경, 신고/제재 service 로직 변경, 지표 산식 변경, 운영 문서 개편.
+- 완료 기준: admin first viewport가 핵심 상태/대기 작업/필터를 2초 안에 파악 가능하다.
+- 검증 명령: `corepack pnpm -C app test -- src/components/admin`, `corepack pnpm -C app design:detect`, `corepack pnpm -C app lint`, `corepack pnpm -C app typecheck`.
+- screenshot 확인 지점: 대상 admin 화면 desktop/mobile, table/list overflow, empty state.
 
 ## 다음 실행 순서
 
-1. Phase 2 변경분을 commit/push한다.
-2. Phase 3 시작 전 관련 skill 문서를 다시 읽는다.
-3. detector 4건을 한 화면군 안에서 정리하고, 완료 시 archive로 이동한다.
+1. Phase 3 변경분을 commit/push한다.
+2. Phase 4 시작 전 관련 skill 문서를 다시 읽는다.
+3. admin 화면군 하나만 선택해 density를 정리하고, 완료 시 archive로 이동한다.

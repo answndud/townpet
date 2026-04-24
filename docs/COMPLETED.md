@@ -262,3 +262,27 @@
 - 결과:
   - DB unavailable 상황에서도 입양 게시판과 글쓰기 진입점은 generic crash가 아니라 회복 가능한 제품 상태를 보여준다.
   - 다음 Phase 3은 post detail media/editor/form 흐름에서 `design:detect`의 `bg-black` 4건을 먼저 정리한다.
+
+### 2026-04-24 | Impeccable Phase 3 media/content overlay detector 정리
+- 완료일: `2026-04-24`
+- 배경:
+  - `design:detect` baseline 5건 중 4건은 post detail media/gallery와 YouTube preview overlay의 pure black 배경이었다.
+  - Phase 3은 상세/쓰기/form 흐름 전체 중 detector가 지목한 media/content overlay 화면군만 먼저 다뤘다.
+- 변경내용:
+  - `LinkifiedContent`의 YouTube preview backdrop과 iframe wrapper를 pure black에서 navy-tinted overlay/background로 바꿨다.
+  - `PostDetailMediaGallery` lightbox 이전/다음 버튼 배경을 `bg-black/*`에서 TownPet 톤의 navy alpha로 바꿨다.
+  - 기존 focus ring, 버튼 크기, lightbox interaction은 유지했다.
+- 코드문서:
+  - [app/src/components/content/linkified-content.tsx](../app/src/components/content/linkified-content.tsx)
+  - [app/src/components/posts/post-detail-media-gallery.tsx](../app/src/components/posts/post-detail-media-gallery.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app exec vitest run src/components/posts/post-detail-media-gallery.test.tsx` 통과
+  - `corepack pnpm -C app lint` 통과, 기존 warning 5건 유지
+  - `corepack pnpm -C app typecheck` 통과
+  - `corepack pnpm -C app design:detect` exit 2, 기존 5건에서 1건으로 감소
+  - `corepack pnpm -C app build` exit 1, 로컬 필수 env 누락으로 page data collection 실패
+- 결과:
+  - media/content overlay의 pure black detector finding 4건은 제거됐다.
+  - 남은 detector finding은 `app/src/app/globals.css`의 `blockquote` 3px side border 1건이며, Phase 5 final polish 또는 글로벌 CSS 정리에서 처리한다.
