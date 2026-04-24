@@ -26,9 +26,9 @@
   - 유지: 앱 기능 로직, 추천 알고리즘, 관리자 UI는 변경 없음.
   - 통과: `corepack pnpm -C app docs:refresh:check`, `corepack pnpm -C app lint`, `corepack pnpm -C app typecheck`.
 - 피드 컨트롤 버그 수정:
-  - 원인: 베스트글 상태의 정렬 링크가 no-op href를 만들고, 맞춤 추천 상태의 정렬/기간 링크가 개인화 재정렬을 유지했다.
-  - 수정: 정렬/기간 클릭 시 전체글 + 비개인화 조건을 명시해 최신/좋아요/댓글/기간 선택이 실제 쿼리에 반영되게 했다.
-  - 통과: `corepack pnpm -C app test -- src/components/posts/feed-control-panel.test.tsx`, `corepack pnpm -C app lint`, `corepack pnpm -C app typecheck`.
+  - 원인: 베스트글 정렬 링크 no-op, 맞춤 추천 정렬 유지, 게스트 canonical effect의 stale data 기반 URL 원복.
+  - 수정: 정렬/기간 클릭 시 전체글 + 비개인화 조건을 명시하고, 게스트 canonical replace는 현재 query 데이터가 로드된 뒤에만 실행하게 했다.
+  - 통과: `corepack pnpm -C app test -- src/components/posts/guest-feed-page-client.test.ts src/components/posts/feed-control-panel.test.tsx`, `corepack pnpm -C app lint`, `corepack pnpm -C app typecheck`.
 - 과거 Phase 0-5와 checkpoint/push 상세는 [COMPLETED.md](./COMPLETED.md)에 보관했다.
 
 ## 다음 액션

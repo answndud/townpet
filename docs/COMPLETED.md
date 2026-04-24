@@ -781,17 +781,22 @@
   - `FeedControlPanel`의 정렬 링크가 항상 `ALL` 모드와 `personalized=0` 전환을 명시하도록 수정했다.
   - 기간 링크도 `ALL` 모드와 `personalized=0` 전환을 명시하도록 수정했다.
   - 베스트글 상태에서는 최신/좋아요/댓글 정렬 버튼을 active로 표시하지 않게 했다.
+  - `GuestFeedPageClient`의 canonical replace가 stale data로 새 query URL을 되돌리지 않도록 `loadedQueryString` guard를 추가했다.
   - 회귀 테스트와 에러 기록 문서를 추가했다.
 - 코드문서:
   - [app/src/components/posts/feed-control-panel.tsx](../app/src/components/posts/feed-control-panel.tsx)
   - [app/src/components/posts/feed-control-panel.test.tsx](../app/src/components/posts/feed-control-panel.test.tsx)
+  - [app/src/components/posts/guest-feed-page-client.tsx](../app/src/components/posts/guest-feed-page-client.tsx)
+  - [app/src/components/posts/guest-feed-page-client.test.ts](../app/src/components/posts/guest-feed-page-client.test.ts)
   - [docs/errors/2026-04-24_feed-controls-personalized-sort.md](./errors/2026-04-24_feed-controls-personalized-sort.md)
   - [docs/PROGRESS.md](./PROGRESS.md)
 - 검증:
-  - `corepack pnpm -C app test -- src/components/posts/feed-control-panel.test.tsx` 통과, 198 files / 939 tests
+  - `corepack pnpm -C app test -- src/components/posts/guest-feed-page-client.test.ts src/components/posts/feed-control-panel.test.tsx` 통과, 199 files / 941 tests
   - `corepack pnpm -C app lint` 통과
   - `corepack pnpm -C app typecheck` 통과
+  - 프로덕션 재현: `/feed/guest`에서 링크 클릭 시 기본 상태로 되돌아가고, 직접 `/feed/guest?sort=LIKE` 진입은 정상 정렬됨을 확인
   - 브라우저 확인: `/feed?mode=BEST&days=7`에서 `댓글` 클릭 시 `/feed?sort=COMMENT` 조건의 전체 피드로 전환됨
 - 결과:
   - 베스트글에서 정렬을 누르면 no-op으로 남지 않고 전체글 정렬로 전환된다.
   - 맞춤 추천 상태에서도 정렬/기간 선택은 개인화 재정렬에 가려지지 않고 명시적 피드 조건으로 적용된다.
+  - 게스트 피드 링크 클릭이 stale canonical 정리에 의해 원복되지 않는다.
