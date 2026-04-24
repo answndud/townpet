@@ -202,8 +202,8 @@ export function PostReactionControls({
   }, [effectiveCanReact, hasInteracted, postId, reactionLoaded]);
 
   const buttonClass = compact
-    ? "inline-flex min-h-[32px] items-center gap-1.5 rounded-lg border px-2.5 text-[12px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-    : "inline-flex min-h-[36px] items-center gap-1.5 rounded-lg border px-3 text-[13px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60";
+    ? "inline-flex min-h-10 items-center gap-1.5 rounded-lg border px-3 text-[12px] font-semibold transition sm:min-h-[32px] sm:px-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+    : "inline-flex min-h-11 items-center gap-1.5 rounded-lg border px-3 text-[13px] font-semibold transition sm:min-h-[36px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60";
   const rootAlignmentClass =
     align === "start" ? "justify-start" : align === "end" ? "justify-end" : "justify-center";
 
