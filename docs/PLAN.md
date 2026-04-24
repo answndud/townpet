@@ -26,15 +26,16 @@
 
 ## Active Plan
 
-### Impeccable 다음 화면군 선정
+### 개인화 운영 판단 기준 문서화
 
 상태: `pending`
 
-- 후보: public post detail/comment flow 또는 search result/detail handoff.
-- 원칙: 한 cycle에서 한 화면군만 다루고, 시작 전 관련 skill/context와 route/component 구조를 다시 읽는다.
-- 완료 기준: `design:detect`, `lint`, `typecheck`, 관련 테스트 또는 build, desktop/mobile screenshot 확인.
+- 목표: `/admin/personalization` 지표를 보고 운영자가 어떤 조치를 할지 판정 기준을 문서화한다.
+- 범위: product/operations 문서와 필요 시 관리자 화면 copy만 다루고 추천 로직은 변경하지 않는다.
+- 사용할 skill 순서: `cycle-kickoff` -> `policy-abuse-gate` -> 필요 시 `impeccable`.
+- 완료 기준: CTR/ad CTR/audience concentration/zero-data 판정 기준, 검증 명령, 다음 UI 보강 범위 확정.
 
 ## 다음 실행 순서
 
-1. 다음 화면군을 선정해 active cycle로 연다.
-2. 구현 우선순위가 바뀌면 코드보다 문서를 먼저 갱신한다.
+1. `business/product/품종_개인화_광고_커뮤니티_실행계획.md`의 A1 범위를 운영 문서로 구체화한다.
+2. `/admin/personalization` UI 보강이 필요한 copy/state를 별도 A2 후보로 분리한다.
