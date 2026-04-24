@@ -26,16 +26,16 @@
 
 ## Active Plan
 
-### Impeccable final audit / verification
+### 다음 품질 안정화 사이클
 
 상태: `pending`
 
-- 목표: 주요 public/auth/write/admin/utility 화면군을 다시 훑고 남은 Impeccable 회귀나 검증 갭을 정리한다.
-- 범위: 새 기능 구현 없이 final audit, screenshot spot check, 문서/검증 증거 보강만 수행한다.
-- 사용할 skill 순서: `$critique` -> `$audit` -> `$layout` -> `$adapt` -> `$clarify` -> `$polish`.
-- 완료 기준: `design:detect`, `lint`, `typecheck`, 관련 테스트 또는 build, desktop/mobile screenshot 확인.
+- 목표: Impeccable 개선 이후 남은 제품/운영 launch gap을 정리한다.
+- 범위: 공개 SEO/metadata/sitemap, 보안 헤더 evidence, 운영 smoke evidence, redteam P0/P1 잔여 항목 중 하나만 선택해 진행한다.
+- 사용할 skill 순서: 작업 성격에 따라 `quality-gate` 또는 `release-readiness`를 먼저 적용한다.
+- 완료 기준: 대상별 테스트/검증 명령, 문서 archive, 필요 시 screenshot 또는 운영 check evidence.
 
 ## 다음 실행 순서
 
-1. 주요 화면군 screenshot evidence와 active docs 상태를 점검한다.
-2. detector/quality gate/build 결과를 final verification으로 정리한다.
+1. 다음 launch gap 중 하나를 선택해 active scope를 확정한다.
+2. 구현 전 `docs/PLAN.md`에 해당 사이클의 목표/범위/검증 명령을 먼저 구체화한다.

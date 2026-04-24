@@ -575,3 +575,30 @@
 - 결과:
   - 로그인 후 utility 화면에서 empty/recovery state와 mobile action affordance가 더 명확해졌다.
   - 변경은 UI shell, fallback, 상태 copy, touch target에 한정했고 profile/auth/session/notification 정책 로직은 변경하지 않았다.
+
+### 2026-04-24 | Impeccable final audit and verification
+- 완료일: `2026-04-24`
+- 배경:
+  - public/auth/write/admin/utility 화면군 개선 후 전체 detector, quality gate, build, 대표 screenshot spot-check를 한 번 더 묶어 확인해야 했다.
+  - final browser spot-check에서 `/search/guest` result telemetry가 `/api/search/log` 400 console error를 남기는 회귀가 발견됐다.
+- 변경내용:
+  - 대표 화면군 `/feed/guest`, `/search/guest`, `/login`, `/password/reset`, `/posts/new`, `/profile`, `/notifications`, `/admin/reports` desktop/mobile screenshot을 새로 남겼다.
+  - `SearchResultTelemetry` payload builder를 추가해 optional `scope`, `type`이 없을 때 JSON에서 생략하도록 정리했다.
+  - guest search telemetry의 `type: null` 회귀를 막는 단위 테스트를 추가했다.
+  - final verification 결과와 error note를 active/archive 문서에 반영했다.
+- 코드문서:
+  - [app/src/components/posts/search-result-telemetry.tsx](../app/src/components/posts/search-result-telemetry.tsx)
+  - [app/src/components/posts/search-result-telemetry.test.ts](../app/src/components/posts/search-result-telemetry.test.ts)
+  - [docs/errors/2026-04-24_search-result-telemetry-null-type.md](./errors/2026-04-24_search-result-telemetry-null-type.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app exec vitest run src/components/posts/search-result-telemetry.test.ts src/app/api/search/log/route.test.ts` 통과
+  - Browser spot-check `/search/guest?q=강아지` 통과, `consoleErrors: []`
+  - `corepack pnpm -C app design:detect` 통과
+  - `corepack pnpm -C app quality:check` 통과, 193 files / 926 tests
+  - `AUTH_SECRET=local-dev-secret-local-dev-secret-123456 GUEST_HASH_PEPPER=local-dev-pepper UPSTASH_REDIS_REST_URL=https://example.com UPSTASH_REDIS_REST_TOKEN=local-token RESEND_API_KEY=re_local_dummy corepack pnpm -C app build` 통과
+  - Playwright/Chrome screenshot: `/tmp/townpet-final-audit/feed-guest-desktop.png`, `/tmp/townpet-final-audit/feed-guest-mobile.png`, `/tmp/townpet-final-audit/search-guest-desktop-after-fix.png`, `/tmp/townpet-final-audit/search-guest-mobile-after-fix.png`, `/tmp/townpet-final-audit/login-desktop.png`, `/tmp/townpet-final-audit/login-mobile.png`, `/tmp/townpet-final-audit/password-reset-desktop.png`, `/tmp/townpet-final-audit/password-reset-mobile.png`, `/tmp/townpet-final-audit/post-new-desktop.png`, `/tmp/townpet-final-audit/post-new-mobile.png`, `/tmp/townpet-final-audit/profile-desktop.png`, `/tmp/townpet-final-audit/profile-mobile.png`, `/tmp/townpet-final-audit/notifications-desktop.png`, `/tmp/townpet-final-audit/notifications-mobile.png`, `/tmp/townpet-final-audit/admin-reports-desktop.png`, `/tmp/townpet-final-audit/admin-reports-mobile.png`
+- 결과:
+  - Impeccable 개선 workflow는 주요 화면군에 대해 detector, full quality check, build, representative screenshot evidence까지 완료됐다.
+  - 남은 active work는 Impeccable UI phase가 아니라 다음 launch gap 선택이다.

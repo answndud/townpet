@@ -7,7 +7,7 @@
 - 상태 문서를 `docs/` 아래 slim active + archive 구조로 재편했다
 - Impeccable 디자인 개선 workflow Phase 0-5를 완료했다
 - 최근 완료 작업 상세와 과거 검증 로그는 [COMPLETED.md](./COMPLETED.md)로 이동했다
-- 현재 작업: Impeccable final audit / verification 대기
+- 현재 작업: 다음 품질 안정화 사이클 대기
 
 ## 열린 blocker
 - 없음. 기존 `db:restore:local` local test account count mismatch는 managed account count 검증으로 수정했고 restore 통과를 확인했다.
@@ -54,11 +54,17 @@
   - 유지: profile/auth/session/notification query/action/service 정책 로직은 변경 없음.
   - screenshot evidence: `/tmp/townpet-utility-baseline/{profile,notifications,notifications-unread}-{desktop,mobile}.png`, `/tmp/townpet-utility-phase/{profile,notifications,notifications-unread}-{desktop-after,mobile-after}.png`, `/tmp/townpet-utility-phase/profile-mobile-after-2.png`.
   - 통과: `corepack pnpm -C app design:detect`, 관련 Vitest 30개, `corepack pnpm -C app lint`, `corepack pnpm -C app typecheck`, local inline env `corepack pnpm -C app build`.
+- Impeccable final audit / verification:
+  - 확인: public/auth/write/admin/utility 대표 화면 spot-check screenshot을 새로 남기고 console error를 점검했다.
+  - 수정: `/search/guest` result telemetry가 `type: null`을 보내 `/api/search/log` 400을 내던 문제를 고치고 회귀 테스트를 추가했다.
+  - evidence: `/tmp/townpet-final-audit/{feed-guest,search-guest,login,password-reset,post-new,profile,notifications,admin-reports}-{desktop,mobile}.png`, `/tmp/townpet-final-audit/search-guest-{desktop,mobile}-after-fix.png`.
+  - 통과: `corepack pnpm -C app design:detect`, `corepack pnpm -C app quality:check` 193 files / 926 tests, local inline env `corepack pnpm -C app build`.
+  - error note: [docs/errors/2026-04-24_search-result-telemetry-null-type.md](./errors/2026-04-24_search-result-telemetry-null-type.md).
 - 과거 Phase 0-5와 checkpoint/push 상세는 [COMPLETED.md](./COMPLETED.md)에 보관했다.
 
 ## 다음 액션
-1. 주요 화면군 screenshot evidence와 active docs 상태를 점검한다.
-2. detector/quality gate/build 결과를 final verification으로 정리한다.
+1. 다음 launch gap 중 하나를 선택해 active scope를 확정한다.
+2. 구현 전 `docs/PLAN.md`에 해당 사이클의 목표/범위/검증 명령을 먼저 구체화한다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)
