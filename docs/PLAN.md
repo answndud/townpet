@@ -26,16 +26,16 @@
 
 ## Active Plan
 
-### 레드팀 P0/P1 잔여 remediation 확인
+### 운영 문서 최신성 점검
 
 상태: `pending`
 
-- 목표: 레드팀 P0/P1 잔여 항목과 현재 remediation 증거를 확인하고 실제 gap이 있으면 하나만 최소 수정한다.
-- 범위: P0/P1 보안/정책/운영 증거만 다루고 신규 기능은 시작하지 않는다.
-- 사용할 skill 순서: `quality-gate` -> 필요 시 `policy-abuse-gate` 또는 `release-readiness`.
-- 완료 기준: 관련 테스트/운영 명령, `lint`, `typecheck`, 필요한 build/quality check, 문서 archive.
+- 목표: 운영 문서 안내, 배포/수동점검 체크리스트, 현재 package scripts 간 명령 불일치를 점검한다.
+- 범위: 운영 문서 최신성 및 문서 테스트만 다루고 앱 기능 로직은 변경하지 않는다.
+- 사용할 skill 순서: `release-readiness` -> `quality-gate`.
+- 완료 기준: 문서 일관성 테스트 또는 `docs:refresh:check`, `lint`, `typecheck`, 필요한 build/quality check, 문서 archive.
 
 ## 다음 실행 순서
 
-1. 레드팀 P0/P1 관련 문서와 테스트 증거를 확인한다.
-2. 잔여 gap이 있으면 한 항목만 골라 최소 수정 후 quality gate를 실행한다.
+1. 운영 문서와 `app/package.json` scripts의 대표 명령을 대조한다.
+2. 불일치가 있으면 문서를 최소 수정하고 검증한다.

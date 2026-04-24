@@ -693,3 +693,29 @@
   - 개인 목록 화면군은 필터 0건과 전체 empty가 분리되어 사용자가 필터를 해제할지 첫 행동을 할지 바로 판단할 수 있다.
   - loading skeleton이 실제 화면의 scan path와 같은 구조를 유지해 모바일/데스크톱 모두에서 전환이 덜 튄다.
   - 변경은 개인 목록 UI 상태와 테스트에 한정했고 auth/query/bookmark/post 정책 로직은 변경하지 않았다.
+
+### 2026-04-24 | Redteam P0/P1 report policy evidence cleanup
+- 완료일: `2026-04-24`
+- 배경:
+  - P0/P1 보안 계획과 현재 신고 정책은 fixed 3-report auto-hide를 폐기하고 reporter trust/속도 기반 가중치 규칙을 사용한다.
+  - `business/product/게시글_코어.md`에는 과거 문구인 `POST 신고 누적 3건 이상이면 status=HIDDEN`이 남아 있어 정책 증거와 충돌했다.
+- 변경내용:
+  - `business/product/게시글_코어.md`의 신고 API 설명을 현재 정책과 맞춰 `신고 3건 고정 규칙은 사용하지 않는다`, `고유 신고자 2명 이상`, `누적 가중치 3.0`, `Post.status=HIDDEN`, `Comment 대상 수동 처리`로 갱신했다.
+  - 운영/정책 메모의 작성/신고 레이트리밋 설명을 user, user+ip, shared ip, fingerprint 축 조합으로 갱신했다.
+  - 비회원 write abuse 방어로 IP+fingerprint step-up proof 요구를 문서에 반영했다.
+  - `scripts/policy-doc-consistency.test.ts`를 추가해 fixed 3-report wording 재도입을 막고, 현재 가중치 기반 규칙이 핵심 문서에 남아 있는지 확인한다.
+  - active plan/progress를 다음 priority인 운영 문서 최신성 점검으로 갱신했다.
+- 코드문서:
+  - [business/product/게시글_코어.md](../business/product/게시글_코어.md)
+  - [app/scripts/policy-doc-consistency.test.ts](../app/scripts/policy-doc-consistency.test.ts)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app exec vitest run scripts/policy-doc-consistency.test.ts src/lib/report-moderation.test.ts src/server/services/report.service.test.ts src/app/api/reports/route.test.ts` 통과, 18 tests
+  - `corepack pnpm -C app lint` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `corepack pnpm -C app quality:check` 통과, 197 files / 935 tests
+  - `AUTH_SECRET=local-dev-secret-local-dev-secret-123456 GUEST_HASH_PEPPER=local-dev-pepper HEALTH_INTERNAL_TOKEN=health-secret UPSTASH_REDIS_REST_URL=https://example.com UPSTASH_REDIS_REST_TOKEN=local-token RESEND_API_KEY=re_local_dummy BLOB_READ_WRITE_TOKEN=local-blob-token corepack pnpm -C app build` 통과
+- 결과:
+  - 레드팀 P0/P1 신고 정책 remediation 증거가 product/policy 문서 사이에서 충돌하지 않는다.
+  - 신고 서비스/API와 moderation scoring 로직은 변경하지 않고, stale 정책 문서와 문서 회귀 테스트만 보강했다.
