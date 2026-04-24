@@ -426,3 +426,32 @@
 - 결과:
   - 작성 form의 첫 화면에서 분류/공개 범위와 정책 안내가 더 명확해졌다.
   - 변경은 UI structure/copy/touch target에 한정했고 작성 validation, action, service 정책 로직은 변경하지 않았다.
+
+### 2026-04-24 | Impeccable public post detail/comment flow
+- 완료일: `2026-04-24`
+- 배경:
+  - `/posts/[id]/guest`는 검색/피드에서 진입한 사용자가 본문을 읽고 댓글 흐름을 확인하는 public 상세 화면이다.
+  - baseline에서 댓글 thread card 안에 best 댓글 카드와 최신 댓글 border card가 다시 들어가 nested surface처럼 보였고, 모바일 action/link/form target이 작았다.
+- 변경내용:
+  - 댓글 thread shell은 유지하되 최신 댓글 list를 border-y divider 구조로 바꿔 내부 카드 중첩을 줄였다.
+  - 베스트 댓글은 별도 섹션 heading과 soft list로 정리해 최신 댓글과 hierarchy를 분리했다.
+  - reply guide spacing과 reply card radius/shadow를 줄여 댓글 depth를 더 조용하게 표시했다.
+  - 모바일에서 댓글 action, reaction, pagination, guest name/password, reply/edit/root textarea target을 40-44px 계열로 정리했다.
+- 코드문서:
+  - [app/src/components/posts/post-comment-layout-class.ts](../app/src/components/posts/post-comment-layout-class.ts)
+  - [app/src/components/posts/post-comment-thread.tsx](../app/src/components/posts/post-comment-thread.tsx)
+  - [app/src/components/posts/post-reaction-controls.tsx](../app/src/components/posts/post-reaction-controls.tsx)
+  - [app/src/components/posts/post-comment-layout-class.test.ts](../app/src/components/posts/post-comment-layout-class.test.ts)
+  - [app/src/components/posts/post-comment-thread.test.tsx](../app/src/components/posts/post-comment-thread.test.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app design:detect` 통과
+  - `corepack pnpm -C app exec vitest run src/components/posts/post-comment-layout-class.test.ts src/components/posts/post-comment-thread.test.tsx src/components/posts/post-reaction-controls.test.tsx` 통과
+  - `corepack pnpm -C app lint` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `AUTH_SECRET=local-dev-secret-local-dev-secret-123456 GUEST_HASH_PEPPER=local-dev-pepper UPSTASH_REDIS_REST_URL=https://example.com UPSTASH_REDIS_REST_TOKEN=local-token RESEND_API_KEY=re_local_dummy corepack pnpm -C app build` 통과
+  - Playwright/Chrome screenshot: `/tmp/townpet-post-detail-baseline/guest-desktop.png`, `/tmp/townpet-post-detail-baseline/guest-mobile.png`, `/tmp/townpet-post-detail-phase/guest-desktop-after.png`, `/tmp/townpet-post-detail-phase/guest-mobile-after.png`
+- 결과:
+  - public post detail의 읽기 흐름은 유지하면서 댓글 영역의 surface 중첩과 모바일 조작 부담을 줄였다.
+  - 변경은 shared comment/detail UI와 테스트 기대값에 한정했고 post/comment 정책, mutation, API 로직은 변경하지 않았다.

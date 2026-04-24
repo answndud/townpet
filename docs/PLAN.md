@@ -26,15 +26,16 @@
 
 ## Active Plan
 
-### Impeccable 다음 화면군 선정
+### Impeccable public search/result 흐름
 
 상태: `pending`
 
-- 후보: public post detail/comment flow 또는 search result/detail handoff.
-- 원칙: 한 cycle에서 한 화면군만 다루고, 시작 전 관련 skill/context와 route/component 구조를 다시 읽는다.
+- 목표: public search/guest result 화면의 result density, empty/loading/error 상태, mobile scan flow를 정리한다.
+- 범위: search 결과/guest search 화면군만 다루고, 검색 query/ranking/logging 정책 로직은 변경하지 않는다.
+- 사용할 skill 순서: `$critique` -> `$audit` -> `$layout` -> `$adapt` -> `$clarify` -> `$polish`.
 - 완료 기준: `design:detect`, `lint`, `typecheck`, 관련 테스트 또는 build, desktop/mobile screenshot 확인.
 
 ## 다음 실행 순서
 
-1. 다음 화면군을 선정해 active cycle로 연다.
-2. 구현 우선순위가 바뀌면 코드보다 문서를 먼저 갱신한다.
+1. public search/guest search baseline screenshot과 route/component 구조를 확인한다.
+2. 검색 결과, empty/error/loading 상태, 모바일 필터/정렬 흐름을 한 화면군 범위에서 정리한다.
