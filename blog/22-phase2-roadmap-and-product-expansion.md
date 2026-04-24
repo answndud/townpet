@@ -23,9 +23,9 @@ TownPet는 Phase 2를 아래 기준으로 정합니다.
 
 ## 먼저 볼 문서와 파일
 
-- `/Users/alex/project/townpet/docs/product/Phase2_로드맵_PRD.md`
-- `/Users/alex/project/townpet/docs/business/수익화_실험_전략.md`
-- `/Users/alex/project/townpet/docs/analytics/가격_실험계획.md`
+- `/Users/alex/project/townpet/business/product/Phase2_로드맵_PRD.md`
+- `/Users/alex/project/townpet/business/analytics/수익화_실험_전략.md`
+- `/Users/alex/project/townpet/business/analytics/가격_실험계획.md`
 - `/Users/alex/project/townpet/app/src/app/admin/ops/page.tsx`
 - `/Users/alex/project/townpet/app/src/server/queries/search.queries.ts`
 - `/Users/alex/project/townpet/app/src/lib/feed-personalization.ts`
@@ -84,7 +84,7 @@ Phase 2 PRD는 현재 TownPet의 출발점을 이렇게 정의합니다.
 
 문서:
 
-- `/Users/alex/project/townpet/docs/product/Phase2_로드맵_PRD.md`
+- `/Users/alex/project/townpet/business/product/Phase2_로드맵_PRD.md`
 
 Phase 2A 범위:
 
@@ -245,7 +245,7 @@ TownPet는 단순히 “개발이 끝났으니 다음 기능 추가”가 아니
 
 Phase 2 글은 전략 문서이므로 테스트보다는 아래를 같이 보는 게 맞습니다.
 
-- `/Users/alex/project/townpet/docs/product/Phase2_로드맵_PRD.md`
+- `/Users/alex/project/townpet/business/product/Phase2_로드맵_PRD.md`
 - `/Users/alex/project/townpet/app/src/app/admin/ops/page.tsx`
 - `/Users/alex/project/townpet/app/src/server/queries/search.queries.ts`
 - `/Users/alex/project/townpet/app/src/lib/feed-personalization.ts`

@@ -514,8 +514,10 @@ body {
 
 .tp-sun-editor-wrap .sun-editor .sun-editor-editable blockquote {
   margin: 1rem 0;
-  border-left: 3px solid #bfd0ec;
-  padding-left: 0.9rem;
+  border: 1px solid #d9e5f7;
+  border-radius: 10px;
+  background: #f8fbff;
+  padding: 0.75rem 0.9rem;
   color: #4f678d;
 }
 

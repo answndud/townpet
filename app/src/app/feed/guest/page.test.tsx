@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import GuestFeedPage from "@/app/feed/guest/page";
 import { GuestFeedPageClient } from "@/components/posts/guest-feed-page-client";

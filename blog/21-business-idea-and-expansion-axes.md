@@ -18,9 +18,9 @@ TownPet는 제품 아이디어가 코드 구조를 결정한 케이스입니다.
 ## 먼저 볼 문서와 파일
 
 - `/Users/alex/project/townpet/README.md`
-- `/Users/alex/project/townpet/docs/business/수익화_실험_전략.md`
-- `/Users/alex/project/townpet/docs/analytics/가격_실험계획.md`
-- `/Users/alex/project/townpet/docs/product/Phase2_로드맵_PRD.md`
+- `/Users/alex/project/townpet/business/analytics/수익화_실험_전략.md`
+- `/Users/alex/project/townpet/business/analytics/가격_실험계획.md`
+- `/Users/alex/project/townpet/business/product/Phase2_로드맵_PRD.md`
 - `/Users/alex/project/townpet/app/src/app/feed/page.tsx`
 - `/Users/alex/project/townpet/app/src/app/boards/adoption/page.tsx`
 - `/Users/alex/project/townpet/app/src/app/admin/ops/page.tsx`
@@ -142,8 +142,8 @@ TownPet의 수익화와 확장성의 전제입니다.
 
 문서:
 
-- `/Users/alex/project/townpet/docs/business/수익화_실험_전략.md`
-- `/Users/alex/project/townpet/docs/analytics/가격_실험계획.md`
+- `/Users/alex/project/townpet/business/analytics/수익화_실험_전략.md`
+- `/Users/alex/project/townpet/business/analytics/가격_실험계획.md`
 
 여기서 보이는 핵심 원칙:
 
@@ -218,9 +218,9 @@ TownPet는 “반려인 커뮤니티”를 만들려는 것이 아니라,
 이 글은 제품 아이디어 문서라서 직접적인 unit test보다 아래 자료를 함께 보면 됩니다.
 
 - `/Users/alex/project/townpet/README.md`
-- `/Users/alex/project/townpet/docs/business/수익화_실험_전략.md`
-- `/Users/alex/project/townpet/docs/analytics/가격_실험계획.md`
-- `/Users/alex/project/townpet/docs/product/Phase2_로드맵_PRD.md`
+- `/Users/alex/project/townpet/business/analytics/수익화_실험_전략.md`
+- `/Users/alex/project/townpet/business/analytics/가격_실험계획.md`
+- `/Users/alex/project/townpet/business/product/Phase2_로드맵_PRD.md`
 
 그리고 코드에서는 아래를 연결해서 보면 됩니다.
 

@@ -14,8 +14,9 @@ describe("EmptyState", () => {
       />,
     );
 
-    expect(html).toContain("아직 비어 있어요");
+    expect(html).toContain("현재 상태");
     expect(html).toContain("tp-eyebrow");
     expect(html).toContain("tp-btn-primary tp-btn-md");
+    expect(html).toContain("text-left");
   });
 });

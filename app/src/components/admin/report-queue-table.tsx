@@ -124,19 +124,19 @@ export function ReportQueueTable({ reports }: ReportQueueTableProps) {
 
   return (
     <section className="tp-card overflow-hidden">
-      <div className="flex flex-col gap-3 border-b border-[#dde7f5] bg-[#f6f9ff] px-4 py-2.5 text-[11px] sm:px-5 lg:flex-row lg:items-center lg:justify-between">
+      <div className="flex flex-col gap-3 border-b border-[#dde7f5] bg-[#f6f9ff] px-4 py-3 text-[11px] sm:px-5 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
-          <span className="rounded-lg border border-[#cbdcf5] bg-white px-3 py-1 text-[#315b9a]">
+          <span className="inline-flex min-h-9 items-center rounded-lg border border-[#cbdcf5] bg-white px-3 text-[#315b9a]">
             선택 {selectedIds.length}건
           </span>
           <input
-            className="tp-input-soft h-8 bg-white px-3 text-xs"
+            className="tp-input-soft h-10 bg-white px-3 text-xs sm:h-9"
             placeholder="일괄 처리 메모(선택)"
             value={bulkResolution}
             onChange={(event) => setBulkResolution(event.target.value)}
             disabled={isPending}
           />
-          <label className="flex items-center gap-2 text-[11px] text-[#4f678d]">
+          <label className="flex min-h-9 items-center gap-2 text-[11px] text-[#4f678d]">
             <input
               type="checkbox"
               checked={bulkApplySanction}
@@ -151,7 +151,7 @@ export function ReportQueueTable({ reports }: ReportQueueTableProps) {
           <button
             type="button"
             onClick={() => runBulkAction("RESOLVE")}
-            className="tp-btn-primary h-8 px-3 disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0]"
+            className="tp-btn-primary h-10 px-3 disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0] sm:h-9"
             disabled={isPending || selectedIds.length === 0}
           >
             일괄 승인
@@ -159,7 +159,7 @@ export function ReportQueueTable({ reports }: ReportQueueTableProps) {
           <button
             type="button"
             onClick={() => runBulkAction("DISMISS")}
-            className="rounded-lg border border-rose-300 bg-white h-8 px-3 text-rose-700 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
+            className="h-10 rounded-lg border border-rose-300 bg-white px-3 text-rose-700 transition hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200 disabled:cursor-not-allowed disabled:opacity-60 sm:h-9"
             disabled={isPending || selectedIds.length === 0}
           >
             일괄 기각
@@ -167,7 +167,7 @@ export function ReportQueueTable({ reports }: ReportQueueTableProps) {
           <button
             type="button"
             onClick={() => runBulkAction("HIDE_TARGET")}
-            className="tp-btn-soft h-8 px-3 disabled:cursor-not-allowed disabled:opacity-60"
+            className="tp-btn-soft h-10 px-3 disabled:cursor-not-allowed disabled:opacity-60 sm:h-9"
             disabled={isPending || selectedIds.length === 0}
           >
             대상 숨김
@@ -175,7 +175,7 @@ export function ReportQueueTable({ reports }: ReportQueueTableProps) {
           <button
             type="button"
             onClick={() => runBulkAction("UNHIDE_TARGET")}
-            className="tp-btn-soft h-8 px-3 disabled:cursor-not-allowed disabled:opacity-60"
+            className="tp-btn-soft h-10 px-3 disabled:cursor-not-allowed disabled:opacity-60 sm:h-9"
             disabled={isPending || selectedIds.length === 0}
           >
             숨김 해제
@@ -190,9 +190,9 @@ export function ReportQueueTable({ reports }: ReportQueueTableProps) {
         </div>
       ) : (
         <>
-        <div className="grid gap-3 p-4 md:hidden">
+        <div className="grid gap-2 p-3 md:hidden">
           {reports.map((report) => (
-            <article key={report.id} className="rounded-2xl border border-[#dde7f5] bg-white p-4 text-sm text-[#1f3f71] shadow-[0_8px_18px_rgba(16,40,74,0.04)]">
+            <article key={report.id} className="rounded-lg border border-[#dde7f5] bg-white p-3 text-sm text-[#1f3f71]">
               <div className="flex items-start justify-between gap-3">
                 <div className="space-y-1">
                   <div className="flex flex-wrap items-center gap-2">
@@ -241,10 +241,11 @@ export function ReportQueueTable({ reports }: ReportQueueTableProps) {
                   onChange={() => toggleSelection(report.id)}
                   aria-label={`신고 ${report.id} 선택`}
                   disabled={report.status !== ReportStatus.PENDING}
+                  className="mt-1 h-5 w-5 accent-[#3567b5]"
                 />
               </div>
 
-              <div className="mt-3 grid gap-2 text-xs text-[#4f678d]">
+              <div className="mt-3 grid gap-1.5 text-xs text-[#4f678d]">
                 <p>사유: {report.reason}</p>
                 <p>설명: {report.description ?? "-"}</p>
                 <p>신고자: {report.reporterLabel}</p>
@@ -254,16 +255,16 @@ export function ReportQueueTable({ reports }: ReportQueueTableProps) {
                 <p>{report.signalSummary.join(" · ")}</p>
               </div>
 
-              <div className="mt-4 border-t border-[#e6edf8] pt-3">
+              <div className="mt-3 border-t border-[#e6edf8] pt-3">
                 <ReportActions reportId={report.id} status={report.status} />
               </div>
 
-              <div className="mt-4 border-t border-[#e6edf8] pt-3">
+              <div className="mt-3 border-t border-[#e6edf8] pt-3">
                 <p className="text-[10px] uppercase tracking-[0.24em] text-[#5b78a1]">처리 이력</p>
                 <div className="mt-2 space-y-2 text-xs text-[#4f678d]">
                   {report.audits.length > 0 ? (
                     report.audits.map((audit) => (
-                      <div key={audit.id} className="rounded-xl border border-[#e1e9f5] bg-[#f8fbff] p-2.5">
+                      <div key={audit.id} className="rounded-lg border border-[#e1e9f5] bg-[#f8fbff] p-2.5">
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="rounded-md border border-[#cbdcf5] bg-white px-2 py-0.5 text-[10px] text-[#355988]">
                             {statusLabels[audit.status]}
