@@ -26,16 +26,15 @@
 
 ## Active Plan
 
-### Impeccable admin reports 화면군
+### Impeccable 다음 화면군 선정
 
 상태: `pending`
 
-- 목표: `/admin/reports` 목록/필터/상태 밀도를 Impeccable 기준으로 정리한다.
-- 범위: 신고 목록 화면군 1개만 다루고, moderation 정책/상태 전이 로직은 변경하지 않는다.
-- 시작 전: `.impeccable.md`, `DESIGN.md`, 관련 skill 문서와 현재 `/admin/reports` 구조를 다시 읽는다.
+- 후보: `/admin/reports/[id]` 상세 처리 흐름 또는 `/posts/new` 작성 form polish.
+- 원칙: 한 cycle에서 한 화면군만 다루고, 시작 전 관련 skill/context와 route/component 구조를 다시 읽는다.
 - 완료 기준: `design:detect`, `lint`, `typecheck`, 관련 테스트 또는 build, desktop/mobile screenshot 확인.
 
 ## 다음 실행 순서
 
-1. `/admin/reports` baseline screenshot과 critique/audit를 먼저 남긴다.
-2. 한 화면군 범위에서 density, mobile first, empty/error/focus 상태를 정리한다.
+1. 다음 화면군을 선정해 active cycle로 연다.
+2. 구현 우선순위가 바뀌면 코드보다 문서를 먼저 갱신한다.

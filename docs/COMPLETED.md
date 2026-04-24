@@ -346,3 +346,30 @@
 - 결과:
   - local restore blocker가 해소되어 다음 Impeccable/admin 화면군 작업 전 DB 복구 루틴을 다시 사용할 수 있다.
   - lint warning이 0건이 되어 품질 게이트 출력이 더 명확해졌다.
+
+### 2026-04-24 | Impeccable admin reports queue density
+- 완료일: `2026-04-24`
+- 배경:
+  - `/admin/reports`는 운영자가 반복적으로 신고를 triage하는 화면인데, baseline에서는 동일 통계 카드와 최근 제재 섹션이 신고 queue보다 먼저 보여 실제 처리 작업이 아래로 밀렸다.
+  - 모바일 첫 viewport에서도 통계 카드들이 길게 쌓여 필터와 신고 카드 접근이 늦었다.
+- 변경내용:
+  - hero를 compact summary 포함 구조로 바꿔 대기/긴급/높음/평균 처리만 상단에서 빠르게 확인하도록 정리했다.
+  - 필터와 pagination, 신고 queue를 통계/최근 제재보다 먼저 배치했다.
+  - 기존 동일 카드 grid 통계를 divider 기반 운영 summary로 바꿔 nested card 느낌과 반복 surface를 줄였다.
+  - bulk action toolbar와 row action control의 touch target/focus affordance를 키웠다.
+  - 모바일 신고 row는 shadow-heavy card에서 border-first list item으로 정리했다.
+- 코드문서:
+  - [app/src/app/admin/reports/page.tsx](../app/src/app/admin/reports/page.tsx)
+  - [app/src/components/admin/report-queue-table.tsx](../app/src/components/admin/report-queue-table.tsx)
+  - [app/src/components/admin/report-actions.tsx](../app/src/components/admin/report-actions.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app design:detect` 통과
+  - `corepack pnpm -C app lint` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `AUTH_SECRET=local-dev-secret-local-dev-secret-123456 GUEST_HASH_PEPPER=local-dev-pepper UPSTASH_REDIS_REST_URL=https://example.com UPSTASH_REDIS_REST_TOKEN=local-token RESEND_API_KEY=re_local_dummy corepack pnpm -C app build` 통과
+  - Playwright/Chrome screenshot: `/tmp/townpet-admin-reports-baseline/desktop.png`, `/tmp/townpet-admin-reports-baseline/mobile.png`, `/tmp/townpet-admin-reports-phase/desktop-after.png`, `/tmp/townpet-admin-reports-phase/mobile-after.png`
+- 결과:
+  - 신고 queue가 통계보다 먼저 보여 운영자의 primary task가 첫 화면에 더 빨리 노출된다.
+  - `/admin/reports` 변경은 화면 구조와 styling에 한정했고 report/moderation/sanction 로직은 변경하지 않았다.

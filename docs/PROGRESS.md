@@ -7,7 +7,7 @@
 - 상태 문서를 `docs/` 아래 slim active + archive 구조로 재편했다
 - Impeccable 디자인 개선 workflow Phase 0-5를 완료했다
 - 최근 완료 작업 상세와 과거 검증 로그는 [COMPLETED.md](./COMPLETED.md)로 이동했다
-- 현재 작업: 다음 Impeccable cycle `/admin/reports` 착수 전 baseline 준비
+- 현재 작업: `/admin/reports` 화면군 완료 후 다음 Impeccable cycle 선정 대기
 
 ## 열린 blocker
 - 없음. 기존 `db:restore:local` local test account count mismatch는 managed account count 검증으로 수정했고 restore 통과를 확인했다.
@@ -21,6 +21,11 @@
   - `corepack pnpm -C app lint` 통과, warning 0건.
   - `corepack pnpm -C app typecheck` 통과.
   - local inline env `corepack pnpm -C app build` 통과.
+- Impeccable `/admin/reports` 화면군:
+  - 변경: hero 통계 compact summary, 필터와 queue를 상단으로 이동, 통계/분포는 후순위 운영 summary로 정리, mobile queue card와 bulk/action touch target 개선.
+  - 유지: report query, moderation priority, bulk/single action API, sanction policy 로직은 변경 없음.
+  - screenshot evidence: `/tmp/townpet-admin-reports-baseline/{desktop,mobile}.png`, `/tmp/townpet-admin-reports-phase/{desktop-after,mobile-after}.png`.
+  - 통과: `corepack pnpm -C app design:detect`, `corepack pnpm -C app lint`, `corepack pnpm -C app typecheck`, local inline env `corepack pnpm -C app build`.
 - checkpoint commit `896e6df`를 생성하고 `origin/codex/editor-stabilization-finish`에 push했다.
 - Phase 1 public entry 구조 정리 완료 후 commit `f479001`을 원격에 push했다.
 - Phase 2 DB unavailable 화면군 완료: `/boards/adoption`, `/posts/new`.
@@ -36,8 +41,8 @@
 - screenshot evidence: `/tmp/townpet-impeccable-phase4/admin-ops-{desktop,mobile}-{before,after}.png`.
 
 ## 다음 액션
-1. 다음 Impeccable cycle은 `/admin/reports` 화면군을 한 화면군으로 착수한다.
-2. 시작 전 `.impeccable.md`, `DESIGN.md`, 관련 skill 문서와 `/admin/reports` route/component 구조를 다시 확인한다.
+1. 다음 Impeccable cycle 후보를 하나 고른다: `/admin/reports/[id]` 상세 처리 흐름 또는 `/posts/new` 작성 form.
+2. 시작 전 `.impeccable.md`, `DESIGN.md`, 관련 skill 문서와 route/component 구조를 다시 확인한다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)
