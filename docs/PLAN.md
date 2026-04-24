@@ -26,16 +26,15 @@
 
 ## Active Plan
 
-### Impeccable post write form 흐름
+### Impeccable 다음 화면군 선정
 
-상태: `in_progress`
+상태: `pending`
 
-- 목표: `/posts/new` 작성 form의 mobile first hierarchy, policy guidance, form affordance를 정리한다.
-- 범위: 작성 화면군 1개만 다루고, post validation/action/service 정책 로직은 변경하지 않는다.
-- 사용할 skill 순서: `$critique` -> `$audit` -> `$layout` -> `$adapt` -> `$clarify` -> `$polish`.
+- 후보: public post detail/comment flow 또는 search result/detail handoff.
+- 원칙: 한 cycle에서 한 화면군만 다루고, 시작 전 관련 skill/context와 route/component 구조를 다시 읽는다.
 - 완료 기준: `design:detect`, `lint`, `typecheck`, 관련 테스트 또는 build, desktop/mobile screenshot 확인.
 
 ## 다음 실행 순서
 
-1. `/posts/new` baseline screenshot과 route/component 구조를 확인한다.
-2. 작성 form의 첫 viewport, empty/error/help copy, touch target을 한 화면군 범위에서 정리한다.
+1. 다음 화면군을 선정해 active cycle로 연다.
+2. 구현 우선순위가 바뀌면 코드보다 문서를 먼저 갱신한다.

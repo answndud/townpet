@@ -400,3 +400,29 @@
 - 결과:
   - 신고 상세 화면이 정상 렌더링되고, 운영자는 대상 컨텍스트와 판정 action을 한 화면 흐름에서 확인할 수 있다.
   - 변경은 상세 화면 구조/styling과 dynamic params unwrap에 한정했고 moderation 정책과 API 로직은 변경하지 않았다.
+
+### 2026-04-24 | Impeccable post write form polish
+- 완료일: `2026-04-24`
+- 배경:
+  - `/posts/new`는 핵심 작성 흐름이지만 baseline에서 page card 안에 form card가 들어가 nested surface처럼 보였다.
+  - 작성 정책과 자동 임시저장 상태가 하단/에디터 footer 중심에 있어 사용자가 본문 작성 전 제약을 늦게 확인했다.
+- 변경내용:
+  - page hero와 form을 분리해 outer card 중첩을 줄였다.
+  - hero에 작성 모드, 자동 임시저장, 피드 복귀 affordance를 compact하게 노출했다.
+  - `PostCreateForm` 상단을 form fields + 작성 기준 side panel 구조로 바꿔 데스크톱 첫 viewport에서 정책과 필드를 함께 볼 수 있게 했다.
+  - 모바일에서는 작성 기준이 본문 에디터 전에 표시되어 연락처/외부 거래 제한, 분류별 추가 정보 안내를 먼저 확인할 수 있다.
+  - 제목/분류/관련 동물/게스트 입력 등 주요 form controls를 44px 계열 touch target으로 정리했다.
+- 코드문서:
+  - [app/src/app/posts/new/page.tsx](../app/src/app/posts/new/page.tsx)
+  - [app/src/components/posts/post-create-form.tsx](../app/src/components/posts/post-create-form.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app design:detect` 통과
+  - `corepack pnpm -C app lint` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `AUTH_SECRET=local-dev-secret-local-dev-secret-123456 GUEST_HASH_PEPPER=local-dev-pepper UPSTASH_REDIS_REST_URL=https://example.com UPSTASH_REDIS_REST_TOKEN=local-token RESEND_API_KEY=re_local_dummy corepack pnpm -C app build` 통과
+  - Playwright/Chrome screenshot: `/tmp/townpet-post-new-baseline/desktop.png`, `/tmp/townpet-post-new-baseline/mobile.png`, `/tmp/townpet-post-new-phase/desktop-after.png`, `/tmp/townpet-post-new-phase/desktop-after-2.png`, `/tmp/townpet-post-new-phase/mobile-after.png`, `/tmp/townpet-post-new-phase/mobile-after-2.png`
+- 결과:
+  - 작성 form의 첫 화면에서 분류/공개 범위와 정책 안내가 더 명확해졌다.
+  - 변경은 UI structure/copy/touch target에 한정했고 작성 validation, action, service 정책 로직은 변경하지 않았다.
