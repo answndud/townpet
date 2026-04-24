@@ -203,3 +203,34 @@
 - 결과:
   - Impeccable 사용을 위한 repo-local skill/context/script 준비가 완료됐다.
   - 이후 프론트엔드 작업은 `PRODUCT.md`/`DESIGN.md`를 먼저 로드하고, 필요 시 `corepack pnpm -C app design:detect`로 anti-pattern 점검을 실행할 수 있다.
+
+### 2026-04-24 | Impeccable Phase 1 public entry 구조 정리
+- 완료일: `2026-04-24`
+- 배경:
+  - Impeccable baseline 평가에서 public feed/search의 첫 viewport가 비어 보이고, mobile header/filters touch target이 작으며, feed controls가 nested card처럼 보이는 문제가 확인됐다.
+  - Phase 1은 `/feed/guest`, `/feed`, `/search/guest`, `/search`만 다루고 ranking/query 정책은 변경하지 않는 범위로 진행했다.
+- 변경내용:
+  - mobile app shell quick link/disclosure controls를 44px 계열 touch target으로 키우고 focus-visible ring을 명시했다.
+  - `FeedControlPanel`의 gradient/shadow/nested rounded row를 줄이고, border/divider 기반의 조용한 product control surface로 정리했다.
+  - public feed/search 결과 영역에서 불필요한 `tp-card` shadow를 줄이고, search hero를 더 compact한 product panel로 맞췄다.
+  - `EmptyState`를 중앙 정렬의 큰 빈 카드에서 좌측 정렬 상태 블록으로 바꿔 desktop/mobile 첫 viewport의 과한 공백을 줄였다.
+- 코드문서:
+  - [app/src/components/navigation/app-shell-header-class.ts](../app/src/components/navigation/app-shell-header-class.ts)
+  - [app/src/components/posts/feed-control-panel.tsx](../app/src/components/posts/feed-control-panel.tsx)
+  - [app/src/components/ui/empty-state.tsx](../app/src/components/ui/empty-state.tsx)
+  - [app/src/app/feed/page.tsx](../app/src/app/feed/page.tsx)
+  - [app/src/components/posts/guest-feed-page-client.tsx](../app/src/components/posts/guest-feed-page-client.tsx)
+  - [app/src/app/search/page.tsx](../app/src/app/search/page.tsx)
+  - [app/src/components/posts/guest-search-page-client.tsx](../app/src/components/posts/guest-search-page-client.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app exec vitest run src/components/navigation/app-shell-header-class.test.ts src/components/posts/feed-control-panel.test.tsx src/components/ui/empty-state.test.tsx` 통과
+  - `corepack pnpm -C app lint` 통과, 기존 warning 5건 유지
+  - `corepack pnpm -C app typecheck` 통과
+  - `corepack pnpm -C app design:detect` exit 2, 기존 Phase 1 범위 밖 anti-pattern 5건 유지
+  - `corepack pnpm -C app build` exit 1, 로컬 필수 env 누락으로 page data collection 실패
+  - Playwright/Chrome screenshot: `/tmp/townpet-impeccable-phase1/feed-guest-desktop.png`, `/tmp/townpet-impeccable-phase1/feed-guest-mobile.png`, `/tmp/townpet-impeccable-phase1/search-guest-desktop.png`, `/tmp/townpet-impeccable-phase1/search-guest-mobile.png`
+- 결과:
+  - public feed/search entry는 기존 디자인 토큰을 유지하면서 nested surface와 generic empty-state 느낌을 줄였다.
+  - 다음 Phase 2는 error/loading/copy hardening이며, `/boards/adoption`, `/posts/new`, `/notifications`, 공통 error/loading 상태를 한 화면군씩 다룬다.

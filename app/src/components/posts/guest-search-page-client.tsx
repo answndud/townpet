@@ -162,13 +162,13 @@ export function GuestSearchPageClient() {
 
   return (
     <div className="tp-page-bg min-h-screen pb-16">
-      <main className="mx-auto flex w-full max-w-[1320px] flex-col gap-5 px-4 py-6 sm:px-6 lg:px-10">
-        <header className="tp-hero p-5 sm:p-6">
-          <p className="text-[11px] uppercase tracking-[0.24em] text-[#3f5f90]">검색</p>
-          <h1 className="mt-2 text-2xl font-bold tracking-tight text-[#10284a] sm:text-4xl">
+      <main className="mx-auto flex w-full max-w-[1320px] flex-col gap-4 px-4 py-4 sm:gap-5 sm:px-6 sm:py-6 lg:px-10">
+        <header className="rounded-xl border border-[#d9e5f7] bg-[#f8fbff] p-4 sm:p-6">
+          <p className="tp-eyebrow">검색</p>
+          <h1 className="mt-2 text-xl font-semibold text-[#10284a] sm:text-3xl">
             게시글 검색
           </h1>
-          <p className="mt-2 text-sm text-[#4f678d] sm:text-base">
+          <p className="mt-2 max-w-[680px] text-sm leading-6 text-[#4f678d]">
             제목, 내용, 작성자 기준으로 원하는 글을 빠르게 찾을 수 있습니다.
           </p>
           <div className="mt-4">
@@ -224,22 +224,22 @@ export function GuestSearchPageClient() {
         ) : null}
 
         {loadError ? (
-          <section className="tp-card overflow-hidden">
+          <section className="overflow-hidden rounded-xl border border-[#d9e5f7] bg-white">
             <EmptyState title="검색 결과를 불러오지 못했습니다" description={loadError} />
           </section>
         ) : isLoading && hasQuery ? (
-          <section className="tp-card overflow-hidden">
+          <section className="overflow-hidden rounded-xl border border-[#d9e5f7] bg-white">
             <EmptyState title="검색 중입니다" description="검색 결과를 불러오고 있습니다." />
           </section>
         ) : !hasQuery ? (
-          <section className="tp-card overflow-hidden">
+          <section className="overflow-hidden rounded-xl border border-[#d9e5f7] bg-white">
             <EmptyState
               title="검색어를 입력해 주세요"
               description="최소 2글자 이상 입력하면 자동완성과 최근/인기 검색어를 활용할 수 있습니다."
             />
           </section>
         ) : items.length === 0 ? (
-          <section className="tp-card overflow-hidden">
+          <section className="overflow-hidden rounded-xl border border-[#d9e5f7] bg-white">
             <EmptyState
               title="검색 결과가 없습니다"
               description="검색 범위를 바꾸거나 인기 검색어를 선택해 다시 시도해 보세요."

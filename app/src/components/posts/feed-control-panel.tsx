@@ -52,13 +52,13 @@ const REVIEW_FILTER_OPTIONS: Array<{ label: string; value?: ReviewCategory }> = 
 ];
 
 const PRIMARY_TAB_CLASS_NAME =
-  "inline-flex h-10 items-center rounded-xl border px-3.5 text-sm font-semibold transition";
+  "inline-flex min-h-11 items-center rounded-lg border px-3.5 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25";
 const ACTIVE_PRIMARY_TAB_CLASS_NAME =
-  "border-[#3567b5] bg-[#3567b5] text-white shadow-[0_8px_18px_rgba(53,103,181,0.18)]";
+  "border-[#3567b5] bg-[#3567b5] text-white";
 const INACTIVE_PRIMARY_TAB_CLASS_NAME =
   "border-[#d5e3f5] bg-white text-[#315b9a] hover:border-[#b8cceb] hover:bg-[#f5f9ff]";
 const FILTER_CHIP_CLASS_NAME =
-  "inline-flex h-8 items-center rounded-lg border px-2.5 text-[12px] font-medium transition";
+  "inline-flex min-h-10 items-center rounded-lg border px-2.5 text-[12px] font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25 sm:min-h-8";
 const ACTIVE_FILTER_CHIP_CLASS_NAME = "border-[#3567b5] bg-[#3567b5] text-white";
 const INACTIVE_FILTER_CHIP_CLASS_NAME =
   "border-[#d4e1f3] bg-white text-[#355f99] hover:border-[#bdd2ed] hover:bg-[#f6faff]";
@@ -87,7 +87,7 @@ function getRangeLabel(mode: FeedMode, periodDays: FeedPeriod | null, bestDays: 
 
 function SummaryPill({ label }: { label: string }) {
   return (
-    <span className="inline-flex items-center rounded-full border border-[#d7e4f6] bg-white px-2.5 py-1 text-[11px] font-medium text-[#4f6e97] shadow-[0_4px_10px_rgba(16,40,74,0.04)]">
+    <span className="inline-flex items-center rounded-full border border-[#d7e4f6] bg-white px-2.5 py-1 text-[11px] font-medium text-[#4f6e97]">
       {label}
     </span>
   );
@@ -115,8 +115,8 @@ export function FeedControlPanel({
   const rangeLabel = getRangeLabel(mode, periodDays, bestDays);
 
   return (
-    <section className="tp-card overflow-hidden border border-[#dce7f7] shadow-[0_14px_34px_rgba(16,40,74,0.06)]">
-      <div className="border-b border-[#dde8f7] bg-[linear-gradient(180deg,#f5faff_0%,#fbfdff_100%)] px-3 py-3.5 sm:px-5">
+    <section className="overflow-hidden rounded-xl border border-[#dce7f7] bg-white">
+      <div className="border-b border-[#dde8f7] bg-[#f8fbff] px-3 py-3.5 sm:px-5">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-2">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#6b86ab]">
@@ -157,7 +157,7 @@ export function FeedControlPanel({
         </div>
 
         {personalized ? (
-          <div className="mt-3 rounded-2xl border border-[#d9e6f7] bg-white px-3 py-3 shadow-[0_10px_24px_rgba(15,35,74,0.05)]">
+          <div className="mt-3 border-t border-[#d9e6f7] pt-3">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
               <div className="space-y-1.5">
                 <SectionLabel>추천 방식</SectionLabel>
@@ -222,10 +222,10 @@ export function FeedControlPanel({
         ) : null}
       </div>
 
-      <div className="grid gap-2.5 bg-white px-3 py-3 sm:px-5">
+      <div className="grid bg-white px-3 py-2 sm:px-5">
         <div
           data-testid="feed-sort-range-row"
-          className="flex flex-col gap-3 rounded-xl border border-[#e5edf8] bg-[#fbfdff] px-3 py-2.5 lg:flex-row lg:flex-wrap lg:items-center lg:gap-4"
+          className="flex flex-col gap-3 border-b border-[#e8f0fa] py-3 lg:flex-row lg:flex-wrap lg:items-center lg:gap-4"
         >
           <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-2.5">
             <SectionLabel>정렬</SectionLabel>
@@ -303,7 +303,7 @@ export function FeedControlPanel({
         </div>
 
         {reviewBoard ? (
-          <div className="flex flex-col gap-2 rounded-xl border border-[#e5edf8] bg-[#fbfdff] px-3 py-2.5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-2.5">
+          <div className="flex flex-col gap-2 py-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-2.5">
             <SectionLabel>리뷰</SectionLabel>
             <div className="flex flex-wrap items-center gap-1.5">
               {REVIEW_FILTER_OPTIONS.map((option) => {
