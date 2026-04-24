@@ -150,6 +150,20 @@ type GuestFeedPageClientProps = {
   initialQueryString?: string;
 };
 
+export function shouldReplaceGuestFeedCanonicalHref({
+  canonicalHref,
+  currentHref,
+  loadedQueryString,
+  queryString,
+}: {
+  canonicalHref: string;
+  currentHref: string;
+  loadedQueryString: string | null;
+  queryString: string;
+}) {
+  return loadedQueryString === queryString && canonicalHref !== currentHref;
+}
+
 export function GuestFeedPageClient({
   initialData = null,
   initialQueryString = "",
@@ -161,6 +175,9 @@ export function GuestFeedPageClient({
   const [isLoading, setIsLoading] = useState(initialData === null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [reloadToken, setReloadToken] = useState(0);
+  const [loadedQueryString, setLoadedQueryString] = useState<string | null>(
+    initialData ? initialQueryString : null,
+  );
 
   const queryString = searchParams.toString();
   const feedBasePath = pathname?.startsWith("/feed/guest") ? "/feed/guest" : "/feed";
@@ -204,6 +221,7 @@ export function GuestFeedPageClient({
 
     if (reloadToken === 0 && initialData && initialQueryString === queryString) {
       setData(initialData);
+      setLoadedQueryString(initialQueryString);
       setIsLoading(false);
       setLoadError(null);
       return;
@@ -234,6 +252,7 @@ export function GuestFeedPageClient({
         }
 
         setData(payload.data);
+        setLoadedQueryString(queryString);
       } catch (error) {
         if (cancelled || (error as { name?: string }).name === "AbortError") {
           return;
@@ -279,10 +298,17 @@ export function GuestFeedPageClient({
       resolvedPage: data.feed.resolvedPage,
     });
     const currentHref = `${window.location.pathname}${window.location.search}`;
-    if (canonicalHref !== currentHref) {
+    if (
+      shouldReplaceGuestFeedCanonicalHref({
+        canonicalHref,
+        currentHref,
+        loadedQueryString,
+        queryString,
+      })
+    ) {
       router.replace(canonicalHref);
     }
-  }, [data, feedBasePath, queryString, router]);
+  }, [data, feedBasePath, loadedQueryString, queryString, router]);
 
   if (data?.view === "gate") {
     return (

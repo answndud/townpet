@@ -1,7 +1,10 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import type { ComponentProps } from "react";
 
 import { FeedControlPanel } from "@/components/posts/feed-control-panel";
+
+type MakeHrefOptions = Parameters<ComponentProps<typeof FeedControlPanel>["makeHref"]>[0];
 
 describe("FeedControlPanel", () => {
   it("renders hierarchical feed controls with personalization summary", () => {
@@ -51,5 +54,75 @@ describe("FeedControlPanel", () => {
     expect(html).not.toContain("추천 방식");
     expect(html).toContain("집계 기간");
     expect(html).toContain("최근 3일");
+  });
+
+  it("makes sort controls switch to non-personalized all feed", () => {
+    const makeHref = (options: MakeHrefOptions) => {
+      const params = new URLSearchParams();
+      for (const [key, value] of Object.entries(options)) {
+        if (value !== undefined && value !== null) {
+          params.set(key, String(value));
+        }
+      }
+      return `/feed?${params.toString()}`;
+    };
+
+    const html = renderToStaticMarkup(
+      <FeedControlPanel
+        mode="BEST"
+        selectedSort="LIKE"
+        bestDays={7}
+        periodDays={30}
+        reviewBoard={false}
+        reviewCategory={null}
+        makeHref={makeHref}
+        personalized={{
+          active: true,
+          currentLabel: "강아지",
+        }}
+      />,
+    );
+
+    expect(html).toContain(
+      'href="/feed?nextMode=ALL&amp;nextSort=COMMENT&amp;nextPersonalized=0&amp;nextPage=1"',
+    );
+    expect(html).toContain(
+      'href="/feed?nextMode=ALL&amp;nextSort=LIKE&amp;nextPersonalized=0&amp;nextPage=1"',
+    );
+  });
+
+  it("makes period controls use non-personalized all feed", () => {
+    const makeHref = (options: MakeHrefOptions) => {
+      const params = new URLSearchParams();
+      for (const [key, value] of Object.entries(options)) {
+        if (value !== undefined && value !== null) {
+          params.set(key, String(value));
+        }
+      }
+      return `/feed?${params.toString()}`;
+    };
+
+    const html = renderToStaticMarkup(
+      <FeedControlPanel
+        mode="ALL"
+        selectedSort="LIKE"
+        bestDays={7}
+        periodDays={30}
+        reviewBoard={false}
+        reviewCategory={null}
+        makeHref={makeHref}
+        personalized={{
+          active: true,
+          currentLabel: "강아지",
+        }}
+      />,
+    );
+
+    expect(html).toContain(
+      'href="/feed?nextMode=ALL&amp;nextPeriod=7&amp;nextPersonalized=0&amp;nextPage=1"',
+    );
+    expect(html).toContain(
+      'href="/feed?nextMode=ALL&amp;nextPersonalized=0&amp;nextPage=1"',
+    );
   });
 });
