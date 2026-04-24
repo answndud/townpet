@@ -7,7 +7,7 @@
 - 상태 문서를 `docs/` 아래 slim active + archive 구조로 재편했다
 - Impeccable 디자인 개선 workflow Phase 0-5를 완료했다
 - 최근 완료 작업 상세와 과거 검증 로그는 [COMPLETED.md](./COMPLETED.md)로 이동했다
-- 현재 작업: `/admin/reports` 화면군 완료 후 다음 Impeccable cycle 선정 대기
+- 현재 작업: `/admin/reports/[id]` 상세 처리 흐름 완료 후 다음 Impeccable cycle 선정 대기
 
 ## 열린 blocker
 - 없음. 기존 `db:restore:local` local test account count mismatch는 managed account count 검증으로 수정했고 restore 통과를 확인했다.
@@ -26,6 +26,11 @@
   - 유지: report query, moderation priority, bulk/single action API, sanction policy 로직은 변경 없음.
   - screenshot evidence: `/tmp/townpet-admin-reports-baseline/{desktop,mobile}.png`, `/tmp/townpet-admin-reports-phase/{desktop-after,mobile-after}.png`.
   - 통과: `corepack pnpm -C app design:detect`, `corepack pnpm -C app lint`, `corepack pnpm -C app typecheck`, local inline env `corepack pnpm -C app build`.
+- Impeccable `/admin/reports/[id]` 상세 흐름:
+  - 변경: Next dynamic params Promise runtime 오류 수정, 상세 hero/status summary, 신고 개요/대상 정보/처리 작업 2-column 구조, mobile stacked action flow, audit card list 정리.
+  - 유지: report/moderation/sanction API와 정책 로직은 변경 없음.
+  - screenshot evidence: `/tmp/townpet-admin-report-detail-baseline/{desktop,mobile}.png`, `/tmp/townpet-admin-report-detail-phase/{desktop-after,mobile-after,desktop-pending-after,mobile-pending-after}.png`.
+  - 통과: `corepack pnpm -C app design:detect`, `corepack pnpm -C app lint`, `corepack pnpm -C app typecheck`, local inline env `corepack pnpm -C app build`.
 - checkpoint commit `896e6df`를 생성하고 `origin/codex/editor-stabilization-finish`에 push했다.
 - Phase 1 public entry 구조 정리 완료 후 commit `f479001`을 원격에 push했다.
 - Phase 2 DB unavailable 화면군 완료: `/boards/adoption`, `/posts/new`.
@@ -41,7 +46,7 @@
 - screenshot evidence: `/tmp/townpet-impeccable-phase4/admin-ops-{desktop,mobile}-{before,after}.png`.
 
 ## 다음 액션
-1. 다음 Impeccable cycle 후보를 하나 고른다: `/admin/reports/[id]` 상세 처리 흐름 또는 `/posts/new` 작성 form.
+1. 다음 Impeccable cycle 후보를 하나 고른다: `/posts/new` 작성 form polish 또는 public post detail/comment flow.
 2. 시작 전 `.impeccable.md`, `DESIGN.md`, 관련 skill 문서와 route/component 구조를 다시 확인한다.
 
 ## Archive Pointer

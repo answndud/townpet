@@ -30,7 +30,7 @@
 
 상태: `pending`
 
-- 후보: `/admin/reports/[id]` 상세 처리 흐름 또는 `/posts/new` 작성 form polish.
+- 후보: `/posts/new` 작성 form polish 또는 public post detail/comment flow.
 - 원칙: 한 cycle에서 한 화면군만 다루고, 시작 전 관련 skill/context와 route/component 구조를 다시 읽는다.
 - 완료 기준: `design:detect`, `lint`, `typecheck`, 관련 테스트 또는 build, desktop/mobile screenshot 확인.
 

@@ -373,3 +373,30 @@
 - 결과:
   - 신고 queue가 통계보다 먼저 보여 운영자의 primary task가 첫 화면에 더 빨리 노출된다.
   - `/admin/reports` 변경은 화면 구조와 styling에 한정했고 report/moderation/sanction 로직은 변경하지 않았다.
+
+### 2026-04-24 | Impeccable admin report detail flow
+- 완료일: `2026-04-24`
+- 배경:
+  - `/admin/reports/[id]`는 목록 triage 다음 단계인 상세 판정 화면이다.
+  - baseline screenshot에서 Next dynamic params Promise 오류로 admin error state가 렌더링되어 실제 상세 화면을 열 수 없었다.
+  - 오류 수정 후 기존 상세 구조는 상태 요약, 대상 정보, 처리 작업, 이력이 카드 단위로 분리되어 판정 전 핵심 컨텍스트와 action form이 멀었다.
+- 변경내용:
+  - `params`를 await하도록 수정해 `/admin/reports/[id]` runtime error를 제거했다.
+  - hero에 상태/대상/신고 시간을 compact summary로 노출했다.
+  - 신고 개요와 대상 정보를 좌측 main column, 처리 작업을 우측 action column으로 배치했다.
+  - mobile에서는 동일 정보가 단일 column으로 자연스럽게 쌓이고 action touch target을 유지한다.
+  - 처리 이력은 side-dot timeline 대신 border-first audit list로 정리해 Impeccable side-stripe 금지와 product density 기준에 맞췄다.
+- 코드문서:
+  - [app/src/app/admin/reports/[id]/page.tsx](../app/src/app/admin/reports/[id]/page.tsx)
+  - [docs/errors/2026-04-24_admin-report-detail-params-promise.md](./errors/2026-04-24_admin-report-detail-params-promise.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app design:detect` 통과
+  - `corepack pnpm -C app lint` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `AUTH_SECRET=local-dev-secret-local-dev-secret-123456 GUEST_HASH_PEPPER=local-dev-pepper UPSTASH_REDIS_REST_URL=https://example.com UPSTASH_REDIS_REST_TOKEN=local-token RESEND_API_KEY=re_local_dummy corepack pnpm -C app build` 통과
+  - Playwright/Chrome screenshot: `/tmp/townpet-admin-report-detail-baseline/desktop.png`, `/tmp/townpet-admin-report-detail-baseline/mobile.png`, `/tmp/townpet-admin-report-detail-phase/desktop-after.png`, `/tmp/townpet-admin-report-detail-phase/mobile-after.png`, `/tmp/townpet-admin-report-detail-phase/desktop-pending-after.png`, `/tmp/townpet-admin-report-detail-phase/mobile-pending-after.png`
+- 결과:
+  - 신고 상세 화면이 정상 렌더링되고, 운영자는 대상 컨텍스트와 판정 action을 한 화면 흐름에서 확인할 수 있다.
+  - 변경은 상세 화면 구조/styling과 dynamic params unwrap에 한정했고 moderation 정책과 API 로직은 변경하지 않았다.
