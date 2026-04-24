@@ -508,3 +508,36 @@
 - 결과:
   - public guest feed의 첫 화면에서 현재 컨텍스트와 검색/작성 행동이 더 빨리 드러난다.
   - 변경은 guest feed UI hierarchy/action placement에 한정했고 feed ranking, pagination, personalization, guest API 정책 로직은 변경하지 않았다.
+
+### 2026-04-24 | Impeccable auth entry and recovery flow
+- 완료일: `2026-04-24`
+- 배경:
+  - login/register는 shared auth shell을 쓰고 있었지만 password reset, password setup, verify email 화면은 별도 shell이라 첫 화면 hierarchy와 footer touch target이 달랐다.
+  - reset/verify/setup form은 44px 계열 input/button, focus ring, aria-live 상태 메시지, 긴 token wrapping이 일부 부족했다.
+- 변경내용:
+  - `AuthPageLayout`의 설명 line length와 footer link touch target/focus state를 보강했다.
+  - `/password/reset`, `/password/setup`, `/verify-email`을 shared auth shell로 통일했다.
+  - reset/verify form을 `1. 토큰 받기 -> 2. 토큰 입력/비밀번호 설정` 흐름으로 정리하고, divider 기반 구조로 내부 nested card 느낌을 줄였다.
+  - reset/verify/setup/register form의 input/button을 44px 계열 target, focus ring, aria-invalid, aria-live status/error copy로 보강했다.
+  - Next 16 page props 계약에 맞게 `/password/reset`, `/verify-email`의 `searchParams`를 Promise로 unwrap했다.
+- 코드문서:
+  - [app/src/components/auth/auth-page-layout.tsx](../app/src/components/auth/auth-page-layout.tsx)
+  - [app/src/components/auth/register-form.tsx](../app/src/components/auth/register-form.tsx)
+  - [app/src/components/auth/reset-password-form.tsx](../app/src/components/auth/reset-password-form.tsx)
+  - [app/src/components/auth/set-password-form.tsx](../app/src/components/auth/set-password-form.tsx)
+  - [app/src/components/auth/verify-email-form.tsx](../app/src/components/auth/verify-email-form.tsx)
+  - [app/src/app/password/reset/page.tsx](../app/src/app/password/reset/page.tsx)
+  - [app/src/app/password/setup/page.tsx](../app/src/app/password/setup/page.tsx)
+  - [app/src/app/verify-email/page.tsx](../app/src/app/verify-email/page.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app design:detect` 통과
+  - `corepack pnpm -C app exec vitest run src/components/auth/auth-page-layout.test.tsx src/lib/password-setup.test.ts src/app/api/auth/register/route.test.ts src/app/api/auth/password/reset/request/route.test.ts src/app/api/auth/verify/request/route.test.ts` 통과
+  - `corepack pnpm -C app lint` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `AUTH_SECRET=local-dev-secret-local-dev-secret-123456 GUEST_HASH_PEPPER=local-dev-pepper UPSTASH_REDIS_REST_URL=https://example.com UPSTASH_REDIS_REST_TOKEN=local-token RESEND_API_KEY=re_local_dummy corepack pnpm -C app build` 통과
+  - Playwright/Chrome screenshot: `/tmp/townpet-auth-baseline/login-desktop.png`, `/tmp/townpet-auth-baseline/login-mobile.png`, `/tmp/townpet-auth-baseline/register-desktop.png`, `/tmp/townpet-auth-baseline/register-mobile.png`, `/tmp/townpet-auth-baseline/password-reset-desktop.png`, `/tmp/townpet-auth-baseline/password-reset-mobile.png`, `/tmp/townpet-auth-baseline/verify-email-desktop.png`, `/tmp/townpet-auth-baseline/verify-email-mobile.png`, `/tmp/townpet-auth-phase/login-desktop-after.png`, `/tmp/townpet-auth-phase/login-mobile-after.png`, `/tmp/townpet-auth-phase/register-desktop-after.png`, `/tmp/townpet-auth-phase/register-mobile-after.png`, `/tmp/townpet-auth-phase/password-reset-desktop-after.png`, `/tmp/townpet-auth-phase/password-reset-mobile-after.png`, `/tmp/townpet-auth-phase/verify-email-desktop-after.png`, `/tmp/townpet-auth-phase/verify-email-mobile-after.png`
+- 결과:
+  - 인증 진입/복구 화면군이 같은 visual shell과 form vocabulary를 사용해 mobile/desktop에서 더 예측 가능해졌다.
+  - 변경은 UI shell, form 상태/copy, route prop typing에 한정했고 auth service/session/OAuth/password/email API 정책 로직은 변경하지 않았다.

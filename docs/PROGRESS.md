@@ -7,7 +7,7 @@
 - 상태 문서를 `docs/` 아래 slim active + archive 구조로 재편했다
 - Impeccable 디자인 개선 workflow Phase 0-5를 완료했다
 - 최근 완료 작업 상세와 과거 검증 로그는 [COMPLETED.md](./COMPLETED.md)로 이동했다
-- 현재 작업: Impeccable auth/login/register 흐름 대기
+- 현재 작업: Impeccable profile/notifications utility 흐름 대기
 
 ## 열린 blocker
 - 없음. 기존 `db:restore:local` local test account count mismatch는 managed account count 검증으로 수정했고 restore 통과를 확인했다.
@@ -51,11 +51,17 @@
   - 유지: feed ranking, pagination, personalization, guest API 정책 로직은 변경 없음.
   - screenshot evidence: `/tmp/townpet-feed-guest-baseline/{default,best,search}-{desktop,mobile}.png`, `/tmp/townpet-feed-guest-phase/{default,best,search}-{desktop-after,mobile-after}.png`.
   - 통과: `corepack pnpm -C app design:detect`, `corepack pnpm -C app lint`, `corepack pnpm -C app typecheck`, `corepack pnpm -C app exec vitest run src/app/feed/guest/page.test.tsx src/app/api/feed/guest/route.test.ts src/components/posts/feed-control-panel.test.tsx src/components/posts/feed-post-meta-badges.test.tsx`, local inline env `corepack pnpm -C app build`.
+- Impeccable auth/login/register/recovery 흐름:
+  - 변경: `/password/reset`, `/verify-email`, `/password/setup`을 shared auth shell로 통일하고, reset/verify/setup/register form의 mobile touch target, focus, aria-live/error 상태, recovery copy를 정리했다.
+  - 유지: credential/social auth, password reset/setup, email verify API와 정책 로직은 변경 없음.
+  - 발견/수정: Next 16 page props 계약에 맞게 `/password/reset`, `/verify-email` `searchParams`를 Promise로 unwrap했다.
+  - screenshot evidence: `/tmp/townpet-auth-baseline/{login,register,password-reset,verify-email}-{desktop,mobile}.png`, `/tmp/townpet-auth-phase/{login,register,password-reset,verify-email}-{desktop-after,mobile-after}.png`.
+  - 통과: `corepack pnpm -C app design:detect`, `corepack pnpm -C app exec vitest run src/components/auth/auth-page-layout.test.tsx src/lib/password-setup.test.ts src/app/api/auth/register/route.test.ts src/app/api/auth/password/reset/request/route.test.ts src/app/api/auth/verify/request/route.test.ts`, `corepack pnpm -C app lint`, `corepack pnpm -C app typecheck`, local inline env `corepack pnpm -C app build`.
 - 과거 Phase 0-5와 checkpoint/push 상세는 [COMPLETED.md](./COMPLETED.md)에 보관했다.
 
 ## 다음 액션
-1. login/register/password/onboarding baseline screenshot과 route/component 구조를 확인한다.
-2. 인증 form, recovery copy, mobile controls를 한 화면군 범위에서 정리한다.
+1. `/profile`, `/notifications` baseline screenshot과 route/component 구조를 확인한다.
+2. utility 화면의 empty/loading/error 상태와 mobile controls를 한 화면군 범위에서 정리한다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)
