@@ -28,31 +28,15 @@
 
 ### Impeccable 디자인 개선 workflow
 
-상태: `in_progress`
+상태: `completed`
 기준 컨텍스트: [PRODUCT.md](../PRODUCT.md), [DESIGN.md](../DESIGN.md), [.impeccable.md](../.impeccable.md)
 
-운영 규칙:
-- 코드보다 문서를 먼저 갱신한다. 우선순위나 phase 범위가 바뀌면 이 섹션을 먼저 수정한다.
-- 한 번에 모든 화면을 고치지 않는다. 각 phase는 한 화면군 또는 한 사용자 흐름만 다룬다.
-- phase 완료 시 상세 결과와 검증 로그는 [COMPLETED.md](./COMPLETED.md)에 append하고, active 문서에서는 완료 phase를 제거하거나 다음 phase만 남긴다.
-- Impeccable detector finding은 실패로만 보지 않고, phase backlog의 입력으로 기록한다.
-- 완료 archive: Phase 0-1 상세는 [COMPLETED.md](./COMPLETED.md)에 정리한다.
-- 현재 blocker: `design:detect` 기존 1건(`globals.css` blockquote side border), `build` 로컬 필수 env 누락.
-
-#### Phase 4: admin / dashboard / list density 개선
-- 상태: `blocked`
-- 목표: 운영자가 신고, 정책, 인증 로그, Ops 지표를 빠르게 스캔하도록 card-heavy 화면을 조용한 작업 화면으로 정리한다.
-- 현재 대상 화면군: `/admin/ops` 또는 `/admin/reports` 중 하나만 선택.
-- blocker: 로컬 DB/admin seed 세션이 없어 desktop/mobile screenshot과 실제 density를 확인할 수 없음.
-- 사용할 skill 순서: `$impeccable distill` -> `$impeccable layout` -> `$impeccable audit` -> `$impeccable adapt`.
-- 수정 범위: metric card hierarchy, table/list density, filter bars, mobile admin fallback.
-- 하지 않을 것: admin 권한 모델 변경, 신고/제재 service 로직 변경, 지표 산식 변경, 운영 문서 개편.
-- 완료 기준: admin first viewport가 핵심 상태/대기 작업/필터를 2초 안에 파악 가능하다.
-- 검증 명령: `corepack pnpm -C app test -- src/components/admin`, `corepack pnpm -C app design:detect`, `corepack pnpm -C app lint`, `corepack pnpm -C app typecheck`.
-- screenshot 확인 지점: 대상 admin 화면 desktop/mobile, table/list overflow, empty state.
+완료 archive:
+- Phase 0-5 상세는 [COMPLETED.md](./COMPLETED.md)에 정리한다.
+- 최종 검증: `design:detect`, `lint`, `typecheck`, `test`, `build` 통과.
+- 참고: `db:restore:local`은 local test account count mismatch로 exit 1이지만 admin seed와 화면 검증은 가능했다.
 
 ## 다음 실행 순서
 
-1. `corepack pnpm -C app db:restore:local`로 DB/admin seed를 복구한다.
-2. `/admin/ops` 또는 `/admin/reports` 중 하나를 선택해 screenshot evidence를 확보한다.
-3. Phase 4 관련 skill 문서를 다시 읽고, admin 화면군 하나만 정리한다.
+1. 새 디자인 개선은 별도 active cycle로 다시 연다.
+2. 남은 제품 작업은 현재 우선순위 목록에서 선택한다.

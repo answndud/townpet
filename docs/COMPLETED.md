@@ -286,3 +286,32 @@
 - 결과:
   - media/content overlay의 pure black detector finding 4건은 제거됐다.
   - 남은 detector finding은 `app/src/app/globals.css`의 `blockquote` 3px side border 1건이며, Phase 5 final polish 또는 글로벌 CSS 정리에서 처리한다.
+
+### 2026-04-24 | Impeccable Phase 4-5 admin density and final polish
+- 완료일: `2026-04-24`
+- 배경:
+  - Phase 4는 admin/dashboard/list density를 한 화면군만 대상으로 다뤄야 했다.
+  - `/admin/ops` baseline은 desktop에서 동일한 metric card가 넓게 반복되고, mobile 첫 viewport에서 status card들이 세로로 밀려 검색 품질 필터까지 접근이 늦었다.
+  - Phase 5에서는 `design:detect`의 마지막 잔여 finding인 editor blockquote side border를 닫아야 했다.
+- 변경내용:
+  - `/admin/ops` 상단 hero와 5개 status cards를 하나의 운영 summary 패널로 통합했다.
+  - 각 status는 큰 카드 대신 divider 기반 row summary로 보여 mobile first viewport의 높이를 줄였다.
+  - 지표 산식, admin 권한, query/service 로직은 변경하지 않았다.
+  - editor blockquote 스타일을 3px side border에서 full border + soft background block으로 바꿨다.
+- 코드문서:
+  - [app/src/app/admin/ops/page.tsx](../app/src/app/admin/ops/page.tsx)
+  - [app/src/app/globals.css](../app/src/app/globals.css)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app db:restore:local` exit 1, local test account count mismatch. Admin seed/login/screenshot 검증은 가능.
+  - `corepack pnpm -C app design:detect` 통과
+  - `corepack pnpm -C app lint` 통과, 기존 warning 5건 유지
+  - `corepack pnpm -C app typecheck` 통과
+  - `corepack pnpm -C app test` 통과, 191 files / 922 tests
+  - `AUTH_SECRET=local-dev-secret-local-dev-secret-123456 GUEST_HASH_PEPPER=local-dev-pepper UPSTASH_REDIS_REST_URL=https://example.com UPSTASH_REDIS_REST_TOKEN=local-token RESEND_API_KEY=re_local_dummy corepack pnpm -C app build` 통과
+  - Playwright/Chrome screenshot: `/tmp/townpet-impeccable-phase4/admin-ops-desktop-before.png`, `/tmp/townpet-impeccable-phase4/admin-ops-mobile-before.png`, `/tmp/townpet-impeccable-phase4/admin-ops-desktop-after.png`, `/tmp/townpet-impeccable-phase4/admin-ops-mobile-after.png`
+- 결과:
+  - `/admin/ops` first viewport는 상태 요약과 다음 작업 영역을 더 빠르게 보여준다.
+  - Impeccable detector 잔여 finding이 0건이 됐다.
+  - Phase 0-5 Impeccable workflow는 완료 상태로 archive 처리했다.
