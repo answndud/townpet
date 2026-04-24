@@ -8,24 +8,23 @@
 - Impeccable 디자인 개선 workflow Phase 0-5를 완료했다
 - 최근 완료 작업 상세와 과거 검증 로그는 [COMPLETED.md](./COMPLETED.md)로 이동했다
 - 공개 SEO / metadata / sitemap 안정화를 완료했다
-- 다음 작업: 보안 헤더 / 운영 smoke evidence 보강
+- 보안 헤더 / 운영 smoke evidence 보강을 완료했다
+- 다음 작업: 로딩 / 빈상태 polish 잔여 점검
 
 ## 열린 blocker
 - 없음. 기존 `db:restore:local` local test account count mismatch는 managed account count 검증으로 수정했고 restore 통과를 확인했다.
 
 ## 직전 검증
-- 공개 SEO / metadata / sitemap 안정화:
-  - 변경: `/boards/adoption`을 public sitemap static route에 추가했고, redirect alias/private/auth/admin/API 화면은 sitemap/robots 경계로 고정했다.
-  - 수정: Next 16 dynamic sitemap 실제 경로가 `/sitemap/0.xml`인데 robots가 `/sitemap.xml`을 가리키던 404 증거를 발견해 수정했다.
-  - 유지: 게시글 조회, 검색, 인증, 관리자, 운영 정책 로직은 변경 없음.
-  - endpoint evidence: `curl http://localhost:3000/robots.txt`, `curl -I http://localhost:3000/sitemap/0.xml`, sitemap loc 확인 통과.
-  - 통과: `corepack pnpm -C app exec vitest run src/app/sitemap.test.ts src/app/robots.test.ts`, `corepack pnpm -C app lint`, `corepack pnpm -C app typecheck`, `corepack pnpm -C app quality:check` 194 files / 929 tests, placeholder env `corepack pnpm -C app build`.
-  - 참고: 기본 `corepack pnpm -C app build`는 로컬 필수 env 누락으로 실패하므로 placeholder env를 명시해 검증했다.
+- 보안 헤더 / 운영 smoke evidence 보강:
+  - 변경: `next.config.ts`의 전역 security header bundle과 public cache rules 분리를 회귀 테스트로 고정했다.
+  - 유지: 보안 헤더 값, middleware CSP, health endpoint, 운영 스크립트 로직은 변경 없음.
+  - smoke evidence: strict security env preflight pass=8/warn=2/fail=0, local `/api/health` 200, controlPlane ok, `pg_trgm` enabled, `/feed/guest` security headers 확인.
+  - 통과: `corepack pnpm -C app exec vitest run scripts/next-config-security-headers.test.ts src/lib/security-headers.test.ts src/app/api/health/route.test.ts`, `corepack pnpm -C app lint`, `corepack pnpm -C app typecheck`, `corepack pnpm -C app quality:check` 195 files / 931 tests, placeholder env `corepack pnpm -C app build`.
 - 과거 Phase 0-5와 checkpoint/push 상세는 [COMPLETED.md](./COMPLETED.md)에 보관했다.
 
 ## 다음 액션
-1. `release-readiness` 기준으로 security header와 운영 smoke evidence의 현재 커버리지를 확인한다.
-2. 누락된 증거 또는 경미한 테스트 갭이 있으면 최소 수정 후 quality gate를 실행한다.
+1. loading/empty/error 상태가 약한 화면군을 하나만 고른다.
+2. 구현 전 대상 화면군과 검증 명령을 `docs/PLAN.md`에 구체화한다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)

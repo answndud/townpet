@@ -634,3 +634,31 @@
   - public sitemap은 canonical public entry와 게시글/품종 lounge만 노출하고, redirect alias와 private/auth utility surface는 제외하도록 테스트로 고정됐다.
   - robots가 실제 생성되는 sitemap 경로를 가리키게 되어 crawler가 404 sitemap URL을 받는 문제가 해소됐다.
   - 변경은 SEO metadata route와 문서에 한정했고 제품 기능/정책 로직은 변경하지 않았다.
+
+### 2026-04-24 | Security headers and ops smoke evidence hardening
+- 완료일: `2026-04-24`
+- 배경:
+  - launch readiness 관점에서 security header, health, 운영 smoke evidence가 문서와 스크립트에 흩어져 있어 Next config 산출 설정의 회귀를 테스트로 고정할 필요가 있었다.
+  - 기존 `src/lib/security-headers.test.ts`는 header builder 값은 검증했지만 `next.config.ts`가 전역 route에 실제로 그 bundle을 적용하는지는 직접 검증하지 않았다.
+- 변경내용:
+  - `scripts/next-config-security-headers.test.ts`를 추가해 `/:path*` 전역 rule이 `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, `Content-Security-Policy`를 포함하는지 확인했다.
+  - public cache rules가 global security header rule과 분리되어 있고 CSP를 중복 정의하지 않는지 회귀 테스트로 고정했다.
+  - strict security env preflight, local health smoke, 실제 page response header curl 결과를 active/archive 문서에 남겼다.
+  - active plan/progress를 다음 launch gap인 loading/empty/error polish 잔여 점검으로 갱신했다.
+- 코드문서:
+  - [app/scripts/next-config-security-headers.test.ts](../app/scripts/next-config-security-headers.test.ts)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app exec vitest run scripts/next-config-security-headers.test.ts src/lib/security-headers.test.ts src/app/api/health/route.test.ts` 통과
+  - `NODE_ENV=production SECURITY_ENV_STRICT=1 AUTH_SECRET=local-prod-secret-local-prod-secret-123456 APP_BASE_URL=http://localhost:3000 GUEST_HASH_PEPPER=local-dev-pepper HEALTH_INTERNAL_TOKEN=health-secret UPSTASH_REDIS_REST_URL=https://example.com UPSTASH_REDIS_REST_TOKEN=local-token RESEND_API_KEY=re_local_dummy BLOB_READ_WRITE_TOKEN=local-blob-token ENABLE_SOCIAL_DEV_LOGIN=0 ENABLE_DEMO_AUTH_FALLBACK=0 corepack pnpm -C app ops:check:security-env:strict` 통과, `pass=8, warn=2, fail=0`
+  - `HEALTH_INTERNAL_TOKEN=health-secret corepack pnpm -C app dev` 후 `OPS_BASE_URL=http://localhost:3000 OPS_HEALTH_INTERNAL_TOKEN=health-secret corepack pnpm -C app ops:check:health` 통과, `controlPlane.state: ok`, `search.pgTrgm.enabled: true`
+  - `curl -sS -I http://localhost:3000/feed/guest` 확인: `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy`, `Content-Security-Policy` 확인
+  - `corepack pnpm -C app lint` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `corepack pnpm -C app quality:check` 통과, 195 files / 931 tests
+  - `AUTH_SECRET=local-dev-secret-local-dev-secret-123456 GUEST_HASH_PEPPER=local-dev-pepper HEALTH_INTERNAL_TOKEN=health-secret UPSTASH_REDIS_REST_URL=https://example.com UPSTASH_REDIS_REST_TOKEN=local-token RESEND_API_KEY=re_local_dummy BLOB_READ_WRITE_TOKEN=local-blob-token corepack pnpm -C app build` 통과
+- 결과:
+  - security header 값뿐 아니라 Next config 적용 계약까지 테스트로 보호된다.
+  - 운영 smoke는 local public health, internal diagnostics, control plane readiness, `pg_trgm`, page response headers까지 증거를 남겼다.
+  - 변경은 테스트와 문서에 한정했고 보안 헤더 값, health endpoint, 운영 스크립트 로직은 변경하지 않았다.

@@ -26,16 +26,16 @@
 
 ## Active Plan
 
-### 보안 헤더 / 운영 smoke evidence 보강
+### 로딩 / 빈상태 polish 잔여 점검
 
 상태: `pending`
 
-- 목표: 배포 전 확인 가능한 security header, health, 운영 smoke 증거를 최신 상태로 정리한다.
-- 범위: 보안 헤더 테스트/문서/evidence와 운영 smoke 명령만 다루고 제품 기능 로직은 변경하지 않는다.
-- 사용할 skill 순서: `release-readiness` -> `quality-gate`.
-- 완료 기준: header/health 관련 테스트 또는 smoke 명령, `lint`, `typecheck`, 필요한 build/quality check, 문서 archive.
+- 목표: Impeccable 이후 아직 점검하지 않은 loading/empty/error 상태의 잔여 UX gap을 한 화면군 단위로 정리한다.
+- 범위: 한 번에 하나의 화면군만 다루고 기능/정책 로직은 변경하지 않는다.
+- 사용할 skill 순서: `impeccable` -> `quality-gate`.
+- 완료 기준: 관련 UI 테스트 또는 screenshot evidence, `design:detect`, `lint`, `typecheck`, 필요한 build/quality check, 문서 archive.
 
 ## 다음 실행 순서
 
-1. `release-readiness` 기준으로 security header와 운영 smoke evidence의 현재 커버리지를 확인한다.
-2. 누락된 증거 또는 경미한 테스트 갭이 있으면 최소 수정 후 quality gate를 실행한다.
+1. loading/empty/error 상태가 약한 화면군을 하나만 고른다.
+2. 구현 전 대상 화면군과 검증 명령을 `docs/PLAN.md`에 구체화한다.
