@@ -26,16 +26,16 @@
 
 ## Active Plan
 
-### Impeccable public feed/guest 흐름
+### Impeccable auth/login/register 흐름
 
 상태: `pending`
 
-- 목표: public feed/guest 화면의 첫 viewport hierarchy, result density, mobile scan flow를 정리한다.
-- 범위: `/feed/guest`와 직접 연결된 feed UI만 다루고, feed ranking/personalization/query 정책 로직은 변경하지 않는다.
+- 목표: login/register/password/onboarding 진입 흐름의 form UX, error/empty/loading 상태, mobile first layout을 정리한다.
+- 범위: auth 화면 UI와 copy만 다루고, auth service/session/OAuth 정책 로직은 변경하지 않는다.
 - 사용할 skill 순서: `$critique` -> `$audit` -> `$layout` -> `$adapt` -> `$clarify` -> `$polish`.
 - 완료 기준: `design:detect`, `lint`, `typecheck`, 관련 테스트 또는 build, desktop/mobile screenshot 확인.
 
 ## 다음 실행 순서
 
-1. `/feed/guest` baseline screenshot과 route/component 구조를 확인한다.
-2. 첫 viewport, category/search affordance, post list density를 한 화면군 범위에서 정리한다.
+1. login/register/password/onboarding baseline screenshot과 route/component 구조를 확인한다.
+2. 인증 form, recovery copy, mobile controls를 한 화면군 범위에서 정리한다.

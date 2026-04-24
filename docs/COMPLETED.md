@@ -482,3 +482,29 @@
 - 결과:
   - public guest search에서 검색 실행 방식이 명확해졌고, 결과 row가 모바일/데스크톱 모두에서 더 빠르게 비교 가능해졌다.
   - 변경은 UI affordance와 result presentation에 한정했고 검색 query/ranking/logging/API 정책 로직은 변경하지 않았다.
+
+### 2026-04-24 | Impeccable public guest feed flow
+- 완료일: `2026-04-24`
+- 배경:
+  - `/feed/guest`는 비로그인 사용자의 public entry 이후 가장 자주 보는 게시글 목록 화면이다.
+  - baseline 모바일 첫 화면은 전역 nav와 필터 패널이 먼저 보이고, 현재 피드의 목적/검색/글쓰기 affordance가 약했다.
+  - desktop에서는 feed title hero가 지나치게 약하게 보여 목록과 필터의 맥락이 흐렸다.
+- 변경내용:
+  - guest feed header를 모바일/데스크톱 모두 표시되는 border-first product panel로 정리했다.
+  - header에 `공개 피드`, 현재 feed title, 짧은 설명을 추가해 첫 viewport hierarchy를 보강했다.
+  - 상단에 `게시글 검색`, `글쓰기` action을 배치하고 하단의 중복 글쓰기 버튼은 제거했다.
+  - 기존 `FeedControlPanel`, `FeedInfiniteList`, pagination, API/ranking 구조는 유지했다.
+- 코드문서:
+  - [app/src/components/posts/guest-feed-page-client.tsx](../app/src/components/posts/guest-feed-page-client.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app design:detect` 통과
+  - `corepack pnpm -C app lint` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `corepack pnpm -C app exec vitest run src/app/feed/guest/page.test.tsx src/app/api/feed/guest/route.test.ts src/components/posts/feed-control-panel.test.tsx src/components/posts/feed-post-meta-badges.test.tsx` 통과
+  - `AUTH_SECRET=local-dev-secret-local-dev-secret-123456 GUEST_HASH_PEPPER=local-dev-pepper UPSTASH_REDIS_REST_URL=https://example.com UPSTASH_REDIS_REST_TOKEN=local-token RESEND_API_KEY=re_local_dummy corepack pnpm -C app build` 통과
+  - Playwright/Chrome screenshot: `/tmp/townpet-feed-guest-baseline/default-desktop.png`, `/tmp/townpet-feed-guest-baseline/default-mobile.png`, `/tmp/townpet-feed-guest-baseline/best-desktop.png`, `/tmp/townpet-feed-guest-baseline/best-mobile.png`, `/tmp/townpet-feed-guest-baseline/search-desktop.png`, `/tmp/townpet-feed-guest-baseline/search-mobile.png`, `/tmp/townpet-feed-guest-phase/default-desktop-after.png`, `/tmp/townpet-feed-guest-phase/default-mobile-after.png`, `/tmp/townpet-feed-guest-phase/best-desktop-after.png`, `/tmp/townpet-feed-guest-phase/best-mobile-after.png`, `/tmp/townpet-feed-guest-phase/search-desktop-after.png`, `/tmp/townpet-feed-guest-phase/search-mobile-after.png`
+- 결과:
+  - public guest feed의 첫 화면에서 현재 컨텍스트와 검색/작성 행동이 더 빨리 드러난다.
+  - 변경은 guest feed UI hierarchy/action placement에 한정했고 feed ranking, pagination, personalization, guest API 정책 로직은 변경하지 않았다.

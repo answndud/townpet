@@ -7,7 +7,7 @@
 - 상태 문서를 `docs/` 아래 slim active + archive 구조로 재편했다
 - Impeccable 디자인 개선 workflow Phase 0-5를 완료했다
 - 최근 완료 작업 상세와 과거 검증 로그는 [COMPLETED.md](./COMPLETED.md)로 이동했다
-- 현재 작업: Impeccable public feed/guest 흐름 대기
+- 현재 작업: Impeccable auth/login/register 흐름 대기
 
 ## 열린 blocker
 - 없음. 기존 `db:restore:local` local test account count mismatch는 managed account count 검증으로 수정했고 restore 통과를 확인했다.
@@ -46,23 +46,16 @@
   - 유지: search query/ranking/logging, guest scope/type block, API 정책 로직은 변경 없음.
   - screenshot evidence: `/tmp/townpet-search-baseline/{guest-results,guest-empty}-{desktop,mobile}.png`, `/tmp/townpet-search-phase/{guest-results,guest-empty}-{desktop-after,mobile-after}.png`.
   - 통과: `corepack pnpm -C app design:detect`, `corepack pnpm -C app lint`, `corepack pnpm -C app typecheck`, `corepack pnpm -C app exec vitest run src/app/api/search/guest/route.test.ts src/app/api/search/log/route.test.ts src/server/queries/search.queries.test.ts`, local inline env `corepack pnpm -C app build`.
-- checkpoint commit `896e6df`를 생성하고 `origin/codex/editor-stabilization-finish`에 push했다.
-- Phase 1 public entry 구조 정리 완료 후 commit `f479001`을 원격에 push했다.
-- Phase 2 DB unavailable 화면군 완료: `/boards/adoption`, `/posts/new`.
-- 변경 요약: Prisma DB unavailable을 generic error 대신 `ServiceUnavailableState`로 복구 가능한 상태로 표시하고, 모바일에서 제목 줄바꿈이 깨지지 않도록 copy를 짧게 정리했다.
-- screenshot evidence: `/tmp/townpet-impeccable-phase2/adoption-unavailable-{desktop,mobile}.png`, `/tmp/townpet-impeccable-phase2/post-new-unavailable-{desktop,mobile}.png`.
-- 통과: `corepack pnpm -C app exec vitest run src/components/ui/service-unavailable-state.test.tsx`, `corepack pnpm -C app lint`(기존 warning 5개), `corepack pnpm -C app typecheck`.
-- Phase 3 detector slice 완료 후 commit `0bdc471`을 원격에 push했다. `linkified-content`와 `post-detail-media-gallery`의 pure black overlay 4건 제거.
-- 통과: `corepack pnpm -C app exec vitest run src/components/posts/post-detail-media-gallery.test.tsx`, `corepack pnpm -C app lint`(기존 warning 5개), `corepack pnpm -C app typecheck`.
-- `corepack pnpm -C app design:detect`는 5건에서 1건으로 감소했다.
-- Phase 4 `/admin/ops` density 개선 완료: status cards를 한 패널 안의 row summary로 정리하고 mobile first viewport에서 검색 품질 필터까지 진입 가능하게 했다.
-- Phase 5 final polish 완료: editor blockquote side border를 full border soft block으로 바꿔 detector 잔여 1건 제거.
-- 최종 통과: `corepack pnpm -C app design:detect`, `corepack pnpm -C app lint`, `corepack pnpm -C app typecheck`, `corepack pnpm -C app test`, local inline env `corepack pnpm -C app build`.
-- screenshot evidence: `/tmp/townpet-impeccable-phase4/admin-ops-{desktop,mobile}-{before,after}.png`.
+- Impeccable `/feed/guest` 흐름:
+  - 변경: mobile에도 공개 피드 목적/현재 feed title을 보이게 하고, 상단에 `게시글 검색`/`글쓰기` affordance를 배치했다.
+  - 유지: feed ranking, pagination, personalization, guest API 정책 로직은 변경 없음.
+  - screenshot evidence: `/tmp/townpet-feed-guest-baseline/{default,best,search}-{desktop,mobile}.png`, `/tmp/townpet-feed-guest-phase/{default,best,search}-{desktop-after,mobile-after}.png`.
+  - 통과: `corepack pnpm -C app design:detect`, `corepack pnpm -C app lint`, `corepack pnpm -C app typecheck`, `corepack pnpm -C app exec vitest run src/app/feed/guest/page.test.tsx src/app/api/feed/guest/route.test.ts src/components/posts/feed-control-panel.test.tsx src/components/posts/feed-post-meta-badges.test.tsx`, local inline env `corepack pnpm -C app build`.
+- 과거 Phase 0-5와 checkpoint/push 상세는 [COMPLETED.md](./COMPLETED.md)에 보관했다.
 
 ## 다음 액션
-1. `/feed/guest` baseline screenshot과 route/component 구조를 확인한다.
-2. 첫 viewport, category/search affordance, post list density를 한 화면군 범위에서 정리한다.
+1. login/register/password/onboarding baseline screenshot과 route/component 구조를 확인한다.
+2. 인증 form, recovery copy, mobile controls를 한 화면군 범위에서 정리한다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)
