@@ -52,7 +52,7 @@ const REVIEW_FILTER_OPTIONS: Array<{ label: string; value?: ReviewCategory }> = 
 ];
 
 const PRIMARY_TAB_CLASS_NAME =
-  "inline-flex min-h-8 items-center rounded-lg border px-2.5 text-[12px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25";
+  "inline-flex min-h-8 items-center rounded-lg border px-2 text-[11px] font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25";
 const ACTIVE_PRIMARY_TAB_CLASS_NAME =
   "border-[#3567b5] bg-[#3567b5] text-white";
 const INACTIVE_PRIMARY_TAB_CLASS_NAME =
