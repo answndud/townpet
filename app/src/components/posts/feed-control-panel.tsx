@@ -225,7 +225,7 @@ export function FeedControlPanel({
       <div className="grid bg-white px-3 py-1 sm:px-5">
         <div
           data-testid="feed-sort-range-row"
-          className="flex flex-col gap-2 border-b border-[#e8f0fa] py-2 lg:flex-row lg:flex-wrap lg:items-center lg:gap-4"
+          className="flex flex-col gap-2 py-2 lg:flex-row lg:flex-wrap lg:items-center lg:gap-4"
         >
           <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
             <SectionLabel>정렬</SectionLabel>
