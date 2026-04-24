@@ -771,3 +771,27 @@
   - 다음 구현은 새 대형 기능이 아니라 기존 개인화/광고 운영 루프의 판단 가능성을 높이는 작은 사이클로 시작한다.
   - 마켓/케어/지도/결제는 이번 흐름에서 명시적으로 제외했다.
   - 변경은 문서에 한정했고 앱 기능 로직, 추천 알고리즘, 관리자 UI는 변경하지 않았다.
+
+### 2026-04-24 | Feed controls sort and period fix
+- 완료일: `2026-04-24`
+- 배경:
+  - 게스트/회원 피드에서 전체글/베스트글, 최신/좋아요/댓글, 기간 컨트롤을 눌러도 선택이 적용되지 않는 것처럼 보인다는 보고가 있었다.
+  - 특히 베스트글 상태의 정렬 버튼은 같은 베스트글 URL을 다시 만들고, 회원 맞춤 추천 상태의 정렬/기간 버튼은 개인화 재정렬을 유지할 수 있었다.
+- 변경내용:
+  - `FeedControlPanel`의 정렬 링크가 항상 `ALL` 모드와 `personalized=0` 전환을 명시하도록 수정했다.
+  - 기간 링크도 `ALL` 모드와 `personalized=0` 전환을 명시하도록 수정했다.
+  - 베스트글 상태에서는 최신/좋아요/댓글 정렬 버튼을 active로 표시하지 않게 했다.
+  - 회귀 테스트와 에러 기록 문서를 추가했다.
+- 코드문서:
+  - [app/src/components/posts/feed-control-panel.tsx](../app/src/components/posts/feed-control-panel.tsx)
+  - [app/src/components/posts/feed-control-panel.test.tsx](../app/src/components/posts/feed-control-panel.test.tsx)
+  - [docs/errors/2026-04-24_feed-controls-personalized-sort.md](./errors/2026-04-24_feed-controls-personalized-sort.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app test -- src/components/posts/feed-control-panel.test.tsx` 통과, 198 files / 939 tests
+  - `corepack pnpm -C app lint` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - 브라우저 확인: `/feed?mode=BEST&days=7`에서 `댓글` 클릭 시 `/feed?sort=COMMENT` 조건의 전체 피드로 전환됨
+- 결과:
+  - 베스트글에서 정렬을 누르면 no-op으로 남지 않고 전체글 정렬로 전환된다.
+  - 맞춤 추천 상태에서도 정렬/기간 선택은 개인화 재정렬에 가려지지 않고 명시적 피드 조건으로 적용된다.

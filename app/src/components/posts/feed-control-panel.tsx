@@ -237,9 +237,14 @@ export function FeedControlPanel({
               ] as const).map((option) => (
                 <Link
                   key={`feed-sort-${option.value}`}
-                  href={makeHref({ nextSort: option.value, nextPage: 1 })}
+                  href={makeHref({
+                    nextMode: "ALL",
+                    nextSort: option.value,
+                    nextPersonalized: "0",
+                    nextPage: 1,
+                  })}
                   className={`${FILTER_CHIP_CLASS_NAME} ${
-                    selectedSort === option.value
+                    mode === "ALL" && selectedSort === option.value
                       ? ACTIVE_FILTER_CHIP_CLASS_NAME
                       : INACTIVE_FILTER_CHIP_CLASS_NAME
                   }`}
@@ -258,7 +263,12 @@ export function FeedControlPanel({
               {mode === "ALL" ? (
                 <>
                   <Link
-                    href={makeHref({ nextPeriod: null, nextPage: 1 })}
+                    href={makeHref({
+                      nextMode: "ALL",
+                      nextPeriod: null,
+                      nextPersonalized: "0",
+                      nextPage: 1,
+                    })}
                     className={`${FILTER_CHIP_CLASS_NAME} ${
                       !periodDays
                         ? ACTIVE_FILTER_CHIP_CLASS_NAME
@@ -270,7 +280,12 @@ export function FeedControlPanel({
                   {FEED_PERIOD_OPTIONS.map((day) => (
                     <Link
                       key={`feed-period-${day}`}
-                      href={makeHref({ nextPeriod: day, nextPage: 1 })}
+                      href={makeHref({
+                        nextMode: "ALL",
+                        nextPeriod: day,
+                        nextPersonalized: "0",
+                        nextPage: 1,
+                      })}
                       className={`${FILTER_CHIP_CLASS_NAME} ${
                         periodDays === day
                           ? ACTIVE_FILTER_CHIP_CLASS_NAME

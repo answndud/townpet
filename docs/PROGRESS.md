@@ -13,6 +13,7 @@
 - 레드팀 P0/P1 잔여 remediation 확인을 완료했다
 - 운영 문서 최신성 점검을 완료했다
 - 품종 기반 개인화/광고/커뮤니티 PRD 착수를 완료했다
+- 피드 컨트롤 정렬/기간 클릭 체감 미적용 버그를 수정했다
 - 다음 작업: 개인화 운영 판단 기준 문서화
 
 ## 열린 blocker
@@ -24,6 +25,10 @@
   - 추가: `business/product/품종_개인화_광고_커뮤니티_실행계획.md`에 A1-A4 순서, 제외 범위, 정책 게이트, 검증 명령을 정리했다.
   - 유지: 앱 기능 로직, 추천 알고리즘, 관리자 UI는 변경 없음.
   - 통과: `corepack pnpm -C app docs:refresh:check`, `corepack pnpm -C app lint`, `corepack pnpm -C app typecheck`.
+- 피드 컨트롤 버그 수정:
+  - 원인: 베스트글 상태의 정렬 링크가 no-op href를 만들고, 맞춤 추천 상태의 정렬/기간 링크가 개인화 재정렬을 유지했다.
+  - 수정: 정렬/기간 클릭 시 전체글 + 비개인화 조건을 명시해 최신/좋아요/댓글/기간 선택이 실제 쿼리에 반영되게 했다.
+  - 통과: `corepack pnpm -C app test -- src/components/posts/feed-control-panel.test.tsx`, `corepack pnpm -C app lint`, `corepack pnpm -C app typecheck`.
 - 과거 Phase 0-5와 checkpoint/push 상세는 [COMPLETED.md](./COMPLETED.md)에 보관했다.
 
 ## 다음 액션

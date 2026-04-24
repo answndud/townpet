@@ -50,6 +50,8 @@ docs/*
 !docs/문서_안내.md
 !docs/개발_운영_가이드.md
 !docs/제품_기술_개요.md
+!docs/errors/
+!docs/errors/**
 !docs/analytics/
 !docs/analytics/**
 !docs/archive/
