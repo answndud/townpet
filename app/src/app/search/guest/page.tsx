@@ -1,36 +1,30 @@
-import { Suspense } from "react";
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 
-import { GuestSearchPageClient } from "@/components/posts/guest-search-page-client";
-import { EmptyState } from "@/components/ui/empty-state";
+import { buildFeedSearchRedirectPath } from "@/app/search/page";
+
+type GuestSearchPageProps = {
+  searchParams?: Promise<{
+    q?: string;
+    type?: string;
+    searchIn?: string;
+  }>;
+};
 
 export const metadata: Metadata = {
   title: "검색",
-  description: "제목/내용/작성자 기준으로 게시글을 빠르게 찾으세요.",
+  description: "공개 피드 하단 검색에서 제목/내용 기준으로 게시글을 찾으세요.",
   alternates: {
-    canonical: "/search",
+    canonical: "/feed",
   },
   openGraph: {
-    title: "TownPet 검색",
-    description: "제목/내용/작성자 기준으로 게시글을 빠르게 찾으세요.",
-    url: "/search",
+    title: "TownPet 공개 피드 검색",
+    description: "공개 피드 하단 검색에서 제목/내용 기준으로 게시글을 찾으세요.",
+    url: "/feed",
   },
 };
 
-export default function GuestSearchPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="tp-page-bg min-h-screen pb-16">
-          <main className="mx-auto flex w-full max-w-[1320px] flex-col gap-5 px-4 py-6 sm:px-6 lg:px-10">
-            <section className="tp-card overflow-hidden">
-              <EmptyState title="검색을 준비 중입니다" description="검색 화면을 불러오고 있습니다." />
-            </section>
-          </main>
-        </div>
-      }
-    >
-      <GuestSearchPageClient />
-    </Suspense>
-  );
+export default async function GuestSearchPage({ searchParams }: GuestSearchPageProps) {
+  const resolvedParams = (await searchParams) ?? {};
+  redirect(buildFeedSearchRedirectPath("/feed/guest", resolvedParams));
 }

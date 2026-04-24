@@ -800,3 +800,35 @@
   - 베스트글에서 정렬을 누르면 no-op으로 남지 않고 전체글 정렬로 전환된다.
   - 맞춤 추천 상태에서도 정렬/기간 선택은 개인화 재정렬에 가려지지 않고 명시적 피드 조건으로 적용된다.
   - 게스트 피드 링크 클릭이 stale canonical 정리에 의해 원복되지 않는다.
+
+### 2026-04-24 | Feed footer search integration
+- 완료일: `2026-04-24`
+- 배경:
+  - 검색을 별도 `/search/guest` 페이지로 보내지 않고 커뮤니티 하단 검색처럼 피드 하단에 배치하고 싶다는 요구가 있었다.
+  - 기존 헤더 검색은 제목/내용 선택이 없고, 피드 탐색 흐름과 검색 화면이 분리되어 있었다.
+- 변경내용:
+  - `FeedFooterSearchForm`을 추가해 피드 목록 하단에서 `제목` / `내용` 기준 검색을 수행하도록 했다.
+  - `/feed`와 `/feed/guest`에 하단 검색 form을 배치하고 현재 게시판, 관심 동물, 리뷰 필터를 hidden input으로 보존했다.
+  - 앱 헤더의 모바일 검색 링크와 데스크톱 검색 form을 제거했다.
+  - `/search`와 `/search/guest` 페이지는 기존 `q`, `type`, `searchIn`을 보존해 각각 `/feed`, `/feed/guest`로 redirect하도록 축소했다.
+  - 게스트 `/search` middleware rewrite도 `/feed/guest` redirect로 전환했다.
+- 코드문서:
+  - [app/src/components/posts/feed-footer-search-form.tsx](../app/src/components/posts/feed-footer-search-form.tsx)
+  - [app/src/components/posts/feed-footer-search-form.test.tsx](../app/src/components/posts/feed-footer-search-form.test.tsx)
+  - [app/src/app/feed/page.tsx](../app/src/app/feed/page.tsx)
+  - [app/src/components/posts/guest-feed-page-client.tsx](../app/src/components/posts/guest-feed-page-client.tsx)
+  - [app/src/components/navigation/app-shell-header.tsx](../app/src/components/navigation/app-shell-header.tsx)
+  - [app/src/app/search/page.tsx](../app/src/app/search/page.tsx)
+  - [app/src/app/search/guest/page.tsx](../app/src/app/search/guest/page.tsx)
+  - [app/middleware.ts](../app/middleware.ts)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app test -- src/components/posts/feed-footer-search-form.test.tsx src/app/search/page.test.tsx src/app/search/guest/page.test.tsx src/middleware.test.ts src/components/posts/guest-feed-page-client.test.ts src/components/posts/feed-control-panel.test.tsx` 통과, 202 files / 946 tests
+  - `corepack pnpm -C app lint` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - 브라우저 확인: `/feed` 하단 검색에서 `제목 + 강아지` 제출 시 `/feed?q=...&searchIn=TITLE` 결과로 전환됨
+  - 브라우저 확인: `/search/guest?q=사료&searchIn=CONTENT` 진입 시 `/feed/guest` 검색 결과 화면으로 수렴됨
+- 결과:
+  - 검색 진입점이 헤더/전용 검색 페이지가 아니라 피드 목록 하단으로 이동했다.
+  - 사용자는 제목/내용 기준을 선택해 현재 피드 맥락 안에서 검색할 수 있다.
+  - 기존 검색 URL은 깨지지 않고 피드 검색 URL로 수렴한다.

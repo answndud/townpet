@@ -8,7 +8,6 @@ import { useEffect, useRef, useState } from "react";
 import { AuthControls } from "@/components/auth/auth-controls";
 import {
   APP_SHELL_DESKTOP_NAV_CLUSTER_CLASS_NAME,
-  APP_SHELL_DESKTOP_SEARCH_INPUT_CLASS_NAME,
   APP_SHELL_HEADER_CLASS_NAME,
   APP_SHELL_MOBILE_QUICK_LINK_CLASS_NAME,
   APP_SHELL_NAV_LINK_CLASS_NAME,
@@ -130,9 +129,6 @@ export function AppShellHeader({ communities }: AppShellHeaderProps) {
                 관리자
               </Link>
             ) : null}
-            <Link href="/search" className={APP_SHELL_MOBILE_QUICK_LINK_CLASS_NAME}>
-              검색
-            </Link>
             <Link href="/profile" className={APP_SHELL_MOBILE_QUICK_LINK_CLASS_NAME}>
               내 프로필
             </Link>
@@ -198,24 +194,6 @@ export function AppShellHeader({ communities }: AppShellHeaderProps) {
           </div>
 
           <div className={`hidden md:flex ${APP_SHELL_DESKTOP_NAV_CLUSTER_CLASS_NAME}`}>
-            <form
-              action="/feed"
-              method="get"
-              className={`flex ${APP_SHELL_DESKTOP_NAV_CLUSTER_CLASS_NAME}`}
-            >
-              <input
-                name="q"
-                type="search"
-                placeholder="검색"
-                className={APP_SHELL_DESKTOP_SEARCH_INPUT_CLASS_NAME}
-              />
-              <button
-                type="submit"
-                className={APP_SHELL_NAV_LINK_CLASS_NAME}
-              >
-                찾기
-              </button>
-            </form>
             {viewerShell.isAuthenticated ? (
               <AuthControls
                 className={`${APP_SHELL_NAV_LINK_CLASS_NAME} text-[#173963] hover:text-[#0f2f56] disabled:opacity-60`}

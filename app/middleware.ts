@@ -265,10 +265,9 @@ export async function middleware(request: NextRequest) {
         "public, s-maxage=60, stale-while-revalidate=300",
       );
       appendVary(responseHeaders, "Cookie");
-      const rewrittenUrl = request.nextUrl.clone();
-      rewrittenUrl.pathname = "/search/guest";
-      return NextResponse.rewrite(rewrittenUrl, {
-        request: { headers: requestHeaders },
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = "/feed/guest";
+      return NextResponse.redirect(redirectUrl, {
         headers: responseHeaders,
       });
     }
