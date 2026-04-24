@@ -11,22 +11,23 @@
 - 보안 헤더 / 운영 smoke evidence 보강을 완료했다
 - 로딩 / 빈상태 polish 잔여 점검을 완료했다
 - 레드팀 P0/P1 잔여 remediation 확인을 완료했다
-- 다음 작업: 운영 문서 최신성 점검
+- 운영 문서 최신성 점검을 완료했다
+- 다음 작업: 품종 기반 개인화/광고/커뮤니티 PRD 착수
 
 ## 열린 blocker
 - 없음. 기존 `db:restore:local` local test account count mismatch는 managed account count 검증으로 수정했고 restore 통과를 확인했다.
 
 ## 직전 검증
-- 레드팀 P0/P1 잔여 remediation 확인:
-  - 변경: `business/product/게시글_코어.md`의 stale `신고 3건 이상이면 HIDDEN` 규칙을 현재 가중치 기반 자동숨김 정책으로 갱신했다.
-  - 추가: 고정 3건 자동숨김 문구가 정책 문서에 재도입되지 않도록 문서 일관성 테스트를 추가했다.
-  - 유지: report service/API, moderation scoring, admin queue 로직은 변경 없음.
-  - 통과: 관련 Vitest 18개, `corepack pnpm -C app lint`, `corepack pnpm -C app typecheck`, `corepack pnpm -C app quality:check` 197 files / 935 tests, placeholder env `corepack pnpm -C app build`.
+- 운영 문서 최신성 점검:
+  - 추가: `scripts/ops-doc-scripts-consistency.test.ts`로 README/AGENTS/운영 문서의 대표 `pnpm` script 참조를 `app/package.json` scripts와 대조한다.
+  - 갱신: `docs:refresh:check`가 stale report를 감지해 `docs:refresh`로 `business/archive/operations/문서 동기화 리포트.md`를 최신화했다.
+  - 유지: 앱 기능 로직, 운영 스크립트 동작, 디자인 UI는 변경 없음.
+  - 통과: targeted Vitest 2개, `corepack pnpm -C app docs:refresh:check`, `corepack pnpm -C app lint`, `corepack pnpm -C app typecheck`, `corepack pnpm -C app quality:check` 198 files / 937 tests, placeholder env `corepack pnpm -C app build`.
 - 과거 Phase 0-5와 checkpoint/push 상세는 [COMPLETED.md](./COMPLETED.md)에 보관했다.
 
 ## 다음 액션
-1. 운영 문서와 `app/package.json` scripts의 대표 명령을 대조한다.
-2. 불일치가 있으면 문서를 최소 수정하고 검증한다.
+1. 품종 기반 개인화/광고/커뮤니티 관련 PRD와 정책 문서를 확인한다.
+2. 첫 구현 후보와 구현 전 검증 기준을 문서로 확정한다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)

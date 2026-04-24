@@ -719,3 +719,29 @@
 - 결과:
   - 레드팀 P0/P1 신고 정책 remediation 증거가 product/policy 문서 사이에서 충돌하지 않는다.
   - 신고 서비스/API와 moderation scoring 로직은 변경하지 않고, stale 정책 문서와 문서 회귀 테스트만 보강했다.
+
+### 2026-04-24 | Operations docs command consistency check
+- 완료일: `2026-04-24`
+- 배경:
+  - 운영/README/AGENTS 문서의 대표 `pnpm` 명령이 `app/package.json` scripts와 어긋나면 온콜, 배포, 로컬 복구 루틴이 stale 문서에 의존할 수 있다.
+  - 최근 문서 추가 후 `business/archive/operations/문서 동기화 리포트.md` 생성 리포트도 최신 상태가 아니었다.
+- 변경내용:
+  - `scripts/ops-doc-scripts-consistency.test.ts`를 추가해 README, AGENTS, app README, 운영 가이드, 배포 체크리스트, OAuth/Vercel 가이드의 대표 `pnpm` script 참조를 `app/package.json` scripts와 대조한다.
+  - `business/archive/operations/문서 동기화 리포트.md`를 `docs:refresh` 결과로 갱신했다.
+  - active plan/progress를 다음 priority인 품종 기반 개인화/광고/커뮤니티 PRD 착수로 갱신했다.
+- 코드문서:
+  - [app/scripts/ops-doc-scripts-consistency.test.ts](../app/scripts/ops-doc-scripts-consistency.test.ts)
+  - [business/archive/operations/문서 동기화 리포트.md](../business/archive/operations/문서 동기화 리포트.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app exec vitest run scripts/ops-doc-scripts-consistency.test.ts` 통과, 2 tests
+  - `corepack pnpm -C app docs:refresh:check` 최초 stale report 감지 후 `corepack pnpm -C app docs:refresh` 실행, 재확인 통과
+  - `corepack pnpm -C app lint` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `corepack pnpm -C app quality:check` 통과, 198 files / 937 tests
+  - `AUTH_SECRET=local-dev-secret-local-dev-secret-123456 GUEST_HASH_PEPPER=local-dev-pepper HEALTH_INTERNAL_TOKEN=health-secret UPSTASH_REDIS_REST_URL=https://example.com UPSTASH_REDIS_REST_TOKEN=local-token RESEND_API_KEY=re_local_dummy BLOB_READ_WRITE_TOKEN=local-blob-token corepack pnpm -C app build` 통과
+- 결과:
+  - 대표 운영 문서의 `pnpm` script 참조가 package scripts 변경과 함께 회귀 검증된다.
+  - 생성형 운영 문서 리포트가 현재 markdown 파일 집합과 다시 동기화됐다.
+  - 변경은 문서/테스트에 한정했고 앱 기능 로직과 운영 스크립트 동작은 변경하지 않았다.

@@ -26,16 +26,16 @@
 
 ## Active Plan
 
-### 운영 문서 최신성 점검
+### 품종 기반 개인화 / 광고 / 커뮤니티 PRD 착수
 
 상태: `pending`
 
-- 목표: 운영 문서 안내, 배포/수동점검 체크리스트, 현재 package scripts 간 명령 불일치를 점검한다.
-- 범위: 운영 문서 최신성 및 문서 테스트만 다루고 앱 기능 로직은 변경하지 않는다.
-- 사용할 skill 순서: `release-readiness` -> `quality-gate`.
-- 완료 기준: 문서 일관성 테스트 또는 `docs:refresh:check`, `lint`, `typecheck`, 필요한 build/quality check, 문서 archive.
+- 목표: 품종 기반 개인화/광고/커뮤니티 기능 PRD의 첫 구현 후보와 운영 정책 전제를 확정한다.
+- 범위: PRD/정책/실행 순서 문서화만 다루고 기능 구현은 시작하지 않는다.
+- 사용할 skill 순서: `cycle-kickoff` -> 필요 시 `policy-abuse-gate`.
+- 완료 기준: 대상 PRD/PLAN/PROGRESS 동기화, 필요한 문서 검증.
 
 ## 다음 실행 순서
 
-1. 운영 문서와 `app/package.json` scripts의 대표 명령을 대조한다.
-2. 불일치가 있으면 문서를 최소 수정하고 검증한다.
+1. 관련 product/business 문서를 확인해 첫 구현 후보를 하나로 좁힌다.
+2. 구현 전 정책/운영 전제와 검증 기준을 문서에 정리한다.
