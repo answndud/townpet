@@ -26,17 +26,16 @@
 
 ## Active Plan
 
-### Impeccable 디자인 개선 workflow
+### Impeccable admin reports 화면군
 
-상태: `completed`
-기준 컨텍스트: [PRODUCT.md](../PRODUCT.md), [DESIGN.md](../DESIGN.md), [.impeccable.md](../.impeccable.md)
+상태: `pending`
 
-완료 archive:
-- Phase 0-5 상세는 [COMPLETED.md](./COMPLETED.md)에 정리한다.
-- 최종 검증: `design:detect`, `lint`, `typecheck`, `test`, `build` 통과.
-- 참고: `db:restore:local`은 local test account count mismatch로 exit 1이지만 admin seed와 화면 검증은 가능했다.
+- 목표: `/admin/reports` 목록/필터/상태 밀도를 Impeccable 기준으로 정리한다.
+- 범위: 신고 목록 화면군 1개만 다루고, moderation 정책/상태 전이 로직은 변경하지 않는다.
+- 시작 전: `.impeccable.md`, `DESIGN.md`, 관련 skill 문서와 현재 `/admin/reports` 구조를 다시 읽는다.
+- 완료 기준: `design:detect`, `lint`, `typecheck`, 관련 테스트 또는 build, desktop/mobile screenshot 확인.
 
 ## 다음 실행 순서
 
-1. 새 디자인 개선은 별도 active cycle로 다시 연다.
-2. 남은 제품 작업은 현재 우선순위 목록에서 선택한다.
+1. `/admin/reports` baseline screenshot과 critique/audit를 먼저 남긴다.
+2. 한 화면군 범위에서 density, mobile first, empty/error/focus 상태를 정리한다.

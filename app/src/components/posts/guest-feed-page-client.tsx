@@ -7,7 +7,7 @@ import { PostType } from "@prisma/client";
 
 import { NeighborhoodGateNotice } from "@/components/neighborhood/neighborhood-gate-notice";
 import { FeedControlPanel } from "@/components/posts/feed-control-panel";
-import { FeedInfiniteList, type FeedPostItem } from "@/components/posts/feed-infinite-list";
+import { FeedInfiniteList } from "@/components/posts/feed-infinite-list";
 import { FeedLoadingSkeleton } from "@/components/posts/feed-loading-skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { isCommonBoardPostType } from "@/lib/community-board";

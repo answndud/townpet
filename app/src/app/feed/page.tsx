@@ -468,7 +468,6 @@ export default async function Home({ searchParams }: HomePageProps) {
       ? primaryNeighborhood?.neighborhood.id
       : undefined;
 
-  let totalItemCount = 0;
   let totalPages = 1;
   let resolvedPage = currentPage;
   let posts: FeedListResult = { items: [], nextCursor: null };
@@ -530,7 +529,6 @@ export default async function Home({ searchParams }: HomePageProps) {
         }),
       );
 
-      totalItemCount = bestPage.totalItemCount;
       totalPages = bestPage.totalPages;
       resolvedPage = bestPage.resolvedPage;
       bestItems = bestPage.page.items;
@@ -589,7 +587,6 @@ export default async function Home({ searchParams }: HomePageProps) {
         }),
       );
 
-      totalItemCount = allPage.totalItemCount;
       totalPages = allPage.totalPages;
       resolvedPage = allPage.resolvedPage;
       posts = allPage.page;

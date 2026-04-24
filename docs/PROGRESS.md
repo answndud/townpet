@@ -7,11 +7,20 @@
 - 상태 문서를 `docs/` 아래 slim active + archive 구조로 재편했다
 - Impeccable 디자인 개선 workflow Phase 0-5를 완료했다
 - 최근 완료 작업 상세와 과거 검증 로그는 [COMPLETED.md](./COMPLETED.md)로 이동했다
+- 현재 작업: 다음 Impeccable cycle `/admin/reports` 착수 전 baseline 준비
 
 ## 열린 blocker
-- `corepack pnpm -C app db:restore:local`: local test account count mismatch로 exit 1. Admin seed/login/screenshot 검증은 가능했다.
+- 없음. 기존 `db:restore:local` local test account count mismatch는 managed account count 검증으로 수정했고 restore 통과를 확인했다.
 
 ## 직전 검증
+- Local restore 안정화:
+  - `corepack pnpm -C app test -- scripts/seed-local-test-accounts.test.ts` 통과, 전체 Vitest 192 files / 924 tests 통과.
+  - `corepack pnpm -C app db:seed:local-test-accounts` 통과, managed `52/49/3`, global `88/71/17`.
+  - `corepack pnpm -C app db:restore:local` 통과.
+  - `corepack pnpm -C app design:detect` 통과.
+  - `corepack pnpm -C app lint` 통과, warning 0건.
+  - `corepack pnpm -C app typecheck` 통과.
+  - local inline env `corepack pnpm -C app build` 통과.
 - checkpoint commit `896e6df`를 생성하고 `origin/codex/editor-stabilization-finish`에 push했다.
 - Phase 1 public entry 구조 정리 완료 후 commit `f479001`을 원격에 push했다.
 - Phase 2 DB unavailable 화면군 완료: `/boards/adoption`, `/posts/new`.
@@ -27,8 +36,8 @@
 - screenshot evidence: `/tmp/townpet-impeccable-phase4/admin-ops-{desktop,mobile}-{before,after}.png`.
 
 ## 다음 액션
-1. 새 디자인 개선은 별도 active cycle로 연다.
-2. local test account seed mismatch는 필요 시 별도 bugfix cycle에서 원인 확인.
+1. 다음 Impeccable cycle은 `/admin/reports` 화면군을 한 화면군으로 착수한다.
+2. 시작 전 `.impeccable.md`, `DESIGN.md`, 관련 skill 문서와 `/admin/reports` route/component 구조를 다시 확인한다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)

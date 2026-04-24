@@ -383,7 +383,6 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    let totalItemCount = 0;
     let totalPages = 1;
     let resolvedPage = currentPage;
     let posts: GuestFeedListResult = { items: [], nextCursor: null };
@@ -444,7 +443,6 @@ export async function GET(request: NextRequest) {
             },
           }),
         );
-        totalItemCount = bestPage.totalItemCount;
         totalPages = bestPage.totalPages;
         resolvedPage = bestPage.resolvedPage;
         bestItems = bestPage.page.items;
@@ -502,7 +500,6 @@ export async function GET(request: NextRequest) {
             },
           }),
         );
-        totalItemCount = allPage.totalItemCount;
         totalPages = allPage.totalPages;
         resolvedPage = allPage.resolvedPage;
         posts = allPage.page;

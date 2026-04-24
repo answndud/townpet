@@ -315,3 +315,34 @@
   - `/admin/ops` first viewport는 상태 요약과 다음 작업 영역을 더 빠르게 보여준다.
   - Impeccable detector 잔여 finding이 0건이 됐다.
   - Phase 0-5 Impeccable workflow는 완료 상태로 archive 처리했다.
+
+### 2026-04-24 | Local restore seed mismatch and lint cleanup
+- 완료일: `2026-04-24`
+- 배경:
+  - Impeccable Phase 4-5 검증 중 `corepack pnpm -C app db:restore:local`이 local test account count mismatch로 실패했다.
+  - restore 스크립트는 DB를 truncate하지 않으므로 오래된 로컬/e2e 사용자가 남으면 전체 `User` count가 바뀔 수 있었다.
+- 변경내용:
+  - `seed-local-test-accounts`의 하드코딩된 전체 사용자 수 검증을 제거하고, 스크립트가 관리하는 email set만 검증하도록 바꿨다.
+  - 글로벌 사용자 수와 passwordless email은 진단용 로그로 유지했다.
+  - seed helper를 export하고 회귀 테스트를 추가했다.
+  - 생성물인 `coverage/**`를 eslint ignore에 추가하고, 기존 unused import/variable warning 4건을 제거했다.
+- 코드문서:
+  - [app/scripts/seed-local-test-accounts.ts](../app/scripts/seed-local-test-accounts.ts)
+  - [app/scripts/seed-local-test-accounts.test.ts](../app/scripts/seed-local-test-accounts.test.ts)
+  - [app/eslint.config.mjs](../app/eslint.config.mjs)
+  - [app/src/app/api/feed/guest/route.ts](../app/src/app/api/feed/guest/route.ts)
+  - [app/src/app/feed/page.tsx](../app/src/app/feed/page.tsx)
+  - [app/src/app/feed/guest/page.test.tsx](../app/src/app/feed/guest/page.test.tsx)
+  - [app/src/components/posts/guest-feed-page-client.tsx](../app/src/components/posts/guest-feed-page-client.tsx)
+  - [docs/errors/2026-04-24_local-test-account-seed-mismatch.md](./errors/2026-04-24_local-test-account-seed-mismatch.md)
+- 검증:
+  - `corepack pnpm -C app test -- scripts/seed-local-test-accounts.test.ts` 통과, 전체 Vitest 192 files / 924 tests 통과.
+  - `corepack pnpm -C app db:seed:local-test-accounts` 통과, managed `52/49/3`, global `88/71/17`.
+  - `corepack pnpm -C app db:restore:local` 통과.
+  - `corepack pnpm -C app design:detect` 통과.
+  - `corepack pnpm -C app lint` 통과, warning 0건.
+  - `corepack pnpm -C app typecheck` 통과.
+  - `AUTH_SECRET=local-dev-secret-local-dev-secret-123456 GUEST_HASH_PEPPER=local-dev-pepper UPSTASH_REDIS_REST_URL=https://example.com UPSTASH_REDIS_REST_TOKEN=local-token RESEND_API_KEY=re_local_dummy corepack pnpm -C app build` 통과.
+- 결과:
+  - local restore blocker가 해소되어 다음 Impeccable/admin 화면군 작업 전 DB 복구 루틴을 다시 사용할 수 있다.
+  - lint warning이 0건이 되어 품질 게이트 출력이 더 명확해졌다.
