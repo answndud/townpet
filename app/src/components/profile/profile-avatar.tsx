@@ -42,6 +42,7 @@ export function ProfileAvatar({ src }: ProfileAvatarProps) {
       width={56}
       height={56}
       className="tp-border-soft h-14 w-14 shrink-0 rounded-full border object-cover"
+      unoptimized
       onError={() => setFailed(true)}
     />
   );
