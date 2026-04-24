@@ -7,7 +7,7 @@
 - 상태 문서를 `docs/` 아래 slim active + archive 구조로 재편했다
 - Impeccable 디자인 개선 workflow Phase 0-5를 완료했다
 - 최근 완료 작업 상세와 과거 검증 로그는 [COMPLETED.md](./COMPLETED.md)로 이동했다
-- 현재 작업: `/admin/reports/[id]` 상세 처리 흐름 완료 후 다음 Impeccable cycle 선정 대기
+- 현재 작업: Impeccable `/posts/new` 작성 form 흐름 baseline 확인
 
 ## 열린 blocker
 - 없음. 기존 `db:restore:local` local test account count mismatch는 managed account count 검증으로 수정했고 restore 통과를 확인했다.
@@ -46,8 +46,8 @@
 - screenshot evidence: `/tmp/townpet-impeccable-phase4/admin-ops-{desktop,mobile}-{before,after}.png`.
 
 ## 다음 액션
-1. 다음 Impeccable cycle 후보를 하나 고른다: `/posts/new` 작성 form polish 또는 public post detail/comment flow.
-2. 시작 전 `.impeccable.md`, `DESIGN.md`, 관련 skill 문서와 route/component 구조를 다시 확인한다.
+1. `/posts/new` baseline screenshot과 route/component 구조를 확인한다.
+2. 작성 form의 첫 viewport, empty/error/help copy, touch target을 한 화면군 범위에서 정리한다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)
