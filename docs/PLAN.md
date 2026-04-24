@@ -40,9 +40,10 @@
 - 현재 blocker: `design:detect` 기존 1건(`globals.css` blockquote side border), `build` 로컬 필수 env 누락.
 
 #### Phase 4: admin / dashboard / list density 개선
-- 상태: `in_progress`
+- 상태: `blocked`
 - 목표: 운영자가 신고, 정책, 인증 로그, Ops 지표를 빠르게 스캔하도록 card-heavy 화면을 조용한 작업 화면으로 정리한다.
 - 현재 대상 화면군: `/admin/ops` 또는 `/admin/reports` 중 하나만 선택.
+- blocker: 로컬 DB/admin seed 세션이 없어 desktop/mobile screenshot과 실제 density를 확인할 수 없음.
 - 사용할 skill 순서: `$impeccable distill` -> `$impeccable layout` -> `$impeccable audit` -> `$impeccable adapt`.
 - 수정 범위: metric card hierarchy, table/list density, filter bars, mobile admin fallback.
 - 하지 않을 것: admin 권한 모델 변경, 신고/제재 service 로직 변경, 지표 산식 변경, 운영 문서 개편.
@@ -52,6 +53,6 @@
 
 ## 다음 실행 순서
 
-1. Phase 3 변경분을 commit/push한다.
-2. Phase 4 시작 전 관련 skill 문서를 다시 읽는다.
-3. admin 화면군 하나만 선택해 density를 정리하고, 완료 시 archive로 이동한다.
+1. `corepack pnpm -C app db:restore:local`로 DB/admin seed를 복구한다.
+2. `/admin/ops` 또는 `/admin/reports` 중 하나를 선택해 screenshot evidence를 확보한다.
+3. Phase 4 관련 skill 문서를 다시 읽고, admin 화면군 하나만 정리한다.
