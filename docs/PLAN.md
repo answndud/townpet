@@ -26,16 +26,16 @@
 
 ## Active Plan
 
-### 다음 품질 안정화 사이클
+### 보안 헤더 / 운영 smoke evidence 보강
 
 상태: `pending`
 
-- 목표: Impeccable 개선 이후 남은 제품/운영 launch gap을 정리한다.
-- 범위: 공개 SEO/metadata/sitemap, 보안 헤더 evidence, 운영 smoke evidence, redteam P0/P1 잔여 항목 중 하나만 선택해 진행한다.
-- 사용할 skill 순서: 작업 성격에 따라 `quality-gate` 또는 `release-readiness`를 먼저 적용한다.
-- 완료 기준: 대상별 테스트/검증 명령, 문서 archive, 필요 시 screenshot 또는 운영 check evidence.
+- 목표: 배포 전 확인 가능한 security header, health, 운영 smoke 증거를 최신 상태로 정리한다.
+- 범위: 보안 헤더 테스트/문서/evidence와 운영 smoke 명령만 다루고 제품 기능 로직은 변경하지 않는다.
+- 사용할 skill 순서: `release-readiness` -> `quality-gate`.
+- 완료 기준: header/health 관련 테스트 또는 smoke 명령, `lint`, `typecheck`, 필요한 build/quality check, 문서 archive.
 
 ## 다음 실행 순서
 
-1. 다음 launch gap 중 하나를 선택해 active scope를 확정한다.
-2. 구현 전 `docs/PLAN.md`에 해당 사이클의 목표/범위/검증 명령을 먼저 구체화한다.
+1. `release-readiness` 기준으로 security header와 운영 smoke evidence의 현재 커버리지를 확인한다.
+2. 누락된 증거 또는 경미한 테스트 갭이 있으면 최소 수정 후 quality gate를 실행한다.

@@ -77,6 +77,11 @@ export default async function sitemap({
             priority: 0.7,
           },
           {
+            url: `${siteOrigin}/boards/adoption`,
+            changeFrequency: "daily",
+            priority: 0.6,
+          },
+          {
             url: `${siteOrigin}/terms`,
             changeFrequency: "yearly",
             priority: 0.2,

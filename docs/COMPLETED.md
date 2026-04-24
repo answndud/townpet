@@ -602,3 +602,35 @@
 - 결과:
   - Impeccable 개선 workflow는 주요 화면군에 대해 detector, full quality check, build, representative screenshot evidence까지 완료됐다.
   - 남은 active work는 Impeccable UI phase가 아니라 다음 launch gap 선택이다.
+
+### 2026-04-24 | Public SEO metadata sitemap stabilization
+- 완료일: `2026-04-24`
+- 배경:
+  - Impeccable UI phase 이후 launch gap으로 public entry의 metadata/canonical/sitemap/robots 증거를 점검했다.
+  - `/boards/adoption`은 public canonical page인데 sitemap static route에 없었고, local endpoint 확인 중 robots가 Next 16 dynamic sitemap 실제 경로와 다른 `/sitemap.xml`을 가리켜 404가 나는 것을 발견했다.
+- 변경내용:
+  - sitemap 첫 페이지 static route에 `/boards/adoption`을 추가했다.
+  - sitemap 테스트에 canonical public entry 포함과 redirect alias/private/auth 화면 제외를 고정했다.
+  - robots disallow에 admin/API/auth/password/profile/notification/bookmark/user-private surface를 명시했다.
+  - robots sitemap URL을 실제 생성 경로인 `/sitemap/0.xml`로 맞추고 회귀 테스트를 추가했다.
+  - active plan/progress를 다음 launch gap인 보안 헤더/운영 smoke evidence 보강으로 갱신했다.
+- 코드문서:
+  - [app/src/app/sitemap.ts](../app/src/app/sitemap.ts)
+  - [app/src/app/sitemap.test.ts](../app/src/app/sitemap.test.ts)
+  - [app/src/app/robots.ts](../app/src/app/robots.ts)
+  - [app/src/app/robots.test.ts](../app/src/app/robots.test.ts)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app exec vitest run src/app/sitemap.test.ts src/app/robots.test.ts` 통과
+  - `corepack pnpm -C app lint` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `corepack pnpm -C app quality:check` 통과, 194 files / 929 tests
+  - `AUTH_SECRET=local-dev-secret-local-dev-secret-123456 GUEST_HASH_PEPPER=local-dev-pepper UPSTASH_REDIS_REST_URL=https://example.com UPSTASH_REDIS_REST_TOKEN=local-token RESEND_API_KEY=re_local_dummy BLOB_READ_WRITE_TOKEN=local-blob-token corepack pnpm -C app build` 통과
+  - `curl -sS http://localhost:3000/robots.txt` 확인: `Sitemap: http://localhost:3000/sitemap/0.xml`, private/auth/admin/API disallow 확인
+  - `curl -sS -I http://localhost:3000/sitemap/0.xml` 확인: `200 OK`, `content-type: application/xml`
+  - `curl -sS http://localhost:3000/sitemap/0.xml` 확인: `/`, `/feed`, `/search`, `/boards/adoption`, legal routes 포함
+- 결과:
+  - public sitemap은 canonical public entry와 게시글/품종 lounge만 노출하고, redirect alias와 private/auth utility surface는 제외하도록 테스트로 고정됐다.
+  - robots가 실제 생성되는 sitemap 경로를 가리키게 되어 crawler가 404 sitemap URL을 받는 문제가 해소됐다.
+  - 변경은 SEO metadata route와 문서에 한정했고 제품 기능/정책 로직은 변경하지 않았다.
