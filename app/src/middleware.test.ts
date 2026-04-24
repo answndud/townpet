@@ -174,6 +174,16 @@ describe("middleware admin path protection", () => {
 });
 
 describe("middleware guest feed rewrite", () => {
+  it("redirects guest /search requests to the guest feed search query", async () => {
+    const request = new NextRequest("https://townpet.test/search?q=%EC%82%B0%EC%B1%85&searchIn=TITLE");
+    const response = await middleware(request);
+
+    expect(response.status).toBe(307);
+    expect(response.headers.get("location")).toBe(
+      "https://townpet.test/feed/guest?q=%EC%82%B0%EC%B1%85&searchIn=TITLE",
+    );
+  });
+
   it("redirects guest /feed requests to /feed/guest with static CSP", async () => {
     process.env.CSP_ENFORCE_STRICT = "1";
 

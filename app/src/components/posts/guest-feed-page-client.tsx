@@ -7,6 +7,7 @@ import { PostType } from "@prisma/client";
 
 import { NeighborhoodGateNotice } from "@/components/neighborhood/neighborhood-gate-notice";
 import { FeedControlPanel } from "@/components/posts/feed-control-panel";
+import { FeedFooterSearchForm } from "@/components/posts/feed-footer-search-form";
 import { FeedInfiniteList } from "@/components/posts/feed-infinite-list";
 import { FeedLoadingSkeleton } from "@/components/posts/feed-loading-skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -361,6 +362,22 @@ export function GuestFeedPageClient({
   } = data.feed;
   const isUltraDense = density === "ULTRA";
   const loginHref = (nextPath: string) => `/login?next=${encodeURIComponent(nextPath)}`;
+  const footerSearchIn = selectedSearchIn === "CONTENT" ? "CONTENT" : "TITLE";
+  const footerSearchResetHref = buildGuestFeedHref({
+    basePath: feedBasePath,
+    type,
+    reviewBoard,
+    reviewCategory,
+    petTypeIds,
+    query: "",
+    mode: "ALL",
+    bestDays,
+    periodDays: null,
+    selectedSort: "LATEST",
+    selectedSearchIn: "ALL",
+    density,
+    resolvedPage: 1,
+  });
 
   const makeHref = ({
     nextType,
@@ -445,12 +462,6 @@ export function GuestFeedPageClient({
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                <Link
-                  href={query ? `/search/guest?q=${encodeURIComponent(query)}` : "/search/guest"}
-                  className="tp-btn-soft inline-flex min-h-10 items-center justify-center px-3 text-xs font-semibold"
-                >
-                  게시글 검색
-                </Link>
                 <Link
                   href="/posts/new"
                   className="tp-btn-primary inline-flex min-h-10 items-center justify-center px-3 text-xs font-semibold hover:bg-[#274f8c]"
@@ -578,6 +589,15 @@ export function GuestFeedPageClient({
                 </Link>
               </div>
             ) : null}
+            <FeedFooterSearchForm
+              actionPath={feedBasePath}
+              query={query}
+              searchIn={footerSearchIn}
+              resetHref={footerSearchResetHref}
+              type={type}
+              petTypeIds={petTypeIds}
+              reviewCategory={reviewCategory}
+            />
           </section>
 
         </div>

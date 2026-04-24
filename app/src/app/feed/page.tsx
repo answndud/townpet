@@ -8,6 +8,7 @@ import { PostScope, PostType } from "@prisma/client";
 
 import { NeighborhoodGateNotice } from "@/components/neighborhood/neighborhood-gate-notice";
 import { FeedControlPanel } from "@/components/posts/feed-control-panel";
+import { FeedFooterSearchForm } from "@/components/posts/feed-footer-search-form";
 import {
   FeedInfiniteList,
   type FeedPostItem,
@@ -861,6 +862,24 @@ export default async function Home({ searchParams }: HomePageProps) {
     const serialized = params.toString();
     return serialized ? `/feed?${serialized}` : "/feed";
   };
+  const footerSearchResetHref = (() => {
+    const params = new URLSearchParams();
+    if (type) {
+      params.set("type", type);
+    }
+    for (const value of petTypeIds) {
+      params.append("petType", value);
+    }
+    if (normalizedReviewCategory) {
+      params.set("review", normalizedReviewCategory);
+    }
+    if (density === "ULTRA") {
+      params.set("density", "ULTRA");
+    }
+    const serialized = params.toString();
+    return serialized ? `/feed?${serialized}` : "/feed";
+  })();
+  const footerSearchIn = selectedSearchIn === "CONTENT" ? "CONTENT" : "TITLE";
 
   feedPerf.flush({
     route: "/feed",
@@ -1046,6 +1065,15 @@ export default async function Home({ searchParams }: HomePageProps) {
               </Link>
             </div>
           ) : null}
+          <FeedFooterSearchForm
+            actionPath="/feed"
+            query={query}
+            searchIn={footerSearchIn}
+            resetHref={footerSearchResetHref}
+            type={type}
+            petTypeIds={petTypeIds}
+            reviewCategory={normalizedReviewCategory}
+          />
         </section>
 
         <div className="flex justify-end gap-2">
