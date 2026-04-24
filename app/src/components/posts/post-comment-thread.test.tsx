@@ -144,10 +144,10 @@ describe("PostCommentThread", () => {
     expect(html).toContain(POST_COMMENT_THREAD_FOOTER_CLASS_NAME);
     expect(html).toContain(POST_COMMENT_THREAD_REPLY_CARD_CLASS_NAME);
     expect(html).toContain("before:bg-[#dfe9f8]");
-    expect(html).toContain("relative mt-2 ml-5");
+    expect(html).toContain("relative mt-2 ml-4");
     expect(html).toContain("sm:ml-7");
     expect(html).toContain("before:absolute");
-    expect(html).toContain("space-y-1.5 pl-3");
+    expect(html).toContain("space-y-2 pl-3");
     expect(html).toContain("sm:pl-4");
     expect(html).not.toContain('href="/users/user-best-1"');
     expect(html).not.toContain("프로필 보기");

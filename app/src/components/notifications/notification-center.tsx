@@ -290,22 +290,34 @@ export function NotificationCenter({
   return (
     <>
       <header className="tp-hero p-5 sm:p-6">
-        <p className="tp-eyebrow">알림 센터</p>
-        <h1 className="tp-text-page-title tp-text-primary mt-2">
-          내 알림
-        </h1>
-        <p className="tp-text-muted mt-2 text-sm">미확인 알림 {globalUnreadCount}건</p>
-        <p className="tp-text-subtle mt-1 text-xs">
-          읽음 처리 후에도 목록에 남아 있으며, 보관한 알림만 목록에서 숨겨집니다.
-        </p>
-        <div className="mt-4 flex flex-wrap items-center gap-2">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="tp-eyebrow">알림 센터</p>
+            <h1 className="tp-text-page-title tp-text-primary mt-2">
+              내 알림
+            </h1>
+            <p className="tp-text-muted mt-2 text-sm">미확인 알림 {globalUnreadCount}건</p>
+            <p className="tp-text-subtle mt-1 max-w-[62ch] text-xs leading-5">
+              댓글, 답글, 반응, 시스템 알림을 확인합니다. 보관한 알림만 목록에서 숨겨집니다.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleMarkAll}
+            disabled={isMarkAllPending || isFilterPending || globalUnreadCount === 0}
+            className="tp-btn-primary min-h-10 justify-center px-4 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            모두 읽음 처리
+          </button>
+        </div>
+        <div className="mt-4 flex flex-wrap items-center gap-2" aria-label="알림 필터">
           {filterTabs.map((tab) => (
             <button
               key={tab.kind}
               type="button"
               disabled={isFilterPending}
               onClick={() => handleApplyFilter(tab.kind, unreadOnly)}
-              className={`tp-btn-sm transition disabled:cursor-not-allowed disabled:opacity-60 ${
+              className={`min-h-10 px-3 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${
                 kind === tab.kind
                   ? "tp-btn-primary"
                   : "tp-btn-soft"
@@ -318,7 +330,7 @@ export function NotificationCenter({
             type="button"
             disabled={isFilterPending}
             onClick={() => handleApplyFilter(kind, !unreadOnly)}
-            className={`tp-btn-sm transition disabled:cursor-not-allowed disabled:opacity-60 ${
+            className={`min-h-10 px-3 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${
               unreadOnly
                 ? "tp-btn-primary"
                 : "tp-btn-soft"
@@ -326,22 +338,31 @@ export function NotificationCenter({
           >
             읽지 않음만
           </button>
-          <button
-            type="button"
-            onClick={handleMarkAll}
-            disabled={isMarkAllPending || isFilterPending || globalUnreadCount === 0}
-            className="tp-btn-primary tp-btn-sm disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            모두 읽음 처리
-          </button>
-          {message ? <span className="text-xs text-rose-600">{message}</span> : null}
         </div>
+        {message ? (
+          <p className="mt-3 text-xs font-medium text-rose-700" role="alert" aria-live="polite">
+            {message}
+          </p>
+        ) : null}
       </header>
 
       <section className="tp-card overflow-hidden">
         {items.length === 0 ? (
-          <div className="tp-text-subtle px-5 py-10 text-center text-sm">
-            {unreadOnly ? "미확인 알림이 없습니다." : "도착한 알림이 없습니다."}
+          <div className="flex flex-col items-center px-5 py-10 text-center sm:py-12">
+            <p className="tp-text-card-title tp-text-heading">
+              {unreadOnly ? "읽지 않은 알림이 없습니다." : "도착한 알림이 없습니다."}
+            </p>
+            <p className="tp-text-subtle mt-2 max-w-[36ch] text-sm leading-6">
+              {unreadOnly
+                ? "새 댓글이나 반응이 생기면 이 필터에 다시 표시됩니다."
+                : "게시글 활동이 생기면 댓글, 답글, 반응 알림이 이곳에 쌓입니다."}
+            </p>
+            <Link
+              href="/feed"
+              className="tp-btn-soft mt-4 inline-flex min-h-10 items-center justify-center px-4 py-2 text-sm font-semibold"
+            >
+              피드로 돌아가기
+            </Link>
           </div>
         ) : (
           <div className="divide-y divide-[#e1e9f5]">
@@ -370,7 +391,7 @@ export function NotificationCenter({
                       type="button"
                       onClick={() => void handleMove(notification)}
                       disabled={isPending}
-                      className="tp-btn-soft tp-btn-xs disabled:cursor-not-allowed disabled:opacity-60"
+                      className="tp-btn-soft min-h-9 px-3 py-1.5 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       이동
                     </button>
@@ -379,7 +400,7 @@ export function NotificationCenter({
                       type="button"
                       onClick={() => void handleArchive(notification.id)}
                       disabled={isPending}
-                      className="tp-btn-soft tp-btn-xs disabled:cursor-not-allowed disabled:opacity-60"
+                      className="tp-btn-soft min-h-9 px-3 py-1.5 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       보관
                     </button>
@@ -389,12 +410,12 @@ export function NotificationCenter({
                         type="button"
                         onClick={() => void handleMarkRead(notification.id)}
                         disabled={isPending}
-                        className="tp-btn-primary tp-btn-xs disabled:cursor-not-allowed disabled:opacity-60"
+                        className="tp-btn-primary min-h-9 px-3 py-1.5 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         읽음 처리
                       </button>
                     ) : (
-                      <span className="tp-border-soft tp-surface-soft tp-text-subtle rounded-md border px-2.5 py-1 text-xs">
+                      <span className="tp-border-soft tp-surface-soft tp-text-subtle inline-flex min-h-9 items-center rounded-md border px-3 py-1.5 text-xs">
                         읽음
                       </span>
                     )}
@@ -411,7 +432,7 @@ export function NotificationCenter({
           <Link
             href={buildNotificationListHref(kind, unreadOnly, Math.max(1, currentPage - 1))}
             aria-disabled={currentPage <= 1}
-            className={`inline-flex items-center rounded-lg ${currentPage <= 1 ? "tp-btn-disabled pointer-events-none" : "tp-btn-soft"} tp-btn-xs transition`}
+            className={`inline-flex min-h-9 items-center rounded-lg px-3 py-1.5 ${currentPage <= 1 ? "tp-btn-disabled pointer-events-none" : "tp-btn-soft"} text-xs font-semibold transition`}
           >
             이전
           </Link>
@@ -419,7 +440,7 @@ export function NotificationCenter({
             <Link
               key={`notification-page-${pageNumber}`}
               href={buildNotificationListHref(kind, unreadOnly, pageNumber)}
-              className={`inline-flex min-w-8 items-center justify-center rounded-lg ${pageNumber === currentPage ? "tp-btn-primary" : "tp-btn-soft"} tp-btn-xs transition`}
+              className={`inline-flex min-h-9 min-w-9 items-center justify-center rounded-lg px-3 py-1.5 ${pageNumber === currentPage ? "tp-btn-primary" : "tp-btn-soft"} text-xs font-semibold transition`}
             >
               {pageNumber}
             </Link>
@@ -427,7 +448,7 @@ export function NotificationCenter({
           <Link
             href={buildNotificationListHref(kind, unreadOnly, Math.min(totalPages, currentPage + 1))}
             aria-disabled={currentPage >= totalPages}
-            className={`inline-flex items-center rounded-lg ${currentPage >= totalPages ? "tp-btn-disabled pointer-events-none" : "tp-btn-soft"} tp-btn-xs transition`}
+            className={`inline-flex min-h-9 items-center rounded-lg px-3 py-1.5 ${currentPage >= totalPages ? "tp-btn-disabled pointer-events-none" : "tp-btn-soft"} text-xs font-semibold transition`}
           >
             다음
           </Link>

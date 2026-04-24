@@ -40,7 +40,7 @@ describe("post comment layout classes", () => {
     expect(POST_COMMENT_THREAD_FOOTER_CLASS_NAME).toContain("items-start");
     expect(POST_COMMENT_THREAD_FOOTER_CLASS_NAME).toContain("sm:flex-row");
     expect(POST_COMMENT_THREAD_FOOTER_CLASS_NAME).toContain("sm:justify-between");
-    expect(POST_COMMENT_REPLY_GUIDE_CLASS_NAME).toContain("ml-5");
+    expect(POST_COMMENT_REPLY_GUIDE_CLASS_NAME).toContain("ml-4");
     expect(POST_COMMENT_REPLY_GUIDE_CLASS_NAME).toContain("pl-3");
     expect(POST_COMMENT_REPLY_GUIDE_CLASS_NAME).toContain("sm:ml-7");
     expect(POST_COMMENT_REPLY_GUIDE_CLASS_NAME).toContain("sm:pl-4");

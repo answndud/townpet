@@ -286,35 +286,35 @@ export function FeedSearchForm({
               : "flex flex-col gap-2 sm:flex-row sm:items-center"
           }
         >
-        {type ? <input type="hidden" name="type" value={type} /> : null}
-        {scope ? <input type="hidden" name="scope" value={scope} /> : null}
-        {petTypeId ? <input type="hidden" name="petType" value={petTypeId} /> : null}
-        {mode === "BEST" ? <input type="hidden" name="mode" value="BEST" /> : null}
-        {mode === "BEST" ? <input type="hidden" name="days" value={String(days)} /> : null}
-        {mode === "ALL" && sort !== "LATEST" ? <input type="hidden" name="sort" value={sort} /> : null}
-        {mode === "ALL" && period ? <input type="hidden" name="period" value={String(period)} /> : null}
-        {mode === "ALL" && personalized === "1" ? (
-          <input type="hidden" name="personalized" value="1" />
-        ) : null}
+          {type ? <input type="hidden" name="type" value={type} /> : null}
+          {scope ? <input type="hidden" name="scope" value={scope} /> : null}
+          {petTypeId ? <input type="hidden" name="petType" value={petTypeId} /> : null}
+          {mode === "BEST" ? <input type="hidden" name="mode" value="BEST" /> : null}
+          {mode === "BEST" ? <input type="hidden" name="days" value={String(days)} /> : null}
+          {mode === "ALL" && sort !== "LATEST" ? <input type="hidden" name="sort" value={sort} /> : null}
+          {mode === "ALL" && period ? <input type="hidden" name="period" value={String(period)} /> : null}
+          {mode === "ALL" && personalized === "1" ? (
+            <input type="hidden" name="personalized" value="1" />
+          ) : null}
 
           <select
             name="searchIn"
-          value={searchInValue}
-          onChange={(event) => {
-            setSearchInValue(event.target.value as FeedSearchIn);
-          }}
-          className={
+            value={searchInValue}
+            onChange={(event) => {
+              setSearchInValue(event.target.value as FeedSearchIn);
+            }}
+            className={
               density === "ULTRA"
-                ? "tp-input-soft h-8 px-2.5 text-xs font-medium outline-none transition focus:border-[#4e89d8] focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
-                : "tp-input-soft h-9 px-3 text-[13px] outline-none transition focus:border-[#4e89d8] focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
+                ? "tp-input-soft min-h-10 px-2.5 text-xs font-medium outline-none transition sm:min-h-8 focus:border-[#4e89d8] focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
+                : "tp-input-soft min-h-11 px-3 text-[13px] outline-none transition sm:min-h-9 focus:border-[#4e89d8] focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
             }
           >
-          {SEARCH_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
+            {SEARCH_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
 
           <input
             name="q"
@@ -327,8 +327,8 @@ export function FeedSearchForm({
             list={datalistId}
             className={
               density === "ULTRA"
-                ? "tp-input-soft h-8 w-full bg-white px-3 text-xs outline-none transition focus:border-[#4e89d8] focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
-                : "tp-input-soft h-9 w-full bg-white px-3.5 text-[13px] outline-none transition focus:border-[#4e89d8] focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
+                ? "tp-input-soft min-h-10 w-full bg-white px-3 text-xs outline-none transition sm:min-h-8 focus:border-[#4e89d8] focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
+                : "tp-input-soft min-h-11 w-full bg-white px-3.5 text-[13px] outline-none transition sm:min-h-9 focus:border-[#4e89d8] focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
             }
           />
           <datalist id={datalistId}>
@@ -337,16 +337,27 @@ export function FeedSearchForm({
             ))}
           </datalist>
 
+          <button
+            type="submit"
+            className={
+              density === "ULTRA"
+                ? "tp-btn-primary tp-btn-xs inline-flex min-h-10 min-w-[64px] items-center justify-center sm:min-h-8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
+                : "tp-btn-primary tp-btn-md inline-flex min-h-11 min-w-[72px] items-center justify-center sm:min-h-9 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
+            }
+          >
+            검색
+          </button>
+
           {shouldShowReset ? (
             <Link
               href={resetHref}
               className={
                 density === "ULTRA"
-                  ? "tp-btn-soft tp-btn-xs inline-flex min-w-[56px] items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
-                  : "tp-btn-soft tp-btn-md inline-flex min-w-[72px] items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
-               }
-             >
-               초기화
+                  ? "tp-btn-soft tp-btn-xs inline-flex min-h-10 min-w-[56px] items-center justify-center sm:min-h-8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
+                  : "tp-btn-soft tp-btn-md inline-flex min-h-11 min-w-[72px] items-center justify-center sm:min-h-9 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
+              }
+            >
+              초기화
             </Link>
           ) : null}
         </form>

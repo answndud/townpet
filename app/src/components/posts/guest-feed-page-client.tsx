@@ -398,21 +398,39 @@ export function GuestFeedPageClient({
       >
         <div className={isUltraDense ? "space-y-2" : "space-y-3"}>
           <header
-            className={`tp-hero hidden animate-float-in sm:block ${
-              isUltraDense ? "sm:px-3 sm:py-2" : "sm:px-4 sm:py-2.5"
+            className={`animate-float-in rounded-xl border border-[#d9e5f7] bg-[#f8fbff] ${
+              isUltraDense ? "px-3 py-3 sm:px-4 sm:py-3" : "px-4 py-4 sm:px-5 sm:py-4"
             }`}
           >
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div>
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              <div className="min-w-0">
+                <p className="tp-eyebrow">공개 피드</p>
                 <h1
                   className={
                     isUltraDense
-                      ? "mt-0.5 text-[15px] font-semibold text-[#1e3f74] sm:text-base"
-                      : "mt-0.5 text-lg font-semibold text-[#1e3f74] sm:text-[22px]"
+                      ? "mt-1 text-lg font-semibold text-[#1e3f74] sm:text-xl"
+                      : "mt-1 text-xl font-semibold text-[#1e3f74] sm:text-2xl"
                   }
                 >
                   {feedTitle}
                 </h1>
+                <p className="mt-2 max-w-[640px] text-sm leading-6 text-[#4f678d]">
+                  비회원에게 공개된 커뮤니티 글을 최신순, 인기순으로 확인할 수 있습니다.
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Link
+                  href={query ? `/search/guest?q=${encodeURIComponent(query)}` : "/search/guest"}
+                  className="tp-btn-soft inline-flex min-h-10 items-center justify-center px-3 text-xs font-semibold"
+                >
+                  게시글 검색
+                </Link>
+                <Link
+                  href="/posts/new"
+                  className="tp-btn-primary inline-flex min-h-10 items-center justify-center px-3 text-xs font-semibold hover:bg-[#274f8c]"
+                >
+                  글쓰기
+                </Link>
               </div>
             </div>
           </header>
@@ -536,14 +554,6 @@ export function GuestFeedPageClient({
             ) : null}
           </section>
 
-          <div className="flex justify-end gap-2">
-            <Link
-              href="/posts/new"
-              className="tp-btn-primary inline-flex h-9 items-center justify-center px-4 text-xs font-semibold hover:bg-[#274f8c]"
-            >
-              글쓰기
-            </Link>
-          </div>
         </div>
       </main>
     </div>

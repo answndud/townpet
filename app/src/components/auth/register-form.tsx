@@ -79,6 +79,7 @@ export function RegisterForm({
           onChange={(event) => setEmail(event.target.value)}
           placeholder="you@townpet.dev"
           required
+          aria-invalid={Boolean(error)}
         />
       </label>
       <label className="flex flex-col gap-2 text-sm font-medium text-[#274b7a]">
@@ -92,7 +93,12 @@ export function RegisterForm({
           minLength={2}
           maxLength={20}
           required
+          aria-invalid={Boolean(error)}
+          aria-describedby="register-nickname-help"
         />
+        <span id="register-nickname-help" className="text-xs font-normal leading-5 text-[#5a7398]">
+          동네 활동에 표시됩니다. 가입 후 변경 제한이 있을 수 있습니다.
+        </span>
       </label>
       <label className="flex flex-col gap-2 text-sm font-medium text-[#274b7a]">
         비밀번호
@@ -104,7 +110,12 @@ export function RegisterForm({
           onChange={(event) => setPassword(event.target.value)}
           placeholder="최소 8자"
           required
+          aria-invalid={Boolean(error)}
+          aria-describedby="register-password-help"
         />
+        <span id="register-password-help" className="text-xs font-normal leading-5 text-[#5a7398]">
+          8자 이상으로 설정해 주세요.
+        </span>
       </label>
       <label className="flex flex-col gap-2 text-sm font-medium text-[#274b7a]">
         비밀번호 확인
@@ -116,6 +127,7 @@ export function RegisterForm({
           onChange={(event) => setPasswordConfirm(event.target.value)}
           placeholder="다시 입력"
           required
+          aria-invalid={Boolean(error)}
         />
       </label>
       {error ? (

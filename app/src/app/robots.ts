@@ -10,10 +10,23 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/admin/", "/api/", "/login", "/register", "/onboarding"],
+        disallow: [
+          "/admin/",
+          "/api/",
+          "/login",
+          "/register",
+          "/onboarding",
+          "/password/",
+          "/profile",
+          "/notifications",
+          "/bookmarks",
+          "/saved",
+          "/my-posts",
+          "/users/",
+        ],
       },
     ],
-    sitemap: `${siteOrigin}/sitemap.xml`,
+    sitemap: `${siteOrigin}/sitemap/0.xml`,
     host: siteOrigin,
   };
 }

@@ -21,6 +21,29 @@ function normalizeSearchQuery(value: string) {
   return normalized;
 }
 
+export function buildSearchResultTelemetryPayload({
+  query,
+  resultCount,
+  scope,
+  type,
+  searchIn = "ALL",
+}: SearchResultTelemetryProps) {
+  const normalizedQuery = normalizeSearchQuery(query);
+  if (!normalizedQuery) {
+    return null;
+  }
+
+  const safeResultCount = Math.min(Math.max(Math.floor(resultCount), 0), 500);
+  return {
+    q: normalizedQuery,
+    stage: "RESULT" as const,
+    resultCount: safeResultCount,
+    ...(scope ? { scope } : {}),
+    ...(type ? { type } : {}),
+    searchIn,
+  };
+}
+
 export function SearchResultTelemetry({
   query,
   resultCount,
@@ -34,21 +57,24 @@ export function SearchResultTelemetry({
       return;
     }
 
-    const safeResultCount = Math.min(Math.max(Math.floor(resultCount), 0), 500);
-    const key = `${SEARCH_RESULT_TELEMETRY_PREFIX}${scope ?? "GLOBAL"}:${type ?? "ALL"}:${searchIn}:${normalizedQuery}:${safeResultCount}`;
+    const payloadObject = buildSearchResultTelemetryPayload({
+      query,
+      resultCount,
+      scope,
+      type,
+      searchIn,
+    });
+    if (!payloadObject) {
+      return;
+    }
+
+    const key = `${SEARCH_RESULT_TELEMETRY_PREFIX}${scope ?? "GLOBAL"}:${type ?? "ALL"}:${searchIn}:${payloadObject.q}:${payloadObject.resultCount}`;
     if (window.sessionStorage.getItem(key) === "1") {
       return;
     }
 
     window.sessionStorage.setItem(key, "1");
-    const payload = JSON.stringify({
-      q: normalizedQuery,
-      stage: "RESULT",
-      resultCount: safeResultCount,
-      scope,
-      type,
-      searchIn,
-    });
+    const payload = JSON.stringify(payloadObject);
 
     if (navigator.sendBeacon) {
       const blob = new Blob([payload], { type: "application/json" });

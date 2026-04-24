@@ -85,6 +85,7 @@ export default async function MyPostsPage({ searchParams }: MyPostsPageProps) {
   const currentPage = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
 
   const query = listInput?.q?.trim() ?? "";
+  const hasActiveFilter = Boolean(type || query);
   const { items: posts, hasNext } = await listUserPostsPage({
     authorId: user.id,
     type,
@@ -217,12 +218,21 @@ export default async function MyPostsPage({ searchParams }: MyPostsPageProps) {
 
         <section className="tp-card overflow-hidden">
           {posts.length === 0 ? (
-            <EmptyState
-              title="작성한 게시글이 없습니다"
-              description="첫 게시글을 작성하고 피드에서 반응을 확인해 보세요."
-              actionHref="/posts/new"
-              actionLabel="첫 글 작성하기"
-            />
+            hasActiveFilter ? (
+              <EmptyState
+                title="조건에 맞는 작성글이 없습니다"
+                description="검색어 또는 게시판 필터를 줄이면 내가 쓴 글을 다시 찾을 수 있습니다."
+                actionHref="/my-posts"
+                actionLabel="전체 작성글 보기"
+              />
+            ) : (
+              <EmptyState
+                title="작성한 게시글이 없습니다"
+                description="첫 게시글을 작성하고 피드에서 반응을 확인해 보세요."
+                actionHref="/posts/new"
+                actionLabel="첫 글 작성하기"
+              />
+            )
           ) : (
             <div className="divide-y divide-[#e1e9f5]">
               {posts.map((post) => {

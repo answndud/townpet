@@ -63,6 +63,13 @@ const DEFAULT_DATA = {
   items: [] as GuestSearchPostItem[],
 };
 
+const searchInLabel: Record<FeedSearchIn, string> = {
+  ALL: "전체 기준",
+  TITLE: "제목 기준",
+  CONTENT: "내용 기준",
+  AUTHOR: "작성자 기준",
+};
+
 export function GuestSearchPageClient() {
   const searchParams = useSearchParams();
   const [data, setData] = useState(DEFAULT_DATA);
@@ -247,32 +254,58 @@ export function GuestSearchPageClient() {
           </section>
         ) : (
           <section className="tp-card overflow-hidden">
-            <div className="border-b border-[#dbe6f6] px-4 py-3 text-sm text-[#4f678d] sm:px-5">
-              검색어 <span className="font-semibold text-[#1f3f71]">&quot;{query}&quot;</span> ·{" "}
-              결과 {items.length}건
+            <div className="flex flex-col gap-1 border-b border-[#dbe6f6] px-4 py-3 text-sm text-[#4f678d] sm:flex-row sm:items-center sm:justify-between sm:px-5">
+              <p>
+                검색어 <span className="font-semibold text-[#1f3f71]">&quot;{query}&quot;</span> ·{" "}
+                결과 {items.length}건
+              </p>
+              <p className="text-[12px] text-[#6a84ab]">
+                {effectiveScope === "LOCAL" ? "동네 검색" : "전체 검색"} ·{" "}
+                {searchInLabel[selectedSearchIn]}
+              </p>
             </div>
             <div className="divide-y divide-[#e4edf9]">
-              {items.map((post) => (
-                <article key={post.id} className="px-4 py-4 sm:px-5">
-                  <div className="flex flex-wrap items-center gap-2 text-xs text-[#59739b]">
-                    <span className="font-semibold text-[#1f4f8f]">
-                      {postTypeMeta[post.type].label}
-                    </span>
-                    <span>•</span>
-                    <span>{formatRelativeDate(post.createdAt)}</span>
-                    <span>•</span>
-                    <span>{resolveUserDisplayName(post.author.nickname)}</span>
-                  </div>
-                  <Link href={`/posts/${post.id}/guest`} className="mt-2 block">
-                    <h2 className="text-base font-semibold text-[#12315c] sm:text-lg">
-                      <HighlightText text={post.title} query={query} />
-                    </h2>
-                    <p className="mt-2 line-clamp-3 text-sm leading-6 text-[#4f678d]">
-                      <HighlightText text={post.content} query={query} />
-                    </p>
-                  </Link>
-                </article>
-              ))}
+              {items.map((post) => {
+                const meta = postTypeMeta[post.type];
+                const authorName = resolveUserDisplayName(post.author.nickname);
+                const excerpt =
+                  post.content.length > 180 ? `${post.content.slice(0, 180)}...` : post.content;
+
+                return (
+                  <article
+                    key={post.id}
+                    className="grid gap-3 px-4 py-4 sm:px-5 md:grid-cols-[minmax(0,1fr)_148px] md:items-start"
+                  >
+                    <div className="min-w-0">
+                      <div className="mb-2 flex flex-wrap items-center gap-1.5 text-xs text-[#59739b]">
+                        <span className={`tp-chip-base ${meta.chipClass}`}>{meta.label}</span>
+                        <span className="tp-chip-base tp-chip-muted">전체</span>
+                      </div>
+                      <Link href={`/posts/${post.id}/guest`} className="block">
+                        <h2 className="flex min-w-0 items-center gap-1 text-base font-semibold text-[#12315c] transition hover:text-[#2f5da4] sm:text-lg">
+                          <span className="overflow-hidden [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]">
+                            <HighlightText text={post.title} query={query} />
+                          </span>
+                          {post.commentCount > 0 ? (
+                            <span className="shrink-0 text-[13px] text-[#2f5da4]">
+                              [{post.commentCount}]
+                            </span>
+                          ) : null}
+                        </h2>
+                        <p className="mt-1.5 line-clamp-3 text-[13px] leading-5 text-[#4c6488]">
+                          <HighlightText text={excerpt} query={query} />
+                        </p>
+                      </Link>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[#5f79a0] md:block md:text-right">
+                      <p className="font-semibold text-[#1f3f71]">{authorName}</p>
+                      <p className="md:mt-0.5 text-[11px] text-[#6a84ab]">
+                        {formatRelativeDate(post.createdAt)} · 댓글 {post.commentCount}
+                      </p>
+                    </div>
+                  </article>
+                );
+              })}
             </div>
           </section>
         )}
