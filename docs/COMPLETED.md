@@ -234,3 +234,31 @@
 - 결과:
   - public feed/search entry는 기존 디자인 토큰을 유지하면서 nested surface와 generic empty-state 느낌을 줄였다.
   - 다음 Phase 2는 error/loading/copy hardening이며, `/boards/adoption`, `/posts/new`, `/notifications`, 공통 error/loading 상태를 한 화면군씩 다룬다.
+
+### 2026-04-24 | Impeccable Phase 2 DB unavailable 상태 hardening
+- 완료일: `2026-04-24`
+- 배경:
+  - baseline 평가에서 로컬 DB가 꺼진 상태의 `/boards/adoption`, `/posts/new`가 generic error로 떨어져 사용자가 복구 경로를 알 수 없었다.
+  - Phase 2는 empty/error/loading/copy hardening 중 P0 generic error 화면군만 먼저 다뤘다.
+- 변경내용:
+  - 공통 `ServiceUnavailableState`를 추가해 일시 지연, 원인 요약, 다시 시도, 피드 이동 CTA를 일관되게 표시했다.
+  - `/boards/adoption`은 policy/count/list query에서 Prisma DB unavailable을 감지하면 입양 게시판 전용 fallback을 렌더링한다.
+  - `/posts/new`는 게시판/동네 정보 로딩이 DB unavailable로 실패하면 작성 form 대신 복구 가능한 상태를 렌더링한다.
+  - 모바일에서 긴 오류 제목이 음절 단위로 깨지지 않도록 제목 copy를 짧게 정리했다.
+- 코드문서:
+  - [app/src/components/ui/service-unavailable-state.tsx](../app/src/components/ui/service-unavailable-state.tsx)
+  - [app/src/components/ui/service-unavailable-state.test.tsx](../app/src/components/ui/service-unavailable-state.test.tsx)
+  - [app/src/app/boards/adoption/page.tsx](../app/src/app/boards/adoption/page.tsx)
+  - [app/src/app/posts/new/page.tsx](../app/src/app/posts/new/page.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app exec vitest run src/components/ui/service-unavailable-state.test.tsx` 통과
+  - `corepack pnpm -C app lint` 통과, 기존 warning 5건 유지
+  - `corepack pnpm -C app typecheck` 통과
+  - `corepack pnpm -C app design:detect` exit 2, 기존 Phase 3/5 대상 anti-pattern 5건 유지
+  - `corepack pnpm -C app build` exit 1, 로컬 필수 env 누락으로 page data collection 실패
+  - Playwright/Chrome screenshot: `/tmp/townpet-impeccable-phase2/adoption-unavailable-desktop.png`, `/tmp/townpet-impeccable-phase2/adoption-unavailable-mobile.png`, `/tmp/townpet-impeccable-phase2/post-new-unavailable-desktop.png`, `/tmp/townpet-impeccable-phase2/post-new-unavailable-mobile.png`
+- 결과:
+  - DB unavailable 상황에서도 입양 게시판과 글쓰기 진입점은 generic crash가 아니라 회복 가능한 제품 상태를 보여준다.
+  - 다음 Phase 3은 post detail media/editor/form 흐름에서 `design:detect`의 `bg-black` 4건을 먼저 정리한다.

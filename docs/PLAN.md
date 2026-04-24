@@ -37,21 +37,21 @@
 - phase 완료 시 상세 결과와 검증 로그는 [COMPLETED.md](./COMPLETED.md)에 append하고, active 문서에서는 완료 phase를 제거하거나 다음 phase만 남긴다.
 - Impeccable detector finding은 실패로만 보지 않고, phase backlog의 입력으로 기록한다.
 - 완료 archive: Phase 0-1 상세는 [COMPLETED.md](./COMPLETED.md)에 정리한다.
-- 현재 blocker: `design:detect` 기존 5건, `build` 로컬 필수 env 누락.
+- 현재 blocker: `design:detect` 기존 5건 중 Phase 3 범위 4건, `build` 로컬 필수 env 누락.
 
-#### Phase 2: empty / error / loading / copy hardening
-- 상태: `pending`
-- 목표: 비어 있음, 오류, 권한/로그인 필요, 로딩 상태를 generic fallback이 아니라 회복 가능한 제품 상태로 만든다.
-- 대상 화면: global `error.tsx`, `not-found.tsx`, `/notifications` guest state, `/boards/adoption` DB unavailable state, `/posts/new` DB unavailable state, 주요 `loading.tsx`.
-- 사용할 skill 순서: `$impeccable harden` -> `$impeccable clarify` -> `$impeccable onboard`.
-- 수정 범위: 오류 copy, recovery CTA, DB unavailable fallback, skeleton hierarchy, auth-required empty state.
-- 하지 않을 것: 실제 장애 처리 정책/alerting 변경, admin 권한 정책 변경, DB migration, seed data 변경.
-- 완료 기준: P0 generic error가 화면별 recovery copy와 CTA를 갖고, loading skeleton이 최종 layout과 유사한 구조를 유지한다.
-- 검증 명령: `corepack pnpm -C app test`, `corepack pnpm -C app lint`, `corepack pnpm -C app typecheck`, 필요 시 관련 route/component targeted test.
-- screenshot 확인 지점: `/boards/adoption` DB unavailable, `/posts/new` DB unavailable, `/notifications` guest, `/not-found` mobile/desktop, `/feed?debugDelayMs=...` loading.
+#### Phase 3: 상세 / 쓰기 / form 흐름 정리
+- 상태: `in_progress`
+- 목표: post detail media/editor/form 흐름의 detector finding과 모바일 사용성을 정리한다.
+- 현재 대상 화면군: post detail media/gallery overlay, linkified external content overlay.
+- 사용할 skill 순서: `$impeccable audit` -> `$impeccable distill` -> `$impeccable clarify` -> `$impeccable adapt`.
+- 수정 범위: `design:detect`의 `bg-black` 4건 제거, overlay contrast/focus/copy 확인.
+- 하지 않을 것: editor 라이브러리 교체, 게시글 schema 변경, moderation/write policy 완화, OAuth 실제 연동 변경.
+- 완료 기준: media/content overlay detector finding이 제거되고, desktop/mobile screenshot에서 media/detail 흐름이 읽힌다.
+- 검증 명령: `corepack pnpm -C app design:detect`, `corepack pnpm -C app test -- src/components/posts/post-detail-media-gallery.test.tsx`, `corepack pnpm -C app lint`, `corepack pnpm -C app typecheck`.
+- screenshot 확인 지점: `/posts/[id]/guest` 또는 관련 컴포넌트 상태의 media overlay desktop/mobile.
 
 ## 다음 실행 순서
 
-1. Phase 1 변경분을 commit/push한다.
-2. Phase 2 시작 전 관련 skill 문서를 다시 읽는다.
-3. 한 번에 한 화면군만 hardening하고, 완료 시 archive로 이동한다.
+1. Phase 2 변경분을 commit/push한다.
+2. Phase 3 시작 전 관련 skill 문서를 다시 읽는다.
+3. detector 4건을 한 화면군 안에서 정리하고, 완료 시 archive로 이동한다.
