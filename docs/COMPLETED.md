@@ -662,3 +662,34 @@
   - security header 값뿐 아니라 Next config 적용 계약까지 테스트로 보호된다.
   - 운영 smoke는 local public health, internal diagnostics, control plane readiness, `pg_trgm`, page response headers까지 증거를 남겼다.
   - 변경은 테스트와 문서에 한정했고 보안 헤더 값, health endpoint, 운영 스크립트 로직은 변경하지 않았다.
+
+### 2026-04-24 | Personal list loading and empty state polish
+- 완료일: `2026-04-24`
+- 배경:
+  - `/bookmarks`, `/my-posts`는 검색/게시판 필터 결과가 0건일 때 전체 목록이 비어 있는 것처럼 안내해 사용자가 필터를 줄여야 하는지, 첫 행동을 해야 하는지 구분하기 어려웠다.
+  - 두 화면의 loading skeleton은 실제 hero, filter, list row 구조보다 generic block에 가까워 로딩 중 화면 전환 예측성이 낮았다.
+- 변경내용:
+  - `/bookmarks` filtered empty copy를 `조건에 맞는 북마크가 없습니다`로 분리하고 `전체 북마크 보기` recovery action을 추가했다.
+  - `/my-posts` filtered empty copy를 `조건에 맞는 작성글이 없습니다`로 분리하고 `전체 작성글 보기` recovery action을 추가했다.
+  - 두 loading 화면을 `tp-page-bg`, `tp-hero`, `tp-card`, `tp-soft-card`, filter pill skeleton, list row skeleton 구조로 실제 화면과 맞췄다.
+  - loading shell 회귀 테스트를 추가했다.
+  - active plan/progress를 다음 priority인 레드팀 P0/P1 잔여 remediation 확인으로 갱신했다.
+- 코드문서:
+  - [app/src/app/bookmarks/page.tsx](../app/src/app/bookmarks/page.tsx)
+  - [app/src/app/bookmarks/loading.tsx](../app/src/app/bookmarks/loading.tsx)
+  - [app/src/app/my-posts/page.tsx](../app/src/app/my-posts/page.tsx)
+  - [app/src/app/my-posts/loading.tsx](../app/src/app/my-posts/loading.tsx)
+  - [app/src/app/personal-list-loading.test.tsx](../app/src/app/personal-list-loading.test.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app exec vitest run src/app/personal-list-loading.test.tsx src/app/saved/page.test.tsx src/server/queries/post.queries.test.ts` 통과, 54 tests
+  - `corepack pnpm -C app design:detect` 통과
+  - `corepack pnpm -C app lint` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `corepack pnpm -C app quality:check` 통과, 196 files / 933 tests
+  - `AUTH_SECRET=local-dev-secret-local-dev-secret-123456 GUEST_HASH_PEPPER=local-dev-pepper HEALTH_INTERNAL_TOKEN=health-secret UPSTASH_REDIS_REST_URL=https://example.com UPSTASH_REDIS_REST_TOKEN=local-token RESEND_API_KEY=re_local_dummy BLOB_READ_WRITE_TOKEN=local-blob-token corepack pnpm -C app build` 통과
+- 결과:
+  - 개인 목록 화면군은 필터 0건과 전체 empty가 분리되어 사용자가 필터를 해제할지 첫 행동을 할지 바로 판단할 수 있다.
+  - loading skeleton이 실제 화면의 scan path와 같은 구조를 유지해 모바일/데스크톱 모두에서 전환이 덜 튄다.
+  - 변경은 개인 목록 UI 상태와 테스트에 한정했고 auth/query/bookmark/post 정책 로직은 변경하지 않았다.

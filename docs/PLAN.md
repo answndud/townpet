@@ -26,16 +26,16 @@
 
 ## Active Plan
 
-### 로딩 / 빈상태 polish 잔여 점검
+### 레드팀 P0/P1 잔여 remediation 확인
 
 상태: `pending`
 
-- 목표: Impeccable 이후 아직 점검하지 않은 loading/empty/error 상태의 잔여 UX gap을 한 화면군 단위로 정리한다.
-- 범위: 한 번에 하나의 화면군만 다루고 기능/정책 로직은 변경하지 않는다.
-- 사용할 skill 순서: `impeccable` -> `quality-gate`.
-- 완료 기준: 관련 UI 테스트 또는 screenshot evidence, `design:detect`, `lint`, `typecheck`, 필요한 build/quality check, 문서 archive.
+- 목표: 레드팀 P0/P1 잔여 항목과 현재 remediation 증거를 확인하고 실제 gap이 있으면 하나만 최소 수정한다.
+- 범위: P0/P1 보안/정책/운영 증거만 다루고 신규 기능은 시작하지 않는다.
+- 사용할 skill 순서: `quality-gate` -> 필요 시 `policy-abuse-gate` 또는 `release-readiness`.
+- 완료 기준: 관련 테스트/운영 명령, `lint`, `typecheck`, 필요한 build/quality check, 문서 archive.
 
 ## 다음 실행 순서
 
-1. loading/empty/error 상태가 약한 화면군을 하나만 고른다.
-2. 구현 전 대상 화면군과 검증 명령을 `docs/PLAN.md`에 구체화한다.
+1. 레드팀 P0/P1 관련 문서와 테스트 증거를 확인한다.
+2. 잔여 gap이 있으면 한 항목만 골라 최소 수정 후 quality gate를 실행한다.
