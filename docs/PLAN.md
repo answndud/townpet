@@ -26,16 +26,16 @@
 
 ## Active Plan
 
-### Impeccable public search/result 흐름
+### Impeccable public feed/guest 흐름
 
 상태: `pending`
 
-- 목표: public search/guest result 화면의 result density, empty/loading/error 상태, mobile scan flow를 정리한다.
-- 범위: search 결과/guest search 화면군만 다루고, 검색 query/ranking/logging 정책 로직은 변경하지 않는다.
+- 목표: public feed/guest 화면의 첫 viewport hierarchy, result density, mobile scan flow를 정리한다.
+- 범위: `/feed/guest`와 직접 연결된 feed UI만 다루고, feed ranking/personalization/query 정책 로직은 변경하지 않는다.
 - 사용할 skill 순서: `$critique` -> `$audit` -> `$layout` -> `$adapt` -> `$clarify` -> `$polish`.
 - 완료 기준: `design:detect`, `lint`, `typecheck`, 관련 테스트 또는 build, desktop/mobile screenshot 확인.
 
 ## 다음 실행 순서
 
-1. public search/guest search baseline screenshot과 route/component 구조를 확인한다.
-2. 검색 결과, empty/error/loading 상태, 모바일 필터/정렬 흐름을 한 화면군 범위에서 정리한다.
+1. `/feed/guest` baseline screenshot과 route/component 구조를 확인한다.
+2. 첫 viewport, category/search affordance, post list density를 한 화면군 범위에서 정리한다.

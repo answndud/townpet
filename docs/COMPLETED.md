@@ -455,3 +455,30 @@
 - 결과:
   - public post detail의 읽기 흐름은 유지하면서 댓글 영역의 surface 중첩과 모바일 조작 부담을 줄였다.
   - 변경은 shared comment/detail UI와 테스트 기대값에 한정했고 post/comment 정책, mutation, API 로직은 변경하지 않았다.
+
+### 2026-04-24 | Impeccable public search result flow
+- 완료일: `2026-04-24`
+- 배경:
+  - `/search/guest`는 비로그인 사용자가 공개 글을 찾는 핵심 public utility 화면이다.
+  - baseline에서 검색 form은 Enter 제출에 의존했고, 모바일에서 select/input/reset만 보여 검색 실행 affordance가 약했다.
+  - guest result row는 검색 결과 판단에 필요한 댓글 수, 범위, 작성자/일시 정보가 약해 scan 효율이 낮았다.
+- 변경내용:
+  - `FeedSearchForm`에 명시적 `검색` submit button을 추가하고 select/input/button/reset을 모바일 40-44px 계열 target으로 정리했다.
+  - guest 결과 header에 검색 범위와 검색 기준을 함께 노출했다.
+  - guest result row를 category/scope chip, title + comment count, excerpt, author/date/comment meta 구조로 정리했다.
+  - 기존 TownPet `tp-*` button/input/chip 스타일과 border-first result list 구조를 유지했다.
+- 코드문서:
+  - [app/src/components/posts/feed-search-form.tsx](../app/src/components/posts/feed-search-form.tsx)
+  - [app/src/components/posts/guest-search-page-client.tsx](../app/src/components/posts/guest-search-page-client.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app design:detect` 통과
+  - `corepack pnpm -C app lint` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `corepack pnpm -C app exec vitest run src/app/api/search/guest/route.test.ts src/app/api/search/log/route.test.ts src/server/queries/search.queries.test.ts` 통과
+  - `AUTH_SECRET=local-dev-secret-local-dev-secret-123456 GUEST_HASH_PEPPER=local-dev-pepper UPSTASH_REDIS_REST_URL=https://example.com UPSTASH_REDIS_REST_TOKEN=local-token RESEND_API_KEY=re_local_dummy corepack pnpm -C app build` 통과
+  - Playwright/Chrome screenshot: `/tmp/townpet-search-baseline/guest-results-desktop.png`, `/tmp/townpet-search-baseline/guest-results-mobile.png`, `/tmp/townpet-search-baseline/guest-empty-desktop.png`, `/tmp/townpet-search-baseline/guest-empty-mobile.png`, `/tmp/townpet-search-phase/guest-results-desktop-after.png`, `/tmp/townpet-search-phase/guest-results-mobile-after.png`, `/tmp/townpet-search-phase/guest-empty-desktop-after.png`, `/tmp/townpet-search-phase/guest-empty-mobile-after.png`
+- 결과:
+  - public guest search에서 검색 실행 방식이 명확해졌고, 결과 row가 모바일/데스크톱 모두에서 더 빠르게 비교 가능해졌다.
+  - 변경은 UI affordance와 result presentation에 한정했고 검색 query/ranking/logging/API 정책 로직은 변경하지 않았다.
