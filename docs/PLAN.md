@@ -26,16 +26,16 @@
 
 ## Active Plan
 
-### Impeccable profile/notifications utility 흐름
+### Impeccable final audit / verification
 
 상태: `pending`
 
-- 목표: profile/notifications 같은 로그인 후 utility 화면의 scan 구조, empty/loading/error 상태, mobile touch target을 정리한다.
-- 범위: profile/notification 화면 UI와 copy만 다루고, auth/session/notification service 정책 로직은 변경하지 않는다.
+- 목표: 주요 public/auth/write/admin/utility 화면군을 다시 훑고 남은 Impeccable 회귀나 검증 갭을 정리한다.
+- 범위: 새 기능 구현 없이 final audit, screenshot spot check, 문서/검증 증거 보강만 수행한다.
 - 사용할 skill 순서: `$critique` -> `$audit` -> `$layout` -> `$adapt` -> `$clarify` -> `$polish`.
 - 완료 기준: `design:detect`, `lint`, `typecheck`, 관련 테스트 또는 build, desktop/mobile screenshot 확인.
 
 ## 다음 실행 순서
 
-1. `/profile`, `/notifications` baseline screenshot과 route/component 구조를 확인한다.
-2. utility 화면의 empty/loading/error 상태와 mobile controls를 한 화면군 범위에서 정리한다.
+1. 주요 화면군 screenshot evidence와 active docs 상태를 점검한다.
+2. detector/quality gate/build 결과를 final verification으로 정리한다.

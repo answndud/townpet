@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
@@ -13,6 +12,7 @@ import {
 import { getSocialAccountNoticeMessage } from "@/lib/social-auth";
 import { NeighborhoodPreferenceForm } from "@/components/profile/neighborhood-preference-form";
 import { PetProfileManager } from "@/components/profile/pet-profile-manager";
+import { ProfileAvatar } from "@/components/profile/profile-avatar";
 import { ProfileImageUploader } from "@/components/profile/profile-image-uploader";
 import { ProfileInfoForm } from "@/components/profile/profile-info-form";
 import { ProfileSocialAccountConnections } from "@/components/profile/profile-social-account-connections";
@@ -116,33 +116,10 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
           </p>
 
           <div className="mt-4 flex items-center gap-3">
-            {user.image ? (
-              <Image
-                src={user.image}
-                alt="프로필 이미지"
-                width={56}
-                height={56}
-                className="tp-border-soft h-14 w-14 rounded-full border object-cover"
-              />
-            ) : (
-              <div className="flex h-14 w-14 items-center justify-center rounded-full border border-[#cbdcf5] bg-[radial-gradient(circle_at_top,#ffffff,transparent_60%),linear-gradient(180deg,#f8fbff_0%,#edf4ff_100%)] text-[#5b78a1] shadow-[0_8px_18px_rgba(53,103,181,0.10)]">
-                <svg
-                  aria-hidden="true"
-                  viewBox="0 0 48 48"
-                  className="h-7 w-7"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <circle cx="24" cy="19" r="7" />
-                  <path d="M12 38c2.8-6.1 8-9.2 12-9.2s9.2 3.1 12 9.2" />
-                </svg>
-                <span className="sr-only">프로필 이미지 없음</span>
-              </div>
-            )}
-            <p className="tp-text-subtle text-xs">프로필 사진은 내 프로필 섹션에서 수정할 수 있습니다.</p>
+            <ProfileAvatar src={user.image} />
+            <p className="tp-text-subtle max-w-[56ch] text-xs leading-5">
+              프로필 사진, 공개 범위, 내 동네, 반려동물 정보는 아래 관리 섹션에서 수정할 수 있습니다.
+            </p>
           </div>
         </header>
 
@@ -199,7 +176,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
             {passwordSetupCopy ? (
               <Link
                 href="/password/setup"
-                className="tp-btn-soft tp-btn-sm tp-text-accent"
+                className="tp-btn-soft tp-btn-sm tp-text-accent inline-flex min-h-10 items-center"
               >
                 {passwordSetupCopy.profileLinkLabel}
               </Link>
@@ -286,26 +263,30 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
               </p>
 
               <div className="mt-4">
-                <div className="tp-soft-card p-4">
-                  <h3 className="tp-text-card-title tp-text-heading">
-                    뮤트 목록 ({mutedUsers.length})
-                  </h3>
+                <div className="border-t border-[#dbe6f6]">
                   {mutedUsers.length === 0 ? (
-                    <p className="tp-text-subtle mt-3 text-xs">뮤트한 사용자가 없습니다.</p>
+                    <div className="py-5">
+                      <p className="tp-text-card-title tp-text-heading">뮤트한 사용자가 없습니다.</p>
+                      <p className="tp-text-subtle mt-2 text-sm">
+                        피드나 댓글에서 불편한 사용자를 뮤트하면 이곳에서 다시 해제할 수 있습니다.
+                      </p>
+                    </div>
                   ) : (
-                    <div className="mt-3 space-y-3">
+                    <div className="divide-y divide-[#dbe6f6]">
                       {mutedUsers.map((entry) => (
                         <div
                           key={entry.id}
-                          className="tp-border-soft tp-text-accent rounded-lg border bg-white px-3 py-2 text-xs"
+                          className="flex flex-col gap-3 py-3 text-xs sm:flex-row sm:items-center sm:justify-between"
                         >
-                          <p className="tp-text-heading break-all font-semibold">
-                            {entry.mutedUser?.nickname ?? entry.mutedUser?.email ?? entry.mutedUserId}
-                          </p>
-                          <p className="tp-text-subtle mt-0.5 text-[11px]">
-                            {entry.createdAt.toLocaleString("ko-KR")}
-                          </p>
-                          <div className="mt-2">
+                          <div>
+                            <p className="tp-text-heading break-all font-semibold">
+                              {entry.mutedUser?.nickname ?? entry.mutedUser?.email ?? entry.mutedUserId}
+                            </p>
+                            <p className="tp-text-subtle mt-0.5 text-[11px]">
+                              {entry.createdAt.toLocaleString("ko-KR")}
+                            </p>
+                          </div>
+                          <div>
                             <UserRelationControls
                               key={`${entry.mutedUserId}:0:1:0`}
                               targetUserId={entry.mutedUserId}

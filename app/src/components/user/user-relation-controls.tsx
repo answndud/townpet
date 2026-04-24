@@ -29,7 +29,7 @@ export function UserRelationControls({
   const [isPending, startTransition] = useTransition();
 
   const buttonClass =
-    "rounded-lg border px-2.5 py-1 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-60";
+    "min-h-9 rounded-lg border px-3 py-1.5 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-60";
 
   const runAction = (action: "MUTE" | "UNMUTE") => {
     startTransition(async () => {

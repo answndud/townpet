@@ -541,3 +541,37 @@
 - 결과:
   - 인증 진입/복구 화면군이 같은 visual shell과 form vocabulary를 사용해 mobile/desktop에서 더 예측 가능해졌다.
   - 변경은 UI shell, form 상태/copy, route prop typing에 한정했고 auth service/session/OAuth/password/email API 정책 로직은 변경하지 않았다.
+
+### 2026-04-24 | Impeccable profile and notification utility flow
+- 완료일: `2026-04-24`
+- 배경:
+  - `/notifications` 빈 상태는 단일 문장이라 다음 행동이 약했고, 필터/일괄 처리/row action target이 모바일에서 작았다.
+  - `/profile`은 저장된 이미지 URL이 깨질 때 hero avatar가 alt text로 노출됐고, 뮤트 관리 영역은 card 안 soft-card 구조로 nested surface처럼 보였다.
+- 변경내용:
+  - `NotificationCenter` hero를 title/filter/action 영역으로 정리하고 `모두 읽음 처리`를 desktop/mobile 모두 명확한 action으로 배치했다.
+  - notification filter, row action, pagination control을 36-40px 계열 touch target으로 보강했다.
+  - notification empty state에 설명과 `피드로 돌아가기` recovery action을 추가했다.
+  - 비로그인 notification 화면도 shared hero surface와 44px login action으로 정리했다.
+  - profile hero avatar에 client fallback을 추가해 깨진 이미지 대신 조용한 placeholder를 보여준다.
+  - 뮤트 관리의 내부 soft-card를 divider 기반 empty/list 구조로 바꿔 nested card 느낌을 줄였다.
+  - profile/notifications loading shell에 `tp-page-bg`를 적용해 로딩 화면 배경 톤을 맞췄다.
+- 코드문서:
+  - [app/src/components/notifications/notification-center.tsx](../app/src/components/notifications/notification-center.tsx)
+  - [app/src/app/notifications/page.tsx](../app/src/app/notifications/page.tsx)
+  - [app/src/app/notifications/loading.tsx](../app/src/app/notifications/loading.tsx)
+  - [app/src/app/profile/page.tsx](../app/src/app/profile/page.tsx)
+  - [app/src/app/profile/loading.tsx](../app/src/app/profile/loading.tsx)
+  - [app/src/components/profile/profile-avatar.tsx](../app/src/components/profile/profile-avatar.tsx)
+  - [app/src/components/user/user-relation-controls.tsx](../app/src/components/user/user-relation-controls.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app design:detect` 통과
+  - `corepack pnpm -C app exec vitest run src/components/profile/profile-summary-link-card.test.tsx src/components/profile/profile-social-account-connections.test.tsx src/components/user/user-relation-controls.test.tsx src/app/api/notifications/route.test.ts src/server/queries/notification.queries.test.ts` 통과
+  - `corepack pnpm -C app lint` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `AUTH_SECRET=local-dev-secret-local-dev-secret-123456 GUEST_HASH_PEPPER=local-dev-pepper UPSTASH_REDIS_REST_URL=https://example.com UPSTASH_REDIS_REST_TOKEN=local-token RESEND_API_KEY=re_local_dummy corepack pnpm -C app build` 통과
+  - Playwright/Chrome screenshot: `/tmp/townpet-utility-baseline/profile-desktop.png`, `/tmp/townpet-utility-baseline/profile-mobile.png`, `/tmp/townpet-utility-baseline/notifications-desktop.png`, `/tmp/townpet-utility-baseline/notifications-mobile.png`, `/tmp/townpet-utility-baseline/notifications-unread-desktop.png`, `/tmp/townpet-utility-baseline/notifications-unread-mobile.png`, `/tmp/townpet-utility-phase/profile-desktop-after.png`, `/tmp/townpet-utility-phase/profile-mobile-after.png`, `/tmp/townpet-utility-phase/profile-mobile-after-2.png`, `/tmp/townpet-utility-phase/notifications-desktop-after.png`, `/tmp/townpet-utility-phase/notifications-mobile-after.png`, `/tmp/townpet-utility-phase/notifications-unread-desktop-after.png`, `/tmp/townpet-utility-phase/notifications-unread-mobile-after.png`
+- 결과:
+  - 로그인 후 utility 화면에서 empty/recovery state와 mobile action affordance가 더 명확해졌다.
+  - 변경은 UI shell, fallback, 상태 copy, touch target에 한정했고 profile/auth/session/notification 정책 로직은 변경하지 않았다.

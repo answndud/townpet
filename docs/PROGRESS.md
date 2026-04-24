@@ -7,20 +7,12 @@
 - 상태 문서를 `docs/` 아래 slim active + archive 구조로 재편했다
 - Impeccable 디자인 개선 workflow Phase 0-5를 완료했다
 - 최근 완료 작업 상세와 과거 검증 로그는 [COMPLETED.md](./COMPLETED.md)로 이동했다
-- 현재 작업: Impeccable profile/notifications utility 흐름 대기
+- 현재 작업: Impeccable final audit / verification 대기
 
 ## 열린 blocker
 - 없음. 기존 `db:restore:local` local test account count mismatch는 managed account count 검증으로 수정했고 restore 통과를 확인했다.
 
 ## 직전 검증
-- Local restore 안정화:
-  - `corepack pnpm -C app test -- scripts/seed-local-test-accounts.test.ts` 통과, 전체 Vitest 192 files / 924 tests 통과.
-  - `corepack pnpm -C app db:seed:local-test-accounts` 통과, managed `52/49/3`, global `88/71/17`.
-  - `corepack pnpm -C app db:restore:local` 통과.
-  - `corepack pnpm -C app design:detect` 통과.
-  - `corepack pnpm -C app lint` 통과, warning 0건.
-  - `corepack pnpm -C app typecheck` 통과.
-  - local inline env `corepack pnpm -C app build` 통과.
 - Impeccable `/admin/reports` 화면군:
   - 변경: hero 통계 compact summary, 필터와 queue를 상단으로 이동, 통계/분포는 후순위 운영 summary로 정리, mobile queue card와 bulk/action touch target 개선.
   - 유지: report query, moderation priority, bulk/single action API, sanction policy 로직은 변경 없음.
@@ -57,11 +49,16 @@
   - 발견/수정: Next 16 page props 계약에 맞게 `/password/reset`, `/verify-email` `searchParams`를 Promise로 unwrap했다.
   - screenshot evidence: `/tmp/townpet-auth-baseline/{login,register,password-reset,verify-email}-{desktop,mobile}.png`, `/tmp/townpet-auth-phase/{login,register,password-reset,verify-email}-{desktop-after,mobile-after}.png`.
   - 통과: `corepack pnpm -C app design:detect`, `corepack pnpm -C app exec vitest run src/components/auth/auth-page-layout.test.tsx src/lib/password-setup.test.ts src/app/api/auth/register/route.test.ts src/app/api/auth/password/reset/request/route.test.ts src/app/api/auth/verify/request/route.test.ts`, `corepack pnpm -C app lint`, `corepack pnpm -C app typecheck`, local inline env `corepack pnpm -C app build`.
+- Impeccable `/profile`, `/notifications` utility 흐름:
+  - 변경: notification empty state/filters/action targets, unauthenticated notification shell, profile hero image fallback, mute management nested surface, loading shell background을 정리했다.
+  - 유지: profile/auth/session/notification query/action/service 정책 로직은 변경 없음.
+  - screenshot evidence: `/tmp/townpet-utility-baseline/{profile,notifications,notifications-unread}-{desktop,mobile}.png`, `/tmp/townpet-utility-phase/{profile,notifications,notifications-unread}-{desktop-after,mobile-after}.png`, `/tmp/townpet-utility-phase/profile-mobile-after-2.png`.
+  - 통과: `corepack pnpm -C app design:detect`, 관련 Vitest 30개, `corepack pnpm -C app lint`, `corepack pnpm -C app typecheck`, local inline env `corepack pnpm -C app build`.
 - 과거 Phase 0-5와 checkpoint/push 상세는 [COMPLETED.md](./COMPLETED.md)에 보관했다.
 
 ## 다음 액션
-1. `/profile`, `/notifications` baseline screenshot과 route/component 구조를 확인한다.
-2. utility 화면의 empty/loading/error 상태와 mobile controls를 한 화면군 범위에서 정리한다.
+1. 주요 화면군 screenshot evidence와 active docs 상태를 점검한다.
+2. detector/quality gate/build 결과를 final verification으로 정리한다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)
