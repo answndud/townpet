@@ -5,6 +5,7 @@ on:
     branches: ["main"]
     paths:
       - "docs/**"
+      - "business/**"
       - "scripts/refresh-docs-index.mjs"
       - "app/package.json"
       - "app/prisma/migrations/**"
@@ -14,6 +15,7 @@ on:
     branches: ["main"]
     paths:
       - "docs/**"
+      - "business/**"
       - "scripts/refresh-docs-index.mjs"
       - "app/package.json"
       - "app/prisma/migrations/**"

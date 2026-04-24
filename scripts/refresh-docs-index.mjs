@@ -8,7 +8,8 @@ const checkMode = args.has("--check");
 
 const repoRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const appDir = join(repoRoot, "app");
-const reportPath = join(repoRoot, "docs", "archive", "operations", "문서 동기화 리포트.md");
+const reportRelativePath = join("business", "archive", "operations", "문서 동기화 리포트.md");
+const reportPath = join(repoRoot, reportRelativePath);
 
 function stableSort(items) {
   return [...items].sort((a, b) => {
@@ -19,11 +20,11 @@ function stableSort(items) {
 }
 
 function gitLsFiles(...paths) {
-  return execFileSync("git", ["ls-files", ...paths], {
+  return execFileSync("git", ["ls-files", "-z", ...paths], {
     cwd: repoRoot,
     encoding: "utf8",
   })
-    .split("\n")
+    .split("\0")
     .map((line) => line.trim())
     .filter(Boolean)
     .map((line) => line.normalize("NFC"));
@@ -37,7 +38,9 @@ function normalizeContent(content) {
   return content.replaceAll("\r\n", "\n").normalize("NFC");
 }
 
-const docsFiles = stableSort(gitLsFiles("docs").filter((path) => path.endsWith(".md")));
+const activeDocsFiles = stableSort(gitLsFiles("docs").filter((path) => path.endsWith(".md")));
+const businessDocsFiles = stableSort(gitLsFiles("business").filter((path) => path.endsWith(".md")));
+const docsFiles = stableSort([...new Set([...activeDocsFiles, ...businessDocsFiles])]);
 
 const packageJson = readJson(join(appDir, "package.json"));
 const scripts = stableSort(Object.keys(packageJson.scripts ?? {}));
@@ -64,8 +67,10 @@ const lines = [
   "",
   "This file is auto-generated. Do not edit manually.",
   "",
-  "## Docs files",
+  "## Tracked docs",
   `- Total markdown files: ${docsFiles.length}`,
+  `- docs/: ${activeDocsFiles.length}`,
+  `- business/: ${businessDocsFiles.length}`,
   ...docsFiles.map((file) => `- ${file}`),
   "",
   "## App scripts",
@@ -93,13 +98,13 @@ const prevContent = existsSync(reportPath)
 
 if (checkMode) {
   if (prevContent !== nextContent) {
-    console.error("docs-sync-report.md is stale. Run: cd app && pnpm docs:refresh");
+    console.error(`${reportRelativePath} is stale. Run: cd app && pnpm docs:refresh`);
     process.exit(1);
   }
-  console.log("docs-sync-report.md is up to date.");
+  console.log(`${reportRelativePath} is up to date.`);
   process.exit(0);
 }
 
 mkdirSync(dirname(reportPath), { recursive: true });
 writeFileSync(reportPath, nextContent, "utf8");
-console.log("Updated docs/archive/operations/문서 동기화 리포트.md");
+console.log(`Updated ${reportRelativePath}`);
