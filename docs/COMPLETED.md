@@ -426,3 +426,348 @@
 - 결과:
   - 작성 form의 첫 화면에서 분류/공개 범위와 정책 안내가 더 명확해졌다.
   - 변경은 UI structure/copy/touch target에 한정했고 작성 validation, action, service 정책 로직은 변경하지 않았다.
+
+### 2026-04-24 | Impeccable public post detail/comment flow
+- 완료일: `2026-04-24`
+- 배경:
+  - `/posts/[id]/guest`는 검색/피드에서 진입한 사용자가 본문을 읽고 댓글 흐름을 확인하는 public 상세 화면이다.
+  - baseline에서 댓글 thread card 안에 best 댓글 카드와 최신 댓글 border card가 다시 들어가 nested surface처럼 보였고, 모바일 action/link/form target이 작았다.
+- 변경내용:
+  - 댓글 thread shell은 유지하되 최신 댓글 list를 border-y divider 구조로 바꿔 내부 카드 중첩을 줄였다.
+  - 베스트 댓글은 별도 섹션 heading과 soft list로 정리해 최신 댓글과 hierarchy를 분리했다.
+  - reply guide spacing과 reply card radius/shadow를 줄여 댓글 depth를 더 조용하게 표시했다.
+  - 모바일에서 댓글 action, reaction, pagination, guest name/password, reply/edit/root textarea target을 40-44px 계열로 정리했다.
+- 코드문서:
+  - [app/src/components/posts/post-comment-layout-class.ts](../app/src/components/posts/post-comment-layout-class.ts)
+  - [app/src/components/posts/post-comment-thread.tsx](../app/src/components/posts/post-comment-thread.tsx)
+  - [app/src/components/posts/post-reaction-controls.tsx](../app/src/components/posts/post-reaction-controls.tsx)
+  - [app/src/components/posts/post-comment-layout-class.test.ts](../app/src/components/posts/post-comment-layout-class.test.ts)
+  - [app/src/components/posts/post-comment-thread.test.tsx](../app/src/components/posts/post-comment-thread.test.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app design:detect` 통과
+  - `corepack pnpm -C app exec vitest run src/components/posts/post-comment-layout-class.test.ts src/components/posts/post-comment-thread.test.tsx src/components/posts/post-reaction-controls.test.tsx` 통과
+  - `corepack pnpm -C app lint` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `AUTH_SECRET=local-dev-secret-local-dev-secret-123456 GUEST_HASH_PEPPER=local-dev-pepper UPSTASH_REDIS_REST_URL=https://example.com UPSTASH_REDIS_REST_TOKEN=local-token RESEND_API_KEY=re_local_dummy corepack pnpm -C app build` 통과
+  - Playwright/Chrome screenshot: `/tmp/townpet-post-detail-baseline/guest-desktop.png`, `/tmp/townpet-post-detail-baseline/guest-mobile.png`, `/tmp/townpet-post-detail-phase/guest-desktop-after.png`, `/tmp/townpet-post-detail-phase/guest-mobile-after.png`
+- 결과:
+  - public post detail의 읽기 흐름은 유지하면서 댓글 영역의 surface 중첩과 모바일 조작 부담을 줄였다.
+  - 변경은 shared comment/detail UI와 테스트 기대값에 한정했고 post/comment 정책, mutation, API 로직은 변경하지 않았다.
+
+### 2026-04-24 | Impeccable public search result flow
+- 완료일: `2026-04-24`
+- 배경:
+  - `/search/guest`는 비로그인 사용자가 공개 글을 찾는 핵심 public utility 화면이다.
+  - baseline에서 검색 form은 Enter 제출에 의존했고, 모바일에서 select/input/reset만 보여 검색 실행 affordance가 약했다.
+  - guest result row는 검색 결과 판단에 필요한 댓글 수, 범위, 작성자/일시 정보가 약해 scan 효율이 낮았다.
+- 변경내용:
+  - `FeedSearchForm`에 명시적 `검색` submit button을 추가하고 select/input/button/reset을 모바일 40-44px 계열 target으로 정리했다.
+  - guest 결과 header에 검색 범위와 검색 기준을 함께 노출했다.
+  - guest result row를 category/scope chip, title + comment count, excerpt, author/date/comment meta 구조로 정리했다.
+  - 기존 TownPet `tp-*` button/input/chip 스타일과 border-first result list 구조를 유지했다.
+- 코드문서:
+  - [app/src/components/posts/feed-search-form.tsx](../app/src/components/posts/feed-search-form.tsx)
+  - [app/src/components/posts/guest-search-page-client.tsx](../app/src/components/posts/guest-search-page-client.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app design:detect` 통과
+  - `corepack pnpm -C app lint` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `corepack pnpm -C app exec vitest run src/app/api/search/guest/route.test.ts src/app/api/search/log/route.test.ts src/server/queries/search.queries.test.ts` 통과
+  - `AUTH_SECRET=local-dev-secret-local-dev-secret-123456 GUEST_HASH_PEPPER=local-dev-pepper UPSTASH_REDIS_REST_URL=https://example.com UPSTASH_REDIS_REST_TOKEN=local-token RESEND_API_KEY=re_local_dummy corepack pnpm -C app build` 통과
+  - Playwright/Chrome screenshot: `/tmp/townpet-search-baseline/guest-results-desktop.png`, `/tmp/townpet-search-baseline/guest-results-mobile.png`, `/tmp/townpet-search-baseline/guest-empty-desktop.png`, `/tmp/townpet-search-baseline/guest-empty-mobile.png`, `/tmp/townpet-search-phase/guest-results-desktop-after.png`, `/tmp/townpet-search-phase/guest-results-mobile-after.png`, `/tmp/townpet-search-phase/guest-empty-desktop-after.png`, `/tmp/townpet-search-phase/guest-empty-mobile-after.png`
+- 결과:
+  - public guest search에서 검색 실행 방식이 명확해졌고, 결과 row가 모바일/데스크톱 모두에서 더 빠르게 비교 가능해졌다.
+  - 변경은 UI affordance와 result presentation에 한정했고 검색 query/ranking/logging/API 정책 로직은 변경하지 않았다.
+
+### 2026-04-24 | Impeccable public guest feed flow
+- 완료일: `2026-04-24`
+- 배경:
+  - `/feed/guest`는 비로그인 사용자의 public entry 이후 가장 자주 보는 게시글 목록 화면이다.
+  - baseline 모바일 첫 화면은 전역 nav와 필터 패널이 먼저 보이고, 현재 피드의 목적/검색/글쓰기 affordance가 약했다.
+  - desktop에서는 feed title hero가 지나치게 약하게 보여 목록과 필터의 맥락이 흐렸다.
+- 변경내용:
+  - guest feed header를 모바일/데스크톱 모두 표시되는 border-first product panel로 정리했다.
+  - header에 `공개 피드`, 현재 feed title, 짧은 설명을 추가해 첫 viewport hierarchy를 보강했다.
+  - 상단에 `게시글 검색`, `글쓰기` action을 배치하고 하단의 중복 글쓰기 버튼은 제거했다.
+  - 기존 `FeedControlPanel`, `FeedInfiniteList`, pagination, API/ranking 구조는 유지했다.
+- 코드문서:
+  - [app/src/components/posts/guest-feed-page-client.tsx](../app/src/components/posts/guest-feed-page-client.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app design:detect` 통과
+  - `corepack pnpm -C app lint` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `corepack pnpm -C app exec vitest run src/app/feed/guest/page.test.tsx src/app/api/feed/guest/route.test.ts src/components/posts/feed-control-panel.test.tsx src/components/posts/feed-post-meta-badges.test.tsx` 통과
+  - `AUTH_SECRET=local-dev-secret-local-dev-secret-123456 GUEST_HASH_PEPPER=local-dev-pepper UPSTASH_REDIS_REST_URL=https://example.com UPSTASH_REDIS_REST_TOKEN=local-token RESEND_API_KEY=re_local_dummy corepack pnpm -C app build` 통과
+  - Playwright/Chrome screenshot: `/tmp/townpet-feed-guest-baseline/default-desktop.png`, `/tmp/townpet-feed-guest-baseline/default-mobile.png`, `/tmp/townpet-feed-guest-baseline/best-desktop.png`, `/tmp/townpet-feed-guest-baseline/best-mobile.png`, `/tmp/townpet-feed-guest-baseline/search-desktop.png`, `/tmp/townpet-feed-guest-baseline/search-mobile.png`, `/tmp/townpet-feed-guest-phase/default-desktop-after.png`, `/tmp/townpet-feed-guest-phase/default-mobile-after.png`, `/tmp/townpet-feed-guest-phase/best-desktop-after.png`, `/tmp/townpet-feed-guest-phase/best-mobile-after.png`, `/tmp/townpet-feed-guest-phase/search-desktop-after.png`, `/tmp/townpet-feed-guest-phase/search-mobile-after.png`
+- 결과:
+  - public guest feed의 첫 화면에서 현재 컨텍스트와 검색/작성 행동이 더 빨리 드러난다.
+  - 변경은 guest feed UI hierarchy/action placement에 한정했고 feed ranking, pagination, personalization, guest API 정책 로직은 변경하지 않았다.
+
+### 2026-04-24 | Impeccable auth entry and recovery flow
+- 완료일: `2026-04-24`
+- 배경:
+  - login/register는 shared auth shell을 쓰고 있었지만 password reset, password setup, verify email 화면은 별도 shell이라 첫 화면 hierarchy와 footer touch target이 달랐다.
+  - reset/verify/setup form은 44px 계열 input/button, focus ring, aria-live 상태 메시지, 긴 token wrapping이 일부 부족했다.
+- 변경내용:
+  - `AuthPageLayout`의 설명 line length와 footer link touch target/focus state를 보강했다.
+  - `/password/reset`, `/password/setup`, `/verify-email`을 shared auth shell로 통일했다.
+  - reset/verify form을 `1. 토큰 받기 -> 2. 토큰 입력/비밀번호 설정` 흐름으로 정리하고, divider 기반 구조로 내부 nested card 느낌을 줄였다.
+  - reset/verify/setup/register form의 input/button을 44px 계열 target, focus ring, aria-invalid, aria-live status/error copy로 보강했다.
+  - Next 16 page props 계약에 맞게 `/password/reset`, `/verify-email`의 `searchParams`를 Promise로 unwrap했다.
+- 코드문서:
+  - [app/src/components/auth/auth-page-layout.tsx](../app/src/components/auth/auth-page-layout.tsx)
+  - [app/src/components/auth/register-form.tsx](../app/src/components/auth/register-form.tsx)
+  - [app/src/components/auth/reset-password-form.tsx](../app/src/components/auth/reset-password-form.tsx)
+  - [app/src/components/auth/set-password-form.tsx](../app/src/components/auth/set-password-form.tsx)
+  - [app/src/components/auth/verify-email-form.tsx](../app/src/components/auth/verify-email-form.tsx)
+  - [app/src/app/password/reset/page.tsx](../app/src/app/password/reset/page.tsx)
+  - [app/src/app/password/setup/page.tsx](../app/src/app/password/setup/page.tsx)
+  - [app/src/app/verify-email/page.tsx](../app/src/app/verify-email/page.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app design:detect` 통과
+  - `corepack pnpm -C app exec vitest run src/components/auth/auth-page-layout.test.tsx src/lib/password-setup.test.ts src/app/api/auth/register/route.test.ts src/app/api/auth/password/reset/request/route.test.ts src/app/api/auth/verify/request/route.test.ts` 통과
+  - `corepack pnpm -C app lint` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `AUTH_SECRET=local-dev-secret-local-dev-secret-123456 GUEST_HASH_PEPPER=local-dev-pepper UPSTASH_REDIS_REST_URL=https://example.com UPSTASH_REDIS_REST_TOKEN=local-token RESEND_API_KEY=re_local_dummy corepack pnpm -C app build` 통과
+  - Playwright/Chrome screenshot: `/tmp/townpet-auth-baseline/login-desktop.png`, `/tmp/townpet-auth-baseline/login-mobile.png`, `/tmp/townpet-auth-baseline/register-desktop.png`, `/tmp/townpet-auth-baseline/register-mobile.png`, `/tmp/townpet-auth-baseline/password-reset-desktop.png`, `/tmp/townpet-auth-baseline/password-reset-mobile.png`, `/tmp/townpet-auth-baseline/verify-email-desktop.png`, `/tmp/townpet-auth-baseline/verify-email-mobile.png`, `/tmp/townpet-auth-phase/login-desktop-after.png`, `/tmp/townpet-auth-phase/login-mobile-after.png`, `/tmp/townpet-auth-phase/register-desktop-after.png`, `/tmp/townpet-auth-phase/register-mobile-after.png`, `/tmp/townpet-auth-phase/password-reset-desktop-after.png`, `/tmp/townpet-auth-phase/password-reset-mobile-after.png`, `/tmp/townpet-auth-phase/verify-email-desktop-after.png`, `/tmp/townpet-auth-phase/verify-email-mobile-after.png`
+- 결과:
+  - 인증 진입/복구 화면군이 같은 visual shell과 form vocabulary를 사용해 mobile/desktop에서 더 예측 가능해졌다.
+  - 변경은 UI shell, form 상태/copy, route prop typing에 한정했고 auth service/session/OAuth/password/email API 정책 로직은 변경하지 않았다.
+
+### 2026-04-24 | Impeccable profile and notification utility flow
+- 완료일: `2026-04-24`
+- 배경:
+  - `/notifications` 빈 상태는 단일 문장이라 다음 행동이 약했고, 필터/일괄 처리/row action target이 모바일에서 작았다.
+  - `/profile`은 저장된 이미지 URL이 깨질 때 hero avatar가 alt text로 노출됐고, 뮤트 관리 영역은 card 안 soft-card 구조로 nested surface처럼 보였다.
+- 변경내용:
+  - `NotificationCenter` hero를 title/filter/action 영역으로 정리하고 `모두 읽음 처리`를 desktop/mobile 모두 명확한 action으로 배치했다.
+  - notification filter, row action, pagination control을 36-40px 계열 touch target으로 보강했다.
+  - notification empty state에 설명과 `피드로 돌아가기` recovery action을 추가했다.
+  - 비로그인 notification 화면도 shared hero surface와 44px login action으로 정리했다.
+  - profile hero avatar에 client fallback을 추가해 깨진 이미지 대신 조용한 placeholder를 보여준다.
+  - 뮤트 관리의 내부 soft-card를 divider 기반 empty/list 구조로 바꿔 nested card 느낌을 줄였다.
+  - profile/notifications loading shell에 `tp-page-bg`를 적용해 로딩 화면 배경 톤을 맞췄다.
+- 코드문서:
+  - [app/src/components/notifications/notification-center.tsx](../app/src/components/notifications/notification-center.tsx)
+  - [app/src/app/notifications/page.tsx](../app/src/app/notifications/page.tsx)
+  - [app/src/app/notifications/loading.tsx](../app/src/app/notifications/loading.tsx)
+  - [app/src/app/profile/page.tsx](../app/src/app/profile/page.tsx)
+  - [app/src/app/profile/loading.tsx](../app/src/app/profile/loading.tsx)
+  - [app/src/components/profile/profile-avatar.tsx](../app/src/components/profile/profile-avatar.tsx)
+  - [app/src/components/user/user-relation-controls.tsx](../app/src/components/user/user-relation-controls.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app design:detect` 통과
+  - `corepack pnpm -C app exec vitest run src/components/profile/profile-summary-link-card.test.tsx src/components/profile/profile-social-account-connections.test.tsx src/components/user/user-relation-controls.test.tsx src/app/api/notifications/route.test.ts src/server/queries/notification.queries.test.ts` 통과
+  - `corepack pnpm -C app lint` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `AUTH_SECRET=local-dev-secret-local-dev-secret-123456 GUEST_HASH_PEPPER=local-dev-pepper UPSTASH_REDIS_REST_URL=https://example.com UPSTASH_REDIS_REST_TOKEN=local-token RESEND_API_KEY=re_local_dummy corepack pnpm -C app build` 통과
+  - Playwright/Chrome screenshot: `/tmp/townpet-utility-baseline/profile-desktop.png`, `/tmp/townpet-utility-baseline/profile-mobile.png`, `/tmp/townpet-utility-baseline/notifications-desktop.png`, `/tmp/townpet-utility-baseline/notifications-mobile.png`, `/tmp/townpet-utility-baseline/notifications-unread-desktop.png`, `/tmp/townpet-utility-baseline/notifications-unread-mobile.png`, `/tmp/townpet-utility-phase/profile-desktop-after.png`, `/tmp/townpet-utility-phase/profile-mobile-after.png`, `/tmp/townpet-utility-phase/profile-mobile-after-2.png`, `/tmp/townpet-utility-phase/notifications-desktop-after.png`, `/tmp/townpet-utility-phase/notifications-mobile-after.png`, `/tmp/townpet-utility-phase/notifications-unread-desktop-after.png`, `/tmp/townpet-utility-phase/notifications-unread-mobile-after.png`
+- 결과:
+  - 로그인 후 utility 화면에서 empty/recovery state와 mobile action affordance가 더 명확해졌다.
+  - 변경은 UI shell, fallback, 상태 copy, touch target에 한정했고 profile/auth/session/notification 정책 로직은 변경하지 않았다.
+
+### 2026-04-24 | Impeccable final audit and verification
+- 완료일: `2026-04-24`
+- 배경:
+  - public/auth/write/admin/utility 화면군 개선 후 전체 detector, quality gate, build, 대표 screenshot spot-check를 한 번 더 묶어 확인해야 했다.
+  - final browser spot-check에서 `/search/guest` result telemetry가 `/api/search/log` 400 console error를 남기는 회귀가 발견됐다.
+- 변경내용:
+  - 대표 화면군 `/feed/guest`, `/search/guest`, `/login`, `/password/reset`, `/posts/new`, `/profile`, `/notifications`, `/admin/reports` desktop/mobile screenshot을 새로 남겼다.
+  - `SearchResultTelemetry` payload builder를 추가해 optional `scope`, `type`이 없을 때 JSON에서 생략하도록 정리했다.
+  - guest search telemetry의 `type: null` 회귀를 막는 단위 테스트를 추가했다.
+  - final verification 결과와 error note를 active/archive 문서에 반영했다.
+- 코드문서:
+  - [app/src/components/posts/search-result-telemetry.tsx](../app/src/components/posts/search-result-telemetry.tsx)
+  - [app/src/components/posts/search-result-telemetry.test.ts](../app/src/components/posts/search-result-telemetry.test.ts)
+  - [docs/errors/2026-04-24_search-result-telemetry-null-type.md](./errors/2026-04-24_search-result-telemetry-null-type.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app exec vitest run src/components/posts/search-result-telemetry.test.ts src/app/api/search/log/route.test.ts` 통과
+  - Browser spot-check `/search/guest?q=강아지` 통과, `consoleErrors: []`
+  - `corepack pnpm -C app design:detect` 통과
+  - `corepack pnpm -C app quality:check` 통과, 193 files / 926 tests
+  - `AUTH_SECRET=local-dev-secret-local-dev-secret-123456 GUEST_HASH_PEPPER=local-dev-pepper UPSTASH_REDIS_REST_URL=https://example.com UPSTASH_REDIS_REST_TOKEN=local-token RESEND_API_KEY=re_local_dummy corepack pnpm -C app build` 통과
+  - Playwright/Chrome screenshot: `/tmp/townpet-final-audit/feed-guest-desktop.png`, `/tmp/townpet-final-audit/feed-guest-mobile.png`, `/tmp/townpet-final-audit/search-guest-desktop-after-fix.png`, `/tmp/townpet-final-audit/search-guest-mobile-after-fix.png`, `/tmp/townpet-final-audit/login-desktop.png`, `/tmp/townpet-final-audit/login-mobile.png`, `/tmp/townpet-final-audit/password-reset-desktop.png`, `/tmp/townpet-final-audit/password-reset-mobile.png`, `/tmp/townpet-final-audit/post-new-desktop.png`, `/tmp/townpet-final-audit/post-new-mobile.png`, `/tmp/townpet-final-audit/profile-desktop.png`, `/tmp/townpet-final-audit/profile-mobile.png`, `/tmp/townpet-final-audit/notifications-desktop.png`, `/tmp/townpet-final-audit/notifications-mobile.png`, `/tmp/townpet-final-audit/admin-reports-desktop.png`, `/tmp/townpet-final-audit/admin-reports-mobile.png`
+- 결과:
+  - Impeccable 개선 workflow는 주요 화면군에 대해 detector, full quality check, build, representative screenshot evidence까지 완료됐다.
+  - 남은 active work는 Impeccable UI phase가 아니라 다음 launch gap 선택이다.
+
+### 2026-04-24 | Public SEO metadata sitemap stabilization
+- 완료일: `2026-04-24`
+- 배경:
+  - Impeccable UI phase 이후 launch gap으로 public entry의 metadata/canonical/sitemap/robots 증거를 점검했다.
+  - `/boards/adoption`은 public canonical page인데 sitemap static route에 없었고, local endpoint 확인 중 robots가 Next 16 dynamic sitemap 실제 경로와 다른 `/sitemap.xml`을 가리켜 404가 나는 것을 발견했다.
+- 변경내용:
+  - sitemap 첫 페이지 static route에 `/boards/adoption`을 추가했다.
+  - sitemap 테스트에 canonical public entry 포함과 redirect alias/private/auth 화면 제외를 고정했다.
+  - robots disallow에 admin/API/auth/password/profile/notification/bookmark/user-private surface를 명시했다.
+  - robots sitemap URL을 실제 생성 경로인 `/sitemap/0.xml`로 맞추고 회귀 테스트를 추가했다.
+  - active plan/progress를 다음 launch gap인 보안 헤더/운영 smoke evidence 보강으로 갱신했다.
+- 코드문서:
+  - [app/src/app/sitemap.ts](../app/src/app/sitemap.ts)
+  - [app/src/app/sitemap.test.ts](../app/src/app/sitemap.test.ts)
+  - [app/src/app/robots.ts](../app/src/app/robots.ts)
+  - [app/src/app/robots.test.ts](../app/src/app/robots.test.ts)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app exec vitest run src/app/sitemap.test.ts src/app/robots.test.ts` 통과
+  - `corepack pnpm -C app lint` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `corepack pnpm -C app quality:check` 통과, 194 files / 929 tests
+  - `AUTH_SECRET=local-dev-secret-local-dev-secret-123456 GUEST_HASH_PEPPER=local-dev-pepper UPSTASH_REDIS_REST_URL=https://example.com UPSTASH_REDIS_REST_TOKEN=local-token RESEND_API_KEY=re_local_dummy BLOB_READ_WRITE_TOKEN=local-blob-token corepack pnpm -C app build` 통과
+  - `curl -sS http://localhost:3000/robots.txt` 확인: `Sitemap: http://localhost:3000/sitemap/0.xml`, private/auth/admin/API disallow 확인
+  - `curl -sS -I http://localhost:3000/sitemap/0.xml` 확인: `200 OK`, `content-type: application/xml`
+  - `curl -sS http://localhost:3000/sitemap/0.xml` 확인: `/`, `/feed`, `/search`, `/boards/adoption`, legal routes 포함
+- 결과:
+  - public sitemap은 canonical public entry와 게시글/품종 lounge만 노출하고, redirect alias와 private/auth utility surface는 제외하도록 테스트로 고정됐다.
+  - robots가 실제 생성되는 sitemap 경로를 가리키게 되어 crawler가 404 sitemap URL을 받는 문제가 해소됐다.
+  - 변경은 SEO metadata route와 문서에 한정했고 제품 기능/정책 로직은 변경하지 않았다.
+
+### 2026-04-24 | Security headers and ops smoke evidence hardening
+- 완료일: `2026-04-24`
+- 배경:
+  - launch readiness 관점에서 security header, health, 운영 smoke evidence가 문서와 스크립트에 흩어져 있어 Next config 산출 설정의 회귀를 테스트로 고정할 필요가 있었다.
+  - 기존 `src/lib/security-headers.test.ts`는 header builder 값은 검증했지만 `next.config.ts`가 전역 route에 실제로 그 bundle을 적용하는지는 직접 검증하지 않았다.
+- 변경내용:
+  - `scripts/next-config-security-headers.test.ts`를 추가해 `/:path*` 전역 rule이 `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, `Content-Security-Policy`를 포함하는지 확인했다.
+  - public cache rules가 global security header rule과 분리되어 있고 CSP를 중복 정의하지 않는지 회귀 테스트로 고정했다.
+  - strict security env preflight, local health smoke, 실제 page response header curl 결과를 active/archive 문서에 남겼다.
+  - active plan/progress를 다음 launch gap인 loading/empty/error polish 잔여 점검으로 갱신했다.
+- 코드문서:
+  - [app/scripts/next-config-security-headers.test.ts](../app/scripts/next-config-security-headers.test.ts)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app exec vitest run scripts/next-config-security-headers.test.ts src/lib/security-headers.test.ts src/app/api/health/route.test.ts` 통과
+  - `NODE_ENV=production SECURITY_ENV_STRICT=1 AUTH_SECRET=local-prod-secret-local-prod-secret-123456 APP_BASE_URL=http://localhost:3000 GUEST_HASH_PEPPER=local-dev-pepper HEALTH_INTERNAL_TOKEN=health-secret UPSTASH_REDIS_REST_URL=https://example.com UPSTASH_REDIS_REST_TOKEN=local-token RESEND_API_KEY=re_local_dummy BLOB_READ_WRITE_TOKEN=local-blob-token ENABLE_SOCIAL_DEV_LOGIN=0 ENABLE_DEMO_AUTH_FALLBACK=0 corepack pnpm -C app ops:check:security-env:strict` 통과, `pass=8, warn=2, fail=0`
+  - `HEALTH_INTERNAL_TOKEN=health-secret corepack pnpm -C app dev` 후 `OPS_BASE_URL=http://localhost:3000 OPS_HEALTH_INTERNAL_TOKEN=health-secret corepack pnpm -C app ops:check:health` 통과, `controlPlane.state: ok`, `search.pgTrgm.enabled: true`
+  - `curl -sS -I http://localhost:3000/feed/guest` 확인: `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy`, `Content-Security-Policy` 확인
+  - `corepack pnpm -C app lint` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `corepack pnpm -C app quality:check` 통과, 195 files / 931 tests
+  - `AUTH_SECRET=local-dev-secret-local-dev-secret-123456 GUEST_HASH_PEPPER=local-dev-pepper HEALTH_INTERNAL_TOKEN=health-secret UPSTASH_REDIS_REST_URL=https://example.com UPSTASH_REDIS_REST_TOKEN=local-token RESEND_API_KEY=re_local_dummy BLOB_READ_WRITE_TOKEN=local-blob-token corepack pnpm -C app build` 통과
+- 결과:
+  - security header 값뿐 아니라 Next config 적용 계약까지 테스트로 보호된다.
+  - 운영 smoke는 local public health, internal diagnostics, control plane readiness, `pg_trgm`, page response headers까지 증거를 남겼다.
+  - 변경은 테스트와 문서에 한정했고 보안 헤더 값, health endpoint, 운영 스크립트 로직은 변경하지 않았다.
+
+### 2026-04-24 | Personal list loading and empty state polish
+- 완료일: `2026-04-24`
+- 배경:
+  - `/bookmarks`, `/my-posts`는 검색/게시판 필터 결과가 0건일 때 전체 목록이 비어 있는 것처럼 안내해 사용자가 필터를 줄여야 하는지, 첫 행동을 해야 하는지 구분하기 어려웠다.
+  - 두 화면의 loading skeleton은 실제 hero, filter, list row 구조보다 generic block에 가까워 로딩 중 화면 전환 예측성이 낮았다.
+- 변경내용:
+  - `/bookmarks` filtered empty copy를 `조건에 맞는 북마크가 없습니다`로 분리하고 `전체 북마크 보기` recovery action을 추가했다.
+  - `/my-posts` filtered empty copy를 `조건에 맞는 작성글이 없습니다`로 분리하고 `전체 작성글 보기` recovery action을 추가했다.
+  - 두 loading 화면을 `tp-page-bg`, `tp-hero`, `tp-card`, `tp-soft-card`, filter pill skeleton, list row skeleton 구조로 실제 화면과 맞췄다.
+  - loading shell 회귀 테스트를 추가했다.
+  - active plan/progress를 다음 priority인 레드팀 P0/P1 잔여 remediation 확인으로 갱신했다.
+- 코드문서:
+  - [app/src/app/bookmarks/page.tsx](../app/src/app/bookmarks/page.tsx)
+  - [app/src/app/bookmarks/loading.tsx](../app/src/app/bookmarks/loading.tsx)
+  - [app/src/app/my-posts/page.tsx](../app/src/app/my-posts/page.tsx)
+  - [app/src/app/my-posts/loading.tsx](../app/src/app/my-posts/loading.tsx)
+  - [app/src/app/personal-list-loading.test.tsx](../app/src/app/personal-list-loading.test.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app exec vitest run src/app/personal-list-loading.test.tsx src/app/saved/page.test.tsx src/server/queries/post.queries.test.ts` 통과, 54 tests
+  - `corepack pnpm -C app design:detect` 통과
+  - `corepack pnpm -C app lint` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `corepack pnpm -C app quality:check` 통과, 196 files / 933 tests
+  - `AUTH_SECRET=local-dev-secret-local-dev-secret-123456 GUEST_HASH_PEPPER=local-dev-pepper HEALTH_INTERNAL_TOKEN=health-secret UPSTASH_REDIS_REST_URL=https://example.com UPSTASH_REDIS_REST_TOKEN=local-token RESEND_API_KEY=re_local_dummy BLOB_READ_WRITE_TOKEN=local-blob-token corepack pnpm -C app build` 통과
+- 결과:
+  - 개인 목록 화면군은 필터 0건과 전체 empty가 분리되어 사용자가 필터를 해제할지 첫 행동을 할지 바로 판단할 수 있다.
+  - loading skeleton이 실제 화면의 scan path와 같은 구조를 유지해 모바일/데스크톱 모두에서 전환이 덜 튄다.
+  - 변경은 개인 목록 UI 상태와 테스트에 한정했고 auth/query/bookmark/post 정책 로직은 변경하지 않았다.
+
+### 2026-04-24 | Redteam P0/P1 report policy evidence cleanup
+- 완료일: `2026-04-24`
+- 배경:
+  - P0/P1 보안 계획과 현재 신고 정책은 fixed 3-report auto-hide를 폐기하고 reporter trust/속도 기반 가중치 규칙을 사용한다.
+  - `business/product/게시글_코어.md`에는 과거 문구인 `POST 신고 누적 3건 이상이면 status=HIDDEN`이 남아 있어 정책 증거와 충돌했다.
+- 변경내용:
+  - `business/product/게시글_코어.md`의 신고 API 설명을 현재 정책과 맞춰 `신고 3건 고정 규칙은 사용하지 않는다`, `고유 신고자 2명 이상`, `누적 가중치 3.0`, `Post.status=HIDDEN`, `Comment 대상 수동 처리`로 갱신했다.
+  - 운영/정책 메모의 작성/신고 레이트리밋 설명을 user, user+ip, shared ip, fingerprint 축 조합으로 갱신했다.
+  - 비회원 write abuse 방어로 IP+fingerprint step-up proof 요구를 문서에 반영했다.
+  - `scripts/policy-doc-consistency.test.ts`를 추가해 fixed 3-report wording 재도입을 막고, 현재 가중치 기반 규칙이 핵심 문서에 남아 있는지 확인한다.
+  - active plan/progress를 다음 priority인 운영 문서 최신성 점검으로 갱신했다.
+- 코드문서:
+  - [business/product/게시글_코어.md](../business/product/게시글_코어.md)
+  - [app/scripts/policy-doc-consistency.test.ts](../app/scripts/policy-doc-consistency.test.ts)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app exec vitest run scripts/policy-doc-consistency.test.ts src/lib/report-moderation.test.ts src/server/services/report.service.test.ts src/app/api/reports/route.test.ts` 통과, 18 tests
+  - `corepack pnpm -C app lint` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `corepack pnpm -C app quality:check` 통과, 197 files / 935 tests
+  - `AUTH_SECRET=local-dev-secret-local-dev-secret-123456 GUEST_HASH_PEPPER=local-dev-pepper HEALTH_INTERNAL_TOKEN=health-secret UPSTASH_REDIS_REST_URL=https://example.com UPSTASH_REDIS_REST_TOKEN=local-token RESEND_API_KEY=re_local_dummy BLOB_READ_WRITE_TOKEN=local-blob-token corepack pnpm -C app build` 통과
+- 결과:
+  - 레드팀 P0/P1 신고 정책 remediation 증거가 product/policy 문서 사이에서 충돌하지 않는다.
+  - 신고 서비스/API와 moderation scoring 로직은 변경하지 않고, stale 정책 문서와 문서 회귀 테스트만 보강했다.
+
+### 2026-04-24 | Operations docs command consistency check
+- 완료일: `2026-04-24`
+- 배경:
+  - 운영/README/AGENTS 문서의 대표 `pnpm` 명령이 `app/package.json` scripts와 어긋나면 온콜, 배포, 로컬 복구 루틴이 stale 문서에 의존할 수 있다.
+  - 최근 문서 추가 후 `business/archive/operations/문서 동기화 리포트.md` 생성 리포트도 최신 상태가 아니었다.
+- 변경내용:
+  - `scripts/ops-doc-scripts-consistency.test.ts`를 추가해 README, AGENTS, app README, 운영 가이드, 배포 체크리스트, OAuth/Vercel 가이드의 대표 `pnpm` script 참조를 `app/package.json` scripts와 대조한다.
+  - `business/archive/operations/문서 동기화 리포트.md`를 `docs:refresh` 결과로 갱신했다.
+  - active plan/progress를 다음 priority인 품종 기반 개인화/광고/커뮤니티 PRD 착수로 갱신했다.
+- 코드문서:
+  - [app/scripts/ops-doc-scripts-consistency.test.ts](../app/scripts/ops-doc-scripts-consistency.test.ts)
+  - [business/archive/operations/문서 동기화 리포트.md](../business/archive/operations/문서 동기화 리포트.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app exec vitest run scripts/ops-doc-scripts-consistency.test.ts` 통과, 2 tests
+  - `corepack pnpm -C app docs:refresh:check` 최초 stale report 감지 후 `corepack pnpm -C app docs:refresh` 실행, 재확인 통과
+  - `corepack pnpm -C app lint` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `corepack pnpm -C app quality:check` 통과, 198 files / 937 tests
+  - `AUTH_SECRET=local-dev-secret-local-dev-secret-123456 GUEST_HASH_PEPPER=local-dev-pepper HEALTH_INTERNAL_TOKEN=health-secret UPSTASH_REDIS_REST_URL=https://example.com UPSTASH_REDIS_REST_TOKEN=local-token RESEND_API_KEY=re_local_dummy BLOB_READ_WRITE_TOKEN=local-blob-token corepack pnpm -C app build` 통과
+- 결과:
+  - 대표 운영 문서의 `pnpm` script 참조가 package scripts 변경과 함께 회귀 검증된다.
+  - 생성형 운영 문서 리포트가 현재 markdown 파일 집합과 다시 동기화됐다.
+  - 변경은 문서/테스트에 한정했고 앱 기능 로직과 운영 스크립트 동작은 변경하지 않았다.
+
+### 2026-04-24 | Breed personalization monetization cycle kickoff
+- 완료일: `2026-04-24`
+- 배경:
+  - `business/product/품종_개인화_기획서.md`는 프로필 품종 신호, 세그먼트, 맞춤 피드, 품종 라운지, 광고 지표까지 MVP 구현 상태 메모가 쌓여 있었다.
+  - `business/product/Phase2_로드맵_PRD.md`는 다음 Phase 2를 검색/개인화/운영 증폭으로 두고, 마켓/케어/지도/결제는 이후로 보류했다.
+- 변경내용:
+  - 첫 구현 후보를 `개인화/광고 운영 튜닝 루프`로 확정했다.
+  - `business/product/품종_개인화_광고_커뮤니티_실행계획.md`를 추가해 A1 운영 판단 기준 문서화, A2 관리자 진단 UX 보강, A3 광고/추천 정책 분리 증거, A4 품종 라운지 고위험 write gate 점검 순서로 쪼갰다.
+  - 광고 라벨/frequency cap, 건강 민감정보 타겟팅 금지, 공동구매/거래성 글 정책 게이트를 문서에 고정했다.
+  - 기존 품종 개인화 PRD와 Phase 2 로드맵에서 최신 실행계획으로 링크했다.
+  - active plan/progress를 다음 작업인 개인화 운영 판단 기준 문서화로 갱신했다.
+- 코드문서:
+  - [business/product/품종_개인화_광고_커뮤니티_실행계획.md](../business/product/품종_개인화_광고_커뮤니티_실행계획.md)
+  - [business/product/품종_개인화_기획서.md](../business/product/품종_개인화_기획서.md)
+  - [business/product/Phase2_로드맵_PRD.md](../business/product/Phase2_로드맵_PRD.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app docs:refresh:check` 통과
+  - `corepack pnpm -C app lint` 통과
+  - `corepack pnpm -C app typecheck` 통과
+- 결과:
+  - 다음 구현은 새 대형 기능이 아니라 기존 개인화/광고 운영 루프의 판단 가능성을 높이는 작은 사이클로 시작한다.
+  - 마켓/케어/지도/결제는 이번 흐름에서 명시적으로 제외했다.
+  - 변경은 문서에 한정했고 앱 기능 로직, 추천 알고리즘, 관리자 UI는 변경하지 않았다.
