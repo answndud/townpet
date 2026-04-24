@@ -109,7 +109,7 @@ export function LinkifiedContent({
 
       {activeEmbed ? (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[#071426]/75 p-4"
           onClick={() => setActiveEmbed(null)}
         >
           <div
@@ -126,7 +126,7 @@ export function LinkifiedContent({
                 닫기
               </button>
             </div>
-            <div className="aspect-video w-full bg-black">
+            <div className="aspect-video w-full bg-[#071426]">
               <iframe
                 title="YouTube video preview"
                 src={`https://www.youtube-nocookie.com/embed/${activeEmbed.videoId}?autoplay=1&rel=0`}

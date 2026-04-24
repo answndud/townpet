@@ -209,17 +209,36 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
   return (
     <div className="tp-page-bg min-h-screen pb-16">
       <main className="mx-auto flex w-full max-w-[1320px] flex-col gap-5 px-4 py-6 sm:px-6 lg:px-10">
-        <header className="tp-hero p-5 sm:p-6">
-          <p className="text-[11px] uppercase tracking-[0.24em] text-[#3f5f90]">운영 관리</p>
-          <h1 className="mt-2 text-2xl font-bold tracking-tight text-[#10284a] sm:text-3xl">
-            신고 큐
-          </h1>
-          <p className="mt-2 text-sm text-[#4f678d]">
-            신고 접수 현황을 확인하고 대기 건을 처리합니다.
-          </p>
-          <p className="mt-3 text-xs text-[#5a7398]">
-            현재 목록 긴급 {criticalPendingCount}건 · 높은 우선순위 {highPendingCount}건
-          </p>
+        <header className="tp-hero flex flex-col gap-4 p-5 sm:p-6 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.24em] text-[#3f5f90]">운영 관리</p>
+            <h1 className="mt-2 text-2xl font-bold tracking-tight text-[#10284a] sm:text-3xl">
+              신고 큐
+            </h1>
+            <p className="mt-2 text-sm text-[#4f678d]">
+              대기 신고를 우선순위와 대상별로 빠르게 판정합니다.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-2 text-xs sm:grid-cols-4 lg:min-w-[520px]">
+            <div className="rounded-lg border border-[#d8e4f6] bg-white px-3 py-2">
+              <p className="text-[10px] uppercase tracking-[0.18em] text-[#5b78a1]">대기</p>
+              <p className="mt-1 text-lg font-bold text-[#10284a]">
+                {stats.statusCounts[ReportStatus.PENDING]}
+              </p>
+            </div>
+            <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2">
+              <p className="text-[10px] uppercase tracking-[0.18em] text-rose-700">긴급</p>
+              <p className="mt-1 text-lg font-bold text-rose-800">{criticalPendingCount}</p>
+            </div>
+            <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
+              <p className="text-[10px] uppercase tracking-[0.18em] text-amber-700">높음</p>
+              <p className="mt-1 text-lg font-bold text-amber-800">{highPendingCount}</p>
+            </div>
+            <div className="rounded-lg border border-[#d8e4f6] bg-white px-3 py-2">
+              <p className="text-[10px] uppercase tracking-[0.18em] text-[#5b78a1]">평균</p>
+              <p className="mt-1 text-lg font-bold text-[#10284a]">{averageResolutionLabel}</p>
+            </div>
+          </div>
         </header>
 
         <div className="flex flex-wrap items-center gap-3 text-xs text-[#5a7398]">
@@ -234,79 +253,6 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
           <ReportUpdateBanner message="신고 처리 결과가 반영되었습니다." />
         ) : null}
 
-        <section className="tp-card grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="border border-[#d8e4f6] bg-[#f8fbff] p-3">
-            <p className="text-[11px] uppercase tracking-[0.22em] text-[#5b78a1]">전체 신고</p>
-            <p className="mt-2 text-2xl font-bold text-[#10284a]">{stats.totalCount}</p>
-            <p className="text-xs text-[#4f678d]">누적 신고 수</p>
-          </div>
-          <div className="border border-[#d8e4f6] bg-[#f8fbff] p-3">
-            <p className="text-[11px] uppercase tracking-[0.22em] text-[#5b78a1]">미처리</p>
-            <p className="mt-2 text-2xl font-bold text-[#10284a]">
-              {stats.statusCounts[ReportStatus.PENDING]}
-            </p>
-            <p className="text-xs text-[#4f678d]">대기 중 신고</p>
-          </div>
-          <div className="border border-[#d8e4f6] bg-[#f8fbff] p-3">
-            <p className="text-[11px] uppercase tracking-[0.22em] text-[#5b78a1]">승인</p>
-            <p className="mt-2 text-2xl font-bold text-[#10284a]">
-              {stats.statusCounts[ReportStatus.RESOLVED]}
-            </p>
-            <p className="text-xs text-[#4f678d]">처리 완료</p>
-          </div>
-          <div className="border border-[#d8e4f6] bg-[#f8fbff] p-3">
-            <p className="text-[11px] uppercase tracking-[0.22em] text-[#5b78a1]">기각</p>
-            <p className="mt-2 text-2xl font-bold text-[#10284a]">
-              {stats.statusCounts[ReportStatus.DISMISSED]}
-            </p>
-            <p className="text-xs text-[#4f678d]">기각 완료</p>
-          </div>
-          <div className="rounded-lg border border-[#d8e4f6] bg-white p-3 sm:col-span-2 lg:col-span-1">
-            <p className="text-[11px] uppercase tracking-[0.22em] text-[#5b78a1]">평균 처리</p>
-            <p className="mt-2 text-2xl font-bold text-[#10284a]">{averageResolutionLabel}</p>
-            <p className="text-xs text-[#4f678d]">처리 평균 시간</p>
-          </div>
-          <div className="border border-[#d8e4f6] bg-white p-3 sm:col-span-2 lg:col-span-1">
-            <p className="text-[11px] uppercase tracking-[0.22em] text-[#5b78a1]">사유 분포</p>
-            <div className="mt-2 flex flex-col gap-1.5 text-xs text-[#4f678d]">
-              {reportReasonOptions.map((reason) => (
-                <div key={reason} className="flex items-center justify-between">
-                  <span>{getReportReasonLabel(reason)}</span>
-                  <span className="font-semibold text-[#163462]">
-                    {stats.reasonCounts[reason]}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="border border-[#d8e4f6] bg-white p-3 sm:col-span-2 lg:col-span-1">
-            <p className="text-[11px] uppercase tracking-[0.22em] text-[#5b78a1]">대상 분포</p>
-            <div className="mt-2 flex flex-col gap-1.5 text-xs text-[#4f678d]">
-              {Object.entries(stats.targetCounts).map(([target, count]) => (
-                isSupportedReportTarget(target) ? (
-                  <div key={target} className="flex items-center justify-between">
-                    <span>{getReportTargetLabel(target)}</span>
-                    <span className="font-semibold text-[#163462]">{count}</span>
-                  </div>
-                ) : null
-              ))}
-            </div>
-          </div>
-          <div className="border border-[#d8e4f6] bg-white p-3 sm:col-span-2 lg:col-span-1">
-            <p className="text-[11px] uppercase tracking-[0.22em] text-[#5b78a1]">
-              최근 {stats.dailyCounts.length}일
-            </p>
-            <div className="mt-2 flex flex-col gap-1.5 text-xs text-[#4f678d]">
-              {stats.dailyCounts.map((entry) => (
-                <div key={entry.date} className="flex items-center justify-between">
-                  <span>{entry.date.slice(5)}</span>
-                  <span className="font-semibold text-[#163462]">{entry.count}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
         <section className="tp-card flex flex-col gap-3 p-4 text-xs text-[#4f678d]">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-[10px] uppercase tracking-[0.24em] text-[#5b78a1]">
@@ -316,7 +262,7 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
               <Link
                 key={value}
                 href={buildLink(value as ReportStatus | "ALL", targetType, 1)}
-                className={`rounded-lg border px-2.5 py-1 transition ${
+                className={`inline-flex min-h-9 items-center rounded-lg border px-3 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8bb8ff] ${
                   status === value
                     ? "border-[#3567b5] bg-[#3567b5] text-white"
                     : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
@@ -334,7 +280,7 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
               <Link
                 key={value}
                 href={buildLink(status, value as ReportTarget | "ALL", 1)}
-                className={`rounded-lg border px-2.5 py-1 transition ${
+                className={`inline-flex min-h-9 items-center rounded-lg border px-3 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8bb8ff] ${
                   targetType === value
                     ? "border-[#3567b5] bg-[#3567b5] text-white"
                     : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
@@ -343,6 +289,119 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
                 {value === "ALL" ? "전체" : getReportTargetLabel(value)}
               </Link>
             ))}
+          </div>
+        </section>
+
+        <section className="flex flex-wrap items-center justify-between gap-3 text-xs text-[#5a7398]">
+          <span>
+            페이지 {reportPage.page} / {reportPage.totalPages} · 현재 {reportRows.length}건 표시 · 누적{" "}
+            {reportPage.totalCount}건
+          </span>
+          {reportPage.totalPages > 1 ? (
+            <div className="flex flex-wrap items-center gap-1.5">
+              <Link
+                href={buildLink(status, targetType, Math.max(1, reportPage.page - 1))}
+                aria-disabled={reportPage.page <= 1}
+                className={`inline-flex items-center rounded-lg ${
+                  reportPage.page <= 1 ? "tp-btn-disabled pointer-events-none" : "tp-btn-soft"
+                } tp-btn-xs transition`}
+              >
+                이전
+              </Link>
+              {buildPaginationWindow(reportPage.page, reportPage.totalPages).map((pageNumber) => (
+                <Link
+                  key={pageNumber}
+                  href={buildLink(status, targetType, pageNumber)}
+                  className={`inline-flex min-w-8 items-center justify-center rounded-lg ${
+                    pageNumber === reportPage.page ? "tp-btn-primary" : "tp-btn-soft"
+                  } tp-btn-xs transition`}
+                >
+                  {pageNumber}
+                </Link>
+              ))}
+              <Link
+                href={buildLink(
+                  status,
+                  targetType,
+                  Math.min(reportPage.totalPages, reportPage.page + 1),
+                )}
+                aria-disabled={reportPage.page >= reportPage.totalPages}
+                className={`inline-flex items-center rounded-lg ${
+                  reportPage.page >= reportPage.totalPages
+                    ? "tp-btn-disabled pointer-events-none"
+                    : "tp-btn-soft"
+                } tp-btn-xs transition`}
+              >
+                다음
+              </Link>
+            </div>
+          ) : null}
+        </section>
+
+        <ReportQueueTable reports={reportRows} />
+
+        <section className="tp-card p-4">
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)_minmax(0,1fr)_minmax(0,1fr)]">
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.22em] text-[#5b78a1]">처리 상태</p>
+              <dl className="mt-3 grid grid-cols-3 gap-2 text-xs">
+                <div>
+                  <dt className="text-[#5a7398]">전체</dt>
+                  <dd className="mt-1 text-lg font-bold text-[#10284a]">{stats.totalCount}</dd>
+                </div>
+                <div>
+                  <dt className="text-[#5a7398]">승인</dt>
+                  <dd className="mt-1 text-lg font-bold text-[#10284a]">
+                    {stats.statusCounts[ReportStatus.RESOLVED]}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-[#5a7398]">기각</dt>
+                  <dd className="mt-1 text-lg font-bold text-[#10284a]">
+                    {stats.statusCounts[ReportStatus.DISMISSED]}
+                  </dd>
+                </div>
+              </dl>
+            </div>
+            <div className="border-t border-[#e1e9f5] pt-4 lg:border-l lg:border-t-0 lg:pl-4 lg:pt-0">
+              <p className="text-[11px] uppercase tracking-[0.22em] text-[#5b78a1]">사유 분포</p>
+              <div className="mt-2 flex flex-col gap-1.5 text-xs text-[#4f678d]">
+              {reportReasonOptions.map((reason) => (
+                <div key={reason} className="flex items-center justify-between">
+                  <span>{getReportReasonLabel(reason)}</span>
+                  <span className="font-semibold text-[#163462]">
+                    {stats.reasonCounts[reason]}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="border-t border-[#e1e9f5] pt-4 lg:border-l lg:border-t-0 lg:pl-4 lg:pt-0">
+            <p className="text-[11px] uppercase tracking-[0.22em] text-[#5b78a1]">대상 분포</p>
+            <div className="mt-2 flex flex-col gap-1.5 text-xs text-[#4f678d]">
+              {Object.entries(stats.targetCounts).map(([target, count]) => (
+                isSupportedReportTarget(target) ? (
+                  <div key={target} className="flex items-center justify-between">
+                    <span>{getReportTargetLabel(target)}</span>
+                    <span className="font-semibold text-[#163462]">{count}</span>
+                  </div>
+                ) : null
+              ))}
+            </div>
+          </div>
+          <div className="border-t border-[#e1e9f5] pt-4 lg:border-l lg:border-t-0 lg:pl-4 lg:pt-0">
+            <p className="text-[11px] uppercase tracking-[0.22em] text-[#5b78a1]">
+              최근 {stats.dailyCounts.length}일
+            </p>
+            <div className="mt-2 flex flex-col gap-1.5 text-xs text-[#4f678d]">
+              {stats.dailyCounts.map((entry) => (
+                <div key={entry.date} className="flex items-center justify-between">
+                  <span>{entry.date.slice(5)}</span>
+                  <span className="font-semibold text-[#163462]">{entry.count}</span>
+                </div>
+              ))}
+            </div>
+          </div>
           </div>
         </section>
 
@@ -409,54 +468,6 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
             </div>
           )}
         </section>
-
-        <section className="flex flex-wrap items-center justify-between gap-3 text-xs text-[#5a7398]">
-          <span>
-            페이지 {reportPage.page} / {reportPage.totalPages} · 현재 {reportRows.length}건 표시 · 누적{" "}
-            {reportPage.totalCount}건
-          </span>
-          {reportPage.totalPages > 1 ? (
-            <div className="flex flex-wrap items-center gap-1.5">
-              <Link
-                href={buildLink(status, targetType, Math.max(1, reportPage.page - 1))}
-                aria-disabled={reportPage.page <= 1}
-                className={`inline-flex items-center rounded-lg ${
-                  reportPage.page <= 1 ? "tp-btn-disabled pointer-events-none" : "tp-btn-soft"
-                } tp-btn-xs transition`}
-              >
-                이전
-              </Link>
-              {buildPaginationWindow(reportPage.page, reportPage.totalPages).map((pageNumber) => (
-                <Link
-                  key={pageNumber}
-                  href={buildLink(status, targetType, pageNumber)}
-                  className={`inline-flex min-w-8 items-center justify-center rounded-lg ${
-                    pageNumber === reportPage.page ? "tp-btn-primary" : "tp-btn-soft"
-                  } tp-btn-xs transition`}
-                >
-                  {pageNumber}
-                </Link>
-              ))}
-              <Link
-                href={buildLink(
-                  status,
-                  targetType,
-                  Math.min(reportPage.totalPages, reportPage.page + 1),
-                )}
-                aria-disabled={reportPage.page >= reportPage.totalPages}
-                className={`inline-flex items-center rounded-lg ${
-                  reportPage.page >= reportPage.totalPages
-                    ? "tp-btn-disabled pointer-events-none"
-                    : "tp-btn-soft"
-                } tp-btn-xs transition`}
-              >
-                다음
-              </Link>
-            </div>
-          ) : null}
-        </section>
-
-        <ReportQueueTable reports={reportRows} />
 
         <div className="flex flex-wrap items-center gap-3 text-xs text-[#5a7398]">
           <Link href="/admin/ops">Ops 대시보드</Link>

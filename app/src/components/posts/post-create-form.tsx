@@ -747,8 +747,15 @@ export function PostCreateForm({
     });
   };
 
+  const policySummary = isAuthenticated
+    ? canUseLocalScope
+      ? "병원후기, 입양, 봉사 모집은 온동네로 고정됩니다. 동네모임은 대표 동네 범위로만 등록됩니다."
+      : "대표 동네를 설정해야 동네모임을 작성할 수 있습니다."
+    : "비회원 글은 전체로만 등록됩니다. 외부 링크, 연락처, 고위험 카테고리는 제한됩니다.";
+
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
       <section className="tp-card overflow-hidden">
         <div className="tp-form-section-bar">
           <p className="tp-form-section-title">
@@ -759,7 +766,7 @@ export function PostCreateForm({
           <label className="tp-form-label">
             제목
             <input
-              className="tp-input-soft px-3 py-2 text-sm"
+              className="tp-input-soft min-h-11 px-3 py-2 text-sm"
               value={formState.title}
               onChange={(event) =>
                 setFormState((prev) => ({ ...prev, title: event.target.value }))
@@ -773,7 +780,7 @@ export function PostCreateForm({
           <label className="tp-form-label">
             분류
             <select
-              className="tp-input-soft px-3 py-2 text-sm"
+              className="tp-input-soft min-h-11 px-3 py-2 text-sm"
               value={formState.type}
               onChange={(event) =>
                 setFormState((prev) => ({
@@ -794,7 +801,7 @@ export function PostCreateForm({
             <label className="tp-form-label">
               리뷰 카테고리
               <select
-                className="tp-input-soft px-3 py-2 text-sm"
+                className="tp-input-soft min-h-11 px-3 py-2 text-sm"
                 value={formState.reviewCategory}
                 onChange={(event) =>
                   setFormState((prev) => ({
@@ -816,7 +823,7 @@ export function PostCreateForm({
             <label className="tp-form-label">
               동네
               <select
-                className={`tp-input-soft px-3 py-2 text-sm transition ${
+                className={`tp-input-soft min-h-11 px-3 py-2 text-sm transition ${
                   showNeighborhood
                     ? ""
                     : "tp-btn-disabled cursor-not-allowed"
@@ -853,7 +860,7 @@ export function PostCreateForm({
             <label className="tp-form-label">
               관련 동물
               <select
-                className="tp-input-soft px-3 py-2 text-sm"
+                className="tp-input-soft min-h-11 px-3 py-2 text-sm"
                 value={formState.petTypeId}
                 onChange={(event) =>
                   setFormState((prev) => ({
@@ -877,7 +884,7 @@ export function PostCreateForm({
             <label className="tp-form-label md:col-span-2">
               동물 태그
               <input
-                className="tp-input-soft px-3 py-2 text-sm"
+                className="tp-input-soft min-h-11 px-3 py-2 text-sm"
                 value={formState.animalTagsInput}
                 onChange={(event) =>
                   setFormState((prev) => ({
@@ -899,7 +906,7 @@ export function PostCreateForm({
             <label className="tp-form-label">
               비회원 닉네임
               <input
-                className="tp-input-soft bg-white px-3 py-2 text-sm"
+                className="tp-input-soft min-h-11 bg-white px-3 py-2 text-sm"
                 value={formState.guestDisplayName}
                 onChange={(event) =>
                   setFormState((prev) => ({ ...prev, guestDisplayName: event.target.value }))
@@ -914,7 +921,7 @@ export function PostCreateForm({
               글 비밀번호
               <input
                 type="password"
-                className="tp-input-soft bg-white px-3 py-2 text-sm"
+                className="tp-input-soft min-h-11 bg-white px-3 py-2 text-sm"
                 value={formState.guestPassword}
                 onChange={(event) =>
                   setFormState((prev) => ({ ...prev, guestPassword: event.target.value }))
@@ -928,6 +935,37 @@ export function PostCreateForm({
           </div>
         ) : null}
       </section>
+
+      <aside className="tp-card h-fit p-4 sm:p-5">
+        <p className="text-[11px] uppercase tracking-[0.22em] text-[#5b78a1]">작성 기준</p>
+        <div className="mt-3 space-y-3 text-xs leading-6 text-[#4f678d]">
+          <p>{policySummary}</p>
+          <div className="rounded-lg border border-[#d8e4f6] bg-[#f8fbff] p-3">
+            <p className="font-semibold text-[#163462]">등록 전 확인</p>
+            <ul className="mt-2 list-disc space-y-1 pl-4">
+              <li>제목과 본문에 동물, 지역, 상황을 구체적으로 적어 주세요.</li>
+              <li>연락처나 외부 거래 유도는 정책에 따라 제한될 수 있습니다.</li>
+              <li>분류를 바꾸면 필요한 추가 정보가 아래에 표시됩니다.</li>
+            </ul>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="rounded-lg border border-[#cbdcf5] bg-white px-2.5 py-1 text-[#355988]">
+              {draftSavedAt
+                ? `임시저장 ${new Date(draftSavedAt).toLocaleTimeString("ko-KR", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}`
+                : "임시저장 대기"}
+            </span>
+            {draftMessage ? (
+              <span className="rounded-lg border border-[#cbdcf5] bg-white px-2.5 py-1 text-[#315b9a]">
+                {draftMessage}
+              </span>
+            ) : null}
+          </div>
+        </div>
+      </aside>
+      </div>
 
         <PostBodyRichEditor
           ref={editorHandleRef}
@@ -1689,13 +1727,7 @@ export function PostCreateForm({
       {error ? <p className="text-sm text-rose-600">{error}</p> : null}
 
       <div className="tp-border-soft flex flex-wrap items-center justify-between gap-3 border-t pt-3">
-        <p className="tp-form-note">
-          {isAuthenticated
-            ? canUseLocalScope
-              ? "병원후기·유기동물 입양·보호소 봉사 모집은 온동네로 고정되고, 동네모임은 동네 범위로만 등록됩니다."
-              : "대표 동네를 설정해야 동네모임을 작성할 수 있습니다."
-            : "비회원 글은 전체로만 등록되며 외부 링크/연락처/고위험 카테고리는 제한됩니다."}
-        </p>
+        <p className="tp-form-note">{policySummary}</p>
         <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end">
           {isAuthenticated && !canUseLocalScope ? (
             <Link

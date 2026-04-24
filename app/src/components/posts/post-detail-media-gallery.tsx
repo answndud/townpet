@@ -212,7 +212,7 @@ export function PostDetailMediaGallery({ images }: PostDetailMediaGalleryProps) 
                         : getWrappedPostDetailMediaIndex(current, -1, orderedImages.length),
                     )
                   }
-                  className="absolute left-2 top-1/2 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/20 text-white transition hover:bg-black/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[rgba(8,20,39,0.74)] sm:left-4"
+                  className="absolute left-2 top-1/2 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-[#071426]/35 text-white transition hover:bg-[#071426]/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[rgba(8,20,39,0.74)] sm:left-4"
                   aria-label="이전 이미지"
                 >
                   <svg
@@ -246,7 +246,7 @@ export function PostDetailMediaGallery({ images }: PostDetailMediaGalleryProps) 
                         : getWrappedPostDetailMediaIndex(current, 1, orderedImages.length),
                     )
                   }
-                  className="absolute right-2 top-1/2 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/20 text-white transition hover:bg-black/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[rgba(8,20,39,0.74)] sm:right-4"
+                  className="absolute right-2 top-1/2 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-[#071426]/35 text-white transition hover:bg-[#071426]/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[rgba(8,20,39,0.74)] sm:right-4"
                   aria-label="다음 이미지"
                 >
                   <svg

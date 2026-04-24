@@ -10,14 +10,16 @@
 
 ## 블로그 작업 SSOT
 
-- [BLOG_PLAN.md](../BLOG_PLAN.md)
-- [BLOG_PROGRESS.md](../BLOG_PROGRESS.md)
 - [00_series_plan.md](./00_series_plan.md)
 - [00_rebuild_guide.md](./00_rebuild_guide.md)
 - [00_quality_checklist.md](./00_quality_checklist.md)
 - [00_js_for_backend_engineers.md](./00_js_for_backend_engineers.md)
 
-기존 [PLAN.md](../PLAN.md), [PROGRESS.md](../PROGRESS.md)는 계속 **앱 개발용 SSOT**로 유지합니다.
+기존 [PLAN.md](../docs/PLAN.md), [PROGRESS.md](../docs/PROGRESS.md)는 계속 **앱 개발용 active SSOT**로 유지하고, 완료 이력은 [COMPLETED.md](../docs/COMPLETED.md)에 둡니다.
+
+## active / archive 규칙
+
+- 별도 `BLOG_*` 상태 문서는 두지 않고, 시리즈 방향은 `00_series_plan.md`와 각 글 원고에서 관리합니다.
 
 ## 독자 기준
 

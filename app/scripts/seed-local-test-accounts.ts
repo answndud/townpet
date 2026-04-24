@@ -1,14 +1,12 @@
 import "dotenv/config";
+import { pathToFileURL } from "node:url";
+
 import { PrismaClient, UserRole } from "@prisma/client";
 
 import { assertLocalDevelopmentDatabase } from "../src/server/local-database-guard";
 import { hashPassword } from "../src/server/password";
 
 const prisma = new PrismaClient();
-
-const EXPECTED_TOTAL_USERS = 87;
-const EXPECTED_WITH_PASSWORD = 70;
-const EXPECTED_WITHOUT_PASSWORD = 17;
 
 type SeedAccount = {
   email: string;
@@ -178,6 +176,41 @@ const supplementalAccounts = [
   ...dynamicPasswordAccounts,
 ];
 
+export function summarizeSeedAccountExpectations(accounts: SeedAccount[]) {
+  return {
+    total: accounts.length,
+    withPassword: accounts.filter((account) => account.hasPassword).length,
+    withoutPassword: accounts.filter((account) => !account.hasPassword).length,
+  };
+}
+
+export function summarizeManagedSeedResults(
+  managedAccounts: Array<{ passwordHash: string | null }>,
+) {
+  const withPassword = managedAccounts.filter((account) => account.passwordHash).length;
+
+  return {
+    total: managedAccounts.length,
+    withPassword,
+    withoutPassword: managedAccounts.length - withPassword,
+  };
+}
+
+function assertManagedAccountCounts(params: {
+  expected: ReturnType<typeof summarizeSeedAccountExpectations>;
+  actual: ReturnType<typeof summarizeManagedSeedResults>;
+}) {
+  if (
+    params.actual.total !== params.expected.total ||
+    params.actual.withPassword !== params.expected.withPassword ||
+    params.actual.withoutPassword !== params.expected.withoutPassword
+  ) {
+    throw new Error(
+      `Local account seed mismatch: expected managed accounts ${params.expected.total}/${params.expected.withPassword}/${params.expected.withoutPassword}, got ${params.actual.total}/${params.actual.withPassword}/${params.actual.withoutPassword}`,
+    );
+  }
+}
+
 async function main() {
   assertLocalDevelopmentDatabase(process.env, "local test account seeding");
 
@@ -209,13 +242,39 @@ async function main() {
     });
   }
 
+  const expectedManaged = summarizeSeedAccountExpectations(supplementalAccounts);
+  const managedEmails = supplementalAccounts.map((account) => account.email);
+  const managedAccounts = await prisma.user.findMany({
+    where: {
+      email: { in: managedEmails },
+    },
+    orderBy: { email: "asc" },
+    select: { email: true, passwordHash: true },
+  });
+
+  const missingManagedEmails = managedEmails.filter(
+    (email) => !managedAccounts.some((account) => account.email === email),
+  );
+  if (missingManagedEmails.length > 0) {
+    throw new Error(
+      `Local account seed missing managed accounts: ${missingManagedEmails.join(", ")}`,
+    );
+  }
+
+  const actualManaged = summarizeManagedSeedResults(managedAccounts);
+
+  assertManagedAccountCounts({
+    expected: expectedManaged,
+    actual: actualManaged,
+  });
+
   const passwordlessAccounts = await prisma.user.findMany({
-      where: {
-        passwordHash: null,
-      },
-      orderBy: { email: "asc" },
-      select: { email: true },
-    });
+    where: {
+      passwordHash: null,
+    },
+    orderBy: { email: "asc" },
+    select: { email: true },
+  });
 
   const totals = await prisma.$queryRaw<
     Array<{
@@ -240,12 +299,9 @@ async function main() {
     JSON.stringify(
       {
         seededAccounts: supplementalAccounts.length,
-        expected: {
-          users: EXPECTED_TOTAL_USERS,
-          withPassword: EXPECTED_WITH_PASSWORD,
-          withoutPassword: EXPECTED_WITHOUT_PASSWORD,
-        },
-        actual: {
+        expectedManaged,
+        actualManaged,
+        actualGlobal: {
           users,
           withPassword,
           withoutPassword,
@@ -256,23 +312,15 @@ async function main() {
       2,
     ),
   );
-
-  if (
-    users !== EXPECTED_TOTAL_USERS ||
-    withPassword !== EXPECTED_WITH_PASSWORD ||
-    withoutPassword !== EXPECTED_WITHOUT_PASSWORD
-  ) {
-    throw new Error(
-      `Local account seed mismatch: expected ${EXPECTED_TOTAL_USERS}/${EXPECTED_WITH_PASSWORD}/${EXPECTED_WITHOUT_PASSWORD}, got ${users}/${withPassword}/${withoutPassword}`,
-    );
-  }
 }
 
-main()
-  .catch((error) => {
-    console.error("Seed local test accounts failed", error);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main()
+    .catch((error) => {
+      console.error("Seed local test accounts failed", error);
+      process.exit(1);
+    })
+    .finally(async () => {
+      await prisma.$disconnect();
+    });
+}

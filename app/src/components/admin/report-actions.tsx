@@ -53,13 +53,13 @@ export function ReportActions({ reportId, status, redirectTo }: ReportActionsPro
   return (
     <div className="flex flex-col gap-2 text-xs">
       <input
-        className="tp-input-soft px-2 py-1 text-xs"
+        className="tp-input-soft min-h-9 px-2 py-1 text-xs"
         value={resolution}
         onChange={(event) => setResolution(event.target.value)}
         placeholder="처리 메모(선택)"
         disabled={isLocked || isPending}
       />
-      <label className="flex items-center gap-2 text-[11px] text-[#4f678d]">
+      <label className="flex min-h-8 items-center gap-2 text-[11px] text-[#4f678d]">
         <input
           type="checkbox"
           checked={applySanction}
@@ -73,7 +73,7 @@ export function ReportActions({ reportId, status, redirectTo }: ReportActionsPro
         <button
           type="button"
           onClick={() => handleUpdate(ReportStatus.RESOLVED)}
-          className="tp-btn-primary px-3 py-1 text-white"
+          className="tp-btn-primary min-h-9 px-3 py-1 text-white"
           disabled={isLocked || isPending}
         >
           승인
@@ -81,7 +81,7 @@ export function ReportActions({ reportId, status, redirectTo }: ReportActionsPro
         <button
           type="button"
           onClick={() => handleUpdate(ReportStatus.DISMISSED)}
-          className="rounded-lg border border-rose-300 bg-white px-3 py-1 text-rose-700 transition hover:bg-rose-50"
+          className="min-h-9 rounded-lg border border-rose-300 bg-white px-3 py-1 text-rose-700 transition hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200"
           disabled={isLocked || isPending}
         >
           기각

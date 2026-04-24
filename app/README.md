@@ -13,8 +13,10 @@
 - Codex 진입점:
   - `../AGENTS.md`
 - 현재 작업 상태:
-  - `../PLAN.md`
-  - `../PROGRESS.md`
+  - `../docs/PLAN.md`
+  - `../docs/PROGRESS.md`
+- 완료 이력 archive:
+  - `../docs/COMPLETED.md`
 
 ## 디렉터리 구조
 
@@ -143,11 +145,12 @@ pnpm test:e2e -- --project=chromium
 
 ## 작업 순서 기준
 
-정책/서버 동작을 바꿀 때는 아래 순서를 기본으로 봅니다.
+정책/서버 동작을 바꿀 때는 아래 의존 순서를 기본으로 봅니다.
 
-`Prisma -> Zod -> Service -> Action/Route -> UI -> Tests`
+- DB 스키마, 입력 계약, 정책 집행이 함께 바뀌는 기능은 `Prisma -> Zod -> Service -> Action/Route -> UI -> Tests` 순서가 안전합니다.
+- read-only 화면은 `Query -> UI -> Tests`, 단순 UI 수정은 필요한 레이어만 바로 수정합니다.
 
 ## 메모
 
 - 실제 명령은 `package.json`, 테스트 동작은 `vitest.config.ts`와 `playwright.config.ts`를 기준으로 봅니다.
-- OpenCode 관련 운영 문서는 `../docs/operations/에이전트_*`에 있지만, Codex 기준 하네스는 `../AGENTS.md`를 먼저 봅니다.
+- OpenCode 관련 운영 문서는 `../business/operations/에이전트_*`에 있지만, Codex 기준 하네스는 `../AGENTS.md`를 먼저 봅니다.

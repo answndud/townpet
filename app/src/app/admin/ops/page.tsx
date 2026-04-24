@@ -68,6 +68,32 @@ function normalizeDashboardState(value: string): "ok" | "warn" | "error" | "degr
   return "warn";
 }
 
+function OpsStatusItem({
+  label,
+  value,
+  detail,
+  state,
+}: {
+  label: string;
+  value: string;
+  detail: string;
+  state: "ok" | "warn" | "error" | "degraded";
+}) {
+  return (
+    <div className="grid gap-1 border-t border-[#dce7f7] py-3 sm:border-t-0 sm:border-l sm:px-4 sm:py-0 sm:first:border-l-0 sm:first:pl-0">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#5b78a1]">
+          {label}
+        </p>
+        <span className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold ${formatStateClass(state)}`}>
+          {value}
+        </span>
+      </div>
+      <p className="truncate text-xs text-[#5a7398]">{detail}</p>
+    </div>
+  );
+}
+
 function buildOpsHref({
   searchScope,
   searchType,
@@ -179,46 +205,54 @@ export default async function AdminOpsPage({ searchParams }: AdminOpsPageProps) 
 
   return (
     <div className="tp-page-bg min-h-screen pb-16">
-      <main className="mx-auto flex w-full max-w-[1320px] flex-col gap-5 px-4 py-6 sm:px-6 lg:px-10">
-        <header className="tp-hero p-5 sm:p-6">
-          <p className="text-[11px] uppercase tracking-[0.24em] text-[#3f5f90]">운영 관리</p>
-          <h1 className="mt-2 text-2xl font-bold tracking-tight text-[#10284a] sm:text-3xl">
-            Ops 대시보드
-          </h1>
-          <p className="mt-2 text-sm text-[#4f678d]">
-            시스템 상태, 검색 품질, 신고 적체, 인증 실패, 개인화 반응을 한 화면에서 확인합니다.
-          </p>
-          <p className="mt-3 text-xs text-[#5a7398]">
-            마지막 스냅샷 {new Date(overview.health.timestamp).toLocaleString("ko-KR")}
-          </p>
-        </header>
-
-        <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-          <article className={`rounded-2xl border p-4 ${formatStateClass(overview.health.status)}`}>
-            <p className="text-[11px] uppercase tracking-[0.22em]">서비스 상태</p>
-            <p className="mt-2 text-2xl font-bold">{overview.health.status.toUpperCase()}</p>
-            <p className="mt-1 text-xs">uptime {formatCount(overview.health.uptimeSec)}초</p>
-          </article>
-          <article className={`rounded-2xl border p-4 ${formatStateClass(databaseState)}`}>
-            <p className="text-[11px] uppercase tracking-[0.22em]">Database</p>
-            <p className="mt-2 text-2xl font-bold">{databaseState.toUpperCase()}</p>
-            <p className="mt-1 text-xs">{overview.health.checks.database.message ?? "database connected"}</p>
-          </article>
-          <article className={`rounded-2xl border p-4 ${formatStateClass(rateLimitState)}`}>
-            <p className="text-[11px] uppercase tracking-[0.22em]">Rate limit</p>
-            <p className="mt-2 text-2xl font-bold">{rateLimitState.toUpperCase()}</p>
-            <p className="mt-1 text-xs">{overview.health.checks.rateLimit.backend}</p>
-          </article>
-          <article className={`rounded-2xl border p-4 ${formatStateClass(controlPlaneState)}`}>
-            <p className="text-[11px] uppercase tracking-[0.22em]">Control plane</p>
-            <p className="mt-2 text-2xl font-bold">{controlPlaneState.toUpperCase()}</p>
-            <p className="mt-1 text-xs">{controlPlaneChecks.length} checks</p>
-          </article>
-          <article className={`rounded-2xl border p-4 ${formatStateClass(cacheState)}`}>
-            <p className="text-[11px] uppercase tracking-[0.22em]">Cache / Search</p>
-            <p className="mt-2 text-2xl font-bold">{overview.health.checks.cache.backend}</p>
-            <p className="mt-1 text-xs">cache {cacheState} · pg_trgm {pgTrgmState}</p>
-          </article>
+      <main className="mx-auto flex w-full max-w-[1320px] flex-col gap-4 px-4 py-4 sm:px-6 sm:py-5 lg:px-10">
+        <section className="rounded-xl border border-[#d9e5f7] bg-white p-4 sm:p-5">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <p className="tp-eyebrow">운영 관리</p>
+              <h1 className="mt-2 text-xl font-semibold text-[#10284a] sm:text-2xl">
+                Ops 대시보드
+              </h1>
+              <p className="mt-2 max-w-[760px] text-sm leading-6 text-[#4f678d]">
+                시스템 상태, 검색 품질, 신고 적체, 인증 실패, 개인화 반응을 확인합니다.
+              </p>
+            </div>
+            <p className="text-xs text-[#5a7398]">
+              스냅샷 {new Date(overview.health.timestamp).toLocaleString("ko-KR")}
+            </p>
+          </div>
+          <div className="mt-4 grid gap-0 sm:grid-cols-2 lg:grid-cols-5">
+            <OpsStatusItem
+              label="서비스"
+              value={overview.health.status.toUpperCase()}
+              detail={`uptime ${formatCount(overview.health.uptimeSec)}초`}
+              state={overview.health.status}
+            />
+            <OpsStatusItem
+              label="Database"
+              value={databaseState.toUpperCase()}
+              detail={overview.health.checks.database.message ?? "database connected"}
+              state={databaseState}
+            />
+            <OpsStatusItem
+              label="Rate limit"
+              value={rateLimitState.toUpperCase()}
+              detail={overview.health.checks.rateLimit.backend}
+              state={rateLimitState}
+            />
+            <OpsStatusItem
+              label="Control"
+              value={controlPlaneState.toUpperCase()}
+              detail={`${controlPlaneChecks.length} checks`}
+              state={controlPlaneState}
+            />
+            <OpsStatusItem
+              label="Cache/Search"
+              value={overview.health.checks.cache.backend}
+              detail={`cache ${cacheState} · pg_trgm ${pgTrgmState}`}
+              state={cacheState}
+            />
+          </div>
         </section>
 
         <section className="tp-card flex flex-col gap-4 p-4 sm:p-5">

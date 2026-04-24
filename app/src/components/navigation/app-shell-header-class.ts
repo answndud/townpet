@@ -10,10 +10,10 @@ export const APP_SHELL_HEADER_CLASS_NAME = [
 
 export const APP_SHELL_NAV_LINK_CLASS_NAME = [
   "inline-flex",
-  "h-8",
+  "h-9",
   "items-center",
   "rounded-md",
-  "px-2.5",
+  "px-3",
   "text-[13px]",
   "font-medium",
   "leading-none",
@@ -29,7 +29,7 @@ export const APP_SHELL_DESKTOP_NAV_CLUSTER_CLASS_NAME = [
 ].join(" ");
 
 export const APP_SHELL_DESKTOP_SEARCH_INPUT_CLASS_NAME = [
-  "h-8",
+  "h-9",
   "w-[150px]",
   "rounded-md",
   "border",
@@ -49,7 +49,7 @@ export const APP_SHELL_DESKTOP_SEARCH_INPUT_CLASS_NAME = [
 
 export const APP_SHELL_MOBILE_QUICK_LINK_CLASS_NAME = [
   "inline-flex",
-  "h-7",
+  "min-h-11",
   "items-center",
   "rounded-md",
   "border",
@@ -62,6 +62,10 @@ export const APP_SHELL_MOBILE_QUICK_LINK_CLASS_NAME = [
   "text-[#315484]",
   "transition",
   "hover:bg-[#eef5ff]",
+  "focus-visible:border-[#4e89d8]",
+  "focus-visible:outline-none",
+  "focus-visible:ring-2",
+  "focus-visible:ring-[#4e89d8]/25",
 ].join(" ");
 
 export const APP_SHELL_MOBILE_DISCLOSURE_ROW_CLASS_NAME = [
@@ -72,7 +76,7 @@ export const APP_SHELL_MOBILE_DISCLOSURE_ROW_CLASS_NAME = [
 
 export const APP_SHELL_MOBILE_DISCLOSURE_TRIGGER_CLASS_NAME = [
   "inline-flex",
-  "h-8",
+  "min-h-11",
   "items-center",
   "justify-center",
   "rounded-full",
@@ -86,6 +90,10 @@ export const APP_SHELL_MOBILE_DISCLOSURE_TRIGGER_CLASS_NAME = [
   "text-[#315484]",
   "transition",
   "hover:bg-[#eef5ff]",
+  "focus-visible:border-[#4e89d8]",
+  "focus-visible:outline-none",
+  "focus-visible:ring-2",
+  "focus-visible:ring-[#4e89d8]/25",
 ].join(" ");
 
 export const APP_SHELL_MOBILE_PANEL_CLASS_NAME = [
@@ -111,6 +119,7 @@ export const APP_SHELL_MOBILE_PANEL_SUMMARY_CLASS_NAME = [
 export const APP_SHELL_MOBILE_PANEL_PILL_CLASS_NAME = [
   "inline-flex",
   "items-center",
+  "min-h-10",
   "rounded-full",
   "border",
   "border-[#c9daf4]",

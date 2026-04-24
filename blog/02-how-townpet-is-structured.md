@@ -114,13 +114,15 @@ DB 구조의 기준입니다.
 
 TownPet는 기능이 커질수록 `schema.prisma`를 먼저 읽는 편이 이해가 빠릅니다.
 
-### 6. [`docs`](../docs) 와 [`blog`](./)
+### 6. [`docs`](../docs), [`business`](../business) 와 [`blog`](./)
 
-둘의 역할은 다릅니다.
+셋의 역할은 다릅니다.
 
 - `docs/`
+  - `PLAN.md`, `PROGRESS.md`, `COMPLETED.md` 같은 상태 문서
+- `business/`
   - 제품, 운영, 보안, 정책, 배포 문서
-  - 실제 운영 SSOT
+  - 실제 기준 문서 SSOT
 - `blog/`
   - 이 프로젝트를 설명하는 학습/포트폴리오 시리즈
   - 독자가 코드를 이해하기 위한 재현형 문서

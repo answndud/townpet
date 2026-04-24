@@ -7,7 +7,7 @@ import { PostType } from "@prisma/client";
 
 import { NeighborhoodGateNotice } from "@/components/neighborhood/neighborhood-gate-notice";
 import { FeedControlPanel } from "@/components/posts/feed-control-panel";
-import { FeedInfiniteList, type FeedPostItem } from "@/components/posts/feed-infinite-list";
+import { FeedInfiniteList } from "@/components/posts/feed-infinite-list";
 import { FeedLoadingSkeleton } from "@/components/posts/feed-loading-skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { isCommonBoardPostType } from "@/lib/community-board";
@@ -390,10 +390,10 @@ export function GuestFeedPageClient({
     });
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(180deg,#ffffff_0%,#fdfefe_55%,#fbfdff_100%)] pb-16">
+    <div className="tp-page-bg min-h-screen pb-16">
       <main
         className={`mx-auto flex w-full max-w-[1320px] flex-col px-4 sm:px-6 lg:px-10 ${
-          isUltraDense ? "gap-1.5 py-2 sm:gap-2" : "gap-2 py-3 sm:gap-3"
+          isUltraDense ? "gap-1.5 py-2 sm:gap-2" : "gap-3 py-4 sm:gap-4 sm:py-5"
         }`}
       >
         <div className={isUltraDense ? "space-y-2" : "space-y-3"}>
@@ -446,7 +446,7 @@ export function GuestFeedPageClient({
             makeHref={makeHref}
           />
 
-          <section id="feed-list" className="tp-card animate-fade-up overflow-hidden">
+          <section id="feed-list" className="animate-fade-up overflow-hidden rounded-xl border border-[#d9e5f7] bg-white">
             {items.length === 0 ? (
               <EmptyState
                 title={mode === "BEST" ? "베스트글이 없습니다" : "게시글이 없습니다"}

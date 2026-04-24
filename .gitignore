@@ -38,13 +38,15 @@ app/test-results/
 PLAN.md
 PROGRESS.md
 
-# private business planning notes (local-only)
-business/
+# project/business docs
 창업지원/
 창업지원/
 docs
 !docs/
 docs/*
+!docs/PLAN.md
+!docs/PROGRESS.md
+!docs/COMPLETED.md
 !docs/문서_안내.md
 !docs/개발_운영_가이드.md
 !docs/제품_기술_개요.md

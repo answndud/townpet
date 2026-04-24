@@ -26,24 +26,26 @@ describe("app shell header classes", () => {
     expect(shouldRefreshViewerShellOnFocus("/posts/abc")).toBe(true);
   });
 
-  it("uses a smaller mobile quick-link style for top-row actions", () => {
+  it("keeps mobile quick links compact while preserving touch targets", () => {
     expect(APP_SHELL_MOBILE_QUICK_LINK_CLASS_NAME).toContain("text-[11px]");
-    expect(APP_SHELL_MOBILE_QUICK_LINK_CLASS_NAME).toContain("h-7");
+    expect(APP_SHELL_MOBILE_QUICK_LINK_CLASS_NAME).toContain("min-h-11");
     expect(APP_SHELL_MOBILE_QUICK_LINK_CLASS_NAME).toContain("rounded-md");
+    expect(APP_SHELL_MOBILE_QUICK_LINK_CLASS_NAME).toContain("focus-visible:ring-2");
   });
 
   it("uses shared desktop link sizing and softer mobile panels for header navigation", () => {
     expect(APP_SHELL_NAV_LINK_CLASS_NAME).toContain("rounded-md");
-    expect(APP_SHELL_NAV_LINK_CLASS_NAME).toContain("px-2.5");
+    expect(APP_SHELL_NAV_LINK_CLASS_NAME).toContain("px-3");
     expect(APP_SHELL_DESKTOP_NAV_CLUSTER_CLASS_NAME).toContain("gap-1.5");
     expect(APP_SHELL_DESKTOP_SEARCH_INPUT_CLASS_NAME).toContain("rounded-md");
-    expect(APP_SHELL_DESKTOP_SEARCH_INPUT_CLASS_NAME).toContain("h-8");
+    expect(APP_SHELL_DESKTOP_SEARCH_INPUT_CLASS_NAME).toContain("h-9");
     expect(APP_SHELL_MOBILE_PANEL_CLASS_NAME).toContain("rounded-xl");
   });
 
   it("uses compact mobile disclosure controls instead of tall card summaries", () => {
     expect(APP_SHELL_MOBILE_DISCLOSURE_ROW_CLASS_NAME).toContain("flex-wrap");
     expect(APP_SHELL_MOBILE_DISCLOSURE_TRIGGER_CLASS_NAME).toContain("rounded-full");
-    expect(APP_SHELL_MOBILE_DISCLOSURE_TRIGGER_CLASS_NAME).toContain("h-8");
+    expect(APP_SHELL_MOBILE_DISCLOSURE_TRIGGER_CLASS_NAME).toContain("min-h-11");
+    expect(APP_SHELL_MOBILE_DISCLOSURE_TRIGGER_CLASS_NAME).toContain("focus-visible:ring-2");
   });
 });

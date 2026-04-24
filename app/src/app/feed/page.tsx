@@ -468,7 +468,6 @@ export default async function Home({ searchParams }: HomePageProps) {
       ? primaryNeighborhood?.neighborhood.id
       : undefined;
 
-  let totalItemCount = 0;
   let totalPages = 1;
   let resolvedPage = currentPage;
   let posts: FeedListResult = { items: [], nextCursor: null };
@@ -530,7 +529,6 @@ export default async function Home({ searchParams }: HomePageProps) {
         }),
       );
 
-      totalItemCount = bestPage.totalItemCount;
       totalPages = bestPage.totalPages;
       resolvedPage = bestPage.resolvedPage;
       bestItems = bestPage.page.items;
@@ -589,7 +587,6 @@ export default async function Home({ searchParams }: HomePageProps) {
         }),
       );
 
-      totalItemCount = allPage.totalItemCount;
       totalPages = allPage.totalPages;
       resolvedPage = allPage.resolvedPage;
       posts = allPage.page;
@@ -881,10 +878,10 @@ export default async function Home({ searchParams }: HomePageProps) {
   });
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(180deg,#ffffff_0%,#fdfefe_55%,#fbfdff_100%)] pb-16">
+    <div className="tp-page-bg min-h-screen pb-16">
       <main
         className={`mx-auto flex w-full max-w-[1320px] flex-col px-4 sm:px-6 lg:px-10 ${
-          isUltraDense ? "gap-1.5 py-2 sm:gap-2" : "gap-2 py-3 sm:gap-3"
+          isUltraDense ? "gap-1.5 py-2 sm:gap-2" : "gap-3 py-4 sm:gap-4 sm:py-5"
         }`}
       >
         <div className={isUltraDense ? "space-y-2" : "space-y-3"}>
@@ -949,7 +946,7 @@ export default async function Home({ searchParams }: HomePageProps) {
           }
         />
 
-        <section id="feed-list" className="tp-card animate-fade-up overflow-hidden">
+        <section id="feed-list" className="animate-fade-up overflow-hidden rounded-xl border border-[#d9e5f7] bg-white">
           {items.length === 0 ? (
             <EmptyState
               title={mode === "BEST" ? "베스트글이 없습니다" : "게시글이 없습니다"}

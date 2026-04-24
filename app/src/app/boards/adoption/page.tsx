@@ -5,10 +5,12 @@ import { PostType, UserRole } from "@prisma/client";
 
 import { AdoptionBoardGrid } from "@/components/boards/adoption-board-grid";
 import { EmptyState } from "@/components/ui/empty-state";
+import { ServiceUnavailableState } from "@/components/ui/service-unavailable-state";
 import { auth } from "@/lib/auth";
 import { isLoginRequiredPostType } from "@/lib/post-access";
 import { getCurrentUserRole } from "@/server/auth";
 import { redirectToProfileIfNicknameMissing } from "@/server/nickname-guard";
+import { isPrismaDatabaseUnavailableError } from "@/server/prisma-database-error";
 import { getGuestReadLoginRequiredPostTypes } from "@/server/queries/policy.queries";
 import {
   countAdoptionBoardPosts,
@@ -60,12 +62,50 @@ function buildAdoptionBoardHref({
   return serialized ? `/boards/adoption?${serialized}` : "/boards/adoption";
 }
 
+function renderAdoptionBoardUnavailable() {
+  return (
+    <div className="tp-page-bg min-h-screen pb-16">
+      <main className="mx-auto flex w-full max-w-[1320px] flex-col gap-4 px-4 py-4 sm:gap-5 sm:px-6 sm:py-6 lg:px-10">
+        <header className="rounded-xl border border-[#d9e5f7] bg-[#f8fbff] p-4 sm:p-6">
+          <p className="tp-eyebrow">Adoption Board</p>
+          <h1 className="mt-2 text-xl font-semibold text-[#10284a] sm:text-3xl">
+            유기동물 입양 게시판
+          </h1>
+          <p className="mt-2 max-w-[680px] text-sm leading-6 text-[#4f678d]">
+            보호소, 지역, 동물종을 기준으로 입양 정보를 비교하는 공간입니다.
+          </p>
+        </header>
+        <ServiceUnavailableState
+          title="입양 게시판 연결이 지연됐습니다"
+          description="목록 데이터 연결이 지연되고 있습니다. 잠시 후 다시 시도하거나 피드에서 다른 글을 먼저 확인해 주세요."
+          primaryHref="/boards/adoption"
+          primaryLabel="다시 시도"
+          secondaryHref="/feed"
+          secondaryLabel="피드로 이동"
+        />
+      </main>
+    </div>
+  );
+}
+
 export default async function AdoptionBoardPage({
   searchParams,
 }: AdoptionBoardPageProps) {
-  const session = await auth();
+  const session = await auth().catch((error) => {
+    if (isPrismaDatabaseUnavailableError(error)) {
+      return null;
+    }
+    throw error;
+  });
   const userId = session?.user?.id;
-  const currentUserRole = userId ? await getCurrentUserRole() : null;
+  const currentUserRole = userId
+    ? await getCurrentUserRole().catch((error) => {
+        if (isPrismaDatabaseUnavailableError(error)) {
+          return null;
+        }
+        throw error;
+      })
+    : null;
   const canManageAdoptionListings =
     currentUserRole?.role === UserRole.ADMIN ||
     currentUserRole?.role === UserRole.MODERATOR;
@@ -82,7 +122,17 @@ export default async function AdoptionBoardPage({
   );
   const currentPage = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
 
-  const loginRequiredTypes = userId ? [] : await getGuestReadLoginRequiredPostTypes();
+  const loginRequiredTypes = userId
+    ? []
+    : await getGuestReadLoginRequiredPostTypes().catch((error) => {
+        if (isPrismaDatabaseUnavailableError(error)) {
+          return null;
+        }
+        throw error;
+      });
+  if (loginRequiredTypes === null) {
+    return renderAdoptionBoardUnavailable();
+  }
   const isGuestTypeBlocked =
     !userId && isLoginRequiredPostType(PostType.ADOPTION_LISTING, loginRequiredTypes);
 
@@ -93,7 +143,15 @@ export default async function AdoptionBoardPage({
   const totalCount = await countAdoptionBoardPosts({
     q: query || undefined,
     viewerId: userId ?? undefined,
+  }).catch((error) => {
+    if (isPrismaDatabaseUnavailableError(error)) {
+      return null;
+    }
+    throw error;
   });
+  if (totalCount === null) {
+    return renderAdoptionBoardUnavailable();
+  }
   const totalPages = Math.max(1, Math.ceil(totalCount / ADOPTION_BOARD_PAGE_SIZE));
   const resolvedPage = Math.min(currentPage, totalPages);
   const items = await listAdoptionBoardPostsPage({
@@ -101,7 +159,15 @@ export default async function AdoptionBoardPage({
     limit: ADOPTION_BOARD_PAGE_SIZE,
     q: query || undefined,
     viewerId: userId ?? undefined,
+  }).catch((error) => {
+    if (isPrismaDatabaseUnavailableError(error)) {
+      return null;
+    }
+    throw error;
   });
+  if (items === null) {
+    return renderAdoptionBoardUnavailable();
+  }
 
   return (
     <div className="min-h-screen bg-[linear-gradient(180deg,#fffdf8_0%,#fdfefe_42%,#fbfdff_100%)] pb-16">
