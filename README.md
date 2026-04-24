@@ -37,37 +37,6 @@
 - `business`
   - 제품/운영/보안 기준 문서
 
-## 대표 도메인 묶음
-
-- `posts/feed`
-  - `app/src/lib/validations/posts/post.ts`
-  - `app/src/server/services/posts/post.service.ts`
-  - `app/src/server/queries/posts/post.queries.ts`
-  - `app/src/app/feed`
-  - `app/src/components/posts`
-- `auth/session`
-  - `app/src/lib/validations/auth/index.ts`
-  - `app/src/server/services/auth/auth.service.ts`
-  - `app/src/server/auth.ts`
-  - `app/src/server/admin-page-access.ts`
-  - `app/src/lib/auth.ts`
-  - `app/src/lib/social-auth.ts`
-  - `app/src/app/login`, `app/src/app/register`, `app/src/app/onboarding`
-- `notifications`
-  - `app/src/lib/notifications/notification-unread-sync.ts`
-  - `app/src/server/services/notifications/notification.service.ts`
-  - `app/src/server/queries/notifications/notification.queries.ts`
-  - `app/src/server/actions/notifications/notification.ts`
-  - `app/src/components/notifications`
-  - `app/src/app/notifications`
-- `moderation/ops`
-  - `app/src/server/services/moderation/report.service.ts`
-  - `app/src/server/services/moderation/sanction.service.ts`
-  - `app/src/server/services/moderation/policy.service.ts`
-  - `app/src/server/queries/moderation/report.queries.ts`
-  - `app/src/server/queries/ops-overview.queries.ts`
-  - `app/src/app/admin`
-
 ## 공용 개발 루틴
 
 - 기본 루틴은 `corepack pnpm -C app dev`, `lint`, `typecheck`, `test`, `test:e2e`, `quality:check`만 공용으로 봅니다.
@@ -186,6 +155,33 @@ corepack pnpm -C app db:seed
 corepack pnpm -C app dev
 ```
 
-## 한 줄 정리
+## 대표 도메인 묶음
 
-> TownPet은 “AI로 빨리 만든 프로젝트”가 아니라, **AI를 활용해 제품·운영·보안·품질까지 끝까지 밀어붙인 프로젝트**입니다.
+- `posts/feed`
+  - `app/src/lib/validations/posts/post.ts`
+  - `app/src/server/services/posts/post.service.ts`
+  - `app/src/server/queries/posts/post.queries.ts`
+  - `app/src/app/feed`
+  - `app/src/components/posts`
+- `auth/session`
+  - `app/src/lib/validations/auth/index.ts`
+  - `app/src/server/services/auth/auth.service.ts`
+  - `app/src/server/auth.ts`
+  - `app/src/server/admin-page-access.ts`
+  - `app/src/lib/auth.ts`
+  - `app/src/lib/social-auth.ts`
+  - `app/src/app/login`, `app/src/app/register`, `app/src/app/onboarding`
+- `notifications`
+  - `app/src/lib/notifications/notification-unread-sync.ts`
+  - `app/src/server/services/notifications/notification.service.ts`
+  - `app/src/server/queries/notifications/notification.queries.ts`
+  - `app/src/server/actions/notifications/notification.ts`
+  - `app/src/components/notifications`
+  - `app/src/app/notifications`
+- `moderation/ops`
+  - `app/src/server/services/moderation/report.service.ts`
+  - `app/src/server/services/moderation/sanction.service.ts`
+  - `app/src/server/services/moderation/policy.service.ts`
+  - `app/src/server/queries/moderation/report.queries.ts`
+  - `app/src/server/queries/ops-overview.queries.ts`
+  - `app/src/app/admin`

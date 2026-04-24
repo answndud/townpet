@@ -51,6 +51,8 @@
     "db:cleanup:legacy-search-setting": "tsx scripts/cleanup-legacy-site-setting.ts",
     "docs:refresh": "node ../scripts/refresh-docs-index.mjs",
     "docs:refresh:check": "node ../scripts/refresh-docs-index.mjs --check",
+    "design:detect": "PUPPETEER_SKIP_DOWNLOAD=1 corepack pnpm dlx impeccable detect src/app src/components --fast",
+    "design:detect:json": "PUPPETEER_SKIP_DOWNLOAD=1 corepack pnpm dlx impeccable detect src/app src/components --fast --json",
     "agent:prompt": "tsx scripts/generate-agent-prompt.ts",
     "growth:day1:handoff": "tsx scripts/generate-day1-growth-handoff.ts",
     "ops:oauth:manual-report": "tsx scripts/generate-oauth-manual-check-report.ts",

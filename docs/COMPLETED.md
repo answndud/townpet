@@ -170,3 +170,36 @@
   - 반복 측정 결과 문서 반영 확인
 - 결과:
   - `/feed` 성능 판단 기준이 명문화됐고, 이후에는 수치 회귀가 생길 때만 다시 최적화를 여는 stop line이 생겼다.
+
+### 2026-04-24 | Impeccable repo-local 디자인 준비
+- 완료일: `2026-04-24`
+- 배경:
+  - 향후 디자인/프론트엔드 개선을 Impeccable 기준으로 체계화하되, 전역 Codex/Claude/npm 설정은 바꾸지 않아야 했다.
+  - TownPet 기존 제품 문서, 프론트엔드 토큰, 컴포넌트 패턴을 먼저 존중하는 준비 작업이 필요했다.
+- 변경내용:
+  - 공식 Impeccable 문서와 GitHub의 현재 `.agents` skill 번들을 확인했다.
+  - repo-local `.agents/skills/impeccable`만 추가하고 홈 디렉터리 설정은 변경하지 않았다.
+  - 루트 `PRODUCT.md`에 TownPet의 product register, 사용자, 제품 목적, 톤, anti-reference, 디자인 원칙을 정리했다.
+  - 루트 `DESIGN.md`에 현재 `globals.css`, `layout.tsx`, 컴포넌트 관례 기반 색상/타이포/컴포넌트 원칙을 정리했다.
+  - `.impeccable.md`는 현재 skill이 읽는 `PRODUCT.md`/`DESIGN.md`로 안내하는 repo-local 호환 포인터로 추가했다.
+  - `app/package.json`에 전역 설치 없는 detector 실행 스크립트 `design:detect`, `design:detect:json`을 추가했다.
+- 코드문서:
+  - [PRODUCT.md](../PRODUCT.md)
+  - [DESIGN.md](../DESIGN.md)
+  - [.impeccable.md](../.impeccable.md)
+  - [.agents/skills/impeccable/SKILL.md](../.agents/skills/impeccable/SKILL.md)
+  - [app/package.json](../app/package.json)
+  - [PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app design:detect`
+    - 실행 성공, 기존 UI anti-pattern 5건 감지로 exit 2
+    - `app/src/app/globals.css`: `blockquote`의 3px side border 1건
+    - `app/src/components/content/linkified-content.tsx`: `bg-black` 2건
+    - `app/src/components/posts/post-detail-media-gallery.tsx`: `bg-black` 2건
+  - `corepack pnpm -C app lint`
+    - 0 errors / 5 warnings
+  - `corepack pnpm -C app typecheck`
+    - 통과
+- 결과:
+  - Impeccable 사용을 위한 repo-local skill/context/script 준비가 완료됐다.
+  - 이후 프론트엔드 작업은 `PRODUCT.md`/`DESIGN.md`를 먼저 로드하고, 필요 시 `corepack pnpm -C app design:detect`로 anti-pattern 점검을 실행할 수 있다.
