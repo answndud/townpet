@@ -28,6 +28,11 @@ describe("search document helpers", () => {
     expect(hasChoseongSearchSignal("ㄱㄱㄱ")).toBe(true);
   });
 
+  it("matches one-character typo compact queries", () => {
+    expect(matchesSearchDocumentQuery("건강 검진 후기", "건강덤진")).toBe(true);
+    expect(resolveSearchDocumentMatchRank("건강 검진 후기", "건강덤진")).toBe(3);
+  });
+
   it("ranks prefix text matches ahead of compact and choseong matches", () => {
     expect(resolveSearchDocumentMatchRank("건강 검진", "건강")).toBe(0);
     expect(resolveSearchDocumentMatchRank("건강 검진", "건강검")).toBe(1);

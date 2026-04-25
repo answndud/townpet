@@ -1117,3 +1117,31 @@
 - 결과:
   - zero-result/low-result 검색어는 이제 운영 화면에서 바로 개선 우선순위와 재현 경로로 연결된다.
   - 다음 작업은 zero-result 후보를 줄이기 위한 검색 normalization/suggestion/search document 매칭 품질 보강이다.
+
+### 2026-04-26 | Search Quality Phase 2 검색 매칭 품질 보강
+- 완료일: `2026-04-26`
+- 배경:
+  - zero-result 운영 루프에서 나온 후보를 줄이려면 띄어쓰기/초성뿐 아니라 한 글자 오타 검색도 실제 피드 결과로 수렴해야 했다.
+  - 기존 fallback은 suggestion/ranked search 일부 경로에 있었고, `/feed/guest` 일반 목록은 `listPosts/countPosts` 기본 검색만 타서 오타 검색이 0건으로 남았다.
+- 변경내용:
+  - `search-document` compact fallback에 4자 이상 query의 한 글자 오타 허용 매칭을 추가했다.
+  - 3자 이하 query는 fuzzy fallback에서 제외해 짧은 검색어 과매칭을 막았다.
+  - suggestion, ranked search, 일반 `listPosts` 첫 페이지 검색에 오타 tolerant fallback 회귀 테스트를 추가했다.
+  - `/feed/guest?q=건강덤진&searchIn=TITLE`가 `건강 검진` 제목 글로 수렴하는 Playwright smoke를 추가했다.
+- 코드문서:
+  - [app/src/lib/search-document.ts](../app/src/lib/search-document.ts)
+  - [app/src/lib/search-document.test.ts](../app/src/lib/search-document.test.ts)
+  - [app/src/server/queries/posts/post.queries.ts](../app/src/server/queries/posts/post.queries.ts)
+  - [app/src/server/queries/post.queries.test.ts](../app/src/server/queries/post.queries.test.ts)
+  - [app/e2e/search-and-board-filtering.spec.ts](../app/e2e/search-and-board-filtering.spec.ts)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app exec vitest run src/lib/search-document.test.ts src/server/queries/post.queries.test.ts src/server/queries/search.queries.test.ts` 통과, 75 tests
+  - `corepack pnpm -C app typecheck` 통과
+  - `PLAYWRIGHT_BASE_URL=http://localhost:3000 corepack pnpm -C app exec playwright test e2e/search-and-board-filtering.spec.ts --project=chromium` 통과, 4 tests
+  - `corepack pnpm -C app quality:check` 통과
+  - `corepack pnpm -C app docs:refresh:check` 통과
+- 결과:
+  - 대표 오타 검색어는 이제 suggestion/ranked search/guest feed hot path에서 기대 결과로 fallback된다.
+  - 다음 작업은 최근 완료 항목 기준으로 남은 런치 갭을 다시 재평가하는 것이다.

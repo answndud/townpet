@@ -291,6 +291,26 @@ test.describe("search and board filtering", () => {
     await expect(page.getByRole("link", { name: hiddenTitle })).toHaveCount(0);
   });
 
+  test("shows title results for one-character typo compact guest search", async ({ page }) => {
+    const runId = `typo-${Date.now()}`;
+    const author = await ensureUser({
+      email: "e2e.search.author.typo@townpet.dev",
+      nicknamePrefix: "search-typo",
+    });
+    const title = `[PW SEARCH] 건강 검진 후기 ${runId}`;
+
+    await createSearchPost({
+      authorId: author.id,
+      title,
+      content: "오타 검색 fallback 검증용 본문",
+      scope: PostScope.GLOBAL,
+    });
+
+    await page.goto(`/feed/guest?q=${encodeURIComponent("건강덤진")}&searchIn=TITLE`);
+
+    await expect(page.getByRole("link", { name: title })).toBeVisible();
+  });
+
   test("hides blocked authors from adoption board results", async ({ page }) => {
     const runId = `adoption-${Date.now()}`;
     const queryToken = `PWSEARCHADOPTION${runId}`;
