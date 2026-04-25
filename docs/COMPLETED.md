@@ -989,3 +989,22 @@
   - 품종 라운지 공동구매 작성은 기존 고위험 post write gate를 우회하지 않는다는 회귀 증거가 생겼다.
   - 품종 개인화/광고/커뮤니티 Cycle A는 A1-A4까지 완료됐다.
   - 다음 작업은 Cycle A 완료 결과를 기준으로 다음 후보를 재평가하는 것이다.
+
+### 2026-04-25 | Cycle A 완료 후 다음 후보 재평가
+- 완료일: `2026-04-25`
+- 배경:
+  - 품종 개인화/광고/커뮤니티 Cycle A가 A1-A4까지 완료되어 다음 구현 후보를 다시 골라야 했다.
+  - 저장소 우선순위는 `서비스 안정성 -> 커뮤니티 핵심 기능 -> 재방문/유입 -> 운영 자동화`이고, Phase 2 대형 기능은 아직 보류 범위다.
+- 변경내용:
+  - Cycle A 완료 증거와 최근 검증 결과를 확인했다.
+  - Phase 2 기능 확장보다 운영 안정화 항목이 먼저라고 판단했다.
+  - 다음 active plan을 `운영 10분 루틴 로컬 evidence runner 보강`으로 전환했다.
+  - destructive DB 작업 없이 read-only 운영 점검을 묶는 방향으로 다음 실행 순서를 정했다.
+- 코드문서:
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+  - [docs/COMPLETED.md](./COMPLETED.md)
+- 검증:
+  - 문서 변경에 한정해 `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md` 동기화를 확인했다.
+- 결과:
+  - 다음 작업은 `ops:*` 스크립트들을 단일 로컬 evidence 흐름으로 묶고, package script와 운영 문서, failure-path test를 추가하는 것이다.
