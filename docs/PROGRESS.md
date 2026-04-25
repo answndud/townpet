@@ -16,12 +16,18 @@
 - 피드 컨트롤 정렬/기간 클릭 체감 미적용 버그를 수정했다
 - 검색 진입점을 헤더/전용 페이지에서 피드 하단 검색으로 통합했다
 - 로컬 핵심 기능 동작 검증과 발견 버그 수정을 완료했다
-- 다음 작업: 개인화 운영 판단 기준 문서화
+- 개인화 운영 판단 기준 문서화를 완료했다
+- 다음 작업: 관리자 개인화 진단 UX 보강
 
 ## 열린 blocker
 - 없음. 기존 `db:restore:local` local test account count mismatch는 managed account count 검증으로 수정했고 restore 통과를 확인했다.
 
 ## 직전 검증
+- 개인화 운영 판단 기준 문서화:
+  - 추가: `business/operations/개인화_운영_판단_기준.md`에 personalized feed CTR, ad CTR, audience concentration, zero-data 판정 기준을 정리했다.
+  - 결정: 정책값 변경 전후 비교는 기본 14일, 긴급 rollback 7일, 저트래픽/월간 리뷰 30일로 둔다.
+  - 고정: 광고 성과를 이유로 커뮤니티 추천 랭킹을 직접 구매하게 만들지 않는 Go/No-Go 기준을 명시했다.
+  - 연결: 운영 문서 안내와 품종 개인화 실행계획 A1이 같은 기준 문서를 가리키게 했다.
 - 로컬 핵심 기능 동작 검증:
   - 범위: `quality:check`, 로컬 DB/서버, 게스트/회원 피드 검색, 인증/소셜 연결, 글쓰기/댓글, 신고/정책, 알림, 마이페이지, 관리자/운영 화면.
   - 수정: 검색 redirect page export 계약, 프로필 소셜 연결 UI, feed 검색 e2e 정리, 댓글 auth sync reload, 정책 저장 feedback, 알림 필터 URL sync, 신고 흐름 e2e를 보강했다.
@@ -44,9 +50,9 @@
 - 과거 Phase 0-5와 checkpoint/push 상세는 [COMPLETED.md](./COMPLETED.md)에 보관했다.
 
 ## 다음 액션
-1. 개인화 운영 판단 기준 문서화를 재개한다.
-2. A1 완료 후 다음 작업을 `관리자 진단 UX 보강`으로 분리한다.
-3. 문서 변경은 `docs:refresh:check`로 인덱스 동기화를 확인한다.
+1. `/admin/personalization` presenter/helper와 테스트를 확인한다.
+2. 운영 판단 기준 문서의 상태를 관리자 진단 UX 문구와 링크로 매핑한다.
+3. 구현 후 관련 unit/e2e와 모바일 폭 표시를 검증한다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)

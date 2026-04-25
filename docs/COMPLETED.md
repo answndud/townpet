@@ -878,3 +878,28 @@
   - `버그`: 검증 중 발견한 page export, 소셜 연결 UI 누락, 댓글 auth sync, 정책 저장 feedback, 알림 필터 URL sync는 즉시 수정하고 회귀 테스트를 추가하거나 갱신했다.
   - `보류`: 결제/마켓/카카오맵/실 OAuth 실계정 검증, 운영 배포 smoke, 개인화 세부 운영 판단 기준 문서화.
   - 다음 작업은 보류해 둔 개인화 운영 판단 기준 문서화로 재개한다.
+
+### 2026-04-25 | 개인화 운영 판단 기준 문서화
+- 완료일: `2026-04-25`
+- 배경:
+  - 품종 개인화/광고/커뮤니티 Cycle A의 첫 작업은 `/admin/personalization` 지표를 보고 운영자가 어떤 조치를 할지 정하는 것이었다.
+  - 기준 없이 UI를 먼저 바꾸면 CTR, ad CTR, audience 쏠림, zero-data를 같은 위험으로 다루거나 광고 성과를 추천 랭킹과 섞을 수 있었다.
+- 변경내용:
+  - `business/operations/개인화_운영_판단_기준.md`를 추가해 personalized feed CTR, ad CTR, audience concentration, zero-data 판정 기준을 문서화했다.
+  - 정책값 변경 전후 비교 기간을 기본 14일, 긴급 rollback 7일, 저트래픽/월간 리뷰 30일로 고정했다.
+  - 최소 표본, 정상/주의/조치 기준, 운영 조치표, Go/No-Go 조건을 분리했다.
+  - 광고 성과를 이유로 커뮤니티 추천 랭킹을 직접 구매하게 만들지 않는 원칙을 운영 기준에 명시했다.
+  - 운영 문서 안내와 품종 개인화 실행계획 A1이 새 기준 문서를 가리키게 했다.
+  - active plan/progress를 다음 작업인 관리자 개인화 진단 UX 보강으로 갱신했다.
+- 코드문서:
+  - [business/operations/개인화_운영_판단_기준.md](../business/operations/개인화_운영_판단_기준.md)
+  - [business/operations/운영_문서_안내.md](../business/operations/운영_문서_안내.md)
+  - [business/product/품종_개인화_광고_커뮤니티_실행계획.md](../business/product/품종_개인화_광고_커뮤니티_실행계획.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app docs:refresh:check` 통과
+- 결과:
+  - A1 운영 판단 기준 문서화는 완료됐다.
+  - 다음 작업은 `/admin/personalization`에서 이 기준을 빈 데이터, 저성과, 편향 위험 진단 UX로 보여주는 A2다.
+  - 변경은 문서에 한정했고 앱 기능 로직, 추천 알고리즘, 관리자 UI는 변경하지 않았다.

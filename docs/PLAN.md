@@ -26,18 +26,18 @@
 
 ## Active Plan
 
-### 개인화 운영 판단 기준 문서화
+### 관리자 개인화 진단 UX 보강
 
 상태: `pending`
 
-- 목표: `/admin/personalization` 지표를 보고 운영자가 어떤 조치를 할지 문서로 고정한다.
-- 범위: CTR, ad CTR, audience concentration, zero-data 상태 판정과 7/14/30일 비교 기간 선택 기준.
-- 제외: 관리자 UI 진단 카드 구현, 추천 알고리즘 변경, 실제 광고 계약/과금.
-- 완료 기준: 운영 문서와 실행계획에서 지표별 판정 기준, 조치, Go/No-Go 조건이 서로 같은 기준을 가리킨다.
+- 목표: `/admin/personalization`에서 운영자가 빈 데이터, 저성과, 편향 위험을 바로 구분하게 한다.
+- 범위: 데이터 없음, 낮은 CTR, 특정 audience 쏠림 상태 문구와 다음 행동 링크.
+- 제외: 추천 알고리즘 변경, 광고 계약/과금, 품종 라운지 write gate.
+- 완료 기준: KPI 카드와 테이블이 운영 판단 기준 문서의 정상/주의/조치 상태를 표시하고, 모바일 폭에서도 읽힌다.
 
 ## 다음 실행 순서
 
-1. 개인화 운영 판단 기준 문서를 `business/operations/`에 추가한다.
-2. `business/product/품종_개인화_광고_커뮤니티_실행계획.md`의 A1 완료 기준과 연결한다.
-3. `docs/PROGRESS.md`에 재개 결과와 다음 작업을 갱신한다.
-4. `docs:refresh:check`로 문서 인덱스 동기화를 확인한다.
+1. `/admin/personalization`의 presenter/helper와 현재 테스트 구조를 확인한다.
+2. 운영 판단 기준 문서의 CTR/ad CTR/audience/zero-data 판정을 UI 상태로 매핑한다.
+3. 상태 문구와 `/admin/policies`, `/admin/breeds`, `/admin/ops` 다음 행동 링크를 추가한다.
+4. 관련 unit/e2e와 모바일 폭 표시를 검증한다.
