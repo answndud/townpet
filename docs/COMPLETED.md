@@ -932,3 +932,34 @@
   - `/admin/personalization`은 이제 숫자 요약뿐 아니라 운영 기준별 다음 행동을 같이 보여준다.
   - 모바일 폭에서 진단 카드와 긴 audience key가 페이지 가로 overflow를 만들지 않는 것을 e2e로 확인했다.
   - 다음 작업은 광고/추천 정책 분리 증거 보강이다.
+
+### 2026-04-25 | 광고/추천 정책 분리 증거 보강
+- 완료일: `2026-04-25`
+- 배경:
+  - 개인화 운영 기준에서 광고 성과를 이유로 커뮤니티 추천 랭킹을 직접 구매하게 만들지 않는다는 원칙을 세웠다.
+  - A3 목표는 이 원칙을 문서뿐 아니라 회귀 테스트와 정책 상한으로 고정하는 것이었다.
+- 변경내용:
+  - `FEED_PERSONALIZATION_AD_SIGNAL_CAP_MAX`를 추가하고 `adSignalCap` 입력 상한을 0.08로 제한했다.
+  - `/admin/policies` 개인화 정책 form의 광고 신호 cap max도 같은 상수를 사용하게 했다.
+  - `AD_IMPRESSION`은 추천 랭킹 행동 신호로 쓰지 않는 테스트를 추가했다.
+  - 반복적인 `AD_CLICK`도 cap 안의 약한 보조 신호라 최신/선호 게시글을 직접 구매해 뒤집지 못하는 테스트를 추가했다.
+  - 운영 판단 기준 문서와 실행계획 A3에 sponsored/partner 표면은 라벨과 frequency cap을 갖는 별도 후보로 다룬다는 기준을 남겼다.
+- 코드문서:
+  - [app/src/lib/feed-personalization-policy.ts](../app/src/lib/feed-personalization-policy.ts)
+  - [app/src/lib/feed-personalization-policy.test.ts](../app/src/lib/feed-personalization-policy.test.ts)
+  - [app/src/server/queries/post.queries.test.ts](../app/src/server/queries/post.queries.test.ts)
+  - [app/src/components/admin/feed-personalization-policy-form.tsx](../app/src/components/admin/feed-personalization-policy-form.tsx)
+  - [business/operations/개인화_운영_판단_기준.md](../business/operations/개인화_운영_판단_기준.md)
+  - [business/product/품종_개인화_광고_커뮤니티_실행계획.md](../business/product/품종_개인화_광고_커뮤니티_실행계획.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app exec vitest run src/lib/feed-personalization-policy.test.ts src/server/queries/post.queries.test.ts src/server/queries/policy.queries.test.ts` 통과, 59 tests
+  - `corepack pnpm -C app lint` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `corepack pnpm -C app quality:check` 통과, 203 files / 956 tests
+  - `corepack pnpm -C app docs:refresh:check` 통과
+- 결과:
+  - 광고 노출은 personalized feed ranker의 행동 신호가 아니다.
+  - 광고 클릭은 weak cap 안의 보조 신호로만 남고, sponsored/partner는 별도 후보군으로 분리해야 한다는 증거가 남았다.
+  - 다음 작업은 품종 라운지 고위험 write gate 점검이다.

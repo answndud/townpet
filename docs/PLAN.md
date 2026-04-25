@@ -26,18 +26,18 @@
 
 ## Active Plan
 
-### 광고/추천 정책 분리 증거 보강
+### 품종 라운지 고위험 write gate 점검
 
 상태: `pending`
 
-- 목표: 광고 노출/클릭 신호가 커뮤니티 추천 랭킹을 직접 구매하지 않는다는 원칙을 회귀 테스트로 고정한다.
-- 범위: personalization policy helper/service tests, 추천 boost 계산 경계, 광고 cap 문서 연결.
-- 제외: 실제 광고 계약/과금, 광고 소재 관리 UI, 관리자 진단 UX 추가 확장.
-- 완료 기준: 광고 클릭/노출 신호는 cap 안의 약한 engagement 신호로만 반영되고, sponsored/partner 표면은 별도 후보라는 증거가 남는다.
+- 목표: 품종 라운지 공동구매/거래성 글이 기존 신규유저 제한, 링크/연락처 제한, 신고/자동숨김 정책을 우회하지 않게 한다.
+- 범위: groupbuy route/action/service/test, 기존 post write policy 재사용 여부, 신고 audit trail.
+- 제외: 결제/정산/에스크로, 실제 공동구매 운영, 마켓 거래 상태 머신.
+- 완료 기준: 품종 라운지 작성 경로가 기존 고위험 write gate를 재사용하고, 신고 정책은 일반 post와 동일한 audit trail을 남긴다.
 
 ## 다음 실행 순서
 
-1. 개인화 추천 boost 계산과 광고 신호 cap 테스트를 확인한다.
-2. 광고 클릭/노출이 추천 랭킹을 직접 구매하지 않는 회귀 테스트를 추가한다.
-3. 필요하면 정책 문서와 helper명을 정리한다.
-4. 관련 unit test, `lint`, `typecheck`, `quality:check`를 검증한다.
+1. 품종 라운지 groupbuy 작성 route/action/service와 현재 테스트를 확인한다.
+2. 신규유저 제한, 링크/연락처 제한, rate-limit, 신고/자동숨김 정책 재사용 여부를 검증한다.
+3. 누락된 write gate나 신고 audit 증거를 테스트로 먼저 고정한다.
+4. 관련 unit/e2e, `lint`, `typecheck`, `quality:check`를 검증한다.

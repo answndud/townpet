@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 
+import { FEED_PERSONALIZATION_AD_SIGNAL_CAP_MAX } from "@/lib/feed-personalization-policy";
 import { updateFeedPersonalizationPolicyAction } from "@/server/actions/policy";
 
 type FeedPersonalizationPolicyFormProps = {
@@ -84,7 +85,7 @@ export function FeedPersonalizationPolicyForm({
         {decimalInput("clickSignalMultiplier", "클릭 신호 multiplier", 0, 3)}
         {decimalInput("clickSignalCap", "클릭 신호 cap", 0, 0.3)}
         {decimalInput("adSignalMultiplier", "광고 신호 multiplier", 0, 3)}
-        {decimalInput("adSignalCap", "광고 신호 cap", 0, 0.3)}
+        {decimalInput("adSignalCap", "광고 신호 cap", 0, FEED_PERSONALIZATION_AD_SIGNAL_CAP_MAX)}
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
