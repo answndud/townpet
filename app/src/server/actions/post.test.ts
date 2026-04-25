@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { revalidatePath } from "next/cache";
+import { MarketStatus } from "@prisma/client";
 
 import { enforceAuthenticatedWriteRateLimit } from "@/server/authenticated-write-throttle";
 import {
@@ -7,6 +8,7 @@ import {
   deletePostAction,
   togglePostBookmarkAction,
   togglePostReactionAction,
+  updateMarketListingStatusAction,
   updatePostAction,
 } from "@/server/actions/post";
 import { requireCurrentUser } from "@/server/auth";
@@ -15,6 +17,7 @@ import {
   deletePost,
   togglePostBookmark,
   togglePostReaction,
+  updateMarketListingStatus,
   updatePost,
 } from "@/server/services/post.service";
 import { ServiceError } from "@/server/services/service-error";
@@ -39,6 +42,7 @@ vi.mock("@/server/services/post.service", () => ({
   togglePostBookmark: vi.fn(),
   updatePost: vi.fn(),
   togglePostReaction: vi.fn(),
+  updateMarketListingStatus: vi.fn(),
 }));
 
 const mockRevalidatePath = vi.mocked(revalidatePath);
@@ -49,6 +53,7 @@ const mockDeletePost = vi.mocked(deletePost);
 const mockTogglePostBookmark = vi.mocked(togglePostBookmark);
 const mockUpdatePost = vi.mocked(updatePost);
 const mockTogglePostReaction = vi.mocked(togglePostReaction);
+const mockUpdateMarketListingStatus = vi.mocked(updateMarketListingStatus);
 
 describe("post actions", () => {
   beforeEach(() => {
@@ -61,6 +66,7 @@ describe("post actions", () => {
     mockTogglePostBookmark.mockReset();
     mockUpdatePost.mockReset();
     mockTogglePostReaction.mockReset();
+    mockUpdateMarketListingStatus.mockReset();
   });
 
   it("creates a post and only revalidates the feed page", async () => {
@@ -172,5 +178,30 @@ describe("post actions", () => {
 
     expect(result).toEqual({ ok: false, code: "FORBIDDEN", message: "forbidden" });
     expect(mockRevalidatePath).not.toHaveBeenCalled();
+  });
+
+  it("updates market listing status and revalidates feed plus detail", async () => {
+    mockRequireCurrentUser.mockResolvedValue({ id: "user-5" } as never);
+    mockUpdateMarketListingStatus.mockResolvedValue({
+      changed: true,
+      previousStatus: MarketStatus.AVAILABLE,
+      status: MarketStatus.RESERVED,
+    } as never);
+
+    const result = await updateMarketListingStatusAction("post-market-1", MarketStatus.RESERVED);
+
+    expect(result).toEqual({
+      ok: true,
+      changed: true,
+      previousStatus: MarketStatus.AVAILABLE,
+      status: MarketStatus.RESERVED,
+    });
+    expect(mockUpdateMarketListingStatus).toHaveBeenCalledWith({
+      postId: "post-market-1",
+      actorId: "user-5",
+      input: { status: MarketStatus.RESERVED },
+    });
+    expect(mockRevalidatePath).toHaveBeenCalledWith("/feed");
+    expect(mockRevalidatePath).toHaveBeenCalledWith("/posts/post-market-1");
   });
 });

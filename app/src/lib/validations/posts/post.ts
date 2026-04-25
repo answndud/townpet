@@ -3,6 +3,7 @@ import {
   AnimalSex,
   ItemCondition,
   MarketType,
+  MarketStatus,
   PostScope,
   PostType,
   VolunteerRecruitmentStatus,
@@ -123,6 +124,10 @@ export const marketListingSchema = z.object({
   condition: optionalNativeEnum(ItemCondition).default(ItemCondition.GOOD),
   depositAmount: optionalInt({ min: 0 }),
   rentalPeriod: optionalTrimmedString({ max: 80 }),
+});
+
+export const marketListingStatusUpdateSchema = z.object({
+  status: z.nativeEnum(MarketStatus),
 });
 
 export const postCreateSchema = z.object({
@@ -325,6 +330,7 @@ export type WalkRouteInput = z.infer<typeof walkRouteSchema>;
 export type AdoptionListingInput = z.infer<typeof adoptionListingSchema>;
 export type VolunteerRecruitmentInput = z.infer<typeof volunteerRecruitmentSchema>;
 export type MarketListingInput = z.infer<typeof marketListingSchema>;
+export type MarketListingStatusUpdateInput = z.infer<typeof marketListingStatusUpdateSchema>;
 export type PostUpdateInput = z.infer<typeof postUpdateSchema>;
 
 // Normalize parsed list input to product-facing naming.

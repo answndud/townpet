@@ -1,13 +1,22 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { PostReactionType, PostStatus } from "@prisma/client";
+import {
+  MarketStatus,
+  ModerationActionType,
+  PostReactionType,
+  PostStatus,
+  PostType,
+  UserRole,
+} from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
+import { recordModerationAction } from "@/server/moderation-action-log";
 import { notifyReactionOnPost } from "@/server/services/notification.service";
 import {
   deletePost,
   registerPostView,
   togglePostBookmark,
   togglePostReaction,
+  updateMarketListingStatus,
 } from "@/server/services/post.service";
 import {
   bumpFeedCacheVersion,
@@ -23,6 +32,12 @@ vi.mock("@/lib/prisma", () => ({
   prisma: {
     post: {
       findUnique: vi.fn(),
+      update: vi.fn(),
+    },
+    user: {
+      findUnique: vi.fn(),
+    },
+    marketListing: {
       update: vi.fn(),
     },
     postBookmark: {
@@ -45,6 +60,10 @@ vi.mock("@/server/services/notification.service", () => ({
   notifyReactionOnPost: vi.fn().mockResolvedValue(null),
 }));
 
+vi.mock("@/server/moderation-action-log", () => ({
+  recordModerationAction: vi.fn(),
+}));
+
 vi.mock("@/server/cache/query-cache", () => ({
   bumpFeedCacheVersion: vi.fn().mockResolvedValue(undefined),
   bumpSearchCacheVersion: vi.fn().mockResolvedValue(undefined),
@@ -58,6 +77,12 @@ vi.mock("@/server/cache/query-cache", () => ({
 const mockPrisma = vi.mocked(prisma) as unknown as {
   post: {
     findUnique: ReturnType<typeof vi.fn>;
+    update: ReturnType<typeof vi.fn>;
+  };
+  user: {
+    findUnique: ReturnType<typeof vi.fn>;
+  };
+  marketListing: {
     update: ReturnType<typeof vi.fn>;
   };
   postBookmark: {
@@ -75,6 +100,7 @@ const mockPrisma = vi.mocked(prisma) as unknown as {
   $transaction: ReturnType<typeof vi.fn>;
 };
 const mockNotifyReactionOnPost = vi.mocked(notifyReactionOnPost);
+const mockRecordModerationAction = vi.mocked(recordModerationAction);
 const mockBumpFeedCacheVersion = vi.mocked(bumpFeedCacheVersion);
 const mockBumpSearchCacheVersion = vi.mocked(bumpSearchCacheVersion);
 const mockBumpSuggestCacheVersion = vi.mocked(bumpSuggestCacheVersion);
@@ -87,6 +113,8 @@ describe("post reaction toggle", () => {
   beforeEach(() => {
     mockPrisma.post.findUnique.mockReset();
     mockPrisma.post.update.mockReset();
+    mockPrisma.user.findUnique.mockReset();
+    mockPrisma.marketListing.update.mockReset();
     mockPrisma.postBookmark.findUnique.mockReset();
     mockPrisma.postBookmark.create.mockReset();
     mockPrisma.postBookmark.delete.mockReset();
@@ -97,6 +125,8 @@ describe("post reaction toggle", () => {
     mockPrisma.$transaction.mockReset();
     mockNotifyReactionOnPost.mockReset();
     mockNotifyReactionOnPost.mockResolvedValue(null);
+    mockRecordModerationAction.mockReset();
+    mockRecordModerationAction.mockResolvedValue(undefined);
     mockBumpFeedCacheVersion.mockReset();
     mockBumpFeedCacheVersion.mockResolvedValue(undefined);
     mockBumpSearchCacheVersion.mockReset();
@@ -611,5 +641,184 @@ describe("post view dedupe", () => {
     expect(first).toBe(true);
     expect(second).toBe(true);
     expect(mockPrisma.post.update).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe("market listing status transitions", () => {
+  beforeEach(() => {
+    mockPrisma.user.findUnique.mockReset();
+    mockPrisma.post.findUnique.mockReset();
+    mockPrisma.marketListing.update.mockReset();
+    mockRecordModerationAction.mockReset();
+    mockRecordModerationAction.mockResolvedValue(undefined);
+  });
+
+  it("allows the author to reserve an available market listing and writes an audit log", async () => {
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: "author-1",
+      role: UserRole.USER,
+    });
+    mockPrisma.post.findUnique.mockResolvedValue({
+      id: "post-1",
+      authorId: "author-1",
+      status: PostStatus.ACTIVE,
+      type: PostType.MARKET_LISTING,
+      marketListing: {
+        id: "listing-1",
+        listingType: "SELL",
+        status: MarketStatus.AVAILABLE,
+      },
+    });
+    mockPrisma.marketListing.update.mockResolvedValue({
+      listingType: "SELL",
+      price: 10000,
+      condition: "GOOD",
+      depositAmount: null,
+      rentalPeriod: null,
+      status: MarketStatus.RESERVED,
+    });
+
+    const result = await updateMarketListingStatus({
+      postId: "post-1",
+      actorId: "author-1",
+      input: { status: MarketStatus.RESERVED },
+    });
+
+    expect(result).toMatchObject({
+      changed: true,
+      previousStatus: MarketStatus.AVAILABLE,
+      status: MarketStatus.RESERVED,
+    });
+    expect(mockPrisma.marketListing.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { postId: "post-1" },
+        data: { status: MarketStatus.RESERVED },
+      }),
+    );
+    expect(mockRecordModerationAction).toHaveBeenCalledWith(
+      expect.objectContaining({
+        actorId: "author-1",
+        action: ModerationActionType.MARKET_STATUS_CHANGED,
+        targetType: "POST",
+        targetId: "post-1",
+        targetUserId: "author-1",
+        metadata: expect.objectContaining({
+          previousStatus: MarketStatus.AVAILABLE,
+          nextStatus: MarketStatus.RESERVED,
+          actorScope: "AUTHOR",
+        }),
+      }),
+    );
+  });
+
+  it("blocks non-authors who are not moderators", async () => {
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: "viewer-1",
+      role: UserRole.USER,
+    });
+    mockPrisma.post.findUnique.mockResolvedValue({
+      id: "post-1",
+      authorId: "author-1",
+      status: PostStatus.ACTIVE,
+      type: PostType.MARKET_LISTING,
+      marketListing: {
+        id: "listing-1",
+        listingType: "SELL",
+        status: MarketStatus.AVAILABLE,
+      },
+    });
+
+    await expect(
+      updateMarketListingStatus({
+        postId: "post-1",
+        actorId: "viewer-1",
+        input: { status: MarketStatus.RESERVED },
+      }),
+    ).rejects.toMatchObject({
+      code: "FORBIDDEN",
+      status: 403,
+    });
+    expect(mockPrisma.marketListing.update).not.toHaveBeenCalled();
+    expect(mockRecordModerationAction).not.toHaveBeenCalled();
+  });
+
+  it("blocks invalid author transitions from sold back to available", async () => {
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: "author-1",
+      role: UserRole.USER,
+    });
+    mockPrisma.post.findUnique.mockResolvedValue({
+      id: "post-1",
+      authorId: "author-1",
+      status: PostStatus.ACTIVE,
+      type: PostType.MARKET_LISTING,
+      marketListing: {
+        id: "listing-1",
+        listingType: "SELL",
+        status: MarketStatus.SOLD,
+      },
+    });
+
+    await expect(
+      updateMarketListingStatus({
+        postId: "post-1",
+        actorId: "author-1",
+        input: { status: MarketStatus.AVAILABLE },
+      }),
+    ).rejects.toMatchObject({
+      code: "INVALID_MARKET_STATUS_TRANSITION",
+      status: 400,
+    });
+    expect(mockPrisma.marketListing.update).not.toHaveBeenCalled();
+  });
+
+  it("allows moderators to override any market status", async () => {
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: "mod-1",
+      role: UserRole.MODERATOR,
+    });
+    mockPrisma.post.findUnique.mockResolvedValue({
+      id: "post-1",
+      authorId: "author-1",
+      status: PostStatus.ACTIVE,
+      type: PostType.MARKET_LISTING,
+      marketListing: {
+        id: "listing-1",
+        listingType: "RENT",
+        status: MarketStatus.SOLD,
+      },
+    });
+    mockPrisma.marketListing.update.mockResolvedValue({
+      listingType: "RENT",
+      price: 5000,
+      condition: "GOOD",
+      depositAmount: 20000,
+      rentalPeriod: "2주",
+      status: MarketStatus.AVAILABLE,
+    });
+
+    await expect(
+      updateMarketListingStatus({
+        postId: "post-1",
+        actorId: "mod-1",
+        input: { status: MarketStatus.AVAILABLE },
+      }),
+    ).resolves.toMatchObject({
+      changed: true,
+      previousStatus: MarketStatus.SOLD,
+      status: MarketStatus.AVAILABLE,
+    });
+    expect(mockRecordModerationAction).toHaveBeenCalledWith(
+      expect.objectContaining({
+        actorId: "mod-1",
+        action: ModerationActionType.MARKET_STATUS_CHANGED,
+        targetUserId: "author-1",
+        metadata: expect.objectContaining({
+          actorScope: "MODERATOR",
+          previousStatus: MarketStatus.SOLD,
+          nextStatus: MarketStatus.AVAILABLE,
+        }),
+      }),
+    );
   });
 });

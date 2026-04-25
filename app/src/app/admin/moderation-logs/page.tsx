@@ -23,6 +23,7 @@ const actionLabels: Record<ModerationActionType, string> = {
   POLICY_UPDATED: "권한 정책 변경",
   AUTH_AUDIT_VIEWED: "인증 로그 조회",
   AUTH_AUDIT_EXPORTED: "인증 로그 내보내기",
+  MARKET_STATUS_CHANGED: "마켓 상태 변경",
 };
 
 const targetLabels: Record<ModerationTargetType, string> = {

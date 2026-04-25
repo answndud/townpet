@@ -1,6 +1,6 @@
 "use server";
 
-import { PostReactionType } from "@prisma/client";
+import { MarketStatus, PostReactionType } from "@prisma/client";
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 
@@ -10,6 +10,7 @@ import {
   deletePost,
   togglePostBookmark,
   togglePostReaction,
+  updateMarketListingStatus,
   updatePost,
 } from "@/server/services/post.service";
 import { logger, serializeError } from "@/server/logger";
@@ -35,6 +36,15 @@ type PostBookmarkActionResult =
   | {
       ok: true;
       bookmarked: boolean;
+    }
+  | { ok: false; code: string; message: string };
+
+type MarketListingStatusActionResult =
+  | {
+      ok: true;
+      changed: boolean;
+      status: MarketStatus;
+      previousStatus: MarketStatus;
     }
   | { ok: false; code: string; message: string };
 
@@ -199,6 +209,45 @@ export async function togglePostBookmarkAction(
     logger.error("togglePostBookmarkAction 실패", {
       postId,
       bookmarked,
+      error: serializeError(error),
+    });
+
+    return {
+      ok: false,
+      code: "INTERNAL_SERVER_ERROR",
+      message: "서버 오류가 발생했습니다.",
+    };
+  }
+}
+
+export async function updateMarketListingStatusAction(
+  postId: string,
+  status: MarketStatus,
+): Promise<MarketListingStatusActionResult> {
+  try {
+    const user = await requireCurrentUser();
+    const result = await updateMarketListingStatus({
+      postId,
+      actorId: user.id,
+      input: { status },
+    });
+    revalidateFeedPage();
+    revalidatePostDetailPage(postId);
+
+    return {
+      ok: true,
+      changed: result.changed,
+      status: result.status,
+      previousStatus: result.previousStatus,
+    };
+  } catch (error) {
+    if (error instanceof ServiceError) {
+      return { ok: false, code: error.code, message: error.message };
+    }
+
+    logger.error("updateMarketListingStatusAction 실패", {
+      postId,
+      status,
       error: serializeError(error),
     });
 

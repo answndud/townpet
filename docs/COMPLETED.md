@@ -1222,3 +1222,38 @@
 - 결과:
   - 마켓 글은 이제 단순 게시글이 아니라 `MarketListing` 구조화 레코드와 함께 생성되고 feed/detail에서 거래 상태와 가격이 보인다.
   - 다음 작업은 `Market Listing M2 상태 전환 액션`이며, 작성자/admin 권한과 감사 로그 기준부터 테스트로 고정한다.
+
+### 2026-04-26 | Market Listing M2 상태 전환 액션
+- 완료일: `2026-04-26`
+- 배경:
+  - M1에서 `MARKET_LISTING`이 구조화 레코드로 저장되기 시작했으므로, 다음 단계는 거래 상태를 작성자/운영자 권한 기준으로 변경하고 감사 로그에 남기는 것이다.
+  - 결제/정산/배송 없이 커뮤니티 마켓 운영에 필요한 최소 상태 머신만 열어야 했다.
+- 변경내용:
+  - `ModerationActionType.MARKET_STATUS_CHANGED`를 추가하고 migration을 작성했다.
+  - `updateMarketListingStatus` service를 추가해 작성자 허용 전환과 moderator/admin override를 분리했다.
+  - 실제 상태 변경 시 `ModerationActionLog`에 이전/다음 상태, actor role/scope, listing type을 metadata로 남긴다.
+  - `updateMarketListingStatusAction`을 추가해 detail/feed revalidate를 수행한다.
+  - 회원 게시글 상세의 마켓 거래 정보 섹션에 거래 상태 변경 버튼을 추가했다.
+  - 관리자 감사 로그 화면에 마켓 상태 변경 action label을 추가했다.
+- 코드문서:
+  - [app/prisma/schema.prisma](../app/prisma/schema.prisma)
+  - [app/prisma/migrations/20260426013000_add_market_status_audit_action/migration.sql](../app/prisma/migrations/20260426013000_add_market_status_audit_action/migration.sql)
+  - [app/src/lib/validations/posts/post.ts](../app/src/lib/validations/posts/post.ts)
+  - [app/src/server/services/posts/post.service.ts](../app/src/server/services/posts/post.service.ts)
+  - [app/src/server/actions/post.ts](../app/src/server/actions/post.ts)
+  - [app/src/components/posts/post-detail-client.tsx](../app/src/components/posts/post-detail-client.tsx)
+  - [app/src/app/admin/moderation-logs/page.tsx](../app/src/app/admin/moderation-logs/page.tsx)
+  - [business/policies/마켓_운영규칙.md](../business/policies/마켓_운영규칙.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app exec prisma generate` 통과
+  - `corepack pnpm -C app exec prisma migrate deploy` 통과
+  - `corepack pnpm -C app exec vitest run src/lib/validations/post.test.ts src/server/services/post.service.test.ts src/server/actions/post.test.ts` 통과, 49 tests
+  - `corepack pnpm -C app typecheck` 통과
+  - `corepack pnpm -C app lint` 통과
+  - `corepack pnpm -C app quality:check` 통과, 205 files / 978 tests
+- 결과:
+  - 마켓 글 작성자는 허용된 상태 전환만 수행할 수 있고, moderator/admin은 운영 복구/취소 목적의 override를 수행할 수 있다.
+  - 모든 실제 전환은 기존 moderation action log에 남는다.
+  - 다음 작업은 남아 있는 `test:e2e:smoke` 카카오 social-dev 온보딩 blocker를 안정화하는 것이다.

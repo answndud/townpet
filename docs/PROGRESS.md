@@ -20,12 +20,19 @@
 - 런치 갭 다음 후보 재평가를 완료했다
 - Market State Machine Phase 2 preflight를 완료했다
 - Market Listing M1 구조화 생성/조회를 완료했다
-- 다음 작업: Market Listing M2 상태 전환 액션
+- Market Listing M2 상태 전환 액션을 완료했다
+- 다음 작업: Social Dev Onboarding Smoke 안정화
 
 ## 열린 blocker
-- 없음. 기존 `db:restore:local` local test account count mismatch는 managed account count 검증으로 수정했고 restore 통과를 확인했다.
+- `test:e2e:smoke`의 카카오 social-dev 온보딩이 `/login?next=/onboarding`에 머물거나 프로필 저장 실패로 끝나는 기존 smoke blocker가 남아 있다.
 
 ## 직전 검증
+- Market Listing M2 상태 전환 액션:
+  - 결정: 별도 audit 모델을 만들지 않고 기존 `ModerationActionLog`에 `MARKET_STATUS_CHANGED` action을 추가했다.
+  - 추가: 작성자는 `AVAILABLE/RESERVED`에서 예약/판매완료/취소와 예약 해제를 수행할 수 있고, moderator/admin은 모든 상태 override가 가능하다.
+  - 차단: 비작성자/비운영자는 `FORBIDDEN`, 작성자의 `SOLD/CANCELLED -> AVAILABLE` 같은 역전환은 `INVALID_MARKET_STATUS_TRANSITION`으로 막는다.
+  - UI: 회원 상세 화면의 마켓 거래 정보에 상태 변경 버튼을 추가하고 성공 시 detail/feed cache를 revalidate한다.
+  - 통과: 관련 validation/service/action unit, `prisma migrate deploy`, `typecheck`, `lint`, `quality:check`.
 - Market Listing M1 구조화 생성/조회:
   - 추가: `MARKET_LISTING` 작성 입력에 `marketListing` 구조화 필드를 필수화하고 post create form과 공동구매 route payload에 연결했다.
   - 연결: `createPost`가 `MarketListing` relation을 생성하고 feed/detail query include와 UI에서 거래 유형, 가격, 상품 상태, 거래 상태를 표시한다.
@@ -88,9 +95,9 @@
 - 과거 Phase 0-5와 checkpoint/push 상세도 [COMPLETED.md](./COMPLETED.md)에 보관했다.
 
 ## 다음 액션
-1. `ModerationActionType`에 마켓 상태 변경 action을 추가할지 별도 audit 모델을 둘지 결정한다.
-2. 작성자/admin/비작성자/게스트 상태 전환 권한 실패 테스트를 먼저 작성한다.
-3. detail/feed에서 상태 변경 후 표시가 갱신되는 smoke를 추가한다.
+1. `social-onboarding-flow.spec.ts` 실패 컨텍스트와 social-dev credentials callback 로그를 확인한다.
+2. 카카오/네이버 병렬 실행 시 세션/테스트 계정 reset 충돌 여부를 분리 테스트로 검증한다.
+3. 원인에 맞춰 로그인 시작 또는 nickname 저장 테스트/코드를 보강하고 smoke 전체를 재실행한다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)
