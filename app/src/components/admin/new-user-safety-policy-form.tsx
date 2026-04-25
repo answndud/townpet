@@ -1,10 +1,24 @@
 "use client";
 
 import { PostType } from "@prisma/client";
-import { useMemo, useState, useTransition } from "react";
+import { useActionState, useMemo, useState } from "react";
 
 import { postTypeMeta } from "@/lib/post-presenter";
 import { updateNewUserSafetyPolicyAction } from "@/server/actions/policy";
+import type { PolicyActionResult } from "@/server/actions/policy";
+
+const postTypes = new Set(Object.values(PostType));
+
+function getPostTypeValues(formData: FormData, name: string) {
+  return formData.getAll(name).filter(
+    (value): value is PostType =>
+      typeof value === "string" && postTypes.has(value as PostType),
+  );
+}
+
+function getNumberValue(formData: FormData, name: string) {
+  return Number(formData.get(name));
+}
 
 type NewUserSafetyPolicyFormProps = {
   initialPolicy: {
@@ -26,9 +40,18 @@ export function NewUserSafetyPolicyForm({
   const [restrictedPostTypes, setRestrictedPostTypes] = useState<PostType[]>(
     initialPolicy.restrictedPostTypes,
   );
-  const [isPending, startTransition] = useTransition();
-  const [message, setMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [result, submitAction, isPending] = useActionState<
+    PolicyActionResult | null,
+    FormData
+  >(
+    async (_previousState, formData) =>
+      updateNewUserSafetyPolicyAction({
+        minAccountAgeHours: getNumberValue(formData, "minAccountAgeHours"),
+        restrictedPostTypes: getPostTypeValues(formData, "restrictedPostTypes"),
+        contactBlockWindowHours: getNumberValue(formData, "contactBlockWindowHours"),
+      }),
+    null,
+  );
 
   const sortedTypes = useMemo(() => Object.values(PostType), []);
 
@@ -41,33 +64,14 @@ export function NewUserSafetyPolicyForm({
     });
   };
 
-  const handleSubmit = () => {
-    startTransition(async () => {
-      setMessage(null);
-      setError(null);
-
-      const result = await updateNewUserSafetyPolicyAction({
-        minAccountAgeHours,
-        restrictedPostTypes,
-        contactBlockWindowHours,
-      });
-
-      if (!result.ok) {
-        setError(result.message);
-        return;
-      }
-
-      setMessage("신규 계정 안전 정책이 저장되었습니다.");
-    });
-  };
-
   return (
-    <div className="flex flex-col gap-4">
+    <form action={submitAction} className="flex flex-col gap-4">
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="flex flex-col gap-1 text-xs text-[#355988]">
           <span className="font-semibold">고위험 카테고리 작성 제한 시간</span>
           <input
             data-testid="new-user-policy-min-account-age-hours"
+            name="minAccountAgeHours"
             type="number"
             min={0}
             max={24 * 30}
@@ -81,6 +85,7 @@ export function NewUserSafetyPolicyForm({
           <span className="font-semibold">연락처 포함 글/댓글 차단 시간</span>
           <input
             data-testid="new-user-policy-contact-block-window-hours"
+            name="contactBlockWindowHours"
             type="number"
             min={0}
             max={24 * 30}
@@ -108,6 +113,8 @@ export function NewUserSafetyPolicyForm({
             >
               <input
                 data-testid={`new-user-policy-post-type-${type}`}
+                name="restrictedPostTypes"
+                value={type}
                 type="checkbox"
                 className="accent-[#3567b5]"
                 checked={restrictedPostTypes.includes(type)}
@@ -124,8 +131,7 @@ export function NewUserSafetyPolicyForm({
       <div className="flex flex-wrap items-center gap-2">
         <button
           data-testid="new-user-policy-submit"
-          type="button"
-          onClick={handleSubmit}
+          type="submit"
           disabled={isPending}
           className="tp-btn-primary px-4 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-70"
         >
@@ -133,12 +139,12 @@ export function NewUserSafetyPolicyForm({
         </button>
       </div>
 
-      {message ? (
+      {result?.ok ? (
         <p data-testid="new-user-policy-success" className="text-xs text-emerald-700">
-          {message}
+          신규 계정 안전 정책이 저장되었습니다.
         </p>
       ) : null}
-      {error ? <p className="text-xs text-rose-600">{error}</p> : null}
-    </div>
+      {result && !result.ok ? <p className="text-xs text-rose-600">{result.message}</p> : null}
+    </form>
   );
 }

@@ -13,7 +13,7 @@ import {
 } from "@/server/services/policy.service";
 import { ServiceError } from "@/server/services/service-error";
 
-type PolicyActionResult =
+export type PolicyActionResult =
   | { ok: true }
   | { ok: false; code: string; message: string };
 

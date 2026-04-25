@@ -51,10 +51,14 @@
   - 발견: `post-comment-auth-sync`에서 로그아웃 후 재로그인 시 기존 post page 댓글 컴포저가 게스트 입력 상태에 머물렀다.
   - 수정: auth-login sync가 강제 게스트 모드에서 복귀할 때 post page를 reload해 서버 인증 props를 다시 받게 했다.
   - 통과: `search-and-board-filtering`, `guest-post-management`, `post-comment-auth-sync`, `corepack pnpm -C app quality:check`.
+- 신고/정책 e2e:
+  - 발견: `/admin/policies`의 비회원 작성/신규 계정 정책 저장은 POST는 성공하지만 RSC refresh로 클라이언트 성공 상태가 사라졌고, 비회원 작성 정책은 reload 후 오래된 정책 캐시를 볼 수 있었다.
+  - 수정: 두 정책 폼을 `useActionState` + 실제 `FormData` 제출로 바꾸고 `/admin/policies` 재검증은 유지해 성공 메시지와 reload persistence를 함께 보장했다.
+  - 통과: `admin-guest-post-policy`, `admin-new-user-policy`, `corepack pnpm -C app quality:check`.
 - 과거 Phase 0-5와 checkpoint/push 상세는 [COMPLETED.md](./COMPLETED.md)에 보관했다.
 
 ## 다음 액션
-1. 신고/정책 e2e와 관련 관리자 신고 화면을 검증한다.
+1. 신고 관리 화면과 댓글 신고 가능 여부를 브라우저/e2e로 확인한다.
 2. 알림/마이페이지, 관리자 운영 화면 순서로 진행한다.
 3. 결과는 기능별 `정상 / 버그 / 보류`로 기록하고, 버그는 재현 URL/단계/원인 후보/수정 우선순위를 남긴다.
 

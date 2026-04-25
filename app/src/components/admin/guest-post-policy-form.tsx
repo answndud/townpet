@@ -1,10 +1,24 @@
 "use client";
 
 import { PostType } from "@prisma/client";
-import { useMemo, useState, useTransition } from "react";
+import { useActionState, useMemo, useState } from "react";
 
 import { postTypeMeta } from "@/lib/post-presenter";
 import { updateGuestPostPolicyAction } from "@/server/actions/policy";
+import type { PolicyActionResult } from "@/server/actions/policy";
+
+const postTypes = new Set(Object.values(PostType));
+
+function getPostTypeValues(formData: FormData, name: string) {
+  return formData.getAll(name).filter(
+    (value): value is PostType =>
+      typeof value === "string" && postTypes.has(value as PostType),
+  );
+}
+
+function getNumberValue(formData: FormData, name: string) {
+  return Number(formData.get(name));
+}
 
 type GuestPostPolicyFormProps = {
   initialPolicy: {
@@ -44,9 +58,30 @@ export function GuestPostPolicyForm({ initialPolicy }: GuestPostPolicyFormProps)
   const [banDurationHoursShort, setBanDurationHoursShort] = useState(initialPolicy.banDurationHoursShort);
   const [banDurationHoursMedium, setBanDurationHoursMedium] = useState(initialPolicy.banDurationHoursMedium);
   const [banDurationHoursLong, setBanDurationHoursLong] = useState(initialPolicy.banDurationHoursLong);
-  const [isPending, startTransition] = useTransition();
-  const [message, setMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [result, submitAction, isPending] = useActionState<
+    PolicyActionResult | null,
+    FormData
+  >(
+    async (_previousState, formData) =>
+      updateGuestPostPolicyAction({
+        blockedPostTypes: getPostTypeValues(formData, "blockedPostTypes"),
+        maxImageCount: getNumberValue(formData, "maxImageCount"),
+        allowLinks: formData.has("allowLinks"),
+        allowContact: formData.has("allowContact"),
+        enforceGlobalScope: formData.has("enforceGlobalScope"),
+        postRateLimit10m: getNumberValue(formData, "postRateLimit10m"),
+        postRateLimit1h: getNumberValue(formData, "postRateLimit1h"),
+        postRateLimit24h: getNumberValue(formData, "postRateLimit24h"),
+        uploadRateLimit10m: getNumberValue(formData, "uploadRateLimit10m"),
+        banThreshold24h: getNumberValue(formData, "banThreshold24h"),
+        banThreshold7dMedium: getNumberValue(formData, "banThreshold7dMedium"),
+        banThreshold7dHigh: getNumberValue(formData, "banThreshold7dHigh"),
+        banDurationHoursShort: getNumberValue(formData, "banDurationHoursShort"),
+        banDurationHoursMedium: getNumberValue(formData, "banDurationHoursMedium"),
+        banDurationHoursLong: getNumberValue(formData, "banDurationHoursLong"),
+      }),
+    null,
+  );
 
   const sortedTypes = useMemo(() => Object.values(PostType), []);
 
@@ -59,45 +94,14 @@ export function GuestPostPolicyForm({ initialPolicy }: GuestPostPolicyFormProps)
     });
   };
 
-  const handleSubmit = () => {
-    startTransition(async () => {
-      setMessage(null);
-      setError(null);
-
-      const result = await updateGuestPostPolicyAction({
-        blockedPostTypes,
-        maxImageCount,
-        allowLinks,
-        allowContact,
-        enforceGlobalScope,
-        postRateLimit10m,
-        postRateLimit1h,
-        postRateLimit24h,
-        uploadRateLimit10m,
-        banThreshold24h,
-        banThreshold7dMedium,
-        banThreshold7dHigh,
-        banDurationHoursShort,
-        banDurationHoursMedium,
-        banDurationHoursLong,
-      });
-
-      if (!result.ok) {
-        setError(result.message);
-        return;
-      }
-
-      setMessage("비회원 작성 정책이 저장되었습니다.");
-    });
-  };
-
   return (
-    <div className="flex flex-col gap-4">
+    <form action={submitAction} className="flex flex-col gap-4">
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <label className="flex flex-col gap-1 text-xs text-[#355988]">
           <span className="font-semibold">비회원 이미지 최대 개수</span>
           <input
             data-testid="guest-post-policy-max-image-count"
+            name="maxImageCount"
             type="number"
             min={0}
             max={10}
@@ -110,6 +114,7 @@ export function GuestPostPolicyForm({ initialPolicy }: GuestPostPolicyFormProps)
         <label className="flex items-center gap-2 border border-[#c6d6ee] bg-white px-3 py-2 text-xs text-[#355988]">
           <input
             data-testid="guest-post-policy-enforce-global-scope"
+            name="enforceGlobalScope"
             type="checkbox"
             className="accent-[#3567b5]"
             checked={enforceGlobalScope}
@@ -121,6 +126,7 @@ export function GuestPostPolicyForm({ initialPolicy }: GuestPostPolicyFormProps)
         <label className="flex items-center gap-2 border border-[#c6d6ee] bg-white px-3 py-2 text-xs text-[#355988]">
           <input
             data-testid="guest-post-policy-allow-links"
+            name="allowLinks"
             type="checkbox"
             className="accent-[#3567b5]"
             checked={allowLinks}
@@ -132,6 +138,7 @@ export function GuestPostPolicyForm({ initialPolicy }: GuestPostPolicyFormProps)
         <label className="flex items-center gap-2 border border-[#c6d6ee] bg-white px-3 py-2 text-xs text-[#355988]">
           <input
             data-testid="guest-post-policy-allow-contact"
+            name="allowContact"
             type="checkbox"
             className="accent-[#3567b5]"
             checked={allowContact}
@@ -147,6 +154,7 @@ export function GuestPostPolicyForm({ initialPolicy }: GuestPostPolicyFormProps)
           <span className="font-semibold">글 제한(10분)</span>
           <input
             data-testid="guest-post-policy-rate-post-10m"
+            name="postRateLimit10m"
             type="number"
             min={1}
             max={200}
@@ -160,6 +168,7 @@ export function GuestPostPolicyForm({ initialPolicy }: GuestPostPolicyFormProps)
           <span className="font-semibold">글 제한(1시간)</span>
           <input
             data-testid="guest-post-policy-rate-post-1h"
+            name="postRateLimit1h"
             type="number"
             min={1}
             max={1000}
@@ -173,6 +182,7 @@ export function GuestPostPolicyForm({ initialPolicy }: GuestPostPolicyFormProps)
           <span className="font-semibold">글 제한(24시간)</span>
           <input
             data-testid="guest-post-policy-rate-post-24h"
+            name="postRateLimit24h"
             type="number"
             min={1}
             max={5000}
@@ -186,6 +196,7 @@ export function GuestPostPolicyForm({ initialPolicy }: GuestPostPolicyFormProps)
           <span className="font-semibold">업로드 제한(10분)</span>
           <input
             data-testid="guest-post-policy-rate-upload-10m"
+            name="uploadRateLimit10m"
             type="number"
             min={1}
             max={200}
@@ -202,6 +213,7 @@ export function GuestPostPolicyForm({ initialPolicy }: GuestPostPolicyFormProps)
           <span className="font-semibold">제재 임계치(24시간)</span>
           <input
             data-testid="guest-post-policy-threshold-24h"
+            name="banThreshold24h"
             type="number"
             min={1}
             max={100}
@@ -215,6 +227,7 @@ export function GuestPostPolicyForm({ initialPolicy }: GuestPostPolicyFormProps)
           <span className="font-semibold">제재 임계치(7일 2차)</span>
           <input
             data-testid="guest-post-policy-threshold-7d-medium"
+            name="banThreshold7dMedium"
             type="number"
             min={1}
             max={500}
@@ -228,6 +241,7 @@ export function GuestPostPolicyForm({ initialPolicy }: GuestPostPolicyFormProps)
           <span className="font-semibold">제재 임계치(7일 3차)</span>
           <input
             data-testid="guest-post-policy-threshold-7d-high"
+            name="banThreshold7dHigh"
             type="number"
             min={1}
             max={500}
@@ -241,6 +255,7 @@ export function GuestPostPolicyForm({ initialPolicy }: GuestPostPolicyFormProps)
           <span className="font-semibold">제재 시간(1차)</span>
           <input
             data-testid="guest-post-policy-ban-short"
+            name="banDurationHoursShort"
             type="number"
             min={1}
             max={24 * 365}
@@ -254,6 +269,7 @@ export function GuestPostPolicyForm({ initialPolicy }: GuestPostPolicyFormProps)
           <span className="font-semibold">제재 시간(2차)</span>
           <input
             data-testid="guest-post-policy-ban-medium"
+            name="banDurationHoursMedium"
             type="number"
             min={1}
             max={24 * 365}
@@ -267,6 +283,7 @@ export function GuestPostPolicyForm({ initialPolicy }: GuestPostPolicyFormProps)
           <span className="font-semibold">제재 시간(3차)</span>
           <input
             data-testid="guest-post-policy-ban-long"
+            name="banDurationHoursLong"
             type="number"
             min={1}
             max={24 * 365}
@@ -293,6 +310,8 @@ export function GuestPostPolicyForm({ initialPolicy }: GuestPostPolicyFormProps)
               <input
                 type="checkbox"
                 className="accent-[#3567b5]"
+                name="blockedPostTypes"
+                value={type}
                 data-testid={`guest-post-policy-blocked-type-${type}`}
                 checked={blockedPostTypes.includes(type)}
                 onChange={() => toggleType(type)}
@@ -308,8 +327,7 @@ export function GuestPostPolicyForm({ initialPolicy }: GuestPostPolicyFormProps)
       <div className="flex flex-wrap items-center gap-2">
         <button
           data-testid="guest-post-policy-submit"
-          type="button"
-          onClick={handleSubmit}
+          type="submit"
           disabled={isPending}
           className="tp-btn-primary px-4 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-70"
         >
@@ -317,8 +335,12 @@ export function GuestPostPolicyForm({ initialPolicy }: GuestPostPolicyFormProps)
         </button>
       </div>
 
-      {message ? <p data-testid="guest-post-policy-success" className="text-xs text-emerald-700">{message}</p> : null}
-      {error ? <p className="text-xs text-rose-600">{error}</p> : null}
-    </div>
+      {result?.ok ? (
+        <p data-testid="guest-post-policy-success" className="text-xs text-emerald-700">
+          비회원 작성 정책이 저장되었습니다.
+        </p>
+      ) : null}
+      {result && !result.ok ? <p className="text-xs text-rose-600">{result.message}</p> : null}
+    </form>
   );
 }
