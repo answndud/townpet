@@ -1069,3 +1069,24 @@
   - `버그`: runner child process 실행 방식, redirecting `/feed` 측정 경로. 둘 다 즉시 수정하고 회귀 테스트를 추가했다.
   - `보류`: security-env WARN 7건은 로컬 env 기준이라 production strict/control-plane 상세 확인에는 운영 secret이 필요하다.
   - 다음 작업은 최근 완료 항목과 보류 조건을 기준으로 남은 런치 갭 중 다음 후보를 재평가하는 것이다.
+
+### 2026-04-26 | 런치 갭 다음 후보 재평가
+- 완료일: `2026-04-26`
+- 배경:
+  - 운영 evidence 첫 실행은 원격 health, prewarm, latency 기준 PASS로 닫혔다.
+  - 남은 security-env WARN은 로컬 env 기준이며 production strict/control-plane 상세 확인은 운영 secret이 필요한 보류 조건이다.
+  - Phase 2 대형 기능 중 결제/마켓/케어/지도는 운영 리스크가 커서 아직 바로 열지 않는 것이 맞다.
+- 변경내용:
+  - 최근 완료 항목과 Phase 2 로드맵을 기준으로 다음 구현 후보를 비교했다.
+  - 지금 코드로 진척 가능한 후보를 Phase 2A `검색/개인화/운영 증폭`으로 좁혔다.
+  - 개인화/광고 운영 튜닝 루프는 이미 Cycle A로 완료했으므로, 다음은 검색 품질 운영 루프가 맞다고 판단했다.
+  - active plan을 `Search Quality Phase 2 zero-result 운영 루프 고정`으로 전환했다.
+- 코드문서:
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+  - [docs/COMPLETED.md](./COMPLETED.md)
+  - [business/product/Phase2_로드맵_PRD.md](../business/product/Phase2_로드맵_PRD.md)
+- 검증:
+  - 문서 변경에 한정해 `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md` 동기화를 확인했다.
+- 결과:
+  - 다음 작업은 `/admin/ops`의 zero-result/low-result 검색 품질 신호를 운영자가 바로 개선 후보로 분류할 수 있게 고정하는 것이다.

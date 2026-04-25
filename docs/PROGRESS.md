@@ -14,12 +14,17 @@
 - Cycle A 완료 후 다음 후보 재평가를 완료했다
 - 운영 10분 루틴 로컬 evidence runner 보강을 완료했다
 - 운영 evidence 첫 실행 및 결과 triage를 완료했다
-- 다음 작업: 런치 갭 다음 후보 재평가
+- 런치 갭 다음 후보 재평가를 완료했다
+- 다음 작업: Search Quality Phase 2 zero-result 운영 루프 고정
 
 ## 열린 blocker
 - 없음. 기존 `db:restore:local` local test account count mismatch는 managed account count 검증으로 수정했고 restore 통과를 확인했다.
 
 ## 직전 검증
+- 런치 갭 다음 후보 재평가:
+  - 확인: 운영 evidence는 원격 health/prewarm/latency 기준 PASS였고, 남은 security-env WARN은 운영 secret이 필요한 보류 조건이다.
+  - 비교: 결제/마켓/케어/지도보다 Phase 2A 검색/개인화/운영 증폭이 현재 우선순위와 리스크에 맞다.
+  - 결정: 다음 작업은 `Search Quality Phase 2` 중 zero-result/low-result 운영 루프를 `/admin/ops`와 테스트로 고정하는 것이다.
 - 운영 evidence 첫 실행 및 결과 triage:
   - 실행: `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm -C app ops:evidence`
   - 정상: health 200, prewarm 7 targets 200, latency steady-state 전 항목 threshold PASS.
@@ -53,9 +58,9 @@
 - 과거 Phase 0-5와 checkpoint/push 상세도 [COMPLETED.md](./COMPLETED.md)에 보관했다.
 
 ## 다음 액션
-1. 최근 완료 항목과 evidence 보류 조건을 확인한다.
-2. 남은 런치 갭 후보를 현재 우선순위 기준으로 비교한다.
-3. 다음 active plan을 하나로 좁힌다.
+1. `/admin/ops` 검색 품질 신호와 query/test 구조를 확인한다.
+2. zero-result/low-result 후보 표시 기준과 개선 액션을 점검한다.
+3. 테스트를 먼저 추가하고 필요한 UI/query/문서를 수정한다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)
