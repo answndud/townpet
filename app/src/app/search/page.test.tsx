@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
-import SearchPage, { buildFeedSearchRedirectPath } from "@/app/search/page";
+import SearchPage from "@/app/search/page";
+import { buildFeedSearchRedirectPath } from "@/lib/feed-search-redirect";
 
 const mockRedirect = vi.fn();
 
