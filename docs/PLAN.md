@@ -26,17 +26,17 @@
 
 ## Active Plan
 
-### Care Request Templates preflight
+### Care Request M1 구조화 요청 생성/조회
 
 상태: `pending`
 
-- 목표: 돌봄/구인구직 요청을 구현하기 전에 정책, 구조화 필드, 상태 모델, 권한/감사 로그 범위를 확정한다.
-- 범위: 기존 post type/schema/service/UI 현황, 돌봄/구인구직 정책, local matching 필드, 신규 유저/게스트 제한, 신고/차단/감사 로그 연결 지점.
-- 제외: 실제 케어 기능 구현, 예약/결제/보험/외부 계약 자동화, 원격 운영 secret이 필요한 production strict 확인.
-- 완료 기준: `CARE_REQUEST`를 별도 모델로 둘지 기존 post 구조 위에 relation으로 둘지 결정하고, M1 구현 범위와 테스트 기준을 `PROGRESS/COMPLETED`에 남긴다.
+- 목표: `CARE_REQUEST` 게시글을 구조화 relation과 함께 생성하고 feed/detail에서 읽게 만든다.
+- 범위: Prisma schema/migration, Zod validation, post create service, structured search/moderation text, feed/detail query include, 작성 폼과 read UI, unit tests.
+- 제외: 지원자 매칭, 상태 전환 액션, 결제/예약/보험, 외부 계약 자동화, 실시간 위치 추적.
+- 완료 기준: 돌봄 요청이 일반 자유글로만 저장되지 않고, 게스트/신규 유저/연락처 제한 failure-path와 생성/조회 테스트가 통과한다.
 
 ## 다음 실행 순서
 
-1. `business/policies/구인구직_운영규칙.md`와 케어 IA/사용자 플로우를 현재 코드 구조와 비교한다.
-2. `PostType`, structured relation, write policy, report/moderation log 경계를 확인한다.
-3. 케어 M1 구현 단위와 failure-path test 목록을 확정한다.
+1. `PostType.CARE_REQUEST`, `CareRequest`, `CareRequestStatus`, `CareType` schema와 migration을 추가한다.
+2. validation/service/query/UI에 돌봄 요청 구조화 필드를 연결한다.
+3. 생성/조회와 게스트/신규 유저/연락처 제한 테스트를 추가하고 품질 게이트를 실행한다.

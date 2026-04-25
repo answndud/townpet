@@ -9,7 +9,8 @@
 - 개인화/광고 운영 판단 기준, 관리자 진단 UX, 광고/추천 정책 분리, 품종 라운지 write gate 점검을 완료했다
 - 운영 evidence runner, Search Quality Phase 2, Market State Machine preflight/M1/M2를 완료했다
 - Social Dev Onboarding Smoke 안정화와 Launch Gap 다음 후보 재평가를 완료했다
-- 다음 작업: Care Request Templates preflight
+- Care Request Templates preflight를 완료했다
+- 다음 작업: Care Request M1 구조화 요청 생성/조회
 
 ## 열린 blocker
 - 없음. `test:e2e:smoke` social-dev 온보딩 blocker는 callback side effect 차단과 온보딩 대기 안정화로 해결했고 smoke 통과를 확인했다.
@@ -25,6 +26,11 @@
   - 비교: 결제는 분쟁/정산/법적 고지 선행이 필요하고, 카카오맵은 외부 API와 장소 canonicalization 의존이 남아 있다.
   - 결정: 다음 후보는 `Care Request Templates preflight`이며, 바로 구현하지 않고 돌봄/구인구직 정책, 구조화 relation, 상태/감사 로그 경계를 먼저 확정한다.
   - 보류: production strict/control-plane 확인과 실 OAuth 계정 검증은 운영 secret이 필요한 별도 보류 조건으로 유지한다.
+- Care Request Templates preflight:
+  - 확인: 현재 schema에는 케어 전용 `PostType`이나 relation이 없고, 위험 작성 제한은 마켓/모임/실종 등 기존 타입에 묶여 있다.
+  - 결정: M1은 `PostType.CARE_REQUEST` + `CareRequest` relation으로 구현해 기존 feed/search/detail/comment/report/auto-hide 경로를 재사용한다.
+  - 정책: `LOCAL` 전용, 게스트 작성 차단, 신규 유저 제한, 연락처/링크 제한, 금칙어 검사를 구조화 필드까지 포함한다.
+  - 보류: 지원자 매칭, 상태 전환, 증빙, 결제/예약/보험은 M2 이후로 분리한다.
 - Market Listing M2 상태 전환 액션:
   - 결정: 별도 audit 모델을 만들지 않고 기존 `ModerationActionLog`에 `MARKET_STATUS_CHANGED` action을 추가했다.
   - 추가: 작성자는 `AVAILABLE/RESERVED`에서 예약/판매완료/취소와 예약 해제를 수행할 수 있고, moderator/admin은 모든 상태 override가 가능하다.
@@ -34,9 +40,9 @@
 - 이전 상세 검증은 [COMPLETED.md](./COMPLETED.md)에 보관했다.
 
 ## 다음 액션
-1. `business/policies/구인구직_운영규칙.md`와 케어 IA/사용자 플로우를 현재 코드 구조와 비교한다.
-2. `PostType`, structured relation, write policy, report/moderation log 경계를 확인한다.
-3. 케어 M1 구현 단위와 failure-path test 목록을 확정한다.
+1. `PostType.CARE_REQUEST`, `CareRequest`, `CareRequestStatus`, `CareType` schema와 migration을 추가한다.
+2. validation/service/query/UI에 돌봄 요청 구조화 필드를 연결한다.
+3. 생성/조회와 게스트/신규 유저/연락처 제한 테스트를 추가하고 품질 게이트를 실행한다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)

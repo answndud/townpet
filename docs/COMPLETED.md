@@ -1309,3 +1309,28 @@
 - 결과:
   - 다음 작업은 `Care Request Templates preflight`다.
   - 케어 M1 구현 전에 돌봄 요청을 별도 모델로 둘지 기존 post 구조 위 relation으로 둘지 결정하고, 신규 유저/게스트 제한과 신고/감사 로그 테스트 기준을 확정한다.
+
+### 2026-04-26 | Care Request Templates preflight
+- 완료일: `2026-04-26`
+- 배경:
+  - Phase 2C의 돌봄/구인구직 요청은 로컬 매칭, 연락처 유도, 사기/노쇼 위험이 있는 고위험 작성 흐름이다.
+  - 현재 코드에는 케어 전용 `PostType`이나 구조화 relation이 없고, 게스트/신규 유저 제한은 기존 게시글 타입 목록에만 연결되어 있다.
+  - 마켓 M1/M2에서 검증한 `Post` + structured relation + 상태 로그 패턴을 재사용할 수 있다.
+- 변경내용:
+  - 돌봄/구인구직 정책 초안에 M1/M2 경계를 추가했다.
+  - M1은 `PostType.CARE_REQUEST` + `CareRequest` relation으로 구현하기로 결정했다.
+  - M1 필드는 `careType`, `startsAt`, `endsAt`, `locationNote`, `petNote`, `requirements`, `rewardAmount`, `isUrgent`, 기본 상태 `OPEN`으로 잡았다.
+  - 정책 적용 지점은 `LOCAL` 전용, 게스트 작성 차단, 신규 유저 제한, 연락처/외부 링크 제한, 금칙어 검사, 신고/자동숨김 재사용으로 정리했다.
+  - 지원자 매칭, 상태 전환, 증빙, 결제/예약/보험은 M2 이후로 분리했다.
+- 코드문서:
+  - [business/policies/구인구직_운영규칙.md](../business/policies/구인구직_운영규칙.md)
+  - [business/product/Phase2_로드맵_PRD.md](../business/product/Phase2_로드맵_PRD.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+  - [docs/COMPLETED.md](./COMPLETED.md)
+- 검증:
+  - 현재 schema의 `PostType`, `Post` structured relation, `Report`, `ModerationActionLog`, guest/new-user write policy 경계를 확인했다.
+  - 문서 변경에 한정해 `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`, `business/policies/구인구직_운영규칙.md`, `business/product/Phase2_로드맵_PRD.md` 동기화를 확인했다.
+- 결과:
+  - 다음 작업은 `Care Request M1 구조화 요청 생성/조회`다.
+  - 첫 구현은 schema/migration, Zod validation, post create service, structured search/moderation text, feed/detail query include, 작성 폼/read UI, 생성/조회와 failure-path tests로 자른다.
