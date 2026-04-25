@@ -38,12 +38,19 @@
   - 발견: `quality:check`에서 `/app/search/page.tsx` named export가 Next page export 계약을 위반해 typecheck 실패.
   - 수정: 검색 redirect helper를 `src/lib`로 분리하고 `/search`, `/search/guest` page는 허용 export만 남겼다.
   - 통과: `corepack pnpm -C app test -- src/app/search/page.test.tsx src/app/search/guest/page.test.tsx`, `corepack pnpm -C app typecheck`, `corepack pnpm -C app quality:check`.
+- 인증/소셜 계정 연결 e2e:
+  - 발견: `/profile` 로그인 수단 섹션에 소셜 연결/해제 버튼이 없어 `profile-social-account-linking` 3개 시나리오가 실패했다.
+  - 수정: 기존 social account link/unlink API를 프로필 UI에 연결하고, 유일한 로그인 수단 해제 방지를 화면에 노출했다.
+  - 통과: `corepack pnpm -C app test:e2e:auth`, `corepack pnpm -C app quality:check`.
+- 브라우저 smoke:
+  - 준비: 로컬 Postgres 기동, `corepack pnpm -C app db:restore:local`, `ENABLE_SOCIAL_DEV_LOGIN=1 corepack pnpm -C app dev`.
+  - 통과: `PLAYWRIGHT_SKIP_WEBSERVER=1 ENABLE_SOCIAL_DEV_LOGIN=1 corepack pnpm -C app exec playwright test e2e/feed-loading-skeleton.spec.ts e2e/kakao-login-entry.spec.ts e2e/naver-login-entry.spec.ts e2e/social-onboarding-flow.spec.ts e2e/post-editor-toolbar.spec.ts --project=chromium --workers=1`.
 - 과거 Phase 0-5와 checkpoint/push 상세는 [COMPLETED.md](./COMPLETED.md)에 보관했다.
 
 ## 다음 액션
-1. 필요 시 `corepack pnpm -C app db:restore:local` 후 `corepack pnpm -C app dev`로 로컬 서버를 준비한다.
-2. `/api/health`와 `/feed/guest` 게스트 피드/검색 클릭 흐름부터 브라우저로 확인한다.
-3. 이후 회원 피드/검색/인증, 게시글 액션, 신고/정책, 알림/마이페이지, 관리자 운영 화면 순서로 진행한다.
+1. `/feed/guest` 게스트 피드/검색 클릭 흐름을 브라우저로 확인한다.
+2. `search-and-board-filtering`, `guest-post-management`, `post-comment-auth-sync` 순서로 피드/검색/게시글 액션 e2e를 실행한다.
+3. 이후 신고/정책, 알림/마이페이지, 관리자 운영 화면 순서로 진행한다.
 4. 결과는 기능별 `정상 / 버그 / 보류`로 기록하고, 버그는 재현 URL/단계/원인 후보/수정 우선순위를 남긴다.
 
 ## Archive Pointer
