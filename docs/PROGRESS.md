@@ -1,6 +1,6 @@
 # PROGRESS.md
 
-기준일: 2026-04-24
+기준일: 2026-04-25
 완료 이력 archive: [COMPLETED.md](./COMPLETED.md)
 
 ## 현재 상태 스냅샷
@@ -15,7 +15,7 @@
 - 품종 기반 개인화/광고/커뮤니티 PRD 착수를 완료했다
 - 피드 컨트롤 정렬/기간 클릭 체감 미적용 버그를 수정했다
 - 검색 진입점을 헤더/전용 페이지에서 피드 하단 검색으로 통합했다
-- 다음 작업: 개인화 운영 판단 기준 문서화
+- 다음 작업: 로컬 핵심 기능 동작 검증
 
 ## 열린 blocker
 - 없음. 기존 `db:restore:local` local test account count mismatch는 managed account count 검증으로 수정했고 restore 통과를 확인했다.
@@ -37,8 +37,11 @@
 - 과거 Phase 0-5와 checkpoint/push 상세는 [COMPLETED.md](./COMPLETED.md)에 보관했다.
 
 ## 다음 액션
-1. `/admin/personalization` 지표별 운영 판정 기준을 문서화한다.
-2. zero-data, 낮은 CTR, audience 쏠림 상태에서 필요한 UI copy/state 보강 범위를 A2 후보로 분리한다.
+1. `corepack pnpm -C app quality:check`로 로컬 검증 전 기본 품질 게이트를 확인한다.
+2. 필요 시 `corepack pnpm -C app db:restore:local` 후 `corepack pnpm -C app dev`로 로컬 서버를 준비한다.
+3. 게스트/회원 피드와 검색, 게시글 액션, 신고/정책, 알림/마이페이지, 관리자 운영 화면 순서로 실제 클릭 동작을 확인한다.
+4. 결과는 기능별 `정상 / 버그 / 보류`로 기록하고, 버그는 재현 URL/단계/원인 후보/수정 우선순위를 남긴다.
+5. 개인화 운영 판단 기준 문서화는 로컬 핵심 기능 검증 완료 후 재개한다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)

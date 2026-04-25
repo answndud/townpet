@@ -1,6 +1,6 @@
 # PLAN.md
 
-기준일: 2026-04-24
+기준일: 2026-04-25
 목표: TownPet를 기능/운영/품질 기준에서 "완성도 높은 커뮤니티" 상태로 끌어올린다.
 완료 이력 archive: [COMPLETED.md](./COMPLETED.md)
 
@@ -26,16 +26,21 @@
 
 ## Active Plan
 
-### 개인화 운영 판단 기준 문서화
+### 로컬 핵심 기능 동작 검증
 
 상태: `pending`
 
-- 목표: `/admin/personalization` 지표를 보고 운영자가 어떤 조치를 할지 판정 기준을 문서화한다.
-- 범위: product/operations 문서와 필요 시 관리자 화면 copy만 다루고 추천 로직은 변경하지 않는다.
-- 사용할 skill 순서: `cycle-kickoff` -> `policy-abuse-gate` -> 필요 시 `impeccable`.
-- 완료 기준: CTR/ad CTR/audience concentration/zero-data 판정 기준, 검증 명령, 다음 UI 보강 범위 확정.
+- 목표: 게스트/회원 기준 핵심 기능이 로컬 브라우저에서 실제로 동작하는지 확인한다.
+- 범위: 피드, 검색, 인증, 글쓰기, 댓글, 좋아요/북마크, 신고, 알림, 관리자 운영 화면.
+- 제외: 결제/마켓/카카오맵/실 OAuth 실계정 검증, 운영 배포 smoke.
+- 기본 순서: `quality:check` -> local data/server 준비 -> 게스트 피드/검색 -> 회원 피드/검색/인증 -> 게시글 액션 -> 신고/정책 -> 알림/마이페이지 -> 관리자/운영 화면.
+- 자동화 매핑: `test:e2e:smoke`, `test:e2e:auth`, `search-and-board-filtering`, `guest-post-management`, `post-comment-auth-sync`, `notification-filter-controls`, `admin-new-user-policy`.
+- 완료 기준: 기능별 결과를 `정상 / 버그 / 보류`로 분류하고, 버그는 재현 URL, 재현 단계, 원인 후보, 수정 우선순위를 남긴다.
 
 ## 다음 실행 순서
 
-1. `business/product/품종_개인화_광고_커뮤니티_실행계획.md`의 A1 범위를 운영 문서로 구체화한다.
-2. `/admin/personalization` UI 보강이 필요한 copy/state를 별도 A2 후보로 분리한다.
+1. `corepack pnpm -C app quality:check`로 기본 품질 게이트를 먼저 확인한다.
+2. 필요 시 `corepack pnpm -C app db:restore:local` 후 `corepack pnpm -C app dev`로 로컬 서버를 띄운다.
+3. `/feed/guest`, `/feed`, 글쓰기/댓글/신고/알림/관리자 흐름을 순서대로 브라우저와 Playwright로 검증한다.
+4. 발견 결과를 `docs/PROGRESS.md`에 기능별 `정상 / 버그 / 보류`로 기록한다.
+5. 보류: 개인화 운영 판단 기준 문서화는 로컬 핵심 기능 검증 완료 후 재개한다.
