@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const FEED_PERSONALIZATION_POLICY_KEY = "feed_personalization_policy_v1";
+export const FEED_PERSONALIZATION_AD_SIGNAL_CAP_MAX = 0.08;
 
 export const DEFAULT_FEED_PERSONALIZATION_POLICY = {
   recencyDecayStep: 0.12,
@@ -25,7 +26,7 @@ export const feedPersonalizationPolicySchema = z.object({
   clickSignalMultiplier: z.coerce.number().min(0).max(3),
   clickSignalCap: z.coerce.number().min(0).max(0.3),
   adSignalMultiplier: z.coerce.number().min(0).max(3),
-  adSignalCap: z.coerce.number().min(0).max(0.3),
+  adSignalCap: z.coerce.number().min(0).max(FEED_PERSONALIZATION_AD_SIGNAL_CAP_MAX),
   dwellSignalMultiplier: z.coerce.number().min(0).max(3),
   dwellSignalCap: z.coerce.number().min(0).max(0.35),
   bookmarkSignalMultiplier: z.coerce.number().min(0).max(3),

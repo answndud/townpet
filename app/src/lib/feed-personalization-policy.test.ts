@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  FEED_PERSONALIZATION_AD_SIGNAL_CAP_MAX,
   DEFAULT_FEED_PERSONALIZATION_POLICY,
   normalizeFeedPersonalizationPolicy,
 } from "@/lib/feed-personalization-policy";
@@ -26,5 +27,18 @@ describe("feed personalization policy", () => {
       recencyDecayStep: 0.08,
       bookmarkSignalMultiplier: 1.25,
     });
+  });
+
+  it("keeps advertising signal cap below direct ranking-purchase strength", () => {
+    expect(FEED_PERSONALIZATION_AD_SIGNAL_CAP_MAX).toBeLessThan(
+      DEFAULT_FEED_PERSONALIZATION_POLICY.clickSignalCap,
+    );
+
+    expect(
+      normalizeFeedPersonalizationPolicy({
+        ...DEFAULT_FEED_PERSONALIZATION_POLICY,
+        adSignalCap: 0.3,
+      }),
+    ).toEqual(DEFAULT_FEED_PERSONALIZATION_POLICY);
   });
 });

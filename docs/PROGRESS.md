@@ -18,12 +18,18 @@
 - 로컬 핵심 기능 동작 검증과 발견 버그 수정을 완료했다
 - 개인화 운영 판단 기준 문서화를 완료했다
 - 관리자 개인화 진단 UX 보강을 완료했다
-- 다음 작업: 광고/추천 정책 분리 증거 보강
+- 광고/추천 정책 분리 증거 보강을 완료했다
+- 다음 작업: 품종 라운지 고위험 write gate 점검
 
 ## 열린 blocker
 - 없음. 기존 `db:restore:local` local test account count mismatch는 managed account count 검증으로 수정했고 restore 통과를 확인했다.
 
 ## 직전 검증
+- 광고/추천 정책 분리 증거 보강:
+  - 고정: `FEED_PERSONALIZATION_AD_SIGNAL_CAP_MAX`를 추가하고 광고 신호 cap을 0.08 이하로 제한했다.
+  - 테스트: `AD_IMPRESSION`은 추천 랭킹 행동 신호가 아니며, `AD_CLICK`도 cap 안의 약한 보조 신호라 최신/선호 게시글을 직접 구매해 뒤집지 못함을 검증했다.
+  - 연결: 운영 판단 기준과 실행계획 A3에 sponsored/partner는 라벨과 frequency cap이 있는 별도 후보로만 다룬다는 기준을 남겼다.
+  - 통과: `feed-personalization-policy`, `post.queries`, `policy.queries` 관련 테스트, `lint`, `typecheck`, `quality:check`, `docs:refresh:check`.
 - 관리자 개인화 진단 UX 보강:
   - 추가: `/admin/personalization`에 데이터 상태, Feed CTR, Ad CTR, audience 쏠림 진단 카드를 추가했다.
   - 연결: 진단별 다음 행동을 `/admin/ops`, `/admin/policies`, `/admin/breeds`로 바로 이동하게 했다.
@@ -56,9 +62,9 @@
 - 과거 Phase 0-5와 checkpoint/push 상세는 [COMPLETED.md](./COMPLETED.md)에 보관했다.
 
 ## 다음 액션
-1. 개인화 추천 boost 계산과 광고 신호 cap 테스트를 확인한다.
-2. 광고 클릭/노출이 추천 랭킹을 직접 구매하지 않는 회귀 테스트를 추가한다.
-3. 관련 unit test, `lint`, `typecheck`, `quality:check`를 검증한다.
+1. 품종 라운지 groupbuy 작성 route/action/service와 현재 테스트를 확인한다.
+2. 신규유저 제한, 링크/연락처 제한, rate-limit, 신고/자동숨김 정책 재사용 여부를 검증한다.
+3. 누락된 write gate나 신고 audit 증거를 테스트로 먼저 고정한다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)

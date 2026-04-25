@@ -1,7 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { PostScope, PostType } from "@prisma/client";
 
-import { DEFAULT_FEED_PERSONALIZATION_POLICY } from "@/lib/feed-personalization-policy";
+import {
+  DEFAULT_FEED_PERSONALIZATION_POLICY,
+  FEED_PERSONALIZATION_AD_SIGNAL_CAP_MAX,
+} from "@/lib/feed-personalization-policy";
 
 vi.mock("@/lib/env", async () => {
   const actual = await vi.importActual<typeof import("@/lib/env")>("@/lib/env");
@@ -953,6 +956,158 @@ describe("post queries", () => {
     });
 
     expect(result.items[0]?.id).toBe("p1");
+    expect(result.nextCursor).toBe("p3");
+  });
+
+  it("does not let ad impressions buy personalized feed ranking", async () => {
+    const now = Date.now();
+    mockPrisma.post.findMany.mockResolvedValue([
+      {
+        id: "p1",
+        type: PostType.FREE_BOARD,
+        petTypeId: "dog-community",
+        author: { id: "a1" },
+        createdAt: new Date(now - 72 * 3_600_000),
+        likeCount: 0,
+        commentCount: 0,
+        viewCount: 0,
+      },
+      {
+        id: "p2",
+        type: PostType.FREE_BOARD,
+        petTypeId: "dog-community",
+        author: { id: "a2" },
+        createdAt: new Date(now - 1 * 3_600_000),
+        likeCount: 0,
+        commentCount: 0,
+        viewCount: 0,
+      },
+      {
+        id: "p3",
+        type: PostType.FREE_BOARD,
+        petTypeId: "cat-community",
+        author: { id: "a3" },
+        createdAt: new Date(now - 80 * 3_600_000),
+        likeCount: 0,
+        commentCount: 0,
+        viewCount: 0,
+      },
+    ]);
+    mockPrisma.feedPersonalizationEventLog.findMany.mockResolvedValue([
+      {
+        event: "AD_IMPRESSION",
+        audienceKey: "MALTESE",
+        breedCode: "MALTESE",
+        post: null,
+      },
+    ]);
+    mockPrisma.userPetTypePreference.findMany.mockResolvedValue([
+      { petTypeId: "dog-community" },
+    ]);
+    mockPrisma.pet.findMany
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([
+        {
+          userId: "a1",
+          species: "DOG",
+          breedCode: "MALTESE",
+          breedLabel: "말티즈",
+          sizeClass: "SMALL",
+          lifeStage: "ADULT",
+        },
+      ]);
+
+    const result = await listPosts({
+      limit: 2,
+      scope: PostScope.GLOBAL,
+      personalized: true,
+      viewerId: "viewer-1",
+    });
+
+    expect(mockPrisma.feedPersonalizationEventLog.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          event: { in: ["POST_CLICK", "AD_CLICK"] },
+        }),
+      }),
+    );
+    expect(result.items[0]?.id).toBe("p2");
+    expect(result.nextCursor).toBe("p3");
+  });
+
+  it("keeps ad click reinforcement below the weak cap so ranking cannot be purchased", async () => {
+    const now = Date.now();
+    mockPrisma.siteSetting.findUnique.mockResolvedValue({
+      value: {
+        ...DEFAULT_FEED_PERSONALIZATION_POLICY,
+        adSignalMultiplier: 3,
+        adSignalCap: FEED_PERSONALIZATION_AD_SIGNAL_CAP_MAX,
+      },
+    });
+    mockPrisma.post.findMany.mockResolvedValue([
+      {
+        id: "p1",
+        type: PostType.FREE_BOARD,
+        petTypeId: "dog-community",
+        author: { id: "a1" },
+        createdAt: new Date(now - 72 * 3_600_000),
+        likeCount: 0,
+        commentCount: 0,
+        viewCount: 0,
+      },
+      {
+        id: "p2",
+        type: PostType.FREE_BOARD,
+        petTypeId: "dog-community",
+        author: { id: "a2" },
+        createdAt: new Date(now - 1 * 3_600_000),
+        likeCount: 0,
+        commentCount: 0,
+        viewCount: 0,
+      },
+      {
+        id: "p3",
+        type: PostType.FREE_BOARD,
+        petTypeId: "cat-community",
+        author: { id: "a3" },
+        createdAt: new Date(now - 80 * 3_600_000),
+        likeCount: 0,
+        commentCount: 0,
+        viewCount: 0,
+      },
+    ]);
+    mockPrisma.feedPersonalizationEventLog.findMany.mockResolvedValue(
+      Array.from({ length: 16 }, () => ({
+        event: "AD_CLICK",
+        audienceKey: "MALTESE",
+        breedCode: "MALTESE",
+        post: null,
+      })),
+    );
+    mockPrisma.userPetTypePreference.findMany.mockResolvedValue([
+      { petTypeId: "dog-community" },
+    ]);
+    mockPrisma.pet.findMany
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([
+        {
+          userId: "a1",
+          species: "DOG",
+          breedCode: "MALTESE",
+          breedLabel: "말티즈",
+          sizeClass: "SMALL",
+          lifeStage: "ADULT",
+        },
+      ]);
+
+    const result = await listPosts({
+      limit: 2,
+      scope: PostScope.GLOBAL,
+      personalized: true,
+      viewerId: "viewer-1",
+    });
+
+    expect(result.items[0]?.id).toBe("p2");
     expect(result.nextCursor).toBe("p3");
   });
 
