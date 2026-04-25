@@ -45,13 +45,18 @@
 - 브라우저 smoke:
   - 준비: 로컬 Postgres 기동, `corepack pnpm -C app db:restore:local`, `ENABLE_SOCIAL_DEV_LOGIN=1 corepack pnpm -C app dev`.
   - 통과: `PLAYWRIGHT_SKIP_WEBSERVER=1 ENABLE_SOCIAL_DEV_LOGIN=1 corepack pnpm -C app exec playwright test e2e/feed-loading-skeleton.spec.ts e2e/kakao-login-entry.spec.ts e2e/naver-login-entry.spec.ts e2e/social-onboarding-flow.spec.ts e2e/post-editor-toolbar.spec.ts --project=chromium --workers=1`.
+- 피드/검색/게시글 액션 e2e:
+  - 발견: `search-and-board-filtering`이 이전 `/search` 전용 페이지와 user cleanup 전제를 사용해 현재 feed 검색 구조 및 seed 댓글 FK와 충돌했다.
+  - 수정: legacy `/search`는 `/feed` 검색으로 수렴하는 기대값으로 바꾸고, 테스트 cleanup은 기존 seed user 삭제 대신 E2E post 정리에 한정했다.
+  - 발견: `post-comment-auth-sync`에서 로그아웃 후 재로그인 시 기존 post page 댓글 컴포저가 게스트 입력 상태에 머물렀다.
+  - 수정: auth-login sync가 강제 게스트 모드에서 복귀할 때 post page를 reload해 서버 인증 props를 다시 받게 했다.
+  - 통과: `search-and-board-filtering`, `guest-post-management`, `post-comment-auth-sync`, `corepack pnpm -C app quality:check`.
 - 과거 Phase 0-5와 checkpoint/push 상세는 [COMPLETED.md](./COMPLETED.md)에 보관했다.
 
 ## 다음 액션
-1. `/feed/guest` 게스트 피드/검색 클릭 흐름을 브라우저로 확인한다.
-2. `search-and-board-filtering`, `guest-post-management`, `post-comment-auth-sync` 순서로 피드/검색/게시글 액션 e2e를 실행한다.
-3. 이후 신고/정책, 알림/마이페이지, 관리자 운영 화면 순서로 진행한다.
-4. 결과는 기능별 `정상 / 버그 / 보류`로 기록하고, 버그는 재현 URL/단계/원인 후보/수정 우선순위를 남긴다.
+1. 신고/정책 e2e와 관련 관리자 신고 화면을 검증한다.
+2. 알림/마이페이지, 관리자 운영 화면 순서로 진행한다.
+3. 결과는 기능별 `정상 / 버그 / 보류`로 기록하고, 버그는 재현 URL/단계/원인 후보/수정 우선순위를 남긴다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)

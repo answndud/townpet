@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   getPostCommentViewerState,
   resolvePostCommentFetchGuestMode,
+  shouldReloadPostCommentSectionOnAuthLogin,
   syncPostCommentViewerState,
 } from "@/components/posts/post-comment-viewer-state";
 import { shouldAutoLoadPostComments } from "@/components/posts/post-comment-load-state";
@@ -67,6 +68,20 @@ describe("PostCommentSectionClient viewer sync", () => {
     expect(
       resolvePostCommentFetchGuestMode({
         initialForceGuestMode: false,
+        forcedGuestMode: false,
+      }),
+    ).toBe(false);
+  });
+
+  it("reloads on auth-login when server viewer props cannot be trusted", () => {
+    expect(
+      shouldReloadPostCommentSectionOnAuthLogin({
+        forcedGuestMode: true,
+      }),
+    ).toBe(true);
+
+    expect(
+      shouldReloadPostCommentSectionOnAuthLogin({
         forcedGuestMode: false,
       }),
     ).toBe(false);

@@ -45,3 +45,11 @@ export function syncPostCommentViewerState(
 
   return baseState;
 }
+
+export function shouldReloadPostCommentSectionOnAuthLogin({
+  forcedGuestMode,
+}: {
+  forcedGuestMode: boolean;
+}) {
+  return forcedGuestMode;
+}

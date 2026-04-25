@@ -17,6 +17,7 @@ import { PostCommentThread } from "@/components/posts/post-comment-thread";
 import {
   getPostCommentViewerState,
   resolvePostCommentFetchGuestMode,
+  shouldReloadPostCommentSectionOnAuthLogin,
   syncPostCommentViewerState,
 } from "@/components/posts/post-comment-viewer-state";
 
@@ -169,10 +170,18 @@ export function PostCommentSectionClient({
 
       if (payload.reason === "auth-login") {
         setForcedGuestMode(false);
+        if (
+          shouldReloadPostCommentSectionOnAuthLogin({
+            forcedGuestMode,
+          })
+        ) {
+          window.location.reload();
+          return;
+        }
         void reloadComments(page, { forceGuestMode: false });
       }
     });
-  }, [page, reloadComments]);
+  }, [baseViewerState.currentUserId, forcedGuestMode, page, reloadComments]);
 
   if (error && !comments) {
     return (
