@@ -26,18 +26,18 @@
 
 ## Active Plan
 
-### 관리자 개인화 진단 UX 보강
+### 광고/추천 정책 분리 증거 보강
 
 상태: `pending`
 
-- 목표: `/admin/personalization`에서 운영자가 빈 데이터, 저성과, 편향 위험을 바로 구분하게 한다.
-- 범위: 데이터 없음, 낮은 CTR, 특정 audience 쏠림 상태 문구와 다음 행동 링크.
-- 제외: 추천 알고리즘 변경, 광고 계약/과금, 품종 라운지 write gate.
-- 완료 기준: KPI 카드와 테이블이 운영 판단 기준 문서의 정상/주의/조치 상태를 표시하고, 모바일 폭에서도 읽힌다.
+- 목표: 광고 노출/클릭 신호가 커뮤니티 추천 랭킹을 직접 구매하지 않는다는 원칙을 회귀 테스트로 고정한다.
+- 범위: personalization policy helper/service tests, 추천 boost 계산 경계, 광고 cap 문서 연결.
+- 제외: 실제 광고 계약/과금, 광고 소재 관리 UI, 관리자 진단 UX 추가 확장.
+- 완료 기준: 광고 클릭/노출 신호는 cap 안의 약한 engagement 신호로만 반영되고, sponsored/partner 표면은 별도 후보라는 증거가 남는다.
 
 ## 다음 실행 순서
 
-1. `/admin/personalization`의 presenter/helper와 현재 테스트 구조를 확인한다.
-2. 운영 판단 기준 문서의 CTR/ad CTR/audience/zero-data 판정을 UI 상태로 매핑한다.
-3. 상태 문구와 `/admin/policies`, `/admin/breeds`, `/admin/ops` 다음 행동 링크를 추가한다.
-4. 관련 unit/e2e와 모바일 폭 표시를 검증한다.
+1. 개인화 추천 boost 계산과 광고 신호 cap 테스트를 확인한다.
+2. 광고 클릭/노출이 추천 랭킹을 직접 구매하지 않는 회귀 테스트를 추가한다.
+3. 필요하면 정책 문서와 helper명을 정리한다.
+4. 관련 unit test, `lint`, `typecheck`, `quality:check`를 검증한다.

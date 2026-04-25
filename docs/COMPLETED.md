@@ -903,3 +903,32 @@
   - A1 운영 판단 기준 문서화는 완료됐다.
   - 다음 작업은 `/admin/personalization`에서 이 기준을 빈 데이터, 저성과, 편향 위험 진단 UX로 보여주는 A2다.
   - 변경은 문서에 한정했고 앱 기능 로직, 추천 알고리즘, 관리자 UI는 변경하지 않았다.
+
+### 2026-04-25 | 관리자 개인화 진단 UX 보강
+- 완료일: `2026-04-25`
+- 배경:
+  - 운영 판단 기준은 문서화됐지만 `/admin/personalization` 화면은 숫자와 표만 보여 운영자가 빈 데이터, 저성과, audience 쏠림을 바로 구분하기 어려웠다.
+  - A2 완료 기준은 데이터 없음, 낮은 CTR, 특정 audience 쏠림 상태 문구와 다음 행동 링크를 화면에 노출하고 모바일 폭에서도 읽히게 하는 것이었다.
+- 변경내용:
+  - `buildPersonalizationDiagnostics` helper를 추가해 데이터 상태, Feed CTR, Ad CTR, audience 쏠림을 `정상 / 주의 / 조치 / 보류`로 판정한다.
+  - `/admin/personalization` 상단에 운영 진단 카드 4개를 추가하고, 각 카드에서 `/admin/ops`, `/admin/policies`, `/admin/breeds`, 30일 보기로 바로 이동하게 했다.
+  - 기간 필터 copy를 운영 기준 문서의 7/14/30일 판단 기준과 맞췄다.
+  - 큰 metric number와 긴 audience key가 모바일 폭에서 페이지 전체를 밀지 않도록 `min-w-0`, `break-words`, `break-all` 처리를 추가했다.
+  - 관리자 개인화 진단 e2e를 추가해 조치 상태와 모바일 폭 표시를 검증한다.
+- 코드문서:
+  - [app/src/lib/admin-personalization-diagnostics.ts](../app/src/lib/admin-personalization-diagnostics.ts)
+  - [app/src/lib/admin-personalization-diagnostics.test.ts](../app/src/lib/admin-personalization-diagnostics.test.ts)
+  - [app/src/app/admin/personalization/page.tsx](../app/src/app/admin/personalization/page.tsx)
+  - [app/e2e/admin-personalization-diagnostics.spec.ts](../app/e2e/admin-personalization-diagnostics.spec.ts)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app exec vitest run src/lib/admin-personalization-diagnostics.test.ts` 통과, 5 tests
+  - `corepack pnpm -C app test:e2e -- e2e/admin-personalization-diagnostics.spec.ts --project=chromium` 통과, 2 tests
+  - `corepack pnpm -C app lint` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `corepack pnpm -C app quality:check` 통과, 203 files / 953 tests
+- 결과:
+  - `/admin/personalization`은 이제 숫자 요약뿐 아니라 운영 기준별 다음 행동을 같이 보여준다.
+  - 모바일 폭에서 진단 카드와 긴 audience key가 페이지 가로 overflow를 만들지 않는 것을 e2e로 확인했다.
+  - 다음 작업은 광고/추천 정책 분리 증거 보강이다.
