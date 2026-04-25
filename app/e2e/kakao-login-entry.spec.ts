@@ -2,6 +2,9 @@ import { expect, test } from "@playwright/test";
 
 test.describe("kakao login entry", () => {
   test("shows kakao button and starts kakao sign-in request", async ({ page }) => {
+    await page.route("**/api/auth/callback/social-dev**", (route) =>
+      route.fulfill({ status: 204, body: "" }),
+    );
     await page.goto("/login?next=%2Fonboarding&devShowKakao=1");
     const kakaoButton = page.getByRole("button", { name: "카카오로 로그인" });
     await expect(kakaoButton).toBeVisible();

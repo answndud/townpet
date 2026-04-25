@@ -26,17 +26,17 @@
 
 ## Active Plan
 
-### Social Dev Onboarding Smoke 안정화
+### Launch Gap 다음 후보 재평가
 
 상태: `pending`
 
-- 목표: `test:e2e:smoke`에서 카카오 social-dev 온보딩이 간헐적으로 `/login?next=/onboarding`에 머물거나 프로필 저장 실패로 끝나는 문제를 재현/수정한다.
-- 범위: social-dev 로그인 버튼, NextAuth credentials callback, 온보딩 nickname 저장 e2e 안정성, 테스트 데이터 reset.
-- 제외: 실제 카카오/네이버 OAuth 실계정 검증, 운영 배포 smoke.
-- 완료 기준: `corepack pnpm -C app test:e2e:smoke`가 로컬에서 통과하고 실패 원인이 unit/e2e로 고정된다.
+- 목표: 마켓 M1/M2와 smoke 안정화 완료 후 남은 런치 갭을 다시 비교해 다음 구현 후보를 정한다.
+- 범위: 최근 완료 항목, 열린 blocker, Phase 2 roadmap, 운영/보안 보류 조건 재평가.
+- 제외: 새 기능 구현, 원격 운영 secret이 필요한 production strict 확인.
+- 완료 기준: 다음 active plan을 하나로 줄이고, 보류 조건과 선택 이유를 `PROGRESS/COMPLETED`에 남긴다.
 
 ## 다음 실행 순서
 
-1. `social-onboarding-flow.spec.ts` 실패 컨텍스트와 social-dev credentials callback 로그를 확인한다.
-2. 카카오/네이버 병렬 실행 시 세션/테스트 계정 reset 충돌 여부를 분리 테스트로 검증한다.
-3. 원인에 맞춰 로그인 시작 또는 nickname 저장 테스트/코드를 보강하고 smoke 전체를 재실행한다.
+1. `COMPLETED.md`의 최근 완료 항목과 `PROGRESS.md` blocker를 비교한다.
+2. Phase 2 roadmap과 현재 운영 리스크를 다시 본다.
+3. 다음 작업을 문서/테스트/기능 중 하나로 확정한다.

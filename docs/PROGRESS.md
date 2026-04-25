@@ -21,12 +21,18 @@
 - Market State Machine Phase 2 preflight를 완료했다
 - Market Listing M1 구조화 생성/조회를 완료했다
 - Market Listing M2 상태 전환 액션을 완료했다
-- 다음 작업: Social Dev Onboarding Smoke 안정화
+- Social Dev Onboarding Smoke 안정화를 완료했다
+- 다음 작업: Launch Gap 다음 후보 재평가
 
 ## 열린 blocker
-- `test:e2e:smoke`의 카카오 social-dev 온보딩이 `/login?next=/onboarding`에 머물거나 프로필 저장 실패로 끝나는 기존 smoke blocker가 남아 있다.
+- 없음. `test:e2e:smoke` social-dev 온보딩 blocker는 callback side effect 차단과 온보딩 대기 안정화로 해결했고 smoke 통과를 확인했다.
 
 ## 직전 검증
+- Social Dev Onboarding Smoke 안정화:
+  - 재현: `social-onboarding-flow.spec.ts` 단독 1 worker는 통과하지만 전체 smoke 병렬 실행에서는 카카오 social-dev 온보딩이 `/login?next=/onboarding`에 머물렀다.
+  - 원인: 소셜 entry 테스트가 요청 시작만 확인해야 하는데 `social-dev` callback까지 실제 처리해 정적 e2e 소셜 계정/session에 부작용을 만들 수 있었다.
+  - 수정: 소셜 entry 테스트는 callback을 `204`로 intercept해 DB/session 변경을 막고, 온보딩 플로우는 병렬 dev server 부하를 감안해 `/onboarding` 대기를 15초로 늘렸다.
+  - 통과: social onboarding 단독, 전체 `test:e2e:smoke`, 관련 user unit, `typecheck`, `lint`.
 - Market Listing M2 상태 전환 액션:
   - 결정: 별도 audit 모델을 만들지 않고 기존 `ModerationActionLog`에 `MARKET_STATUS_CHANGED` action을 추가했다.
   - 추가: 작성자는 `AVAILABLE/RESERVED`에서 예약/판매완료/취소와 예약 해제를 수행할 수 있고, moderator/admin은 모든 상태 override가 가능하다.
@@ -95,9 +101,9 @@
 - 과거 Phase 0-5와 checkpoint/push 상세도 [COMPLETED.md](./COMPLETED.md)에 보관했다.
 
 ## 다음 액션
-1. `social-onboarding-flow.spec.ts` 실패 컨텍스트와 social-dev credentials callback 로그를 확인한다.
-2. 카카오/네이버 병렬 실행 시 세션/테스트 계정 reset 충돌 여부를 분리 테스트로 검증한다.
-3. 원인에 맞춰 로그인 시작 또는 nickname 저장 테스트/코드를 보강하고 smoke 전체를 재실행한다.
+1. `COMPLETED.md`의 최근 완료 항목과 `PROGRESS.md` blocker를 비교한다.
+2. Phase 2 roadmap과 현재 운영 리스크를 다시 본다.
+3. 다음 작업을 문서/테스트/기능 중 하나로 확정한다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)
