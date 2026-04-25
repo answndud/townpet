@@ -60,6 +60,16 @@ function formatStateClass(state: "ok" | "warn" | "error" | "degraded") {
   return "border-[#f1c7c7] bg-[#fff5f5] text-[#8b2f2f]";
 }
 
+function formatSearchActionClass(priority: "high" | "medium" | "low") {
+  if (priority === "high") {
+    return "border-[#f1c7c7] bg-[#fff5f5] text-[#8b2f2f]";
+  }
+  if (priority === "medium") {
+    return "border-[#ead8a4] bg-[#fff9ea] text-[#7f5b0d]";
+  }
+  return "border-[#cfe6d1] bg-[#f4fbf4] text-[#256342]";
+}
+
 function normalizeDashboardState(value: string): "ok" | "warn" | "error" | "degraded" {
   if (value === "ok" || value === "warn" || value === "error" || value === "degraded") {
     return value;
@@ -122,12 +132,17 @@ function buildSearchHref({
   searchScope,
   searchType,
   searchIn,
+  query,
 }: {
   searchScope: PostScope;
   searchType?: PostType;
   searchIn: SearchTermSearchIn;
+  query?: string;
 }) {
   const params = new URLSearchParams();
+  if (query) {
+    params.set("q", query);
+  }
   if (searchScope === PostScope.LOCAL) {
     params.set("scope", PostScope.LOCAL);
   }
@@ -139,7 +154,7 @@ function buildSearchHref({
   }
 
   const serialized = params.toString();
-  return serialized ? `/search?${serialized}` : "/search";
+  return serialized ? `/feed?${serialized}` : "/feed";
 }
 
 function describeSearchContext({
@@ -430,14 +445,34 @@ export default async function AdminOpsPage({ searchParams }: AdminOpsPageProps) 
                 <div className="mt-3 space-y-2 text-xs text-[#4f678d]">
                   {overview.search.zeroResultTerms.length > 0 ? (
                     overview.search.zeroResultTerms.map((term) => (
-                      <div key={`zero:${term.term}`} className="space-y-1">
+                      <div key={`zero:${term.term}`} className="space-y-2 rounded-lg border border-[#edf2fb] p-2">
                         <div className="flex items-center justify-between gap-3">
                           <span className="font-medium text-[#163462]">{term.term}</span>
                           <span>{formatCount(term.zeroResultCount)}회</span>
                         </div>
                         <p className="text-[11px] text-[#6a7f9f]">
-                          평균 결과 {term.averageResultCount.toFixed(1)}건 · 최근 {term.lastResultCount ?? "-"}건
+                          0건 비율 {formatPercent(term.zeroResultRate)} · 평균 결과{" "}
+                          {term.averageResultCount.toFixed(1)}건 · 최근 {term.lastResultCount ?? "-"}건
                         </p>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span
+                            className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold ${formatSearchActionClass(term.action.priority)}`}
+                          >
+                            {term.action.label}
+                          </span>
+                          <Link
+                            href={buildSearchHref({
+                              searchScope: selectedSearchScope,
+                              searchType: selectedSearchType,
+                              searchIn: selectedSearchIn,
+                              query: term.term,
+                            })}
+                            className="text-[11px] font-semibold text-[#1f5fae] underline-offset-2 hover:underline"
+                          >
+                            검색 재현
+                          </Link>
+                        </div>
+                        <p className="text-[11px] leading-5 text-[#6a7f9f]">{term.action.description}</p>
                       </div>
                     ))
                   ) : (
@@ -454,14 +489,34 @@ export default async function AdminOpsPage({ searchParams }: AdminOpsPageProps) 
                 <div className="mt-3 space-y-2 text-xs text-[#4f678d]">
                   {overview.search.lowResultTerms.length > 0 ? (
                     overview.search.lowResultTerms.map((term) => (
-                      <div key={`low:${term.term}`} className="space-y-1">
+                      <div key={`low:${term.term}`} className="space-y-2 rounded-lg border border-[#edf2fb] p-2">
                         <div className="flex items-center justify-between gap-3">
                           <span className="font-medium text-[#163462]">{term.term}</span>
                           <span>{term.averageResultCount.toFixed(1)}건</span>
                         </div>
                         <p className="text-[11px] text-[#6a7f9f]">
-                          누적 {formatCount(term.count)}회 · 최근 {term.lastResultCount ?? "-"}건
+                          누적 {formatCount(term.count)}회 · 0건 비율 {formatPercent(term.zeroResultRate)} · 최근{" "}
+                          {term.lastResultCount ?? "-"}건
                         </p>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span
+                            className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold ${formatSearchActionClass(term.action.priority)}`}
+                          >
+                            {term.action.label}
+                          </span>
+                          <Link
+                            href={buildSearchHref({
+                              searchScope: selectedSearchScope,
+                              searchType: selectedSearchType,
+                              searchIn: selectedSearchIn,
+                              query: term.term,
+                            })}
+                            className="text-[11px] font-semibold text-[#1f5fae] underline-offset-2 hover:underline"
+                          >
+                            검색 재현
+                          </Link>
+                        </div>
+                        <p className="text-[11px] leading-5 text-[#6a7f9f]">{term.action.description}</p>
                       </div>
                     ))
                   ) : (

@@ -15,12 +15,18 @@
 - 운영 10분 루틴 로컬 evidence runner 보강을 완료했다
 - 운영 evidence 첫 실행 및 결과 triage를 완료했다
 - 런치 갭 다음 후보 재평가를 완료했다
-- 다음 작업: Search Quality Phase 2 zero-result 운영 루프 고정
+- Search Quality Phase 2 zero-result 운영 루프 고정을 완료했다
+- 다음 작업: Search Quality Phase 2 검색 매칭 품질 보강
 
 ## 열린 blocker
 - 없음. 기존 `db:restore:local` local test account count mismatch는 managed account count 검증으로 수정했고 restore 통과를 확인했다.
 
 ## 직전 검증
+- Search Quality Phase 2 zero-result 운영 루프 고정:
+  - 추가: `SearchTermInsight`에 `zeroResultRate`와 운영 액션(priority/label/description)을 붙였다.
+  - 연결: `/admin/ops`의 0건/결과 부족 검색어 카드에서 우선순위, 개선 액션, `/feed` 검색 재현 링크를 표시한다.
+  - 문서: 검색 통계 전환 가이드에 high/medium/low 분류 기준과 주간 운영 루프를 추가했다.
+  - 통과: 관련 query unit, `typecheck`, `quality:check`, `docs:refresh:check`.
 - 런치 갭 다음 후보 재평가:
   - 확인: 운영 evidence는 원격 health/prewarm/latency 기준 PASS였고, 남은 security-env WARN은 운영 secret이 필요한 보류 조건이다.
   - 비교: 결제/마켓/케어/지도보다 Phase 2A 검색/개인화/운영 증폭이 현재 우선순위와 리스크에 맞다.
@@ -58,9 +64,9 @@
 - 과거 Phase 0-5와 checkpoint/push 상세도 [COMPLETED.md](./COMPLETED.md)에 보관했다.
 
 ## 다음 액션
-1. `/admin/ops` 검색 품질 신호와 query/test 구조를 확인한다.
-2. zero-result/low-result 후보 표시 기준과 개선 액션을 점검한다.
-3. 테스트를 먼저 추가하고 필요한 UI/query/문서를 수정한다.
+1. 검색 normalization/suggestion/search document 매칭 구조를 확인한다.
+2. 초성/오타/띄어쓰기 실패 케이스를 테스트로 고정한다.
+3. `/feed` 검색 query와 suggestion fallback을 최소 수정한다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)

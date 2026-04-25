@@ -1090,3 +1090,30 @@
   - 문서 변경에 한정해 `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md` 동기화를 확인했다.
 - 결과:
   - 다음 작업은 `/admin/ops`의 zero-result/low-result 검색 품질 신호를 운영자가 바로 개선 후보로 분류할 수 있게 고정하는 것이다.
+
+### 2026-04-26 | Search Quality Phase 2 zero-result 운영 루프 고정
+- 완료일: `2026-04-26`
+- 배경:
+  - `/admin/ops`는 0건/결과 부족 검색어를 보여주고 있었지만, 운영자가 어떤 기준으로 개선 후보를 분류해야 하는지 화면과 read model에 남지 않았다.
+  - 검색 품질 Phase 2A에서는 실패어를 단순 통계가 아니라 콘텐츠/동의어/검색 매칭 개선 backlog로 옮길 수 있어야 한다.
+- 변경내용:
+  - `SearchTermInsight`에 `zeroResultRate`와 운영 액션(priority, label, description)을 추가했다.
+  - 반복 0건, 높은 0건 비율, 최근 0건 반복은 `high`로 분류하고 콘텐츠/동의어 보강 액션을 제안한다.
+  - 0건이 있거나 평균 결과가 낮은 검색어는 `medium`으로 분류하고 띄어쓰기/초성/오타/유사어 매칭 점검 액션을 제안한다.
+  - `/admin/ops` 0건/결과 부족 카드에 우선순위 badge, 액션 설명, 현재 문맥을 보존한 `/feed` 검색 재현 링크를 추가했다.
+  - 검색 통계 전환 가이드에 zero-result 운영 루프와 점검 체크리스트를 추가했다.
+- 코드문서:
+  - [app/src/server/queries/search.queries.ts](../app/src/server/queries/search.queries.ts)
+  - [app/src/server/queries/search.queries.test.ts](../app/src/server/queries/search.queries.test.ts)
+  - [app/src/app/admin/ops/page.tsx](../app/src/app/admin/ops/page.tsx)
+  - [business/operations/검색 통계 전환 가이드.md](../business/operations/검색%20통계%20전환%20가이드.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app exec vitest run src/server/queries/search.queries.test.ts src/server/queries/ops-overview.queries.test.ts` 통과, 15 tests
+  - `corepack pnpm -C app typecheck` 통과
+  - `corepack pnpm -C app quality:check` 통과
+  - `corepack pnpm -C app docs:refresh:check` 통과
+- 결과:
+  - zero-result/low-result 검색어는 이제 운영 화면에서 바로 개선 우선순위와 재현 경로로 연결된다.
+  - 다음 작업은 zero-result 후보를 줄이기 위한 검색 normalization/suggestion/search document 매칭 품질 보강이다.
