@@ -17,12 +17,18 @@
 - 검색 진입점을 헤더/전용 페이지에서 피드 하단 검색으로 통합했다
 - 로컬 핵심 기능 동작 검증과 발견 버그 수정을 완료했다
 - 개인화 운영 판단 기준 문서화를 완료했다
-- 다음 작업: 관리자 개인화 진단 UX 보강
+- 관리자 개인화 진단 UX 보강을 완료했다
+- 다음 작업: 광고/추천 정책 분리 증거 보강
 
 ## 열린 blocker
 - 없음. 기존 `db:restore:local` local test account count mismatch는 managed account count 검증으로 수정했고 restore 통과를 확인했다.
 
 ## 직전 검증
+- 관리자 개인화 진단 UX 보강:
+  - 추가: `/admin/personalization`에 데이터 상태, Feed CTR, Ad CTR, audience 쏠림 진단 카드를 추가했다.
+  - 연결: 진단별 다음 행동을 `/admin/ops`, `/admin/policies`, `/admin/breeds`로 바로 이동하게 했다.
+  - 보강: 큰 수치와 긴 audience key가 모바일 폭에서 페이지를 밀지 않도록 admin page layout을 조정했다.
+  - 통과: `admin-personalization-diagnostics` unit/e2e, `corepack pnpm -C app lint`, `corepack pnpm -C app typecheck`, `corepack pnpm -C app quality:check`.
 - 개인화 운영 판단 기준 문서화:
   - 추가: `business/operations/개인화_운영_판단_기준.md`에 personalized feed CTR, ad CTR, audience concentration, zero-data 판정 기준을 정리했다.
   - 결정: 정책값 변경 전후 비교는 기본 14일, 긴급 rollback 7일, 저트래픽/월간 리뷰 30일로 둔다.
@@ -50,9 +56,9 @@
 - 과거 Phase 0-5와 checkpoint/push 상세는 [COMPLETED.md](./COMPLETED.md)에 보관했다.
 
 ## 다음 액션
-1. `/admin/personalization` presenter/helper와 테스트를 확인한다.
-2. 운영 판단 기준 문서의 상태를 관리자 진단 UX 문구와 링크로 매핑한다.
-3. 구현 후 관련 unit/e2e와 모바일 폭 표시를 검증한다.
+1. 개인화 추천 boost 계산과 광고 신호 cap 테스트를 확인한다.
+2. 광고 클릭/노출이 추천 랭킹을 직접 구매하지 않는 회귀 테스트를 추가한다.
+3. 관련 unit test, `lint`, `typecheck`, `quality:check`를 검증한다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)
