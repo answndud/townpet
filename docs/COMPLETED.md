@@ -832,3 +832,49 @@
   - 검색 진입점이 헤더/전용 검색 페이지가 아니라 피드 목록 하단으로 이동했다.
   - 사용자는 제목/내용 기준을 선택해 현재 피드 맥락 안에서 검색할 수 있다.
   - 기존 검색 URL은 깨지지 않고 피드 검색 URL로 수렴한다.
+
+### 2026-04-25 | 로컬 핵심 기능 동작 검증
+- 완료일: `2026-04-25`
+- 배경:
+  - 피드 컨트롤과 하단 검색을 수정한 뒤에도 실제 클릭 기준으로 기능이 적용되는지 다시 확인해야 했다.
+  - 목표는 단순 테스트 통과가 아니라 로컬 브라우저와 Playwright에서 게스트/회원 hot path가 실제로 동작하는지 검증하고, 실패 기능을 수정 후보로 분류하는 것이었다.
+- 변경내용:
+  - `quality:check`에서 드러난 `/search` page named export 위반을 수정해 검색 redirect helper를 `src/lib`로 분리했다.
+  - `/profile` 로그인 수단 섹션에 소셜 연결/해제 UI를 연결해 기존 social account API가 브라우저에서 실행되게 했다.
+  - feed 검색 e2e를 피드 하단 검색 구조와 legacy `/search -> /feed` 수렴 구조에 맞게 갱신했다.
+  - 댓글 auth sync는 강제 게스트 모드에서 로그인으로 돌아올 때 post page를 reload해 서버 인증 props를 다시 받도록 고쳤다.
+  - `/admin/policies` 두 정책 form을 `useActionState`와 실제 `FormData` 제출로 바꿔 성공 메시지와 reload persistence를 보장했다.
+  - `/notifications` 필터를 `Link href` 기반 내비게이션으로 전환해 URL sync와 필터 적용을 안정화했다.
+  - 게시글/댓글 신고 접수와 관리자 기각 처리를 검증하는 `report-flow` e2e를 추가했다.
+  - `docs/PLAN.md`와 `docs/PROGRESS.md`를 로컬 검증 완료와 개인화 운영 기준 재개 상태로 정리했다.
+- 코드문서:
+  - [app/src/lib/feed-search-redirect.ts](../app/src/lib/feed-search-redirect.ts)
+  - [app/src/app/search/page.tsx](../app/src/app/search/page.tsx)
+  - [app/src/app/search/guest/page.tsx](../app/src/app/search/guest/page.tsx)
+  - [app/src/components/profile/profile-social-account-connections.tsx](../app/src/components/profile/profile-social-account-connections.tsx)
+  - [app/e2e/search-and-board-filtering.spec.ts](../app/e2e/search-and-board-filtering.spec.ts)
+  - [app/src/components/posts/post-comment-section-client.tsx](../app/src/components/posts/post-comment-section-client.tsx)
+  - [app/src/components/admin/guest-post-policy-form.tsx](../app/src/components/admin/guest-post-policy-form.tsx)
+  - [app/src/components/admin/new-user-safety-policy-form.tsx](../app/src/components/admin/new-user-safety-policy-form.tsx)
+  - [app/src/components/notifications/notification-center.tsx](../app/src/components/notifications/notification-center.tsx)
+  - [app/e2e/notification-filter-controls.spec.ts](../app/e2e/notification-filter-controls.spec.ts)
+  - [app/e2e/report-flow.spec.ts](../app/e2e/report-flow.spec.ts)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app test -- src/app/search/page.test.tsx src/app/search/guest/page.test.tsx` 통과
+  - `corepack pnpm -C app test:e2e:auth` 통과
+  - `PLAYWRIGHT_SKIP_WEBSERVER=1 ENABLE_SOCIAL_DEV_LOGIN=1 corepack pnpm -C app exec playwright test e2e/feed-loading-skeleton.spec.ts e2e/kakao-login-entry.spec.ts e2e/naver-login-entry.spec.ts e2e/social-onboarding-flow.spec.ts e2e/post-editor-toolbar.spec.ts --project=chromium --workers=1` 통과
+  - `PLAYWRIGHT_BASE_URL=http://localhost:3000 corepack pnpm -C app playwright test e2e/search-and-board-filtering.spec.ts --project=chromium` 통과
+  - `PLAYWRIGHT_BASE_URL=http://localhost:3000 corepack pnpm -C app playwright test e2e/guest-post-management.spec.ts --project=chromium` 통과
+  - `PLAYWRIGHT_BASE_URL=http://localhost:3000 corepack pnpm -C app playwright test e2e/post-comment-auth-sync.spec.ts --project=chromium` 통과
+  - `PLAYWRIGHT_BASE_URL=http://localhost:3000 corepack pnpm -C app playwright test e2e/admin-guest-post-policy.spec.ts e2e/admin-new-user-policy.spec.ts --project=chromium` 통과
+  - `PLAYWRIGHT_BASE_URL=http://localhost:3000 corepack pnpm -C app playwright test e2e/notification-filter-controls.spec.ts --project=chromium` 통과
+  - `PLAYWRIGHT_BASE_URL=http://localhost:3000 corepack pnpm -C app playwright test e2e/report-flow.spec.ts --project=chromium` 통과
+  - `corepack pnpm -C app quality:check` 통과, 202 files / 948 tests
+  - 로컬 브라우저 smoke: `/profile`, `/my-posts`, `/bookmarks`, `/admin`, `/admin/ops`, `/admin/personalization` 접근/표시 정상 확인
+- 결과:
+  - `정상`: 게스트/회원 피드 검색, legacy 검색 URL 수렴, 인증/소셜 연결, 글쓰기/댓글, 신고, 알림 필터, 마이페이지, 관리자/운영 접근 hot path.
+  - `버그`: 검증 중 발견한 page export, 소셜 연결 UI 누락, 댓글 auth sync, 정책 저장 feedback, 알림 필터 URL sync는 즉시 수정하고 회귀 테스트를 추가하거나 갱신했다.
+  - `보류`: 결제/마켓/카카오맵/실 OAuth 실계정 검증, 운영 배포 smoke, 개인화 세부 운영 판단 기준 문서화.
+  - 다음 작업은 보류해 둔 개인화 운영 판단 기준 문서화로 재개한다.
