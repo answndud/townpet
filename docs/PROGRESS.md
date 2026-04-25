@@ -63,11 +63,15 @@
   - 추가: 회원이 게시글/댓글을 신고하고, 관리자가 신고 상세에서 기각 처리하는 핫패스 e2e를 추가했다.
   - 확인: 게시글/댓글 신고 접수 메시지, 관리자 상세 접근, 처리 후 DB 상태 `DISMISSED/PENDING` 분류를 검증했다.
   - 통과: `report-flow`, `post-report-form`/`post-comment-thread` 관련 테스트, `corepack pnpm -C app typecheck`.
+- 마이페이지/관리자 운영 smoke:
+  - 정상: `/profile`, `/my-posts`, `/bookmarks`에서 작성글/북마크 목록 반영을 로컬 브라우저로 확인했다.
+  - 정상: 관리자 계정으로 `/admin`, `/admin/ops`, `/admin/personalization` 접근/표시를 확인했다.
+  - 보류: 관리자 개인화 화면의 세부 운영 판단 기준 문서화는 기존 계획대로 다음 작업으로 유지한다.
 - 과거 Phase 0-5와 checkpoint/push 상세는 [COMPLETED.md](./COMPLETED.md)에 보관했다.
 
 ## 다음 액션
-1. 마이페이지 내 글/북마크 목록과 빈 상태를 확인한다.
-2. 관리자 운영 화면 접근/표시 정상 여부를 확인한다.
+1. 로컬 검증 결과를 최종 정리하고 남은 보류/확장 검증 범위를 분리한다.
+2. 개인화 운영 판단 기준 문서화 작업을 재개한다.
 3. 결과는 기능별 `정상 / 버그 / 보류`로 기록하고, 버그는 재현 URL/단계/원인 후보/수정 우선순위를 남긴다.
 
 ## Archive Pointer
