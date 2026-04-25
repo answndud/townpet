@@ -18,13 +18,36 @@ describe("ProfileSocialAccountConnections", () => {
     expect(html).not.toContain("해제");
   });
 
-  it("shows the active social login method without alternative options", () => {
+  it("shows local social connection actions when dev mode is enabled", () => {
     const html = renderToStaticMarkup(
-      <ProfileSocialAccountConnections authProvider="kakao" hasPassword={false} />,
+      <ProfileSocialAccountConnections
+        authProvider="email"
+        hasPassword
+        linkedAccountProviders={["kakao"]}
+        socialDevEnabled
+      />,
     );
 
     expect(html).toContain("카카오");
-    expect(html).not.toContain("네이버");
-    expect(html).not.toContain("연결하기");
+    expect(html).toContain("네이버");
+    expect(html).toContain("profile-social-provider-linked-kakao");
+    expect(html).toContain("profile-social-connect-naver");
+    expect(html).toContain("해제");
+    expect(html).toContain("연결하기");
+  });
+
+  it("disables unlink for the only login method", () => {
+    const html = renderToStaticMarkup(
+      <ProfileSocialAccountConnections
+        authProvider="kakao"
+        hasPassword={false}
+        linkedAccountProviders={["kakao"]}
+        socialDevEnabled
+      />,
+    );
+
+    expect(html).toContain("profile-social-unlink-kakao");
+    expect(html).toContain("disabled");
+    expect(html).toContain("유일한 로그인 수단");
   });
 });

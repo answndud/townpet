@@ -10,6 +10,7 @@ import {
   getPasswordManagementUnavailableMessage,
 } from "@/lib/password-management";
 import { getSocialAccountNoticeMessage } from "@/lib/social-auth";
+import { isSocialDevLoginEnabled } from "@/lib/env";
 import { NeighborhoodPreferenceForm } from "@/components/profile/neighborhood-preference-form";
 import { PetProfileManager } from "@/components/profile/pet-profile-manager";
 import { ProfileAvatar } from "@/components/profile/profile-avatar";
@@ -191,6 +192,8 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
         <ProfileSocialAccountConnections
           authProvider={session.user?.authProvider}
           hasPassword={passwordStatus?.hasPassword ?? false}
+          linkedAccountProviders={passwordStatus?.linkedAccountProviders ?? []}
+          socialDevEnabled={isSocialDevLoginEnabled()}
         />
 
         <ProfileInfoForm
