@@ -90,6 +90,14 @@ export type FeedPostItem = {
     volunteerDate?: string | Date | null;
     status?: string | null;
   } | null;
+  marketListing?: {
+    listingType?: string | null;
+    price?: number | null;
+    condition?: string | null;
+    depositAmount?: number | null;
+    rentalPeriod?: string | null;
+    status?: string | null;
+  } | null;
   isBookmarked?: boolean | null;
   reactions?: Array<{
     type: FeedReactionType;
@@ -150,6 +158,26 @@ const volunteerStatusLabel: Record<string, string> = {
   OPEN: "모집 중",
   FULL: "정원 마감",
   CLOSED: "종료",
+  CANCELLED: "취소",
+};
+
+const marketTypeLabel: Record<string, string> = {
+  SELL: "판매",
+  RENT: "대여",
+  SHARE: "나눔",
+};
+
+const marketConditionLabel: Record<string, string> = {
+  NEW: "새상품",
+  LIKE_NEW: "거의 새것",
+  GOOD: "사용감 적음",
+  FAIR: "사용감 있음",
+};
+
+const marketStatusLabel: Record<string, string> = {
+  AVAILABLE: "거래 가능",
+  RESERVED: "예약 중",
+  SOLD: "거래 완료",
   CANCELLED: "취소",
 };
 
@@ -597,6 +625,24 @@ export function FeedInfiniteList({
                 .filter(Boolean)
                 .join(" · ")
             : null;
+          const marketSummary = post.marketListing
+            ? [
+                post.marketListing.listingType
+                  ? (marketTypeLabel[post.marketListing.listingType] ?? post.marketListing.listingType)
+                  : null,
+                post.marketListing.price !== null && post.marketListing.price !== undefined
+                  ? `${post.marketListing.price.toLocaleString()}원`
+                  : null,
+                post.marketListing.condition
+                  ? (marketConditionLabel[post.marketListing.condition] ?? post.marketListing.condition)
+                  : null,
+                post.marketListing.status
+                  ? (marketStatusLabel[post.marketListing.status] ?? post.marketListing.status)
+                  : null,
+              ]
+                .filter(Boolean)
+                .join(" · ")
+            : null;
           const isGuestPost = Boolean(post.guestAuthorId || post.guestDisplayName?.trim());
           const authorLabel = isGuestPost
             ? resolvePublicGuestDisplayName(post.guestDisplayName)
@@ -688,9 +734,9 @@ export function FeedInfiniteList({
                 }}
                 bottomContent={
                   <>
-                    {adoptionSummary || volunteerSummary ? (
+                    {marketSummary || adoptionSummary || volunteerSummary ? (
                       <p className="mt-1 truncate text-[12px] text-[#5d779e]">
-                        {adoptionSummary ?? volunteerSummary}
+                        {marketSummary ?? adoptionSummary ?? volunteerSummary}
                       </p>
                     ) : null}
                     <div className="mt-2 flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1 text-[12px] text-[#5f789d]">

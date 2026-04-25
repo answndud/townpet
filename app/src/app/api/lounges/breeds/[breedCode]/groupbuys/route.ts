@@ -82,6 +82,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
           scope: PostScope.GLOBAL,
           animalTags: [parsedBreedCode.data],
           imageUrls: parsed.data.imageUrls ?? [],
+          marketListing: {
+            listingType: "SELL",
+            price: parsed.data.targetPrice ?? 0,
+            condition: "NEW",
+            rentalPeriod: parsed.data.purchaseDeadline,
+          },
         },
       });
       return jsonOk(post, { status: 201 });
@@ -109,6 +115,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
         scope: PostScope.GLOBAL,
         animalTags: [parsedBreedCode.data],
         imageUrls: parsed.data.imageUrls ?? [],
+        marketListing: {
+          listingType: "SELL",
+          price: parsed.data.targetPrice ?? 0,
+          condition: "NEW",
+          rentalPeriod: parsed.data.purchaseDeadline,
+        },
         guestDisplayName: parsed.data.guestDisplayName,
         guestPassword: parsed.data.guestPassword,
       },

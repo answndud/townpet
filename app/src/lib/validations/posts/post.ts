@@ -1,6 +1,8 @@
 import {
   AdoptionStatus,
   AnimalSex,
+  ItemCondition,
+  MarketType,
   PostScope,
   PostType,
   VolunteerRecruitmentStatus,
@@ -102,6 +104,27 @@ const imageUrlSchema = z
   .max(2048)
   .refine((value) => isTrustedUploadUrl(value), "허용된 업로드 이미지 URL만 사용할 수 있습니다.");
 
+const requiredInt = (options: { min: number; max?: number }) =>
+  z.preprocess(
+    (value) => {
+      if (value === "" || value === null || value === undefined) {
+        return undefined;
+      }
+      return value;
+    },
+    options.max !== undefined
+      ? z.coerce.number().int().min(options.min).max(options.max)
+      : z.coerce.number().int().min(options.min),
+  );
+
+export const marketListingSchema = z.object({
+  listingType: z.nativeEnum(MarketType),
+  price: requiredInt({ min: 0 }),
+  condition: optionalNativeEnum(ItemCondition).default(ItemCondition.GOOD),
+  depositAmount: optionalInt({ min: 0 }),
+  rentalPeriod: optionalTrimmedString({ max: 80 }),
+});
+
 export const postCreateSchema = z.object({
   title: trimmedRequiredString({ max: POST_TITLE_MAX_LENGTH }),
   content: trimmedRequiredString({ max: POST_CONTENT_MAX_LENGTH }),
@@ -114,6 +137,7 @@ export const postCreateSchema = z.object({
   imageUrls: z.array(imageUrlSchema).max(10).optional().default([]),
   guestDisplayName: optionalTrimmedString({ min: 2, max: 24 }),
   guestPassword: z.string().min(4).max(32).optional(),
+  marketListing: marketListingSchema.optional(),
 })
   .superRefine((value, ctx) => {
     const isReviewType =
@@ -164,6 +188,14 @@ export const postCreateSchema = z.object({
           code: z.ZodIssueCode.custom,
           path: ["animalTags"],
           message: "공용 보드 글은 동물 태그를 최소 1개 입력해 주세요.",
+        });
+      }
+
+      if (value.type === PostType.MARKET_LISTING && !value.marketListing) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["marketListing"],
+          message: "마켓 글은 거래 정보를 입력해 주세요.",
         });
       }
 
@@ -292,6 +324,7 @@ export type PlaceReviewInput = z.infer<typeof placeReviewSchema>;
 export type WalkRouteInput = z.infer<typeof walkRouteSchema>;
 export type AdoptionListingInput = z.infer<typeof adoptionListingSchema>;
 export type VolunteerRecruitmentInput = z.infer<typeof volunteerRecruitmentSchema>;
+export type MarketListingInput = z.infer<typeof marketListingSchema>;
 export type PostUpdateInput = z.infer<typeof postUpdateSchema>;
 
 // Normalize parsed list input to product-facing naming.

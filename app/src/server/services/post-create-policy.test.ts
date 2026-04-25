@@ -138,6 +138,11 @@ describe("createPost new-user restriction", () => {
           scope: PostScope.GLOBAL,
           animalTags: ["강아지"],
           imageUrls: [],
+          marketListing: {
+            listingType: "SELL",
+            price: 10000,
+            condition: "GOOD",
+          },
         },
       }),
     ).rejects.toMatchObject({
@@ -458,6 +463,55 @@ describe("createPost new-user restriction", () => {
     );
   });
 
+  it("creates structured market listing records for market posts", async () => {
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: "user-1",
+      role: UserRole.USER,
+      createdAt: new Date(Date.now() - 30 * 60 * 60 * 1000),
+    });
+
+    await expect(
+      createPost({
+        authorId: "user-1",
+        input: {
+          title: "마켓 글",
+          content: "하네스 판매",
+          type: PostType.MARKET_LISTING,
+          scope: PostScope.GLOBAL,
+          animalTags: ["강아지"],
+          imageUrls: [],
+          marketListing: {
+            listingType: "SELL",
+            price: 15000,
+            condition: "LIKE_NEW",
+            depositAmount: 0,
+            rentalPeriod: "이번 주말 직거래",
+          },
+        },
+      }),
+    ).resolves.toBeTruthy();
+
+    expect(mockPrisma.post.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          marketListing: {
+            create: expect.objectContaining({
+              listingType: "SELL",
+              price: 15000,
+              condition: "LIKE_NEW",
+              depositAmount: 0,
+              rentalPeriod: "이번 주말 직거래",
+            }),
+          },
+          structuredSearchText: expect.stringContaining("이번 주말 직거래"),
+        }),
+        include: expect.objectContaining({
+          marketListing: expect.any(Object),
+        }),
+      }),
+    );
+  });
+
   it("blocks sanctioned users before creating a post", async () => {
     const now = new Date();
     mockPrisma.user.findUnique.mockResolvedValue({
@@ -630,6 +684,11 @@ describe("createPost new-user restriction", () => {
           content: "내용",
           type: PostType.MARKET_LISTING,
           scope: PostScope.GLOBAL,
+          marketListing: {
+            listingType: "SHARE",
+            price: 0,
+            condition: "GOOD",
+          },
         },
       }),
     ).resolves.toBeTruthy();

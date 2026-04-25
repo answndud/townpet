@@ -124,6 +124,14 @@ type PostDetailItem = {
     capacity?: number | null;
     status?: string | null;
   } | null;
+  marketListing?: {
+    listingType?: string | null;
+    price?: number | null;
+    condition?: string | null;
+    depositAmount?: number | null;
+    rentalPeriod?: string | null;
+    status?: string | null;
+  } | null;
   renderedContentHtml?: string | null;
   renderedContentText?: string | null;
 };
@@ -222,6 +230,26 @@ const volunteerStatusLabel: Record<string, string> = {
   OPEN: "모집 중",
   FULL: "정원 마감",
   CLOSED: "모집 종료",
+  CANCELLED: "취소",
+};
+
+const marketTypeLabel: Record<string, string> = {
+  SELL: "판매",
+  RENT: "대여",
+  SHARE: "나눔",
+};
+
+const marketConditionLabel: Record<string, string> = {
+  NEW: "새상품",
+  LIKE_NEW: "거의 새것",
+  GOOD: "사용감 적음",
+  FAIR: "사용감 있음",
+};
+
+const marketStatusLabel: Record<string, string> = {
+  AVAILABLE: "거래 가능",
+  RESERVED: "예약 중",
+  SOLD: "거래 완료",
   CANCELLED: "취소",
 };
 
@@ -796,6 +824,56 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
                   ? post.walkRoute.safetyTags.join(", ")
                   : "없음"
               }
+            />
+          </PostDetailInfoSection>
+        ) : null}
+
+        {post.marketListing ? (
+          <PostDetailInfoSection title="마켓 거래 정보">
+            <PostDetailInfoItem
+              label="거래 유형"
+              value={renderTextValue(
+                post.marketListing.listingType
+                  ? (marketTypeLabel[post.marketListing.listingType] ?? post.marketListing.listingType)
+                  : null,
+              )}
+            />
+            <PostDetailInfoItem
+              label="가격"
+              value={
+                post.marketListing.price !== null && post.marketListing.price !== undefined
+                  ? `${post.marketListing.price.toLocaleString()}원`
+                  : emptyValue
+              }
+            />
+            <PostDetailInfoItem
+              label="상품 상태"
+              value={renderTextValue(
+                post.marketListing.condition
+                  ? (marketConditionLabel[post.marketListing.condition] ?? post.marketListing.condition)
+                  : null,
+              )}
+            />
+            <PostDetailInfoItem
+              label="거래 상태"
+              value={renderTextValue(
+                post.marketListing.status
+                  ? (marketStatusLabel[post.marketListing.status] ?? post.marketListing.status)
+                  : null,
+              )}
+            />
+            <PostDetailInfoItem
+              label="보증금"
+              value={
+                post.marketListing.depositAmount !== null &&
+                post.marketListing.depositAmount !== undefined
+                  ? `${post.marketListing.depositAmount.toLocaleString()}원`
+                  : emptyValue
+              }
+            />
+            <PostDetailInfoItem
+              label="기간"
+              value={renderTextValue(post.marketListing.rentalPeriod)}
             />
           </PostDetailInfoSection>
         ) : null}

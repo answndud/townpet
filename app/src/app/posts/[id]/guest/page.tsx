@@ -157,6 +157,26 @@ const volunteerStatusLabel: Record<string, string> = {
   CANCELLED: "취소",
 };
 
+const marketTypeLabel: Record<string, string> = {
+  SELL: "판매",
+  RENT: "대여",
+  SHARE: "나눔",
+};
+
+const marketConditionLabel: Record<string, string> = {
+  NEW: "새상품",
+  LIKE_NEW: "거의 새것",
+  GOOD: "사용감 적음",
+  FAIR: "사용감 있음",
+};
+
+const marketStatusLabel: Record<string, string> = {
+  AVAILABLE: "거래 가능",
+  RESERVED: "예약 중",
+  SOLD: "거래 완료",
+  CANCELLED: "취소",
+};
+
 export default async function GuestPostDetailPage({ params }: PostDetailPageProps) {
   await connection();
   const cspNonce = await getCspNonce();
@@ -457,6 +477,67 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
                   {post.walkRoute.safetyTags && post.walkRoute.safetyTags.length > 0
                     ? post.walkRoute.safetyTags.join(", ")
                     : "없음"}
+                </p>
+              </div>
+            </div>
+          </section>
+        ) : null}
+
+        {post.marketListing ? (
+          <section className="tp-card p-5 sm:p-6">
+            <h2 className="tp-text-section-title text-[#163462]">마켓 거래 정보</h2>
+            <div className="mt-4 grid gap-3 text-sm text-[#355988] md:grid-cols-3">
+              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
+                <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">거래 유형</p>
+                <p className="mt-1 font-medium text-[#1f3f71]">
+                  {renderTextValue(
+                    post.marketListing.listingType
+                      ? (marketTypeLabel[post.marketListing.listingType] ?? post.marketListing.listingType)
+                      : null,
+                  )}
+                </p>
+              </div>
+              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
+                <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">가격</p>
+                <p className="mt-1 font-medium text-[#1f3f71]">
+                  {post.marketListing.price !== null && post.marketListing.price !== undefined
+                    ? `${post.marketListing.price.toLocaleString()}원`
+                    : emptyValue}
+                </p>
+              </div>
+              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
+                <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">상품 상태</p>
+                <p className="mt-1 font-medium text-[#1f3f71]">
+                  {renderTextValue(
+                    post.marketListing.condition
+                      ? (marketConditionLabel[post.marketListing.condition] ?? post.marketListing.condition)
+                      : null,
+                  )}
+                </p>
+              </div>
+              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
+                <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">거래 상태</p>
+                <p className="mt-1 font-medium text-[#1f3f71]">
+                  {renderTextValue(
+                    post.marketListing.status
+                      ? (marketStatusLabel[post.marketListing.status] ?? post.marketListing.status)
+                      : null,
+                  )}
+                </p>
+              </div>
+              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
+                <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">보증금</p>
+                <p className="mt-1 font-medium text-[#1f3f71]">
+                  {post.marketListing.depositAmount !== null &&
+                  post.marketListing.depositAmount !== undefined
+                    ? `${post.marketListing.depositAmount.toLocaleString()}원`
+                    : emptyValue}
+                </p>
+              </div>
+              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
+                <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">기간</p>
+                <p className="mt-1 font-medium text-[#1f3f71]">
+                  {renderTextValue(post.marketListing.rentalPeriod)}
                 </p>
               </div>
             </div>

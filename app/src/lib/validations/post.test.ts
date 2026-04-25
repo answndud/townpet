@@ -250,12 +250,28 @@ describe("post validations", () => {
     expect(result.success).toBe(true);
   });
 
-  it("allows market-listing posts without animal tags", () => {
+  it("requires structured market listing fields for market posts", () => {
     const result = postCreateSchema.safeParse({
       title: "공동구매",
       content: "내용",
       type: PostType.MARKET_LISTING,
       scope: PostScope.GLOBAL,
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("allows structured market-listing posts without animal tags", () => {
+    const result = postCreateSchema.safeParse({
+      title: "공동구매",
+      content: "내용",
+      type: PostType.MARKET_LISTING,
+      scope: PostScope.GLOBAL,
+      marketListing: {
+        listingType: "SHARE",
+        price: 0,
+        condition: "GOOD",
+      },
     });
 
     expect(result.success).toBe(true);

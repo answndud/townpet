@@ -29,6 +29,11 @@ type StructuredSearchTextInput = {
     region?: string | null;
     volunteerType?: string | null;
   } | null;
+  marketListing?: {
+    listingType?: string | null;
+    condition?: string | null;
+    rentalPeriod?: string | null;
+  } | null;
 };
 
 function normalizeArray(values: Array<string | null | undefined> | null | undefined) {
@@ -57,6 +62,9 @@ export function buildPostStructuredSearchText(input: StructuredSearchTextInput) 
       input.volunteerRecruitment?.shelterName,
       input.volunteerRecruitment?.region,
       input.volunteerRecruitment?.volunteerType,
+      input.marketListing?.listingType,
+      input.marketListing?.condition,
+      input.marketListing?.rentalPeriod,
     ]),
   ];
 

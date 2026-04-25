@@ -119,6 +119,13 @@ type PostCreateFormState = {
     capacity: string;
     status: string;
   };
+  marketListing: {
+    listingType: string;
+    price: string;
+    condition: string;
+    depositAmount: string;
+    rentalPeriod: string;
+  };
   imageUrls: string[];
   guestDisplayName: string;
   guestPassword: string;
@@ -159,6 +166,19 @@ const reviewCategoryOptions: Array<{ value: ReviewCategory; label: string }> = [
   { value: REVIEW_CATEGORY.PLACE, label: "장소" },
   { value: REVIEW_CATEGORY.ETC, label: "기타" },
 ];
+
+const marketListingTypeOptions = [
+  { value: "SELL", label: "판매" },
+  { value: "RENT", label: "대여" },
+  { value: "SHARE", label: "나눔" },
+] as const;
+
+const marketConditionOptions = [
+  { value: "NEW", label: "새상품" },
+  { value: "LIKE_NEW", label: "거의 새것" },
+  { value: "GOOD", label: "사용감 적음" },
+  { value: "FAIR", label: "사용감 있음" },
+] as const;
 
 const DRAFT_STORAGE_KEY = "townpet:post-create-draft:v1";
 
@@ -274,6 +294,13 @@ export function PostCreateForm({
       capacity: "",
       status: "OPEN",
     },
+    marketListing: {
+      listingType: "SELL",
+      price: "",
+      condition: "GOOD",
+      depositAmount: "",
+      rentalPeriod: "",
+    },
     imageUrls: [],
     guestDisplayName: "",
     guestPassword: "",
@@ -308,6 +335,7 @@ export function PostCreateForm({
           petTypeId: draftForm.petTypeId ?? prev.petTypeId,
           reviewCategory: draftForm.reviewCategory ?? prev.reviewCategory,
           animalTagsInput: draftForm.animalTagsInput ?? "",
+          marketListing: draftForm.marketListing ?? prev.marketListing,
           guestDisplayName: draftForm.guestDisplayName ?? "",
           guestPassword: "",
         }));
@@ -450,6 +478,7 @@ export function PostCreateForm({
   const showWalkRoute = formState.type === PostType.WALK_ROUTE;
   const showAdoptionListing = formState.type === PostType.ADOPTION_LISTING;
   const showVolunteerRecruitment = formState.type === PostType.SHELTER_VOLUNTEER;
+  const showMarketListing = formState.type === PostType.MARKET_LISTING;
 
   useEffect(() => {
     if (formState.scope !== resolvedScope) {
@@ -516,6 +545,7 @@ export function PostCreateForm({
       formState.volunteerRecruitment.volunteerType.trim().length > 0 ||
       formState.volunteerRecruitment.capacity.trim().length > 0 ||
       formState.volunteerRecruitment.status.trim().length > 0);
+  const hasMarketListing = showMarketListing;
 
   const clearDraft = () => {
     if (typeof window === "undefined") {
@@ -569,6 +599,11 @@ export function PostCreateForm({
 
     if (showAnimalTagsInput && normalizedAnimalTags.length === 0) {
       setError("공용 보드 글은 동물 태그를 1개 이상 입력해 주세요.");
+      return;
+    }
+
+    if (showMarketListing && formState.marketListing.price.trim().length === 0) {
+      setError("마켓 글은 가격을 입력해 주세요. 나눔은 0원을 입력합니다.");
       return;
     }
 
@@ -630,6 +665,13 @@ export function PostCreateForm({
               volunteerDate: formState.volunteerRecruitment.volunteerDate || undefined,
               capacity: formState.volunteerRecruitment.capacity || undefined,
               status: formState.volunteerRecruitment.status || undefined,
+            }
+          : undefined,
+        marketListing: hasMarketListing
+          ? {
+              ...formState.marketListing,
+              depositAmount: formState.marketListing.depositAmount || undefined,
+              rentalPeriod: formState.marketListing.rentalPeriod || undefined,
             }
           : undefined,
       };
@@ -739,6 +781,14 @@ export function PostCreateForm({
           volunteerType: "",
           capacity: "",
           status: "OPEN",
+        },
+        marketListing: {
+          ...prev.marketListing,
+          listingType: "SELL",
+          price: "",
+          condition: "GOOD",
+          depositAmount: "",
+          rentalPeriod: "",
         },
         imageUrls: [],
         guestDisplayName: "",
@@ -1368,6 +1418,115 @@ export function PostCreateForm({
               </label>
             </div>
           </div>
+        </StructuredFieldSection>
+      ) : null}
+
+      {showMarketListing ? (
+        <StructuredFieldSection title="마켓 거래 정보">
+          <label className="tp-form-label">
+            거래 유형
+            <select
+              className="tp-input-soft px-3 py-2 text-sm"
+              value={formState.marketListing.listingType}
+              onChange={(event) =>
+                setFormState((prev) => ({
+                  ...prev,
+                  marketListing: {
+                    ...prev.marketListing,
+                    listingType: event.target.value,
+                  },
+                }))
+              }
+            >
+              {marketListingTypeOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="tp-form-label">
+            가격(원)
+            <input
+              type="number"
+              className="tp-input-soft px-3 py-2 text-sm"
+              value={formState.marketListing.price}
+              onChange={(event) =>
+                setFormState((prev) => ({
+                  ...prev,
+                  marketListing: {
+                    ...prev.marketListing,
+                    price: event.target.value,
+                  },
+                }))
+              }
+              placeholder="나눔은 0"
+              min={0}
+              required
+            />
+          </label>
+
+          <label className="tp-form-label">
+            상품 상태
+            <select
+              className="tp-input-soft px-3 py-2 text-sm"
+              value={formState.marketListing.condition}
+              onChange={(event) =>
+                setFormState((prev) => ({
+                  ...prev,
+                  marketListing: {
+                    ...prev.marketListing,
+                    condition: event.target.value,
+                  },
+                }))
+              }
+            >
+              {marketConditionOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="tp-form-label">
+            보증금(원)
+            <input
+              type="number"
+              className="tp-input-soft px-3 py-2 text-sm"
+              value={formState.marketListing.depositAmount}
+              onChange={(event) =>
+                setFormState((prev) => ({
+                  ...prev,
+                  marketListing: {
+                    ...prev.marketListing,
+                    depositAmount: event.target.value,
+                  },
+                }))
+              }
+              placeholder="대여 글일 때 선택"
+              min={0}
+            />
+          </label>
+
+          <label className="tp-form-label md:col-span-2">
+            대여/거래 기간
+            <input
+              className="tp-input-soft px-3 py-2 text-sm"
+              value={formState.marketListing.rentalPeriod}
+              onChange={(event) =>
+                setFormState((prev) => ({
+                  ...prev,
+                  marketListing: {
+                    ...prev.marketListing,
+                    rentalPeriod: event.target.value,
+                  },
+                }))
+              }
+              placeholder="예: 2주 대여, 이번 주말 직거래"
+            />
+          </label>
         </StructuredFieldSection>
       ) : null}
 
