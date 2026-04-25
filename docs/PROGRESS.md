@@ -11,12 +11,17 @@
 - 관리자 개인화 진단 UX 보강을 완료했다
 - 광고/추천 정책 분리 증거 보강을 완료했다
 - 품종 라운지 고위험 write gate 점검을 완료했다
-- 다음 작업: Cycle A 완료 후 다음 후보 재평가
+- Cycle A 완료 후 다음 후보 재평가를 완료했다
+- 다음 작업: 운영 10분 루틴 로컬 evidence runner 보강
 
 ## 열린 blocker
 - 없음. 기존 `db:restore:local` local test account count mismatch는 managed account count 검증으로 수정했고 restore 통과를 확인했다.
 
 ## 직전 검증
+- Cycle A 완료 후 다음 후보 재평가:
+  - 확인: 개인화/광고/커뮤니티 Cycle A는 A1-A4까지 완료됐고 `quality:check` 증거가 남아 있다.
+  - 비교: Phase 2 대형 기능보다 현재 우선순위 3번인 운영 안정화가 먼저다.
+  - 결정: 다음 작업은 `ops:*` 점검을 단일 로컬 evidence 흐름으로 묶는 작업으로 둔다.
 - 품종 라운지 고위험 write gate 점검:
   - 고정: 공동구매 route가 `MARKET_LISTING`, `GLOBAL`, `animalTags: [breedCode]`로 `createPost`에 넘기는 계약을 테스트로 보강했다.
   - 정책: 신규유저 제한, 연락처 제한, 비회원 제한은 `createPost`의 `ServiceError`를 그대로 반환하고 500으로 가리지 않게 검증했다.
@@ -36,9 +41,9 @@
 - 과거 Phase 0-5와 checkpoint/push 상세도 [COMPLETED.md](./COMPLETED.md)에 보관했다.
 
 ## 다음 액션
-1. Cycle A 완료 항목과 검증 결과를 확인한다.
-2. 남은 런치 갭과 Phase 2 후보를 현재 우선순위 기준으로 비교한다.
-3. 다음 active plan을 하나로 좁혀 문서화한다.
+1. 기존 운영 점검 스크립트의 입출력과 실패 방식을 확인한다.
+2. read-only 로컬 evidence runner 범위를 정한다.
+3. runner, package script, 테스트, 운영 문서를 추가한다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)

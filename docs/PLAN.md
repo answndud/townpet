@@ -26,17 +26,17 @@
 
 ## Active Plan
 
-### Cycle A 완료 후 다음 후보 재평가
+### 운영 10분 루틴 로컬 evidence runner 보강
 
 상태: `pending`
 
-- 목표: 품종 개인화/광고/커뮤니티 Cycle A 결과를 기준으로 다음 구현 후보를 고른다.
-- 범위: Cycle A 완료 증거 확인, 남은 런치 갭/Phase 2 후보 비교, 다음 active plan 확정.
-- 제외: 결제/정산/에스크로, 실제 광고 계약, 카카오맵 실연동, 실 OAuth 계정 검증.
-- 완료 기준: 다음 작업 1개를 `서비스 안정성 -> 커뮤니티 핵심 기능 -> 재방문/유입 -> 운영 자동화` 우선순위에 맞춰 active plan으로 전환한다.
+- 목표: 혼자 운영할 때 매주 10분 안에 실행할 health/security/perf 점검을 단일 로컬 evidence 흐름으로 묶는다.
+- 범위: `ops:*` 스크립트 조합, 로컬 리포트 출력 경로, package script, 운영 문서, failure-path 테스트.
+- 제외: 실 Sentry ingestion, 실 Vercel/GitHub secrets 조회, 운영 배포 smoke, 장기 모니터링 대시보드 구축.
+- 완료 기준: 로컬에서 하나의 명령으로 실행/실패 결과를 남기고, 결과 위치와 판정 기준이 운영 문서와 테스트에 고정된다.
 
 ## 다음 실행 순서
 
-1. `COMPLETED.md`의 Cycle A 완료 항목과 검증 명령을 확인한다.
-2. 남은 런치 갭과 Phase 2 후보 중 지금 착수할 가치가 가장 큰 항목을 비교한다.
-3. 선택한 다음 작업의 목표, 범위, 제외, 완료 기준을 `PLAN.md`에 남긴다.
+1. 기존 `ops:check:health`, `ops:check:security-env`, `ops:perf:snapshot`, `ops:prewarm` 스크립트의 입출력과 실패 방식을 확인한다.
+2. 로컬/원격 모두에서 쓸 수 있는 runner 범위를 정하고, 기본은 destructive DB 작업 없이 read-only 점검으로 제한한다.
+3. runner와 failure-path 테스트를 추가한 뒤 운영 문서와 `PROGRESS.md`를 갱신한다.
