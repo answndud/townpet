@@ -88,7 +88,6 @@ export function NotificationCenter({
   const unreadOnly = initialUnreadOnly;
   const [message, setMessage] = useState<string | null>(initialMessage);
   const [pendingMap, setPendingMap] = useState<Record<string, boolean>>({});
-  const [isFilterPending, startFilterTransition] = useTransition();
   const [isMarkAllPending, startMarkAllTransition] = useTransition();
 
   useEffect(() => {
@@ -156,10 +155,8 @@ export function NotificationCenter({
       }
     };
 
-    window.addEventListener("focus", refresh);
     window.addEventListener("pageshow", handlePageShow);
     return () => {
-      window.removeEventListener("focus", refresh);
       window.removeEventListener("pageshow", handlePageShow);
     };
   }, [router]);
@@ -169,15 +166,6 @@ export function NotificationCenter({
       ...prev,
       [id]: value,
     }));
-  };
-
-  const handleApplyFilter = (nextKind: NotificationFilterKind, nextUnreadOnly: boolean) => {
-    setMessage(null);
-    startFilterTransition(() => {
-      router.replace(buildNotificationListHref(nextKind, nextUnreadOnly, 1), {
-        scroll: false,
-      });
-    });
   };
 
   const handleMarkRead = async (id: string) => {
@@ -304,7 +292,7 @@ export function NotificationCenter({
           <button
             type="button"
             onClick={handleMarkAll}
-            disabled={isMarkAllPending || isFilterPending || globalUnreadCount === 0}
+            disabled={isMarkAllPending || globalUnreadCount === 0}
             className="tp-btn-primary min-h-10 justify-center px-4 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60"
           >
             모두 읽음 처리
@@ -312,11 +300,10 @@ export function NotificationCenter({
         </div>
         <div className="mt-4 flex flex-wrap items-center gap-2" aria-label="알림 필터">
           {filterTabs.map((tab) => (
-            <button
+            <Link
               key={tab.kind}
-              type="button"
-              disabled={isFilterPending}
-              onClick={() => handleApplyFilter(tab.kind, unreadOnly)}
+              href={buildNotificationListHref(tab.kind, unreadOnly, 1)}
+              aria-current={kind === tab.kind ? "page" : undefined}
               className={`min-h-10 px-3 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${
                 kind === tab.kind
                   ? "tp-btn-primary"
@@ -324,12 +311,11 @@ export function NotificationCenter({
               }`}
             >
               {tab.label}
-            </button>
+            </Link>
           ))}
-          <button
-            type="button"
-            disabled={isFilterPending}
-            onClick={() => handleApplyFilter(kind, !unreadOnly)}
+          <Link
+            href={buildNotificationListHref(kind, !unreadOnly, 1)}
+            aria-current={unreadOnly ? "page" : undefined}
             className={`min-h-10 px-3 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${
               unreadOnly
                 ? "tp-btn-primary"
@@ -337,7 +323,7 @@ export function NotificationCenter({
             }`}
           >
             읽지 않음만
-          </button>
+          </Link>
         </div>
         {message ? (
           <p className="mt-3 text-xs font-medium text-rose-700" role="alert" aria-live="polite">
