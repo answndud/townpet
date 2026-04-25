@@ -1145,3 +1145,25 @@
 - 결과:
   - 대표 오타 검색어는 이제 suggestion/ranked search/guest feed hot path에서 기대 결과로 fallback된다.
   - 다음 작업은 최근 완료 항목 기준으로 남은 런치 갭을 다시 재평가하는 것이다.
+
+### 2026-04-26 | 런치 갭 다음 후보 재평가
+- 완료일: `2026-04-26`
+- 배경:
+  - Search Quality Phase 2는 zero-result 운영 루프와 오타 tolerant feed fallback까지 완료됐다.
+  - 운영 evidence의 production strict/control-plane 확인은 운영 secret이 필요한 보류 조건이고, 결제/케어/지도는 아직 운영 리스크가 크다.
+  - Phase 2 로드맵상 검색/개인화/운영 증폭 다음 후보는 결제 없는 마켓 상태 머신이다.
+- 변경내용:
+  - 최근 완료 항목과 Phase 2 로드맵을 다시 비교했다.
+  - 다음 active plan을 `Market State Machine Phase 2 preflight`로 전환했다.
+  - 첫 단계는 구현이 아니라 현재 `MarketListing` schema/service/UI/API 경로와 상태 전환 권한/감사 로그 필요 지점을 확인하는 preflight로 자른다.
+  - Phase 2 로드맵에 2026-04-26 실행 결과와 다음 후보를 남겼다.
+- 코드문서:
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+  - [docs/COMPLETED.md](./COMPLETED.md)
+  - [business/product/Phase2_로드맵_PRD.md](../business/product/Phase2_로드맵_PRD.md)
+  - [business/policies/마켓_운영규칙.md](../business/policies/마켓_운영규칙.md)
+- 검증:
+  - 문서 변경에 한정해 `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`, `business/product/Phase2_로드맵_PRD.md` 동기화를 확인했다.
+- 결과:
+  - 다음 작업은 `MarketListing` schema와 현재 마켓 작성/조회 경로를 읽고, `AVAILABLE/RESERVED/SOLD/CANCELLED` 상태 전환의 첫 구현 단위를 테스트 기준으로 고정하는 것이다.

@@ -26,17 +26,17 @@
 
 ## Active Plan
 
-### 런치 갭 다음 후보 재평가
+### Market State Machine Phase 2 preflight
 
 상태: `pending`
 
-- 목표: 최근 완료된 검색 품질 작업 이후 남은 런치 갭 중 다음 구현 후보를 고른다.
-- 범위: PLAN/PROGRESS/COMPLETED, Phase 2 로드맵, 운영/품질 잔여 blocker.
-- 제외: 신규 기능 구현, DB 마이그레이션, 배포 smoke.
-- 완료 기준: 다음 active plan을 하나로 좁히고 실행 순서를 남긴다.
+- 목표: 마켓 글을 결제 없이도 상태가 있는 거래 표면으로 올릴 수 있는 최소 구현 경계를 확정한다.
+- 범위: `MarketListing` schema/service/UI/API/test 현황, `마켓_운영규칙`, 신고/제재/감사 로그 연결 지점.
+- 제외: 결제/정산/에스크로/배송, 외부 채팅, 케어/지도 기능, 실운영 데이터 마이그레이션.
+- 완료 기준: 상태 전환 권한, 감사 로그, 신고/분쟁 연결, 필요한 schema 변경 여부를 정리하고 첫 구현 단위를 테스트 기준으로 고정한다.
 
 ## 다음 실행 순서
 
-1. 최근 완료 항목과 검증 결과를 확인한다.
-2. 남은 런치 갭을 서비스 안정성/핵심 기능/재방문/운영 자동화 순서로 비교한다.
-3. 다음 active plan과 첫 실행 명령을 문서에 남긴다.
+1. `MarketListing` schema와 현재 작성/조회 UI/API 경로를 확인한다.
+2. `AVAILABLE/RESERVED/SOLD/CANCELLED` 상태 전환 권한과 감사 로그 필요 지점을 정한다.
+3. 첫 구현 단위를 schema/service/action/UI/test 중 어디까지로 자를지 문서화한다.
