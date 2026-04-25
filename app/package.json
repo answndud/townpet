@@ -64,6 +64,7 @@
     "ops:check:security-env": "tsx scripts/check-security-env.ts",
     "ops:check:security-env:strict": "NODE_ENV=production SECURITY_ENV_STRICT=1 tsx scripts/check-security-env.ts",
     "ops:check:sentry": "tsx scripts/check-sentry-ingestion.ts",
+    "ops:evidence": "tsx scripts/run-ops-evidence.ts",
     "ops:prewarm": "tsx scripts/prewarm-deployment.ts",
     "ops:perf:snapshot": "tsx scripts/collect-latency-snapshot.ts",
     "search:check:cases": "tsx scripts/check-search-cases.ts",

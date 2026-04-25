@@ -1,6 +1,6 @@
 # PROGRESS.md
 
-기준일: 2026-04-25
+기준일: 2026-04-26
 완료 이력 archive: [COMPLETED.md](./COMPLETED.md)
 
 ## 현재 상태 스냅샷
@@ -12,12 +12,18 @@
 - 광고/추천 정책 분리 증거 보강을 완료했다
 - 품종 라운지 고위험 write gate 점검을 완료했다
 - Cycle A 완료 후 다음 후보 재평가를 완료했다
-- 다음 작업: 운영 10분 루틴 로컬 evidence runner 보강
+- 운영 10분 루틴 로컬 evidence runner 보강을 완료했다
+- 다음 작업: 운영 evidence 첫 실행 및 결과 triage
 
 ## 열린 blocker
 - 없음. 기존 `db:restore:local` local test account count mismatch는 managed account count 검증으로 수정했고 restore 통과를 확인했다.
 
 ## 직전 검증
+- 운영 10분 루틴 로컬 evidence runner 보강:
+  - 추가: `ops:evidence`가 health, security env, prewarm, latency snapshot을 read-only로 순차 실행하고 `docs/reports/ops-evidence-*.md`에 결과를 남긴다.
+  - 실패: 한 단계가 실패해도 나머지 점검을 계속 기록한 뒤 required 실패가 있으면 exit code 1로 종료한다.
+  - 문서: README, app README, 운영 문서 안내, 주간 보안 운영 점검 템플릿에 실행법과 판정 기준을 연결했다.
+  - 통과: runner unit/failure-path test, `lint`, `typecheck`, `quality:check`.
 - Cycle A 완료 후 다음 후보 재평가:
   - 확인: 개인화/광고/커뮤니티 Cycle A는 A1-A4까지 완료됐고 `quality:check` 증거가 남아 있다.
   - 비교: Phase 2 대형 기능보다 현재 우선순위 3번인 운영 안정화가 먼저다.
@@ -41,9 +47,9 @@
 - 과거 Phase 0-5와 checkpoint/push 상세도 [COMPLETED.md](./COMPLETED.md)에 보관했다.
 
 ## 다음 액션
-1. 기존 운영 점검 스크립트의 입출력과 실패 방식을 확인한다.
-2. read-only 로컬 evidence runner 범위를 정한다.
-3. runner, package script, 테스트, 운영 문서를 추가한다.
+1. 로컬 서버 또는 원격 기준 `OPS_BASE_URL`을 정한다.
+2. `corepack pnpm -C app ops:evidence`를 실행한다.
+3. 생성된 evidence 결과를 보고 `정상 / 버그 / 보류`로 분류한다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)

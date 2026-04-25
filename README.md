@@ -46,6 +46,7 @@
 ## 최소 운영 루틴
 
 - solo 운영에서 매일 기억할 명령은 `corepack pnpm -C app quality:check`, `corepack pnpm -C app ops:check:health`, `corepack pnpm -C app db:restore:local` 세 개면 충분합니다.
+- 주간 10분 evidence는 `corepack pnpm -C app ops:evidence`로 health/security/prewarm/latency read-only 점검을 한 번에 실행하고 `docs/reports/`에 로컬 결과를 남깁니다.
 - CI/배포 mental model도 [`quality-gate.yml`](/Users/alex/project/townpet/.github/workflows/quality-gate.yml) 과 [`ops-smoke-checks.yml`](/Users/alex/project/townpet/.github/workflows/ops-smoke-checks.yml) 두 개만 먼저 보면 됩니다.
 - 브라우저 smoke는 hot path에서 뺐고, 필요할 때 [`browser-smoke.yml`](/Users/alex/project/townpet/.github/workflows/browser-smoke.yml)이나 로컬 `test:e2e:smoke`로만 확인합니다.
 - 나머지 `db:*`, `ops:*`, `test:e2e:*`, cleanup/backfill 스크립트는 평소 루틴이 아니라 필요할 때 찾는 유지보수 도구입니다.
