@@ -26,18 +26,17 @@
 
 ## Active Plan
 
-### 품종 라운지 고위험 write gate 점검
+### Cycle A 완료 후 다음 후보 재평가
 
 상태: `pending`
 
-- 목표: 품종 라운지 공동구매/거래성 글이 기존 신규유저 제한, 링크/연락처 제한, 신고/자동숨김 정책을 우회하지 않게 한다.
-- 범위: groupbuy route/action/service/test, 기존 post write policy 재사용 여부, 신고 audit trail.
-- 제외: 결제/정산/에스크로, 실제 공동구매 운영, 마켓 거래 상태 머신.
-- 완료 기준: 품종 라운지 작성 경로가 기존 고위험 write gate를 재사용하고, 신고 정책은 일반 post와 동일한 audit trail을 남긴다.
+- 목표: 품종 개인화/광고/커뮤니티 Cycle A 결과를 기준으로 다음 구현 후보를 고른다.
+- 범위: Cycle A 완료 증거 확인, 남은 런치 갭/Phase 2 후보 비교, 다음 active plan 확정.
+- 제외: 결제/정산/에스크로, 실제 광고 계약, 카카오맵 실연동, 실 OAuth 계정 검증.
+- 완료 기준: 다음 작업 1개를 `서비스 안정성 -> 커뮤니티 핵심 기능 -> 재방문/유입 -> 운영 자동화` 우선순위에 맞춰 active plan으로 전환한다.
 
 ## 다음 실행 순서
 
-1. 품종 라운지 groupbuy 작성 route/action/service와 현재 테스트를 확인한다.
-2. 신규유저 제한, 링크/연락처 제한, rate-limit, 신고/자동숨김 정책 재사용 여부를 검증한다.
-3. 누락된 write gate나 신고 audit 증거를 테스트로 먼저 고정한다.
-4. 관련 unit/e2e, `lint`, `typecheck`, `quality:check`를 검증한다.
+1. `COMPLETED.md`의 Cycle A 완료 항목과 검증 명령을 확인한다.
+2. 남은 런치 갭과 Phase 2 후보 중 지금 착수할 가치가 가장 큰 항목을 비교한다.
+3. 선택한 다음 작업의 목표, 범위, 제외, 완료 기준을 `PLAN.md`에 남긴다.

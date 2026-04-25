@@ -5,26 +5,23 @@
 
 ## 현재 상태 스냅샷
 - 상태 문서를 `docs/` 아래 slim active + archive 구조로 재편했다
-- Impeccable 디자인 개선 workflow Phase 0-5를 완료했다
-- 최근 완료 작업 상세와 과거 검증 로그는 [COMPLETED.md](./COMPLETED.md)로 이동했다
-- 공개 SEO / metadata / sitemap 안정화를 완료했다
-- 보안 헤더 / 운영 smoke evidence 보강을 완료했다
-- 로딩 / 빈상태 polish 잔여 점검을 완료했다
-- 레드팀 P0/P1 잔여 remediation 확인을 완료했다
-- 운영 문서 최신성 점검을 완료했다
-- 품종 기반 개인화/광고/커뮤니티 PRD 착수를 완료했다
-- 피드 컨트롤 정렬/기간 클릭 체감 미적용 버그를 수정했다
-- 검색 진입점을 헤더/전용 페이지에서 피드 하단 검색으로 통합했다
-- 로컬 핵심 기능 동작 검증과 발견 버그 수정을 완료했다
+- 공개 SEO, 보안 헤더, 운영 smoke, 로딩/빈상태, 레드팀 잔여 remediation, 운영 문서 최신성 점검을 완료했다
+- 피드 컨트롤 버그 수정, 하단 검색 통합, 로컬 핵심 기능 검증과 발견 버그 수정을 완료했다
 - 개인화 운영 판단 기준 문서화를 완료했다
 - 관리자 개인화 진단 UX 보강을 완료했다
 - 광고/추천 정책 분리 증거 보강을 완료했다
-- 다음 작업: 품종 라운지 고위험 write gate 점검
+- 품종 라운지 고위험 write gate 점검을 완료했다
+- 다음 작업: Cycle A 완료 후 다음 후보 재평가
 
 ## 열린 blocker
 - 없음. 기존 `db:restore:local` local test account count mismatch는 managed account count 검증으로 수정했고 restore 통과를 확인했다.
 
 ## 직전 검증
+- 품종 라운지 고위험 write gate 점검:
+  - 고정: 공동구매 route가 `MARKET_LISTING`, `GLOBAL`, `animalTags: [breedCode]`로 `createPost`에 넘기는 계약을 테스트로 보강했다.
+  - 정책: 신규유저 제한, 연락처 제한, 비회원 제한은 `createPost`의 `ServiceError`를 그대로 반환하고 500으로 가리지 않게 검증했다.
+  - 신고: 일반 post 신고/자동숨김/audit trail은 기존 `report.service` 테스트를 함께 실행해 같은 post 경로로 유지됨을 확인했다.
+  - 통과: groupbuy route, post create policy, report service 관련 테스트, `lint`, `typecheck`, `quality:check`.
 - 광고/추천 정책 분리 증거 보강:
   - 고정: `FEED_PERSONALIZATION_AD_SIGNAL_CAP_MAX`를 추가하고 광고 신호 cap을 0.08 이하로 제한했다.
   - 테스트: `AD_IMPRESSION`은 추천 랭킹 행동 신호가 아니며, `AD_CLICK`도 cap 안의 약한 보조 신호라 최신/선호 게시글을 직접 구매해 뒤집지 못함을 검증했다.
@@ -35,36 +32,13 @@
   - 연결: 진단별 다음 행동을 `/admin/ops`, `/admin/policies`, `/admin/breeds`로 바로 이동하게 했다.
   - 보강: 큰 수치와 긴 audience key가 모바일 폭에서 페이지를 밀지 않도록 admin page layout을 조정했다.
   - 통과: `admin-personalization-diagnostics` unit/e2e, `corepack pnpm -C app lint`, `corepack pnpm -C app typecheck`, `corepack pnpm -C app quality:check`.
-- 개인화 운영 판단 기준 문서화:
-  - 추가: `business/operations/개인화_운영_판단_기준.md`에 personalized feed CTR, ad CTR, audience concentration, zero-data 판정 기준을 정리했다.
-  - 결정: 정책값 변경 전후 비교는 기본 14일, 긴급 rollback 7일, 저트래픽/월간 리뷰 30일로 둔다.
-  - 고정: 광고 성과를 이유로 커뮤니티 추천 랭킹을 직접 구매하게 만들지 않는 Go/No-Go 기준을 명시했다.
-  - 연결: 운영 문서 안내와 품종 개인화 실행계획 A1이 같은 기준 문서를 가리키게 했다.
-- 로컬 핵심 기능 동작 검증:
-  - 범위: `quality:check`, 로컬 DB/서버, 게스트/회원 피드 검색, 인증/소셜 연결, 글쓰기/댓글, 신고/정책, 알림, 마이페이지, 관리자/운영 화면.
-  - 수정: 검색 redirect page export 계약, 프로필 소셜 연결 UI, feed 검색 e2e 정리, 댓글 auth sync reload, 정책 저장 feedback, 알림 필터 URL sync, 신고 흐름 e2e를 보강했다.
-  - 정상: `/feed/guest`, `/feed`, `/profile`, `/my-posts`, `/bookmarks`, `/admin`, `/admin/ops`, `/admin/personalization` hot path가 로컬 자동화와 브라우저 smoke를 통과했다.
-  - 보류: 결제/마켓/카카오맵/실 OAuth 실계정 검증, 운영 배포 smoke, 개인화 세부 운영 판단 기준 문서화.
-  - 상세 결과와 명령 로그는 [COMPLETED.md](./COMPLETED.md)의 `2026-04-25 | 로컬 핵심 기능 동작 검증` 항목으로 이동했다.
-- 품종 개인화/광고/커뮤니티 PRD 착수:
-  - 결정: 첫 구현 후보를 `개인화/광고 운영 튜닝 루프`로 좁혔다.
-  - 추가: `business/product/품종_개인화_광고_커뮤니티_실행계획.md`에 A1-A4 순서, 제외 범위, 정책 게이트, 검증 명령을 정리했다.
-  - 유지: 앱 기능 로직, 추천 알고리즘, 관리자 UI는 변경 없음.
-  - 통과: `corepack pnpm -C app docs:refresh:check`, `corepack pnpm -C app lint`, `corepack pnpm -C app typecheck`.
-- 피드 컨트롤 버그 수정:
-  - 원인: 베스트글 정렬 링크 no-op, 맞춤 추천 정렬 유지, 게스트 canonical effect의 stale data 기반 URL 원복.
-  - 수정: 정렬/기간 클릭 시 전체글 + 비개인화 조건을 명시하고, 게스트 canonical replace는 현재 query 데이터가 로드된 뒤에만 실행하게 했다.
-  - 통과: `corepack pnpm -C app test -- src/components/posts/guest-feed-page-client.test.ts src/components/posts/feed-control-panel.test.tsx`, `corepack pnpm -C app lint`, `corepack pnpm -C app typecheck`.
-- 피드 하단 검색 통합:
-  - 변경: 헤더 검색 UI를 제거하고 `/feed`, `/feed/guest` 목록 하단에 제목/내용 선택 검색 form을 배치했다.
-  - 호환: `/search`, `/search/guest`는 기존 q/type/searchIn을 보존해 `/feed`, `/feed/guest`로 redirect한다.
-  - 통과: `corepack pnpm -C app test -- src/components/posts/feed-footer-search-form.test.tsx src/app/search/page.test.tsx src/app/search/guest/page.test.tsx src/middleware.test.ts`, `corepack pnpm -C app lint`, `corepack pnpm -C app typecheck`.
-- 과거 Phase 0-5와 checkpoint/push 상세는 [COMPLETED.md](./COMPLETED.md)에 보관했다.
+- 개인화 운영 판단 기준 문서화, 로컬 핵심 기능 동작 검증, 피드 컨트롤/하단 검색 통합 상세는 [COMPLETED.md](./COMPLETED.md)에 보관했다.
+- 과거 Phase 0-5와 checkpoint/push 상세도 [COMPLETED.md](./COMPLETED.md)에 보관했다.
 
 ## 다음 액션
-1. 품종 라운지 groupbuy 작성 route/action/service와 현재 테스트를 확인한다.
-2. 신규유저 제한, 링크/연락처 제한, rate-limit, 신고/자동숨김 정책 재사용 여부를 검증한다.
-3. 누락된 write gate나 신고 audit 증거를 테스트로 먼저 고정한다.
+1. Cycle A 완료 항목과 검증 결과를 확인한다.
+2. 남은 런치 갭과 Phase 2 후보를 현재 우선순위 기준으로 비교한다.
+3. 다음 active plan을 하나로 좁혀 문서화한다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)
