@@ -1189,3 +1189,36 @@
 - 결과:
   - 다음 구현은 `marketListingSchema`, post create service, query include/read model, feed/detail UI, unit/e2e smoke를 포함하는 M1이다.
   - 상태 전환 액션은 `ModerationActionLog` enum 확장과 작성자/admin 권한 테스트가 필요한 M2로 보류한다.
+
+### 2026-04-26 | Market Listing M1 구조화 생성/조회
+- 완료일: `2026-04-26`
+- 배경:
+  - `MarketListing` 모델과 enum은 존재했지만 `MARKET_LISTING` 작성은 구조화 레코드 없이 일반 post로만 저장되고 있었다.
+  - 상태 전환 액션(M2)을 열기 전에 작성/조회/read model이 구조화 필드를 안정적으로 저장하고 표시해야 했다.
+- 변경내용:
+  - `marketListingSchema`를 추가하고 `MARKET_LISTING` 작성 시 `listingType`, `price`, `condition`, `depositAmount`, `rentalPeriod` 입력을 검증한다.
+  - post create form과 품종 라운지 공동구매 route가 `marketListing` payload를 넘기도록 연결했다.
+  - `createPost`가 `MarketListing` relation을 생성하고 structured search text, 금칙어/연락처 moderation text에 마켓 구조화 필드를 포함한다.
+  - post list/detail query include와 authenticated/guest feed/detail UI에 거래 유형, 가격, 상품 상태, 거래 상태, 보증금, 기간을 표시한다.
+  - 신규 유저 제한, 비회원 제한, 금칙어/연락처 제한은 기존 post write policy 경로를 그대로 재사용하도록 테스트로 고정했다.
+- 코드문서:
+  - [app/src/lib/validations/posts/post.ts](../app/src/lib/validations/posts/post.ts)
+  - [app/src/server/services/posts/post.service.ts](../app/src/server/services/posts/post.service.ts)
+  - [app/src/server/queries/posts/post.queries.ts](../app/src/server/queries/posts/post.queries.ts)
+  - [app/src/components/posts/post-create-form.tsx](../app/src/components/posts/post-create-form.tsx)
+  - [app/src/components/posts/feed-infinite-list.tsx](../app/src/components/posts/feed-infinite-list.tsx)
+  - [app/src/components/posts/post-detail-client.tsx](../app/src/components/posts/post-detail-client.tsx)
+  - [app/src/app/posts/[id]/guest/page.tsx](../app/src/app/posts/%5Bid%5D/guest/page.tsx)
+  - [app/src/app/api/lounges/breeds/[breedCode]/groupbuys/route.ts](../app/src/app/api/lounges/breeds/%5BbreedCode%5D/groupbuys/route.ts)
+  - [business/policies/마켓_운영규칙.md](../business/policies/마켓_운영규칙.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app exec vitest run src/lib/validations/post.test.ts src/lib/post-structured-search.test.ts src/server/services/post-create-policy.test.ts src/server/queries/post.queries.test.ts 'src/app/api/lounges/breeds/[breedCode]/groupbuys/route.test.ts'` 통과, 112 tests
+  - `corepack pnpm -C app typecheck` 통과
+  - `corepack pnpm -C app lint` 통과
+  - `corepack pnpm -C app quality:check` 통과, 205 files / 971 tests
+  - `corepack pnpm -C app test:e2e:smoke` 실패: 카카오 social-dev 온보딩이 `/login?next=/onboarding`에 머물거나 프로필 저장 메시지를 받지 못했다. 마켓 경로와 직접 관련 없는 기존 smoke blocker로 별도 triage 대상이다.
+- 결과:
+  - 마켓 글은 이제 단순 게시글이 아니라 `MarketListing` 구조화 레코드와 함께 생성되고 feed/detail에서 거래 상태와 가격이 보인다.
+  - 다음 작업은 `Market Listing M2 상태 전환 액션`이며, 작성자/admin 권한과 감사 로그 기준부터 테스트로 고정한다.

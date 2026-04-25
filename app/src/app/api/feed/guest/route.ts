@@ -153,6 +153,16 @@ function serializeFeedItems(items: Array<Record<string, unknown>>) {
       id: image.id,
       url: image.url ?? null,
     })),
+    marketListing: (post as {
+      marketListing?: {
+        listingType?: string | null;
+        price?: number | null;
+        condition?: string | null;
+        depositAmount?: number | null;
+        rentalPeriod?: string | null;
+        status?: string | null;
+      } | null;
+    }).marketListing ?? null,
     isBookmarked: false,
     reactions:
       ((post.reactions as Array<{ type: "LIKE" | "DISLIKE" }> | undefined) ?? []).map(

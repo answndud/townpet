@@ -35,9 +35,11 @@ import {
 import {
   type AdoptionListingInput,
   type HospitalReviewInput,
+  type MarketListingInput,
   type VolunteerRecruitmentInput,
   adoptionListingSchema,
   hospitalReviewSchema,
+  marketListingSchema,
   placeReviewSchema,
   postCreateSchema,
   postUpdateSchema,
@@ -127,6 +129,7 @@ const VOLUNTEER_RECRUITMENT_TEXT_FIELDS = [
   "region",
   "volunteerType",
 ] as const;
+const MARKET_LISTING_TEXT_FIELDS = ["rentalPeriod"] as const;
 
 const normalizeImageUrls = (imageUrls: string[] | undefined) =>
   Array.from(
@@ -536,6 +539,7 @@ export async function createPost({ authorId, input, guestIdentity }: CreatePostP
     animalTags,
     guestDisplayName,
     guestPassword,
+    marketListing,
     ...postData
   } = parsed.data;
   const normalizedImageUrls = normalizeImageUrls(imageUrls);
@@ -553,6 +557,7 @@ export async function createPost({ authorId, input, guestIdentity }: CreatePostP
   let hospitalReviewInput: HospitalReviewInput | null = null;
   let adoptionListingInput: AdoptionListingInput | null = null;
   let volunteerRecruitmentInput: VolunteerRecruitmentInput | null = null;
+  let marketListingInput: MarketListingInput | null = null;
   if (postData.type === PostType.HOSPITAL_REVIEW) {
     const reviewInput = hospitalReviewSchema.safeParse(rawInput.hospitalReview ?? {});
     if (!reviewInput.success) {
@@ -578,6 +583,14 @@ export async function createPost({ authorId, input, guestIdentity }: CreatePostP
     }
 
     volunteerRecruitmentInput = recruitmentInput.data;
+  }
+  if (postData.type === PostType.MARKET_LISTING) {
+    const listingInput = marketListingSchema.safeParse(rawInput.marketListing ?? marketListing);
+    if (!listingInput.success) {
+      throw new ServiceError("마켓 글 입력값이 올바르지 않습니다.", "INVALID_MARKET_LISTING", 400);
+    }
+
+    marketListingInput = listingInput.data;
   }
   if (hospitalReviewInput) {
     hospitalReviewInput = normalizeHospitalReviewFields(hospitalReviewInput);
@@ -608,6 +621,7 @@ export async function createPost({ authorId, input, guestIdentity }: CreatePostP
       volunteerRecruitmentInput?.shelterName,
       volunteerRecruitmentInput?.region,
       volunteerRecruitmentInput?.volunteerType,
+      marketListingInput?.rentalPeriod,
     ]),
     forbiddenKeywords,
   );
@@ -716,6 +730,15 @@ export async function createPost({ authorId, input, guestIdentity }: CreatePostP
         blockWindowHours: newUserSafetyPolicy.contactBlockWindowHours,
       });
     }
+    if (marketListingInput) {
+      marketListingInput = moderateStructuredTextFields({
+        data: marketListingInput,
+        fields: MARKET_LISTING_TEXT_FIELDS,
+        role: author.role,
+        accountCreatedAt: author.createdAt,
+        blockWindowHours: newUserSafetyPolicy.contactBlockWindowHours,
+      });
+    }
     resolvedAuthorId = author.id;
     resolvedAuthorAccountCreatedAt = author.createdAt;
   } else {
@@ -776,6 +799,7 @@ export async function createPost({ authorId, input, guestIdentity }: CreatePostP
       volunteerRecruitmentInput?.shelterName,
       volunteerRecruitmentInput?.region,
       volunteerRecruitmentInput?.volunteerType,
+      marketListingInput?.rentalPeriod,
     ]);
 
     if (!guestPostPolicy.allowLinks && GUEST_LINK_PATTERN.test(guestPolicyText)) {
@@ -1126,6 +1150,54 @@ export async function createPost({ authorId, input, guestIdentity }: CreatePostP
     return created;
   }
 
+  if (postData.type === "MARKET_LISTING") {
+    if (!marketListingInput) {
+      throw new ServiceError("마켓 글 입력값이 올바르지 않습니다.", "INVALID_MARKET_LISTING", 400);
+    }
+
+    const created = await prisma.post.create({
+      data: {
+        ...commonCreateData,
+        structuredSearchText: buildPostStructuredSearchText({
+          animalTags: commonBoardAnimalTags,
+          marketListing: marketListingInput,
+        }),
+        marketListing: {
+          create: {
+            listingType: marketListingInput.listingType,
+            price: marketListingInput.price,
+            condition: marketListingInput.condition,
+            depositAmount: marketListingInput.depositAmount,
+            rentalPeriod: marketListingInput.rentalPeriod,
+          },
+        },
+      },
+      include: {
+        author: { select: { id: true, nickname: true } },
+        neighborhood: {
+          select: { id: true, name: true, city: true, district: true },
+        },
+        marketListing: {
+          select: {
+            listingType: true,
+            price: true,
+            condition: true,
+            depositAmount: true,
+            rentalPeriod: true,
+            status: true,
+          },
+        },
+        images: {
+          select: { id: true, url: true, order: true },
+          orderBy: { order: "asc" },
+        },
+      },
+    });
+    await finalizeUploadUrlChanges({ attachedUrls: normalizedImageUrls });
+    notifyPostCacheChange();
+    return created;
+  }
+
   if (postData.type === "ADOPTION_LISTING") {
     const listingInput = adoptionListingInput ?? {};
     const shouldCreateListing = hasAnyValue(listingInput);
@@ -1283,6 +1355,16 @@ export async function createPost({ authorId, input, guestIdentity }: CreatePostP
           volunteerDate: true,
           volunteerType: true,
           capacity: true,
+          status: true,
+        },
+      },
+      marketListing: {
+        select: {
+          listingType: true,
+          price: true,
+          condition: true,
+          depositAmount: true,
+          rentalPeriod: true,
           status: true,
         },
       },

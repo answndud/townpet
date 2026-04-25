@@ -134,6 +134,16 @@ const buildPostListInclude = (
         status: true,
       },
     },
+    marketListing: {
+      select: {
+        listingType: true,
+        price: true,
+        condition: true,
+        depositAmount: true,
+        rentalPeriod: true,
+        status: true,
+      },
+    },
   }) as const;
 
 const buildPostListIncludeWithoutReactions = (
@@ -175,6 +185,16 @@ const buildPostListIncludeWithoutReactions = (
         shelterName: true,
         region: true,
         volunteerDate: true,
+        status: true,
+      },
+    },
+    marketListing: {
+      select: {
+        listingType: true,
+        price: true,
+        condition: true,
+        depositAmount: true,
+        rentalPeriod: true,
         status: true,
       },
     },
@@ -232,6 +252,15 @@ const VOLUNTEER_RECRUITMENT_SELECT = {
   status: true,
 } as const;
 
+const MARKET_LISTING_SELECT = {
+  listingType: true,
+  price: true,
+  condition: true,
+  depositAmount: true,
+  rentalPeriod: true,
+  status: true,
+} as const;
+
 type PostDetailExtras = {
   hospitalReview: {
     hospitalName: string | null;
@@ -277,6 +306,14 @@ type PostDetailExtras = {
     capacity: number | null;
     status: string | null;
   } | null;
+  marketListing: {
+    listingType: string | null;
+    price: number | null;
+    condition: string | null;
+    depositAmount: number | null;
+    rentalPeriod: string | null;
+    status: string | null;
+  } | null;
 };
 
 const buildPostDetailBaseInclude = (includeGuestAuthor = supportsPostGuestAuthorField()) =>
@@ -317,6 +354,7 @@ async function attachPostDetailExtras<T extends { id: string; type: PostType }>(
   const needsWalk = post.type === PostType.WALK_ROUTE;
   const needsAdoption = post.type === PostType.ADOPTION_LISTING;
   const needsVolunteer = post.type === PostType.SHELTER_VOLUNTEER;
+  const needsMarket = post.type === PostType.MARKET_LISTING;
   const tasks: Array<Promise<void>> = [];
   const target = post as T & PostDetailExtras;
 
@@ -388,6 +426,20 @@ async function attachPostDetailExtras<T extends { id: string; type: PostType }>(
     }
   } else if (target.volunteerRecruitment === undefined) {
     target.volunteerRecruitment = null;
+  }
+
+  if (needsMarket) {
+    if (target.marketListing === undefined) {
+      tasks.push(
+        prisma.marketListing
+          .findUnique({ where: { postId: post.id }, select: MARKET_LISTING_SELECT })
+          .then((listing) => {
+            target.marketListing = listing;
+          }),
+      );
+    }
+  } else if (target.marketListing === undefined) {
+    target.marketListing = null;
   }
 
   if (tasks.length > 0) {

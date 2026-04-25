@@ -16,8 +16,15 @@ describe("buildPostStructuredSearchText", () => {
           region: "서울 마포",
           breed: "웰시 코기",
         },
+        marketListing: {
+          listingType: "SELL",
+          condition: "LIKE_NEW",
+          rentalPeriod: "2주 대여",
+        },
       }),
-    ).toBe("강아지 산책 해피 동물 병원 중성화 수술 서울 보호 센터 서울 마포 웰시 코기");
+    ).toBe(
+      "강아지 산책 해피 동물 병원 중성화 수술 서울 보호 센터 서울 마포 웰시 코기 SELL LIKE_NEW 2주 대여",
+    );
   });
 
   it("returns an empty string when there is no structured content", () => {

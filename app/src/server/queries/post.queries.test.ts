@@ -237,6 +237,11 @@ describe("post queries", () => {
 
     const args = mockPrisma.post.findMany.mock.calls[0][0];
     expect(args.include.reactions).toBeUndefined();
+    expect(args.include.marketListing.select).toMatchObject({
+      listingType: true,
+      price: true,
+      status: true,
+    });
     expect((result.items[0] as { reactions?: Array<{ type: string }> } | undefined)?.reactions).toEqual(
       [],
     );

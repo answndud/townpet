@@ -19,12 +19,19 @@
 - Search Quality Phase 2 검색 매칭 품질 보강을 완료했다
 - 런치 갭 다음 후보 재평가를 완료했다
 - Market State Machine Phase 2 preflight를 완료했다
-- 다음 작업: Market Listing M1 구조화 생성/조회
+- Market Listing M1 구조화 생성/조회를 완료했다
+- 다음 작업: Market Listing M2 상태 전환 액션
 
 ## 열린 blocker
 - 없음. 기존 `db:restore:local` local test account count mismatch는 managed account count 검증으로 수정했고 restore 통과를 확인했다.
 
 ## 직전 검증
+- Market Listing M1 구조화 생성/조회:
+  - 추가: `MARKET_LISTING` 작성 입력에 `marketListing` 구조화 필드를 필수화하고 post create form과 공동구매 route payload에 연결했다.
+  - 연결: `createPost`가 `MarketListing` relation을 생성하고 feed/detail query include와 UI에서 거래 유형, 가격, 상품 상태, 거래 상태를 표시한다.
+  - 보호: 신규 유저 제한, 비회원 제한, 금칙어/연락처 제한은 기존 post write policy 경로를 그대로 통과한다.
+  - 통과: 관련 validation/search/service/query/groupbuy unit, `typecheck`, `lint`, `quality:check`.
+  - 보류: `test:e2e:smoke`는 카카오 social-dev 온보딩이 `/login?next=/onboarding`에 머물거나 프로필 저장 메시지를 받지 못해 실패했다. 마켓 경로와 직접 관련 없는 기존 smoke blocker로 별도 triage가 필요하다.
 - Market State Machine Phase 2 preflight:
   - 확인: `MarketListing` 모델과 `MarketStatus` enum은 이미 있지만 validation/service/UI/query 경로에는 연결되어 있지 않다.
   - 결정: 상태 변경 액션보다 먼저 `MARKET_LISTING` 작성 시 구조화 레코드를 생성하고 feed/detail에서 읽는 M1을 구현한다.
@@ -81,9 +88,9 @@
 - 과거 Phase 0-5와 checkpoint/push 상세도 [COMPLETED.md](./COMPLETED.md)에 보관했다.
 
 ## 다음 액션
-1. `marketListingSchema`와 post create form payload를 추가하는 실패 테스트를 작성한다.
-2. `createPost`가 `MARKET_LISTING`에서 `MarketListing`을 생성하고 read include에 싣도록 수정한다.
-3. feed/detail UI에 거래 유형, 가격, 상태를 표시하고 e2e smoke로 확인한다.
+1. `ModerationActionType`에 마켓 상태 변경 action을 추가할지 별도 audit 모델을 둘지 결정한다.
+2. 작성자/admin/비작성자/게스트 상태 전환 권한 실패 테스트를 먼저 작성한다.
+3. detail/feed에서 상태 변경 후 표시가 갱신되는 smoke를 추가한다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)

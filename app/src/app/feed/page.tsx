@@ -762,6 +762,16 @@ export default async function Home({ searchParams }: HomePageProps) {
       id: image.id,
       url: "url" in image ? image.url : null,
     })),
+    marketListing: (post as {
+      marketListing?: {
+        listingType?: string | null;
+        price?: number | null;
+        condition?: string | null;
+        depositAmount?: number | null;
+        rentalPeriod?: string | null;
+        status?: string | null;
+      } | null;
+    }).marketListing ?? null,
     isBookmarked: Boolean((post as { isBookmarked?: boolean | null }).isBookmarked),
     reactions:
       (post as { reactions?: Array<{ type: "LIKE" | "DISLIKE" }> }).reactions?.map(

@@ -26,17 +26,17 @@
 
 ## Active Plan
 
-### Market Listing M1 구조화 생성/조회
+### Market Listing M2 상태 전환 액션
 
 상태: `pending`
 
-- 목표: `MARKET_LISTING` 글이 단순 자유글이 아니라 `MarketListing` 구조화 레코드로 생성/조회되게 한다.
-- 범위: market validation, post create service, query include/read model, feed/detail UI, unit/e2e smoke.
-- 제외: 상태 변경 액션, 결제/정산/에스크로/배송, 외부 채팅, 관리자 강제 상태 변경.
-- 완료 기준: 작성 시 `listingType/price/condition/depositAmount/rentalPeriod/status`가 저장되고 feed/detail에서 상태/가격이 표시되며 기존 신규유저/게스트/연락처 제한을 우회하지 않는다.
+- 목표: 구조화된 `MarketListing`의 `AVAILABLE/RESERVED/SOLD/CANCELLED` 상태 전환을 권한과 감사 로그 기준으로 연다.
+- 범위: 작성자 상태 변경 action/service, admin override 설계, 감사 로그 enum/schema 확장, feed/detail 상태 반영, unit/e2e smoke.
+- 제외: 결제/정산/에스크로/배송, 외부 채팅, 자동 분쟁 처리.
+- 완료 기준: 작성자/admin만 허용된 상태 전환을 수행하고 비작성자/게스트는 차단되며 모든 전환이 감사 로그에 남는다.
 
 ## 다음 실행 순서
 
-1. `marketListingSchema`와 post create form payload를 추가하는 실패 테스트를 작성한다.
-2. `createPost`가 `MARKET_LISTING`에서 `MarketListing`을 생성하고 read include에 싣도록 수정한다.
-3. feed/detail UI에 거래 유형, 가격, 상태를 표시하고 e2e smoke로 확인한다.
+1. `ModerationActionType`에 마켓 상태 변경 action을 추가할지 별도 audit 모델을 둘지 결정한다.
+2. 작성자/admin/비작성자/게스트 상태 전환 권한 실패 테스트를 먼저 작성한다.
+3. detail/feed에서 상태 변경 후 표시가 갱신되는 smoke를 추가한다.
