@@ -306,6 +306,7 @@ model Post {
   walkRoute                 WalkRoute?
   meetup                    Meetup?
   marketListing             MarketListing?
+  careRequest               CareRequest?
   adoptionListing           AdoptionListing?
   volunteerRecruitment      VolunteerRecruitment?
   lostFoundAlert            LostFoundAlert?
@@ -427,6 +428,7 @@ enum PostType {
   WALK_ROUTE
   MEETUP
   MARKET_LISTING
+  CARE_REQUEST
   ADOPTION_LISTING
   SHELTER_VOLUNTEER
   LOST_FOUND
@@ -526,6 +528,42 @@ enum MarketStatus {
   AVAILABLE
   RESERVED
   SOLD
+  CANCELLED
+}
+
+model CareRequest {
+  id           String            @id @default(cuid())
+  postId       String            @unique
+  post         Post              @relation(fields: [postId], references: [id], onDelete: Cascade)
+  careType     CareType
+  startsAt     DateTime?
+  endsAt       DateTime?
+  locationNote String?
+  petNote      String?
+  requirements String?
+  rewardAmount Int?
+  isUrgent     Boolean           @default(false)
+  status       CareRequestStatus @default(OPEN)
+
+  @@index([careType, status])
+  @@index([startsAt])
+  @@index([status, isUrgent, startsAt])
+}
+
+enum CareType {
+  WALK
+  FEEDING
+  VISIT_CARE
+  HOSPITAL_COMPANION
+  EMERGENCY_CHECK
+  ERRAND
+}
+
+enum CareRequestStatus {
+  OPEN
+  MATCHED
+  IN_PROGRESS
+  COMPLETED
   CANCELLED
 }
 

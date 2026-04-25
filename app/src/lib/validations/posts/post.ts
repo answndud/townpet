@@ -1,6 +1,7 @@
 import {
   AdoptionStatus,
   AnimalSex,
+  CareType,
   ItemCondition,
   MarketType,
   MarketStatus,
@@ -130,6 +131,27 @@ export const marketListingStatusUpdateSchema = z.object({
   status: z.nativeEnum(MarketStatus),
 });
 
+export const careRequestSchema = z
+  .object({
+    careType: z.nativeEnum(CareType),
+    startsAt: optionalDate,
+    endsAt: optionalDate,
+    locationNote: optionalTrimmedString({ max: 120 }),
+    petNote: optionalTrimmedString({ max: 160 }),
+    requirements: optionalTrimmedString({ max: 500 }),
+    rewardAmount: optionalInt({ min: 0 }),
+    isUrgent: optionalBoolean.default(false),
+  })
+  .superRefine((value, ctx) => {
+    if (value.startsAt && value.endsAt && value.endsAt.getTime() < value.startsAt.getTime()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["endsAt"],
+        message: "종료 시간은 시작 시간 이후여야 합니다.",
+      });
+    }
+  });
+
 export const postCreateSchema = z.object({
   title: trimmedRequiredString({ max: POST_TITLE_MAX_LENGTH }),
   content: trimmedRequiredString({ max: POST_CONTENT_MAX_LENGTH }),
@@ -143,6 +165,7 @@ export const postCreateSchema = z.object({
   guestDisplayName: optionalTrimmedString({ min: 2, max: 24 }),
   guestPassword: z.string().min(4).max(32).optional(),
   marketListing: marketListingSchema.optional(),
+  careRequest: careRequestSchema.optional(),
 })
   .superRefine((value, ctx) => {
     const isReviewType =
@@ -205,6 +228,14 @@ export const postCreateSchema = z.object({
       }
 
       return;
+    }
+
+    if (value.type === PostType.CARE_REQUEST && !value.careRequest) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["careRequest"],
+        message: "돌봄 요청 글은 요청 정보를 입력해 주세요.",
+      });
     }
 
     if (!isFreeBoardPostType(value.type) && !value.petTypeId) {
@@ -331,6 +362,7 @@ export type AdoptionListingInput = z.infer<typeof adoptionListingSchema>;
 export type VolunteerRecruitmentInput = z.infer<typeof volunteerRecruitmentSchema>;
 export type MarketListingInput = z.infer<typeof marketListingSchema>;
 export type MarketListingStatusUpdateInput = z.infer<typeof marketListingStatusUpdateSchema>;
+export type CareRequestInput = z.infer<typeof careRequestSchema>;
 export type PostUpdateInput = z.infer<typeof postUpdateSchema>;
 
 // Normalize parsed list input to product-facing naming.

@@ -153,6 +153,40 @@ describe("createPost new-user restriction", () => {
     expect(mockPrisma.post.create).not.toHaveBeenCalled();
   });
 
+  it("blocks care requests for new users", async () => {
+    const now = new Date();
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: "user-1",
+      role: UserRole.USER,
+      createdAt: new Date(now.getTime() - 2 * 60 * 60 * 1000),
+    });
+
+    await expect(
+      createPost({
+        authorId: "user-1",
+        input: {
+          title: "산책 도움 요청",
+          content: "오늘 저녁 산책 도와주실 분",
+          type: PostType.CARE_REQUEST,
+          scope: PostScope.LOCAL,
+          neighborhoodId: "ckc7k5qsj0000u0t8qv6d1d7n",
+          petTypeId,
+          imageUrls: [],
+          careRequest: {
+            careType: "WALK",
+            startsAt: "2026-04-27T18:00",
+            locationNote: "공원 근처",
+          },
+        },
+      }),
+    ).rejects.toMatchObject({
+      code: "NEW_USER_RESTRICTED_TYPE",
+      status: 403,
+    });
+
+    expect(mockPrisma.post.create).not.toHaveBeenCalled();
+  });
+
   it("allows unrestricted categories even for new users", async () => {
     const now = new Date();
     mockPrisma.user.findUnique.mockResolvedValue({
@@ -507,6 +541,62 @@ describe("createPost new-user restriction", () => {
         }),
         include: expect.objectContaining({
           marketListing: expect.any(Object),
+        }),
+      }),
+    );
+  });
+
+  it("creates structured care request records for care posts", async () => {
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: "user-1",
+      role: UserRole.USER,
+      createdAt: new Date(Date.now() - 30 * 60 * 60 * 1000),
+    });
+
+    await expect(
+      createPost({
+        authorId: "user-1",
+        input: {
+          title: "산책 도움 요청",
+          content: "저녁 산책을 도와주세요",
+          type: PostType.CARE_REQUEST,
+          scope: PostScope.LOCAL,
+          neighborhoodId: "ckc7k5qsj0000u0t8qv6d1d7n",
+          petTypeId,
+          imageUrls: [],
+          careRequest: {
+            careType: "WALK",
+            startsAt: "2026-04-27T18:00",
+            endsAt: "2026-04-27T19:00",
+            locationNote: "마포구청 근처",
+            petNote: "겁이 많은 소형견",
+            requirements: "하네스를 꼭 확인해 주세요",
+            rewardAmount: 12000,
+            isUrgent: true,
+          },
+        },
+      }),
+    ).resolves.toBeTruthy();
+
+    expect(mockPrisma.post.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          type: PostType.CARE_REQUEST,
+          scope: PostScope.LOCAL,
+          careRequest: {
+            create: expect.objectContaining({
+              careType: "WALK",
+              locationNote: "마포구청 근처",
+              petNote: "겁이 많은 소형견",
+              requirements: "하네스를 꼭 확인해 주세요",
+              rewardAmount: 12000,
+              isUrgent: true,
+            }),
+          },
+          structuredSearchText: expect.stringContaining("마포구청 근처"),
+        }),
+        include: expect.objectContaining({
+          careRequest: expect.any(Object),
         }),
       }),
     );

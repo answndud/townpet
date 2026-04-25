@@ -144,6 +144,19 @@ const buildPostListInclude = (
         status: true,
       },
     },
+    careRequest: {
+      select: {
+        careType: true,
+        startsAt: true,
+        endsAt: true,
+        locationNote: true,
+        petNote: true,
+        requirements: true,
+        rewardAmount: true,
+        isUrgent: true,
+        status: true,
+      },
+    },
   }) as const;
 
 const buildPostListIncludeWithoutReactions = (
@@ -195,6 +208,19 @@ const buildPostListIncludeWithoutReactions = (
         condition: true,
         depositAmount: true,
         rentalPeriod: true,
+        status: true,
+      },
+    },
+    careRequest: {
+      select: {
+        careType: true,
+        startsAt: true,
+        endsAt: true,
+        locationNote: true,
+        petNote: true,
+        requirements: true,
+        rewardAmount: true,
+        isUrgent: true,
         status: true,
       },
     },
@@ -261,6 +287,18 @@ const MARKET_LISTING_SELECT = {
   status: true,
 } as const;
 
+const CARE_REQUEST_SELECT = {
+  careType: true,
+  startsAt: true,
+  endsAt: true,
+  locationNote: true,
+  petNote: true,
+  requirements: true,
+  rewardAmount: true,
+  isUrgent: true,
+  status: true,
+} as const;
+
 type PostDetailExtras = {
   hospitalReview: {
     hospitalName: string | null;
@@ -314,6 +352,17 @@ type PostDetailExtras = {
     rentalPeriod: string | null;
     status: string | null;
   } | null;
+  careRequest: {
+    careType: string | null;
+    startsAt: Date | null;
+    endsAt: Date | null;
+    locationNote: string | null;
+    petNote: string | null;
+    requirements: string | null;
+    rewardAmount: number | null;
+    isUrgent: boolean | null;
+    status: string | null;
+  } | null;
 };
 
 const buildPostDetailBaseInclude = (includeGuestAuthor = supportsPostGuestAuthorField()) =>
@@ -355,6 +404,7 @@ async function attachPostDetailExtras<T extends { id: string; type: PostType }>(
   const needsAdoption = post.type === PostType.ADOPTION_LISTING;
   const needsVolunteer = post.type === PostType.SHELTER_VOLUNTEER;
   const needsMarket = post.type === PostType.MARKET_LISTING;
+  const needsCare = post.type === PostType.CARE_REQUEST;
   const tasks: Array<Promise<void>> = [];
   const target = post as T & PostDetailExtras;
 
@@ -440,6 +490,20 @@ async function attachPostDetailExtras<T extends { id: string; type: PostType }>(
     }
   } else if (target.marketListing === undefined) {
     target.marketListing = null;
+  }
+
+  if (needsCare) {
+    if (target.careRequest === undefined) {
+      tasks.push(
+        prisma.careRequest
+          .findUnique({ where: { postId: post.id }, select: CARE_REQUEST_SELECT })
+          .then((request) => {
+            target.careRequest = request;
+          }),
+      );
+    }
+  } else if (target.careRequest === undefined) {
+    target.careRequest = null;
   }
 
   if (tasks.length > 0) {

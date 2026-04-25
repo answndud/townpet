@@ -31,6 +31,7 @@ const typeLabels: Record<PostType, string> = {
   WALK_ROUTE: "동네 산책코스",
   MEETUP: "동네모임",
   MARKET_LISTING: "중고/공동구매",
+  CARE_REQUEST: "돌봄 요청",
   ADOPTION_LISTING: "유기동물 입양",
   SHELTER_VOLUNTEER: "보호소 봉사 모집",
   LOST_FOUND: "실종/목격 제보",

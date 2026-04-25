@@ -133,6 +133,17 @@ type PostDetailItem = {
     rentalPeriod?: string | null;
     status?: string | null;
   } | null;
+  careRequest?: {
+    careType?: string | null;
+    startsAt?: string | Date | null;
+    endsAt?: string | Date | null;
+    locationNote?: string | null;
+    petNote?: string | null;
+    requirements?: string | null;
+    rewardAmount?: number | null;
+    isUrgent?: boolean | null;
+    status?: string | null;
+  } | null;
   renderedContentHtml?: string | null;
   renderedContentText?: string | null;
 };
@@ -157,6 +168,10 @@ const typeMeta: Record<PostType, { label: string; chipClass: string }> = {
   MARKET_LISTING: {
     label: "중고/공동구매",
     chipClass: "border-slate-300 bg-slate-100 text-slate-700",
+  },
+  CARE_REQUEST: {
+    label: "돌봄 요청",
+    chipClass: "border-emerald-200 bg-emerald-50 text-emerald-700",
   },
   ADOPTION_LISTING: {
     label: "유기동물 입양",
@@ -208,6 +223,24 @@ const renderTextValue = (value: string | null | undefined) =>
 const renderNumberValue = (value: number | null | undefined, suffix = "") =>
   value !== null && value !== undefined ? `${value}${suffix}` : emptyValue;
 
+const formatDetailDateTime = (value: string | Date | null | undefined) => {
+  if (!value) {
+    return null;
+  }
+
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  return new Intl.DateTimeFormat("ko-KR", {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+};
+
 const renderBooleanValue = (
   value: boolean | null | undefined,
   trueLabel: string,
@@ -251,6 +284,23 @@ const marketStatusLabel: Record<string, string> = {
   AVAILABLE: "거래 가능",
   RESERVED: "예약 중",
   SOLD: "거래 완료",
+  CANCELLED: "취소",
+};
+
+const careTypeLabel: Record<string, string> = {
+  WALK: "산책",
+  FEEDING: "급식",
+  VISIT_CARE: "방문 돌봄",
+  HOSPITAL_COMPANION: "병원 동행",
+  EMERGENCY_CHECK: "긴급 체크",
+  ERRAND: "심부름",
+};
+
+const careStatusLabel: Record<string, string> = {
+  OPEN: "요청 중",
+  MATCHED: "매칭됨",
+  IN_PROGRESS: "진행 중",
+  COMPLETED: "완료",
   CANCELLED: "취소",
 };
 
@@ -957,6 +1007,63 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
                 ) : null}
               </div>
             ) : null}
+          </PostDetailInfoSection>
+        ) : null}
+
+        {post.careRequest ? (
+          <PostDetailInfoSection title="돌봄 요청 정보">
+            <PostDetailInfoItem
+              label="요청 유형"
+              value={renderTextValue(
+                post.careRequest.careType
+                  ? (careTypeLabel[post.careRequest.careType] ?? post.careRequest.careType)
+                  : null,
+              )}
+            />
+            <PostDetailInfoItem
+              label="상태"
+              value={renderTextValue(
+                post.careRequest.status
+                  ? (careStatusLabel[post.careRequest.status] ?? post.careRequest.status)
+                  : null,
+              )}
+            />
+            <PostDetailInfoItem
+              label="시작"
+              value={renderTextValue(formatDetailDateTime(post.careRequest.startsAt))}
+            />
+            <PostDetailInfoItem
+              label="종료"
+              value={renderTextValue(formatDetailDateTime(post.careRequest.endsAt))}
+            />
+            <PostDetailInfoItem
+              label="보상"
+              value={
+                post.careRequest.rewardAmount !== null &&
+                post.careRequest.rewardAmount !== undefined
+                  ? `${post.careRequest.rewardAmount.toLocaleString()}원`
+                  : emptyValue
+              }
+            />
+            <PostDetailInfoItem
+              label="긴급"
+              value={renderBooleanValue(post.careRequest.isUrgent, "긴급 요청", "일반 요청")}
+            />
+            <PostDetailInfoItem
+              label="위치 힌트"
+              span="wide"
+              value={renderTextValue(post.careRequest.locationNote)}
+            />
+            <PostDetailInfoItem
+              label="반려동물"
+              span="wide"
+              value={renderTextValue(post.careRequest.petNote)}
+            />
+            <PostDetailInfoItem
+              label="요청사항"
+              span="full"
+              value={renderTextValue(post.careRequest.requirements)}
+            />
           </PostDetailInfoSection>
         ) : null}
 

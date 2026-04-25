@@ -26,17 +26,17 @@
 
 ## Active Plan
 
-### Care Request M1 구조화 요청 생성/조회
+### Care Request M2 상태 전환/지원 흐름 preflight
 
 상태: `pending`
 
-- 목표: `CARE_REQUEST` 게시글을 구조화 relation과 함께 생성하고 feed/detail에서 읽게 만든다.
-- 범위: Prisma schema/migration, Zod validation, post create service, structured search/moderation text, feed/detail query include, 작성 폼과 read UI, unit tests.
-- 제외: 지원자 매칭, 상태 전환 액션, 결제/예약/보험, 외부 계약 자동화, 실시간 위치 추적.
-- 완료 기준: 돌봄 요청이 일반 자유글로만 저장되지 않고, 게스트/신규 유저/연락처 제한 failure-path와 생성/조회 테스트가 통과한다.
+- 목표: 돌봄 요청의 상태 전환과 지원/문의 흐름을 구현하기 전에 권한, 감사 로그, 모델 경계를 확정한다.
+- 범위: `CareRequestStatus`, 작성자/운영자 권한, 지원자 모델 후보, 신고/감사 로그 연결, 알림 후보, failure-path tests.
+- 제외: 실제 M2 구현, 결제/예약/보험, 외부 계약 자동화, 실시간 위치 추적.
+- 완료 기준: 상태 전환 M2와 지원/문의 M3 경계를 분리하고 첫 구현 단위와 테스트 기준을 `PROGRESS/COMPLETED`에 남긴다.
 
 ## 다음 실행 순서
 
-1. `PostType.CARE_REQUEST`, `CareRequest`, `CareRequestStatus`, `CareType` schema와 migration을 추가한다.
-2. validation/service/query/UI에 돌봄 요청 구조화 필드를 연결한다.
-3. 생성/조회와 게스트/신규 유저/연락처 제한 테스트를 추가하고 품질 게이트를 실행한다.
+1. 마켓 상태 전환 패턴과 `CareRequestStatus` 후보 전이를 비교한다.
+2. 작성자/admin/moderator/지원자 권한과 `ModerationActionLog` action 필요 여부를 확정한다.
+3. M2 구현 범위와 테스트 목록을 문서화한다.

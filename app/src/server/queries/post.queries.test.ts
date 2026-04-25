@@ -242,6 +242,11 @@ describe("post queries", () => {
       price: true,
       status: true,
     });
+    expect(args.include.careRequest.select).toMatchObject({
+      careType: true,
+      startsAt: true,
+      status: true,
+    });
     expect((result.items[0] as { reactions?: Array<{ type: string }> } | undefined)?.reactions).toEqual(
       [],
     );

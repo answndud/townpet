@@ -98,6 +98,17 @@ export type FeedPostItem = {
     rentalPeriod?: string | null;
     status?: string | null;
   } | null;
+  careRequest?: {
+    careType?: string | null;
+    startsAt?: string | Date | null;
+    endsAt?: string | Date | null;
+    locationNote?: string | null;
+    petNote?: string | null;
+    requirements?: string | null;
+    rewardAmount?: number | null;
+    isUrgent?: boolean | null;
+    status?: string | null;
+  } | null;
   isBookmarked?: boolean | null;
   reactions?: Array<{
     type: FeedReactionType;
@@ -178,6 +189,23 @@ const marketStatusLabel: Record<string, string> = {
   AVAILABLE: "거래 가능",
   RESERVED: "예약 중",
   SOLD: "거래 완료",
+  CANCELLED: "취소",
+};
+
+const careTypeLabel: Record<string, string> = {
+  WALK: "산책",
+  FEEDING: "급식",
+  VISIT_CARE: "방문 돌봄",
+  HOSPITAL_COMPANION: "병원 동행",
+  EMERGENCY_CHECK: "긴급 체크",
+  ERRAND: "심부름",
+};
+
+const careStatusLabel: Record<string, string> = {
+  OPEN: "요청 중",
+  MATCHED: "매칭됨",
+  IN_PROGRESS: "진행 중",
+  COMPLETED: "완료",
   CANCELLED: "취소",
 };
 
@@ -643,6 +671,23 @@ export function FeedInfiniteList({
                 .filter(Boolean)
                 .join(" · ")
             : null;
+          const careSummary = post.careRequest
+            ? [
+                post.careRequest.careType
+                  ? (careTypeLabel[post.careRequest.careType] ?? post.careRequest.careType)
+                  : null,
+                formatListDate(post.careRequest.startsAt),
+                post.careRequest.rewardAmount !== null && post.careRequest.rewardAmount !== undefined
+                  ? `${post.careRequest.rewardAmount.toLocaleString()}원`
+                  : null,
+                post.careRequest.isUrgent ? "긴급" : null,
+                post.careRequest.status
+                  ? (careStatusLabel[post.careRequest.status] ?? post.careRequest.status)
+                  : null,
+              ]
+                .filter(Boolean)
+                .join(" · ")
+            : null;
           const isGuestPost = Boolean(post.guestAuthorId || post.guestDisplayName?.trim());
           const authorLabel = isGuestPost
             ? resolvePublicGuestDisplayName(post.guestDisplayName)
@@ -734,9 +779,9 @@ export function FeedInfiniteList({
                 }}
                 bottomContent={
                   <>
-                    {marketSummary || adoptionSummary || volunteerSummary ? (
+                    {marketSummary || careSummary || adoptionSummary || volunteerSummary ? (
                       <p className="mt-1 truncate text-[12px] text-[#5d779e]">
-                        {marketSummary ?? adoptionSummary ?? volunteerSummary}
+                        {marketSummary ?? careSummary ?? adoptionSummary ?? volunteerSummary}
                       </p>
                     ) : null}
                     <div className="mt-2 flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1 text-[12px] text-[#5f789d]">

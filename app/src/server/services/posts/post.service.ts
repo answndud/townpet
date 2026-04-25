@@ -35,10 +35,12 @@ import {
 } from "@/lib/post-write-policy";
 import {
   type AdoptionListingInput,
+  type CareRequestInput,
   type HospitalReviewInput,
   type MarketListingInput,
   type VolunteerRecruitmentInput,
   adoptionListingSchema,
+  careRequestSchema,
   hospitalReviewSchema,
   marketListingSchema,
   marketListingStatusUpdateSchema,
@@ -132,6 +134,7 @@ const VOLUNTEER_RECRUITMENT_TEXT_FIELDS = [
   "volunteerType",
 ] as const;
 const MARKET_LISTING_TEXT_FIELDS = ["rentalPeriod"] as const;
+const CARE_REQUEST_TEXT_FIELDS = ["locationNote", "petNote", "requirements"] as const;
 
 const normalizeImageUrls = (imageUrls: string[] | undefined) =>
   Array.from(
@@ -542,6 +545,7 @@ export async function createPost({ authorId, input, guestIdentity }: CreatePostP
     guestDisplayName,
     guestPassword,
     marketListing,
+    careRequest,
     ...postData
   } = parsed.data;
   const normalizedImageUrls = normalizeImageUrls(imageUrls);
@@ -552,7 +556,7 @@ export async function createPost({ authorId, input, guestIdentity }: CreatePostP
     postData.type === PostType.ADOPTION_LISTING ||
     postData.type === PostType.SHELTER_VOLUNTEER
       ? PostScope.GLOBAL
-      : postData.type === PostType.MEETUP
+      : postData.type === PostType.MEETUP || postData.type === PostType.CARE_REQUEST
       ? PostScope.LOCAL
       : postData.scope;
   const rawInput = input as Record<string, unknown>;
@@ -560,6 +564,7 @@ export async function createPost({ authorId, input, guestIdentity }: CreatePostP
   let adoptionListingInput: AdoptionListingInput | null = null;
   let volunteerRecruitmentInput: VolunteerRecruitmentInput | null = null;
   let marketListingInput: MarketListingInput | null = null;
+  let careRequestInput: CareRequestInput | null = null;
   if (postData.type === PostType.HOSPITAL_REVIEW) {
     const reviewInput = hospitalReviewSchema.safeParse(rawInput.hospitalReview ?? {});
     if (!reviewInput.success) {
@@ -594,6 +599,14 @@ export async function createPost({ authorId, input, guestIdentity }: CreatePostP
 
     marketListingInput = listingInput.data;
   }
+  if (postData.type === PostType.CARE_REQUEST) {
+    const requestInput = careRequestSchema.safeParse(rawInput.careRequest ?? careRequest);
+    if (!requestInput.success) {
+      throw new ServiceError("돌봄 요청 입력값이 올바르지 않습니다.", "INVALID_CARE_REQUEST", 400);
+    }
+
+    careRequestInput = requestInput.data;
+  }
   if (hospitalReviewInput) {
     hospitalReviewInput = normalizeHospitalReviewFields(hospitalReviewInput);
   }
@@ -624,6 +637,9 @@ export async function createPost({ authorId, input, guestIdentity }: CreatePostP
       volunteerRecruitmentInput?.region,
       volunteerRecruitmentInput?.volunteerType,
       marketListingInput?.rentalPeriod,
+      careRequestInput?.locationNote,
+      careRequestInput?.petNote,
+      careRequestInput?.requirements,
     ]),
     forbiddenKeywords,
   );
@@ -741,6 +757,15 @@ export async function createPost({ authorId, input, guestIdentity }: CreatePostP
         blockWindowHours: newUserSafetyPolicy.contactBlockWindowHours,
       });
     }
+    if (careRequestInput) {
+      careRequestInput = moderateStructuredTextFields({
+        data: careRequestInput,
+        fields: CARE_REQUEST_TEXT_FIELDS,
+        role: author.role,
+        accountCreatedAt: author.createdAt,
+        blockWindowHours: newUserSafetyPolicy.contactBlockWindowHours,
+      });
+    }
     resolvedAuthorId = author.id;
     resolvedAuthorAccountCreatedAt = author.createdAt;
   } else {
@@ -802,6 +827,9 @@ export async function createPost({ authorId, input, guestIdentity }: CreatePostP
       volunteerRecruitmentInput?.region,
       volunteerRecruitmentInput?.volunteerType,
       marketListingInput?.rentalPeriod,
+      careRequestInput?.locationNote,
+      careRequestInput?.petNote,
+      careRequestInput?.requirements,
     ]);
 
     if (!guestPostPolicy.allowLinks && GUEST_LINK_PATTERN.test(guestPolicyText)) {
@@ -1186,6 +1214,60 @@ export async function createPost({ authorId, input, guestIdentity }: CreatePostP
             condition: true,
             depositAmount: true,
             rentalPeriod: true,
+            status: true,
+          },
+        },
+        images: {
+          select: { id: true, url: true, order: true },
+          orderBy: { order: "asc" },
+        },
+      },
+    });
+    await finalizeUploadUrlChanges({ attachedUrls: normalizedImageUrls });
+    notifyPostCacheChange();
+    return created;
+  }
+
+  if (postData.type === "CARE_REQUEST") {
+    if (!careRequestInput) {
+      throw new ServiceError("돌봄 요청 입력값이 올바르지 않습니다.", "INVALID_CARE_REQUEST", 400);
+    }
+
+    const created = await prisma.post.create({
+      data: {
+        ...commonCreateData,
+        structuredSearchText: buildPostStructuredSearchText({
+          animalTags: commonBoardAnimalTags,
+          careRequest: careRequestInput,
+        }),
+        careRequest: {
+          create: {
+            careType: careRequestInput.careType,
+            startsAt: careRequestInput.startsAt,
+            endsAt: careRequestInput.endsAt,
+            locationNote: careRequestInput.locationNote,
+            petNote: careRequestInput.petNote,
+            requirements: careRequestInput.requirements,
+            rewardAmount: careRequestInput.rewardAmount,
+            isUrgent: careRequestInput.isUrgent,
+          },
+        },
+      },
+      include: {
+        author: { select: { id: true, nickname: true } },
+        neighborhood: {
+          select: { id: true, name: true, city: true, district: true },
+        },
+        careRequest: {
+          select: {
+            careType: true,
+            startsAt: true,
+            endsAt: true,
+            locationNote: true,
+            petNote: true,
+            requirements: true,
+            rewardAmount: true,
+            isUrgent: true,
             status: true,
           },
         },
