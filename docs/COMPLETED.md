@@ -1286,3 +1286,26 @@
   - social-dev entry smoke는 DB/session 부작용 없이 요청 시작만 검증한다.
   - 전체 smoke가 로컬 병렬 실행에서 통과한다.
   - 다음 작업은 마켓 M1/M2와 smoke 안정화 이후 남은 런치 갭을 다시 재평가하는 것이다.
+
+### 2026-04-26 | Launch Gap 다음 후보 재평가
+- 완료일: `2026-04-26`
+- 배경:
+  - 마켓 M1/M2가 완료되어 `MARKET_LISTING`은 구조화 생성/조회와 작성자/admin 상태 전환까지 동작한다.
+  - social-dev smoke blocker도 해결되어 로컬 smoke 증거가 회복됐다.
+  - 남은 Phase 2 후보 중 결제는 정산/분쟁/법적 고지 선행이 필요하고, 카카오맵은 외부 API와 장소 canonicalization 의존이 남아 있다.
+- 변경내용:
+  - 최근 완료 항목, 열린 blocker, Phase 2 로드맵, 돌봄/구인구직 정책 초안을 비교했다.
+  - 다음 active plan을 `Care Request Templates preflight`로 전환했다.
+  - 구현 첫 단계는 새 기능 작성이 아니라 `PostType`/structured relation/write policy/report/audit 경계 확정으로 자른다.
+  - production strict/control-plane 확인과 실 OAuth 계정 검증은 운영 secret이 필요한 별도 보류 조건으로 유지했다.
+- 코드문서:
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+  - [docs/COMPLETED.md](./COMPLETED.md)
+  - [business/product/Phase2_로드맵_PRD.md](../business/product/Phase2_로드맵_PRD.md)
+  - [business/policies/구인구직_운영규칙.md](../business/policies/구인구직_운영규칙.md)
+- 검증:
+  - 문서 변경에 한정해 `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`, `business/product/Phase2_로드맵_PRD.md` 동기화를 확인했다.
+- 결과:
+  - 다음 작업은 `Care Request Templates preflight`다.
+  - 케어 M1 구현 전에 돌봄 요청을 별도 모델로 둘지 기존 post 구조 위 relation으로 둘지 결정하고, 신규 유저/게스트 제한과 신고/감사 로그 테스트 기준을 확정한다.

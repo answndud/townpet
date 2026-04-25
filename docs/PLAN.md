@@ -26,17 +26,17 @@
 
 ## Active Plan
 
-### Launch Gap 다음 후보 재평가
+### Care Request Templates preflight
 
 상태: `pending`
 
-- 목표: 마켓 M1/M2와 smoke 안정화 완료 후 남은 런치 갭을 다시 비교해 다음 구현 후보를 정한다.
-- 범위: 최근 완료 항목, 열린 blocker, Phase 2 roadmap, 운영/보안 보류 조건 재평가.
-- 제외: 새 기능 구현, 원격 운영 secret이 필요한 production strict 확인.
-- 완료 기준: 다음 active plan을 하나로 줄이고, 보류 조건과 선택 이유를 `PROGRESS/COMPLETED`에 남긴다.
+- 목표: 돌봄/구인구직 요청을 구현하기 전에 정책, 구조화 필드, 상태 모델, 권한/감사 로그 범위를 확정한다.
+- 범위: 기존 post type/schema/service/UI 현황, 돌봄/구인구직 정책, local matching 필드, 신규 유저/게스트 제한, 신고/차단/감사 로그 연결 지점.
+- 제외: 실제 케어 기능 구현, 예약/결제/보험/외부 계약 자동화, 원격 운영 secret이 필요한 production strict 확인.
+- 완료 기준: `CARE_REQUEST`를 별도 모델로 둘지 기존 post 구조 위에 relation으로 둘지 결정하고, M1 구현 범위와 테스트 기준을 `PROGRESS/COMPLETED`에 남긴다.
 
 ## 다음 실행 순서
 
-1. `COMPLETED.md`의 최근 완료 항목과 `PROGRESS.md` blocker를 비교한다.
-2. Phase 2 roadmap과 현재 운영 리스크를 다시 본다.
-3. 다음 작업을 문서/테스트/기능 중 하나로 확정한다.
+1. `business/policies/구인구직_운영규칙.md`와 케어 IA/사용자 플로우를 현재 코드 구조와 비교한다.
+2. `PostType`, structured relation, write policy, report/moderation log 경계를 확인한다.
+3. 케어 M1 구현 단위와 failure-path test 목록을 확정한다.
