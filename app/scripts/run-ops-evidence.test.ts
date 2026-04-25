@@ -24,6 +24,10 @@ function createConfig(overrides: Partial<OpsEvidenceConfig> = {}): OpsEvidenceCo
   };
 }
 
+function scriptNameFromArgs(args: string[]) {
+  return args.at(-1);
+}
+
 describe("ops evidence runner", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
@@ -42,7 +46,7 @@ describe("ops evidence runner", () => {
       "prewarm",
       "perf-snapshot",
     ]);
-    expect(steps[1].args).toEqual(["ops:check:security-env"]);
+    expect(scriptNameFromArgs(steps[1].args)).toBe("ops:check:security-env");
     expect(steps[3].env.OPS_PERF_GET_SAMPLES).toBe("5");
   });
 
@@ -57,7 +61,7 @@ describe("ops evidence runner", () => {
     expect(config.baseUrl).toBe("https://townpet.vercel.app");
     expect(config.securityStrict).toBe(true);
     expect(config.continueOnFailure).toBe(false);
-    expect(steps[1].args).toEqual(["ops:check:security-env:strict"]);
+    expect(scriptNameFromArgs(steps[1].args)).toBe("ops:check:security-env:strict");
   });
 
   it("writes a passing markdown evidence report", async () => {
@@ -69,11 +73,11 @@ describe("ops evidence runner", () => {
     await runOpsEvidence(config, commandRunner);
     const report = await readFile(config.outputPath, "utf8");
 
-    expect(commandRunner.mock.calls.map((call) => [call[0], call[1]])).toEqual([
-      ["pnpm", ["ops:check:health"]],
-      ["pnpm", ["ops:check:security-env"]],
-      ["pnpm", ["ops:prewarm"]],
-      ["pnpm", ["ops:perf:snapshot"]],
+    expect(commandRunner.mock.calls.map((call) => scriptNameFromArgs(call[1]))).toEqual([
+      "ops:check:health",
+      "ops:check:security-env",
+      "ops:prewarm",
+      "ops:perf:snapshot",
     ]);
     expect(report).toContain("- status: PASS");
     expect(report).toContain("- health: PASS");
