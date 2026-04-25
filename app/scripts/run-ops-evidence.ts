@@ -75,6 +75,21 @@ function excerptOutput(output: string, maxLines = 80) {
 
 type EnvMap = Record<string, string | undefined>;
 
+function buildPnpmCommand(script: string) {
+  const npmExecPath = process.env.npm_execpath;
+  if (npmExecPath) {
+    return {
+      command: process.execPath,
+      args: [npmExecPath, script],
+    };
+  }
+
+  return {
+    command: "pnpm",
+    args: [script],
+  };
+}
+
 export function resolveOpsEvidenceConfig(env: EnvMap = process.env): OpsEvidenceConfig {
   const timestamp = compactTimestamp();
   const outputPath = path.resolve(env.OPS_EVIDENCE_OUT ?? defaultEvidencePath(timestamp));
@@ -105,24 +120,23 @@ export function buildOpsEvidenceSteps(config: OpsEvidenceConfig): EvidenceStep[]
     {
       id: "health",
       title: "Health endpoint",
-      command: "pnpm",
-      args: ["ops:check:health"],
+      ...buildPnpmCommand("ops:check:health"),
       env: baseEnv,
       required: true,
     },
     {
       id: "security-env",
       title: config.securityStrict ? "Security env strict preflight" : "Security env preflight",
-      command: "pnpm",
-      args: [config.securityStrict ? "ops:check:security-env:strict" : "ops:check:security-env"],
+      ...buildPnpmCommand(
+        config.securityStrict ? "ops:check:security-env:strict" : "ops:check:security-env",
+      ),
       env: baseEnv,
       required: true,
     },
     {
       id: "prewarm",
       title: "Read-only deployment prewarm",
-      command: "pnpm",
-      args: ["ops:prewarm"],
+      ...buildPnpmCommand("ops:prewarm"),
       env: {
         ...baseEnv,
         OPS_PREWARM_PASSES: baseEnv.OPS_PREWARM_PASSES ?? "1",
@@ -133,8 +147,7 @@ export function buildOpsEvidenceSteps(config: OpsEvidenceConfig): EvidenceStep[]
     {
       id: "perf-snapshot",
       title: "Latency snapshot",
-      command: "pnpm",
-      args: ["ops:perf:snapshot"],
+      ...buildPnpmCommand("ops:perf:snapshot"),
       env: {
         ...baseEnv,
         OPS_PERF_GET_SAMPLES: baseEnv.OPS_PERF_GET_SAMPLES ?? "5",

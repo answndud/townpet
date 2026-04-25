@@ -1,10 +1,12 @@
 import "dotenv/config"
 import { execFile } from "child_process"
 import { mkdirSync, writeFileSync } from "fs"
-import { dirname } from "path"
+import { dirname, resolve } from "path"
+import { fileURLToPath } from "url"
 import { promisify } from "util"
 
 const execFileAsync = promisify(execFile)
+const CURRENT_FILE_PATH = fileURLToPath(import.meta.url)
 
 type HttpMethod = "GET" | "POST"
 
@@ -435,36 +437,20 @@ function buildSummary(
   return lines.join("\n")
 }
 
-async function main() {
-  const baseUrl = process.env.OPS_BASE_URL
-  if (!baseUrl) {
-    throw new Error("OPS_BASE_URL is required (example: https://townpet.vercel.app)")
-  }
-
-  const normalizedBaseUrl = normalizeBaseUrl(baseUrl)
-  const getSamples = toPositiveInt("OPS_PERF_GET_SAMPLES", process.env.OPS_PERF_GET_SAMPLES, 30)
-  const postSamples = toPositiveInt("OPS_PERF_POST_SAMPLES", process.env.OPS_PERF_POST_SAMPLES, 20)
-  const pauseMs = toNonNegativeInt("OPS_PERF_PAUSE_MS", process.env.OPS_PERF_PAUSE_MS, 200)
-  const warmupSamplesPerEndpoint = toNonNegativeInt(
-    "OPS_PERF_WARMUP_SAMPLES_PER_ENDPOINT",
-    process.env.OPS_PERF_WARMUP_SAMPLES_PER_ENDPOINT,
-    1,
-  )
-  const failOnThresholdBreach = toBoolean(
-    "OPS_PERF_FAIL_ON_THRESHOLD_BREACH",
-    process.env.OPS_PERF_FAIL_ON_THRESHOLD_BREACH,
-    false,
-  )
-  const outputPath =
-    process.env.OPS_PERF_OUT ??
-    `/tmp/townpet_latency_snapshot_${new Date().toISOString().replace(/[:.]/g, "-")}.tsv`
-  const summaryPath = process.env.OPS_PERF_SUMMARY_OUT ?? `${outputPath}.summary.md`
-
-  const endpoints: EndpointConfig[] = [
+export function buildLatencySnapshotEndpoints({
+  getSamples,
+  postSamples,
+  pauseMs,
+}: {
+  getSamples: number
+  postSamples: number
+  pauseMs: number
+}) {
+  return [
     {
       label: "page_feed",
       method: "GET",
-      path: "/feed",
+      path: "/feed/guest",
       samples: getSamples,
       pauseMs,
     },
@@ -511,7 +497,35 @@ async function main() {
       samples: postSamples,
       pauseMs,
     },
-  ]
+  ] satisfies EndpointConfig[]
+}
+
+async function main() {
+  const baseUrl = process.env.OPS_BASE_URL
+  if (!baseUrl) {
+    throw new Error("OPS_BASE_URL is required (example: https://townpet.vercel.app)")
+  }
+
+  const normalizedBaseUrl = normalizeBaseUrl(baseUrl)
+  const getSamples = toPositiveInt("OPS_PERF_GET_SAMPLES", process.env.OPS_PERF_GET_SAMPLES, 30)
+  const postSamples = toPositiveInt("OPS_PERF_POST_SAMPLES", process.env.OPS_PERF_POST_SAMPLES, 20)
+  const pauseMs = toNonNegativeInt("OPS_PERF_PAUSE_MS", process.env.OPS_PERF_PAUSE_MS, 200)
+  const warmupSamplesPerEndpoint = toNonNegativeInt(
+    "OPS_PERF_WARMUP_SAMPLES_PER_ENDPOINT",
+    process.env.OPS_PERF_WARMUP_SAMPLES_PER_ENDPOINT,
+    1,
+  )
+  const failOnThresholdBreach = toBoolean(
+    "OPS_PERF_FAIL_ON_THRESHOLD_BREACH",
+    process.env.OPS_PERF_FAIL_ON_THRESHOLD_BREACH,
+    false,
+  )
+  const outputPath =
+    process.env.OPS_PERF_OUT ??
+    `/tmp/townpet_latency_snapshot_${new Date().toISOString().replace(/[:.]/g, "-")}.tsv`
+  const summaryPath = process.env.OPS_PERF_SUMMARY_OUT ?? `${outputPath}.summary.md`
+
+  const endpoints = buildLatencySnapshotEndpoints({ getSamples, postSamples, pauseMs })
 
   const records: SampleRecord[] = []
 
@@ -606,8 +620,10 @@ async function main() {
   }
 }
 
-main().catch((error) => {
-  console.error("Latency snapshot collection failed")
-  console.error(error)
-  process.exit(1)
-})
+if (process.argv[1] && resolve(process.argv[1]) === CURRENT_FILE_PATH) {
+  main().catch((error) => {
+    console.error("Latency snapshot collection failed")
+    console.error(error)
+    process.exit(1)
+  })
+}

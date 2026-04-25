@@ -13,12 +13,18 @@
 - 품종 라운지 고위험 write gate 점검을 완료했다
 - Cycle A 완료 후 다음 후보 재평가를 완료했다
 - 운영 10분 루틴 로컬 evidence runner 보강을 완료했다
-- 다음 작업: 운영 evidence 첫 실행 및 결과 triage
+- 운영 evidence 첫 실행 및 결과 triage를 완료했다
+- 다음 작업: 런치 갭 다음 후보 재평가
 
 ## 열린 blocker
 - 없음. 기존 `db:restore:local` local test account count mismatch는 managed account count 검증으로 수정했고 restore 통과를 확인했다.
 
 ## 직전 검증
+- 운영 evidence 첫 실행 및 결과 triage:
+  - 실행: `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm -C app ops:evidence`
+  - 정상: health 200, prewarm 7 targets 200, latency steady-state 전 항목 threshold PASS.
+  - 수정: runner가 bare `pnpm`을 spawn해 실패하던 문제를 현재 package manager 경로 재사용으로 고쳤고, perf `page_feed`가 `/feed` 307을 측정하던 문제를 `/feed/guest` 기준으로 고쳤다.
+  - 보류: security-env WARN 7건은 로컬 env 기준이며 production strict/control-plane 상세 확인은 운영 secret이 필요하다.
 - 운영 10분 루틴 로컬 evidence runner 보강:
   - 추가: `ops:evidence`가 health, security env, prewarm, latency snapshot을 read-only로 순차 실행하고 `docs/reports/ops-evidence-*.md`에 결과를 남긴다.
   - 실패: 한 단계가 실패해도 나머지 점검을 계속 기록한 뒤 required 실패가 있으면 exit code 1로 종료한다.
@@ -47,9 +53,9 @@
 - 과거 Phase 0-5와 checkpoint/push 상세도 [COMPLETED.md](./COMPLETED.md)에 보관했다.
 
 ## 다음 액션
-1. 로컬 서버 또는 원격 기준 `OPS_BASE_URL`을 정한다.
-2. `corepack pnpm -C app ops:evidence`를 실행한다.
-3. 생성된 evidence 결과를 보고 `정상 / 버그 / 보류`로 분류한다.
+1. 최근 완료 항목과 evidence 보류 조건을 확인한다.
+2. 남은 런치 갭 후보를 현재 우선순위 기준으로 비교한다.
+3. 다음 active plan을 하나로 좁힌다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)

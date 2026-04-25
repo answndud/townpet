@@ -1039,3 +1039,33 @@
 - 결과:
   - 주간 10분 운영 점검은 이제 `ops:evidence` 단일 명령으로 시작할 수 있다.
   - 다음 작업은 실제 로컬 또는 원격 target에 대해 evidence를 1회 실행하고 결과를 triage하는 것이다.
+
+### 2026-04-26 | 운영 evidence 첫 실행 및 결과 triage
+- 완료일: `2026-04-26`
+- 배경:
+  - `ops:evidence` runner를 실제 원격 target에 대해 1회 실행해 결과 파일, 실패 항목, 후속 수정 후보를 분류해야 했다.
+  - 로컬 `localhost:3000` 서버가 떠 있지 않아 원격 `https://townpet.vercel.app` 기준으로 실행했다.
+- 변경내용:
+  - 첫 실행에서 runner가 bare `pnpm`을 spawn해 실패하는 문제를 발견했고, 현재 실행 중인 package manager 경로를 재사용하도록 수정했다.
+  - perf snapshot의 `page_feed`가 `/feed` 307 redirect를 측정해 threshold FAIL을 만들던 문제를 `/feed/guest` 기준으로 수정했다.
+  - `collect-latency-snapshot`의 endpoint 목록을 테스트 가능하게 분리하고, import 시 main이 실행되지 않도록 guard를 추가했다.
+  - 원격 evidence를 재실행해 health, security env, prewarm, latency snapshot을 모두 기록했다.
+- 코드문서:
+  - [app/scripts/run-ops-evidence.ts](../app/scripts/run-ops-evidence.ts)
+  - [app/scripts/run-ops-evidence.test.ts](../app/scripts/run-ops-evidence.test.ts)
+  - [app/scripts/collect-latency-snapshot.ts](../app/scripts/collect-latency-snapshot.ts)
+  - [app/scripts/collect-latency-snapshot.test.ts](../app/scripts/collect-latency-snapshot.test.ts)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm -C app ops:evidence` 통과
+  - 생성 파일: `docs/reports/ops-evidence-2026-04-25T15-19-48-865Z.md` (로컬 evidence, git ignored)
+  - health: `https://townpet.vercel.app/api/health` 200, `payload.status=ok`
+  - prewarm: 7 targets 200, cacheHitLike 5, cacheMisses 1
+  - latency steady-state threshold: `api_breed_posts`, `api_feed_guest`, `api_posts_global`, `api_posts_suggestions`, `api_search_guest`, `api_search_log`, `page_feed` 모두 PASS
+  - `corepack pnpm -C app exec vitest run scripts/collect-latency-snapshot.test.ts scripts/run-ops-evidence.test.ts` 통과, 5 tests
+- 결과:
+  - `정상`: 원격 health, prewarm, latency steady-state threshold.
+  - `버그`: runner child process 실행 방식, redirecting `/feed` 측정 경로. 둘 다 즉시 수정하고 회귀 테스트를 추가했다.
+  - `보류`: security-env WARN 7건은 로컬 env 기준이라 production strict/control-plane 상세 확인에는 운영 secret이 필요하다.
+  - 다음 작업은 최근 완료 항목과 보류 조건을 기준으로 남은 런치 갭 중 다음 후보를 재평가하는 것이다.

@@ -26,17 +26,17 @@
 
 ## Active Plan
 
-### 운영 evidence 첫 실행 및 결과 triage
+### 런치 갭 다음 후보 재평가
 
 상태: `pending`
 
-- 목표: 새 `ops:evidence` runner를 로컬 또는 원격 기준으로 1회 실행하고 결과를 `정상 / 버그 / 보류`로 분류한다.
-- 범위: `OPS_BASE_URL` 결정, evidence 실행, 생성 리포트 확인, 실패 원인 triage, 필요 시 후속 작업 분리.
-- 제외: 실 Sentry ingestion, 실 Vercel/GitHub secrets 조회, 장기 모니터링 대시보드 구축.
-- 완료 기준: evidence 결과 파일 경로, PASS/FAIL, 실패 항목 원인 후보와 다음 조치를 `PROGRESS.md`에 남긴다.
+- 목표: 최근 로컬 기능 검증, Cycle A, 운영 evidence 결과를 기준으로 다음 런치 갭 작업을 하나로 고른다.
+- 범위: 남은 운영/품질/커뮤니티 hot path 후보 비교, 다음 active plan 확정.
+- 제외: 결제/정산/에스크로, 카카오맵 실연동, 장기 모니터링 대시보드 구축.
+- 완료 기준: 우선순위에 맞는 다음 작업 1개를 목표/범위/완료 기준과 함께 active plan으로 전환한다.
 
 ## 다음 실행 순서
 
-1. 로컬 서버 상태를 확인하고, 없으면 원격 `https://townpet.vercel.app` 기준으로 실행할지 결정한다.
-2. `OPS_BASE_URL=<target> corepack pnpm -C app ops:evidence`를 실행한다.
-3. 생성된 `docs/reports/ops-evidence-*.md` 요약을 확인하고 후속 수정 후보를 분리한다.
+1. `PROGRESS.md`와 `COMPLETED.md`의 최근 완료 항목을 확인한다.
+2. 운영 evidence 보류 조건과 남은 런치 갭을 비교한다.
+3. 다음 구현/검증 작업을 하나로 좁혀 `PLAN.md`와 `PROGRESS.md`에 반영한다.
