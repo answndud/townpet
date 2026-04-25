@@ -26,17 +26,17 @@
 
 ## Active Plan
 
-### Market Listing M2 상태 전환 액션
+### Social Dev Onboarding Smoke 안정화
 
 상태: `pending`
 
-- 목표: 구조화된 `MarketListing`의 `AVAILABLE/RESERVED/SOLD/CANCELLED` 상태 전환을 권한과 감사 로그 기준으로 연다.
-- 범위: 작성자 상태 변경 action/service, admin override 설계, 감사 로그 enum/schema 확장, feed/detail 상태 반영, unit/e2e smoke.
-- 제외: 결제/정산/에스크로/배송, 외부 채팅, 자동 분쟁 처리.
-- 완료 기준: 작성자/admin만 허용된 상태 전환을 수행하고 비작성자/게스트는 차단되며 모든 전환이 감사 로그에 남는다.
+- 목표: `test:e2e:smoke`에서 카카오 social-dev 온보딩이 간헐적으로 `/login?next=/onboarding`에 머물거나 프로필 저장 실패로 끝나는 문제를 재현/수정한다.
+- 범위: social-dev 로그인 버튼, NextAuth credentials callback, 온보딩 nickname 저장 e2e 안정성, 테스트 데이터 reset.
+- 제외: 실제 카카오/네이버 OAuth 실계정 검증, 운영 배포 smoke.
+- 완료 기준: `corepack pnpm -C app test:e2e:smoke`가 로컬에서 통과하고 실패 원인이 unit/e2e로 고정된다.
 
 ## 다음 실행 순서
 
-1. `ModerationActionType`에 마켓 상태 변경 action을 추가할지 별도 audit 모델을 둘지 결정한다.
-2. 작성자/admin/비작성자/게스트 상태 전환 권한 실패 테스트를 먼저 작성한다.
-3. detail/feed에서 상태 변경 후 표시가 갱신되는 smoke를 추가한다.
+1. `social-onboarding-flow.spec.ts` 실패 컨텍스트와 social-dev credentials callback 로그를 확인한다.
+2. 카카오/네이버 병렬 실행 시 세션/테스트 계정 reset 충돌 여부를 분리 테스트로 검증한다.
+3. 원인에 맞춰 로그인 시작 또는 nickname 저장 테스트/코드를 보강하고 smoke 전체를 재실행한다.

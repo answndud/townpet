@@ -829,6 +829,7 @@ enum ModerationActionType {
   POLICY_UPDATED
   AUTH_AUDIT_VIEWED
   AUTH_AUDIT_EXPORTED
+  MARKET_STATUS_CHANGED
 }
 
 model ModerationActionLog {

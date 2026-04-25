@@ -1,9 +1,10 @@
-import { PostScope, PostType } from "@prisma/client";
+import { MarketStatus, PostScope, PostType } from "@prisma/client";
 import { describe, expect, it } from "vitest";
 
 import {
   adoptionListingSchema,
   hospitalReviewSchema,
+  marketListingStatusUpdateSchema,
   placeReviewSchema,
   postCreateSchema,
   postListSchema,
@@ -322,4 +323,16 @@ describe("post validations", () => {
     expect(result.success).toBe(false);
   });
 
+});
+
+describe("marketListingStatusUpdateSchema", () => {
+  it("accepts known market statuses", () => {
+    expect(
+      marketListingStatusUpdateSchema.safeParse({ status: MarketStatus.RESERVED }).success,
+    ).toBe(true);
+  });
+
+  it("rejects unknown market statuses", () => {
+    expect(marketListingStatusUpdateSchema.safeParse({ status: "PENDING" }).success).toBe(false);
+  });
 });

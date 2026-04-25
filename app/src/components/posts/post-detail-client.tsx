@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { PostStatus, PostType } from "@prisma/client";
+import { useEffect, useState, useTransition } from "react";
+import { MarketStatus, PostStatus, PostType } from "@prisma/client";
 
 import { BackToFeedButton } from "@/components/posts/back-to-feed-button";
 import { PostBoardLinkChip } from "@/components/posts/post-board-link-chip";
@@ -39,6 +39,7 @@ import { formatRelativeDate } from "@/lib/post-presenter";
 import { isReportablePostType } from "@/lib/post-type-groups";
 import { toAbsoluteUrl } from "@/lib/site-url";
 import { resolveUserDisplayName } from "@/lib/user-display";
+import { updateMarketListingStatusAction } from "@/server/actions/post";
 
 type RelationState = {
   isBlockedByMe: boolean;
@@ -253,6 +254,13 @@ const marketStatusLabel: Record<string, string> = {
   CANCELLED: "취소",
 };
 
+const authorMarketStatusOptions: MarketStatus[] = [
+  MarketStatus.AVAILABLE,
+  MarketStatus.RESERVED,
+  MarketStatus.SOLD,
+  MarketStatus.CANCELLED,
+];
+
 function ensureDate(value: unknown) {
   if (value instanceof Date) return value;
   if (typeof value === "string") {
@@ -272,6 +280,8 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
   const [error, setError] = useState<string | null>(null);
   const [isPostReportOpen, setIsPostReportOpen] = useState(false);
   const [relationMessage, setRelationMessage] = useState<string | null>(null);
+  const [marketStatusMessage, setMarketStatusMessage] = useState<string | null>(null);
+  const [isMarketStatusPending, startMarketStatusTransition] = useTransition();
   const [loadVersion, setLoadVersion] = useState(0);
   const [commentLoadState, setCommentLoadState] = useState<PostCommentPrefetchState>({
     status: "idle",
@@ -378,6 +388,44 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
           },
         },
       };
+    });
+  };
+
+  const handleMarketStatusChange = (nextStatus: MarketStatus) => {
+    if (!postId) {
+      return;
+    }
+
+    setMarketStatusMessage(null);
+    startMarketStatusTransition(async () => {
+      const result = await updateMarketListingStatusAction(postId, nextStatus);
+      if (!result.ok) {
+        setMarketStatusMessage(result.message);
+        return;
+      }
+
+      setData((current) => {
+        if (!current?.ok || !current.data?.post.marketListing) {
+          return current;
+        }
+
+        return {
+          ...current,
+          data: {
+            ...current.data,
+            post: {
+              ...current.data.post,
+              marketListing: {
+                ...current.data.post.marketListing,
+                status: result.status,
+              },
+            },
+          },
+        };
+      });
+      setMarketStatusMessage(
+        result.changed ? "거래 상태가 변경되었습니다." : "이미 선택한 거래 상태입니다.",
+      );
     });
   };
 
@@ -529,6 +577,12 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
     resolvedRelationState.hasBlockedMe || resolvedRelationState.isBlockedByMe
   );
   const canModeratePost = hasLoadedPost && canModerate && !isAuthor;
+  const canManageMarketStatus =
+    hasLoadedPost &&
+    Boolean(post?.marketListing) &&
+    Boolean(viewerId) &&
+    (isAuthor || canModerate) &&
+    post?.status !== PostStatus.DELETED;
   const showPostReportControls =
     canReportPost && canInteract && !isAuthor && canInteractWithPostOwner;
   const meta = post ? typeMeta[post.type] : null;
@@ -875,6 +929,34 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
               label="기간"
               value={renderTextValue(post.marketListing.rentalPeriod)}
             />
+            {canManageMarketStatus ? (
+              <div className="col-span-full mt-1 rounded-lg border border-[#dce7f6] bg-[#f8fbff] p-3">
+                <p className="text-xs font-semibold text-[#315b9a]">거래 상태 변경</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {authorMarketStatusOptions.map((status) => {
+                    const isCurrent = post.marketListing?.status === status;
+                    return (
+                      <button
+                        key={status}
+                        type="button"
+                        className={`rounded-md border px-3 py-1.5 text-xs font-semibold transition ${
+                          isCurrent
+                            ? "border-[#3567b5] bg-[#3567b5] text-white"
+                            : "border-[#c7d8ef] bg-white text-[#315b9a] hover:border-[#9dbbe6] hover:bg-[#eef5ff]"
+                        } disabled:cursor-not-allowed disabled:opacity-60`}
+                        disabled={isMarketStatusPending || isCurrent}
+                        onClick={() => handleMarketStatusChange(status)}
+                      >
+                        {marketStatusLabel[status] ?? status}
+                      </button>
+                    );
+                  })}
+                </div>
+                {marketStatusMessage ? (
+                  <p className="mt-2 text-xs text-[#5d779e]">{marketStatusMessage}</p>
+                ) : null}
+              </div>
+            ) : null}
           </PostDetailInfoSection>
         ) : null}
 
