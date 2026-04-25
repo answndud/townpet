@@ -175,28 +175,6 @@ test.describe("search and board filtering", () => {
       },
     });
 
-    await prisma.user.deleteMany({
-      where: {
-        email: {
-          in: [
-            "e2e.search.author.global@townpet.dev",
-            "e2e.search.author.local@townpet.dev",
-            "e2e.search.author.hidden@townpet.dev",
-            "e2e.search.author.visible@townpet.dev",
-            "e2e.search.adoption.visible@townpet.dev",
-            "e2e.search.adoption.blocked@townpet.dev",
-          ],
-        },
-      },
-    });
-    await prisma.user.deleteMany({
-      where: {
-        email: {
-          startsWith: VIEWER_EMAIL_PREFIX,
-        },
-      },
-    });
-
     await ensureNeighborhood({
       name: seochodong.name,
       city: seochodong.city,
@@ -209,7 +187,7 @@ test.describe("search and board filtering", () => {
     });
   });
 
-  test("switches between global and local search results", async ({ page }) => {
+  test("redirects legacy search to feed global search results", async ({ page }) => {
     const runId = `scope-${Date.now()}`;
     const queryToken = `PWSEARCHSCOPE${runId}`;
     const viewerEmail = buildViewerEmail(runId);
@@ -256,14 +234,9 @@ test.describe("search and board filtering", () => {
       next: `/search?q=${queryToken}`,
     });
 
-    await expect(page).toHaveURL(new RegExp(`/search\\?q=${queryToken}`));
+    await expect(page).toHaveURL(new RegExp(`/feed\\?q=${queryToken}`));
     await expect(page.getByRole("link", { name: globalTitle })).toBeVisible();
     await expect(page.getByRole("link", { name: localTitle })).toHaveCount(0);
-
-    await page.getByRole("link", { name: `${seochodong.name} 검색` }).click();
-    await expect(page).toHaveURL(/scope=LOCAL/);
-    await expect(page.getByRole("link", { name: localTitle })).toBeVisible();
-    await expect(page.getByRole("link", { name: globalTitle })).toHaveCount(0);
   });
 
   test("does not show hidden posts in authenticated search results", async ({ page }) => {
