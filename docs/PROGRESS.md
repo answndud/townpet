@@ -59,11 +59,15 @@
   - 발견: `/notifications` 필터가 버튼 click + focus refresh 조합에서 URL sync가 불안정해 kind 필터가 적용되지 않았다.
   - 수정: 알림 필터 컨트롤을 실제 `Link href` 기반 내비게이션으로 전환하고, bfcache 복귀용 `pageshow` refresh만 유지했다.
   - 통과: `notification-filter-controls`, `corepack pnpm -C app typecheck`.
+- 신고 흐름 e2e:
+  - 추가: 회원이 게시글/댓글을 신고하고, 관리자가 신고 상세에서 기각 처리하는 핫패스 e2e를 추가했다.
+  - 확인: 게시글/댓글 신고 접수 메시지, 관리자 상세 접근, 처리 후 DB 상태 `DISMISSED/PENDING` 분류를 검증했다.
+  - 통과: `report-flow`, `post-report-form`/`post-comment-thread` 관련 테스트, `corepack pnpm -C app typecheck`.
 - 과거 Phase 0-5와 checkpoint/push 상세는 [COMPLETED.md](./COMPLETED.md)에 보관했다.
 
 ## 다음 액션
-1. 신고 관리 화면과 댓글 신고 가능 여부를 브라우저/e2e로 확인한다.
-2. 마이페이지와 관리자 운영 화면 순서로 진행한다.
+1. 마이페이지 내 글/북마크 목록과 빈 상태를 확인한다.
+2. 관리자 운영 화면 접근/표시 정상 여부를 확인한다.
 3. 결과는 기능별 `정상 / 버그 / 보류`로 기록하고, 버그는 재현 URL/단계/원인 후보/수정 우선순위를 남긴다.
 
 ## Archive Pointer

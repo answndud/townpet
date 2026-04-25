@@ -576,7 +576,10 @@ export function PostCommentThread({
         id={`comment-${comment.id}`}
         className={depth > 0 ? "mt-2" : undefined}
       >
-        <article className={commentCardClassName}>
+        <article
+          data-testid={`post-comment-item-${comment.id}`}
+          className={commentCardClassName}
+        >
           <div className="tp-surface-alt tp-text-accent mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold">
             {avatarText}
           </div>

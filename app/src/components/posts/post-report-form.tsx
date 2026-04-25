@@ -74,6 +74,7 @@ export function PostReportForm({
 
   return (
     <form
+      data-testid={`report-form-${targetType.toLowerCase()}-${targetId}`}
       onSubmit={handleSubmit}
       className="space-y-3"
     >
@@ -81,6 +82,7 @@ export function PostReportForm({
         <label className="tp-text-accent flex flex-col gap-1 text-[11px] font-semibold">
           <span>사유</span>
           <select
+            data-testid={`report-reason-${targetType.toLowerCase()}-${targetId}`}
             className="tp-input-soft h-9 px-3 text-[13px]"
             value={reason}
             onChange={(event) =>
@@ -97,6 +99,7 @@ export function PostReportForm({
         <label className="tp-text-accent flex flex-col gap-1 text-[11px] font-semibold">
           <span>추가 설명</span>
           <textarea
+            data-testid={`report-description-${targetType.toLowerCase()}-${targetId}`}
             className="tp-input-soft min-h-[72px] px-3 py-2 text-[13px]"
             value={description}
             onChange={(event) => setDescription(event.target.value)}
@@ -107,8 +110,16 @@ export function PostReportForm({
       </div>
 
       <div className="flex items-center justify-between gap-2">
-        {message ? <p className="tp-text-muted text-[11px]">{message}</p> : <span />}
+        {message ? (
+          <p
+            data-testid={`report-message-${targetType.toLowerCase()}-${targetId}`}
+            className="tp-text-muted text-[11px]"
+          >
+            {message}
+          </p>
+        ) : <span />}
         <button
+          data-testid={`report-submit-${targetType.toLowerCase()}-${targetId}`}
           type="submit"
           className="tp-btn-soft tp-btn-xs border-rose-300 text-rose-700 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:border-[#d5dfee] disabled:text-[#9fb2cf]"
           disabled={isPending}
