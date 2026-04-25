@@ -26,17 +26,17 @@
 
 ## Active Plan
 
-### 런치 갭 다음 후보 재평가
+### Search Quality Phase 2 zero-result 운영 루프 고정
 
 상태: `pending`
 
-- 목표: 최근 로컬 기능 검증, Cycle A, 운영 evidence 결과를 기준으로 다음 런치 갭 작업을 하나로 고른다.
-- 범위: 남은 운영/품질/커뮤니티 hot path 후보 비교, 다음 active plan 확정.
-- 제외: 결제/정산/에스크로, 카카오맵 실연동, 장기 모니터링 대시보드 구축.
-- 완료 기준: 우선순위에 맞는 다음 작업 1개를 목표/범위/완료 기준과 함께 active plan으로 전환한다.
+- 목표: 검색 실패어/저성과 검색어를 운영자가 주간 루틴에서 바로 개선 후보로 분류할 수 있게 한다.
+- 범위: `/admin/ops` 검색 품질 신호, `SearchTermStat/SearchTermDailyMetric` read model, zero-result/low-result 테스트와 운영 문서.
+- 제외: pg_trgm 튜닝, 외부 검색엔진, 지도/반경 검색, 대량 synonym 사전 구축, 실운영 DB 수동 수정.
+- 완료 기준: zero-result/low-result 후보가 재현 가능한 테스트와 함께 운영 화면/문서에서 개선 액션으로 연결된다.
 
 ## 다음 실행 순서
 
-1. `PROGRESS.md`와 `COMPLETED.md`의 최근 완료 항목을 확인한다.
-2. 운영 evidence 보류 조건과 남은 런치 갭을 비교한다.
-3. 다음 구현/검증 작업을 하나로 좁혀 `PLAN.md`와 `PROGRESS.md`에 반영한다.
+1. `/admin/ops` 검색 품질 신호와 관련 query/test 구조를 확인한다.
+2. zero-result/low-result 후보의 표시 기준과 개선 액션이 부족한 지점을 찾는다.
+3. 테스트를 먼저 추가하고 UI/query/문서를 최소 수정한다.
