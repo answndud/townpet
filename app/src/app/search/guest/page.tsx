@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
-import { buildFeedSearchRedirectPath } from "@/app/search/page";
+import { buildFeedSearchRedirectPath } from "@/lib/feed-search-redirect";
 
 type GuestSearchPageProps = {
   searchParams?: Promise<{

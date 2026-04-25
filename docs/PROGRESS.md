@@ -34,14 +34,17 @@
   - 변경: 헤더 검색 UI를 제거하고 `/feed`, `/feed/guest` 목록 하단에 제목/내용 선택 검색 form을 배치했다.
   - 호환: `/search`, `/search/guest`는 기존 q/type/searchIn을 보존해 `/feed`, `/feed/guest`로 redirect한다.
   - 통과: `corepack pnpm -C app test -- src/components/posts/feed-footer-search-form.test.tsx src/app/search/page.test.tsx src/app/search/guest/page.test.tsx src/middleware.test.ts`, `corepack pnpm -C app lint`, `corepack pnpm -C app typecheck`.
+- 로컬 핵심 기능 동작 검증 착수:
+  - 발견: `quality:check`에서 `/app/search/page.tsx` named export가 Next page export 계약을 위반해 typecheck 실패.
+  - 수정: 검색 redirect helper를 `src/lib`로 분리하고 `/search`, `/search/guest` page는 허용 export만 남겼다.
+  - 통과: `corepack pnpm -C app test -- src/app/search/page.test.tsx src/app/search/guest/page.test.tsx`, `corepack pnpm -C app typecheck`, `corepack pnpm -C app quality:check`.
 - 과거 Phase 0-5와 checkpoint/push 상세는 [COMPLETED.md](./COMPLETED.md)에 보관했다.
 
 ## 다음 액션
-1. `corepack pnpm -C app quality:check`로 로컬 검증 전 기본 품질 게이트를 확인한다.
-2. 필요 시 `corepack pnpm -C app db:restore:local` 후 `corepack pnpm -C app dev`로 로컬 서버를 준비한다.
-3. 게스트/회원 피드와 검색, 게시글 액션, 신고/정책, 알림/마이페이지, 관리자 운영 화면 순서로 실제 클릭 동작을 확인한다.
+1. 필요 시 `corepack pnpm -C app db:restore:local` 후 `corepack pnpm -C app dev`로 로컬 서버를 준비한다.
+2. `/api/health`와 `/feed/guest` 게스트 피드/검색 클릭 흐름부터 브라우저로 확인한다.
+3. 이후 회원 피드/검색/인증, 게시글 액션, 신고/정책, 알림/마이페이지, 관리자 운영 화면 순서로 진행한다.
 4. 결과는 기능별 `정상 / 버그 / 보류`로 기록하고, 버그는 재현 URL/단계/원인 후보/수정 우선순위를 남긴다.
-5. 개인화 운영 판단 기준 문서화는 로컬 핵심 기능 검증 완료 후 재개한다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)

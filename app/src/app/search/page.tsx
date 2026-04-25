@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { PostType } from "@prisma/client";
+
+import { buildFeedSearchRedirectPath } from "@/lib/feed-search-redirect";
 
 type SearchPageProps = {
   searchParams?: Promise<{
@@ -22,40 +23,6 @@ export const metadata: Metadata = {
     url: "/feed",
   },
 };
-
-function normalizeSearchIn(value?: string) {
-  if (value === "TITLE" || value === "CONTENT" || value === "AUTHOR") {
-    return value;
-  }
-  return null;
-}
-
-function normalizePostType(value?: string) {
-  return Object.values(PostType).includes(value as PostType) ? value : null;
-}
-
-export function buildFeedSearchRedirectPath(
-  basePath: "/feed" | "/feed/guest",
-  params: Awaited<NonNullable<SearchPageProps["searchParams"]>>,
-) {
-  const searchParams = new URLSearchParams();
-  const query = params.q?.trim().replace(/\s+/g, " ");
-  const type = normalizePostType(params.type);
-  const searchIn = normalizeSearchIn(params.searchIn);
-
-  if (query) {
-    searchParams.set("q", query);
-  }
-  if (type) {
-    searchParams.set("type", type);
-  }
-  if (searchIn) {
-    searchParams.set("searchIn", searchIn);
-  }
-
-  const serialized = searchParams.toString();
-  return serialized ? `${basePath}?${serialized}` : basePath;
-}
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {
   const resolvedParams = (await searchParams) ?? {};
