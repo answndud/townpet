@@ -80,17 +80,22 @@ for (const scenario of scenarios) {
       await page.goto(`/login?next=%2Fonboarding&${scenario.loginQueryParam}`);
       await page.getByRole("button", { name: scenario.buttonLabel }).click();
 
-      await expect(page).toHaveURL(/\/onboarding/);
+      await expect(page).toHaveURL(/\/onboarding/, { timeout: 15_000 });
 
-      const nickname = `pw-${scenario.provider}-${Date.now().toString().slice(-6)}`;
-      await page.getByTestId("onboarding-nickname").fill(nickname);
+      const nickname = `pw-${scenario.provider.slice(0, 2)}-${Date.now()
+        .toString(36)
+        .slice(-6)}-${Math.random().toString(36).slice(2, 4)}`;
+      const nicknameInput = page.getByTestId("onboarding-nickname");
+      await nicknameInput.fill(nickname);
+      await expect(nicknameInput).toHaveValue(nickname);
       await page.getByTestId("onboarding-profile-submit").click();
       try {
         await expect(page.getByText("프로필이 저장되었습니다.")).toBeVisible({
           timeout: 5_000,
         });
       } catch {
-        await page.getByTestId("onboarding-nickname").fill(nickname);
+        await nicknameInput.fill(nickname);
+        await expect(nicknameInput).toHaveValue(nickname);
         await page.getByTestId("onboarding-profile-submit").click();
         await expect(page.getByText("프로필이 저장되었습니다.")).toBeVisible({
           timeout: 10_000,

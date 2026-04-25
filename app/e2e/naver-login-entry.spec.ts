@@ -2,6 +2,9 @@ import { expect, test } from "@playwright/test";
 
 test.describe("naver login entry", () => {
   test("shows naver button and starts naver sign-in request", async ({ page }) => {
+    await page.route("**/api/auth/callback/social-dev**", (route) =>
+      route.fulfill({ status: 204, body: "" }),
+    );
     await page.goto("/login?next=%2Fonboarding&devShowNaver=1");
     const naverButton = page.getByRole("button", { name: "네이버로 로그인" });
     await expect(naverButton).toBeVisible();

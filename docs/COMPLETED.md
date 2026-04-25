@@ -1257,3 +1257,32 @@
   - 마켓 글 작성자는 허용된 상태 전환만 수행할 수 있고, moderator/admin은 운영 복구/취소 목적의 override를 수행할 수 있다.
   - 모든 실제 전환은 기존 moderation action log에 남는다.
   - 다음 작업은 남아 있는 `test:e2e:smoke` 카카오 social-dev 온보딩 blocker를 안정화하는 것이다.
+
+### 2026-04-26 | Social Dev Onboarding Smoke 안정화
+- 완료일: `2026-04-26`
+- 배경:
+  - `test:e2e:smoke`에서 카카오 social-dev 온보딩이 간헐적으로 `/login?next=/onboarding`에 머물거나 프로필 저장 메시지를 받지 못했다.
+  - 같은 spec을 단독 1 worker로 실행하면 통과해, 앱 기능 자체보다 smoke 병렬 실행 조건의 테스트 부작용이 의심됐다.
+- 변경내용:
+  - `kakao-login-entry`와 `naver-login-entry` 테스트가 social-dev callback을 실제 처리하지 않도록 Playwright route로 `204` intercept했다.
+  - entry 테스트는 기존처럼 callback 요청이 시작되는지만 `waitForRequest`로 검증한다.
+  - `social-onboarding-flow`는 병렬 dev server 부하에서 social-dev redirect가 5초를 넘길 수 있어 `/onboarding` URL 대기를 15초로 늘렸다.
+  - 온보딩 닉네임은 20자 제한 안에서 provider/timestamp/random suffix를 조합하고 입력값 반영을 확인한 뒤 submit한다.
+  - 에러 기록 문서 `docs/errors/2026-04-26_social-dev-onboarding-smoke-race.md`를 추가했다.
+- 코드문서:
+  - [app/e2e/kakao-login-entry.spec.ts](../app/e2e/kakao-login-entry.spec.ts)
+  - [app/e2e/naver-login-entry.spec.ts](../app/e2e/naver-login-entry.spec.ts)
+  - [app/e2e/social-onboarding-flow.spec.ts](../app/e2e/social-onboarding-flow.spec.ts)
+  - [docs/errors/2026-04-26_social-dev-onboarding-smoke-race.md](./errors/2026-04-26_social-dev-onboarding-smoke-race.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `ENABLE_SOCIAL_DEV_LOGIN=1 corepack pnpm -C app exec playwright test e2e/social-onboarding-flow.spec.ts --project=chromium --workers=1` 통과, 2 tests
+  - `corepack pnpm -C app test:e2e:smoke` 통과, 11 tests
+  - `corepack pnpm -C app exec vitest run src/lib/validations/user.test.ts src/server/services/user.service.test.ts src/server/actions/user.test.ts` 통과, 23 tests
+  - `corepack pnpm -C app typecheck` 통과
+  - `corepack pnpm -C app lint` 통과
+- 결과:
+  - social-dev entry smoke는 DB/session 부작용 없이 요청 시작만 검증한다.
+  - 전체 smoke가 로컬 병렬 실행에서 통과한다.
+  - 다음 작업은 마켓 M1/M2와 smoke 안정화 이후 남은 런치 갭을 다시 재평가하는 것이다.
