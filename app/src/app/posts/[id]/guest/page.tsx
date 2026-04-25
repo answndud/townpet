@@ -81,6 +81,10 @@ const typeMeta: Record<PostType, { label: string; chipClass: string }> = {
     label: "중고/공동구매",
     chipClass: "border-slate-300 bg-slate-100 text-slate-700",
   },
+  CARE_REQUEST: {
+    label: "돌봄 요청",
+    chipClass: "border-emerald-200 bg-emerald-50 text-emerald-700",
+  },
   ADOPTION_LISTING: {
     label: "유기동물 입양",
     chipClass: "border-amber-200 bg-amber-50 text-amber-700",
@@ -131,6 +135,24 @@ const renderTextValue = (value: string | null | undefined) =>
 const renderNumberValue = (value: number | null | undefined, suffix = "") =>
   value !== null && value !== undefined ? `${value}${suffix}` : emptyValue;
 
+const formatDetailDateTime = (value: string | Date | null | undefined) => {
+  if (!value) {
+    return null;
+  }
+
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  return new Intl.DateTimeFormat("ko-KR", {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+};
+
 const renderBooleanValue = (
   value: boolean | null | undefined,
   trueLabel: string,
@@ -174,6 +196,23 @@ const marketStatusLabel: Record<string, string> = {
   AVAILABLE: "거래 가능",
   RESERVED: "예약 중",
   SOLD: "거래 완료",
+  CANCELLED: "취소",
+};
+
+const careTypeLabel: Record<string, string> = {
+  WALK: "산책",
+  FEEDING: "급식",
+  VISIT_CARE: "방문 돌봄",
+  HOSPITAL_COMPANION: "병원 동행",
+  EMERGENCY_CHECK: "긴급 체크",
+  ERRAND: "심부름",
+};
+
+const careStatusLabel: Record<string, string> = {
+  OPEN: "요청 중",
+  MATCHED: "매칭됨",
+  IN_PROGRESS: "진행 중",
+  COMPLETED: "완료",
   CANCELLED: "취소",
 };
 
@@ -539,6 +578,73 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
                 <p className="mt-1 font-medium text-[#1f3f71]">
                   {renderTextValue(post.marketListing.rentalPeriod)}
                 </p>
+              </div>
+            </div>
+          </section>
+        ) : null}
+
+        {post.careRequest ? (
+          <section className="tp-card p-5 sm:p-6">
+            <h2 className="tp-text-section-title text-[#163462]">돌봄 요청 정보</h2>
+            <div className="mt-4 grid gap-3 text-sm text-[#355988] md:grid-cols-3">
+              <div className="border border-[#cfe9dc] bg-[#f3fbf7] px-3 py-3">
+                <p className="text-[11px] uppercase tracking-[0.2em] text-[#4d8468]">요청 유형</p>
+                <p className="mt-1 font-medium text-[#21543d]">
+                  {renderTextValue(
+                    post.careRequest.careType
+                      ? (careTypeLabel[post.careRequest.careType] ?? post.careRequest.careType)
+                      : null,
+                  )}
+                </p>
+              </div>
+              <div className="border border-[#cfe9dc] bg-[#f3fbf7] px-3 py-3">
+                <p className="text-[11px] uppercase tracking-[0.2em] text-[#4d8468]">상태</p>
+                <p className="mt-1 font-medium text-[#21543d]">
+                  {renderTextValue(
+                    post.careRequest.status
+                      ? (careStatusLabel[post.careRequest.status] ?? post.careRequest.status)
+                      : null,
+                  )}
+                </p>
+              </div>
+              <div className="border border-[#cfe9dc] bg-[#f3fbf7] px-3 py-3">
+                <p className="text-[11px] uppercase tracking-[0.2em] text-[#4d8468]">긴급</p>
+                <p className="mt-1 font-medium text-[#21543d]">
+                  {renderBooleanValue(post.careRequest.isUrgent, "긴급 요청", "일반 요청")}
+                </p>
+              </div>
+              <div className="border border-[#cfe9dc] bg-[#f3fbf7] px-3 py-3">
+                <p className="text-[11px] uppercase tracking-[0.2em] text-[#4d8468]">시작</p>
+                <p className="mt-1 font-medium text-[#21543d]">
+                  {renderTextValue(formatDetailDateTime(post.careRequest.startsAt))}
+                </p>
+              </div>
+              <div className="border border-[#cfe9dc] bg-[#f3fbf7] px-3 py-3">
+                <p className="text-[11px] uppercase tracking-[0.2em] text-[#4d8468]">종료</p>
+                <p className="mt-1 font-medium text-[#21543d]">
+                  {renderTextValue(formatDetailDateTime(post.careRequest.endsAt))}
+                </p>
+              </div>
+              <div className="border border-[#cfe9dc] bg-[#f3fbf7] px-3 py-3">
+                <p className="text-[11px] uppercase tracking-[0.2em] text-[#4d8468]">보상</p>
+                <p className="mt-1 font-medium text-[#21543d]">
+                  {post.careRequest.rewardAmount !== null &&
+                  post.careRequest.rewardAmount !== undefined
+                    ? `${post.careRequest.rewardAmount.toLocaleString()}원`
+                    : emptyValue}
+                </p>
+              </div>
+              <div className="border border-[#cfe9dc] bg-[#f3fbf7] px-3 py-3 md:col-span-2">
+                <p className="text-[11px] uppercase tracking-[0.2em] text-[#4d8468]">위치 힌트</p>
+                <p className="mt-1 font-medium text-[#21543d]">{renderTextValue(post.careRequest.locationNote)}</p>
+              </div>
+              <div className="border border-[#cfe9dc] bg-[#f3fbf7] px-3 py-3">
+                <p className="text-[11px] uppercase tracking-[0.2em] text-[#4d8468]">반려동물</p>
+                <p className="mt-1 font-medium text-[#21543d]">{renderTextValue(post.careRequest.petNote)}</p>
+              </div>
+              <div className="border border-[#cfe9dc] bg-[#f3fbf7] px-3 py-3 md:col-span-3">
+                <p className="text-[11px] uppercase tracking-[0.2em] text-[#4d8468]">요청사항</p>
+                <p className="mt-1 font-medium text-[#21543d]">{renderTextValue(post.careRequest.requirements)}</p>
               </div>
             </div>
           </section>

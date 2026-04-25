@@ -45,6 +45,11 @@ export const postTypeMeta: Record<
     chipClass: "border-slate-300 bg-slate-100 text-slate-700",
     icon: "K",
   },
+  CARE_REQUEST: {
+    label: "돌봄 요청",
+    chipClass: "border-emerald-200 bg-emerald-50 text-emerald-700",
+    icon: "C",
+  },
   ADOPTION_LISTING: {
     label: "유기동물 입양",
     chipClass: "border-amber-200 bg-amber-50 text-amber-700",

@@ -7,6 +7,7 @@ export const MAX_POLICY_HOURS = 24 * 30;
 
 export const DEFAULT_NEW_USER_RESTRICTED_POST_TYPES: ReadonlyArray<PostType> = [
   PostType.MARKET_LISTING,
+  PostType.CARE_REQUEST,
   PostType.ADOPTION_LISTING,
   PostType.SHELTER_VOLUNTEER,
   PostType.LOST_FOUND,

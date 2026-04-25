@@ -163,3 +163,4 @@ Phase 2 기능은 아래 조건을 만족할 때만 동시에 2개 이상 병행
 - 2026-04-26 실행 결과: 개인화/광고 운영 튜닝, 검색 zero-result 운영 루프, 오타 tolerant feed fallback까지 완료했다. 다음 후보는 결제 없는 `Market State Machine Phase 2` preflight로 좁힌다.
 - 2026-04-26 실행 결과: 마켓 M1 구조화 생성/조회, M2 상태 전환 액션, social-dev smoke 안정화를 완료했다. 다음 후보는 `Care Request Templates preflight`로 좁히고, 결제/카카오맵/실 OAuth/production strict 확인은 선행 조건이 맞을 때까지 보류한다.
 - 2026-04-26 실행 결과: `Care Request Templates preflight`를 완료했다. M1은 `PostType.CARE_REQUEST` + `CareRequest` relation으로 기존 post 운영 표면을 재사용하고, 지원/상태 전환/증빙/결제는 M2 이후로 분리한다.
+- 2026-04-26 실행 결과: Care Request M1 구조화 요청 생성/조회를 완료했다. 다음은 상태 전환과 지원/문의 흐름을 바로 열기 전에 권한/감사 로그/모델 경계를 확정하는 M2 preflight다.

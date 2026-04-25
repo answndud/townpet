@@ -34,6 +34,12 @@ type StructuredSearchTextInput = {
     condition?: string | null;
     rentalPeriod?: string | null;
   } | null;
+  careRequest?: {
+    careType?: string | null;
+    locationNote?: string | null;
+    petNote?: string | null;
+    requirements?: string | null;
+  } | null;
 };
 
 function normalizeArray(values: Array<string | null | undefined> | null | undefined) {
@@ -65,6 +71,10 @@ export function buildPostStructuredSearchText(input: StructuredSearchTextInput) 
       input.marketListing?.listingType,
       input.marketListing?.condition,
       input.marketListing?.rentalPeriod,
+      input.careRequest?.careType,
+      input.careRequest?.locationNote,
+      input.careRequest?.petNote,
+      input.careRequest?.requirements,
     ]),
   ];
 

@@ -126,6 +126,16 @@ type PostCreateFormState = {
     depositAmount: string;
     rentalPeriod: string;
   };
+  careRequest: {
+    careType: string;
+    startsAt: string;
+    endsAt: string;
+    locationNote: string;
+    petNote: string;
+    requirements: string;
+    rewardAmount: string;
+    isUrgent: string;
+  };
   imageUrls: string[];
   guestDisplayName: string;
   guestPassword: string;
@@ -138,6 +148,7 @@ const postTypeOptions = [
   { value: PostType.LOST_FOUND, label: "실종/목격 제보" },
   { value: PostType.MEETUP, label: "동네모임" },
   { value: PostType.MARKET_LISTING, label: "중고/공동구매" },
+  { value: PostType.CARE_REQUEST, label: "돌봄 요청" },
   { value: PostType.ADOPTION_LISTING, label: "유기동물 입양" },
   { value: PostType.SHELTER_VOLUNTEER, label: "보호소 봉사 모집" },
   { value: PostType.PRODUCT_REVIEW, label: "리뷰" },
@@ -152,7 +163,7 @@ function resolveScopeByPostType(type: PostType, scope: PostScope) {
   ) {
     return PostScope.GLOBAL;
   }
-  if (type === PostType.MEETUP) {
+  if (type === PostType.MEETUP || type === PostType.CARE_REQUEST) {
     return PostScope.LOCAL;
   }
   return scope;
@@ -178,6 +189,15 @@ const marketConditionOptions = [
   { value: "LIKE_NEW", label: "거의 새것" },
   { value: "GOOD", label: "사용감 적음" },
   { value: "FAIR", label: "사용감 있음" },
+] as const;
+
+const careTypeOptions = [
+  { value: "WALK", label: "산책" },
+  { value: "FEEDING", label: "급식" },
+  { value: "VISIT_CARE", label: "방문 돌봄" },
+  { value: "HOSPITAL_COMPANION", label: "병원 동행" },
+  { value: "EMERGENCY_CHECK", label: "긴급 체크" },
+  { value: "ERRAND", label: "심부름" },
 ] as const;
 
 const DRAFT_STORAGE_KEY = "townpet:post-create-draft:v1";
@@ -221,7 +241,9 @@ function isDraftFormState(value: unknown): value is PostCreateFormState {
     !!candidate.placeReview &&
     !!candidate.walkRoute &&
     !!candidate.adoptionListing &&
-    !!candidate.volunteerRecruitment
+    !!candidate.volunteerRecruitment &&
+    !!candidate.marketListing &&
+    !!candidate.careRequest
   );
 }
 
@@ -301,6 +323,16 @@ export function PostCreateForm({
       depositAmount: "",
       rentalPeriod: "",
     },
+    careRequest: {
+      careType: "WALK",
+      startsAt: "",
+      endsAt: "",
+      locationNote: "",
+      petNote: "",
+      requirements: "",
+      rewardAmount: "",
+      isUrgent: "false",
+    },
     imageUrls: [],
     guestDisplayName: "",
     guestPassword: "",
@@ -336,6 +368,7 @@ export function PostCreateForm({
           reviewCategory: draftForm.reviewCategory ?? prev.reviewCategory,
           animalTagsInput: draftForm.animalTagsInput ?? "",
           marketListing: draftForm.marketListing ?? prev.marketListing,
+          careRequest: draftForm.careRequest ?? prev.careRequest,
           guestDisplayName: draftForm.guestDisplayName ?? "",
           guestPassword: "",
         }));
@@ -479,6 +512,7 @@ export function PostCreateForm({
   const showAdoptionListing = formState.type === PostType.ADOPTION_LISTING;
   const showVolunteerRecruitment = formState.type === PostType.SHELTER_VOLUNTEER;
   const showMarketListing = formState.type === PostType.MARKET_LISTING;
+  const showCareRequest = formState.type === PostType.CARE_REQUEST;
 
   useEffect(() => {
     if (formState.scope !== resolvedScope) {
@@ -546,6 +580,7 @@ export function PostCreateForm({
       formState.volunteerRecruitment.capacity.trim().length > 0 ||
       formState.volunteerRecruitment.status.trim().length > 0);
   const hasMarketListing = showMarketListing;
+  const hasCareRequest = showCareRequest;
 
   const clearDraft = () => {
     if (typeof window === "undefined") {
@@ -604,6 +639,11 @@ export function PostCreateForm({
 
     if (showMarketListing && formState.marketListing.price.trim().length === 0) {
       setError("마켓 글은 가격을 입력해 주세요. 나눔은 0원을 입력합니다.");
+      return;
+    }
+
+    if (showCareRequest && !formState.careRequest.startsAt) {
+      setError("돌봄 요청은 시작 시간을 입력해 주세요.");
       return;
     }
 
@@ -672,6 +712,18 @@ export function PostCreateForm({
               ...formState.marketListing,
               depositAmount: formState.marketListing.depositAmount || undefined,
               rentalPeriod: formState.marketListing.rentalPeriod || undefined,
+            }
+          : undefined,
+        careRequest: hasCareRequest
+          ? {
+              ...formState.careRequest,
+              startsAt: formState.careRequest.startsAt || undefined,
+              endsAt: formState.careRequest.endsAt || undefined,
+              locationNote: formState.careRequest.locationNote || undefined,
+              petNote: formState.careRequest.petNote || undefined,
+              requirements: formState.careRequest.requirements || undefined,
+              rewardAmount: formState.careRequest.rewardAmount || undefined,
+              isUrgent: formState.careRequest.isUrgent === "true",
             }
           : undefined,
       };
@@ -1526,6 +1578,162 @@ export function PostCreateForm({
               }
               placeholder="예: 2주 대여, 이번 주말 직거래"
             />
+          </label>
+        </StructuredFieldSection>
+      ) : null}
+
+      {showCareRequest ? (
+        <StructuredFieldSection title="돌봄 요청 정보">
+          <label className="tp-form-label">
+            요청 유형
+            <select
+              className="tp-input-soft px-3 py-2 text-sm"
+              value={formState.careRequest.careType}
+              onChange={(event) =>
+                setFormState((prev) => ({
+                  ...prev,
+                  careRequest: {
+                    ...prev.careRequest,
+                    careType: event.target.value,
+                  },
+                }))
+              }
+            >
+              {careTypeOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="tp-form-label">
+            시작 시간
+            <input
+              type="datetime-local"
+              className="tp-input-soft px-3 py-2 text-sm"
+              value={formState.careRequest.startsAt}
+              onChange={(event) =>
+                setFormState((prev) => ({
+                  ...prev,
+                  careRequest: {
+                    ...prev.careRequest,
+                    startsAt: event.target.value,
+                  },
+                }))
+              }
+              required
+            />
+          </label>
+
+          <label className="tp-form-label">
+            종료 시간
+            <input
+              type="datetime-local"
+              className="tp-input-soft px-3 py-2 text-sm"
+              value={formState.careRequest.endsAt}
+              onChange={(event) =>
+                setFormState((prev) => ({
+                  ...prev,
+                  careRequest: {
+                    ...prev.careRequest,
+                    endsAt: event.target.value,
+                  },
+                }))
+              }
+            />
+          </label>
+
+          <label className="tp-form-label">
+            보상(원)
+            <input
+              type="number"
+              className="tp-input-soft px-3 py-2 text-sm"
+              value={formState.careRequest.rewardAmount}
+              onChange={(event) =>
+                setFormState((prev) => ({
+                  ...prev,
+                  careRequest: {
+                    ...prev.careRequest,
+                    rewardAmount: event.target.value,
+                  },
+                }))
+              }
+              placeholder="선택"
+              min={0}
+            />
+          </label>
+
+          <label className="tp-form-label md:col-span-2">
+            위치 힌트
+            <input
+              className="tp-input-soft px-3 py-2 text-sm"
+              value={formState.careRequest.locationNote}
+              onChange={(event) =>
+                setFormState((prev) => ({
+                  ...prev,
+                  careRequest: {
+                    ...prev.careRequest,
+                    locationNote: event.target.value,
+                  },
+                }))
+              }
+              placeholder="예: 아파트 단지명, 큰 길 기준 위치"
+            />
+          </label>
+
+          <label className="tp-form-label md:col-span-2">
+            반려동물 정보
+            <input
+              className="tp-input-soft px-3 py-2 text-sm"
+              value={formState.careRequest.petNote}
+              onChange={(event) =>
+                setFormState((prev) => ({
+                  ...prev,
+                  careRequest: {
+                    ...prev.careRequest,
+                    petNote: event.target.value,
+                  },
+                }))
+              }
+              placeholder="예: 5kg 소형견, 낯선 사람에게 겁이 많음"
+            />
+          </label>
+
+          <label className="tp-form-label md:col-span-2">
+            요청사항
+            <textarea
+              className="tp-input-soft min-h-24 px-3 py-2 text-sm"
+              value={formState.careRequest.requirements}
+              onChange={(event) =>
+                setFormState((prev) => ({
+                  ...prev,
+                  careRequest: {
+                    ...prev.careRequest,
+                    requirements: event.target.value,
+                  },
+                }))
+              }
+              placeholder="필요한 도움과 주의사항을 적어 주세요."
+            />
+          </label>
+
+          <label className="inline-flex items-center gap-2 text-sm font-semibold text-[#315b9a] md:col-span-2">
+            <input
+              type="checkbox"
+              className="h-4 w-4 rounded border-[#b9cbe6]"
+              checked={formState.careRequest.isUrgent === "true"}
+              onChange={(event) =>
+                setFormState((prev) => ({
+                  ...prev,
+                  careRequest: {
+                    ...prev.careRequest,
+                    isUrgent: event.target.checked ? "true" : "false",
+                  },
+                }))
+              }
+            />
+            긴급 요청
           </label>
         </StructuredFieldSection>
       ) : null}

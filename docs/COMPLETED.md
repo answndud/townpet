@@ -1334,3 +1334,39 @@
 - 결과:
   - 다음 작업은 `Care Request M1 구조화 요청 생성/조회`다.
   - 첫 구현은 schema/migration, Zod validation, post create service, structured search/moderation text, feed/detail query include, 작성 폼/read UI, 생성/조회와 failure-path tests로 자른다.
+
+### 2026-04-26 | Care Request M1 구조화 요청 생성/조회
+- 완료일: `2026-04-26`
+- 배경:
+  - preflight에서 돌봄 요청은 기존 `Post` 운영 표면을 재사용하고 `CareRequest` relation으로 구조화하기로 결정했다.
+  - M1은 지원자 매칭이나 상태 전환 없이 생성/조회와 정책 게이트를 먼저 고정해야 했다.
+- 변경내용:
+  - Prisma에 `PostType.CARE_REQUEST`, `CareRequest`, `CareType`, `CareRequestStatus`와 migration을 추가했다.
+  - `careRequestSchema`를 추가하고 종료 시간이 시작 시간보다 빠른 입력을 거부한다.
+  - `createPost`가 `CARE_REQUEST`를 `LOCAL`로 강제하고 `CareRequest` relation을 생성한다.
+  - structured search text와 moderation/contact 검사에 `locationNote`, `petNote`, `requirements`를 포함했다.
+  - 게스트 차단, 신규 유저 제한, 로컬 동네 필수, 연락처/외부 링크 제한은 기존 post write policy를 재사용한다.
+  - feed/detail/guest detail/create form에 돌봄 유형, 일정, 위치 힌트, 보상, 긴급 여부, 상태를 표시한다.
+- 코드문서:
+  - [app/prisma/schema.prisma](../app/prisma/schema.prisma)
+  - [app/prisma/migrations/20260426023000_add_care_request_m1/migration.sql](../app/prisma/migrations/20260426023000_add_care_request_m1/migration.sql)
+  - [app/src/lib/validations/posts/post.ts](../app/src/lib/validations/posts/post.ts)
+  - [app/src/server/services/posts/post.service.ts](../app/src/server/services/posts/post.service.ts)
+  - [app/src/server/queries/posts/post.queries.ts](../app/src/server/queries/posts/post.queries.ts)
+  - [app/src/components/posts/post-create-form.tsx](../app/src/components/posts/post-create-form.tsx)
+  - [app/src/components/posts/feed-infinite-list.tsx](../app/src/components/posts/feed-infinite-list.tsx)
+  - [app/src/components/posts/post-detail-client.tsx](../app/src/components/posts/post-detail-client.tsx)
+  - [app/src/app/posts/[id]/guest/page.tsx](../app/src/app/posts/%5Bid%5D/guest/page.tsx)
+  - [business/policies/구인구직_운영규칙.md](../business/policies/구인구직_운영규칙.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app exec prisma generate` 통과
+  - `corepack pnpm -C app exec prisma migrate deploy` 통과
+  - `corepack pnpm -C app exec vitest run src/lib/validations/post.test.ts src/lib/post-structured-search.test.ts src/server/services/post-create-policy.test.ts src/server/queries/post.queries.test.ts` 통과, 111 tests
+  - `corepack pnpm -C app typecheck` 통과
+  - `corepack pnpm -C app lint` 통과
+  - `corepack pnpm -C app quality:check` 통과, 205 files / 982 tests
+- 결과:
+  - 돌봄 요청은 이제 일반 자유글이 아니라 `CareRequest` 구조화 레코드와 함께 생성되고 feed/detail에서 읽힌다.
+  - 다음 작업은 상태 전환과 지원/문의 흐름의 권한/감사 로그/모델 경계를 확정하는 `Care Request M2 상태 전환/지원 흐름 preflight`다.

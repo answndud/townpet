@@ -5,6 +5,7 @@ import {
   adoptionListingSchema,
   hospitalReviewSchema,
   marketListingStatusUpdateSchema,
+  careRequestSchema,
   placeReviewSchema,
   postCreateSchema,
   postListSchema,
@@ -144,6 +145,32 @@ describe("post validations", () => {
     expect(result.data?.volunteerDate).toBeInstanceOf(Date);
     expect(result.data?.capacity).toBe(12);
     expect(result.data?.status).toBe("FULL");
+  });
+
+  it("accepts care request dates and urgent flag", () => {
+    const result = careRequestSchema.safeParse({
+      careType: "WALK",
+      startsAt: "2026-04-27T09:00",
+      endsAt: "2026-04-27T10:00",
+      locationNote: "마포구청 근처",
+      rewardAmount: "12000",
+      isUrgent: "true",
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.data?.startsAt).toBeInstanceOf(Date);
+    expect(result.data?.rewardAmount).toBe(12000);
+    expect(result.data?.isUrgent).toBe(true);
+  });
+
+  it("rejects care request ending before it starts", () => {
+    const result = careRequestSchema.safeParse({
+      careType: "WALK",
+      startsAt: "2026-04-27T10:00",
+      endsAt: "2026-04-27T09:00",
+    });
+
+    expect(result.success).toBe(false);
   });
 
   it("canonicalizes volunteer structured text fields", () => {
