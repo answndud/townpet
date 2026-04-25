@@ -16,12 +16,18 @@
 - 운영 evidence 첫 실행 및 결과 triage를 완료했다
 - 런치 갭 다음 후보 재평가를 완료했다
 - Search Quality Phase 2 zero-result 운영 루프 고정을 완료했다
-- 다음 작업: Search Quality Phase 2 검색 매칭 품질 보강
+- Search Quality Phase 2 검색 매칭 품질 보강을 완료했다
+- 다음 작업: 런치 갭 다음 후보 재평가
 
 ## 열린 blocker
 - 없음. 기존 `db:restore:local` local test account count mismatch는 managed account count 검증으로 수정했고 restore 통과를 확인했다.
 
 ## 직전 검증
+- Search Quality Phase 2 검색 매칭 품질 보강:
+  - 추가: compact 검색 문서 fallback에 4자 이상 query의 한 글자 오타 허용 매칭을 추가했다.
+  - 고정: suggestion/ranked search뿐 아니라 `/feed` 일반 목록 첫 페이지도 SQL 결과 0건이면 search-document fallback을 한 번 더 시도한다.
+  - 보호: 3자 이하 query는 fuzzy fallback에서 제외해 `병원후`가 `병원비`까지 과매칭되던 회귀를 막았다.
+  - 통과: 검색 helper/post query/search stat unit, `typecheck`, `search-and-board-filtering` chromium e2e.
 - Search Quality Phase 2 zero-result 운영 루프 고정:
   - 추가: `SearchTermInsight`에 `zeroResultRate`와 운영 액션(priority/label/description)을 붙였다.
   - 연결: `/admin/ops`의 0건/결과 부족 검색어 카드에서 우선순위, 개선 액션, `/feed` 검색 재현 링크를 표시한다.
@@ -64,9 +70,9 @@
 - 과거 Phase 0-5와 checkpoint/push 상세도 [COMPLETED.md](./COMPLETED.md)에 보관했다.
 
 ## 다음 액션
-1. 검색 normalization/suggestion/search document 매칭 구조를 확인한다.
-2. 초성/오타/띄어쓰기 실패 케이스를 테스트로 고정한다.
-3. `/feed` 검색 query와 suggestion fallback을 최소 수정한다.
+1. 최근 완료 항목과 검증 결과를 확인한다.
+2. 남은 런치 갭을 우선순위 원칙에 맞춰 비교한다.
+3. 다음 active plan과 첫 실행 명령을 문서에 남긴다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)

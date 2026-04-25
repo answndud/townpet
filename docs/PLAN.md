@@ -26,17 +26,17 @@
 
 ## Active Plan
 
-### Search Quality Phase 2 검색 매칭 품질 보강
+### 런치 갭 다음 후보 재평가
 
 상태: `pending`
 
-- 목표: zero-result 운영 루프에서 나온 후보를 줄이기 위해 초성/오타/띄어쓰기 검색 매칭 품질을 보강한다.
-- 범위: 검색어 normalization, suggestion/search document match, feed 검색 query, 관련 unit/e2e 테스트.
-- 제외: 외부 검색엔진, pg_trgm ranking 튜닝, 대량 synonym 사전 구축, 지도/반경 검색.
-- 완료 기준: 대표 실패어가 재현 테스트로 고정되고 `/feed` 검색에서 기대 결과 또는 명확한 fallback을 제공한다.
+- 목표: 최근 완료된 검색 품질 작업 이후 남은 런치 갭 중 다음 구현 후보를 고른다.
+- 범위: PLAN/PROGRESS/COMPLETED, Phase 2 로드맵, 운영/품질 잔여 blocker.
+- 제외: 신규 기능 구현, DB 마이그레이션, 배포 smoke.
+- 완료 기준: 다음 active plan을 하나로 좁히고 실행 순서를 남긴다.
 
 ## 다음 실행 순서
 
-1. 현재 검색 normalization/suggestion/search document 매칭 구조를 확인한다.
-2. 초성/오타/띄어쓰기 실패 케이스를 테스트로 먼저 고정한다.
-3. feed 검색 query와 suggestion fallback을 최소 수정하고 e2e smoke를 보강한다.
+1. 최근 완료 항목과 검증 결과를 확인한다.
+2. 남은 런치 갭을 서비스 안정성/핵심 기능/재방문/운영 자동화 순서로 비교한다.
+3. 다음 active plan과 첫 실행 명령을 문서에 남긴다.

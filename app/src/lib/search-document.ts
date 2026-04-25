@@ -28,6 +28,8 @@ const HANGUL_INITIALS = [
 ] as const;
 const COMPATIBILITY_CHOSEONG_REGEX = /[ㄱ-ㅎ]/;
 const ALPHANUMERIC_REGEX = /[a-z0-9]/i;
+const FUZZY_COMPACT_MIN_LENGTH = 4;
+const FUZZY_COMPACT_MAX_LENGTH = 24;
 
 export type SearchDocumentParts = {
   normalizedText: string;
@@ -112,6 +114,9 @@ export function matchesSearchDocumentQuery(
   if (queryParts.choseongText && candidateParts.choseongText.includes(queryParts.choseongText)) {
     return true;
   }
+  if (hasFuzzyCompactSearchMatch(candidateParts.compactText, queryParts.compactText)) {
+    return true;
+  }
 
   return false;
 }
@@ -135,9 +140,78 @@ export function resolveSearchDocumentMatchRank(
   if (queryParts.choseongText && candidateParts.choseongText.startsWith(queryParts.choseongText)) {
     return 2;
   }
+  if (hasFuzzyCompactSearchMatch(candidateParts.compactText, queryParts.compactText)) {
+    return 3;
+  }
   if (matchesSearchDocumentQuery(candidateParts, queryParts)) {
     return 3;
   }
 
   return 4;
+}
+
+function hasFuzzyCompactSearchMatch(candidateCompact: string, queryCompact: string) {
+  if (
+    queryCompact.length < FUZZY_COMPACT_MIN_LENGTH ||
+    queryCompact.length > FUZZY_COMPACT_MAX_LENGTH ||
+    candidateCompact.length < queryCompact.length - 1
+  ) {
+    return false;
+  }
+
+  const windowLengths = Array.from(
+    new Set([queryCompact.length - 1, queryCompact.length, queryCompact.length + 1]),
+  ).filter((length) => length > 0 && length <= candidateCompact.length);
+
+  for (const windowLength of windowLengths) {
+    for (let index = 0; index <= candidateCompact.length - windowLength; index += 1) {
+      const candidateWindow = candidateCompact.slice(index, index + windowLength);
+      if (isWithinOneEdit(candidateWindow, queryCompact)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+function isWithinOneEdit(left: string, right: string) {
+  if (left === right) {
+    return true;
+  }
+  if (Math.abs(left.length - right.length) > 1) {
+    return false;
+  }
+
+  let leftIndex = 0;
+  let rightIndex = 0;
+  let edits = 0;
+
+  while (leftIndex < left.length && rightIndex < right.length) {
+    if (left[leftIndex] === right[rightIndex]) {
+      leftIndex += 1;
+      rightIndex += 1;
+      continue;
+    }
+
+    edits += 1;
+    if (edits > 1) {
+      return false;
+    }
+
+    if (left.length > right.length) {
+      leftIndex += 1;
+    } else if (right.length > left.length) {
+      rightIndex += 1;
+    } else {
+      leftIndex += 1;
+      rightIndex += 1;
+    }
+  }
+
+  if (leftIndex < left.length || rightIndex < right.length) {
+    edits += 1;
+  }
+
+  return edits <= 1;
 }

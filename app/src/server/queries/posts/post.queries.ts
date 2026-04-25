@@ -2838,7 +2838,7 @@ export async function listPosts({
       return { items, nextCursor };
     }
 
-    const items = await prisma.post
+    let items = await prisma.post
       .findMany({
         ...baseArgs,
         include: includeViewerReactions
@@ -2974,6 +2974,70 @@ export async function listPosts({
             });
         return withEmptyReactions(withEmptyGuestPostMeta(fallbackItems));
       });
+
+    const trimmedQuery = q?.trim();
+    if (
+      items.length === 0 &&
+      trimmedQuery &&
+      !cursor &&
+      resolvedPage === 1 &&
+      shouldTryPostSearchDocumentFallback(trimmedQuery)
+    ) {
+      const fallbackWhere = buildPostListWhere({
+        type: effectiveType,
+        reviewBoard: effectiveReviewBoard,
+        reviewCategory: effectiveReviewCategory,
+        scope,
+        petTypeId,
+        petTypeIds,
+        q: undefined,
+        searchIn: resolvedSearchIn,
+        excludeTypes: normalizedExcludeTypes,
+        neighborhoodId,
+        hiddenAuthorIds,
+        days,
+        authorBreedCode,
+      });
+      const fallbackRows = await prisma.post
+        .findMany({
+          where: fallbackWhere,
+          take: Math.min(Math.max(resolvedLimit * 12, 60), 180),
+          orderBy,
+          include: includeViewerReactions
+            ? buildPostListInclude(viewerId)
+            : buildPostListIncludeWithoutReactions(),
+        })
+        .then((rows) => (includeViewerReactions ? rows : withEmptyReactions(rows)));
+      const queryDocument = buildSearchDocumentParts(trimmedQuery);
+
+      items = fallbackRows
+        .map((row) => ({
+          row,
+          rank: resolveSearchDocumentMatchRank(
+            buildRankedSearchFallbackSource(
+              {
+                id: row.id,
+                title: row.title,
+                content: row.content,
+                structuredSearchText: row.structuredSearchText ?? "",
+                createdAt: row.createdAt,
+                author: { nickname: row.author.nickname },
+              },
+              resolvedSearchIn,
+            ),
+            queryDocument,
+          ),
+        }))
+        .filter((item) => item.rank < 4)
+        .sort((left, right) => {
+          if (left.rank !== right.rank) {
+            return left.rank - right.rank;
+          }
+          return 0;
+        })
+        .slice(0, resolvedLimit + 1)
+        .map((item) => item.row);
+    }
 
     let nextCursor: string | null = null;
     if (items.length > resolvedLimit) {
@@ -3891,6 +3955,14 @@ function buildRankedSearchFallbackSource(
     .join(" ");
 }
 
+function shouldTryPostSearchDocumentFallback(query: string) {
+  const queryDocument = buildSearchDocumentParts(query);
+  return (
+    hasChoseongSearchSignal(query) ||
+    (!query.includes(" ") && queryDocument.compactText.length >= 4)
+  );
+}
+
 function buildFieldSearchMatchSql(fieldSql: Prisma.Sql, variants: StructuredSearchSqlVariant[]) {
   return variants.flatMap(({ query, pattern, compactQuery, compactPattern }) => [
     Prisma.sql`${fieldSql} ILIKE ${pattern}`,
@@ -3994,9 +4066,7 @@ export async function listRankedSearchPosts({
   const resolvedSearchIn = searchIn ?? DEFAULT_POST_SEARCH_IN;
   const includeStructuredSearch = resolvedSearchIn === "ALL";
   const queryDocument = buildSearchDocumentParts(trimmedQuery);
-  const shouldTryDocumentFallback =
-    hasChoseongSearchSignal(trimmedQuery) ||
-    (!trimmedQuery.includes(" ") && queryDocument.compactText.length >= 3);
+  const shouldTryDocumentFallback = shouldTryPostSearchDocumentFallback(trimmedQuery);
   const likePattern = `%${trimmedQuery}%`;
   const compactQuery = trimmedQuery.replace(/\s+/g, "");
   const compactPattern = `%${compactQuery}%`;
@@ -4290,9 +4360,7 @@ export async function listPostSearchSuggestions({
 
   const resolvedSearchIn = searchIn ?? DEFAULT_POST_SEARCH_IN;
   const queryDocument = buildSearchDocumentParts(trimmedQuery);
-  const shouldTryDocumentFallback =
-    hasChoseongSearchSignal(trimmedQuery) ||
-    (!trimmedQuery.includes(" ") && queryDocument.compactText.length >= 3);
+  const shouldTryDocumentFallback = shouldTryPostSearchDocumentFallback(trimmedQuery);
   const canonicalSuggestionCandidates =
     resolvedSearchIn === "ALL"
       ? buildStructuredSearchVariants(trimmedQuery).filter(

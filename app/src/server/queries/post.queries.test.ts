@@ -327,6 +327,44 @@ describe("post queries", () => {
     );
   });
 
+  it("falls back to typo-tolerant search-document matching for feed list searches", async () => {
+    mockPrisma.post.findMany
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([
+        {
+          id: "post-1",
+          type: PostType.HOSPITAL_REVIEW,
+          title: "건강 검진 후기",
+          content: "병원에서 건강 검진을 받았어요.",
+          structuredSearchText: "건강 검진",
+          likeCount: 0,
+          dislikeCount: 0,
+          commentCount: 0,
+          viewCount: 0,
+          createdAt: new Date("2026-03-21T00:00:00.000Z"),
+          updatedAt: new Date("2026-03-21T00:00:00.000Z"),
+          author: { id: "user-1", nickname: "보리엄마", image: null },
+          neighborhood: null,
+          petType: null,
+          reactions: [],
+          images: [],
+          adoptionListing: null,
+          volunteerRecruitment: null,
+        },
+      ]);
+
+    const result = await listPosts({
+      limit: 20,
+      scope: PostScope.GLOBAL,
+      q: "건강덤진",
+      searchIn: "TITLE",
+    });
+
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0]?.id).toBe("post-1");
+    expect(mockPrisma.post.findMany).toHaveBeenCalledTimes(2);
+  });
+
   it("applies breed filter for breed lounge feed", async () => {
     mockPrisma.post.findMany.mockResolvedValue([]);
 
@@ -1608,6 +1646,34 @@ describe("post queries", () => {
     expect(items).toEqual(["건강 검진 후기"]);
   });
 
+  it("falls back to typo-tolerant compact matching for autocomplete suggestions", async () => {
+    mockPrisma.post.findMany
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([
+        {
+          title: "건강 검진 후기",
+          content: "병원에서 건강 검진을 받았어요.",
+          animalTags: [],
+          author: { nickname: "보리엄마" },
+          hospitalReview: null,
+          placeReview: null,
+          walkRoute: null,
+          adoptionListing: null,
+          volunteerRecruitment: null,
+        },
+      ]);
+
+    const items = await listPostSearchSuggestions({
+      q: "건강덤진",
+      limit: 5,
+      scope: PostScope.GLOBAL,
+      searchIn: "TITLE",
+    });
+
+    expect(items).toEqual(["건강 검진 후기"]);
+    expect(mockPrisma.post.findMany).toHaveBeenCalledTimes(2);
+  });
+
   it("filters ranked search to active posts and adds stable tie-breaker ordering", async () => {
     mockPrisma.$queryRaw
       .mockResolvedValueOnce([{ enabled: true }])
@@ -1705,6 +1771,55 @@ describe("post queries", () => {
       limit: 10,
       scope: PostScope.GLOBAL,
       q: "ㄱㄱㄱ",
+      searchIn: "ALL",
+    });
+
+    expect(items).toHaveLength(1);
+    expect(items[0]?.id).toBe("post-1");
+    expect(mockPrisma.post.findMany).toHaveBeenCalledTimes(2);
+  });
+
+  it("falls back to typo-tolerant search-document ranking when SQL search has no matches", async () => {
+    mockPrisma.$queryRaw
+      .mockResolvedValueOnce([{ enabled: true }])
+      .mockResolvedValueOnce([]);
+    mockPrisma.post.findMany
+      .mockResolvedValueOnce([
+        {
+          id: "post-1",
+          title: "건강 검진 후기",
+          content: "병원에서 건강 검진을 받았어요.",
+          structuredSearchText: "건강 검진",
+          createdAt: new Date("2026-03-21T00:00:00.000Z"),
+          author: { nickname: "보리엄마" },
+        },
+      ])
+      .mockResolvedValueOnce([
+        {
+          id: "post-1",
+          type: PostType.HOSPITAL_REVIEW,
+          title: "건강 검진 후기",
+          content: "병원에서 건강 검진을 받았어요.",
+          likeCount: 0,
+          dislikeCount: 0,
+          commentCount: 0,
+          viewCount: 0,
+          createdAt: new Date("2026-03-21T00:00:00.000Z"),
+          updatedAt: new Date("2026-03-21T00:00:00.000Z"),
+          author: { id: "user-1", nickname: "보리엄마", image: null },
+          neighborhood: null,
+          petType: null,
+          reactions: [],
+          images: [],
+          adoptionListing: null,
+          volunteerRecruitment: null,
+        },
+      ]);
+
+    const items = await listRankedSearchPosts({
+      limit: 10,
+      scope: PostScope.GLOBAL,
+      q: "건강덤진",
       searchIn: "ALL",
     });
 
