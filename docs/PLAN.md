@@ -1,6 +1,6 @@
 # PLAN.md
 
-기준일: 2026-04-25
+기준일: 2026-04-26
 목표: TownPet를 기능/운영/품질 기준에서 "완성도 높은 커뮤니티" 상태로 끌어올린다.
 완료 이력 archive: [COMPLETED.md](./COMPLETED.md)
 
@@ -26,17 +26,17 @@
 
 ## Active Plan
 
-### 운영 10분 루틴 로컬 evidence runner 보강
+### 운영 evidence 첫 실행 및 결과 triage
 
 상태: `pending`
 
-- 목표: 혼자 운영할 때 매주 10분 안에 실행할 health/security/perf 점검을 단일 로컬 evidence 흐름으로 묶는다.
-- 범위: `ops:*` 스크립트 조합, 로컬 리포트 출력 경로, package script, 운영 문서, failure-path 테스트.
-- 제외: 실 Sentry ingestion, 실 Vercel/GitHub secrets 조회, 운영 배포 smoke, 장기 모니터링 대시보드 구축.
-- 완료 기준: 로컬에서 하나의 명령으로 실행/실패 결과를 남기고, 결과 위치와 판정 기준이 운영 문서와 테스트에 고정된다.
+- 목표: 새 `ops:evidence` runner를 로컬 또는 원격 기준으로 1회 실행하고 결과를 `정상 / 버그 / 보류`로 분류한다.
+- 범위: `OPS_BASE_URL` 결정, evidence 실행, 생성 리포트 확인, 실패 원인 triage, 필요 시 후속 작업 분리.
+- 제외: 실 Sentry ingestion, 실 Vercel/GitHub secrets 조회, 장기 모니터링 대시보드 구축.
+- 완료 기준: evidence 결과 파일 경로, PASS/FAIL, 실패 항목 원인 후보와 다음 조치를 `PROGRESS.md`에 남긴다.
 
 ## 다음 실행 순서
 
-1. 기존 `ops:check:health`, `ops:check:security-env`, `ops:perf:snapshot`, `ops:prewarm` 스크립트의 입출력과 실패 방식을 확인한다.
-2. 로컬/원격 모두에서 쓸 수 있는 runner 범위를 정하고, 기본은 destructive DB 작업 없이 read-only 점검으로 제한한다.
-3. runner와 failure-path 테스트를 추가한 뒤 운영 문서와 `PROGRESS.md`를 갱신한다.
+1. 로컬 서버 상태를 확인하고, 없으면 원격 `https://townpet.vercel.app` 기준으로 실행할지 결정한다.
+2. `OPS_BASE_URL=<target> corepack pnpm -C app ops:evidence`를 실행한다.
+3. 생성된 `docs/reports/ops-evidence-*.md` 요약을 확인하고 후속 수정 후보를 분리한다.

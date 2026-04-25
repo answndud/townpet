@@ -1008,3 +1008,34 @@
   - 문서 변경에 한정해 `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md` 동기화를 확인했다.
 - 결과:
   - 다음 작업은 `ops:*` 스크립트들을 단일 로컬 evidence 흐름으로 묶고, package script와 운영 문서, failure-path test를 추가하는 것이다.
+
+### 2026-04-26 | 운영 10분 루틴 로컬 evidence runner 보강
+- 완료일: `2026-04-26`
+- 배경:
+  - 혼자 운영할 때 health, security env, prewarm, latency snapshot을 각각 기억해서 실행하면 증거가 흩어지고 실패 원인도 남기기 어렵다.
+  - 기존 `ops:*` 스크립트는 개별 기능은 갖췄지만 주간 10분 루틴의 단일 진입점과 로컬 evidence 파일이 부족했다.
+- 변경내용:
+  - `app/scripts/run-ops-evidence.ts`를 추가해 `ops:check:health`, `ops:check:security-env`, `ops:prewarm`, `ops:perf:snapshot`을 read-only로 순서대로 실행한다.
+  - 기본 `OPS_BASE_URL`은 `http://localhost:3000`이고, 원격 점검은 `OPS_BASE_URL=https://townpet.vercel.app pnpm -C app ops:evidence`로 실행하게 했다.
+  - 실패가 발생해도 나머지 점검을 계속 기록하고, required check 실패가 있으면 최종 exit code 1로 종료한다.
+  - 결과는 커밋 대상이 아닌 `docs/reports/ops-evidence-*.md`와 latency TSV/summary 파일로 남긴다.
+  - `app/package.json`에 `ops:evidence` script를 추가했다.
+  - README, app README, 운영 문서 안내, 주간 보안 운영 점검 템플릿에 실행법과 판정 기준을 연결했다.
+- 코드문서:
+  - [app/scripts/run-ops-evidence.ts](../app/scripts/run-ops-evidence.ts)
+  - [app/scripts/run-ops-evidence.test.ts](../app/scripts/run-ops-evidence.test.ts)
+  - [app/package.json](../app/package.json)
+  - [README.md](../README.md)
+  - [app/README.md](../app/README.md)
+  - [business/operations/운영_문서_안내.md](../business/operations/운영_문서_안내.md)
+  - [business/operations/보안 운영 점검 템플릿.md](../business/operations/보안%20운영%20점검%20템플릿.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app exec vitest run scripts/run-ops-evidence.test.ts` 통과, 4 tests
+  - `corepack pnpm -C app lint` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `corepack pnpm -C app quality:check` 통과, 204 files / 964 tests
+- 결과:
+  - 주간 10분 운영 점검은 이제 `ops:evidence` 단일 명령으로 시작할 수 있다.
+  - 다음 작업은 실제 로컬 또는 원격 target에 대해 evidence를 1회 실행하고 결과를 triage하는 것이다.
