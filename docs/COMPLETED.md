@@ -963,3 +963,29 @@
   - 광고 노출은 personalized feed ranker의 행동 신호가 아니다.
   - 광고 클릭은 weak cap 안의 보조 신호로만 남고, sponsored/partner는 별도 후보군으로 분리해야 한다는 증거가 남았다.
   - 다음 작업은 품종 라운지 고위험 write gate 점검이다.
+
+### 2026-04-25 | 품종 라운지 고위험 write gate 점검
+- 완료일: `2026-04-25`
+- 배경:
+  - 품종 라운지 공동구매/거래성 글은 마켓성 write path라 신규유저 제한, 비회원 제한, 연락처/링크 제한, 신고 자동숨김 정책을 우회하면 안 된다.
+  - 기존 구현은 `createPost`에 위임하고 있었지만 route 테스트가 이 계약을 충분히 고정하지 못했다.
+- 변경내용:
+  - 공동구매 route 테스트에 `MARKET_LISTING`, `GLOBAL`, `animalTags: [breedCode]` 입력 계약을 추가했다.
+  - 인증 사용자 경로에서 신규유저 제한과 연락처 제한 `ServiceError`가 403으로 그대로 반환되는지 검증했다.
+  - 비회원 경로에서 10분/1시간 rate-limit key, guest identity 전달, `GUEST_RESTRICTED_TYPE` 반환을 검증했다.
+  - `post-create-policy`와 `report.service` 테스트를 함께 실행해 작성 정책과 신고 audit/자동숨김 경로가 일반 post 정책을 재사용함을 확인했다.
+  - `business/product/품종_개인화_광고_커뮤니티_실행계획.md`를 Cycle A 완료 상태로 갱신했다.
+- 코드문서:
+  - [app/src/app/api/lounges/breeds/[breedCode]/groupbuys/route.test.ts](../app/src/app/api/lounges/breeds/%5BbreedCode%5D/groupbuys/route.test.ts)
+  - [business/product/품종_개인화_광고_커뮤니티_실행계획.md](../business/product/품종_개인화_광고_커뮤니티_실행계획.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app exec vitest run 'src/app/api/lounges/breeds/[breedCode]/groupbuys/route.test.ts' src/server/services/post-create-policy.test.ts src/server/services/report.service.test.ts` 통과, 37 tests
+  - `corepack pnpm -C app lint` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `corepack pnpm -C app quality:check` 통과, 203 files / 960 tests
+- 결과:
+  - 품종 라운지 공동구매 작성은 기존 고위험 post write gate를 우회하지 않는다는 회귀 증거가 생겼다.
+  - 품종 개인화/광고/커뮤니티 Cycle A는 A1-A4까지 완료됐다.
+  - 다음 작업은 Cycle A 완료 결과를 기준으로 다음 후보를 재평가하는 것이다.
