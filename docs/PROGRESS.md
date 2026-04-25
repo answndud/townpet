@@ -55,11 +55,15 @@
   - 발견: `/admin/policies`의 비회원 작성/신규 계정 정책 저장은 POST는 성공하지만 RSC refresh로 클라이언트 성공 상태가 사라졌고, 비회원 작성 정책은 reload 후 오래된 정책 캐시를 볼 수 있었다.
   - 수정: 두 정책 폼을 `useActionState` + 실제 `FormData` 제출로 바꾸고 `/admin/policies` 재검증은 유지해 성공 메시지와 reload persistence를 함께 보장했다.
   - 통과: `admin-guest-post-policy`, `admin-new-user-policy`, `corepack pnpm -C app quality:check`.
+- 알림 e2e:
+  - 발견: `/notifications` 필터가 버튼 click + focus refresh 조합에서 URL sync가 불안정해 kind 필터가 적용되지 않았다.
+  - 수정: 알림 필터 컨트롤을 실제 `Link href` 기반 내비게이션으로 전환하고, bfcache 복귀용 `pageshow` refresh만 유지했다.
+  - 통과: `notification-filter-controls`, `corepack pnpm -C app typecheck`.
 - 과거 Phase 0-5와 checkpoint/push 상세는 [COMPLETED.md](./COMPLETED.md)에 보관했다.
 
 ## 다음 액션
 1. 신고 관리 화면과 댓글 신고 가능 여부를 브라우저/e2e로 확인한다.
-2. 알림/마이페이지, 관리자 운영 화면 순서로 진행한다.
+2. 마이페이지와 관리자 운영 화면 순서로 진행한다.
 3. 결과는 기능별 `정상 / 버그 / 보류`로 기록하고, 버그는 재현 URL/단계/원인 후보/수정 우선순위를 남긴다.
 
 ## Archive Pointer

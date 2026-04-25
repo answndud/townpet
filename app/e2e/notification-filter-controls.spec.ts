@@ -134,18 +134,20 @@ test.describe("notification filter controls", () => {
     await expect(page.getByText(`[${runId}] 반응 알림(읽음)`)).toBeVisible();
     await expect(page.getByText(`[${runId}] 시스템 알림`)).toBeVisible();
 
-    await page.getByRole("button", { name: "댓글/답글", exact: true }).click();
+    const filters = page.getByLabel("알림 필터");
+
+    await filters.getByRole("link", { name: /댓글/ }).click();
     await expect(page).toHaveURL(/\/notifications\?kind=COMMENT/);
     await expect(page.getByText(`[${runId}] 댓글 알림`)).toBeVisible();
     await expect(page.getByText(`[${runId}] 반응 알림(미확인)`)).toHaveCount(0);
     await expect(page.getByText(`[${runId}] 시스템 알림`)).toHaveCount(0);
 
-    await page.getByRole("button", { name: "반응", exact: true }).click();
+    await filters.getByRole("link", { name: "반응", exact: true }).click();
     await expect(page).toHaveURL(/\/notifications\?kind=REACTION/);
     await expect(page.getByText(`[${runId}] 반응 알림(미확인)`)).toBeVisible();
     await expect(page.getByText(`[${runId}] 반응 알림(읽음)`)).toBeVisible();
 
-    await page.getByRole("button", { name: "읽지 않음만", exact: true }).click();
+    await filters.getByRole("link", { name: "읽지 않음만", exact: true }).click();
     await expect(page).toHaveURL(/\/notifications\?kind=REACTION&unreadOnly=1/);
     await expect(page.getByText(`[${runId}] 반응 알림(미확인)`)).toBeVisible();
     await expect(page.getByText(`[${runId}] 반응 알림(읽음)`)).toHaveCount(0);
@@ -155,7 +157,7 @@ test.describe("notification filter controls", () => {
     await expect(page.getByText(`[${runId}] 반응 알림(미확인)`)).toBeVisible();
     await expect(page.getByText(`[${runId}] 반응 알림(읽음)`)).toHaveCount(0);
 
-    await page.getByRole("button", { name: "전체", exact: true }).click();
+    await filters.getByRole("link", { name: "전체", exact: true }).click();
     await expect(page).toHaveURL(/\/notifications\?unreadOnly=1/);
     await expect(page.getByText(`[${runId}] 댓글 알림`)).toBeVisible();
     await expect(page.getByText(`[${runId}] 시스템 알림`)).toBeVisible();
@@ -164,7 +166,7 @@ test.describe("notification filter controls", () => {
 
   test("dismisses notification with X button", async ({ page }) => {
     await loginAsRecipient(page);
-    await page.getByRole("button", { name: "시스템", exact: true }).click();
+    await page.getByLabel("알림 필터").getByRole("link", { name: "시스템", exact: true }).click();
     await expect(page).toHaveURL(/\/notifications\?kind=SYSTEM/);
 
     const item = page.getByTestId(`notification-item-${unreadSystemId}`);
