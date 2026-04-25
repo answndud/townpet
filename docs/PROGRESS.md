@@ -18,12 +18,18 @@
 - Search Quality Phase 2 zero-result 운영 루프 고정을 완료했다
 - Search Quality Phase 2 검색 매칭 품질 보강을 완료했다
 - 런치 갭 다음 후보 재평가를 완료했다
-- 다음 작업: Market State Machine Phase 2 preflight
+- Market State Machine Phase 2 preflight를 완료했다
+- 다음 작업: Market Listing M1 구조화 생성/조회
 
 ## 열린 blocker
 - 없음. 기존 `db:restore:local` local test account count mismatch는 managed account count 검증으로 수정했고 restore 통과를 확인했다.
 
 ## 직전 검증
+- Market State Machine Phase 2 preflight:
+  - 확인: `MarketListing` 모델과 `MarketStatus` enum은 이미 있지만 validation/service/UI/query 경로에는 연결되어 있지 않다.
+  - 결정: 상태 변경 액션보다 먼저 `MARKET_LISTING` 작성 시 구조화 레코드를 생성하고 feed/detail에서 읽는 M1을 구현한다.
+  - 보류: `AVAILABLE/RESERVED/SOLD/CANCELLED` 상태 전환 액션은 작성자/admin 권한과 `ModerationActionLog` enum 확장이 필요하므로 M2로 분리한다.
+  - 정책: 마켓 운영규칙에 M1/M2 경계, 상태 전환 권한, 감사 로그/신고 연결 기준을 추가했다.
 - 런치 갭 다음 후보 재평가:
   - 확인: Search Quality Phase 2는 zero-result 운영 루프와 오타 tolerant feed fallback까지 완료됐다.
   - 비교: 운영 secret이 필요한 production strict/control-plane 확인은 보류 조건이고, 결제/케어/지도는 아직 운영 리스크가 크다.
@@ -75,9 +81,9 @@
 - 과거 Phase 0-5와 checkpoint/push 상세도 [COMPLETED.md](./COMPLETED.md)에 보관했다.
 
 ## 다음 액션
-1. `MarketListing` schema와 현재 작성/조회 UI/API 경로를 확인한다.
-2. `AVAILABLE/RESERVED/SOLD/CANCELLED` 상태 전환 권한과 감사 로그 필요 지점을 정한다.
-3. 첫 구현 단위를 schema/service/action/UI/test 중 어디까지로 자를지 문서화한다.
+1. `marketListingSchema`와 post create form payload를 추가하는 실패 테스트를 작성한다.
+2. `createPost`가 `MARKET_LISTING`에서 `MarketListing`을 생성하고 read include에 싣도록 수정한다.
+3. feed/detail UI에 거래 유형, 가격, 상태를 표시하고 e2e smoke로 확인한다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)
