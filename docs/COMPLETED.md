@@ -1167,3 +1167,25 @@
   - 문서 변경에 한정해 `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`, `business/product/Phase2_로드맵_PRD.md` 동기화를 확인했다.
 - 결과:
   - 다음 작업은 `MarketListing` schema와 현재 마켓 작성/조회 경로를 읽고, `AVAILABLE/RESERVED/SOLD/CANCELLED` 상태 전환의 첫 구현 단위를 테스트 기준으로 고정하는 것이다.
+
+### 2026-04-26 | Market State Machine Phase 2 preflight
+- 완료일: `2026-04-26`
+- 배경:
+  - Phase 2B는 결제 없는 마켓 상태 머신이지만, 바로 상태 변경 액션을 열면 권한/감사 로그/분쟁 연결 범위가 커진다.
+  - 현재 schema에는 `MarketListing`, `MarketType`, `ItemCondition`, `MarketStatus`가 있으나 validation, create service, feed/detail read model, UI에는 연결되어 있지 않았다.
+- 변경내용:
+  - `MarketListing` 현황을 확인했다.
+  - 작성/조회 경로를 확인해 현재 `MARKET_LISTING`은 구조화 레코드 없이 일반 post로만 저장된다는 gap을 확인했다.
+  - 마켓 운영규칙에 M1/M2 경계를 추가했다.
+  - M1은 구조화 마켓 글 생성/조회, M2는 상태 전환 액션과 감사 로그 확장으로 분리했다.
+  - 다음 active plan을 `Market Listing M1 구조화 생성/조회`로 전환했다.
+- 코드문서:
+  - [business/policies/마켓_운영규칙.md](../business/policies/마켓_운영규칙.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+  - [docs/COMPLETED.md](./COMPLETED.md)
+- 검증:
+  - 문서 변경에 한정해 `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`, `business/policies/마켓_운영규칙.md` 동기화를 확인했다.
+- 결과:
+  - 다음 구현은 `marketListingSchema`, post create service, query include/read model, feed/detail UI, unit/e2e smoke를 포함하는 M1이다.
+  - 상태 전환 액션은 `ModerationActionLog` enum 확장과 작성자/admin 권한 테스트가 필요한 M2로 보류한다.

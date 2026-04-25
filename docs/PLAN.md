@@ -26,17 +26,17 @@
 
 ## Active Plan
 
-### Market State Machine Phase 2 preflight
+### Market Listing M1 구조화 생성/조회
 
 상태: `pending`
 
-- 목표: 마켓 글을 결제 없이도 상태가 있는 거래 표면으로 올릴 수 있는 최소 구현 경계를 확정한다.
-- 범위: `MarketListing` schema/service/UI/API/test 현황, `마켓_운영규칙`, 신고/제재/감사 로그 연결 지점.
-- 제외: 결제/정산/에스크로/배송, 외부 채팅, 케어/지도 기능, 실운영 데이터 마이그레이션.
-- 완료 기준: 상태 전환 권한, 감사 로그, 신고/분쟁 연결, 필요한 schema 변경 여부를 정리하고 첫 구현 단위를 테스트 기준으로 고정한다.
+- 목표: `MARKET_LISTING` 글이 단순 자유글이 아니라 `MarketListing` 구조화 레코드로 생성/조회되게 한다.
+- 범위: market validation, post create service, query include/read model, feed/detail UI, unit/e2e smoke.
+- 제외: 상태 변경 액션, 결제/정산/에스크로/배송, 외부 채팅, 관리자 강제 상태 변경.
+- 완료 기준: 작성 시 `listingType/price/condition/depositAmount/rentalPeriod/status`가 저장되고 feed/detail에서 상태/가격이 표시되며 기존 신규유저/게스트/연락처 제한을 우회하지 않는다.
 
 ## 다음 실행 순서
 
-1. `MarketListing` schema와 현재 작성/조회 UI/API 경로를 확인한다.
-2. `AVAILABLE/RESERVED/SOLD/CANCELLED` 상태 전환 권한과 감사 로그 필요 지점을 정한다.
-3. 첫 구현 단위를 schema/service/action/UI/test 중 어디까지로 자를지 문서화한다.
+1. `marketListingSchema`와 post create form payload를 추가하는 실패 테스트를 작성한다.
+2. `createPost`가 `MARKET_LISTING`에서 `MarketListing`을 생성하고 read include에 싣도록 수정한다.
+3. feed/detail UI에 거래 유형, 가격, 상태를 표시하고 e2e smoke로 확인한다.
