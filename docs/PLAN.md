@@ -26,17 +26,17 @@
 
 ## Active Plan
 
-### Search Quality Phase 2 zero-result 운영 루프 고정
+### Search Quality Phase 2 검색 매칭 품질 보강
 
 상태: `pending`
 
-- 목표: 검색 실패어/저성과 검색어를 운영자가 주간 루틴에서 바로 개선 후보로 분류할 수 있게 한다.
-- 범위: `/admin/ops` 검색 품질 신호, `SearchTermStat/SearchTermDailyMetric` read model, zero-result/low-result 테스트와 운영 문서.
-- 제외: pg_trgm 튜닝, 외부 검색엔진, 지도/반경 검색, 대량 synonym 사전 구축, 실운영 DB 수동 수정.
-- 완료 기준: zero-result/low-result 후보가 재현 가능한 테스트와 함께 운영 화면/문서에서 개선 액션으로 연결된다.
+- 목표: zero-result 운영 루프에서 나온 후보를 줄이기 위해 초성/오타/띄어쓰기 검색 매칭 품질을 보강한다.
+- 범위: 검색어 normalization, suggestion/search document match, feed 검색 query, 관련 unit/e2e 테스트.
+- 제외: 외부 검색엔진, pg_trgm ranking 튜닝, 대량 synonym 사전 구축, 지도/반경 검색.
+- 완료 기준: 대표 실패어가 재현 테스트로 고정되고 `/feed` 검색에서 기대 결과 또는 명확한 fallback을 제공한다.
 
 ## 다음 실행 순서
 
-1. `/admin/ops` 검색 품질 신호와 관련 query/test 구조를 확인한다.
-2. zero-result/low-result 후보의 표시 기준과 개선 액션이 부족한 지점을 찾는다.
-3. 테스트를 먼저 추가하고 UI/query/문서를 최소 수정한다.
+1. 현재 검색 normalization/suggestion/search document 매칭 구조를 확인한다.
+2. 초성/오타/띄어쓰기 실패 케이스를 테스트로 먼저 고정한다.
+3. feed 검색 query와 suggestion fallback을 최소 수정하고 e2e smoke를 보강한다.

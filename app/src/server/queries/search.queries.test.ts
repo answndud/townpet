@@ -370,10 +370,18 @@ describe("search queries", () => {
       expect(overview.zeroResultTerms[0]).toMatchObject({
         term: "노령견 케어",
         zeroResultCount: 2,
+        zeroResultRate: 0.5,
+        action: {
+          priority: "high",
+          label: "콘텐츠/동의어 보강",
+        },
       });
       expect(overview.lowResultTerms[0]).toMatchObject({
         term: "노령견 케어",
         averageResultCount: 0.75,
+        action: {
+          priority: "high",
+        },
       });
       expect(overview.popularTerms.some((item) => item.term.includes("@"))).toBe(false);
       expect(mockPrisma.searchTermStat?.findMany).toHaveBeenCalledWith(
@@ -429,6 +437,13 @@ describe("search queries", () => {
       totalQueryCount: 6,
       totalZeroResultCount: 3,
       zeroResultRate: 0.5,
+    });
+    expect(overview.zeroResultTerms[0]).toMatchObject({
+      term: "건강 검진",
+      action: {
+        priority: "high",
+        label: "콘텐츠/동의어 보강",
+      },
     });
     expect(mockPrisma.searchTermStat?.findMany).toHaveBeenCalledWith(
       expect.objectContaining({

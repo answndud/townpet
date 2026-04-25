@@ -153,9 +153,15 @@ export type SearchTermInsight = {
   term: string;
   count: number;
   zeroResultCount: number;
+  zeroResultRate: number;
   averageResultCount: number;
   lastResultCount: number | null;
   updatedAt: string | null;
+  action: {
+    priority: "high" | "medium" | "low";
+    label: string;
+    description: string;
+  };
 };
 
 export type SearchInsightsSummary = {
@@ -315,14 +321,64 @@ function mapSearchTermInsight(row: SearchTermStatRecord): SearchTermInsight | nu
   const zeroResultCount = Math.max(row.zeroResultCount ?? 0, 0);
   const totalResultCount = Math.max(row.totalResultCount ?? 0, 0);
   const averageResultCount = count > 0 ? totalResultCount / count : 0;
+  const zeroResultRate = count > 0 ? zeroResultCount / count : 0;
+  const lastResultCount = row.lastResultCount ?? null;
 
   return {
     term,
     count,
     zeroResultCount,
+    zeroResultRate,
     averageResultCount,
-    lastResultCount: row.lastResultCount ?? null,
+    lastResultCount,
     updatedAt: row.updatedAt instanceof Date ? row.updatedAt.toISOString() : null,
+    action: buildSearchTermOperationalAction({
+      count,
+      zeroResultCount,
+      zeroResultRate,
+      averageResultCount,
+      lastResultCount,
+    }),
+  };
+}
+
+function buildSearchTermOperationalAction({
+  count,
+  zeroResultCount,
+  zeroResultRate,
+  averageResultCount,
+  lastResultCount,
+}: {
+  count: number;
+  zeroResultCount: number;
+  zeroResultRate: number;
+  averageResultCount: number;
+  lastResultCount: number | null;
+}): SearchTermInsight["action"] {
+  if (
+    zeroResultCount >= 3 ||
+    (count >= 5 && zeroResultRate >= 0.4) ||
+    (count >= 3 && lastResultCount === 0)
+  ) {
+    return {
+      priority: "high",
+      label: "콘텐츠/동의어 보강",
+      description: "반복 실패 검색입니다. 기존 게시글 제목/태그 보강 또는 seed 콘텐츠 후보로 올립니다.",
+    };
+  }
+
+  if (zeroResultCount > 0 || averageResultCount <= 1) {
+    return {
+      priority: "medium",
+      label: "검색어 매핑 점검",
+      description: "결과가 부족합니다. 띄어쓰기, 초성, 유사어 매칭 후보로 분류합니다.",
+    };
+  }
+
+  return {
+    priority: "low",
+    label: "추이 관찰",
+    description: "충분한 반복 신호가 쌓일 때까지 주간 검색 품질 점검에서 관찰합니다.",
   };
 }
 
