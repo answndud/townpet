@@ -18,12 +18,9 @@
 - Care Request M7 케어 플로우 로컬 검증을 완료했다
 - Care Request M8 출시 갭 정리를 완료했다
 - Care Request M9 운영 런북/데모 seed를 완료했다
-- Care Request M10 관리자 큐 처리 상태 preflight를 완료했다
-- Care Request M10 관리자 큐 처리 상태 구현을 완료했다
-- Care Request M11 모바일/빈 상태 polish preflight를 완료했다
-- Care Request M11 관리자 큐 모바일/빈 상태 polish를 완료했다
-- Care Request M12 운영 threshold preflight를 완료했다
-- 다음 작업: Care Request M12 운영 threshold 구현
+- Care Request M10 관리자 큐 처리 상태와 M11 모바일/빈 상태 polish를 완료했다
+- Care Request M12 운영 threshold preflight와 구현을 완료했다
+- 다음 작업: Care Request M13 출시 준비 최종 정리
 
 ## 열린 blocker
 - 없음. `test:e2e:smoke` social-dev 온보딩 blocker는 callback side effect 차단과 온보딩 대기 안정화로 해결했고 smoke 통과를 확인했다.
@@ -60,10 +57,13 @@
 - Care Request M12 운영 threshold preflight:
   - 결정: 자동 조치 없이 `/admin/ops` 경고 copy와 count 표시만 추가한다.
   - 기준: `PENDING >= 3`, `PENDING + REVIEWING >= 5`, `SAFETY/PAYMENT_OR_FRAUD >= 1`.
+- Care Request M12 운영 threshold 구현:
+  - 추가: threshold summary helper, `/admin/ops` 대기/검토중/해결/종료 count, 경고 badge/copy.
+  - 검증: targeted Vitest(현재 설정상 전체 suite), `typecheck`, `lint`.
 ## 다음 액션
-1. care feedback stats에서 threshold summary helper를 만든다.
-2. `/admin/ops` 돌봄 이슈 카드에 warning copy와 review status count를 표시한다.
-3. query/helper/UI 테스트와 문서를 갱신한다.
+1. Care Request M1-M12 결과와 검증 명령을 한 장으로 정리한다.
+2. 결제/보험/정산, 자동 제재, 증빙 업로드, production smoke 보류 조건을 재분류한다.
+3. 다음 Phase 후보를 `PLAN.md`, `PROGRESS.md`, `COMPLETED.md`에 맞춘다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)

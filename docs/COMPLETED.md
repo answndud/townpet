@@ -1876,3 +1876,31 @@
   - 문서 변경에 한정해 active plan, progress, policy, roadmap archive를 동기화했다.
 - 결과:
   - 다음 작업은 `Care Request M12 운영 threshold 구현`이다.
+
+### 2026-04-26 | Care Request M12 운영 threshold 구현
+- 완료일: `2026-04-26`
+- 배경:
+  - M12 preflight에서 돌봄 이슈 threshold는 자동 제재가 아니라 `/admin/ops` 운영 판단 copy로만 시작하기로 결정했다.
+  - 기존 Ops 카드는 돌봄 이슈 총량만 보여줘 대기/검토중 적체와 고위험 신호를 즉시 구분하기 어려웠다.
+- 변경내용:
+  - `care-feedback.queries`에 threshold summary helper를 추가했다.
+  - 기준은 `PENDING >= 3`, `PENDING + REVIEWING >= 5`, `SAFETY/PAYMENT_OR_FRAUD >= 1`로 구현했다.
+  - `/admin/ops` 돌봄 카드에 총 신호 수, 대기/검토중/해결/종료 count, `정상/확인 필요/우선 검토` badge, threshold copy를 표시했다.
+  - 자동 제재, 자동 숨김, 운영자 자동 알림은 계속 보류했다.
+- 코드문서:
+  - [app/src/server/queries/care-feedback.queries.ts](../app/src/server/queries/care-feedback.queries.ts)
+  - [app/src/server/queries/care-feedback.queries.test.ts](../app/src/server/queries/care-feedback.queries.test.ts)
+  - [app/src/server/queries/ops-overview.queries.test.ts](../app/src/server/queries/ops-overview.queries.test.ts)
+  - [app/src/app/admin/ops/page.tsx](../app/src/app/admin/ops/page.tsx)
+  - [business/policies/구인구직_운영규칙.md](../business/policies/구인구직_운영규칙.md)
+  - [business/operations/돌봄_운영_런북.md](../business/operations/돌봄_운영_런북.md)
+  - [business/product/Phase2_로드맵_PRD.md](../business/product/Phase2_로드맵_PRD.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app test -- src/server/queries/care-feedback.queries.test.ts src/server/queries/ops-overview.queries.test.ts`
+  - `corepack pnpm -C app typecheck`
+  - `corepack pnpm -C app lint`
+- 결과:
+  - 운영자는 `/admin/ops`에서 돌봄 이슈 적체와 고위험 신호 우선순위를 즉시 판단할 수 있다.
+  - 다음 작업은 `Care Request M13 출시 준비 최종 정리`다.
