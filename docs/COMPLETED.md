@@ -1990,3 +1990,23 @@
   - public health는 PASS다.
   - internal token, Sentry secret, 운영 테스트 계정 확인 부재로 production smoke 전체 실행은 No-Go로 유지한다.
   - 다음 작업은 `Care Request M17 운영 smoke 준비값 확보`다.
+
+### 2026-04-26 | Care Request M17 운영 smoke 준비값 확보
+- 완료일: `2026-04-26`
+- 배경:
+  - M16에서 public health는 통과했지만 production smoke 전체 실행에 필요한 internal token과 운영 테스트 계정이 없었다.
+  - 현재 실행 환경에 값이 주입됐는지 다시 확인하고, 실행 가능 여부를 확정해야 했다.
+- 변경내용:
+  - `OPS_HEALTH_INTERNAL_TOKEN`, `HEALTH_INTERNAL_TOKEN`, Sentry secret, `OPS_BASE_URL`, `CARE_SMOKE_*_EMAIL` 존재 여부를 값 노출 없이 확인했다.
+  - 모든 production smoke 준비값이 현재 실행 환경에 없음을 확인했다.
+  - 돌봄 운영 런북에 준비값 재확인 결과와 다음 준비 항목을 추가했다.
+  - `PLAN.md`를 `Care Request M18 운영 smoke 준비값 주입 후 실행` blocked 상태로 넘겼다.
+- 코드문서:
+  - [business/operations/돌봄_운영_런북.md](../business/operations/돌봄_운영_런북.md)
+  - [business/product/Phase2_로드맵_PRD.md](../business/product/Phase2_로드맵_PRD.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app docs:refresh:check`
+- 결과:
+  - production smoke는 internal token과 운영 테스트 계정 식별자가 주입될 때까지 blocked다.
