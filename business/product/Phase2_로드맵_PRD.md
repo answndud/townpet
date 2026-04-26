@@ -175,3 +175,4 @@ Phase 2 기능은 아래 조건을 만족할 때만 동시에 2개 이상 병행
 - 2026-04-26 실행 결과: Care Request M6 preflight를 완료했다. 완료 피드백 이슈는 기존 신고 큐에 섞지 않고 별도 `/admin/care-feedbacks` 큐와 Ops 요약으로 다루며, 자동 제재/공개 평판/증빙 업로드는 보류한다.
 - 2026-04-26 실행 결과: Care Request M6 운영 신호 큐를 완료했다. `issueType != NONE` 완료 피드백은 `/admin/care-feedbacks`에서 필터링하고 `/admin/ops`에 요약되며, 다음은 M1-M6 케어 흐름 로컬 hot path 검증이다.
 - 2026-04-26 실행 결과: Care Request M7 로컬 hot path 검증을 완료했다. 작성 폼의 돌봄 요청 동네 선택 UI 누락을 발견해 수정했고, 작성/지원/수락/진행/완료/피드백/관리자 큐/Ops 요약 e2e를 추가했다.
+- 2026-04-26 실행 결과: Care Request M8 출시 갭 정리를 완료했다. 다음 구현은 케어 운영 런북과 로컬 demo seed/검증 지침이며, 큐 처리 상태·모바일 polish·운영 threshold는 이후 보강으로 분리한다.
