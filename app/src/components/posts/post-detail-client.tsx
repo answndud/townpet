@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
-import { MarketStatus, PostStatus, PostType } from "@prisma/client";
+import { CareRequestStatus, MarketStatus, PostStatus, PostType } from "@prisma/client";
 
 import { BackToFeedButton } from "@/components/posts/back-to-feed-button";
 import { PostBoardLinkChip } from "@/components/posts/post-board-link-chip";
@@ -39,7 +39,10 @@ import { formatRelativeDate } from "@/lib/post-presenter";
 import { isReportablePostType } from "@/lib/post-type-groups";
 import { toAbsoluteUrl } from "@/lib/site-url";
 import { resolveUserDisplayName } from "@/lib/user-display";
-import { updateMarketListingStatusAction } from "@/server/actions/post";
+import {
+  updateCareRequestStatusAction,
+  updateMarketListingStatusAction,
+} from "@/server/actions/post";
 
 type RelationState = {
   isBlockedByMe: boolean;
@@ -311,6 +314,16 @@ const authorMarketStatusOptions: MarketStatus[] = [
   MarketStatus.CANCELLED,
 ];
 
+const careStatusOptions: CareRequestStatus[] = [
+  CareRequestStatus.OPEN,
+  CareRequestStatus.MATCHED,
+  CareRequestStatus.IN_PROGRESS,
+  CareRequestStatus.COMPLETED,
+  CareRequestStatus.CANCELLED,
+];
+
+const authorCareStatusOptions: CareRequestStatus[] = [CareRequestStatus.CANCELLED];
+
 function ensureDate(value: unknown) {
   if (value instanceof Date) return value;
   if (typeof value === "string") {
@@ -331,7 +344,9 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
   const [isPostReportOpen, setIsPostReportOpen] = useState(false);
   const [relationMessage, setRelationMessage] = useState<string | null>(null);
   const [marketStatusMessage, setMarketStatusMessage] = useState<string | null>(null);
+  const [careStatusMessage, setCareStatusMessage] = useState<string | null>(null);
   const [isMarketStatusPending, startMarketStatusTransition] = useTransition();
+  const [isCareStatusPending, startCareStatusTransition] = useTransition();
   const [loadVersion, setLoadVersion] = useState(0);
   const [commentLoadState, setCommentLoadState] = useState<PostCommentPrefetchState>({
     status: "idle",
@@ -475,6 +490,44 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
       });
       setMarketStatusMessage(
         result.changed ? "거래 상태가 변경되었습니다." : "이미 선택한 거래 상태입니다.",
+      );
+    });
+  };
+
+  const handleCareStatusChange = (nextStatus: CareRequestStatus) => {
+    if (!postId) {
+      return;
+    }
+
+    setCareStatusMessage(null);
+    startCareStatusTransition(async () => {
+      const result = await updateCareRequestStatusAction(postId, nextStatus);
+      if (!result.ok) {
+        setCareStatusMessage(result.message);
+        return;
+      }
+
+      setData((current) => {
+        if (!current?.ok || !current.data?.post.careRequest) {
+          return current;
+        }
+
+        return {
+          ...current,
+          data: {
+            ...current.data,
+            post: {
+              ...current.data.post,
+              careRequest: {
+                ...current.data.post.careRequest,
+                status: result.status,
+              },
+            },
+          },
+        };
+      });
+      setCareStatusMessage(
+        result.changed ? "돌봄 요청 상태가 변경되었습니다." : "이미 선택한 요청 상태입니다.",
       );
     });
   };
@@ -633,6 +686,13 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
     Boolean(viewerId) &&
     (isAuthor || canModerate) &&
     post?.status !== PostStatus.DELETED;
+  const canManageCareStatus =
+    hasLoadedPost &&
+    Boolean(post?.careRequest) &&
+    Boolean(viewerId) &&
+    (isAuthor || canModerate) &&
+    post?.status !== PostStatus.DELETED;
+  const visibleCareStatusOptions = canModerate ? careStatusOptions : authorCareStatusOptions;
   const showPostReportControls =
     canReportPost && canInteract && !isAuthor && canInteractWithPostOwner;
   const meta = post ? typeMeta[post.type] : null;
@@ -1064,6 +1124,34 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
               span="full"
               value={renderTextValue(post.careRequest.requirements)}
             />
+            {canManageCareStatus ? (
+              <div className="col-span-full mt-1 rounded-lg border border-[#cfe9dc] bg-[#f3fbf7] p-3">
+                <p className="text-xs font-semibold text-[#21543d]">돌봄 요청 상태 변경</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {visibleCareStatusOptions.map((status) => {
+                    const isCurrent = post.careRequest?.status === status;
+                    return (
+                      <button
+                        key={status}
+                        type="button"
+                        className={`rounded-md border px-3 py-1.5 text-xs font-semibold transition ${
+                          isCurrent
+                            ? "border-[#2f7b58] bg-[#2f7b58] text-white"
+                            : "border-[#b5dcc9] bg-white text-[#21543d] hover:border-[#8cc7ad] hover:bg-[#e9f7ef]"
+                        } disabled:cursor-not-allowed disabled:opacity-60`}
+                        disabled={isCareStatusPending || isCurrent}
+                        onClick={() => handleCareStatusChange(status)}
+                      >
+                        {careStatusLabel[status] ?? status}
+                      </button>
+                    );
+                  })}
+                </div>
+                {careStatusMessage ? (
+                  <p className="mt-2 text-xs text-[#4b765f]">{careStatusMessage}</p>
+                ) : null}
+              </div>
+            ) : null}
           </PostDetailInfoSection>
         ) : null}
 

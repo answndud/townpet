@@ -1,4 +1,4 @@
-import { MarketStatus, PostScope, PostType } from "@prisma/client";
+import { CareRequestStatus, MarketStatus, PostScope, PostType } from "@prisma/client";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -6,6 +6,7 @@ import {
   hospitalReviewSchema,
   marketListingStatusUpdateSchema,
   careRequestSchema,
+  careRequestStatusUpdateSchema,
   placeReviewSchema,
   postCreateSchema,
   postListSchema,
@@ -361,5 +362,17 @@ describe("marketListingStatusUpdateSchema", () => {
 
   it("rejects unknown market statuses", () => {
     expect(marketListingStatusUpdateSchema.safeParse({ status: "PENDING" }).success).toBe(false);
+  });
+});
+
+describe("careRequestStatusUpdateSchema", () => {
+  it("accepts valid care request status updates", () => {
+    expect(
+      careRequestStatusUpdateSchema.safeParse({ status: CareRequestStatus.CANCELLED }).success,
+    ).toBe(true);
+  });
+
+  it("rejects invalid care request status updates", () => {
+    expect(careRequestStatusUpdateSchema.safeParse({ status: "PENDING" }).success).toBe(false);
   });
 });

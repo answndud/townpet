@@ -26,17 +26,17 @@
 
 ## Active Plan
 
-### Care Request M2 상태 전환 액션
+### Care Request M3 지원/문의 흐름 preflight
 
 상태: `pending`
 
-- 목표: `CARE_REQUEST` 작성자와 운영자가 허용된 요청 상태 전환을 수행하고 감사 로그에 남긴다.
-- 범위: `CARE_STATUS_CHANGED` audit action, status update validation, service/action, detail UI 버튼, unit tests.
-- 제외: 지원자 매칭, 수행자 배정, 결제/예약/보험, 외부 계약 자동화, 실시간 위치 추적.
-- 완료 기준: 작성자는 `OPEN -> CANCELLED`만 가능하고, admin/moderator override와 비작성자 차단, audit log 기록 테스트가 통과한다.
+- 목표: 돌봄 요청의 지원/문의 흐름을 구현하기 전에 모델, 권한, 알림, 개인정보 경계를 확정한다.
+- 범위: `CareApplication` 후보, 작성자 승인/거절 권한, 지원자 취소, 알림, 노쇼/취소 기록, 댓글 기반 대안 비교.
+- 제외: 실제 지원/문의 구현, 결제/예약/보험, 외부 계약 자동화, 실시간 위치 추적.
+- 완료 기준: M3 구현 단위를 하나로 줄이고, 필요한 schema/service/action/UI/test 범위를 `PROGRESS/COMPLETED`에 남긴다.
 
 ## 다음 실행 순서
 
-1. `ModerationActionType.CARE_STATUS_CHANGED` migration과 status update schema를 추가한다.
-2. `updateCareRequestStatus` service/action과 detail UI 상태 버튼을 연결한다.
-3. 작성자/admin/비작성자/failure-path 테스트와 품질 게이트를 실행한다.
+1. `CareApplication` 별도 모델과 댓글 기반 inquiry 확장안을 비교한다.
+2. 지원자/작성자/admin 권한, 개인정보 비노출, 알림 필요 범위를 확정한다.
+3. M3 구현 단위와 failure-path test 목록을 문서화한다.

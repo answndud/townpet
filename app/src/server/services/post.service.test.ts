@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  CareRequestStatus,
   MarketStatus,
   ModerationActionType,
   PostReactionType,
@@ -17,6 +18,7 @@ import {
   togglePostBookmark,
   togglePostReaction,
   updateMarketListingStatus,
+  updateCareRequestStatus,
 } from "@/server/services/post.service";
 import {
   bumpFeedCacheVersion,
@@ -38,6 +40,9 @@ vi.mock("@/lib/prisma", () => ({
       findUnique: vi.fn(),
     },
     marketListing: {
+      update: vi.fn(),
+    },
+    careRequest: {
       update: vi.fn(),
     },
     postBookmark: {
@@ -85,6 +90,9 @@ const mockPrisma = vi.mocked(prisma) as unknown as {
   marketListing: {
     update: ReturnType<typeof vi.fn>;
   };
+  careRequest: {
+    update: ReturnType<typeof vi.fn>;
+  };
   postBookmark: {
     findUnique: ReturnType<typeof vi.fn>;
     create: ReturnType<typeof vi.fn>;
@@ -115,6 +123,7 @@ describe("post reaction toggle", () => {
     mockPrisma.post.update.mockReset();
     mockPrisma.user.findUnique.mockReset();
     mockPrisma.marketListing.update.mockReset();
+    mockPrisma.careRequest.update.mockReset();
     mockPrisma.postBookmark.findUnique.mockReset();
     mockPrisma.postBookmark.create.mockReset();
     mockPrisma.postBookmark.delete.mockReset();
@@ -817,6 +826,193 @@ describe("market listing status transitions", () => {
           actorScope: "MODERATOR",
           previousStatus: MarketStatus.SOLD,
           nextStatus: MarketStatus.AVAILABLE,
+        }),
+      }),
+    );
+  });
+});
+
+describe("care request status transitions", () => {
+  beforeEach(() => {
+    mockPrisma.user.findUnique.mockReset();
+    mockPrisma.post.findUnique.mockReset();
+    mockPrisma.careRequest.update.mockReset();
+    mockRecordModerationAction.mockReset();
+    mockRecordModerationAction.mockResolvedValue(undefined);
+  });
+
+  it("allows the author to cancel an open care request and writes an audit log", async () => {
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: "author-1",
+      role: UserRole.USER,
+    });
+    mockPrisma.post.findUnique.mockResolvedValue({
+      id: "post-1",
+      authorId: "author-1",
+      status: PostStatus.ACTIVE,
+      type: PostType.CARE_REQUEST,
+      careRequest: {
+        id: "care-1",
+        careType: "WALK",
+        status: CareRequestStatus.OPEN,
+      },
+    });
+    mockPrisma.careRequest.update.mockResolvedValue({
+      careType: "WALK",
+      startsAt: null,
+      endsAt: null,
+      locationNote: "공원 근처",
+      petNote: null,
+      requirements: null,
+      rewardAmount: null,
+      isUrgent: false,
+      status: CareRequestStatus.CANCELLED,
+    });
+
+    const result = await updateCareRequestStatus({
+      postId: "post-1",
+      actorId: "author-1",
+      input: { status: CareRequestStatus.CANCELLED },
+    });
+
+    expect(result).toMatchObject({
+      changed: true,
+      previousStatus: CareRequestStatus.OPEN,
+      status: CareRequestStatus.CANCELLED,
+    });
+    expect(mockPrisma.careRequest.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { postId: "post-1" },
+        data: { status: CareRequestStatus.CANCELLED },
+      }),
+    );
+    expect(mockRecordModerationAction).toHaveBeenCalledWith(
+      expect.objectContaining({
+        actorId: "author-1",
+        action: ModerationActionType.CARE_STATUS_CHANGED,
+        targetType: "POST",
+        targetId: "post-1",
+        targetUserId: "author-1",
+        metadata: expect.objectContaining({
+          previousStatus: CareRequestStatus.OPEN,
+          nextStatus: CareRequestStatus.CANCELLED,
+          actorScope: "AUTHOR",
+          careType: "WALK",
+        }),
+      }),
+    );
+  });
+
+  it("blocks non-authors who are not moderators", async () => {
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: "viewer-1",
+      role: UserRole.USER,
+    });
+    mockPrisma.post.findUnique.mockResolvedValue({
+      id: "post-1",
+      authorId: "author-1",
+      status: PostStatus.ACTIVE,
+      type: PostType.CARE_REQUEST,
+      careRequest: {
+        id: "care-1",
+        careType: "WALK",
+        status: CareRequestStatus.OPEN,
+      },
+    });
+
+    await expect(
+      updateCareRequestStatus({
+        postId: "post-1",
+        actorId: "viewer-1",
+        input: { status: CareRequestStatus.CANCELLED },
+      }),
+    ).rejects.toMatchObject({
+      code: "FORBIDDEN",
+      status: 403,
+    });
+    expect(mockPrisma.careRequest.update).not.toHaveBeenCalled();
+    expect(mockRecordModerationAction).not.toHaveBeenCalled();
+  });
+
+  it("blocks invalid author transitions from cancelled back to open", async () => {
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: "author-1",
+      role: UserRole.USER,
+    });
+    mockPrisma.post.findUnique.mockResolvedValue({
+      id: "post-1",
+      authorId: "author-1",
+      status: PostStatus.ACTIVE,
+      type: PostType.CARE_REQUEST,
+      careRequest: {
+        id: "care-1",
+        careType: "WALK",
+        status: CareRequestStatus.CANCELLED,
+      },
+    });
+
+    await expect(
+      updateCareRequestStatus({
+        postId: "post-1",
+        actorId: "author-1",
+        input: { status: CareRequestStatus.OPEN },
+      }),
+    ).rejects.toMatchObject({
+      code: "INVALID_CARE_STATUS_TRANSITION",
+      status: 400,
+    });
+    expect(mockPrisma.careRequest.update).not.toHaveBeenCalled();
+  });
+
+  it("allows moderators to override any care request status", async () => {
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: "mod-1",
+      role: UserRole.MODERATOR,
+    });
+    mockPrisma.post.findUnique.mockResolvedValue({
+      id: "post-1",
+      authorId: "author-1",
+      status: PostStatus.ACTIVE,
+      type: PostType.CARE_REQUEST,
+      careRequest: {
+        id: "care-1",
+        careType: "VISIT_CARE",
+        status: CareRequestStatus.CANCELLED,
+      },
+    });
+    mockPrisma.careRequest.update.mockResolvedValue({
+      careType: "VISIT_CARE",
+      startsAt: null,
+      endsAt: null,
+      locationNote: null,
+      petNote: null,
+      requirements: null,
+      rewardAmount: null,
+      isUrgent: false,
+      status: CareRequestStatus.OPEN,
+    });
+
+    await expect(
+      updateCareRequestStatus({
+        postId: "post-1",
+        actorId: "mod-1",
+        input: { status: CareRequestStatus.OPEN },
+      }),
+    ).resolves.toMatchObject({
+      changed: true,
+      previousStatus: CareRequestStatus.CANCELLED,
+      status: CareRequestStatus.OPEN,
+    });
+    expect(mockRecordModerationAction).toHaveBeenCalledWith(
+      expect.objectContaining({
+        actorId: "mod-1",
+        action: ModerationActionType.CARE_STATUS_CHANGED,
+        targetUserId: "author-1",
+        metadata: expect.objectContaining({
+          actorScope: "MODERATOR",
+          previousStatus: CareRequestStatus.CANCELLED,
+          nextStatus: CareRequestStatus.OPEN,
+          careType: "VISIT_CARE",
         }),
       }),
     );

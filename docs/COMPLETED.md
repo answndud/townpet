@@ -1394,3 +1394,38 @@
 - 결과:
   - 다음 작업은 `Care Request M2 상태 전환 액션`이다.
   - 구현 범위는 `CARE_STATUS_CHANGED` migration, status update validation, service/action, detail UI 버튼, 작성자/admin/비작성자/failure-path tests다.
+
+### 2026-04-26 | Care Request M2 상태 전환 액션
+- 완료일: `2026-04-26`
+- 배경:
+  - Care Request M1에서 `CareRequestStatus`는 생성/조회만 가능했고, 요청 취소나 운영 복구를 서버 정책으로 수행할 수 없었다.
+  - preflight에서 M2는 지원자 모델 없이 상태 전환 액션만 구현하기로 제한했다.
+- 변경내용:
+  - `ModerationActionType.CARE_STATUS_CHANGED` migration을 추가했다.
+  - `careRequestStatusUpdateSchema`를 추가했다.
+  - `updateCareRequestStatus` service를 추가해 작성자 전이와 admin/moderator override를 분리했다.
+  - 작성자는 `OPEN -> CANCELLED`만 가능하고, admin/moderator는 모든 상태에서 수동 복구/취소가 가능하다.
+  - 실제 상태 변경은 `ModerationActionLog`에 이전/다음 상태, actor role/scope, care type metadata로 남긴다.
+  - `updateCareRequestStatusAction`과 회원 상세 UI의 상태 변경 버튼을 연결했다.
+  - 관리자 moderation log 화면에 돌봄 요청 상태 변경 label을 추가했다.
+- 코드문서:
+  - [app/prisma/schema.prisma](../app/prisma/schema.prisma)
+  - [app/prisma/migrations/20260426033000_add_care_status_audit_action/migration.sql](../app/prisma/migrations/20260426033000_add_care_status_audit_action/migration.sql)
+  - [app/src/lib/validations/posts/post.ts](../app/src/lib/validations/posts/post.ts)
+  - [app/src/server/services/posts/post.service.ts](../app/src/server/services/posts/post.service.ts)
+  - [app/src/server/actions/post.ts](../app/src/server/actions/post.ts)
+  - [app/src/components/posts/post-detail-client.tsx](../app/src/components/posts/post-detail-client.tsx)
+  - [app/src/app/admin/moderation-logs/page.tsx](../app/src/app/admin/moderation-logs/page.tsx)
+  - [business/policies/구인구직_운영규칙.md](../business/policies/구인구직_운영규칙.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app exec prisma generate` 통과
+  - `corepack pnpm -C app exec prisma migrate deploy` 통과
+  - `corepack pnpm -C app exec vitest run src/lib/validations/post.test.ts src/server/services/post.service.test.ts src/server/actions/post.test.ts` 통과, 58 tests
+  - `corepack pnpm -C app typecheck` 통과
+  - `corepack pnpm -C app lint` 통과
+  - `corepack pnpm -C app quality:check` 통과, 205 files / 989 tests
+- 결과:
+  - 돌봄 요청 작성자는 요청을 취소할 수 있고, 운영자는 필요한 수동 override를 감사 로그와 함께 수행할 수 있다.
+  - 다음 작업은 `Care Request M3 지원/문의 흐름 preflight`다.

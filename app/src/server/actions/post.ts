@@ -1,6 +1,6 @@
 "use server";
 
-import { MarketStatus, PostReactionType } from "@prisma/client";
+import { CareRequestStatus, MarketStatus, PostReactionType } from "@prisma/client";
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 
@@ -10,6 +10,7 @@ import {
   deletePost,
   togglePostBookmark,
   togglePostReaction,
+  updateCareRequestStatus,
   updateMarketListingStatus,
   updatePost,
 } from "@/server/services/post.service";
@@ -45,6 +46,15 @@ type MarketListingStatusActionResult =
       changed: boolean;
       status: MarketStatus;
       previousStatus: MarketStatus;
+    }
+  | { ok: false; code: string; message: string };
+
+type CareRequestStatusActionResult =
+  | {
+      ok: true;
+      changed: boolean;
+      status: CareRequestStatus;
+      previousStatus: CareRequestStatus;
     }
   | { ok: false; code: string; message: string };
 
@@ -246,6 +256,45 @@ export async function updateMarketListingStatusAction(
     }
 
     logger.error("updateMarketListingStatusAction 실패", {
+      postId,
+      status,
+      error: serializeError(error),
+    });
+
+    return {
+      ok: false,
+      code: "INTERNAL_SERVER_ERROR",
+      message: "서버 오류가 발생했습니다.",
+    };
+  }
+}
+
+export async function updateCareRequestStatusAction(
+  postId: string,
+  status: CareRequestStatus,
+): Promise<CareRequestStatusActionResult> {
+  try {
+    const user = await requireCurrentUser();
+    const result = await updateCareRequestStatus({
+      postId,
+      actorId: user.id,
+      input: { status },
+    });
+    revalidateFeedPage();
+    revalidatePostDetailPage(postId);
+
+    return {
+      ok: true,
+      changed: result.changed,
+      status: result.status,
+      previousStatus: result.previousStatus,
+    };
+  } catch (error) {
+    if (error instanceof ServiceError) {
+      return { ok: false, code: error.code, message: error.message };
+    }
+
+    logger.error("updateCareRequestStatusAction 실패", {
       postId,
       status,
       error: serializeError(error),
