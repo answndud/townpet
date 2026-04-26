@@ -1491,3 +1491,28 @@
 - 결과:
   - 돌봄 요청 지원자는 별도 지원 워크플로우로 신청/취소할 수 있고, 작성자/운영자는 지원을 수락/거절할 수 있다.
   - 다음 작업은 `Care Request M4 수행 체크리스트 preflight`다.
+
+### 2026-04-26 | Care Request M4 수행 체크리스트 preflight
+- 완료일: `2026-04-26`
+- 배경:
+  - Care Application M3에서 지원 수락 시 요청이 `MATCHED`가 되지만, 매칭 이후 수행 시작/완료/취소를 기록하는 최소 흐름이 없었다.
+  - 체크리스트/노쇼/후기/결제/보험은 책임 범위가 커서 바로 구현하기 전에 최소 운영 표면을 분리해야 했다.
+- 변경내용:
+  - M4 구현 범위를 세부 체크리스트가 아니라 `MATCHED -> IN_PROGRESS -> COMPLETED`, 작성자 취소, 운영자 override로 제한했다.
+  - 작성자와 수락 지원자만 매칭된 요청의 시작/완료 전환을 수행하도록 권한 기준을 정했다.
+  - 운영자는 수동 복구/취소를 할 수 있고, 모든 상태 변경은 기존 `CARE_STATUS_CHANGED` 감사 로그에 남긴다.
+  - 분쟁은 별도 dispute table 없이 기존 Post 신고 큐와 `ReportAudit`, `ModerationActionLog`를 소스 오브 트루스로 유지한다.
+  - 체크인 사진, 노쇼 판정, 후기/평점, 결제/보험/실시간 위치는 보류했다.
+- 코드문서:
+  - [business/policies/구인구직_운영규칙.md](../business/policies/구인구직_운영규칙.md)
+  - [business/product/Phase2_로드맵_PRD.md](../business/product/Phase2_로드맵_PRD.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+  - [docs/COMPLETED.md](./COMPLETED.md)
+- 검증:
+  - 현재 `CareRequestStatus`, `CareApplicationStatus`, `ReportReason`, `ModerationActionType` schema를 확인했다.
+  - 신고 정책의 `FRAUD`, `PRIVACY`, `EMERGENCY` 우선순위 큐 기준과 연결 가능성을 확인했다.
+  - 문서 변경에 한정해 active plan, progress, policy, roadmap archive를 동기화했다.
+- 결과:
+  - 다음 작업은 `Care Request M4 수행 상태 전환`이다.
+  - 구현 범위는 수락 지원자 기준 조회, 시작/완료/취소 service/action/UI, 상태 변경 알림, failure-path tests다.
