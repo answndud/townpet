@@ -1828,3 +1828,29 @@
   - `corepack pnpm -C app docs:refresh:check`
 - 결과:
   - 다음 작업은 `Care Request M11 관리자 큐 모바일/빈 상태 polish`다.
+
+### 2026-04-26 | Care Request M11 관리자 큐 모바일/빈 상태 polish
+- 완료일: `2026-04-26`
+- 배경:
+  - M11 preflight에서 `/admin/care-feedbacks` 모바일은 문서 overflow는 없지만 1120px 테이블 내부 스크롤로 처리 폼을 써야 하는 문제가 확인됐다.
+  - 필터 0건 상태도 전체 큐 없음과 구분되지 않아 운영자가 현재 조건만 비어 있는지 판단하기 어려웠다.
+- 변경내용:
+  - `/admin/care-feedbacks`에 모바일 전용 카드 리스트를 추가하고, 기존 테이블은 `md` 이상에서만 보이게 분리했다.
+  - 모바일 카드에 요청 제목, 이슈/결과/처리 상태, 작성자/지원자, 피드백 메모, 처리 상태 변경, 운영자 메모, 저장 CTA를 세로 흐름으로 배치했다.
+  - 필터가 적용된 empty state는 “현재 조건에 맞는 신호가 없습니다” 문구로 분리했다.
+  - `e2e/care-feedback-mobile.spec.ts`를 추가해 모바일 overflow, 저장 CTA, 필터 0건 copy를 검증한다.
+- 코드문서:
+  - [app/src/app/admin/care-feedbacks/page.tsx](../app/src/app/admin/care-feedbacks/page.tsx)
+  - [app/e2e/care-feedback-mobile.spec.ts](../app/e2e/care-feedback-mobile.spec.ts)
+  - [app/scripts/seed-care-demo.ts](../app/scripts/seed-care-demo.ts)
+  - [business/policies/구인구직_운영규칙.md](../business/policies/구인구직_운영규칙.md)
+  - [business/operations/돌봄_운영_런북.md](../business/operations/돌봄_운영_런북.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `PLAYWRIGHT_BASE_URL=http://localhost:3000 corepack pnpm -C app exec playwright test e2e/care-feedback-mobile.spec.ts --project=chromium --workers=1`
+  - `corepack pnpm -C app typecheck`
+  - `corepack pnpm -C app lint`
+- 결과:
+  - 모바일 390px에서 관리자 큐 이슈 확인, 상태 변경, 메모 저장 CTA를 가로 스크롤 없이 사용할 수 있다.
+  - 다음 작업은 `Care Request M12 운영 threshold preflight`다.

@@ -180,3 +180,4 @@ Phase 2 기능은 아래 조건을 만족할 때만 동시에 2개 이상 병행
 - 2026-04-26 실행 결과: Care Request M10 관리자 큐 처리 상태 preflight를 완료했다. 별도 dispute/queue table 없이 `CareCompletionFeedback`에 검토 상태와 운영자 메모를 붙이고, 처리 이력은 `ModerationActionLog`로 남기는 방향으로 확정했다.
 - 2026-04-26 실행 결과: Care Request M10 관리자 큐 처리 상태 구현을 완료했다. `/admin/care-feedbacks`에서 `PENDING/REVIEWING/RESOLVED/DISMISSED` 필터와 상태 변경, 운영자 메모, 담당자/처리 시간을 관리할 수 있다.
 - 2026-04-26 실행 결과: Care Request M11 모바일/빈 상태 polish preflight를 완료했다. feed/detail은 모바일 overflow가 없고, `/admin/care-feedbacks`는 모바일 카드 리스트와 필터 0건 empty copy 분리를 다음 구현으로 확정했다.
+- 2026-04-26 실행 결과: Care Request M11 관리자 큐 모바일/빈 상태 polish를 완료했다. `/admin/care-feedbacks`는 모바일 카드 리스트와 데스크톱 테이블을 분리하고, 필터 0건 empty copy와 모바일 smoke를 추가했다.

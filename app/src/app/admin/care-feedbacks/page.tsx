@@ -90,6 +90,16 @@ export default async function CareFeedbacksPage({ searchParams }: CareFeedbacksP
     listCareFeedbackIssueQueue({ issueType, outcome, reviewStatus, page: currentPage }),
     getCareFeedbackIssueStats(),
   ]);
+  const hasActiveFilter = issueType !== "ALL" || outcome !== "ALL" || reviewStatus !== "ALL";
+  const emptyStateCopy = hasActiveFilter
+    ? {
+        title: "현재 조건에 맞는 신호가 없습니다",
+        description: "필터를 줄이거나 전체 상태로 돌아가 다른 돌봄 이슈 신호를 확인하세요.",
+      }
+    : {
+        title: "돌봄 이슈 신호가 없습니다",
+        description: "완료 피드백에서 이슈가 선택되면 이 큐에 표시됩니다.",
+      };
 
   const buildLink = (
     nextIssueType: CareFeedbackIssueType | "ALL",
@@ -271,7 +281,111 @@ export default async function CareFeedbacksPage({ searchParams }: CareFeedbacksP
 
         <section className="tp-card overflow-hidden">
           {feedbackPage.items.length > 0 ? (
-            <div className="overflow-x-auto">
+            <>
+            <div data-testid="care-feedback-mobile-list" className="flex flex-col divide-y divide-[#e6edf8] md:hidden">
+              {feedbackPage.items.map((feedback) => (
+                <article key={feedback.id} className="flex flex-col gap-3 p-4 text-xs text-[#355988]">
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <Link
+                        href={`/posts/${feedback.careRequest.post.id}`}
+                        className="block break-words text-sm font-semibold leading-5 text-[#163462] hover:text-[#2f5da4]"
+                      >
+                        {feedback.careRequest.post.title}
+                      </Link>
+                      <p className="mt-1 text-[11px] text-[#6a7f9f]">
+                        {careRequestStatusLabels[feedback.careRequest.status]} ·{" "}
+                        {formatDateTime(feedback.careRequest.startsAt)}
+                      </p>
+                    </div>
+                    <span className="shrink-0 rounded-md border border-amber-200 bg-amber-50 px-2 py-1 font-semibold text-amber-800">
+                      {issueTypeLabels[feedback.issueType]}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 rounded-lg border border-[#dbe6f6] bg-[#f8fbff] p-3">
+                    <div>
+                      <p className="text-[10px] uppercase tracking-[0.18em] text-[#5b78a1]">결과</p>
+                      <p className="mt-1 font-semibold text-[#163462]">
+                        {outcomeLabels[feedback.outcome]}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase tracking-[0.18em] text-[#5b78a1]">처리</p>
+                      <p className="mt-1 font-semibold text-[#163462]">
+                        {reviewStatusLabels[feedback.reviewStatus]}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase tracking-[0.18em] text-[#5b78a1]">작성자</p>
+                      <p className="mt-1 font-semibold text-[#163462]">
+                        {formatUserLabel(feedback.author)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase tracking-[0.18em] text-[#5b78a1]">지원자</p>
+                      <p className="mt-1 font-semibold text-[#163462]">
+                        {formatUserLabel(feedback.careApplication?.applicant)}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="text-[10px] uppercase tracking-[0.18em] text-[#5b78a1]">피드백 메모</p>
+                    <p className="mt-1 whitespace-pre-wrap rounded-lg border border-[#e2e8f0] bg-white px-3 py-2 leading-5 text-[#355988]">
+                      {feedback.comment ?? "메모 없음"}
+                    </p>
+                  </div>
+
+                  <form
+                    action={async (formData) => {
+                      "use server";
+                      await updateCareFeedbackReviewAction(feedback.id, {
+                        reviewStatus: formData.get("reviewStatus"),
+                        reviewNote: formData.get("reviewNote"),
+                      });
+                    }}
+                    className="rounded-lg border border-[#dbe6f6] bg-white p-3"
+                  >
+                    <label className="block text-[11px] font-semibold text-[#4f678d]">
+                      처리 상태
+                      <select
+                        name="reviewStatus"
+                        defaultValue={feedback.reviewStatus}
+                        className="mt-1 min-h-10 w-full rounded-lg border border-[#cbdcf5] bg-white px-2 text-xs text-[#163462]"
+                      >
+                        {Object.values(CareFeedbackReviewStatus).map((status) => (
+                          <option key={status} value={status}>
+                            {reviewStatusLabels[status]}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="mt-2 block text-[11px] font-semibold text-[#4f678d]">
+                      운영자 메모
+                      <textarea
+                        name="reviewNote"
+                        defaultValue={feedback.reviewNote ?? ""}
+                        maxLength={1000}
+                        rows={3}
+                        className="mt-1 w-full rounded-lg border border-[#cbdcf5] bg-white px-2 py-2 text-xs text-[#163462]"
+                        placeholder="확인한 내용과 다음 조치를 남깁니다"
+                      />
+                    </label>
+                    <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                      <p className="text-[11px] text-[#6a7f9f]">
+                        {formatDateTime(feedback.reviewedAt)} · 담당{" "}
+                        {formatUserLabel(feedback.reviewer)}
+                      </p>
+                      <button type="submit" className="tp-btn-primary tp-btn-sm rounded-lg">
+                        저장
+                      </button>
+                    </div>
+                  </form>
+                </article>
+              ))}
+            </div>
+            <div data-testid="care-feedback-desktop-table" className="hidden overflow-x-auto md:block">
               <table className="w-full min-w-[1120px] text-left text-xs text-[#355988]">
                 <thead className="border-b border-[#dbe6f6] bg-[#f6f9ff] text-[10px] uppercase tracking-[0.18em] text-[#5b78a1]">
                   <tr>
@@ -371,11 +485,12 @@ export default async function CareFeedbacksPage({ searchParams }: CareFeedbacksP
                 </tbody>
               </table>
             </div>
+            </>
           ) : (
             <div className="p-8">
               <EmptyState
-                title="돌봄 이슈 신호가 없습니다"
-                description="완료 피드백에서 이슈가 선택되면 이 큐에 표시됩니다."
+                title={emptyStateCopy.title}
+                description={emptyStateCopy.description}
               />
             </div>
           )}
