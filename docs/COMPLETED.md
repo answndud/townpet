@@ -1947,3 +1947,24 @@
 - 결과:
   - 운영 secret이 준비되면 실행할 production smoke 명령과 중단 기준이 문서화됐다.
   - 다음 작업은 `Care Request M15 운영 계정/데이터 smoke 준비`다.
+
+### 2026-04-26 | Care Request M15 운영 계정/데이터 smoke 준비
+- 완료일: `2026-04-26`
+- 배경:
+  - M14에서 production smoke 명령과 중단 기준은 정리했지만, 실제 운영 데이터에 테스트 지원/피드백/메모를 남기지 않는 계정과 데이터 원칙이 필요했다.
+- 변경내용:
+  - 돌봄 운영 런북에 `운영 계정/데이터 Smoke 기준` 섹션을 추가했다.
+  - 운영 관리자, 요청자 테스트 회원, 지원자 테스트 회원, 게스트별 허용 범위를 분리했다.
+  - production 테스트 글은 `[SMOKE][CARE] yyyy-mm-dd ...` 제목만 허용하고 실제 연락처/주소/결제/민감 정보를 금지했다.
+  - smoke 후 `CANCELLED`, `DISMISSED`, `[SMOKE 정리 완료]`, `ModerationActionLog` 확인 기준을 정리했다.
+- 코드문서:
+  - [business/operations/돌봄_운영_런북.md](../business/operations/돌봄_운영_런북.md)
+  - [business/policies/구인구직_운영규칙.md](../business/policies/구인구직_운영규칙.md)
+  - [business/product/Phase2_로드맵_PRD.md](../business/product/Phase2_로드맵_PRD.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app docs:refresh:check`
+- 결과:
+  - 운영자가 어떤 계정과 데이터로 케어 smoke를 실행하고 언제 중단할지 판단할 수 있다.
+  - 다음 작업은 `Care Request M16 production smoke 실행 보류 확인`이다.
