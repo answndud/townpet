@@ -1904,3 +1904,25 @@
 - 결과:
   - 운영자는 `/admin/ops`에서 돌봄 이슈 적체와 고위험 신호 우선순위를 즉시 판단할 수 있다.
   - 다음 작업은 `Care Request M13 출시 준비 최종 정리`다.
+
+### 2026-04-26 | Care Request M13 출시 준비 최종 정리
+- 완료일: `2026-04-26`
+- 배경:
+  - Care Request M1-M12가 구조화 작성부터 운영 threshold까지 이어졌지만, 출시 판단 기준이 여러 완료 항목에 흩어져 있었다.
+  - 다음 작업자가 케어 요청을 바로 운영 배포 후보로 볼 수 있는지, 아니면 보류 조건을 먼저 해결해야 하는지 한 번에 볼 필요가 있었다.
+- 변경내용:
+  - 돌봄 운영 런북에 출시 판단 요약을 추가했다.
+  - 로컬 기능 판정은 조건부 Go, 운영 배포 판정은 production smoke와 운영 secret 기반 strict health 전 No-Go로 분리했다.
+  - 포함 범위와 보류 범위를 결제 없는 커뮤니티 매칭, 비공개 완료 피드백, 운영 이슈 신호 큐, 수동 처리 메모, Ops threshold 기준으로 재정리했다.
+  - 다음 작업을 `Care Request M14 production smoke preflight`로 넘겼다.
+- 코드문서:
+  - [business/operations/돌봄_운영_런북.md](../business/operations/돌봄_운영_런북.md)
+  - [business/policies/구인구직_운영규칙.md](../business/policies/구인구직_운영규칙.md)
+  - [business/product/Phase2_로드맵_PRD.md](../business/product/Phase2_로드맵_PRD.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app docs:refresh:check`
+- 결과:
+  - 케어 요청은 로컬 기능 기준 조건부 Go, 운영 배포 기준 No-Go로 판정됐다.
+  - 다음 작업은 `Care Request M14 production smoke preflight`다.

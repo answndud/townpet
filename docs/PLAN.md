@@ -26,17 +26,17 @@
 
 ## Active Plan
 
-### Care Request M13 출시 준비 최종 정리
+### Care Request M14 production smoke preflight
 
 상태: `pending`
 
-- 목표: Care Request M1-M12 완료 범위와 남은 출시 보류 항목을 한 번에 판단할 수 있게 정리한다.
-- 범위: care request 문서, 런북, 완료 이력, 검증 명령 목록, 보류/다음 phase 후보.
-- 제외: 신규 기능 구현, 결제/보험/정산, production smoke, 실 운영 배포.
-- 완료 기준: 다음 착수자가 케어 기능을 출시 후보로 둘지, 보류 항목을 먼저 처리할지 문서만 보고 결정할 수 있다.
+- 목표: 케어 요청을 운영 배포 후보로 볼 수 있는지 원격 smoke 전제와 실행 순서를 확정한다.
+- 범위: production smoke 체크리스트, 운영 secret 필요 항목, 원격 health/admin 수동 smoke 순서.
+- 제외: 실제 배포, 결제/보험/정산, 자동 제재, 증빙 업로드.
+- 완료 기준: 운영 secret이 준비되면 어떤 명령과 브라우저 경로를 어떤 순서로 확인할지 바로 실행할 수 있다.
 
 ## 다음 실행 순서
 
-1. Care Request M1-M12 결과와 검증 명령을 한 장으로 정리한다.
-2. 결제/보험/정산, 자동 제재, 증빙 업로드, production smoke 보류 조건을 재분류한다.
-3. 다음 Phase 후보를 `PLAN.md`, `PROGRESS.md`, `COMPLETED.md`에 맞춘다.
+1. 원격 health와 strict env 확인에 필요한 secret/env를 목록화한다.
+2. 케어 요청 원격 smoke 경로와 계정 조건을 정리한다.
+3. production smoke 실행 전 No-Go 조건과 중단 기준을 문서화한다.
