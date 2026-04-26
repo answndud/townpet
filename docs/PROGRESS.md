@@ -20,33 +20,16 @@
 - Care Request M7 케어 플로우 로컬 검증을 완료했다
 - Care Request M8 출시 갭 정리를 완료했다
 - Care Request M9 운영 런북/데모 seed를 완료했다
-- 다음 작업: Care Request M10 관리자 큐 처리 상태 preflight
+- Care Request M10 관리자 큐 처리 상태 preflight를 완료했다
+- 다음 작업: Care Request M10 관리자 큐 처리 상태 구현
 
 ## 열린 blocker
 - 없음. `test:e2e:smoke` social-dev 온보딩 blocker는 callback side effect 차단과 온보딩 대기 안정화로 해결했고 smoke 통과를 확인했다.
 
 ## 직전 검증
-- Care Request M1-M4:
-  - 구조화 요청, 작성자 취소/admin override, `CareApplication` 지원 생성/취소/승인/거절, `MATCHED -> IN_PROGRESS -> COMPLETED` 상태 전환을 완료했다.
-  - `LOCAL` 전용, 게스트 작성 차단, 신규 유저 제한, 연락처/링크/금칙어 검사를 기존 post write path로 재사용한다.
-- Care Request M5 후기/노쇼/증빙 preflight:
-  - 결정: 공개 평점/증빙 자동 판정이 아니라 비공개 `CareCompletionFeedback`과 운영 이슈 신호 수집으로 제한한다.
-  - 권한: 요청 작성자와 수락 지원자만 `COMPLETED` 요청에 각 1회 작성한다.
-  - 공개: 피드백은 당사자/관리자만 보고, 공개 프로필 점수나 자동 랭킹에는 사용하지 않는다.
-  - 보류: 공개 별점, 체크인 사진, 자동 노쇼 판정, 자동 패널티, 결제/보험/정산.
-- Care Request M5 완료 피드백:
-  - 추가: `CareCompletionFeedback`, outcome/issueType enum, validation, service/action, detail API/UI를 연결했다.
-  - 권한: 요청 작성자와 수락 지원자만 `COMPLETED` 요청에 각 1회 작성한다.
-  - 공개: 피드백은 당사자/관리자만 detail API에서 조회한다.
-  - 통과: prisma generate/migrate deploy, targeted Vitest, `typecheck`, `lint`.
-- Care Request M6 운영 신호 큐 preflight:
-  - 결정: 기존 신고 큐에는 섞지 않고 별도 `/admin/care-feedbacks` 큐와 Ops 요약 카드로 구현한다.
-  - 이유: `CareCompletionFeedback`은 사용자가 제기한 신고가 아니라 당사자 비공개 운영 신호라 `ReportStatus/ReportAudit` 처리 모델과 다르다.
-  - 범위: `issueType != NONE` 조회, issue/outcome 필터, 관련 게시글 상세 링크, 관리자 전용 접근, tests.
-  - 보류: 자동 제재, 공개 평판 점수, 증빙 업로드, 결제/보험 분쟁 처리, 별도 dispute table.
-- Care Request M6 운영 신호 큐:
-  - 추가: `listCareFeedbackIssueQueue`, `getCareFeedbackIssueStats`, `/admin/care-feedbacks`, `/admin/ops` 요약 카드를 연결했다.
-  - 공개: `issueType != NONE` 피드백만 관리자 큐에서 보고, 신고 큐/공개 화면에는 섞지 않는다.
+- Care Request M1-M6:
+  - 구조화 요청, 상태 전환, 지원 생성/관리, 완료 피드백, `/admin/care-feedbacks`, `/admin/ops` 요약을 완료했다.
+  - 완료 피드백 이슈는 신고 큐와 분리하고, 공개 피드/검색/프로필에는 노출하지 않는다.
 - Care Request M7 로컬 검증:
   - 정상: UI 기준 작성 -> 지원 -> 수락 -> 진행/완료 -> 완료 피드백 -> 관리자 이슈 큐 -> Ops 요약 e2e가 통과했다.
   - 버그: 돌봄 요청 작성 폼의 동네 선택 UI 누락을 재현했고, `showNeighborhood` 조건 수정으로 해결했다.
@@ -59,10 +42,13 @@
   - 추가: `db:seed:care-demo`, `db:restore:local` seed step, `business/operations/돌봄_운영_런북.md`.
   - 데이터: 요청자/지원자/운영자 계정과 `OPEN`, `MATCHED`, `COMPLETED + SAFETY issue` 케이스.
   - 보류 유지: 결제/보험/정산, 자동 제재, 증빙 업로드, production smoke.
+- Care Request M10 관리자 큐 처리 상태 preflight:
+  - 결정: 별도 dispute/queue table 없이 `CareCompletionFeedback`에 검토 상태/운영자 메모를 붙인다.
+  - 처리 이력은 신고 큐의 `ReportAudit`이 아니라 `ModerationActionLog`의 `CARE_FEEDBACK_REVIEWED` action으로 남긴다.
 ## 다음 액션
-1. `/admin/care-feedbacks` 처리 상태/메모 모델 경계를 검토한다.
-2. 별도 queue table이 필요한지, `CareCompletionFeedback` 확장으로 충분한지 결정한다.
-3. 구현 범위와 보류 항목을 정책/계획 문서에 남긴다.
+1. Prisma schema/migration에 review status/note 필드를 추가한다.
+2. 관리자 전용 service/action과 audit log를 구현한다.
+3. `/admin/care-feedbacks` 상태 필터/처리 폼과 seed/tests를 갱신한다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)

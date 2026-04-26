@@ -177,3 +177,4 @@ Phase 2 기능은 아래 조건을 만족할 때만 동시에 2개 이상 병행
 - 2026-04-26 실행 결과: Care Request M7 로컬 hot path 검증을 완료했다. 작성 폼의 돌봄 요청 동네 선택 UI 누락을 발견해 수정했고, 작성/지원/수락/진행/완료/피드백/관리자 큐/Ops 요약 e2e를 추가했다.
 - 2026-04-26 실행 결과: Care Request M8 출시 갭 정리를 완료했다. 다음 구현은 케어 운영 런북과 로컬 demo seed/검증 지침이며, 큐 처리 상태·모바일 polish·운영 threshold는 이후 보강으로 분리한다.
 - 2026-04-26 실행 결과: Care Request M9 운영 런북/데모 seed를 완료했다. `db:restore:local`이 케어 데모 데이터를 함께 준비하고, 독립 `db:seed:care-demo`와 `business/operations/돌봄_운영_런북.md`로 수동/e2e 재현 절차를 문서화했다.
+- 2026-04-26 실행 결과: Care Request M10 관리자 큐 처리 상태 preflight를 완료했다. 별도 dispute/queue table 없이 `CareCompletionFeedback`에 검토 상태와 운영자 메모를 붙이고, 처리 이력은 `ModerationActionLog`로 남기는 방향으로 확정했다.
