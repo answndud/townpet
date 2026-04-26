@@ -84,6 +84,14 @@ type NotifyCareApplicationDecisionParams = {
   status: "ACCEPTED" | "DECLINED";
 };
 
+type NotifyCareRequestStatusChangedParams = {
+  recipientUserId: string;
+  actorId: string;
+  postId: string;
+  postTitle: string;
+  status: "OPEN" | "MATCHED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
+};
+
 function clampText(value: string | null | undefined, maxLength: number) {
   const trimmed = (value ?? "").trim();
   if (trimmed.length <= maxLength) {
@@ -280,6 +288,36 @@ export async function notifyCareApplicationDecision({
       status === "ACCEPTED"
         ? `돌봄 지원이 수락되었어요: ${clampText(postTitle, 60)}`
         : `돌봄 지원이 거절되었어요: ${clampText(postTitle, 60)}`,
+    metadata: { status },
+  });
+}
+
+export async function notifyCareRequestStatusChanged({
+  recipientUserId,
+  actorId,
+  postId,
+  postTitle,
+  status,
+}: NotifyCareRequestStatusChangedParams) {
+  const statusLabel =
+    status === "IN_PROGRESS"
+      ? "진행 중"
+      : status === "COMPLETED"
+        ? "완료"
+        : status === "CANCELLED"
+          ? "취소"
+          : status === "MATCHED"
+            ? "매칭"
+            : "모집 중";
+
+  return createUserNotification({
+    userId: recipientUserId,
+    actorId,
+    type: NotificationType.CARE_STATUS_CHANGED,
+    entityType: NotificationEntityType.POST,
+    entityId: postId,
+    postId,
+    title: `돌봄 요청 상태가 ${statusLabel}로 변경되었어요: ${clampText(postTitle, 60)}`,
     metadata: { status },
   });
 }

@@ -1516,3 +1516,35 @@
 - 결과:
   - 다음 작업은 `Care Request M4 수행 상태 전환`이다.
   - 구현 범위는 수락 지원자 기준 조회, 시작/완료/취소 service/action/UI, 상태 변경 알림, failure-path tests다.
+
+### 2026-04-26 | Care Request M4 수행 상태 전환
+- 완료일: `2026-04-26`
+- 배경:
+  - M4 preflight에서 매칭 이후 최소 상태 기록은 세부 체크리스트가 아니라 `MATCHED -> IN_PROGRESS -> COMPLETED` 전환으로 제한했다.
+  - 작성자와 수락 지원자 양쪽이 수행 시작/완료 상태를 확인할 수 있어야 하고, 상태 변경은 알림과 감사 로그로 남아야 했다.
+- 변경내용:
+  - `NotificationType.CARE_STATUS_CHANGED` migration과 알림 helper를 추가했다.
+  - `updateCareRequestStatus` service를 확장해 수락된 `CareApplication` 기준 지원자 권한을 판정한다.
+  - 작성자와 수락 지원자는 `MATCHED -> IN_PROGRESS -> COMPLETED` 전환이 가능하고, 작성자는 `MATCHED -> CANCELLED`도 가능하다.
+  - 운영자는 기존처럼 모든 상태 override가 가능하다.
+  - `CARE_STATUS_CHANGED` audit metadata에 actor scope와 accepted application id를 남긴다.
+  - 상태 변경 알림은 작성자와 수락 지원자에게 발송하되, actor 본인 알림은 기존 notification helper에서 건너뛴다.
+  - 회원 상세 UI는 현재 상태와 역할에 따라 가능한 상태 버튼만 표시한다.
+- 코드문서:
+  - [app/prisma/schema.prisma](../app/prisma/schema.prisma)
+  - [app/prisma/migrations/20260426053000_add_care_status_notification_type/migration.sql](../app/prisma/migrations/20260426053000_add_care_status_notification_type/migration.sql)
+  - [app/src/server/services/posts/post.service.ts](../app/src/server/services/posts/post.service.ts)
+  - [app/src/server/services/notifications/notification.service.ts](../app/src/server/services/notifications/notification.service.ts)
+  - [app/src/components/posts/post-detail-client.tsx](../app/src/components/posts/post-detail-client.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app exec prisma generate` 통과
+  - `corepack pnpm -C app exec prisma migrate deploy` 통과
+  - `corepack pnpm -C app test -- src/server/services/post.service.test.ts src/server/actions/post.test.ts src/lib/validations/post.test.ts` 통과, 205 files / 1003 tests
+  - `corepack pnpm -C app typecheck` 통과
+  - `corepack pnpm -C app lint` 통과
+  - `corepack pnpm -C app quality:check` 통과, 205 files / 1003 tests
+- 결과:
+  - 매칭된 돌봄 요청은 수행 중/완료/취소 상태로 전환할 수 있다.
+  - 다음 작업은 `Care Request M5 후기/노쇼/증빙 preflight`다.

@@ -341,7 +341,44 @@ const careStatusOptions: CareRequestStatus[] = [
   CareRequestStatus.CANCELLED,
 ];
 
-const authorCareStatusOptions: CareRequestStatus[] = [CareRequestStatus.CANCELLED];
+const resolveCareStatusOptions = ({
+  currentStatus,
+  isAuthor,
+  isAcceptedApplicant,
+  canModerate,
+}: {
+  currentStatus?: string | null;
+  isAuthor: boolean;
+  isAcceptedApplicant: boolean;
+  canModerate: boolean;
+}) => {
+  if (canModerate) {
+    return careStatusOptions;
+  }
+
+  if (isAuthor) {
+    if (currentStatus === CareRequestStatus.OPEN) {
+      return [CareRequestStatus.CANCELLED];
+    }
+    if (currentStatus === CareRequestStatus.MATCHED) {
+      return [CareRequestStatus.IN_PROGRESS, CareRequestStatus.CANCELLED];
+    }
+    if (currentStatus === CareRequestStatus.IN_PROGRESS) {
+      return [CareRequestStatus.COMPLETED];
+    }
+  }
+
+  if (isAcceptedApplicant) {
+    if (currentStatus === CareRequestStatus.MATCHED) {
+      return [CareRequestStatus.IN_PROGRESS];
+    }
+    if (currentStatus === CareRequestStatus.IN_PROGRESS) {
+      return [CareRequestStatus.COMPLETED];
+    }
+  }
+
+  return [];
+};
 
 const careApplicationStatusLabel: Record<CareApplicationStatus, string> = {
   PENDING: "대기",
@@ -780,16 +817,24 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
     Boolean(viewerId) &&
     (isAuthor || canModerate) &&
     post?.status !== PostStatus.DELETED;
-  const canManageCareStatus =
-    hasLoadedPost &&
-    Boolean(post?.careRequest) &&
-    Boolean(viewerId) &&
-    (isAuthor || canModerate) &&
-    post?.status !== PostStatus.DELETED;
   const careApplications = post?.careApplications ?? [];
   const ownCareApplication = viewerId
     ? careApplications.find((application) => application.applicantId === viewerId) ?? null
     : null;
+  const isAcceptedCareApplicant =
+    ownCareApplication?.status === CareApplicationStatus.ACCEPTED;
+  const visibleCareStatusOptions = resolveCareStatusOptions({
+    currentStatus: post?.careRequest?.status,
+    isAuthor,
+    isAcceptedApplicant: isAcceptedCareApplicant,
+    canModerate,
+  });
+  const canManageCareStatus =
+    hasLoadedPost &&
+    Boolean(post?.careRequest) &&
+    Boolean(viewerId) &&
+    visibleCareStatusOptions.length > 0 &&
+    post?.status !== PostStatus.DELETED;
   const canApplyCareRequest =
     hasLoadedPost &&
     post?.type === PostType.CARE_REQUEST &&
@@ -806,7 +851,6 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
     Boolean(viewerId) &&
     (isAuthor || canModerate) &&
     post?.status !== PostStatus.DELETED;
-  const visibleCareStatusOptions = canModerate ? careStatusOptions : authorCareStatusOptions;
   const showPostReportControls =
     canReportPost && canInteract && !isAuthor && canInteractWithPostOwner;
   const meta = post ? typeMeta[post.type] : null;
