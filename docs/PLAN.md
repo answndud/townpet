@@ -26,17 +26,17 @@
 
 ## Active Plan
 
-### Care Request M3 지원/문의 흐름 preflight
+### Care Application M3 지원 생성/관리
 
 상태: `pending`
 
-- 목표: 돌봄 요청의 지원/문의 흐름을 구현하기 전에 모델, 권한, 알림, 개인정보 경계를 확정한다.
-- 범위: `CareApplication` 후보, 작성자 승인/거절 권한, 지원자 취소, 알림, 노쇼/취소 기록, 댓글 기반 대안 비교.
-- 제외: 실제 지원/문의 구현, 결제/예약/보험, 외부 계약 자동화, 실시간 위치 추적.
-- 완료 기준: M3 구현 단위를 하나로 줄이고, 필요한 schema/service/action/UI/test 범위를 `PROGRESS/COMPLETED`에 남긴다.
+- 목표: 돌봄 요청에 별도 `CareApplication` 지원 워크플로우를 추가한다.
+- 범위: Prisma schema/migration, validation, service/action, detail UI 지원 생성/취소/승인/거절, 지원 생성/결정 알림, failure-path tests.
+- 제외: 공개 댓글 기반 지원, 수행 체크리스트, 후기/평점, 노쇼 기록, 결제/예약/보험, 실시간 위치 추적.
+- 완료 기준: 지원자/작성자/운영자 권한이 서비스에서 강제되고, 승인 시 `CareRequest.status = MATCHED`로 전환되며, 연락처/차단/중복/이미 매칭된 요청 failure-path 테스트가 통과한다.
 
 ## 다음 실행 순서
 
-1. `CareApplication` 별도 모델과 댓글 기반 inquiry 확장안을 비교한다.
-2. 지원자/작성자/admin 권한, 개인정보 비노출, 알림 필요 범위를 확정한다.
-3. M3 구현 단위와 failure-path test 목록을 문서화한다.
+1. `CareApplication`, `CareApplicationStatus`, notification type/schema migration을 추가한다.
+2. 지원 생성/취소/승인/거절 service/action과 detail UI를 연결한다.
+3. 중복 지원, 작성자 self-apply, 차단 관계, 연락처, 이미 매칭된 요청 테스트와 품질 게이트를 실행한다.

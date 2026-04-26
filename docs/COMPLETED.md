@@ -1429,3 +1429,29 @@
 - 결과:
   - 돌봄 요청 작성자는 요청을 취소할 수 있고, 운영자는 필요한 수동 override를 감사 로그와 함께 수행할 수 있다.
   - 다음 작업은 `Care Request M3 지원/문의 흐름 preflight`다.
+
+### 2026-04-26 | Care Request M3 지원/문의 흐름 preflight
+- 완료일: `2026-04-26`
+- 배경:
+  - Care Request M2까지 요청 생성/조회와 상태 전환은 완료됐지만, 실제 매칭을 위해서는 지원/문의 흐름이 필요하다.
+  - 지원은 공개 댓글과 달리 신청자 상태, 작성자 승인/거절, 취소, 알림, 개인정보 비노출 정책이 필요한 별도 워크플로우다.
+- 변경내용:
+  - 댓글 기반 inquiry 확장과 별도 `CareApplication` 모델을 비교했다.
+  - 댓글 확장은 공개 토론, 신고, 일반 댓글 알림과 지원 상태가 섞여 권한과 개인정보 경계가 약하다고 판단했다.
+  - M3는 `CareApplication` 별도 모델로 구현하기로 결정했다.
+  - 지원 상태는 `PENDING`, `ACCEPTED`, `DECLINED`, `CANCELLED`로 둔다.
+  - 지원자는 로그인 사용자만 가능하고 작성자 본인, 게스트, 제재 유저, 차단 관계, 중복 지원, 이미 매칭된 요청은 차단한다.
+  - 작성자는 본인 요청의 `PENDING` 지원을 승인/거절하고, 승인 시 `CareRequest.status`를 `MATCHED`로 바꾼다.
+  - M3 알림은 지원 생성과 승인/거절 알림만 포함하고, 수행 체크리스트/후기/노쇼 기록은 이후 작업으로 분리했다.
+- 코드문서:
+  - [business/policies/구인구직_운영규칙.md](../business/policies/구인구직_운영규칙.md)
+  - [business/product/Phase2_로드맵_PRD.md](../business/product/Phase2_로드맵_PRD.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+  - [docs/COMPLETED.md](./COMPLETED.md)
+- 검증:
+  - 현재 `Comment`/`Notification` schema와 comment service의 로컬/차단/연락처 정책 경계를 확인했다.
+  - 문서 변경에 한정해 active plan, progress, policy, roadmap archive를 동기화했다.
+- 결과:
+  - 다음 작업은 `Care Application M3 지원 생성/관리`다.
+  - 구현 범위는 `CareApplication` schema/migration, validation, service/action, detail UI, 지원 생성/취소/승인/거절, 지원 생성/결정 알림, failure-path tests다.
