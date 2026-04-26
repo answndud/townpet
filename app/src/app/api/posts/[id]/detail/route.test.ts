@@ -8,6 +8,7 @@ import { monitorUnhandledError } from "@/server/error-monitor";
 import {
   getPostById,
   listCareApplicationsForPostDetail,
+  listCareCompletionFeedbacksForPostDetail,
 } from "@/server/queries/post.queries";
 import { getUserRelationState } from "@/server/queries/user-relation.queries";
 import { assertPostReadable } from "@/server/services/post-read-access.service";
@@ -20,6 +21,7 @@ vi.mock("@/server/error-monitor", () => ({ monitorUnhandledError: vi.fn() }));
 vi.mock("@/server/queries/post.queries", () => ({
   getPostById: vi.fn(),
   listCareApplicationsForPostDetail: vi.fn(),
+  listCareCompletionFeedbacksForPostDetail: vi.fn(),
 }));
 vi.mock("@/server/queries/user-relation.queries", () => ({
   getUserRelationState: vi.fn(),
@@ -33,6 +35,7 @@ const mockGetCurrentUserRole = vi.mocked(getCurrentUserRole);
 const mockMonitorUnhandledError = vi.mocked(monitorUnhandledError);
 const mockGetPostById = vi.mocked(getPostById);
 const mockListCareApplicationsForPostDetail = vi.mocked(listCareApplicationsForPostDetail);
+const mockListCareCompletionFeedbacksForPostDetail = vi.mocked(listCareCompletionFeedbacksForPostDetail);
 const mockGetUserRelationState = vi.mocked(getUserRelationState);
 const mockAssertPostReadable = vi.mocked(assertPostReadable);
 
@@ -43,6 +46,7 @@ describe("GET /api/posts/[id]/detail contract", () => {
     mockMonitorUnhandledError.mockReset();
     mockGetPostById.mockReset();
     mockListCareApplicationsForPostDetail.mockReset();
+    mockListCareCompletionFeedbacksForPostDetail.mockReset();
     mockGetUserRelationState.mockReset();
     mockAssertPostReadable.mockReset();
 
@@ -71,6 +75,7 @@ describe("GET /api/posts/[id]/detail contract", () => {
       isMutedByMe: false,
     } as never);
     mockListCareApplicationsForPostDetail.mockResolvedValue([]);
+    mockListCareCompletionFeedbacksForPostDetail.mockResolvedValue([]);
     mockAssertPostReadable.mockResolvedValue(undefined);
   });
 
@@ -103,6 +108,11 @@ describe("GET /api/posts/[id]/detail contract", () => {
       },
     );
     expect(mockListCareApplicationsForPostDetail).toHaveBeenCalledWith({
+      postId: "post-1",
+      viewerId: "mod-1",
+      canModerate: true,
+    });
+    expect(mockListCareCompletionFeedbacksForPostDetail).toHaveBeenCalledWith({
       postId: "post-1",
       viewerId: "mod-1",
       canModerate: true,

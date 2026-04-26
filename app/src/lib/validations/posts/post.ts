@@ -1,6 +1,8 @@
 import {
   AdoptionStatus,
   AnimalSex,
+  CareFeedbackIssueType,
+  CareFeedbackOutcome,
   CareApplicationStatus,
   CareRequestStatus,
   CareType,
@@ -172,6 +174,23 @@ export const careApplicationDecisionSchema = z.object({
       "지원 결정 상태는 수락 또는 거절만 가능합니다.",
     ),
 });
+
+export const careCompletionFeedbackSchema = z
+  .object({
+    outcome: z.nativeEnum(CareFeedbackOutcome),
+    issueType: z.nativeEnum(CareFeedbackIssueType).optional().default(CareFeedbackIssueType.NONE),
+    wouldRepeat: optionalBoolean,
+    comment: optionalTrimmedString({ max: 500 }),
+  })
+  .superRefine((value, ctx) => {
+    if (value.outcome === CareFeedbackOutcome.ISSUE && value.issueType === CareFeedbackIssueType.NONE) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["issueType"],
+        message: "이슈가 있는 경우 이슈 유형을 선택해야 합니다.",
+      });
+    }
+  });
 
 export const postCreateSchema = z.object({
   title: trimmedRequiredString({ max: POST_TITLE_MAX_LENGTH }),
@@ -387,6 +406,7 @@ export type CareRequestInput = z.infer<typeof careRequestSchema>;
 export type CareRequestStatusUpdateInput = z.infer<typeof careRequestStatusUpdateSchema>;
 export type CareApplicationCreateInput = z.infer<typeof careApplicationCreateSchema>;
 export type CareApplicationDecisionInput = z.infer<typeof careApplicationDecisionSchema>;
+export type CareCompletionFeedbackInput = z.infer<typeof careCompletionFeedbackSchema>;
 export type PostUpdateInput = z.infer<typeof postUpdateSchema>;
 
 // Normalize parsed list input to product-facing naming.

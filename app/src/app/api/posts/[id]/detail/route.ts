@@ -8,6 +8,7 @@ import { monitorUnhandledError } from "@/server/error-monitor";
 import {
   getPostById,
   listCareApplicationsForPostDetail,
+  listCareCompletionFeedbacksForPostDetail,
 } from "@/server/queries/post.queries";
 import { getUserRelationState } from "@/server/queries/user-relation.queries";
 import { jsonError, jsonOk } from "@/server/response";
@@ -57,6 +58,11 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       viewerId: userId,
       canModerate,
     });
+    const careCompletionFeedbacks = await listCareCompletionFeedbacksForPostDetail({
+      postId,
+      viewerId: userId,
+      canModerate,
+    });
 
     const sanitizedPost = sanitizePublicGuestIdentity(post as Record<string, unknown> & {
       guestDisplayName?: string | null;
@@ -72,6 +78,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         post: {
           ...publicPost,
           careApplications,
+          careCompletionFeedbacks,
           renderedContentHtml,
           renderedContentText,
         },

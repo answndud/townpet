@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   CareApplicationStatus,
+  CareFeedbackAuthorRole,
+  CareFeedbackIssueType,
+  CareFeedbackOutcome,
   CareRequestStatus,
   MarketStatus,
   ModerationActionType,
@@ -20,6 +23,7 @@ import {
 } from "@/server/services/notification.service";
 import {
   createCareApplication,
+  createCareCompletionFeedback,
   decideCareApplication,
   deletePost,
   registerPostView,
@@ -59,6 +63,10 @@ vi.mock("@/lib/prisma", () => ({
       create: vi.fn(),
       update: vi.fn(),
       updateMany: vi.fn(),
+    },
+    careCompletionFeedback: {
+      findUnique: vi.fn(),
+      create: vi.fn(),
     },
     userNeighborhood: {
       findFirst: vi.fn(),
@@ -135,6 +143,10 @@ const mockPrisma = vi.mocked(prisma) as unknown as {
     update: ReturnType<typeof vi.fn>;
     updateMany: ReturnType<typeof vi.fn>;
   };
+  careCompletionFeedback: {
+    findUnique: ReturnType<typeof vi.fn>;
+    create: ReturnType<typeof vi.fn>;
+  };
   userNeighborhood: {
     findFirst: ReturnType<typeof vi.fn>;
   };
@@ -177,6 +189,8 @@ describe("post reaction toggle", () => {
     mockPrisma.careApplication.create.mockReset();
     mockPrisma.careApplication.update.mockReset();
     mockPrisma.careApplication.updateMany.mockReset();
+    mockPrisma.careCompletionFeedback.findUnique.mockReset();
+    mockPrisma.careCompletionFeedback.create.mockReset();
     mockPrisma.userNeighborhood.findFirst.mockReset();
     mockPrisma.postBookmark.findUnique.mockReset();
     mockPrisma.postBookmark.create.mockReset();
@@ -1534,5 +1548,162 @@ describe("care applications", () => {
         status: CareApplicationStatus.ACCEPTED,
       }),
     );
+  });
+});
+
+describe("care completion feedback", () => {
+  beforeEach(() => {
+    mockPrisma.user.findUnique.mockReset();
+    mockPrisma.userSanction.findFirst.mockReset();
+    mockPrisma.userSanction.findFirst.mockResolvedValue(null);
+    mockPrisma.$transaction.mockReset();
+    mockPrisma.careCompletionFeedback.findUnique.mockReset();
+    mockPrisma.careCompletionFeedback.create.mockReset();
+  });
+
+  it("allows the requester to create private feedback for a completed care request", async () => {
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: "author-1",
+      role: UserRole.USER,
+      createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    });
+    const create = vi.fn().mockResolvedValue({
+      id: "feedback-1",
+      careRequestId: "care-1",
+      careApplicationId: "application-1",
+      authorId: "author-1",
+      authorRole: CareFeedbackAuthorRole.REQUESTER,
+      outcome: CareFeedbackOutcome.POSITIVE,
+      issueType: CareFeedbackIssueType.NONE,
+      wouldRepeat: true,
+      comment: "좋았어요",
+      author: { id: "author-1", nickname: "요청자", image: null },
+    });
+    mockPrisma.$transaction.mockImplementation(async (callback) =>
+      callback({
+        post: {
+          findUnique: vi.fn().mockResolvedValue({
+            id: "post-1",
+            authorId: "author-1",
+            status: PostStatus.ACTIVE,
+            type: PostType.CARE_REQUEST,
+            careRequest: {
+              id: "care-1",
+              status: CareRequestStatus.COMPLETED,
+              applications: [{ id: "application-1", applicantId: "applicant-1" }],
+            },
+          }),
+        },
+        careCompletionFeedback: {
+          findUnique: vi.fn().mockResolvedValue(null),
+          create,
+        },
+      } as never),
+    );
+
+    const result = await createCareCompletionFeedback({
+      postId: "post-1",
+      authorId: "author-1",
+      input: {
+        outcome: CareFeedbackOutcome.POSITIVE,
+        wouldRepeat: true,
+        comment: " 좋았어요 ",
+      },
+    });
+
+    expect(result).toMatchObject({
+      id: "feedback-1",
+      authorRole: CareFeedbackAuthorRole.REQUESTER,
+    });
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          careRequestId: "care-1",
+          careApplicationId: "application-1",
+          authorRole: CareFeedbackAuthorRole.REQUESTER,
+          comment: "좋았어요",
+        }),
+      }),
+    );
+  });
+
+  it("blocks completion feedback for non-participants", async () => {
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: "viewer-1",
+      role: UserRole.USER,
+      createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    });
+    mockPrisma.$transaction.mockImplementation(async (callback) =>
+      callback({
+        post: {
+          findUnique: vi.fn().mockResolvedValue({
+            id: "post-1",
+            authorId: "author-1",
+            status: PostStatus.ACTIVE,
+            type: PostType.CARE_REQUEST,
+            careRequest: {
+              id: "care-1",
+              status: CareRequestStatus.COMPLETED,
+              applications: [{ id: "application-1", applicantId: "applicant-1" }],
+            },
+          }),
+        },
+        careCompletionFeedback: {
+          findUnique: vi.fn(),
+          create: vi.fn(),
+        },
+      } as never),
+    );
+
+    await expect(
+      createCareCompletionFeedback({
+        postId: "post-1",
+        authorId: "viewer-1",
+        input: { outcome: CareFeedbackOutcome.NEUTRAL },
+      }),
+    ).rejects.toMatchObject({
+      code: "FORBIDDEN",
+      status: 403,
+    });
+  });
+
+  it("blocks duplicate feedback by the same participant", async () => {
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: "applicant-1",
+      role: UserRole.USER,
+      createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    });
+    mockPrisma.$transaction.mockImplementation(async (callback) =>
+      callback({
+        post: {
+          findUnique: vi.fn().mockResolvedValue({
+            id: "post-1",
+            authorId: "author-1",
+            status: PostStatus.ACTIVE,
+            type: PostType.CARE_REQUEST,
+            careRequest: {
+              id: "care-1",
+              status: CareRequestStatus.COMPLETED,
+              applications: [{ id: "application-1", applicantId: "applicant-1" }],
+            },
+          }),
+        },
+        careCompletionFeedback: {
+          findUnique: vi.fn().mockResolvedValue({ id: "feedback-1" }),
+          create: vi.fn(),
+        },
+      } as never),
+    );
+
+    await expect(
+      createCareCompletionFeedback({
+        postId: "post-1",
+        authorId: "applicant-1",
+        input: { outcome: CareFeedbackOutcome.NEUTRAL },
+      }),
+    ).rejects.toMatchObject({
+      code: "CARE_FEEDBACK_ALREADY_EXISTS",
+      status: 409,
+    });
   });
 });

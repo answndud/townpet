@@ -1,5 +1,7 @@
 import {
   CareApplicationStatus,
+  CareFeedbackIssueType,
+  CareFeedbackOutcome,
   CareRequestStatus,
   MarketStatus,
   PostScope,
@@ -11,6 +13,7 @@ import {
   adoptionListingSchema,
   careApplicationCreateSchema,
   careApplicationDecisionSchema,
+  careCompletionFeedbackSchema,
   hospitalReviewSchema,
   marketListingStatusUpdateSchema,
   careRequestSchema,
@@ -402,6 +405,29 @@ describe("care application schemas", () => {
     expect(
       careApplicationDecisionSchema.safeParse({
         status: CareApplicationStatus.CANCELLED,
+      }).success,
+    ).toBe(false);
+  });
+});
+
+describe("careCompletionFeedbackSchema", () => {
+  it("accepts private completion feedback", () => {
+    const result = careCompletionFeedbackSchema.safeParse({
+      outcome: CareFeedbackOutcome.POSITIVE,
+      wouldRepeat: true,
+      comment: "  다시 부탁하고 싶어요  ",
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.data?.comment).toBe("다시 부탁하고 싶어요");
+    expect(result.data?.issueType).toBe(CareFeedbackIssueType.NONE);
+  });
+
+  it("requires an issue type when outcome is issue", () => {
+    expect(
+      careCompletionFeedbackSchema.safeParse({
+        outcome: CareFeedbackOutcome.ISSUE,
+        issueType: CareFeedbackIssueType.NONE,
       }).success,
     ).toBe(false);
   });
