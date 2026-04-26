@@ -26,17 +26,17 @@
 
 ## Active Plan
 
-### Care Request M14 production smoke preflight
+### Care Request M15 운영 계정/데이터 smoke 준비
 
 상태: `pending`
 
-- 목표: 케어 요청을 운영 배포 후보로 볼 수 있는지 원격 smoke 전제와 실행 순서를 확정한다.
-- 범위: production smoke 체크리스트, 운영 secret 필요 항목, 원격 health/admin 수동 smoke 순서.
-- 제외: 실제 배포, 결제/보험/정산, 자동 제재, 증빙 업로드.
-- 완료 기준: 운영 secret이 준비되면 어떤 명령과 브라우저 경로를 어떤 순서로 확인할지 바로 실행할 수 있다.
+- 목표: production smoke를 실 사용자 데이터 손상 없이 실행할 운영 계정과 테스트 데이터 방식을 확정한다.
+- 범위: 운영 관리자/테스트 회원 조건, 테스트 글/피드백 생성 금지선, smoke 후 정리 기준.
+- 제외: 실제 production smoke 실행, 결제/보험/정산, 자동 제재, 증빙 업로드.
+- 완료 기준: 운영자가 어떤 계정과 데이터로 케어 smoke를 실행하고 언제 중단할지 판단할 수 있다.
 
 ## 다음 실행 순서
 
-1. 원격 health와 strict env 확인에 필요한 secret/env를 목록화한다.
-2. 케어 요청 원격 smoke 경로와 계정 조건을 정리한다.
-3. production smoke 실행 전 No-Go 조건과 중단 기준을 문서화한다.
+1. 운영 관리자와 테스트 회원 계정 조건을 정리한다.
+2. production smoke용 케어 요청/피드백 데이터 생성 원칙을 정한다.
+3. smoke 후 정리와 감사 로그 확인 기준을 문서화한다.

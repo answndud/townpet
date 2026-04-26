@@ -1926,3 +1926,24 @@
 - 결과:
   - 케어 요청은 로컬 기능 기준 조건부 Go, 운영 배포 기준 No-Go로 판정됐다.
   - 다음 작업은 `Care Request M14 production smoke preflight`다.
+
+### 2026-04-26 | Care Request M14 production smoke preflight
+- 완료일: `2026-04-26`
+- 배경:
+  - M13에서 운영 배포는 production smoke와 운영 secret 기반 strict health 확인 전까지 No-Go로 남겼다.
+  - 실제 smoke를 실행하기 전에 필요한 secret/env, 명령 순서, 브라우저 경로, 중단 기준을 런북에 고정해야 했다.
+- 변경내용:
+  - 돌봄 운영 런북에 `Production Smoke Preflight` 섹션을 추가했다.
+  - Vercel runtime, GitHub Actions, Sentry 선택 검증 secret을 분리했다.
+  - `quality:check`, 원격 public/internal health, strict ops evidence, `ops-smoke-checks` 실행 순서를 정리했다.
+  - `/feed/guest`, `/feed`, `/admin/care-feedbacks`, `/admin/ops` 브라우저 smoke 경로와 No-Go 중단 기준을 문서화했다.
+- 코드문서:
+  - [business/operations/돌봄_운영_런북.md](../business/operations/돌봄_운영_런북.md)
+  - [business/product/Phase2_로드맵_PRD.md](../business/product/Phase2_로드맵_PRD.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app docs:refresh:check`
+- 결과:
+  - 운영 secret이 준비되면 실행할 production smoke 명령과 중단 기준이 문서화됐다.
+  - 다음 작업은 `Care Request M15 운영 계정/데이터 smoke 준비`다.
