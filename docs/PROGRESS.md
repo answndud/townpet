@@ -11,7 +11,8 @@
 - Social Dev Onboarding Smoke 안정화와 Launch Gap 다음 후보 재평가를 완료했다
 - Care Request Templates preflight를 완료했다
 - Care Request M1 구조화 요청 생성/조회를 완료했다
-- 다음 작업: Care Request M2 상태 전환/지원 흐름 preflight
+- Care Request M2 상태 전환/지원 흐름 preflight를 완료했다
+- 다음 작업: Care Request M2 상태 전환 액션
 
 ## 열린 blocker
 - 없음. `test:e2e:smoke` social-dev 온보딩 blocker는 callback side effect 차단과 온보딩 대기 안정화로 해결했고 smoke 통과를 확인했다.
@@ -37,6 +38,11 @@
   - 연결: validation/service/query/create form/feed/detail/guest detail에 돌봄 요청 구조화 필드를 연결했다.
   - 정책: `LOCAL` 강제, 게스트 작성 차단, 신규 유저 제한, 연락처/링크/금칙어 검사를 기존 post write path로 재사용한다.
   - 통과: migration deploy, targeted unit, `typecheck`, `lint`, `quality:check`.
+- Care Request M2 상태 전환/지원 흐름 preflight:
+  - 결정: M2는 지원자 모델 없이 요청 상태 전환 액션만 구현한다.
+  - 권한: 작성자는 `OPEN -> CANCELLED`만 가능하고, admin/moderator는 운영 복구/취소 목적의 override를 수행한다.
+  - 감사: 상태 변경은 `ModerationActionLog.CARE_STATUS_CHANGED`로 남긴다.
+  - 보류: `CareApplication`/문의/수행자 배정/알림은 M3 preflight로 분리한다.
 - Market Listing M2 상태 전환 액션:
   - 결정: 별도 audit 모델을 만들지 않고 기존 `ModerationActionLog`에 `MARKET_STATUS_CHANGED` action을 추가했다.
   - 추가: 작성자는 `AVAILABLE/RESERVED`에서 예약/판매완료/취소와 예약 해제를 수행할 수 있고, moderator/admin은 모든 상태 override가 가능하다.
@@ -46,9 +52,9 @@
 - 이전 상세 검증은 [COMPLETED.md](./COMPLETED.md)에 보관했다.
 
 ## 다음 액션
-1. 마켓 상태 전환 패턴과 `CareRequestStatus` 후보 전이를 비교한다.
-2. 작성자/admin/moderator/지원자 권한과 `ModerationActionLog` action 필요 여부를 확정한다.
-3. M2 구현 범위와 테스트 목록을 문서화한다.
+1. `ModerationActionType.CARE_STATUS_CHANGED` migration과 status update schema를 추가한다.
+2. `updateCareRequestStatus` service/action과 detail UI 상태 버튼을 연결한다.
+3. 작성자/admin/비작성자/failure-path 테스트와 품질 게이트를 실행한다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)
