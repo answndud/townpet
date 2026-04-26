@@ -26,17 +26,17 @@
 
 ## Active Plan
 
-### Care Request M12 운영 threshold preflight
+### Care Request M12 운영 threshold 구현
 
 상태: `pending`
 
-- 목표: 돌봄 이슈 운영 지표 threshold를 둘지 판단하고 최소 범위를 확정한다.
-- 범위: `/admin/ops` 요약 기준, `PENDING/REVIEWING` 적체 기준, issue type별 주간 점검 기준, 문서화.
+- 목표: `/admin/ops`에 돌봄 이슈 적체와 고위험 신호 경고를 표시한다.
+- 범위: threshold helper, `/admin/ops` 돌봄 카드 copy, 대기/검토중/해결/종료 count 표시, tests.
 - 제외: 자동 제재, 알림 자동 발송, 결제/보험/정산, production smoke.
-- 완료 기준: 바로 구현할 threshold/문서 범위와 보류 항목을 분리한다.
+- 완료 기준: 운영자가 대기/검토중 적체와 고위험 issue 우선순위를 Ops 화면에서 즉시 판단할 수 있다.
 
 ## 다음 실행 순서
 
-1. 현재 `/admin/ops` 돌봄 이슈 요약과 reviewStatus count를 점검한다.
-2. 운영자가 볼 최소 threshold와 warning copy를 정한다.
-3. 구현 또는 문서화 범위를 정책/계획 문서에 남긴다.
+1. care feedback stats에서 threshold summary helper를 만든다.
+2. `/admin/ops` 돌봄 이슈 카드에 warning copy와 review status count를 표시한다.
+3. query/helper/UI 테스트와 문서를 갱신한다.
