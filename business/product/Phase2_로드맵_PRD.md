@@ -187,3 +187,4 @@ Phase 2 기능은 아래 조건을 만족할 때만 동시에 2개 이상 병행
 - 2026-04-26 실행 결과: Care Request M14 production smoke preflight를 완료했다. 운영 secret/env, 원격 health/evidence 명령, Actions 입력값, 브라우저 smoke 경로, No-Go 중단 기준을 `돌봄_운영_런북.md`에 고정했다.
 - 2026-04-26 실행 결과: Care Request M15 운영 계정/데이터 smoke 준비를 완료했다. production smoke는 전용 운영 관리자/테스트 회원과 `[SMOKE][CARE]` 테스트 데이터만 사용하고, 실사용자 데이터 변경은 No-Go로 둔다.
 - 2026-04-26 실행 결과: Care Request M16 production smoke 실행 보류 확인을 완료했다. public health는 PASS지만 internal token, Sentry secret, 운영 테스트 계정 확인이 없어 전체 production smoke는 No-Go로 유지한다.
+- 2026-04-26 실행 결과: Care Request M17 운영 smoke 준비값 확보를 시도했지만 현재 실행 환경에 internal token, Sentry secret, smoke 계정 식별자가 없어 production smoke는 계속 blocked 상태다.

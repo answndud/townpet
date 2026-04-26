@@ -26,17 +26,17 @@
 
 ## Active Plan
 
-### Care Request M17 운영 smoke 준비값 확보
+### Care Request M18 운영 smoke 준비값 주입 후 실행
 
-상태: `pending`
+상태: `blocked`
 
-- 목표: production smoke를 실행할 수 있도록 필요한 운영 token과 테스트 계정 준비 상태를 확보한다.
-- 범위: internal health token 준비, 선택 Sentry secret 준비, 운영 관리자/요청자/지원자 테스트 계정 확인.
-- 제외: secret 값 문서화, 실제 production smoke 강행, 결제/보험/정산, 자동 제재.
-- 완료 기준: 값 노출 없이 준비 여부가 확인되고, 실행 가능하면 production smoke로 넘어간다.
+- 목표: 운영 token과 테스트 계정이 주입된 환경에서 production smoke를 실행한다.
+- 범위: internal health, 선택 Sentry smoke, 전용 운영 관리자/요청자/지원자 계정 기반 브라우저 smoke.
+- 제외: secret 값 문서화, 실사용자 데이터 변경, 결제/보험/정산, 자동 제재.
+- 완료 기준: M14/M15 기준 smoke가 통과하거나, 실패 단계와 No-Go 사유가 기록된다.
 
 ## 다음 실행 순서
 
-1. `HEALTH_INTERNAL_TOKEN` 또는 `OPS_HEALTH_INTERNAL_TOKEN` 준비 여부를 확인한다.
-2. Sentry 검증 secret과 운영 테스트 계정 준비 여부를 확인한다.
-3. 준비 완료 시 M14/M15 기준으로 production smoke를 실행한다.
+1. `OPS_HEALTH_INTERNAL_TOKEN` 또는 `HEALTH_INTERNAL_TOKEN`을 현재 실행 환경에 주입한다.
+2. 선택 Sentry secret과 `CARE_SMOKE_*_EMAIL` 테스트 계정 식별자를 주입한다.
+3. 준비 완료 후 M14/M15 순서대로 production smoke를 실행한다.
