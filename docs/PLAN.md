@@ -26,17 +26,17 @@
 
 ## Active Plan
 
-### Care Request M11 관리자 큐 모바일/빈 상태 polish
+### Care Request M12 운영 threshold preflight
 
 상태: `pending`
 
-- 목표: `/admin/care-feedbacks`의 모바일 운영성과 필터 empty state를 개선한다.
-- 범위: 모바일 카드 리스트, 필터 0건 copy, 처리 폼 CTA 배치, Playwright 모바일 smoke.
-- 제외: 새 상태 머신, 결제/보험/정산, 자동 제재, production smoke.
-- 완료 기준: 모바일 390px에서 가로 스크롤 없이 이슈 확인/상태 변경/메모 저장이 가능하고, 필터 0건 상태가 명확하다.
+- 목표: 돌봄 이슈 운영 지표 threshold를 둘지 판단하고 최소 범위를 확정한다.
+- 범위: `/admin/ops` 요약 기준, `PENDING/REVIEWING` 적체 기준, issue type별 주간 점검 기준, 문서화.
+- 제외: 자동 제재, 알림 자동 발송, 결제/보험/정산, production smoke.
+- 완료 기준: 바로 구현할 threshold/문서 범위와 보류 항목을 분리한다.
 
 ## 다음 실행 순서
 
-1. `/admin/care-feedbacks`에 모바일 전용 카드 리스트를 추가한다.
-2. 필터 적용 여부에 따라 empty state title/description을 분리한다.
-3. 모바일 smoke로 overflow, 저장 CTA, 필터 0건 copy를 검증한다.
+1. 현재 `/admin/ops` 돌봄 이슈 요약과 reviewStatus count를 점검한다.
+2. 운영자가 볼 최소 threshold와 warning copy를 정한다.
+3. 구현 또는 문서화 범위를 정책/계획 문서에 남긴다.

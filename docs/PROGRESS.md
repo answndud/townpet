@@ -23,7 +23,8 @@
 - Care Request M10 관리자 큐 처리 상태 preflight를 완료했다
 - Care Request M10 관리자 큐 처리 상태 구현을 완료했다
 - Care Request M11 모바일/빈 상태 polish preflight를 완료했다
-- 다음 작업: Care Request M11 관리자 큐 모바일/빈 상태 polish
+- Care Request M11 관리자 큐 모바일/빈 상태 polish를 완료했다
+- 다음 작업: Care Request M12 운영 threshold preflight
 
 ## 열린 blocker
 - 없음. `test:e2e:smoke` social-dev 온보딩 blocker는 callback side effect 차단과 온보딩 대기 안정화로 해결했고 smoke 통과를 확인했다.
@@ -54,10 +55,13 @@
   - 모바일 390px 기준 feed/detail 문서 overflow 없음.
   - `/admin/care-feedbacks`는 1120px 테이블 내부 스크롤로만 운영해야 해 모바일 카드 리스트가 필요하다.
   - 필터 0건 empty copy는 전체 큐 없음과 조건 0건을 분리해야 한다.
+- Care Request M11 관리자 큐 모바일/빈 상태 polish:
+  - 추가: 모바일 카드 리스트, 데스크톱 테이블 분리, 필터 0건 empty copy.
+  - 검증: `care-feedback-mobile.spec.ts`, `typecheck`, `lint`.
 ## 다음 액션
-1. `/admin/care-feedbacks` 모바일 전용 카드 리스트를 추가한다.
-2. 필터 적용 여부에 따라 empty state title/description을 분리한다.
-3. 모바일 smoke로 overflow, 저장 CTA, 필터 0건 copy를 검증한다.
+1. `/admin/ops` 돌봄 이슈 요약과 reviewStatus count를 점검한다.
+2. 운영자가 볼 최소 threshold와 warning copy를 정한다.
+3. 구현 또는 문서화 범위를 정책/계획 문서에 남긴다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)

@@ -181,7 +181,7 @@ async function createCareRequestPost(params: {
   });
 }
 
-async function seedCareDemo() {
+export async function seedCareDemo() {
   assertLocalDevelopmentDatabase(process.env, "care request demo seeding");
 
   const neighborhood = await upsertDemoNeighborhood();
