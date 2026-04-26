@@ -182,3 +182,4 @@ Phase 2 기능은 아래 조건을 만족할 때만 동시에 2개 이상 병행
 - 2026-04-26 실행 결과: Care Request M11 모바일/빈 상태 polish preflight를 완료했다. feed/detail은 모바일 overflow가 없고, `/admin/care-feedbacks`는 모바일 카드 리스트와 필터 0건 empty copy 분리를 다음 구현으로 확정했다.
 - 2026-04-26 실행 결과: Care Request M11 관리자 큐 모바일/빈 상태 polish를 완료했다. `/admin/care-feedbacks`는 모바일 카드 리스트와 데스크톱 테이블을 분리하고, 필터 0건 empty copy와 모바일 smoke를 추가했다.
 - 2026-04-26 실행 결과: Care Request M12 운영 threshold preflight를 완료했다. 자동 조치 없이 `/admin/ops`에 `PENDING >= 3`, `PENDING + REVIEWING >= 5`, 고위험 issue 1건 이상 기준의 경고 copy를 추가하는 방향으로 확정했다.
+- 2026-04-26 실행 결과: Care Request M12 운영 threshold 구현을 완료했다. `/admin/ops`에서 돌봄 이슈 총량, 대기/검토중/해결/종료 count, `정상/확인 필요/우선 검토` badge와 threshold copy를 한 카드에서 확인할 수 있다.

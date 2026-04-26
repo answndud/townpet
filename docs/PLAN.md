@@ -26,17 +26,17 @@
 
 ## Active Plan
 
-### Care Request M12 운영 threshold 구현
+### Care Request M13 출시 준비 최종 정리
 
 상태: `pending`
 
-- 목표: `/admin/ops`에 돌봄 이슈 적체와 고위험 신호 경고를 표시한다.
-- 범위: threshold helper, `/admin/ops` 돌봄 카드 copy, 대기/검토중/해결/종료 count 표시, tests.
-- 제외: 자동 제재, 알림 자동 발송, 결제/보험/정산, production smoke.
-- 완료 기준: 운영자가 대기/검토중 적체와 고위험 issue 우선순위를 Ops 화면에서 즉시 판단할 수 있다.
+- 목표: Care Request M1-M12 완료 범위와 남은 출시 보류 항목을 한 번에 판단할 수 있게 정리한다.
+- 범위: care request 문서, 런북, 완료 이력, 검증 명령 목록, 보류/다음 phase 후보.
+- 제외: 신규 기능 구현, 결제/보험/정산, production smoke, 실 운영 배포.
+- 완료 기준: 다음 착수자가 케어 기능을 출시 후보로 둘지, 보류 항목을 먼저 처리할지 문서만 보고 결정할 수 있다.
 
 ## 다음 실행 순서
 
-1. care feedback stats에서 threshold summary helper를 만든다.
-2. `/admin/ops` 돌봄 이슈 카드에 warning copy와 review status count를 표시한다.
-3. query/helper/UI 테스트와 문서를 갱신한다.
+1. Care Request M1-M12 결과와 검증 명령을 한 장으로 정리한다.
+2. 결제/보험/정산, 자동 제재, 증빙 업로드, production smoke 보류 조건을 재분류한다.
+3. 다음 Phase 후보를 `PLAN.md`, `PROGRESS.md`, `COMPLETED.md`에 맞춘다.

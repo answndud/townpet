@@ -8,6 +8,29 @@ import {
 import { prisma } from "@/lib/prisma";
 
 export const CARE_FEEDBACK_QUEUE_PAGE_SIZE = 25;
+export const CARE_FEEDBACK_PENDING_REVIEW_THRESHOLD = 3;
+export const CARE_FEEDBACK_ACTIVE_REVIEW_THRESHOLD = 5;
+
+export type CareFeedbackThresholdSeverity = "ok" | "notice" | "warning";
+
+type CareFeedbackThresholdInput = {
+  issueCounts: Record<CareFeedbackIssueType, number>;
+  reviewStatusCounts: Record<CareFeedbackReviewStatus, number>;
+};
+
+export type CareFeedbackReviewThresholdSummary = {
+  pendingCount: number;
+  reviewingCount: number;
+  resolvedCount: number;
+  dismissedCount: number;
+  activeReviewCount: number;
+  highRiskIssueCount: number;
+  pendingNeedsReview: boolean;
+  activeReviewBacklog: boolean;
+  hasHighRiskIssue: boolean;
+  severity: CareFeedbackThresholdSeverity;
+  messages: string[];
+};
 
 const careFeedbackQueueInclude = {
   author: { select: { id: true, email: true, nickname: true } },
@@ -64,6 +87,51 @@ function buildCareFeedbackWhere({ issueType, outcome, reviewStatus }: CareFeedba
     ...(outcome && outcome !== "ALL" ? { outcome } : {}),
     ...(reviewStatus && reviewStatus !== "ALL" ? { reviewStatus } : {}),
   } satisfies Prisma.CareCompletionFeedbackWhereInput;
+}
+
+export function summarizeCareFeedbackReviewThresholds({
+  issueCounts,
+  reviewStatusCounts,
+}: CareFeedbackThresholdInput): CareFeedbackReviewThresholdSummary {
+  const pendingCount = reviewStatusCounts[CareFeedbackReviewStatus.PENDING] ?? 0;
+  const reviewingCount = reviewStatusCounts[CareFeedbackReviewStatus.REVIEWING] ?? 0;
+  const resolvedCount = reviewStatusCounts[CareFeedbackReviewStatus.RESOLVED] ?? 0;
+  const dismissedCount = reviewStatusCounts[CareFeedbackReviewStatus.DISMISSED] ?? 0;
+  const activeReviewCount = pendingCount + reviewingCount;
+  const highRiskIssueCount =
+    (issueCounts[CareFeedbackIssueType.SAFETY] ?? 0) +
+    (issueCounts[CareFeedbackIssueType.PAYMENT_OR_FRAUD] ?? 0);
+  const pendingNeedsReview = pendingCount >= CARE_FEEDBACK_PENDING_REVIEW_THRESHOLD;
+  const activeReviewBacklog = activeReviewCount >= CARE_FEEDBACK_ACTIVE_REVIEW_THRESHOLD;
+  const hasHighRiskIssue = highRiskIssueCount > 0;
+  const messages: string[] = [];
+
+  if (pendingNeedsReview) {
+    messages.push("대기 신호가 3건 이상입니다. 오늘 중 1차 확인이 필요합니다.");
+  }
+  if (activeReviewBacklog) {
+    messages.push("대기/검토중 신호가 5건 이상입니다. 처리 우선순위를 조정하세요.");
+  }
+  if (hasHighRiskIssue) {
+    messages.push("안전/금전 이슈가 있습니다. 관련 돌봄 요청을 먼저 확인하세요.");
+  }
+  if (messages.length === 0) {
+    messages.push("현재 돌봄 이슈 적체 기준을 넘지 않았습니다.");
+  }
+
+  return {
+    pendingCount,
+    reviewingCount,
+    resolvedCount,
+    dismissedCount,
+    activeReviewCount,
+    highRiskIssueCount,
+    pendingNeedsReview,
+    activeReviewBacklog,
+    hasHighRiskIssue,
+    severity: activeReviewBacklog || hasHighRiskIssue ? "warning" : pendingNeedsReview ? "notice" : "ok",
+    messages,
+  };
 }
 
 export async function listCareFeedbackIssueQueue({
@@ -151,5 +219,6 @@ export async function getCareFeedbackIssueStats() {
     issueCounts,
     outcomeCounts,
     reviewStatusCounts,
+    reviewThresholds: summarizeCareFeedbackReviewThresholds({ issueCounts, reviewStatusCounts }),
   };
 }

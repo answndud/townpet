@@ -129,6 +129,19 @@ describe("ops overview queries", () => {
         RESOLVED: 1,
         DISMISSED: 0,
       },
+      reviewThresholds: {
+        pendingCount: 2,
+        reviewingCount: 1,
+        resolvedCount: 1,
+        dismissedCount: 0,
+        activeReviewCount: 3,
+        highRiskIssueCount: 2,
+        pendingNeedsReview: false,
+        activeReviewBacklog: false,
+        hasHighRiskIssue: true,
+        severity: "warning",
+        messages: ["안전/금전 이슈가 있습니다. 관련 돌봄 요청을 먼저 확인하세요."],
+      },
     });
     mockGetFeedPersonalizationOverview.mockResolvedValue({
       days: 7,

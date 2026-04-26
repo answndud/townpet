@@ -70,6 +70,35 @@ function formatSearchActionClass(priority: "high" | "medium" | "low") {
   return "border-[#cfe6d1] bg-[#f4fbf4] text-[#256342]";
 }
 
+function formatCareFeedbackThresholdClass(severity: "ok" | "notice" | "warning") {
+  if (severity === "warning") {
+    return {
+      badge: "border-[#ead8a4] bg-[#fff9ea] text-[#7f5b0d]",
+      panel: "border-[#ead8a4] bg-[#fff9ea] text-[#7f5b0d]",
+    };
+  }
+  if (severity === "notice") {
+    return {
+      badge: "border-[#cfe0f6] bg-[#f4f8ff] text-[#315f9f]",
+      panel: "border-[#cfe0f6] bg-[#f4f8ff] text-[#315f9f]",
+    };
+  }
+  return {
+    badge: "border-[#cfe6d1] bg-[#f4fbf4] text-[#256342]",
+    panel: "border-[#cfe6d1] bg-[#f4fbf4] text-[#256342]",
+  };
+}
+
+function formatCareFeedbackThresholdLabel(severity: "ok" | "notice" | "warning") {
+  if (severity === "warning") {
+    return "우선 검토";
+  }
+  if (severity === "notice") {
+    return "확인 필요";
+  }
+  return "정상";
+}
+
 function normalizeDashboardState(value: string): "ok" | "warn" | "error" | "degraded" {
   if (value === "ok" || value === "warn" || value === "error" || value === "degraded") {
     return value;
@@ -212,6 +241,8 @@ export default async function AdminOpsPage({ searchParams }: AdminOpsPageProps) 
   const controlPlaneChecks =
     "checks" in overview.health.checks.controlPlane ? overview.health.checks.controlPlane.checks : [];
   const dailySummaries = overview.personalization.dailySummaries.slice(-7);
+  const careThreshold = overview.careFeedbacks.reviewThresholds;
+  const careThresholdClass = formatCareFeedbackThresholdClass(careThreshold.severity);
   const searchContextLabel = describeSearchContext({
     searchScope: selectedSearchScope,
     searchType: selectedSearchType,
@@ -598,10 +629,42 @@ export default async function AdminOpsPage({ searchParams }: AdminOpsPageProps) 
                   href="/admin/care-feedbacks"
                   className="rounded-xl border border-amber-200 bg-amber-50 p-3 transition hover:border-amber-300 hover:bg-amber-100"
                 >
-                  <p className="text-xs text-amber-800">돌봄 이슈 신호</p>
-                  <p className="mt-2 text-2xl font-bold text-amber-900">
-                    {formatCount(overview.careFeedbacks.totalCount)}
-                  </p>
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-xs text-amber-800">돌봄 이슈 신호</p>
+                      <p className="mt-2 text-2xl font-bold text-amber-900">
+                        {formatCount(overview.careFeedbacks.totalCount)}
+                      </p>
+                    </div>
+                    <span
+                      className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold ${careThresholdClass.badge}`}
+                    >
+                      {formatCareFeedbackThresholdLabel(careThreshold.severity)}
+                    </span>
+                  </div>
+                  <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] text-amber-900">
+                    <div className="flex items-center justify-between gap-2">
+                      <dt>대기</dt>
+                      <dd className="font-semibold">{formatCount(careThreshold.pendingCount)}</dd>
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <dt>검토중</dt>
+                      <dd className="font-semibold">{formatCount(careThreshold.reviewingCount)}</dd>
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <dt>해결</dt>
+                      <dd className="font-semibold">{formatCount(careThreshold.resolvedCount)}</dd>
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <dt>종료</dt>
+                      <dd className="font-semibold">{formatCount(careThreshold.dismissedCount)}</dd>
+                    </div>
+                  </dl>
+                  <div className={`mt-3 rounded-lg border px-3 py-2 text-[11px] ${careThresholdClass.panel}`}>
+                    {careThreshold.messages.map((message) => (
+                      <p key={message}>{message}</p>
+                    ))}
+                  </div>
                 </Link>
               </div>
               <div className="mt-3 rounded-xl border border-[#dbe6f6] bg-[#f8fbff] p-3">
