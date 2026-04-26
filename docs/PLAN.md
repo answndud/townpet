@@ -26,17 +26,17 @@
 
 ## Active Plan
 
-### Care Request M6 운영 신호 큐 preflight
+### Care Request M6 운영 신호 큐
 
 상태: `pending`
 
-- 목표: 돌봄 완료 피드백의 이슈 신호를 운영자가 확인할 최소 큐 범위로 정한다.
-- 범위: issueType 기반 관리자 조회, 기존 신고 큐와의 관계, 상태/필터/상세 연결, 테스트 범위 결정.
+- 목표: 돌봄 완료 피드백의 이슈 신호를 관리자 전용 큐와 Ops 요약에서 확인하게 한다.
+- 범위: `/admin/care-feedbacks` 조회 화면, issueType/outcome 필터, 관련 게시글 상세 링크, Ops pending signal 요약, query tests.
 - 제외: 자동 제재, 공개 평판 점수, 결제/보험 분쟁 처리, 증빙 파일 업로드, 별도 dispute table.
-- 완료 기준: `CareCompletionFeedback` 이슈를 기존 운영 화면에 붙일지 별도 큐로 둘지 결정하고, M6 구현 범위와 실패 경로를 문서화한다.
+- 완료 기준: `NONE`이 아닌 `CareCompletionFeedback.issueType`을 관리자만 조회하고, 기존 신고 큐와 섞지 않으며, 공개 화면에 노출하지 않는다.
 
 ## 다음 실행 순서
 
-1. 현재 admin 신고/ops 화면이 `CareCompletionFeedback.issueType`을 흡수할 수 있는지 확인한다.
-2. 별도 큐가 필요하면 조회 모델, 필터, 상세 링크, 권한 기준을 정한다.
-3. M6 구현 범위와 보류 범위를 `business/policies`와 active 문서에 반영한다.
+1. `CareCompletionFeedback` 관리자 조회 query와 issue/outcome 필터를 추가한다.
+2. `/admin/care-feedbacks` 큐와 `/admin/ops` 요약 카드를 연결한다.
+3. 관리자 권한/필터/비공개 노출 방지 테스트와 품질 게이트를 실행한다.
