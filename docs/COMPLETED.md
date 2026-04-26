@@ -1696,3 +1696,26 @@
 - 결과:
   - 케어 요청 M1-M6 핵심 흐름은 로컬 브라우저 기준으로 정상 동작한다.
   - 다음 작업은 `Care Request M8 출시 갭 정리`다.
+
+### 2026-04-26 | Care Request M8 출시 갭 정리
+- 완료일: `2026-04-26`
+- 배경:
+  - M7에서 케어 요청 핵심 흐름은 로컬 브라우저 기준으로 통과했다.
+  - 다음 단계는 새 기능을 더 붙이는 것보다 운영자가 반복 점검하고 문제를 재현할 수 있는 문서와 데이터 준비 루틴을 갖추는 것이다.
+- 변경내용:
+  - 출시 전 바로 구현할 항목을 운영 런북, 로컬 demo seed/seed 지침, 수동 점검 절차, e2e 실행 위치 정리로 좁혔다.
+  - 이후 보강 항목은 관리자 큐 처리 상태/메모, 모바일 polish, 빈 상태 copy, 운영 지표 threshold로 분리했다.
+  - 결제/보험/정산, 자동 제재, 증빙 업로드, production smoke는 계속 보류했다.
+  - 다음 Active Plan을 `Care Request M9 운영 런북/데모 seed`로 갱신했다.
+- 코드문서:
+  - [business/policies/구인구직_운영규칙.md](../business/policies/구인구직_운영규칙.md)
+  - [business/product/Phase2_로드맵_PRD.md](../business/product/Phase2_로드맵_PRD.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+  - [docs/COMPLETED.md](./COMPLETED.md)
+- 검증:
+  - M1-M7 완료 범위와 `e2e/care-request-flow.spec.ts` 검증 결과를 기준으로 남은 출시 갭을 분류했다.
+  - 문서 변경에 한정해 active plan, progress, policy, roadmap archive를 동기화했다.
+- 결과:
+  - 다음 작업은 `Care Request M9 운영 런북/데모 seed`다.
+  - 완료 기준은 운영자가 요청/지원/완료피드백/이슈큐를 어떤 순서로 확인할지 문서화하고 로컬 재현 데이터를 준비할 수 있는 상태다.
