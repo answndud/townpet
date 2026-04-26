@@ -594,12 +594,21 @@ export default async function AdminOpsPage({ searchParams }: AdminOpsPageProps) 
                       : "-"}
                   </p>
                 </div>
-                <div className="rounded-xl border border-[#dbe6f6] bg-[#f8fbff] p-3">
-                  <p className="text-xs text-[#5a7398]">병원 후기 CTR</p>
-                  <p className="mt-2 text-2xl font-bold text-[#10284a]">
-                    {formatPercent(overview.personalization.totals.postCtr)}
+                <Link
+                  href="/admin/care-feedbacks"
+                  className="rounded-xl border border-amber-200 bg-amber-50 p-3 transition hover:border-amber-300 hover:bg-amber-100"
+                >
+                  <p className="text-xs text-amber-800">돌봄 이슈 신호</p>
+                  <p className="mt-2 text-2xl font-bold text-amber-900">
+                    {formatCount(overview.careFeedbacks.totalCount)}
                   </p>
-                </div>
+                </Link>
+              </div>
+              <div className="mt-3 rounded-xl border border-[#dbe6f6] bg-[#f8fbff] p-3">
+                <p className="text-xs text-[#5a7398]">병원 후기 CTR</p>
+                <p className="mt-2 text-2xl font-bold text-[#10284a]">
+                  {formatPercent(overview.personalization.totals.postCtr)}
+                </p>
               </div>
 
               <div className="mt-4 overflow-x-auto">

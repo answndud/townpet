@@ -26,17 +26,17 @@
 
 ## Active Plan
 
-### Care Request M6 운영 신호 큐
+### Care Request M7 케어 플로우 로컬 검증
 
 상태: `pending`
 
-- 목표: 돌봄 완료 피드백의 이슈 신호를 관리자 전용 큐와 Ops 요약에서 확인하게 한다.
-- 범위: `/admin/care-feedbacks` 조회 화면, issueType/outcome 필터, 관련 게시글 상세 링크, Ops pending signal 요약, query tests.
-- 제외: 자동 제재, 공개 평판 점수, 결제/보험 분쟁 처리, 증빙 파일 업로드, 별도 dispute table.
-- 완료 기준: `NONE`이 아닌 `CareCompletionFeedback.issueType`을 관리자만 조회하고, 기존 신고 큐와 섞지 않으며, 공개 화면에 노출하지 않는다.
+- 목표: M1-M6 케어 요청 흐름이 로컬에서 실제 클릭 기준으로 이어지는지 검증한다.
+- 범위: 요청 작성, 지원, 승인/거절, 상태 전환, 완료 피드백, 관리자 이슈 큐, Ops 요약.
+- 제외: 결제/보험/정산, 실 OAuth, production smoke, 자동 제재, 증빙 업로드.
+- 완료 기준: 정상/버그/보류를 재현 URL, 단계, 원인 후보, 수정 우선순위와 함께 기록한다.
 
 ## 다음 실행 순서
 
-1. `CareCompletionFeedback` 관리자 조회 query와 issue/outcome 필터를 추가한다.
-2. `/admin/care-feedbacks` 큐와 `/admin/ops` 요약 카드를 연결한다.
-3. 관리자 권한/필터/비공개 노출 방지 테스트와 품질 게이트를 실행한다.
+1. 로컬 DB/서버를 준비하고 케어 요청 시나리오 계정을 확인한다.
+2. 작성자/지원자/관리자 역할별 hot path를 브라우저에서 검증한다.
+3. 실패 기능은 즉시 재현 테스트 후보와 수정 우선순위로 분류한다.

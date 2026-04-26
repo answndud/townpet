@@ -3,6 +3,7 @@ import { PostScope, PostType, SearchTermSearchIn } from "@prisma/client";
 
 import { getHealthSnapshot } from "@/server/health-overview";
 import { getAuthAuditOverview } from "@/server/queries/auth-audit.queries";
+import { getCareFeedbackIssueStats } from "@/server/queries/care-feedback.queries";
 import { getFeedPersonalizationOverview } from "@/server/queries/feed-personalization-metrics.queries";
 import { getAdminOpsOverview } from "@/server/queries/ops-overview.queries";
 import { getReportStats } from "@/server/queries/report.queries";
@@ -20,6 +21,10 @@ vi.mock("@/server/queries/feed-personalization-metrics.queries", () => ({
   getFeedPersonalizationOverview: vi.fn(),
 }));
 
+vi.mock("@/server/queries/care-feedback.queries", () => ({
+  getCareFeedbackIssueStats: vi.fn(),
+}));
+
 vi.mock("@/server/queries/report.queries", () => ({
   getReportStats: vi.fn(),
 }));
@@ -30,6 +35,7 @@ vi.mock("@/server/queries/search.queries", () => ({
 
 const mockGetHealthSnapshot = vi.mocked(getHealthSnapshot);
 const mockGetAuthAuditOverview = vi.mocked(getAuthAuditOverview);
+const mockGetCareFeedbackIssueStats = vi.mocked(getCareFeedbackIssueStats);
 const mockGetFeedPersonalizationOverview = vi.mocked(getFeedPersonalizationOverview);
 const mockGetReportStats = vi.mocked(getReportStats);
 const mockGetSearchInsightsOverview = vi.mocked(getSearchInsightsOverview);
@@ -38,6 +44,7 @@ describe("ops overview queries", () => {
   beforeEach(() => {
     mockGetHealthSnapshot.mockReset();
     mockGetAuthAuditOverview.mockReset();
+    mockGetCareFeedbackIssueStats.mockReset();
     mockGetFeedPersonalizationOverview.mockReset();
     mockGetReportStats.mockReset();
     mockGetSearchInsightsOverview.mockReset();
@@ -101,6 +108,22 @@ describe("ops overview queries", () => {
       dailyCounts: [{ date: "2026-03-19", count: 2 }],
       averageResolutionHours: 2.5,
     });
+    mockGetCareFeedbackIssueStats.mockResolvedValue({
+      totalCount: 4,
+      issueCounts: {
+        NONE: 0,
+        NO_SHOW: 2,
+        SAFETY: 1,
+        PAYMENT_OR_FRAUD: 1,
+        PRIVACY: 0,
+        OTHER: 0,
+      },
+      outcomeCounts: {
+        POSITIVE: 0,
+        NEUTRAL: 1,
+        ISSUE: 3,
+      },
+    });
     mockGetFeedPersonalizationOverview.mockResolvedValue({
       days: 7,
       totals: {
@@ -151,6 +174,7 @@ describe("ops overview queries", () => {
     expect(overview.health.status).toBe("ok");
     expect(overview.authAudit.totalEvents).toBe(5);
     expect(overview.reports.totalCount).toBe(7);
+    expect(overview.careFeedbacks.totalCount).toBe(4);
     expect(overview.personalization.totals.postCtr).toBe(0.3);
     expect(overview.search.zeroResultTerms).toEqual([]);
   });

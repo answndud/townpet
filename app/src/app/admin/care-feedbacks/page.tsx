@@ -1,0 +1,294 @@
+import Link from "next/link";
+import {
+  CareFeedbackIssueType,
+  CareFeedbackOutcome,
+  CareRequestStatus,
+} from "@prisma/client";
+
+import { AdminSectionNav } from "@/components/admin/admin-section-nav";
+import { EmptyState } from "@/components/ui/empty-state";
+import { buildPaginationWindow, parsePositivePage } from "@/lib/pagination";
+import { requireModeratorPageUser } from "@/server/admin-page-access";
+import {
+  getCareFeedbackIssueStats,
+  listCareFeedbackIssueQueue,
+} from "@/server/queries/care-feedback.queries";
+
+type CareFeedbacksPageProps = {
+  searchParams?: Promise<{ issueType?: string; outcome?: string; page?: string }>;
+};
+
+const issueTypeLabels: Record<CareFeedbackIssueType, string> = {
+  NONE: "이슈 없음",
+  NO_SHOW: "노쇼/불참",
+  SAFETY: "안전 우려",
+  PAYMENT_OR_FRAUD: "사기/금전 요구",
+  PRIVACY: "개인정보 문제",
+  OTHER: "기타",
+};
+
+const outcomeLabels: Record<CareFeedbackOutcome, string> = {
+  POSITIVE: "좋았어요",
+  NEUTRAL: "보통이에요",
+  ISSUE: "확인이 필요해요",
+};
+
+const careRequestStatusLabels: Record<CareRequestStatus, string> = {
+  OPEN: "모집중",
+  MATCHED: "매칭",
+  IN_PROGRESS: "진행중",
+  COMPLETED: "완료",
+  CANCELLED: "취소",
+};
+
+function formatDateTime(value: Date | null | undefined) {
+  return value ? value.toLocaleString("ko-KR") : "-";
+}
+
+function formatUserLabel(user: { email?: string | null; nickname?: string | null } | null | undefined) {
+  return user?.nickname ?? user?.email ?? "-";
+}
+
+export default async function CareFeedbacksPage({ searchParams }: CareFeedbacksPageProps) {
+  const user = await requireModeratorPageUser();
+  const resolvedParams = (await searchParams) ?? {};
+  const issueTypeParam = resolvedParams.issueType ?? "ALL";
+  const outcomeParam = resolvedParams.outcome ?? "ALL";
+  const issueType =
+    issueTypeParam === "ALL" ||
+    Object.values(CareFeedbackIssueType).includes(issueTypeParam as CareFeedbackIssueType)
+      ? (issueTypeParam as CareFeedbackIssueType | "ALL")
+      : "ALL";
+  const outcome =
+    outcomeParam === "ALL" ||
+    Object.values(CareFeedbackOutcome).includes(outcomeParam as CareFeedbackOutcome)
+      ? (outcomeParam as CareFeedbackOutcome | "ALL")
+      : "ALL";
+  const currentPage = parsePositivePage(resolvedParams.page);
+
+  const [feedbackPage, stats] = await Promise.all([
+    listCareFeedbackIssueQueue({ issueType, outcome, page: currentPage }),
+    getCareFeedbackIssueStats(),
+  ]);
+
+  const buildLink = (
+    nextIssueType: CareFeedbackIssueType | "ALL",
+    nextOutcome: CareFeedbackOutcome | "ALL",
+    nextPage = 1,
+  ) => {
+    const params = new URLSearchParams();
+    if (nextIssueType !== "ALL") {
+      params.set("issueType", nextIssueType);
+    }
+    if (nextOutcome !== "ALL") {
+      params.set("outcome", nextOutcome);
+    }
+    if (nextPage > 1) {
+      params.set("page", String(nextPage));
+    }
+    const serialized = params.toString();
+    return serialized ? `/admin/care-feedbacks?${serialized}` : "/admin/care-feedbacks";
+  };
+
+  return (
+    <div className="tp-page-bg min-h-screen pb-16">
+      <main className="mx-auto flex w-full max-w-[1320px] flex-col gap-5 px-4 py-6 sm:px-6 lg:px-10">
+        <header className="tp-hero flex flex-col gap-4 p-5 sm:p-6 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.24em] text-[#3f5f90]">운영 관리</p>
+            <h1 className="mt-2 text-2xl font-bold tracking-tight text-[#10284a] sm:text-3xl">
+              돌봄 이슈 신호
+            </h1>
+            <p className="mt-2 text-sm text-[#4f678d]">
+              완료 피드백의 비공개 이슈 신호를 확인합니다. 신고 큐와 분리해 자동 제재 없이 검토합니다.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-2 text-xs sm:grid-cols-4 lg:min-w-[560px]">
+            <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
+              <p className="text-[10px] uppercase tracking-[0.18em] text-amber-700">전체</p>
+              <p className="mt-1 text-lg font-bold text-amber-900">{stats.totalCount}</p>
+            </div>
+            {[
+              CareFeedbackIssueType.NO_SHOW,
+              CareFeedbackIssueType.SAFETY,
+              CareFeedbackIssueType.PAYMENT_OR_FRAUD,
+            ].map((type) => (
+              <div key={type} className="rounded-lg border border-[#d8e4f6] bg-white px-3 py-2">
+                <p className="text-[10px] uppercase tracking-[0.18em] text-[#5b78a1]">
+                  {issueTypeLabels[type]}
+                </p>
+                <p className="mt-1 text-lg font-bold text-[#10284a]">{stats.issueCounts[type]}</p>
+              </div>
+            ))}
+          </div>
+        </header>
+
+        <div className="flex flex-wrap items-center gap-3 text-xs text-[#5a7398]">
+          <Link href="/admin/ops">Ops 대시보드</Link>
+          <Link href="/admin/reports">신고 큐</Link>
+          <Link href="/admin/moderation-logs">모더레이션 로그</Link>
+          <Link href="/admin/hospital-review-flags">병원 후기 의심 신호</Link>
+        </div>
+
+        <section className="tp-card flex flex-col gap-3 p-4 text-xs text-[#4f678d]">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-[10px] uppercase tracking-[0.24em] text-[#5b78a1]">
+              이슈 필터
+            </span>
+            {[
+              "ALL",
+              ...Object.values(CareFeedbackIssueType).filter(
+                (type) => type !== CareFeedbackIssueType.NONE,
+              ),
+            ].map((value) => (
+              <Link
+                key={value}
+                href={buildLink(value as CareFeedbackIssueType | "ALL", outcome, 1)}
+                className={`inline-flex min-h-9 items-center rounded-lg border px-3 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8bb8ff] ${
+                  issueType === value
+                    ? "border-[#3567b5] bg-[#3567b5] text-white"
+                    : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
+                }`}
+              >
+                {value === "ALL" ? "전체" : issueTypeLabels[value as CareFeedbackIssueType]}
+              </Link>
+            ))}
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-[10px] uppercase tracking-[0.24em] text-[#5b78a1]">
+              결과 필터
+            </span>
+            {["ALL", ...Object.values(CareFeedbackOutcome)].map((value) => (
+              <Link
+                key={value}
+                href={buildLink(issueType, value as CareFeedbackOutcome | "ALL", 1)}
+                className={`inline-flex min-h-9 items-center rounded-lg border px-3 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8bb8ff] ${
+                  outcome === value
+                    ? "border-[#3567b5] bg-[#3567b5] text-white"
+                    : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
+                }`}
+              >
+                {value === "ALL" ? "전체" : outcomeLabels[value as CareFeedbackOutcome]}
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        <section className="flex flex-wrap items-center justify-between gap-3 text-xs text-[#5a7398]">
+          <span>
+            페이지 {feedbackPage.page} / {feedbackPage.totalPages} · 현재 {feedbackPage.items.length}건 표시 · 누적{" "}
+            {feedbackPage.totalCount}건
+          </span>
+          {feedbackPage.totalPages > 1 ? (
+            <div className="flex flex-wrap items-center gap-1.5">
+              <Link
+                href={buildLink(issueType, outcome, Math.max(1, feedbackPage.page - 1))}
+                aria-disabled={feedbackPage.page <= 1}
+                className={`inline-flex items-center rounded-lg ${
+                  feedbackPage.page <= 1 ? "tp-btn-disabled pointer-events-none" : "tp-btn-soft"
+                } tp-btn-xs transition`}
+              >
+                이전
+              </Link>
+              {buildPaginationWindow(feedbackPage.page, feedbackPage.totalPages).map((pageNumber) => (
+                <Link
+                  key={pageNumber}
+                  href={buildLink(issueType, outcome, pageNumber)}
+                  className={`inline-flex min-w-8 items-center justify-center rounded-lg ${
+                    pageNumber === feedbackPage.page ? "tp-btn-primary" : "tp-btn-soft"
+                  } tp-btn-xs transition`}
+                >
+                  {pageNumber}
+                </Link>
+              ))}
+              <Link
+                href={buildLink(
+                  issueType,
+                  outcome,
+                  Math.min(feedbackPage.totalPages, feedbackPage.page + 1),
+                )}
+                aria-disabled={feedbackPage.page >= feedbackPage.totalPages}
+                className={`inline-flex items-center rounded-lg ${
+                  feedbackPage.page >= feedbackPage.totalPages
+                    ? "tp-btn-disabled pointer-events-none"
+                    : "tp-btn-soft"
+                } tp-btn-xs transition`}
+              >
+                다음
+              </Link>
+            </div>
+          ) : null}
+        </section>
+
+        <section className="tp-card overflow-hidden">
+          {feedbackPage.items.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[1120px] text-left text-xs text-[#355988]">
+                <thead className="border-b border-[#dbe6f6] bg-[#f6f9ff] text-[10px] uppercase tracking-[0.18em] text-[#5b78a1]">
+                  <tr>
+                    <th className="px-3 py-2.5">돌봄 요청</th>
+                    <th className="px-3 py-2.5">이슈</th>
+                    <th className="px-3 py-2.5">결과</th>
+                    <th className="px-3 py-2.5">작성자</th>
+                    <th className="px-3 py-2.5">요청자/지원자</th>
+                    <th className="px-3 py-2.5">메모</th>
+                    <th className="px-3 py-2.5">시간</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {feedbackPage.items.map((feedback) => (
+                    <tr key={feedback.id} className="border-b border-[#e6edf8] align-top">
+                      <td className="px-3 py-3">
+                        <Link
+                          href={`/posts/${feedback.careRequest.post.id}`}
+                          className="font-semibold text-[#163462] hover:text-[#2f5da4]"
+                        >
+                          {feedback.careRequest.post.title}
+                        </Link>
+                        <p className="mt-1 text-[11px] text-[#6a7f9f]">
+                          {careRequestStatusLabels[feedback.careRequest.status]} ·{" "}
+                          {formatDateTime(feedback.careRequest.startsAt)}
+                        </p>
+                      </td>
+                      <td className="px-3 py-3">
+                        <span className="rounded-md border border-amber-200 bg-amber-50 px-2 py-1 font-semibold text-amber-800">
+                          {issueTypeLabels[feedback.issueType]}
+                        </span>
+                      </td>
+                      <td className="px-3 py-3">{outcomeLabels[feedback.outcome]}</td>
+                      <td className="px-3 py-3">
+                        <p className="font-semibold text-[#163462]">{formatUserLabel(feedback.author)}</p>
+                        <p className="mt-1 text-[11px] text-[#6a7f9f]">{feedback.authorRole}</p>
+                      </td>
+                      <td className="px-3 py-3">
+                        <p>요청자: {formatUserLabel(feedback.careRequest.post.author)}</p>
+                        <p className="mt-1">
+                          지원자: {formatUserLabel(feedback.careApplication?.applicant)}
+                        </p>
+                      </td>
+                      <td className="max-w-[320px] px-3 py-3">
+                        <p className="whitespace-pre-wrap leading-5">
+                          {feedback.comment ?? "메모 없음"}
+                        </p>
+                      </td>
+                      <td className="px-3 py-3">{formatDateTime(feedback.createdAt)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="p-8">
+              <EmptyState
+                title="돌봄 이슈 신호가 없습니다"
+                description="완료 피드백에서 이슈가 선택되면 이 큐에 표시됩니다."
+              />
+            </div>
+          )}
+        </section>
+
+        <AdminSectionNav role={user.role} />
+      </main>
+    </div>
+  );
+}

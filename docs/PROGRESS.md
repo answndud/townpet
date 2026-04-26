@@ -16,18 +16,16 @@
 - Care Request M5 후기/노쇼/증빙 preflight를 완료했다
 - Care Request M5 완료 피드백을 완료했다
 - Care Request M6 운영 신호 큐 preflight를 완료했다
-- 다음 작업: Care Request M6 운영 신호 큐
+- Care Request M6 운영 신호 큐를 완료했다
+- 다음 작업: Care Request M7 케어 플로우 로컬 검증
 
 ## 열린 blocker
 - 없음. `test:e2e:smoke` social-dev 온보딩 blocker는 callback side effect 차단과 온보딩 대기 안정화로 해결했고 smoke 통과를 확인했다.
 
 ## 직전 검증
-- Care Request M2까지:
-  - 구조화 요청 생성/조회와 작성자 취소/admin override 상태 전환을 완료했다.
+- Care Request M1-M3:
+  - 구조화 요청, 작성자 취소/admin override, 별도 `CareApplication` 지원 생성/취소/승인/거절과 알림을 완료했다.
   - `LOCAL` 전용, 게스트 작성 차단, 신규 유저 제한, 연락처/링크/금칙어 검사를 기존 post write path로 재사용한다.
-- Care Request M3 지원/문의 흐름 preflight:
-  - 비교: 댓글 확장은 공개 토론과 지원 상태가 섞여 개인정보/권한/알림 경계가 약하다.
-  - 결정: 별도 `CareApplication` 모델로 지원 생성/취소/승인/거절과 알림까지만 구현한다.
 - Care Application M3 지원 생성/관리:
   - 추가: `CareApplication`, `CareApplicationStatus`, 지원 생성/결정 notification type과 migration을 추가했다.
   - 연결: validation, service/action, 회원 상세 UI, 상세 API 지원 목록 조회를 연결했다.
@@ -60,10 +58,13 @@
   - 이유: `CareCompletionFeedback`은 사용자가 제기한 신고가 아니라 당사자 비공개 운영 신호라 `ReportStatus/ReportAudit` 처리 모델과 다르다.
   - 범위: `issueType != NONE` 조회, issue/outcome 필터, 관련 게시글 상세 링크, 관리자 전용 접근, tests.
   - 보류: 자동 제재, 공개 평판 점수, 증빙 업로드, 결제/보험 분쟁 처리, 별도 dispute table.
+- Care Request M6 운영 신호 큐:
+  - 추가: `listCareFeedbackIssueQueue`, `getCareFeedbackIssueStats`, `/admin/care-feedbacks`, `/admin/ops` 요약 카드를 연결했다.
+  - 공개: `issueType != NONE` 피드백만 관리자 큐에서 보고, 신고 큐/공개 화면에는 섞지 않는다.
 ## 다음 액션
-1. `CareCompletionFeedback` 관리자 조회 query와 issue/outcome 필터를 추가한다.
-2. `/admin/care-feedbacks` 큐와 `/admin/ops` 요약 카드를 연결한다.
-3. 관리자 권한/필터/비공개 노출 방지 테스트와 품질 게이트를 실행한다.
+1. 로컬 DB/서버를 준비하고 케어 요청 시나리오 계정을 확인한다.
+2. 작성자/지원자/관리자 역할별 hot path를 브라우저에서 검증한다.
+3. 실패 기능은 즉시 재현 테스트 후보와 수정 우선순위로 분류한다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)
