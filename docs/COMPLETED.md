@@ -1668,3 +1668,31 @@
 - 결과:
   - 운영자는 `/admin/care-feedbacks`에서 돌봄 완료 피드백 이슈 신호를 확인할 수 있다.
   - 다음 작업은 `Care Request M7 케어 플로우 로컬 검증`이다.
+
+### 2026-04-26 | Care Request M7 케어 플로우 로컬 검증
+- 완료일: `2026-04-26`
+- 배경:
+  - M1-M6까지 케어 요청 기능을 단계적으로 구현했지만, 사용자가 실제 브라우저에서 클릭했을 때 전체 흐름이 이어지는지 확인이 필요했다.
+  - 특히 작성/지원/승인/상태 전환/피드백/관리자 큐가 서로 다른 역할과 화면을 거치므로 단위 테스트만으로는 충분하지 않았다.
+- 변경내용:
+  - `e2e/care-request-flow.spec.ts`를 추가해 작성자, 지원자, 관리자 역할의 local hot path를 검증한다.
+  - 시나리오는 돌봄 요청 작성, 지원, 수락, 진행 중 전환, 완료 전환, 이슈 완료 피드백, `/admin/care-feedbacks`, `/admin/ops` 확인까지 포함한다.
+  - 검증 중 돌봄 요청 작성 폼에서 `LOCAL` 글에 필요한 동네 선택 UI가 `MEETUP`에만 노출되는 버그를 발견했다.
+  - `PostCreateForm`의 동네 선택 표시 조건을 `showNeighborhood` 기준으로 바꿔 돌봄 요청에서도 동네를 선택할 수 있게 수정했다.
+  - 정책 안내 문구도 동네모임뿐 아니라 돌봄 요청까지 포함하도록 수정했다.
+- 코드문서:
+  - [app/e2e/care-request-flow.spec.ts](../app/e2e/care-request-flow.spec.ts)
+  - [app/src/components/posts/post-create-form.tsx](../app/src/components/posts/post-create-form.tsx)
+  - [business/product/Phase2_로드맵_PRD.md](../business/product/Phase2_로드맵_PRD.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - 정상: `PLAYWRIGHT_BASE_URL=http://localhost:3000 corepack pnpm -C app exec playwright test e2e/care-request-flow.spec.ts --project=chromium --workers=1` 통과
+  - 버그: `/posts/new`에서 `CARE_REQUEST` 선택 후 동네 선택 UI가 없어 제출이 `동네를 먼저 선택해 주세요.`로 막히는 문제를 재현했다.
+  - 수정: 동네 선택 UI를 `showNeighborhood` 기준으로 노출하도록 변경한 뒤 동일 e2e가 통과했다.
+  - 보류: 결제/보험/정산, 실 OAuth, production smoke, 자동 제재, 증빙 업로드.
+  - `corepack pnpm -C app typecheck` 통과
+  - `corepack pnpm -C app lint` 통과
+- 결과:
+  - 케어 요청 M1-M6 핵심 흐름은 로컬 브라우저 기준으로 정상 동작한다.
+  - 다음 작업은 `Care Request M8 출시 갭 정리`다.

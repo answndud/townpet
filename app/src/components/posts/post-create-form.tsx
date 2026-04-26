@@ -627,7 +627,7 @@ export function PostCreateForm({
       setError(
         canUseLocalScope
           ? "동네를 먼저 선택해 주세요."
-          : "동네모임 글을 작성하려면 먼저 대표 동네를 설정해 주세요.",
+          : "동네 기반 글을 작성하려면 먼저 대표 동네를 설정해 주세요.",
       );
       return;
     }
@@ -851,8 +851,8 @@ export function PostCreateForm({
 
   const policySummary = isAuthenticated
     ? canUseLocalScope
-      ? "병원후기, 입양, 봉사 모집은 온동네로 고정됩니다. 동네모임은 대표 동네 범위로만 등록됩니다."
-      : "대표 동네를 설정해야 동네모임을 작성할 수 있습니다."
+      ? "병원후기, 입양, 봉사 모집은 온동네로 고정됩니다. 동네모임과 돌봄 요청은 대표 동네 범위로 등록됩니다."
+      : "대표 동네를 설정해야 동네 기반 글을 작성할 수 있습니다."
     : "비회원 글은 전체로만 등록됩니다. 외부 링크, 연락처, 고위험 카테고리는 제한됩니다.";
 
   return (
@@ -921,7 +921,7 @@ export function PostCreateForm({
             </label>
           ) : null}
 
-          {formState.type === PostType.MEETUP ? (
+          {showNeighborhood ? (
             <label className="tp-form-label">
               동네
               <select
