@@ -13,7 +13,8 @@
 - Care Request M1 구조화 요청 생성/조회를 완료했다
 - Care Request M2 상태 전환/지원 흐름 preflight를 완료했다
 - Care Request M2 상태 전환 액션을 완료했다
-- 다음 작업: Care Request M3 지원/문의 흐름 preflight
+- Care Request M3 지원/문의 흐름 preflight를 완료했다
+- 다음 작업: Care Application M3 지원 생성/관리
 
 ## 열린 blocker
 - 없음. `test:e2e:smoke` social-dev 온보딩 blocker는 callback side effect 차단과 온보딩 대기 안정화로 해결했고 smoke 통과를 확인했다.
@@ -49,18 +50,17 @@
   - 권한: 작성자는 `OPEN -> CANCELLED`만 가능하고, admin/moderator는 모든 상태 override가 가능하다.
   - 차단: 비작성자/비운영자는 `FORBIDDEN`, 작성자의 `CANCELLED -> OPEN`은 `INVALID_CARE_STATUS_TRANSITION`으로 막는다.
   - 통과: migration deploy, targeted unit, `typecheck`, `lint`, `quality:check`.
-- Market Listing M2 상태 전환 액션:
-  - 결정: 별도 audit 모델을 만들지 않고 기존 `ModerationActionLog`에 `MARKET_STATUS_CHANGED` action을 추가했다.
-  - 추가: 작성자는 `AVAILABLE/RESERVED`에서 예약/판매완료/취소와 예약 해제를 수행할 수 있고, moderator/admin은 모든 상태 override가 가능하다.
-  - 차단: 비작성자/비운영자는 `FORBIDDEN`, 작성자의 `SOLD/CANCELLED -> AVAILABLE` 같은 역전환은 `INVALID_MARKET_STATUS_TRANSITION`으로 막는다.
-  - UI: 회원 상세 화면의 마켓 거래 정보에 상태 변경 버튼을 추가하고 성공 시 detail/feed cache를 revalidate한다.
-  - 통과: 관련 validation/service/action unit, `prisma migrate deploy`, `typecheck`, `lint`, `quality:check`.
+- Care Request M3 지원/문의 흐름 preflight:
+  - 비교: 댓글 확장은 공개 토론과 지원 상태가 섞여 개인정보/권한/알림 경계가 약하다.
+  - 결정: M3는 별도 `CareApplication` 모델로 구현하고 댓글은 일반 문의/대화 표면으로 유지한다.
+  - 권한: 로그인 지원자만 가능, 작성자 본인/게스트/제재 유저/차단 관계/중복 지원/이미 매칭된 요청은 차단한다.
+  - 범위: 지원 생성/취소/승인/거절과 지원 생성/결정 알림까지만 포함하고, 수행 체크리스트/후기/노쇼는 이후로 분리한다.
 - 이전 상세 검증은 [COMPLETED.md](./COMPLETED.md)에 보관했다.
 
 ## 다음 액션
-1. `CareApplication` 별도 모델과 댓글 기반 inquiry 확장안을 비교한다.
-2. 지원자/작성자/admin 권한, 개인정보 비노출, 알림 필요 범위를 확정한다.
-3. M3 구현 단위와 failure-path test 목록을 문서화한다.
+1. `CareApplication`, `CareApplicationStatus`, notification type/schema migration을 추가한다.
+2. 지원 생성/취소/승인/거절 service/action과 detail UI를 연결한다.
+3. 중복 지원, 작성자 self-apply, 차단 관계, 연락처, 이미 매칭된 요청 테스트와 품질 게이트를 실행한다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)
