@@ -12,7 +12,8 @@
 - Care Request Templates preflight, M1 구조화 요청, M2 상태 전환, M3 preflight를 완료했다
 - Care Application M3 지원 생성/관리를 완료했다
 - Care Request M4 수행 체크리스트 preflight를 완료했다
-- 다음 작업: Care Request M4 수행 상태 전환
+- Care Request M4 수행 상태 전환을 완료했다
+- 다음 작업: Care Request M5 후기/노쇼/증빙 preflight
 
 ## 열린 blocker
 - 없음. `test:e2e:smoke` social-dev 온보딩 blocker는 callback side effect 차단과 온보딩 대기 안정화로 해결했고 smoke 통과를 확인했다.
@@ -37,12 +38,18 @@
   - 권한: 작성자와 수락 지원자만 매칭된 요청의 시작/완료 전환을 수행하고, 운영자는 수동 복구/취소를 수행한다.
   - 정책: 분쟁은 기존 Post 신고 큐(`FRAUD`, `PRIVACY`, `EMERGENCY`)와 `ModerationActionLog`/`ReportAudit`로 연결한다.
   - 보류: 체크인 사진, 노쇼 판정, 후기/평점, 별도 dispute table, 결제/보험/실시간 위치.
+- Care Request M4 수행 상태 전환:
+  - 추가: `CARE_STATUS_CHANGED` 알림 type과 status change notification helper를 추가했다.
+  - 권한: 작성자와 수락 지원자는 `MATCHED -> IN_PROGRESS -> COMPLETED`, 작성자는 `MATCHED -> CANCELLED`, 운영자는 override 가능하다.
+  - 감사: 기존 `CARE_STATUS_CHANGED` audit metadata에 actor scope와 accepted application id를 남긴다.
+  - UI: 회원 상세에서 현재 상태/역할별로 가능한 상태 버튼만 표시한다.
+  - 통과: prisma generate/migrate deploy, targeted unit, `typecheck`, `lint`.
 - 이전 상세 검증은 [COMPLETED.md](./COMPLETED.md)에 보관했다.
 
 ## 다음 액션
-1. 수락된 `CareApplication` 조회 기준과 상태 전환 권한을 service에 추가한다.
-2. 시작/완료/취소 action, detail UI, 상태 변경 알림을 연결한다.
-3. 비매칭 사용자, 잘못된 전이, 운영자 override failure-path 테스트와 품질 게이트를 실행한다.
+1. 후기/평점/노쇼/증빙의 법적/운영 위험을 비교한다.
+2. 공개 노출 여부와 관리자 확인 큐 필요성을 확정한다.
+3. M5 구현 범위가 정해지면 별도 커밋으로 진행한다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)

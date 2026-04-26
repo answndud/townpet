@@ -83,6 +83,7 @@ import { getOrCreateGuestSystemUserId } from "@/server/services/guest-author.ser
 import {
   notifyCareApplicationCreated,
   notifyCareApplicationDecision,
+  notifyCareRequestStatusChanged,
   notifyReactionOnPost,
 } from "@/server/services/notification.service";
 import { assertUserInteractionAllowed } from "@/server/services/sanction.service";
@@ -1720,14 +1721,26 @@ function canModerateMarketStatus(role: UserRole) {
 
 const AUTHOR_CARE_STATUS_TRANSITIONS: Record<CareRequestStatus, CareRequestStatus[]> = {
   [CareRequestStatus.OPEN]: [CareRequestStatus.CANCELLED],
-  [CareRequestStatus.MATCHED]: [],
-  [CareRequestStatus.IN_PROGRESS]: [],
+  [CareRequestStatus.MATCHED]: [CareRequestStatus.IN_PROGRESS, CareRequestStatus.CANCELLED],
+  [CareRequestStatus.IN_PROGRESS]: [CareRequestStatus.COMPLETED],
+  [CareRequestStatus.COMPLETED]: [],
+  [CareRequestStatus.CANCELLED]: [],
+};
+
+const ACCEPTED_APPLICANT_CARE_STATUS_TRANSITIONS: Record<CareRequestStatus, CareRequestStatus[]> = {
+  [CareRequestStatus.OPEN]: [],
+  [CareRequestStatus.MATCHED]: [CareRequestStatus.IN_PROGRESS],
+  [CareRequestStatus.IN_PROGRESS]: [CareRequestStatus.COMPLETED],
   [CareRequestStatus.COMPLETED]: [],
   [CareRequestStatus.CANCELLED]: [],
 };
 
 function canAuthorTransitionCareStatus(from: CareRequestStatus, to: CareRequestStatus) {
   return AUTHOR_CARE_STATUS_TRANSITIONS[from]?.includes(to) ?? false;
+}
+
+function canAcceptedApplicantTransitionCareStatus(from: CareRequestStatus, to: CareRequestStatus) {
+  return ACCEPTED_APPLICANT_CARE_STATUS_TRANSITIONS[from]?.includes(to) ?? false;
 }
 
 function canModerateCareStatus(role: UserRole) {
@@ -1866,12 +1879,21 @@ export async function updateCareRequestStatus({
       id: true,
       authorId: true,
       status: true,
+      title: true,
       type: true,
       careRequest: {
         select: {
           id: true,
           careType: true,
           status: true,
+          applications: {
+            where: { status: CareApplicationStatus.ACCEPTED },
+            select: {
+              id: true,
+              applicantId: true,
+            },
+            take: 1,
+          },
         },
       },
     },
@@ -1897,11 +1919,26 @@ export async function updateCareRequestStatus({
 
   const isAuthor = existing.authorId === actor.id;
   const isModerator = canModerateCareStatus(actor.role);
-  if (!isAuthor && !isModerator) {
+  const acceptedApplication = existing.careRequest.applications?.[0] ?? null;
+  const isAcceptedApplicant = acceptedApplication?.applicantId === actor.id;
+  if (!isAuthor && !isModerator && !isAcceptedApplicant) {
     throw new ServiceError("돌봄 요청 상태 변경 권한이 없습니다.", "FORBIDDEN", 403);
   }
 
-  if (isAuthor && !isModerator && !canAuthorTransitionCareStatus(previousStatus, nextStatus)) {
+  if (
+    !isModerator &&
+    isAuthor &&
+    !canAuthorTransitionCareStatus(previousStatus, nextStatus)
+  ) {
+    throw new ServiceError("허용되지 않는 돌봄 요청 상태 변경입니다.", "INVALID_CARE_STATUS_TRANSITION", 400);
+  }
+
+  if (
+    !isModerator &&
+    !isAuthor &&
+    isAcceptedApplicant &&
+    !canAcceptedApplicantTransitionCareStatus(previousStatus, nextStatus)
+  ) {
     throw new ServiceError("허용되지 않는 돌봄 요청 상태 변경입니다.", "INVALID_CARE_STATUS_TRANSITION", 400);
   }
 
@@ -1931,11 +1968,39 @@ export async function updateCareRequestStatus({
       previousStatus,
       nextStatus,
       actorRole: actor.role,
-      actorScope: isModerator ? "MODERATOR" : "AUTHOR",
+      actorScope: isModerator
+        ? "MODERATOR"
+        : isAcceptedApplicant && !isAuthor
+          ? "ACCEPTED_APPLICANT"
+          : "AUTHOR",
       careType: existing.careRequest.careType,
+      acceptedApplicationId: acceptedApplication?.id ?? null,
     },
   });
 
+  const notificationRecipients = [
+    existing.authorId,
+    acceptedApplication?.applicantId ?? null,
+  ].filter((userId): userId is string => Boolean(userId));
+  for (const recipientUserId of Array.from(new Set(notificationRecipients))) {
+    try {
+      await notifyCareRequestStatusChanged({
+        recipientUserId,
+        actorId: actor.id,
+        postId: existing.id,
+        postTitle: existing.title,
+        status: nextStatus,
+      });
+    } catch (error) {
+      logger.warn("돌봄 요청 상태 변경 알림 생성에 실패했습니다.", {
+        postId,
+        actorId: actor.id,
+        recipientUserId,
+        error: serializeError(error),
+      });
+    }
+  }
+  notifyNotificationCacheChange(notificationRecipients);
   notifyPostCacheChange();
   return {
     changed: true,

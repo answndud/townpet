@@ -169,3 +169,4 @@ Phase 2 기능은 아래 조건을 만족할 때만 동시에 2개 이상 병행
 - 2026-04-26 실행 결과: Care Request M3 preflight를 완료했다. 지원/문의는 댓글 확장이 아니라 별도 `CareApplication` 모델로 구현하고, 지원 생성/취소/승인/거절과 알림까지만 M3 범위로 둔다.
 - 2026-04-26 실행 결과: Care Application M3 지원 생성/관리를 완료했다. 승인 시 요청은 `MATCHED`가 되고 다른 대기 지원은 거절된다. 다음은 수행 체크리스트/취소/노쇼/분쟁 기록의 최소 범위를 정하는 M4 preflight다.
 - 2026-04-26 실행 결과: Care Request M4 preflight를 완료했다. M4 구현은 `MATCHED -> IN_PROGRESS -> COMPLETED`, 작성자 취소, 운영자 override, 상태 변경 알림으로 제한하고 체크리스트/노쇼/후기/결제/보험은 보류한다.
+- 2026-04-26 실행 결과: Care Request M4 수행 상태 전환을 완료했다. 다음은 후기/평점/노쇼/증빙 중 결제 없이도 안전한 최소 신뢰 기능을 고르는 M5 preflight다.
