@@ -26,17 +26,17 @@
 
 ## Active Plan
 
-### Care Request M18 운영 smoke 준비값 주입 후 실행
+### Care Request M19 운영 smoke secret/계정 실제 주입
 
 상태: `blocked`
 
-- 목표: 운영 token과 테스트 계정이 주입된 환경에서 production smoke를 실행한다.
-- 범위: internal health, 선택 Sentry smoke, 전용 운영 관리자/요청자/지원자 계정 기반 브라우저 smoke.
-- 제외: secret 값 문서화, 실사용자 데이터 변경, 결제/보험/정산, 자동 제재.
-- 완료 기준: M14/M15 기준 smoke가 통과하거나, 실패 단계와 No-Go 사유가 기록된다.
+- 목표: 운영 환경 또는 현재 실행 셸에 internal health token과 전용 smoke 계정을 실제로 준비한다.
+- 범위: `OPS_HEALTH_INTERNAL_TOKEN`, 선택 Sentry secret, `CARE_SMOKE_*_EMAIL` 식별자와 실제 로그인 가능 계정.
+- 제외: secret 값 문서화, 비밀번호 공유, 실사용자 데이터 변경, 결제/보험/정산.
+- 완료 기준: `ops:check:care-smoke-readiness`가 `PASS`가 되고 production smoke 실행 단계로 넘어갈 수 있다.
 
 ## 다음 실행 순서
 
 1. `OPS_HEALTH_INTERNAL_TOKEN` 또는 `HEALTH_INTERNAL_TOKEN`을 현재 실행 환경에 주입한다.
-2. 선택 Sentry secret과 `CARE_SMOKE_*_EMAIL` 테스트 계정 식별자를 주입한다.
-3. 준비 완료 후 M14/M15 순서대로 production smoke를 실행한다.
+2. `CARE_SMOKE_ADMIN_EMAIL`, `CARE_SMOKE_REQUESTER_EMAIL`, `CARE_SMOKE_CAREGIVER_EMAIL`을 실제 운영 테스트 계정으로 주입한다.
+3. `corepack pnpm -C app ops:check:care-smoke-readiness`가 `PASS`인지 확인한다.

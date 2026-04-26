@@ -61,6 +61,7 @@
     "ops:oauth:verify-manual": "tsx scripts/verify-oauth-manual-check.ts",
     "ops:oauth:update-manual": "tsx scripts/update-oauth-manual-check.ts",
     "ops:check:auth-email-readiness": "tsx scripts/check-auth-email-readiness.ts",
+    "ops:check:care-smoke-readiness": "tsx scripts/check-care-smoke-readiness.ts",
     "ops:check:health": "tsx scripts/check-health-endpoint.ts",
     "ops:check:security-env": "tsx scripts/check-security-env.ts",
     "ops:check:security-env:strict": "NODE_ENV=production SECURITY_ENV_STRICT=1 tsx scripts/check-security-env.ts",

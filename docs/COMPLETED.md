@@ -2010,3 +2010,30 @@
   - `corepack pnpm -C app docs:refresh:check`
 - 결과:
   - production smoke는 internal token과 운영 테스트 계정 식별자가 주입될 때까지 blocked다.
+
+### 2026-04-26 | Care Request M18 smoke readiness tooling
+- 완료일: `2026-04-26`
+- 배경:
+  - 운영 계정 식별자는 정할 수 있지만 실제 계정 생성, 관리자 권한 부여, secret 주입은 현재 환경에서 수행할 수 없다.
+  - 준비값이 들어오는 순간 production smoke 가능 여부를 기계적으로 확인할 필요가 있었다.
+- 변경내용:
+  - 표준 smoke 계정 식별자를 `care.smoke.admin@townpet.dev`, `care.smoke.requester@townpet.dev`, `care.smoke.caregiver@townpet.dev`로 고정했다.
+  - `ops:check:care-smoke-readiness` 스크립트를 추가해 internal health token, smoke 계정 식별자, 선택 Sentry secret 준비 여부를 값 노출 없이 확인한다.
+  - 준비값 미충족 시 `BLOCKED`와 exit code 1을 반환한다.
+  - 돌봄 운영 런북에 표준 식별자와 readiness 명령을 추가했다.
+- 코드문서:
+  - [app/scripts/check-care-smoke-readiness.ts](../app/scripts/check-care-smoke-readiness.ts)
+  - [app/scripts/check-care-smoke-readiness.test.ts](../app/scripts/check-care-smoke-readiness.test.ts)
+  - [app/package.json](../app/package.json)
+  - [business/operations/돌봄_운영_런북.md](../business/operations/돌봄_운영_런북.md)
+  - [business/product/Phase2_로드맵_PRD.md](../business/product/Phase2_로드맵_PRD.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app test -- scripts/check-care-smoke-readiness.test.ts`
+  - `corepack pnpm -C app ops:check:care-smoke-readiness` (expected BLOCKED)
+  - `corepack pnpm -C app typecheck`
+  - `corepack pnpm -C app lint`
+- 결과:
+  - smoke 준비값은 표준 명령으로 확인 가능하다.
+  - 실제 production smoke는 internal token과 운영 테스트 계정이 주입될 때까지 계속 blocked다.
