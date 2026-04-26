@@ -104,6 +104,7 @@ async function main() {
     "db:seed:users",
     "db:seed:local-test-accounts",
     "db:seed:board-posts",
+    "db:seed:care-demo",
     "db:seed:adoption-demo",
     "db:seed:comment-best-demo",
     "db:seed:search-cases",
