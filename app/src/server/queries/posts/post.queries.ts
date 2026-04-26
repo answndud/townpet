@@ -1,5 +1,8 @@
 import {
   CareApplicationStatus,
+  CareFeedbackAuthorRole,
+  CareFeedbackIssueType,
+  CareFeedbackOutcome,
   FeedPersonalizationEvent,
   PostReactionType,
   PostScope,
@@ -382,6 +385,22 @@ export type CareApplicationDetailItem = {
   };
 };
 
+export type CareCompletionFeedbackDetailItem = {
+  id: string;
+  authorId: string;
+  authorRole: CareFeedbackAuthorRole;
+  outcome: CareFeedbackOutcome;
+  issueType: CareFeedbackIssueType;
+  wouldRepeat: boolean | null;
+  comment: string | null;
+  createdAt: Date;
+  author: {
+    id: string;
+    nickname: string | null;
+    image: string | null;
+  };
+};
+
 export async function listCareApplicationsForPostDetail(params: {
   postId: string;
   viewerId?: string | null;
@@ -417,6 +436,63 @@ export async function listCareApplicationsForPostDetail(params: {
       decidedAt: true,
       createdAt: true,
       applicant: {
+        select: { id: true, nickname: true, image: true },
+      },
+    },
+  });
+}
+
+export async function listCareCompletionFeedbacksForPostDetail(params: {
+  postId: string;
+  viewerId?: string | null;
+  canModerate?: boolean;
+}): Promise<CareCompletionFeedbackDetailItem[]> {
+  if (!params.viewerId) {
+    return [];
+  }
+
+  const post = await prisma.post.findUnique({
+    where: { id: params.postId },
+    select: {
+      authorId: true,
+      careRequest: {
+        select: {
+          id: true,
+          applications: {
+            where: { status: CareApplicationStatus.ACCEPTED },
+            select: { applicantId: true },
+            take: 1,
+          },
+        },
+      },
+    },
+  });
+  if (!post?.careRequest) {
+    return [];
+  }
+
+  const acceptedApplicantId = post.careRequest.applications[0]?.applicantId ?? null;
+  const canSeeFeedbacks =
+    params.canModerate ||
+    post.authorId === params.viewerId ||
+    acceptedApplicantId === params.viewerId;
+  if (!canSeeFeedbacks) {
+    return [];
+  }
+
+  return prisma.careCompletionFeedback.findMany({
+    where: { careRequestId: post.careRequest.id },
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      authorId: true,
+      authorRole: true,
+      outcome: true,
+      issueType: true,
+      wouldRepeat: true,
+      comment: true,
+      createdAt: true,
+      author: {
         select: { id: true, nickname: true, image: true },
       },
     },

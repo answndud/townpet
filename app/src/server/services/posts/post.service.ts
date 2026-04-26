@@ -1,5 +1,7 @@
 import {
   CareApplicationStatus,
+  CareFeedbackAuthorRole,
+  CareFeedbackIssueType,
   GuestViolationCategory,
   CareRequestStatus,
   MarketStatus,
@@ -40,6 +42,7 @@ import {
   type CareRequestInput,
   careApplicationCreateSchema,
   careApplicationDecisionSchema,
+  careCompletionFeedbackSchema,
   type HospitalReviewInput,
   type MarketListingInput,
   type VolunteerRecruitmentInput,
@@ -1696,6 +1699,12 @@ type DecideCareApplicationParams = {
   input: unknown;
 };
 
+type CreateCareCompletionFeedbackParams = {
+  postId: string;
+  authorId: string;
+  input: unknown;
+};
+
 const AUTHOR_MARKET_STATUS_TRANSITIONS: Record<MarketStatus, MarketStatus[]> = {
   [MarketStatus.AVAILABLE]: [
     MarketStatus.RESERVED,
@@ -2333,6 +2342,134 @@ export async function decideCareApplication({
 
   notifyPostCacheChange();
   return result.application;
+}
+
+export async function createCareCompletionFeedback({
+  postId,
+  authorId,
+  input,
+}: CreateCareCompletionFeedbackParams) {
+  const parsed = careCompletionFeedbackSchema.safeParse(input);
+  if (!parsed.success) {
+    throw new ServiceError("돌봄 완료 피드백 입력값이 올바르지 않습니다.", "INVALID_INPUT", 400);
+  }
+
+  const [author, newUserSafetyPolicy] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: authorId },
+      select: { id: true, role: true, createdAt: true },
+    }),
+    getNewUserSafetyPolicy(),
+  ]);
+  if (!author) {
+    throw new ServiceError("사용자를 찾을 수 없습니다.", "USER_NOT_FOUND", 404);
+  }
+
+  await assertUserInteractionAllowed(author.id);
+
+  let comment = parsed.data.comment ?? null;
+  if (comment) {
+    const contactPolicy = moderateContactContent({
+      text: comment,
+      role: author.role,
+      accountCreatedAt: author.createdAt,
+      blockWindowHours: newUserSafetyPolicy.contactBlockWindowHours,
+    });
+    if (contactPolicy.blocked) {
+      throw new ServiceError(
+        contactPolicy.message ?? "연락처가 포함된 피드백은 현재 계정으로 작성할 수 없습니다.",
+        "CONTACT_RESTRICTED_FOR_NEW_USER",
+        403,
+      );
+    }
+    comment = contactPolicy.sanitizedText;
+
+    const forbiddenKeywords = await getForbiddenKeywords();
+    const matchedForbiddenKeywords = findMatchedForbiddenKeywords(comment, forbiddenKeywords);
+    if (matchedForbiddenKeywords.length > 0) {
+      throw new ServiceError(
+        `금칙어가 포함되어 돌봄 피드백을 저장할 수 없습니다. (${matchedForbiddenKeywords
+          .slice(0, 3)
+          .join(", ")})`,
+        "FORBIDDEN_KEYWORD_DETECTED",
+        400,
+      );
+    }
+  }
+
+  const feedback = await prisma.$transaction(async (tx) => {
+    const post = await tx.post.findUnique({
+      where: { id: postId },
+      select: {
+        id: true,
+        authorId: true,
+        status: true,
+        type: true,
+        careRequest: {
+          select: {
+            id: true,
+            status: true,
+            applications: {
+              where: { status: CareApplicationStatus.ACCEPTED },
+              select: { id: true, applicantId: true },
+              take: 1,
+            },
+          },
+        },
+      },
+    });
+
+    if (!post || post.status === PostStatus.DELETED) {
+      throw new ServiceError("게시물을 찾을 수 없습니다.", "POST_NOT_FOUND", 404);
+    }
+    if (post.type !== PostType.CARE_REQUEST || !post.careRequest) {
+      throw new ServiceError("돌봄 요청 글을 찾을 수 없습니다.", "CARE_REQUEST_NOT_FOUND", 404);
+    }
+    if (post.careRequest.status !== CareRequestStatus.COMPLETED) {
+      throw new ServiceError("완료된 돌봄 요청에만 피드백을 남길 수 있습니다.", "CARE_REQUEST_NOT_COMPLETED", 400);
+    }
+
+    const acceptedApplication = post.careRequest.applications?.[0] ?? null;
+    const isRequester = post.authorId === authorId;
+    const isCaregiver = acceptedApplication?.applicantId === authorId;
+    if (!isRequester && !isCaregiver) {
+      throw new ServiceError("돌봄 완료 피드백 작성 권한이 없습니다.", "FORBIDDEN", 403);
+    }
+
+    const existingFeedback = await tx.careCompletionFeedback.findUnique({
+      where: {
+        careRequestId_authorId: {
+          careRequestId: post.careRequest.id,
+          authorId,
+        },
+      },
+      select: { id: true },
+    });
+    if (existingFeedback) {
+      throw new ServiceError("이미 돌봄 완료 피드백을 남겼습니다.", "CARE_FEEDBACK_ALREADY_EXISTS", 409);
+    }
+
+    return tx.careCompletionFeedback.create({
+      data: {
+        careRequestId: post.careRequest.id,
+        careApplicationId: acceptedApplication?.id ?? null,
+        authorId,
+        authorRole: isRequester
+          ? CareFeedbackAuthorRole.REQUESTER
+          : CareFeedbackAuthorRole.CAREGIVER,
+        outcome: parsed.data.outcome,
+        issueType: parsed.data.issueType ?? CareFeedbackIssueType.NONE,
+        wouldRepeat: parsed.data.wouldRepeat ?? null,
+        comment,
+      },
+      include: {
+        author: { select: { id: true, nickname: true, image: true } },
+      },
+    });
+  });
+
+  notifyPostCacheChange();
+  return feedback;
 }
 
 export async function deletePost({ postId, authorId }: DeletePostParams) {

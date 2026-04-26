@@ -14,7 +14,8 @@
 - Care Request M4 수행 체크리스트 preflight를 완료했다
 - Care Request M4 수행 상태 전환을 완료했다
 - Care Request M5 후기/노쇼/증빙 preflight를 완료했다
-- 다음 작업: Care Request M5 완료 피드백
+- Care Request M5 완료 피드백을 완료했다
+- 다음 작업: Care Request M6 운영 신호 큐 preflight
 
 ## 열린 blocker
 - 없음. `test:e2e:smoke` social-dev 온보딩 blocker는 callback side effect 차단과 온보딩 대기 안정화로 해결했고 smoke 통과를 확인했다.
@@ -50,12 +51,17 @@
   - 권한: 요청 작성자와 수락 지원자만 `COMPLETED` 요청에 각 1회 작성한다.
   - 공개: 피드백은 당사자/관리자만 보고, 공개 프로필 점수나 자동 랭킹에는 사용하지 않는다.
   - 보류: 공개 별점, 체크인 사진, 자동 노쇼 판정, 자동 패널티, 결제/보험/정산.
+- Care Request M5 완료 피드백:
+  - 추가: `CareCompletionFeedback`, outcome/issueType enum, validation, service/action, detail API/UI를 연결했다.
+  - 권한: 요청 작성자와 수락 지원자만 `COMPLETED` 요청에 각 1회 작성한다.
+  - 공개: 피드백은 당사자/관리자만 detail API에서 조회하고 공개 피드/검색에는 노출하지 않는다.
+  - 통과: prisma generate/migrate deploy, targeted Vitest, `typecheck`, `lint`.
 - 이전 상세 검증은 [COMPLETED.md](./COMPLETED.md)에 보관했다.
 
 ## 다음 액션
-1. `CareCompletionFeedback` 모델과 issue/outcome enum migration을 추가한다.
-2. 피드백 작성 service/action과 detail UI를 연결한다.
-3. 비참여자/미완료 요청/중복 작성/공개 노출 방지 테스트와 품질 게이트를 실행한다.
+1. admin 신고/ops 화면에서 `CareCompletionFeedback.issueType` 운영 신호를 흡수할 수 있는지 확인한다.
+2. 별도 큐가 필요하면 조회 모델, 필터, 상세 링크, 권한 기준을 정한다.
+3. M6 구현 범위와 failure-path tests를 확정한다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)

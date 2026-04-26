@@ -50,6 +50,7 @@ model User {
   actions                   Notification[]                @relation("NotificationActor")
   careApplications          CareApplication[]             @relation("CareApplicationApplicant")
   careApplicationDecisions   CareApplication[]             @relation("CareApplicationDecider")
+  careCompletionFeedbacks   CareCompletionFeedback[]      @relation("CareCompletionFeedbackAuthor")
   uploadAssets              UploadAsset[]
   createdAt                 DateTime                      @default(now())
   updatedAt                 DateTime                      @updatedAt
@@ -538,6 +539,7 @@ model CareRequest {
   postId       String            @unique
   post         Post              @relation(fields: [postId], references: [id], onDelete: Cascade)
   applications CareApplication[]
+  feedbacks    CareCompletionFeedback[]
   careType     CareType
   startsAt     DateTime?
   endsAt       DateTime?
@@ -579,6 +581,7 @@ model CareApplication {
   decidedAt     DateTime?
   decidedBy     String?
   careRequest   CareRequest           @relation(fields: [careRequestId], references: [id], onDelete: Cascade)
+  feedbacks     CareCompletionFeedback[]
   applicant     User                  @relation("CareApplicationApplicant", fields: [applicantId], references: [id], onDelete: Cascade)
   decider       User?                 @relation("CareApplicationDecider", fields: [decidedBy], references: [id], onDelete: SetNull)
   createdAt     DateTime              @default(now())
@@ -595,6 +598,49 @@ enum CareApplicationStatus {
   ACCEPTED
   DECLINED
   CANCELLED
+}
+
+model CareCompletionFeedback {
+  id                String                    @id @default(cuid())
+  careRequestId     String
+  careApplicationId String?
+  authorId          String
+  authorRole        CareFeedbackAuthorRole
+  outcome           CareFeedbackOutcome
+  issueType         CareFeedbackIssueType     @default(NONE)
+  wouldRepeat       Boolean?
+  comment           String?                   @db.Text
+  careRequest       CareRequest               @relation(fields: [careRequestId], references: [id], onDelete: Cascade)
+  careApplication   CareApplication?          @relation(fields: [careApplicationId], references: [id], onDelete: SetNull)
+  author            User                      @relation("CareCompletionFeedbackAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  createdAt         DateTime                  @default(now())
+  updatedAt         DateTime                  @updatedAt
+
+  @@unique([careRequestId, authorId])
+  @@index([careRequestId, authorRole])
+  @@index([careApplicationId])
+  @@index([issueType, createdAt(sort: Desc)])
+  @@index([authorId, createdAt(sort: Desc)])
+}
+
+enum CareFeedbackAuthorRole {
+  REQUESTER
+  CAREGIVER
+}
+
+enum CareFeedbackOutcome {
+  POSITIVE
+  NEUTRAL
+  ISSUE
+}
+
+enum CareFeedbackIssueType {
+  NONE
+  NO_SHOW
+  SAFETY
+  PAYMENT_OR_FRAUD
+  PRIVACY
+  OTHER
 }
 
 model AdoptionListing {

@@ -1,12 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { revalidatePath } from "next/cache";
-import { CareApplicationStatus, CareRequestStatus, MarketStatus } from "@prisma/client";
+import {
+  CareApplicationStatus,
+  CareFeedbackOutcome,
+  CareRequestStatus,
+  MarketStatus,
+} from "@prisma/client";
 
 import { enforceAuthenticatedWriteRateLimit } from "@/server/authenticated-write-throttle";
 import {
   createPostAction,
   cancelCareApplicationAction,
   createCareApplicationAction,
+  createCareCompletionFeedbackAction,
   deletePostAction,
   decideCareApplicationAction,
   togglePostBookmarkAction,
@@ -20,6 +26,7 @@ import {
   createPost,
   cancelCareApplication,
   createCareApplication,
+  createCareCompletionFeedback,
   decideCareApplication,
   deletePost,
   togglePostBookmark,
@@ -55,6 +62,7 @@ vi.mock("@/server/services/post.service", () => ({
   createCareApplication: vi.fn(),
   cancelCareApplication: vi.fn(),
   decideCareApplication: vi.fn(),
+  createCareCompletionFeedback: vi.fn(),
 }));
 
 const mockRevalidatePath = vi.mocked(revalidatePath);
@@ -70,6 +78,7 @@ const mockUpdateCareRequestStatus = vi.mocked(updateCareRequestStatus);
 const mockCreateCareApplication = vi.mocked(createCareApplication);
 const mockCancelCareApplication = vi.mocked(cancelCareApplication);
 const mockDecideCareApplication = vi.mocked(decideCareApplication);
+const mockCreateCareCompletionFeedback = vi.mocked(createCareCompletionFeedback);
 
 describe("post actions", () => {
   beforeEach(() => {
@@ -87,6 +96,7 @@ describe("post actions", () => {
     mockCreateCareApplication.mockReset();
     mockCancelCareApplication.mockReset();
     mockDecideCareApplication.mockReset();
+    mockCreateCareCompletionFeedback.mockReset();
   });
 
   it("creates a post and only revalidates the feed page", async () => {
@@ -298,5 +308,26 @@ describe("post actions", () => {
     });
     expect(mockRevalidatePath).toHaveBeenCalledWith("/feed");
     expect(mockRevalidatePath).toHaveBeenCalledWith("/posts/post-care-2");
+  });
+
+  it("creates care completion feedback and revalidates only detail", async () => {
+    mockRequireCurrentUser.mockResolvedValue({ id: "author-1" } as never);
+
+    const result = await createCareCompletionFeedbackAction("post-care-3", {
+      outcome: CareFeedbackOutcome.POSITIVE,
+      wouldRepeat: true,
+    });
+
+    expect(result).toEqual({ ok: true });
+    expect(mockCreateCareCompletionFeedback).toHaveBeenCalledWith({
+      postId: "post-care-3",
+      authorId: "author-1",
+      input: {
+        outcome: CareFeedbackOutcome.POSITIVE,
+        wouldRepeat: true,
+      },
+    });
+    expect(mockRevalidatePath).toHaveBeenCalledTimes(1);
+    expect(mockRevalidatePath).toHaveBeenCalledWith("/posts/post-care-3");
   });
 });

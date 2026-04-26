@@ -4,6 +4,9 @@ import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
 import {
   CareApplicationStatus,
+  CareFeedbackIssueType,
+  CareFeedbackOutcome,
+  CareFeedbackAuthorRole,
   CareRequestStatus,
   MarketStatus,
   PostStatus,
@@ -48,6 +51,7 @@ import { resolveUserDisplayName } from "@/lib/user-display";
 import {
   cancelCareApplicationAction,
   createCareApplicationAction,
+  createCareCompletionFeedbackAction,
   decideCareApplicationAction,
   updateCareRequestStatusAction,
   updateMarketListingStatusAction,
@@ -165,6 +169,17 @@ type PostDetailItem = {
     decidedAt?: string | Date | null;
     createdAt: string | Date;
     applicant: { id: string; nickname: string | null; image?: string | null };
+  }>;
+  careCompletionFeedbacks?: Array<{
+    id: string;
+    authorId: string;
+    authorRole: CareFeedbackAuthorRole;
+    outcome: CareFeedbackOutcome;
+    issueType: CareFeedbackIssueType;
+    wouldRepeat: boolean | null;
+    comment: string | null;
+    createdAt: string | Date;
+    author: { id: string; nickname: string | null; image?: string | null };
   }>;
   renderedContentHtml?: string | null;
   renderedContentText?: string | null;
@@ -387,6 +402,26 @@ const careApplicationStatusLabel: Record<CareApplicationStatus, string> = {
   CANCELLED: "취소",
 };
 
+const careFeedbackOutcomeLabel: Record<CareFeedbackOutcome, string> = {
+  POSITIVE: "좋았어요",
+  NEUTRAL: "보통이에요",
+  ISSUE: "확인이 필요해요",
+};
+
+const careFeedbackIssueLabel: Record<CareFeedbackIssueType, string> = {
+  NONE: "이슈 없음",
+  NO_SHOW: "노쇼/불참",
+  SAFETY: "안전 우려",
+  PAYMENT_OR_FRAUD: "사기/금전 요구",
+  PRIVACY: "개인정보 문제",
+  OTHER: "기타",
+};
+
+const careFeedbackAuthorRoleLabel: Record<CareFeedbackAuthorRole, string> = {
+  REQUESTER: "요청자",
+  CAREGIVER: "돌봄 지원자",
+};
+
 function ensureDate(value: unknown) {
   if (value instanceof Date) return value;
   if (typeof value === "string") {
@@ -410,9 +445,22 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
   const [careStatusMessage, setCareStatusMessage] = useState<string | null>(null);
   const [careApplicationMessage, setCareApplicationMessage] = useState<string | null>(null);
   const [careApplicationInput, setCareApplicationInput] = useState("");
+  const [careFeedbackMessage, setCareFeedbackMessage] = useState<string | null>(null);
+  const [careFeedbackInput, setCareFeedbackInput] = useState<{
+    outcome: CareFeedbackOutcome;
+    issueType: CareFeedbackIssueType;
+    wouldRepeat: boolean;
+    comment: string;
+  }>({
+    outcome: CareFeedbackOutcome.POSITIVE,
+    issueType: CareFeedbackIssueType.NONE,
+    wouldRepeat: true,
+    comment: "",
+  });
   const [isMarketStatusPending, startMarketStatusTransition] = useTransition();
   const [isCareStatusPending, startCareStatusTransition] = useTransition();
   const [isCareApplicationPending, startCareApplicationTransition] = useTransition();
+  const [isCareFeedbackPending, startCareFeedbackTransition] = useTransition();
   const [loadVersion, setLoadVersion] = useState(0);
   const [commentLoadState, setCommentLoadState] = useState<PostCommentPrefetchState>({
     status: "idle",
@@ -662,6 +710,30 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
     });
   };
 
+  const handleCreateCareCompletionFeedback = () => {
+    if (!postId) {
+      return;
+    }
+
+    setCareFeedbackMessage(null);
+    startCareFeedbackTransition(async () => {
+      const result = await createCareCompletionFeedbackAction(postId, careFeedbackInput);
+      if (!result.ok) {
+        setCareFeedbackMessage(result.message);
+        return;
+      }
+
+      setCareFeedbackMessage("완료 피드백이 저장되었습니다.");
+      setCareFeedbackInput({
+        outcome: CareFeedbackOutcome.POSITIVE,
+        issueType: CareFeedbackIssueType.NONE,
+        wouldRepeat: true,
+        comment: "",
+      });
+      setLoadVersion((current) => current + 1);
+    });
+  };
+
   useEffect(() => {
     let cancelled = false;
     const run = async () => {
@@ -674,6 +746,7 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
       setData(null);
       setRelationMessage(null);
       setCareApplicationMessage(null);
+      setCareFeedbackMessage(null);
       setCommentLoadState({
         status: "loading",
         pageData: null,
@@ -850,6 +923,18 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
     Boolean(post?.careRequest) &&
     Boolean(viewerId) &&
     (isAuthor || canModerate) &&
+    post?.status !== PostStatus.DELETED;
+  const careCompletionFeedbacks = post?.careCompletionFeedbacks ?? [];
+  const ownCareCompletionFeedback = viewerId
+    ? careCompletionFeedbacks.find((feedback) => feedback.authorId === viewerId) ?? null
+    : null;
+  const canCreateCareCompletionFeedback =
+    hasLoadedPost &&
+    post?.type === PostType.CARE_REQUEST &&
+    post?.careRequest?.status === CareRequestStatus.COMPLETED &&
+    Boolean(viewerId) &&
+    (isAuthor || isAcceptedCareApplicant) &&
+    !ownCareCompletionFeedback &&
     post?.status !== PostStatus.DELETED;
   const showPostReportControls =
     canReportPost && canInteract && !isAuthor && canInteractWithPostOwner;
@@ -1426,6 +1511,124 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
             {careApplicationMessage ? (
               <p className="col-span-full mt-1 text-xs text-[#4b765f]">
                 {careApplicationMessage}
+              </p>
+            ) : null}
+            {canCreateCareCompletionFeedback ? (
+              <div className="col-span-full mt-1 rounded-lg border border-[#e2e8f0] bg-white p-3">
+                <p className="text-xs font-semibold text-[#2f3b4c]">완료 피드백</p>
+                <div className="mt-2 grid gap-2 sm:grid-cols-3">
+                  <label className="text-xs font-semibold text-[#4f5f75]">
+                    결과
+                    <select
+                      value={careFeedbackInput.outcome}
+                      onChange={(event) =>
+                        setCareFeedbackInput((current) => ({
+                          ...current,
+                          outcome: event.target.value as CareFeedbackOutcome,
+                          issueType:
+                            event.target.value === CareFeedbackOutcome.ISSUE
+                              ? current.issueType
+                              : CareFeedbackIssueType.NONE,
+                        }))
+                      }
+                      className="mt-1 w-full rounded-md border border-[#d5dae3] bg-white px-2 py-1.5 text-xs"
+                    >
+                      {Object.values(CareFeedbackOutcome).map((outcome) => (
+                        <option key={outcome} value={outcome}>
+                          {careFeedbackOutcomeLabel[outcome]}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="text-xs font-semibold text-[#4f5f75]">
+                    이슈 유형
+                    <select
+                      value={careFeedbackInput.issueType}
+                      onChange={(event) =>
+                        setCareFeedbackInput((current) => ({
+                          ...current,
+                          issueType: event.target.value as CareFeedbackIssueType,
+                        }))
+                      }
+                      disabled={careFeedbackInput.outcome !== CareFeedbackOutcome.ISSUE}
+                      className="mt-1 w-full rounded-md border border-[#d5dae3] bg-white px-2 py-1.5 text-xs disabled:opacity-60"
+                    >
+                      {Object.values(CareFeedbackIssueType).map((issueType) => (
+                        <option key={issueType} value={issueType}>
+                          {careFeedbackIssueLabel[issueType]}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="flex items-end gap-2 text-xs font-semibold text-[#4f5f75]">
+                    <input
+                      type="checkbox"
+                      checked={careFeedbackInput.wouldRepeat}
+                      onChange={(event) =>
+                        setCareFeedbackInput((current) => ({
+                          ...current,
+                          wouldRepeat: event.target.checked,
+                        }))
+                      }
+                      className="mb-1 h-4 w-4 rounded border-[#d5dae3]"
+                    />
+                    다시 매칭하고 싶어요
+                  </label>
+                </div>
+                <textarea
+                  value={careFeedbackInput.comment}
+                  onChange={(event) =>
+                    setCareFeedbackInput((current) => ({
+                      ...current,
+                      comment: event.target.value,
+                    }))
+                  }
+                  rows={3}
+                  maxLength={500}
+                  className="mt-2 w-full rounded-md border border-[#d5dae3] bg-white px-3 py-2 text-sm text-[#253449] outline-none transition focus:border-[#7a91b5] focus:ring-2 focus:ring-[#d8e2f1]"
+                  placeholder="운영 확인이 필요한 내용이나 간단한 메모를 남겨주세요."
+                />
+                <div className="mt-2 flex items-center justify-between gap-3">
+                  <span className="text-xs text-[#66758a]">피드백은 공개 프로필에 노출되지 않습니다.</span>
+                  <button
+                    type="button"
+                    className="rounded-md border border-[#2f5da4] bg-[#2f5da4] px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-[#244a83] disabled:cursor-not-allowed disabled:opacity-60"
+                    disabled={isCareFeedbackPending}
+                    onClick={handleCreateCareCompletionFeedback}
+                  >
+                    저장
+                  </button>
+                </div>
+              </div>
+            ) : null}
+            {careCompletionFeedbacks.length > 0 ? (
+              <div className="col-span-full mt-1 rounded-lg border border-[#e2e8f0] bg-[#fbfcfe] p-3">
+                <p className="text-xs font-semibold text-[#2f3b4c]">비공개 피드백</p>
+                <div className="mt-2 flex flex-col gap-2">
+                  {careCompletionFeedbacks.map((feedback) => (
+                    <div key={feedback.id} className="rounded-md border border-[#e2e8f0] bg-white p-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <p className="text-xs font-semibold text-[#253449]">
+                          {careFeedbackAuthorRoleLabel[feedback.authorRole]} ·{" "}
+                          {careFeedbackOutcomeLabel[feedback.outcome]}
+                        </p>
+                        <p className="text-xs text-[#66758a]">
+                          {careFeedbackIssueLabel[feedback.issueType]}
+                        </p>
+                      </div>
+                      {feedback.comment ? (
+                        <p className="mt-2 whitespace-pre-wrap text-xs text-[#4f5f75]">
+                          {feedback.comment}
+                        </p>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+            {careFeedbackMessage ? (
+              <p className="col-span-full mt-1 text-xs text-[#4b765f]">
+                {careFeedbackMessage}
               </p>
             ) : null}
           </PostDetailInfoSection>

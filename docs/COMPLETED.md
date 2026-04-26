@@ -1575,3 +1575,39 @@
 - 결과:
   - 다음 작업은 `Care Request M5 완료 피드백`이다.
   - 구현 범위는 `CareCompletionFeedback` schema/migration, validation, service/action, detail UI, 비공개 조회/이슈 신호 tests다.
+
+### 2026-04-26 | Care Request M5 완료 피드백
+- 완료일: `2026-04-26`
+- 배경:
+  - M5 preflight에서 공개 후기/평점보다 비공개 완료 피드백과 운영 이슈 신호 수집을 먼저 구현하기로 결정했다.
+  - 완료된 돌봄 요청의 작성자와 수락 지원자가 서로 공개 평판에 영향을 주지 않으면서 운영 리스크를 남길 경로가 필요했다.
+- 변경내용:
+  - `CareCompletionFeedback` 모델과 `CareFeedbackAuthorRole`, `CareFeedbackOutcome`, `CareFeedbackIssueType` enum migration을 추가했다.
+  - `careCompletionFeedbackSchema`로 outcome/issueType/comment 입력 계약을 추가했고, `ISSUE` outcome은 `NONE`이 아닌 issue type을 요구한다.
+  - `createCareCompletionFeedback` service/action을 추가해 `COMPLETED` 요청, 당사자 권한, 중복 작성, 신규 유저 연락처 제한, 금칙어를 검사한다.
+  - detail API는 당사자와 관리자에게만 완료 피드백을 반환한다.
+  - 회원 상세 UI에 완료 피드백 작성 폼과 비공개 피드백 목록을 연결했다.
+  - 운영자 이슈 큐/필터는 M6 preflight에서 별도 범위로 분리했다.
+- 코드문서:
+  - [app/prisma/schema.prisma](../app/prisma/schema.prisma)
+  - [app/prisma/migrations/20260426063000_add_care_completion_feedback/migration.sql](../app/prisma/migrations/20260426063000_add_care_completion_feedback/migration.sql)
+  - [app/src/lib/validations/posts/post.ts](../app/src/lib/validations/posts/post.ts)
+  - [app/src/server/services/posts/post.service.ts](../app/src/server/services/posts/post.service.ts)
+  - [app/src/server/actions/post.ts](../app/src/server/actions/post.ts)
+  - [app/src/server/queries/posts/post.queries.ts](../app/src/server/queries/posts/post.queries.ts)
+  - [app/src/app/api/posts/[id]/detail/route.ts](../app/src/app/api/posts/%5Bid%5D/detail/route.ts)
+  - [app/src/components/posts/post-detail-client.tsx](../app/src/components/posts/post-detail-client.tsx)
+  - [business/policies/구인구직_운영규칙.md](../business/policies/구인구직_운영규칙.md)
+  - [business/product/Phase2_로드맵_PRD.md](../business/product/Phase2_로드맵_PRD.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app exec prisma generate` 통과
+  - `corepack pnpm -C app exec prisma migrate deploy` 통과
+  - `corepack pnpm -C app test -- src/lib/validations/post.test.ts src/server/services/post.service.test.ts src/server/actions/post.test.ts 'src/app/api/posts/[id]/detail/route.test.ts'` 통과, 205 files / 1009 tests
+  - `corepack pnpm -C app typecheck` 통과
+  - `corepack pnpm -C app lint` 통과
+- 결과:
+  - 완료된 돌봄 요청은 요청 작성자와 수락 지원자가 각 1회 비공개 피드백을 남길 수 있다.
+  - 피드백 issue type은 공개 노출 없이 운영 신호로 보관된다.
+  - 다음 작업은 `Care Request M6 운영 신호 큐 preflight`다.

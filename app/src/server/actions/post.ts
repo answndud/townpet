@@ -13,6 +13,7 @@ import {
   createPost,
   cancelCareApplication,
   createCareApplication,
+  createCareCompletionFeedback,
   decideCareApplication,
   deletePost,
   togglePostBookmark,
@@ -66,6 +67,10 @@ type CareRequestStatusActionResult =
   | { ok: false; code: string; message: string };
 
 type CareApplicationActionResult =
+  | { ok: true }
+  | { ok: false; code: string; message: string };
+
+type CareCompletionFeedbackActionResult =
   | { ok: true }
   | { ok: false; code: string; message: string };
 
@@ -410,6 +415,38 @@ export async function decideCareApplicationAction(
       postId,
       applicationId,
       status,
+      error: serializeError(error),
+    });
+
+    return {
+      ok: false,
+      code: "INTERNAL_SERVER_ERROR",
+      message: "서버 오류가 발생했습니다.",
+    };
+  }
+}
+
+export async function createCareCompletionFeedbackAction(
+  postId: string,
+  input: unknown,
+): Promise<CareCompletionFeedbackActionResult> {
+  try {
+    const user = await requireCurrentUser();
+    await createCareCompletionFeedback({
+      postId,
+      authorId: user.id,
+      input,
+    });
+    revalidatePostDetailPage(postId);
+
+    return { ok: true };
+  } catch (error) {
+    if (error instanceof ServiceError) {
+      return { ok: false, code: error.code, message: error.message };
+    }
+
+    logger.error("createCareCompletionFeedbackAction 실패", {
+      postId,
       error: serializeError(error),
     });
 
