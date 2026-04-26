@@ -1719,3 +1719,34 @@
 - 결과:
   - 다음 작업은 `Care Request M9 운영 런북/데모 seed`다.
   - 완료 기준은 운영자가 요청/지원/완료피드백/이슈큐를 어떤 순서로 확인할지 문서화하고 로컬 재현 데이터를 준비할 수 있는 상태다.
+
+### 2026-04-26 | Care Request M9 운영 런북/데모 seed
+- 완료일: `2026-04-26`
+- 배경:
+  - M8에서 케어 요청 출시 전 바로 필요한 갭을 운영 런북과 로컬 데모 데이터 준비 루틴으로 좁혔다.
+  - 운영자는 결제/보험/정산 없이도 요청, 지원, 완료 피드백, 이슈 큐를 반복 재현할 수 있어야 했다.
+- 변경내용:
+  - `db:seed:care-demo`를 추가해 케어 요청자, 지원자, 운영자 계정과 `OPEN`, `MATCHED`, `COMPLETED + SAFETY issue` 케이스를 생성한다.
+  - `db:restore:local`에 케어 데모 seed를 포함해 기본 복구 루틴만으로 검증 데이터를 준비하게 했다.
+  - `business/operations/돌봄_운영_런북.md`에 로컬 데이터 준비, 수동 점검 순서, e2e 명령, 판정 기준을 정리했다.
+  - 운영 문서 안내, 구인구직 정책, Phase 2 PRD, active docs를 M9 완료 상태로 동기화했다.
+- 코드문서:
+  - [app/scripts/seed-care-demo.ts](../app/scripts/seed-care-demo.ts)
+  - [app/scripts/seed-care-demo.test.ts](../app/scripts/seed-care-demo.test.ts)
+  - [app/scripts/restore-local-dev.ts](../app/scripts/restore-local-dev.ts)
+  - [app/package.json](../app/package.json)
+  - [business/operations/돌봄_운영_런북.md](../business/operations/돌봄_운영_런북.md)
+  - [business/operations/운영_문서_안내.md](../business/operations/운영_문서_안내.md)
+  - [business/policies/구인구직_운영규칙.md](../business/policies/구인구직_운영규칙.md)
+  - [business/product/Phase2_로드맵_PRD.md](../business/product/Phase2_로드맵_PRD.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app test -- scripts/seed-care-demo.test.ts`
+  - `corepack pnpm -C app db:seed:care-demo`
+  - `corepack pnpm -C app typecheck`
+  - `corepack pnpm -C app lint`
+  - `corepack pnpm -C app docs:refresh:check`
+- 결과:
+  - 운영자는 `db:restore:local` 또는 `db:seed:care-demo` 후 `/feed?type=CARE_REQUEST&page=1`, `/admin/care-feedbacks`, `/admin/ops` 순서로 케어 흐름을 재현할 수 있다.
+  - 다음 작업은 `Care Request M10 관리자 큐 처리 상태 preflight`다.

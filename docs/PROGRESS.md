@@ -19,7 +19,8 @@
 - Care Request M6 운영 신호 큐를 완료했다
 - Care Request M7 케어 플로우 로컬 검증을 완료했다
 - Care Request M8 출시 갭 정리를 완료했다
-- 다음 작업: Care Request M9 운영 런북/데모 seed
+- Care Request M9 운영 런북/데모 seed를 완료했다
+- 다음 작업: Care Request M10 관리자 큐 처리 상태 preflight
 
 ## 열린 blocker
 - 없음. `test:e2e:smoke` social-dev 온보딩 blocker는 callback side effect 차단과 온보딩 대기 안정화로 해결했고 smoke 통과를 확인했다.
@@ -54,10 +55,14 @@
   - 바로 구현: 운영 런북, 로컬 demo seed/seed 지침, e2e 실행 위치 정리.
   - 이후 보강: 빈 상태/모바일 polish, 관리자 큐 처리 상태, 운영 지표 threshold.
   - 보류 유지: 결제/보험/정산, 자동 제재, 증빙 업로드, production smoke.
+- Care Request M9 운영 런북/데모 seed:
+  - 추가: `db:seed:care-demo`, `db:restore:local` seed step, `business/operations/돌봄_운영_런북.md`.
+  - 데이터: 요청자/지원자/운영자 계정과 `OPEN`, `MATCHED`, `COMPLETED + SAFETY issue` 케이스.
+  - 보류 유지: 결제/보험/정산, 자동 제재, 증빙 업로드, production smoke.
 ## 다음 액션
-1. `business/operations`에 케어 운영 런북을 추가한다.
-2. 로컬 demo seed 방식 또는 기존 seed 확장 범위를 정하고 구현한다.
-3. 수동 점검 명령과 e2e 명령을 문서/README 계층에 연결한다.
+1. `/admin/care-feedbacks` 처리 상태/메모 모델 경계를 검토한다.
+2. 별도 queue table이 필요한지, `CareCompletionFeedback` 확장으로 충분한지 결정한다.
+3. 구현 범위와 보류 항목을 정책/계획 문서에 남긴다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)
