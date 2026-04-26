@@ -1805,3 +1805,26 @@
 - 결과:
   - 운영자는 돌봄 이슈 신호를 `PENDING`, `REVIEWING`, `RESOLVED`, `DISMISSED`로 분류하고 메모를 남길 수 있다.
   - 다음 작업은 `Care Request M11 모바일/빈 상태 polish preflight`다.
+
+### 2026-04-26 | Care Request M11 모바일/빈 상태 polish preflight
+- 완료일: `2026-04-26`
+- 배경:
+  - M10에서 관리자 큐 처리 상태와 운영자 메모를 추가했지만, 모바일 운영성과 필터 0건 상태의 문구가 아직 검증되지 않았다.
+  - 케어 기능은 모바일 사용자가 많고, 운영자는 반복 처리 화면에서 입력/저장 흐름이 막히면 안 된다.
+- 변경내용:
+  - product UI 기준으로 feed/detail/admin queue의 모바일과 빈 상태를 점검했다.
+  - `/feed/guest?type=CARE_REQUEST&page=1`과 돌봄 요청 상세는 모바일 390px에서 문서 overflow가 없음을 확인했다.
+  - `/admin/care-feedbacks`는 모바일 390px에서 문서 전체 overflow는 없지만, 1120px 테이블 내부 스크롤에 처리 폼이 들어가 있어 모바일 작업성이 낮다고 분류했다.
+  - 필터 0건 empty state는 “전체 큐 없음”과 “현재 조건 0건”을 분리해야 한다고 결정했다.
+- 코드문서:
+  - [business/policies/구인구직_운영규칙.md](../business/policies/구인구직_운영규칙.md)
+  - [business/operations/돌봄_운영_런북.md](../business/operations/돌봄_운영_런북.md)
+  - [business/product/Phase2_로드맵_PRD.md](../business/product/Phase2_로드맵_PRD.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app dev`
+  - 모바일 390px Playwright 점검: `/feed/guest?type=CARE_REQUEST&page=1`, `/posts/{careDemoId}`, `/admin/care-feedbacks`, `/admin/care-feedbacks?reviewStatus=DISMISSED`
+  - `corepack pnpm -C app docs:refresh:check`
+- 결과:
+  - 다음 작업은 `Care Request M11 관리자 큐 모바일/빈 상태 polish`다.
