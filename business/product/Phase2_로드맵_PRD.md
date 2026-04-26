@@ -172,3 +172,4 @@ Phase 2 기능은 아래 조건을 만족할 때만 동시에 2개 이상 병행
 - 2026-04-26 실행 결과: Care Request M4 수행 상태 전환을 완료했다. 다음은 후기/평점/노쇼/증빙 중 결제 없이도 안전한 최소 신뢰 기능을 고르는 M5 preflight다.
 - 2026-04-26 실행 결과: Care Request M5 preflight를 완료했다. 공개 평점/증빙 자동 판정보다 비공개 `CareCompletionFeedback`과 운영 이슈 신호 수집을 먼저 구현한다.
 - 2026-04-26 실행 결과: Care Request M5 완료 피드백을 완료했다. 요청 작성자와 수락 지원자만 `COMPLETED` 요청에 각 1회 비공개 피드백을 남기며, issue type은 공개 노출 없이 운영 신호로 보관한다. 다음은 이 신호를 관리자 운영 화면에 흡수할 M6 preflight다.
+- 2026-04-26 실행 결과: Care Request M6 preflight를 완료했다. 완료 피드백 이슈는 기존 신고 큐에 섞지 않고 별도 `/admin/care-feedbacks` 큐와 Ops 요약으로 다루며, 자동 제재/공개 평판/증빙 업로드는 보류한다.

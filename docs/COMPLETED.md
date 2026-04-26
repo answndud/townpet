@@ -1611,3 +1611,31 @@
   - 완료된 돌봄 요청은 요청 작성자와 수락 지원자가 각 1회 비공개 피드백을 남길 수 있다.
   - 피드백 issue type은 공개 노출 없이 운영 신호로 보관된다.
   - 다음 작업은 `Care Request M6 운영 신호 큐 preflight`다.
+
+### 2026-04-26 | Care Request M6 운영 신호 큐 preflight
+- 완료일: `2026-04-26`
+- 배경:
+  - M5에서 `CareCompletionFeedback.issueType`을 운영 신호로 저장했지만, 운영자가 어디서 어떤 기준으로 확인할지는 확정되지 않았다.
+  - 기존 신고 큐는 `Report` 기반 승인/기각/감사 모델이라 비공개 완료 피드백을 바로 섞으면 과잉 제재와 개인정보 노출 리스크가 있다.
+- 변경내용:
+  - M6는 기존 `/admin/reports`에 합치지 않고 별도 `/admin/care-feedbacks` 큐로 구현하기로 결정했다.
+  - 기본 조회 대상은 `issueType != NONE`인 완료 피드백으로 제한한다.
+  - 큐는 `issueType`, `outcome` 필터와 관련 돌봄 게시글 상세 링크를 제공한다.
+  - `/admin/ops`에는 미확인 돌봄 이슈 신호 수 요약만 추가한다.
+  - 공개 피드/검색/프로필 노출, 자동 제재, 자동 숨김, 증빙 업로드, 별도 dispute table은 보류했다.
+- 코드문서:
+  - [app/src/app/admin/reports/page.tsx](../app/src/app/admin/reports/page.tsx)
+  - [app/src/app/admin/ops/page.tsx](../app/src/app/admin/ops/page.tsx)
+  - [app/src/server/queries/moderation/report.queries.ts](../app/src/server/queries/moderation/report.queries.ts)
+  - [app/src/server/queries/ops-overview.queries.ts](../app/src/server/queries/ops-overview.queries.ts)
+  - [business/policies/구인구직_운영규칙.md](../business/policies/구인구직_운영규칙.md)
+  - [business/product/Phase2_로드맵_PRD.md](../business/product/Phase2_로드맵_PRD.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `Report` 큐가 `ReportStatus`, `ReportAudit`, auto-hide 우선순위 계산에 묶여 있음을 확인했다.
+  - `Ops` 대시보드가 `getReportStats`, health, auth, personalization, search 요약을 조합하는 구조임을 확인했다.
+  - 문서 변경에 한정해 active plan, progress, policy, roadmap archive를 동기화했다.
+- 결과:
+  - 다음 작업은 `Care Request M6 운영 신호 큐` 구현이다.
+  - 구현 범위는 admin query, `/admin/care-feedbacks` page, Ops 요약, 관리자 권한/필터/비공개 노출 방지 tests다.
