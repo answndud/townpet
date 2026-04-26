@@ -1968,3 +1968,25 @@
 - 결과:
   - 운영자가 어떤 계정과 데이터로 케어 smoke를 실행하고 언제 중단할지 판단할 수 있다.
   - 다음 작업은 `Care Request M16 production smoke 실행 보류 확인`이다.
+
+### 2026-04-26 | Care Request M16 production smoke 실행 보류 확인
+- 완료일: `2026-04-26`
+- 배경:
+  - M14-M15에서 production smoke 실행 순서와 데이터 보호 기준을 정리했으므로, 현재 실행 환경에서 실제 smoke가 가능한지 확인해야 했다.
+- 변경내용:
+  - 현재 셸의 운영 secret 존재 여부를 값 노출 없이 확인했다.
+  - public health만 read-only로 실행했다.
+  - 내부 health, Sentry, 관리자 브라우저 smoke는 필요한 token/account 준비가 확인되지 않아 실행하지 않았다.
+  - 돌봄 운영 런북에 production smoke 실행 보류 기록을 추가했다.
+- 코드문서:
+  - [business/operations/돌봄_운영_런북.md](../business/operations/돌봄_운영_런북.md)
+  - [business/product/Phase2_로드맵_PRD.md](../business/product/Phase2_로드맵_PRD.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm -C app ops:check:health`
+  - `corepack pnpm -C app docs:refresh:check`
+- 결과:
+  - public health는 PASS다.
+  - internal token, Sentry secret, 운영 테스트 계정 확인 부재로 production smoke 전체 실행은 No-Go로 유지한다.
+  - 다음 작업은 `Care Request M17 운영 smoke 준비값 확보`다.

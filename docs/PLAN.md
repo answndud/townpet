@@ -26,17 +26,17 @@
 
 ## Active Plan
 
-### Care Request M16 production smoke 실행 보류 확인
+### Care Request M17 운영 smoke 준비값 확보
 
 상태: `pending`
 
-- 목표: production smoke를 실제로 실행할 수 있는지 secret, 계정, 데이터 조건을 확인하고 보류 여부를 확정한다.
-- 범위: 운영 secret 존재 확인 방식, 테스트 계정 준비 여부, 원격 smoke 실행 가능/불가 판정.
-- 제외: secret 값 노출, 실제 production smoke 강행, 결제/보험/정산, 자동 제재.
-- 완료 기준: 실행 가능이면 smoke 명령을 수행하고, 불가하면 어떤 조건 때문에 보류인지 기록한다.
+- 목표: production smoke를 실행할 수 있도록 필요한 운영 token과 테스트 계정 준비 상태를 확보한다.
+- 범위: internal health token 준비, 선택 Sentry secret 준비, 운영 관리자/요청자/지원자 테스트 계정 확인.
+- 제외: secret 값 문서화, 실제 production smoke 강행, 결제/보험/정산, 자동 제재.
+- 완료 기준: 값 노출 없이 준비 여부가 확인되고, 실행 가능하면 production smoke로 넘어간다.
 
 ## 다음 실행 순서
 
-1. 운영 secret과 테스트 계정이 준비됐는지 값 노출 없이 확인한다.
-2. 실행 가능하면 M14/M15 순서대로 production smoke를 수행한다.
-3. 실행 불가하면 보류 조건과 다음 준비 항목을 `PROGRESS.md`에 남긴다.
+1. `HEALTH_INTERNAL_TOKEN` 또는 `OPS_HEALTH_INTERNAL_TOKEN` 준비 여부를 확인한다.
+2. Sentry 검증 secret과 운영 테스트 계정 준비 여부를 확인한다.
+3. 준비 완료 시 M14/M15 기준으로 production smoke를 실행한다.

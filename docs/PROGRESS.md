@@ -19,8 +19,8 @@
 - Care Request M8 출시 갭 정리를 완료했다
 - Care Request M9 운영 런북/데모 seed를 완료했다
 - Care Request M10 관리자 큐 처리 상태와 M11 모바일/빈 상태 polish를 완료했다
-- Care Request M12 운영 threshold와 M13-M15 production smoke 준비 문서를 완료했다
-- 다음 작업: Care Request M16 production smoke 실행 보류 확인
+- Care Request M12 운영 threshold와 M13-M16 production smoke 준비/보류 확인을 완료했다
+- 다음 작업: Care Request M17 운영 smoke 준비값 확보
 
 ## 열린 blocker
 - 없음. `test:e2e:smoke` social-dev 온보딩 blocker는 callback side effect 차단과 온보딩 대기 안정화로 해결했고 smoke 통과를 확인했다.
@@ -59,12 +59,11 @@
   - 기준: `PENDING >= 3`, `PENDING + REVIEWING >= 5`, `SAFETY/PAYMENT_OR_FRAUD >= 1`.
 - Care Request M12 운영 threshold 구현: helper, Ops count/badge/copy, targeted Vitest, `typecheck`, `lint` 통과.
 - Care Request M13 출시 준비 최종 정리: 로컬 기능 조건부 Go, 운영 배포는 production smoke/strict health 전 No-Go.
-- Care Request M14-M15 production smoke 준비:
-  - 추가: secret/env, 원격 health/evidence, Actions, 브라우저 경로, No-Go, 전용 계정/데이터/정리 기준.
+- Care Request M14-M16 production smoke 준비/보류 확인: 실행 기준 정리, public health PASS, internal token/Sentry/테스트 계정 부재로 No-Go.
 ## 다음 액션
-1. 운영 secret과 테스트 계정이 준비됐는지 값 노출 없이 확인한다.
-2. 실행 가능하면 M14/M15 순서대로 production smoke를 수행한다.
-3. 실행 불가하면 보류 조건과 다음 준비 항목을 `PROGRESS.md`에 남긴다.
+1. `HEALTH_INTERNAL_TOKEN` 또는 `OPS_HEALTH_INTERNAL_TOKEN` 준비 여부를 확인한다.
+2. Sentry 검증 secret과 운영 테스트 계정 준비 여부를 확인한다.
+3. 준비 완료 시 M14/M15 기준으로 production smoke를 실행한다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)
