@@ -1548,3 +1548,30 @@
 - 결과:
   - 매칭된 돌봄 요청은 수행 중/완료/취소 상태로 전환할 수 있다.
   - 다음 작업은 `Care Request M5 후기/노쇼/증빙 preflight`다.
+
+### 2026-04-26 | Care Request M5 후기/노쇼/증빙 preflight
+- 완료일: `2026-04-26`
+- 배경:
+  - M4까지 완료된 돌봄 요청은 상태 전환을 기록할 수 있지만, 수행 후 신뢰 신호나 운영 이슈를 축적하는 경로가 없다.
+  - 공개 별점/노쇼/증빙 자동 판정은 보복, 명예훼손, 조작, 법적 책임 리스크가 높아 초기 범위에서 분리해야 했다.
+- 변경내용:
+  - M5는 공개 후기/평점이 아니라 비공개 완료 피드백으로 제한했다.
+  - 모델 방향은 `CareCompletionFeedback`으로 정했다.
+  - 작성자는 요청 작성자와 수락 지원자만 가능하고, `COMPLETED` 요청에 각 1회만 작성한다.
+  - 입력은 `outcome`, `comment`, `wouldRepeat`, `issueType`만 둔다.
+  - 피드백은 기본 비공개이며 당사자/관리자만 조회한다.
+  - `NO_SHOW`, `SAFETY`, `PAYMENT_OR_FRAUD`, `PRIVACY` 이슈는 운영 확인 대상으로 분류한다.
+  - 공개 별점/프로필 점수, 자동 평판 랭킹, 체크인 사진, 자동 노쇼 판정, 자동 패널티, 결제/보험/정산은 보류했다.
+- 코드문서:
+  - [business/policies/구인구직_운영규칙.md](../business/policies/구인구직_운영규칙.md)
+  - [business/product/Phase2_로드맵_PRD.md](../business/product/Phase2_로드맵_PRD.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+  - [docs/COMPLETED.md](./COMPLETED.md)
+- 검증:
+  - 기존 `UploadAsset`, `ReportReason`, 병원/장소 리뷰 rating 모델을 확인했다.
+  - 공개 rating과 증빙 첨부를 바로 열 경우의 정책/운영 리스크를 비교했다.
+  - 문서 변경에 한정해 active plan, progress, policy, roadmap archive를 동기화했다.
+- 결과:
+  - 다음 작업은 `Care Request M5 완료 피드백`이다.
+  - 구현 범위는 `CareCompletionFeedback` schema/migration, validation, service/action, detail UI, 비공개 조회/이슈 신호 tests다.

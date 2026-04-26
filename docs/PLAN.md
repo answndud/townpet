@@ -26,17 +26,17 @@
 
 ## Active Plan
 
-### Care Request M5 후기/노쇼/증빙 preflight
+### Care Request M5 완료 피드백
 
 상태: `pending`
 
-- 목표: 완료된 돌봄 요청 이후 후기/노쇼/증빙을 어느 범위까지 열지 결정한다.
-- 범위: 상호 후기/평점, 노쇼 신고, 증빙 첨부, 관리자 확인 큐, 공개 노출 여부 판단.
-- 제외: 결제/예약 보증/보험/정산, 실시간 위치 추적, 자동 배상/패널티.
-- 완료 기준: M5에서 바로 구현할 최소 신뢰 기능과 보류할 법적/운영 고위험 기능을 분리하고 service/query/schema 경계를 문서화한다.
+- 목표: 완료된 돌봄 요청에 비공개 완료 피드백을 남기고 운영 이슈 신호를 수집한다.
+- 범위: `CareCompletionFeedback` schema, validation, service/action, detail UI, 관리자 조회 신호, failure-path tests.
+- 제외: 공개 별점/프로필 점수, 자동 평판 랭킹, 체크인 사진, 자동 노쇼 판정, 자동 패널티, 결제/보험/정산.
+- 완료 기준: 작성자/수락 지원자만 `COMPLETED` 요청에 각 1회 피드백을 남기고, 이슈 유형은 공개 노출 없이 운영 확인 대상으로 분류된다.
 
 ## 다음 실행 순서
 
-1. M4 수행 상태 전환 결과를 완료 archive에 고정한다.
-2. 후기/평점/노쇼/증빙 중 결제 없이도 안전한 최소 기능을 비교한다.
-3. 구현 범위를 확정하면 schema/service/action/UI/tests 순서로 별도 커밋한다.
+1. `CareCompletionFeedback` 모델과 issue/outcome enum migration을 추가한다.
+2. 피드백 작성 service/action과 detail UI를 연결한다.
+3. 비참여자/미완료 요청/중복 작성/공개 노출 방지 테스트와 품질 게이트를 실행한다.
