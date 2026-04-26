@@ -1370,3 +1370,27 @@
 - 결과:
   - 돌봄 요청은 이제 일반 자유글이 아니라 `CareRequest` 구조화 레코드와 함께 생성되고 feed/detail에서 읽힌다.
   - 다음 작업은 상태 전환과 지원/문의 흐름의 권한/감사 로그/모델 경계를 확정하는 `Care Request M2 상태 전환/지원 흐름 preflight`다.
+
+### 2026-04-26 | Care Request M2 상태 전환/지원 흐름 preflight
+- 완료일: `2026-04-26`
+- 배경:
+  - Care Request M1은 구조화 생성/조회만 고정했고, `CareRequestStatus`는 아직 변경 액션과 감사 로그에 연결되지 않았다.
+  - 돌봄 요청은 지원자/수행자 개념이 들어오면 모델과 알림 범위가 커지므로 상태 액션과 지원/문의 흐름을 분리해야 했다.
+- 변경내용:
+  - 마켓 상태 전환 패턴을 기준으로 작성자/운영자 권한과 감사 로그 기준을 비교했다.
+  - M2는 지원자 모델 없이 요청 상태 전환 액션만 구현하기로 결정했다.
+  - 작성자는 `OPEN -> CANCELLED`만 가능하고, admin/moderator는 운영 복구/취소 목적의 override를 수행한다.
+  - 상태 변경은 `ModerationActionLog`에 `CARE_STATUS_CHANGED` action으로 남긴다.
+  - `CareApplication`, 문의, 수행자 배정, 알림, 취소/노쇼 기록은 M3 preflight로 분리했다.
+- 코드문서:
+  - [business/policies/구인구직_운영규칙.md](../business/policies/구인구직_운영규칙.md)
+  - [business/product/Phase2_로드맵_PRD.md](../business/product/Phase2_로드맵_PRD.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+  - [docs/COMPLETED.md](./COMPLETED.md)
+- 검증:
+  - `MarketStatus` 전환 service/action 패턴과 현재 `CareRequestStatus`, `ModerationActionType` 경계를 확인했다.
+  - 문서 변경에 한정해 active plan, progress, policy, roadmap archive를 동기화했다.
+- 결과:
+  - 다음 작업은 `Care Request M2 상태 전환 액션`이다.
+  - 구현 범위는 `CARE_STATUS_CHANGED` migration, status update validation, service/action, detail UI 버튼, 작성자/admin/비작성자/failure-path tests다.

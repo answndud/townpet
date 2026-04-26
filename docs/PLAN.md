@@ -26,17 +26,17 @@
 
 ## Active Plan
 
-### Care Request M2 상태 전환/지원 흐름 preflight
+### Care Request M2 상태 전환 액션
 
 상태: `pending`
 
-- 목표: 돌봄 요청의 상태 전환과 지원/문의 흐름을 구현하기 전에 권한, 감사 로그, 모델 경계를 확정한다.
-- 범위: `CareRequestStatus`, 작성자/운영자 권한, 지원자 모델 후보, 신고/감사 로그 연결, 알림 후보, failure-path tests.
-- 제외: 실제 M2 구현, 결제/예약/보험, 외부 계약 자동화, 실시간 위치 추적.
-- 완료 기준: 상태 전환 M2와 지원/문의 M3 경계를 분리하고 첫 구현 단위와 테스트 기준을 `PROGRESS/COMPLETED`에 남긴다.
+- 목표: `CARE_REQUEST` 작성자와 운영자가 허용된 요청 상태 전환을 수행하고 감사 로그에 남긴다.
+- 범위: `CARE_STATUS_CHANGED` audit action, status update validation, service/action, detail UI 버튼, unit tests.
+- 제외: 지원자 매칭, 수행자 배정, 결제/예약/보험, 외부 계약 자동화, 실시간 위치 추적.
+- 완료 기준: 작성자는 `OPEN -> CANCELLED`만 가능하고, admin/moderator override와 비작성자 차단, audit log 기록 테스트가 통과한다.
 
 ## 다음 실행 순서
 
-1. 마켓 상태 전환 패턴과 `CareRequestStatus` 후보 전이를 비교한다.
-2. 작성자/admin/moderator/지원자 권한과 `ModerationActionLog` action 필요 여부를 확정한다.
-3. M2 구현 범위와 테스트 목록을 문서화한다.
+1. `ModerationActionType.CARE_STATUS_CHANGED` migration과 status update schema를 추가한다.
+2. `updateCareRequestStatus` service/action과 detail UI 상태 버튼을 연결한다.
+3. 작성자/admin/비작성자/failure-path 테스트와 품질 게이트를 실행한다.
