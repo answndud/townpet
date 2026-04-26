@@ -1,11 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { revalidatePath } from "next/cache";
-import { CareRequestStatus, MarketStatus } from "@prisma/client";
+import { CareApplicationStatus, CareRequestStatus, MarketStatus } from "@prisma/client";
 
 import { enforceAuthenticatedWriteRateLimit } from "@/server/authenticated-write-throttle";
 import {
   createPostAction,
+  cancelCareApplicationAction,
+  createCareApplicationAction,
   deletePostAction,
+  decideCareApplicationAction,
   togglePostBookmarkAction,
   togglePostReactionAction,
   updateCareRequestStatusAction,
@@ -15,6 +18,9 @@ import {
 import { requireCurrentUser } from "@/server/auth";
 import {
   createPost,
+  cancelCareApplication,
+  createCareApplication,
+  decideCareApplication,
   deletePost,
   togglePostBookmark,
   togglePostReaction,
@@ -46,6 +52,9 @@ vi.mock("@/server/services/post.service", () => ({
   togglePostReaction: vi.fn(),
   updateMarketListingStatus: vi.fn(),
   updateCareRequestStatus: vi.fn(),
+  createCareApplication: vi.fn(),
+  cancelCareApplication: vi.fn(),
+  decideCareApplication: vi.fn(),
 }));
 
 const mockRevalidatePath = vi.mocked(revalidatePath);
@@ -58,6 +67,9 @@ const mockUpdatePost = vi.mocked(updatePost);
 const mockTogglePostReaction = vi.mocked(togglePostReaction);
 const mockUpdateMarketListingStatus = vi.mocked(updateMarketListingStatus);
 const mockUpdateCareRequestStatus = vi.mocked(updateCareRequestStatus);
+const mockCreateCareApplication = vi.mocked(createCareApplication);
+const mockCancelCareApplication = vi.mocked(cancelCareApplication);
+const mockDecideCareApplication = vi.mocked(decideCareApplication);
 
 describe("post actions", () => {
   beforeEach(() => {
@@ -72,6 +84,9 @@ describe("post actions", () => {
     mockTogglePostReaction.mockReset();
     mockUpdateMarketListingStatus.mockReset();
     mockUpdateCareRequestStatus.mockReset();
+    mockCreateCareApplication.mockReset();
+    mockCancelCareApplication.mockReset();
+    mockDecideCareApplication.mockReset();
   });
 
   it("creates a post and only revalidates the feed page", async () => {
@@ -233,5 +248,55 @@ describe("post actions", () => {
     });
     expect(mockRevalidatePath).toHaveBeenCalledWith("/feed");
     expect(mockRevalidatePath).toHaveBeenCalledWith("/posts/post-care-1");
+  });
+
+  it("creates a care application and revalidates feed plus detail", async () => {
+    mockRequireCurrentUser.mockResolvedValue({ id: "applicant-1" } as never);
+
+    const result = await createCareApplicationAction("post-care-2", {
+      message: "지원합니다",
+    });
+
+    expect(result).toEqual({ ok: true });
+    expect(mockCreateCareApplication).toHaveBeenCalledWith({
+      postId: "post-care-2",
+      applicantId: "applicant-1",
+      input: { message: "지원합니다" },
+    });
+    expect(mockRevalidatePath).toHaveBeenCalledWith("/feed");
+    expect(mockRevalidatePath).toHaveBeenCalledWith("/posts/post-care-2");
+  });
+
+  it("cancels a care application and revalidates feed plus detail", async () => {
+    mockRequireCurrentUser.mockResolvedValue({ id: "applicant-1" } as never);
+
+    const result = await cancelCareApplicationAction("post-care-2", "application-1");
+
+    expect(result).toEqual({ ok: true });
+    expect(mockCancelCareApplication).toHaveBeenCalledWith({
+      applicationId: "application-1",
+      actorId: "applicant-1",
+    });
+    expect(mockRevalidatePath).toHaveBeenCalledWith("/feed");
+    expect(mockRevalidatePath).toHaveBeenCalledWith("/posts/post-care-2");
+  });
+
+  it("decides a care application and revalidates feed plus detail", async () => {
+    mockRequireCurrentUser.mockResolvedValue({ id: "author-1" } as never);
+
+    const result = await decideCareApplicationAction(
+      "post-care-2",
+      "application-1",
+      CareApplicationStatus.ACCEPTED,
+    );
+
+    expect(result).toEqual({ ok: true });
+    expect(mockDecideCareApplication).toHaveBeenCalledWith({
+      applicationId: "application-1",
+      actorId: "author-1",
+      input: { status: CareApplicationStatus.ACCEPTED },
+    });
+    expect(mockRevalidatePath).toHaveBeenCalledWith("/feed");
+    expect(mockRevalidatePath).toHaveBeenCalledWith("/posts/post-care-2");
   });
 });

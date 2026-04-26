@@ -1,6 +1,7 @@
 import {
   AdoptionStatus,
   AnimalSex,
+  CareApplicationStatus,
   CareRequestStatus,
   CareType,
   ItemCondition,
@@ -155,6 +156,21 @@ export const careRequestSchema = z
 
 export const careRequestStatusUpdateSchema = z.object({
   status: z.nativeEnum(CareRequestStatus),
+});
+
+export const careApplicationCreateSchema = z.object({
+  message: optionalTrimmedString({ max: 500 }),
+});
+
+export const careApplicationDecisionSchema = z.object({
+  status: z
+    .nativeEnum(CareApplicationStatus)
+    .refine(
+      (status) =>
+        status === CareApplicationStatus.ACCEPTED ||
+        status === CareApplicationStatus.DECLINED,
+      "지원 결정 상태는 수락 또는 거절만 가능합니다.",
+    ),
 });
 
 export const postCreateSchema = z.object({
@@ -369,6 +385,8 @@ export type MarketListingInput = z.infer<typeof marketListingSchema>;
 export type MarketListingStatusUpdateInput = z.infer<typeof marketListingStatusUpdateSchema>;
 export type CareRequestInput = z.infer<typeof careRequestSchema>;
 export type CareRequestStatusUpdateInput = z.infer<typeof careRequestStatusUpdateSchema>;
+export type CareApplicationCreateInput = z.infer<typeof careApplicationCreateSchema>;
+export type CareApplicationDecisionInput = z.infer<typeof careApplicationDecisionSchema>;
 export type PostUpdateInput = z.infer<typeof postUpdateSchema>;
 
 // Normalize parsed list input to product-facing naming.

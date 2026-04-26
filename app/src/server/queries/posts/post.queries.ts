@@ -1,4 +1,5 @@
 import {
+  CareApplicationStatus,
   FeedPersonalizationEvent,
   PostReactionType,
   PostScope,
@@ -288,6 +289,7 @@ const MARKET_LISTING_SELECT = {
 } as const;
 
 const CARE_REQUEST_SELECT = {
+  id: true,
   careType: true,
   startsAt: true,
   endsAt: true,
@@ -353,6 +355,7 @@ type PostDetailExtras = {
     status: string | null;
   } | null;
   careRequest: {
+    id: string;
     careType: string | null;
     startsAt: Date | null;
     endsAt: Date | null;
@@ -364,6 +367,61 @@ type PostDetailExtras = {
     status: string | null;
   } | null;
 };
+
+export type CareApplicationDetailItem = {
+  id: string;
+  applicantId: string;
+  message: string | null;
+  status: CareApplicationStatus;
+  decidedAt: Date | null;
+  createdAt: Date;
+  applicant: {
+    id: string;
+    nickname: string | null;
+    image: string | null;
+  };
+};
+
+export async function listCareApplicationsForPostDetail(params: {
+  postId: string;
+  viewerId?: string | null;
+  canModerate?: boolean;
+}): Promise<CareApplicationDetailItem[]> {
+  if (!params.viewerId) {
+    return [];
+  }
+
+  const post = await prisma.post.findUnique({
+    where: { id: params.postId },
+    select: {
+      authorId: true,
+      careRequest: { select: { id: true } },
+    },
+  });
+  if (!post?.careRequest) {
+    return [];
+  }
+
+  const canSeeAll = params.canModerate || post.authorId === params.viewerId;
+  return prisma.careApplication.findMany({
+    where: {
+      careRequestId: post.careRequest.id,
+      ...(canSeeAll ? {} : { applicantId: params.viewerId }),
+    },
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      applicantId: true,
+      message: true,
+      status: true,
+      decidedAt: true,
+      createdAt: true,
+      applicant: {
+        select: { id: true, nickname: true, image: true },
+      },
+    },
+  });
+}
 
 const buildPostDetailBaseInclude = (includeGuestAuthor = supportsPostGuestAuthorField()) =>
   ({

@@ -5,7 +5,10 @@ import { UserRole } from "@prisma/client";
 import { GET } from "@/app/api/posts/[id]/detail/route";
 import { getCurrentUserIdFromRequest, getCurrentUserRole } from "@/server/auth";
 import { monitorUnhandledError } from "@/server/error-monitor";
-import { getPostById } from "@/server/queries/post.queries";
+import {
+  getPostById,
+  listCareApplicationsForPostDetail,
+} from "@/server/queries/post.queries";
 import { getUserRelationState } from "@/server/queries/user-relation.queries";
 import { assertPostReadable } from "@/server/services/post-read-access.service";
 
@@ -14,7 +17,10 @@ vi.mock("@/server/auth", () => ({
   getCurrentUserRole: vi.fn(),
 }));
 vi.mock("@/server/error-monitor", () => ({ monitorUnhandledError: vi.fn() }));
-vi.mock("@/server/queries/post.queries", () => ({ getPostById: vi.fn() }));
+vi.mock("@/server/queries/post.queries", () => ({
+  getPostById: vi.fn(),
+  listCareApplicationsForPostDetail: vi.fn(),
+}));
 vi.mock("@/server/queries/user-relation.queries", () => ({
   getUserRelationState: vi.fn(),
 }));
@@ -26,6 +32,7 @@ const mockGetCurrentUserIdFromRequest = vi.mocked(getCurrentUserIdFromRequest);
 const mockGetCurrentUserRole = vi.mocked(getCurrentUserRole);
 const mockMonitorUnhandledError = vi.mocked(monitorUnhandledError);
 const mockGetPostById = vi.mocked(getPostById);
+const mockListCareApplicationsForPostDetail = vi.mocked(listCareApplicationsForPostDetail);
 const mockGetUserRelationState = vi.mocked(getUserRelationState);
 const mockAssertPostReadable = vi.mocked(assertPostReadable);
 
@@ -35,6 +42,7 @@ describe("GET /api/posts/[id]/detail contract", () => {
     mockGetCurrentUserRole.mockReset();
     mockMonitorUnhandledError.mockReset();
     mockGetPostById.mockReset();
+    mockListCareApplicationsForPostDetail.mockReset();
     mockGetUserRelationState.mockReset();
     mockAssertPostReadable.mockReset();
 
@@ -62,6 +70,7 @@ describe("GET /api/posts/[id]/detail contract", () => {
       hasBlockedMe: false,
       isMutedByMe: false,
     } as never);
+    mockListCareApplicationsForPostDetail.mockResolvedValue([]);
     mockAssertPostReadable.mockResolvedValue(undefined);
   });
 
@@ -93,6 +102,11 @@ describe("GET /api/posts/[id]/detail contract", () => {
         allowModeratorHiddenRead: true,
       },
     );
+    expect(mockListCareApplicationsForPostDetail).toHaveBeenCalledWith({
+      postId: "post-1",
+      viewerId: "mod-1",
+      canModerate: true,
+    });
   });
 
   it("strips guest network meta from detail payload", async () => {

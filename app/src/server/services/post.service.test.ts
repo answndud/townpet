@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  CareApplicationStatus,
   CareRequestStatus,
   MarketStatus,
   ModerationActionType,
@@ -11,8 +12,14 @@ import {
 
 import { prisma } from "@/lib/prisma";
 import { recordModerationAction } from "@/server/moderation-action-log";
-import { notifyReactionOnPost } from "@/server/services/notification.service";
 import {
+  notifyCareApplicationCreated,
+  notifyCareApplicationDecision,
+  notifyReactionOnPost,
+} from "@/server/services/notification.service";
+import {
+  createCareApplication,
+  decideCareApplication,
   deletePost,
   registerPostView,
   togglePostBookmark,
@@ -45,6 +52,16 @@ vi.mock("@/lib/prisma", () => ({
     careRequest: {
       update: vi.fn(),
     },
+    careApplication: {
+      findUnique: vi.fn(),
+      findFirst: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+      updateMany: vi.fn(),
+    },
+    userNeighborhood: {
+      findFirst: vi.fn(),
+    },
     postBookmark: {
       findUnique: vi.fn(),
       create: vi.fn(),
@@ -62,11 +79,27 @@ vi.mock("@/lib/prisma", () => ({
 }));
 
 vi.mock("@/server/services/notification.service", () => ({
+  notifyCareApplicationCreated: vi.fn().mockResolvedValue(null),
+  notifyCareApplicationDecision: vi.fn().mockResolvedValue(null),
   notifyReactionOnPost: vi.fn().mockResolvedValue(null),
 }));
 
 vi.mock("@/server/moderation-action-log", () => ({
   recordModerationAction: vi.fn(),
+}));
+
+vi.mock("@/server/queries/policy.queries", () => ({
+  getForbiddenKeywords: vi.fn().mockResolvedValue([]),
+  getGuestPostPolicy: vi.fn().mockResolvedValue({
+    allowGuestPosts: true,
+    blockedPostTypes: [],
+    maxGuestPostsPerIpHourly: 20,
+    maxGuestPostsPerFingerprintHourly: 20,
+  }),
+  getNewUserSafetyPolicy: vi.fn().mockResolvedValue({
+    enabled: true,
+    contactBlockWindowHours: 24,
+  }),
 }));
 
 vi.mock("@/server/cache/query-cache", () => ({
@@ -93,6 +126,16 @@ const mockPrisma = vi.mocked(prisma) as unknown as {
   careRequest: {
     update: ReturnType<typeof vi.fn>;
   };
+  careApplication: {
+    findUnique: ReturnType<typeof vi.fn>;
+    findFirst: ReturnType<typeof vi.fn>;
+    create: ReturnType<typeof vi.fn>;
+    update: ReturnType<typeof vi.fn>;
+    updateMany: ReturnType<typeof vi.fn>;
+  };
+  userNeighborhood: {
+    findFirst: ReturnType<typeof vi.fn>;
+  };
   postBookmark: {
     findUnique: ReturnType<typeof vi.fn>;
     create: ReturnType<typeof vi.fn>;
@@ -108,6 +151,8 @@ const mockPrisma = vi.mocked(prisma) as unknown as {
   $transaction: ReturnType<typeof vi.fn>;
 };
 const mockNotifyReactionOnPost = vi.mocked(notifyReactionOnPost);
+const mockNotifyCareApplicationCreated = vi.mocked(notifyCareApplicationCreated);
+const mockNotifyCareApplicationDecision = vi.mocked(notifyCareApplicationDecision);
 const mockRecordModerationAction = vi.mocked(recordModerationAction);
 const mockBumpFeedCacheVersion = vi.mocked(bumpFeedCacheVersion);
 const mockBumpSearchCacheVersion = vi.mocked(bumpSearchCacheVersion);
@@ -124,6 +169,12 @@ describe("post reaction toggle", () => {
     mockPrisma.user.findUnique.mockReset();
     mockPrisma.marketListing.update.mockReset();
     mockPrisma.careRequest.update.mockReset();
+    mockPrisma.careApplication.findUnique.mockReset();
+    mockPrisma.careApplication.findFirst.mockReset();
+    mockPrisma.careApplication.create.mockReset();
+    mockPrisma.careApplication.update.mockReset();
+    mockPrisma.careApplication.updateMany.mockReset();
+    mockPrisma.userNeighborhood.findFirst.mockReset();
     mockPrisma.postBookmark.findUnique.mockReset();
     mockPrisma.postBookmark.create.mockReset();
     mockPrisma.postBookmark.delete.mockReset();
@@ -134,6 +185,10 @@ describe("post reaction toggle", () => {
     mockPrisma.$transaction.mockReset();
     mockNotifyReactionOnPost.mockReset();
     mockNotifyReactionOnPost.mockResolvedValue(null);
+    mockNotifyCareApplicationCreated.mockReset();
+    mockNotifyCareApplicationCreated.mockResolvedValue(null);
+    mockNotifyCareApplicationDecision.mockReset();
+    mockNotifyCareApplicationDecision.mockResolvedValue(null);
     mockRecordModerationAction.mockReset();
     mockRecordModerationAction.mockResolvedValue(undefined);
     mockBumpFeedCacheVersion.mockReset();
@@ -1014,6 +1069,306 @@ describe("care request status transitions", () => {
           nextStatus: CareRequestStatus.OPEN,
           careType: "VISIT_CARE",
         }),
+      }),
+    );
+  });
+});
+
+describe("care applications", () => {
+  beforeEach(() => {
+    mockPrisma.user.findUnique.mockReset();
+    mockPrisma.post.findUnique.mockReset();
+    mockPrisma.careApplication.findUnique.mockReset();
+    mockPrisma.careApplication.findFirst.mockReset();
+    mockPrisma.careApplication.create.mockReset();
+    mockPrisma.careApplication.update.mockReset();
+    mockPrisma.careApplication.updateMany.mockReset();
+    mockPrisma.careRequest.update.mockReset();
+    mockPrisma.userNeighborhood.findFirst.mockReset();
+    mockPrisma.userBlock.findFirst.mockReset();
+    mockPrisma.userBlock.findFirst.mockResolvedValue(null);
+    mockPrisma.userSanction.findFirst.mockReset();
+    mockPrisma.userSanction.findFirst.mockResolvedValue(null);
+    mockPrisma.$transaction.mockReset();
+    mockNotifyCareApplicationCreated.mockReset();
+    mockNotifyCareApplicationCreated.mockResolvedValue(null);
+    mockNotifyCareApplicationDecision.mockReset();
+    mockNotifyCareApplicationDecision.mockResolvedValue(null);
+  });
+
+  it("creates a pending care application and notifies the author", async () => {
+    const createdAt = new Date("2026-01-01T00:00:00.000Z");
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: "applicant-1",
+      role: UserRole.USER,
+      createdAt,
+    });
+    mockPrisma.$transaction.mockImplementation(async (callback) =>
+      callback({
+        post: {
+          findUnique: vi.fn().mockResolvedValue({
+            id: "post-1",
+            authorId: "author-1",
+            title: "산책 돌봄 요청",
+            type: PostType.CARE_REQUEST,
+            scope: "LOCAL",
+            status: PostStatus.ACTIVE,
+            neighborhoodId: "neighborhood-1",
+            careRequest: {
+              id: "care-1",
+              status: CareRequestStatus.OPEN,
+            },
+          }),
+        },
+        userNeighborhood: {
+          findFirst: vi.fn().mockResolvedValue({ neighborhoodId: "neighborhood-1" }),
+        },
+        careApplication: {
+          findFirst: vi.fn().mockResolvedValue(null),
+          create: vi.fn().mockResolvedValue({
+            id: "application-1",
+            careRequestId: "care-1",
+            applicantId: "applicant-1",
+            message: "지원합니다",
+            status: CareApplicationStatus.PENDING,
+            applicant: { id: "applicant-1", nickname: "지원자", image: null },
+          }),
+        },
+      } as never),
+    );
+
+    const result = await createCareApplication({
+      postId: "post-1",
+      applicantId: "applicant-1",
+      input: { message: " 지원합니다 " },
+    });
+
+    expect(result).toMatchObject({
+      id: "application-1",
+      status: CareApplicationStatus.PENDING,
+      message: "지원합니다",
+    });
+    expect(mockNotifyCareApplicationCreated).toHaveBeenCalledWith(
+      expect.objectContaining({
+        recipientUserId: "author-1",
+        actorId: "applicant-1",
+        applicationId: "application-1",
+      }),
+    );
+  });
+
+  it("blocks duplicate care applications", async () => {
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: "applicant-1",
+      role: UserRole.USER,
+      createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    });
+    mockPrisma.$transaction.mockImplementation(async (callback) =>
+      callback({
+        post: {
+          findUnique: vi.fn().mockResolvedValue({
+            id: "post-1",
+            authorId: "author-1",
+            title: "산책 돌봄 요청",
+            type: PostType.CARE_REQUEST,
+            scope: "LOCAL",
+            status: PostStatus.ACTIVE,
+            neighborhoodId: "neighborhood-1",
+            careRequest: {
+              id: "care-1",
+              status: CareRequestStatus.OPEN,
+            },
+          }),
+        },
+        userNeighborhood: {
+          findFirst: vi.fn().mockResolvedValue({ neighborhoodId: "neighborhood-1" }),
+        },
+        careApplication: {
+          findFirst: vi.fn().mockResolvedValue({ id: "application-1" }),
+          create: vi.fn(),
+        },
+      } as never),
+    );
+
+    await expect(
+      createCareApplication({
+        postId: "post-1",
+        applicantId: "applicant-1",
+        input: { message: "지원합니다" },
+      }),
+    ).rejects.toMatchObject({
+      code: "CARE_APPLICATION_ALREADY_EXISTS",
+      status: 409,
+    });
+  });
+
+  it("blocks support messages with contact signals for new users", async () => {
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: "applicant-1",
+      role: UserRole.USER,
+      createdAt: new Date(),
+    });
+
+    await expect(
+      createCareApplication({
+        postId: "post-1",
+        applicantId: "applicant-1",
+        input: { message: "010-1234-5678로 연락주세요" },
+      }),
+    ).rejects.toMatchObject({
+      code: "CONTACT_RESTRICTED_FOR_NEW_USER",
+      status: 403,
+    });
+    expect(mockPrisma.$transaction).not.toHaveBeenCalled();
+  });
+
+  it("blocks applications to already matched care requests", async () => {
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: "applicant-1",
+      role: UserRole.USER,
+      createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    });
+    mockPrisma.$transaction.mockImplementation(async (callback) =>
+      callback({
+        post: {
+          findUnique: vi.fn().mockResolvedValue({
+            id: "post-1",
+            authorId: "author-1",
+            title: "산책 돌봄 요청",
+            type: PostType.CARE_REQUEST,
+            scope: "LOCAL",
+            status: PostStatus.ACTIVE,
+            neighborhoodId: "neighborhood-1",
+            careRequest: {
+              id: "care-1",
+              status: CareRequestStatus.MATCHED,
+            },
+          }),
+        },
+      } as never),
+    );
+
+    await expect(
+      createCareApplication({
+        postId: "post-1",
+        applicantId: "applicant-1",
+        input: { message: "지원합니다" },
+      }),
+    ).rejects.toMatchObject({
+      code: "CARE_REQUEST_NOT_OPEN",
+      status: 400,
+    });
+  });
+
+  it("blocks applications across a user block relation", async () => {
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: "applicant-1",
+      role: UserRole.USER,
+      createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    });
+    mockPrisma.userBlock.findFirst.mockResolvedValue({ id: "block-1" });
+    mockPrisma.$transaction.mockImplementation(async (callback) =>
+      callback({
+        post: {
+          findUnique: vi.fn().mockResolvedValue({
+            id: "post-1",
+            authorId: "author-1",
+            title: "산책 돌봄 요청",
+            type: PostType.CARE_REQUEST,
+            scope: "LOCAL",
+            status: PostStatus.ACTIVE,
+            neighborhoodId: "neighborhood-1",
+            careRequest: {
+              id: "care-1",
+              status: CareRequestStatus.OPEN,
+            },
+          }),
+        },
+        userNeighborhood: {
+          findFirst: vi.fn().mockResolvedValue({ neighborhoodId: "neighborhood-1" }),
+        },
+        careApplication: {
+          findFirst: vi.fn().mockResolvedValue(null),
+          create: vi.fn(),
+        },
+      } as never),
+    );
+
+    await expect(
+      createCareApplication({
+        postId: "post-1",
+        applicantId: "applicant-1",
+        input: { message: "지원합니다" },
+      }),
+    ).rejects.toMatchObject({
+      code: "USER_BLOCK_RELATION",
+      status: 403,
+    });
+  });
+
+  it("accepts a pending care application and matches the care request", async () => {
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: "author-1",
+      role: UserRole.USER,
+    });
+    const careRequestUpdate = vi.fn().mockResolvedValue({ status: CareRequestStatus.MATCHED });
+    const applicationUpdate = vi.fn().mockResolvedValue({
+      id: "application-1",
+      applicantId: "applicant-1",
+      status: CareApplicationStatus.ACCEPTED,
+      applicant: { id: "applicant-1", nickname: "지원자", image: null },
+    });
+    const applicationUpdateMany = vi.fn().mockResolvedValue({ count: 2 });
+    mockPrisma.$transaction.mockImplementation(async (callback) =>
+      callback({
+        careApplication: {
+          findUnique: vi.fn().mockResolvedValue({
+            id: "application-1",
+            applicantId: "applicant-1",
+            message: null,
+            status: CareApplicationStatus.PENDING,
+            careRequestId: "care-1",
+            careRequest: {
+              id: "care-1",
+              status: CareRequestStatus.OPEN,
+              post: {
+                id: "post-1",
+                title: "산책 돌봄 요청",
+                authorId: "author-1",
+                status: PostStatus.ACTIVE,
+                type: PostType.CARE_REQUEST,
+              },
+            },
+          }),
+          update: applicationUpdate,
+          updateMany: applicationUpdateMany,
+        },
+        careRequest: {
+          update: careRequestUpdate,
+        },
+      } as never),
+    );
+
+    const result = await decideCareApplication({
+      applicationId: "application-1",
+      actorId: "author-1",
+      input: { status: CareApplicationStatus.ACCEPTED },
+    });
+
+    expect(result.status).toBe(CareApplicationStatus.ACCEPTED);
+    expect(careRequestUpdate).toHaveBeenCalledWith({
+      where: { id: "care-1" },
+      data: { status: CareRequestStatus.MATCHED },
+    });
+    expect(applicationUpdateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ status: CareApplicationStatus.DECLINED }),
+      }),
+    );
+    expect(mockNotifyCareApplicationDecision).toHaveBeenCalledWith(
+      expect.objectContaining({
+        recipientUserId: "applicant-1",
+        status: CareApplicationStatus.ACCEPTED,
       }),
     );
   });

@@ -2,7 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
-import { CareRequestStatus, MarketStatus, PostStatus, PostType } from "@prisma/client";
+import {
+  CareApplicationStatus,
+  CareRequestStatus,
+  MarketStatus,
+  PostStatus,
+  PostType,
+} from "@prisma/client";
 
 import { BackToFeedButton } from "@/components/posts/back-to-feed-button";
 import { PostBoardLinkChip } from "@/components/posts/post-board-link-chip";
@@ -40,6 +46,9 @@ import { isReportablePostType } from "@/lib/post-type-groups";
 import { toAbsoluteUrl } from "@/lib/site-url";
 import { resolveUserDisplayName } from "@/lib/user-display";
 import {
+  cancelCareApplicationAction,
+  createCareApplicationAction,
+  decideCareApplicationAction,
   updateCareRequestStatusAction,
   updateMarketListingStatusAction,
 } from "@/server/actions/post";
@@ -137,6 +146,7 @@ type PostDetailItem = {
     status?: string | null;
   } | null;
   careRequest?: {
+    id?: string | null;
     careType?: string | null;
     startsAt?: string | Date | null;
     endsAt?: string | Date | null;
@@ -147,6 +157,15 @@ type PostDetailItem = {
     isUrgent?: boolean | null;
     status?: string | null;
   } | null;
+  careApplications?: Array<{
+    id: string;
+    applicantId: string;
+    message: string | null;
+    status: CareApplicationStatus;
+    decidedAt?: string | Date | null;
+    createdAt: string | Date;
+    applicant: { id: string; nickname: string | null; image?: string | null };
+  }>;
   renderedContentHtml?: string | null;
   renderedContentText?: string | null;
 };
@@ -324,6 +343,13 @@ const careStatusOptions: CareRequestStatus[] = [
 
 const authorCareStatusOptions: CareRequestStatus[] = [CareRequestStatus.CANCELLED];
 
+const careApplicationStatusLabel: Record<CareApplicationStatus, string> = {
+  PENDING: "대기",
+  ACCEPTED: "수락",
+  DECLINED: "거절",
+  CANCELLED: "취소",
+};
+
 function ensureDate(value: unknown) {
   if (value instanceof Date) return value;
   if (typeof value === "string") {
@@ -345,8 +371,11 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
   const [relationMessage, setRelationMessage] = useState<string | null>(null);
   const [marketStatusMessage, setMarketStatusMessage] = useState<string | null>(null);
   const [careStatusMessage, setCareStatusMessage] = useState<string | null>(null);
+  const [careApplicationMessage, setCareApplicationMessage] = useState<string | null>(null);
+  const [careApplicationInput, setCareApplicationInput] = useState("");
   const [isMarketStatusPending, startMarketStatusTransition] = useTransition();
   const [isCareStatusPending, startCareStatusTransition] = useTransition();
+  const [isCareApplicationPending, startCareApplicationTransition] = useTransition();
   const [loadVersion, setLoadVersion] = useState(0);
   const [commentLoadState, setCommentLoadState] = useState<PostCommentPrefetchState>({
     status: "idle",
@@ -532,6 +561,70 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
     });
   };
 
+  const handleCreateCareApplication = () => {
+    if (!postId) {
+      return;
+    }
+
+    setCareApplicationMessage(null);
+    startCareApplicationTransition(async () => {
+      const result = await createCareApplicationAction(postId, {
+        message: careApplicationInput,
+      });
+      if (!result.ok) {
+        setCareApplicationMessage(result.message);
+        return;
+      }
+
+      setCareApplicationInput("");
+      setCareApplicationMessage("돌봄 지원이 등록되었습니다.");
+      setLoadVersion((current) => current + 1);
+    });
+  };
+
+  const handleCancelCareApplication = (applicationId: string) => {
+    if (!postId) {
+      return;
+    }
+
+    setCareApplicationMessage(null);
+    startCareApplicationTransition(async () => {
+      const result = await cancelCareApplicationAction(postId, applicationId);
+      if (!result.ok) {
+        setCareApplicationMessage(result.message);
+        return;
+      }
+
+      setCareApplicationMessage("돌봄 지원이 취소되었습니다.");
+      setLoadVersion((current) => current + 1);
+    });
+  };
+
+  const handleDecideCareApplication = (
+    applicationId: string,
+    status: "ACCEPTED" | "DECLINED",
+  ) => {
+    if (!postId) {
+      return;
+    }
+
+    setCareApplicationMessage(null);
+    startCareApplicationTransition(async () => {
+      const result = await decideCareApplicationAction(postId, applicationId, status);
+      if (!result.ok) {
+        setCareApplicationMessage(result.message);
+        return;
+      }
+
+      setCareApplicationMessage(
+        status === CareApplicationStatus.ACCEPTED
+          ? "돌봄 지원을 수락했습니다."
+          : "돌봄 지원을 거절했습니다.",
+      );
+      setLoadVersion((current) => current + 1);
+    });
+  };
+
   useEffect(() => {
     let cancelled = false;
     const run = async () => {
@@ -543,6 +636,7 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
       setError(null);
       setData(null);
       setRelationMessage(null);
+      setCareApplicationMessage(null);
       setCommentLoadState({
         status: "loading",
         pageData: null,
@@ -688,6 +782,26 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
     post?.status !== PostStatus.DELETED;
   const canManageCareStatus =
     hasLoadedPost &&
+    Boolean(post?.careRequest) &&
+    Boolean(viewerId) &&
+    (isAuthor || canModerate) &&
+    post?.status !== PostStatus.DELETED;
+  const careApplications = post?.careApplications ?? [];
+  const ownCareApplication = viewerId
+    ? careApplications.find((application) => application.applicantId === viewerId) ?? null
+    : null;
+  const canApplyCareRequest =
+    hasLoadedPost &&
+    post?.type === PostType.CARE_REQUEST &&
+    Boolean(post?.careRequest) &&
+    post?.careRequest?.status === CareRequestStatus.OPEN &&
+    canInteract &&
+    !isAuthor &&
+    canInteractWithPostOwner &&
+    !ownCareApplication;
+  const canManageCareApplications =
+    hasLoadedPost &&
+    post?.type === PostType.CARE_REQUEST &&
     Boolean(post?.careRequest) &&
     Boolean(viewerId) &&
     (isAuthor || canModerate) &&
@@ -1151,6 +1265,124 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
                   <p className="mt-2 text-xs text-[#4b765f]">{careStatusMessage}</p>
                 ) : null}
               </div>
+            ) : null}
+            {canApplyCareRequest ? (
+              <div className="col-span-full mt-1 rounded-lg border border-[#cfe9dc] bg-white p-3">
+                <p className="text-xs font-semibold text-[#21543d]">돌봄 지원</p>
+                <textarea
+                  value={careApplicationInput}
+                  onChange={(event) => setCareApplicationInput(event.target.value)}
+                  rows={3}
+                  maxLength={500}
+                  className="mt-2 w-full rounded-md border border-[#b5dcc9] bg-white px-3 py-2 text-sm text-[#20362b] outline-none transition focus:border-[#2f7b58] focus:ring-2 focus:ring-[#b5dcc9]"
+                  placeholder="요청자에게 전달할 메시지를 입력하세요."
+                />
+                <div className="mt-2 flex items-center justify-between gap-3">
+                  <span className="text-xs text-[#6a7f73]">
+                    연락처 공유는 정책에 따라 제한될 수 있습니다.
+                  </span>
+                  <button
+                    type="button"
+                    className="rounded-md border border-[#2f7b58] bg-[#2f7b58] px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-[#246145] disabled:cursor-not-allowed disabled:opacity-60"
+                    disabled={isCareApplicationPending}
+                    onClick={handleCreateCareApplication}
+                  >
+                    지원하기
+                  </button>
+                </div>
+              </div>
+            ) : null}
+            {ownCareApplication ? (
+              <div className="col-span-full mt-1 rounded-lg border border-[#dce7f6] bg-[#f8fbff] p-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-xs font-semibold text-[#315b9a]">
+                    내 지원 상태: {careApplicationStatusLabel[ownCareApplication.status] ?? ownCareApplication.status}
+                  </p>
+                  {ownCareApplication.status === CareApplicationStatus.PENDING ? (
+                    <button
+                      type="button"
+                      className="rounded-md border border-[#c7d8ef] bg-white px-3 py-1.5 text-xs font-semibold text-[#315b9a] transition hover:border-[#9dbbe6] hover:bg-[#eef5ff] disabled:cursor-not-allowed disabled:opacity-60"
+                      disabled={isCareApplicationPending}
+                      onClick={() => handleCancelCareApplication(ownCareApplication.id)}
+                    >
+                      지원 취소
+                    </button>
+                  ) : null}
+                </div>
+                {ownCareApplication.message ? (
+                  <p className="mt-2 whitespace-pre-wrap text-xs text-[#5d779e]">
+                    {ownCareApplication.message}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
+            {canManageCareApplications ? (
+              <div className="col-span-full mt-1 rounded-lg border border-[#e2e8f0] bg-white p-3">
+                <p className="text-xs font-semibold text-[#2f3b4c]">지원자 관리</p>
+                {careApplications.length > 0 ? (
+                  <div className="mt-2 flex flex-col gap-2">
+                    {careApplications.map((application) => (
+                      <div
+                        key={application.id}
+                        className="rounded-md border border-[#e2e8f0] bg-[#fbfcfe] p-3"
+                      >
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div>
+                            <p className="text-sm font-semibold text-[#253449]">
+                              {resolveUserDisplayName(application.applicant.nickname)}
+                            </p>
+                            <p className="mt-0.5 text-xs text-[#66758a]">
+                              {careApplicationStatusLabel[application.status] ?? application.status}
+                            </p>
+                          </div>
+                          {application.status === CareApplicationStatus.PENDING ? (
+                            <div className="flex gap-2">
+                              <button
+                                type="button"
+                                className="rounded-md border border-[#2f7b58] bg-[#2f7b58] px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-[#246145] disabled:cursor-not-allowed disabled:opacity-60"
+                                disabled={isCareApplicationPending}
+                                onClick={() =>
+                                  handleDecideCareApplication(
+                                    application.id,
+                                    CareApplicationStatus.ACCEPTED,
+                                  )
+                                }
+                              >
+                                수락
+                              </button>
+                              <button
+                                type="button"
+                                className="rounded-md border border-[#d5dae3] bg-white px-3 py-1.5 text-xs font-semibold text-[#4f5f75] transition hover:bg-[#f1f4f8] disabled:cursor-not-allowed disabled:opacity-60"
+                                disabled={isCareApplicationPending}
+                                onClick={() =>
+                                  handleDecideCareApplication(
+                                    application.id,
+                                    CareApplicationStatus.DECLINED,
+                                  )
+                                }
+                              >
+                                거절
+                              </button>
+                            </div>
+                          ) : null}
+                        </div>
+                        {application.message ? (
+                          <p className="mt-2 whitespace-pre-wrap text-xs text-[#4f5f75]">
+                            {application.message}
+                          </p>
+                        ) : null}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="mt-2 text-xs text-[#66758a]">아직 지원자가 없습니다.</p>
+                )}
+              </div>
+            ) : null}
+            {careApplicationMessage ? (
+              <p className="col-span-full mt-1 text-xs text-[#4b765f]">
+                {careApplicationMessage}
+              </p>
             ) : null}
           </PostDetailInfoSection>
         ) : null}

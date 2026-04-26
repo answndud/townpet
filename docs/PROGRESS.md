@@ -9,12 +9,9 @@
 - 개인화/광고 운영 판단 기준, 관리자 진단 UX, 광고/추천 정책 분리, 품종 라운지 write gate 점검을 완료했다
 - 운영 evidence runner, Search Quality Phase 2, Market State Machine preflight/M1/M2를 완료했다
 - Social Dev Onboarding Smoke 안정화와 Launch Gap 다음 후보 재평가를 완료했다
-- Care Request Templates preflight를 완료했다
-- Care Request M1 구조화 요청 생성/조회를 완료했다
-- Care Request M2 상태 전환/지원 흐름 preflight를 완료했다
-- Care Request M2 상태 전환 액션을 완료했다
-- Care Request M3 지원/문의 흐름 preflight를 완료했다
-- 다음 작업: Care Application M3 지원 생성/관리
+- Care Request Templates preflight, M1 구조화 요청, M2 상태 전환, M3 preflight를 완료했다
+- Care Application M3 지원 생성/관리를 완료했다
+- 다음 작업: Care Request M4 수행 체크리스트 preflight
 
 ## 열린 blocker
 - 없음. `test:e2e:smoke` social-dev 온보딩 blocker는 callback side effect 차단과 온보딩 대기 안정화로 해결했고 smoke 통과를 확인했다.
@@ -55,12 +52,18 @@
   - 결정: M3는 별도 `CareApplication` 모델로 구현하고 댓글은 일반 문의/대화 표면으로 유지한다.
   - 권한: 로그인 지원자만 가능, 작성자 본인/게스트/제재 유저/차단 관계/중복 지원/이미 매칭된 요청은 차단한다.
   - 범위: 지원 생성/취소/승인/거절과 지원 생성/결정 알림까지만 포함하고, 수행 체크리스트/후기/노쇼는 이후로 분리한다.
+- Care Application M3 지원 생성/관리:
+  - 추가: `CareApplication`, `CareApplicationStatus`, 지원 생성/결정 notification type과 migration을 추가했다.
+  - 연결: validation, service/action, 회원 상세 UI, 상세 API 지원 목록 조회를 연결했다.
+  - 권한: 지원자는 본인 지원 생성/취소만 가능하고, 작성자/운영자는 대기 지원을 수락/거절한다. 수락 시 요청 상태는 `MATCHED`가 되고 다른 대기 지원은 거절된다.
+  - 차단: 작성자 self-apply, 차단 관계, 중복 지원, 모집 종료 요청, 연락처/금칙어 메시지를 서비스에서 막는다.
+  - 통과: prisma generate/migrate deploy, targeted unit, `typecheck`, `lint`.
 - 이전 상세 검증은 [COMPLETED.md](./COMPLETED.md)에 보관했다.
 
 ## 다음 액션
-1. `CareApplication`, `CareApplicationStatus`, notification type/schema migration을 추가한다.
-2. 지원 생성/취소/승인/거절 service/action과 detail UI를 연결한다.
-3. 중복 지원, 작성자 self-apply, 차단 관계, 연락처, 이미 매칭된 요청 테스트와 품질 게이트를 실행한다.
+1. M4 수행 체크리스트/시작/완료/취소/노쇼 상태가 필요한지 preflight한다.
+2. 분쟁/신고/관리자 큐 연결과 결제/보험 보류 경계를 확정한다.
+3. 구현 범위를 확정하면 schema/service/action/UI/tests 순서로 별도 커밋한다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)

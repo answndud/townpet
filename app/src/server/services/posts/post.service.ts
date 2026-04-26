@@ -1,4 +1,5 @@
 import {
+  CareApplicationStatus,
   GuestViolationCategory,
   CareRequestStatus,
   MarketStatus,
@@ -37,6 +38,8 @@ import {
 import {
   type AdoptionListingInput,
   type CareRequestInput,
+  careApplicationCreateSchema,
+  careApplicationDecisionSchema,
   type HospitalReviewInput,
   type MarketListingInput,
   type VolunteerRecruitmentInput,
@@ -77,7 +80,11 @@ import {
   registerGuestViolation,
 } from "@/server/services/guest-safety.service";
 import { getOrCreateGuestSystemUserId } from "@/server/services/guest-author.service";
-import { notifyReactionOnPost } from "@/server/services/notification.service";
+import {
+  notifyCareApplicationCreated,
+  notifyCareApplicationDecision,
+  notifyReactionOnPost,
+} from "@/server/services/notification.service";
 import { assertUserInteractionAllowed } from "@/server/services/sanction.service";
 import { ServiceError } from "@/server/services/service-error";
 import {
@@ -1671,6 +1678,23 @@ type UpdateCareRequestStatusParams = {
   input: unknown;
 };
 
+type CreateCareApplicationParams = {
+  postId: string;
+  applicantId: string;
+  input: unknown;
+};
+
+type CancelCareApplicationParams = {
+  applicationId: string;
+  actorId: string;
+};
+
+type DecideCareApplicationParams = {
+  applicationId: string;
+  actorId: string;
+  input: unknown;
+};
+
 const AUTHOR_MARKET_STATUS_TRANSITIONS: Record<MarketStatus, MarketStatus[]> = {
   [MarketStatus.AVAILABLE]: [
     MarketStatus.RESERVED,
@@ -1919,6 +1943,331 @@ export async function updateCareRequestStatus({
     status: updated.status,
     careRequest: updated,
   };
+}
+
+export async function createCareApplication({
+  postId,
+  applicantId,
+  input,
+}: CreateCareApplicationParams) {
+  const parsed = careApplicationCreateSchema.safeParse(input);
+  if (!parsed.success) {
+    throw new ServiceError("돌봄 지원 입력값이 올바르지 않습니다.", "INVALID_INPUT", 400);
+  }
+
+  const [applicant, newUserSafetyPolicy] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: applicantId },
+      select: { id: true, role: true, createdAt: true },
+    }),
+    getNewUserSafetyPolicy(),
+  ]);
+  if (!applicant) {
+    throw new ServiceError("사용자를 찾을 수 없습니다.", "USER_NOT_FOUND", 404);
+  }
+
+  await assertUserInteractionAllowed(applicant.id);
+
+  let message = parsed.data.message ?? null;
+  if (message) {
+    const contactPolicy = moderateContactContent({
+      text: message,
+      role: applicant.role,
+      accountCreatedAt: applicant.createdAt,
+      blockWindowHours: newUserSafetyPolicy.contactBlockWindowHours,
+    });
+    if (contactPolicy.blocked) {
+      throw new ServiceError(
+        contactPolicy.message ?? "연락처가 포함된 지원 메시지는 현재 계정으로 작성할 수 없습니다.",
+        "CONTACT_RESTRICTED_FOR_NEW_USER",
+        403,
+      );
+    }
+    message = contactPolicy.sanitizedText;
+
+    const forbiddenKeywords = await getForbiddenKeywords();
+    const matchedForbiddenKeywords = findMatchedForbiddenKeywords(message, forbiddenKeywords);
+    if (matchedForbiddenKeywords.length > 0) {
+      throw new ServiceError(
+        `금칙어가 포함되어 돌봄 지원을 저장할 수 없습니다. (${matchedForbiddenKeywords
+          .slice(0, 3)
+          .join(", ")})`,
+        "FORBIDDEN_KEYWORD_DETECTED",
+        400,
+      );
+    }
+  }
+
+  const result = await prisma.$transaction(async (tx) => {
+    const post = await tx.post.findUnique({
+      where: { id: postId },
+      select: {
+        id: true,
+        authorId: true,
+        title: true,
+        type: true,
+        scope: true,
+        status: true,
+        neighborhoodId: true,
+        careRequest: {
+          select: {
+            id: true,
+            status: true,
+          },
+        },
+      },
+    });
+
+    if (!post || post.status !== PostStatus.ACTIVE) {
+      throw new ServiceError("게시물을 찾을 수 없습니다.", "POST_NOT_FOUND", 404);
+    }
+
+    if (post.type !== PostType.CARE_REQUEST || !post.careRequest) {
+      throw new ServiceError("돌봄 요청 글을 찾을 수 없습니다.", "CARE_REQUEST_NOT_FOUND", 404);
+    }
+
+    if (post.authorId === applicantId) {
+      throw new ServiceError("내 돌봄 요청에는 지원할 수 없습니다.", "CARE_APPLICATION_SELF", 400);
+    }
+
+    if (post.careRequest.status !== CareRequestStatus.OPEN) {
+      throw new ServiceError("모집 중인 돌봄 요청에만 지원할 수 있습니다.", "CARE_REQUEST_NOT_OPEN", 400);
+    }
+
+    if (post.scope === PostScope.LOCAL) {
+      const primaryNeighborhood = await tx.userNeighborhood.findFirst({
+        where: { userId: applicantId, isPrimary: true },
+        select: { neighborhoodId: true },
+      });
+      if (!primaryNeighborhood) {
+        throw new ServiceError("대표 동네를 설정해 주세요.", "NEIGHBORHOOD_REQUIRED", 400);
+      }
+      if (!post.neighborhoodId || post.neighborhoodId !== primaryNeighborhood.neighborhoodId) {
+        throw new ServiceError("다른 동네 돌봄 요청에는 지원할 수 없습니다.", "FORBIDDEN", 403);
+      }
+    }
+
+    const existingApplication = await tx.careApplication.findFirst({
+      where: {
+        careRequestId: post.careRequest.id,
+        applicantId,
+      },
+      select: { id: true },
+    });
+    if (existingApplication) {
+      throw new ServiceError("이미 지원한 돌봄 요청입니다.", "CARE_APPLICATION_ALREADY_EXISTS", 409);
+    }
+
+    if (await hasBlockingRelation(applicantId, post.authorId)) {
+      throw new ServiceError("차단 관계에서는 돌봄 요청에 지원할 수 없습니다.", "USER_BLOCK_RELATION", 403);
+    }
+
+    const application = await tx.careApplication.create({
+      data: {
+        careRequestId: post.careRequest.id,
+        applicantId,
+        message,
+      },
+      include: {
+        applicant: { select: { id: true, nickname: true, image: true } },
+      },
+    });
+
+    return { application, post };
+  });
+
+  try {
+    await notifyCareApplicationCreated({
+      recipientUserId: result.post.authorId,
+      actorId: applicantId,
+      postId: result.post.id,
+      applicationId: result.application.id,
+      postTitle: result.post.title,
+      message: result.application.message,
+    });
+    notifyNotificationCacheChange([result.post.authorId]);
+  } catch (error) {
+    logger.warn("돌봄 지원 생성 알림에 실패했습니다.", {
+      postId,
+      applicantId,
+      error: serializeError(error),
+    });
+  }
+
+  notifyPostCacheChange();
+  return result.application;
+}
+
+export async function cancelCareApplication({
+  applicationId,
+  actorId,
+}: CancelCareApplicationParams) {
+  await assertUserInteractionAllowed(actorId);
+
+  const application = await prisma.careApplication.findUnique({
+    where: { id: applicationId },
+    select: {
+      id: true,
+      applicantId: true,
+      status: true,
+      careRequest: {
+        select: {
+          postId: true,
+          post: {
+            select: { id: true, status: true },
+          },
+        },
+      },
+    },
+  });
+
+  if (!application || application.careRequest.post.status === PostStatus.DELETED) {
+    throw new ServiceError("돌봄 지원을 찾을 수 없습니다.", "CARE_APPLICATION_NOT_FOUND", 404);
+  }
+  if (application.applicantId !== actorId) {
+    throw new ServiceError("돌봄 지원 취소 권한이 없습니다.", "FORBIDDEN", 403);
+  }
+  if (application.status !== CareApplicationStatus.PENDING) {
+    throw new ServiceError("대기 중인 돌봄 지원만 취소할 수 있습니다.", "INVALID_CARE_APPLICATION_STATUS", 400);
+  }
+
+  const updated = await prisma.careApplication.update({
+    where: { id: applicationId },
+    data: { status: CareApplicationStatus.CANCELLED },
+    include: {
+      applicant: { select: { id: true, nickname: true, image: true } },
+    },
+  });
+
+  notifyPostCacheChange();
+  return updated;
+}
+
+export async function decideCareApplication({
+  applicationId,
+  actorId,
+  input,
+}: DecideCareApplicationParams) {
+  const parsed = careApplicationDecisionSchema.safeParse(input);
+  if (!parsed.success) {
+    throw new ServiceError("돌봄 지원 결정 입력값이 올바르지 않습니다.", "INVALID_INPUT", 400);
+  }
+
+  const actor = await prisma.user.findUnique({
+    where: { id: actorId },
+    select: { id: true, role: true },
+  });
+  if (!actor) {
+    throw new ServiceError("사용자를 찾을 수 없습니다.", "USER_NOT_FOUND", 404);
+  }
+  if (actor.role === UserRole.USER) {
+    await assertUserInteractionAllowed(actor.id);
+  }
+
+  const nextStatus = parsed.data.status;
+  const result = await prisma.$transaction(async (tx) => {
+    const application = await tx.careApplication.findUnique({
+      where: { id: applicationId },
+      select: {
+        id: true,
+        applicantId: true,
+        message: true,
+        status: true,
+        careRequestId: true,
+        careRequest: {
+          select: {
+            id: true,
+            status: true,
+            post: {
+              select: {
+                id: true,
+                title: true,
+                authorId: true,
+                status: true,
+                type: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!application || application.careRequest.post.status === PostStatus.DELETED) {
+      throw new ServiceError("돌봄 지원을 찾을 수 없습니다.", "CARE_APPLICATION_NOT_FOUND", 404);
+    }
+
+    const isAuthor = application.careRequest.post.authorId === actor.id;
+    const isModerator = canModerateCareStatus(actor.role);
+    if (!isAuthor && !isModerator) {
+      throw new ServiceError("돌봄 지원 결정 권한이 없습니다.", "FORBIDDEN", 403);
+    }
+
+    if (application.status !== CareApplicationStatus.PENDING) {
+      throw new ServiceError("대기 중인 돌봄 지원만 결정할 수 있습니다.", "INVALID_CARE_APPLICATION_STATUS", 400);
+    }
+
+    if (
+      nextStatus === CareApplicationStatus.ACCEPTED &&
+      application.careRequest.status !== CareRequestStatus.OPEN
+    ) {
+      throw new ServiceError("모집 중인 돌봄 요청만 수락할 수 있습니다.", "CARE_REQUEST_NOT_OPEN", 400);
+    }
+
+    const now = new Date();
+    const updated = await tx.careApplication.update({
+      where: { id: application.id },
+      data: {
+        status: nextStatus,
+        decidedAt: now,
+        decidedBy: actor.id,
+      },
+      include: {
+        applicant: { select: { id: true, nickname: true, image: true } },
+      },
+    });
+
+    if (nextStatus === CareApplicationStatus.ACCEPTED) {
+      await tx.careRequest.update({
+        where: { id: application.careRequestId },
+        data: { status: CareRequestStatus.MATCHED },
+      });
+      await tx.careApplication.updateMany({
+        where: {
+          careRequestId: application.careRequestId,
+          id: { not: application.id },
+          status: CareApplicationStatus.PENDING,
+        },
+        data: {
+          status: CareApplicationStatus.DECLINED,
+          decidedAt: now,
+          decidedBy: actor.id,
+        },
+      });
+    }
+
+    return { application: updated, post: application.careRequest.post };
+  });
+
+  try {
+    await notifyCareApplicationDecision({
+      recipientUserId: result.application.applicantId,
+      actorId: actor.id,
+      postId: result.post.id,
+      applicationId: result.application.id,
+      postTitle: result.post.title,
+      status: nextStatus,
+    });
+    notifyNotificationCacheChange([result.application.applicantId]);
+  } catch (error) {
+    logger.warn("돌봄 지원 결정 알림에 실패했습니다.", {
+      applicationId,
+      actorId,
+      error: serializeError(error),
+    });
+  }
+
+  notifyPostCacheChange();
+  return result.application;
 }
 
 export async function deletePost({ postId, authorId }: DeletePostParams) {

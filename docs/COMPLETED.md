@@ -1455,3 +1455,39 @@
 - 결과:
   - 다음 작업은 `Care Application M3 지원 생성/관리`다.
   - 구현 범위는 `CareApplication` schema/migration, validation, service/action, detail UI, 지원 생성/취소/승인/거절, 지원 생성/결정 알림, failure-path tests다.
+
+### 2026-04-26 | Care Application M3 지원 생성/관리
+- 완료일: `2026-04-26`
+- 배경:
+  - Care Request M3 preflight에서 공개 댓글 기반 지원은 개인정보/상태/권한 경계가 약하다고 판단했다.
+  - 돌봄 요청 매칭에는 별도 지원 상태, 작성자 결정, 지원자 취소, 알림이 필요했다.
+- 변경내용:
+  - `CareApplication`, `CareApplicationStatus` schema와 migration을 추가했다.
+  - 지원 생성/결정 notification type과 `CARE_APPLICATION` entity type을 추가했다.
+  - `careApplicationCreateSchema`, `careApplicationDecisionSchema`를 추가했다.
+  - `createCareApplication`, `cancelCareApplication`, `decideCareApplication` service/action을 추가했다.
+  - 회원 상세 API는 작성자/운영자에게 전체 지원 목록, 지원자 본인에게 본인 지원만 내려주도록 제한했다.
+  - 상세 UI에서 지원 생성, 본인 지원 취소, 작성자/운영자 수락/거절을 연결했다.
+  - 수락 시 `CareRequest.status`는 `MATCHED`로 전환되고 다른 `PENDING` 지원은 `DECLINED`가 된다.
+- 코드문서:
+  - [app/prisma/schema.prisma](../app/prisma/schema.prisma)
+  - [app/prisma/migrations/20260426043000_add_care_applications_m3/migration.sql](../app/prisma/migrations/20260426043000_add_care_applications_m3/migration.sql)
+  - [app/src/lib/validations/posts/post.ts](../app/src/lib/validations/posts/post.ts)
+  - [app/src/server/services/posts/post.service.ts](../app/src/server/services/posts/post.service.ts)
+  - [app/src/server/actions/post.ts](../app/src/server/actions/post.ts)
+  - [app/src/server/queries/posts/post.queries.ts](../app/src/server/queries/posts/post.queries.ts)
+  - [app/src/server/services/notifications/notification.service.ts](../app/src/server/services/notifications/notification.service.ts)
+  - [app/src/app/api/posts/[id]/detail/route.ts](../app/src/app/api/posts/[id]/detail/route.ts)
+  - [app/src/components/posts/post-detail-client.tsx](../app/src/components/posts/post-detail-client.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app exec prisma generate` 통과
+  - `corepack pnpm -C app exec prisma migrate deploy` 통과
+  - `corepack pnpm -C app test -- src/lib/validations/post.test.ts src/server/actions/post.test.ts 'src/app/api/posts/[id]/detail/route.test.ts' src/server/services/post.service.test.ts` 통과
+  - `corepack pnpm -C app typecheck` 통과
+  - `corepack pnpm -C app lint` 통과
+  - `corepack pnpm -C app quality:check` 통과, 205 files / 1000 tests
+- 결과:
+  - 돌봄 요청 지원자는 별도 지원 워크플로우로 신청/취소할 수 있고, 작성자/운영자는 지원을 수락/거절할 수 있다.
+  - 다음 작업은 `Care Request M4 수행 체크리스트 preflight`다.

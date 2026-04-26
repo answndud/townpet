@@ -1,8 +1,16 @@
-import { CareRequestStatus, MarketStatus, PostScope, PostType } from "@prisma/client";
+import {
+  CareApplicationStatus,
+  CareRequestStatus,
+  MarketStatus,
+  PostScope,
+  PostType,
+} from "@prisma/client";
 import { describe, expect, it } from "vitest";
 
 import {
   adoptionListingSchema,
+  careApplicationCreateSchema,
+  careApplicationDecisionSchema,
   hospitalReviewSchema,
   marketListingStatusUpdateSchema,
   careRequestSchema,
@@ -374,5 +382,27 @@ describe("careRequestStatusUpdateSchema", () => {
 
   it("rejects invalid care request status updates", () => {
     expect(careRequestStatusUpdateSchema.safeParse({ status: "PENDING" }).success).toBe(false);
+  });
+});
+
+describe("care application schemas", () => {
+  it("accepts trimmed optional support messages", () => {
+    const result = careApplicationCreateSchema.safeParse({ message: "  지원합니다  " });
+
+    expect(result.success).toBe(true);
+    expect(result.data?.message).toBe("지원합니다");
+  });
+
+  it("accepts only accepted or declined decisions", () => {
+    expect(
+      careApplicationDecisionSchema.safeParse({
+        status: CareApplicationStatus.ACCEPTED,
+      }).success,
+    ).toBe(true);
+    expect(
+      careApplicationDecisionSchema.safeParse({
+        status: CareApplicationStatus.CANCELLED,
+      }).success,
+    ).toBe(false);
   });
 });
