@@ -1,5 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { CareFeedbackIssueType, CareFeedbackOutcome } from "@prisma/client";
+import {
+  CareFeedbackIssueType,
+  CareFeedbackOutcome,
+  CareFeedbackReviewStatus,
+} from "@prisma/client";
 
 import {
   CARE_FEEDBACK_QUEUE_PAGE_SIZE,
@@ -62,6 +66,7 @@ describe("care feedback queries", () => {
     await listCareFeedbackIssueQueue({
       issueType: CareFeedbackIssueType.SAFETY,
       outcome: CareFeedbackOutcome.ISSUE,
+      reviewStatus: CareFeedbackReviewStatus.PENDING,
     });
 
     expect(mockPrisma.careCompletionFeedback.findMany).toHaveBeenCalledWith(
@@ -69,6 +74,7 @@ describe("care feedback queries", () => {
         where: {
           issueType: CareFeedbackIssueType.SAFETY,
           outcome: CareFeedbackOutcome.ISSUE,
+          reviewStatus: CareFeedbackReviewStatus.PENDING,
         },
       }),
     );
@@ -81,7 +87,11 @@ describe("care feedback queries", () => {
         { issueType: CareFeedbackIssueType.NO_SHOW, _count: { _all: 2 } },
         { issueType: CareFeedbackIssueType.SAFETY, _count: { _all: 1 } },
       ])
-      .mockResolvedValueOnce([{ outcome: CareFeedbackOutcome.ISSUE, _count: { _all: 3 } }]);
+      .mockResolvedValueOnce([{ outcome: CareFeedbackOutcome.ISSUE, _count: { _all: 3 } }])
+      .mockResolvedValueOnce([
+        { reviewStatus: CareFeedbackReviewStatus.PENDING, _count: { _all: 2 } },
+        { reviewStatus: CareFeedbackReviewStatus.REVIEWING, _count: { _all: 1 } },
+      ]);
 
     const stats = await getCareFeedbackIssueStats();
 
@@ -91,5 +101,8 @@ describe("care feedback queries", () => {
     expect(stats.issueCounts[CareFeedbackIssueType.NONE]).toBe(0);
     expect(stats.outcomeCounts[CareFeedbackOutcome.ISSUE]).toBe(3);
     expect(stats.outcomeCounts[CareFeedbackOutcome.POSITIVE]).toBe(0);
+    expect(stats.reviewStatusCounts[CareFeedbackReviewStatus.PENDING]).toBe(2);
+    expect(stats.reviewStatusCounts[CareFeedbackReviewStatus.REVIEWING]).toBe(1);
+    expect(stats.reviewStatusCounts[CareFeedbackReviewStatus.RESOLVED]).toBe(0);
   });
 });

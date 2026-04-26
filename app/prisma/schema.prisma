@@ -51,6 +51,7 @@ model User {
   careApplications          CareApplication[]             @relation("CareApplicationApplicant")
   careApplicationDecisions   CareApplication[]             @relation("CareApplicationDecider")
   careCompletionFeedbacks   CareCompletionFeedback[]      @relation("CareCompletionFeedbackAuthor")
+  careFeedbackReviews       CareCompletionFeedback[]      @relation("CareCompletionFeedbackReviewer")
   uploadAssets              UploadAsset[]
   createdAt                 DateTime                      @default(now())
   updatedAt                 DateTime                      @updatedAt
@@ -608,11 +609,16 @@ model CareCompletionFeedback {
   authorRole        CareFeedbackAuthorRole
   outcome           CareFeedbackOutcome
   issueType         CareFeedbackIssueType     @default(NONE)
+  reviewStatus      CareFeedbackReviewStatus  @default(PENDING)
+  reviewNote        String?                   @db.Text
+  reviewedAt        DateTime?
+  reviewedBy        String?
   wouldRepeat       Boolean?
   comment           String?                   @db.Text
   careRequest       CareRequest               @relation(fields: [careRequestId], references: [id], onDelete: Cascade)
   careApplication   CareApplication?          @relation(fields: [careApplicationId], references: [id], onDelete: SetNull)
   author            User                      @relation("CareCompletionFeedbackAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  reviewer          User?                     @relation("CareCompletionFeedbackReviewer", fields: [reviewedBy], references: [id], onDelete: SetNull)
   createdAt         DateTime                  @default(now())
   updatedAt         DateTime                  @updatedAt
 
@@ -620,7 +626,9 @@ model CareCompletionFeedback {
   @@index([careRequestId, authorRole])
   @@index([careApplicationId])
   @@index([issueType, createdAt(sort: Desc)])
+  @@index([reviewStatus, createdAt(sort: Desc)])
   @@index([authorId, createdAt(sort: Desc)])
+  @@index([reviewedBy, reviewedAt])
 }
 
 enum CareFeedbackAuthorRole {
@@ -641,6 +649,13 @@ enum CareFeedbackIssueType {
   PAYMENT_OR_FRAUD
   PRIVACY
   OTHER
+}
+
+enum CareFeedbackReviewStatus {
+  PENDING
+  REVIEWING
+  RESOLVED
+  DISMISSED
 }
 
 model AdoptionListing {
@@ -945,6 +960,7 @@ enum ModerationActionType {
   AUTH_AUDIT_EXPORTED
   MARKET_STATUS_CHANGED
   CARE_STATUS_CHANGED
+  CARE_FEEDBACK_REVIEWED
 }
 
 model ModerationActionLog {

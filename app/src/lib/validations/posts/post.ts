@@ -3,6 +3,7 @@ import {
   AnimalSex,
   CareFeedbackIssueType,
   CareFeedbackOutcome,
+  CareFeedbackReviewStatus,
   CareApplicationStatus,
   CareRequestStatus,
   CareType,
@@ -191,6 +192,11 @@ export const careCompletionFeedbackSchema = z
       });
     }
   });
+
+export const careFeedbackReviewUpdateSchema = z.object({
+  reviewStatus: z.nativeEnum(CareFeedbackReviewStatus),
+  reviewNote: optionalTrimmedString({ max: 1000 }),
+});
 
 export const postCreateSchema = z.object({
   title: trimmedRequiredString({ max: POST_TITLE_MAX_LENGTH }),
@@ -407,6 +413,7 @@ export type CareRequestStatusUpdateInput = z.infer<typeof careRequestStatusUpdat
 export type CareApplicationCreateInput = z.infer<typeof careApplicationCreateSchema>;
 export type CareApplicationDecisionInput = z.infer<typeof careApplicationDecisionSchema>;
 export type CareCompletionFeedbackInput = z.infer<typeof careCompletionFeedbackSchema>;
+export type CareFeedbackReviewUpdateInput = z.infer<typeof careFeedbackReviewUpdateSchema>;
 export type PostUpdateInput = z.infer<typeof postUpdateSchema>;
 
 // Normalize parsed list input to product-facing naming.

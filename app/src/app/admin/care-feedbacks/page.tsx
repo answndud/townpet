@@ -2,9 +2,11 @@ import Link from "next/link";
 import {
   CareFeedbackIssueType,
   CareFeedbackOutcome,
+  CareFeedbackReviewStatus,
   CareRequestStatus,
 } from "@prisma/client";
 
+import { updateCareFeedbackReviewAction } from "@/server/actions/post";
 import { AdminSectionNav } from "@/components/admin/admin-section-nav";
 import { EmptyState } from "@/components/ui/empty-state";
 import { buildPaginationWindow, parsePositivePage } from "@/lib/pagination";
@@ -15,7 +17,12 @@ import {
 } from "@/server/queries/care-feedback.queries";
 
 type CareFeedbacksPageProps = {
-  searchParams?: Promise<{ issueType?: string; outcome?: string; page?: string }>;
+  searchParams?: Promise<{
+    issueType?: string;
+    outcome?: string;
+    reviewStatus?: string;
+    page?: string;
+  }>;
 };
 
 const issueTypeLabels: Record<CareFeedbackIssueType, string> = {
@@ -31,6 +38,13 @@ const outcomeLabels: Record<CareFeedbackOutcome, string> = {
   POSITIVE: "좋았어요",
   NEUTRAL: "보통이에요",
   ISSUE: "확인이 필요해요",
+};
+
+const reviewStatusLabels: Record<CareFeedbackReviewStatus, string> = {
+  PENDING: "대기",
+  REVIEWING: "검토중",
+  RESOLVED: "해결",
+  DISMISSED: "종료",
 };
 
 const careRequestStatusLabels: Record<CareRequestStatus, string> = {
@@ -54,6 +68,7 @@ export default async function CareFeedbacksPage({ searchParams }: CareFeedbacksP
   const resolvedParams = (await searchParams) ?? {};
   const issueTypeParam = resolvedParams.issueType ?? "ALL";
   const outcomeParam = resolvedParams.outcome ?? "ALL";
+  const reviewStatusParam = resolvedParams.reviewStatus ?? "ALL";
   const issueType =
     issueTypeParam === "ALL" ||
     Object.values(CareFeedbackIssueType).includes(issueTypeParam as CareFeedbackIssueType)
@@ -64,16 +79,22 @@ export default async function CareFeedbacksPage({ searchParams }: CareFeedbacksP
     Object.values(CareFeedbackOutcome).includes(outcomeParam as CareFeedbackOutcome)
       ? (outcomeParam as CareFeedbackOutcome | "ALL")
       : "ALL";
+  const reviewStatus =
+    reviewStatusParam === "ALL" ||
+    Object.values(CareFeedbackReviewStatus).includes(reviewStatusParam as CareFeedbackReviewStatus)
+      ? (reviewStatusParam as CareFeedbackReviewStatus | "ALL")
+      : "ALL";
   const currentPage = parsePositivePage(resolvedParams.page);
 
   const [feedbackPage, stats] = await Promise.all([
-    listCareFeedbackIssueQueue({ issueType, outcome, page: currentPage }),
+    listCareFeedbackIssueQueue({ issueType, outcome, reviewStatus, page: currentPage }),
     getCareFeedbackIssueStats(),
   ]);
 
   const buildLink = (
     nextIssueType: CareFeedbackIssueType | "ALL",
     nextOutcome: CareFeedbackOutcome | "ALL",
+    nextReviewStatus: CareFeedbackReviewStatus | "ALL",
     nextPage = 1,
   ) => {
     const params = new URLSearchParams();
@@ -82,6 +103,9 @@ export default async function CareFeedbacksPage({ searchParams }: CareFeedbacksP
     }
     if (nextOutcome !== "ALL") {
       params.set("outcome", nextOutcome);
+    }
+    if (nextReviewStatus !== "ALL") {
+      params.set("reviewStatus", nextReviewStatus);
     }
     if (nextPage > 1) {
       params.set("page", String(nextPage));
@@ -107,6 +131,12 @@ export default async function CareFeedbacksPage({ searchParams }: CareFeedbacksP
             <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
               <p className="text-[10px] uppercase tracking-[0.18em] text-amber-700">전체</p>
               <p className="mt-1 text-lg font-bold text-amber-900">{stats.totalCount}</p>
+            </div>
+            <div className="rounded-lg border border-[#d8e4f6] bg-white px-3 py-2">
+              <p className="text-[10px] uppercase tracking-[0.18em] text-[#5b78a1]">대기</p>
+              <p className="mt-1 text-lg font-bold text-[#10284a]">
+                {stats.reviewStatusCounts[CareFeedbackReviewStatus.PENDING]}
+              </p>
             </div>
             {[
               CareFeedbackIssueType.NO_SHOW,
@@ -143,7 +173,7 @@ export default async function CareFeedbacksPage({ searchParams }: CareFeedbacksP
             ].map((value) => (
               <Link
                 key={value}
-                href={buildLink(value as CareFeedbackIssueType | "ALL", outcome, 1)}
+                href={buildLink(value as CareFeedbackIssueType | "ALL", outcome, reviewStatus, 1)}
                 className={`inline-flex min-h-9 items-center rounded-lg border px-3 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8bb8ff] ${
                   issueType === value
                     ? "border-[#3567b5] bg-[#3567b5] text-white"
@@ -161,7 +191,7 @@ export default async function CareFeedbacksPage({ searchParams }: CareFeedbacksP
             {["ALL", ...Object.values(CareFeedbackOutcome)].map((value) => (
               <Link
                 key={value}
-                href={buildLink(issueType, value as CareFeedbackOutcome | "ALL", 1)}
+                href={buildLink(issueType, value as CareFeedbackOutcome | "ALL", reviewStatus, 1)}
                 className={`inline-flex min-h-9 items-center rounded-lg border px-3 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8bb8ff] ${
                   outcome === value
                     ? "border-[#3567b5] bg-[#3567b5] text-white"
@@ -169,6 +199,24 @@ export default async function CareFeedbacksPage({ searchParams }: CareFeedbacksP
                 }`}
               >
                 {value === "ALL" ? "전체" : outcomeLabels[value as CareFeedbackOutcome]}
+              </Link>
+            ))}
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-[10px] uppercase tracking-[0.24em] text-[#5b78a1]">
+              처리 상태
+            </span>
+            {["ALL", ...Object.values(CareFeedbackReviewStatus)].map((value) => (
+              <Link
+                key={value}
+                href={buildLink(issueType, outcome, value as CareFeedbackReviewStatus | "ALL", 1)}
+                className={`inline-flex min-h-9 items-center rounded-lg border px-3 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8bb8ff] ${
+                  reviewStatus === value
+                    ? "border-[#3567b5] bg-[#3567b5] text-white"
+                    : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
+                }`}
+              >
+                {value === "ALL" ? "전체" : reviewStatusLabels[value as CareFeedbackReviewStatus]}
               </Link>
             ))}
           </div>
@@ -182,7 +230,7 @@ export default async function CareFeedbacksPage({ searchParams }: CareFeedbacksP
           {feedbackPage.totalPages > 1 ? (
             <div className="flex flex-wrap items-center gap-1.5">
               <Link
-                href={buildLink(issueType, outcome, Math.max(1, feedbackPage.page - 1))}
+                href={buildLink(issueType, outcome, reviewStatus, Math.max(1, feedbackPage.page - 1))}
                 aria-disabled={feedbackPage.page <= 1}
                 className={`inline-flex items-center rounded-lg ${
                   feedbackPage.page <= 1 ? "tp-btn-disabled pointer-events-none" : "tp-btn-soft"
@@ -193,7 +241,7 @@ export default async function CareFeedbacksPage({ searchParams }: CareFeedbacksP
               {buildPaginationWindow(feedbackPage.page, feedbackPage.totalPages).map((pageNumber) => (
                 <Link
                   key={pageNumber}
-                  href={buildLink(issueType, outcome, pageNumber)}
+                  href={buildLink(issueType, outcome, reviewStatus, pageNumber)}
                   className={`inline-flex min-w-8 items-center justify-center rounded-lg ${
                     pageNumber === feedbackPage.page ? "tp-btn-primary" : "tp-btn-soft"
                   } tp-btn-xs transition`}
@@ -205,6 +253,7 @@ export default async function CareFeedbacksPage({ searchParams }: CareFeedbacksP
                 href={buildLink(
                   issueType,
                   outcome,
+                  reviewStatus,
                   Math.min(feedbackPage.totalPages, feedbackPage.page + 1),
                 )}
                 aria-disabled={feedbackPage.page >= feedbackPage.totalPages}
@@ -229,6 +278,7 @@ export default async function CareFeedbacksPage({ searchParams }: CareFeedbacksP
                     <th className="px-3 py-2.5">돌봄 요청</th>
                     <th className="px-3 py-2.5">이슈</th>
                     <th className="px-3 py-2.5">결과</th>
+                    <th className="px-3 py-2.5">처리</th>
                     <th className="px-3 py-2.5">작성자</th>
                     <th className="px-3 py-2.5">요청자/지원자</th>
                     <th className="px-3 py-2.5">메모</th>
@@ -256,6 +306,50 @@ export default async function CareFeedbacksPage({ searchParams }: CareFeedbacksP
                         </span>
                       </td>
                       <td className="px-3 py-3">{outcomeLabels[feedback.outcome]}</td>
+                      <td className="min-w-[260px] px-3 py-3">
+                        <form
+                          action={async (formData) => {
+                            "use server";
+                            await updateCareFeedbackReviewAction(feedback.id, {
+                              reviewStatus: formData.get("reviewStatus"),
+                              reviewNote: formData.get("reviewNote"),
+                            });
+                          }}
+                          className="flex flex-col gap-2"
+                        >
+                          <select
+                            name="reviewStatus"
+                            defaultValue={feedback.reviewStatus}
+                            className="min-h-9 rounded-lg border border-[#cbdcf5] bg-white px-2 text-xs text-[#163462]"
+                          >
+                            {Object.values(CareFeedbackReviewStatus).map((status) => (
+                              <option key={status} value={status}>
+                                {reviewStatusLabels[status]}
+                              </option>
+                            ))}
+                          </select>
+                          <textarea
+                            name="reviewNote"
+                            defaultValue={feedback.reviewNote ?? ""}
+                            maxLength={1000}
+                            rows={2}
+                            className="rounded-lg border border-[#cbdcf5] bg-white px-2 py-1 text-xs text-[#163462]"
+                            placeholder="운영자 메모"
+                          />
+                          <button type="submit" className="tp-btn-primary tp-btn-xs self-start rounded-lg">
+                            저장
+                          </button>
+                        </form>
+                        <p className="mt-2 text-[11px] text-[#6a7f9f]">
+                          {reviewStatusLabels[feedback.reviewStatus]} ·{" "}
+                          {formatDateTime(feedback.reviewedAt)}
+                        </p>
+                        {feedback.reviewer ? (
+                          <p className="mt-1 text-[11px] text-[#6a7f9f]">
+                            담당: {formatUserLabel(feedback.reviewer)}
+                          </p>
+                        ) : null}
+                      </td>
                       <td className="px-3 py-3">
                         <p className="font-semibold text-[#163462]">{formatUserLabel(feedback.author)}</p>
                         <p className="mt-1 text-[11px] text-[#6a7f9f]">{feedback.authorRole}</p>

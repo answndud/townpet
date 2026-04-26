@@ -10,6 +10,7 @@ describe("care demo seed summary", () => {
         requests: 3,
         applications: 2,
         feedbacks: 1,
+        pendingReviews: 1,
       }),
     ).toEqual({
       posts: 3,
@@ -17,6 +18,7 @@ describe("care demo seed summary", () => {
       applications: 2,
       feedbacks: 1,
       hasIssueQueueCase: true,
+      pendingReviews: 1,
     });
   });
 
@@ -27,6 +29,7 @@ describe("care demo seed summary", () => {
         requests: 1,
         applications: 0,
         feedbacks: 0,
+        pendingReviews: 0,
       }).hasIssueQueueCase,
     ).toBe(false);
   });

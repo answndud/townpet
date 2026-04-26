@@ -123,6 +123,12 @@ describe("ops overview queries", () => {
         NEUTRAL: 1,
         ISSUE: 3,
       },
+      reviewStatusCounts: {
+        PENDING: 2,
+        REVIEWING: 1,
+        RESOLVED: 1,
+        DISMISSED: 0,
+      },
     });
     mockGetFeedPersonalizationOverview.mockResolvedValue({
       days: 7,
