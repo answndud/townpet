@@ -184,3 +184,4 @@ Phase 2 기능은 아래 조건을 만족할 때만 동시에 2개 이상 병행
 - 2026-04-26 실행 결과: Care Request M12 운영 threshold preflight를 완료했다. 자동 조치 없이 `/admin/ops`에 `PENDING >= 3`, `PENDING + REVIEWING >= 5`, 고위험 issue 1건 이상 기준의 경고 copy를 추가하는 방향으로 확정했다.
 - 2026-04-26 실행 결과: Care Request M12 운영 threshold 구현을 완료했다. `/admin/ops`에서 돌봄 이슈 총량, 대기/검토중/해결/종료 count, `정상/확인 필요/우선 검토` badge와 threshold copy를 한 카드에서 확인할 수 있다.
 - 2026-04-26 실행 결과: Care Request M13 출시 준비 최종 정리를 완료했다. 케어 요청은 로컬 기능 기준 조건부 Go, 운영 배포 기준은 production smoke와 운영 secret 기반 strict health 확인 전 No-Go로 분리한다.
+- 2026-04-26 실행 결과: Care Request M14 production smoke preflight를 완료했다. 운영 secret/env, 원격 health/evidence 명령, Actions 입력값, 브라우저 smoke 경로, No-Go 중단 기준을 `돌봄_운영_런북.md`에 고정했다.

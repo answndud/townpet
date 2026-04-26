@@ -19,8 +19,8 @@
 - Care Request M8 출시 갭 정리를 완료했다
 - Care Request M9 운영 런북/데모 seed를 완료했다
 - Care Request M10 관리자 큐 처리 상태와 M11 모바일/빈 상태 polish를 완료했다
-- Care Request M12 운영 threshold와 M13 출시 준비 최종 정리를 완료했다
-- 다음 작업: Care Request M14 production smoke preflight
+- Care Request M12 운영 threshold, M13 출시 준비 정리, M14 production smoke preflight를 완료했다
+- 다음 작업: Care Request M15 운영 계정/데이터 smoke 준비
 
 ## 열린 blocker
 - 없음. `test:e2e:smoke` social-dev 온보딩 blocker는 callback side effect 차단과 온보딩 대기 안정화로 해결했고 smoke 통과를 확인했다.
@@ -58,13 +58,13 @@
   - 결정: 자동 조치 없이 `/admin/ops` 경고 copy와 count 표시만 추가한다.
   - 기준: `PENDING >= 3`, `PENDING + REVIEWING >= 5`, `SAFETY/PAYMENT_OR_FRAUD >= 1`.
 - Care Request M12 운영 threshold 구현: helper, Ops count/badge/copy, targeted Vitest, `typecheck`, `lint` 통과.
-- Care Request M13 출시 준비 최종 정리:
-  - 판단: 로컬 기능은 조건부 Go, 운영 배포는 production smoke/strict health 전 No-Go.
-  - 보류: 결제/보험/정산, 자동 제재/숨김, 증빙 업로드, 공개 평판 점수.
+- Care Request M13 출시 준비 최종 정리: 로컬 기능 조건부 Go, 운영 배포는 production smoke/strict health 전 No-Go.
+- Care Request M14 production smoke preflight:
+  - 추가: 필수 secret/env, 원격 health/evidence 명령, Actions 입력값, 브라우저 경로, No-Go 중단 기준.
 ## 다음 액션
-1. 원격 health와 strict env 확인에 필요한 secret/env를 목록화한다.
-2. 케어 요청 원격 smoke 경로와 계정 조건을 정리한다.
-3. production smoke 실행 전 No-Go 조건과 중단 기준을 문서화한다.
+1. 운영 관리자와 테스트 회원 계정 조건을 정리한다.
+2. production smoke용 케어 요청/피드백 데이터 생성 원칙을 정한다.
+3. smoke 후 정리와 감사 로그 확인 기준을 문서화한다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)
