@@ -1,5 +1,6 @@
 import {
   GuestViolationCategory,
+  CareRequestStatus,
   MarketStatus,
   ModerationActionType,
   ModerationTargetType,
@@ -41,6 +42,7 @@ import {
   type VolunteerRecruitmentInput,
   adoptionListingSchema,
   careRequestSchema,
+  careRequestStatusUpdateSchema,
   hospitalReviewSchema,
   marketListingSchema,
   marketListingStatusUpdateSchema,
@@ -1663,6 +1665,12 @@ type UpdateMarketListingStatusParams = {
   input: unknown;
 };
 
+type UpdateCareRequestStatusParams = {
+  postId: string;
+  actorId: string;
+  input: unknown;
+};
+
 const AUTHOR_MARKET_STATUS_TRANSITIONS: Record<MarketStatus, MarketStatus[]> = {
   [MarketStatus.AVAILABLE]: [
     MarketStatus.RESERVED,
@@ -1683,6 +1691,22 @@ function canAuthorTransitionMarketStatus(from: MarketStatus, to: MarketStatus) {
 }
 
 function canModerateMarketStatus(role: UserRole) {
+  return role === UserRole.ADMIN || role === UserRole.MODERATOR;
+}
+
+const AUTHOR_CARE_STATUS_TRANSITIONS: Record<CareRequestStatus, CareRequestStatus[]> = {
+  [CareRequestStatus.OPEN]: [CareRequestStatus.CANCELLED],
+  [CareRequestStatus.MATCHED]: [],
+  [CareRequestStatus.IN_PROGRESS]: [],
+  [CareRequestStatus.COMPLETED]: [],
+  [CareRequestStatus.CANCELLED]: [],
+};
+
+function canAuthorTransitionCareStatus(from: CareRequestStatus, to: CareRequestStatus) {
+  return AUTHOR_CARE_STATUS_TRANSITIONS[from]?.includes(to) ?? false;
+}
+
+function canModerateCareStatus(role: UserRole) {
   return role === UserRole.ADMIN || role === UserRole.MODERATOR;
 }
 
@@ -1787,6 +1811,113 @@ export async function updateMarketListingStatus({
     previousStatus,
     status: updated.status,
     marketListing: updated,
+  };
+}
+
+export async function updateCareRequestStatus({
+  postId,
+  actorId,
+  input,
+}: UpdateCareRequestStatusParams) {
+  const parsed = careRequestStatusUpdateSchema.safeParse(input);
+  if (!parsed.success) {
+    throw new ServiceError("돌봄 요청 상태 입력값이 올바르지 않습니다.", "INVALID_INPUT", 400);
+  }
+
+  const actor = await prisma.user.findUnique({
+    where: { id: actorId },
+    select: { id: true, role: true },
+  });
+  if (!actor) {
+    throw new ServiceError("사용자를 찾을 수 없습니다.", "USER_NOT_FOUND", 404);
+  }
+
+  if (actor.role === UserRole.USER) {
+    await assertUserInteractionAllowed(actor.id);
+  }
+
+  const existing = await prisma.post.findUnique({
+    where: { id: postId },
+    select: {
+      id: true,
+      authorId: true,
+      status: true,
+      type: true,
+      careRequest: {
+        select: {
+          id: true,
+          careType: true,
+          status: true,
+        },
+      },
+    },
+  });
+
+  if (!existing || existing.status === PostStatus.DELETED) {
+    throw new ServiceError("게시물을 찾을 수 없습니다.", "POST_NOT_FOUND", 404);
+  }
+
+  if (existing.type !== PostType.CARE_REQUEST || !existing.careRequest) {
+    throw new ServiceError("돌봄 요청 글을 찾을 수 없습니다.", "CARE_REQUEST_NOT_FOUND", 404);
+  }
+
+  const previousStatus = existing.careRequest.status;
+  const nextStatus = parsed.data.status;
+  if (previousStatus === nextStatus) {
+    return {
+      changed: false,
+      previousStatus,
+      status: nextStatus,
+    };
+  }
+
+  const isAuthor = existing.authorId === actor.id;
+  const isModerator = canModerateCareStatus(actor.role);
+  if (!isAuthor && !isModerator) {
+    throw new ServiceError("돌봄 요청 상태 변경 권한이 없습니다.", "FORBIDDEN", 403);
+  }
+
+  if (isAuthor && !isModerator && !canAuthorTransitionCareStatus(previousStatus, nextStatus)) {
+    throw new ServiceError("허용되지 않는 돌봄 요청 상태 변경입니다.", "INVALID_CARE_STATUS_TRANSITION", 400);
+  }
+
+  const updated = await prisma.careRequest.update({
+    where: { postId },
+    data: { status: nextStatus },
+    select: {
+      careType: true,
+      startsAt: true,
+      endsAt: true,
+      locationNote: true,
+      petNote: true,
+      requirements: true,
+      rewardAmount: true,
+      isUrgent: true,
+      status: true,
+    },
+  });
+
+  await recordModerationAction({
+    actorId: actor.id,
+    action: ModerationActionType.CARE_STATUS_CHANGED,
+    targetType: ModerationTargetType.POST,
+    targetId: existing.id,
+    targetUserId: existing.authorId,
+    metadata: {
+      previousStatus,
+      nextStatus,
+      actorRole: actor.role,
+      actorScope: isModerator ? "MODERATOR" : "AUTHOR",
+      careType: existing.careRequest.careType,
+    },
+  });
+
+  notifyPostCacheChange();
+  return {
+    changed: true,
+    previousStatus,
+    status: updated.status,
+    careRequest: updated,
   };
 }
 

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { revalidatePath } from "next/cache";
-import { MarketStatus } from "@prisma/client";
+import { CareRequestStatus, MarketStatus } from "@prisma/client";
 
 import { enforceAuthenticatedWriteRateLimit } from "@/server/authenticated-write-throttle";
 import {
@@ -8,6 +8,7 @@ import {
   deletePostAction,
   togglePostBookmarkAction,
   togglePostReactionAction,
+  updateCareRequestStatusAction,
   updateMarketListingStatusAction,
   updatePostAction,
 } from "@/server/actions/post";
@@ -17,6 +18,7 @@ import {
   deletePost,
   togglePostBookmark,
   togglePostReaction,
+  updateCareRequestStatus,
   updateMarketListingStatus,
   updatePost,
 } from "@/server/services/post.service";
@@ -43,6 +45,7 @@ vi.mock("@/server/services/post.service", () => ({
   updatePost: vi.fn(),
   togglePostReaction: vi.fn(),
   updateMarketListingStatus: vi.fn(),
+  updateCareRequestStatus: vi.fn(),
 }));
 
 const mockRevalidatePath = vi.mocked(revalidatePath);
@@ -54,6 +57,7 @@ const mockTogglePostBookmark = vi.mocked(togglePostBookmark);
 const mockUpdatePost = vi.mocked(updatePost);
 const mockTogglePostReaction = vi.mocked(togglePostReaction);
 const mockUpdateMarketListingStatus = vi.mocked(updateMarketListingStatus);
+const mockUpdateCareRequestStatus = vi.mocked(updateCareRequestStatus);
 
 describe("post actions", () => {
   beforeEach(() => {
@@ -67,6 +71,7 @@ describe("post actions", () => {
     mockUpdatePost.mockReset();
     mockTogglePostReaction.mockReset();
     mockUpdateMarketListingStatus.mockReset();
+    mockUpdateCareRequestStatus.mockReset();
   });
 
   it("creates a post and only revalidates the feed page", async () => {
@@ -203,5 +208,30 @@ describe("post actions", () => {
     });
     expect(mockRevalidatePath).toHaveBeenCalledWith("/feed");
     expect(mockRevalidatePath).toHaveBeenCalledWith("/posts/post-market-1");
+  });
+
+  it("updates care request status and revalidates feed plus detail", async () => {
+    mockRequireCurrentUser.mockResolvedValue({ id: "user-6" } as never);
+    mockUpdateCareRequestStatus.mockResolvedValue({
+      changed: true,
+      previousStatus: CareRequestStatus.OPEN,
+      status: CareRequestStatus.CANCELLED,
+    } as never);
+
+    const result = await updateCareRequestStatusAction("post-care-1", CareRequestStatus.CANCELLED);
+
+    expect(result).toEqual({
+      ok: true,
+      changed: true,
+      previousStatus: CareRequestStatus.OPEN,
+      status: CareRequestStatus.CANCELLED,
+    });
+    expect(mockUpdateCareRequestStatus).toHaveBeenCalledWith({
+      postId: "post-care-1",
+      actorId: "user-6",
+      input: { status: CareRequestStatus.CANCELLED },
+    });
+    expect(mockRevalidatePath).toHaveBeenCalledWith("/feed");
+    expect(mockRevalidatePath).toHaveBeenCalledWith("/posts/post-care-1");
   });
 });

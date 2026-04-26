@@ -1,6 +1,7 @@
 import {
   AdoptionStatus,
   AnimalSex,
+  CareRequestStatus,
   CareType,
   ItemCondition,
   MarketType,
@@ -151,6 +152,10 @@ export const careRequestSchema = z
       });
     }
   });
+
+export const careRequestStatusUpdateSchema = z.object({
+  status: z.nativeEnum(CareRequestStatus),
+});
 
 export const postCreateSchema = z.object({
   title: trimmedRequiredString({ max: POST_TITLE_MAX_LENGTH }),
@@ -363,6 +368,7 @@ export type VolunteerRecruitmentInput = z.infer<typeof volunteerRecruitmentSchem
 export type MarketListingInput = z.infer<typeof marketListingSchema>;
 export type MarketListingStatusUpdateInput = z.infer<typeof marketListingStatusUpdateSchema>;
 export type CareRequestInput = z.infer<typeof careRequestSchema>;
+export type CareRequestStatusUpdateInput = z.infer<typeof careRequestStatusUpdateSchema>;
 export type PostUpdateInput = z.infer<typeof postUpdateSchema>;
 
 // Normalize parsed list input to product-facing naming.
