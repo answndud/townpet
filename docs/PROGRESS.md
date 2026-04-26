@@ -10,9 +10,7 @@
 - 운영 evidence runner, Search Quality Phase 2, Market State Machine preflight/M1/M2를 완료했다
 - Social Dev Onboarding Smoke 안정화와 Launch Gap 다음 후보 재평가를 완료했다
 - Care Request Templates preflight, M1 구조화 요청, M2 상태 전환, M3 preflight를 완료했다
-- Care Application M3 지원 생성/관리를 완료했다
-- Care Request M4 수행 체크리스트 preflight를 완료했다
-- Care Request M4 수행 상태 전환을 완료했다
+- Care Application M3 지원 생성/관리와 Care Request M4 preflight/상태 전환을 완료했다
 - Care Request M5 후기/노쇼/증빙 preflight를 완료했다
 - Care Request M5 완료 피드백을 완료했다
 - Care Request M6 운영 신호 큐 preflight를 완료했다
@@ -24,7 +22,8 @@
 - Care Request M10 관리자 큐 처리 상태 구현을 완료했다
 - Care Request M11 모바일/빈 상태 polish preflight를 완료했다
 - Care Request M11 관리자 큐 모바일/빈 상태 polish를 완료했다
-- 다음 작업: Care Request M12 운영 threshold preflight
+- Care Request M12 운영 threshold preflight를 완료했다
+- 다음 작업: Care Request M12 운영 threshold 구현
 
 ## 열린 blocker
 - 없음. `test:e2e:smoke` social-dev 온보딩 blocker는 callback side effect 차단과 온보딩 대기 안정화로 해결했고 smoke 통과를 확인했다.
@@ -58,10 +57,13 @@
 - Care Request M11 관리자 큐 모바일/빈 상태 polish:
   - 추가: 모바일 카드 리스트, 데스크톱 테이블 분리, 필터 0건 empty copy.
   - 검증: `care-feedback-mobile.spec.ts`, `typecheck`, `lint`.
+- Care Request M12 운영 threshold preflight:
+  - 결정: 자동 조치 없이 `/admin/ops` 경고 copy와 count 표시만 추가한다.
+  - 기준: `PENDING >= 3`, `PENDING + REVIEWING >= 5`, `SAFETY/PAYMENT_OR_FRAUD >= 1`.
 ## 다음 액션
-1. `/admin/ops` 돌봄 이슈 요약과 reviewStatus count를 점검한다.
-2. 운영자가 볼 최소 threshold와 warning copy를 정한다.
-3. 구현 또는 문서화 범위를 정책/계획 문서에 남긴다.
+1. care feedback stats에서 threshold summary helper를 만든다.
+2. `/admin/ops` 돌봄 이슈 카드에 warning copy와 review status count를 표시한다.
+3. query/helper/UI 테스트와 문서를 갱신한다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)

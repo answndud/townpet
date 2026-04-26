@@ -1854,3 +1854,25 @@
 - 결과:
   - 모바일 390px에서 관리자 큐 이슈 확인, 상태 변경, 메모 저장 CTA를 가로 스크롤 없이 사용할 수 있다.
   - 다음 작업은 `Care Request M12 운영 threshold preflight`다.
+
+### 2026-04-26 | Care Request M12 운영 threshold preflight
+- 완료일: `2026-04-26`
+- 배경:
+  - M10-M11에서 돌봄 이슈 큐 처리 상태와 모바일 운영 화면은 갖췄지만, `/admin/ops`는 총 이슈 수만 보여줬다.
+  - 운영자는 자동 조치 없이도 대기/검토중 적체와 고위험 issue를 빠르게 구분할 기준이 필요하다.
+- 변경내용:
+  - threshold는 자동 제재나 자동 알림이 아니라 `/admin/ops` 경고 copy와 count 표시로 제한하기로 결정했다.
+  - 기준은 `PENDING >= 3`, `PENDING + REVIEWING >= 5`, `SAFETY/PAYMENT_OR_FRAUD >= 1`로 둔다.
+  - 구현 범위는 threshold summary helper, `/admin/ops` 돌봄 카드 copy, review status count 표시, tests로 확정했다.
+  - 자동 제재, 자동 숨김, 운영자 자동 알림, 결제/보험/정산은 보류했다.
+- 코드문서:
+  - [business/policies/구인구직_운영규칙.md](../business/policies/구인구직_운영규칙.md)
+  - [business/operations/돌봄_운영_런북.md](../business/operations/돌봄_운영_런북.md)
+  - [business/product/Phase2_로드맵_PRD.md](../business/product/Phase2_로드맵_PRD.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `/admin/ops` 현재 돌봄 이슈 요약과 `getCareFeedbackIssueStats`의 review status count를 확인했다.
+  - 문서 변경에 한정해 active plan, progress, policy, roadmap archive를 동기화했다.
+- 결과:
+  - 다음 작업은 `Care Request M12 운영 threshold 구현`이다.
