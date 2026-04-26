@@ -5,7 +5,10 @@ import { renderLiteMarkdown } from "@/lib/markdown-lite";
 import { sanitizePublicGuestIdentity } from "@/lib/public-guest-identity";
 import { getCurrentUserIdFromRequest, getCurrentUserRole } from "@/server/auth";
 import { monitorUnhandledError } from "@/server/error-monitor";
-import { getPostById } from "@/server/queries/post.queries";
+import {
+  getPostById,
+  listCareApplicationsForPostDetail,
+} from "@/server/queries/post.queries";
 import { getUserRelationState } from "@/server/queries/user-relation.queries";
 import { jsonError, jsonOk } from "@/server/response";
 import { assertPostReadable } from "@/server/services/post-read-access.service";
@@ -49,6 +52,11 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             hasBlockedMe: false,
             isMutedByMe: false,
           };
+    const careApplications = await listCareApplicationsForPostDetail({
+      postId,
+      viewerId: userId,
+      canModerate,
+    });
 
     const sanitizedPost = sanitizePublicGuestIdentity(post as Record<string, unknown> & {
       guestDisplayName?: string | null;
@@ -63,6 +71,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       {
         post: {
           ...publicPost,
+          careApplications,
           renderedContentHtml,
           renderedContentText,
         },

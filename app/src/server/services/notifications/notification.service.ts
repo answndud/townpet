@@ -66,6 +66,24 @@ type NotifyReactionOnCommentParams = {
   reactionType: "LIKE" | "DISLIKE";
 };
 
+type NotifyCareApplicationCreatedParams = {
+  recipientUserId: string;
+  actorId: string;
+  postId: string;
+  applicationId: string;
+  postTitle: string;
+  message?: string | null;
+};
+
+type NotifyCareApplicationDecisionParams = {
+  recipientUserId: string;
+  actorId: string;
+  postId: string;
+  applicationId: string;
+  postTitle: string;
+  status: "ACCEPTED" | "DECLINED";
+};
+
 function clampText(value: string | null | undefined, maxLength: number) {
   const trimmed = (value ?? "").trim();
   if (trimmed.length <= maxLength) {
@@ -220,5 +238,48 @@ export async function notifyReactionOnComment({
     metadata: {
       reactionType,
     },
+  });
+}
+
+export async function notifyCareApplicationCreated({
+  recipientUserId,
+  actorId,
+  postId,
+  applicationId,
+  postTitle,
+  message,
+}: NotifyCareApplicationCreatedParams) {
+  return createUserNotification({
+    userId: recipientUserId,
+    actorId,
+    type: NotificationType.CARE_APPLICATION_CREATED,
+    entityType: NotificationEntityType.CARE_APPLICATION,
+    entityId: applicationId,
+    postId,
+    title: `돌봄 요청에 새 지원이 도착했어요: ${clampText(postTitle, 60)}`,
+    body: message ? clampText(message, 140) : undefined,
+  });
+}
+
+export async function notifyCareApplicationDecision({
+  recipientUserId,
+  actorId,
+  postId,
+  applicationId,
+  postTitle,
+  status,
+}: NotifyCareApplicationDecisionParams) {
+  return createUserNotification({
+    userId: recipientUserId,
+    actorId,
+    type: NotificationType.CARE_APPLICATION_DECIDED,
+    entityType: NotificationEntityType.CARE_APPLICATION,
+    entityId: applicationId,
+    postId,
+    title:
+      status === "ACCEPTED"
+        ? `돌봄 지원이 수락되었어요: ${clampText(postTitle, 60)}`
+        : `돌봄 지원이 거절되었어요: ${clampText(postTitle, 60)}`,
+    metadata: { status },
   });
 }

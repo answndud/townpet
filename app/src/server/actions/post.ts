@@ -1,12 +1,19 @@
 "use server";
 
-import { CareRequestStatus, MarketStatus, PostReactionType } from "@prisma/client";
+import {
+  CareRequestStatus,
+  MarketStatus,
+  PostReactionType,
+} from "@prisma/client";
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 
 import { enforceAuthenticatedWriteRateLimit } from "@/server/authenticated-write-throttle";
 import {
   createPost,
+  cancelCareApplication,
+  createCareApplication,
+  decideCareApplication,
   deletePost,
   togglePostBookmark,
   togglePostReaction,
@@ -56,6 +63,10 @@ type CareRequestStatusActionResult =
       status: CareRequestStatus;
       previousStatus: CareRequestStatus;
     }
+  | { ok: false; code: string; message: string };
+
+type CareApplicationActionResult =
+  | { ok: true }
   | { ok: false; code: string; message: string };
 
 function revalidateFeedPage() {
@@ -296,6 +307,108 @@ export async function updateCareRequestStatusAction(
 
     logger.error("updateCareRequestStatusAction 실패", {
       postId,
+      status,
+      error: serializeError(error),
+    });
+
+    return {
+      ok: false,
+      code: "INTERNAL_SERVER_ERROR",
+      message: "서버 오류가 발생했습니다.",
+    };
+  }
+}
+
+export async function createCareApplicationAction(
+  postId: string,
+  input: unknown,
+): Promise<CareApplicationActionResult> {
+  try {
+    const user = await requireCurrentUser();
+    await createCareApplication({
+      postId,
+      applicantId: user.id,
+      input,
+    });
+    revalidateFeedPage();
+    revalidatePostDetailPage(postId);
+
+    return { ok: true };
+  } catch (error) {
+    if (error instanceof ServiceError) {
+      return { ok: false, code: error.code, message: error.message };
+    }
+
+    logger.error("createCareApplicationAction 실패", {
+      postId,
+      error: serializeError(error),
+    });
+
+    return {
+      ok: false,
+      code: "INTERNAL_SERVER_ERROR",
+      message: "서버 오류가 발생했습니다.",
+    };
+  }
+}
+
+export async function cancelCareApplicationAction(
+  postId: string,
+  applicationId: string,
+): Promise<CareApplicationActionResult> {
+  try {
+    const user = await requireCurrentUser();
+    await cancelCareApplication({
+      applicationId,
+      actorId: user.id,
+    });
+    revalidateFeedPage();
+    revalidatePostDetailPage(postId);
+
+    return { ok: true };
+  } catch (error) {
+    if (error instanceof ServiceError) {
+      return { ok: false, code: error.code, message: error.message };
+    }
+
+    logger.error("cancelCareApplicationAction 실패", {
+      postId,
+      applicationId,
+      error: serializeError(error),
+    });
+
+    return {
+      ok: false,
+      code: "INTERNAL_SERVER_ERROR",
+      message: "서버 오류가 발생했습니다.",
+    };
+  }
+}
+
+export async function decideCareApplicationAction(
+  postId: string,
+  applicationId: string,
+  status: "ACCEPTED" | "DECLINED",
+): Promise<CareApplicationActionResult> {
+  try {
+    const user = await requireCurrentUser();
+    await decideCareApplication({
+      applicationId,
+      actorId: user.id,
+      input: { status },
+    });
+    revalidateFeedPage();
+    revalidatePostDetailPage(postId);
+
+    return { ok: true };
+  } catch (error) {
+    if (error instanceof ServiceError) {
+      return { ok: false, code: error.code, message: error.message };
+    }
+
+    logger.error("decideCareApplicationAction 실패", {
+      postId,
+      applicationId,
       status,
       error: serializeError(error),
     });

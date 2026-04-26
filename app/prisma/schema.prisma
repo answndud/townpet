@@ -48,6 +48,8 @@ model User {
   preferredPetTypes         UserPetTypePreference[]
   notifications             Notification[]                @relation("NotificationRecipient")
   actions                   Notification[]                @relation("NotificationActor")
+  careApplications          CareApplication[]             @relation("CareApplicationApplicant")
+  careApplicationDecisions   CareApplication[]             @relation("CareApplicationDecider")
   uploadAssets              UploadAsset[]
   createdAt                 DateTime                      @default(now())
   updatedAt                 DateTime                      @updatedAt
@@ -535,6 +537,7 @@ model CareRequest {
   id           String            @id @default(cuid())
   postId       String            @unique
   post         Post              @relation(fields: [postId], references: [id], onDelete: Cascade)
+  applications CareApplication[]
   careType     CareType
   startsAt     DateTime?
   endsAt       DateTime?
@@ -564,6 +567,33 @@ enum CareRequestStatus {
   MATCHED
   IN_PROGRESS
   COMPLETED
+  CANCELLED
+}
+
+model CareApplication {
+  id            String                @id @default(cuid())
+  careRequestId String
+  applicantId   String
+  message       String?               @db.Text
+  status        CareApplicationStatus @default(PENDING)
+  decidedAt     DateTime?
+  decidedBy     String?
+  careRequest   CareRequest           @relation(fields: [careRequestId], references: [id], onDelete: Cascade)
+  applicant     User                  @relation("CareApplicationApplicant", fields: [applicantId], references: [id], onDelete: Cascade)
+  decider       User?                 @relation("CareApplicationDecider", fields: [decidedBy], references: [id], onDelete: SetNull)
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+
+  @@unique([careRequestId, applicantId])
+  @@index([applicantId, createdAt(sort: Desc)])
+  @@index([careRequestId, status, createdAt(sort: Desc)])
+  @@index([decidedBy, decidedAt])
+}
+
+enum CareApplicationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
   CANCELLED
 }
 
@@ -1104,6 +1134,8 @@ enum NotificationType {
   MENTION_IN_COMMENT
   REACTION_ON_POST
   REACTION_ON_COMMENT
+  CARE_APPLICATION_CREATED
+  CARE_APPLICATION_DECIDED
   SYSTEM
 }
 
@@ -1111,6 +1143,7 @@ enum NotificationEntityType {
   POST
   COMMENT
   REACTION
+  CARE_APPLICATION
   SYSTEM
 }
 

@@ -167,3 +167,4 @@ Phase 2 기능은 아래 조건을 만족할 때만 동시에 2개 이상 병행
 - 2026-04-26 실행 결과: Care Request M2 preflight를 완료했다. M2는 `OPEN -> CANCELLED` 작성자 전환과 admin/moderator override를 감사 로그로 남기는 상태 전환 액션으로 제한하고, 지원/문의 모델은 M3로 분리한다.
 - 2026-04-26 실행 결과: Care Request M2 상태 전환 액션을 완료했다. 다음은 `CareApplication` 또는 댓글 기반 inquiry 확장 중 하나를 고르는 M3 지원/문의 흐름 preflight다.
 - 2026-04-26 실행 결과: Care Request M3 preflight를 완료했다. 지원/문의는 댓글 확장이 아니라 별도 `CareApplication` 모델로 구현하고, 지원 생성/취소/승인/거절과 알림까지만 M3 범위로 둔다.
+- 2026-04-26 실행 결과: Care Application M3 지원 생성/관리를 완료했다. 승인 시 요청은 `MATCHED`가 되고 다른 대기 지원은 거절된다. 다음은 수행 체크리스트/취소/노쇼/분쟁 기록의 최소 범위를 정하는 M4 preflight다.

@@ -26,17 +26,17 @@
 
 ## Active Plan
 
-### Care Application M3 지원 생성/관리
+### Care Request M4 수행 체크리스트 preflight
 
 상태: `pending`
 
-- 목표: 돌봄 요청에 별도 `CareApplication` 지원 워크플로우를 추가한다.
-- 범위: Prisma schema/migration, validation, service/action, detail UI 지원 생성/취소/승인/거절, 지원 생성/결정 알림, failure-path tests.
-- 제외: 공개 댓글 기반 지원, 수행 체크리스트, 후기/평점, 노쇼 기록, 결제/예약/보험, 실시간 위치 추적.
-- 완료 기준: 지원자/작성자/운영자 권한이 서비스에서 강제되고, 승인 시 `CareRequest.status = MATCHED`로 전환되며, 연락처/차단/중복/이미 매칭된 요청 failure-path 테스트가 통과한다.
+- 목표: `MATCHED` 이후 돌봄 수행 상태를 어떻게 추적할지 모델/정책/UI 범위를 먼저 확정한다.
+- 범위: 수행 체크리스트, 시작/완료 전환, 취소/노쇼/분쟁 기록, 알림, 신고/관리자 큐 연결 여부 판단.
+- 제외: 결제/예약 보증/보험/정산, 실시간 위치 추적, 후기/평점 구현.
+- 완료 기준: M4에서 바로 구현할 최소 상태와 보류할 고위험 기능을 나누고, service/query/schema 경계를 문서화한다.
 
 ## 다음 실행 순서
 
-1. `CareApplication`, `CareApplicationStatus`, notification type/schema migration을 추가한다.
-2. 지원 생성/취소/승인/거절 service/action과 detail UI를 연결한다.
-3. 중복 지원, 작성자 self-apply, 차단 관계, 연락처, 이미 매칭된 요청 테스트와 품질 게이트를 실행한다.
+1. `CareApplication M3 지원 생성/관리` 결과를 완료 archive에 고정한다.
+2. M4에서 필요한 수행/분쟁 상태와 운영자 개입 지점을 비교한다.
+3. 결제/보험/실시간 위치 없이도 안전한 최소 구현 범위를 확정한다.
