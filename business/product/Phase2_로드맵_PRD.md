@@ -188,3 +188,4 @@ Phase 2 기능은 아래 조건을 만족할 때만 동시에 2개 이상 병행
 - 2026-04-26 실행 결과: Care Request M15 운영 계정/데이터 smoke 준비를 완료했다. production smoke는 전용 운영 관리자/테스트 회원과 `[SMOKE][CARE]` 테스트 데이터만 사용하고, 실사용자 데이터 변경은 No-Go로 둔다.
 - 2026-04-26 실행 결과: Care Request M16 production smoke 실행 보류 확인을 완료했다. public health는 PASS지만 internal token, Sentry secret, 운영 테스트 계정 확인이 없어 전체 production smoke는 No-Go로 유지한다.
 - 2026-04-26 실행 결과: Care Request M17 운영 smoke 준비값 확보를 시도했지만 현재 실행 환경에 internal token, Sentry secret, smoke 계정 식별자가 없어 production smoke는 계속 blocked 상태다.
+- 2026-04-26 실행 결과: Care Request M18 smoke readiness tooling을 완료했다. 표준 smoke 계정 식별자와 `ops:check:care-smoke-readiness`를 추가해 token/계정 준비 여부를 값 노출 없이 확인한다.

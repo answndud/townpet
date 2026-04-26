@@ -19,11 +19,11 @@
 - Care Request M8 출시 갭 정리를 완료했다
 - Care Request M9 운영 런북/데모 seed를 완료했다
 - Care Request M10 관리자 큐 처리 상태와 M11 모바일/빈 상태 polish를 완료했다
-- Care Request M12 운영 threshold와 M13-M17 production smoke 준비/보류 확인을 완료했다
-- 다음 작업: Care Request M18 운영 smoke 준비값 주입 후 실행
+- Care Request M12 운영 threshold와 M13-M18 production smoke 준비/보류/tooling을 완료했다
+- 다음 작업: Care Request M19 운영 smoke secret/계정 실제 주입
 
 ## 열린 blocker
-- Production smoke는 `OPS_HEALTH_INTERNAL_TOKEN` 또는 `HEALTH_INTERNAL_TOKEN`, 운영 관리자/요청자/지원자 테스트 계정 식별자가 주입될 때까지 blocked다.
+- Production smoke는 `ops:check:care-smoke-readiness`가 `PASS`가 될 때까지 blocked다.
 
 ## 직전 검증
 - Care Request M1-M6:
@@ -60,10 +60,11 @@
 - Care Request M12 운영 threshold 구현: helper, Ops count/badge/copy, targeted Vitest, `typecheck`, `lint` 통과.
 - Care Request M13 출시 준비 최종 정리: 로컬 기능 조건부 Go, 운영 배포는 production smoke/strict health 전 No-Go.
 - Care Request M14-M17 production smoke 준비/보류 확인: public health PASS, internal token/Sentry/테스트 계정 부재로 blocked.
+- Care Request M18 smoke readiness tooling: 표준 smoke 계정 식별자와 `ops:check:care-smoke-readiness`; 현재 환경은 expected `BLOCKED`.
 ## 다음 액션
 1. `OPS_HEALTH_INTERNAL_TOKEN` 또는 `HEALTH_INTERNAL_TOKEN`을 현재 실행 환경에 주입한다.
-2. 선택 Sentry secret과 `CARE_SMOKE_*_EMAIL` 테스트 계정 식별자를 주입한다.
-3. 준비 완료 후 M14/M15 순서대로 production smoke를 실행한다.
+2. `CARE_SMOKE_ADMIN_EMAIL`, `CARE_SMOKE_REQUESTER_EMAIL`, `CARE_SMOKE_CAREGIVER_EMAIL`을 실제 운영 테스트 계정으로 주입한다.
+3. `corepack pnpm -C app ops:check:care-smoke-readiness`가 `PASS`인지 확인한다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)
