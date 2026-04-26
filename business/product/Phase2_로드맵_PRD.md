@@ -179,3 +179,4 @@ Phase 2 기능은 아래 조건을 만족할 때만 동시에 2개 이상 병행
 - 2026-04-26 실행 결과: Care Request M9 운영 런북/데모 seed를 완료했다. `db:restore:local`이 케어 데모 데이터를 함께 준비하고, 독립 `db:seed:care-demo`와 `business/operations/돌봄_운영_런북.md`로 수동/e2e 재현 절차를 문서화했다.
 - 2026-04-26 실행 결과: Care Request M10 관리자 큐 처리 상태 preflight를 완료했다. 별도 dispute/queue table 없이 `CareCompletionFeedback`에 검토 상태와 운영자 메모를 붙이고, 처리 이력은 `ModerationActionLog`로 남기는 방향으로 확정했다.
 - 2026-04-26 실행 결과: Care Request M10 관리자 큐 처리 상태 구현을 완료했다. `/admin/care-feedbacks`에서 `PENDING/REVIEWING/RESOLVED/DISMISSED` 필터와 상태 변경, 운영자 메모, 담당자/처리 시간을 관리할 수 있다.
+- 2026-04-26 실행 결과: Care Request M11 모바일/빈 상태 polish preflight를 완료했다. feed/detail은 모바일 overflow가 없고, `/admin/care-feedbacks`는 모바일 카드 리스트와 필터 0건 empty copy 분리를 다음 구현으로 확정했다.

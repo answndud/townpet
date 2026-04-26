@@ -26,17 +26,17 @@
 
 ## Active Plan
 
-### Care Request M11 모바일/빈 상태 polish preflight
+### Care Request M11 관리자 큐 모바일/빈 상태 polish
 
 상태: `pending`
 
-- 목표: 케어 요청/관리자 큐의 모바일과 빈 상태 polish 범위를 확정한다.
-- 범위: `/feed`, `/posts/{id}`, `/admin/care-feedbacks` 모바일 overflow, 빈 상태 copy, CTA 배치, e2e/스크린샷 필요성.
+- 목표: `/admin/care-feedbacks`의 모바일 운영성과 필터 empty state를 개선한다.
+- 범위: 모바일 카드 리스트, 필터 0건 copy, 처리 폼 CTA 배치, Playwright 모바일 smoke.
 - 제외: 새 상태 머신, 결제/보험/정산, 자동 제재, production smoke.
-- 완료 기준: 바로 구현할 UI 개선과 보류 항목을 분류하고 검증 기준을 정한다.
+- 완료 기준: 모바일 390px에서 가로 스크롤 없이 이슈 확인/상태 변경/메모 저장이 가능하고, 필터 0건 상태가 명확하다.
 
 ## 다음 실행 순서
 
-1. 케어 요청 feed/detail/admin queue의 모바일 UI와 빈 상태를 점검한다.
-2. overflow, 텍스트 밀도, CTA 위치 문제를 구현 후보로 분류한다.
-3. 필요한 Playwright 스크린샷/회귀 테스트 범위를 정한다.
+1. `/admin/care-feedbacks`에 모바일 전용 카드 리스트를 추가한다.
+2. 필터 적용 여부에 따라 empty state title/description을 분리한다.
+3. 모바일 smoke로 overflow, 저장 CTA, 필터 0건 copy를 검증한다.
