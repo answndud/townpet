@@ -21,7 +21,8 @@
 - Care Request M8 출시 갭 정리를 완료했다
 - Care Request M9 운영 런북/데모 seed를 완료했다
 - Care Request M10 관리자 큐 처리 상태 preflight를 완료했다
-- 다음 작업: Care Request M10 관리자 큐 처리 상태 구현
+- Care Request M10 관리자 큐 처리 상태 구현을 완료했다
+- 다음 작업: Care Request M11 모바일/빈 상태 polish preflight
 
 ## 열린 blocker
 - 없음. `test:e2e:smoke` social-dev 온보딩 blocker는 callback side effect 차단과 온보딩 대기 안정화로 해결했고 smoke 통과를 확인했다.
@@ -45,10 +46,13 @@
 - Care Request M10 관리자 큐 처리 상태 preflight:
   - 결정: 별도 dispute/queue table 없이 `CareCompletionFeedback`에 검토 상태/운영자 메모를 붙인다.
   - 처리 이력은 신고 큐의 `ReportAudit`이 아니라 `ModerationActionLog`의 `CARE_FEEDBACK_REVIEWED` action으로 남긴다.
+- Care Request M10 관리자 큐 처리 상태 구현:
+  - 추가: `CareFeedbackReviewStatus`, `reviewStatus/reviewNote/reviewedAt/reviewedBy`, 관리자 action/service, 상태 필터/처리 폼.
+  - 검증: migration deploy, care demo seed, targeted Vitest, `typecheck`, `lint`.
 ## 다음 액션
-1. Prisma schema/migration에 review status/note 필드를 추가한다.
-2. 관리자 전용 service/action과 audit log를 구현한다.
-3. `/admin/care-feedbacks` 상태 필터/처리 폼과 seed/tests를 갱신한다.
+1. 케어 요청 feed/detail/admin queue의 모바일 UI와 빈 상태를 점검한다.
+2. overflow, 텍스트 밀도, CTA 위치 문제를 구현 후보로 분류한다.
+3. 필요한 Playwright 스크린샷/회귀 테스트 범위를 정한다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)

@@ -1772,3 +1772,36 @@
   - 문서 변경에 한정해 active plan, progress, policy, roadmap archive를 동기화했다.
 - 결과:
   - 다음 작업은 `Care Request M10 관리자 큐 처리 상태 구현`이다.
+
+### 2026-04-26 | Care Request M10 관리자 큐 처리 상태 구현
+- 완료일: `2026-04-26`
+- 배경:
+  - M10 preflight에서 돌봄 완료 피드백 이슈는 별도 dispute table 없이 `CareCompletionFeedback` 자체에 검토 상태와 운영자 메모를 붙이기로 결정했다.
+  - 운영자는 `/admin/care-feedbacks`에서 신호 확인 후 처리 상태와 메모를 남길 수 있어야 했다.
+- 변경내용:
+  - `CareFeedbackReviewStatus` enum과 `reviewStatus`, `reviewNote`, `reviewedAt`, `reviewedBy` 필드/migration을 추가했다.
+  - 관리자 전용 `updateCareFeedbackReview` service/action을 추가하고 `CARE_FEEDBACK_REVIEWED` moderation action log를 남긴다.
+  - `/admin/care-feedbacks`에 처리 상태 필터, 상태 변경 폼, 운영자 메모, 담당자/처리 시간 표시를 추가했다.
+  - care demo seed summary에 `pendingReviews`를 추가했다.
+- 코드문서:
+  - [app/prisma/schema.prisma](../app/prisma/schema.prisma)
+  - [app/prisma/migrations/20260426090000_add_care_feedback_review_status/migration.sql](../app/prisma/migrations/20260426090000_add_care_feedback_review_status/migration.sql)
+  - [app/src/lib/validations/posts/post.ts](../app/src/lib/validations/posts/post.ts)
+  - [app/src/server/services/posts/post.service.ts](../app/src/server/services/posts/post.service.ts)
+  - [app/src/server/actions/post.ts](../app/src/server/actions/post.ts)
+  - [app/src/server/queries/care-feedback.queries.ts](../app/src/server/queries/care-feedback.queries.ts)
+  - [app/src/app/admin/care-feedbacks/page.tsx](../app/src/app/admin/care-feedbacks/page.tsx)
+  - [app/scripts/seed-care-demo.ts](../app/scripts/seed-care-demo.ts)
+  - [business/policies/구인구직_운영규칙.md](../business/policies/구인구직_운영규칙.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app exec prisma generate`
+  - `corepack pnpm -C app exec prisma migrate deploy`
+  - `corepack pnpm -C app db:seed:care-demo`
+  - `corepack pnpm -C app test -- src/lib/validations/post.test.ts src/server/queries/care-feedback.queries.test.ts src/server/services/post.service.test.ts src/server/actions/post.test.ts scripts/seed-care-demo.test.ts src/server/queries/ops-overview.queries.test.ts`
+  - `corepack pnpm -C app typecheck`
+  - `corepack pnpm -C app lint`
+- 결과:
+  - 운영자는 돌봄 이슈 신호를 `PENDING`, `REVIEWING`, `RESOLVED`, `DISMISSED`로 분류하고 메모를 남길 수 있다.
+  - 다음 작업은 `Care Request M11 모바일/빈 상태 polish preflight`다.

@@ -4,6 +4,7 @@ import {
   CareFeedbackAuthorRole,
   CareFeedbackIssueType,
   CareFeedbackOutcome,
+  CareFeedbackReviewStatus,
   CareRequestStatus,
   MarketStatus,
   ModerationActionType,
@@ -31,6 +32,7 @@ import {
   togglePostReaction,
   updateMarketListingStatus,
   updateCareRequestStatus,
+  updateCareFeedbackReview,
 } from "@/server/services/post.service";
 import {
   bumpFeedCacheVersion,
@@ -67,6 +69,7 @@ vi.mock("@/lib/prisma", () => ({
     careCompletionFeedback: {
       findUnique: vi.fn(),
       create: vi.fn(),
+      update: vi.fn(),
     },
     userNeighborhood: {
       findFirst: vi.fn(),
@@ -146,6 +149,7 @@ const mockPrisma = vi.mocked(prisma) as unknown as {
   careCompletionFeedback: {
     findUnique: ReturnType<typeof vi.fn>;
     create: ReturnType<typeof vi.fn>;
+    update: ReturnType<typeof vi.fn>;
   };
   userNeighborhood: {
     findFirst: ReturnType<typeof vi.fn>;
@@ -191,6 +195,7 @@ describe("post reaction toggle", () => {
     mockPrisma.careApplication.updateMany.mockReset();
     mockPrisma.careCompletionFeedback.findUnique.mockReset();
     mockPrisma.careCompletionFeedback.create.mockReset();
+    mockPrisma.careCompletionFeedback.update.mockReset();
     mockPrisma.userNeighborhood.findFirst.mockReset();
     mockPrisma.postBookmark.findUnique.mockReset();
     mockPrisma.postBookmark.create.mockReset();
@@ -1559,6 +1564,7 @@ describe("care completion feedback", () => {
     mockPrisma.$transaction.mockReset();
     mockPrisma.careCompletionFeedback.findUnique.mockReset();
     mockPrisma.careCompletionFeedback.create.mockReset();
+    mockPrisma.careCompletionFeedback.update.mockReset();
   });
 
   it("allows the requester to create private feedback for a completed care request", async () => {
@@ -1704,6 +1710,84 @@ describe("care completion feedback", () => {
     ).rejects.toMatchObject({
       code: "CARE_FEEDBACK_ALREADY_EXISTS",
       status: 409,
+    });
+  });
+
+  it("lets moderators update issue feedback review status and records an action log", async () => {
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: "moderator-1",
+      role: UserRole.MODERATOR,
+    });
+    mockPrisma.careCompletionFeedback.findUnique.mockResolvedValue({
+      id: "feedback-1",
+      issueType: CareFeedbackIssueType.SAFETY,
+      reviewStatus: CareFeedbackReviewStatus.PENDING,
+      reviewNote: null,
+      careRequest: {
+        id: "care-1",
+        post: {
+          id: "post-1",
+          authorId: "author-1",
+          status: PostStatus.ACTIVE,
+        },
+      },
+    });
+    mockPrisma.careCompletionFeedback.update.mockResolvedValue({
+      id: "feedback-1",
+      reviewStatus: CareFeedbackReviewStatus.REVIEWING,
+      reviewNote: "상황 확인 중",
+    });
+
+    const result = await updateCareFeedbackReview({
+      feedbackId: "feedback-1",
+      actorId: "moderator-1",
+      input: {
+        reviewStatus: CareFeedbackReviewStatus.REVIEWING,
+        reviewNote: " 상황 확인 중 ",
+      },
+    });
+
+    expect(result.reviewStatus).toBe(CareFeedbackReviewStatus.REVIEWING);
+    expect(mockPrisma.careCompletionFeedback.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: "feedback-1" },
+        data: expect.objectContaining({
+          reviewStatus: CareFeedbackReviewStatus.REVIEWING,
+          reviewNote: "상황 확인 중",
+          reviewedBy: "moderator-1",
+        }),
+      }),
+    );
+    expect(mockRecordModerationAction).toHaveBeenCalledWith(
+      expect.objectContaining({
+        actorId: "moderator-1",
+        action: ModerationActionType.CARE_FEEDBACK_REVIEWED,
+        targetId: "post-1",
+        targetUserId: "author-1",
+        metadata: expect.objectContaining({
+          previousStatus: CareFeedbackReviewStatus.PENDING,
+          nextStatus: CareFeedbackReviewStatus.REVIEWING,
+          issueType: CareFeedbackIssueType.SAFETY,
+        }),
+      }),
+    );
+  });
+
+  it("blocks non-moderators from reviewing issue feedback", async () => {
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: "user-1",
+      role: UserRole.USER,
+    });
+
+    await expect(
+      updateCareFeedbackReview({
+        feedbackId: "feedback-1",
+        actorId: "user-1",
+        input: { reviewStatus: CareFeedbackReviewStatus.RESOLVED },
+      }),
+    ).rejects.toMatchObject({
+      code: "FORBIDDEN",
+      status: 403,
     });
   });
 });

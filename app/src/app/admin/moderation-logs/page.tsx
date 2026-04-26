@@ -25,6 +25,7 @@ const actionLabels: Record<ModerationActionType, string> = {
   AUTH_AUDIT_EXPORTED: "인증 로그 내보내기",
   MARKET_STATUS_CHANGED: "마켓 상태 변경",
   CARE_STATUS_CHANGED: "돌봄 요청 상태 변경",
+  CARE_FEEDBACK_REVIEWED: "돌봄 이슈 검토",
 };
 
 const targetLabels: Record<ModerationTargetType, string> = {

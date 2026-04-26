@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import {
   CareApplicationStatus,
   CareFeedbackOutcome,
+  CareFeedbackReviewStatus,
   CareRequestStatus,
   MarketStatus,
 } from "@prisma/client";
@@ -18,6 +19,7 @@ import {
   togglePostBookmarkAction,
   togglePostReactionAction,
   updateCareRequestStatusAction,
+  updateCareFeedbackReviewAction,
   updateMarketListingStatusAction,
   updatePostAction,
 } from "@/server/actions/post";
@@ -32,6 +34,7 @@ import {
   togglePostBookmark,
   togglePostReaction,
   updateCareRequestStatus,
+  updateCareFeedbackReview,
   updateMarketListingStatus,
   updatePost,
 } from "@/server/services/post.service";
@@ -63,6 +66,7 @@ vi.mock("@/server/services/post.service", () => ({
   cancelCareApplication: vi.fn(),
   decideCareApplication: vi.fn(),
   createCareCompletionFeedback: vi.fn(),
+  updateCareFeedbackReview: vi.fn(),
 }));
 
 const mockRevalidatePath = vi.mocked(revalidatePath);
@@ -79,6 +83,7 @@ const mockCreateCareApplication = vi.mocked(createCareApplication);
 const mockCancelCareApplication = vi.mocked(cancelCareApplication);
 const mockDecideCareApplication = vi.mocked(decideCareApplication);
 const mockCreateCareCompletionFeedback = vi.mocked(createCareCompletionFeedback);
+const mockUpdateCareFeedbackReview = vi.mocked(updateCareFeedbackReview);
 
 describe("post actions", () => {
   beforeEach(() => {
@@ -97,6 +102,7 @@ describe("post actions", () => {
     mockCancelCareApplication.mockReset();
     mockDecideCareApplication.mockReset();
     mockCreateCareCompletionFeedback.mockReset();
+    mockUpdateCareFeedbackReview.mockReset();
   });
 
   it("creates a post and only revalidates the feed page", async () => {
@@ -329,5 +335,32 @@ describe("post actions", () => {
     });
     expect(mockRevalidatePath).toHaveBeenCalledTimes(1);
     expect(mockRevalidatePath).toHaveBeenCalledWith("/posts/post-care-3");
+  });
+
+  it("updates care feedback review status and revalidates admin queues", async () => {
+    mockRequireCurrentUser.mockResolvedValue({ id: "moderator-1" } as never);
+    mockUpdateCareFeedbackReview.mockResolvedValue({
+      reviewStatus: CareFeedbackReviewStatus.RESOLVED,
+    } as never);
+
+    const result = await updateCareFeedbackReviewAction("feedback-1", {
+      reviewStatus: CareFeedbackReviewStatus.RESOLVED,
+      reviewNote: "처리 완료",
+    });
+
+    expect(result).toEqual({
+      ok: true,
+      reviewStatus: CareFeedbackReviewStatus.RESOLVED,
+    });
+    expect(mockUpdateCareFeedbackReview).toHaveBeenCalledWith({
+      feedbackId: "feedback-1",
+      actorId: "moderator-1",
+      input: {
+        reviewStatus: CareFeedbackReviewStatus.RESOLVED,
+        reviewNote: "처리 완료",
+      },
+    });
+    expect(mockRevalidatePath).toHaveBeenCalledWith("/admin/care-feedbacks");
+    expect(mockRevalidatePath).toHaveBeenCalledWith("/admin/ops");
   });
 });

@@ -6,6 +6,7 @@ import {
   CareFeedbackAuthorRole,
   CareFeedbackIssueType,
   CareFeedbackOutcome,
+  CareFeedbackReviewStatus,
   CareRequestStatus,
   CareType,
   PostScope,
@@ -52,6 +53,7 @@ export function summarizeCareDemoSeed(params: {
   requests: number;
   applications: number;
   feedbacks: number;
+  pendingReviews: number;
 }) {
   return {
     posts: params.posts,
@@ -59,6 +61,7 @@ export function summarizeCareDemoSeed(params: {
     applications: params.applications,
     feedbacks: params.feedbacks,
     hasIssueQueueCase: params.feedbacks > 0,
+    pendingReviews: params.pendingReviews,
   };
 }
 
@@ -271,6 +274,7 @@ async function seedCareDemo() {
       authorRole: CareFeedbackAuthorRole.REQUESTER,
       outcome: CareFeedbackOutcome.ISSUE,
       issueType: CareFeedbackIssueType.SAFETY,
+      reviewStatus: CareFeedbackReviewStatus.PENDING,
       wouldRepeat: false,
       comment: "방문 완료 사진이 늦게 공유되어 안전 확인이 지연되었습니다.",
     },
@@ -286,6 +290,12 @@ async function seedCareDemo() {
     }),
     prisma.careCompletionFeedback.count({
       where: { careRequest: { post: { title: { startsWith: DEMO_PREFIX } } } },
+    }),
+    prisma.careCompletionFeedback.count({
+      where: {
+        careRequest: { post: { title: { startsWith: DEMO_PREFIX } } },
+        reviewStatus: CareFeedbackReviewStatus.PENDING,
+      },
     }),
   ]);
 
@@ -312,6 +322,7 @@ async function seedCareDemo() {
       requests: counts[1],
       applications: counts[2],
       feedbacks: counts[3],
+      pendingReviews: counts[4],
     }),
   };
 }

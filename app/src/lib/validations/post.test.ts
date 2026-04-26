@@ -2,6 +2,7 @@ import {
   CareApplicationStatus,
   CareFeedbackIssueType,
   CareFeedbackOutcome,
+  CareFeedbackReviewStatus,
   CareRequestStatus,
   MarketStatus,
   PostScope,
@@ -14,6 +15,7 @@ import {
   careApplicationCreateSchema,
   careApplicationDecisionSchema,
   careCompletionFeedbackSchema,
+  careFeedbackReviewUpdateSchema,
   hospitalReviewSchema,
   marketListingStatusUpdateSchema,
   careRequestSchema,
@@ -430,5 +432,17 @@ describe("careCompletionFeedbackSchema", () => {
         issueType: CareFeedbackIssueType.NONE,
       }).success,
     ).toBe(false);
+  });
+});
+
+describe("careFeedbackReviewUpdateSchema", () => {
+  it("normalizes admin review notes", () => {
+    const result = careFeedbackReviewUpdateSchema.safeParse({
+      reviewStatus: CareFeedbackReviewStatus.REVIEWING,
+      reviewNote: "  작성자에게 상황 확인 중  ",
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.data?.reviewNote).toBe("작성자에게 상황 확인 중");
   });
 });

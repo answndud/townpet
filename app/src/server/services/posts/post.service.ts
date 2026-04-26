@@ -43,6 +43,7 @@ import {
   careApplicationCreateSchema,
   careApplicationDecisionSchema,
   careCompletionFeedbackSchema,
+  careFeedbackReviewUpdateSchema,
   type HospitalReviewInput,
   type MarketListingInput,
   type VolunteerRecruitmentInput,
@@ -1705,6 +1706,12 @@ type CreateCareCompletionFeedbackParams = {
   input: unknown;
 };
 
+type UpdateCareFeedbackReviewParams = {
+  feedbackId: string;
+  actorId: string;
+  input: unknown;
+};
+
 const AUTHOR_MARKET_STATUS_TRANSITIONS: Record<MarketStatus, MarketStatus[]> = {
   [MarketStatus.AVAILABLE]: [
     MarketStatus.RESERVED,
@@ -2470,6 +2477,92 @@ export async function createCareCompletionFeedback({
 
   notifyPostCacheChange();
   return feedback;
+}
+
+export async function updateCareFeedbackReview({
+  feedbackId,
+  actorId,
+  input,
+}: UpdateCareFeedbackReviewParams) {
+  const parsed = careFeedbackReviewUpdateSchema.safeParse(input);
+  if (!parsed.success) {
+    throw new ServiceError("돌봄 이슈 검토 입력값이 올바르지 않습니다.", "INVALID_INPUT", 400);
+  }
+
+  const actor = await prisma.user.findUnique({
+    where: { id: actorId },
+    select: { id: true, role: true },
+  });
+  if (!actor) {
+    throw new ServiceError("사용자를 찾을 수 없습니다.", "USER_NOT_FOUND", 404);
+  }
+  if (!canModerateCareStatus(actor.role)) {
+    throw new ServiceError("돌봄 이슈 검토 권한이 없습니다.", "FORBIDDEN", 403);
+  }
+
+  const existing = await prisma.careCompletionFeedback.findUnique({
+    where: { id: feedbackId },
+    select: {
+      id: true,
+      issueType: true,
+      reviewStatus: true,
+      reviewNote: true,
+      careRequest: {
+        select: {
+          id: true,
+          post: {
+            select: {
+              id: true,
+              authorId: true,
+              status: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!existing || existing.careRequest.post.status === PostStatus.DELETED) {
+    throw new ServiceError("돌봄 완료 피드백을 찾을 수 없습니다.", "CARE_FEEDBACK_NOT_FOUND", 404);
+  }
+  if (existing.issueType === CareFeedbackIssueType.NONE) {
+    throw new ServiceError("이슈가 없는 피드백은 검토 큐에서 처리할 수 없습니다.", "CARE_FEEDBACK_NOT_ISSUE", 400);
+  }
+
+  const reviewNote = parsed.data.reviewNote ?? null;
+  const reviewedAt = new Date();
+  const updated = await prisma.careCompletionFeedback.update({
+    where: { id: feedbackId },
+    data: {
+      reviewStatus: parsed.data.reviewStatus,
+      reviewNote,
+      reviewedAt,
+      reviewedBy: actor.id,
+    },
+    include: {
+      reviewer: { select: { id: true, email: true, nickname: true } },
+    },
+  });
+
+  await recordModerationAction({
+    actorId: actor.id,
+    action: ModerationActionType.CARE_FEEDBACK_REVIEWED,
+    targetType: ModerationTargetType.POST,
+    targetId: existing.careRequest.post.id,
+    targetUserId: existing.careRequest.post.authorId,
+    metadata: {
+      feedbackId: existing.id,
+      careRequestId: existing.careRequest.id,
+      issueType: existing.issueType,
+      previousStatus: existing.reviewStatus,
+      nextStatus: parsed.data.reviewStatus,
+      previousNotePresent: Boolean(existing.reviewNote),
+      nextNotePresent: Boolean(reviewNote),
+      actorRole: actor.role,
+    },
+  });
+
+  return updated;
 }
 
 export async function deletePost({ postId, authorId }: DeletePostParams) {

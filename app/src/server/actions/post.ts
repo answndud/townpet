@@ -1,6 +1,7 @@
 "use server";
 
 import {
+  CareFeedbackReviewStatus,
   CareRequestStatus,
   MarketStatus,
   PostReactionType,
@@ -18,6 +19,7 @@ import {
   deletePost,
   togglePostBookmark,
   togglePostReaction,
+  updateCareFeedbackReview,
   updateCareRequestStatus,
   updateMarketListingStatus,
   updatePost,
@@ -72,6 +74,13 @@ type CareApplicationActionResult =
 
 type CareCompletionFeedbackActionResult =
   | { ok: true }
+  | { ok: false; code: string; message: string };
+
+type CareFeedbackReviewActionResult =
+  | {
+      ok: true;
+      reviewStatus: CareFeedbackReviewStatus;
+    }
   | { ok: false; code: string; message: string };
 
 function revalidateFeedPage() {
@@ -447,6 +456,39 @@ export async function createCareCompletionFeedbackAction(
 
     logger.error("createCareCompletionFeedbackAction 실패", {
       postId,
+      error: serializeError(error),
+    });
+
+    return {
+      ok: false,
+      code: "INTERNAL_SERVER_ERROR",
+      message: "서버 오류가 발생했습니다.",
+    };
+  }
+}
+
+export async function updateCareFeedbackReviewAction(
+  feedbackId: string,
+  input: unknown,
+): Promise<CareFeedbackReviewActionResult> {
+  try {
+    const user = await requireCurrentUser();
+    const updated = await updateCareFeedbackReview({
+      feedbackId,
+      actorId: user.id,
+      input,
+    });
+    revalidatePath("/admin/care-feedbacks");
+    revalidatePath("/admin/ops");
+
+    return { ok: true, reviewStatus: updated.reviewStatus };
+  } catch (error) {
+    if (error instanceof ServiceError) {
+      return { ok: false, code: error.code, message: error.message };
+    }
+
+    logger.error("updateCareFeedbackReviewAction 실패", {
+      feedbackId,
       error: serializeError(error),
     });
 
