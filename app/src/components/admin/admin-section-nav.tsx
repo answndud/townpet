@@ -18,6 +18,11 @@ export const ADMIN_SECTION_LINKS: readonly AdminSectionLink[] = [
   },
   { href: "/admin/reports", label: "신고 큐", description: "신고 접수와 처리 상태 관리" },
   {
+    href: "/admin/care-feedbacks",
+    label: "돌봄 이슈 신호",
+    description: "완료 피드백의 비공개 운영 신호 확인",
+  },
+  {
     href: "/admin/moderation/direct",
     label: "직접 모더레이션",
     description: "신고 없이 사용자/콘텐츠 직접 제재",

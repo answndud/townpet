@@ -1639,3 +1639,32 @@
 - 결과:
   - 다음 작업은 `Care Request M6 운영 신호 큐` 구현이다.
   - 구현 범위는 admin query, `/admin/care-feedbacks` page, Ops 요약, 관리자 권한/필터/비공개 노출 방지 tests다.
+
+### 2026-04-26 | Care Request M6 운영 신호 큐
+- 완료일: `2026-04-26`
+- 배경:
+  - M6 preflight에서 완료 피드백 이슈는 기존 신고 큐가 아니라 별도 관리자 큐와 Ops 요약으로 다루기로 결정했다.
+  - 운영자는 자동 제재 없이 `issueType != NONE`인 비공개 완료 피드백을 확인하고 관련 돌봄 글로 이동할 수 있어야 했다.
+- 변경내용:
+  - `listCareFeedbackIssueQueue`와 `getCareFeedbackIssueStats` query를 추가했다.
+  - `/admin/care-feedbacks` 페이지를 추가해 issueType/outcome 필터, 관련 돌봄 글 링크, 요청자/지원자 맥락, 피드백 메모를 표시한다.
+  - `/admin/ops` 운영 큐 요약에 돌봄 이슈 신호 수 카드를 추가했다.
+  - 관리자 섹션 내비게이션에 `돌봄 이슈 신호` 링크를 추가했다.
+  - 기존 신고 큐, 공개 피드, 검색, 프로필에는 완료 피드백 이슈를 노출하지 않는다.
+- 코드문서:
+  - [app/src/server/queries/care-feedback.queries.ts](../app/src/server/queries/care-feedback.queries.ts)
+  - [app/src/app/admin/care-feedbacks/page.tsx](../app/src/app/admin/care-feedbacks/page.tsx)
+  - [app/src/app/admin/ops/page.tsx](../app/src/app/admin/ops/page.tsx)
+  - [app/src/components/admin/admin-section-nav.tsx](../app/src/components/admin/admin-section-nav.tsx)
+  - [app/src/server/queries/ops-overview.queries.ts](../app/src/server/queries/ops-overview.queries.ts)
+  - [business/policies/구인구직_운영규칙.md](../business/policies/구인구직_운영규칙.md)
+  - [business/product/Phase2_로드맵_PRD.md](../business/product/Phase2_로드맵_PRD.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm -C app typecheck` 통과
+  - `corepack pnpm -C app lint` 통과
+  - `corepack pnpm -C app test -- src/server/queries/care-feedback.queries.test.ts src/server/queries/ops-overview.queries.test.ts` 통과, 206 files / 1012 tests
+- 결과:
+  - 운영자는 `/admin/care-feedbacks`에서 돌봄 완료 피드백 이슈 신호를 확인할 수 있다.
+  - 다음 작업은 `Care Request M7 케어 플로우 로컬 검증`이다.
