@@ -1750,3 +1750,25 @@
 - 결과:
   - 운영자는 `db:restore:local` 또는 `db:seed:care-demo` 후 `/feed?type=CARE_REQUEST&page=1`, `/admin/care-feedbacks`, `/admin/ops` 순서로 케어 흐름을 재현할 수 있다.
   - 다음 작업은 `Care Request M10 관리자 큐 처리 상태 preflight`다.
+
+### 2026-04-26 | Care Request M10 관리자 큐 처리 상태 preflight
+- 완료일: `2026-04-26`
+- 배경:
+  - M9로 운영자는 이슈 신호를 재현할 수 있게 됐지만, `/admin/care-feedbacks`에서 확인 후 처리 상태를 남길 방법은 없었다.
+  - 이 신호는 신고가 아니라 비공개 완료 피드백이므로 신고 큐 모델을 그대로 재사용할지 별도 큐를 만들지 결정이 필요했다.
+- 변경내용:
+  - 별도 dispute/queue table을 만들지 않고 `CareCompletionFeedback`에 검토 상태와 운영자 메모를 붙이기로 결정했다.
+  - 구현 범위는 `CareFeedbackReviewStatus`, `reviewStatus`, `reviewNote`, `reviewedAt`, `reviewedBy`, 관리자 service/action, `/admin/care-feedbacks` 상태 필터/처리 폼으로 확정했다.
+  - 처리 이력은 `ReportAudit`이 아니라 `ModerationActionLog`의 `CARE_FEEDBACK_REVIEWED` action으로 남기기로 했다.
+  - 자동 제재, 자동 숨김, 공개 평판 점수, 증빙 업로드, 결제/보험 dispute table은 계속 보류했다.
+- 코드문서:
+  - [business/policies/구인구직_운영규칙.md](../business/policies/구인구직_운영규칙.md)
+  - [business/operations/돌봄_운영_런북.md](../business/operations/돌봄_운영_런북.md)
+  - [business/product/Phase2_로드맵_PRD.md](../business/product/Phase2_로드맵_PRD.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `/admin/care-feedbacks` 현재 조회 모델과 `CareCompletionFeedback`, `Report`, `ReportAudit`, `ModerationActionLog` 스키마를 확인했다.
+  - 문서 변경에 한정해 active plan, progress, policy, roadmap archive를 동기화했다.
+- 결과:
+  - 다음 작업은 `Care Request M10 관리자 큐 처리 상태 구현`이다.

@@ -26,17 +26,17 @@
 
 ## Active Plan
 
-### Care Request M10 관리자 큐 처리 상태 preflight
+### Care Request M10 관리자 큐 처리 상태 구현
 
 상태: `pending`
 
-- 목표: 돌봄 이슈 신호 큐에 처리 상태/운영자 메모를 붙일지 범위와 모델 경계를 확정한다.
-- 범위: `/admin/care-feedbacks` 처리 workflow, 상태 enum/메모 저장 위치, audit/log 필요성, 필터 UX.
+- 목표: 돌봄 이슈 신호 큐에 검토 상태와 운영자 메모를 추가한다.
+- 범위: Prisma enum/필드, 처리 service/action, `CARE_FEEDBACK_REVIEWED` moderation log, `/admin/care-feedbacks` 상태 필터/폼, tests.
 - 제외: 자동 제재, 공개 평판 점수, 결제/보험 분쟁 처리, 증빙 업로드.
-- 완료 기준: 구현 여부와 최소 모델/서비스/UI/test 범위를 정하고, 보류 항목을 문서화한다.
+- 완료 기준: 운영자가 이슈 신호를 `PENDING/REVIEWING/RESOLVED/DISMISSED`로 분류하고 메모를 남길 수 있다.
 
 ## 다음 실행 순서
 
-1. 현재 `/admin/care-feedbacks` 조회 모델과 운영자 사용 흐름을 읽는다.
-2. 처리 상태/메모를 `CareCompletionFeedback`에 붙일지 별도 queue table로 둘지 결정한다.
-3. 구현 범위, 테스트 범위, 보류 항목을 정책/계획 문서에 정리한다.
+1. Prisma schema와 migration에 review status/note 필드를 추가한다.
+2. 관리자 전용 service/action과 audit log를 구현한다.
+3. `/admin/care-feedbacks` 상태 필터/처리 폼과 seed/tests를 갱신한다.
