@@ -1,6 +1,6 @@
 # PLAN.md
 
-기준일: 2026-04-26
+기준일: 2026-05-07
 목표: TownPet를 기능/운영/품질 기준에서 "완성도 높은 커뮤니티" 상태로 끌어올린다.
 완료 이력 archive: [COMPLETED.md](./COMPLETED.md)
 
@@ -26,17 +26,20 @@
 
 ## Active Plan
 
-### Care Request M19 운영 smoke secret/계정 실제 주입
+### Release Confidence Hardening
 
-상태: `blocked`
+상태: `pending`
 
-- 목표: 운영 환경 또는 현재 실행 셸에 internal health token과 전용 smoke 계정을 실제로 준비한다.
-- 범위: `OPS_HEALTH_INTERNAL_TOKEN`, 선택 Sentry secret, `CARE_SMOKE_*_EMAIL` 식별자와 실제 로그인 가능 계정.
-- 제외: secret 값 문서화, 비밀번호 공유, 실사용자 데이터 변경, 결제/보험/정산.
-- 완료 기준: `ops:check:care-smoke-readiness`가 `PASS`가 되고 production smoke 실행 단계로 넘어갈 수 있다.
+- 목표: pre-mortem에서 나온 P0/P1 loophole을 순서대로 제거해 운영 배포 확신도를 최대한 끌어올린다.
+- 범위: 런타임 고정, production smoke 준비/실행, 관리자 운영 루틴 e2e, abuse/policy gap 점검, 문서-스크립트 동기화.
+- 제외: secret 값 문서화, 실사용자 데이터 변경, 결제/보험/정산, 자동 제재 강행.
+- 완료 기준: `quality:check`, internal health, care production smoke, 관리자 운영 루틴 smoke가 PASS하거나 남은 No-Go가 구체적으로 기록된다.
 
 ## 다음 실행 순서
 
-1. `OPS_HEALTH_INTERNAL_TOKEN` 또는 `HEALTH_INTERNAL_TOKEN`을 현재 실행 환경에 주입한다.
-2. `CARE_SMOKE_ADMIN_EMAIL`, `CARE_SMOKE_REQUESTER_EMAIL`, `CARE_SMOKE_CAREGIVER_EMAIL`을 실제 운영 테스트 계정으로 주입한다.
-3. `corepack pnpm -C app ops:check:care-smoke-readiness`가 `PASS`인지 확인한다.
+1. Node/pnpm 표준화: Node 20 LTS 기준 파일/문서/CI를 맞추고 Corepack key 오류 재발을 막는다.
+2. Smoke 준비값 확보: `OPS_HEALTH_INTERNAL_TOKEN`, 전용 smoke 계정, 선택 Sentry secret을 값 노출 없이 확인한다.
+3. Production smoke: public/internal health, `pg_trgm`, care smoke, 테스트 데이터 정리 여부를 확인한다.
+4. 관리자 운영 루틴 e2e: `/admin/ops`, `/admin/reports`, `/admin/care-feedbacks`, `/admin/auth-audits`를 10분 루틴으로 고정한다.
+5. Abuse/policy gap 점검: 피드/검색/작성/신고/케어 흐름의 rate limit, 신규유저 제한, 연락처/링크 제한, 감사 로그를 재검증한다.
+6. 문서-자동화 동기화: 런북 명령을 package script/test와 맞추고 남은 No-Go를 `PROGRESS.md`/`COMPLETED.md`에 기록한다.
