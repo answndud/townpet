@@ -261,9 +261,12 @@ export function PostCreateForm({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [draftLoaded, setDraftLoaded] = useState(false);
+  const [isClientReady, setIsClientReady] = useState(false);
+  const [isDraftHydrated, setIsDraftHydrated] = useState(false);
   const [draftMessage, setDraftMessage] = useState<string | null>(null);
   const [draftSavedAt, setDraftSavedAt] = useState<string | null>(null);
+  const titleInputRef = useRef<HTMLInputElement | null>(null);
+  const latestTitleRef = useRef("");
   const editorHandleRef = useRef<PostBodyRichEditorHandle | null>(null);
   const latestEditorContentRef = useRef("");
   const latestEditorImageUrlsRef = useRef<string[]>([]);
@@ -343,6 +346,11 @@ export function PostCreateForm({
   });
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Keep SSR-controlled fields inert until hydration can preserve user input.
+    setIsClientReady(true);
+  }, []);
+
+  useEffect(() => {
     latestEditorContentRef.current = formState.content;
     latestEditorImageUrlsRef.current = formState.imageUrls;
   }, [formState.content, formState.imageUrls]);
@@ -352,49 +360,58 @@ export function PostCreateForm({
       return;
     }
 
-    const timer = window.setTimeout(() => {
-      const stored = window.localStorage.getItem(DRAFT_STORAGE_KEY);
-      if (!stored) {
-        setDraftLoaded(true);
-        return;
-      }
+    const stored = window.localStorage.getItem(DRAFT_STORAGE_KEY);
+    if (!stored) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- The form becomes interactive only after local draft restore has been checked.
+      setIsDraftHydrated(true);
+      return;
+    }
 
-      const parsed = parsePostDraftPayload<Partial<PostCreateFormState>>(
-        stored,
-        isDraftFormState,
-      );
-      if (parsed.status === "ready") {
-        const draftForm = parsed.draft.form;
-        setFormState((prev) => ({
-          ...prev,
-          ...draftForm,
-          petTypeId: draftForm.petTypeId ?? prev.petTypeId,
-          reviewCategory: draftForm.reviewCategory ?? prev.reviewCategory,
-          animalTagsInput: draftForm.animalTagsInput ?? "",
-          marketListing: draftForm.marketListing ?? prev.marketListing,
-          careRequest: draftForm.careRequest ?? prev.careRequest,
-          guestDisplayName: draftForm.guestDisplayName ?? "",
-          guestPassword: "",
-        }));
-        setDraftSavedAt(parsed.draft.savedAt);
-        setDraftMessage("임시저장을 불러왔습니다.");
-      } else if (parsed.status === "expired") {
-        window.localStorage.removeItem(DRAFT_STORAGE_KEY);
-        setDraftMessage("만료된 임시저장을 삭제했습니다.");
-      } else if (parsed.status === "invalid") {
-        window.localStorage.removeItem(DRAFT_STORAGE_KEY);
-        setDraftMessage("임시저장을 읽을 수 없어 초기화했습니다.");
+    const parsed = parsePostDraftPayload<Partial<PostCreateFormState>>(
+      stored,
+      isDraftFormState,
+    );
+    if (parsed.status === "ready") {
+      const draftForm = parsed.draft.form;
+      const draftTitle = draftForm.title ?? "";
+      latestTitleRef.current = draftTitle;
+      if (titleInputRef.current) {
+        titleInputRef.current.value = draftTitle;
       }
-      setDraftLoaded(true);
-    }, 0);
-
-    return () => {
-      window.clearTimeout(timer);
-    };
+      setFormState((prev) => ({
+        ...prev,
+        ...draftForm,
+        petTypeId: draftForm.petTypeId ?? prev.petTypeId,
+        reviewCategory: draftForm.reviewCategory ?? prev.reviewCategory,
+        animalTagsInput: draftForm.animalTagsInput ?? "",
+        marketListing: draftForm.marketListing ?? prev.marketListing,
+        careRequest: draftForm.careRequest ?? prev.careRequest,
+        guestDisplayName: draftForm.guestDisplayName ?? "",
+        guestPassword: "",
+      }));
+      setDraftSavedAt(parsed.draft.savedAt);
+      setDraftMessage("임시저장을 불러왔습니다.");
+    } else if (parsed.status === "expired") {
+      window.localStorage.removeItem(DRAFT_STORAGE_KEY);
+      setDraftMessage("만료된 임시저장을 삭제했습니다.");
+    } else if (parsed.status === "invalid") {
+      window.localStorage.removeItem(DRAFT_STORAGE_KEY);
+      setDraftMessage("임시저장을 읽을 수 없어 초기화했습니다.");
+    }
+    setIsDraftHydrated(true);
   }, []);
 
   useEffect(() => {
-    if (!draftLoaded || typeof window === "undefined") {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const hasDraftContent =
+      latestTitleRef.current.trim().length > 0 ||
+      formState.content.trim().length > 0 ||
+      formState.imageUrls.length > 0 ||
+      formState.guestDisplayName?.trim().length > 0;
+    if (!hasDraftContent) {
       return;
     }
 
@@ -405,6 +422,7 @@ export function PostCreateForm({
         JSON.stringify(
           buildPostDraftPayload({
             ...formState,
+            title: latestTitleRef.current,
             guestPassword: "",
           }),
         ),
@@ -415,7 +433,7 @@ export function PostCreateForm({
     return () => {
       window.clearTimeout(timer);
     };
-  }, [draftLoaded, formState]);
+  }, [formState]);
 
   const neighborhoodOptions = useMemo(
     () =>
@@ -646,6 +664,11 @@ export function PostCreateForm({
     const editorSnapshot = editorHandleRef.current?.getSerializedState();
     const serializedContent = editorSnapshot?.content ?? latestEditorContentRef.current;
     const serializedImageUrls = editorSnapshot?.imageUrls ?? latestEditorImageUrlsRef.current;
+    const normalizedTitle = latestTitleRef.current.trim();
+    if (!normalizedTitle) {
+      setError("제목을 입력해 주세요.");
+      return;
+    }
     if (!serializedContent.trim()) {
       setError("내용을 입력해 주세요.");
       return;
@@ -704,7 +727,7 @@ export function PostCreateForm({
 
     startTransition(async () => {
       const payload = {
-        title: formState.title,
+        title: normalizedTitle,
         content: serializedContent,
         type: resolvedType,
         reviewCategory: shouldAttachReviewCategory ? formState.reviewCategory : undefined,
@@ -895,6 +918,10 @@ export function PostCreateForm({
         guestDisplayName: "",
         guestPassword: "",
       }));
+      latestTitleRef.current = "";
+      if (titleInputRef.current) {
+        titleInputRef.current.value = "";
+      }
     });
   };
 
@@ -903,9 +930,10 @@ export function PostCreateForm({
       ? "병원후기, 입양, 봉사 모집은 온동네로 고정됩니다. 동네모임과 돌봄 요청은 대표 동네 범위로 등록됩니다."
       : "대표 동네를 설정해야 동네 기반 글을 작성할 수 있습니다."
     : "비회원 글은 전체로만 등록됩니다. 외부 링크, 연락처, 고위험 카테고리는 제한됩니다.";
+  const isFormInteractive = isClientReady && isDraftHydrated;
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-5" noValidate>
       <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
       <section className="tp-card overflow-hidden">
         <div className="tp-form-section-bar">
@@ -917,11 +945,13 @@ export function PostCreateForm({
           <label className="tp-form-label">
             제목
             <input
+              ref={titleInputRef}
               className="tp-input-soft min-h-11 px-3 py-2 text-sm"
-              value={formState.title}
-              onChange={(event) =>
-                setFormState((prev) => ({ ...prev, title: event.target.value }))
-              }
+              defaultValue={formState.title}
+              onChange={(event) => {
+                latestTitleRef.current = event.target.value;
+              }}
+              disabled={!isFormInteractive}
               maxLength={POST_TITLE_MAX_LENGTH}
               placeholder="제목을 입력해 주세요"
               required
@@ -2163,7 +2193,7 @@ export function PostCreateForm({
           <button
             type="submit"
             className="tp-btn-primary tp-btn-md inline-flex w-full items-center justify-center px-6 text-sm disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0] sm:w-auto"
-            disabled={isPending}
+            disabled={isPending || !isFormInteractive}
           >
             {isPending ? "등록 중..." : "등록"}
           </button>

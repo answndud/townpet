@@ -298,6 +298,8 @@
 
 ### P1-5. upload/media hardening을 보강한다
 
+상태: `completed`
+
 - 문제: 업로드는 signature/Sharp 처리가 있으나 GIF 원본 유지, raw `<img>`, remote/local mixed media 정책이 남아 있다.
 - 대상:
   - `app/src/server/upload.ts`
@@ -317,6 +319,12 @@
   - `pnpm -C app test:e2e:upload`
 - 완료 기준:
   - 업로드가 storage 비용/성능/보안 사고의 열린 입구가 아니다.
+- 결과:
+  - 업로드 저장 전 polyglot/script payload, corrupt image, HEIC/HEIF/AVIF metadata failure, GIF 용량/프레임/픽셀 제한을 검증한다.
+  - `/media` proxy가 저장된 trusted pathname과 요청 pathname 불일치를 거부하고, upstream non-image content-type을 차단하며 `nosniff`를 붙인다.
+  - 게시글 상세 media gallery의 raw image 사용을 내부 공용 fallback component로 감쌌다.
+  - 글쓰기 draft hydration과 제목 입력이 업로드 e2e를 깨지 않도록 제목 입력과 editor rerender를 분리했다.
+  - 검증: upload/media targeted unit PASS, `test:e2e:upload` PASS, `quality:check` PASS.
 
 ### P1-6. 거대 컴포넌트와 monolith query/service를 분해한다
 

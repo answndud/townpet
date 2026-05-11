@@ -23,6 +23,17 @@ const MAX_UPLOAD_SIZE_BYTES = 12 * 1024 * 1024;
 const MAX_PROCESSED_IMAGE_SIDE = 2048;
 const MAX_THUMBNAIL_SIDE = 480;
 const MAX_SHARP_INPUT_PIXELS = 36_000_000;
+const MAX_GIF_SIZE_BYTES = 6 * 1024 * 1024;
+const MAX_GIF_FRAMES = 60;
+const MAX_ANIMATED_IMAGE_PIXELS = 36_000_000;
+const SCRIPT_PAYLOAD_PATTERNS = [
+  "<script",
+  "</script",
+  "<?php",
+  "<svg",
+  "onerror=",
+  "onload=",
+] as const;
 
 type SaveUploadedImageOptions = {
   maxSizeBytes?: number;
@@ -144,6 +155,80 @@ function validateImageSignature(mimeType: string, buffer: Buffer) {
 
   if (!isValid) {
     throw new ServiceError("이미지 파일 형식이 올바르지 않습니다.", "IMAGE_SIGNATURE_MISMATCH", 400);
+  }
+}
+
+function detectEmbeddedScriptPayload(buffer: Buffer) {
+  const ascii = buffer.toString("utf8").toLowerCase();
+  return SCRIPT_PAYLOAD_PATTERNS.some((pattern) => ascii.includes(pattern));
+}
+
+function isModernContainerImage(mimeType: string) {
+  return mimeType === "image/avif" || mimeType === "image/heic" || mimeType === "image/heif";
+}
+
+async function readImageMetadata(mimeType: string, rawBuffer: Buffer) {
+  try {
+    return await sharp(rawBuffer, {
+      animated: mimeType === "image/gif",
+      failOn: "error",
+      limitInputPixels: MAX_SHARP_INPUT_PIXELS,
+    }).metadata();
+  } catch {
+    if (isModernContainerImage(mimeType)) {
+      throw new ServiceError(
+        "이 이미지 형식은 서버에서 변환할 수 없습니다. JPG, PNG, WebP 형식으로 저장한 뒤 다시 업로드해 주세요.",
+        "IMAGE_TRANSCODE_UNSUPPORTED",
+        400,
+      );
+    }
+
+    throw new ServiceError(
+      "이미지를 처리하지 못했습니다. 다른 형식으로 저장한 뒤 다시 시도해 주세요.",
+      "IMAGE_PROCESSING_FAILED",
+      400,
+    );
+  }
+}
+
+async function validateImagePayload(mimeType: string, rawBuffer: Buffer) {
+  if (detectEmbeddedScriptPayload(rawBuffer)) {
+    throw new ServiceError(
+      "이미지 파일에 허용되지 않는 스크립트성 데이터가 포함되어 있습니다.",
+      "IMAGE_POLYGLOT_REJECTED",
+      400,
+    );
+  }
+
+  if (mimeType === "image/gif" && rawBuffer.byteLength > MAX_GIF_SIZE_BYTES) {
+    throw new ServiceError(
+      "GIF 이미지는 최대 6MB까지 업로드할 수 있습니다.",
+      "GIF_TOO_LARGE",
+      400,
+    );
+  }
+
+  const metadata = await readImageMetadata(mimeType, rawBuffer);
+  const width = metadata.width ?? 0;
+  const height = metadata.height ?? 0;
+  if (width <= 0 || height <= 0) {
+    throw new ServiceError(
+      "이미지 크기를 확인할 수 없습니다.",
+      "IMAGE_DIMENSIONS_UNREADABLE",
+      400,
+    );
+  }
+
+  if (mimeType === "image/gif") {
+    const frameCount = Math.max(metadata.pages ?? 1, 1);
+    const totalPixels = width * height * frameCount;
+    if (frameCount > MAX_GIF_FRAMES || totalPixels > MAX_ANIMATED_IMAGE_PIXELS) {
+      throw new ServiceError(
+        "GIF 이미지의 프레임 수나 해상도가 너무 큽니다.",
+        "GIF_TOO_COMPLEX",
+        400,
+      );
+    }
   }
 }
 
@@ -388,6 +473,7 @@ export async function saveUploadedImage(file: File, options?: SaveUploadedImageO
   }
 
   validateImageSignature(file.type, rawBuffer);
+  await validateImagePayload(file.type, rawBuffer);
 
   const processed = await processUploadedImage(file, rawBuffer);
   const filenameBase = `${Date.now()}-${randomUUID()}`;
