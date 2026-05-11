@@ -28,7 +28,7 @@
 
 ### 100점 Release Confidence Hardening
 
-상태: `pending`
+상태: `in_progress`
 
 #### 배경
 
@@ -79,6 +79,8 @@
 
 ### P0-1. CI/build gate를 실제 production failure 기준으로 올린다
 
+상태: `completed`
+
 - 문제: `quality:check`와 GitHub `quality-gate`가 `next build`를 포함하지 않아, 타입/테스트가 통과해도 Next build/runtime bundling failure를 놓칠 수 있다.
 - 대상:
   - `app/package.json`
@@ -99,6 +101,8 @@
   - build 없는 green 상태가 release-ready로 오인되지 않는다.
 
 ### P0-2. rendered HTML/XSS 안전성을 증명한다
+
+상태: `pending`
 
 - 문제: `markdown-lite`, editor preview, post detail, guest post detail이 custom HTML renderer와 `dangerouslySetInnerHTML`에 의존한다.
 - 대상:

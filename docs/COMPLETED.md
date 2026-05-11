@@ -2037,3 +2037,31 @@
 - 결과:
   - smoke 준비값은 표준 명령으로 확인 가능하다.
   - 실제 production smoke는 internal token과 운영 테스트 계정이 주입될 때까지 계속 blocked다.
+
+### 2026-05-11 | Release Confidence P0-1 CI/build gate
+- 완료일: `2026-05-11`
+- 배경:
+  - React Doctor식 점검과 pre-mortem에서 `quality:check`가 `next build`를 포함하지 않아 release-ready 착시를 만들 수 있다는 P0 gap을 확인했다.
+  - 실제로 build gate를 추가하자 Next production build phase에서 runtime env strict assert가 page data collection 중 실행되어 build가 실패했다.
+- 변경내용:
+  - `quality:check`를 `eslint -> tsc --noEmit -> vitest run -> next build` 순서로 강화했다.
+  - `quality:gate`는 `quality:check -> e2e smoke`로 재사용하도록 정리했다.
+  - GitHub `quality-gate` step 이름을 build 포함 기준으로 갱신했다.
+  - `assertRuntimeEnv`는 Next production build phase에서는 module-load assert를 건너뛰고, runtime validation과 Vercel strict preflight는 유지되도록 분리했다.
+  - env regression test와 app/agent 문서의 품질 게이트 설명을 갱신했다.
+- 코드문서:
+  - [app/package.json](../app/package.json)
+  - [.github/workflows/quality-gate.yml](../.github/workflows/quality-gate.yml)
+  - [app/src/lib/env.ts](../app/src/lib/env.ts)
+  - [app/src/lib/env.test.ts](../app/src/lib/env.test.ts)
+  - [AGENTS.md](../AGENTS.md)
+  - [app/README.md](../app/README.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app exec vitest run src/lib/env.test.ts`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+- 결과:
+  - CI/local 품질 게이트가 lint/typecheck/unit/build failure를 함께 잡는다.
+  - production runtime strict env 검증은 유지되고, build-time page data collection은 운영 secret 부재 때문에 실패하지 않는다.
+  - 다음 작업은 `P0-2 rendered HTML/XSS 안전성 증명`이다.

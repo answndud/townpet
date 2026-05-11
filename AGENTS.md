@@ -384,7 +384,7 @@ pnpm -C app dev
   - `pnpm -C app typecheck`
 - 기본 품질 체크:
   - `pnpm -C app quality:check`
-  - 현재 흐름은 `lint -> typecheck -> vitest run`
+  - 현재 흐름은 `lint -> typecheck -> vitest run -> next build`
 - 확장 게이트:
   - `pnpm -C app quality:gate`
   - 현재 흐름은 `quality:check -> e2e smoke`
