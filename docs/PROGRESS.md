@@ -117,13 +117,14 @@
   - 다섯 번째 slice로 병원/장소/산책/입양/봉사 structured fields와 datalist를 `post-create-structured-fields`로 분리했고, `post-create-form`을 912줄까지 줄였다.
   - 여섯 번째 slice로 submit payload assembly/validation/reset helper를 `post-create-submit`으로 분리했고, `post-create-form`을 692줄까지 줄였다.
   - 일곱 번째 slice로 상단 글 정보/비회원 인증 입력 블록을 `post-create-basic-fields` presentational component로 분리했고, `post-create-form`을 532줄까지 줄였다.
+  - 여덟 번째 slice로 작성 기준 aside/editor footer/submit footer를 `post-create-form-shell`로 분리했고, `post-create-form`을 485줄까지 줄였다.
   - 검증: structured fields/options/state targeted test PASS, `typecheck` PASS, `lint` PASS.
 - Vercel preview 배포 차단:
   - 원인: `build:vercel`이 `VERCEL_ENV=preview`도 strict security env preflight 대상으로 취급해 preview secret 구성이 production급이 아니면 빌드 전에 실패했다.
   - 수정: preview는 기본 skip으로 되돌리고, production/명시적 staging 또는 `DEPLOY_SECURITY_PREFLIGHT_STRICT=1`에서만 strict preflight를 실행한다.
   - 검증: `corepack pnpm@9.12.3 -C app exec vitest run scripts/vercel-build.test.ts` PASS.
 ## 다음 액션
-1. 같은 P1-6 내 다음 slice로 `post-create-form`의 작성 기준 aside/submit footer를 작은 presentational component로 분리한다.
+1. 같은 P1-6 내 다음 slice로 `post-create-form`의 type/scope 자동 보정 effect를 hook/helper로 분리한다.
 2. 이후 `post.queries`를 feed list/detail/search/admin/care-adoption read model 단위로 분해할 경계와 기존 테스트 매핑을 잡는다.
 3. 각 slice마다 targeted test, `typecheck`, `lint`를 실행하고 작은 커밋으로 끊는다.
 
