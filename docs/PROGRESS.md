@@ -21,7 +21,7 @@
 - Care Request M10 관리자 큐 처리 상태와 M11 모바일/빈 상태 polish를 완료했다
 - Care Request M12 운영 threshold와 M13-M18 production smoke 준비/보류/tooling을 완료했다
 - Release Confidence Hardening 상세 계획과 P0-1 CI/build gate, P0-2 rendered HTML/XSS 안전성, P0-3 abuse-prone write path Redis 장애 failure mode, P0-4 production smoke readiness blocker, P1-1 원격 production smoke, P1-2 hot-path browser gate 자동화, P1-3 metadata/SEO 누락 제거, P1-4 privacy hardening, P1-5 upload/media hardening을 완료했다.
-- 다음 작업: P1-6 거대 컴포넌트와 monolith query/service 분해
+- 현재 작업: P1-6 거대 컴포넌트와 monolith query/service 분해
 
 ## 열린 blocker
 - 원격 production smoke는 GitHub Actions `ops-smoke-checks` run `25645368457` 기준 PASS했다.
@@ -108,10 +108,14 @@
   - `/media` route가 stored source pathname mismatch와 upstream non-image content-type을 거부하고 `X-Content-Type-Options: nosniff`를 보낸다.
   - 게시글 상세 media gallery에 image fallback wrapper를 추가했고, 글쓰기 제목 입력은 editor rerender와 분리해 upload e2e를 안정화했다.
   - 검증: targeted upload/media Vitest 34개 PASS, `test:e2e:upload` PASS, `quality:check` PASS.
+- Release Confidence Hardening P1-6:
+  - 1차 inventory: `post-create-form` 2204줄, `post-detail-client` 1727줄, `post-comment-thread` 1135줄, `feed-infinite-list` 821줄, `feed/page` 1102줄, `post.queries` 4850줄, `post.service` 3210줄.
+  - 첫 slice로 `post-create-form` 상태 타입/초기값/draft guard를 `post-create-form-state`로 분리했다.
+  - 검증: `post-create-form-state`/draft storage targeted test PASS, `typecheck` PASS, `lint` PASS.
 ## 다음 액션
-1. P1-6 착수 전 `post-create-form`, `post-detail-client`, `post-comment-thread`, `feed/page`, `post.queries`, `post.service`의 현재 줄 수와 책임 경계를 inventory한다.
-2. 동작 변경 없이 먼저 추출 가능한 helper/component/service slice를 정하고, 각 slice별 기존 targeted test를 매핑한다.
-3. 첫 커밋은 `post-create-form` draft/title/editor/submit 경계 분리부터 작게 진행한다.
+1. 같은 P1-6 내 다음 slice로 `post-create-form`의 option constants 또는 structured field sections를 별도 파일로 분리한다.
+2. 이후 `post.queries`를 feed list/detail/search/admin/care-adoption read model 단위로 분해할 경계와 기존 테스트 매핑을 잡는다.
+3. 각 slice마다 targeted test, `typecheck`, `lint`를 실행하고 작은 커밋으로 끊는다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)

@@ -328,6 +328,8 @@
 
 ### P1-6. 거대 컴포넌트와 monolith query/service를 분해한다
 
+상태: `in_progress`
+
 - 문제: 500~4800줄 파일들이 많아 회귀 수정 속도와 AI/사람 리뷰 품질이 떨어진다.
 - 대상:
   - `app/src/components/posts/post-create-form.tsx`
@@ -351,6 +353,9 @@
   - hot-path e2e
 - 완료 기준:
   - 핵심 파일이 700~900줄 이하 또는 명확한 책임 단위로 줄어든다.
+- 진행:
+  - 1차 inventory: `post-create-form` 2204줄, `post-detail-client` 1727줄, `post-comment-thread` 1135줄, `feed-infinite-list` 821줄, `feed/page` 1102줄, `post.queries` 4850줄, `post.service` 3210줄.
+  - 첫 slice: `post-create-form` 상태 타입/초기값/draft guard를 `post-create-form-state`로 분리.
 
 ### P1-7. 운영 관리자 루틴을 10분 smoke로 고정한다
 
