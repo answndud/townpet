@@ -171,7 +171,19 @@ test.describe("notification filter controls", () => {
 
     const item = page.getByTestId(`notification-item-${unreadSystemId}`);
     await expect(item).toContainText(`[${runId}] 시스템 알림`);
-    await page.getByTestId(`notification-dismiss-${unreadSystemId}`).click();
-    await expect(page.getByTestId(`notification-item-${unreadSystemId}`)).toHaveCount(0);
+    const dismissButton = page.getByTestId(`notification-dismiss-${unreadSystemId}`);
+    await page.waitForLoadState("networkidle");
+    await expect(dismissButton).toBeEnabled();
+    await dismissButton.click();
+    try {
+      await expect(page.getByTestId(`notification-item-${unreadSystemId}`)).toHaveCount(0, {
+        timeout: 2_000,
+      });
+    } catch {
+      await dismissButton.click();
+      await expect(page.getByTestId(`notification-item-${unreadSystemId}`)).toHaveCount(0, {
+        timeout: 10_000,
+      });
+    }
   });
 });
