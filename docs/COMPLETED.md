@@ -2117,3 +2117,25 @@
 - 결과:
   - Redis/Upstash 장애가 high-risk write path abuse 방어 무력화로 바로 이어지지 않는다.
   - 다음 작업은 `P0-4 production smoke blocker 값/계정 단위 제거`다.
+
+### 2026-05-11 | Release Confidence P0-4 production smoke readiness unblock
+- 완료일: `2026-05-11`
+- 배경:
+  - 이전 production smoke는 internal health token, Sentry secret, 운영 smoke 계정 식별자가 어디에 준비돼 있는지 불명확해 실행 전부터 blocked 상태였다.
+  - P1 원격 smoke로 넘어가기 전에 값 노출 없이 “설정됨/미설정”과 CI 주입 경로를 고정해야 했다.
+- 변경내용:
+  - GitHub Actions secret inventory에서 `HEALTH_INTERNAL_TOKEN`, `SENTRY_DSN`, `SENTRY_AUTH_TOKEN`, `SENTRY_ORG_SLUG`, `SENTRY_PROJECT_SLUG`가 설정돼 있음을 확인했다.
+  - GitHub repository variables에 `CARE_SMOKE_ADMIN_EMAIL`, `CARE_SMOKE_REQUESTER_EMAIL`, `CARE_SMOKE_CAREGIVER_EMAIL`을 표준 smoke 식별자로 설정했다.
+  - `ops-smoke-checks` workflow가 health/prewarm 전에 `ops:check:care-smoke-readiness`를 실행하도록 추가했다.
+  - readiness는 secret 값을 출력하지 않고 PASS/WARN/BLOCKED만 기록한다.
+- 코드문서:
+  - [.github/workflows/ops-smoke-checks.yml](../.github/workflows/ops-smoke-checks.yml)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `gh secret list --repo answndud/townpet`
+  - `gh variable list --repo answndud/townpet`
+  - `HEALTH_INTERNAL_TOKEN=dummy CARE_SMOKE_ADMIN_EMAIL=care.smoke.admin@townpet.dev CARE_SMOKE_REQUESTER_EMAIL=care.smoke.requester@townpet.dev CARE_SMOKE_CAREGIVER_EMAIL=care.smoke.caregiver@townpet.dev SENTRY_DSN=dummy SENTRY_AUTH_TOKEN=dummy SENTRY_ORG_SLUG=dummy SENTRY_PROJECT_SLUG=dummy corepack pnpm@9.12.3 -C app ops:check:care-smoke-readiness`
+- 결과:
+  - production smoke readiness의 값/계정 blocker는 CI에서 확인 가능한 상태로 정리됐다.
+  - 실제 운영 계정 존재/권한, remote health, `pg_trgm`, prewarm, Sentry ingestion 실행 결과는 `P1-1 production smoke 실제 원격 실행`에서 검증한다.

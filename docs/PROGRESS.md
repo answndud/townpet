@@ -20,12 +20,12 @@
 - Care Request M9 운영 런북/데모 seed를 완료했다
 - Care Request M10 관리자 큐 처리 상태와 M11 모바일/빈 상태 polish를 완료했다
 - Care Request M12 운영 threshold와 M13-M18 production smoke 준비/보류/tooling을 완료했다
-- Release Confidence Hardening 상세 계획과 P0-1 CI/build gate, P0-2 rendered HTML/XSS 안전성, P0-3 abuse-prone write path Redis 장애 failure mode 정리를 완료했다.
-- 다음 작업: P0-4 production smoke blocker 값/계정 단위 제거
+- Release Confidence Hardening 상세 계획과 P0-1 CI/build gate, P0-2 rendered HTML/XSS 안전성, P0-3 abuse-prone write path Redis 장애 failure mode, P0-4 production smoke readiness blocker 정리를 완료했다.
+- 다음 작업: P1-1 production smoke 실제 원격 실행
 
 ## 열린 blocker
-- Production smoke는 `ops:check:care-smoke-readiness`가 `PASS`가 될 때까지 blocked다.
-- P0-2 이후 production smoke 단계는 여전히 internal token과 운영 smoke 계정 준비가 필요하다.
+- Production smoke는 실제 원격 `ops-smoke-checks` 실행과 운영 smoke 계정 존재/권한 확인 전까지 blocked다.
+- 로컬 환경에는 실제 secret 값이 없으므로 internal health/pg_trgm 확인은 GitHub Actions 또는 운영 secret 주입 환경에서 실행해야 한다.
 
 ## 직전 검증
 - Care Request M1-M6:
@@ -78,10 +78,15 @@
   - 인증 작성 throttle은 모든 user/ip/fingerprint/scope limit에 closed mode를 적용했다.
   - 게스트 작성/수정/삭제/댓글, 업로드, guest step-up, 검색 로그, 개인화 metric write에 closed mode를 적용했다.
   - 검증: targeted 9개 테스트 파일, `corepack pnpm@9.12.3 -C app quality:check` 통과.
+- Release Confidence Hardening P0-4:
+  - GitHub Actions secret inventory에서 `HEALTH_INTERNAL_TOKEN`, Sentry 4종 secret 설정 여부를 값 노출 없이 확인했다.
+  - GitHub repository variables에 표준 smoke 계정 식별자 3종을 설정했다.
+  - `ops-smoke-checks`가 health/prewarm 전에 `ops:check:care-smoke-readiness`를 실행하도록 추가했다.
+  - 검증: `HEALTH_INTERNAL_TOKEN=dummy ... corepack pnpm@9.12.3 -C app ops:check:care-smoke-readiness` PASS.
 ## 다음 액션
-1. P0-4에서 `OPS_HEALTH_INTERNAL_TOKEN` 또는 `HEALTH_INTERNAL_TOKEN`, `CARE_SMOKE_*_EMAIL`, 선택 Sentry secret 준비 여부를 값 노출 없이 확인한다.
-2. `ops:check:care-smoke-readiness`가 PASS인지 확인하고, blocker가 남으면 secret/계정/외부서비스 단위로 기록한다.
-3. 준비값이 확보되면 P1-1 원격 production smoke로 이어간다.
+1. P1-1에서 `ops-smoke-checks`를 원격 기준으로 실행한다.
+2. `verify_pg_trgm=true`, 필요 시 `verify_sentry=true`로 internal health와 Sentry ingestion을 확인한다.
+3. 운영 smoke 계정이 실제로 존재하고 필요한 role/session 조건을 만족하는지 브라우저 smoke로 확인한다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)
