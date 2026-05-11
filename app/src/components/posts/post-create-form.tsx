@@ -26,15 +26,10 @@ import {
 import { getClientFingerprint } from "@/lib/guest-client";
 import { getGuestWriteHeaders } from "@/lib/guest-step-up.client";
 import {
-  buildPostDraftPayload,
-  parsePostDraftPayload,
-} from "@/lib/post-draft-storage";
-import {
   createInitialPostCreateFormState,
-  isDraftFormState,
-  POST_CREATE_DRAFT_STORAGE_KEY,
   type PostCreateFormState,
 } from "@/components/posts/post-create-form-state";
+import { usePostCreateDraft } from "@/components/posts/use-post-create-draft";
 import {
   careTypeOptions,
   marketConditionOptions,
@@ -111,10 +106,6 @@ export function PostCreateForm({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [isClientReady, setIsClientReady] = useState(false);
-  const [isDraftHydrated, setIsDraftHydrated] = useState(false);
-  const [draftMessage, setDraftMessage] = useState<string | null>(null);
-  const [draftSavedAt, setDraftSavedAt] = useState<string | null>(null);
   const titleInputRef = useRef<HTMLInputElement | null>(null);
   const latestTitleRef = useRef("");
   const editorHandleRef = useRef<PostBodyRichEditorHandle | null>(null);
@@ -125,94 +116,22 @@ export function PostCreateForm({
   );
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- Keep SSR-controlled fields inert until hydration can preserve user input.
-    setIsClientReady(true);
-  }, []);
-
-  useEffect(() => {
     latestEditorContentRef.current = formState.content;
     latestEditorImageUrlsRef.current = formState.imageUrls;
   }, [formState.content, formState.imageUrls]);
 
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    const stored = window.localStorage.getItem(POST_CREATE_DRAFT_STORAGE_KEY);
-    if (!stored) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- The form becomes interactive only after local draft restore has been checked.
-      setIsDraftHydrated(true);
-      return;
-    }
-
-    const parsed = parsePostDraftPayload<Partial<PostCreateFormState>>(
-      stored,
-      isDraftFormState,
-    );
-    if (parsed.status === "ready") {
-      const draftForm = parsed.draft.form;
-      const draftTitle = draftForm.title ?? "";
-      latestTitleRef.current = draftTitle;
-      if (titleInputRef.current) {
-        titleInputRef.current.value = draftTitle;
-      }
-      setFormState((prev) => ({
-        ...prev,
-        ...draftForm,
-        petTypeId: draftForm.petTypeId ?? prev.petTypeId,
-        reviewCategory: draftForm.reviewCategory ?? prev.reviewCategory,
-        animalTagsInput: draftForm.animalTagsInput ?? "",
-        marketListing: draftForm.marketListing ?? prev.marketListing,
-        careRequest: draftForm.careRequest ?? prev.careRequest,
-        guestDisplayName: draftForm.guestDisplayName ?? "",
-        guestPassword: "",
-      }));
-      setDraftSavedAt(parsed.draft.savedAt);
-      setDraftMessage("임시저장을 불러왔습니다.");
-    } else if (parsed.status === "expired") {
-      window.localStorage.removeItem(POST_CREATE_DRAFT_STORAGE_KEY);
-      setDraftMessage("만료된 임시저장을 삭제했습니다.");
-    } else if (parsed.status === "invalid") {
-      window.localStorage.removeItem(POST_CREATE_DRAFT_STORAGE_KEY);
-      setDraftMessage("임시저장을 읽을 수 없어 초기화했습니다.");
-    }
-    setIsDraftHydrated(true);
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    const hasDraftContent =
-      latestTitleRef.current.trim().length > 0 ||
-      formState.content.trim().length > 0 ||
-      formState.imageUrls.length > 0 ||
-      formState.guestDisplayName?.trim().length > 0;
-    if (!hasDraftContent) {
-      return;
-    }
-
-    const timer = window.setTimeout(() => {
-      const savedAt = new Date().toISOString();
-      window.localStorage.setItem(
-        POST_CREATE_DRAFT_STORAGE_KEY,
-        JSON.stringify(
-          buildPostDraftPayload({
-            ...formState,
-            title: latestTitleRef.current,
-            guestPassword: "",
-          }),
-        ),
-      );
-      setDraftSavedAt(savedAt);
-    }, 500);
-
-    return () => {
-      window.clearTimeout(timer);
-    };
-  }, [formState]);
+  const {
+    clearDraft,
+    draftMessage,
+    draftSavedAt,
+    isFormInteractive,
+    markDraftSubmitted,
+  } = usePostCreateDraft({
+    formState,
+    latestTitleRef,
+    setFormState,
+    titleInputRef,
+  });
 
   const neighborhoodOptions = useMemo(
     () =>
@@ -428,15 +347,6 @@ export function PostCreateForm({
   const hasMarketListing = showMarketListing;
   const hasCareRequest = showCareRequest;
 
-  const clearDraft = () => {
-    if (typeof window === "undefined") {
-      return;
-    }
-    window.localStorage.removeItem(POST_CREATE_DRAFT_STORAGE_KEY);
-    setDraftSavedAt(null);
-    setDraftMessage("임시저장을 삭제했습니다.");
-  };
-
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
@@ -624,11 +534,7 @@ export function PostCreateForm({
         return;
       }
 
-      if (typeof window !== "undefined") {
-        window.localStorage.removeItem(POST_CREATE_DRAFT_STORAGE_KEY);
-      }
-      setDraftSavedAt(null);
-      setDraftMessage("게시글을 등록해 임시저장을 비웠습니다.");
+      markDraftSubmitted();
       router.push("/feed");
       router.refresh();
       setFormState((prev) => ({
@@ -709,8 +615,6 @@ export function PostCreateForm({
       ? "병원후기, 입양, 봉사 모집은 온동네로 고정됩니다. 동네모임과 돌봄 요청은 대표 동네 범위로 등록됩니다."
       : "대표 동네를 설정해야 동네 기반 글을 작성할 수 있습니다."
     : "비회원 글은 전체로만 등록됩니다. 외부 링크, 연락처, 고위험 카테고리는 제한됩니다.";
-  const isFormInteractive = isClientReady && isDraftHydrated;
-
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5" noValidate>
       <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
