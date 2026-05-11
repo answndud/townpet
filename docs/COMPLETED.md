@@ -2170,11 +2170,15 @@
   - `browser-smoke` workflow를 `main` push path gate와 manual dispatch 양쪽에서 실행되도록 확장했다.
   - CI browser job에 `SEED_DEFAULT_PASSWORD`, `db:seed:users`, `db:seed:local-test-accounts`를 추가해 관리자/알림 기본 계정이 안정적으로 준비되게 했다.
   - hotpath 실행 중 댓글 cross-tab auth sync 회귀를 발견했고, 댓글 섹션이 storage event를 놓쳐도 localStorage sync timestamp polling으로 서버 렌더 reload에 수렴하도록 수정했다.
+  - CI hotpath에서 active community가 비어도 댓글 sync spec이 독립적으로 fixture community를 만든다.
+  - 알림 보관은 서버 액션 완료 전 UI가 먼저 반응하고, 실패 시 rollback하는 낙관적 업데이트로 바꿨다.
   - `/api/viewer-shell` 응답에 현재 `userId`를 포함해 viewer shell contract가 인증 주체를 명시적으로 표현하도록 보강했다.
 - 코드문서:
   - [app/package.json](../app/package.json)
   - [.github/workflows/browser-smoke.yml](../.github/workflows/browser-smoke.yml)
   - [app/src/components/posts/post-comment-section-client.tsx](../app/src/components/posts/post-comment-section-client.tsx)
+  - [app/src/components/notifications/notification-center.tsx](../app/src/components/notifications/notification-center.tsx)
+  - [app/e2e/post-comment-auth-sync.spec.ts](../app/e2e/post-comment-auth-sync.spec.ts)
   - [app/src/app/api/viewer-shell/route.ts](../app/src/app/api/viewer-shell/route.ts)
   - [docs/PLAN.md](./PLAN.md)
   - [docs/PROGRESS.md](./PROGRESS.md)

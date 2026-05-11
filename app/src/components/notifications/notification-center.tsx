@@ -257,15 +257,22 @@ export function NotificationCenter({
       return;
     }
 
+    const previousItems = items;
+    const previousUnreadCount = globalUnreadCount;
     setPending(id, true);
+    setItems((prev) => prev.filter((item) => item.id !== id));
+    if (!target.isRead) {
+      setGlobalUnreadCount((prev) => Math.max(0, prev - 1));
+    }
+
     const result = await archiveNotificationAction(id);
 
     if (!result.ok) {
       setMessage(result.message);
+      setItems(previousItems);
+      setGlobalUnreadCount(previousUnreadCount);
     } else {
-      setItems((prev) => prev.filter((item) => item.id !== id));
       if (!target.isRead) {
-        setGlobalUnreadCount((prev) => Math.max(0, prev - 1));
         emitNotificationUnreadSync({ delta: -1, archiveIds: [id] });
       } else {
         emitNotificationUnreadSync({ archiveIds: [id] });
