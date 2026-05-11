@@ -28,13 +28,23 @@ describe("vercel-build security preflight", () => {
     ).toBe(true);
   });
 
-  it("enables strict preflight for preview and staging vercel targets", () => {
+  it("skips strict preflight for preview deployments unless explicitly forced", () => {
     expect(
       shouldRunSecurityEnvPreflight({
         NODE_ENV: "production",
         VERCEL_ENV: "preview",
       }),
+    ).toBe(false);
+    expect(
+      shouldRunSecurityEnvPreflight({
+        NODE_ENV: "production",
+        VERCEL_ENV: "preview",
+        DEPLOY_SECURITY_PREFLIGHT_STRICT: "1",
+      }),
     ).toBe(true);
+  });
+
+  it("enables strict preflight for explicit staging targets", () => {
     expect(
       shouldRunSecurityEnvPreflight({
         NODE_ENV: "production",

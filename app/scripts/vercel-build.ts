@@ -81,8 +81,13 @@ function hasTruthyFlag(value: string | undefined) {
 }
 
 function isStrictVercelTarget(env: NodeJS.ProcessEnv = process.env) {
-  const targetEnv = (env.VERCEL_TARGET_ENV ?? env.VERCEL_ENV ?? "").trim().toLowerCase();
-  return targetEnv === "production" || targetEnv === "preview" || targetEnv === "staging";
+  const explicitTargetEnv = env.VERCEL_TARGET_ENV?.trim().toLowerCase();
+  if (explicitTargetEnv === "production" || explicitTargetEnv === "staging") {
+    return true;
+  }
+
+  const vercelEnv = env.VERCEL_ENV?.trim().toLowerCase();
+  return vercelEnv === "production";
 }
 
 export function shouldRunSecurityEnvPreflight(env: NodeJS.ProcessEnv = process.env) {
