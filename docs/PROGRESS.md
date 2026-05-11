@@ -20,12 +20,12 @@
 - Care Request M9 운영 런북/데모 seed를 완료했다
 - Care Request M10 관리자 큐 처리 상태와 M11 모바일/빈 상태 polish를 완료했다
 - Care Request M12 운영 threshold와 M13-M18 production smoke 준비/보류/tooling을 완료했다
-- Release Confidence Hardening 상세 계획과 P0-1 CI/build gate, P0-2 rendered HTML/XSS 안전성, P0-3 abuse-prone write path Redis 장애 failure mode, P0-4 production smoke readiness blocker 정리를 완료했다.
-- 다음 작업: P1-1 production smoke 실제 원격 실행
+- Release Confidence Hardening 상세 계획과 P0-1 CI/build gate, P0-2 rendered HTML/XSS 안전성, P0-3 abuse-prone write path Redis 장애 failure mode, P0-4 production smoke readiness blocker, P1-1 원격 production smoke를 완료했다.
+- 다음 작업: P1-2 hot-path browser gate 자동화
 
 ## 열린 blocker
-- Production smoke는 실제 원격 `ops-smoke-checks` 실행과 운영 smoke 계정 존재/권한 확인 전까지 blocked다.
-- 로컬 환경에는 실제 secret 값이 없으므로 internal health/pg_trgm 확인은 GitHub Actions 또는 운영 secret 주입 환경에서 실행해야 한다.
+- 원격 production smoke는 GitHub Actions `ops-smoke-checks` run `25645368457` 기준 PASS했다.
+- 운영 smoke 계정의 실제 role/session 브라우저 검증은 P1-2/P1 운영 계정 smoke에서 계속 확인한다.
 
 ## 직전 검증
 - Care Request M1-M6:
@@ -83,9 +83,12 @@
   - GitHub repository variables에 표준 smoke 계정 식별자 3종을 설정했다.
   - `ops-smoke-checks`가 health/prewarm 전에 `ops:check:care-smoke-readiness`를 실행하도록 추가했다.
   - 검증: `HEALTH_INTERNAL_TOKEN=dummy ... corepack pnpm@9.12.3 -C app ops:check:care-smoke-readiness` PASS.
+- Release Confidence Hardening P1-1:
+  - `main`에 P0-1~P0-4 커밋을 push한 뒤 GitHub Actions `ops-smoke-checks`를 수동 실행했다.
+  - `run 25645368457`에서 care readiness, deployment health, prewarm, internal health token, `pg_trgm`, Sentry secret validation, Sentry ingestion이 모두 PASS했다.
 ## 다음 액션
-1. P1-1에서 `ops-smoke-checks`를 원격 기준으로 실행한다.
-2. `verify_pg_trgm=true`, 필요 시 `verify_sentry=true`로 internal health와 Sentry ingestion을 확인한다.
+1. P1-2에서 핵심 클릭 hot path suite를 `test:e2e:hotpath`로 묶는다.
+2. `browser-smoke`를 main push/dispatch/nightly 중 어떤 gate로 운용할지 확정한다.
 3. 운영 smoke 계정이 실제로 존재하고 필요한 role/session 조건을 만족하는지 브라우저 smoke로 확인한다.
 
 ## Archive Pointer
