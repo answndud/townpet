@@ -358,6 +358,7 @@
   - 첫 slice: `post-create-form` 상태 타입/초기값/draft guard를 `post-create-form-state`로 분리.
   - 두 번째 slice: `post-create-form` option constants와 scope resolver를 `post-create-form-options`로 분리.
   - 세 번째 slice: `post-create-form` draft hydration/autosave/clear 로직을 `use-post-create-draft` hook으로 분리.
+  - 네 번째 slice: `post-create-form` 마켓/돌봄 structured fields와 공용 section wrapper를 `post-create-structured-fields`로 분리.
 
 ### P1-7. 운영 관리자 루틴을 10분 smoke로 고정한다
 
