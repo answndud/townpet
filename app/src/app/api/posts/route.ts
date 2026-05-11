@@ -208,16 +208,19 @@ export async function POST(request: NextRequest) {
       key: `${guestRateKey}:10m`,
       limit: guestPostPolicy.postRateLimit10m,
       windowMs: 10 * 60_000,
+      failureMode: "closed",
     });
     await enforceRateLimit({
       key: `${guestRateKey}:1h`,
       limit: guestPostPolicy.postRateLimit1h,
       windowMs: 60 * 60_000,
+      failureMode: "closed",
     });
     await enforceRateLimit({
       key: `${guestRateKey}:24h`,
       limit: guestPostPolicy.postRateLimit24h,
       windowMs: 24 * 60 * 60_000,
+      failureMode: "closed",
     });
     await assertGuestStepUp({
       scope: "post:create",

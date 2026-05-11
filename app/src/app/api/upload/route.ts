@@ -25,6 +25,7 @@ export async function POST(request: NextRequest) {
         key: `upload:user:${userId}:ip:${clientIp}`,
         limit: 20,
         windowMs: 60_000,
+        failureMode: "closed",
       });
     } else {
       const guestPostPolicy = await getGuestPostPolicy();
@@ -32,6 +33,7 @@ export async function POST(request: NextRequest) {
         key: `upload:guest:ip:${clientIp}:fp:${guestFingerprint ?? "none"}:10m`,
         limit: guestPostPolicy.uploadRateLimit10m,
         windowMs: 10 * 60_000,
+        failureMode: "closed",
       });
       await assertGuestStepUp({
         scope: "upload",

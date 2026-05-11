@@ -8,6 +8,7 @@ type MutableRuntimeEnv = {
   upstashRedisRestUrl: string;
   upstashRedisRestToken: string;
   isUpstashConfigured: boolean;
+  isProduction: boolean;
 };
 
 const mutableRuntimeEnv = runtimeEnv as unknown as MutableRuntimeEnv;
@@ -15,6 +16,7 @@ const originalRuntimeEnv = {
   upstashRedisRestUrl: mutableRuntimeEnv.upstashRedisRestUrl,
   upstashRedisRestToken: mutableRuntimeEnv.upstashRedisRestToken,
   isUpstashConfigured: mutableRuntimeEnv.isUpstashConfigured,
+  isProduction: mutableRuntimeEnv.isProduction,
 };
 
 function jsonResponse(payload: unknown) {
@@ -31,6 +33,7 @@ describe("rate limit", () => {
     mutableRuntimeEnv.isUpstashConfigured = false;
     mutableRuntimeEnv.upstashRedisRestUrl = "";
     mutableRuntimeEnv.upstashRedisRestToken = "";
+    mutableRuntimeEnv.isProduction = false;
   });
 
   afterEach(() => {
@@ -39,6 +42,7 @@ describe("rate limit", () => {
     mutableRuntimeEnv.isUpstashConfigured = originalRuntimeEnv.isUpstashConfigured;
     mutableRuntimeEnv.upstashRedisRestUrl = originalRuntimeEnv.upstashRedisRestUrl;
     mutableRuntimeEnv.upstashRedisRestToken = originalRuntimeEnv.upstashRedisRestToken;
+    mutableRuntimeEnv.isProduction = originalRuntimeEnv.isProduction;
   });
 
   it("blocks when limit exceeded", async () => {
@@ -111,5 +115,54 @@ describe("rate limit", () => {
       Array<string | number>
     >;
     expect(repairPayload).toEqual([["PEXPIRE", "ratelimit:ttl-fix", 1000]]);
+  });
+
+  it("falls back to memory by default when upstash is unavailable", async () => {
+    mutableRuntimeEnv.isUpstashConfigured = true;
+    mutableRuntimeEnv.upstashRedisRestUrl = "https://upstash.test";
+    mutableRuntimeEnv.upstashRedisRestToken = "token";
+    vi.stubGlobal("fetch", vi.fn<typeof fetch>().mockRejectedValue(new Error("upstash down")));
+
+    await enforceRateLimit({ key: "fallback", limit: 1, windowMs: 1000 });
+
+    await expect(enforceRateLimit({ key: "fallback", limit: 1, windowMs: 1000 })).rejects.toMatchObject({
+      code: "RATE_LIMITED",
+      status: 429,
+    });
+  });
+
+  it("fails closed when configured upstash is unavailable and the caller requires it", async () => {
+    mutableRuntimeEnv.isUpstashConfigured = true;
+    mutableRuntimeEnv.upstashRedisRestUrl = "https://upstash.test";
+    mutableRuntimeEnv.upstashRedisRestToken = "token";
+    vi.stubGlobal("fetch", vi.fn<typeof fetch>().mockRejectedValue(new Error("upstash down")));
+
+    await expect(
+      enforceRateLimit({
+        key: "closed",
+        limit: 10,
+        windowMs: 1000,
+        failureMode: "closed",
+      }),
+    ).rejects.toMatchObject({
+      code: "RATE_LIMIT_BACKEND_UNAVAILABLE",
+      status: 503,
+    });
+  });
+
+  it("fails closed in production when redis is required but not configured", async () => {
+    mutableRuntimeEnv.isProduction = true;
+
+    await expect(
+      enforceRateLimit({
+        key: "production-closed",
+        limit: 10,
+        windowMs: 1000,
+        failureMode: "closed",
+      }),
+    ).rejects.toMatchObject({
+      code: "RATE_LIMIT_BACKEND_UNAVAILABLE",
+      status: 503,
+    });
   });
 });

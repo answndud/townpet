@@ -127,7 +127,7 @@
 
 ### P0-3. abuse-prone write path의 Redis 장애 failure mode를 정한다
 
-상태: `pending`
+상태: `completed`
 
 - 문제: Upstash/Redis rate limit 실패 시 memory fallback을 사용한다. serverless scale-out에서는 instance-local fallback이 abuse 방어로 충분하지 않을 수 있다.
 - 대상:
@@ -152,6 +152,8 @@
   - Redis 장애가 곧 abuse 방어 무력화로 이어지지 않는다.
 
 ### P0-4. production smoke blocker를 값/계정 단위로 제거한다
+
+상태: `pending`
 
 - 문제: production smoke는 `OPS_HEALTH_INTERNAL_TOKEN`, smoke 계정, 선택 Sentry secret이 없어 blocked 상태였다.
 - 대상:

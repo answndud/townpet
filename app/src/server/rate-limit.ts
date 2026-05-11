@@ -15,6 +15,7 @@ type RateLimitOptions = {
   limit: number;
   windowMs: number;
   cacheMs?: number;
+  failureMode?: "memory" | "closed";
 };
 
 type UpstashPipelineCommand = Array<string | number>;
@@ -30,6 +31,14 @@ function createRateLimitError() {
     "요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.",
     "RATE_LIMITED",
     429,
+  );
+}
+
+function createRateLimitBackendUnavailableError() {
+  return new ServiceError(
+    "요청 제한 저장소를 확인할 수 없습니다. 잠시 후 다시 시도해 주세요.",
+    "RATE_LIMIT_BACKEND_UNAVAILABLE",
+    503,
   );
 }
 
@@ -140,15 +149,31 @@ export async function enforceRateLimitAndReturnState(options: RateLimitOptions) 
         throw error;
       }
 
-      // Avoid noisy logs when Redis is unavailable; fallback still protects per instance.
+      // Avoid noisy logs when Redis is unavailable.
       const now = Date.now();
       if (now - redisFailureLoggedAt > 60_000) {
         redisFailureLoggedAt = now;
-        logger.warn("Redis rate limit 실패로 메모리 fallback을 사용합니다.", {
-          error: serializeError(error),
-        });
+        logger.warn(
+          options.failureMode === "closed"
+            ? "Redis rate limit 실패로 요청을 차단합니다."
+            : "Redis rate limit 실패로 메모리 fallback을 사용합니다.",
+          {
+            error: serializeError(error),
+          },
+        );
+      }
+
+      if (options.failureMode === "closed") {
+        throw createRateLimitBackendUnavailableError();
       }
     }
+  } else if (options.failureMode === "closed" && runtimeEnv.isProduction) {
+    const now = Date.now();
+    if (now - redisFailureLoggedAt > 60_000) {
+      redisFailureLoggedAt = now;
+      logger.warn("Redis rate limit이 설정되지 않아 production 요청을 차단합니다.");
+    }
+    throw createRateLimitBackendUnavailableError();
   }
 
   const state = enforceMemoryRateLimit(options);

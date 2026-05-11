@@ -186,6 +186,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       key: `${guestRateKey}:10m`,
       limit: Math.max(5, guestPostPolicy.postRateLimit10m),
       windowMs: 10 * 60_000,
+      failureMode: "closed",
     });
     await assertGuestStepUp({
       scope: "comment:create",

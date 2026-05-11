@@ -77,6 +77,7 @@ describe("POST /api/search/log contract", () => {
       limit: 30,
       windowMs: 60_000,
       cacheMs: 500,
+      failureMode: "closed",
     });
   });
 
@@ -104,6 +105,7 @@ describe("POST /api/search/log contract", () => {
       limit: 30,
       windowMs: 60_000,
       cacheMs: 500,
+      failureMode: "closed",
     });
   });
 

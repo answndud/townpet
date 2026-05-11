@@ -37,6 +37,7 @@ export async function POST(request: NextRequest) {
       limit: 30,
       windowMs: 60_000,
       cacheMs: 500,
+      failureMode: "closed",
     });
 
     const body = await request.json().catch(() => null);
