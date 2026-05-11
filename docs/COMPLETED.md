@@ -2065,3 +2065,25 @@
   - CI/local 품질 게이트가 lint/typecheck/unit/build failure를 함께 잡는다.
   - production runtime strict env 검증은 유지되고, build-time page data collection은 운영 secret 부재 때문에 실패하지 않는다.
   - 다음 작업은 `P0-2 rendered HTML/XSS 안전성 증명`이다.
+
+### 2026-05-11 | Release Confidence P0-2 rendered HTML/XSS safety
+- 완료일: `2026-05-11`
+- 배경:
+  - post detail, guest post detail, editor preview는 `renderLiteMarkdown` 결과를 `dangerouslySetInnerHTML`로 렌더링한다.
+  - 기존 테스트는 기본 escape와 trusted image만 확인했고, malicious URL/protocol/label/alt/placeholder collision fixture가 부족했다.
+- 변경내용:
+  - link/image token placeholder를 사용자 입력의 `@@LINK_TOKEN_0@@` 같은 평문과 충돌하지 않는 sentinel로 바꿨다.
+  - unsafe markdown link는 anchor로 만들지 않고 label만 남기도록 강화했다.
+  - `javascript:`, `data:`, relative unsafe link, raw HTML, link label HTML, image alt quote/event text, unsafe image protocol, placeholder collision 회귀 테스트를 추가했다.
+  - JSON-LD script serialization 테스트와 함께 rendered HTML safety 경로를 검증했다.
+- 코드문서:
+  - [app/src/lib/markdown-lite.ts](../app/src/lib/markdown-lite.ts)
+  - [app/src/lib/markdown-lite.test.ts](../app/src/lib/markdown-lite.test.ts)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app exec vitest run src/lib/markdown-lite.test.ts src/lib/json-script.test.ts`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+- 결과:
+  - markdown 기반 rendered HTML 경로에서 unsafe href/src와 token collision이 회귀 테스트로 고정됐다.
+  - 다음 작업은 `P0-3 abuse-prone write path Redis 장애 failure mode 정리`다.

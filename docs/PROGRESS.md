@@ -20,8 +20,8 @@
 - Care Request M9 운영 런북/데모 seed를 완료했다
 - Care Request M10 관리자 큐 처리 상태와 M11 모바일/빈 상태 polish를 완료했다
 - Care Request M12 운영 threshold와 M13-M18 production smoke 준비/보류/tooling을 완료했다
-- Release Confidence Hardening 상세 계획과 P0-1 CI/build gate를 완료했다.
-- 다음 작업: P0-2 rendered HTML/XSS 안전성 증명
+- Release Confidence Hardening 상세 계획과 P0-1 CI/build gate, P0-2 rendered HTML/XSS 안전성 증명을 완료했다.
+- 다음 작업: P0-3 abuse-prone write path Redis 장애 failure mode 정리
 
 ## 열린 blocker
 - Production smoke는 `ops:check:care-smoke-readiness`가 `PASS`가 될 때까지 blocked다.
@@ -68,9 +68,14 @@
   - GitHub `quality-gate` step 이름을 build 포함 기준으로 갱신했다.
   - Next production build phase에서는 module-load runtime assert를 건너뛰되, `validateRuntimeEnv`와 Vercel strict preflight는 유지되도록 경계를 분리했다.
   - 검증: `corepack pnpm@9.12.3 -C app exec vitest run src/lib/env.test.ts`, `corepack pnpm@9.12.3 -C app quality:check` 통과.
+- Release Confidence Hardening P0-2:
+  - `markdown-lite`의 link/image token placeholder를 사용자 입력과 충돌하기 어려운 sentinel로 바꿨다.
+  - unsafe markdown link는 anchor로 만들지 않고 label만 남기도록 강화했다.
+  - `javascript:`, `data:`, raw HTML, link label HTML, image alt quote/event text, unsafe image protocol, placeholder collision fixture를 추가했다.
+  - 검증: `corepack pnpm@9.12.3 -C app exec vitest run src/lib/markdown-lite.test.ts src/lib/json-script.test.ts`, `corepack pnpm@9.12.3 -C app quality:check` 통과.
 ## 다음 액션
-1. P0-2 rendered HTML/XSS fixture를 `markdown-lite`, editor preview, post detail 경로에 추가한다.
-2. `dangerouslySetInnerHTML` 경로별 allowlist/escape 보증 테스트를 보강한다.
+1. P0-3 high-risk write path의 Redis/Upstash 장애 시 failure mode를 설계한다.
+2. `rate-limit`, `authenticated-write-throttle`, posts/reports/upload/search-log/feed-personalization route test를 failure mode 기준으로 보강한다.
 3. 이후 production smoke 단계에서 `OPS_HEALTH_INTERNAL_TOKEN` 또는 `HEALTH_INTERNAL_TOKEN`, `CARE_SMOKE_*_EMAIL`을 준비한다.
 
 ## Archive Pointer

@@ -102,7 +102,7 @@
 
 ### P0-2. rendered HTML/XSS 안전성을 증명한다
 
-상태: `pending`
+상태: `completed`
 
 - 문제: `markdown-lite`, editor preview, post detail, guest post detail이 custom HTML renderer와 `dangerouslySetInnerHTML`에 의존한다.
 - 대상:
@@ -126,6 +126,8 @@
   - 사용자 입력 기반 HTML 경로에서 script execution, attribute injection, unsafe href/src가 불가능하다는 테스트가 있다.
 
 ### P0-3. abuse-prone write path의 Redis 장애 failure mode를 정한다
+
+상태: `pending`
 
 - 문제: Upstash/Redis rate limit 실패 시 memory fallback을 사용한다. serverless scale-out에서는 instance-local fallback이 abuse 방어로 충분하지 않을 수 있다.
 - 대상:
