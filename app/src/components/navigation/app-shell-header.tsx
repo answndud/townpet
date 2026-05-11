@@ -27,6 +27,7 @@ type AppShellHeaderProps = {
 
 type ViewerShellData = {
   isAuthenticated: boolean;
+  userId?: string | null;
   canModerate: boolean;
   unreadNotificationCount: number;
   preferredPetTypeIds: string[];
@@ -34,6 +35,7 @@ type ViewerShellData = {
 
 const DEFAULT_VIEWER_SHELL: ViewerShellData = {
   isAuthenticated: false,
+  userId: null,
   canModerate: false,
   unreadNotificationCount: 0,
   preferredPetTypeIds: [],

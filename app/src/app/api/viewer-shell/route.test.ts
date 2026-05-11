@@ -42,6 +42,7 @@ describe("GET /api/viewer-shell contract", () => {
       ok: true,
       data: {
         isAuthenticated: false,
+        userId: null,
         canModerate: false,
         unreadNotificationCount: 0,
         preferredPetTypeIds: [],
@@ -67,6 +68,7 @@ describe("GET /api/viewer-shell contract", () => {
       ok: true,
       data: {
         isAuthenticated: true,
+        userId: "user-1",
         canModerate: true,
         unreadNotificationCount: 4,
         preferredPetTypeIds: ["pet-1", "pet-2"],
@@ -85,6 +87,7 @@ describe("GET /api/viewer-shell contract", () => {
       ok: true,
       data: {
         isAuthenticated: false,
+        userId: null,
         canModerate: false,
         unreadNotificationCount: 0,
         preferredPetTypeIds: [],
@@ -112,6 +115,7 @@ describe("GET /api/viewer-shell contract", () => {
       ok: true,
       data: {
         isAuthenticated: true,
+        userId: "user-1",
         canModerate: false,
         unreadNotificationCount: 0,
         preferredPetTypeIds: [],

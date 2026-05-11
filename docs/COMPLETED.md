@@ -2159,3 +2159,31 @@
 - 결과:
   - 원격 production smoke가 PASS해 public/internal health, `pg_trgm`, route prewarm, Sentry ingestion evidence가 확보됐다.
   - 다음 작업은 `P1-2 hot-path browser gate 자동화`다.
+
+### 2026-05-11 | Release Confidence P1-2 hot-path browser gate
+- 완료일: `2026-05-11`
+- 배경:
+  - 피드/검색/정렬/기간처럼 사용자가 실제로 클릭하는 기능은 unit/build green만으로 충분히 보장되지 않는다.
+  - 이전에 클릭 UI가 적용되지 않는 회귀가 있었으므로 핵심 브라우저 흐름을 별도 hotpath gate로 묶어야 했다.
+- 변경내용:
+  - `test:e2e:hotpath` 스크립트를 추가해 검색/게시판 필터, 비회원 글 관리, 댓글 auth sync, 알림 필터, 관리자 신규 유저 정책, 신고 흐름을 실행한다.
+  - `browser-smoke` workflow를 `main` push path gate와 manual dispatch 양쪽에서 실행되도록 확장했다.
+  - CI browser job에 `SEED_DEFAULT_PASSWORD`, `db:seed:users`, `db:seed:local-test-accounts`를 추가해 관리자/알림 기본 계정이 안정적으로 준비되게 했다.
+  - hotpath 실행 중 댓글 cross-tab auth sync 회귀를 발견했고, 댓글 섹션이 storage event를 놓쳐도 localStorage sync timestamp polling으로 서버 렌더 reload에 수렴하도록 수정했다.
+  - `/api/viewer-shell` 응답에 현재 `userId`를 포함해 viewer shell contract가 인증 주체를 명시적으로 표현하도록 보강했다.
+- 코드문서:
+  - [app/package.json](../app/package.json)
+  - [.github/workflows/browser-smoke.yml](../.github/workflows/browser-smoke.yml)
+  - [app/src/components/posts/post-comment-section-client.tsx](../app/src/components/posts/post-comment-section-client.tsx)
+  - [app/src/app/api/viewer-shell/route.ts](../app/src/app/api/viewer-shell/route.ts)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app exec vitest run src/app/api/viewer-shell/route.test.ts src/components/posts/post-comment-section-client.test.ts`
+  - `PLAYWRIGHT_REUSE_EXISTING_SERVER=0 SEED_DEFAULT_PASSWORD=dev-password-1234 corepack pnpm@9.12.3 -C app exec playwright test e2e/post-comment-auth-sync.spec.ts --project=chromium --workers=1`
+  - `PLAYWRIGHT_REUSE_EXISTING_SERVER=0 SEED_DEFAULT_PASSWORD=dev-password-1234 corepack pnpm@9.12.3 -C app test:e2e:hotpath`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+- 결과:
+  - 핵심 클릭 hotpath 10개가 로컬에서 PASS했다.
+  - 기본 품질 게이트도 lint/typecheck/unit/build까지 PASS했다.
+  - 다음 작업은 `P1-3 metadata/SEO 누락 체계 제거`다.

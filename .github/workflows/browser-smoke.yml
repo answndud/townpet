@@ -2,6 +2,12 @@ name: browser-smoke
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "app/**"
+      - ".github/workflows/browser-smoke.yml"
 
 jobs:
   smoke:
@@ -32,6 +38,7 @@ jobs:
       AUTH_SECRET: ci-auth-secret
       NEXTAUTH_SECRET: ci-nextauth-secret
       NEXTAUTH_URL: http://localhost:3000
+      SEED_DEFAULT_PASSWORD: dev-password-1234
 
     steps:
       - uses: actions/checkout@v6
@@ -57,8 +64,16 @@ jobs:
       - name: Generate Prisma client
         run: pnpm prisma generate
 
+      - name: Seed browser test accounts
+        run: |
+          pnpm db:seed:users
+          pnpm db:seed:local-test-accounts
+
       - name: Install Playwright browser
         run: pnpm exec playwright install --with-deps chromium
 
       - name: Run browser smoke
         run: pnpm test:e2e:smoke
+
+      - name: Run hot path browser gate
+        run: pnpm test:e2e:hotpath

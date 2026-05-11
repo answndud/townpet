@@ -35,6 +35,7 @@ export async function GET(request: NextRequest) {
       return jsonOk(
         {
           isAuthenticated: false,
+          userId: null,
           canModerate: false,
           unreadNotificationCount: 0,
           preferredPetTypeIds: [] as string[],
@@ -62,6 +63,7 @@ export async function GET(request: NextRequest) {
     return jsonOk(
       {
         isAuthenticated: true,
+        userId,
         canModerate,
         unreadNotificationCount,
         preferredPetTypeIds: extractPreferredPetTypeIds(currentUser),

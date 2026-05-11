@@ -206,6 +206,8 @@
 
 ### P1-2. hot-path browser gate를 자동화한다
 
+상태: `completed`
+
 - 문제: 피드/검색/정렬/기간 같은 실제 클릭 기능은 단위 테스트만으로 부족하고, 이전에 실제로 regress 되었다.
 - 대상:
   - `app/e2e/search-and-board-filtering.spec.ts`
@@ -226,6 +228,12 @@
   - GitHub `browser-smoke` PASS
 - 완료 기준:
   - 사용자가 클릭했을 때 적용되지 않는 회귀가 CI에서 잡힌다.
+- 결과:
+  - `test:e2e:hotpath`를 추가해 검색/게시판 필터, 비회원 글 관리, 댓글 auth sync, 알림 필터, 관리자 신규 유저 정책, 신고 흐름을 한 suite로 묶었다.
+  - `browser-smoke` workflow를 `main` push path gate와 수동 실행 모두에서 smoke + hotpath를 실행하도록 확장했다.
+  - CI browser job에서 seed users/local test accounts를 준비하도록 고정했다.
+  - hotpath가 댓글 cross-tab auth sync 회귀를 잡았고, 댓글 섹션이 missed storage event까지 서버 렌더로 수렴하도록 수정했다.
+  - 검증: targeted unit/e2e, `test:e2e:hotpath` 10개 PASS, `quality:check` PASS.
 
 ### P1-3. metadata/SEO 누락을 체계적으로 제거한다
 

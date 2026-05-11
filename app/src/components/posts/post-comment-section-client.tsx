@@ -17,7 +17,6 @@ import { PostCommentThread } from "@/components/posts/post-comment-thread";
 import {
   getPostCommentViewerState,
   resolvePostCommentFetchGuestMode,
-  shouldReloadPostCommentSectionOnAuthLogin,
   syncPostCommentViewerState,
 } from "@/components/posts/post-comment-viewer-state";
 
@@ -49,7 +48,17 @@ export function PostCommentSectionClient({
   const [isLoading, setIsLoading] = useState(initialLoadState?.status === "loading");
   const [page, setPage] = useState(() => initialLoadState?.pageData?.page ?? 1);
   const [forcedGuestMode, setForcedGuestMode] = useState(false);
+  const forcedGuestModeRef = useRef(false);
   const mountedRef = useRef(true);
+  const lastViewerSyncTimestampRef = useRef(0);
+  const forcedGuestStorageKey = useMemo(
+    () => `townpet:post-comment-forced-guest:${postId}`,
+    [postId],
+  );
+  const authLoginReloadStorageKey = useMemo(
+    () => `townpet:post-comment-auth-login-reload:${postId}`,
+    [postId],
+  );
   const baseViewerState = useMemo(
     () => getPostCommentViewerState({ currentUserId, canInteract, canInteractWithPostOwner }),
     [currentUserId, canInteract, canInteractWithPostOwner],
@@ -66,10 +75,45 @@ export function PostCommentSectionClient({
 
   useEffect(() => {
     mountedRef.current = true;
+    try {
+      const payload = JSON.parse(
+        window.localStorage.getItem("townpet:viewer-shell-sync") ?? "null",
+      ) as { timestamp?: unknown } | null;
+      lastViewerSyncTimestampRef.current =
+        typeof payload?.timestamp === "number" ? payload.timestamp : 0;
+    } catch {
+      lastViewerSyncTimestampRef.current = 0;
+    }
     return () => {
       mountedRef.current = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (currentUserId && !forcedGuestMode) {
+      return;
+    }
+
+    const timer = window.setInterval(() => {
+      try {
+        const payload = JSON.parse(
+          window.localStorage.getItem("townpet:viewer-shell-sync") ?? "null",
+        ) as { reason?: unknown; timestamp?: unknown } | null;
+        const timestamp = typeof payload?.timestamp === "number" ? payload.timestamp : 0;
+        if (
+          payload?.reason === "auth-login" &&
+          timestamp > lastViewerSyncTimestampRef.current
+        ) {
+          lastViewerSyncTimestampRef.current = timestamp;
+          window.location.reload();
+        }
+      } catch {
+        // Ignore malformed client sync state and keep event-based sync.
+      }
+    }, 500);
+
+    return () => window.clearInterval(timer);
+  }, [currentUserId, forcedGuestMode]);
 
   const reloadComments = useCallback(async (
     nextPage = page,
@@ -163,25 +207,51 @@ export function PostCommentSectionClient({
   useEffect(() => {
     return subscribeViewerShellSync((payload) => {
       if (payload.reason === "auth-logout") {
+        forcedGuestModeRef.current = true;
+        try {
+          window.sessionStorage.setItem(forcedGuestStorageKey, "1");
+        } catch {
+          // Keep in-memory sync when session storage is unavailable.
+        }
         setForcedGuestMode(true);
         void reloadComments(page, { forceGuestMode: true });
         return;
       }
 
       if (payload.reason === "auth-login") {
+        let shouldReload = forcedGuestModeRef.current;
+        try {
+          shouldReload = shouldReload || window.sessionStorage.getItem(forcedGuestStorageKey) === "1";
+          window.sessionStorage.removeItem(forcedGuestStorageKey);
+          const alreadyReloadedForLogin =
+            window.sessionStorage.getItem(authLoginReloadStorageKey) === "1";
+          shouldReload =
+            shouldReload || (!baseViewerState.currentUserId && !alreadyReloadedForLogin);
+          if (shouldReload) {
+            window.sessionStorage.setItem(authLoginReloadStorageKey, "1");
+          } else if (baseViewerState.currentUserId) {
+            window.sessionStorage.removeItem(authLoginReloadStorageKey);
+          }
+        } catch {
+          // Keep in-memory sync when session storage is unavailable.
+          shouldReload = shouldReload || !baseViewerState.currentUserId;
+        }
+        forcedGuestModeRef.current = false;
         setForcedGuestMode(false);
-        if (
-          shouldReloadPostCommentSectionOnAuthLogin({
-            forcedGuestMode,
-          })
-        ) {
+        if (shouldReload) {
           window.location.reload();
           return;
         }
         void reloadComments(page, { forceGuestMode: false });
       }
     });
-  }, [baseViewerState.currentUserId, forcedGuestMode, page, reloadComments]);
+  }, [
+    authLoginReloadStorageKey,
+    baseViewerState.currentUserId,
+    forcedGuestStorageKey,
+    page,
+    reloadComments,
+  ]);
 
   if (error && !comments) {
     return (
