@@ -11,6 +11,7 @@ import {
   buildSearchTermStatVariants,
   normalizeSearchTerm,
   normalizeSearchTermForStats,
+  sanitizeSearchTermForStats,
   shouldExcludeSearchTermFromStats,
   type SearchTermSkipReason,
 } from "@/lib/search-term-privacy";
@@ -810,9 +811,13 @@ export async function getSearchInsightsOverview(
 }
 
 export async function recordSearchTerm(rawTerm: string, options: RecordSearchTermOptions = {}) {
-  const normalizedTerm = normalizeSearchTermForStats(rawTerm);
+  const normalizedTerm = sanitizeSearchTermForStats(rawTerm);
   if (!normalizedTerm) {
-    return { ok: true, recorded: false, reason: "INVALID_TERM" } as const;
+    return {
+      ok: true,
+      recorded: false,
+      reason: shouldExcludeSearchTermFromStats(rawTerm) ? "SENSITIVE_TERM" : "INVALID_TERM",
+    } as const;
   }
 
   if (!isTrackableSearchTerm(normalizedTerm)) {

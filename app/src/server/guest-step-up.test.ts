@@ -1,14 +1,17 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createHash } from "crypto";
 
 import {
   assertGuestStepUp,
   issueGuestStepUpChallenge,
 } from "@/server/guest-step-up";
+import { registerGuestViolation } from "@/server/services/guest-safety.service";
 
 vi.mock("@/server/services/guest-safety.service", () => ({
   registerGuestViolation: vi.fn().mockResolvedValue(undefined),
 }));
+
+const mockRegisterGuestViolation = vi.mocked(registerGuestViolation);
 
 function solveProof(token: string, difficulty: number) {
   const targetPrefix = "0".repeat(difficulty);
@@ -24,6 +27,10 @@ function solveProof(token: string, difficulty: number) {
 }
 
 describe("guest step-up", () => {
+  beforeEach(() => {
+    mockRegisterGuestViolation.mockClear();
+  });
+
   it("raises difficulty for automation-like guest signals", () => {
     const challenge = issueGuestStepUpChallenge({
       scope: "post:create",
@@ -79,5 +86,43 @@ describe("guest step-up", () => {
       code: "GUEST_STEP_UP_REQUIRED",
       status: 428,
     });
+  });
+
+  it("records identity mismatch as a hashed abuse signal", async () => {
+    const now = new Date("2026-03-07T00:00:00.000Z");
+    const challenge = issueGuestStepUpChallenge({
+      scope: "post:create",
+      ip: "127.0.0.1",
+      fingerprint: "guest-fp-1",
+      userAgent: "Mozilla/5.0",
+      forwardedFor: "127.0.0.1",
+      acceptLanguage: "ko-KR",
+      now,
+    });
+    const proof = solveProof(challenge.token, challenge.difficulty);
+
+    await expect(
+      assertGuestStepUp({
+        scope: "post:create",
+        ip: "127.0.0.1",
+        fingerprint: "guest-fp-2",
+        token: challenge.token,
+        proof,
+        now,
+      }),
+    ).rejects.toMatchObject({
+      code: "GUEST_STEP_UP_REQUIRED",
+      status: 428,
+    });
+
+    expect(mockRegisterGuestViolation).toHaveBeenCalledWith(
+      expect.objectContaining({
+        identity: {
+          ip: "127.0.0.1",
+          fingerprint: "guest-fp-2",
+        },
+        source: "guest-step-up:post:create",
+      }),
+    );
   });
 });

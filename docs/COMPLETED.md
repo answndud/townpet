@@ -2218,3 +2218,36 @@
   - 모든 `app/src/app/**/page.tsx`가 metadata 정책을 갖는다.
   - sitemap/robots와 metadata scan이 함께 회귀 테스트로 묶였다.
   - 다음 작업은 `P1-4 privacy hardening`이다.
+
+### 2026-05-11 | Release Confidence P1-4 privacy hardening
+- 완료일: `2026-05-11`
+- 배경:
+  - 검색어 로그, browser recent search, 글쓰기 draft, guest fingerprint는 제품 편의와 abuse 방어에 필요하지만 그대로 두면 개인정보 저장소가 될 수 있다.
+  - 기존 검색 통계는 일부 연락처 패턴을 skip했지만 상세주소/토큰/혼합 검색어 redaction, localStorage TTL, guest step-up mismatch signal이 부족했다.
+- 변경내용:
+  - 검색어 privacy helper를 확장해 이메일, 전화번호, 오픈카카오/메신저 링크, 카카오톡 ID, 상세주소, bearer/JWT/API key 패턴을 탐지한다.
+  - 민감 패턴만 있는 검색어는 `SENSITIVE_TERM`으로 저장하지 않고, 일반어와 섞인 검색어는 민감 조각만 `[... 비공개]`로 치환해 집계한다.
+  - recent search localStorage를 7일 TTL payload로 바꾸고 민감 검색어는 저장하지 않게 했다.
+  - 글쓰기 draft localStorage를 24시간 TTL payload로 바꾸고 만료/invalid draft를 자동 삭제하게 했다.
+  - 글쓰기 UI에 공용 기기에서 임시저장을 삭제하라는 안내를 추가했다.
+  - guest step-up identity mismatch를 guest safety violation으로 기록하되 원문 fingerprint는 저장하지 않고 기존 hash 경로를 사용한다.
+  - 검색 통계 운영 가이드를 redaction/TTL 기준에 맞게 갱신했다.
+- 코드문서:
+  - [app/src/lib/search-term-privacy.ts](../app/src/lib/search-term-privacy.ts)
+  - [app/src/lib/recent-search-storage.ts](../app/src/lib/recent-search-storage.ts)
+  - [app/src/lib/post-draft-storage.ts](../app/src/lib/post-draft-storage.ts)
+  - [app/src/server/queries/search.queries.ts](../app/src/server/queries/search.queries.ts)
+  - [app/src/components/posts/feed-search-form.tsx](../app/src/components/posts/feed-search-form.tsx)
+  - [app/src/components/posts/post-create-form.tsx](../app/src/components/posts/post-create-form.tsx)
+  - [app/src/server/guest-step-up.ts](../app/src/server/guest-step-up.ts)
+  - [business/operations/검색 통계 전환 가이드.md](../business/operations/검색%20통계%20전환%20가이드.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app exec vitest run src/lib/search-term-privacy.test.ts src/lib/recent-search-storage.test.ts src/lib/post-draft-storage.test.ts src/server/queries/search.queries.test.ts src/server/guest-step-up.test.ts`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+- 결과:
+  - 검색/임시저장 편의 기능이 장기 개인정보 저장소로 변하지 않도록 TTL과 redaction 회귀 테스트가 생겼다.
+  - 다음 작업은 `P1-5 upload/media hardening`이다.

@@ -264,6 +264,8 @@
 
 ### P1-4. privacy hardening을 실제 데이터 흐름 기준으로 한다
 
+상태: `completed`
+
 - 문제: 검색어 로그, localStorage draft, guest fingerprint, auth/search/admin audit는 기능상 필요하지만 개인정보/민감정보 리스크가 있다.
 - 대상:
   - `app/src/app/api/search/log/route.ts`
@@ -287,6 +289,12 @@
   - retention script dry-run
 - 완료 기준:
   - 편의 기능이 개인정보 저장소로 변하지 않는다.
+- 결과:
+  - 검색어 통계 저장 전 이메일/전화번호/연락 링크/상세주소/토큰 패턴을 redaction 또는 skip 처리했다.
+  - recent search localStorage를 7일 TTL payload로 바꾸고 민감 검색어는 저장하지 않게 했다.
+  - 글쓰기 draft localStorage에 24시간 만료를 추가하고 공용 기기 안내를 노출했다.
+  - guest step-up identity mismatch도 원문 fingerprint 없이 abuse signal로 기록하게 했다.
+  - privacy/storage/guest-step-up targeted test와 `quality:check`가 통과했다.
 
 ### P1-5. upload/media hardening을 보강한다
 

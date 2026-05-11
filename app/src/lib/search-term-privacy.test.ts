@@ -5,6 +5,8 @@ import {
   detectSensitiveSearchSignals,
   normalizeSearchTerm,
   normalizeSearchTermForStats,
+  redactSensitiveSearchTerm,
+  sanitizeSearchTermForStats,
   shouldExcludeSearchTermFromStats,
 } from "@/lib/search-term-privacy";
 
@@ -22,6 +24,19 @@ describe("search term privacy", () => {
     expect(detectSensitiveSearchSignals("test@example.com")).toContain("email");
     expect(detectSensitiveSearchSignals("010-1234-5678")).toContain("phone");
     expect(shouldExcludeSearchTermFromStats("https://open.kakao.com/o/test-room")).toBe(true);
+    expect(detectSensitiveSearchSignals("서울 마포구 월드컵로 123")).toContain("address");
+    expect(detectSensitiveSearchSignals("Bearer abcdefghijklmnop")).toContain("token");
+  });
+
+  it("redacts sensitive fragments before a mixed search term can be stored", () => {
+    expect(redactSensitiveSearchTerm("강아지 산책 test@example.com")).toBe(
+      "강아지 산책 [이메일 비공개]",
+    );
+    expect(sanitizeSearchTermForStats("강아지 산책 010-1234-5678")).toBe(
+      "강아지 산책 [연락처 비공개]",
+    );
+    expect(sanitizeSearchTermForStats("010-1234-5678")).toBeNull();
+    expect(sanitizeSearchTermForStats("Bearer abcdefghijklmnop")).toBeNull();
   });
 
   it("keeps benign community queries trackable", () => {

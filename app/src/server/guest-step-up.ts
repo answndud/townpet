@@ -273,6 +273,7 @@ export async function assertGuestStepUp(params: AssertGuestStepUpParams) {
     payload.ipHash !== currentIpHash ||
     payload.fingerprintHash !== currentFingerprintHash
   ) {
+    await registerInvalidGuestStepUpAttempt(params);
     throw new ServiceError(
       "추가 확인이 만료되었습니다. 다시 시도해 주세요.",
       "GUEST_STEP_UP_REQUIRED",
