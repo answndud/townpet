@@ -20,8 +20,8 @@
 - Care Request M9 운영 런북/데모 seed를 완료했다
 - Care Request M10 관리자 큐 처리 상태와 M11 모바일/빈 상태 polish를 완료했다
 - Care Request M12 운영 threshold와 M13-M18 production smoke 준비/보류/tooling을 완료했다
-- Release Confidence Hardening 상세 계획과 P0-1 CI/build gate, P0-2 rendered HTML/XSS 안전성, P0-3 abuse-prone write path Redis 장애 failure mode, P0-4 production smoke readiness blocker, P1-1 원격 production smoke를 완료했다.
-- 다음 작업: P1-2 hot-path browser gate 자동화
+- Release Confidence Hardening 상세 계획과 P0-1 CI/build gate, P0-2 rendered HTML/XSS 안전성, P0-3 abuse-prone write path Redis 장애 failure mode, P0-4 production smoke readiness blocker, P1-1 원격 production smoke, P1-2 hot-path browser gate 자동화를 완료했다.
+- 다음 작업: P1-3 metadata/SEO 누락 체계 제거
 
 ## 열린 blocker
 - 원격 production smoke는 GitHub Actions `ops-smoke-checks` run `25645368457` 기준 PASS했다.
@@ -86,10 +86,15 @@
 - Release Confidence Hardening P1-1:
   - `main`에 P0-1~P0-4 커밋을 push한 뒤 GitHub Actions `ops-smoke-checks`를 수동 실행했다.
   - `run 25645368457`에서 care readiness, deployment health, prewarm, internal health token, `pg_trgm`, Sentry secret validation, Sentry ingestion이 모두 PASS했다.
+- Release Confidence Hardening P1-2:
+  - `test:e2e:hotpath`를 추가해 검색/게시판 필터, 비회원 글 관리, 댓글 auth sync, 알림 필터, 관리자 신규 유저 정책, 신고 흐름을 묶었다.
+  - `browser-smoke` workflow는 `main` push path gate와 수동 실행에서 smoke + hotpath를 함께 실행한다.
+  - hotpath가 댓글 cross-tab auth sync 회귀를 잡아, 댓글 섹션이 missed storage event도 localStorage timestamp polling으로 서버 렌더 reload에 수렴하도록 수정했다.
+  - 검증: targeted unit/e2e, `PLAYWRIGHT_REUSE_EXISTING_SERVER=0 SEED_DEFAULT_PASSWORD=dev-password-1234 corepack pnpm@9.12.3 -C app test:e2e:hotpath` PASS, `corepack pnpm@9.12.3 -C app quality:check` PASS.
 ## 다음 액션
-1. P1-2에서 핵심 클릭 hot path suite를 `test:e2e:hotpath`로 묶는다.
-2. `browser-smoke`를 main push/dispatch/nightly 중 어떤 gate로 운용할지 확정한다.
-3. 운영 smoke 계정이 실제로 존재하고 필요한 role/session 조건을 만족하는지 브라우저 smoke로 확인한다.
+1. P1-3에서 public/auth/admin page metadata 누락을 inventory로 다시 확인한다.
+2. metadata/generateMetadata 공통 helper 또는 page별 metadata를 추가한다.
+3. SEO metadata regression test를 넓힌다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)
