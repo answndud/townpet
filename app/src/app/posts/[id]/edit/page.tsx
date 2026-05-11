@@ -4,10 +4,17 @@ import { notFound, redirect } from "next/navigation";
 import { NeighborhoodGateNotice } from "@/components/neighborhood/neighborhood-gate-notice";
 import { PostDetailEditForm } from "@/components/posts/post-detail-edit-form";
 import { auth } from "@/lib/auth";
+import { createNoIndexPageMetadata } from "@/lib/page-metadata";
 import { getGuestPostMeta } from "@/lib/post-guest-meta";
 import { redirectToProfileIfNicknameMissing } from "@/server/nickname-guard";
 import { getPostById } from "@/server/queries/post.queries";
 import { getUserWithNeighborhoods } from "@/server/queries/user.queries";
+
+export const metadata = createNoIndexPageMetadata({
+  title: "게시글 수정",
+  description: "TownPet 게시글을 수정합니다.",
+  path: "/posts/[id]/edit",
+});
 
 type PostEditPageProps = {
   params?: Promise<{ id?: string }>;

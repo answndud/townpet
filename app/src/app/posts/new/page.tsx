@@ -4,11 +4,18 @@ import { UserRole } from "@prisma/client";
 import { PostCreateForm } from "@/components/posts/post-create-form";
 import { ServiceUnavailableState } from "@/components/ui/service-unavailable-state";
 import { auth } from "@/lib/auth";
+import { createNoIndexPageMetadata } from "@/lib/page-metadata";
 import { getCurrentUserRole } from "@/server/auth";
 import { redirectToProfileIfNicknameMissing } from "@/server/nickname-guard";
 import { isPrismaDatabaseUnavailableError } from "@/server/prisma-database-error";
 import { listCommunities } from "@/server/queries/community.queries";
 import { getUserWithNeighborhoods } from "@/server/queries/user.queries";
+
+export const metadata = createNoIndexPageMetadata({
+  title: "글쓰기",
+  description: "TownPet 게시글을 작성합니다.",
+  path: "/posts/new",
+});
 
 export default async function NewPostPage() {
   const session = await auth().catch((error) => {

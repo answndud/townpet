@@ -2191,3 +2191,30 @@
   - 핵심 클릭 hotpath 10개가 로컬에서 PASS했다.
   - 기본 품질 게이트도 lint/typecheck/unit/build까지 PASS했다.
   - 다음 작업은 `P1-3 metadata/SEO 누락 체계 제거`다.
+
+### 2026-05-11 | Release Confidence P1-3 metadata SEO coverage
+- 완료일: `2026-05-11`
+- 배경:
+  - 공개 SEO, 인증, 관리자, 개인/작성 화면이 섞여 있는데 `page.tsx` 단위 metadata 보장이 약하면 canonical, noindex, OG 정책이 페이지마다 누락될 수 있다.
+  - 이전 점검에서 다수 페이지가 `metadata` 또는 `generateMetadata`를 갖지 않아 출시 전 정적 회귀 테스트가 필요했다.
+- 변경내용:
+  - 공통 metadata helper `createPublicPageMetadata`, `createNoIndexPageMetadata`를 추가했다.
+  - `/`, `/best`, 로그인/회원가입/비밀번호/이메일 인증/온보딩 같은 redirect 또는 auth 페이지에 noindex metadata를 추가했다.
+  - 관리자 전체 화면, 내 글, 저장한 글 legacy redirect, 글쓰기, 게시글 수정, 품종 공동구매 작성 화면에 noindex metadata를 추가했다.
+  - `post-page-metadata.test.ts`가 `app/src/app/**/page.tsx` 전체를 스캔해 `metadata` 또는 `generateMetadata` 누락을 실패시키도록 확장했다.
+- 코드문서:
+  - [app/src/lib/page-metadata.ts](../app/src/lib/page-metadata.ts)
+  - [app/src/lib/post-page-metadata.test.ts](../app/src/lib/post-page-metadata.test.ts)
+  - [app/src/app/admin/page.tsx](../app/src/app/admin/page.tsx)
+  - [app/src/app/posts/new/page.tsx](../app/src/app/posts/new/page.tsx)
+  - [app/src/app/posts/[id]/edit/page.tsx](../app/src/app/posts/[id]/edit/page.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `rg --files app/src/app -g 'page.tsx' | while IFS= read -r f; do if ! rg -q "export const metadata|generateMetadata" "$f"; then printf '%s\n' "$f"; fi; done`
+  - `corepack pnpm@9.12.3 -C app exec vitest run src/lib/post-page-metadata.test.ts src/app/sitemap.test.ts src/app/robots.test.ts`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+- 결과:
+  - 모든 `app/src/app/**/page.tsx`가 metadata 정책을 갖는다.
+  - sitemap/robots와 metadata scan이 함께 회귀 테스트로 묶였다.
+  - 다음 작업은 `P1-4 privacy hardening`이다.

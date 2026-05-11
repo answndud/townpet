@@ -1,5 +1,12 @@
 import { AdminSectionNav } from "@/components/admin/admin-section-nav";
+import { createNoIndexPageMetadata } from "@/lib/page-metadata";
 import { requireModeratorPageUser } from "@/server/admin-page-access";
+
+export const metadata = createNoIndexPageMetadata({
+  title: "관리자 홈",
+  description: "TownPet 운영 관리 화면입니다.",
+  path: "/admin",
+});
 
 export default async function AdminHomePage() {
   const user = await requireModeratorPageUser();

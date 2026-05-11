@@ -20,8 +20,8 @@
 - Care Request M9 운영 런북/데모 seed를 완료했다
 - Care Request M10 관리자 큐 처리 상태와 M11 모바일/빈 상태 polish를 완료했다
 - Care Request M12 운영 threshold와 M13-M18 production smoke 준비/보류/tooling을 완료했다
-- Release Confidence Hardening 상세 계획과 P0-1 CI/build gate, P0-2 rendered HTML/XSS 안전성, P0-3 abuse-prone write path Redis 장애 failure mode, P0-4 production smoke readiness blocker, P1-1 원격 production smoke, P1-2 hot-path browser gate 자동화를 완료했다.
-- 다음 작업: P1-3 metadata/SEO 누락 체계 제거
+- Release Confidence Hardening 상세 계획과 P0-1 CI/build gate, P0-2 rendered HTML/XSS 안전성, P0-3 abuse-prone write path Redis 장애 failure mode, P0-4 production smoke readiness blocker, P1-1 원격 production smoke, P1-2 hot-path browser gate 자동화, P1-3 metadata/SEO 누락 제거를 완료했다.
+- 다음 작업: P1-4 privacy hardening을 실제 데이터 흐름 기준으로 진행
 
 ## 열린 blocker
 - 원격 production smoke는 GitHub Actions `ops-smoke-checks` run `25645368457` 기준 PASS했다.
@@ -92,10 +92,15 @@
   - hotpath가 댓글 cross-tab auth sync 회귀를 잡아, 댓글 섹션이 missed storage event도 localStorage timestamp polling으로 서버 렌더 reload에 수렴하도록 수정했다.
   - CI hotpath 차이를 줄이기 위해 댓글 spec fixture community를 자급자족하게 만들고, 알림 보관 UI는 낙관적 제거 후 실패 시 rollback하도록 바꿨다.
   - 검증: targeted unit/e2e, `PLAYWRIGHT_REUSE_EXISTING_SERVER=0 SEED_DEFAULT_PASSWORD=dev-password-1234 corepack pnpm@9.12.3 -C app test:e2e:hotpath` PASS, `corepack pnpm@9.12.3 -C app quality:check` PASS.
+- Release Confidence Hardening P1-3:
+  - `createPublicPageMetadata`, `createNoIndexPageMetadata` helper를 추가했다.
+  - auth/admin/private/작성/수정/legacy redirect 페이지에 noindex metadata를 추가했다.
+  - 모든 `app/src/app/**/page.tsx`가 `metadata` 또는 `generateMetadata`를 갖는지 scan test로 고정했다.
+  - 검증: metadata/sitemap/robots targeted test PASS, `corepack pnpm@9.12.3 -C app quality:check` PASS.
 ## 다음 액션
-1. P1-3에서 public/auth/admin page metadata 누락을 inventory로 다시 확인한다.
-2. metadata/generateMetadata 공통 helper 또는 page별 metadata를 추가한다.
-3. SEO metadata regression test를 넓힌다.
+1. P1-4에서 검색어 로그, recent search, localStorage draft, guest fingerprint, audit retention 저장 흐름을 inventory로 다시 확인한다.
+2. 민감정보 redaction/TTL/retention fixture를 먼저 추가한다.
+3. privacy hardening 변경 후 targeted test와 `quality:check`를 실행한다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)

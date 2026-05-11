@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { EmptyState } from "@/components/ui/empty-state";
+import { createNoIndexPageMetadata } from "@/lib/page-metadata";
 import {
   FEED_AUDIENCE_SOURCE_LABELS,
   FEED_PERSONALIZATION_SURFACE_LABELS,
@@ -12,6 +13,12 @@ import {
 import { adminFeedPersonalizationQuerySchema } from "@/lib/validations/feed-personalization";
 import { requireAdminPageUser } from "@/server/admin-page-access";
 import { getFeedPersonalizationOverview } from "@/server/queries/feed-personalization-metrics.queries";
+
+export const metadata = createNoIndexPageMetadata({
+  title: "개인화 지표",
+  description: "TownPet 피드 개인화 신호와 진단 지표를 확인합니다.",
+  path: "/admin/personalization",
+});
 
 type PersonalizationPageProps = {
   searchParams?: Promise<{ days?: string }>;

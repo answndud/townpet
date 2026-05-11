@@ -1,5 +1,12 @@
 import { AuthPageLayout } from "@/components/auth/auth-page-layout";
 import { ResetPasswordForm } from "@/components/auth/reset-password-form";
+import { createNoIndexPageMetadata } from "@/lib/page-metadata";
+
+export const metadata = createNoIndexPageMetadata({
+  title: "비밀번호 재설정",
+  description: "TownPet 계정 비밀번호를 재설정합니다.",
+  path: "/password/reset",
+});
 
 type PasswordResetPageProps = {
   searchParams?: Promise<{ token?: string }>;

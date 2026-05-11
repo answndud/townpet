@@ -1,8 +1,15 @@
 import Link from "next/link";
 
 import { EmptyState } from "@/components/ui/empty-state";
+import { createNoIndexPageMetadata } from "@/lib/page-metadata";
 import { requireModeratorPageUser } from "@/server/admin-page-access";
 import { listHospitalReviewFlagLogs } from "@/server/queries/moderation-action.queries";
+
+export const metadata = createNoIndexPageMetadata({
+  title: "병원 후기 의심 신호",
+  description: "TownPet 병원 후기 위험 신호를 검토합니다.",
+  path: "/admin/hospital-review-flags",
+});
 
 type HospitalReviewFlagsPageProps = {
   searchParams?: Promise<{ signal?: string; q?: string }>;

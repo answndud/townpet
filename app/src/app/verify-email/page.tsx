@@ -1,5 +1,12 @@
 import { AuthPageLayout } from "@/components/auth/auth-page-layout";
 import { VerifyEmailForm } from "@/components/auth/verify-email-form";
+import { createNoIndexPageMetadata } from "@/lib/page-metadata";
+
+export const metadata = createNoIndexPageMetadata({
+  title: "이메일 인증",
+  description: "TownPet 계정 이메일을 인증합니다.",
+  path: "/verify-email",
+});
 
 type VerifyEmailPageProps = {
   searchParams?: Promise<{ token?: string; email?: string }>;

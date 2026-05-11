@@ -2,6 +2,8 @@ import Link from "next/link";
 import { ReportReason, ReportStatus, ReportTarget } from "@prisma/client";
 
 import { ReportQueueTable } from "@/components/admin/report-queue-table";
+import { ReportUpdateBanner } from "@/components/admin/report-update-banner";
+import { createNoIndexPageMetadata } from "@/lib/page-metadata";
 import { buildPaginationWindow, parsePositivePage } from "@/lib/pagination";
 import {
   calculateReporterTrustWeight,
@@ -10,7 +12,6 @@ import {
   summarizeReportModeration,
 } from "@/lib/report-moderation";
 import { getReportReasonLabel, reportReasonOptions } from "@/lib/report-reason";
-import { ReportUpdateBanner } from "@/components/admin/report-update-banner";
 import {
   SUPPORTED_REPORT_TARGETS,
   getReportTargetLabel,
@@ -22,6 +23,12 @@ import { getReportStats, listReportsPage } from "@/server/queries/report.queries
 import { listRecentSanctions } from "@/server/queries/sanction.queries";
 import { listUsersByIds } from "@/server/queries/user.queries";
 import { formatSanctionLevelLabel } from "@/server/services/sanction.service";
+
+export const metadata = createNoIndexPageMetadata({
+  title: "신고 큐",
+  description: "TownPet 신고 접수와 처리 우선순위를 검토합니다.",
+  path: "/admin/reports",
+});
 
 type ReportsPageProps = {
   searchParams?: Promise<{ status?: string; target?: string; updated?: string; page?: string }>;
