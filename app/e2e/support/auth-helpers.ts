@@ -150,7 +150,15 @@ export async function loginWithCredentials(
     return;
   }
 
-  await page.reload();
+  try {
+    await page.reload({ waitUntil: "domcontentloaded", timeout: 10_000 });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (!message.includes("ERR_ABORTED") && !message.includes("frame was detached")) {
+      throw error;
+    }
+    await page.goto(nextPath, { waitUntil: "domcontentloaded" });
+  }
 }
 
 export async function loginWithCredentialsApi(
