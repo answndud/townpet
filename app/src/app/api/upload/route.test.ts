@@ -101,6 +101,7 @@ describe("POST /api/upload contract", () => {
       key: "upload:user:user-1:ip:127.0.0.1",
       limit: 20,
       windowMs: 60_000,
+      failureMode: "closed",
     });
     expect(mockSaveUploadedImage).toHaveBeenCalledWith(expect.any(File), {
       maxSizeBytes: undefined,

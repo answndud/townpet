@@ -81,6 +81,13 @@ describe("POST /api/feed/personalization contract", () => {
       audienceSource: "PET",
       userId: "user-1",
     });
+    expect(mockEnforceRateLimit).toHaveBeenCalledWith({
+      key: "feed-personalization:user:user-1:ip:127.0.0.1",
+      limit: 120,
+      windowMs: 60_000,
+      cacheMs: 500,
+      failureMode: "closed",
+    });
   });
 
   it("returns 400 when post click payload omits postId", async () => {

@@ -51,6 +51,7 @@ const SHARED_IP_GLOBAL_LIMITS: Record<
   ELEVATED: { limit: 28, windowMs: 10 * 60_000 },
   HIGH: { limit: 18, windowMs: 10 * 60_000 },
 };
+const HIGH_RISK_RATE_LIMIT_FAILURE_MODE = "closed" as const;
 
 const SCOPE_LIMITS: Record<
   AuthenticatedWriteScope,
@@ -204,39 +205,46 @@ export async function enforceAuthenticatedWriteRateLimit(params: {
     key: `auth-write:user:${params.userId}`,
     limit: config.userGlobal.limit,
     windowMs: config.userGlobal.windowMs,
+    failureMode: HIGH_RISK_RATE_LIMIT_FAILURE_MODE,
   });
   await enforceRateLimit({
     key: `auth-write:ip:${ipHash}`,
     limit: config.sharedIpGlobal.limit,
     windowMs: config.sharedIpGlobal.windowMs,
+    failureMode: HIGH_RISK_RATE_LIMIT_FAILURE_MODE,
   });
   if (fingerprintHash) {
     await enforceRateLimit({
       key: `auth-write:fingerprint:${fingerprintHash}`,
       limit: config.sharedIpGlobal.limit,
       windowMs: config.sharedIpGlobal.windowMs,
+      failureMode: HIGH_RISK_RATE_LIMIT_FAILURE_MODE,
     });
   }
   await enforceRateLimit({
     key: `${params.scope}:user:${params.userId}`,
     limit: config.user.limit,
     windowMs: config.user.windowMs,
+    failureMode: HIGH_RISK_RATE_LIMIT_FAILURE_MODE,
   });
   await enforceRateLimit({
     key: `${params.scope}:user:${params.userId}:ip:${ipHash}`,
     limit: config.userIp.limit,
     windowMs: config.userIp.windowMs,
+    failureMode: HIGH_RISK_RATE_LIMIT_FAILURE_MODE,
   });
   await enforceRateLimit({
     key: `${params.scope}:ip:${ipHash}`,
     limit: config.sharedIp.limit,
     windowMs: config.sharedIp.windowMs,
+    failureMode: HIGH_RISK_RATE_LIMIT_FAILURE_MODE,
   });
   if (fingerprintHash) {
     await enforceRateLimit({
       key: `${params.scope}:fingerprint:${fingerprintHash}`,
       limit: config.sharedIp.limit,
       windowMs: config.sharedIp.windowMs,
+      failureMode: HIGH_RISK_RATE_LIMIT_FAILURE_MODE,
     });
   }
 }

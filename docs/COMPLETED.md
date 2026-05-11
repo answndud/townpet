@@ -2087,3 +2087,33 @@
 - 결과:
   - markdown 기반 rendered HTML 경로에서 unsafe href/src와 token collision이 회귀 테스트로 고정됐다.
   - 다음 작업은 `P0-3 abuse-prone write path Redis 장애 failure mode 정리`다.
+
+### 2026-05-11 | Release Confidence P0-3 abuse fail-closed rate limit
+- 완료일: `2026-05-11`
+- 배경:
+  - 기존 rate limit은 Upstash/Redis 장애 시 memory fallback을 사용했다.
+  - serverless scale-out 환경에서 memory fallback은 high-risk write path abuse 방어로 충분하지 않을 수 있다.
+- 변경내용:
+  - `enforceRateLimit`에 `failureMode: "memory" | "closed"` 옵션을 추가했다.
+  - Upstash가 설정되어 있는데 장애가 나거나, production에서 closed mode가 필요한데 Redis가 설정되지 않으면 `RATE_LIMIT_BACKEND_UNAVAILABLE` 503으로 차단한다.
+  - 기존 read/low-risk path는 기본 memory fallback 동작을 유지한다.
+  - 인증 작성 throttle의 모든 user/ip/fingerprint/scope limit은 closed mode로 실행한다.
+  - 게스트 작성/수정/삭제/댓글, 업로드, guest step-up, 검색 로그, 개인화 metric write에 closed mode를 적용했다.
+  - rate-limit backend failure, authenticated write closed mode, 주요 route contract 테스트를 보강했다.
+- 코드문서:
+  - [app/src/server/rate-limit.ts](../app/src/server/rate-limit.ts)
+  - [app/src/server/rate-limit.test.ts](../app/src/server/rate-limit.test.ts)
+  - [app/src/server/authenticated-write-throttle.ts](../app/src/server/authenticated-write-throttle.ts)
+  - [app/src/server/authenticated-write-throttle.test.ts](../app/src/server/authenticated-write-throttle.test.ts)
+  - [app/src/app/api/posts/route.ts](../app/src/app/api/posts/route.ts)
+  - [app/src/app/api/upload/route.ts](../app/src/app/api/upload/route.ts)
+  - [app/src/app/api/search/log/route.ts](../app/src/app/api/search/log/route.ts)
+  - [app/src/app/api/feed/personalization/route.ts](../app/src/app/api/feed/personalization/route.ts)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app exec vitest run src/server/rate-limit.test.ts src/server/authenticated-write-throttle.test.ts src/app/api/upload/route.test.ts src/app/api/search/log/route.test.ts src/app/api/feed/personalization/route.test.ts src/app/api/guest/step-up/route.test.ts src/app/api/posts/route.test.ts 'src/app/api/posts/[id]/comments/route.test.ts' 'src/app/api/posts/[id]/route.test.ts'`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+- 결과:
+  - Redis/Upstash 장애가 high-risk write path abuse 방어 무력화로 바로 이어지지 않는다.
+  - 다음 작업은 `P0-4 production smoke blocker 값/계정 단위 제거`다.

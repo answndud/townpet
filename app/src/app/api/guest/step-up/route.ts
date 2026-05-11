@@ -30,6 +30,7 @@ export async function POST(request: NextRequest) {
       limit: 20,
       windowMs: 60_000,
       cacheMs: 1_000,
+      failureMode: "closed",
     });
 
     const challenge = issueGuestStepUpChallenge({

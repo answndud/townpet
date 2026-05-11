@@ -91,11 +91,13 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         key: `${guestRateKey}:10m`,
         limit: Math.max(5, guestPostPolicy.postRateLimit10m),
         windowMs: 10 * 60_000,
+        failureMode: "closed",
       });
       await enforceRateLimit({
         key: `${guestRateKey}:1h`,
         limit: guestPostPolicy.postRateLimit1h,
         windowMs: 60 * 60_000,
+        failureMode: "closed",
       });
 
       const post = await updateGuestPost({
@@ -159,11 +161,13 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
         key: `${guestRateKey}:10m`,
         limit: Math.max(5, guestPostPolicy.postRateLimit10m),
         windowMs: 10 * 60_000,
+        failureMode: "closed",
       });
       await enforceRateLimit({
         key: `${guestRateKey}:1h`,
         limit: guestPostPolicy.postRateLimit1h,
         windowMs: 60 * 60_000,
+        failureMode: "closed",
       });
 
       const result = await deleteGuestPost({

@@ -161,4 +161,18 @@ describe("authenticated write throttle", () => {
     expect(config.user).toEqual({ limit: 8, windowMs: 60_000 });
     expect(config.sharedIp).toEqual({ limit: 18, windowMs: 600_000 });
   });
+
+  it("requires closed failure mode for every authenticated write limit", async () => {
+    await enforceAuthenticatedWriteRateLimit({
+      scope: "report:create",
+      userId: "user-closed",
+      ip: "203.0.113.77",
+      clientFingerprint: "fp-closed",
+    });
+
+    expect(mockEnforceRateLimit).toHaveBeenCalledTimes(7);
+    for (const [options] of mockEnforceRateLimit.mock.calls) {
+      expect(options).toEqual(expect.objectContaining({ failureMode: "closed" }));
+    }
+  });
 });

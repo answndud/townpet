@@ -20,8 +20,8 @@
 - Care Request M9 운영 런북/데모 seed를 완료했다
 - Care Request M10 관리자 큐 처리 상태와 M11 모바일/빈 상태 polish를 완료했다
 - Care Request M12 운영 threshold와 M13-M18 production smoke 준비/보류/tooling을 완료했다
-- Release Confidence Hardening 상세 계획과 P0-1 CI/build gate, P0-2 rendered HTML/XSS 안전성 증명을 완료했다.
-- 다음 작업: P0-3 abuse-prone write path Redis 장애 failure mode 정리
+- Release Confidence Hardening 상세 계획과 P0-1 CI/build gate, P0-2 rendered HTML/XSS 안전성, P0-3 abuse-prone write path Redis 장애 failure mode 정리를 완료했다.
+- 다음 작업: P0-4 production smoke blocker 값/계정 단위 제거
 
 ## 열린 blocker
 - Production smoke는 `ops:check:care-smoke-readiness`가 `PASS`가 될 때까지 blocked다.
@@ -73,10 +73,15 @@
   - unsafe markdown link는 anchor로 만들지 않고 label만 남기도록 강화했다.
   - `javascript:`, `data:`, raw HTML, link label HTML, image alt quote/event text, unsafe image protocol, placeholder collision fixture를 추가했다.
   - 검증: `corepack pnpm@9.12.3 -C app exec vitest run src/lib/markdown-lite.test.ts src/lib/json-script.test.ts`, `corepack pnpm@9.12.3 -C app quality:check` 통과.
+- Release Confidence Hardening P0-3:
+  - `enforceRateLimit`에 `failureMode: "closed"`를 추가해 Redis/Upstash 장애 시 high-risk 경로가 503으로 fail-closed할 수 있게 했다.
+  - 인증 작성 throttle은 모든 user/ip/fingerprint/scope limit에 closed mode를 적용했다.
+  - 게스트 작성/수정/삭제/댓글, 업로드, guest step-up, 검색 로그, 개인화 metric write에 closed mode를 적용했다.
+  - 검증: targeted 9개 테스트 파일, `corepack pnpm@9.12.3 -C app quality:check` 통과.
 ## 다음 액션
-1. P0-3 high-risk write path의 Redis/Upstash 장애 시 failure mode를 설계한다.
-2. `rate-limit`, `authenticated-write-throttle`, posts/reports/upload/search-log/feed-personalization route test를 failure mode 기준으로 보강한다.
-3. 이후 production smoke 단계에서 `OPS_HEALTH_INTERNAL_TOKEN` 또는 `HEALTH_INTERNAL_TOKEN`, `CARE_SMOKE_*_EMAIL`을 준비한다.
+1. P0-4에서 `OPS_HEALTH_INTERNAL_TOKEN` 또는 `HEALTH_INTERNAL_TOKEN`, `CARE_SMOKE_*_EMAIL`, 선택 Sentry secret 준비 여부를 값 노출 없이 확인한다.
+2. `ops:check:care-smoke-readiness`가 PASS인지 확인하고, blocker가 남으면 secret/계정/외부서비스 단위로 기록한다.
+3. 준비값이 확보되면 P1-1 원격 production smoke로 이어간다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)

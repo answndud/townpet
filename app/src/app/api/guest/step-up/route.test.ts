@@ -75,6 +75,7 @@ describe("POST /api/guest/step-up contract", () => {
       limit: 20,
       windowMs: 60_000,
       cacheMs: 1_000,
+      failureMode: "closed",
     });
     expect(payload).toMatchObject({
       ok: true,
