@@ -180,6 +180,8 @@
 
 ### P1-1. production smoke를 실제 원격 기준으로 실행한다
 
+상태: `completed`
+
 - 문제: 로컬 기능 검증과 운영 배포 검증은 다르다.
 - 대상:
   - `app/scripts/check-health-endpoint.ts`
@@ -197,6 +199,10 @@
   - GitHub `ops-smoke-checks` manual run
 - 완료 기준:
   - 원격 배포가 local-only green 착시가 아님을 증명한다.
+- 결과:
+  - GitHub Actions `ops-smoke-checks` manual run `25645368457` PASS.
+  - care readiness, public health, prewarm, internal health token validation, `pg_trgm`, Sentry secret validation, Sentry ingestion이 모두 통과했다.
+  - 남은 범위는 브라우저 기반 실제 클릭 hot path gate와 운영 계정 role/session smoke다.
 
 ### P1-2. hot-path browser gate를 자동화한다
 

@@ -2139,3 +2139,23 @@
 - 결과:
   - production smoke readiness의 값/계정 blocker는 CI에서 확인 가능한 상태로 정리됐다.
   - 실제 운영 계정 존재/권한, remote health, `pg_trgm`, prewarm, Sentry ingestion 실행 결과는 `P1-1 production smoke 실제 원격 실행`에서 검증한다.
+
+### 2026-05-11 | Release Confidence P1-1 production smoke execution
+- 완료일: `2026-05-11`
+- 배경:
+  - P0-4에서 production smoke 준비값과 CI 주입 경로를 정리했으므로, 실제 원격 배포가 local-only green 상태가 아닌지 검증해야 했다.
+  - internal health, `pg_trgm`, Sentry ingestion은 로컬 secret 없이 검증할 수 없어 GitHub Actions에서 실행했다.
+- 변경내용:
+  - P0-1~P0-4 커밋을 `main`에 push했다.
+  - GitHub Actions `ops-smoke-checks`를 `target_base_url=https://townpet.vercel.app`, `verify_pg_trgm=true`, `verify_sentry=true`로 수동 실행했다.
+  - run `25645368457`에서 care readiness, deployment health, prewarm, internal health token, `pg_trgm`, Sentry secret validation, Sentry ingestion이 모두 PASS했다.
+- 코드문서:
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `git push origin main`
+  - `gh workflow run ops-smoke-checks.yml --repo answndud/townpet -f target_base_url=https://townpet.vercel.app -f verify_pg_trgm=true -f verify_sentry=true`
+  - `gh run watch 25645368457 --repo answndud/townpet --exit-status`
+- 결과:
+  - 원격 production smoke가 PASS해 public/internal health, `pg_trgm`, route prewarm, Sentry ingestion evidence가 확보됐다.
+  - 다음 작업은 `P1-2 hot-path browser gate 자동화`다.
