@@ -115,6 +115,10 @@
   - 세 번째 slice로 draft hydration/autosave/clear/submit-clear 로직을 `use-post-create-draft` hook으로 분리했다.
   - 네 번째 slice로 마켓/돌봄 structured fields와 공용 section wrapper를 `post-create-structured-fields`로 분리했다.
   - 검증: structured fields/options/state targeted test PASS, `typecheck` PASS, `lint` PASS.
+- Vercel preview 배포 차단:
+  - 원인: `build:vercel`이 `VERCEL_ENV=preview`도 strict security env preflight 대상으로 취급해 preview secret 구성이 production급이 아니면 빌드 전에 실패했다.
+  - 수정: preview는 기본 skip으로 되돌리고, production/명시적 staging 또는 `DEPLOY_SECURITY_PREFLIGHT_STRICT=1`에서만 strict preflight를 실행한다.
+  - 검증: `corepack pnpm@9.12.3 -C app exec vitest run scripts/vercel-build.test.ts` PASS.
 ## 다음 액션
 1. 같은 P1-6 내 다음 slice로 `post-create-form`의 병원/장소/산책/입양/봉사 structured fields를 더 작은 그룹으로 분리한다.
 2. 이후 `post.queries`를 feed list/detail/search/admin/care-adoption read model 단위로 분해할 경계와 기존 테스트 매핑을 잡는다.
