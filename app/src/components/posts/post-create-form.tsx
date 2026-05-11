@@ -28,6 +28,10 @@ import {
   createInitialPostCreateFormState,
   type PostCreateFormState,
 } from "@/components/posts/post-create-form-state";
+import {
+  buildPostCreateSubmitPayload,
+  createPostCreateSuccessState,
+} from "@/components/posts/post-create-submit";
 import { usePostCreateDraft } from "@/components/posts/use-post-create-draft";
 import {
   postTypeOptions,
@@ -277,57 +281,6 @@ export function PostCreateForm({
     };
   }, [formState.neighborhoodId, formState.scope, resolvedScope]);
 
-  const hasHospitalReview =
-    showHospitalReview &&
-    (formState.hospitalReview.hospitalName.trim().length > 0 ||
-      formState.hospitalReview.treatmentType.trim().length > 0 ||
-      formState.hospitalReview.totalCost.trim().length > 0 ||
-      formState.hospitalReview.waitTime.trim().length > 0 ||
-      formState.hospitalReview.rating.trim().length > 0);
-
-  const hasPlaceReview =
-    showPlaceReview &&
-    (formState.placeReview.placeName.trim().length > 0 ||
-      formState.placeReview.placeType.trim().length > 0 ||
-      formState.placeReview.address.trim().length > 0 ||
-      formState.placeReview.isPetAllowed.trim().length > 0 ||
-      formState.placeReview.rating.trim().length > 0);
-
-  const hasWalkRoute =
-    showWalkRoute &&
-    (formState.walkRoute.routeName.trim().length > 0 ||
-      formState.walkRoute.distance.trim().length > 0 ||
-      formState.walkRoute.duration.trim().length > 0 ||
-      formState.walkRoute.difficulty.trim().length > 0 ||
-      formState.walkRoute.safetyTags.trim().length > 0 ||
-      formState.walkRoute.hasStreetLights === "true" ||
-      formState.walkRoute.hasRestroom === "true" ||
-      formState.walkRoute.hasParkingLot === "true");
-
-  const hasAdoptionListing =
-    showAdoptionListing &&
-    (formState.adoptionListing.shelterName.trim().length > 0 ||
-      formState.adoptionListing.region.trim().length > 0 ||
-      formState.adoptionListing.animalType.trim().length > 0 ||
-      formState.adoptionListing.breed.trim().length > 0 ||
-      formState.adoptionListing.ageLabel.trim().length > 0 ||
-      formState.adoptionListing.sex.trim().length > 0 ||
-      formState.adoptionListing.isNeutered.trim().length > 0 ||
-      formState.adoptionListing.isVaccinated.trim().length > 0 ||
-      formState.adoptionListing.sizeLabel.trim().length > 0 ||
-      formState.adoptionListing.status.trim().length > 0);
-
-  const hasVolunteerRecruitment =
-    showVolunteerRecruitment &&
-    (formState.volunteerRecruitment.shelterName.trim().length > 0 ||
-      formState.volunteerRecruitment.region.trim().length > 0 ||
-      formState.volunteerRecruitment.volunteerDate.trim().length > 0 ||
-      formState.volunteerRecruitment.volunteerType.trim().length > 0 ||
-      formState.volunteerRecruitment.capacity.trim().length > 0 ||
-      formState.volunteerRecruitment.status.trim().length > 0);
-  const hasMarketListing = showMarketListing;
-  const hasCareRequest = showCareRequest;
-
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
@@ -335,57 +288,23 @@ export function PostCreateForm({
     const serializedContent = editorSnapshot?.content ?? latestEditorContentRef.current;
     const serializedImageUrls = editorSnapshot?.imageUrls ?? latestEditorImageUrlsRef.current;
     const normalizedTitle = latestTitleRef.current.trim();
-    if (!normalizedTitle) {
-      setError("제목을 입력해 주세요.");
-      return;
-    }
-    if (!serializedContent.trim()) {
-      setError("내용을 입력해 주세요.");
-      return;
-    }
-    if (serializedContent.length > POST_CONTENT_MAX_LENGTH) {
-      setError(`내용은 ${POST_CONTENT_MAX_LENGTH.toLocaleString("ko-KR")}자까지 입력할 수 있습니다.`);
-      return;
-    }
-
-    const normalizedAnimalTags = formState.animalTagsInput
-      .split(",")
-      .map((tag) => tag.trim())
-      .filter((tag) => tag.length > 0)
-      .slice(0, 5);
-    const resolvedType =
-      formState.type === PostType.PRODUCT_REVIEW && formState.reviewCategory === REVIEW_CATEGORY.PLACE
-        ? PostType.PLACE_REVIEW
-        : formState.type;
-    const shouldAttachReviewCategory =
-      resolvedType === PostType.PLACE_REVIEW || resolvedType === PostType.PRODUCT_REVIEW;
-
-    if (showCommunitySelector && !isFreeBoardType && !formState.petTypeId) {
-      setError("커뮤니티를 선택해 주세요.");
-      return;
-    }
-
-    if (resolvedScope === PostScope.LOCAL && !formState.neighborhoodId) {
-      setError(
-        canUseLocalScope
-          ? "동네를 먼저 선택해 주세요."
-          : "동네 기반 글을 작성하려면 먼저 대표 동네를 설정해 주세요.",
-      );
-      return;
-    }
-
-    if (showAnimalTagsInput && normalizedAnimalTags.length === 0) {
-      setError("공용 보드 글은 동물 태그를 1개 이상 입력해 주세요.");
-      return;
-    }
-
-    if (showMarketListing && formState.marketListing.price.trim().length === 0) {
-      setError("마켓 글은 가격을 입력해 주세요. 나눔은 0원을 입력합니다.");
-      return;
-    }
-
-    if (showCareRequest && !formState.careRequest.startsAt) {
-      setError("돌봄 요청은 시작 시간을 입력해 주세요.");
+    const payloadResult = buildPostCreateSubmitPayload({
+      formState,
+      normalizedTitle,
+      serializedContent,
+      serializedImageUrls,
+      resolvedScope,
+      isAuthenticated,
+      canUseLocalScope,
+      showNeighborhood,
+      showCommunitySelector,
+      showAnimalTagsInput,
+      showMarketListing,
+      showCareRequest,
+      isFreeBoardType,
+    });
+    if (!payloadResult.ok) {
+      setError(payloadResult.message);
       return;
     }
 
@@ -396,82 +315,8 @@ export function PostCreateForm({
     }));
 
     startTransition(async () => {
-      const payload = {
-        title: normalizedTitle,
-        content: serializedContent,
-        type: resolvedType,
-        reviewCategory: shouldAttachReviewCategory ? formState.reviewCategory : undefined,
-        scope: isAuthenticated ? resolvedScope : PostScope.GLOBAL,
-        imageUrls: serializedImageUrls,
-        neighborhoodId: showNeighborhood ? formState.neighborhoodId : undefined,
-        petTypeId: showCommunitySelector ? formState.petTypeId || undefined : undefined,
-        animalTags: showAnimalTagsInput ? normalizedAnimalTags : undefined,
-        guestDisplayName: isAuthenticated ? undefined : formState.guestDisplayName,
-        guestPassword: isAuthenticated ? undefined : formState.guestPassword,
-        hospitalReview: hasHospitalReview
-          ? {
-              ...formState.hospitalReview,
-              totalCost: formState.hospitalReview.totalCost || undefined,
-              waitTime: formState.hospitalReview.waitTime || undefined,
-            }
-          : undefined,
-        placeReview: hasPlaceReview
-          ? {
-              ...formState.placeReview,
-              isPetAllowed: formState.placeReview.isPetAllowed || undefined,
-            }
-          : undefined,
-        walkRoute: hasWalkRoute
-          ? {
-              ...formState.walkRoute,
-              distance: formState.walkRoute.distance || undefined,
-              duration: formState.walkRoute.duration || undefined,
-              safetyTags: formState.walkRoute.safetyTags
-                .split(",")
-                .map((tag) => tag.trim())
-                .filter(Boolean),
-            }
-          : undefined,
-        adoptionListing: hasAdoptionListing
-          ? {
-              ...formState.adoptionListing,
-              sex: formState.adoptionListing.sex || undefined,
-              isNeutered: formState.adoptionListing.isNeutered || undefined,
-              isVaccinated: formState.adoptionListing.isVaccinated || undefined,
-              status: formState.adoptionListing.status || undefined,
-            }
-          : undefined,
-        volunteerRecruitment: hasVolunteerRecruitment
-          ? {
-              ...formState.volunteerRecruitment,
-              volunteerDate: formState.volunteerRecruitment.volunteerDate || undefined,
-              capacity: formState.volunteerRecruitment.capacity || undefined,
-              status: formState.volunteerRecruitment.status || undefined,
-            }
-          : undefined,
-        marketListing: hasMarketListing
-          ? {
-              ...formState.marketListing,
-              depositAmount: formState.marketListing.depositAmount || undefined,
-              rentalPeriod: formState.marketListing.rentalPeriod || undefined,
-            }
-          : undefined,
-        careRequest: hasCareRequest
-          ? {
-              ...formState.careRequest,
-              startsAt: formState.careRequest.startsAt || undefined,
-              endsAt: formState.careRequest.endsAt || undefined,
-              locationNote: formState.careRequest.locationNote || undefined,
-              petNote: formState.careRequest.petNote || undefined,
-              requirements: formState.careRequest.requirements || undefined,
-              rewardAmount: formState.careRequest.rewardAmount || undefined,
-              isUrgent: formState.careRequest.isUrgent === "true",
-            }
-          : undefined,
-      };
-
       const result = isAuthenticated
-        ? await createPostAction(payload, {
+        ? await createPostAction(payloadResult.payload, {
             clientFingerprint: getClientFingerprint(),
           })
         : await (async () => {
@@ -483,7 +328,7 @@ export function PostCreateForm({
                   "content-type": "application/json",
                   ...guestHeaders,
                 },
-                body: JSON.stringify(payload),
+                body: JSON.stringify(payloadResult.payload),
               });
               const responsePayload = (await response.json()) as {
                 ok: boolean;
@@ -518,72 +363,7 @@ export function PostCreateForm({
       markDraftSubmitted();
       router.push("/feed");
       router.refresh();
-      setFormState((prev) => ({
-        ...prev,
-        title: "",
-        content: "",
-        type: PostType.FREE_BOARD,
-        petTypeId: "",
-        reviewCategory: REVIEW_CATEGORY.SUPPLIES,
-        animalTagsInput: "",
-        hospitalReview: {
-          ...prev.hospitalReview,
-          hospitalName: "",
-          treatmentType: "",
-          totalCost: "",
-          waitTime: "",
-          rating: "",
-        },
-        placeReview: {
-          ...prev.placeReview,
-          placeName: "",
-          placeType: "",
-          address: "",
-          isPetAllowed: "",
-          rating: "",
-        },
-        walkRoute: {
-          ...prev.walkRoute,
-          routeName: "",
-          distance: "",
-          duration: "",
-          difficulty: "",
-          safetyTags: "",
-        },
-        adoptionListing: {
-          ...prev.adoptionListing,
-          shelterName: "",
-          region: "",
-          animalType: "",
-          breed: "",
-          ageLabel: "",
-          sex: "",
-          isNeutered: "",
-          isVaccinated: "",
-          sizeLabel: "",
-          status: "OPEN",
-        },
-        volunteerRecruitment: {
-          ...prev.volunteerRecruitment,
-          shelterName: "",
-          region: "",
-          volunteerDate: "",
-          volunteerType: "",
-          capacity: "",
-          status: "OPEN",
-        },
-        marketListing: {
-          ...prev.marketListing,
-          listingType: "SELL",
-          price: "",
-          condition: "GOOD",
-          depositAmount: "",
-          rentalPeriod: "",
-        },
-        imageUrls: [],
-        guestDisplayName: "",
-        guestPassword: "",
-      }));
+      setFormState(createPostCreateSuccessState);
       latestTitleRef.current = "";
       if (titleInputRef.current) {
         titleInputRef.current.value = "";
