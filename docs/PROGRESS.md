@@ -90,6 +90,7 @@
   - `test:e2e:hotpath`를 추가해 검색/게시판 필터, 비회원 글 관리, 댓글 auth sync, 알림 필터, 관리자 신규 유저 정책, 신고 흐름을 묶었다.
   - `browser-smoke` workflow는 `main` push path gate와 수동 실행에서 smoke + hotpath를 함께 실행한다.
   - hotpath가 댓글 cross-tab auth sync 회귀를 잡아, 댓글 섹션이 missed storage event도 localStorage timestamp polling으로 서버 렌더 reload에 수렴하도록 수정했다.
+  - CI hotpath 차이를 줄이기 위해 댓글 spec fixture community를 자급자족하게 만들고, 알림 보관 UI는 낙관적 제거 후 실패 시 rollback하도록 바꿨다.
   - 검증: targeted unit/e2e, `PLAYWRIGHT_REUSE_EXISTING_SERVER=0 SEED_DEFAULT_PASSWORD=dev-password-1234 corepack pnpm@9.12.3 -C app test:e2e:hotpath` PASS, `corepack pnpm@9.12.3 -C app quality:check` PASS.
 ## 다음 액션
 1. P1-3에서 public/auth/admin page metadata 누락을 inventory로 다시 확인한다.

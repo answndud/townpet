@@ -19,15 +19,30 @@ test.describe("post comment auth sync", () => {
       email,
       nicknamePrefix: "e2e-comment-auth",
     });
-    const community = await prisma.community.findFirst({
-      where: { isActive: true },
-      orderBy: { sortOrder: "asc" },
+    const category = await prisma.communityCategory.upsert({
+      where: { slug: "e2e-hotpath" },
+      update: { isActive: true },
+      create: {
+        slug: "e2e-hotpath",
+        labelKo: "E2E",
+        sortOrder: 999,
+        isActive: true,
+      },
       select: { id: true },
     });
-
-    if (!community) {
-      throw new Error("No active community found for comment auth sync setup.");
-    }
+    const community = await prisma.community.upsert({
+      where: { slug: "e2e-hotpath" },
+      update: { isActive: true, categoryId: category.id },
+      create: {
+        slug: "e2e-hotpath",
+        labelKo: "E2E",
+        categoryId: category.id,
+        isActive: true,
+        sortOrder: 999,
+        defaultPostTypes: [PostType.FREE_BOARD],
+      },
+      select: { id: true },
+    });
 
     const post = await createPost({
       authorId: user.id,
@@ -66,7 +81,9 @@ test.describe("post comment auth sync", () => {
         }),
       ]);
       await expect(primaryPage).toHaveURL(new RegExp(`/posts/${post.id}$`));
-      await expect(primaryPage.getByTestId("post-comment-root-input")).toBeVisible();
+      await expect(primaryPage.getByTestId("post-comment-root-input")).toBeVisible({
+        timeout: 15_000,
+      });
       await expect(primaryPage.getByTestId("post-comment-guest-name")).toHaveCount(0);
       await expect(primaryPage.getByTestId("post-comment-guest-password")).toHaveCount(0);
 
