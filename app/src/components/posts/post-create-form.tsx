@@ -35,9 +35,9 @@ import {
   createPostCreateSuccessState,
 } from "@/components/posts/post-create-submit";
 import { usePostCreateDraft } from "@/components/posts/use-post-create-draft";
+import { usePostCreateGuards } from "@/components/posts/use-post-create-guards";
 import {
   postTypeOptions,
-  resolveScopeByPostType,
   reviewCategoryOptions,
 } from "@/components/posts/post-create-form-options";
 import {
@@ -154,87 +154,14 @@ export function PostCreateForm({
     });
   }, [canCreateAdoptionListing, isAuthenticated]);
 
-  useEffect(() => {
-    let timer: number | null = null;
-    if (!isAuthenticated && formState.scope !== PostScope.GLOBAL) {
-      timer = window.setTimeout(() => {
-        setFormState((prev) => ({ ...prev, scope: PostScope.GLOBAL }));
-      }, 0);
-      return () => {
-        if (timer !== null) {
-          window.clearTimeout(timer);
-        }
-      };
-    }
-
-    const isGuestBlockedType =
-      !isAuthenticated && GUEST_BLOCKED_POST_TYPES.includes(formState.type);
-    const isRoleBlockedType =
-      formState.type === PostType.ADOPTION_LISTING && !canCreateAdoptionListing;
-
-    if (
-      isGuestBlockedType ||
-      isRoleBlockedType ||
-      !availablePostTypeOptions.some((option) => option.value === formState.type)
-    ) {
-      timer = window.setTimeout(() => {
-        setFormState((prev) => ({ ...prev, type: PostType.FREE_BOARD }));
-      }, 0);
-    }
-
-    return () => {
-      if (timer !== null) {
-        window.clearTimeout(timer);
-      }
-    };
-  }, [
+  const { resolvedScope } = usePostCreateGuards({
     availablePostTypeOptions,
     canCreateAdoptionListing,
-    formState.scope,
-    formState.type,
+    communityOptions,
+    formState,
     isAuthenticated,
-  ]);
-
-  useEffect(() => {
-    if (formState.type !== PostType.PLACE_REVIEW) {
-      return;
-    }
-
-    const timer = window.setTimeout(() => {
-      setFormState((prev) => ({
-        ...prev,
-        type: PostType.PRODUCT_REVIEW,
-        reviewCategory: REVIEW_CATEGORY.PLACE,
-      }));
-    }, 0);
-
-    return () => {
-      window.clearTimeout(timer);
-    };
-  }, [formState.type]);
-
-  useEffect(() => {
-    if (formState.petTypeId || isFreeBoardPostType(formState.type)) {
-      return;
-    }
-
-    if (communityOptions.length === 0) {
-      return;
-    }
-
-    const timer = window.setTimeout(() => {
-      setFormState((prev) => ({
-        ...prev,
-        petTypeId: communityOptions[0].value,
-      }));
-    }, 0);
-
-    return () => {
-      window.clearTimeout(timer);
-    };
-  }, [communityOptions, formState.petTypeId, formState.type]);
-
-  const resolvedScope = resolveScopeByPostType(formState.type, formState.scope);
+    setFormState,
+  });
   const showNeighborhood = resolvedScope === PostScope.LOCAL;
   const isCommonBoardType = isCommonBoardPostType(formState.type);
   const isFreeBoardType = isFreeBoardPostType(formState.type);
@@ -250,38 +177,6 @@ export function PostCreateForm({
   const showVolunteerRecruitment = formState.type === PostType.SHELTER_VOLUNTEER;
   const showMarketListing = formState.type === PostType.MARKET_LISTING;
   const showCareRequest = formState.type === PostType.CARE_REQUEST;
-
-  useEffect(() => {
-    let timer: number | null = null;
-    if (formState.scope !== resolvedScope) {
-      timer = window.setTimeout(() => {
-        setFormState((prev) => ({
-          ...prev,
-          scope: resolvedScope,
-        }));
-      }, 0);
-      return () => {
-        if (timer !== null) {
-          window.clearTimeout(timer);
-        }
-      };
-    }
-
-    if (resolvedScope !== PostScope.LOCAL && formState.neighborhoodId) {
-      timer = window.setTimeout(() => {
-        setFormState((prev) => ({
-          ...prev,
-          neighborhoodId: "",
-        }));
-      }, 0);
-    }
-
-    return () => {
-      if (timer !== null) {
-        window.clearTimeout(timer);
-      }
-    };
-  }, [formState.neighborhoodId, formState.scope, resolvedScope]);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
