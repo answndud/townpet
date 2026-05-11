@@ -3,9 +3,16 @@ import { AuthAuditAction } from "@prisma/client";
 
 import { AdminSectionNav } from "@/components/admin/admin-section-nav";
 import { EmptyState } from "@/components/ui/empty-state";
+import { createNoIndexPageMetadata } from "@/lib/page-metadata";
 import { requireAdminPageUser } from "@/server/admin-page-access";
 import { recordAuthAuditViewed } from "@/server/moderation-action-log";
 import { listAuthAuditLogs } from "@/server/queries/auth-audit.queries";
+
+export const metadata = createNoIndexPageMetadata({
+  title: "인증 로그",
+  description: "TownPet 관리자 인증 감사 로그를 확인합니다.",
+  path: "/admin/auth-audits",
+});
 
 type AuthAuditPageProps = {
   searchParams?: Promise<{ action?: string; q?: string }>;

@@ -237,6 +237,8 @@
 
 ### P1-3. metadata/SEO 누락을 체계적으로 제거한다
 
+상태: `completed`
+
 - 문제: `page.tsx` 40개 중 metadata 또는 `generateMetadata` 누락이 25개였다.
 - 대상:
   - public/auth/admin page 전체
@@ -254,6 +256,11 @@
   - `pnpm -C app build`
 - 완료 기준:
   - 의도하지 않은 metadata 누락이 없다.
+- 결과:
+  - `createPublicPageMetadata`, `createNoIndexPageMetadata` helper를 추가했다.
+  - auth/admin/private/작성/수정/legacy redirect 페이지에 noindex metadata를 추가했다.
+  - 모든 `app/src/app/**/page.tsx`가 `metadata` 또는 `generateMetadata`를 갖는지 scan test로 고정했다.
+  - metadata/sitemap/robots targeted test와 `quality:check`가 통과했다.
 
 ### P1-4. privacy hardening을 실제 데이터 흐름 기준으로 한다
 

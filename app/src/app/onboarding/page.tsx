@@ -2,7 +2,14 @@ import { redirect } from "next/navigation";
 
 import { OnboardingForm } from "@/components/onboarding/onboarding-form";
 import { auth } from "@/lib/auth";
+import { createNoIndexPageMetadata } from "@/lib/page-metadata";
 import { getUserWithNeighborhoods } from "@/server/queries/user.queries";
+
+export const metadata = createNoIndexPageMetadata({
+  title: "온보딩",
+  description: "TownPet 사용을 위한 기본 프로필과 동네 정보를 설정합니다.",
+  path: "/onboarding",
+});
 
 export default async function OnboardingPage() {
   const session = await auth();

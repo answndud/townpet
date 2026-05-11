@@ -1,5 +1,13 @@
 import { redirect } from "next/navigation";
 
+import { createNoIndexPageMetadata } from "@/lib/page-metadata";
+
+export const metadata = createNoIndexPageMetadata({
+  title: "저장한 글",
+  description: "저장한 TownPet 게시글을 북마크 화면에서 확인합니다.",
+  path: "/saved",
+});
+
 type SavedPageProps = {
   searchParams?: Promise<{
     type?: string;

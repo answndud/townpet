@@ -1,7 +1,14 @@
 import Link from "next/link";
 
 import { DirectModerationPanel } from "@/components/admin/direct-moderation-panel";
+import { createNoIndexPageMetadata } from "@/lib/page-metadata";
 import { requireModeratorPageUser } from "@/server/admin-page-access";
+
+export const metadata = createNoIndexPageMetadata({
+  title: "직접 모더레이션",
+  description: "TownPet 운영자가 사용자와 콘텐츠를 직접 조치합니다.",
+  path: "/admin/moderation/direct",
+});
 
 export default async function DirectModerationPage() {
   await requireModeratorPageUser();

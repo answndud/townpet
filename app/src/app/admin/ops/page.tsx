@@ -4,9 +4,16 @@ import { z } from "zod";
 
 import { AdminSectionNav } from "@/components/admin/admin-section-nav";
 import { EmptyState } from "@/components/ui/empty-state";
+import { createNoIndexPageMetadata } from "@/lib/page-metadata";
 import { getPostTypeMeta } from "@/lib/post-presenter";
 import { requireAdminPageUser } from "@/server/admin-page-access";
 import { getAdminOpsOverview } from "@/server/queries/ops-overview.queries";
+
+export const metadata = createNoIndexPageMetadata({
+  title: "운영 Overview",
+  description: "TownPet 운영 지표와 위험 신호를 확인합니다.",
+  path: "/admin/ops",
+});
 
 type AdminOpsPageProps = {
   searchParams?: Promise<{

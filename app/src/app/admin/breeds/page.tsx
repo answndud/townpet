@@ -1,11 +1,18 @@
 import Link from "next/link";
 
 import { BreedCatalogManager } from "@/components/admin/breed-catalog-manager";
+import { createNoIndexPageMetadata } from "@/lib/page-metadata";
 import { requireAdminPageUser } from "@/server/admin-page-access";
 import {
   listBreedCatalogAdminEntries,
   listEffectiveBreedCatalogGroupedBySpecies,
 } from "@/server/queries/breed-catalog.queries";
+
+export const metadata = createNoIndexPageMetadata({
+  title: "품종 사전",
+  description: "TownPet 관리자 품종 사전을 관리합니다.",
+  path: "/admin/breeds",
+});
 
 export default async function AdminBreedsPage() {
   await requireAdminPageUser();

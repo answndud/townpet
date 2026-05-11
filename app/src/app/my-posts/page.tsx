@@ -7,12 +7,19 @@ import { PostListItemShell } from "@/components/posts/post-list-item-shell";
 import { PostSignalIcons } from "@/components/posts/post-signal-icons";
 import { EmptyState } from "@/components/ui/empty-state";
 import { auth } from "@/lib/auth";
+import { createNoIndexPageMetadata } from "@/lib/page-metadata";
 import { formatRelativeDate, getPostSignals, postTypeMeta } from "@/lib/post-presenter";
 import { PRIMARY_POST_TYPES, SECONDARY_POST_TYPES } from "@/lib/post-type-groups";
 import { postListSchema, toPostListInput } from "@/lib/validations/post";
 import { redirectToProfileIfNicknameMissing } from "@/server/nickname-guard";
 import { getUserWithNeighborhoods } from "@/server/queries/user.queries";
 import { listUserPostsPage } from "@/server/queries/post.queries";
+
+export const metadata = createNoIndexPageMetadata({
+  title: "내 글",
+  description: "내가 작성한 TownPet 게시글을 확인합니다.",
+  path: "/my-posts",
+});
 
 type MyPostsPageProps = {
   searchParams?: Promise<{

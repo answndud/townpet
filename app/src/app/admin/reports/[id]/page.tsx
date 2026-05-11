@@ -2,12 +2,19 @@ import Link from "next/link";
 import { ReportStatus } from "@prisma/client";
 
 import { ReportActions } from "@/components/admin/report-actions";
+import { createNoIndexPageMetadata } from "@/lib/page-metadata";
 import { getReportReasonLabel } from "@/lib/report-reason";
 import { getReportTargetLabel, isSupportedReportTarget } from "@/lib/report-target";
 import { requireModeratorPageUser } from "@/server/admin-page-access";
 import { listReportAudits } from "@/server/queries/report-audit.queries";
 import { getReportById } from "@/server/queries/report.queries";
 import { listUsersByIds } from "@/server/queries/user.queries";
+
+export const metadata = createNoIndexPageMetadata({
+  title: "신고 상세",
+  description: "TownPet 신고 상세와 처리 이력을 확인합니다.",
+  path: "/admin/reports",
+});
 
 type ReportDetailPageProps = {
   params: Promise<{ id: string }>;

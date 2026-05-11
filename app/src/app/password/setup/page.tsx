@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { AuthPageLayout } from "@/components/auth/auth-page-layout";
 import { SetPasswordForm } from "@/components/auth/set-password-form";
 import { auth } from "@/lib/auth";
+import { createNoIndexPageMetadata } from "@/lib/page-metadata";
 import {
   buildPasswordManagementUnavailableHref,
   canManagePassword,
@@ -10,6 +11,12 @@ import {
 import { getPasswordSetupCopy } from "@/lib/password-setup";
 import { redirectToProfileIfNicknameMissing } from "@/server/nickname-guard";
 import { getUserPasswordStatusById } from "@/server/queries/user.queries";
+
+export const metadata = createNoIndexPageMetadata({
+  title: "비밀번호 설정",
+  description: "TownPet 계정 비밀번호를 설정합니다.",
+  path: "/password/setup",
+});
 
 export default async function PasswordSetupPage() {
   const session = await auth();

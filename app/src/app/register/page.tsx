@@ -1,6 +1,13 @@
 import { isSocialDevLoginEnabled } from "@/lib/env";
 import { AuthPageLayout } from "@/components/auth/auth-page-layout";
 import { RegisterForm } from "@/components/auth/register-form";
+import { createNoIndexPageMetadata } from "@/lib/page-metadata";
+
+export const metadata = createNoIndexPageMetadata({
+  title: "회원가입",
+  description: "TownPet 계정을 만듭니다.",
+  path: "/register",
+});
 
 type RegisterPageProps = {
   searchParams?: Promise<{

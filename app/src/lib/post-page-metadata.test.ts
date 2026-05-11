@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
+import { readdirSync, readFileSync } from "node:fs";
+import path from "node:path";
 
+import { createNoIndexPageMetadata, createPublicPageMetadata } from "@/lib/page-metadata";
 import { buildPostDetailMetadata, type PostMetadataRecord } from "@/lib/post-page-metadata";
 
 const basePost: PostMetadataRecord = {
@@ -63,6 +66,59 @@ describe("buildPostDetailMetadata", () => {
     expect(metadata.twitter).toMatchObject({
       card: "summary_large_image",
       title: basePost.title,
+    });
+  });
+});
+
+describe("page metadata policy", () => {
+  function listPageFiles(dir: string): string[] {
+    return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+      const fullPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        return listPageFiles(fullPath);
+      }
+      return entry.name === "page.tsx" ? [fullPath] : [];
+    });
+  }
+
+  it("keeps metadata explicit on every app page", () => {
+    const appDir = path.join(process.cwd(), "src/app");
+    const missing = listPageFiles(appDir)
+      .filter((filePath) => {
+        const source = readFileSync(filePath, "utf8");
+        return !source.includes("export const metadata") && !source.includes("generateMetadata");
+      })
+      .map((filePath) => path.relative(appDir, filePath))
+      .sort();
+
+    expect(missing).toEqual([]);
+  });
+
+  it("builds reusable public and noindex page metadata", () => {
+    expect(
+      createPublicPageMetadata({
+        title: "피드",
+        description: "게시글을 확인합니다.",
+        path: "/feed",
+      }),
+    ).toMatchObject({
+      title: "피드",
+      alternates: { canonical: "/feed" },
+      openGraph: {
+        title: "TownPet 피드",
+        url: "/feed",
+      },
+    });
+
+    expect(
+      createNoIndexPageMetadata({
+        title: "관리자",
+        description: "운영 화면입니다.",
+        path: "/admin",
+      }).robots,
+    ).toEqual({
+      index: false,
+      follow: false,
     });
   });
 });

@@ -6,8 +6,15 @@ import {
 
 import { AdminSectionNav } from "@/components/admin/admin-section-nav";
 import { EmptyState } from "@/components/ui/empty-state";
+import { createNoIndexPageMetadata } from "@/lib/page-metadata";
 import { requireModeratorPageUser } from "@/server/admin-page-access";
 import { listModerationActionLogs } from "@/server/queries/moderation-action.queries";
+
+export const metadata = createNoIndexPageMetadata({
+  title: "모더레이션 로그",
+  description: "TownPet 운영 모더레이션 이력을 확인합니다.",
+  path: "/admin/moderation-logs",
+});
 
 type ModerationLogsPageProps = {
   searchParams?: Promise<{ action?: string; q?: string }>;

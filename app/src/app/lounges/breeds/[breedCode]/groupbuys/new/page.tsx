@@ -2,8 +2,15 @@ import Link from "next/link";
 
 import { BreedGroupBuyForm } from "@/components/lounges/breed-groupbuy-form";
 import { auth } from "@/lib/auth";
+import { createNoIndexPageMetadata } from "@/lib/page-metadata";
 import { breedCodeParamSchema } from "@/lib/validations/lounge";
 import { redirectToProfileIfNicknameMissing } from "@/server/nickname-guard";
+
+export const metadata = createNoIndexPageMetadata({
+  title: "품종 공동구매 작성",
+  description: "TownPet 품종 라운지 공동구매 글을 작성합니다.",
+  path: "/lounges/breeds/[breedCode]/groupbuys/new",
+});
 
 type BreedGroupBuyPageProps = {
   params: Promise<{ breedCode?: string }>;

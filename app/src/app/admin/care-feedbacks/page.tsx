@@ -9,12 +9,19 @@ import {
 import { updateCareFeedbackReviewAction } from "@/server/actions/post";
 import { AdminSectionNav } from "@/components/admin/admin-section-nav";
 import { EmptyState } from "@/components/ui/empty-state";
+import { createNoIndexPageMetadata } from "@/lib/page-metadata";
 import { buildPaginationWindow, parsePositivePage } from "@/lib/pagination";
 import { requireModeratorPageUser } from "@/server/admin-page-access";
 import {
   getCareFeedbackIssueStats,
   listCareFeedbackIssueQueue,
 } from "@/server/queries/care-feedback.queries";
+
+export const metadata = createNoIndexPageMetadata({
+  title: "돌봄 이슈 신호",
+  description: "TownPet 돌봄 완료 피드백과 운영 이슈 신호를 검토합니다.",
+  path: "/admin/care-feedbacks",
+});
 
 type CareFeedbacksPageProps = {
   searchParams?: Promise<{

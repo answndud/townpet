@@ -6,6 +6,7 @@ import { ForbiddenKeywordPolicyForm } from "@/components/admin/forbidden-keyword
 import { GuestPostPolicyForm } from "@/components/admin/guest-post-policy-form";
 import { GuestReadPolicyForm } from "@/components/admin/guest-read-policy-form";
 import { NewUserSafetyPolicyForm } from "@/components/admin/new-user-safety-policy-form";
+import { createNoIndexPageMetadata } from "@/lib/page-metadata";
 import { postTypeMeta } from "@/lib/post-presenter";
 import { requireAdminPageUser } from "@/server/admin-page-access";
 import {
@@ -15,6 +16,12 @@ import {
   getGuestReadLoginRequiredPostTypes,
   getNewUserSafetyPolicy,
 } from "@/server/queries/policy.queries";
+
+export const metadata = createNoIndexPageMetadata({
+  title: "권한 정책",
+  description: "TownPet 열람, 작성, 신규 계정, 개인화 정책을 관리합니다.",
+  path: "/admin/policies",
+});
 
 export default async function AdminPoliciesPage() {
   const user = await requireAdminPageUser();

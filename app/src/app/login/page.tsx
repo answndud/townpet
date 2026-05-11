@@ -1,6 +1,13 @@
 import { isSocialDevLoginEnabled } from "@/lib/env";
 import { AuthPageLayout } from "@/components/auth/auth-page-layout";
 import { LoginForm } from "@/components/auth/login-form";
+import { createNoIndexPageMetadata } from "@/lib/page-metadata";
+
+export const metadata = createNoIndexPageMetadata({
+  title: "로그인",
+  description: "TownPet 계정으로 로그인합니다.",
+  path: "/login",
+});
 
 type LoginPageProps = {
   searchParams?: Promise<{
