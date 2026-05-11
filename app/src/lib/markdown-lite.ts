@@ -27,9 +27,10 @@ function sanitizeImageUrl(value: string) {
 
 function replaceLinkToken(value: string) {
   const tokens: string[] = [];
+  const tokenPrefix = "\u0000TOWNPET_LINK_TOKEN_";
 
   const createToken = (html: string) => {
-    const token = `@@LINK_TOKEN_${tokens.length}@@`;
+    const token = `${tokenPrefix}${tokens.length}\u0000`;
     tokens.push(html);
     return token;
   };
@@ -54,14 +55,14 @@ function replaceLinkToken(value: string) {
   );
 
   transformed = transformed.replace(
-    /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/gi,
+    /\[([^\]]+)\]\(([^)\s]+)\)/gi,
     (_, rawLabel: string, rawUrl: string) => {
       const safeUrl = sanitizeHttpUrl(rawUrl);
+      const label = rawLabel.trim().length > 0 ? rawLabel : safeUrl ?? "";
       if (!safeUrl) {
-        return rawLabel;
+        return label;
       }
 
-      const label = rawLabel.trim().length > 0 ? rawLabel : safeUrl;
       return createToken(
         `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer nofollow" class="text-[#2f5da4] underline">${label}</a>`,
       );
@@ -82,7 +83,7 @@ function replaceLinkToken(value: string) {
   return {
     transformed,
     restore: (source: string) =>
-      source.replace(/@@LINK_TOKEN_(\d+)@@/g, (_, rawIndex: string) => {
+      source.replace(/\u0000TOWNPET_LINK_TOKEN_(\d+)\u0000/g, (_, rawIndex: string) => {
         const index = Number(rawIndex);
         return Number.isInteger(index) && tokens[index] ? tokens[index] : "";
       }),
