@@ -2251,3 +2251,36 @@
 - 결과:
   - 검색/임시저장 편의 기능이 장기 개인정보 저장소로 변하지 않도록 TTL과 redaction 회귀 테스트가 생겼다.
   - 다음 작업은 `P1-5 upload/media hardening`이다.
+
+### 2026-05-11 | Release Confidence P1-5 upload media hardening
+- 완료일: `2026-05-11`
+- 배경:
+  - 업로드는 signature와 Sharp 처리 경로가 있었지만, GIF 원본 유지, HEIC/AVIF 실패 표현, polyglot payload, `/media` trusted source 검증, 상세 화면 raw image fallback이 출시 전 사고 지점으로 남아 있었다.
+  - P1-4 privacy hardening 이후 다음 high-risk write/storage path인 upload/media를 닫아야 했다.
+- 변경내용:
+  - `saveUploadedImage`가 파일 signature 검증 후 embedded script/polyglot payload를 거부한다.
+  - PNG/JPEG/WebP/GIF/AVIF/HEIC/HEIF metadata를 읽어 corrupt image, unreadable dimensions, HEIC/HEIF/AVIF transcode unsupported failure를 명확히 분류한다.
+  - GIF는 원본 보존 경로이므로 6MB, 60 frame, animated pixel budget 제한을 추가했다.
+  - `/media/[...path]` route가 stored source의 trusted upload pathname과 실제 요청 pathname이 다르면 404로 거부한다.
+  - blob-backed media upstream 응답도 image content-type allowlist를 통과해야 하며, 모든 media 응답에 `X-Content-Type-Options: nosniff`를 붙인다.
+  - 게시글 상세 media gallery의 raw `<img>` 사용을 내부 fallback component로 감싸 lazy/eager loading, alt, error fallback을 중앙화했다.
+  - 글쓰기 draft hydration이 제목 입력을 덮거나 editor rerender가 제목 입력 focus를 빼앗지 않도록 제목 입력을 ref 기반으로 분리하고 upload e2e의 stale draft를 정리했다.
+- 코드문서:
+  - [app/src/server/upload.ts](../app/src/server/upload.ts)
+  - [app/src/server/upload.test.ts](../app/src/server/upload.test.ts)
+  - [app/src/app/media/[...path]/route.ts](../app/src/app/media/[...path]/route.ts)
+  - [app/src/app/media/[...path]/route.test.ts](../app/src/app/media/%5B...path%5D/route.test.ts)
+  - [app/src/components/posts/post-detail-media-gallery.tsx](../app/src/components/posts/post-detail-media-gallery.tsx)
+  - [app/src/components/posts/post-create-form.tsx](../app/src/components/posts/post-create-form.tsx)
+  - [app/e2e/image-upload-flow.spec.ts](../app/e2e/image-upload-flow.spec.ts)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app exec vitest run src/server/upload.test.ts src/server/upload-asset.service.test.ts src/app/api/upload/route.test.ts 'src/app/media/[...path]/route.test.ts' src/lib/upload-url.test.ts src/components/posts/post-detail-media-gallery.test.tsx`
+  - `SEED_DEFAULT_PASSWORD=dev-password-1234 PLAYWRIGHT_REUSE_EXISTING_SERVER=0 corepack pnpm@9.12.3 -C app test:e2e:upload`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+- 결과:
+  - 업로드가 storage 비용, 성능, MIME confusion, polyglot payload, media proxy spoofing의 열린 입구가 되지 않도록 회귀 테스트가 생겼다.
+  - 다음 작업은 `P1-6 거대 컴포넌트와 monolith query/service 분해`다.

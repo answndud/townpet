@@ -43,6 +43,46 @@ type PostDetailMediaGalleryProps = {
   images: PostDetailMediaItem[];
 };
 
+type PostDetailUploadImageProps = {
+  src: string;
+  alt: string;
+  className: string;
+  loading?: "eager" | "lazy";
+};
+
+function PostDetailUploadImage({
+  src,
+  alt,
+  className,
+  loading = "lazy",
+}: PostDetailUploadImageProps) {
+  const [hasError, setHasError] = useState(false);
+
+  if (hasError) {
+    return (
+      <div
+        className={`flex items-center justify-center bg-[#eef4fd] text-center text-[12px] font-semibold text-[#5b7194] ${className}`}
+        role="img"
+        aria-label={`${alt || "첨부 이미지"} 불러오기 실패`}
+      >
+        이미지를 불러올 수 없습니다
+      </div>
+    );
+  }
+
+  return (
+    // eslint-disable-next-line @next/next/no-img-element -- Upload URLs are already normalized through /media; this component centralizes fallback, lazy loading, and sizing.
+    <img
+      src={src}
+      alt={alt}
+      loading={loading}
+      decoding="async"
+      className={className}
+      onError={() => setHasError(true)}
+    />
+  );
+}
+
 export function PostDetailMediaGallery({ images }: PostDetailMediaGalleryProps) {
   const orderedImages = useMemo(
     () => [...images].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)),
@@ -143,12 +183,9 @@ export function PostDetailMediaGallery({ images }: PostDetailMediaGalleryProps) 
                 aria-label={`${fileName} 크게 보기`}
               >
                 <div className="aspect-[4/3] overflow-hidden bg-[#f4f8ff]">
-                  {/* eslint-disable-next-line @next/next/no-img-element -- remote/local mixed upload URLs make plain img the safest preview path here. */}
-                  <img
+                  <PostDetailUploadImage
                     src={image.url}
                     alt={fileName}
-                    loading="lazy"
-                    decoding="async"
                     className="h-full w-full object-cover transition duration-200 group-hover:scale-[1.02]"
                   />
                 </div>
@@ -228,11 +265,10 @@ export function PostDetailMediaGallery({ images }: PostDetailMediaGalleryProps) 
                 </button>
               ) : null}
 
-              {/* eslint-disable-next-line @next/next/no-img-element -- remote/local mixed upload URLs make plain img the safest preview path here. */}
-              <img
+              <PostDetailUploadImage
                 src={activeImage.url}
                 alt={activeImageName}
-                decoding="async"
+                loading="eager"
                 className="max-h-full max-w-full rounded-[18px] object-contain"
               />
 
@@ -295,12 +331,9 @@ export function PostDetailMediaGallery({ images }: PostDetailMediaGalleryProps) 
                       aria-label={`${thumbName} 선택`}
                       aria-pressed={isActive}
                     >
-                      {/* eslint-disable-next-line @next/next/no-img-element -- remote/local mixed upload URLs make plain img the safest preview path here. */}
-                      <img
+                      <PostDetailUploadImage
                         src={image.url}
                         alt=""
-                        loading="lazy"
-                        decoding="async"
                         className="h-14 w-20 object-cover sm:h-16 sm:w-24"
                       />
                     </button>

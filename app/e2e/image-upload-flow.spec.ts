@@ -76,6 +76,12 @@ async function loginAndOpenPostCreate(page: Page) {
     next: "/posts/new",
   });
   await expect(page).toHaveURL(/\/posts\/new/, { timeout: 15_000 });
+  await page.waitForLoadState("networkidle");
+  await page.evaluate(() => {
+    window.localStorage.removeItem("townpet:post-create-draft:v1");
+  });
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await page.waitForLoadState("networkidle");
   await expect(page.getByTestId("post-body-editor")).toBeVisible({ timeout: 15_000 });
 }
 
@@ -145,7 +151,19 @@ test.describe("image upload flow", () => {
 
     await loginAndOpenPostCreate(page);
 
-    await page.getByLabel("제목").fill(title);
+    const titleInput = page.getByPlaceholder("제목을 입력해 주세요");
+    await expect(titleInput).toBeEnabled({ timeout: 15_000 });
+    await titleInput.evaluate((element, nextTitle) => {
+      const input = element as HTMLInputElement;
+      const valueSetter = Object.getOwnPropertyDescriptor(
+        HTMLInputElement.prototype,
+        "value",
+      )?.set;
+      valueSetter?.call(input, nextTitle);
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+      input.dispatchEvent(new Event("change", { bubbles: true }));
+    }, title);
+    await expect(titleInput).toHaveValue(title);
     await setEditorText(page, content);
     await uploadImagesThroughEditor(page, [
       {
@@ -161,6 +179,7 @@ test.describe("image upload flow", () => {
     ]);
 
     await expect(page.getByTestId("post-body-editor").locator("img")).toHaveCount(2, { timeout: 15_000 });
+    await expect(titleInput).toHaveValue(title);
     await page.getByRole("button", { name: "등록" }).click();
 
     await expect(page).toHaveURL(/\/feed/, { timeout: 15_000 });

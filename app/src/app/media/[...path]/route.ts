@@ -2,7 +2,10 @@ import { readFile } from "fs/promises";
 import path from "path";
 import { NextRequest, NextResponse } from "next/server";
 
-import { isTrustedUploadPathname } from "@/lib/upload-url";
+import {
+  getTrustedUploadPathname,
+  isTrustedUploadPathname,
+} from "@/lib/upload-url";
 import { monitorUnhandledError } from "@/server/error-monitor";
 import { findStoredUploadSourceByPathname } from "@/server/upload-asset.service";
 
@@ -39,6 +42,21 @@ function inferContentTypeFromStorageKey(storageKey: string) {
   return "application/octet-stream";
 }
 
+function normalizeImageContentType(contentType: string | null) {
+  const normalized = contentType?.split(";")[0]?.trim().toLowerCase() ?? "";
+  return [
+    "image/jpeg",
+    "image/png",
+    "image/gif",
+    "image/webp",
+    "image/avif",
+    "image/heic",
+    "image/heif",
+  ].includes(normalized)
+    ? normalized
+    : null;
+}
+
 function buildMediaHeaders(params: {
   contentType?: string | null;
   contentLength?: string | null;
@@ -46,6 +64,7 @@ function buildMediaHeaders(params: {
   const headers = new Headers({
     "Cache-Control": "public, max-age=31536000, immutable",
     "Cross-Origin-Resource-Policy": "same-site",
+    "X-Content-Type-Options": "nosniff",
   });
 
   if (params.contentType) {
@@ -77,6 +96,22 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
   try {
     const storedSource = await findStoredUploadSourceByPathname(storageKey);
+
+    if (
+      storedSource &&
+      getTrustedUploadPathname(storedSource.sourceUrl) !== storageKey
+    ) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: {
+            code: "MEDIA_NOT_FOUND",
+            message: "이미지를 찾을 수 없습니다.",
+          },
+        },
+        { status: 404 },
+      );
+    }
 
     if (!storedSource || storedSource.storageProvider === "LOCAL") {
       const absolutePath = path.join(process.cwd(), "public", ...storageKey.split("/"));
@@ -131,10 +166,26 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       );
     }
 
+    const upstreamContentType = normalizeImageContentType(
+      upstream.headers.get("content-type"),
+    );
+    if (!upstreamContentType) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: {
+            code: "MEDIA_NOT_FOUND",
+            message: "이미지를 찾을 수 없습니다.",
+          },
+        },
+        { status: 404 },
+      );
+    }
+
     return new Response(upstream.body, {
       status: 200,
       headers: buildMediaHeaders({
-        contentType: upstream.headers.get("content-type"),
+        contentType: upstreamContentType,
         contentLength: upstream.headers.get("content-length"),
       }),
     });

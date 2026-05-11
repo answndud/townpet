@@ -20,8 +20,8 @@
 - Care Request M9 운영 런북/데모 seed를 완료했다
 - Care Request M10 관리자 큐 처리 상태와 M11 모바일/빈 상태 polish를 완료했다
 - Care Request M12 운영 threshold와 M13-M18 production smoke 준비/보류/tooling을 완료했다
-- Release Confidence Hardening 상세 계획과 P0-1 CI/build gate, P0-2 rendered HTML/XSS 안전성, P0-3 abuse-prone write path Redis 장애 failure mode, P0-4 production smoke readiness blocker, P1-1 원격 production smoke, P1-2 hot-path browser gate 자동화, P1-3 metadata/SEO 누락 제거, P1-4 privacy hardening을 완료했다.
-- 다음 작업: P1-5 upload/media hardening 보강
+- Release Confidence Hardening 상세 계획과 P0-1 CI/build gate, P0-2 rendered HTML/XSS 안전성, P0-3 abuse-prone write path Redis 장애 failure mode, P0-4 production smoke readiness blocker, P1-1 원격 production smoke, P1-2 hot-path browser gate 자동화, P1-3 metadata/SEO 누락 제거, P1-4 privacy hardening, P1-5 upload/media hardening을 완료했다.
+- 다음 작업: P1-6 거대 컴포넌트와 monolith query/service 분해
 
 ## 열린 blocker
 - 원격 production smoke는 GitHub Actions `ops-smoke-checks` run `25645368457` 기준 PASS했다.
@@ -103,10 +103,15 @@
   - 글쓰기 draft localStorage는 24시간 만료 payload로 저장하고, 만료/invalid draft를 자동 삭제한다.
   - guest step-up identity mismatch를 abuse signal로 기록하되 원문 fingerprint는 저장하지 않는다.
   - 검증: targeted privacy/storage/guest-step-up test PASS, `corepack pnpm@9.12.3 -C app quality:check` PASS.
+- Release Confidence Hardening P1-5:
+  - `saveUploadedImage`가 signature 통과 후 polyglot/script payload, corrupt image, HEIC/HEIF/AVIF transcode metadata failure, GIF 용량/프레임/픽셀 budget을 검증한다.
+  - `/media` route가 stored source pathname mismatch와 upstream non-image content-type을 거부하고 `X-Content-Type-Options: nosniff`를 보낸다.
+  - 게시글 상세 media gallery에 image fallback wrapper를 추가했고, 글쓰기 제목 입력은 editor rerender와 분리해 upload e2e를 안정화했다.
+  - 검증: targeted upload/media Vitest 34개 PASS, `test:e2e:upload` PASS, `quality:check` PASS.
 ## 다음 액션
-1. P1-5에서 upload/media 경로의 GIF/HEIC/AVIF/polyglot/wrong MIME/oversized dimensions 케이스를 inventory로 다시 확인한다.
-2. 업로드 fixture와 `/media` proxy trusted source policy 테스트를 먼저 추가한다.
-3. upload/media hardening 변경 후 targeted test와 `quality:check`를 실행한다.
+1. P1-6 착수 전 `post-create-form`, `post-detail-client`, `post-comment-thread`, `feed/page`, `post.queries`, `post.service`의 현재 줄 수와 책임 경계를 inventory한다.
+2. 동작 변경 없이 먼저 추출 가능한 helper/component/service slice를 정하고, 각 slice별 기존 targeted test를 매핑한다.
+3. 첫 커밋은 `post-create-form` draft/title/editor/submit 경계 분리부터 작게 진행한다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)

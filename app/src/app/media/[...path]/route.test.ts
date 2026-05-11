@@ -54,6 +54,8 @@ describe("GET /media/[...path]", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toBe("image/webp");
+    expect(response.headers.get("x-content-type-options")).toBe("nosniff");
+    expect(response.headers.get("cross-origin-resource-policy")).toBe("same-site");
     expect(await response.text()).toBe("local-image");
   });
 
@@ -88,5 +90,44 @@ describe("GET /media/[...path]", () => {
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toBe("image/webp");
     expect(await response.text()).toBe("blob-image");
+  });
+
+  it("rejects stored sources that do not match the requested trusted pathname", async () => {
+    mockFindStoredUploadSourceByPathname.mockResolvedValue({
+      sourceUrl: "https://blob.public.blob.vercel-storage.com/uploads/other.webp",
+      storageProvider: "BLOB",
+    } as never);
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response("unexpected"));
+
+    const request = new Request("http://localhost/media/uploads/pet.webp") as NextRequest;
+    const response = await GET(request, {
+      params: Promise.resolve({ path: ["uploads", "pet.webp"] }),
+    });
+
+    expect(response.status).toBe(404);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects upstream non-image content even for blob-backed assets", async () => {
+    mockFindStoredUploadSourceByPathname.mockResolvedValue({
+      sourceUrl: "https://blob.public.blob.vercel-storage.com/uploads/pet.webp",
+      storageProvider: "BLOB",
+    } as never);
+
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response("<html></html>", {
+        status: 200,
+        headers: {
+          "content-type": "text/html; charset=utf-8",
+        },
+      }),
+    );
+
+    const request = new Request("http://localhost/media/uploads/pet.webp") as NextRequest;
+    const response = await GET(request, {
+      params: Promise.resolve({ path: ["uploads", "pet.webp"] }),
+    });
+
+    expect(response.status).toBe(404);
   });
 });
