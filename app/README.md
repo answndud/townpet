@@ -99,6 +99,8 @@ pnpm test:e2e
 pnpm quality:check
 ```
 
+`quality:check`는 lint, typecheck, Vitest unit, `next build`까지 포함합니다.
+
 ## 최소 운영 루틴
 
 - 매일 기억할 명령은 `pnpm quality:check`, `pnpm ops:check:health`, `pnpm db:restore:local` 세 개면 충분합니다.

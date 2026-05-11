@@ -67,6 +67,10 @@ function isLikelyWeakSecret(value: string) {
   return lower.includes("changeme") || lower.includes("example") || lower.includes("test");
 }
 
+function isNextProductionBuildPhase() {
+  return process.env.NEXT_PHASE === "phase-production-build";
+}
+
 export const runtimeEnv = {
   nodeEnv: parsed.NODE_ENV,
   databaseUrl: parsed.DATABASE_URL ?? "",
@@ -176,6 +180,10 @@ export function validateRuntimeEnv(): EnvValidationResult {
 }
 
 export function assertRuntimeEnv() {
+  if (isNextProductionBuildPhase()) {
+    return;
+  }
+
   const validation = validateRuntimeEnv();
 
   if (!validation.ok && runtimeEnv.isProduction) {

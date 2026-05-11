@@ -98,6 +98,24 @@ describe("env security validation", () => {
     expect(result.missing).toContain("ENABLE_SOCIAL_DEV_LOGIN_MUST_BE_DISABLED");
   });
 
+  it("skips module-load runtime assertion during Next production build", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("NEXT_PHASE", "phase-production-build");
+    vi.stubEnv("DATABASE_URL", "postgres://db");
+    vi.stubEnv("AUTH_SECRET", "weak");
+    vi.stubEnv("GUEST_HASH_PEPPER", "");
+    vi.stubEnv("HEALTH_INTERNAL_TOKEN", "");
+    vi.stubEnv("UPSTASH_REDIS_REST_URL", "");
+    vi.stubEnv("UPSTASH_REDIS_REST_TOKEN", "");
+    vi.stubEnv("RESEND_API_KEY", "");
+    vi.stubEnv("BLOB_READ_WRITE_TOKEN", "");
+
+    const { assertRuntimeEnv, validateRuntimeEnv } = await loadEnvModule();
+
+    expect(validateRuntimeEnv().ok).toBe(false);
+    expect(() => assertRuntimeEnv()).not.toThrow();
+  });
+
   it("enables social dev login only when explicitly opted in outside production", async () => {
     vi.stubEnv("NODE_ENV", "development");
     vi.stubEnv("ENABLE_SOCIAL_DEV_LOGIN", "1");
