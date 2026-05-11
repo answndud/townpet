@@ -111,9 +111,10 @@
 - Release Confidence Hardening P1-6:
   - 1차 inventory: `post-create-form` 2204줄, `post-detail-client` 1727줄, `post-comment-thread` 1135줄, `feed-infinite-list` 821줄, `feed/page` 1102줄, `post.queries` 4850줄, `post.service` 3210줄.
   - 첫 slice로 `post-create-form` 상태 타입/초기값/draft guard를 `post-create-form-state`로 분리했다.
-  - 검증: `post-create-form-state`/draft storage targeted test PASS, `typecheck` PASS, `lint` PASS.
+  - 두 번째 slice로 `post-create-form` option constants와 scope resolver를 `post-create-form-options`로 분리했다.
+  - 검증: `post-create-form-state`/`post-create-form-options` targeted test PASS, `typecheck` PASS, `lint` PASS.
 ## 다음 액션
-1. 같은 P1-6 내 다음 slice로 `post-create-form`의 option constants 또는 structured field sections를 별도 파일로 분리한다.
+1. 같은 P1-6 내 다음 slice로 `post-create-form`의 structured field sections 또는 draft hydration hook을 별도 파일로 분리한다.
 2. 이후 `post.queries`를 feed list/detail/search/admin/care-adoption read model 단위로 분해할 경계와 기존 테스트 매핑을 잡는다.
 3. 각 slice마다 targeted test, `typecheck`, `lint`를 실행하고 작은 커밋으로 끊는다.
 

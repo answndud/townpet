@@ -356,6 +356,7 @@
 - 진행:
   - 1차 inventory: `post-create-form` 2204줄, `post-detail-client` 1727줄, `post-comment-thread` 1135줄, `feed-infinite-list` 821줄, `feed/page` 1102줄, `post.queries` 4850줄, `post.service` 3210줄.
   - 첫 slice: `post-create-form` 상태 타입/초기값/draft guard를 `post-create-form-state`로 분리.
+  - 두 번째 slice: `post-create-form` option constants와 scope resolver를 `post-create-form-options`로 분리.
 
 ### P1-7. 운영 관리자 루틴을 10분 smoke로 고정한다
 
