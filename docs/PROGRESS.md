@@ -20,8 +20,8 @@
 - Care Request M9 운영 런북/데모 seed를 완료했다
 - Care Request M10 관리자 큐 처리 상태와 M11 모바일/빈 상태 polish를 완료했다
 - Care Request M12 운영 threshold와 M13-M18 production smoke 준비/보류/tooling을 완료했다
-- Release Confidence Hardening 상세 계획과 P0-1 CI/build gate, P0-2 rendered HTML/XSS 안전성, P0-3 abuse-prone write path Redis 장애 failure mode, P0-4 production smoke readiness blocker, P1-1 원격 production smoke, P1-2 hot-path browser gate 자동화, P1-3 metadata/SEO 누락 제거를 완료했다.
-- 다음 작업: P1-4 privacy hardening을 실제 데이터 흐름 기준으로 진행
+- Release Confidence Hardening 상세 계획과 P0-1 CI/build gate, P0-2 rendered HTML/XSS 안전성, P0-3 abuse-prone write path Redis 장애 failure mode, P0-4 production smoke readiness blocker, P1-1 원격 production smoke, P1-2 hot-path browser gate 자동화, P1-3 metadata/SEO 누락 제거, P1-4 privacy hardening을 완료했다.
+- 다음 작업: P1-5 upload/media hardening 보강
 
 ## 열린 blocker
 - 원격 production smoke는 GitHub Actions `ops-smoke-checks` run `25645368457` 기준 PASS했다.
@@ -97,10 +97,16 @@
   - auth/admin/private/작성/수정/legacy redirect 페이지에 noindex metadata를 추가했다.
   - 모든 `app/src/app/**/page.tsx`가 `metadata` 또는 `generateMetadata`를 갖는지 scan test로 고정했다.
   - 검증: metadata/sitemap/robots targeted test PASS, `corepack pnpm@9.12.3 -C app quality:check` PASS.
+- Release Confidence Hardening P1-4:
+  - 검색어 통계 저장 전 이메일/전화번호/연락 링크/상세주소/토큰 패턴을 redaction 또는 skip 처리했다.
+  - recent search localStorage는 7일 TTL payload로 저장하고 민감 검색어는 저장하지 않는다.
+  - 글쓰기 draft localStorage는 24시간 만료 payload로 저장하고, 만료/invalid draft를 자동 삭제한다.
+  - guest step-up identity mismatch를 abuse signal로 기록하되 원문 fingerprint는 저장하지 않는다.
+  - 검증: targeted privacy/storage/guest-step-up test PASS, `corepack pnpm@9.12.3 -C app quality:check` PASS.
 ## 다음 액션
-1. P1-4에서 검색어 로그, recent search, localStorage draft, guest fingerprint, audit retention 저장 흐름을 inventory로 다시 확인한다.
-2. 민감정보 redaction/TTL/retention fixture를 먼저 추가한다.
-3. privacy hardening 변경 후 targeted test와 `quality:check`를 실행한다.
+1. P1-5에서 upload/media 경로의 GIF/HEIC/AVIF/polyglot/wrong MIME/oversized dimensions 케이스를 inventory로 다시 확인한다.
+2. 업로드 fixture와 `/media` proxy trusted source policy 테스트를 먼저 추가한다.
+3. upload/media hardening 변경 후 targeted test와 `quality:check`를 실행한다.
 
 ## Archive Pointer
 - 2026-04-17 이전 app 상태 상세와 검증 로그: [COMPLETED.md](./COMPLETED.md)

@@ -4,6 +4,13 @@ import Link from "next/link";
 import type { PostType } from "@prisma/client";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import {
+  addRecentSearchTerm,
+  buildRecentSearchesPayload,
+  normalizeSearchTerm,
+  parseRecentSearches,
+} from "@/lib/recent-search-storage";
+
 type FeedMode = "ALL" | "BEST";
 type FeedSort = "LATEST" | "LIKE" | "COMMENT";
 type FeedScope = "LOCAL" | "GLOBAL";
@@ -41,35 +48,6 @@ type SuggestionResponse =
   | { ok: false; error: { code: string; message: string } };
 
 const RECENT_SEARCHES_KEY = "townpet:recent-searches:v1";
-const MAX_RECENT_SEARCHES = 8;
-
-function normalizeSearchTerm(value: string) {
-  const normalized = value.trim().replace(/\s+/g, " ");
-  if (normalized.length < 2 || normalized.length > 100) {
-    return null;
-  }
-  return normalized;
-}
-
-function parseRecentSearches(raw: string | null) {
-  if (!raw) {
-    return [] as string[];
-  }
-
-  try {
-    const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed)) {
-      return [];
-    }
-    return parsed
-      .filter((item): item is string => typeof item === "string")
-      .map((item) => normalizeSearchTerm(item))
-      .filter((item): item is string => Boolean(item))
-      .slice(0, MAX_RECENT_SEARCHES);
-  } catch {
-    return [];
-  }
-}
 
 export function FeedSearchForm({
   actionPath,
@@ -122,12 +100,9 @@ export function FeedSearchForm({
     }
 
     setRecentTerms((prev) => {
-      const next = [term, ...prev.filter((item) => item !== term)].slice(
-        0,
-        MAX_RECENT_SEARCHES,
-      );
-      window.localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(next));
-      return next;
+      const next = addRecentSearchTerm(prev, term);
+      window.localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(next.payload));
+      return next.items;
     });
   };
 
@@ -138,7 +113,10 @@ export function FeedSearchForm({
 
     setRecentTerms((prev) => {
       const next = prev.filter((item) => item !== term);
-      window.localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(next));
+      window.localStorage.setItem(
+        RECENT_SEARCHES_KEY,
+        JSON.stringify(buildRecentSearchesPayload(next)),
+      );
       return next;
     });
   };

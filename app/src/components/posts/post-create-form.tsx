@@ -26,6 +26,10 @@ import {
 import { getClientFingerprint } from "@/lib/guest-client";
 import { getGuestWriteHeaders } from "@/lib/guest-step-up.client";
 import {
+  buildPostDraftPayload,
+  parsePostDraftPayload,
+} from "@/lib/post-draft-storage";
+import {
   isAnimalTagsRequiredCommonBoardPostType,
   isCommonBoardPostType,
 } from "@/lib/community-board";
@@ -348,19 +352,19 @@ export function PostCreateForm({
       return;
     }
 
-    const stored = window.localStorage.getItem(DRAFT_STORAGE_KEY);
-    if (!stored) {
-      setDraftLoaded(true);
-      return;
-    }
+    const timer = window.setTimeout(() => {
+      const stored = window.localStorage.getItem(DRAFT_STORAGE_KEY);
+      if (!stored) {
+        setDraftLoaded(true);
+        return;
+      }
 
-    try {
-      const parsed = JSON.parse(stored) as {
-        savedAt?: string;
-        form?: unknown;
-      };
-      if (isDraftFormState(parsed.form)) {
-        const draftForm = parsed.form as Partial<PostCreateFormState>;
+      const parsed = parsePostDraftPayload<Partial<PostCreateFormState>>(
+        stored,
+        isDraftFormState,
+      );
+      if (parsed.status === "ready") {
+        const draftForm = parsed.draft.form;
         setFormState((prev) => ({
           ...prev,
           ...draftForm,
@@ -372,17 +376,21 @@ export function PostCreateForm({
           guestDisplayName: draftForm.guestDisplayName ?? "",
           guestPassword: "",
         }));
+        setDraftSavedAt(parsed.draft.savedAt);
+        setDraftMessage("임시저장을 불러왔습니다.");
+      } else if (parsed.status === "expired") {
+        window.localStorage.removeItem(DRAFT_STORAGE_KEY);
+        setDraftMessage("만료된 임시저장을 삭제했습니다.");
+      } else if (parsed.status === "invalid") {
+        window.localStorage.removeItem(DRAFT_STORAGE_KEY);
+        setDraftMessage("임시저장을 읽을 수 없어 초기화했습니다.");
       }
-      if (parsed.savedAt) {
-        setDraftSavedAt(parsed.savedAt);
-      }
-      setDraftMessage("임시저장을 불러왔습니다.");
-    } catch {
-      window.localStorage.removeItem(DRAFT_STORAGE_KEY);
-      setDraftMessage("임시저장을 읽을 수 없어 초기화했습니다.");
-    } finally {
       setDraftLoaded(true);
-    }
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
   }, []);
 
   useEffect(() => {
@@ -394,13 +402,12 @@ export function PostCreateForm({
       const savedAt = new Date().toISOString();
       window.localStorage.setItem(
         DRAFT_STORAGE_KEY,
-        JSON.stringify({
-          savedAt,
-          form: {
+        JSON.stringify(
+          buildPostDraftPayload({
             ...formState,
             guestPassword: "",
-          },
-        }),
+          }),
+        ),
       );
       setDraftSavedAt(savedAt);
     }, 500);
@@ -445,9 +452,16 @@ export function PostCreateForm({
   }, [canCreateAdoptionListing, isAuthenticated]);
 
   useEffect(() => {
+    let timer: number | null = null;
     if (!isAuthenticated && formState.scope !== PostScope.GLOBAL) {
-      setFormState((prev) => ({ ...prev, scope: PostScope.GLOBAL }));
-      return;
+      timer = window.setTimeout(() => {
+        setFormState((prev) => ({ ...prev, scope: PostScope.GLOBAL }));
+      }, 0);
+      return () => {
+        if (timer !== null) {
+          window.clearTimeout(timer);
+        }
+      };
     }
 
     const isGuestBlockedType =
@@ -460,8 +474,16 @@ export function PostCreateForm({
       isRoleBlockedType ||
       !availablePostTypeOptions.some((option) => option.value === formState.type)
     ) {
-      setFormState((prev) => ({ ...prev, type: PostType.FREE_BOARD }));
+      timer = window.setTimeout(() => {
+        setFormState((prev) => ({ ...prev, type: PostType.FREE_BOARD }));
+      }, 0);
     }
+
+    return () => {
+      if (timer !== null) {
+        window.clearTimeout(timer);
+      }
+    };
   }, [
     availablePostTypeOptions,
     canCreateAdoptionListing,
@@ -475,11 +497,17 @@ export function PostCreateForm({
       return;
     }
 
-    setFormState((prev) => ({
-      ...prev,
-      type: PostType.PRODUCT_REVIEW,
-      reviewCategory: REVIEW_CATEGORY.PLACE,
-    }));
+    const timer = window.setTimeout(() => {
+      setFormState((prev) => ({
+        ...prev,
+        type: PostType.PRODUCT_REVIEW,
+        reviewCategory: REVIEW_CATEGORY.PLACE,
+      }));
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
   }, [formState.type]);
 
   useEffect(() => {
@@ -491,10 +519,16 @@ export function PostCreateForm({
       return;
     }
 
-    setFormState((prev) => ({
-      ...prev,
-      petTypeId: communityOptions[0].value,
-    }));
+    const timer = window.setTimeout(() => {
+      setFormState((prev) => ({
+        ...prev,
+        petTypeId: communityOptions[0].value,
+      }));
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
   }, [communityOptions, formState.petTypeId, formState.type]);
 
   const resolvedScope = resolveScopeByPostType(formState.type, formState.scope);
@@ -515,20 +549,35 @@ export function PostCreateForm({
   const showCareRequest = formState.type === PostType.CARE_REQUEST;
 
   useEffect(() => {
+    let timer: number | null = null;
     if (formState.scope !== resolvedScope) {
-      setFormState((prev) => ({
-        ...prev,
-        scope: resolvedScope,
-      }));
-      return;
+      timer = window.setTimeout(() => {
+        setFormState((prev) => ({
+          ...prev,
+          scope: resolvedScope,
+        }));
+      }, 0);
+      return () => {
+        if (timer !== null) {
+          window.clearTimeout(timer);
+        }
+      };
     }
 
     if (resolvedScope !== PostScope.LOCAL && formState.neighborhoodId) {
-      setFormState((prev) => ({
-        ...prev,
-        neighborhoodId: "",
-      }));
+      timer = window.setTimeout(() => {
+        setFormState((prev) => ({
+          ...prev,
+          neighborhoodId: "",
+        }));
+      }, 0);
     }
+
+    return () => {
+      if (timer !== null) {
+        window.clearTimeout(timer);
+      }
+    };
   }, [formState.neighborhoodId, formState.scope, resolvedScope]);
 
   const hasHospitalReview =
@@ -1047,6 +1096,7 @@ export function PostCreateForm({
             <ul className="mt-2 list-disc space-y-1 pl-4">
               <li>제목과 본문에 동물, 지역, 상황을 구체적으로 적어 주세요.</li>
               <li>연락처나 외부 거래 유도는 정책에 따라 제한될 수 있습니다.</li>
+              <li>임시저장은 이 브라우저에만 24시간 보관되며 공용 기기에서는 삭제해 주세요.</li>
               <li>분류를 바꾸면 필요한 추가 정보가 아래에 표시됩니다.</li>
             </ul>
           </div>

@@ -178,6 +178,19 @@ describe("search queries", () => {
     expect(mockPrisma.searchTermStat?.upsert).not.toHaveBeenCalled();
   });
 
+  it("redacts mixed sensitive fragments before storing search stats", async () => {
+    mockPrisma.searchTermStat?.upsert.mockResolvedValue({});
+    mockPrisma.searchTermDailyMetric?.upsert.mockResolvedValue({});
+
+    const result = await recordSearchTerm("강아지 산책 test@example.com");
+
+    expect(result).toEqual({ ok: true, recorded: true });
+    const args = mockPrisma.searchTermStat?.upsert.mock.calls[0][0];
+    expect(args.create.termDisplay).toBe("강아지 산책 [이메일 비공개]");
+    expect(args.create.termNormalized).toBe("강아지 산책 [이메일 비공개]");
+    expect(JSON.stringify(args)).not.toContain("test@example.com");
+  });
+
   it("returns schema sync required when table exists in client but DB is missing", async () => {
     mockPrisma.searchTermStat?.upsert.mockRejectedValue(
       new Prisma.PrismaClientKnownRequestError("missing table", {
