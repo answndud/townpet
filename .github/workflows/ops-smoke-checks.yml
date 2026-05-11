@@ -53,6 +53,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Check care smoke readiness
+        env:
+          HEALTH_INTERNAL_TOKEN: ${{ secrets.HEALTH_INTERNAL_TOKEN }}
+          CARE_SMOKE_ADMIN_EMAIL: ${{ vars.CARE_SMOKE_ADMIN_EMAIL }}
+          CARE_SMOKE_REQUESTER_EMAIL: ${{ vars.CARE_SMOKE_REQUESTER_EMAIL }}
+          CARE_SMOKE_CAREGIVER_EMAIL: ${{ vars.CARE_SMOKE_CAREGIVER_EMAIL }}
+        run: pnpm ops:check:care-smoke-readiness
+
       - name: Check deployment health endpoint
         run: pnpm ops:check:health
 

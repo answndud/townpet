@@ -153,7 +153,7 @@
 
 ### P0-4. production smoke blocker를 값/계정 단위로 제거한다
 
-상태: `pending`
+상태: `completed`
 
 - 문제: production smoke는 `OPS_HEALTH_INTERNAL_TOKEN`, smoke 계정, 선택 Sentry secret이 없어 blocked 상태였다.
 - 대상:
@@ -171,6 +171,12 @@
   - `OPS_BASE_URL=https://townpet.vercel.app OPS_HEALTH_INTERNAL_TOKEN=<set> pnpm -C app ops:check:health`
 - 완료 기준:
   - readiness가 PASS거나, blocker가 정확히 어떤 secret/계정인지 남는다.
+- 결과:
+  - GitHub Actions secret inventory에서 `HEALTH_INTERNAL_TOKEN`, Sentry 4종 secret이 설정된 것을 값 노출 없이 확인했다.
+  - GitHub repository variables에 `CARE_SMOKE_ADMIN_EMAIL`, `CARE_SMOKE_REQUESTER_EMAIL`, `CARE_SMOKE_CAREGIVER_EMAIL`을 표준 smoke 식별자로 설정했다.
+  - `.github/workflows/ops-smoke-checks.yml`에 `ops:check:care-smoke-readiness` 선행 gate를 추가했다.
+  - 로컬 더미 토큰/동일 변수 조합에서는 readiness가 `PASS`로 분류된다.
+  - 실제 운영 계정 존재/권한과 원격 health/pg_trgm/prewarm 실행은 P1-1에서 검증한다.
 
 ### P1-1. production smoke를 실제 원격 기준으로 실행한다
 
