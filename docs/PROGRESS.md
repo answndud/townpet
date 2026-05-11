@@ -113,9 +113,10 @@
   - 첫 slice로 `post-create-form` 상태 타입/초기값/draft guard를 `post-create-form-state`로 분리했다.
   - 두 번째 slice로 `post-create-form` option constants와 scope resolver를 `post-create-form-options`로 분리했다.
   - 세 번째 slice로 draft hydration/autosave/clear/submit-clear 로직을 `use-post-create-draft` hook으로 분리했다.
-  - 검증: `post-create-form-state`/`post-create-form-options`/draft storage targeted test PASS, `typecheck` PASS, `lint` PASS, `test:e2e:upload` PASS.
+  - 네 번째 slice로 마켓/돌봄 structured fields와 공용 section wrapper를 `post-create-structured-fields`로 분리했다.
+  - 검증: structured fields/options/state targeted test PASS, `typecheck` PASS, `lint` PASS.
 ## 다음 액션
-1. 같은 P1-6 내 다음 slice로 `post-create-form`의 structured field sections를 별도 파일로 분리한다.
+1. 같은 P1-6 내 다음 slice로 `post-create-form`의 병원/장소/산책/입양/봉사 structured fields를 더 작은 그룹으로 분리한다.
 2. 이후 `post.queries`를 feed list/detail/search/admin/care-adoption read model 단위로 분해할 경계와 기존 테스트 매핑을 잡는다.
 3. 각 slice마다 targeted test, `typecheck`, `lint`를 실행하고 작은 커밋으로 끊는다.
 
