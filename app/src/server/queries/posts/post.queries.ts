@@ -414,6 +414,26 @@ async function fetchPostRowsWithReactionsWithFallback({
     });
 }
 
+function countPostRowsWithSchemaFallback({
+  where,
+  legacyWhere,
+}: {
+  where: Prisma.PostWhereInput;
+  legacyWhere: Prisma.PostWhereInput;
+}) {
+  return prisma.post.count({ where }).catch((error) => {
+    if (!isMissingCommunityBoardSchemaError(error) && !isUnsupportedReviewCategoryFilterError(error)) {
+      throw error;
+    }
+
+    if (isUnsupportedReviewCategoryFilterError(error)) {
+      postReviewCategoryFieldSupport = false;
+    }
+
+    return prisma.post.count({ where: legacyWhere });
+  });
+}
+
 function supportsFeedPersonalizationEventLogField() {
   return Boolean(
     (
@@ -2463,16 +2483,9 @@ export async function countPosts({
     authorBreedCode,
   });
 
-  return prisma.post.count({ where }).catch((error) => {
-    if (!isMissingCommunityBoardSchemaError(error) && !isUnsupportedReviewCategoryFilterError(error)) {
-      throw error;
-    }
-
-    if (isUnsupportedReviewCategoryFilterError(error)) {
-      postReviewCategoryFieldSupport = false;
-    }
-
-    const legacyWhere = buildLegacyReviewPostListWhere({
+  return countPostRowsWithSchemaFallback({
+    where,
+    legacyWhere: buildLegacyReviewPostListWhere({
       type,
       reviewCategory,
       scope,
@@ -2485,9 +2498,7 @@ export async function countPosts({
       hiddenAuthorIds,
       days,
       authorBreedCode,
-    });
-
-    return prisma.post.count({ where: legacyWhere });
+    }),
   });
 }
 
@@ -2535,16 +2546,9 @@ export async function countBestPosts({
     hiddenAuthorIds,
   });
 
-  return prisma.post.count({ where }).catch((error) => {
-    if (!isMissingCommunityBoardSchemaError(error) && !isUnsupportedReviewCategoryFilterError(error)) {
-      throw error;
-    }
-
-    if (isUnsupportedReviewCategoryFilterError(error)) {
-      postReviewCategoryFieldSupport = false;
-    }
-
-    const legacyWhere = buildLegacyReviewBestPostWhere({
+  return countPostRowsWithSchemaFallback({
+    where,
+    legacyWhere: buildLegacyReviewBestPostWhere({
       days,
       minLikes,
       type,
@@ -2557,9 +2561,7 @@ export async function countBestPosts({
       excludeTypes: normalizedExcludeTypes,
       neighborhoodId,
       hiddenAuthorIds,
-    });
-
-    return prisma.post.count({ where: legacyWhere });
+    }),
   });
 }
 

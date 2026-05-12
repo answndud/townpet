@@ -138,14 +138,15 @@
   - 스물여섯 번째 slice로 feed/best list fetch와 schema compatibility fallback 절차를 helper로 통합했고, `post.queries`를 2883줄까지 줄였다.
   - 스물일곱 번째 slice로 검색 document fallback ranking 절차를 `post-ranked-search-support`로 분리했고, `post.queries`를 2855줄까지 줄였다.
   - 스물여덟 번째 slice로 ranked search candidate limit 계산과 candidate SQL 조립을 `post-ranked-search-support`로 분리했고, `post.queries`를 2816줄까지 줄였다.
-  - 다음 작업: ranked search hydrate 함수 또는 count fallback 절차 분리를 추가로 시도한다.
+  - 스물아홉 번째 slice로 count/countBest의 schema compatibility fallback 실행을 `countPostRowsWithSchemaFallback`으로 통합했다.
+  - 다음 작업: ranked search hydrate 함수 또는 count where 조립 helper 분리를 추가로 시도한다.
   - 검증: `post.queries.test.ts` PASS, structured fields/options/state targeted test PASS, `typecheck` PASS, `lint` PASS.
 - Vercel preview 배포 차단:
   - 원인: `build:vercel`이 `VERCEL_ENV=preview`도 strict security env preflight 대상으로 취급해 preview secret 구성이 production급이 아니면 빌드 전에 실패했다.
   - 수정: `VERCEL_ENV=preview/development`를 `VERCEL_TARGET_ENV`보다 우선해 skip하고, production/명시적 staging 또는 `DEPLOY_SECURITY_PREFLIGHT_STRICT=1`에서만 strict preflight를 실행한다.
   - 검증: `corepack pnpm@9.12.3 -C app exec vitest run scripts/vercel-build.test.ts` PASS.
 ## 다음 액션
-1. 다음 slice는 `post.queries`의 ranked search hydrate 함수 또는 count fallback 절차를 별도 module/helper로 분리한다.
+1. 다음 slice는 `post.queries`의 ranked search hydrate 함수 또는 count where 조립 helper를 별도 module/helper로 분리한다.
 2. public API/result shape는 유지하고, 기존 `post.queries.test.ts`를 우선 회귀 테스트로 사용한다.
 3. 각 slice마다 targeted test, `typecheck`, `lint`를 실행하고 작은 커밋으로 끊는다.
 
