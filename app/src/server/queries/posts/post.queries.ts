@@ -55,13 +55,10 @@ import {
 } from "./post-ranked-search-support";
 import {
   buildBestPostCountWherePair,
-  buildBestPostWhere,
+  buildBestPostListWhereSet,
   buildPostCountWherePair,
-  buildLegacyReviewBestPostWhere,
-  buildLegacyReviewPostListWhere,
-  buildPostListWhere,
+  buildPostListWhereSet,
   isPostTypeFullyExcluded,
-  resolvePostReviewCategoryFilters,
 } from "./post-list-where-support";
 import {
   buildPostListInclude as buildPostListIncludeBase,
@@ -2070,14 +2067,11 @@ export async function listPosts({
     const includeViewerReactions = Boolean(viewerId);
     const resolvedSearchIn = searchIn ?? DEFAULT_POST_SEARCH_IN;
     const resolvedSort = sort ?? DEFAULT_POST_LIST_SORT;
-    const effectiveFilters = resolvePostReviewCategoryFilters({
+    const whereSet = buildPostListWhereSet({
       type,
       reviewBoard,
       reviewCategory,
       reviewCategorySupported: supportsPostReviewCategoryField(),
-    });
-    const where = buildPostListWhere({
-      ...effectiveFilters,
       scope,
       petTypeId,
       petTypeIds,
@@ -2106,22 +2100,8 @@ export async function listPosts({
             ]
           : [{ createdAt: "desc" }, { id: "desc" }];
 
-    const legacyCompatibleWhere = buildPostListWhere({
-      ...effectiveFilters,
-      scope,
-      petTypeId: undefined,
-      petTypeIds: undefined,
-      q,
-      searchIn: resolvedSearchIn,
-      excludeTypes: normalizedExcludeTypes,
-      neighborhoodId,
-      hiddenAuthorIds,
-      days,
-      authorBreedCode,
-    });
-
     const baseArgs: Omit<Prisma.PostFindManyArgs, "include"> = {
-      where,
+      where: whereSet.where,
       take: resolvedLimit + 1,
       ...(cursor
         ? {
@@ -2136,26 +2116,11 @@ export async function listPosts({
       orderBy,
     };
 
-    const legacyReviewWhere = buildLegacyReviewPostListWhere({
-      type,
-      reviewCategory,
-      scope,
-      petTypeId,
-      petTypeIds,
-      q,
-      searchIn: resolvedSearchIn,
-      excludeTypes: normalizedExcludeTypes,
-      neighborhoodId,
-      hiddenAuthorIds,
-      days,
-      authorBreedCode,
-    });
-
     if (!supportsPostReactionsField()) {
       const items = await fetchPostRowsWithoutReactionsWithFallback({
         baseArgs,
-        legacyCompatibleWhere,
-        legacyReviewWhere,
+        legacyCompatibleWhere: whereSet.legacyCompatibleWhere,
+        legacyReviewWhere: whereSet.legacyReviewWhere,
       });
       let nextCursor: string | null = null;
       if (items.length > resolvedLimit) {
@@ -2168,8 +2133,8 @@ export async function listPosts({
 
     let items = await fetchPostRowsWithReactionsWithFallback({
       baseArgs,
-      legacyCompatibleWhere,
-      legacyReviewWhere,
+      legacyCompatibleWhere: whereSet.legacyCompatibleWhere,
+      legacyReviewWhere: whereSet.legacyReviewWhere,
       includeViewerReactions,
       viewerId,
     });
@@ -2182,22 +2147,9 @@ export async function listPosts({
       resolvedPage === 1 &&
       shouldTryPostSearchDocumentFallback(trimmedQuery)
     ) {
-      const fallbackWhere = buildPostListWhere({
-        ...effectiveFilters,
-        scope,
-        petTypeId,
-        petTypeIds,
-        q: undefined,
-        searchIn: resolvedSearchIn,
-        excludeTypes: normalizedExcludeTypes,
-        neighborhoodId,
-        hiddenAuthorIds,
-        days,
-        authorBreedCode,
-      });
       const fallbackRows = await prisma.post
         .findMany({
-          where: fallbackWhere,
+          where: whereSet.searchDocumentFallbackWhere,
           take: Math.min(Math.max(resolvedLimit * 12, 60), 180),
           orderBy,
           include: includeViewerReactions
@@ -2314,16 +2266,13 @@ export async function listBestPosts({
   const runListBestPosts = async () => {
     const includeViewerReactions = Boolean(viewerId);
     const resolvedSearchIn = searchIn ?? DEFAULT_POST_SEARCH_IN;
-    const effectiveFilters = resolvePostReviewCategoryFilters({
+    const whereSet = buildBestPostListWhereSet({
+      days,
+      minLikes,
       type,
       reviewBoard,
       reviewCategory,
       reviewCategorySupported: supportsPostReviewCategoryField(),
-    });
-    const where = buildBestPostWhere({
-      days,
-      minLikes,
-      ...effectiveFilters,
       scope,
       petTypeId,
       petTypeIds,
@@ -2335,7 +2284,7 @@ export async function listBestPosts({
     });
 
     const baseArgs: Omit<Prisma.PostFindManyArgs, "include"> = {
-      where,
+      where: whereSet.where,
       take: resolvedLimit,
       ...(resolvedPage > 1
         ? {
@@ -2351,47 +2300,18 @@ export async function listBestPosts({
       ],
     };
 
-    const legacyCompatibleWhere = buildBestPostWhere({
-      days,
-      minLikes,
-      ...effectiveFilters,
-      scope,
-      petTypeId: undefined,
-      petTypeIds: undefined,
-      q,
-      searchIn: resolvedSearchIn,
-      excludeTypes: normalizedExcludeTypes,
-      neighborhoodId,
-      hiddenAuthorIds,
-    });
-
-    const legacyReviewWhere = buildLegacyReviewBestPostWhere({
-      days,
-      minLikes,
-      type,
-      reviewCategory,
-      scope,
-      petTypeId,
-      petTypeIds,
-      q,
-      searchIn: resolvedSearchIn,
-      excludeTypes: normalizedExcludeTypes,
-      neighborhoodId,
-      hiddenAuthorIds,
-    });
-
     if (!supportsPostReactionsField()) {
       return fetchPostRowsWithoutReactionsWithFallback({
         baseArgs,
-        legacyCompatibleWhere,
-        legacyReviewWhere,
+        legacyCompatibleWhere: whereSet.legacyCompatibleWhere,
+        legacyReviewWhere: whereSet.legacyReviewWhere,
       });
     }
 
     const items = await fetchPostRowsWithReactionsWithFallback({
       baseArgs,
-      legacyCompatibleWhere,
-      legacyReviewWhere,
+      legacyCompatibleWhere: whereSet.legacyCompatibleWhere,
+      legacyReviewWhere: whereSet.legacyReviewWhere,
       includeViewerReactions,
       viewerId,
     });
