@@ -120,14 +120,15 @@
   - 여덟 번째 slice로 작성 기준 aside/editor footer/submit footer를 `post-create-form-shell`로 분리했고, `post-create-form`을 485줄까지 줄였다.
   - 아홉 번째 slice로 type/scope/legacy/default community 자동 보정 effect를 `use-post-create-guards`로 분리했고, `post-create-form`을 380줄까지 줄였다.
   - 열 번째 slice로 submit orchestration/auth-guest transport/redirect-reset 흐름을 `use-post-create-submit`으로 분리했고, `post-create-form`을 298줄까지 줄였다.
-  - 검증: structured fields/options/state targeted test PASS, `typecheck` PASS, `lint` PASS.
+  - 열한 번째 slice로 `post.queries`의 상세 structured relation select/type을 `post-detail-read-model`로 분리했고, public query export와 결과 shape는 유지했다.
+  - 검증: `post.queries.test.ts` PASS, structured fields/options/state targeted test PASS, `typecheck` PASS, `lint` PASS.
 - Vercel preview 배포 차단:
   - 원인: `build:vercel`이 `VERCEL_ENV=preview`도 strict security env preflight 대상으로 취급해 preview secret 구성이 production급이 아니면 빌드 전에 실패했다.
   - 수정: preview는 기본 skip으로 되돌리고, production/명시적 staging 또는 `DEPLOY_SECURITY_PREFLIGHT_STRICT=1`에서만 strict preflight를 실행한다.
   - 검증: `corepack pnpm@9.12.3 -C app exec vitest run scripts/vercel-build.test.ts` PASS.
 ## 다음 액션
-1. P1-6 `post-create-form` split은 여기서 마무리하고, 다음 slice부터 `post.queries`를 feed list/detail/search/admin/care-adoption read model 단위로 분해할 경계와 기존 테스트 매핑을 잡는다.
-2. 첫 query slice는 read-only helper 이동만 수행하고 public API/result shape는 변경하지 않는다.
+1. 다음 slice는 `post.queries`의 detail 조회 helper 또는 care detail helper를 별도 read-only query module로 옮긴다.
+2. public API/result shape는 유지하고, 기존 `post.queries.test.ts`를 우선 회귀 테스트로 사용한다.
 3. 각 slice마다 targeted test, `typecheck`, `lint`를 실행하고 작은 커밋으로 끊는다.
 
 ## Archive Pointer
