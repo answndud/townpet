@@ -125,7 +125,7 @@
   - 검증: `post.queries.test.ts` PASS, structured fields/options/state targeted test PASS, `typecheck` PASS, `lint` PASS.
 - Vercel preview 배포 차단:
   - 원인: `build:vercel`이 `VERCEL_ENV=preview`도 strict security env preflight 대상으로 취급해 preview secret 구성이 production급이 아니면 빌드 전에 실패했다.
-  - 수정: preview는 기본 skip으로 되돌리고, production/명시적 staging 또는 `DEPLOY_SECURITY_PREFLIGHT_STRICT=1`에서만 strict preflight를 실행한다.
+  - 수정: `VERCEL_ENV=preview/development`를 `VERCEL_TARGET_ENV`보다 우선해 skip하고, production/명시적 staging 또는 `DEPLOY_SECURITY_PREFLIGHT_STRICT=1`에서만 strict preflight를 실행한다.
   - 검증: `corepack pnpm@9.12.3 -C app exec vitest run scripts/vercel-build.test.ts` PASS.
 ## 다음 액션
 1. 다음 slice는 `post.queries`의 `getPostById` 계열 detail 조회 wrapper를 read-only module로 분리할 수 있는지 경계를 잡는다.
