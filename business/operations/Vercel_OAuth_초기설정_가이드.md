@@ -31,7 +31,8 @@
    - Framework Preset: `Next.js`
    - Root Directory: `app`
    - Build Command: `pnpm build:vercel` (Root Directory=`app` 기준 `app/vercel.json`과 동일)
-   - production/preview/staging 배포에서는 `build:vercel`가 strict security env preflight -> `prisma migrate deploy` -> `prisma generate` -> `next build` 순서로 동작하므로, 필수 secret 누락과 migration 실패는 빌드 초반에 바로 드러납니다
+   - production/staging 배포에서는 `build:vercel`가 build-profile security env preflight -> `prisma migrate deploy` -> `prisma generate` -> `next build` 순서로 동작하므로, 필수 secret 누락과 migration 실패는 빌드 초반에 바로 드러납니다
+   - preview 배포는 기본적으로 이 build preflight를 자동 실행하지 않고, 필요할 때만 `DEPLOY_SECURITY_PREFLIGHT_STRICT=1`로 opt-in 합니다
 5. 우선 빈 환경변수로는 실패할 수 있으니, 아래 2단계까지 진행 후 Deploy
 
 ---
@@ -105,7 +106,10 @@ OAuth 연결 전 임시로 비워도 되는 값:
 - 예: `openssl rand -base64 32`
 
 중요:
-- production/preview/staging 배포는 `build:vercel` 시작 시 strict security env preflight를 먼저 실행하고, 이어서 `prisma migrate deploy`, `prisma generate`, `next build`를 수행합니다.
+- production/staging 배포는 `build:vercel` 시작 시 `ops:check:security-env:build`를 먼저 실행하고, 이어서 `prisma migrate deploy`, `prisma generate`, `next build`를 수행합니다.
+- build preflight는 production 필수 env/정책만 검사하고 원격 `/api/health` control-plane check는 포함하지 않습니다.
+- 원격 운영 상태나 `MODERATION_CONTROL_PLANE_HEALTH` drift까지 확인하려면 아래 명령으로 수동 strict preflight를 별도로 실행해야 합니다.
+- `cd /Users/alex/project/townpet/app && pnpm ops:check:security-env:strict`
 - `RESEND_API_KEY`, `BLOB_READ_WRITE_TOKEN`, `UPSTASH_REDIS_REST_URL/TOKEN`이 빠지면 빌드 초반에 실패합니다.
 - auth email 정규화/중복 상태는 더 이상 모든 배포의 자동 게이트가 아닙니다. 해당 영역을 건드릴 때만 아래 명령으로 수동 확인하는 쪽이 맞습니다.
 

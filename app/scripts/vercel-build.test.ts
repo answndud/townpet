@@ -13,7 +13,7 @@ describe("vercel-build security preflight", () => {
     delete process.env.VERCEL_TARGET_ENV;
   });
 
-  it("enables strict preflight for production vercel targets", () => {
+  it("enables build preflight for production vercel targets", () => {
     expect(
       shouldRunSecurityEnvPreflight({
         NODE_ENV: "production",
@@ -28,7 +28,7 @@ describe("vercel-build security preflight", () => {
     ).toBe(true);
   });
 
-  it("skips strict preflight for preview deployments unless explicitly forced", () => {
+  it("skips build preflight for preview deployments unless explicitly forced", () => {
     expect(
       shouldRunSecurityEnvPreflight({
         NODE_ENV: "production",
@@ -44,7 +44,7 @@ describe("vercel-build security preflight", () => {
     ).toBe(true);
   });
 
-  it("lets preview deployments skip strict preflight even when target env is production", () => {
+  it("lets preview deployments skip build preflight even when target env is production", () => {
     expect(
       shouldRunSecurityEnvPreflight({
         NODE_ENV: "production",
@@ -54,7 +54,7 @@ describe("vercel-build security preflight", () => {
     ).toBe(false);
   });
 
-  it("enables strict preflight for explicit staging targets", () => {
+  it("enables build preflight for explicit staging targets", () => {
     expect(
       shouldRunSecurityEnvPreflight({
         NODE_ENV: "production",
@@ -63,7 +63,7 @@ describe("vercel-build security preflight", () => {
     ).toBe(true);
   });
 
-  it("skips strict preflight outside Vercel targets unless explicitly forced", () => {
+  it("skips build preflight outside Vercel targets unless explicitly forced", () => {
     expect(
       shouldRunSecurityEnvPreflight({
         NODE_ENV: "production",
@@ -88,14 +88,18 @@ describe("vercel-build security preflight", () => {
 
     const commandRunner = vi
       .fn()
-      .mockResolvedValueOnce({ code: 1, output: "missing AUTH_SECRET" });
+      .mockResolvedValueOnce({
+        code: 1,
+        output:
+          "Security env check\n- [FAIL] HEALTH_INTERNAL_TOKEN: missing\n- [FAIL] UPSTASH_REDIS_REST_URL_AND_TOKEN_PAIR: missing",
+      });
 
     await expect(runBuildVercel(commandRunner)).rejects.toThrow(
-      "[build:vercel] security env preflight failed.",
+      "[build:vercel] security env preflight failed. failed checks: HEALTH_INTERNAL_TOKEN, UPSTASH_REDIS_REST_URL_AND_TOKEN_PAIR",
     );
 
     expect(commandRunner).toHaveBeenCalledTimes(1);
-    expect(commandRunner).toHaveBeenCalledWith("pnpm", ["ops:check:security-env:strict"]);
+    expect(commandRunner).toHaveBeenCalledWith("pnpm", ["ops:check:security-env:build"]);
   });
 
   it("runs security preflight before deploy steps on production builds", async () => {
@@ -109,7 +113,7 @@ describe("vercel-build security preflight", () => {
     await runBuildVercel(commandRunner);
 
     expect(commandRunner.mock.calls).toEqual([
-      ["pnpm", ["ops:check:security-env:strict"]],
+      ["pnpm", ["ops:check:security-env:build"]],
       ["pnpm", ["prisma", "migrate", "deploy"]],
       ["pnpm", ["prisma", "generate"]],
       ["pnpm", ["next", "build"]],
@@ -129,7 +133,7 @@ describe("vercel-build security preflight", () => {
     );
 
     expect(commandRunner.mock.calls).toEqual([
-      ["pnpm", ["ops:check:security-env:strict"]],
+      ["pnpm", ["ops:check:security-env:build"]],
       ["pnpm", ["prisma", "migrate", "deploy"]],
     ]);
   });
@@ -148,7 +152,7 @@ describe("vercel-build security preflight", () => {
     );
 
     expect(commandRunner.mock.calls).toEqual([
-      ["pnpm", ["ops:check:security-env:strict"]],
+      ["pnpm", ["ops:check:security-env:build"]],
       ["pnpm", ["prisma", "migrate", "deploy"]],
       ["pnpm", ["prisma", "generate"]],
     ]);

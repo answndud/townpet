@@ -80,6 +80,10 @@ function hasTruthyFlag(value: string | undefined) {
   return normalized === "1" || normalized === "true" || normalized === "yes";
 }
 
+function extractFailedCheckKeys(output: string) {
+  return [...output.matchAll(/- \[FAIL\] ([A-Z0-9_]+)/g)].map((match) => match[1]);
+}
+
 function isStrictVercelTarget(env: NodeJS.ProcessEnv = process.env) {
   const vercelEnv = env.VERCEL_ENV?.trim().toLowerCase();
   if (vercelEnv === "production") {
@@ -140,14 +144,17 @@ async function baselineMigrations(commandRunner: CommandRunner = runCommand) {
 export async function runSecurityEnvPreflight(commandRunner: CommandRunner = runCommand) {
   if (!shouldRunSecurityEnvPreflight()) {
     console.log(
-      "[build:vercel] skipping strict security env preflight (non-strict target or explicit opt-out).",
+      "[build:vercel] skipping security env build preflight (non-production/staging target or explicit opt-out).",
     );
     return;
   }
 
-  const result = await commandRunner("pnpm", ["ops:check:security-env:strict"]);
+  const result = await commandRunner("pnpm", ["ops:check:security-env:build"]);
   if (result.code !== 0) {
-    throw new Error("[build:vercel] security env preflight failed.");
+    const failedKeys = extractFailedCheckKeys(result.output);
+    const detail =
+      failedKeys.length > 0 ? ` failed checks: ${failedKeys.join(", ")}` : "";
+    throw new Error(`[build:vercel] security env preflight failed.${detail}`);
   }
 }
 

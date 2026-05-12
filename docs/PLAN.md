@@ -13,6 +13,10 @@
 
 ## Active
 
+운영 인터럽트 메모:
+- `2026-05-12` Vercel deploy blocker였던 security-env build preflight recurrence hardening을 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록합니다.
+- 현재 active feature work는 아래 `Release Confidence Hardening P1-6`로 복귀합니다.
+
 ### Release Confidence Hardening P1-6
 
 - 상태: `in_progress`

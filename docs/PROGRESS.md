@@ -4,35 +4,51 @@
 
 - 작업: `Release Confidence Hardening P1-6`
 - 상태: `in_progress`
-- 현재 초점: `post.queries.ts`의 남은 post detail fallback 경계를 작은 module로 분리한다.
+- 현재 초점: `2026-05-12` deploy blocker였던 Vercel security-env preflight recurrence hardening을 완료했고, 다음 작업은 `post.queries.ts`의 남은 post detail fallback 경계 분리로 복귀한다.
 
 ## 변경/탐색한 파일
 
-- 최근 변경:
-  - `app/src/server/queries/posts/post-list-search-document-fallback.ts`
-  - `app/src/server/queries/posts/post-ranked-search-hydration.ts`
-  - `app/src/server/queries/posts/post-ranked-search-document-fallback.ts`
-  - `app/src/server/queries/posts/post-list-fetch-fallback.ts`
-  - `app/src/server/queries/posts/post-ranked-search-cache.ts`
-  - `app/src/server/queries/posts/post.queries.ts`
-- 최근 결과:
+- 이번 세션 변경:
+  - `app/package.json`
+  - `app/scripts/check-security-env.ts`
+  - `app/scripts/check-security-env.test.ts`
+  - `app/scripts/vercel-build.ts`
+  - `app/scripts/vercel-build.test.ts`
+  - `app/README.md`
+  - `business/operations/Vercel_OAuth_초기설정_가이드.md`
+  - `business/operations/Resend_Vercel_이메일_설정_가이드.md`
+  - `business/operations/manual-checks/배포_보안_체크리스트.md`
+  - `business/archive/operations/문서 동기화 리포트.md`
+  - `business/security/보안_계획.md`
+  - `business/security/보안_진행상황.md`
+  - `business/security/보안_위험_등록부.md`
+  - `docs/errors/2026-05-12_vercel-security-env-build-preflight.md`
+  - `docs/COMPLETED.md`
+- 이번 세션 결과:
+  - `ops:check:security-env`를 `build`/`full(strict)` profile로 분리해 Vercel build가 원격 `/api/health` control-plane drift 때문에 다시 실패하지 않도록 수정했다.
+  - `build:vercel`는 production/staging target에서 `ops:check:security-env:build`만 실행하고, 실제 실패 key를 에러 메시지에 포함하게 보강했다.
+  - 운영 문서와 보안 문서를 현재 동작 기준으로 동기화해 build gate와 수동 strict 진단을 혼동하지 않도록 정리했다.
+- 직전 P1-6 맥락:
   - `listRankedSearchPosts`의 cache/run fallback orchestration을 `post-ranked-search-cache`로 분리했다.
   - `post.queries.ts`를 4850줄에서 2389줄까지 축소했다.
   - `post-create-form`은 298줄 수준까지 축소해 현재 P1-6의 첫 큰 경계를 완료했다.
 
 ## 직전 검증
 
-- `corepack pnpm@9.12.3 -C app exec vitest run src/server/queries/post.queries.test.ts` PASS
+- `corepack pnpm@9.12.3 -C app exec vitest run scripts/vercel-build.test.ts scripts/check-security-env.test.ts src/lib/env.test.ts` PASS
 - `corepack pnpm@9.12.3 -C app typecheck` PASS
-- `corepack pnpm@9.12.3 -C app lint` PASS
-- GitHub Actions `docs-quality`, `quality-gate`, `browser-smoke` PASS
+- `corepack pnpm@9.12.3 -C app lint scripts/vercel-build.ts scripts/vercel-build.test.ts scripts/check-security-env.ts scripts/check-security-env.test.ts src/lib/env.ts src/lib/env.test.ts` PASS
+- `placeholder production env + OPS_BASE_URL=https://127.0.0.1.invalid corepack pnpm@9.12.3 -C app ops:check:security-env:build` PASS
+- `placeholder production env + OPS_BASE_URL=https://127.0.0.1.invalid corepack pnpm@9.12.3 -C app ops:check:security-env:strict` -> `MODERATION_CONTROL_PLANE_HEALTH` FAIL 확인
+- `corepack pnpm@9.12.3 -C app docs:refresh` PASS
+- `corepack pnpm@9.12.3 -C app docs:refresh:check` PASS
 
 ## Blocker
 
-- 현재 known blocker 없음.
+- 현재 known blocker 없음. deploy recurrence issue closed.
 
 ## 다음 액션
 
-1. post detail fallback 경계를 분리한다.
+1. `Release Confidence Hardening P1-6`의 post detail fallback 경계 분리를 재개한다.
 2. 어렵거나 결합이 크면 `post.service.ts`의 create/update/delete/reaction/bookmark 책임 경계를 먼저 분리한다.
 3. public API/result shape를 유지하고 targeted test, `typecheck`, `lint`를 실행한다.
