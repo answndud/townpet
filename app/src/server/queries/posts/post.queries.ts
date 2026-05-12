@@ -251,6 +251,26 @@ function isMissingCommunityBoardSchemaError(error: unknown) {
   return false;
 }
 
+function buildPostFindManyFallbackArgs<T extends { where?: Prisma.PostWhereInput }>({
+  error,
+  baseArgs,
+  legacyCompatibleWhere,
+  legacyReviewWhere,
+}: {
+  error: unknown;
+  baseArgs: T;
+  legacyCompatibleWhere: Prisma.PostWhereInput;
+  legacyReviewWhere: Prisma.PostWhereInput;
+}) {
+  const safeBaseArgs = isMissingCommunityBoardSchemaError(error)
+    ? { ...baseArgs, where: legacyCompatibleWhere }
+    : baseArgs;
+
+  return isUnsupportedReviewCategoryFilterError(error)
+    ? { ...safeBaseArgs, where: legacyReviewWhere }
+    : safeBaseArgs;
+}
+
 function supportsFeedPersonalizationEventLogField() {
   return Boolean(
     (
@@ -1975,29 +1995,25 @@ export async function listPosts({
              postReviewCategoryFieldSupport = false;
            }
 
-           const safeBaseArgs = isMissingCommunityBoardSchemaError(error)
-             ? { ...baseArgs, where: legacyCompatibleWhere }
-             : baseArgs;
-
-           const safeFallbackBaseArgs = isUnsupportedReviewCategoryFilterError(error)
-             ? {
-                 ...safeBaseArgs,
-                 where: buildLegacyReviewPostListWhere({
-                   type,
-                   reviewCategory,
-                   scope,
-                   petTypeId,
-                   petTypeIds,
-                   q,
-                   searchIn: resolvedSearchIn,
-                   excludeTypes: normalizedExcludeTypes,
-                   neighborhoodId,
-                   hiddenAuthorIds,
-                   days,
-                   authorBreedCode,
-                 }),
-               }
-             : safeBaseArgs;
+           const safeFallbackBaseArgs = buildPostFindManyFallbackArgs({
+             error,
+             baseArgs,
+             legacyCompatibleWhere,
+             legacyReviewWhere: buildLegacyReviewPostListWhere({
+               type,
+               reviewCategory,
+               scope,
+               petTypeId,
+               petTypeIds,
+               q,
+               searchIn: resolvedSearchIn,
+               excludeTypes: normalizedExcludeTypes,
+               neighborhoodId,
+               hiddenAuthorIds,
+               days,
+               authorBreedCode,
+             }),
+           });
 
            if (isUnknownGuestAuthorIncludeError(error)) {
              return prisma.post.findMany({
@@ -2048,29 +2064,25 @@ export async function listPosts({
           postReviewCategoryFieldSupport = false;
         }
 
-        const safeBaseArgs = isMissingCommunityBoardSchemaError(error)
-          ? { ...baseArgs, where: legacyCompatibleWhere }
-          : baseArgs;
-
-        const safeFallbackBaseArgs = isUnsupportedReviewCategoryFilterError(error)
-          ? {
-              ...safeBaseArgs,
-              where: buildLegacyReviewPostListWhere({
-                type,
-                reviewCategory,
-                scope,
-                petTypeId,
-                petTypeIds,
-                q,
-                searchIn: resolvedSearchIn,
-                excludeTypes: normalizedExcludeTypes,
-                neighborhoodId,
-                hiddenAuthorIds,
-                days,
-                authorBreedCode,
-              }),
-            }
-          : safeBaseArgs;
+        const safeFallbackBaseArgs = buildPostFindManyFallbackArgs({
+          error,
+          baseArgs,
+          legacyCompatibleWhere,
+          legacyReviewWhere: buildLegacyReviewPostListWhere({
+            type,
+            reviewCategory,
+            scope,
+            petTypeId,
+            petTypeIds,
+            q,
+            searchIn: resolvedSearchIn,
+            excludeTypes: normalizedExcludeTypes,
+            neighborhoodId,
+            hiddenAuthorIds,
+            days,
+            authorBreedCode,
+          }),
+        });
 
         if (isUnknownGuestAuthorIncludeError(error)) {
           const rows = await prisma.post.findMany({
@@ -2100,7 +2112,7 @@ export async function listPosts({
 
         const fallbackItems = await prisma.post
           .findMany({
-            ...safeBaseArgs,
+            ...safeFallbackBaseArgs,
             include: buildPostListIncludeWithoutReactions(),
           })
           .catch(async (innerError) => {
@@ -2117,29 +2129,25 @@ export async function listPosts({
                 postReviewCategoryFieldSupport = false;
               }
 
-              const safeInnerBaseArgs = isMissingCommunityBoardSchemaError(innerError)
-                ? { ...baseArgs, where: legacyCompatibleWhere }
-                : safeBaseArgs;
-
-              const safeInnerFallbackArgs = isUnsupportedReviewCategoryFilterError(innerError)
-                ? {
-                    ...safeInnerBaseArgs,
-                    where: buildLegacyReviewPostListWhere({
-                      type,
-                      reviewCategory,
-                      scope,
-                      petTypeId,
-                      petTypeIds,
-                      q,
-                      searchIn: resolvedSearchIn,
-                      excludeTypes: normalizedExcludeTypes,
-                      neighborhoodId,
-                      hiddenAuthorIds,
-                      days,
-                      authorBreedCode,
-                    }),
-                  }
-                : safeInnerBaseArgs;
+              const safeInnerFallbackArgs = buildPostFindManyFallbackArgs({
+                error: innerError,
+                baseArgs: safeFallbackBaseArgs,
+                legacyCompatibleWhere,
+                legacyReviewWhere: buildLegacyReviewPostListWhere({
+                  type,
+                  reviewCategory,
+                  scope,
+                  petTypeId,
+                  petTypeIds,
+                  q,
+                  searchIn: resolvedSearchIn,
+                  excludeTypes: normalizedExcludeTypes,
+                  neighborhoodId,
+                  hiddenAuthorIds,
+                  days,
+                  authorBreedCode,
+                }),
+              });
 
               if (isUnknownGuestAuthorIncludeError(innerError)) {
                 return prisma.post.findMany({
@@ -2385,29 +2393,25 @@ export async function listBestPosts({
              postReviewCategoryFieldSupport = false;
            }
 
-           const safeBaseArgs = isMissingCommunityBoardSchemaError(error)
-             ? { ...baseArgs, where: legacyCompatibleWhere }
-             : baseArgs;
-
-           const safeFallbackBaseArgs = isUnsupportedReviewCategoryFilterError(error)
-             ? {
-                 ...safeBaseArgs,
-                 where: buildLegacyReviewBestPostWhere({
-                   days,
-                   minLikes,
-                   type,
-                   reviewCategory,
-                   scope,
-                   petTypeId,
-                   petTypeIds,
-                   q,
-                   searchIn: resolvedSearchIn,
-                   excludeTypes: normalizedExcludeTypes,
-                   neighborhoodId,
-                   hiddenAuthorIds,
-                 }),
-               }
-             : safeBaseArgs;
+           const safeFallbackBaseArgs = buildPostFindManyFallbackArgs({
+             error,
+             baseArgs,
+             legacyCompatibleWhere,
+             legacyReviewWhere: buildLegacyReviewBestPostWhere({
+               days,
+               minLikes,
+               type,
+               reviewCategory,
+               scope,
+               petTypeId,
+               petTypeIds,
+               q,
+               searchIn: resolvedSearchIn,
+               excludeTypes: normalizedExcludeTypes,
+               neighborhoodId,
+               hiddenAuthorIds,
+             }),
+           });
 
            if (isUnknownGuestAuthorIncludeError(error)) {
              return prisma.post.findMany({
@@ -2451,29 +2455,25 @@ export async function listBestPosts({
           postReviewCategoryFieldSupport = false;
         }
 
-        const safeBaseArgs = isMissingCommunityBoardSchemaError(error)
-          ? { ...baseArgs, where: legacyCompatibleWhere }
-          : baseArgs;
-
-        const safeFallbackBaseArgs = isUnsupportedReviewCategoryFilterError(error)
-          ? {
-              ...safeBaseArgs,
-              where: buildLegacyReviewBestPostWhere({
-                days,
-                minLikes,
-                type,
-                reviewCategory,
-                scope,
-                petTypeId,
-                petTypeIds,
-                q,
-                searchIn: resolvedSearchIn,
-                excludeTypes: normalizedExcludeTypes,
-                neighborhoodId,
-                hiddenAuthorIds,
-              }),
-            }
-          : safeBaseArgs;
+        const safeFallbackBaseArgs = buildPostFindManyFallbackArgs({
+          error,
+          baseArgs,
+          legacyCompatibleWhere,
+          legacyReviewWhere: buildLegacyReviewBestPostWhere({
+            days,
+            minLikes,
+            type,
+            reviewCategory,
+            scope,
+            petTypeId,
+            petTypeIds,
+            q,
+            searchIn: resolvedSearchIn,
+            excludeTypes: normalizedExcludeTypes,
+            neighborhoodId,
+            hiddenAuthorIds,
+          }),
+        });
 
         if (isUnknownGuestAuthorIncludeError(error)) {
           const rows = await prisma.post.findMany({
@@ -2503,7 +2503,7 @@ export async function listBestPosts({
 
         const fallbackItems = await prisma.post
           .findMany({
-            ...safeBaseArgs,
+            ...safeFallbackBaseArgs,
             include: buildPostListIncludeWithoutReactions(),
           })
           .catch(async (innerError) => {
@@ -2520,29 +2520,25 @@ export async function listBestPosts({
                 postReviewCategoryFieldSupport = false;
               }
 
-              const safeInnerBaseArgs = isMissingCommunityBoardSchemaError(innerError)
-                ? { ...baseArgs, where: legacyCompatibleWhere }
-                : safeBaseArgs;
-
-              const safeInnerFallbackArgs = isUnsupportedReviewCategoryFilterError(innerError)
-                ? {
-                    ...safeInnerBaseArgs,
-                    where: buildLegacyReviewBestPostWhere({
-                      days,
-                      minLikes,
-                      type,
-                      reviewCategory,
-                      scope,
-                      petTypeId,
-                      petTypeIds,
-                      q,
-                      searchIn: resolvedSearchIn,
-                      excludeTypes: normalizedExcludeTypes,
-                      neighborhoodId,
-                      hiddenAuthorIds,
-                    }),
-                  }
-                : safeInnerBaseArgs;
+              const safeInnerFallbackArgs = buildPostFindManyFallbackArgs({
+                error: innerError,
+                baseArgs: safeFallbackBaseArgs,
+                legacyCompatibleWhere,
+                legacyReviewWhere: buildLegacyReviewBestPostWhere({
+                  days,
+                  minLikes,
+                  type,
+                  reviewCategory,
+                  scope,
+                  petTypeId,
+                  petTypeIds,
+                  q,
+                  searchIn: resolvedSearchIn,
+                  excludeTypes: normalizedExcludeTypes,
+                  neighborhoodId,
+                  hiddenAuthorIds,
+                }),
+              });
 
               if (isUnknownGuestAuthorIncludeError(innerError)) {
                 return prisma.post.findMany({
