@@ -2,14 +2,11 @@
 
 import { PostScope, PostType } from "@prisma/client";
 import {
-  type FormEvent,
   useEffect,
   useMemo,
   useRef,
   useState,
-  useTransition,
 } from "react";
-import { useRouter } from "next/navigation";
 
 import { PostBodyRichEditor } from "@/components/posts/post-body-rich-editor";
 import type { PostBodyRichEditorHandle } from "@/components/posts/post-body-rich-editor";
@@ -18,8 +15,6 @@ import {
   GUEST_BLOCKED_POST_TYPES,
   GUEST_MAX_IMAGE_COUNT,
 } from "@/lib/guest-post-policy";
-import { getClientFingerprint } from "@/lib/guest-client";
-import { getGuestWriteHeaders } from "@/lib/guest-step-up.client";
 import { PostCreateBasicFields } from "@/components/posts/post-create-basic-fields";
 import {
   PostCreateEditorFooter,
@@ -30,12 +25,9 @@ import {
   createInitialPostCreateFormState,
   type PostCreateFormState,
 } from "@/components/posts/post-create-form-state";
-import {
-  buildPostCreateSubmitPayload,
-  createPostCreateSuccessState,
-} from "@/components/posts/post-create-submit";
 import { usePostCreateDraft } from "@/components/posts/use-post-create-draft";
 import { usePostCreateGuards } from "@/components/posts/use-post-create-guards";
+import { usePostCreateSubmit } from "@/components/posts/use-post-create-submit";
 import {
   postTypeOptions,
   reviewCategoryOptions,
@@ -57,7 +49,6 @@ import {
 import { isFreeBoardPostType } from "@/lib/post-type-groups";
 import { POST_CONTENT_MAX_LENGTH } from "@/lib/input-limits";
 import { REVIEW_CATEGORY } from "@/lib/review-category";
-import { createPostAction } from "@/server/actions/post";
 
 type NeighborhoodOption = {
   id: string;
@@ -90,9 +81,6 @@ export function PostCreateForm({
   isAuthenticated,
   canCreateAdoptionListing = false,
 }: PostCreateFormProps) {
-  const router = useRouter();
-  const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
   const titleInputRef = useRef<HTMLInputElement | null>(null);
   const latestTitleRef = useRef("");
   const editorHandleRef = useRef<PostBodyRichEditorHandle | null>(null);
@@ -178,95 +166,25 @@ export function PostCreateForm({
   const showMarketListing = formState.type === PostType.MARKET_LISTING;
   const showCareRequest = formState.type === PostType.CARE_REQUEST;
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setError(null);
-    const editorSnapshot = editorHandleRef.current?.getSerializedState();
-    const serializedContent = editorSnapshot?.content ?? latestEditorContentRef.current;
-    const serializedImageUrls = editorSnapshot?.imageUrls ?? latestEditorImageUrlsRef.current;
-    const normalizedTitle = latestTitleRef.current.trim();
-    const payloadResult = buildPostCreateSubmitPayload({
-      formState,
-      normalizedTitle,
-      serializedContent,
-      serializedImageUrls,
-      resolvedScope,
-      isAuthenticated,
-      canUseLocalScope,
-      showNeighborhood,
-      showCommunitySelector,
-      showAnimalTagsInput,
-      showMarketListing,
-      showCareRequest,
-      isFreeBoardType,
-    });
-    if (!payloadResult.ok) {
-      setError(payloadResult.message);
-      return;
-    }
-
-    setFormState((prev) => ({
-      ...prev,
-      content: serializedContent,
-      imageUrls: serializedImageUrls,
-    }));
-
-    startTransition(async () => {
-      const result = isAuthenticated
-        ? await createPostAction(payloadResult.payload, {
-            clientFingerprint: getClientFingerprint(),
-          })
-        : await (async () => {
-            try {
-              const guestHeaders = await getGuestWriteHeaders("post:create");
-              const response = await fetch("/api/posts", {
-                method: "POST",
-                headers: {
-                  "content-type": "application/json",
-                  ...guestHeaders,
-                },
-                body: JSON.stringify(payloadResult.payload),
-              });
-              const responsePayload = (await response.json()) as {
-                ok: boolean;
-                error?: { message?: string };
-              };
-
-              if (response.ok && responsePayload.ok) {
-                return { ok: true } as const;
-              }
-
-              return {
-                ok: false,
-                message:
-                  responsePayload.error?.message ?? "비회원 글 등록에 실패했습니다.",
-              } as const;
-            } catch (guestError) {
-              return {
-                ok: false,
-                message:
-                  guestError instanceof Error && guestError.message.trim().length > 0
-                    ? guestError.message
-                    : "네트워크 오류가 발생했습니다.",
-              } as const;
-            }
-          })();
-
-      if (!result.ok) {
-        setError(result.message ?? "게시글 등록에 실패했습니다.");
-        return;
-      }
-
-      markDraftSubmitted();
-      router.push("/feed");
-      router.refresh();
-      setFormState(createPostCreateSuccessState);
-      latestTitleRef.current = "";
-      if (titleInputRef.current) {
-        titleInputRef.current.value = "";
-      }
-    });
-  };
+  const { error, handleSubmit, isPending } = usePostCreateSubmit({
+    canUseLocalScope,
+    editorHandleRef,
+    formState,
+    isAuthenticated,
+    isFreeBoardType,
+    latestEditorContentRef,
+    latestEditorImageUrlsRef,
+    latestTitleRef,
+    markDraftSubmitted,
+    resolvedScope,
+    setFormState,
+    showAnimalTagsInput,
+    showCareRequest,
+    showCommunitySelector,
+    showMarketListing,
+    showNeighborhood,
+    titleInputRef,
+  });
 
   const policySummary = isAuthenticated
     ? canUseLocalScope
