@@ -143,7 +143,8 @@
   - 서른한 번째 slice로 count/countBest의 기본 where와 legacy fallback where pair 조립을 `post-list-where-support`로 분리했고, `post.queries`를 2774줄까지 줄였다.
   - 서른두 번째 slice로 list/best의 기본 where와 fallback where set 조립을 `post-list-where-support`로 분리했고, `post.queries`를 2694줄까지 줄였다.
   - 서른세 번째 slice로 list/best pagination과 order base args 조립을 `post-list-args`로 분리했고, `post.queries`를 2665줄까지 줄였다.
-  - 다음 작업: ranked search hydrate 함수 또는 list search document fallback fetch helper 분리를 추가로 시도한다.
+  - 서른네 번째 slice로 list search document fallback fetch/ranking 절차를 `post-list-search-document-fallback`으로 분리했고, `post.queries`를 2651줄까지 줄였다.
+  - 다음 작업: ranked search hydrate 함수 또는 ranked search document fallback fetch helper 분리를 추가로 시도한다.
   - 검증: `post.queries.test.ts` PASS, structured fields/options/state targeted test PASS, `typecheck` PASS, `lint` PASS.
 - Vercel preview 배포 차단:
   - 원인: `build:vercel`이 `VERCEL_ENV=preview`도 strict security env preflight 대상으로 취급해 preview secret 구성이 production급이 아니면 빌드 전에 실패했다.
