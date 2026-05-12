@@ -271,6 +271,26 @@ function buildPostFindManyFallbackArgs<T extends { where?: Prisma.PostWhereInput
     : safeBaseArgs;
 }
 
+function isRecoverablePostListFetchError(error: unknown, options?: { includeReactions?: boolean }) {
+  return (
+    (options?.includeReactions ? isUnavailableReactionsIncludeError(error) : false) ||
+    isUnknownGuestPostColumnError(error) ||
+    isUnknownGuestAuthorIncludeError(error) ||
+    isMissingCommunityBoardSchemaError(error) ||
+    isUnsupportedReviewCategoryFilterError(error)
+  );
+}
+
+function applyPostListFetchFallbackSideEffects(error: unknown) {
+  if (isUnavailableReactionsIncludeError(error)) {
+    markPostReactionsUnsupported();
+  }
+
+  if (isUnsupportedReviewCategoryFilterError(error)) {
+    postReviewCategoryFieldSupport = false;
+  }
+}
+
 function supportsFeedPersonalizationEventLogField() {
   return Boolean(
     (
@@ -1982,18 +2002,11 @@ export async function listPosts({
           include: buildPostListIncludeWithoutReactions(),
         })
         .catch(async (error) => {
-          if (
-            !isUnknownGuestPostColumnError(error) &&
-            !isUnknownGuestAuthorIncludeError(error) &&
-             !isMissingCommunityBoardSchemaError(error) &&
-             !isUnsupportedReviewCategoryFilterError(error)
-           ) {
+          if (!isRecoverablePostListFetchError(error)) {
              throw error;
            }
 
-           if (isUnsupportedReviewCategoryFilterError(error)) {
-             postReviewCategoryFieldSupport = false;
-           }
+           applyPostListFetchFallbackSideEffects(error);
 
            const safeFallbackBaseArgs = buildPostFindManyFallbackArgs({
              error,
@@ -2046,23 +2059,11 @@ export async function listPosts({
       })
       .then((rows) => (includeViewerReactions ? rows : withEmptyReactions(rows)))
       .catch(async (error) => {
-        if (
-          !isUnavailableReactionsIncludeError(error) &&
-          !isUnknownGuestPostColumnError(error) &&
-          !isUnknownGuestAuthorIncludeError(error) &&
-           !isMissingCommunityBoardSchemaError(error) &&
-           !isUnsupportedReviewCategoryFilterError(error)
-         ) {
+        if (!isRecoverablePostListFetchError(error, { includeReactions: true })) {
            throw error;
          }
 
-        if (isUnavailableReactionsIncludeError(error)) {
-          markPostReactionsUnsupported();
-        }
-
-        if (isUnsupportedReviewCategoryFilterError(error)) {
-          postReviewCategoryFieldSupport = false;
-        }
+        applyPostListFetchFallbackSideEffects(error);
 
         const safeFallbackBaseArgs = buildPostFindManyFallbackArgs({
           error,
@@ -2116,18 +2117,11 @@ export async function listPosts({
             include: buildPostListIncludeWithoutReactions(),
           })
           .catch(async (innerError) => {
-            if (
-              !isUnknownGuestPostColumnError(innerError) &&
-              !isUnknownGuestAuthorIncludeError(innerError) &&
-                !isMissingCommunityBoardSchemaError(innerError) &&
-                !isUnsupportedReviewCategoryFilterError(innerError)
-              ) {
+            if (!isRecoverablePostListFetchError(innerError)) {
                 throw innerError;
               }
 
-              if (isUnsupportedReviewCategoryFilterError(innerError)) {
-                postReviewCategoryFieldSupport = false;
-              }
+              applyPostListFetchFallbackSideEffects(innerError);
 
               const safeInnerFallbackArgs = buildPostFindManyFallbackArgs({
                 error: innerError,
@@ -2380,18 +2374,11 @@ export async function listBestPosts({
           include: buildPostListIncludeWithoutReactions(),
         })
         .catch(async (error) => {
-          if (
-            !isUnknownGuestPostColumnError(error) &&
-            !isUnknownGuestAuthorIncludeError(error) &&
-             !isMissingCommunityBoardSchemaError(error) &&
-             !isUnsupportedReviewCategoryFilterError(error)
-           ) {
+          if (!isRecoverablePostListFetchError(error)) {
              throw error;
            }
 
-           if (isUnsupportedReviewCategoryFilterError(error)) {
-             postReviewCategoryFieldSupport = false;
-           }
+           applyPostListFetchFallbackSideEffects(error);
 
            const safeFallbackBaseArgs = buildPostFindManyFallbackArgs({
              error,
@@ -2437,23 +2424,11 @@ export async function listBestPosts({
       })
       .then((rows) => (includeViewerReactions ? rows : withEmptyReactions(rows)))
       .catch(async (error) => {
-        if (
-          !isUnavailableReactionsIncludeError(error) &&
-          !isUnknownGuestPostColumnError(error) &&
-          !isUnknownGuestAuthorIncludeError(error) &&
-            !isMissingCommunityBoardSchemaError(error) &&
-            !isUnsupportedReviewCategoryFilterError(error)
-          ) {
+        if (!isRecoverablePostListFetchError(error, { includeReactions: true })) {
             throw error;
           }
 
-        if (isUnavailableReactionsIncludeError(error)) {
-          markPostReactionsUnsupported();
-        }
-
-        if (isUnsupportedReviewCategoryFilterError(error)) {
-          postReviewCategoryFieldSupport = false;
-        }
+        applyPostListFetchFallbackSideEffects(error);
 
         const safeFallbackBaseArgs = buildPostFindManyFallbackArgs({
           error,
@@ -2507,18 +2482,11 @@ export async function listBestPosts({
             include: buildPostListIncludeWithoutReactions(),
           })
           .catch(async (innerError) => {
-            if (
-              !isUnknownGuestPostColumnError(innerError) &&
-              !isUnknownGuestAuthorIncludeError(innerError) &&
-                !isMissingCommunityBoardSchemaError(innerError) &&
-                !isUnsupportedReviewCategoryFilterError(innerError)
-              ) {
+            if (!isRecoverablePostListFetchError(innerError)) {
                 throw innerError;
               }
 
-              if (isUnsupportedReviewCategoryFilterError(innerError)) {
-                postReviewCategoryFieldSupport = false;
-              }
+              applyPostListFetchFallbackSideEffects(innerError);
 
               const safeInnerFallbackArgs = buildPostFindManyFallbackArgs({
                 error: innerError,

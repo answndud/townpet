@@ -134,6 +134,7 @@
   - 스물두 번째 slice로 post list include builder를 `post-list-includes`로 분리했고, `post.queries`를 3053줄까지 줄였다.
   - 스물세 번째 slice로 reviewCategory legacy fallback where helper를 `post-list-where-support`에 추가했고, 반복 fallback where 조립을 제거했다.
   - 스물네 번째 slice로 feed/best list fallback args 계산을 `buildPostFindManyFallbackArgs`로 통합했고, `post.queries`를 3043줄까지 줄였다.
+  - 스물다섯 번째 slice로 feed/best list fetch fallback error 판정과 side-effect 처리를 helper로 통합했고, `post.queries`를 3011줄까지 줄였다.
   - 다음 작업: feed/list fallback fetch helper 또는 ranked search public 함수 분리를 추가로 시도한다.
   - 검증: `post.queries.test.ts` PASS, structured fields/options/state targeted test PASS, `typecheck` PASS, `lint` PASS.
 - Vercel preview 배포 차단:
