@@ -12,7 +12,6 @@ import {
 import type { FeedPersonalizationPolicy } from "@/lib/feed-personalization-policy";
 import {
   buildSearchDocumentParts,
-  matchesSearchDocumentQuery,
   resolveSearchDocumentMatchRank,
 } from "@/lib/search-document";
 import {
@@ -22,7 +21,6 @@ import {
 } from "@/lib/pet-profile";
 import { prisma } from "@/lib/prisma";
 import { buildVisibleAuthorFilter } from "@/lib/sanction-visibility";
-import { buildStructuredSearchVariants } from "@/lib/structured-field-normalization";
 import { FEED_PAGE_SIZE } from "@/lib/feed";
 import {
   expandExcludedPostTypes,
@@ -62,9 +60,7 @@ import {
 import {
   DEFAULT_POST_SEARCH_IN,
   buildPostSearchWhere,
-  listStructuredSuggestionCandidates,
   type PostSearchIn,
-  type PostSearchSuggestionRow,
 } from "./post-search-support";
 import {
   attachBookmarkStateToPost,
@@ -86,6 +82,9 @@ export type {
   CareCompletionFeedbackDetailItem,
 } from "./post-detail-read-model";
 export type { PostSearchIn } from "./post-search-support";
+export {
+  listPostSearchSuggestions,
+} from "./post-search-suggestions.queries";
 export {
   countUserBookmarkedPosts,
   countUserPosts,
@@ -3037,17 +3036,6 @@ export async function countBestPosts({
   });
 }
 
-type PostSearchSuggestionOptions = {
-  q: string;
-  limit: number;
-  type?: PostType;
-  scope: PostScope;
-  searchIn?: PostSearchIn;
-  excludeTypes?: PostType[];
-  neighborhoodId?: string;
-  viewerId?: string;
-};
-
 type RankedPostSearchOptions = {
   limit: number;
   type?: PostType;
@@ -3354,265 +3342,4 @@ export async function listRankedSearchPosts({
     });
     return fallback.items.slice(0, safeLimit);
   }
-}
-
-export async function listPostSearchSuggestions({
-  q,
-  limit,
-  type,
-  scope,
-  searchIn,
-  excludeTypes,
-  neighborhoodId,
-  viewerId,
-}: PostSearchSuggestionOptions) {
-  const trimmedQuery = q.trim();
-  if (trimmedQuery.length < 2) {
-    return [];
-  }
-
-  const normalizedExcludeTypes = expandExcludedPostTypes(excludeTypes ?? []);
-  if (isPostTypeFullyExcluded(type, normalizedExcludeTypes)) {
-    return [];
-  }
-
-  const resolvedSearchIn = searchIn ?? DEFAULT_POST_SEARCH_IN;
-  const queryDocument = buildSearchDocumentParts(trimmedQuery);
-  const shouldTryDocumentFallback = shouldTryPostSearchDocumentFallback(trimmedQuery);
-  const canonicalSuggestionCandidates =
-    resolvedSearchIn === "ALL"
-      ? buildStructuredSearchVariants(trimmedQuery).filter(
-          (candidate) => candidate.toLowerCase() !== trimmedQuery.toLowerCase(),
-        )
-      : [];
-  const includeStructuredSuggestionFields = resolvedSearchIn === "ALL";
-  const hiddenAuthorIds = await listHiddenAuthorIdsForViewer(viewerId);
-
-  const runSuggestions = async () =>
-    prisma.post.findMany({
-      where: {
-        status: PostStatus.ACTIVE,
-        ...(type
-          ? (() => {
-              const equivalentTypes = getEquivalentPostTypes(type);
-              return equivalentTypes.length === 1
-                ? { type: equivalentTypes[0] }
-                : { type: { in: equivalentTypes } };
-            })()
-          : normalizedExcludeTypes.length > 0
-            ? { type: { notIn: normalizedExcludeTypes } }
-            : {}),
-        scope,
-        ...(scope === PostScope.LOCAL && neighborhoodId
-          ? { neighborhoodId }
-          : scope === PostScope.LOCAL
-            ? { neighborhoodId: "__NO_NEIGHBORHOOD__" }
-            : {}),
-        ...(hiddenAuthorIds.length > 0 ? { authorId: { notIn: hiddenAuthorIds } } : {}),
-        author: buildVisibleAuthorFilter(),
-        ...buildPostSearchWhere(trimmedQuery, resolvedSearchIn),
-      },
-      select: {
-        title: true,
-        content: true,
-        ...(includeStructuredSuggestionFields ? { animalTags: true } : {}),
-        author: {
-          select: {
-            nickname: true,
-          },
-        },
-        ...(includeStructuredSuggestionFields
-          ? {
-              hospitalReview: {
-                select: {
-                  hospitalName: true,
-                  treatmentType: true,
-                },
-              },
-              placeReview: {
-                select: {
-                  placeName: true,
-                  placeType: true,
-                  address: true,
-                },
-              },
-              walkRoute: {
-                select: {
-                  routeName: true,
-                  safetyTags: true,
-                },
-              },
-              adoptionListing: {
-                select: {
-                  shelterName: true,
-                  region: true,
-                  animalType: true,
-                  breed: true,
-                  ageLabel: true,
-                  sizeLabel: true,
-                },
-              },
-              volunteerRecruitment: {
-                select: {
-                  shelterName: true,
-                  region: true,
-                  volunteerType: true,
-                },
-              },
-            }
-          : {}),
-      },
-      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-      take: Math.min(Math.max(limit * 3, limit), 30),
-    });
-
-  const runSuggestionFallback = async () =>
-    prisma.post.findMany({
-      where: {
-        status: PostStatus.ACTIVE,
-        ...(type
-          ? (() => {
-              const equivalentTypes = getEquivalentPostTypes(type);
-              return equivalentTypes.length === 1
-                ? { type: equivalentTypes[0] }
-                : { type: { in: equivalentTypes } };
-            })()
-          : normalizedExcludeTypes.length > 0
-            ? { type: { notIn: normalizedExcludeTypes } }
-            : {}),
-        scope,
-        ...(scope === PostScope.LOCAL && neighborhoodId
-          ? { neighborhoodId }
-          : scope === PostScope.LOCAL
-            ? { neighborhoodId: "__NO_NEIGHBORHOOD__" }
-            : {}),
-        ...(hiddenAuthorIds.length > 0 ? { authorId: { notIn: hiddenAuthorIds } } : {}),
-        author: buildVisibleAuthorFilter(),
-      },
-      select: {
-        title: true,
-        content: true,
-        ...(includeStructuredSuggestionFields ? { animalTags: true } : {}),
-        author: {
-          select: {
-            nickname: true,
-          },
-        },
-        ...(includeStructuredSuggestionFields
-          ? {
-              hospitalReview: {
-                select: {
-                  hospitalName: true,
-                  treatmentType: true,
-                },
-              },
-              placeReview: {
-                select: {
-                  placeName: true,
-                  placeType: true,
-                  address: true,
-                },
-              },
-              walkRoute: {
-                select: {
-                  routeName: true,
-                  safetyTags: true,
-                },
-              },
-              adoptionListing: {
-                select: {
-                  shelterName: true,
-                  region: true,
-                  animalType: true,
-                  breed: true,
-                  ageLabel: true,
-                  sizeLabel: true,
-                },
-              },
-              volunteerRecruitment: {
-                select: {
-                  shelterName: true,
-                  region: true,
-                  volunteerType: true,
-                },
-              },
-            }
-          : {}),
-      },
-      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-      take: Math.min(Math.max(limit * 8, 40), 80),
-    });
-
-  const shouldCache = true;
-  const rows = shouldCache
-    ? await withQueryCache({
-        key: await createQueryCacheKey("suggest", {
-          scope,
-          type: type ?? "ALL",
-          q: trimmedQuery,
-          searchIn: resolvedSearchIn,
-          excludeTypes: normalizedExcludeTypes,
-          limit,
-          neighborhoodId: neighborhoodId ?? "",
-          viewerId: viewerId ?? "guest",
-          hiddenAuthorIds,
-          hasChoseongFallback: shouldTryDocumentFallback,
-        }),
-        ttlSeconds: 60,
-        fetcher: runSuggestions,
-      })
-    : await runSuggestions();
-
-  const fallbackRows =
-    rows.length === 0 && shouldTryDocumentFallback ? await runSuggestionFallback() : [];
-  const candidateRows = rows.length > 0 ? rows : fallbackRows;
-  const suggestions: string[] = [];
-  const seen = new Set<string>();
-  const addSuggestion = (
-    value?: string | null,
-    options?: { requireContains?: boolean; sourceValue?: string | null },
-  ) => {
-    const requireContains = options?.requireContains ?? true;
-    const normalized = value?.trim();
-    if (!normalized) {
-      return;
-    }
-    const lower = normalized.toLowerCase();
-    const sourceValue = options?.sourceValue ?? normalized;
-    if ((requireContains && !matchesSearchDocumentQuery(sourceValue, queryDocument)) || seen.has(lower)) {
-      return;
-    }
-
-    seen.add(lower);
-    suggestions.push(normalized);
-  };
-
-  for (const canonicalSuggestion of canonicalSuggestionCandidates) {
-    addSuggestion(canonicalSuggestion, { requireContains: false });
-    if (suggestions.length >= limit) {
-      return suggestions.slice(0, limit);
-    }
-  }
-
-  for (const row of candidateRows) {
-    if (resolvedSearchIn === "AUTHOR") {
-      addSuggestion(row.author.nickname);
-    } else {
-      addSuggestion(row.title, {
-        sourceValue: resolvedSearchIn === "CONTENT" ? row.content : row.title,
-      });
-      if (resolvedSearchIn === "ALL") {
-        addSuggestion(row.author.nickname);
-        for (const candidate of listStructuredSuggestionCandidates(row as PostSearchSuggestionRow)) {
-          addSuggestion(candidate);
-        }
-      }
-    }
-
-    if (suggestions.length >= limit) {
-      break;
-    }
-  }
-
-  return suggestions.slice(0, limit);
 }

@@ -129,6 +129,7 @@
   - 열일곱 번째 slice로 search where builder, `PostSearchIn`, structured suggestion candidate helper를 `post-search-support`로 분리했고, `post.queries`를 4062줄까지 줄였다.
   - 열여덟 번째 slice로 내 글/북마크 목록 조회를 `post-user-posts.queries`로 분리했고, `post.queries`를 3805줄까지 줄였다.
   - 열아홉 번째 slice로 ranked search SQL/fallback helper를 `post-ranked-search-support`로 분리했고, `post.queries`를 3618줄까지 줄였다.
+  - 스무 번째 slice로 검색 제안 public query를 `post-search-suggestions.queries`로 분리했고, `post.queries`를 3345줄까지 줄였다.
   - 다음 작업: ranked search public 함수 또는 남은 feed/list query helper를 추가 분리한다.
   - 검증: `post.queries.test.ts` PASS, structured fields/options/state targeted test PASS, `typecheck` PASS, `lint` PASS.
 - Vercel preview 배포 차단:
