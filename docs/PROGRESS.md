@@ -122,13 +122,14 @@
   - 열 번째 slice로 submit orchestration/auth-guest transport/redirect-reset 흐름을 `use-post-create-submit`으로 분리했고, `post-create-form`을 298줄까지 줄였다.
   - 열한 번째 slice로 `post.queries`의 상세 structured relation select/type을 `post-detail-read-model`로 분리했고, public query export와 결과 shape는 유지했다.
   - 열두 번째 slice로 care application/feedback 상세 helper를 `post-detail-care.queries`로 분리했고, 기존 `post.queries` public export는 re-export로 유지했다.
+  - 열세 번째 slice로 `getPostById`가 쓰는 상세 include builder와 structured extra attach 로직을 `post-detail-extras`로 분리했고, `post.queries`를 4444줄까지 줄였다.
   - 검증: `post.queries.test.ts` PASS, structured fields/options/state targeted test PASS, `typecheck` PASS, `lint` PASS.
 - Vercel preview 배포 차단:
   - 원인: `build:vercel`이 `VERCEL_ENV=preview`도 strict security env preflight 대상으로 취급해 preview secret 구성이 production급이 아니면 빌드 전에 실패했다.
   - 수정: `VERCEL_ENV=preview/development`를 `VERCEL_TARGET_ENV`보다 우선해 skip하고, production/명시적 staging 또는 `DEPLOY_SECURITY_PREFLIGHT_STRICT=1`에서만 strict preflight를 실행한다.
   - 검증: `corepack pnpm@9.12.3 -C app exec vitest run scripts/vercel-build.test.ts` PASS.
 ## 다음 액션
-1. 다음 slice는 `post.queries`의 `getPostById` 계열 detail 조회 wrapper를 read-only module로 분리할 수 있는지 경계를 잡는다.
+1. 다음 slice는 `post.queries`의 legacy detail select 또는 bookmark/reaction fallback helper를 별도 read-only support module로 분리한다.
 2. public API/result shape는 유지하고, 기존 `post.queries.test.ts`를 우선 회귀 테스트로 사용한다.
 3. 각 slice마다 targeted test, `typecheck`, `lint`를 실행하고 작은 커밋으로 끊는다.
 
