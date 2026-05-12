@@ -1,6 +1,5 @@
 import {
   FeedPersonalizationEvent,
-  PostReactionType,
   PostScope,
   PostStatus,
   PostType,
@@ -48,6 +47,18 @@ import {
   buildLegacyPostListSelect,
   buildLegacyPostListSelectWithoutReactions,
 } from "./post-legacy-selects";
+import {
+  attachBookmarkStateToPost,
+  attachBookmarkStateToPosts,
+  isMissingPostBookmarkTableError,
+  isMissingPostReactionTableError,
+  isUnavailableReactionsIncludeError,
+  markPostBookmarksUnsupported,
+  markPostReactionsUnsupported,
+  supportsPostBookmarksField,
+  supportsPostReactionsField,
+  withEmptyReactions,
+} from "./post-engagement-support";
 export {
   listCareApplicationsForPostDetail,
   listCareCompletionFeedbacksForPostDetail,
@@ -63,8 +74,6 @@ export type PostSearchIn = "ALL" | "TITLE" | "CONTENT" | "AUTHOR";
 const DEFAULT_POST_LIST_SORT: PostListSort = "LATEST";
 const DEFAULT_POST_SEARCH_IN: PostSearchIn = "ALL";
 const SEARCH_SIMILARITY_THRESHOLD = 0.12;
-let postReactionsFieldSupport: boolean | null = null;
-let postBookmarksFieldSupport: boolean | null = null;
 let postGuestAuthorFieldSupport: boolean | null = null;
 let postReviewCategoryFieldSupport: boolean | null = null;
 let pgTrgmSupport: boolean | null = null;
@@ -247,46 +256,6 @@ const buildPostListIncludeWithoutReactions = (
 
 const REVIEW_BOARD_TYPES = [PostType.PLACE_REVIEW, PostType.PRODUCT_REVIEW] as const;
 
-function isUnknownReactionsIncludeError(error: unknown) {
-  return error instanceof Error && error.message.includes("Unknown field `reactions`");
-}
-
-function isMissingPostReactionTableError(error: unknown) {
-  if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2021") {
-    const meta = error.meta as { table?: unknown } | undefined;
-    const tableName = typeof meta?.table === "string" ? meta.table : "";
-    if (tableName.includes("PostReaction")) {
-      return true;
-    }
-  }
-
-  return (
-    error instanceof Error &&
-    error.message.includes("PostReaction") &&
-    error.message.includes("does not exist")
-  );
-}
-
-function isUnavailableReactionsIncludeError(error: unknown) {
-  return isUnknownReactionsIncludeError(error) || isMissingPostReactionTableError(error);
-}
-
-function isMissingPostBookmarkTableError(error: unknown) {
-  if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2021") {
-    const meta = error.meta as { table?: unknown } | undefined;
-    const tableName = typeof meta?.table === "string" ? meta.table : "";
-    if (tableName.includes("PostBookmark")) {
-      return true;
-    }
-  }
-
-  return (
-    error instanceof Error &&
-    error.message.includes("PostBookmark") &&
-    error.message.includes("does not exist")
-  );
-}
-
 function isMissingFeedPersonalizationEventLogSchemaError(error: unknown) {
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     if (error.code !== "P2021" && error.code !== "P2022") {
@@ -420,32 +389,6 @@ function withEmptyGuestPostMeta<T extends object>(items: T[]): Array<T & GuestMe
   }));
 }
 
-function supportsPostReactionsField() {
-  if (postReactionsFieldSupport !== null) {
-    return postReactionsFieldSupport;
-  }
-
-  postReactionsFieldSupport = true;
-  return true;
-}
-
-function supportsPostBookmarksField() {
-  if (postBookmarksFieldSupport !== null) {
-    return postBookmarksFieldSupport;
-  }
-
-  postBookmarksFieldSupport = Boolean(
-    (
-      prisma as typeof prisma & {
-        postBookmark?: {
-          findMany: (typeof prisma.postBookmark)["findMany"];
-        };
-      }
-    ).postBookmark,
-  );
-  return postBookmarksFieldSupport;
-}
-
 function supportsFeedPersonalizationEventLogField() {
   return Boolean(
     (
@@ -489,92 +432,6 @@ function toLegacyReviewTypeFallback(type: PostType | undefined, reviewCategory?:
   }
 
   return PostType.PRODUCT_REVIEW;
-}
-
-function withEmptyReactions<T extends Record<string, unknown>>(items: T[]) {
-  return items.map((item) => ({
-    ...item,
-    reactions: [] as Array<{ type: PostReactionType }>,
-  }));
-}
-
-function withBookmarkStateOne<T extends { id: string }>(
-  item: T | null,
-  bookmarkedPostIds: Set<string>,
-): (T & { isBookmarked: boolean }) | null {
-  if (!item) {
-    return null;
-  }
-
-  return {
-    ...item,
-    isBookmarked: bookmarkedPostIds.has(item.id),
-  };
-}
-
-function withBookmarkState<T extends { id: string }>(
-  items: T[],
-  bookmarkedPostIds: Set<string>,
-): Array<T & { isBookmarked: boolean }> {
-  return items.map((item) => ({
-    ...item,
-    isBookmarked: bookmarkedPostIds.has(item.id),
-  }));
-}
-
-async function getBookmarkedPostIdSet(postIds: string[], viewerId?: string) {
-  if (!viewerId || postIds.length === 0 || !supportsPostBookmarksField()) {
-    return new Set<string>();
-  }
-
-  const delegate = (
-    prisma as typeof prisma & {
-      postBookmark?: {
-        findMany: (typeof prisma.postBookmark)["findMany"];
-      };
-    }
-  ).postBookmark;
-
-  if (!delegate) {
-    postBookmarksFieldSupport = false;
-    return new Set<string>();
-  }
-
-  try {
-    const bookmarks = await delegate.findMany({
-      where: {
-        userId: viewerId,
-        postId: { in: postIds },
-      },
-      select: { postId: true },
-    });
-    return new Set(bookmarks.map((bookmark) => bookmark.postId));
-  } catch (error) {
-    if (!isMissingPostBookmarkTableError(error)) {
-      throw error;
-    }
-    postBookmarksFieldSupport = false;
-    return new Set<string>();
-  }
-}
-
-async function attachBookmarkStateToPosts<T extends { id: string }>(
-  items: T[],
-  viewerId?: string,
-) {
-  const bookmarkedPostIds = await getBookmarkedPostIdSet(
-    Array.from(new Set(items.map((item) => item.id))),
-    viewerId,
-  );
-  return withBookmarkState(items, bookmarkedPostIds);
-}
-
-async function attachBookmarkStateToPost<T extends { id: string }>(
-  item: T | null,
-  viewerId?: string,
-) {
-  const bookmarkedPostIds = await getBookmarkedPostIdSet(item ? [item.id] : [], viewerId);
-  return withBookmarkStateOne(item, bookmarkedPostIds);
 }
 
 function buildPostSearchWhere(
@@ -2193,7 +2050,7 @@ export async function getPostById(id?: string, viewerId?: string) {
       }
 
       if (isUnavailableReactionsIncludeError(error)) {
-        postReactionsFieldSupport = false;
+        markPostReactionsUnsupported();
       }
 
       const post = await prisma.post
@@ -2588,7 +2445,7 @@ export async function listPosts({
          }
 
         if (isUnavailableReactionsIncludeError(error)) {
-          postReactionsFieldSupport = false;
+          markPostReactionsUnsupported();
         }
 
         if (isUnsupportedReviewCategoryFilterError(error)) {
@@ -2994,7 +2851,7 @@ export async function listBestPosts({
           }
 
         if (isUnavailableReactionsIncludeError(error)) {
-          postReactionsFieldSupport = false;
+          markPostReactionsUnsupported();
         }
 
         if (isUnsupportedReviewCategoryFilterError(error)) {
@@ -3476,7 +3333,7 @@ export async function countUserBookmarkedPosts({
       if (!isMissingPostBookmarkTableError(error)) {
         throw error;
       }
-      postBookmarksFieldSupport = false;
+      markPostBookmarksUnsupported();
       return 0;
     });
 }
@@ -3533,7 +3390,7 @@ export async function listUserBookmarkedPostsPage({
       if (!isMissingPostBookmarkTableError(error)) {
         throw error;
       }
-      postBookmarksFieldSupport = false;
+      markPostBookmarksUnsupported();
       return [];
     });
 
@@ -3870,7 +3727,7 @@ export async function listRankedSearchPosts({
             }
 
             if (isUnavailableReactionsIncludeError(error)) {
-              postReactionsFieldSupport = false;
+              markPostReactionsUnsupported();
             }
 
             if (isUnknownGuestAuthorIncludeError(error)) {
