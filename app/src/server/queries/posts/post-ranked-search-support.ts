@@ -36,6 +36,20 @@ export type RankedSearchRow = {
   id: string;
 };
 
+export function resolveRankedSearchCandidateLimit({
+  query,
+  safeLimit,
+}: {
+  query: string;
+  safeLimit: number;
+}) {
+  const queryLength = query.length;
+  const candidateMultiplier = queryLength <= 2 ? 2 : 3;
+  const maxCandidates = queryLength <= 2 ? 80 : 120;
+
+  return Math.min(Math.max(safeLimit * candidateMultiplier, safeLimit), maxCandidates);
+}
+
 export function buildRankedSearchWhereSql({
   scope,
   type,
@@ -252,4 +266,75 @@ export function buildRankedSearchMatchSql(
   }
 
   return Prisma.sql`(${titleMatch} OR ${contentMatch} OR ${authorMatch} OR ${structuredMatch})`;
+}
+
+export function buildRankedSearchCandidateSql({
+  whereSql,
+  query,
+  likePattern,
+  compactPattern,
+  useTrigram,
+  includeStructuredSearch,
+  structuredSearchVariants,
+  candidateLimit,
+}: {
+  whereSql: Prisma.Sql;
+  query: string;
+  likePattern: string;
+  compactPattern: string;
+  useTrigram: boolean;
+  includeStructuredSearch: boolean;
+  structuredSearchVariants: StructuredSearchSqlVariant[];
+  candidateLimit: number;
+}) {
+  const trigramScoreSql = useTrigram
+    ? Prisma.sql`+ GREATEST(
+          similarity(COALESCE(p."title", ''), ${query}),
+          similarity(COALESCE(p."content", ''), ${query}),
+          similarity(COALESCE(u."nickname", ''), ${query})
+        ) * 4.0`
+    : Prisma.sql``;
+  const structuredSearchScoreSql =
+    includeStructuredSearch && structuredSearchVariants.length > 0
+      ? buildStructuredSearchMatchSql(structuredSearchVariants)
+      : Prisma.sql`FALSE`;
+
+  return Prisma.sql`
+    SELECT p."id"
+    FROM "Post" p
+    INNER JOIN "User" u ON u."id" = p."authorId"
+    WHERE ${whereSql}
+    ORDER BY
+      (
+        ts_rank_cd(
+          setweight(to_tsvector('simple', COALESCE(p."title", '')), 'A') ||
+          setweight(to_tsvector('simple', COALESCE(u."nickname", '')), 'A') ||
+          setweight(to_tsvector('simple', COALESCE(p."content", '')), 'B'),
+          websearch_to_tsquery('simple', ${query})
+        ) * 9.0
+        ${trigramScoreSql}
+        + CASE WHEN p."title" ILIKE ${likePattern} THEN 1.5 ELSE 0 END
+        + CASE
+            WHEN REPLACE(COALESCE(p."title", ''), ' ', '') ILIKE ${compactPattern}
+            THEN 0.8
+            ELSE 0
+          END
+        + CASE
+            WHEN COALESCE(u."nickname", '') ILIKE ${likePattern} THEN 1.0
+            ELSE 0
+          END
+        + CASE
+            WHEN ${structuredSearchScoreSql}
+            THEN 1.1
+            ELSE 0
+          END
+        + GREATEST(
+            0,
+            1.2 - (EXTRACT(EPOCH FROM (NOW() - p."createdAt")) / 86400.0) / 30.0
+          )
+      ) DESC,
+      p."createdAt" DESC,
+      p."id" DESC
+    LIMIT ${candidateLimit}
+  `;
 }

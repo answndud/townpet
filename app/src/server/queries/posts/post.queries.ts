@@ -44,11 +44,12 @@ import {
   withEmptyGuestPostMetaOne,
 } from "./post-guest-meta-fallback";
 import {
+  buildRankedSearchCandidateSql,
   buildRankedSearchMatchSql,
   buildRankedSearchWhereSql,
-  buildStructuredSearchMatchSql,
   buildStructuredSearchSqlVariants,
   rankPostSearchDocumentFallbackRows,
+  resolveRankedSearchCandidateLimit,
   shouldTryPostSearchDocumentFallback,
   type RankedSearchRow,
 } from "./post-ranked-search-support";
@@ -2621,24 +2622,10 @@ export async function listRankedSearchPosts({
     hiddenAuthorIds,
     searchSql: searchMatchSql,
   });
-  const queryLength = trimmedQuery.length;
-  const candidateMultiplier = queryLength <= 2 ? 2 : 3;
-  const maxCandidates = queryLength <= 2 ? 80 : 120;
-  const candidateLimit = Math.min(
-    Math.max(safeLimit * candidateMultiplier, safeLimit),
-    maxCandidates,
-  );
-  const trigramScoreSql = useTrigram
-    ? Prisma.sql`+ GREATEST(
-          similarity(COALESCE(p."title", ''), ${trimmedQuery}),
-          similarity(COALESCE(p."content", ''), ${trimmedQuery}),
-          similarity(COALESCE(u."nickname", ''), ${trimmedQuery})
-        ) * 4.0`
-    : Prisma.sql``;
-  const structuredSearchScoreSql =
-    includeStructuredSearch && structuredSearchVariants.length > 0
-      ? buildStructuredSearchMatchSql(structuredSearchVariants)
-      : Prisma.sql`FALSE`;
+  const candidateLimit = resolveRankedSearchCandidateLimit({
+    query: trimmedQuery,
+    safeLimit,
+  });
   const includeViewerReactions = Boolean(viewerId);
   const hydratePostsByIds = async (candidateIds: string[]) => {
     if (candidateIds.length === 0) {
@@ -2695,44 +2682,18 @@ export async function listRankedSearchPosts({
       .slice(0, safeLimit);
   };
   const runRankedSearch = async () => {
-    const candidates = await prisma.$queryRaw<RankedSearchRow[]>(Prisma.sql`
-      SELECT p."id"
-      FROM "Post" p
-      INNER JOIN "User" u ON u."id" = p."authorId"
-      WHERE ${whereSql}
-      ORDER BY
-        (
-          ts_rank_cd(
-            setweight(to_tsvector('simple', COALESCE(p."title", '')), 'A') ||
-            setweight(to_tsvector('simple', COALESCE(u."nickname", '')), 'A') ||
-            setweight(to_tsvector('simple', COALESCE(p."content", '')), 'B'),
-            websearch_to_tsquery('simple', ${trimmedQuery})
-          ) * 9.0
-          ${trigramScoreSql}
-          + CASE WHEN p."title" ILIKE ${likePattern} THEN 1.5 ELSE 0 END
-          + CASE
-              WHEN REPLACE(COALESCE(p."title", ''), ' ', '') ILIKE ${compactPattern}
-              THEN 0.8
-              ELSE 0
-            END
-          + CASE
-              WHEN COALESCE(u."nickname", '') ILIKE ${likePattern} THEN 1.0
-              ELSE 0
-            END
-          + CASE
-              WHEN ${structuredSearchScoreSql}
-              THEN 1.1
-              ELSE 0
-            END
-          + GREATEST(
-              0,
-              1.2 - (EXTRACT(EPOCH FROM (NOW() - p."createdAt")) / 86400.0) / 30.0
-            )
-        ) DESC,
-        p."createdAt" DESC,
-        p."id" DESC
-      LIMIT ${candidateLimit}
-    `);
+    const candidates = await prisma.$queryRaw<RankedSearchRow[]>(
+      buildRankedSearchCandidateSql({
+        whereSql,
+        query: trimmedQuery,
+        likePattern,
+        compactPattern,
+        useTrigram,
+        includeStructuredSearch,
+        structuredSearchVariants,
+        candidateLimit,
+      }),
+    );
 
     const candidateIds = Array.from(
       new Set(
