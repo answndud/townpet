@@ -11,10 +11,6 @@ import {
 } from "@/lib/breed-catalog";
 import type { FeedPersonalizationPolicy } from "@/lib/feed-personalization-policy";
 import {
-  buildSearchDocumentParts,
-  resolveSearchDocumentMatchRank,
-} from "@/lib/search-document";
-import {
   extractAudienceSegmentBreedLabel,
   getPetBreedDisplayLabel,
   hasBreedLoungeRoute,
@@ -48,11 +44,11 @@ import {
   withEmptyGuestPostMetaOne,
 } from "./post-guest-meta-fallback";
 import {
-  buildRankedSearchFallbackSource,
   buildRankedSearchMatchSql,
   buildRankedSearchWhereSql,
   buildStructuredSearchMatchSql,
   buildStructuredSearchSqlVariants,
+  rankPostSearchDocumentFallbackRows,
   shouldTryPostSearchDocumentFallback,
   type RankedSearchRow,
 } from "./post-ranked-search-support";
@@ -2192,35 +2188,23 @@ export async function listPosts({
             : buildPostListIncludeWithoutReactions(),
         })
         .then((rows) => (includeViewerReactions ? rows : withEmptyReactions(rows)));
-      const queryDocument = buildSearchDocumentParts(trimmedQuery);
-
-      items = fallbackRows
-        .map((row) => ({
+      const rankedRows = rankPostSearchDocumentFallbackRows({
+        rows: fallbackRows.map((row) => ({
+          id: row.id,
+          title: row.title,
+          content: row.content,
+          structuredSearchText: row.structuredSearchText ?? "",
+          createdAt: row.createdAt,
+          author: { nickname: row.author.nickname },
           row,
-          rank: resolveSearchDocumentMatchRank(
-            buildRankedSearchFallbackSource(
-              {
-                id: row.id,
-                title: row.title,
-                content: row.content,
-                structuredSearchText: row.structuredSearchText ?? "",
-                createdAt: row.createdAt,
-                author: { nickname: row.author.nickname },
-              },
-              resolvedSearchIn,
-            ),
-            queryDocument,
-          ),
-        }))
-        .filter((item) => item.rank < 4)
-        .sort((left, right) => {
-          if (left.rank !== right.rank) {
-            return left.rank - right.rank;
-          }
-          return 0;
-        })
-        .slice(0, resolvedLimit + 1)
-        .map((item) => item.row);
+        })),
+        query: trimmedQuery,
+        searchIn: resolvedSearchIn,
+        limit: resolvedLimit + 1,
+        preserveInputOrderOnTie: true,
+      });
+
+      items = rankedRows.map((rankedRow) => rankedRow.row);
     }
 
     let nextCursor: string | null = null;
@@ -2613,7 +2597,6 @@ export async function listRankedSearchPosts({
 
   const resolvedSearchIn = searchIn ?? DEFAULT_POST_SEARCH_IN;
   const includeStructuredSearch = resolvedSearchIn === "ALL";
-  const queryDocument = buildSearchDocumentParts(trimmedQuery);
   const shouldTryDocumentFallback = shouldTryPostSearchDocumentFallback(trimmedQuery);
   const likePattern = `%${trimmedQuery}%`;
   const compactQuery = trimmedQuery.replace(/\s+/g, "");
@@ -2800,27 +2783,12 @@ export async function listRankedSearchPosts({
       take: Math.min(Math.max(safeLimit * 12, 60), 180),
     });
 
-    const candidateIds = fallbackCandidates
-      .map((row) => ({
-        id: row.id,
-        rank: resolveSearchDocumentMatchRank(
-          buildRankedSearchFallbackSource(row, resolvedSearchIn),
-          queryDocument,
-        ),
-        createdAt: row.createdAt.getTime(),
-      }))
-      .filter((row) => row.rank < 4)
-      .sort((left, right) => {
-        if (left.rank !== right.rank) {
-          return left.rank - right.rank;
-        }
-        if (right.createdAt !== left.createdAt) {
-          return right.createdAt - left.createdAt;
-        }
-        return right.id.localeCompare(left.id, "ko");
-      })
-      .slice(0, safeLimit)
-      .map((row) => row.id);
+    const candidateIds = rankPostSearchDocumentFallbackRows({
+      rows: fallbackCandidates,
+      query: trimmedQuery,
+      searchIn: resolvedSearchIn,
+      limit: safeLimit,
+    }).map((row) => row.id);
 
     return hydratePostsByIds(candidateIds);
   };

@@ -3,6 +3,7 @@ import { PostScope, PostType, Prisma } from "@prisma/client";
 import {
   buildSearchDocumentParts,
   hasChoseongSearchSignal,
+  resolveSearchDocumentMatchRank,
 } from "@/lib/search-document";
 import {
   expandExcludedPostTypes,
@@ -130,6 +131,50 @@ export function shouldTryPostSearchDocumentFallback(query: string) {
     hasChoseongSearchSignal(query) ||
     (!query.includes(" ") && queryDocument.compactText.length >= 4)
   );
+}
+
+export function rankPostSearchDocumentFallbackRows<
+  T extends RankedSearchFallbackCandidateRow,
+>({
+  rows,
+  query,
+  searchIn,
+  limit,
+  preserveInputOrderOnTie,
+}: {
+  rows: T[];
+  query: string;
+  searchIn: PostSearchIn;
+  limit: number;
+  preserveInputOrderOnTie?: boolean;
+}) {
+  const queryDocument = buildSearchDocumentParts(query);
+
+  return rows
+    .map((row, index) => ({
+      row,
+      index,
+      rank: resolveSearchDocumentMatchRank(
+        buildRankedSearchFallbackSource(row, searchIn),
+        queryDocument,
+      ),
+      createdAt: row.createdAt.getTime(),
+    }))
+    .filter((item) => item.rank < 4)
+    .sort((left, right) => {
+      if (left.rank !== right.rank) {
+        return left.rank - right.rank;
+      }
+      if (preserveInputOrderOnTie) {
+        return left.index - right.index;
+      }
+      if (right.createdAt !== left.createdAt) {
+        return right.createdAt - left.createdAt;
+      }
+      return right.row.id.localeCompare(left.row.id, "ko");
+    })
+    .slice(0, limit)
+    .map((item) => item.row);
 }
 
 function buildFieldSearchMatchSql(
