@@ -189,6 +189,75 @@ export function buildLegacyReviewPostListWhere({
   });
 }
 
+export function buildPostCountWherePair({
+  type,
+  reviewBoard,
+  reviewCategory,
+  reviewCategorySupported,
+  scope,
+  petTypeId,
+  petTypeIds,
+  q,
+  searchIn,
+  excludeTypes,
+  neighborhoodId,
+  hiddenAuthorIds,
+  days,
+  authorBreedCode,
+}: {
+  type?: PostType;
+  reviewBoard?: boolean;
+  reviewCategory?: ReviewCategory;
+  reviewCategorySupported: boolean;
+  scope: PostScope;
+  petTypeId?: string;
+  petTypeIds?: string[];
+  q?: string;
+  searchIn: PostSearchIn;
+  excludeTypes: PostType[];
+  neighborhoodId?: string;
+  hiddenAuthorIds: string[];
+  days?: number;
+  authorBreedCode?: string;
+}) {
+  const effectiveFilters = resolvePostReviewCategoryFilters({
+    type,
+    reviewBoard,
+    reviewCategory,
+    reviewCategorySupported,
+  });
+
+  return {
+    where: buildPostListWhere({
+      ...effectiveFilters,
+      scope,
+      petTypeId,
+      petTypeIds,
+      q,
+      searchIn,
+      excludeTypes,
+      neighborhoodId,
+      hiddenAuthorIds,
+      days,
+      authorBreedCode,
+    }),
+    legacyWhere: buildLegacyReviewPostListWhere({
+      type,
+      reviewCategory,
+      scope,
+      petTypeId: undefined,
+      petTypeIds: undefined,
+      q,
+      searchIn,
+      excludeTypes,
+      neighborhoodId,
+      hiddenAuthorIds,
+      days,
+      authorBreedCode,
+    }),
+  };
+}
+
 export function isPostTypeFullyExcluded(type: PostType | undefined, excludeTypes: PostType[]) {
   if (!type) {
     return false;
@@ -290,4 +359,73 @@ export function buildLegacyReviewBestPostWhere({
     neighborhoodId,
     hiddenAuthorIds,
   });
+}
+
+export function buildBestPostCountWherePair({
+  days,
+  minLikes,
+  type,
+  reviewBoard,
+  reviewCategory,
+  reviewCategorySupported,
+  scope,
+  petTypeId,
+  petTypeIds,
+  q,
+  searchIn,
+  excludeTypes,
+  neighborhoodId,
+  hiddenAuthorIds,
+}: {
+  days: number;
+  minLikes: number;
+  type?: PostType;
+  reviewBoard?: boolean;
+  reviewCategory?: ReviewCategory;
+  reviewCategorySupported: boolean;
+  scope: PostScope;
+  petTypeId?: string;
+  petTypeIds?: string[];
+  q?: string;
+  searchIn: PostSearchIn;
+  excludeTypes: PostType[];
+  neighborhoodId?: string;
+  hiddenAuthorIds: string[];
+}) {
+  const effectiveFilters = resolvePostReviewCategoryFilters({
+    type,
+    reviewBoard,
+    reviewCategory,
+    reviewCategorySupported,
+  });
+
+  return {
+    where: buildBestPostWhere({
+      days,
+      minLikes,
+      ...effectiveFilters,
+      scope,
+      petTypeId,
+      petTypeIds,
+      q,
+      searchIn,
+      excludeTypes,
+      neighborhoodId,
+      hiddenAuthorIds,
+    }),
+    legacyWhere: buildLegacyReviewBestPostWhere({
+      days,
+      minLikes,
+      type,
+      reviewCategory,
+      scope,
+      petTypeId: undefined,
+      petTypeIds: undefined,
+      q,
+      searchIn,
+      excludeTypes,
+      neighborhoodId,
+      hiddenAuthorIds,
+    }),
+  };
 }
