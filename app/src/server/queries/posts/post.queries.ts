@@ -53,6 +53,7 @@ import {
   shouldTryPostSearchDocumentFallback,
   type RankedSearchRow,
 } from "./post-ranked-search-support";
+import { hydrateRankedSearchPostsByIds } from "./post-ranked-search-hydration";
 import {
   buildBestPostCountWherePair,
   buildBestPostListWhereSet,
@@ -2462,60 +2463,17 @@ export async function listRankedSearchPosts({
     safeLimit,
   });
   const includeViewerReactions = Boolean(viewerId);
-  const hydratePostsByIds = async (candidateIds: string[]) => {
-    if (candidateIds.length === 0) {
-      return [];
-    }
-
-    const baseArgs: Omit<Prisma.PostFindManyArgs, "include"> = {
-      where: {
-        id: { in: candidateIds },
-        ...(hiddenAuthorIds.length > 0 ? { authorId: { notIn: hiddenAuthorIds } } : {}),
-        author: buildVisibleAuthorFilter(),
-      },
-    };
-
-    const fetchedPosts = !supportsPostReactionsField() || !includeViewerReactions
-      ? withEmptyReactions(
-          await prisma.post.findMany({
-            ...baseArgs,
-            include: buildPostListIncludeWithoutReactions(),
-          }),
-        )
-      : await prisma.post
-          .findMany({
-            ...baseArgs,
-            include: buildPostListInclude(viewerId),
-          })
-          .catch(async (error) => {
-            if (!isUnavailableReactionsIncludeError(error) && !isUnknownGuestAuthorIncludeError(error)) {
-              throw error;
-            }
-
-            if (isUnavailableReactionsIncludeError(error)) {
-              markPostReactionsUnsupported();
-            }
-
-            if (isUnknownGuestAuthorIncludeError(error)) {
-              return prisma.post.findMany({
-                ...baseArgs,
-                include: buildPostListInclude(viewerId, false),
-              });
-            }
-
-            const fallbackItems = await prisma.post.findMany({
-              ...baseArgs,
-              include: buildPostListIncludeWithoutReactions(),
-            });
-            return withEmptyReactions(fallbackItems);
-          });
-
-    const byId = new Map(fetchedPosts.map((item) => [item.id, item]));
-    return candidateIds
-      .map((id) => byId.get(id))
-      .filter((item): item is (typeof fetchedPosts)[number] => Boolean(item))
-      .slice(0, safeLimit);
-  };
+  const hydratePostsByIds = (candidateIds: string[]) =>
+    hydrateRankedSearchPostsByIds({
+      candidateIds,
+      hiddenAuthorIds,
+      safeLimit,
+      includeViewerReactions,
+      viewerId,
+      includeGuestAuthor: supportsPostGuestAuthorField(),
+      noViewerId: NO_VIEWER_ID,
+      isUnknownGuestAuthorIncludeError,
+    });
   const runRankedSearch = async () => {
     const candidates = await prisma.$queryRaw<RankedSearchRow[]>(
       buildRankedSearchCandidateSql({
