@@ -54,7 +54,9 @@ import {
   type RankedSearchRow,
 } from "./post-ranked-search-support";
 import {
+  buildBestPostCountWherePair,
   buildBestPostWhere,
+  buildPostCountWherePair,
   buildLegacyReviewBestPostWhere,
   buildLegacyReviewPostListWhere,
   buildPostListWhere,
@@ -2451,14 +2453,11 @@ export async function countPosts({
   }
 
   const resolvedSearchIn = searchIn ?? DEFAULT_POST_SEARCH_IN;
-  const effectiveFilters = resolvePostReviewCategoryFilters({
+  const countWhere = buildPostCountWherePair({
     type,
     reviewBoard,
     reviewCategory,
     reviewCategorySupported: supportsPostReviewCategoryField(),
-  });
-  const where = buildPostListWhere({
-    ...effectiveFilters,
     scope,
     petTypeId,
     petTypeIds,
@@ -2472,21 +2471,8 @@ export async function countPosts({
   });
 
   return countPostRowsWithSchemaFallback({
-    where,
-    legacyWhere: buildLegacyReviewPostListWhere({
-      type,
-      reviewCategory,
-      scope,
-      petTypeId: undefined,
-      petTypeIds: undefined,
-      q,
-      searchIn: resolvedSearchIn,
-      excludeTypes: normalizedExcludeTypes,
-      neighborhoodId,
-      hiddenAuthorIds,
-      days,
-      authorBreedCode,
-    }),
+    where: countWhere.where,
+    legacyWhere: countWhere.legacyWhere,
   });
 }
 
@@ -2512,16 +2498,13 @@ export async function countBestPosts({
   }
 
   const resolvedSearchIn = searchIn ?? DEFAULT_POST_SEARCH_IN;
-  const effectiveFilters = resolvePostReviewCategoryFilters({
+  const countWhere = buildBestPostCountWherePair({
+    days,
+    minLikes,
     type,
     reviewBoard,
     reviewCategory,
     reviewCategorySupported: supportsPostReviewCategoryField(),
-  });
-  const where = buildBestPostWhere({
-    days,
-    minLikes,
-    ...effectiveFilters,
     scope,
     petTypeId,
     petTypeIds,
@@ -2533,21 +2516,8 @@ export async function countBestPosts({
   });
 
   return countPostRowsWithSchemaFallback({
-    where,
-    legacyWhere: buildLegacyReviewBestPostWhere({
-      days,
-      minLikes,
-      type,
-      reviewCategory,
-      scope,
-      petTypeId: undefined,
-      petTypeIds: undefined,
-      q,
-      searchIn: resolvedSearchIn,
-      excludeTypes: normalizedExcludeTypes,
-      neighborhoodId,
-      hiddenAuthorIds,
-    }),
+    where: countWhere.where,
+    legacyWhere: countWhere.legacyWhere,
   });
 }
 
