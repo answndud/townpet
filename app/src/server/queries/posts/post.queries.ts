@@ -45,6 +45,7 @@ import {
   shouldTryPostSearchDocumentFallback,
   type RankedSearchRow,
 } from "./post-ranked-search-support";
+import { runRankedSearchWithCache } from "./post-ranked-search-cache";
 import { listRankedSearchDocumentFallbackCandidateIds } from "./post-ranked-search-document-fallback";
 import { hydrateRankedSearchPostsByIds } from "./post-ranked-search-hydration";
 import {
@@ -2359,54 +2360,30 @@ export async function listRankedSearchPosts({
     return runSearchDocumentFallback();
   };
 
-  const shouldCache = true;
-  if (shouldCache) {
-    const cacheKey = await createQueryCacheKey("search", {
-      scope,
-      type: type ?? "ALL",
-      q: trimmedQuery,
-      searchIn: resolvedSearchIn,
-      excludeTypes: normalizedExcludeTypes,
-      limit: safeLimit,
-      neighborhoodId: neighborhoodId ?? "",
-      viewerId: viewerId ?? "guest",
-      hiddenAuthorIds,
-      hasChoseongFallback: shouldTryDocumentFallback,
-    });
-    try {
-      return await withQueryCache({
-        key: cacheKey,
-        ttlSeconds: 45,
-        fetcher: runSearch,
-      });
-    } catch (error) {
-      logger.warn("검색 캐시 실패로 원본 검색을 사용합니다.", {
-        query: trimmedQuery,
+  return runRankedSearchWithCache({
+    scope,
+    type,
+    query: trimmedQuery,
+    searchIn: resolvedSearchIn,
+    excludeTypes: normalizedExcludeTypes,
+    limit: safeLimit,
+    neighborhoodId,
+    viewerId,
+    hiddenAuthorIds,
+    hasDocumentFallback: shouldTryDocumentFallback,
+    runSearch,
+    runFallbackSearch: async () => {
+      const fallback = await listPosts({
+        limit: Math.min(Math.max(safeLimit * 3, safeLimit), 80),
+        type,
+        scope,
+        q: trimmedQuery,
         searchIn: resolvedSearchIn,
-        error: serializeError(error),
+        excludeTypes: normalizedExcludeTypes,
+        neighborhoodId,
+        viewerId,
       });
-    }
-  }
-
-  try {
-    return await runSearch();
-  } catch (error) {
-    logger.warn("고급 검색 쿼리 실패로 기본 검색으로 fallback합니다.", {
-      query: trimmedQuery,
-      searchIn: resolvedSearchIn,
-      error: serializeError(error),
-    });
-
-    const fallback = await listPosts({
-      limit: Math.min(Math.max(safeLimit * 3, safeLimit), 80),
-      type,
-      scope,
-      q: trimmedQuery,
-      searchIn: resolvedSearchIn,
-      excludeTypes: normalizedExcludeTypes,
-      neighborhoodId,
-      viewerId,
-    });
-    return fallback.items.slice(0, safeLimit);
-  }
+      return fallback.items.slice(0, safeLimit);
+    },
+  });
 }
