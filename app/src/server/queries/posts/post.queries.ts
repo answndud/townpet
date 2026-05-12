@@ -42,6 +42,12 @@ import {
   buildPostDetailBaseInclude,
   buildPostDetailBaseIncludeWithoutReactions,
 } from "./post-detail-extras";
+import {
+  buildLegacyPostDetailSelect,
+  buildLegacyPostDetailSelectWithoutReactions,
+  buildLegacyPostListSelect,
+  buildLegacyPostListSelectWithoutReactions,
+} from "./post-legacy-selects";
 export {
   listCareApplicationsForPostDetail,
   listCareCompletionFeedbacksForPostDetail,
@@ -240,126 +246,6 @@ const buildPostListIncludeWithoutReactions = (
   }) as const;
 
 const REVIEW_BOARD_TYPES = [PostType.PLACE_REVIEW, PostType.PRODUCT_REVIEW] as const;
-
-const LEGACY_POST_BASE_SELECT = {
-  id: true,
-  authorId: true,
-  neighborhoodId: true,
-  type: true,
-  scope: true,
-  status: true,
-  title: true,
-  content: true,
-  viewCount: true,
-  likeCount: true,
-  dislikeCount: true,
-  commentCount: true,
-  createdAt: true,
-  updatedAt: true,
-} as const;
-
-const LEGACY_POST_RELATION_SELECT = {
-  author: { select: { id: true, nickname: true } },
-  neighborhood: {
-    select: { id: true, name: true, city: true },
-  },
-  hospitalReview: {
-    select: {
-      hospitalName: true,
-      totalCost: true,
-      waitTime: true,
-      rating: true,
-    },
-  },
-  placeReview: {
-    select: {
-      placeName: true,
-      placeType: true,
-      address: true,
-      isPetAllowed: true,
-      rating: true,
-    },
-  },
-  walkRoute: {
-    select: {
-      routeName: true,
-      distance: true,
-      duration: true,
-      difficulty: true,
-      hasStreetLights: true,
-      hasRestroom: true,
-      hasParkingLot: true,
-      safetyTags: true,
-    },
-  },
-  images: {
-    select: { url: true, order: true },
-  },
-} as const;
-
-const buildLegacyPostListSelect = (viewerId?: string) =>
-  ({
-    ...LEGACY_POST_BASE_SELECT,
-    author: { select: { id: true, nickname: true, image: true } },
-    neighborhood: {
-      select: { id: true, name: true, city: true, district: true },
-    },
-    images: {
-      orderBy: { order: "asc" },
-      take: 1,
-      select: { id: true, url: true },
-    },
-    reactions: {
-      where: {
-        userId: viewerId ?? NO_VIEWER_ID,
-      },
-      select: { type: true },
-    },
-  }) as const;
-
-const buildLegacyPostListSelectWithoutReactions = () =>
-  ({
-    ...LEGACY_POST_BASE_SELECT,
-    author: { select: { id: true, nickname: true, image: true } },
-    neighborhood: {
-      select: { id: true, name: true, city: true, district: true },
-    },
-    images: {
-      orderBy: { order: "asc" },
-      take: 1,
-      select: { id: true, url: true },
-    },
-  }) as const;
-
-const buildLegacyPostDetailSelect = () =>
-  ({
-    ...LEGACY_POST_BASE_SELECT,
-    ...LEGACY_POST_RELATION_SELECT,
-    hospitalReview: {
-      select: {
-        hospitalName: true,
-        totalCost: true,
-        waitTime: true,
-        rating: true,
-        treatmentType: true,
-      },
-    },
-  }) as const;
-
-const buildLegacyPostDetailSelectWithoutReactions = () =>
-  ({
-    ...LEGACY_POST_BASE_SELECT,
-    ...LEGACY_POST_RELATION_SELECT,
-    hospitalReview: {
-      select: {
-        hospitalName: true,
-        totalCost: true,
-        waitTime: true,
-        rating: true,
-        treatmentType: true,
-      },
-    },
-  }) as const;
 
 function isUnknownReactionsIncludeError(error: unknown) {
   return error instanceof Error && error.message.includes("Unknown field `reactions`");
