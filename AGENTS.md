@@ -464,18 +464,16 @@ OPS_BASE_URL=https://townpet.vercel.app OPS_HEALTH_INTERNAL_TOKEN=<HEALTH_INTERN
 pnpm -C app ops:check:security-env:strict
 ```
 
-## 18. PLAN / PROGRESS 운영 규칙
+## 18. 작업 상태 문서
 
-- 항상 `docs/PLAN.md`, `docs/PROGRESS.md`를 사용합니다.
-- 완료된 app 작업 상세는 `docs/COMPLETED.md`로 이동합니다.
-- `docs/COMPLETED.md` 항목 형식은 `완료일 -> 배경 -> 변경내용 -> 코드문서 -> 검증 -> 결과`를 사용하고, heading은 `완료일 | 작업명`만 남깁니다.
+- 새 세션은 작업 전 `docs/PLAN.md`와 `docs/PROGRESS.md`를 읽습니다.
+- `docs/COMPLETED.md`는 완료 archive이며, 과거 맥락이 필요할 때만 읽습니다.
+- 범위, 우선순위, 신규 작업은 `docs/PLAN.md`에 기록합니다.
+- 진행 상태, 변경 파일, 검증 결과, blocker, 다음 액션은 `docs/PROGRESS.md`에 기록합니다.
+- 완료된 작업은 `docs/COMPLETED.md`에 append한 뒤 active 문서에서 제거합니다.
+- active 작업이 없으면 `PLAN.md`와 `PROGRESS.md`는 `현재 active 작업 없음`만 명확히 표시합니다.
+- 코드와 문서 변경은 같은 작업 단위 안에서 정렬합니다.
 - 하위 디렉터리에 중복 계획 문서를 만들지 않습니다.
-- 작업 시작 전에는 `pending`, `in_progress`, `blocked` 상태와 현재 맡은 사이클만 읽습니다.
-- 작업 종료 후에는 `docs/PROGRESS.md`에 실행 결과를 먼저 정리하고, 완료 상세와 긴 검증 로그는 `docs/COMPLETED.md` 맨 아래에 시간 오름차순으로 append한 뒤 `docs/PLAN.md` 상태를 맞춥니다.
-- 블로커가 생기면 두 파일을 즉시 함께 업데이트합니다.
-- active 문서 목표 길이:
-  - `docs/PLAN.md` 60줄 이하
-  - `docs/PROGRESS.md` 70줄 이하
 
 ## 19. 완료 기준
 
