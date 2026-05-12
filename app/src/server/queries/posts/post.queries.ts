@@ -58,6 +58,8 @@ import {
 } from "./post-ranked-search-support";
 import {
   buildBestPostWhere,
+  buildLegacyReviewBestPostWhere,
+  buildLegacyReviewPostListWhere,
   buildPostListWhere,
   isPostTypeFullyExcluded,
   toLegacyReviewTypeFallback,
@@ -1980,13 +1982,12 @@ export async function listPosts({
            const safeFallbackBaseArgs = isUnsupportedReviewCategoryFilterError(error)
              ? {
                  ...safeBaseArgs,
-                 where: buildPostListWhere({
-                   type: toLegacyReviewTypeFallback(type, reviewCategory),
-                   reviewBoard: false,
-                   reviewCategory: undefined,
-                  scope,
-                  petTypeId,
-                  petTypeIds,
+                 where: buildLegacyReviewPostListWhere({
+                   type,
+                   reviewCategory,
+                   scope,
+                   petTypeId,
+                   petTypeIds,
                    q,
                    searchIn: resolvedSearchIn,
                    excludeTypes: normalizedExcludeTypes,
@@ -2054,10 +2055,9 @@ export async function listPosts({
         const safeFallbackBaseArgs = isUnsupportedReviewCategoryFilterError(error)
           ? {
               ...safeBaseArgs,
-              where: buildPostListWhere({
-                type: toLegacyReviewTypeFallback(type, reviewCategory),
-                reviewBoard: false,
-                reviewCategory: undefined,
+              where: buildLegacyReviewPostListWhere({
+                type,
+                reviewCategory,
                 scope,
                 petTypeId,
                 petTypeIds,
@@ -2124,10 +2124,9 @@ export async function listPosts({
               const safeInnerFallbackArgs = isUnsupportedReviewCategoryFilterError(innerError)
                 ? {
                     ...safeInnerBaseArgs,
-                    where: buildPostListWhere({
-                      type: toLegacyReviewTypeFallback(type, reviewCategory),
-                      reviewBoard: false,
-                      reviewCategory: undefined,
+                    where: buildLegacyReviewPostListWhere({
+                      type,
+                      reviewCategory,
                       scope,
                       petTypeId,
                       petTypeIds,
@@ -2393,12 +2392,11 @@ export async function listBestPosts({
            const safeFallbackBaseArgs = isUnsupportedReviewCategoryFilterError(error)
              ? {
                  ...safeBaseArgs,
-                 where: buildBestPostWhere({
+                 where: buildLegacyReviewBestPostWhere({
                    days,
                    minLikes,
-                   type: toLegacyReviewTypeFallback(type, reviewCategory),
-                   reviewBoard: false,
-                   reviewCategory: undefined,
+                   type,
+                   reviewCategory,
                    scope,
                    petTypeId,
                    petTypeIds,
@@ -2460,12 +2458,11 @@ export async function listBestPosts({
         const safeFallbackBaseArgs = isUnsupportedReviewCategoryFilterError(error)
           ? {
               ...safeBaseArgs,
-              where: buildBestPostWhere({
+              where: buildLegacyReviewBestPostWhere({
                 days,
                 minLikes,
-                type: toLegacyReviewTypeFallback(type, reviewCategory),
-                reviewBoard: false,
-                reviewCategory: undefined,
+                type,
+                reviewCategory,
                 scope,
                 petTypeId,
                 petTypeIds,
@@ -2530,12 +2527,11 @@ export async function listBestPosts({
               const safeInnerFallbackArgs = isUnsupportedReviewCategoryFilterError(innerError)
                 ? {
                     ...safeInnerBaseArgs,
-                    where: buildBestPostWhere({
+                    where: buildLegacyReviewBestPostWhere({
                       days,
                       minLikes,
-                      type: toLegacyReviewTypeFallback(type, reviewCategory),
-                      reviewBoard: false,
-                      reviewCategory: undefined,
+                      type,
+                      reviewCategory,
                       scope,
                       petTypeId,
                       petTypeIds,
@@ -2651,10 +2647,9 @@ export async function countPosts({
       postReviewCategoryFieldSupport = false;
     }
 
-    const legacyWhere = buildPostListWhere({
-      type: toLegacyReviewTypeFallback(type, reviewCategory),
-      reviewBoard: false,
-      reviewCategory: undefined,
+    const legacyWhere = buildLegacyReviewPostListWhere({
+      type,
+      reviewCategory,
       scope,
       petTypeId: undefined,
       petTypeIds: undefined,
@@ -2724,12 +2719,11 @@ export async function countBestPosts({
       postReviewCategoryFieldSupport = false;
     }
 
-    const legacyWhere = buildBestPostWhere({
+    const legacyWhere = buildLegacyReviewBestPostWhere({
       days,
       minLikes,
-      type: toLegacyReviewTypeFallback(type, reviewCategory),
-      reviewBoard: false,
-      reviewCategory: undefined,
+      type,
+      reviewCategory,
       scope,
       petTypeId: undefined,
       petTypeIds: undefined,

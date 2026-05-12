@@ -125,6 +125,50 @@ export function buildPostListWhere({
   };
 }
 
+export function buildLegacyReviewPostListWhere({
+  type,
+  reviewCategory,
+  scope,
+  petTypeId,
+  petTypeIds,
+  q,
+  searchIn,
+  excludeTypes,
+  neighborhoodId,
+  hiddenAuthorIds,
+  days,
+  authorBreedCode,
+}: {
+  type?: PostType;
+  reviewCategory?: ReviewCategory;
+  scope: PostScope;
+  petTypeId?: string;
+  petTypeIds?: string[];
+  q?: string;
+  searchIn: PostSearchIn;
+  excludeTypes: PostType[];
+  neighborhoodId?: string;
+  hiddenAuthorIds: string[];
+  days?: number;
+  authorBreedCode?: string;
+}) {
+  return buildPostListWhere({
+    type: toLegacyReviewTypeFallback(type, reviewCategory),
+    reviewBoard: false,
+    reviewCategory: undefined,
+    scope,
+    petTypeId,
+    petTypeIds,
+    q,
+    searchIn,
+    excludeTypes,
+    neighborhoodId,
+    hiddenAuthorIds,
+    days,
+    authorBreedCode,
+  });
+}
+
 export function isPostTypeFullyExcluded(type: PostType | undefined, excludeTypes: PostType[]) {
   if (!type) {
     return false;
@@ -182,4 +226,48 @@ export function buildBestPostWhere({
     likeCount: { gte: minLikes },
     createdAt: { gte: since },
   };
+}
+
+export function buildLegacyReviewBestPostWhere({
+  days,
+  minLikes,
+  type,
+  reviewCategory,
+  scope,
+  petTypeId,
+  petTypeIds,
+  q,
+  searchIn,
+  excludeTypes,
+  neighborhoodId,
+  hiddenAuthorIds,
+}: {
+  days: number;
+  minLikes: number;
+  type?: PostType;
+  reviewCategory?: ReviewCategory;
+  scope: PostScope;
+  petTypeId?: string;
+  petTypeIds?: string[];
+  q?: string;
+  searchIn: PostSearchIn;
+  excludeTypes: PostType[];
+  neighborhoodId?: string;
+  hiddenAuthorIds: string[];
+}) {
+  return buildBestPostWhere({
+    days,
+    minLikes,
+    type: toLegacyReviewTypeFallback(type, reviewCategory),
+    reviewBoard: false,
+    reviewCategory: undefined,
+    scope,
+    petTypeId,
+    petTypeIds,
+    q,
+    searchIn,
+    excludeTypes,
+    neighborhoodId,
+    hiddenAuthorIds,
+  });
 }
