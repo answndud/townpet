@@ -48,6 +48,10 @@ import {
   buildLegacyPostListSelectWithoutReactions,
 } from "./post-legacy-selects";
 import {
+  withEmptyGuestPostMeta,
+  withEmptyGuestPostMetaOne,
+} from "./post-guest-meta-fallback";
+import {
   attachBookmarkStateToPost,
   attachBookmarkStateToPosts,
   isMissingPostBookmarkTableError,
@@ -351,42 +355,6 @@ function isMissingCommunityBoardSchemaError(error: unknown) {
   }
 
   return false;
-}
-
-type GuestMetaFields = {
-  guestDisplayName?: string | null;
-  guestIpDisplay?: string | null;
-  guestIpLabel?: string | null;
-  guestPasswordHash?: string | null;
-  guestIpHash?: string | null;
-  guestFingerprintHash?: string | null;
-};
-
-function withEmptyGuestPostMetaOne<T extends object>(item: T | null): (T & GuestMetaFields) | null {
-  if (!item) {
-    return null;
-  }
-  return {
-    ...item,
-    guestDisplayName: null,
-    guestIpDisplay: null,
-    guestIpLabel: null,
-    guestPasswordHash: null,
-    guestIpHash: null,
-    guestFingerprintHash: null,
-  };
-}
-
-function withEmptyGuestPostMeta<T extends object>(items: T[]): Array<T & GuestMetaFields> {
-  return items.map((item) => ({
-    ...item,
-    guestDisplayName: null,
-    guestIpDisplay: null,
-    guestIpLabel: null,
-    guestPasswordHash: null,
-    guestIpHash: null,
-    guestFingerprintHash: null,
-  }));
 }
 
 function supportsFeedPersonalizationEventLogField() {
