@@ -291,6 +291,132 @@ function applyPostListFetchFallbackSideEffects(error: unknown) {
   }
 }
 
+type PostListFindManyBaseArgs = Omit<Prisma.PostFindManyArgs, "include" | "select">;
+type PostListFetchRow =
+  | Prisma.PostGetPayload<{ include: ReturnType<typeof buildPostListInclude> }>
+  | Prisma.PostGetPayload<{ include: ReturnType<typeof buildPostListIncludeWithoutReactions> }>
+  | Prisma.PostGetPayload<{ select: ReturnType<typeof buildLegacyPostListSelect> }>
+  | Prisma.PostGetPayload<{ select: ReturnType<typeof buildLegacyPostListSelectWithoutReactions> }>;
+
+async function fetchPostRowsWithoutReactionsWithFallback({
+  baseArgs,
+  legacyCompatibleWhere,
+  legacyReviewWhere,
+}: {
+  baseArgs: PostListFindManyBaseArgs;
+  legacyCompatibleWhere: Prisma.PostWhereInput;
+  legacyReviewWhere: Prisma.PostWhereInput;
+}): Promise<PostListFetchRow[]> {
+  const rows = await prisma.post
+    .findMany({
+      ...baseArgs,
+      include: buildPostListIncludeWithoutReactions(),
+    })
+    .catch(async (error) => {
+      if (!isRecoverablePostListFetchError(error)) {
+        throw error;
+      }
+
+      applyPostListFetchFallbackSideEffects(error);
+
+      const safeFallbackBaseArgs = buildPostFindManyFallbackArgs({
+        error,
+        baseArgs,
+        legacyCompatibleWhere,
+        legacyReviewWhere,
+      });
+
+      if (isUnknownGuestAuthorIncludeError(error)) {
+        return prisma.post.findMany({
+          ...safeFallbackBaseArgs,
+          include: buildPostListIncludeWithoutReactions(false),
+        });
+      }
+
+      return prisma.post.findMany({
+        ...safeFallbackBaseArgs,
+        select: buildLegacyPostListSelectWithoutReactions(),
+      });
+    });
+
+  return withEmptyReactions(withEmptyGuestPostMeta(rows as PostListFetchRow[]));
+}
+
+async function fetchPostRowsWithReactionsWithFallback({
+  baseArgs,
+  legacyCompatibleWhere,
+  legacyReviewWhere,
+  includeViewerReactions,
+  viewerId,
+}: {
+  baseArgs: PostListFindManyBaseArgs;
+  legacyCompatibleWhere: Prisma.PostWhereInput;
+  legacyReviewWhere: Prisma.PostWhereInput;
+  includeViewerReactions: boolean;
+  viewerId?: string;
+}): Promise<PostListFetchRow[]> {
+  return prisma.post
+    .findMany({
+      ...baseArgs,
+      include: includeViewerReactions
+        ? buildPostListInclude(viewerId)
+        : buildPostListIncludeWithoutReactions(),
+    })
+    .then((rows) =>
+      includeViewerReactions
+        ? (rows as PostListFetchRow[])
+        : withEmptyReactions(rows as PostListFetchRow[]),
+    )
+    .catch(async (error) => {
+      if (!isRecoverablePostListFetchError(error, { includeReactions: true })) {
+        throw error;
+      }
+
+      applyPostListFetchFallbackSideEffects(error);
+
+      const safeFallbackBaseArgs = buildPostFindManyFallbackArgs({
+        error,
+        baseArgs,
+        legacyCompatibleWhere,
+        legacyReviewWhere,
+      });
+
+      if (isUnknownGuestAuthorIncludeError(error)) {
+        const rows = await prisma.post.findMany({
+          ...safeFallbackBaseArgs,
+          include: includeViewerReactions
+            ? buildPostListInclude(viewerId, false)
+            : buildPostListIncludeWithoutReactions(false),
+        });
+        return includeViewerReactions
+          ? (rows as PostListFetchRow[])
+          : withEmptyReactions(rows as PostListFetchRow[]);
+      }
+
+      if (
+        isUnknownGuestPostColumnError(error) ||
+        isMissingCommunityBoardSchemaError(error) ||
+        isUnsupportedReviewCategoryFilterError(error)
+      ) {
+        const legacyItems = await prisma.post.findMany({
+          ...safeFallbackBaseArgs,
+          select: includeViewerReactions
+            ? buildLegacyPostListSelect(viewerId)
+            : buildLegacyPostListSelectWithoutReactions(),
+        });
+        return includeViewerReactions
+          ? withEmptyGuestPostMeta(legacyItems as PostListFetchRow[])
+          : withEmptyReactions(withEmptyGuestPostMeta(legacyItems as PostListFetchRow[]));
+      }
+
+      return fetchPostRowsWithoutReactionsWithFallback({
+        baseArgs: safeFallbackBaseArgs,
+        legacyCompatibleWhere,
+        legacyReviewWhere,
+      });
+    });
+}
+
 function supportsFeedPersonalizationEventLogField() {
   return Boolean(
     (
@@ -1995,52 +2121,27 @@ export async function listPosts({
       orderBy,
     };
 
+    const legacyReviewWhere = buildLegacyReviewPostListWhere({
+      type,
+      reviewCategory,
+      scope,
+      petTypeId,
+      petTypeIds,
+      q,
+      searchIn: resolvedSearchIn,
+      excludeTypes: normalizedExcludeTypes,
+      neighborhoodId,
+      hiddenAuthorIds,
+      days,
+      authorBreedCode,
+    });
+
     if (!supportsPostReactionsField()) {
-      const fallbackItems = await prisma.post
-        .findMany({
-          ...baseArgs,
-          include: buildPostListIncludeWithoutReactions(),
-        })
-        .catch(async (error) => {
-          if (!isRecoverablePostListFetchError(error)) {
-             throw error;
-           }
-
-           applyPostListFetchFallbackSideEffects(error);
-
-           const safeFallbackBaseArgs = buildPostFindManyFallbackArgs({
-             error,
-             baseArgs,
-             legacyCompatibleWhere,
-             legacyReviewWhere: buildLegacyReviewPostListWhere({
-               type,
-               reviewCategory,
-               scope,
-               petTypeId,
-               petTypeIds,
-               q,
-               searchIn: resolvedSearchIn,
-               excludeTypes: normalizedExcludeTypes,
-               neighborhoodId,
-               hiddenAuthorIds,
-               days,
-               authorBreedCode,
-             }),
-           });
-
-           if (isUnknownGuestAuthorIncludeError(error)) {
-             return prisma.post.findMany({
-               ...safeFallbackBaseArgs,
-               include: buildPostListIncludeWithoutReactions(false),
-             });
-           }
-
-           return prisma.post.findMany({
-             ...safeFallbackBaseArgs,
-             select: buildLegacyPostListSelectWithoutReactions(),
-           });
-         });
-      const items = withEmptyReactions(withEmptyGuestPostMeta(fallbackItems));
+      const items = await fetchPostRowsWithoutReactionsWithFallback({
+        baseArgs,
+        legacyCompatibleWhere,
+        legacyReviewWhere,
+      });
       let nextCursor: string | null = null;
       if (items.length > resolvedLimit) {
         const nextItem = items.pop();
@@ -2050,113 +2151,13 @@ export async function listPosts({
       return { items, nextCursor };
     }
 
-    let items = await prisma.post
-      .findMany({
-        ...baseArgs,
-        include: includeViewerReactions
-          ? buildPostListInclude(viewerId)
-          : buildPostListIncludeWithoutReactions(),
-      })
-      .then((rows) => (includeViewerReactions ? rows : withEmptyReactions(rows)))
-      .catch(async (error) => {
-        if (!isRecoverablePostListFetchError(error, { includeReactions: true })) {
-           throw error;
-         }
-
-        applyPostListFetchFallbackSideEffects(error);
-
-        const safeFallbackBaseArgs = buildPostFindManyFallbackArgs({
-          error,
-          baseArgs,
-          legacyCompatibleWhere,
-          legacyReviewWhere: buildLegacyReviewPostListWhere({
-            type,
-            reviewCategory,
-            scope,
-            petTypeId,
-            petTypeIds,
-            q,
-            searchIn: resolvedSearchIn,
-            excludeTypes: normalizedExcludeTypes,
-            neighborhoodId,
-            hiddenAuthorIds,
-            days,
-            authorBreedCode,
-          }),
-        });
-
-        if (isUnknownGuestAuthorIncludeError(error)) {
-          const rows = await prisma.post.findMany({
-            ...safeFallbackBaseArgs,
-            include: includeViewerReactions
-              ? buildPostListInclude(viewerId, false)
-              : buildPostListIncludeWithoutReactions(false),
-          });
-          return includeViewerReactions ? rows : withEmptyReactions(rows);
-        }
-
-        if (
-          isUnknownGuestPostColumnError(error) ||
-          isMissingCommunityBoardSchemaError(error) ||
-          isUnsupportedReviewCategoryFilterError(error)
-        ) {
-          const legacyItems = await prisma.post.findMany({
-            ...safeFallbackBaseArgs,
-            select: includeViewerReactions
-              ? buildLegacyPostListSelect(viewerId)
-              : buildLegacyPostListSelectWithoutReactions(),
-          });
-          return includeViewerReactions
-            ? withEmptyGuestPostMeta(legacyItems)
-            : withEmptyReactions(withEmptyGuestPostMeta(legacyItems));
-        }
-
-        const fallbackItems = await prisma.post
-          .findMany({
-            ...safeFallbackBaseArgs,
-            include: buildPostListIncludeWithoutReactions(),
-          })
-          .catch(async (innerError) => {
-            if (!isRecoverablePostListFetchError(innerError)) {
-                throw innerError;
-              }
-
-              applyPostListFetchFallbackSideEffects(innerError);
-
-              const safeInnerFallbackArgs = buildPostFindManyFallbackArgs({
-                error: innerError,
-                baseArgs: safeFallbackBaseArgs,
-                legacyCompatibleWhere,
-                legacyReviewWhere: buildLegacyReviewPostListWhere({
-                  type,
-                  reviewCategory,
-                  scope,
-                  petTypeId,
-                  petTypeIds,
-                  q,
-                  searchIn: resolvedSearchIn,
-                  excludeTypes: normalizedExcludeTypes,
-                  neighborhoodId,
-                  hiddenAuthorIds,
-                  days,
-                  authorBreedCode,
-                }),
-              });
-
-              if (isUnknownGuestAuthorIncludeError(innerError)) {
-                return prisma.post.findMany({
-                  ...safeInnerFallbackArgs,
-                  include: buildPostListIncludeWithoutReactions(false),
-                });
-              }
-
-              return prisma.post.findMany({
-                ...safeInnerFallbackArgs,
-                select: buildLegacyPostListSelectWithoutReactions(),
-              });
-            });
-        return withEmptyReactions(withEmptyGuestPostMeta(fallbackItems));
-      });
+    let items = await fetchPostRowsWithReactionsWithFallback({
+      baseArgs,
+      legacyCompatibleWhere,
+      legacyReviewWhere,
+      includeViewerReactions,
+      viewerId,
+    });
 
     const trimmedQuery = q?.trim();
     if (
@@ -2367,161 +2368,36 @@ export async function listBestPosts({
       hiddenAuthorIds,
     });
 
+    const legacyReviewWhere = buildLegacyReviewBestPostWhere({
+      days,
+      minLikes,
+      type,
+      reviewCategory,
+      scope,
+      petTypeId,
+      petTypeIds,
+      q,
+      searchIn: resolvedSearchIn,
+      excludeTypes: normalizedExcludeTypes,
+      neighborhoodId,
+      hiddenAuthorIds,
+    });
+
     if (!supportsPostReactionsField()) {
-      const fallbackItems = await prisma.post
-        .findMany({
-          ...baseArgs,
-          include: buildPostListIncludeWithoutReactions(),
-        })
-        .catch(async (error) => {
-          if (!isRecoverablePostListFetchError(error)) {
-             throw error;
-           }
-
-           applyPostListFetchFallbackSideEffects(error);
-
-           const safeFallbackBaseArgs = buildPostFindManyFallbackArgs({
-             error,
-             baseArgs,
-             legacyCompatibleWhere,
-             legacyReviewWhere: buildLegacyReviewBestPostWhere({
-               days,
-               minLikes,
-               type,
-               reviewCategory,
-               scope,
-               petTypeId,
-               petTypeIds,
-               q,
-               searchIn: resolvedSearchIn,
-               excludeTypes: normalizedExcludeTypes,
-               neighborhoodId,
-               hiddenAuthorIds,
-             }),
-           });
-
-           if (isUnknownGuestAuthorIncludeError(error)) {
-             return prisma.post.findMany({
-               ...safeFallbackBaseArgs,
-               include: buildPostListIncludeWithoutReactions(false),
-             });
-           }
-
-           return prisma.post.findMany({
-             ...safeFallbackBaseArgs,
-             select: buildLegacyPostListSelectWithoutReactions(),
-           });
-         });
-      return withEmptyReactions(withEmptyGuestPostMeta(fallbackItems));
+      return fetchPostRowsWithoutReactionsWithFallback({
+        baseArgs,
+        legacyCompatibleWhere,
+        legacyReviewWhere,
+      });
     }
 
-    const items = await prisma.post
-      .findMany({
-        ...baseArgs,
-        include: includeViewerReactions
-          ? buildPostListInclude(viewerId)
-          : buildPostListIncludeWithoutReactions(),
-      })
-      .then((rows) => (includeViewerReactions ? rows : withEmptyReactions(rows)))
-      .catch(async (error) => {
-        if (!isRecoverablePostListFetchError(error, { includeReactions: true })) {
-            throw error;
-          }
-
-        applyPostListFetchFallbackSideEffects(error);
-
-        const safeFallbackBaseArgs = buildPostFindManyFallbackArgs({
-          error,
-          baseArgs,
-          legacyCompatibleWhere,
-          legacyReviewWhere: buildLegacyReviewBestPostWhere({
-            days,
-            minLikes,
-            type,
-            reviewCategory,
-            scope,
-            petTypeId,
-            petTypeIds,
-            q,
-            searchIn: resolvedSearchIn,
-            excludeTypes: normalizedExcludeTypes,
-            neighborhoodId,
-            hiddenAuthorIds,
-          }),
-        });
-
-        if (isUnknownGuestAuthorIncludeError(error)) {
-          const rows = await prisma.post.findMany({
-            ...safeFallbackBaseArgs,
-            include: includeViewerReactions
-              ? buildPostListInclude(viewerId, false)
-              : buildPostListIncludeWithoutReactions(false),
-          });
-          return includeViewerReactions ? rows : withEmptyReactions(rows);
-        }
-
-        if (
-          isUnknownGuestPostColumnError(error) ||
-          isMissingCommunityBoardSchemaError(error) ||
-          isUnsupportedReviewCategoryFilterError(error)
-        ) {
-          const legacyItems = await prisma.post.findMany({
-            ...safeFallbackBaseArgs,
-            select: includeViewerReactions
-              ? buildLegacyPostListSelect(viewerId)
-              : buildLegacyPostListSelectWithoutReactions(),
-          });
-          return includeViewerReactions
-            ? withEmptyGuestPostMeta(legacyItems)
-            : withEmptyReactions(withEmptyGuestPostMeta(legacyItems));
-        }
-
-        const fallbackItems = await prisma.post
-          .findMany({
-            ...safeFallbackBaseArgs,
-            include: buildPostListIncludeWithoutReactions(),
-          })
-          .catch(async (innerError) => {
-            if (!isRecoverablePostListFetchError(innerError)) {
-                throw innerError;
-              }
-
-              applyPostListFetchFallbackSideEffects(innerError);
-
-              const safeInnerFallbackArgs = buildPostFindManyFallbackArgs({
-                error: innerError,
-                baseArgs: safeFallbackBaseArgs,
-                legacyCompatibleWhere,
-                legacyReviewWhere: buildLegacyReviewBestPostWhere({
-                  days,
-                  minLikes,
-                  type,
-                  reviewCategory,
-                  scope,
-                  petTypeId,
-                  petTypeIds,
-                  q,
-                  searchIn: resolvedSearchIn,
-                  excludeTypes: normalizedExcludeTypes,
-                  neighborhoodId,
-                  hiddenAuthorIds,
-                }),
-              });
-
-              if (isUnknownGuestAuthorIncludeError(innerError)) {
-                return prisma.post.findMany({
-                  ...safeInnerFallbackArgs,
-                  include: buildPostListIncludeWithoutReactions(false),
-                });
-              }
-
-              return prisma.post.findMany({
-                ...safeInnerFallbackArgs,
-                select: buildLegacyPostListSelectWithoutReactions(),
-              });
-            });
-        return withEmptyReactions(withEmptyGuestPostMeta(fallbackItems));
-      });
+    const items = await fetchPostRowsWithReactionsWithFallback({
+      baseArgs,
+      legacyCompatibleWhere,
+      legacyReviewWhere,
+      includeViewerReactions,
+      viewerId,
+    });
     return (await attachBookmarkStateToPosts(
       items as Array<{ id: string }>,
       viewerId,
