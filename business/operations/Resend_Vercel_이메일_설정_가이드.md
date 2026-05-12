@@ -17,7 +17,7 @@
 - 인증 메일 발송: `app/src/server/email.ts`
 
 중요 조건:
-- production 배포는 `RESEND_API_KEY`가 없으면 strict security env preflight와 runtime env 검증에서 실패합니다.
+- production/staging 배포는 `RESEND_API_KEY`가 없으면 build security env preflight와 runtime env 검증에서 실패합니다.
 - 비밀번호 재설정/이메일 인증 메일은 production에서 설정 누락 또는 전송 실패 시 `503`으로 fail-fast 합니다.
 - `welcome email`만 best-effort 전송입니다.
 - `APP_BASE_URL`이 올바르지 않으면 메일 링크가 잘못된 도메인으로 생성됩니다.

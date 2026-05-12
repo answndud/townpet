@@ -2284,3 +2284,38 @@
 - 결과:
   - 업로드가 storage 비용, 성능, MIME confusion, polyglot payload, media proxy spoofing의 열린 입구가 되지 않도록 회귀 테스트가 생겼다.
   - 다음 작업은 `P1-6 거대 컴포넌트와 monolith query/service 분해`다.
+
+### 2026-05-12 | Vercel build security-env preflight recurrence hardening
+- 완료일: `2026-05-12`
+- 배경:
+  - Vercel build가 `Error: [build:vercel] security env preflight failed.`로 반복 중단됐다.
+  - 실제 원인은 필수 secret 누락만이 아니라 `build:vercel`가 운영자용 strict preflight를 그대로 호출해 원격 `/api/health` control-plane drift까지 빌드 게이트에 섞어 둔 구조였다.
+  - 그 결과 다른 세션에서 env를 한 번 정리해도 `OPS_BASE_URL`이나 remote health 상태 변화에 따라 같은 실패가 다시 재발할 수 있었다.
+- 변경내용:
+  - `check-security-env.ts`를 `build`/`full` profile로 분리하고, build profile은 production 필수 env/정책만 검사하며 remote control-plane health fetch는 생략하도록 정리했다.
+  - `package.json`에 `ops:check:security-env:build`를 추가하고 `build:vercel`는 production/staging target에서 이 profile만 호출하도록 수정했다.
+  - `vercel-build.ts`는 preflight 실패 시 `[FAIL]` key를 추출해 어떤 env가 빌드를 막았는지 에러 메시지에 직접 포함하게 보강했다.
+  - 운영/보안 문서와 오류 기록을 현재 동작 기준으로 동기화해 build preflight와 수동 strict 진단을 혼동하지 않도록 정리했다.
+- 코드문서:
+  - [app/scripts/check-security-env.ts](../app/scripts/check-security-env.ts)
+  - [app/scripts/check-security-env.test.ts](../app/scripts/check-security-env.test.ts)
+  - [app/scripts/vercel-build.ts](../app/scripts/vercel-build.ts)
+  - [app/scripts/vercel-build.test.ts](../app/scripts/vercel-build.test.ts)
+  - [app/package.json](../app/package.json)
+  - [business/operations/Vercel_OAuth_초기설정_가이드.md](../business/operations/Vercel_OAuth_%EC%B4%88%EA%B8%B0%EC%84%A4%EC%A0%95_%EA%B0%80%EC%9D%B4%EB%93%9C.md)
+  - [business/operations/manual-checks/배포_보안_체크리스트.md](../business/operations/manual-checks/%EB%B0%B0%ED%8F%AC_%EB%B3%B4%EC%95%88_%EC%B2%B4%ED%81%AC%EB%A6%AC%EC%8A%A4%ED%8A%B8.md)
+  - [business/archive/operations/문서 동기화 리포트.md](../business/archive/operations/%EB%AC%B8%EC%84%9C%20%EB%8F%99%EA%B8%B0%ED%99%94%20%EB%A6%AC%ED%8F%AC%ED%8A%B8.md)
+  - [business/security/보안_계획.md](../business/security/%EB%B3%B4%EC%95%88_%EA%B3%84%ED%9A%8D.md)
+  - [business/security/보안_진행상황.md](../business/security/%EB%B3%B4%EC%95%88_%EC%A7%84%ED%96%89%EC%83%81%ED%99%A9.md)
+  - [business/security/보안_위험_등록부.md](../business/security/%EB%B3%B4%EC%95%88_%EC%9C%84%ED%97%98_%EB%93%B1%EB%A1%9D%EB%B6%80.md)
+  - [docs/errors/2026-05-12_vercel-security-env-build-preflight.md](./errors/2026-05-12_vercel-security-env-build-preflight.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app exec vitest run scripts/vercel-build.test.ts scripts/check-security-env.test.ts src/lib/env.test.ts`
+  - `corepack pnpm@9.12.3 -C app lint scripts/vercel-build.ts scripts/vercel-build.test.ts scripts/check-security-env.ts scripts/check-security-env.test.ts src/lib/env.ts src/lib/env.test.ts`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - placeholder production env + `OPS_BASE_URL=https://127.0.0.1.invalid`로 `corepack pnpm@9.12.3 -C app ops:check:security-env:build`
+  - 동일 env로 `corepack pnpm@9.12.3 -C app ops:check:security-env:strict` 실행 시 `MODERATION_CONTROL_PLANE_HEALTH` FAIL 확인
+  - `corepack pnpm@9.12.3 -C app docs:refresh`
+  - `corepack pnpm@9.12.3 -C app docs:refresh:check`
+- 결과:
+  - Vercel build는 이제 필수 env misconfig만으로 fail-fast하고, remote health/control-plane drift는 운영자용 strict preflight로 분리되어 다른 작업과 무관한 재발성 배포 실패를 막는다.

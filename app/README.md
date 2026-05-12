@@ -122,6 +122,7 @@ pnpm db:seed
 pnpm db:restore:local
 pnpm ops:check:health
 pnpm ops:check:security-env
+pnpm ops:check:security-env:build
 pnpm ops:check:security-env:strict
 pnpm ops:check:auth-email-readiness
 pnpm ops:perf:snapshot
