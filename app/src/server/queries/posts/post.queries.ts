@@ -61,6 +61,13 @@ import {
   isPostTypeFullyExcluded,
 } from "./post-list-where-support";
 import {
+  buildBestPostListFindManyBaseArgs,
+  buildPostListFindManyBaseArgs,
+  buildPostListOrderBy,
+  DEFAULT_POST_LIST_SORT,
+  type PostListSort,
+} from "./post-list-args";
+import {
   buildPostListInclude as buildPostListIncludeBase,
   buildPostListIncludeWithoutReactions as buildPostListIncludeWithoutReactionsBase,
 } from "./post-list-includes";
@@ -88,6 +95,7 @@ export type {
   CareCompletionFeedbackDetailItem,
 } from "./post-detail-read-model";
 export type { PostSearchIn } from "./post-search-support";
+export type { PostListSort } from "./post-list-args";
 export {
   listPostSearchSuggestions,
 } from "./post-search-suggestions.queries";
@@ -100,8 +108,6 @@ export {
 } from "./post-user-posts.queries";
 
 const NO_VIEWER_ID = "__NO_VIEWER__";
-export type PostListSort = "LATEST" | "LIKE" | "COMMENT";
-const DEFAULT_POST_LIST_SORT: PostListSort = "LATEST";
 let postGuestAuthorFieldSupport: boolean | null = null;
 let postReviewCategoryFieldSupport: boolean | null = null;
 let pgTrgmSupport: boolean | null = null;
@@ -2083,38 +2089,14 @@ export async function listPosts({
       days,
       authorBreedCode,
     });
-    const orderBy: Prisma.PostOrderByWithRelationInput[] =
-      resolvedSort === "LIKE"
-        ? [
-            { likeCount: "desc" },
-            { commentCount: "desc" },
-            { createdAt: "desc" },
-            { id: "desc" },
-          ]
-        : resolvedSort === "COMMENT"
-          ? [
-              { commentCount: "desc" },
-              { likeCount: "desc" },
-              { createdAt: "desc" },
-              { id: "desc" },
-            ]
-          : [{ createdAt: "desc" }, { id: "desc" }];
-
-    const baseArgs: Omit<Prisma.PostFindManyArgs, "include"> = {
+    const orderBy = buildPostListOrderBy(resolvedSort);
+    const baseArgs = buildPostListFindManyBaseArgs({
       where: whereSet.where,
-      take: resolvedLimit + 1,
-      ...(cursor
-        ? {
-            cursor: { id: cursor },
-            skip: 1,
-          }
-        : resolvedPage > 1
-          ? {
-              skip: (resolvedPage - 1) * resolvedLimit,
-            }
-          : {}),
+      limit: resolvedLimit,
+      page: resolvedPage,
+      cursor,
       orderBy,
-    };
+    });
 
     if (!supportsPostReactionsField()) {
       const items = await fetchPostRowsWithoutReactionsWithFallback({
@@ -2283,22 +2265,11 @@ export async function listBestPosts({
       hiddenAuthorIds,
     });
 
-    const baseArgs: Omit<Prisma.PostFindManyArgs, "include"> = {
+    const baseArgs = buildBestPostListFindManyBaseArgs({
       where: whereSet.where,
-      take: resolvedLimit,
-      ...(resolvedPage > 1
-        ? {
-            skip: (resolvedPage - 1) * resolvedLimit,
-          }
-        : {}),
-      orderBy: [
-        { likeCount: "desc" },
-        { commentCount: "desc" },
-        { viewCount: "desc" },
-        { createdAt: "desc" },
-        { id: "desc" },
-      ],
-    };
+      limit: resolvedLimit,
+      page: resolvedPage,
+    });
 
     if (!supportsPostReactionsField()) {
       return fetchPostRowsWithoutReactionsWithFallback({
