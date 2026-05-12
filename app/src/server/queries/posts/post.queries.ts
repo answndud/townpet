@@ -59,7 +59,7 @@ import {
   buildLegacyReviewPostListWhere,
   buildPostListWhere,
   isPostTypeFullyExcluded,
-  toLegacyReviewTypeFallback,
+  resolvePostReviewCategoryFilters,
 } from "./post-list-where-support";
 import {
   buildPostListInclude as buildPostListIncludeBase,
@@ -2068,16 +2068,14 @@ export async function listPosts({
     const includeViewerReactions = Boolean(viewerId);
     const resolvedSearchIn = searchIn ?? DEFAULT_POST_SEARCH_IN;
     const resolvedSort = sort ?? DEFAULT_POST_LIST_SORT;
-    const reviewCategorySupported = supportsPostReviewCategoryField();
-    const effectiveType = reviewCategorySupported
-      ? type
-      : toLegacyReviewTypeFallback(type, reviewCategory);
-    const effectiveReviewBoard = reviewCategorySupported ? reviewBoard : false;
-    const effectiveReviewCategory = reviewCategorySupported ? reviewCategory : undefined;
+    const effectiveFilters = resolvePostReviewCategoryFilters({
+      type,
+      reviewBoard,
+      reviewCategory,
+      reviewCategorySupported: supportsPostReviewCategoryField(),
+    });
     const where = buildPostListWhere({
-      type: effectiveType,
-      reviewBoard: effectiveReviewBoard,
-      reviewCategory: effectiveReviewCategory,
+      ...effectiveFilters,
       scope,
       petTypeId,
       petTypeIds,
@@ -2107,9 +2105,7 @@ export async function listPosts({
           : [{ createdAt: "desc" }, { id: "desc" }];
 
     const legacyCompatibleWhere = buildPostListWhere({
-      type: effectiveType,
-      reviewBoard: effectiveReviewBoard,
-      reviewCategory: effectiveReviewCategory,
+      ...effectiveFilters,
       scope,
       petTypeId: undefined,
       petTypeIds: undefined,
@@ -2185,9 +2181,7 @@ export async function listPosts({
       shouldTryPostSearchDocumentFallback(trimmedQuery)
     ) {
       const fallbackWhere = buildPostListWhere({
-        type: effectiveType,
-        reviewBoard: effectiveReviewBoard,
-        reviewCategory: effectiveReviewCategory,
+        ...effectiveFilters,
         scope,
         petTypeId,
         petTypeIds,
@@ -2318,18 +2312,16 @@ export async function listBestPosts({
   const runListBestPosts = async () => {
     const includeViewerReactions = Boolean(viewerId);
     const resolvedSearchIn = searchIn ?? DEFAULT_POST_SEARCH_IN;
-    const reviewCategorySupported = supportsPostReviewCategoryField();
-    const effectiveType = reviewCategorySupported
-      ? type
-      : toLegacyReviewTypeFallback(type, reviewCategory);
-    const effectiveReviewBoard = reviewCategorySupported ? reviewBoard : false;
-    const effectiveReviewCategory = reviewCategorySupported ? reviewCategory : undefined;
+    const effectiveFilters = resolvePostReviewCategoryFilters({
+      type,
+      reviewBoard,
+      reviewCategory,
+      reviewCategorySupported: supportsPostReviewCategoryField(),
+    });
     const where = buildBestPostWhere({
       days,
       minLikes,
-      type: effectiveType,
-      reviewBoard: effectiveReviewBoard,
-      reviewCategory: effectiveReviewCategory,
+      ...effectiveFilters,
       scope,
       petTypeId,
       petTypeIds,
@@ -2360,9 +2352,7 @@ export async function listBestPosts({
     const legacyCompatibleWhere = buildBestPostWhere({
       days,
       minLikes,
-      type: effectiveType,
-      reviewBoard: effectiveReviewBoard,
-      reviewCategory: effectiveReviewCategory,
+      ...effectiveFilters,
       scope,
       petTypeId: undefined,
       petTypeIds: undefined,
@@ -2461,16 +2451,14 @@ export async function countPosts({
   }
 
   const resolvedSearchIn = searchIn ?? DEFAULT_POST_SEARCH_IN;
-  const reviewCategorySupported = supportsPostReviewCategoryField();
-  const effectiveType = reviewCategorySupported
-    ? type
-    : toLegacyReviewTypeFallback(type, reviewCategory);
-  const effectiveReviewBoard = reviewCategorySupported ? reviewBoard : false;
-  const effectiveReviewCategory = reviewCategorySupported ? reviewCategory : undefined;
+  const effectiveFilters = resolvePostReviewCategoryFilters({
+    type,
+    reviewBoard,
+    reviewCategory,
+    reviewCategorySupported: supportsPostReviewCategoryField(),
+  });
   const where = buildPostListWhere({
-    type: effectiveType,
-    reviewBoard: effectiveReviewBoard,
-    reviewCategory: effectiveReviewCategory,
+    ...effectiveFilters,
     scope,
     petTypeId,
     petTypeIds,
@@ -2524,18 +2512,16 @@ export async function countBestPosts({
   }
 
   const resolvedSearchIn = searchIn ?? DEFAULT_POST_SEARCH_IN;
-  const reviewCategorySupported = supportsPostReviewCategoryField();
-  const effectiveType = reviewCategorySupported
-    ? type
-    : toLegacyReviewTypeFallback(type, reviewCategory);
-  const effectiveReviewBoard = reviewCategorySupported ? reviewBoard : false;
-  const effectiveReviewCategory = reviewCategorySupported ? reviewCategory : undefined;
+  const effectiveFilters = resolvePostReviewCategoryFilters({
+    type,
+    reviewBoard,
+    reviewCategory,
+    reviewCategorySupported: supportsPostReviewCategoryField(),
+  });
   const where = buildBestPostWhere({
     days,
     minLikes,
-    type: effectiveType,
-    reviewBoard: effectiveReviewBoard,
-    reviewCategory: effectiveReviewCategory,
+    ...effectiveFilters,
     scope,
     petTypeId,
     petTypeIds,

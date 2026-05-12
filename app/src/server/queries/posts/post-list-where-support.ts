@@ -34,6 +34,26 @@ export function toLegacyReviewTypeFallback(
   return PostType.PRODUCT_REVIEW;
 }
 
+export function resolvePostReviewCategoryFilters({
+  type,
+  reviewBoard,
+  reviewCategory,
+  reviewCategorySupported,
+}: {
+  type?: PostType;
+  reviewBoard?: boolean;
+  reviewCategory?: ReviewCategory;
+  reviewCategorySupported: boolean;
+}) {
+  return {
+    type: reviewCategorySupported
+      ? type
+      : toLegacyReviewTypeFallback(type, reviewCategory),
+    reviewBoard: reviewCategorySupported ? reviewBoard : false,
+    reviewCategory: reviewCategorySupported ? reviewCategory : undefined,
+  };
+}
+
 export function buildPostListWhere({
   type,
   reviewBoard,

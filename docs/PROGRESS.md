@@ -139,6 +139,7 @@
   - 스물일곱 번째 slice로 검색 document fallback ranking 절차를 `post-ranked-search-support`로 분리했고, `post.queries`를 2855줄까지 줄였다.
   - 스물여덟 번째 slice로 ranked search candidate limit 계산과 candidate SQL 조립을 `post-ranked-search-support`로 분리했고, `post.queries`를 2816줄까지 줄였다.
   - 스물아홉 번째 slice로 count/countBest의 schema compatibility fallback 실행을 `countPostRowsWithSchemaFallback`으로 통합했다.
+  - 서른 번째 slice로 list/best/count/countBest의 reviewCategory 호환 필터 계산을 `post-list-where-support`로 분리했고, `post.queries`를 2804줄까지 줄였다.
   - 다음 작업: ranked search hydrate 함수 또는 count where 조립 helper 분리를 추가로 시도한다.
   - 검증: `post.queries.test.ts` PASS, structured fields/options/state targeted test PASS, `typecheck` PASS, `lint` PASS.
 - Vercel preview 배포 차단:
