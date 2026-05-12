@@ -71,6 +71,7 @@ import {
   buildPostListInclude as buildPostListIncludeBase,
   buildPostListIncludeWithoutReactions as buildPostListIncludeWithoutReactionsBase,
 } from "./post-list-includes";
+import { fetchRankedPostListSearchDocumentFallback } from "./post-list-search-document-fallback";
 import {
   DEFAULT_POST_SEARCH_IN,
   type PostSearchIn,
@@ -2129,33 +2130,18 @@ export async function listPosts({
       resolvedPage === 1 &&
       shouldTryPostSearchDocumentFallback(trimmedQuery)
     ) {
-      const fallbackRows = await prisma.post
-        .findMany({
-          where: whereSet.searchDocumentFallbackWhere,
-          take: Math.min(Math.max(resolvedLimit * 12, 60), 180),
-          orderBy,
-          include: includeViewerReactions
-            ? buildPostListInclude(viewerId)
-            : buildPostListIncludeWithoutReactions(),
-        })
-        .then((rows) => (includeViewerReactions ? rows : withEmptyReactions(rows)));
-      const rankedRows = rankPostSearchDocumentFallbackRows({
-        rows: fallbackRows.map((row) => ({
-          id: row.id,
-          title: row.title,
-          content: row.content,
-          structuredSearchText: row.structuredSearchText ?? "",
-          createdAt: row.createdAt,
-          author: { nickname: row.author.nickname },
-          row,
-        })),
+      items = await fetchRankedPostListSearchDocumentFallback({
+        where: whereSet.searchDocumentFallbackWhere,
+        take: Math.min(Math.max(resolvedLimit * 12, 60), 180),
+        orderBy,
+        includeViewerReactions,
+        viewerId,
+        includeGuestAuthor: supportsPostGuestAuthorField(),
+        noViewerId: NO_VIEWER_ID,
         query: trimmedQuery,
         searchIn: resolvedSearchIn,
         limit: resolvedLimit + 1,
-        preserveInputOrderOnTie: true,
       });
-
-      items = rankedRows.map((rankedRow) => rankedRow.row);
     }
 
     let nextCursor: string | null = null;
