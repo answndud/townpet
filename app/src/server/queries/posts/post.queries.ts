@@ -1,7 +1,6 @@
 import {
   FeedPersonalizationEvent,
   PostScope,
-  PostStatus,
   PostType,
   Prisma,
 } from "@prisma/client";
@@ -20,7 +19,6 @@ import { buildVisibleAuthorFilter } from "@/lib/sanction-visibility";
 import { FEED_PAGE_SIZE } from "@/lib/feed";
 import {
   expandExcludedPostTypes,
-  getEquivalentPostTypes,
 } from "@/lib/post-type-groups";
 import type { ReviewCategory } from "@/lib/review-category";
 import { logger, serializeError } from "@/server/logger";
@@ -48,11 +46,11 @@ import {
   buildRankedSearchMatchSql,
   buildRankedSearchWhereSql,
   buildStructuredSearchSqlVariants,
-  rankPostSearchDocumentFallbackRows,
   resolveRankedSearchCandidateLimit,
   shouldTryPostSearchDocumentFallback,
   type RankedSearchRow,
 } from "./post-ranked-search-support";
+import { listRankedSearchDocumentFallbackCandidateIds } from "./post-ranked-search-document-fallback";
 import { hydrateRankedSearchPostsByIds } from "./post-ranked-search-hydration";
 import {
   buildBestPostCountWherePair,
@@ -2499,50 +2497,16 @@ export async function listRankedSearchPosts({
   };
 
   const runSearchDocumentFallback = async () => {
-    const fallbackCandidates = await prisma.post.findMany({
-      where: {
-        status: PostStatus.ACTIVE,
-        ...(type
-          ? (() => {
-              const equivalentTypes = getEquivalentPostTypes(type);
-              return equivalentTypes.length === 1
-                ? { type: equivalentTypes[0] }
-                : { type: { in: equivalentTypes } };
-            })()
-          : normalizedExcludeTypes.length > 0
-            ? { type: { notIn: normalizedExcludeTypes } }
-            : {}),
-        scope,
-        ...(scope === PostScope.LOCAL && neighborhoodId
-          ? { neighborhoodId }
-          : scope === PostScope.LOCAL
-            ? { neighborhoodId: "__NO_NEIGHBORHOOD__" }
-            : {}),
-        ...(hiddenAuthorIds.length > 0 ? { authorId: { notIn: hiddenAuthorIds } } : {}),
-        author: buildVisibleAuthorFilter(),
-      },
-      select: {
-        id: true,
-        title: true,
-        content: true,
-        structuredSearchText: true,
-        createdAt: true,
-        author: {
-          select: {
-            nickname: true,
-          },
-        },
-      },
-      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-      take: Math.min(Math.max(safeLimit * 12, 60), 180),
-    });
-
-    const candidateIds = rankPostSearchDocumentFallbackRows({
-      rows: fallbackCandidates,
+    const candidateIds = await listRankedSearchDocumentFallbackCandidateIds({
+      type,
+      excludeTypes: normalizedExcludeTypes,
+      scope,
+      neighborhoodId,
+      hiddenAuthorIds,
       query: trimmedQuery,
       searchIn: resolvedSearchIn,
-      limit: safeLimit,
-    }).map((row) => row.id);
+      safeLimit,
+    });
 
     return hydratePostsByIds(candidateIds);
   };

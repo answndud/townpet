@@ -145,7 +145,8 @@
   - 서른세 번째 slice로 list/best pagination과 order base args 조립을 `post-list-args`로 분리했고, `post.queries`를 2665줄까지 줄였다.
   - 서른네 번째 slice로 list search document fallback fetch/ranking 절차를 `post-list-search-document-fallback`으로 분리했고, `post.queries`를 2651줄까지 줄였다.
   - 서른다섯 번째 slice로 ranked search candidate id hydration 절차를 `post-ranked-search-hydration`으로 분리했고, `post.queries`를 2609줄까지 줄였다.
-  - 다음 작업: ranked search document fallback fetch helper 또는 list/best fetch fallback helper의 남은 경계를 추가로 분리한다.
+  - 서른여섯 번째 slice로 ranked search document fallback candidate 조회/ranking을 `post-ranked-search-document-fallback`으로 분리했고, `post.queries`를 2573줄까지 줄였다.
+  - 다음 작업: list/best fetch fallback helper의 남은 경계 또는 `listRankedSearchPosts`의 cache/run orchestration 경계를 추가로 분리한다.
   - 검증: `post.queries.test.ts` PASS, structured fields/options/state targeted test PASS, `typecheck` PASS, `lint` PASS.
 - Vercel preview 배포 차단:
   - 원인: `build:vercel`이 `VERCEL_ENV=preview`도 strict security env preflight 대상으로 취급해 preview secret 구성이 production급이 아니면 빌드 전에 실패했다.
