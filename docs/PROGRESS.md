@@ -131,14 +131,15 @@
   - 열아홉 번째 slice로 ranked search SQL/fallback helper를 `post-ranked-search-support`로 분리했고, `post.queries`를 3618줄까지 줄였다.
   - 스무 번째 slice로 검색 제안 public query를 `post-search-suggestions.queries`로 분리했고, `post.queries`를 3345줄까지 줄였다.
   - 스물한 번째 slice로 list/best/count 공용 where builder를 `post-list-where-support`로 분리했고, `post.queries`를 3182줄까지 줄였다.
-  - 다음 작업: ranked search public 함수 또는 남은 feed/list query helper를 추가 분리한다.
+  - 스물두 번째 slice로 post list include builder를 `post-list-includes`로 분리했고, `post.queries`를 3053줄까지 줄였다.
+  - 다음 작업: feed/list fallback/hydration helper 또는 ranked search public 함수 분리를 추가로 시도한다.
   - 검증: `post.queries.test.ts` PASS, structured fields/options/state targeted test PASS, `typecheck` PASS, `lint` PASS.
 - Vercel preview 배포 차단:
   - 원인: `build:vercel`이 `VERCEL_ENV=preview`도 strict security env preflight 대상으로 취급해 preview secret 구성이 production급이 아니면 빌드 전에 실패했다.
   - 수정: `VERCEL_ENV=preview/development`를 `VERCEL_TARGET_ENV`보다 우선해 skip하고, production/명시적 staging 또는 `DEPLOY_SECURITY_PREFLIGHT_STRICT=1`에서만 strict preflight를 실행한다.
   - 검증: `corepack pnpm@9.12.3 -C app exec vitest run scripts/vercel-build.test.ts` PASS.
 ## 다음 액션
-1. 다음 slice는 `post.queries`의 ranked search public 함수 또는 남은 feed/list query helper를 별도 module로 분리한다.
+1. 다음 slice는 `post.queries`의 feed/list fallback/hydration helper 또는 ranked search public 함수를 별도 module로 분리한다.
 2. public API/result shape는 유지하고, 기존 `post.queries.test.ts`를 우선 회귀 테스트로 사용한다.
 3. 각 slice마다 targeted test, `typecheck`, `lint`를 실행하고 작은 커밋으로 끊는다.
 
