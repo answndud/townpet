@@ -4,11 +4,25 @@
 
 - 작업: 현재 active 작업 없음
 - 상태: `idle`
-- 현재 초점: `P2-3 핵심 empty state 모바일/복구 액션 보강`을 완료 archive했다.
+- 현재 초점: `P2-4 feed loading/pagination 모바일 접근성 보강`을 완료 archive했다.
 
 ## 변경/탐색한 파일
 
 - 이번 세션 변경:
+  - `app/src/components/posts/feed-pagination.tsx`
+  - `app/src/components/posts/feed-pagination.test.tsx`
+  - `app/src/components/posts/feed-loading-skeleton.tsx`
+  - `app/src/components/posts/feed-loading-skeleton.test.tsx`
+  - `app/src/app/feed/feed-pagination.tsx`
+  - `app/src/components/posts/guest-feed-page-client.tsx`
+  - `docs/PLAN.md`
+  - `docs/PROGRESS.md`
+- 탐색한 파일:
+  - `app/src/app/feed/feed-pagination.tsx`
+  - `app/src/components/posts/guest-feed-page-client.tsx`
+  - `app/src/components/posts/feed-loading-skeleton.tsx`
+  - `app/src/components/ui/skeleton.tsx`
+- 이전 세션 변경:
   - `app/src/components/ui/empty-state.tsx`
   - `app/src/components/ui/empty-state.test.tsx`
   - `app/src/app/bookmarks/page.tsx`
@@ -172,6 +186,11 @@
   - `docs/errors/2026-05-12_vercel-security-env-build-preflight.md`
   - `docs/COMPLETED.md`
 - 이번 세션 결과:
+- feed pagination을 `app/src/components/posts/feed-pagination.tsx`로 공용화하고 기존 `app/feed` pagination 파일은 re-export로 유지했다.
+- guest feed pagination 중복 마크업을 공용 `FeedPagination` 사용으로 교체했다.
+- pagination에 `nav`, `aria-label`, `aria-current="page"`, `min-h-10`, `min-w-10`을 적용했다.
+- `FeedLoadingSkeleton`에 `role="status"`, `aria-busy`, `aria-label`을 추가했다.
+- 이전 세션 결과:
 - 공용 `EmptyState`가 모바일에서 `flex-col`, `sm` 이상에서 `flex-row`로 접히도록 보강했다.
 - `EmptyState`에 contextual eyebrow와 secondary action을 추가했다.
 - 북마크/내 작성글의 필터 0건 상태에는 전체 보기 reset과 대체 action을 제공했다.
