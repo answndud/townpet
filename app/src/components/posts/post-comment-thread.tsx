@@ -475,7 +475,7 @@ export function PostCommentThread({
         : resolveUserDisplayName(comment.author.nickname);
     const avatarText = (isMutedPlaceholder ? "뮤" : displayName.slice(0, 1)).toUpperCase();
     const actionLinkClass =
-      "tp-text-muted inline-flex min-h-8 items-center rounded-md px-2 text-[12px] font-medium transition sm:min-h-6 sm:px-1.5 sm:text-[11px] hover:bg-[#f4f8ff] hover:text-[#2f5da4] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
+      "tp-text-muted inline-flex min-h-10 items-center rounded-md px-3 text-[12px] font-medium transition hover:bg-[#f4f8ff] hover:text-[#2f5da4] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
     const commentCardClassName =
       depth > 0
         ? `flex gap-2.5 ${POST_COMMENT_THREAD_REPLY_CARD_CLASS_NAME}`
@@ -533,7 +533,7 @@ export function PostCommentThread({
                 <div className="ml-auto shrink-0">
                   {canOpenMenu ? (
                     <details className="relative">
-                      <summary className="tp-text-muted inline-flex min-h-8 min-w-8 items-center justify-center rounded-md text-[15px] leading-none hover:bg-[#f1f5fb] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2">
+                      <summary className="tp-text-muted inline-flex min-h-10 min-w-10 items-center justify-center rounded-md text-[15px] leading-none hover:bg-[#f1f5fb] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2">
                         ···
                       </summary>
                       <div className="tp-border-muted absolute right-0 z-20 mt-1.5 min-w-24 rounded-md border bg-white p-1 shadow-[0_8px_18px_rgba(16,40,74,0.08)]">
@@ -541,7 +541,7 @@ export function PostCommentThread({
                           <>
                             <button
                               type="button"
-                              className="tp-text-heading block w-full rounded px-2 py-1 text-left text-[11px] hover:bg-[#f5f9ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1"
+                              className="tp-text-heading flex min-h-10 w-full items-center rounded px-3 text-left text-[12px] font-medium hover:bg-[#f5f9ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1"
                               onClick={() => {
                                 if (isGuestComment) {
                                   setGuestActionPrompt((prev) => ({ ...prev, [comment.id]: "EDIT" }));
@@ -555,7 +555,7 @@ export function PostCommentThread({
                             </button>
                             <button
                               type="button"
-                              className="block w-full rounded px-2 py-1 text-left text-[11px] text-rose-700 hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200 focus-visible:ring-offset-1"
+                              className="flex min-h-10 w-full items-center rounded px-3 text-left text-[12px] font-medium text-rose-700 hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200 focus-visible:ring-offset-1"
                               onClick={() => {
                                 if (isGuestComment) {
                                   setGuestActionPrompt((prev) => ({ ...prev, [comment.id]: "DELETE" }));
@@ -577,7 +577,7 @@ export function PostCommentThread({
               {!isDeleted && isMutedPlaceholder && canMuteCommentAuthor(currentUserId, comment.author.id) ? (
                 <button
                   type="button"
-                  className="tp-text-muted inline-flex min-h-8 shrink-0 items-center rounded-md px-2 text-[12px] font-medium transition sm:min-h-6 sm:px-1.5 sm:text-[11px] hover:bg-white hover:text-[#2f5da4] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2"
+                  className="tp-text-muted inline-flex min-h-10 shrink-0 items-center rounded-md px-3 text-[12px] font-medium transition hover:bg-white hover:text-[#2f5da4] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2"
                   onClick={() => handleUnmute(comment.id, comment.author.id)}
                   disabled={isPending}
                 >
@@ -675,14 +675,14 @@ export function PostCommentThread({
                 {!currentUserId ? (
                   <div className="mb-1.5 grid gap-1.5 sm:grid-cols-2">
                     <input
-                      className={`tp-input-soft ${POST_COMMENT_FORM_FIELD_CLASS_NAME} min-h-11 w-full px-3 py-2 text-[14px] sm:min-h-9 sm:px-2.5 sm:py-1.5 sm:text-[13px]`}
+                      className={`tp-input-soft ${POST_COMMENT_FORM_FIELD_CLASS_NAME} min-h-11 w-full px-3 py-2 text-[14px] sm:min-h-10 sm:px-2.5 sm:py-1.5 sm:text-[13px]`}
                       value={guestDisplayName}
                       onChange={(event) => setGuestDisplayName(event.target.value)}
                       placeholder="비회원 닉네임"
                       maxLength={24}
                     />
                     <input
-                      className={`tp-input-soft ${POST_COMMENT_FORM_FIELD_CLASS_NAME} min-h-11 w-full px-3 py-2 text-[14px] sm:min-h-9 sm:px-2.5 sm:py-1.5 sm:text-[13px]`}
+                      className={`tp-input-soft ${POST_COMMENT_FORM_FIELD_CLASS_NAME} min-h-11 w-full px-3 py-2 text-[14px] sm:min-h-10 sm:px-2.5 sm:py-1.5 sm:text-[13px]`}
                       type="password"
                       value={guestPassword}
                       onChange={(event) => setGuestPassword(event.target.value)}
@@ -709,7 +709,7 @@ export function PostCommentThread({
                 <div className="mt-1.5 flex justify-end gap-1.5">
                   <button
                     type="button"
-                    className="tp-btn-soft tp-btn-xs"
+                    className="tp-btn-soft inline-flex min-h-10 items-center justify-center rounded-lg px-3 text-xs font-semibold"
                     onClick={() =>
                       setReplyOpen((prev) => ({
                         ...prev,
@@ -722,7 +722,7 @@ export function PostCommentThread({
                   </button>
                   <button
                     type="button"
-                    className="tp-btn-primary tp-btn-xs"
+                    className="tp-btn-primary inline-flex min-h-10 items-center justify-center rounded-lg px-3 text-xs font-semibold"
                     onClick={() => handleCreate(comment.id)}
                     disabled={isPending}
                   >
@@ -737,7 +737,7 @@ export function PostCommentThread({
                 <div className="flex flex-wrap items-center gap-2">
                   <input
                     type="password"
-                    className={`tp-input-soft ${POST_COMMENT_FORM_FIELD_CLASS_NAME} min-h-11 px-3 text-[14px] sm:min-h-8 sm:px-2.5 sm:text-[12px]`}
+                    className={`tp-input-soft ${POST_COMMENT_FORM_FIELD_CLASS_NAME} min-h-11 px-3 text-[14px] sm:min-h-10 sm:px-2.5 sm:text-[12px]`}
                     placeholder="댓글 비밀번호"
                     value={guestActionPassword[comment.id] ?? ""}
                     onChange={(event) =>
@@ -749,7 +749,7 @@ export function PostCommentThread({
                   />
                   <button
                     type="button"
-                    className="tp-btn-primary tp-btn-xs"
+                    className="tp-btn-primary inline-flex min-h-10 items-center justify-center rounded-lg px-3 text-xs font-semibold"
                     onClick={() =>
                       confirmGuestAction(
                         comment.id,
@@ -762,7 +762,7 @@ export function PostCommentThread({
                   </button>
                   <button
                     type="button"
-                    className="tp-btn-soft tp-btn-xs"
+                    className="tp-btn-soft inline-flex min-h-10 items-center justify-center rounded-lg px-3 text-xs font-semibold"
                     onClick={() => setGuestActionPrompt((prev) => ({ ...prev, [comment.id]: null }))}
                     disabled={isPending}
                   >
@@ -788,7 +788,7 @@ export function PostCommentThread({
                 <div className="mt-2 flex justify-end">
                   <button
                     type="button"
-                    className="tp-btn-primary tp-btn-xs"
+                    className="tp-btn-primary inline-flex min-h-10 items-center justify-center rounded-lg px-3 text-xs font-semibold"
                     onClick={() => handleUpdate(comment.id, isGuestComment)}
                     disabled={isPending}
                   >
@@ -817,7 +817,11 @@ export function PostCommentThread({
           <span className="tp-text-label text-[11px]">{currentPage} / {totalPages}</span>
         ) : null}
       </div>
-      {message ? <p className="tp-text-subtle mt-2 text-[11px]">{message}</p> : null}
+      {message ? (
+        <p className="tp-text-subtle mt-2 text-[11px] font-medium" role="status" aria-live="polite">
+          {message}
+        </p>
+      ) : null}
 
       {hasBestComments ? (
         <section className="mt-3 sm:mt-4">

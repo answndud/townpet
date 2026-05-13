@@ -3072,3 +3072,36 @@
 - 결과:
   - 게시글 상세 정보 패널의 상태 변경, 신청/피드백 control과 status message가 기존 모바일/접근성 기준에 맞춰졌다.
   - 다음 후보는 `P2-17 remaining compact controls audit, comments pagination/menu/admin edge surfaces 점검`이다.
+
+### 2026-05-13 | P2-17 remaining compact comments control 보강
+- 완료일: `2026-05-13`
+- 배경:
+  - 남은 compact control 검색에서 댓글 pagination, 댓글 메뉴, 답글/수정 form, 비회원 댓글 action prompt, 베스트 댓글 jump/unmute, 댓글 로드 실패 retry가 40px 미만 기준으로 남아 있었다.
+  - 댓글 작업 결과 메시지와 로드 실패 상태도 live region 역할이 약했다.
+- 변경내용:
+  - 댓글 pagination 이전/다음/page 버튼을 `min-h-10`과 `min-w-10` 기준으로 보강했다.
+  - 댓글 본문 action link, 댓글 메뉴 summary, 메뉴 내부 수정/삭제 버튼을 `min-h-10` 기준으로 보강했다.
+  - 댓글 답글 form의 비회원 입력, 취소/등록 버튼을 `min-h-10` 기준으로 보강했다.
+  - 비회원 댓글 action prompt의 password input과 확인/취소 버튼을 `min-h-10` 기준으로 보강했다.
+  - 댓글 수정 저장 버튼을 `min-h-10` 기준으로 보강했다.
+  - 베스트 댓글의 뮤트 해제와 원댓글 이동 action을 `min-h-10` 기준으로 보강했다.
+  - 댓글 로드 실패 retry 버튼을 `min-h-10` 기준으로 보강하고 실패 상태에 `role="alert"`와 `aria-live="polite"`를 추가했다.
+  - 댓글 thread message에 `role="status"`와 `aria-live="polite"`를 추가했다.
+  - 댓글 compact controls 접근성 회귀 unit test를 추가했다.
+- 코드문서:
+  - [app/src/components/posts/post-comment-pagination.tsx](../app/src/components/posts/post-comment-pagination.tsx)
+  - [app/src/components/posts/post-comment-section-client.tsx](../app/src/components/posts/post-comment-section-client.tsx)
+  - [app/src/components/posts/post-comment-best-item.tsx](../app/src/components/posts/post-comment-best-item.tsx)
+  - [app/src/components/posts/post-comment-thread.tsx](../app/src/components/posts/post-comment-thread.tsx)
+  - [app/src/components/posts/post-comment-compact-controls-accessibility.test.tsx](../app/src/components/posts/post-comment-compact-controls-accessibility.test.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app exec vitest run src/components/posts/post-comment-compact-controls-accessibility.test.tsx src/components/posts/post-comment-thread.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `corepack pnpm@9.12.3 -C app docs:refresh:check`
+  - `git diff --check`
+- 결과:
+  - 댓글 compact interaction 표면의 작은 컨트롤과 상태 메시지가 기존 모바일/접근성 기준에 맞춰졌다.
+  - 다음 후보는 `P2-18 remaining compact controls audit, notification/profile/lounge/admin edge surfaces 점검`이다.

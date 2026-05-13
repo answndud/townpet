@@ -256,12 +256,12 @@ export function PostCommentSectionClient({
   if (error && !comments) {
     return (
       <div className={`${POST_COMMENT_SECTION_STATE_CLASS_NAME} border-[#f0d3d3] bg-[#fff7f7] text-[#8b4b4b]`}>
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3" role="alert" aria-live="polite">
           <span>{error}</span>
           <button
             type="button"
             onClick={() => void reloadComments()}
-            className="tp-btn-soft tp-btn-xs"
+            className="tp-btn-soft inline-flex min-h-10 items-center justify-center rounded-lg px-3 text-xs font-semibold"
           >
             다시 시도
           </button>
