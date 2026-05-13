@@ -4,16 +4,22 @@
 
 - 작업: `Release Confidence Hardening P1-6`
 - 상태: `in_progress`
-- 현재 초점: `post.service.ts`의 create write 경계 분리를 완료했고, 다음 작업은 `post-detail-client.tsx` media/actions/comments 경계 분리다.
+- 현재 초점: `post-detail-client.tsx`의 type/presenter 경계 분리를 완료했고, 다음 작업은 primary card/media/actions 경계 분리다.
 
 ## 변경/탐색한 파일
 
 - 이번 세션 변경:
+  - `app/src/components/posts/post-detail-client.tsx`
+  - `app/src/components/posts/post-detail-presenter.tsx`
+  - `app/src/components/posts/post-detail-types.ts`
+  - `docs/PLAN.md`
+  - `docs/PROGRESS.md`
+- 직전 세션 변경:
   - `app/src/server/services/posts/post-create.service.ts`
   - `app/src/server/services/posts/post.service.ts`
   - `docs/PLAN.md`
   - `docs/PROGRESS.md`
-- 직전 세션 변경:
+- 이전 세션 변경:
   - `app/src/server/services/posts/post-update.service.ts`
   - `app/src/server/services/posts/post-write-support.ts`
   - `app/src/server/services/posts/post.service.ts`
@@ -52,10 +58,14 @@
   - `docs/errors/2026-05-12_vercel-security-env-build-preflight.md`
   - `docs/COMPLETED.md`
 - 이번 세션 결과:
+  - 게시글 상세 클라이언트의 response/item 타입을 `post-detail-types.ts`로 분리했다.
+  - 게시글 상세 라벨, 포맷, render helper, care/market 상태 option 계산을 `post-detail-presenter.tsx`로 분리했다.
+  - `post-detail-client.tsx`를 1727줄에서 1376줄까지 축소했다.
+- 직전 세션 결과:
   - 회원/비회원 게시글 생성 흐름(`createPost`)과 create 전용 structured write helper를 `post-create.service.ts`로 분리했다.
   - 기존 `@/server/services/post.service` export 경로는 re-export로 유지했다.
   - `post.service.ts`를 3210줄에서 156줄까지 축소해 service facade/view-count 책임만 남겼다.
-- 직전 세션 결과:
+- 이전 세션 결과:
   - 회원 게시글 수정 흐름(`updatePost`)을 `post-update.service.ts`로 분리했다.
   - create/update에서 공유하는 이미지 URL 정규화와 image create input 생성을 `post-write-support.ts`로 이동했다.
   - 기존 `@/server/services/post.service` export 경로는 re-export로 유지했다.
@@ -90,6 +100,8 @@
 
 ## 직전 검증
 
+- `corepack pnpm@9.12.3 -C app typecheck` PASS
+- `corepack pnpm@9.12.3 -C app lint` PASS
 - `corepack pnpm@9.12.3 -C app exec vitest run src/server/services/post-create-policy.test.ts src/server/services/post.service.test.ts src/server/actions/post.test.ts` PASS
 - `corepack pnpm@9.12.3 -C app typecheck` PASS
 - `corepack pnpm@9.12.3 -C app lint` PASS
@@ -118,6 +130,6 @@
 
 ## 다음 액션
 
-1. `post-detail-client.tsx`의 media/actions/comments 경계를 분리한다.
+1. `post-detail-client.tsx`의 primary card/media/actions 경계를 분리한다.
 2. 이어서 `post-comment-thread.tsx`, `app/feed/page.tsx` 중 더 큰 결합을 먼저 분리한다.
 3. public API/result shape를 유지하고 targeted test, `typecheck`, `lint`를 실행한다.
