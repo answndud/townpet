@@ -2,13 +2,16 @@
 
 ## 현재 상태
 
-- 작업: 현재 active 작업 없음
-- 상태: `idle`
-- 현재 초점: `P1-7 1인 운영용 최소 production smoke 축소`를 완료 archive했다.
+- 작업: `P1-8 1인 운영용 과설계 축소 배치`
+- 상태: `in_progress`
+- 현재 초점: `PLAN.md`에 과설계 축소 후보를 상세화했고, 첫 작업으로 scheduled maintenance/workflow 축소를 진행한다.
 
 ## 변경/탐색한 파일
 
 - 이번 세션 변경:
+  - `docs/PLAN.md`
+  - `docs/PROGRESS.md`
+- 이전 세션 변경:
   - `.github/workflows/ops-smoke-checks.yml`
   - `app/package.json`
   - `app/README.md`
@@ -99,6 +102,8 @@
   - `docs/errors/2026-05-12_vercel-security-env-build-preflight.md`
   - `docs/COMPLETED.md`
 - 이번 세션 결과:
+- `P1-8` active plan을 생성하고 workflow, package script, production demo/OAuth manual automation, 개인화/광고 판단, client fetch/telemetry, 운영 문서 정리 순서로 세분화했다.
+- 이전 세션 결과:
   - `ops-smoke-checks` 기본 timeout을 5분으로 낮추고 care smoke readiness/prewarm을 기본 경로에서 제거했다.
   - `ops:evidence:solo`를 추가해 health-only 로컬 evidence profile을 제공했다.
   - 운영 문서를 10분 관리자 smoke가 아니라 1인 운영용 2-3분 생존 확인 기준으로 정리했다.
@@ -206,5 +211,6 @@
 
 ## 다음 액션
 
-1. 다음 active 작업을 시작할 때 [PLAN.md](./PLAN.md)의 다음 작업 후보 중 하나를 선택한다.
-2. 현재 후보 우선순위는 `P2-1 client useEffect fetch 표면 정리`다.
+1. `P1-8.1 scheduled maintenance/workflow 축소`를 구현한다.
+2. workflow schedule 제거 후 관련 운영 문서를 on-demand 기준으로 맞춘다.
+3. YAML/docs sanity check 후 P1-8.1을 커밋한다.
