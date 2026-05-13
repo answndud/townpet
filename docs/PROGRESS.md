@@ -4,19 +4,26 @@
 
 - 작업: 현재 active 작업 없음
 - 상태: `idle`
-- 현재 초점: `P2-6 admin pagination 반복 표면 축소`를 완료 archive했다.
+- 현재 초점: `P2-7 admin table empty/action touch target 보강`을 완료 archive했다.
 
 ## 변경/탐색한 파일
 
 - 이번 세션 변경:
+  - `app/src/components/admin/report-queue-table.tsx`
+  - `app/src/components/admin/report-actions.tsx`
+  - `app/src/components/admin/report-actions.test.tsx`
+  - `docs/PLAN.md`
+  - `docs/PROGRESS.md`
+- 탐색한 파일:
+  - `app/src/components/admin/report-actions.tsx`
+  - `app/src/app/admin/reports/page.tsx`
+  - `app/src/app/admin/care-feedbacks/page.tsx`
+  - `app/src/components/admin/report-queue-table.tsx`
+- 이전 세션 변경:
   - `app/src/app/admin/reports/page.tsx`
   - `app/src/app/admin/care-feedbacks/page.tsx`
   - `docs/PLAN.md`
   - `docs/PROGRESS.md`
-- 탐색한 파일:
-  - `app/src/app/admin/reports/page.tsx`
-  - `app/src/app/admin/care-feedbacks/page.tsx`
-  - `app/src/components/admin/report-queue-table.tsx`
 - 이전 세션 변경:
   - `app/src/components/ui/compact-pagination.tsx`
   - `app/src/components/ui/compact-pagination.test.tsx`
@@ -206,6 +213,11 @@
   - `docs/errors/2026-05-12_vercel-security-env-build-preflight.md`
   - `docs/COMPLETED.md`
 - 이번 세션 결과:
+- 신고 큐 0건 상태를 공용 `EmptyState`로 교체했다.
+- 신고 큐 0건 상태에 `전체 신고 보기` action을 제공했다.
+- `ReportActions`의 승인/기각 버튼과 제재 checkbox row를 `min-h-10` 기준으로 보강했다.
+- `ReportActions` button row가 모바일에서 wrap되도록 했다.
+- 이전 세션 결과:
 - `/admin/reports` pagination을 `CompactPagination`으로 교체했다.
 - `/admin/care-feedbacks` pagination을 `CompactPagination`으로 교체했다.
 - 두 admin 화면에서 직접 `buildPaginationWindow`를 호출하던 중복을 제거했다.

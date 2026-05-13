@@ -16,6 +16,7 @@
 현재 active 작업 없음.
 
 최근 완료:
+- `P2-7 admin table empty/action touch target 보강`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
 - `P2-6 admin pagination 반복 표면 축소`는 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
 - `P2-5 알림/공개 프로필 빈 상태와 pagination 보강`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
 - `P2-4 feed loading/pagination 모바일 접근성 보강`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
@@ -28,4 +29,4 @@
 
 ## 다음 작업 후보
 
-- P2-7: admin table empty state와 action button touch target 중 남은 큰 반복을 점검한다.
+- P2-8: admin forms의 submit/cancel button touch target과 상태 메시지를 점검한다.

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Fragment, useMemo, useState, useTransition } from "react";
 
 import { ReportActions } from "@/components/admin/report-actions";
+import { EmptyState } from "@/components/ui/empty-state";
 import { getReportTargetLabel } from "@/lib/report-target";
 
 type ReportQueueAudit = {
@@ -185,8 +186,14 @@ export function ReportQueueTable({ reports }: ReportQueueTableProps) {
       </div>
 
       {reports.length === 0 ? (
-        <div className="px-6 py-10 text-center text-sm text-[#5a7398]">
-          선택한 상태의 신고가 없습니다.
+        <div className="p-4 sm:p-6">
+          <EmptyState
+            eyebrow="신고 큐"
+            title="선택한 상태의 신고가 없습니다."
+            description="필터를 바꾸거나 새 신고가 들어오면 이 큐에서 우선순위와 처리 이력을 확인할 수 있습니다."
+            actionHref="/admin/reports"
+            actionLabel="전체 신고 보기"
+          />
         </div>
       ) : (
         <>
