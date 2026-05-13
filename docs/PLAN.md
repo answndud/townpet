@@ -33,11 +33,11 @@
   - `post.queries`는 상세 read model, care detail, legacy select, engagement, guest meta, search support, user posts, ranked search, list where/include/args/fallback, post detail fallback 계열 분리를 진행했다.
   - 최근 기준 `post.queries.ts`는 4850줄에서 2299줄까지 축소됐다.
   - `post.service`는 create service, reaction/bookmark engagement service, delete service, guest-management service, market workflow service, care workflow service, update service, write support 분리를 진행했고, 최근 기준 `post.service.ts`는 3210줄에서 156줄까지 축소됐다.
-  - `post-detail-client`는 detail type/presenter와 primary card/media/actions 분리를 시작했고, 최근 기준 1727줄에서 1216줄까지 축소됐다.
+  - `post-detail-client`는 detail type/presenter, primary card/media/actions, detail info panel 분리를 진행했고, 최근 기준 1727줄에서 691줄까지 축소됐다.
   - Vitest config는 Vite 7 ESM 로딩 기준에 맞춰 `.mts`로 전환하고 `vite-tsconfig-paths` 의존성을 제거했다.
 - 다음 액션:
-  - `post-detail-client.tsx`의 market/care/detail info panel 경계를 추가로 분리한다.
-  - 이어서 `post-comment-thread.tsx`, `app/feed/page.tsx` 중 더 큰 결합을 먼저 분리한다.
+  - `post-comment-thread.tsx`의 comment item/form/thread state 경계를 분리한다.
+  - 이어서 `app/feed/page.tsx`의 query parsing/data loading/view composition 경계를 분리한다.
 - 검증:
   - 변경 slice마다 `post.queries.test.ts`, `post.service.test.ts`, 또는 해당 targeted test
   - `corepack pnpm@9.12.3 -C app typecheck`
