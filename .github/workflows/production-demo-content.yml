@@ -1,5 +1,7 @@
 name: production-demo-content
 
+# Manual-only legacy helper. Do not use for normal production operations.
+
 on:
   workflow_dispatch:
     inputs:
@@ -70,7 +72,7 @@ jobs:
           set -euo pipefail
           output_file="$RUNNER_TEMP/production-demo-content.log"
 
-          pnpm db:seed:production-demo-content | tee "$output_file"
+          pnpm exec tsx scripts/seed-production-demo-content.ts | tee "$output_file"
 
           {
             echo "## production-demo-content"

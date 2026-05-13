@@ -79,7 +79,7 @@
 
 #### P1-8.3 production demo/OAuth manual automation 격하
 
-- 상태: `pending`
+- 상태: `completed`
 - 문제:
   - production demo content workflow는 운영 DB에 데모 데이터를 넣고 지우는 위험한 표면이다.
   - OAuth 수동점검 자동화는 report 생성/갱신/검증까지 3개 script로 쪼개져 있지만, 1인 운영에서는 Markdown 체크리스트와 실제 OAuth 진입 확인으로 충분하다.
@@ -102,6 +102,7 @@
 
 #### P1-8.4 개인화/광고 운영 판단 기준 축소
 
+- 상태: `pending`
 - 문제:
   - 개인화/광고 CTR, audience concentration 기준은 초기 트래픽이 적을 때 통계적으로 불안정하다.
   - 운영자가 매주 볼 지표로 두면 잘못된 튜닝이나 불필요한 정책 변경을 유도할 수 있다.

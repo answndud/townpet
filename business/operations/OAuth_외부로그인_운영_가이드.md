@@ -219,8 +219,9 @@
 - 실패 시 에러 문구/경로 캡처
 
 5. 기록 반영
-- `pnpm -C app ops:oauth:preflight`로 Base URL sanity(ERROR/WARN) 먼저 확인
-- `pnpm -C app ops:oauth:manual-report --date <YYYY-MM-DD> --run-url <RUN_URL> --out ../business/operations/manual-checks/oauth-manual-check-<YYYY-MM-DD>.md`로 기록 템플릿 생성
+- 1인 운영 기본값은 체크리스트에 결과를 직접 기록한다.
+- helper가 필요할 때만 `cd app && pnpm exec tsx scripts/generate-oauth-manual-check-report.ts --strict-base-url 1 --out /tmp/oauth-manual-check.md`로 Base URL sanity(ERROR/WARN)를 확인한다.
+- 기록 템플릿이 필요할 때만 `cd app && pnpm exec tsx scripts/generate-oauth-manual-check-report.ts --date <YYYY-MM-DD> --run-url <RUN_URL> --out ../business/operations/manual-checks/oauth-manual-check-<YYYY-MM-DD>.md`를 실행한다.
 - 생성된 markdown을 기준으로 `PROGRESS.md`에 결과 append
 - `PLAN.md`의 `blocked` 상태 갱신(조건 충족 시 `done`)
 - `business/operations/manual-checks/수동점검_안내.md` 기준으로 PII 없이 증적 링크만 기록
@@ -250,22 +251,22 @@ gh run view <RUN_ID> --repo answndud/townpet
 # 워크플로우 수동 실행
 gh workflow run oauth-real-e2e.yml --repo answndud/townpet
 
-# Base URL sanity 사전 점검(strict)
-pnpm -C app ops:oauth:preflight
+# Base URL sanity 사전 점검(strict, 필요할 때만)
+cd app && pnpm exec tsx scripts/generate-oauth-manual-check-report.ts --strict-base-url 1 --out /tmp/oauth-manual-check.md
 
-# 실계정 수동 점검 리포트 템플릿 생성
-pnpm -C app ops:oauth:manual-report --date 2026-03-05 --run-url https://github.com/answndud/townpet/actions/runs/22705265766 --out ../business/operations/manual-checks/OAuth_수동점검_기록_2026-03-05.md
+# 실계정 수동 점검 리포트 템플릿 생성(필요할 때만)
+cd app && pnpm exec tsx scripts/generate-oauth-manual-check-report.ts --date 2026-03-05 --run-url https://github.com/answndud/townpet/actions/runs/22705265766 --out ../business/operations/manual-checks/OAuth_수동점검_기록_2026-03-05.md
 
-# Provider 결과 빠른 반영
-pnpm -C app ops:oauth:update-manual --report ../business/operations/manual-checks/OAuth_수동점검_기록_2026-03-05.md --provider kakao --status pass --evidence <evidence-link>
-pnpm -C app ops:oauth:update-manual --report ../business/operations/manual-checks/OAuth_수동점검_기록_2026-03-05.md --provider naver --status pass --evidence <evidence-link>
+# Provider 결과 빠른 반영(필요할 때만)
+cd app && pnpm exec tsx scripts/update-oauth-manual-check.ts --report ../business/operations/manual-checks/OAuth_수동점검_기록_2026-03-05.md --provider kakao --status pass --evidence <evidence-link>
+cd app && pnpm exec tsx scripts/update-oauth-manual-check.ts --report ../business/operations/manual-checks/OAuth_수동점검_기록_2026-03-05.md --provider naver --status pass --evidence <evidence-link>
 
-# Cycle 23 해소 조건 검증(strict)
-pnpm -C app ops:oauth:verify-manual --report ../business/operations/manual-checks/OAuth_수동점검_기록_2026-03-05.md --strict 1
+# 수동 점검 기록 검증(strict, 필요할 때만)
+cd app && pnpm exec tsx scripts/verify-oauth-manual-check.ts --report ../business/operations/manual-checks/OAuth_수동점검_기록_2026-03-05.md --strict 1
 ```
 
 Day1 핸드오프 템플릿 생성:
 
 ```bash
-pnpm -C app growth:day1:handoff --date 2026-03-04 --out /tmp/day1-growth-handoff.md
+cd app && pnpm exec tsx scripts/generate-day1-growth-handoff.ts --date 2026-03-04 --out /tmp/day1-growth-handoff.md
 ```

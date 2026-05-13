@@ -17,7 +17,7 @@ const DEFAULT_REPORT_PATH =
 
 function usage() {
   console.log(`Usage:
-  pnpm -C app ops:oauth:verify-manual [options]
+  cd app && pnpm exec tsx scripts/verify-oauth-manual-check.ts [options]
 
 Options:
   --report <path>       Report markdown path (default: ${DEFAULT_REPORT_PATH})
