@@ -86,7 +86,7 @@
   - 사용자가 `보관`한 알림만 `archivedAt`이 기록되어 inbox에서 숨김
   - 운영/CS 확인용으로 보관 알림은 기본 90일 유지
 - 정리 기준:
-  - GitHub Actions `notification-cleanup`가 하루 1회 실행
+  - GitHub Actions `notification-cleanup`는 1인 운영 기본 루틴에서는 자동 실행하지 않고, 보관 알림 누적이 확인될 때 수동 실행
   - 삭제 대상은 `archivedAt < now() - 90 days`인 알림만 해당
 
 ## 7. 단계적 고도화

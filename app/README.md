@@ -108,7 +108,7 @@ pnpm quality:check
 - health 외 security/prewarm/latency evidence는 필요할 때만 `pnpm ops:evidence`로 실행합니다.
 - 먼저 볼 워크플로우는 `../.github/workflows/quality-gate.yml` 과 `../.github/workflows/ops-smoke-checks.yml` 두 개입니다.
 - 브라우저 smoke는 hot path에서 뺐고, 필요할 때 `../.github/workflows/browser-smoke.yml` 또는 `pnpm test:e2e:smoke`로만 확인합니다. 현재 smoke 범위는 로그인 진입, 소셜 온보딩, 에디터 툴바 regression까지 포함합니다.
-- 나머지 `db:*`, `ops:*`, `test:e2e:*`, cleanup/backfill 스크립트는 on-demand 유지보수 도구로 봅니다.
+- 나머지 `db:*`, `ops:*`, `test:e2e:*`, cleanup/backfill 스크립트와 maintenance workflow는 on-demand 유지보수 도구로 봅니다.
 
 ## 유지보수/운영 루틴
 
@@ -128,6 +128,14 @@ pnpm ops:check:security-env:strict
 pnpm ops:check:auth-email-readiness
 pnpm ops:perf:snapshot
 ```
+
+GitHub Actions maintenance workflow는 자동 schedule 없이 수동 실행 기준입니다.
+
+- `auth-audit-cleanup`
+- `notification-cleanup`
+- `search-term-cleanup`
+- `post-integrity-maintenance`
+- `ops-latency-snapshots`
 
 ## 특정 테스트만 돌릴 때
 

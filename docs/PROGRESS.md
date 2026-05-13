@@ -4,11 +4,22 @@
 
 - 작업: `P1-8 1인 운영용 과설계 축소 배치`
 - 상태: `in_progress`
-- 현재 초점: `PLAN.md`에 과설계 축소 후보를 상세화했고, 첫 작업으로 scheduled maintenance/workflow 축소를 진행한다.
+- 현재 초점: `P1-8.1 scheduled maintenance/workflow 축소`를 완료했고, 다음은 `P1-8.2 package script 표면 축소`다.
 
 ## 변경/탐색한 파일
 
 - 이번 세션 변경:
+  - `.github/workflows/auth-audit-cleanup.yml`
+  - `.github/workflows/notification-cleanup.yml`
+  - `.github/workflows/search-term-cleanup.yml`
+  - `.github/workflows/ops-latency-snapshots.yml`
+  - `.github/workflows/post-integrity-maintenance.yml`
+  - `app/README.md`
+  - `business/operations/운영_문서_안내.md`
+  - `business/operations/SLO_알림_기준.md`
+  - `business/operations/검색 통계 전환 가이드.md`
+  - `business/security/보안_위험_등록부.md`
+  - `business/security/보안_진행상황.md`
   - `docs/PLAN.md`
   - `docs/PROGRESS.md`
 - 이전 세션 변경:
@@ -103,6 +114,8 @@
   - `docs/COMPLETED.md`
 - 이번 세션 결과:
 - `P1-8` active plan을 생성하고 workflow, package script, production demo/OAuth manual automation, 개인화/광고 판단, client fetch/telemetry, 운영 문서 정리 순서로 세분화했다.
+- `auth-audit-cleanup`, `notification-cleanup`, `search-term-cleanup`, `post-integrity-maintenance`, `ops-latency-snapshots`의 schedule trigger를 제거하고 수동 `workflow_dispatch` 전용으로 낮췄다.
+- 운영 문서와 보안 문서에서 retention cleanup, post integrity, latency snapshot을 상시 자동 루틴이 아니라 on-demand 유지보수 루틴으로 정리했다.
 - 이전 세션 결과:
   - `ops-smoke-checks` 기본 timeout을 5분으로 낮추고 care smoke readiness/prewarm을 기본 경로에서 제거했다.
   - `ops:evidence:solo`를 추가해 health-only 로컬 evidence profile을 제공했다.
@@ -167,6 +180,9 @@
 
 ## 직전 검증
 
+- `ruby -e 'require "yaml"; ARGV.each { |f| YAML.load_file(f); puts "ok #{f}" }' .github/workflows/*.yml` PASS
+- `corepack pnpm@9.12.3 -C app docs:refresh:check` PASS
+- `git diff --check` PASS
 - `corepack pnpm@9.12.3 -C app exec vitest run scripts/run-ops-evidence.test.ts scripts/check-care-smoke-readiness.test.ts` PASS
 - `corepack pnpm@9.12.3 -C app typecheck` PASS
 - `corepack pnpm@9.12.3 -C app lint` PASS
@@ -211,6 +227,6 @@
 
 ## 다음 액션
 
-1. `P1-8.1 scheduled maintenance/workflow 축소`를 구현한다.
-2. workflow schedule 제거 후 관련 운영 문서를 on-demand 기준으로 맞춘다.
-3. YAML/docs sanity check 후 P1-8.1을 커밋한다.
+1. `P1-8.2 package script 표면 축소`를 진행한다.
+2. `package.json` script를 일상/maintenance/legacy 후보로 분류한다.
+3. 제거 또는 격하한 alias는 문서의 직접 실행법과 충돌하지 않게 정리한다.
