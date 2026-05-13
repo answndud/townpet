@@ -88,7 +88,7 @@ export function BreedGroupBuyForm({ breedCode, isAuthenticated }: BreedGroupBuyF
             name="title"
             required
             maxLength={120}
-            className="tp-input-soft w-full bg-white px-3 py-2 text-sm"
+            className="tp-input-soft min-h-10 w-full bg-white px-3 py-2 text-sm"
             placeholder="예: 말티즈 전용 저알러지 사료 공동구매"
           />
         </label>
@@ -98,7 +98,7 @@ export function BreedGroupBuyForm({ breedCode, isAuthenticated }: BreedGroupBuyF
             name="productName"
             required
             maxLength={120}
-            className="tp-input-soft w-full bg-white px-3 py-2 text-sm"
+            className="tp-input-soft min-h-10 w-full bg-white px-3 py-2 text-sm"
             placeholder="예: 알러지 케어 사료 6kg"
           />
         </label>
@@ -107,18 +107,18 @@ export function BreedGroupBuyForm({ breedCode, isAuthenticated }: BreedGroupBuyF
       <div className="grid gap-3 sm:grid-cols-3">
         <label className="space-y-1 text-sm text-[#2d4f7f]">
           <span className="font-semibold">목표가격(원)</span>
-          <input name="targetPrice" type="number" min={0} className="tp-input-soft w-full bg-white px-3 py-2 text-sm" />
+          <input name="targetPrice" type="number" min={0} className="tp-input-soft min-h-10 w-full bg-white px-3 py-2 text-sm" />
         </label>
         <label className="space-y-1 text-sm text-[#2d4f7f]">
           <span className="font-semibold">최소참여인원</span>
-          <input name="minParticipants" type="number" min={2} className="tp-input-soft w-full bg-white px-3 py-2 text-sm" />
+          <input name="minParticipants" type="number" min={2} className="tp-input-soft min-h-10 w-full bg-white px-3 py-2 text-sm" />
         </label>
         <label className="space-y-1 text-sm text-[#2d4f7f]">
           <span className="font-semibold">마감일</span>
           <input
             name="purchaseDeadline"
             maxLength={60}
-            className="tp-input-soft w-full bg-white px-3 py-2 text-sm"
+            className="tp-input-soft min-h-10 w-full bg-white px-3 py-2 text-sm"
             placeholder="예: 2026-03-15"
           />
         </label>
@@ -129,7 +129,7 @@ export function BreedGroupBuyForm({ breedCode, isAuthenticated }: BreedGroupBuyF
         <input
           name="deliveryMethod"
           maxLength={120}
-          className="tp-input-soft w-full bg-white px-3 py-2 text-sm"
+          className="tp-input-soft min-h-10 w-full bg-white px-3 py-2 text-sm"
           placeholder="예: 택배 / 직거래"
         />
       </label>
@@ -140,7 +140,7 @@ export function BreedGroupBuyForm({ breedCode, isAuthenticated }: BreedGroupBuyF
           name="content"
           required
           rows={6}
-          className="tp-input-soft w-full bg-white px-3 py-2 text-sm"
+          className="tp-input-soft min-h-24 w-full bg-white px-3 py-2 text-sm"
           placeholder="수량, 구매 조건, 주의사항을 구체적으로 작성해 주세요."
         />
       </label>
@@ -150,7 +150,7 @@ export function BreedGroupBuyForm({ breedCode, isAuthenticated }: BreedGroupBuyF
         <textarea
           name="imageUrls"
           rows={3}
-          className="tp-input-soft w-full bg-white px-3 py-2 text-sm"
+          className="tp-input-soft min-h-20 w-full bg-white px-3 py-2 text-sm"
           placeholder="https://..."
         />
       </label>
@@ -164,7 +164,7 @@ export function BreedGroupBuyForm({ breedCode, isAuthenticated }: BreedGroupBuyF
               required
               minLength={2}
               maxLength={24}
-              className="w-full border border-[#d5c08a] bg-white px-3 py-2 text-sm"
+              className="min-h-10 w-full border border-[#d5c08a] bg-white px-3 py-2 text-sm"
             />
           </label>
           <label className="space-y-1 text-sm text-[#6c5319]">
@@ -175,20 +175,22 @@ export function BreedGroupBuyForm({ breedCode, isAuthenticated }: BreedGroupBuyF
               required
               minLength={4}
               maxLength={32}
-              className="w-full border border-[#d5c08a] bg-white px-3 py-2 text-sm"
+              className="min-h-10 w-full border border-[#d5c08a] bg-white px-3 py-2 text-sm"
             />
           </label>
         </div>
       ) : null}
 
       {errorMessage ? (
-        <p className="border border-rose-300 bg-rose-50 px-3 py-2 text-sm text-rose-700">{errorMessage}</p>
+        <p className="border border-rose-300 bg-rose-50 px-3 py-2 text-sm text-rose-700" role="alert" aria-live="polite">
+          {errorMessage}
+        </p>
       ) : null}
 
       <button
         type="submit"
         disabled={isSubmitting}
-        className="inline-flex h-9 items-center border border-[#3567b5] bg-[#3567b5] px-3 text-sm font-semibold text-white transition hover:bg-[#2f5da4] disabled:cursor-not-allowed disabled:opacity-60"
+        className="inline-flex min-h-10 items-center justify-center rounded-lg border border-[#3567b5] bg-[#3567b5] px-4 text-sm font-semibold text-white transition hover:bg-[#2f5da4] disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isSubmitting ? "저장 중..." : `${breedCode} 공동구매 템플릿으로 작성`}
       </button>

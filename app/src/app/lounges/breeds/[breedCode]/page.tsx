@@ -273,13 +273,13 @@ export default async function BreedLoungePage({ params, searchParams }: BreedLou
         <div className="mt-3 flex flex-wrap gap-2">
           <Link
             href={`/lounges/breeds/${breedCode}/groupbuys/new`}
-            className="inline-flex h-8 items-center border border-[#3567b5] bg-[#3567b5] px-3 text-xs font-semibold text-white"
+            className="inline-flex min-h-10 items-center justify-center rounded-lg border border-[#3567b5] bg-[#3567b5] px-3 text-xs font-semibold text-white"
           >
             공동구매 템플릿 작성
           </Link>
           <Link
             href="/feed"
-            className="tp-btn-soft inline-flex h-8 items-center px-3 text-xs font-semibold"
+            className="tp-btn-soft inline-flex min-h-10 items-center justify-center px-3 text-xs font-semibold"
           >
             피드로 이동
           </Link>
@@ -295,17 +295,17 @@ export default async function BreedLoungePage({ params, searchParams }: BreedLou
             name="q"
             defaultValue={query.q ?? ""}
             placeholder="라운지 검색"
-            className="tp-input-soft h-8 min-w-[220px] px-3 text-sm"
+            className="tp-input-soft min-h-10 min-w-[220px] px-3 text-sm"
           />
           <button
             type="submit"
-            className="inline-flex h-8 items-center border border-[#3567b5] bg-[#3567b5] px-3 text-xs font-semibold text-white"
+            className="inline-flex min-h-10 items-center justify-center rounded-lg border border-[#3567b5] bg-[#3567b5] px-3 text-xs font-semibold text-white"
           >
             검색
           </button>
           <Link
             href={toHref({ breedCode })}
-            className="tp-btn-soft inline-flex h-8 items-center px-3 text-xs font-semibold"
+            className="tp-btn-soft inline-flex min-h-10 items-center justify-center px-3 text-xs font-semibold"
           >
             초기화
           </Link>
@@ -325,7 +325,7 @@ export default async function BreedLoungePage({ params, searchParams }: BreedLou
                   type: query.type,
                   personalized: query.personalized,
                 })}
-                className={`border px-2.5 py-1 text-xs font-semibold ${
+                className={`inline-flex min-h-10 items-center rounded-lg border px-3 text-xs font-semibold ${
                   selected
                     ? "border-[#3567b5] bg-[#3567b5] text-white"
                     : "border-[#b9cbeb] bg-white text-[#2f548f]"
@@ -349,7 +349,7 @@ export default async function BreedLoungePage({ params, searchParams }: BreedLou
                   type: query.type,
                   personalized: false,
                 })}
-                className={`border px-2.5 py-1 text-xs font-semibold ${
+                className={`inline-flex min-h-10 items-center rounded-lg border px-3 text-xs font-semibold ${
                   !query.personalized
                     ? "border-[#3567b5] bg-[#3567b5] text-white"
                     : "border-[#b9cbeb] bg-white text-[#2f548f]"
@@ -366,7 +366,7 @@ export default async function BreedLoungePage({ params, searchParams }: BreedLou
                   type: query.type,
                   personalized: true,
                 })}
-                className={`border px-2.5 py-1 text-xs font-semibold ${
+                className={`inline-flex min-h-10 items-center rounded-lg border px-3 text-xs font-semibold ${
                   query.personalized
                     ? "border-[#3567b5] bg-[#3567b5] text-white"
                     : "border-[#b9cbeb] bg-white text-[#2f548f]"
@@ -374,7 +374,7 @@ export default async function BreedLoungePage({ params, searchParams }: BreedLou
               >
                 맞춤 정렬
               </Link>
-              <span className="inline-flex items-center rounded border border-[#d8e4f5] bg-[#f7fbff] px-2.5 py-1 text-[11px] text-[#55749e]">
+              <span className="inline-flex min-h-10 items-center rounded-lg border border-[#d8e4f5] bg-[#f7fbff] px-3 text-[11px] text-[#55749e]">
                 {loungeAudienceContext.label ?? "프로필 보강 필요"}
               </span>
             </>
@@ -390,7 +390,7 @@ export default async function BreedLoungePage({ params, searchParams }: BreedLou
               type: query.type,
               personalized: query.personalized,
             })}
-            className={`border px-2.5 py-1 text-xs font-semibold ${
+            className={`inline-flex min-h-10 items-center rounded-lg border px-3 text-xs font-semibold ${
               !query.days
                 ? "border-[#3567b5] bg-[#3567b5] text-white"
                 : "border-[#b9cbeb] bg-white text-[#2f548f]"
@@ -409,7 +409,7 @@ export default async function BreedLoungePage({ params, searchParams }: BreedLou
                 type: query.type,
                 personalized: query.personalized,
               })}
-              className={`border px-2.5 py-1 text-xs font-semibold ${
+              className={`inline-flex min-h-10 items-center rounded-lg border px-3 text-xs font-semibold ${
                 query.days === day
                   ? "border-[#3567b5] bg-[#3567b5] text-white"
                   : "border-[#b9cbeb] bg-white text-[#2f548f]"
@@ -429,7 +429,7 @@ export default async function BreedLoungePage({ params, searchParams }: BreedLou
               days: query.days,
               personalized: query.personalized,
             })}
-            className={`border px-2.5 py-1 text-xs font-semibold ${
+            className={`inline-flex min-h-10 items-center rounded-lg border px-3 text-xs font-semibold ${
               !query.type
                 ? "border-[#3567b5] bg-[#3567b5] text-white"
                 : "border-[#b9cbeb] bg-white text-[#2f548f]"
@@ -448,7 +448,7 @@ export default async function BreedLoungePage({ params, searchParams }: BreedLou
                 type,
                 personalized: query.personalized,
               })}
-              className={`border px-2.5 py-1 text-xs font-semibold ${
+              className={`inline-flex min-h-10 items-center rounded-lg border px-3 text-xs font-semibold ${
                 query.type === type
                   ? "border-[#3567b5] bg-[#3567b5] text-white"
                   : "border-[#b9cbeb] bg-white text-[#2f548f]"
@@ -519,7 +519,7 @@ export default async function BreedLoungePage({ params, searchParams }: BreedLou
                     page: Math.max(1, resolvedPage - 1),
                   })}
                   aria-disabled={resolvedPage <= 1}
-                  className={`inline-flex h-8 items-center border px-2.5 text-xs font-semibold transition ${
+                  className={`inline-flex min-h-10 items-center rounded-lg border px-3 text-xs font-semibold transition ${
                     resolvedPage <= 1
                       ? "pointer-events-none border-[#d6e1f1] bg-[#eef3fb] text-[#91a6c6]"
                       : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
@@ -539,7 +539,7 @@ export default async function BreedLoungePage({ params, searchParams }: BreedLou
                       personalized: query.personalized,
                       page: pageNumber,
                     })}
-                    className={`inline-flex h-8 min-w-8 items-center justify-center border px-2 text-xs font-semibold transition ${
+                    className={`inline-flex min-h-10 min-w-10 items-center justify-center rounded-lg border px-2 text-xs font-semibold transition ${
                       pageNumber === resolvedPage
                         ? "border-[#3567b5] bg-[#3567b5] text-white"
                         : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
@@ -559,7 +559,7 @@ export default async function BreedLoungePage({ params, searchParams }: BreedLou
                     page: Math.min(totalPages, resolvedPage + 1),
                   })}
                   aria-disabled={resolvedPage >= totalPages}
-                  className={`inline-flex h-8 items-center border px-2.5 text-xs font-semibold transition ${
+                  className={`inline-flex min-h-10 items-center rounded-lg border px-3 text-xs font-semibold transition ${
                     resolvedPage >= totalPages
                       ? "pointer-events-none border-[#d6e1f1] bg-[#eef3fb] text-[#91a6c6]"
                       : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"

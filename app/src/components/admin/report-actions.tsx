@@ -53,7 +53,7 @@ export function ReportActions({ reportId, status, redirectTo }: ReportActionsPro
   return (
     <div className="flex flex-col gap-2 text-xs">
       <input
-        className="tp-input-soft min-h-9 px-2 py-1 text-xs"
+        className="tp-input-soft min-h-10 px-2 py-1 text-xs"
         value={resolution}
         onChange={(event) => setResolution(event.target.value)}
         placeholder="처리 메모(선택)"
@@ -65,7 +65,7 @@ export function ReportActions({ reportId, status, redirectTo }: ReportActionsPro
           checked={applySanction}
           onChange={(event) => setApplySanction(event.target.checked)}
           disabled={isLocked || isPending}
-          className="accent-[#3567b5]"
+          className="h-5 w-5 accent-[#3567b5]"
         />
         승인 시 단계적 제재 적용 (경고→7일→30일→영구)
       </label>
@@ -86,9 +86,15 @@ export function ReportActions({ reportId, status, redirectTo }: ReportActionsPro
         >
           기각
         </button>
-        {message ? <span className="text-[#5a7398]">{message}</span> : null}
+        {message ? (
+          <span className="text-[#5a7398]" role="status" aria-live="polite">
+            {message}
+          </span>
+        ) : null}
         {isLocked && !message ? (
-          <span className="text-[#5a7398]">처리 완료</span>
+          <span className="text-[#5a7398]" role="status" aria-live="polite">
+            처리 완료
+          </span>
         ) : null}
       </div>
     </div>

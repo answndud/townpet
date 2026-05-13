@@ -127,23 +127,23 @@ export function ReportQueueTable({ reports }: ReportQueueTableProps) {
     <section className="tp-card overflow-hidden">
       <div className="flex flex-col gap-3 border-b border-[#dde7f5] bg-[#f6f9ff] px-4 py-3 text-[11px] sm:px-5 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
-          <span className="inline-flex min-h-9 items-center rounded-lg border border-[#cbdcf5] bg-white px-3 text-[#315b9a]">
+          <span className="inline-flex min-h-10 items-center rounded-lg border border-[#cbdcf5] bg-white px-3 text-[#315b9a]">
             선택 {selectedIds.length}건
           </span>
           <input
-            className="tp-input-soft h-10 bg-white px-3 text-xs sm:h-9"
+            className="tp-input-soft min-h-10 bg-white px-3 text-xs"
             placeholder="일괄 처리 메모(선택)"
             value={bulkResolution}
             onChange={(event) => setBulkResolution(event.target.value)}
             disabled={isPending}
           />
-          <label className="flex min-h-9 items-center gap-2 text-[11px] text-[#4f678d]">
+          <label className="flex min-h-10 items-center gap-2 text-[11px] text-[#4f678d]">
             <input
               type="checkbox"
               checked={bulkApplySanction}
               onChange={(event) => setBulkApplySanction(event.target.checked)}
               disabled={isPending || selectedIds.length === 0}
-              className="accent-[#3567b5]"
+              className="h-5 w-5 accent-[#3567b5]"
             />
             일괄 승인 시 사용자별 1회 단계적 제재 적용
           </label>
@@ -152,7 +152,7 @@ export function ReportQueueTable({ reports }: ReportQueueTableProps) {
           <button
             type="button"
             onClick={() => runBulkAction("RESOLVE")}
-            className="tp-btn-primary h-10 px-3 disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0] sm:h-9"
+            className="tp-btn-primary min-h-10 px-3 disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0]"
             disabled={isPending || selectedIds.length === 0}
           >
             일괄 승인
@@ -160,7 +160,7 @@ export function ReportQueueTable({ reports }: ReportQueueTableProps) {
           <button
             type="button"
             onClick={() => runBulkAction("DISMISS")}
-            className="h-10 rounded-lg border border-rose-300 bg-white px-3 text-rose-700 transition hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200 disabled:cursor-not-allowed disabled:opacity-60 sm:h-9"
+            className="min-h-10 rounded-lg border border-rose-300 bg-white px-3 text-rose-700 transition hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200 disabled:cursor-not-allowed disabled:opacity-60"
             disabled={isPending || selectedIds.length === 0}
           >
             일괄 기각
@@ -168,7 +168,7 @@ export function ReportQueueTable({ reports }: ReportQueueTableProps) {
           <button
             type="button"
             onClick={() => runBulkAction("HIDE_TARGET")}
-            className="tp-btn-soft h-10 px-3 disabled:cursor-not-allowed disabled:opacity-60 sm:h-9"
+            className="tp-btn-soft min-h-10 px-3 disabled:cursor-not-allowed disabled:opacity-60"
             disabled={isPending || selectedIds.length === 0}
           >
             대상 숨김
@@ -176,12 +176,16 @@ export function ReportQueueTable({ reports }: ReportQueueTableProps) {
           <button
             type="button"
             onClick={() => runBulkAction("UNHIDE_TARGET")}
-            className="tp-btn-soft h-10 px-3 disabled:cursor-not-allowed disabled:opacity-60 sm:h-9"
+            className="tp-btn-soft min-h-10 px-3 disabled:cursor-not-allowed disabled:opacity-60"
             disabled={isPending || selectedIds.length === 0}
           >
             숨김 해제
           </button>
-          {message ? <span className="text-[#5a7398]">{message}</span> : null}
+          {message ? (
+            <span className="text-[#5a7398]" role="status" aria-live="polite">
+              {message}
+            </span>
+          ) : null}
         </div>
       </div>
 
@@ -302,6 +306,7 @@ export function ReportQueueTable({ reports }: ReportQueueTableProps) {
                     checked={allSelected}
                     onChange={toggleAll}
                     aria-label="전체 선택"
+                    className="h-5 w-5 accent-[#3567b5]"
                   />
                 </th>
                 <th className="px-3 py-2.5">대상</th>
@@ -328,6 +333,7 @@ export function ReportQueueTable({ reports }: ReportQueueTableProps) {
                         onChange={() => toggleSelection(report.id)}
                         aria-label={`신고 ${report.id} 선택`}
                         disabled={report.status !== ReportStatus.PENDING}
+                        className="h-5 w-5 accent-[#3567b5]"
                       />
                     </td>
                     <td className="px-3 py-2.5">
