@@ -30,11 +30,11 @@
   - `app/src/server/services/posts/post.service.ts`
 - 이미 완료한 큰 경계:
   - `post-create-form`은 상태, 옵션, draft, structured fields, shell, submit orchestration 분리를 완료했다.
-  - `post.queries`는 상세 read model, care detail, legacy select, engagement, guest meta, search support, user posts, ranked search, list where/include/args/fallback 계열 분리를 진행했다.
-  - 최근 기준 `post.queries.ts`는 4850줄에서 2389줄까지 축소됐다.
+  - `post.queries`는 상세 read model, care detail, legacy select, engagement, guest meta, search support, user posts, ranked search, list where/include/args/fallback, post detail fallback 계열 분리를 진행했다.
+  - 최근 기준 `post.queries.ts`는 4850줄에서 2299줄까지 축소됐다.
 - 다음 액션:
-  - post detail fallback 경계를 추가로 분리한다.
-  - 또는 `post.service.ts`의 create/update/delete/reaction/bookmark 책임 경계를 분리한다.
+  - `post.service.ts`의 create/update/delete/reaction/bookmark 책임 경계를 분리한다.
+  - 결합이 크면 `post-detail-client.tsx`의 media/actions/comments 경계를 먼저 분리한다.
 - 검증:
   - 변경 slice마다 `post.queries.test.ts` 또는 해당 targeted test
   - `corepack pnpm@9.12.3 -C app typecheck`

@@ -26,16 +26,7 @@ import { getFeedPersonalizationPolicy } from "@/server/queries/policy.queries";
 import { listPreferredPetTypeIdsByUserId } from "@/server/queries/user.queries";
 import { listHiddenAuthorIdsForViewer } from "@/server/queries/user-relation.queries";
 import { createQueryCacheKey, withQueryCache } from "@/server/cache/query-cache";
-import {
-  attachPostDetailExtras,
-  buildPostDetailBaseInclude,
-  buildPostDetailBaseIncludeWithoutReactions,
-} from "./post-detail-extras";
-import {
-  buildLegacyPostDetailSelect,
-  buildLegacyPostDetailSelectWithoutReactions,
-} from "./post-legacy-selects";
-import { withEmptyGuestPostMetaOne } from "./post-guest-meta-fallback";
+import { fetchPostDetailWithFallback } from "./post-detail-fetch-fallback";
 import {
   buildRankedSearchCandidateSql,
   buildRankedSearchMatchSql,
@@ -72,7 +63,6 @@ import {
   type PostSearchIn,
 } from "./post-search-support";
 import {
-  attachBookmarkStateToPost,
   attachBookmarkStateToPosts,
   isMissingPostBookmarkTableError,
   isMissingPostReactionTableError,
@@ -247,6 +237,12 @@ const postListFetchFallbackHandlers = {
   onUnsupportedReviewCategoryFilter: () => {
     postReviewCategoryFieldSupport = false;
   },
+};
+
+const postDetailFetchFallbackHandlers = {
+  isUnknownGuestPostColumnError,
+  isUnknownGuestAuthorIncludeError,
+  onUnavailableReactions: markPostReactionsUnsupported,
 };
 
 function countPostRowsWithSchemaFallback({
@@ -1601,100 +1597,14 @@ export async function getPostById(id?: string, viewerId?: string) {
       author: buildVisibleAuthorFilter(),
     };
 
-    if (!supportsPostReactionsField()) {
-      const post = await prisma.post
-        .findFirst({
-          where: { id, ...visibilityFilter },
-          include: buildPostDetailBaseIncludeWithoutReactions(),
-        })
-        .catch(async (error) => {
-          if (!isUnknownGuestPostColumnError(error) && !isUnknownGuestAuthorIncludeError(error)) {
-            throw error;
-          }
-
-          if (isUnknownGuestAuthorIncludeError(error)) {
-            return prisma.post.findFirst({
-              where: { id, ...visibilityFilter },
-              include: buildPostDetailBaseIncludeWithoutReactions(false),
-            });
-          }
-
-          return prisma.post.findFirst({
-            where: { id, ...visibilityFilter },
-            select: buildLegacyPostDetailSelectWithoutReactions(),
-          });
-        });
-      return attachBookmarkStateToPost(
-        await attachPostDetailExtras(withEmptyGuestPostMetaOne(post)),
-        viewerId,
-      );
-    }
-
-    try {
-      const post = await prisma.post
-        .findFirst({
-          where: { id, ...visibilityFilter },
-          include: buildPostDetailBaseInclude(supportsPostGuestAuthorField()),
-        })
-        .catch(async (error) => {
-          if (!isUnknownGuestPostColumnError(error) && !isUnknownGuestAuthorIncludeError(error)) {
-            throw error;
-          }
-
-          if (isUnknownGuestAuthorIncludeError(error)) {
-            return prisma.post.findFirst({
-              where: { id, ...visibilityFilter },
-              include: buildPostDetailBaseInclude(false),
-            });
-          }
-
-          const post = await prisma.post.findFirst({
-            where: { id, ...visibilityFilter },
-            select: buildLegacyPostDetailSelect(),
-          });
-          return withEmptyGuestPostMetaOne(post);
-        });
-      return attachBookmarkStateToPost(await attachPostDetailExtras(post), viewerId);
-    } catch (error) {
-      if (
-        !isUnavailableReactionsIncludeError(error) &&
-        !isUnknownGuestPostColumnError(error) &&
-        !isUnknownGuestAuthorIncludeError(error)
-      ) {
-        throw error;
-      }
-
-      if (isUnavailableReactionsIncludeError(error)) {
-        markPostReactionsUnsupported();
-      }
-
-      const post = await prisma.post
-        .findFirst({
-          where: { id, ...visibilityFilter },
-          include: buildPostDetailBaseIncludeWithoutReactions(!isUnknownGuestAuthorIncludeError(error)),
-        })
-        .catch(async (innerError) => {
-          if (!isUnknownGuestPostColumnError(innerError) && !isUnknownGuestAuthorIncludeError(innerError)) {
-            throw innerError;
-          }
-
-          if (isUnknownGuestAuthorIncludeError(innerError)) {
-            return prisma.post.findFirst({
-              where: { id, ...visibilityFilter },
-              include: buildPostDetailBaseIncludeWithoutReactions(false),
-            });
-          }
-
-          return prisma.post.findFirst({
-            where: { id, ...visibilityFilter },
-            select: buildLegacyPostDetailSelectWithoutReactions(),
-          });
-        });
-      return attachBookmarkStateToPost(
-        await attachPostDetailExtras(withEmptyGuestPostMetaOne(post)),
-        viewerId,
-      );
-    }
+    return fetchPostDetailWithFallback({
+      id,
+      visibilityFilter,
+      viewerId,
+      includeReactions: supportsPostReactionsField(),
+      includeGuestAuthor: supportsPostGuestAuthorField(),
+      handlers: postDetailFetchFallbackHandlers,
+    });
   };
 
   if (shouldCache) {
