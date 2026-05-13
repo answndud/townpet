@@ -2778,3 +2778,31 @@
 - 결과:
   - 주요 운영 화면의 반복 pagination이 기존 공용 접근성 기준을 공유하게 됐다.
   - 다음 후보는 `P2-7 admin table empty state와 action button touch target 점검`이다.
+
+### 2026-05-13 | P2-7 admin table empty/action touch target 보강
+- 완료일: `2026-05-13`
+- 배경:
+  - 신고 큐 0건 상태는 단순 문장만 보여주고 있어 현재 필터 맥락과 복구 action이 약했다.
+  - 신고 처리의 핵심 action인 승인/기각 버튼은 `min-h-9` 기준이라 이전 작업에서 맞춘 40px touch target 기준보다 작았다.
+- 변경내용:
+  - `ReportQueueTable`의 0건 상태를 공용 `EmptyState`로 교체했다.
+  - 신고 큐 0건 상태에 `전체 신고 보기` action을 제공했다.
+  - `ReportActions`의 제재 checkbox row를 `min-h-10`으로 보강했다.
+  - `ReportActions`의 승인/기각 버튼을 `min-h-10`으로 보강했다.
+  - `ReportActions` button row가 모바일에서 줄바꿈되도록 `flex-wrap`을 추가했다.
+  - `ReportActions` 정적 렌더 unit test를 추가했다.
+- 코드문서:
+  - [app/src/components/admin/report-queue-table.tsx](../app/src/components/admin/report-queue-table.tsx)
+  - [app/src/components/admin/report-actions.tsx](../app/src/components/admin/report-actions.tsx)
+  - [app/src/components/admin/report-actions.test.tsx](../app/src/components/admin/report-actions.test.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app exec vitest run src/components/admin/report-actions.test.tsx src/components/ui/empty-state.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `corepack pnpm@9.12.3 -C app docs:refresh:check`
+  - `git diff --check`
+- 결과:
+  - 신고 큐 0건 상태와 신고 처리 action이 기존 모바일/접근성 기준에 맞춰졌다.
+  - 다음 후보는 `P2-8 admin forms의 submit/cancel button touch target과 상태 메시지 점검`이다.
