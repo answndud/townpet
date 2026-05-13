@@ -136,7 +136,7 @@ export default async function BookmarksPage({ searchParams }: BookmarksPageProps
                 name="q"
                 defaultValue={query}
                 placeholder="제목, 내용 검색"
-                className="tp-input-soft h-9 w-full bg-white px-3.5 text-[13px] outline-none transition focus:border-[#4e89d8]"
+                className="tp-input-soft min-h-10 w-full bg-white px-3.5 text-[13px] outline-none transition focus:border-[#4e89d8]"
               />
               <button
                 type="submit"

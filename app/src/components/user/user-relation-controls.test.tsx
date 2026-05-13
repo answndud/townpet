@@ -28,6 +28,7 @@ describe("UserRelationControls", () => {
     );
 
     expect(html).toContain("뮤트");
+    expect(html).toContain("min-h-10");
     expect(html).not.toContain(">차단<");
     expect(html).not.toContain("차단 해제");
   });

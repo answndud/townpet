@@ -16,6 +16,7 @@
 현재 active 작업 없음.
 
 최근 완료:
+- `P2-18 remaining compact user controls 보강`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
 - `P2-17 remaining compact comments control 보강`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
 - `P2-16 post detail info panel status/action control 보강`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
 - `P2-15 post detail action/reaction/bookmark/share control 보강`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
@@ -39,4 +40,4 @@
 
 ## 다음 작업 후보
 
-- P2-18: remaining compact controls audit, notification/profile/lounge/admin edge surfaces를 점검한다.
+- P2-19: remaining compact controls audit, lounge/admin edge surfaces를 점검한다.

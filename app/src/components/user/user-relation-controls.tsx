@@ -29,7 +29,7 @@ export function UserRelationControls({
   const [isPending, startTransition] = useTransition();
 
   const buttonClass =
-    "min-h-9 rounded-lg border px-3 py-1.5 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-60";
+    "inline-flex min-h-10 items-center justify-center rounded-lg border px-3 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-60";
 
   const runAction = (action: "MUTE" | "UNMUTE") => {
     startTransition(async () => {
@@ -67,7 +67,11 @@ export function UserRelationControls({
       {initialState.hasBlockedMe ? (
         <span className="text-[11px] text-rose-700">상대가 나를 차단한 상태입니다.</span>
       ) : null}
-      {message ? <span className="text-[11px] text-[#4f678d]">{message}</span> : null}
+      {message ? (
+        <span className="text-[11px] font-medium text-[#4f678d]" role="status" aria-live="polite">
+          {message}
+        </span>
+      ) : null}
     </div>
   );
 }
