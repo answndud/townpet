@@ -3044,3 +3044,31 @@
 - 결과:
   - 게시글 상세의 주요 action, reaction, bookmark, share control이 기존 모바일/접근성 기준에 맞춰졌다.
   - 다음 후보는 `P2-16 post detail info panel의 status action, 신청/피드백 control, empty/failure state 점검`이다.
+
+### 2026-05-13 | P2-16 post detail info panel status/action control 보강
+- 완료일: `2026-05-13`
+- 배경:
+  - 게시글 상세 정보 패널은 마켓 거래 상태, 돌봄 요청 상태, 지원/취소/수락/거절, 완료 피드백을 처리하는 정책성 action 표면이다.
+  - 일부 버튼과 select가 작은 `py-1.5` 기준으로 남아 있었고, 상태 변경 결과 메시지도 보조기술에 명시적으로 전달되지 않았다.
+- 변경내용:
+  - 정보 패널 action button 공용 class를 `INFO_PANEL_PRIMARY_ACTION_CLASS`로 정리하고 `min-h-10` 기준을 적용했다.
+  - 마켓 상태 변경, 돌봄 상태 변경, 돌봄 지원, 지원 취소, 지원자 수락/거절, 완료 피드백 저장 버튼을 같은 touch target 기준으로 맞췄다.
+  - 완료 피드백 select 공용 class를 `INFO_PANEL_SELECT_CLASS`로 정리하고 `min-h-10` 기준을 적용했다.
+  - 돌봄 지원/완료 피드백 textarea에 `min-h-24`를 적용해 입력 영역을 안정적으로 확보했다.
+  - 완료 피드백 checkbox를 `h-5 w-5`로 보강했다.
+  - 마켓/돌봄/지원/피드백 메시지에 `role="status"`와 `aria-live="polite"`를 추가했다.
+  - post detail info panel 접근성 소스 회귀 unit test를 추가했다.
+- 코드문서:
+  - [app/src/components/posts/post-detail-info-panels.tsx](../app/src/components/posts/post-detail-info-panels.tsx)
+  - [app/src/components/posts/post-detail-info-panels-accessibility.test.ts](../app/src/components/posts/post-detail-info-panels-accessibility.test.ts)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app exec vitest run src/components/posts/post-detail-info-panels-accessibility.test.ts src/components/posts/post-detail-info-section.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `corepack pnpm@9.12.3 -C app docs:refresh:check`
+  - `git diff --check`
+- 결과:
+  - 게시글 상세 정보 패널의 상태 변경, 신청/피드백 control과 status message가 기존 모바일/접근성 기준에 맞춰졌다.
+  - 다음 후보는 `P2-17 remaining compact controls audit, comments pagination/menu/admin edge surfaces 점검`이다.

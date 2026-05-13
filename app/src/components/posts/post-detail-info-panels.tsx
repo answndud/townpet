@@ -46,6 +46,14 @@ type CareFeedbackInput = {
   comment: string;
 };
 
+const INFO_PANEL_PRIMARY_ACTION_CLASS =
+  "inline-flex min-h-10 items-center justify-center rounded-md border px-3 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-60";
+
+const INFO_PANEL_SELECT_CLASS =
+  "mt-1 min-h-10 w-full rounded-md border border-[#d5dae3] bg-white px-2 text-xs";
+
+const INFO_PANEL_STATUS_MESSAGE_CLASS = "mt-2 text-xs font-medium";
+
 type PostDetailInfoPanelsProps = {
   post: PostDetailItem;
   canManageMarketStatus: boolean;
@@ -227,11 +235,11 @@ export function PostDetailInfoPanels({
                     <button
                       key={status}
                       type="button"
-                      className={`rounded-md border px-3 py-1.5 text-xs font-semibold transition ${
+                      className={`${INFO_PANEL_PRIMARY_ACTION_CLASS} ${
                         isCurrent
                           ? "border-[#3567b5] bg-[#3567b5] text-white"
                           : "border-[#c7d8ef] bg-white text-[#315b9a] hover:border-[#9dbbe6] hover:bg-[#eef5ff]"
-                      } disabled:cursor-not-allowed disabled:opacity-60`}
+                      }`}
                       disabled={isMarketStatusPending || isCurrent}
                       onClick={() => onMarketStatusChange(status)}
                     >
@@ -241,7 +249,9 @@ export function PostDetailInfoPanels({
                 })}
               </div>
               {marketStatusMessage ? (
-                <p className="mt-2 text-xs text-[#5d779e]">{marketStatusMessage}</p>
+                <p className={`${INFO_PANEL_STATUS_MESSAGE_CLASS} text-[#5d779e]`} role="status" aria-live="polite">
+                  {marketStatusMessage}
+                </p>
               ) : null}
             </div>
           ) : null}
@@ -312,11 +322,11 @@ export function PostDetailInfoPanels({
                     <button
                       key={status}
                       type="button"
-                      className={`rounded-md border px-3 py-1.5 text-xs font-semibold transition ${
+                      className={`${INFO_PANEL_PRIMARY_ACTION_CLASS} ${
                         isCurrent
                           ? "border-[#2f7b58] bg-[#2f7b58] text-white"
                           : "border-[#b5dcc9] bg-white text-[#21543d] hover:border-[#8cc7ad] hover:bg-[#e9f7ef]"
-                      } disabled:cursor-not-allowed disabled:opacity-60`}
+                      }`}
                       disabled={isCareStatusPending || isCurrent}
                       onClick={() => onCareStatusChange(status)}
                     >
@@ -326,7 +336,9 @@ export function PostDetailInfoPanels({
                 })}
               </div>
               {careStatusMessage ? (
-                <p className="mt-2 text-xs text-[#4b765f]">{careStatusMessage}</p>
+                <p className={`${INFO_PANEL_STATUS_MESSAGE_CLASS} text-[#4b765f]`} role="status" aria-live="polite">
+                  {careStatusMessage}
+                </p>
               ) : null}
             </div>
           ) : null}
@@ -338,7 +350,7 @@ export function PostDetailInfoPanels({
                 onChange={(event) => onCareApplicationInputChange(event.target.value)}
                 rows={3}
                 maxLength={500}
-                className="mt-2 w-full rounded-md border border-[#b5dcc9] bg-white px-3 py-2 text-sm text-[#20362b] outline-none transition focus:border-[#2f7b58] focus:ring-2 focus:ring-[#b5dcc9]"
+                className="mt-2 min-h-24 w-full rounded-md border border-[#b5dcc9] bg-white px-3 py-2 text-sm text-[#20362b] outline-none transition focus:border-[#2f7b58] focus:ring-2 focus:ring-[#b5dcc9]"
                 placeholder="요청자에게 전달할 메시지를 입력하세요."
               />
               <div className="mt-2 flex items-center justify-between gap-3">
@@ -347,7 +359,7 @@ export function PostDetailInfoPanels({
                 </span>
                 <button
                   type="button"
-                  className="rounded-md border border-[#2f7b58] bg-[#2f7b58] px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-[#246145] disabled:cursor-not-allowed disabled:opacity-60"
+                  className={`${INFO_PANEL_PRIMARY_ACTION_CLASS} border-[#2f7b58] bg-[#2f7b58] text-white hover:bg-[#246145]`}
                   disabled={isCareApplicationPending}
                   onClick={onCreateCareApplication}
                 >
@@ -365,7 +377,7 @@ export function PostDetailInfoPanels({
                 {ownCareApplication.status === CareApplicationStatus.PENDING ? (
                   <button
                     type="button"
-                    className="rounded-md border border-[#c7d8ef] bg-white px-3 py-1.5 text-xs font-semibold text-[#315b9a] transition hover:border-[#9dbbe6] hover:bg-[#eef5ff] disabled:cursor-not-allowed disabled:opacity-60"
+                    className={`${INFO_PANEL_PRIMARY_ACTION_CLASS} border-[#c7d8ef] bg-white text-[#315b9a] hover:border-[#9dbbe6] hover:bg-[#eef5ff]`}
                     disabled={isCareApplicationPending}
                     onClick={() => onCancelCareApplication(ownCareApplication.id)}
                   >
@@ -403,7 +415,7 @@ export function PostDetailInfoPanels({
                           <div className="flex gap-2">
                             <button
                               type="button"
-                              className="rounded-md border border-[#2f7b58] bg-[#2f7b58] px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-[#246145] disabled:cursor-not-allowed disabled:opacity-60"
+                              className={`${INFO_PANEL_PRIMARY_ACTION_CLASS} border-[#2f7b58] bg-[#2f7b58] text-white hover:bg-[#246145]`}
                               disabled={isCareApplicationPending}
                               onClick={() =>
                                 onDecideCareApplication(
@@ -416,7 +428,7 @@ export function PostDetailInfoPanels({
                             </button>
                             <button
                               type="button"
-                              className="rounded-md border border-[#d5dae3] bg-white px-3 py-1.5 text-xs font-semibold text-[#4f5f75] transition hover:bg-[#f1f4f8] disabled:cursor-not-allowed disabled:opacity-60"
+                              className={`${INFO_PANEL_PRIMARY_ACTION_CLASS} border-[#d5dae3] bg-white text-[#4f5f75] hover:bg-[#f1f4f8]`}
                               disabled={isCareApplicationPending}
                               onClick={() =>
                                 onDecideCareApplication(
@@ -444,7 +456,7 @@ export function PostDetailInfoPanels({
             </div>
           ) : null}
           {careApplicationMessage ? (
-            <p className="col-span-full mt-1 text-xs text-[#4b765f]">
+            <p className="col-span-full mt-1 text-xs font-medium text-[#4b765f]" role="status" aria-live="polite">
               {careApplicationMessage}
             </p>
           ) : null}
@@ -466,7 +478,7 @@ export function PostDetailInfoPanels({
                             : CareFeedbackIssueType.NONE,
                       }))
                     }
-                    className="mt-1 w-full rounded-md border border-[#d5dae3] bg-white px-2 py-1.5 text-xs"
+                    className={INFO_PANEL_SELECT_CLASS}
                   >
                     {Object.values(CareFeedbackOutcome).map((outcome) => (
                       <option key={outcome} value={outcome}>
@@ -486,7 +498,7 @@ export function PostDetailInfoPanels({
                       }))
                     }
                     disabled={careFeedbackInput.outcome !== CareFeedbackOutcome.ISSUE}
-                    className="mt-1 w-full rounded-md border border-[#d5dae3] bg-white px-2 py-1.5 text-xs disabled:opacity-60"
+                    className={`${INFO_PANEL_SELECT_CLASS} disabled:opacity-60`}
                   >
                     {Object.values(CareFeedbackIssueType).map((issueType) => (
                       <option key={issueType} value={issueType}>
@@ -505,7 +517,7 @@ export function PostDetailInfoPanels({
                         wouldRepeat: event.target.checked,
                       }))
                     }
-                    className="mb-1 h-4 w-4 rounded border-[#d5dae3]"
+                    className="mb-1 h-5 w-5 rounded border-[#d5dae3]"
                   />
                   다시 매칭하고 싶어요
                 </label>
@@ -520,14 +532,14 @@ export function PostDetailInfoPanels({
                 }
                 rows={3}
                 maxLength={500}
-                className="mt-2 w-full rounded-md border border-[#d5dae3] bg-white px-3 py-2 text-sm text-[#253449] outline-none transition focus:border-[#7a91b5] focus:ring-2 focus:ring-[#d8e2f1]"
+                className="mt-2 min-h-24 w-full rounded-md border border-[#d5dae3] bg-white px-3 py-2 text-sm text-[#253449] outline-none transition focus:border-[#7a91b5] focus:ring-2 focus:ring-[#d8e2f1]"
                 placeholder="운영 확인이 필요한 내용이나 간단한 메모를 남겨주세요."
               />
               <div className="mt-2 flex items-center justify-between gap-3">
                 <span className="text-xs text-[#66758a]">피드백은 공개 프로필에 노출되지 않습니다.</span>
                 <button
                   type="button"
-                  className="rounded-md border border-[#2f5da4] bg-[#2f5da4] px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-[#244a83] disabled:cursor-not-allowed disabled:opacity-60"
+                  className={`${INFO_PANEL_PRIMARY_ACTION_CLASS} border-[#2f5da4] bg-[#2f5da4] text-white hover:bg-[#244a83]`}
                   disabled={isCareFeedbackPending}
                   onClick={onCreateCareCompletionFeedback}
                 >
@@ -562,7 +574,7 @@ export function PostDetailInfoPanels({
             </div>
           ) : null}
           {careFeedbackMessage ? (
-            <p className="col-span-full mt-1 text-xs text-[#4b765f]">
+            <p className="col-span-full mt-1 text-xs font-medium text-[#4b765f]" role="status" aria-live="polite">
               {careFeedbackMessage}
             </p>
           ) : null}
