@@ -4,11 +4,22 @@
 
 - 작업: 현재 active 작업 없음
 - 상태: `idle`
-- 현재 초점: `P2-4 feed loading/pagination 모바일 접근성 보강`을 완료 archive했다.
+- 현재 초점: `P2-5 알림/공개 프로필 빈 상태와 pagination 보강`을 완료 archive했다.
 
 ## 변경/탐색한 파일
 
 - 이번 세션 변경:
+  - `app/src/components/ui/compact-pagination.tsx`
+  - `app/src/components/ui/compact-pagination.test.tsx`
+  - `app/src/components/notifications/notification-center.tsx`
+  - `app/src/app/users/[id]/page.tsx`
+  - `docs/PLAN.md`
+  - `docs/PROGRESS.md`
+- 탐색한 파일:
+  - `app/src/components/notifications/notification-center.tsx`
+  - `app/src/app/users/[id]/page.tsx`
+  - `app/src/components/ui/empty-state.tsx`
+- 이전 세션 변경:
   - `app/src/components/posts/feed-pagination.tsx`
   - `app/src/components/posts/feed-pagination.test.tsx`
   - `app/src/components/posts/feed-loading-skeleton.tsx`
@@ -186,6 +197,11 @@
   - `docs/errors/2026-05-12_vercel-security-env-build-preflight.md`
   - `docs/COMPLETED.md`
 - 이번 세션 결과:
+- `CompactPagination`을 추가해 알림 센터와 공개 프로필 활동 탭 pagination에 적용했다.
+- compact pagination에 `nav`, `aria-label`, `aria-current="page"`, `min-h-10`, `min-w-10`을 적용했다.
+- 알림 센터 빈 상태를 공용 `EmptyState`로 교체하고, unread 0건에서 전체 알림 보기와 피드 이동 action을 제공했다.
+- 공개 프로필 posts/comments/reactions 0건 상태를 공용 `EmptyState`로 교체했다.
+- 이전 세션 결과:
 - feed pagination을 `app/src/components/posts/feed-pagination.tsx`로 공용화하고 기존 `app/feed` pagination 파일은 re-export로 유지했다.
 - guest feed pagination 중복 마크업을 공용 `FeedPagination` 사용으로 교체했다.
 - pagination에 `nav`, `aria-label`, `aria-current="page"`, `min-h-10`, `min-w-10`을 적용했다.

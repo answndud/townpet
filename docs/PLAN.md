@@ -16,6 +16,7 @@
 현재 active 작업 없음.
 
 최근 완료:
+- `P2-5 알림/공개 프로필 빈 상태와 pagination 보강`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
 - `P2-4 feed loading/pagination 모바일 접근성 보강`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
 - `P2-3 핵심 empty state 모바일/복구 액션 보강`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
 - `P2-2 UX/error boundary/mobile/accessibility 보강`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
@@ -26,4 +27,4 @@
 
 ## 다음 작업 후보
 
-- P2-5: 개인 프로필/알림의 빈 상태와 pagination controls를 같은 기준으로 점검하고 필요한 곳만 보강한다.
+- P2-6: admin pagination/empty state 중 반복이 큰 화면을 점검하고, 1인 운영에 필요한 범위만 공용화한다.

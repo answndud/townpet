@@ -5,12 +5,14 @@ import { notFound, redirect } from "next/navigation";
 import { cache } from "react";
 
 import { RouteRefreshOnReturn } from "@/components/ui/route-refresh-on-return";
+import { CompactPagination } from "@/components/ui/compact-pagination";
+import { EmptyState } from "@/components/ui/empty-state";
 import { PublicProfileSummaryStats } from "@/components/user/public-profile-summary-stats";
 import { UserRelationControls } from "@/components/user/user-relation-controls";
 import { auth } from "@/lib/auth";
 import { getCspNonce } from "@/lib/csp-nonce";
 import { serializeJsonForScriptTag } from "@/lib/json-script";
-import { buildPaginationWindow, parsePositivePage } from "@/lib/pagination";
+import { parsePositivePage } from "@/lib/pagination";
 import {
   buildPublicProfileTabHref,
   buildPublicProfileLoginHref,
@@ -62,6 +64,45 @@ function buildBioExcerpt(text: string, maxLength = 140) {
     return normalized;
   }
   return `${normalized.slice(0, maxLength)}...`;
+}
+
+function PublicProfileActivityEmptyState({
+  eyebrow,
+  title,
+  description,
+}: {
+  eyebrow: string;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="py-2">
+      <EmptyState eyebrow={eyebrow} title={title} description={description} />
+    </div>
+  );
+}
+
+function PublicProfileActivityPagination({
+  profileId,
+  tab,
+  page,
+  totalPages,
+}: {
+  profileId: string;
+  tab: ActivityTab;
+  page: number;
+  totalPages: number;
+}) {
+  return (
+    <div className="pt-3">
+      <CompactPagination
+        ariaLabel="프로필 활동 페이지 이동"
+        currentPage={page}
+        totalPages={totalPages}
+        makeHref={(nextPage) => buildPublicProfileTabHref(profileId, tab, nextPage)}
+      />
+    </div>
+  );
 }
 
 export async function generateMetadata({
@@ -353,7 +394,11 @@ export default async function PublicUserProfilePage({
           {resolvedTab === "posts" ? (
             <div className="mt-4 divide-y divide-[#e1e9f5]">
               {posts.length === 0 ? (
-                <p className="py-6 text-sm text-[#5a7398]">게시글 활동이 없습니다.</p>
+                <PublicProfileActivityEmptyState
+                  eyebrow="게시글 활동"
+                  title="게시글 활동이 없습니다."
+                  description="공개된 작성글이 생기면 이 탭에서 확인할 수 있습니다."
+                />
               ) : (
                 posts.map((post) => (
                   <article key={post.id} className="py-3">
@@ -368,43 +413,12 @@ export default async function PublicUserProfilePage({
                 ))
               )}
               {tabTotalPages > 1 ? (
-                <div className="flex flex-wrap items-center justify-center gap-1.5 pt-3">
-                  <Link
-                    href={buildPublicProfileTabHref(profile.id, "posts", Math.max(1, tabPage - 1))}
-                    aria-disabled={tabPage <= 1}
-                    className={`inline-flex h-8 items-center rounded-lg border px-2.5 text-xs font-semibold transition ${
-                      tabPage <= 1
-                        ? "pointer-events-none border-[#d6e1f1] bg-[#eef3fb] text-[#91a6c6]"
-                        : "border-[#cbdcf5] bg-white text-[#315b9a]"
-                    }`}
-                  >
-                    이전
-                  </Link>
-                  {buildPaginationWindow(tabPage, tabTotalPages).map((pageNumber) => (
-                    <Link
-                      key={`public-profile-post-page-${pageNumber}`}
-                      href={buildPublicProfileTabHref(profile.id, "posts", pageNumber)}
-                      className={`inline-flex h-8 min-w-8 items-center justify-center rounded-lg border px-2 text-xs font-semibold transition ${
-                        pageNumber === tabPage
-                          ? "border-[#3567b5] bg-[#3567b5] text-white"
-                          : "border-[#cbdcf5] bg-white text-[#315b9a]"
-                      }`}
-                    >
-                      {pageNumber}
-                    </Link>
-                  ))}
-                  <Link
-                    href={buildPublicProfileTabHref(profile.id, "posts", Math.min(tabTotalPages, tabPage + 1))}
-                    aria-disabled={tabPage >= tabTotalPages}
-                    className={`inline-flex h-8 items-center rounded-lg border px-2.5 text-xs font-semibold transition ${
-                      tabPage >= tabTotalPages
-                        ? "pointer-events-none border-[#d6e1f1] bg-[#eef3fb] text-[#91a6c6]"
-                        : "border-[#cbdcf5] bg-white text-[#315b9a]"
-                    }`}
-                  >
-                    다음
-                  </Link>
-                </div>
+                <PublicProfileActivityPagination
+                  profileId={profile.id}
+                  tab="posts"
+                  page={tabPage}
+                  totalPages={tabTotalPages}
+                />
               ) : null}
             </div>
           ) : null}
@@ -412,7 +426,11 @@ export default async function PublicUserProfilePage({
           {resolvedTab === "comments" ? (
             <div className="mt-4 divide-y divide-[#e1e9f5]">
               {comments.length === 0 ? (
-                <p className="py-6 text-sm text-[#5a7398]">댓글 활동이 없습니다.</p>
+                <PublicProfileActivityEmptyState
+                  eyebrow="댓글 활동"
+                  title="댓글 활동이 없습니다."
+                  description="공개 댓글 활동이 생기면 이 탭에서 확인할 수 있습니다."
+                />
               ) : (
                 comments.map((comment) => (
                   <article key={comment.id} className="py-3">
@@ -432,43 +450,12 @@ export default async function PublicUserProfilePage({
                 ))
               )}
               {tabTotalPages > 1 ? (
-                <div className="flex flex-wrap items-center justify-center gap-1.5 pt-3">
-                  <Link
-                    href={buildPublicProfileTabHref(profile.id, "comments", Math.max(1, tabPage - 1))}
-                    aria-disabled={tabPage <= 1}
-                    className={`inline-flex h-8 items-center rounded-lg border px-2.5 text-xs font-semibold transition ${
-                      tabPage <= 1
-                        ? "pointer-events-none border-[#d6e1f1] bg-[#eef3fb] text-[#91a6c6]"
-                        : "border-[#cbdcf5] bg-white text-[#315b9a]"
-                    }`}
-                  >
-                    이전
-                  </Link>
-                  {buildPaginationWindow(tabPage, tabTotalPages).map((pageNumber) => (
-                    <Link
-                      key={`public-profile-comment-page-${pageNumber}`}
-                      href={buildPublicProfileTabHref(profile.id, "comments", pageNumber)}
-                      className={`inline-flex h-8 min-w-8 items-center justify-center rounded-lg border px-2 text-xs font-semibold transition ${
-                        pageNumber === tabPage
-                          ? "border-[#3567b5] bg-[#3567b5] text-white"
-                          : "border-[#cbdcf5] bg-white text-[#315b9a]"
-                      }`}
-                    >
-                      {pageNumber}
-                    </Link>
-                  ))}
-                  <Link
-                    href={buildPublicProfileTabHref(profile.id, "comments", Math.min(tabTotalPages, tabPage + 1))}
-                    aria-disabled={tabPage >= tabTotalPages}
-                    className={`inline-flex h-8 items-center rounded-lg border px-2.5 text-xs font-semibold transition ${
-                      tabPage >= tabTotalPages
-                        ? "pointer-events-none border-[#d6e1f1] bg-[#eef3fb] text-[#91a6c6]"
-                        : "border-[#cbdcf5] bg-white text-[#315b9a]"
-                    }`}
-                  >
-                    다음
-                  </Link>
-                </div>
+                <PublicProfileActivityPagination
+                  profileId={profile.id}
+                  tab="comments"
+                  page={tabPage}
+                  totalPages={tabTotalPages}
+                />
               ) : null}
             </div>
           ) : null}
@@ -476,7 +463,11 @@ export default async function PublicUserProfilePage({
           {resolvedTab === "reactions" ? (
             <div className="mt-4 divide-y divide-[#e1e9f5]">
               {reactions.length === 0 ? (
-                <p className="py-6 text-sm text-[#5a7398]">반응 활동이 없습니다.</p>
+                <PublicProfileActivityEmptyState
+                  eyebrow="반응 활동"
+                  title="반응 활동이 없습니다."
+                  description="공개 글에 남긴 반응이 생기면 이 탭에서 확인할 수 있습니다."
+                />
               ) : (
                 reactions.map((reaction) => (
                   <article key={reaction.id} className="py-3">
@@ -492,43 +483,12 @@ export default async function PublicUserProfilePage({
                 ))
               )}
               {tabTotalPages > 1 ? (
-                <div className="flex flex-wrap items-center justify-center gap-1.5 pt-3">
-                  <Link
-                    href={buildPublicProfileTabHref(profile.id, "reactions", Math.max(1, tabPage - 1))}
-                    aria-disabled={tabPage <= 1}
-                    className={`inline-flex h-8 items-center rounded-lg border px-2.5 text-xs font-semibold transition ${
-                      tabPage <= 1
-                        ? "pointer-events-none border-[#d6e1f1] bg-[#eef3fb] text-[#91a6c6]"
-                        : "border-[#cbdcf5] bg-white text-[#315b9a]"
-                    }`}
-                  >
-                    이전
-                  </Link>
-                  {buildPaginationWindow(tabPage, tabTotalPages).map((pageNumber) => (
-                    <Link
-                      key={`public-profile-reaction-page-${pageNumber}`}
-                      href={buildPublicProfileTabHref(profile.id, "reactions", pageNumber)}
-                      className={`inline-flex h-8 min-w-8 items-center justify-center rounded-lg border px-2 text-xs font-semibold transition ${
-                        pageNumber === tabPage
-                          ? "border-[#3567b5] bg-[#3567b5] text-white"
-                          : "border-[#cbdcf5] bg-white text-[#315b9a]"
-                      }`}
-                    >
-                      {pageNumber}
-                    </Link>
-                  ))}
-                  <Link
-                    href={buildPublicProfileTabHref(profile.id, "reactions", Math.min(tabTotalPages, tabPage + 1))}
-                    aria-disabled={tabPage >= tabTotalPages}
-                    className={`inline-flex h-8 items-center rounded-lg border px-2.5 text-xs font-semibold transition ${
-                      tabPage >= tabTotalPages
-                        ? "pointer-events-none border-[#d6e1f1] bg-[#eef3fb] text-[#91a6c6]"
-                        : "border-[#cbdcf5] bg-white text-[#315b9a]"
-                    }`}
-                  >
-                    다음
-                  </Link>
-                </div>
+                <PublicProfileActivityPagination
+                  profileId={profile.id}
+                  tab="reactions"
+                  page={tabPage}
+                  totalPages={tabTotalPages}
+                />
               ) : null}
             </div>
           ) : null}
