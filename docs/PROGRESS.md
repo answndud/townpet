@@ -2,9 +2,9 @@
 
 ## 현재 상태
 
-- 작업: `Release Confidence Hardening P1-6`
-- 상태: `in_progress`
-- 현재 초점: `app/feed/page.tsx`의 support/item mapping/pagination 경계 분리를 완료했고, 다음 작업은 P1-6 대상 파일 전체 줄 수와 책임 경계 재점검이다.
+- 작업: 현재 active 작업 없음
+- 상태: `idle`
+- 현재 초점: `Release Confidence Hardening P1-6` 완료 archive와 품질 게이트 확인을 마쳤다.
 
 ## 변경/탐색한 파일
 
@@ -177,10 +177,9 @@
 
 ## Blocker
 
-- 현재 known blocker 없음. deploy recurrence issue closed.
+- 현재 known blocker 없음.
 
 ## 다음 액션
 
-1. P1-6 대상 파일 전체 줄 수와 책임 경계를 재점검한다.
-2. 남은 과대 파일이 있으면 추가 분리하고, 없으면 P1-6 완료 archive로 정리한다.
-3. public API/result shape를 유지하고 targeted test, `typecheck`, `lint`를 실행한다.
+1. 다음 active 작업을 시작할 때 [PLAN.md](./PLAN.md)의 다음 작업 후보 중 하나를 선택한다.
+2. 현재 후보 우선순위는 `P1-7 운영 관리자 루틴을 10분 smoke로 고정`이다.

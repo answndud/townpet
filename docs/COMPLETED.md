@@ -2319,3 +2319,49 @@
   - `corepack pnpm@9.12.3 -C app docs:refresh:check`
 - 결과:
   - Vercel build는 이제 필수 env misconfig만으로 fail-fast하고, remote health/control-plane drift는 운영자용 strict preflight로 분리되어 다른 작업과 무관한 재발성 배포 실패를 막는다.
+
+### 2026-05-13 | Release Confidence P1-6 decomposition hardening
+- 완료일: `2026-05-13`
+- 배경:
+  - 출시 전 pre-mortem/doctor 관점에서 거대 컴포넌트와 monolith query/service는 회귀 수정 속도, 리뷰 품질, AI handoff 정확도를 떨어뜨리는 핵심 리스크였다.
+  - 목표는 동작 변경보다 책임 경계 분리와 public API/result shape 유지였다.
+- 변경내용:
+  - `post.service.ts`에서 reaction/bookmark, delete, guest management, market workflow, care workflow, update, create, write support를 분리했다.
+  - `post.service.ts`는 기존 import 경로를 유지하는 service facade와 조회수 집계 책임으로 축소됐다.
+  - `post-detail-client.tsx`에서 detail types, presenter, primary card/media/actions, info panels를 분리했다.
+  - `post-comment-thread.tsx`에서 comment types, presenter, root form, pagination, best comment item을 분리했다.
+  - `app/feed/page.tsx`에서 feed support, item mapping, pagination을 분리했다.
+  - `post.queries.ts`는 상세 read model, care detail, legacy select, engagement support, guest meta fallback, search support, user posts, ranked search, list where/include/args/fallback, post detail fallback으로 이미 분리된 query facade 상태를 재확인했다.
+- 주요 결과:
+  - `post.service.ts`: `3210`줄 -> `156`줄
+  - `post-detail-client.tsx`: `1727`줄 -> `691`줄
+  - `post-comment-thread.tsx`: `1135`줄 -> `894`줄
+  - `app/feed/page.tsx`: `1102`줄 -> `884`줄
+  - `feed-infinite-list.tsx`: `821`줄 유지, 목표 범위 내
+  - `post.queries.ts`: `4850`줄 -> `2299`줄, 단일 책임 facade와 하위 query helper 경계 유지
+- 코드문서:
+  - [app/src/server/services/posts/post.service.ts](../app/src/server/services/posts/post.service.ts)
+  - [app/src/server/services/posts/post-create.service.ts](../app/src/server/services/posts/post-create.service.ts)
+  - [app/src/server/services/posts/post-update.service.ts](../app/src/server/services/posts/post-update.service.ts)
+  - [app/src/server/services/posts/post-care-workflow.service.ts](../app/src/server/services/posts/post-care-workflow.service.ts)
+  - [app/src/server/services/posts/post-market-workflow.service.ts](../app/src/server/services/posts/post-market-workflow.service.ts)
+  - [app/src/components/posts/post-detail-client.tsx](../app/src/components/posts/post-detail-client.tsx)
+  - [app/src/components/posts/post-detail-primary-card.tsx](../app/src/components/posts/post-detail-primary-card.tsx)
+  - [app/src/components/posts/post-detail-info-panels.tsx](../app/src/components/posts/post-detail-info-panels.tsx)
+  - [app/src/components/posts/post-comment-thread.tsx](../app/src/components/posts/post-comment-thread.tsx)
+  - [app/src/app/feed/page.tsx](../app/src/app/feed/page.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app exec vitest run src/server/services/post-create-policy.test.ts src/server/services/post.service.test.ts src/server/actions/post.test.ts`
+  - `corepack pnpm@9.12.3 -C app exec vitest run src/server/services/post.service.test.ts src/server/actions/post.test.ts`
+  - `corepack pnpm@9.12.3 -C app exec vitest run src/server/queries/post.queries.test.ts`
+  - slice별 `corepack pnpm@9.12.3 -C app typecheck`
+  - slice별 `corepack pnpm@9.12.3 -C app lint`
+  - `corepack pnpm@9.12.3 -C app docs:refresh:check`
+  - 최종 `corepack pnpm@9.12.3 -C app quality:check`
+- 결과:
+  - P1-6 완료 기준을 충족했다.
+  - UI hot path와 post service write path는 700~900줄 이하 또는 명확한 facade/helper 책임 경계로 정리됐다.
+  - public import 경로와 result shape를 유지한 채 최종 lint/typecheck/Vitest/build 품질 게이트가 통과했다.
+  - 다음 후보는 `P1-7 운영 관리자 루틴을 10분 smoke로 고정`이다.
