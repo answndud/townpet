@@ -16,6 +16,7 @@
 현재 active 작업 없음.
 
 최근 완료:
+- `P2-2 UX/error boundary/mobile/accessibility 보강`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
 - `P2-1 client fetch helper 최소 통일`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
 - `P1-8 1인 운영용 과설계 축소 배치`는 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
 - `P1-7 1인 운영용 최소 production smoke 축소`는 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
@@ -23,4 +24,4 @@
 
 ## 다음 작업 후보
 
-- P2-2: UX/error boundary/mobile/accessibility를 보강한다.
+- P2-3: 남은 empty/loading state 중 핵심 사용자 경로를 점검하고, 모바일에서 버튼/텍스트 overflow가 나는 화면을 좁혀 수정한다.

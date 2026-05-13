@@ -3,6 +3,8 @@
 import { useEffect } from "react";
 import Link from "next/link";
 
+import { ErrorState } from "@/components/ui/error-state";
+
 type GlobalErrorProps = {
   error: Error & { digest?: string };
   reset: () => void;
@@ -15,29 +17,29 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
 
   return (
     <div className="tp-page-bg min-h-screen px-4 py-16">
-      <main className="tp-card mx-auto w-full max-w-[720px] p-6 text-center">
-        <p className="text-xs uppercase tracking-[0.2em] text-[#5b78a1]">오류 발생</p>
-        <h1 className="mt-2 text-2xl font-bold text-[#10284a]">
-          요청을 처리하는 중 문제가 발생했습니다.
-        </h1>
-        <p className="mt-3 text-sm text-[#5a7398]">
-          잠시 후 다시 시도하거나 피드로 이동해 주세요.
-        </p>
-        <div className="mt-5 flex items-center justify-center gap-2">
-          <button
-            type="button"
-            onClick={reset}
-            className="tp-btn-primary px-4 py-2 text-sm font-semibold"
-          >
-            다시 시도
-          </button>
-          <Link
-            href="/feed"
-            className="tp-btn-soft px-4 py-2 text-sm font-semibold"
-          >
-            피드로 이동
-          </Link>
-        </div>
+      <main>
+        <ErrorState
+          eyebrow="오류 발생"
+          title="요청을 처리하는 중 문제가 발생했습니다."
+          description="잠시 후 다시 시도하거나 피드로 이동해 주세요."
+          actions={
+            <>
+              <button
+                type="button"
+                onClick={reset}
+                className="tp-btn-primary inline-flex min-h-11 items-center justify-center px-4 py-2 text-sm font-semibold"
+              >
+                다시 시도
+              </button>
+              <Link
+                href="/feed"
+                className="tp-btn-soft inline-flex min-h-11 items-center justify-center px-4 py-2 text-sm font-semibold"
+              >
+                피드로 이동
+              </Link>
+            </>
+          }
+        />
       </main>
     </div>
   );
