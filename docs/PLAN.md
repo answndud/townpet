@@ -16,6 +16,7 @@
 현재 active 작업 없음.
 
 최근 완료:
+- `P2-16 post detail info panel status/action control 보강`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
 - `P2-15 post detail action/reaction/bookmark/share control 보강`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
 - `P2-14 post write/comment/report form status와 touch target 보강`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
 - `P2-13 auth form status/touch target과 error recovery 점검`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
@@ -37,4 +38,4 @@
 
 ## 다음 작업 후보
 
-- P2-16: post detail info panel의 status action, 신청/피드백 control, empty/failure state를 점검한다.
+- P2-17: remaining compact controls audit, comments pagination/menu/admin edge surfaces를 점검한다.
