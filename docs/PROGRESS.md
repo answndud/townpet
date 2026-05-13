@@ -4,11 +4,24 @@
 
 - 작업: 현재 active 작업 없음
 - 상태: `idle`
-- 현재 초점: `P2-7 admin table empty/action touch target 보강`을 완료 archive했다.
+- 현재 초점: `P2-8 admin policy form touch/status 보강`을 완료 archive했다.
 
 ## 변경/탐색한 파일
 
 - 이번 세션 변경:
+  - `app/src/components/admin/guest-read-policy-form.tsx`
+  - `app/src/components/admin/forbidden-keyword-policy-form.tsx`
+  - `app/src/components/admin/feed-personalization-policy-form.tsx`
+  - `app/src/components/admin/admin-policy-form-accessibility.test.tsx`
+  - `docs/PLAN.md`
+  - `docs/PROGRESS.md`
+- 탐색한 파일:
+  - `app/src/components/admin/new-user-safety-policy-form.tsx`
+  - `app/src/components/admin/guest-read-policy-form.tsx`
+  - `app/src/components/admin/forbidden-keyword-policy-form.tsx`
+  - `app/src/components/admin/feed-personalization-policy-form.tsx`
+  - `app/src/components/admin/direct-moderation-panel.tsx`
+- 이전 세션 변경:
   - `app/src/components/admin/report-queue-table.tsx`
   - `app/src/components/admin/report-actions.tsx`
   - `app/src/components/admin/report-actions.test.tsx`
@@ -213,6 +226,11 @@
   - `docs/errors/2026-05-12_vercel-security-env-build-preflight.md`
   - `docs/COMPLETED.md`
 - 이번 세션 결과:
+- guest read policy form의 저장/reset 버튼을 `min-h-10` 기준으로 보강하고 성공/실패 메시지에 `role`과 `aria-live`를 추가했다.
+- forbidden keyword policy form의 저장/reset 버튼을 `min-h-10` 기준으로 보강하고 성공/실패 메시지에 `role`과 `aria-live`를 추가했다.
+- feed personalization policy form의 저장 버튼을 `min-h-10` 기준으로 보강하고 성공/실패 메시지에 `role`과 `aria-live`를 추가했다.
+- admin policy form 접근성 정적 렌더 테스트를 추가했다.
+- 이전 세션 결과:
 - 신고 큐 0건 상태를 공용 `EmptyState`로 교체했다.
 - 신고 큐 0건 상태에 `전체 신고 보기` action을 제공했다.
 - `ReportActions`의 승인/기각 버튼과 제재 checkbox row를 `min-h-10` 기준으로 보강했다.
