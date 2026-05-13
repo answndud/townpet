@@ -6,6 +6,7 @@ import {
   resolveFeedPersonalizationSurfaceFromReferrer,
   sendFeedPersonalizationMetric,
 } from "@/lib/feed-personalization-tracking";
+import { isClientTelemetryEnabled } from "@/lib/client-telemetry";
 
 const MIN_POST_DWELL_MS = 12_000;
 
@@ -19,7 +20,12 @@ export function PostPersonalizationDwellTracker({
   enabled,
 }: PostPersonalizationDwellTrackerProps) {
   useEffect(() => {
-    if (!enabled || typeof document === "undefined" || typeof window === "undefined") {
+    if (
+      !enabled ||
+      !isClientTelemetryEnabled() ||
+      typeof document === "undefined" ||
+      typeof window === "undefined"
+    ) {
       return;
     }
 

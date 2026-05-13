@@ -3,6 +3,8 @@
 import { useEffect } from "react";
 import type { PostType } from "@prisma/client";
 
+import { isClientTelemetryEnabled } from "@/lib/client-telemetry";
+
 type SearchResultTelemetryProps = {
   query: string;
   resultCount: number;
@@ -52,6 +54,10 @@ export function SearchResultTelemetry({
   searchIn = "ALL",
 }: SearchResultTelemetryProps) {
   useEffect(() => {
+    if (!isClientTelemetryEnabled()) {
+      return;
+    }
+
     const normalizedQuery = normalizeSearchQuery(query);
     if (!normalizedQuery || typeof window === "undefined") {
       return;

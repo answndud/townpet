@@ -122,7 +122,7 @@
 
 #### P1-8.5 client `useEffect` fetch/telemetry 표면 정리
 
-- 상태: `pending`
+- 상태: `completed`
 - 문제:
   - 클라이언트 fetch와 `useEffect`가 feed, guest feed, detail, notification, search, reaction, telemetry에 분산되어 있다.
   - 일부 telemetry/prefetch는 있으면 좋지만 초기 1인 운영 단계의 필수 기능은 아니다.
@@ -144,6 +144,7 @@
 
 #### P1-8.6 운영 문서 active/archive 정리
 
+- 상태: `pending`
 - 문제:
   - `business/operations`, `business/security`, `docs`, `blog`를 합치면 Markdown 문서가 100개 이상이고, 현재 기준과 과거 기록이 섞여 있다.
   - 1인 운영에서는 문서가 많을수록 실행 기준을 찾는 시간이 늘어난다.

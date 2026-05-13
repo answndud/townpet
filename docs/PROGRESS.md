@@ -4,11 +4,17 @@
 
 - 작업: `P1-8 1인 운영용 과설계 축소 배치`
 - 상태: `in_progress`
-- 현재 초점: `P1-8.4 개인화/광고 운영 판단 기준 축소`를 완료했고, 다음은 `P1-8.5 client useEffect fetch/telemetry 표면 정리`다.
+- 현재 초점: `P1-8.5 client useEffect fetch/telemetry 표면 정리`를 완료했고, 다음은 `P1-8.6 운영 문서 active/archive 정리`다.
 
 ## 변경/탐색한 파일
 
 - 이번 세션 변경:
+  - `app/src/lib/client-telemetry.ts`
+  - `app/src/lib/client-telemetry.test.ts`
+  - `app/src/lib/feed-personalization-tracking.ts`
+  - `app/src/components/posts/search-result-telemetry.tsx`
+  - `app/src/components/posts/feed-search-form.tsx`
+  - `app/src/components/posts/post-personalization-dwell-tracker.tsx`
   - `app/src/app/admin/personalization/page.tsx`
   - `app/src/lib/admin-personalization-diagnostics.ts`
   - `app/src/lib/admin-personalization-diagnostics.test.ts`
@@ -139,6 +145,8 @@
 - `/admin/personalization` 기본 기간을 30일로 바꾸고, 7일/14일은 회귀 관찰용이라는 copy로 낮췄다.
 - 개인화 진단은 28일 미만 기간에서는 Feed CTR, Ad CTR, Audience 쏠림을 `pending`으로 유지해 정책 조정으로 이어지지 않게 했다.
 - 개인화 운영 문서는 초기 1인 운영에서 4주 이상 데이터와 최소 표본을 모두 충족하기 전까지 튜닝을 보류하도록 정리했다.
+- `NEXT_PUBLIC_ENABLE_CLIENT_TELEMETRY=1` 명시 opt-in 전에는 검색 결과 telemetry, 검색어 log, 개인화 dwell/feed metric 전송이 no-op이 되도록 줄였다.
+- 기능 필수 fetch는 유지하고, 부가 telemetry fetch만 기본 OFF로 낮췄다.
 - 이전 세션 결과:
   - `ops-smoke-checks` 기본 timeout을 5분으로 낮추고 care smoke readiness/prewarm을 기본 경로에서 제거했다.
   - `ops:evidence:solo`를 추가해 health-only 로컬 evidence profile을 제공했다.
@@ -222,6 +230,11 @@
 - `corepack pnpm@9.12.3 -C app lint` PASS
 - `corepack pnpm@9.12.3 -C app docs:refresh:check` PASS
 - `git diff --check` PASS
+- `corepack pnpm@9.12.3 -C app exec vitest run src/lib/client-telemetry.test.ts src/components/posts/search-result-telemetry.test.ts src/lib/admin-personalization-diagnostics.test.ts` PASS
+- `corepack pnpm@9.12.3 -C app typecheck` PASS
+- `corepack pnpm@9.12.3 -C app lint` PASS
+- `corepack pnpm@9.12.3 -C app docs:refresh:check` PASS
+- `git diff --check` PASS
 - `corepack pnpm@9.12.3 -C app exec vitest run scripts/run-ops-evidence.test.ts scripts/check-care-smoke-readiness.test.ts` PASS
 - `corepack pnpm@9.12.3 -C app typecheck` PASS
 - `corepack pnpm@9.12.3 -C app lint` PASS
@@ -266,6 +279,6 @@
 
 ## 다음 액션
 
-1. `P1-8.5 client useEffect fetch/telemetry 표면 정리`를 진행한다.
-2. 기능 필수 fetch와 부가 telemetry/prefetch를 분리한다.
-3. 최소 변경으로 telemetry/prefetch 기본 복잡도를 낮춘다.
+1. `P1-8.6 운영 문서 active/archive 정리`를 진행한다.
+2. active 운영 문서와 archive/legacy 문서 경계를 명확히 한다.
+3. `AGENTS.md`와 운영 안내의 먼저 볼 문서 목록을 1인 운영 기준으로 맞춘다.

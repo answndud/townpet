@@ -5,6 +5,7 @@ import type {
   FeedPersonalizationEventValue,
   FeedPersonalizationSurfaceValue,
 } from "@/lib/feed-personalization-metrics";
+import { isClientTelemetryEnabled } from "@/lib/client-telemetry";
 
 export async function sendFeedPersonalizationMetric(input: {
   surface: FeedPersonalizationSurfaceValue;
@@ -14,7 +15,7 @@ export async function sendFeedPersonalizationMetric(input: {
   audienceSource: FeedAudienceSourceValue;
   postId?: string | null;
 }) {
-  if (typeof window === "undefined") {
+  if (!isClientTelemetryEnabled() || typeof window === "undefined") {
     return;
   }
 
