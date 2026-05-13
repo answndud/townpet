@@ -2951,3 +2951,28 @@
 - 결과:
   - 온보딩과 반려동물 프로필 form의 주요 action과 상태 메시지가 기존 모바일/접근성 기준에 맞춰졌다.
   - 다음 후보는 `P2-13 auth form status/touch target과 error recovery 점검`이다.
+
+### 2026-05-13 | P2-13 auth form status/touch target과 error recovery 점검
+- 완료일: `2026-05-13`
+- 배경:
+  - 로그인/가입/auth layout은 이미 shared surface와 44px 입력/버튼 기준이 맞춰져 있었다.
+  - 비밀번호 설정/재설정 성공 상태의 후속 이동 링크 두 곳만 `min-h-9`로 남아 있어 앞선 P2 모바일 touch target 기준과 어긋났다.
+- 변경내용:
+  - 비밀번호 설정 성공 상태의 `프로필로 이동` 링크를 `min-h-10` 기준으로 보강했다.
+  - 비밀번호 재설정 성공 상태의 `로그인으로 이동` 링크를 `min-h-10` 기준으로 보강했다.
+  - auth form 접근성 정적 렌더 unit test를 추가해 복구 흐름의 주요 copy, 입력/버튼 touch baseline, 성공 후 복구 링크 class를 회귀 확인한다.
+- 코드문서:
+  - [app/src/components/auth/set-password-form.tsx](../app/src/components/auth/set-password-form.tsx)
+  - [app/src/components/auth/reset-password-form.tsx](../app/src/components/auth/reset-password-form.tsx)
+  - [app/src/components/auth/auth-form-accessibility.test.tsx](../app/src/components/auth/auth-form-accessibility.test.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app exec vitest run src/components/auth/auth-form-accessibility.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `corepack pnpm@9.12.3 -C app docs:refresh:check`
+  - `git diff --check`
+- 결과:
+  - 인증/비밀번호 복구 흐름의 남은 작은 action이 기존 모바일/접근성 기준에 맞춰졌다.
+  - 다음 후보는 `P2-14 post write/comment/report form의 status, touch target, failure recovery 점검`이다.

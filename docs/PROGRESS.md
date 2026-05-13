@@ -4,11 +4,22 @@
 
 - 작업: 현재 active 작업 없음
 - 상태: `idle`
-- 현재 초점: `P2-12 onboarding/pet profile form touch/status 보강`을 완료 archive했다.
+- 현재 초점: `P2-13 auth form status/touch target과 error recovery 점검`을 완료 archive했다. 다음 후보는 `P2-14 post write/comment/report form의 status, touch target, failure recovery 점검`이다.
 
 ## 변경/탐색한 파일
 
 - 이번 세션 변경:
+  - `app/src/components/auth/set-password-form.tsx`
+  - `app/src/components/auth/reset-password-form.tsx`
+  - `app/src/components/auth/auth-form-accessibility.test.tsx`
+  - `docs/PLAN.md`
+  - `docs/PROGRESS.md`
+  - `docs/COMPLETED.md`
+- 탐색한 파일:
+  - `app/src/components/auth/set-password-form.tsx`
+  - `app/src/components/auth/reset-password-form.tsx`
+  - `app/src/components/auth/auth-page-layout.test.tsx`
+- 이전 세션 변경:
   - `app/src/components/onboarding/onboarding-form.tsx`
   - `app/src/components/onboarding/onboarding-form-accessibility.test.tsx`
   - `app/src/components/profile/pet-profile-manager.tsx`

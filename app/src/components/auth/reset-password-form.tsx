@@ -179,7 +179,7 @@ export function ResetPasswordForm({ initialToken }: ResetPasswordFormProps) {
             <span>비밀번호가 재설정되었습니다.</span>
             <Link
               href="/login"
-              className="inline-flex min-h-9 items-center rounded-md text-xs text-[#315b9a] underline-offset-2 hover:text-[#1f3f71] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2f66ba]/35"
+              className="inline-flex min-h-10 items-center rounded-md text-xs text-[#315b9a] underline-offset-2 hover:text-[#1f3f71] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2f66ba]/35"
             >
               로그인으로 이동
             </Link>
