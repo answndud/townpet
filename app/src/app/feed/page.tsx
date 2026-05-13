@@ -1,7 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { Prisma } from "@prisma/client";
-import { unstable_cache } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { PostScope, PostType } from "@prisma/client";
@@ -9,10 +8,7 @@ import { PostScope, PostType } from "@prisma/client";
 import { NeighborhoodGateNotice } from "@/components/neighborhood/neighborhood-gate-notice";
 import { FeedControlPanel } from "@/components/posts/feed-control-panel";
 import { FeedFooterSearchForm } from "@/components/posts/feed-footer-search-form";
-import {
-  FeedInfiniteList,
-  type FeedPostItem,
-} from "@/components/posts/feed-infinite-list";
+import { FeedInfiniteList } from "@/components/posts/feed-infinite-list";
 import { EmptyState } from "@/components/ui/empty-state";
 import { auth } from "@/lib/auth";
 import {
@@ -22,8 +18,6 @@ import {
 } from "@/lib/feed-personalization";
 import { toFeedAudienceSourceValue } from "@/lib/feed-personalization-metrics";
 import { FEED_PAGE_SIZE, shouldStripFeedPageParam } from "@/lib/feed";
-import { sanitizePublicGuestIdentity } from "@/lib/public-guest-identity";
-import { buildPaginationWindow } from "@/lib/pagination";
 import {
   getDedicatedBoardPathByPostType,
   isCommonBoardPostType,
@@ -41,7 +35,6 @@ import { isLocalRequiredPostType } from "@/lib/post-scope-policy";
 import { postListSchema, toPostListInput } from "@/lib/validations/post";
 import { redirectToProfileIfNicknameMissing } from "@/server/nickname-guard";
 import { listAudienceSegmentsByUserId } from "@/server/queries/audience-segment.queries";
-import { getGuestReadLoginRequiredPostTypes } from "@/server/queries/policy.queries";
 import { listCommunityNavItems } from "@/server/queries/community.queries";
 import {
   countPosts,
@@ -60,40 +53,34 @@ import {
 import { isPrismaDatabaseUnavailableError } from "@/server/prisma-database-error";
 import { createFeedPagePerformanceTracker } from "@/server/services/posts/feed-page-performance.service";
 import { resolveFeedPageSlice } from "@/server/services/posts/feed-page-query.service";
+import { buildInitialFeedItems } from "./feed-page-items";
+import { FeedPagination } from "./feed-pagination";
+import {
+  type BestDay,
+  type FeedDensity,
+  type FeedMode,
+  type FeedPeriod,
+  type FeedPersonalized,
+  type FeedSearchIn,
+  type FeedSort,
+  type HomePageProps,
+  extractPreferredPetTypeIds,
+  getGuestFeedContext,
+  isMissingAudienceSegmentQueryError,
+  maybeDebugDelay,
+  toBestDay,
+  toFeedDensity,
+  toFeedMode,
+  toFeedPeriod,
+  toFeedPersonalized,
+  toFeedSearchIn,
+  toFeedSort,
+} from "./feed-page-support";
 
-type FeedMode = "ALL" | "BEST";
-type FeedSort = "LATEST" | "LIKE" | "COMMENT";
-type FeedSearchIn = "ALL" | "TITLE" | "CONTENT" | "AUTHOR";
-type FeedPersonalized = "0" | "1";
-type FeedDensity = "DEFAULT" | "ULTRA";
 type FeedListResult = Awaited<ReturnType<typeof listPosts>>;
 type FeedListItem = FeedListResult["items"][number];
 type BestFeedItems = Awaited<ReturnType<typeof listBestPosts>>;
 type BestFeedItem = BestFeedItems[number];
-const BEST_DAY_OPTIONS = [3, 7, 30] as const;
-const FEED_PERIOD_OPTIONS = [3, 7, 30] as const;
-const MAX_DEBUG_DELAY_MS = 5_000;
-type BestDay = (typeof BEST_DAY_OPTIONS)[number];
-type FeedPeriod = (typeof FEED_PERIOD_OPTIONS)[number];
-
-function extractPreferredPetTypeIds(user: unknown) {
-  if (!user || typeof user !== "object") {
-    return [];
-  }
-
-  const preferredPetTypes = (user as { preferredPetTypes?: unknown }).preferredPetTypes;
-  if (!Array.isArray(preferredPetTypes)) {
-    return [];
-  }
-
-  return preferredPetTypes
-    .map((item) =>
-      item && typeof item === "object"
-        ? (item as { petTypeId?: string | null }).petTypeId
-        : null,
-    )
-    .filter((petTypeId): petTypeId is string => typeof petTypeId === "string");
-}
 
 export const metadata: Metadata = {
   title: "피드",
@@ -107,110 +94,6 @@ export const metadata: Metadata = {
     url: "/feed",
   },
 };
-
-type HomePageProps = {
-  searchParams?: Promise<{
-    type?: PostType;
-    scope?: "LOCAL" | "GLOBAL";
-    petType?: string | string[];
-    communityId?: string;
-    q?: string;
-    mode?: string;
-    days?: string;
-    period?: string;
-    sort?: string;
-    searchIn?: string;
-    review?: string;
-    personalized?: string;
-    perf?: string;
-    page?: string;
-    density?: string;
-    debugDelayMs?: string;
-  }>;
-};
-
-async function maybeDebugDelay(value?: string) {
-  if (process.env.NODE_ENV === "production") {
-    return;
-  }
-
-  const numeric = Number(value);
-  if (!Number.isFinite(numeric) || numeric <= 0) {
-    return;
-  }
-
-  const delayMs = Math.min(MAX_DEBUG_DELAY_MS, Math.floor(numeric));
-  await new Promise((resolve) => setTimeout(resolve, delayMs));
-}
-
-function toFeedMode(value?: string): FeedMode {
-  return value === "BEST" ? "BEST" : "ALL";
-}
-
-function toBestDay(value?: string): BestDay {
-  const numeric = Number(value);
-  return BEST_DAY_OPTIONS.includes(numeric as BestDay)
-    ? (numeric as BestDay)
-    : 7;
-}
-
-function toFeedPeriod(value?: string): FeedPeriod | null {
-  const numeric = Number(value);
-  return FEED_PERIOD_OPTIONS.includes(numeric as FeedPeriod)
-    ? (numeric as FeedPeriod)
-    : null;
-}
-
-function toFeedSort(value?: string): FeedSort {
-  if (value === "LIKE" || value === "COMMENT") {
-    return value;
-  }
-  return "LATEST";
-}
-
-function toFeedSearchIn(value?: string): FeedSearchIn {
-  if (value === "TITLE" || value === "CONTENT" || value === "AUTHOR") {
-    return value;
-  }
-  return "ALL";
-}
-
-function toFeedPersonalized(value?: string): FeedPersonalized {
-  return value === "1" ? "1" : "0";
-}
-
-function toFeedDensity(value?: string): FeedDensity {
-  return value === "ULTRA" ? "ULTRA" : "DEFAULT";
-}
-
-function isMissingAudienceSegmentQueryError(error: unknown) {
-  if (!(error instanceof Prisma.PrismaClientKnownRequestError)) {
-    return false;
-  }
-
-  if (error.code !== "P2021" && error.code !== "P2022") {
-    return false;
-  }
-
-  const tableName = String(error.meta?.table ?? "");
-  const columnName = String(error.meta?.column ?? "");
-  return (
-    tableName.includes("UserAudienceSegment") ||
-    columnName.includes("UserAudienceSegment")
-  );
-}
-
-const getGuestFeedContext = unstable_cache(
-  async () => {
-    const [loginRequiredTypes] = await Promise.all([getGuestReadLoginRequiredPostTypes()]);
-
-    return {
-      loginRequiredTypes,
-    };
-  },
-  ["feed-guest-context"],
-  { revalidate: 60 },
-);
 
 export default async function Home({ searchParams }: HomePageProps) {
   const resolvedParams = (await searchParams) ?? {};
@@ -709,76 +592,7 @@ export default async function Home({ searchParams }: HomePageProps) {
       : undefined;
   const showPersonalizedToggle =
     isAuthenticated && mode === "ALL" && effectiveScope === PostScope.GLOBAL;
-  const initialFeedItems: FeedPostItem[] = items.map((rawPost) => {
-    const post = sanitizePublicGuestIdentity(rawPost as (typeof items)[number] & {
-      guestDisplayName?: string | null;
-      guestIpDisplay?: string | null;
-      guestIpLabel?: string | null;
-      guestAuthor?: { displayName?: string | null; ipDisplay?: string | null; ipLabel?: string | null } | null;
-    });
-    const petType = (post as {
-      petType?: {
-        id: string;
-        labelKo: string;
-        category: { labelKo: string };
-      } | null;
-    }).petType;
-
-    return {
-    id: post.id,
-    type: post.type,
-    scope: post.scope,
-    status: post.status,
-    title: post.title,
-    content: post.content,
-    commentCount: post.commentCount,
-    likeCount: post.likeCount,
-    dislikeCount: post.dislikeCount,
-    viewCount: post.viewCount,
-    createdAt: post.createdAt.toISOString(),
-    author: {
-      id: post.author.id,
-      nickname: post.author.nickname,
-      image: post.author.image,
-    },
-    guestAuthorId: (post as { guestAuthorId?: string | null }).guestAuthorId ?? null,
-    guestDisplayName: (post as { guestDisplayName?: string | null }).guestDisplayName ?? null,
-    neighborhood: post.neighborhood
-      ? {
-          id: post.neighborhood.id,
-          name: post.neighborhood.name,
-          city: post.neighborhood.city,
-          district: post.neighborhood.district,
-        }
-      : null,
-    petType: petType
-      ? {
-          id: petType.id,
-          labelKo: petType.labelKo,
-          categoryLabelKo: petType.category.labelKo,
-        }
-      : null,
-    images: post.images.map((image) => ({
-      id: image.id,
-      url: "url" in image ? image.url : null,
-    })),
-    marketListing: (post as {
-      marketListing?: {
-        listingType?: string | null;
-        price?: number | null;
-        condition?: string | null;
-        depositAmount?: number | null;
-        rentalPeriod?: string | null;
-        status?: string | null;
-      } | null;
-    }).marketListing ?? null,
-    isBookmarked: Boolean((post as { isBookmarked?: boolean | null }).isBookmarked),
-    reactions:
-      (post as { reactions?: Array<{ type: "LIKE" | "DISLIKE" }> }).reactions?.map(
-        (reaction) => ({ type: reaction.type }),
-      ) ?? [],
-    };
-  });
+  const initialFeedItems = buildInitialFeedItems(items);
 
   const makeHref = ({
     nextType,
@@ -1036,44 +850,12 @@ export default async function Home({ searchParams }: HomePageProps) {
               }
             />
           )}
-          {items.length > 0 && totalPages > 1 ? (
-            <div className="flex flex-wrap items-center justify-center gap-1.5 border-t border-[#dbe6f6] bg-[#f8fbff] px-3 py-3">
-              <Link
-                href={makeHref({ nextPage: Math.max(1, resolvedPage - 1) })}
-                aria-disabled={resolvedPage <= 1}
-                className={`inline-flex h-8 items-center border px-2.5 text-xs font-semibold transition ${
-                  resolvedPage <= 1
-                    ? "pointer-events-none border-[#d6e1f1] bg-[#eef3fb] text-[#91a6c6]"
-                    : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
-                }`}
-              >
-                이전
-              </Link>
-              {buildPaginationWindow(resolvedPage, totalPages).map((pageNumber) => (
-                <Link
-                  key={`feed-page-${pageNumber}`}
-                  href={makeHref({ nextPage: pageNumber })}
-                  className={`inline-flex h-8 min-w-8 items-center justify-center border px-2 text-xs font-semibold transition ${
-                    pageNumber === resolvedPage
-                      ? "border-[#3567b5] bg-[#3567b5] text-white"
-                      : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
-                  }`}
-                >
-                  {pageNumber}
-                </Link>
-              ))}
-              <Link
-                href={makeHref({ nextPage: Math.min(totalPages, resolvedPage + 1) })}
-                aria-disabled={resolvedPage >= totalPages}
-                className={`inline-flex h-8 items-center border px-2.5 text-xs font-semibold transition ${
-                  resolvedPage >= totalPages
-                    ? "pointer-events-none border-[#d6e1f1] bg-[#eef3fb] text-[#91a6c6]"
-                    : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
-                }`}
-              >
-                다음
-              </Link>
-            </div>
+          {items.length > 0 ? (
+            <FeedPagination
+              resolvedPage={resolvedPage}
+              totalPages={totalPages}
+              makeHref={makeHref}
+            />
           ) : null}
           <FeedFooterSearchForm
             actionPath="/feed"

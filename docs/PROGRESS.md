@@ -4,11 +4,18 @@
 
 - 작업: `Release Confidence Hardening P1-6`
 - 상태: `in_progress`
-- 현재 초점: `post-comment-thread.tsx`의 type/presenter/root form/pagination/best item 경계 분리를 완료했고, 다음 작업은 `app/feed/page.tsx`의 query parsing/data loading/view composition 경계 분리다.
+- 현재 초점: `app/feed/page.tsx`의 support/item mapping/pagination 경계 분리를 완료했고, 다음 작업은 P1-6 대상 파일 전체 줄 수와 책임 경계 재점검이다.
 
 ## 변경/탐색한 파일
 
 - 이번 세션 변경:
+  - `app/src/app/feed/page.tsx`
+  - `app/src/app/feed/feed-page-support.ts`
+  - `app/src/app/feed/feed-page-items.ts`
+  - `app/src/app/feed/feed-pagination.tsx`
+  - `docs/PLAN.md`
+  - `docs/PROGRESS.md`
+- 직전 세션 변경:
   - `app/src/components/posts/post-comment-thread.tsx`
   - `app/src/components/posts/post-comment-thread-types.ts`
   - `app/src/components/posts/post-comment-thread-presenter.tsx`
@@ -17,7 +24,7 @@
   - `app/src/components/posts/post-comment-best-item.tsx`
   - `docs/PLAN.md`
   - `docs/PROGRESS.md`
-- 직전 세션 변경:
+- 이전 세션 변경:
   - `app/src/components/posts/post-detail-client.tsx`
   - `app/src/components/posts/post-detail-info-panels.tsx`
   - `docs/PLAN.md`
@@ -77,11 +84,15 @@
   - `docs/errors/2026-05-12_vercel-security-env-build-preflight.md`
   - `docs/COMPLETED.md`
 - 이번 세션 결과:
+  - feed page의 query/option parsing, debug delay, guest feed context, audience segment missing-column guard를 `feed-page-support.ts`로 분리했다.
+  - feed item client shape 변환을 `feed-page-items.ts`, pagination UI를 `feed-pagination.tsx`로 분리했다.
+  - `app/feed/page.tsx`를 1102줄에서 884줄까지 축소했다.
+- 직전 세션 결과:
   - 댓글 thread의 `CommentItem`/form state 타입을 `post-comment-thread-types.ts`로 분리했다.
   - 댓글 thread의 날짜/페이지 계산/상수/reaction stat icon/submit shortcut을 `post-comment-thread-presenter.tsx`로 분리했다.
   - root comment form을 `post-comment-root-form.tsx`, pagination을 `post-comment-pagination.tsx`, best comment item을 `post-comment-best-item.tsx`로 분리했다.
   - `post-comment-thread.tsx`를 1135줄에서 894줄까지 축소했다.
-- 직전 세션 결과:
+- 이전 세션 결과:
   - 병원/장소/산책/마켓/돌봄/입양/봉사 상세 패널과 care/market interaction UI를 `post-detail-info-panels.tsx`로 분리했다.
   - parent `post-detail-client.tsx`는 fetch/state orchestration, 권한 계산, primary card/panel/comment 조합만 담당하도록 좁혔다.
   - `post-detail-client.tsx`를 1727줄에서 691줄까지 축소했다.
@@ -140,6 +151,8 @@
 - `corepack pnpm@9.12.3 -C app lint` PASS
 - `corepack pnpm@9.12.3 -C app typecheck` PASS
 - `corepack pnpm@9.12.3 -C app lint` PASS
+- `corepack pnpm@9.12.3 -C app typecheck` PASS
+- `corepack pnpm@9.12.3 -C app lint` PASS
 - `corepack pnpm@9.12.3 -C app exec vitest run src/server/services/post-create-policy.test.ts src/server/services/post.service.test.ts src/server/actions/post.test.ts` PASS
 - `corepack pnpm@9.12.3 -C app typecheck` PASS
 - `corepack pnpm@9.12.3 -C app lint` PASS
@@ -168,6 +181,6 @@
 
 ## 다음 액션
 
-1. `app/feed/page.tsx`의 query parsing/data loading/view composition 경계를 분리한다.
-2. 필요하면 `post-comment-thread.tsx`의 comment item body를 한 번 더 분리한다.
+1. P1-6 대상 파일 전체 줄 수와 책임 경계를 재점검한다.
+2. 남은 과대 파일이 있으면 추가 분리하고, 없으면 P1-6 완료 archive로 정리한다.
 3. public API/result shape를 유지하고 targeted test, `typecheck`, `lint`를 실행한다.
