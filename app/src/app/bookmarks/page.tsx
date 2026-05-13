@@ -214,17 +214,23 @@ export default async function BookmarksPage({ searchParams }: BookmarksPageProps
           {posts.length === 0 ? (
             hasActiveFilter ? (
               <EmptyState
+                eyebrow="필터 결과"
                 title="조건에 맞는 북마크가 없습니다"
                 description="검색어 또는 게시판 필터를 줄이면 저장한 글을 다시 찾을 수 있습니다."
                 actionHref="/bookmarks"
                 actionLabel="전체 북마크 보기"
+                secondaryActionHref="/feed"
+                secondaryActionLabel="피드에서 찾기"
               />
             ) : (
               <EmptyState
+                eyebrow="저장한 글"
                 title="북마크한 글이 없습니다"
                 description="게시글 상세에서 북마크 버튼을 눌러 나중에 다시 볼 글을 모아보세요."
                 actionHref="/feed"
                 actionLabel="피드로 이동"
+                secondaryActionHref="/my-posts"
+                secondaryActionLabel="내 작성글 보기"
               />
             )
           ) : (

@@ -2655,3 +2655,34 @@
 - 결과:
   - 핵심 실패 화면이 같은 recovery pattern을 사용하게 됐다.
   - 다음 후보는 `P2-3 남은 empty/loading state 중 핵심 사용자 경로 점검`이다.
+
+### 2026-05-13 | P2-3 핵심 empty state 모바일/복구 액션 보강
+- 완료일: `2026-05-13`
+- 배경:
+  - 핵심 사용자 경로인 북마크와 내 작성글의 빈 목록은 `EmptyState`를 쓰고 있었지만, 모바일에서 아이콘과 본문이 같은 줄에 놓여 좁은 폭을 압박할 수 있었다.
+  - 빈 상태 action이 하나뿐이라 필터 0건, 최초 0건 상황에서 사용자가 다음 행동을 선택하기 어렵다.
+- 변경내용:
+  - 공용 `EmptyState`를 모바일에서 `flex-col`, `sm` 이상에서 `flex-row`로 접히도록 바꿨다.
+  - `EmptyState`에 문맥별 eyebrow를 받을 수 있게 했다.
+  - `EmptyState`에 secondary action을 추가하고, 버튼 영역도 모바일에서 세로로 접히도록 했다.
+  - 북마크 필터 0건에는 `전체 북마크 보기`와 `피드에서 찾기`를 제공했다.
+  - 북마크 최초 0건에는 `피드로 이동`과 `내 작성글 보기`를 제공했다.
+  - 내 작성글 필터 0건에는 `전체 작성글 보기`와 `새 글 작성`을 제공했다.
+  - 내 작성글 최초 0건에는 `첫 글 작성하기`와 `피드 둘러보기`를 제공했다.
+  - 정적 렌더 unit test로 responsive layout, primary/secondary action, contextual eyebrow를 고정했다.
+- 코드문서:
+  - [app/src/components/ui/empty-state.tsx](../app/src/components/ui/empty-state.tsx)
+  - [app/src/components/ui/empty-state.test.tsx](../app/src/components/ui/empty-state.test.tsx)
+  - [app/src/app/bookmarks/page.tsx](../app/src/app/bookmarks/page.tsx)
+  - [app/src/app/my-posts/page.tsx](../app/src/app/my-posts/page.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app exec vitest run src/components/ui/empty-state.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `corepack pnpm@9.12.3 -C app docs:refresh:check`
+  - `git diff --check`
+- 결과:
+  - 핵심 개인 목록의 빈 상태가 더 안정적인 모바일 layout과 복구/탐색 action을 갖게 됐다.
+  - 다음 후보는 `P2-4 남은 loading skeleton과 핵심 목록 pagination/controls의 모바일 overflow 점검`이다.

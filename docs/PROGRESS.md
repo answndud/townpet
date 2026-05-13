@@ -4,11 +4,23 @@
 
 - 작업: 현재 active 작업 없음
 - 상태: `idle`
-- 현재 초점: `P2-2 UX/error boundary/mobile/accessibility 보강`을 완료 archive했다.
+- 현재 초점: `P2-3 핵심 empty state 모바일/복구 액션 보강`을 완료 archive했다.
 
 ## 변경/탐색한 파일
 
 - 이번 세션 변경:
+  - `app/src/components/ui/empty-state.tsx`
+  - `app/src/components/ui/empty-state.test.tsx`
+  - `app/src/app/bookmarks/page.tsx`
+  - `app/src/app/my-posts/page.tsx`
+  - `docs/PLAN.md`
+  - `docs/PROGRESS.md`
+- 탐색한 파일:
+  - `app/src/components/ui/empty-state.tsx`
+  - `app/src/components/ui/empty-state.test.tsx`
+  - `app/src/app/bookmarks/page.tsx`
+  - `app/src/app/my-posts/page.tsx`
+- 이전 세션 변경:
   - `app/src/components/ui/error-state.tsx`
   - `app/src/components/ui/error-state-back-button.tsx`
   - `app/src/components/ui/error-state.test.tsx`
@@ -160,6 +172,11 @@
   - `docs/errors/2026-05-12_vercel-security-env-build-preflight.md`
   - `docs/COMPLETED.md`
 - 이번 세션 결과:
+- 공용 `EmptyState`가 모바일에서 `flex-col`, `sm` 이상에서 `flex-row`로 접히도록 보강했다.
+- `EmptyState`에 contextual eyebrow와 secondary action을 추가했다.
+- 북마크/내 작성글의 필터 0건 상태에는 전체 보기 reset과 대체 action을 제공했다.
+- 북마크/내 작성글의 최초 0건 상태에는 다음 행동과 대체 탐색 경로를 함께 제공했다.
+- 이전 세션 결과:
 - 공용 `ErrorState`를 추가하고 전역, 피드, 게시글 상세, 관리자, 404 fallback에 적용했다.
 - 실패 화면에 `role`, `aria-live`, 모바일 `flex-col -> sm:flex-row` action layout을 통일했다.
 - error boundary에는 재시도 버튼과 안전한 이동 링크를 함께 제공하고, 404에는 피드 이동과 이전 페이지 버튼을 제공했다.
