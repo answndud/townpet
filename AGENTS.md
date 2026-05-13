@@ -47,6 +47,9 @@ Codex가 저장소에 처음 들어왔을 때 이 파일 하나만 읽어도 현
 - `.github/workflows/*`
 - `app/scripts/*`
 
+운영 문서는 `business/operations/운영_문서_안내.md`의 Active 운영 문서 목록을 우선합니다.
+그 외 운영 문서는 reference/legacy로 취급하고, 관련 기능 변경이나 장애 조사 때만 엽니다.
+
 ## 3. 디렉터리 지도
 
 ### 루트
