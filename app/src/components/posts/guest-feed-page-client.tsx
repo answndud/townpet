@@ -477,7 +477,7 @@ export function GuestFeedPageClient({
 
           <a
             href="#feed-list"
-            className="tp-btn-soft hidden w-fit items-center px-3 py-1.5 text-xs font-semibold sm:inline-flex lg:hidden"
+            className="tp-btn-soft hidden min-h-10 w-fit items-center px-3 text-xs font-semibold sm:inline-flex lg:hidden"
           >
             목록 바로가기
           </a>
