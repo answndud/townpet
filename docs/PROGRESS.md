@@ -4,11 +4,33 @@
 
 - 작업: 현재 active 작업 없음
 - 상태: `idle`
-- 현재 초점: `P2-14 post write/comment/report form status와 touch target 보강`을 완료 archive했다. 다음 후보는 `P2-15 post detail action, reaction, bookmark, share control의 touch target과 disabled/failure state 점검`이다.
+- 현재 초점: `P2-15 post detail action/reaction/bookmark/share control 보강`을 완료 archive했다. 다음 후보는 `P2-16 post detail info panel의 status action, 신청/피드백 control, empty/failure state 점검`이다.
 
 ## 변경/탐색한 파일
 
 - 이번 세션 변경:
+  - `app/src/components/posts/post-detail-action-button-class.ts`
+  - `app/src/components/posts/post-detail-actions.tsx`
+  - `app/src/components/posts/guest-post-detail-actions.tsx`
+  - `app/src/components/posts/post-bookmark-button.tsx`
+  - `app/src/components/posts/post-reaction-controls.tsx`
+  - `app/src/components/posts/reaction-login-prompt.tsx`
+  - `app/src/components/posts/post-share-controls.tsx`
+  - `app/src/components/posts/post-detail-action-button-class.test.ts`
+  - `app/src/components/posts/post-detail-action-accessibility.test.tsx`
+  - `app/src/components/posts/post-reaction-controls.test.tsx`
+  - `app/src/components/posts/reaction-login-prompt.test.tsx`
+  - `docs/PLAN.md`
+  - `docs/PROGRESS.md`
+  - `docs/COMPLETED.md`
+- 탐색한 파일:
+  - `app/src/components/posts/post-detail-actions.tsx`
+  - `app/src/components/posts/guest-post-detail-actions.tsx`
+  - `app/src/components/posts/post-bookmark-button.tsx`
+  - `app/src/components/posts/post-reaction-controls.tsx`
+  - `app/src/components/posts/reaction-login-prompt.tsx`
+  - `app/src/components/posts/post-share-controls.tsx`
+- 이전 세션 변경:
   - `app/src/components/posts/post-report-form.tsx`
   - `app/src/components/posts/post-comment-root-form.tsx`
   - `app/src/components/posts/post-detail-edit-form.tsx`

@@ -34,5 +34,6 @@ describe("ReactionLoginPrompt", () => {
     expect(html).toContain("로그인하기");
     expect(html).toContain("sm:hidden");
     expect(html).toContain("hidden min-w-[220px] sm:block");
+    expect((html.match(/min-h-10/g) ?? []).length).toBe(4);
   });
 });

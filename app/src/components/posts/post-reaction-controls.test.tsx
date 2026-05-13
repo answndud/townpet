@@ -41,5 +41,7 @@ describe("PostReactionControls", () => {
     expect(html).toContain(">8<");
     expect(html).toContain(">3<");
     expect(html).toContain("focus-visible:ring-2");
+    expect((html.match(/min-h-11/g) ?? []).length).toBe(2);
+    expect(html).not.toContain("sm:min-h-[36px]");
   });
 });

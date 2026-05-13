@@ -49,8 +49,8 @@ export function PostBookmarkButton({
   }, [loginIntent]);
 
   const buttonClass = compact
-    ? "inline-flex tp-btn-xs items-center justify-center rounded-lg border leading-none transition disabled:cursor-not-allowed disabled:opacity-60"
-    : "inline-flex tp-btn-sm min-w-[72px] items-center justify-center rounded-lg border transition disabled:cursor-not-allowed disabled:opacity-60";
+    ? "inline-flex min-h-10 items-center justify-center rounded-lg border px-3 text-xs font-semibold leading-none transition disabled:cursor-not-allowed disabled:opacity-60"
+    : "inline-flex min-h-10 min-w-[72px] items-center justify-center rounded-lg border px-4 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60";
 
   const handleToggle = () => {
     if (actionLockRef.current) {
@@ -105,13 +105,17 @@ export function PostBookmarkButton({
           }`}
         >
           로그인 후 북마크 가능.{" "}
-          <Link href={loginHref} className="font-semibold text-[#2f5da4] underline underline-offset-2">
+          <Link href={loginHref} className="inline-flex min-h-10 items-center font-semibold text-[#2f5da4] underline underline-offset-2">
             로그인하기
           </Link>
         </div>
       ) : null}
       {error ? (
-        <span className={compact ? "mt-1 block text-[11px] text-rose-600" : "text-xs text-rose-600"}>
+        <span
+          className={compact ? "mt-1 block text-[11px] font-medium text-rose-700" : "text-xs font-medium text-rose-700"}
+          role="alert"
+          aria-live="polite"
+        >
           {error}
         </span>
       ) : null}

@@ -8,8 +8,8 @@ import {
 describe("post detail action button classes", () => {
   it("keeps edit action vertically centered like other inline buttons", () => {
     expect(POST_DETAIL_ACTION_BUTTON_CLASS_NAME).toContain("tp-btn-soft");
-    expect(POST_DETAIL_ACTION_BUTTON_CLASS_NAME).toContain("tp-btn-sm");
     expect(POST_DETAIL_ACTION_BUTTON_CLASS_NAME).toContain("inline-flex");
+    expect(POST_DETAIL_ACTION_BUTTON_CLASS_NAME).toContain("min-h-10");
     expect(POST_DETAIL_ACTION_BUTTON_CLASS_NAME).toContain("items-center");
     expect(POST_DETAIL_ACTION_BUTTON_CLASS_NAME).toContain("justify-center");
   });

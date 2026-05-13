@@ -36,12 +36,12 @@ export function ReactionLoginPrompt({
           <div className="mt-2 flex items-center justify-end gap-2">
             <button
               type="button"
-              className="tp-btn-soft tp-btn-xs"
+              className="tp-btn-soft inline-flex min-h-10 items-center justify-center rounded-lg px-3 text-xs font-semibold"
               onClick={onClose}
             >
               닫기
             </button>
-            <Link href={loginHref} className="tp-btn-primary tp-btn-xs">
+            <Link href={loginHref} className="tp-btn-primary inline-flex min-h-10 items-center justify-center rounded-lg px-3 text-xs font-semibold">
               로그인하기
             </Link>
           </div>
@@ -54,12 +54,12 @@ export function ReactionLoginPrompt({
           <div className="mt-3 flex items-center justify-end gap-2">
             <button
               type="button"
-              className="tp-btn-soft tp-btn-sm"
+              className="tp-btn-soft inline-flex min-h-10 items-center justify-center rounded-lg px-4 text-sm font-semibold"
               onClick={onClose}
             >
               닫기
             </button>
-            <Link href={loginHref} className="tp-btn-primary tp-btn-sm">
+            <Link href={loginHref} className="tp-btn-primary inline-flex min-h-10 items-center justify-center rounded-lg px-4 text-sm font-semibold">
               로그인하기
             </Link>
           </div>

@@ -3007,3 +3007,40 @@
 - 결과:
   - 쓰기/댓글/신고 폼의 주요 입력, 제출, 복구 action과 상태 메시지가 기존 모바일/접근성 기준에 맞춰졌다.
   - 다음 후보는 `P2-15 post detail action, reaction, bookmark, share control의 touch target과 disabled/failure state 점검`이다.
+
+### 2026-05-13 | P2-15 post detail action/reaction/bookmark/share control 보강
+- 완료일: `2026-05-13`
+- 배경:
+  - 게시글 상세의 삭제, 비회원 관리, 북마크, reaction, 공유 control은 사용자가 실제로 반복 클릭하는 핵심 action 표면이다.
+  - 일부 action은 `h-8`, `tp-btn-xs`, desktop `sm:min-h-[32px]`처럼 40px 미만 기준으로 남아 있었고, 오류/복사 결과 메시지도 역할 전달이 약했다.
+- 변경내용:
+  - 상세 action 공용 button class를 `min-h-10` 기준으로 맞췄다.
+  - 회원 삭제 오류 메시지에 `role="alert"`와 `aria-live="polite"`를 추가했다.
+  - 비회원 관리 summary, password input, 수정 link, 삭제 button을 `min-h-10` 기준으로 보강했다.
+  - 비회원 관리 오류 메시지에 `role="alert"`와 `aria-live="polite"`를 추가했다.
+  - 북마크 compact/default button과 로그인 recovery link를 `min-h-10` 기준으로 보강했다.
+  - 북마크 오류 메시지에 `role="alert"`와 `aria-live="polite"`를 추가했다.
+  - reaction compact button의 desktop override를 제거해 40px 기준을 유지하고, reaction 오류 메시지에 `role="alert"`와 `aria-live="polite"`를 추가했다.
+  - reaction 로그인 prompt의 desktop/mobile 닫기와 로그인 action을 `min-h-10` 기준으로 보강했다.
+  - 공유 button을 `min-h-10` 기준으로 보강하고 복사 결과 메시지를 `role="status"`와 `aria-live="polite"`로 전달한다.
+  - post detail action 접근성 정적 렌더 unit test를 추가하고 기존 reaction/action class tests를 확장했다.
+- 코드문서:
+  - [app/src/components/posts/post-detail-action-button-class.ts](../app/src/components/posts/post-detail-action-button-class.ts)
+  - [app/src/components/posts/post-detail-actions.tsx](../app/src/components/posts/post-detail-actions.tsx)
+  - [app/src/components/posts/guest-post-detail-actions.tsx](../app/src/components/posts/guest-post-detail-actions.tsx)
+  - [app/src/components/posts/post-bookmark-button.tsx](../app/src/components/posts/post-bookmark-button.tsx)
+  - [app/src/components/posts/post-reaction-controls.tsx](../app/src/components/posts/post-reaction-controls.tsx)
+  - [app/src/components/posts/reaction-login-prompt.tsx](../app/src/components/posts/reaction-login-prompt.tsx)
+  - [app/src/components/posts/post-share-controls.tsx](../app/src/components/posts/post-share-controls.tsx)
+  - [app/src/components/posts/post-detail-action-accessibility.test.tsx](../app/src/components/posts/post-detail-action-accessibility.test.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app exec vitest run src/components/posts/post-detail-action-button-class.test.ts src/components/posts/post-detail-action-accessibility.test.tsx src/components/posts/post-reaction-controls.test.tsx src/components/posts/reaction-login-prompt.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `corepack pnpm@9.12.3 -C app docs:refresh:check`
+  - `git diff --check`
+- 결과:
+  - 게시글 상세의 주요 action, reaction, bookmark, share control이 기존 모바일/접근성 기준에 맞춰졌다.
+  - 다음 후보는 `P2-16 post detail info panel의 status action, 신청/피드백 control, empty/failure state 점검`이다.
