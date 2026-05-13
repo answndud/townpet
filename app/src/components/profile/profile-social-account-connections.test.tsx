@@ -49,5 +49,6 @@ describe("ProfileSocialAccountConnections", () => {
     expect(html).toContain("profile-social-unlink-kakao");
     expect(html).toContain("disabled");
     expect(html).toContain("유일한 로그인 수단");
+    expect(html).toContain("min-h-10");
   });
 });

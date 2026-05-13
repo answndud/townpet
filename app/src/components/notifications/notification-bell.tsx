@@ -360,7 +360,7 @@ export function NotificationBell({ unreadCount }: NotificationBellProps) {
                 type="button"
                 onClick={markAllAsRead}
                 disabled={isActionPending || items.every((item) => item.isRead)}
-                className="tp-btn-soft inline-flex h-7 items-center px-2 text-[11px] font-semibold disabled:cursor-not-allowed disabled:opacity-60"
+                className="tp-btn-soft inline-flex min-h-10 items-center justify-center px-3 text-[11px] font-semibold disabled:cursor-not-allowed disabled:opacity-60"
               >
                 모두 읽음
               </button>
@@ -369,7 +369,7 @@ export function NotificationBell({ unreadCount }: NotificationBellProps) {
               <button
                 type="button"
                 onClick={() => setPreviewFilter("ALL")}
-                className={`inline-flex h-7 items-center rounded-md border px-2 text-[11px] font-semibold transition ${
+                className={`inline-flex min-h-10 items-center rounded-md border px-3 text-[11px] font-semibold transition ${
                   previewFilter === "ALL"
                     ? "border-[#3567b5] bg-[#3567b5] text-white"
                     : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
@@ -380,7 +380,7 @@ export function NotificationBell({ unreadCount }: NotificationBellProps) {
               <button
                 type="button"
                 onClick={() => setPreviewFilter("UNREAD")}
-                className={`inline-flex h-7 items-center rounded-md border px-2 text-[11px] font-semibold transition ${
+                className={`inline-flex min-h-10 items-center rounded-md border px-3 text-[11px] font-semibold transition ${
                   previewFilter === "UNREAD"
                     ? "border-[#3567b5] bg-[#3567b5] text-white"
                     : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
@@ -397,13 +397,13 @@ export function NotificationBell({ unreadCount }: NotificationBellProps) {
             ) : null}
 
             {!isLoading && loadError ? (
-              <p className="mx-1 rounded-sm border border-rose-200 bg-rose-50 px-2 py-2 text-xs text-rose-700">
+              <p className="mx-1 rounded-sm border border-rose-200 bg-rose-50 px-2 py-2 text-xs text-rose-700" role="alert" aria-live="polite">
                 {loadError}
               </p>
             ) : null}
 
             {!isLoading && actionMessage ? (
-              <p className="mx-1 mb-1 rounded-sm border border-rose-200 bg-rose-50 px-2 py-2 text-xs text-rose-700">
+              <p className="mx-1 mb-1 rounded-sm border border-rose-200 bg-rose-50 px-2 py-2 text-xs text-rose-700" role="alert" aria-live="polite">
                 {actionMessage}
               </p>
             ) : null}
@@ -449,7 +449,7 @@ export function NotificationBell({ unreadCount }: NotificationBellProps) {
                           onClick={() => archiveOne(item.id)}
                           disabled={isActionPending}
                           aria-label="알림 보관"
-                          className="tp-btn-soft inline-flex h-6 w-6 shrink-0 items-center justify-center p-0 text-[11px] font-semibold text-[#5f79a0] disabled:cursor-not-allowed disabled:opacity-60"
+                          className="tp-btn-soft inline-flex min-h-10 min-w-10 shrink-0 items-center justify-center p-0 text-[11px] font-semibold text-[#5f79a0] disabled:cursor-not-allowed disabled:opacity-60"
                         >
                           X
                         </button>
@@ -460,7 +460,7 @@ export function NotificationBell({ unreadCount }: NotificationBellProps) {
                             type="button"
                             onClick={() => markOneAsRead(item.id)}
                             disabled={isActionPending}
-                            className="tp-btn-soft inline-flex h-7 items-center px-2 text-[11px] font-semibold disabled:cursor-not-allowed disabled:opacity-60"
+                            className="tp-btn-soft inline-flex min-h-10 items-center justify-center px-3 text-[11px] font-semibold disabled:cursor-not-allowed disabled:opacity-60"
                           >
                             읽음 처리
                           </button>
@@ -476,7 +476,7 @@ export function NotificationBell({ unreadCount }: NotificationBellProps) {
             <Link
               href="/notifications"
               onClick={() => setIsOpen(false)}
-              className="tp-btn-primary inline-flex h-9 w-full items-center justify-center px-3 text-xs font-semibold"
+              className="tp-btn-primary inline-flex min-h-10 w-full items-center justify-center px-3 text-xs font-semibold"
             >
               알림 페이지로 이동
             </Link>

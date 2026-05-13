@@ -4,11 +4,31 @@
 
 - 작업: 현재 active 작업 없음
 - 상태: `idle`
-- 현재 초점: `P2-17 remaining compact comments control 보강`을 완료 archive했다. 다음 후보는 `P2-18 remaining compact controls audit, notification/profile/lounge/admin edge surfaces 점검`이다.
+- 현재 초점: `P2-18 remaining compact user controls 보강`을 완료 archive했다. 다음 후보는 `P2-19 remaining compact controls audit, lounge/admin edge surfaces 점검`이다.
 
 ## 변경/탐색한 파일
 
 - 이번 세션 변경:
+  - `app/src/components/notifications/notification-center.tsx`
+  - `app/src/components/notifications/notification-bell.tsx`
+  - `app/src/components/profile/profile-social-account-connections.tsx`
+  - `app/src/components/profile/profile-social-account-connections.test.tsx`
+  - `app/src/components/user/user-relation-controls.tsx`
+  - `app/src/components/user/user-relation-controls.test.tsx`
+  - `app/src/components/compact-control-edge-accessibility.test.ts`
+  - `app/src/app/bookmarks/page.tsx`
+  - `app/src/app/my-posts/page.tsx`
+  - `docs/PLAN.md`
+  - `docs/PROGRESS.md`
+  - `docs/COMPLETED.md`
+- 탐색한 파일:
+  - `app/src/components/notifications/notification-center.tsx`
+  - `app/src/components/notifications/notification-bell.tsx`
+  - `app/src/components/profile/profile-social-account-connections.tsx`
+  - `app/src/components/user/user-relation-controls.tsx`
+  - `app/src/app/bookmarks/page.tsx`
+  - `app/src/app/my-posts/page.tsx`
+- 이전 세션 변경:
   - `app/src/components/posts/post-comment-pagination.tsx`
   - `app/src/components/posts/post-comment-section-client.tsx`
   - `app/src/components/posts/post-comment-best-item.tsx`

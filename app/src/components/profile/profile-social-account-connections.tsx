@@ -122,7 +122,7 @@ export function ProfileSocialAccountConnections({
                       data-testid={`profile-social-unlink-${provider}`}
                       disabled={isPending || isLastLoginMethod}
                       onClick={() => handleUnlink(provider)}
-                      className="mt-3 inline-flex min-h-9 items-center rounded-sm border border-[#d8e4f6] bg-white px-3 py-1.5 text-xs font-semibold text-[#315b9a] transition hover:bg-[#f3f7fd] disabled:cursor-not-allowed disabled:opacity-60"
+                      className="mt-3 inline-flex min-h-10 items-center rounded-sm border border-[#d8e4f6] bg-white px-3 text-xs font-semibold text-[#315b9a] transition hover:bg-[#f3f7fd] disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       해제
                     </button>
@@ -138,7 +138,7 @@ export function ProfileSocialAccountConnections({
                     data-testid={`profile-social-connect-${provider}`}
                     disabled={isPending}
                     onClick={() => handleConnect(provider)}
-                    className="mt-3 inline-flex min-h-9 items-center rounded-sm bg-[#315b9a] px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-[#254b82] disabled:cursor-not-allowed disabled:opacity-60"
+                    className="mt-3 inline-flex min-h-10 items-center rounded-sm bg-[#315b9a] px-3 text-xs font-semibold text-white transition hover:bg-[#254b82] disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     연결하기
                   </button>

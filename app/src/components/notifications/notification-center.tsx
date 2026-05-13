@@ -382,7 +382,7 @@ export function NotificationCenter({
                       type="button"
                       onClick={() => void handleMove(notification)}
                       disabled={isPending}
-                      className="tp-btn-soft min-h-9 px-3 py-1.5 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-60"
+                      className="tp-btn-soft inline-flex min-h-10 items-center justify-center px-3 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       이동
                     </button>
@@ -391,7 +391,7 @@ export function NotificationCenter({
                       type="button"
                       onClick={() => void handleArchive(notification.id)}
                       disabled={isPending}
-                      className="tp-btn-soft min-h-9 px-3 py-1.5 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-60"
+                      className="tp-btn-soft inline-flex min-h-10 items-center justify-center px-3 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       보관
                     </button>
@@ -401,12 +401,12 @@ export function NotificationCenter({
                         type="button"
                         onClick={() => void handleMarkRead(notification.id)}
                         disabled={isPending}
-                        className="tp-btn-primary min-h-9 px-3 py-1.5 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-60"
+                        className="tp-btn-primary inline-flex min-h-10 items-center justify-center px-3 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         읽음 처리
                       </button>
                     ) : (
-                      <span className="tp-border-soft tp-surface-soft tp-text-subtle inline-flex min-h-9 items-center rounded-md border px-3 py-1.5 text-xs">
+                      <span className="tp-border-soft tp-surface-soft tp-text-subtle inline-flex min-h-10 items-center rounded-md border px-3 text-xs">
                         읽음
                       </span>
                     )}

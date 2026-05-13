@@ -3105,3 +3105,37 @@
 - 결과:
   - 댓글 compact interaction 표면의 작은 컨트롤과 상태 메시지가 기존 모바일/접근성 기준에 맞춰졌다.
   - 다음 후보는 `P2-18 remaining compact controls audit, notification/profile/lounge/admin edge surfaces 점검`이다.
+
+### 2026-05-13 | P2-18 remaining compact user controls 보강
+- 완료일: `2026-05-13`
+- 배경:
+  - 댓글 외 남은 compact control 검색에서 알림 센터, 알림 벨 popover, 프로필 소셜 연결, 유저 뮤트, 내 글/북마크 검색 input에 40px 미만 기준이 남아 있었다.
+  - 알림 벨의 load/action error와 유저 관계 action message도 보조기술 상태 전달이 약했다.
+- 변경내용:
+  - 알림 센터 item의 이동, 보관, 읽음 처리, 읽음 badge를 `min-h-10` 기준으로 보강했다.
+  - 알림 벨 popover의 모두 읽음, 전체/안읽음 필터, 보관, 읽음 처리, 알림 페이지 이동 action을 `min-h-10` 기준으로 보강했다.
+  - 알림 벨 보관 icon button은 `min-h-10 min-w-10` 기준으로 보강했다.
+  - 알림 벨 load/action error에 `role="alert"`와 `aria-live="polite"`를 추가했다.
+  - 프로필 소셜 연결/해제 action을 `min-h-10` 기준으로 보강했다.
+  - 유저 뮤트 action을 `min-h-10` 기준으로 보강하고 결과 메시지에 `role="status"`와 `aria-live="polite"`를 추가했다.
+  - 내 글/북마크 검색 input을 `min-h-10` 기준으로 보강했다.
+  - 남은 일반 사용자 compact control 접근성 소스 회귀 unit test를 추가했다.
+- 코드문서:
+  - [app/src/components/notifications/notification-center.tsx](../app/src/components/notifications/notification-center.tsx)
+  - [app/src/components/notifications/notification-bell.tsx](../app/src/components/notifications/notification-bell.tsx)
+  - [app/src/components/profile/profile-social-account-connections.tsx](../app/src/components/profile/profile-social-account-connections.tsx)
+  - [app/src/components/user/user-relation-controls.tsx](../app/src/components/user/user-relation-controls.tsx)
+  - [app/src/app/bookmarks/page.tsx](../app/src/app/bookmarks/page.tsx)
+  - [app/src/app/my-posts/page.tsx](../app/src/app/my-posts/page.tsx)
+  - [app/src/components/compact-control-edge-accessibility.test.ts](../app/src/components/compact-control-edge-accessibility.test.ts)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app exec vitest run src/components/compact-control-edge-accessibility.test.ts src/components/profile/profile-social-account-connections.test.tsx src/components/user/user-relation-controls.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `corepack pnpm@9.12.3 -C app docs:refresh:check`
+  - `git diff --check`
+- 결과:
+  - 일반 사용자 compact controls 중 알림, 프로필, 유저 관계, 개인 목록 검색 표면이 기존 모바일/접근성 기준에 맞춰졌다.
+  - 다음 후보는 `P2-19 remaining compact controls audit, lounge/admin edge surfaces 점검`이다.
