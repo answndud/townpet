@@ -4,11 +4,26 @@
 
 - 작업: 현재 active 작업 없음
 - 상태: `idle`
-- 현재 초점: `Release Confidence Hardening P1-6` 완료 archive와 품질 게이트 확인을 마쳤다.
+- 현재 초점: `P1-7 1인 운영용 최소 production smoke 축소`를 완료 archive했다.
 
 ## 변경/탐색한 파일
 
 - 이번 세션 변경:
+  - `.github/workflows/ops-smoke-checks.yml`
+  - `app/package.json`
+  - `app/README.md`
+  - `app/scripts/run-ops-evidence.ts`
+  - `app/scripts/run-ops-evidence.test.ts`
+  - `business/archive/operations/문서 동기화 리포트.md`
+  - `business/operations/보안 운영 점검 템플릿.md`
+  - `business/operations/운영_문서_안내.md`
+  - `business/operations/돌봄_운영_런북.md`
+  - `business/operations/캐시_성능_적용_기록.md`
+  - `business/operations/차단 해소 체크리스트.md`
+  - `docs/COMPLETED.md`
+  - `docs/PLAN.md`
+  - `docs/PROGRESS.md`
+- 이전 세션 변경:
   - `app/src/app/feed/page.tsx`
   - `app/src/app/feed/feed-page-support.ts`
   - `app/src/app/feed/feed-page-items.ts`
@@ -84,6 +99,10 @@
   - `docs/errors/2026-05-12_vercel-security-env-build-preflight.md`
   - `docs/COMPLETED.md`
 - 이번 세션 결과:
+  - `ops-smoke-checks` 기본 timeout을 5분으로 낮추고 care smoke readiness/prewarm을 기본 경로에서 제거했다.
+  - `ops:evidence:solo`를 추가해 health-only 로컬 evidence profile을 제공했다.
+  - 운영 문서를 10분 관리자 smoke가 아니라 1인 운영용 2-3분 생존 확인 기준으로 정리했다.
+- 이전 세션 결과:
   - feed page의 query/option parsing, debug delay, guest feed context, audience segment missing-column guard를 `feed-page-support.ts`로 분리했다.
   - feed item client shape 변환을 `feed-page-items.ts`, pagination UI를 `feed-pagination.tsx`로 분리했다.
   - `app/feed/page.tsx`를 1102줄에서 884줄까지 축소했다.
@@ -143,6 +162,12 @@
 
 ## 직전 검증
 
+- `corepack pnpm@9.12.3 -C app exec vitest run scripts/run-ops-evidence.test.ts scripts/check-care-smoke-readiness.test.ts` PASS
+- `corepack pnpm@9.12.3 -C app typecheck` PASS
+- `corepack pnpm@9.12.3 -C app lint` PASS
+- `corepack pnpm@9.12.3 -C app docs:refresh` PASS
+- `corepack pnpm@9.12.3 -C app docs:refresh:check` PASS
+- `OPS_BASE_URL=http://127.0.0.1:9 corepack pnpm@9.12.3 -C app ops:evidence:solo` expected FAIL, health 실패와 evidence report 생성 확인
 - `corepack pnpm@9.12.3 -C app typecheck` PASS
 - `corepack pnpm@9.12.3 -C app lint` PASS
 - `corepack pnpm@9.12.3 -C app typecheck` PASS
@@ -182,4 +207,4 @@
 ## 다음 액션
 
 1. 다음 active 작업을 시작할 때 [PLAN.md](./PLAN.md)의 다음 작업 후보 중 하나를 선택한다.
-2. 현재 후보 우선순위는 `P1-7 운영 관리자 루틴을 10분 smoke로 고정`이다.
+2. 현재 후보 우선순위는 `P2-1 client useEffect fetch 표면 정리`다.

@@ -18,6 +18,7 @@ function createConfig(overrides: Partial<OpsEvidenceConfig> = {}): OpsEvidenceCo
     outputPath,
     perfOutputPath: path.join(tempDir, "latency.tsv"),
     perfSummaryPath: path.join(tempDir, "latency.summary.md"),
+    profile: "standard",
     securityStrict: false,
     continueOnFailure: true,
     ...overrides,
@@ -38,6 +39,7 @@ describe("ops evidence runner", () => {
     const steps = buildOpsEvidenceSteps(config);
 
     expect(config.baseUrl).toBe("http://localhost:3000");
+    expect(config.profile).toBe("standard");
     expect(config.securityStrict).toBe(false);
     expect(config.continueOnFailure).toBe(true);
     expect(steps.map((step) => step.id)).toEqual([
@@ -48,6 +50,39 @@ describe("ops evidence runner", () => {
     ]);
     expect(scriptNameFromArgs(steps[1].args)).toBe("ops:check:security-env");
     expect(steps[3].env.OPS_PERF_GET_SAMPLES).toBe("5");
+  });
+
+  it("supports a solo profile that only checks deployment health", () => {
+    const config = resolveOpsEvidenceConfig({
+      OPS_BASE_URL: "https://townpet.vercel.app",
+      OPS_EVIDENCE_PROFILE: "solo",
+    });
+    const steps = buildOpsEvidenceSteps(config);
+
+    expect(config.profile).toBe("solo");
+    expect(config.baseUrl).toBe("https://townpet.vercel.app");
+    expect(steps.map((step) => step.id)).toEqual(["health"]);
+  });
+
+  it("writes a solo evidence report with only the health check", async () => {
+    const config = createConfig({ profile: "solo" });
+    await mkdir(path.dirname(config.outputPath), { recursive: true });
+
+    const commandRunner = vi.fn().mockResolvedValue({ code: 0, output: "health ok" });
+
+    await runOpsEvidence(config, commandRunner);
+    const report = await readFile(config.outputPath, "utf8");
+
+    expect(commandRunner.mock.calls.map((call) => scriptNameFromArgs(call[1]))).toEqual([
+      "ops:check:health",
+    ]);
+    expect(report).toContain("- profile: solo");
+    expect(report).toContain("- health: PASS");
+    expect(report).not.toContain("- security-env:");
+    expect(report).not.toContain("- prewarm:");
+    expect(report).not.toContain("- perf-snapshot:");
+
+    await rm(path.dirname(config.outputPath), { recursive: true, force: true });
   });
 
   it("uses strict security preflight when explicitly requested", () => {
@@ -80,6 +115,7 @@ describe("ops evidence runner", () => {
       "ops:perf:snapshot",
     ]);
     expect(report).toContain("- status: PASS");
+    expect(report).toContain("- profile: standard");
     expect(report).toContain("- health: PASS");
     expect(report).toContain("- perfSummary:");
 

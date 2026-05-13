@@ -39,6 +39,7 @@ export type OpsEvidenceConfig = {
   outputPath: string;
   perfOutputPath: string;
   perfSummaryPath: string;
+  profile: "solo" | "standard";
   securityStrict: boolean;
   continueOnFailure: boolean;
 };
@@ -105,6 +106,7 @@ export function resolveOpsEvidenceConfig(env: EnvMap = process.env): OpsEvidence
     outputPath,
     perfOutputPath,
     perfSummaryPath,
+    profile: env.OPS_EVIDENCE_PROFILE?.trim() === "solo" ? "solo" : "standard",
     securityStrict: hasTruthyFlag(env.OPS_EVIDENCE_SECURITY_STRICT),
     continueOnFailure: !hasFalsyFlag(env.OPS_EVIDENCE_CONTINUE_ON_FAILURE),
   };
@@ -116,14 +118,20 @@ export function buildOpsEvidenceSteps(config: OpsEvidenceConfig): EvidenceStep[]
     OPS_BASE_URL: config.baseUrl,
   };
 
+  const healthStep: EvidenceStep = {
+    id: "health",
+    title: "Health endpoint",
+    ...buildPnpmCommand("ops:check:health"),
+    env: baseEnv,
+    required: true,
+  };
+
+  if (config.profile === "solo") {
+    return [healthStep];
+  }
+
   return [
-    {
-      id: "health",
-      title: "Health endpoint",
-      ...buildPnpmCommand("ops:check:health"),
-      env: baseEnv,
-      required: true,
-    },
+    healthStep,
     {
       id: "security-env",
       title: config.securityStrict ? "Security env strict preflight" : "Security env preflight",
@@ -215,6 +223,7 @@ function buildEvidenceMarkdown(config: OpsEvidenceConfig, results: EvidenceStepR
   lines.push("");
   lines.push(`- generatedAt: ${new Date().toISOString()}`);
   lines.push(`- baseUrl: ${config.baseUrl}`);
+  lines.push(`- profile: ${config.profile}`);
   lines.push(`- status: ${failedRequired.length === 0 ? "PASS" : "FAIL"}`);
   lines.push(`- continueOnFailure: ${String(config.continueOnFailure)}`);
   lines.push(`- perfOutput: ${config.perfOutputPath}`);
