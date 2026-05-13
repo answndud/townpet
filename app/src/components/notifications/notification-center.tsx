@@ -4,9 +4,10 @@ import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
+import { CompactPagination } from "@/components/ui/compact-pagination";
+import { EmptyState } from "@/components/ui/empty-state";
 import { formatKoreanDateTime } from "@/lib/date-format";
 import type { NotificationFilterKind } from "@/lib/notification-filter";
-import { buildPaginationWindow } from "@/lib/pagination";
 import {
   emitNotificationUnreadSync,
   subscribeNotificationUnreadSync,
@@ -341,22 +342,19 @@ export function NotificationCenter({
 
       <section className="tp-card overflow-hidden">
         {items.length === 0 ? (
-          <div className="flex flex-col items-center px-5 py-10 text-center sm:py-12">
-            <p className="tp-text-card-title tp-text-heading">
-              {unreadOnly ? "읽지 않은 알림이 없습니다." : "도착한 알림이 없습니다."}
-            </p>
-            <p className="tp-text-subtle mt-2 max-w-[36ch] text-sm leading-6">
-              {unreadOnly
+          <EmptyState
+            eyebrow={unreadOnly ? "읽지 않음" : "알림 상태"}
+            title={unreadOnly ? "읽지 않은 알림이 없습니다." : "도착한 알림이 없습니다."}
+            description={
+              unreadOnly
                 ? "새 댓글이나 반응이 생기면 이 필터에 다시 표시됩니다."
-                : "게시글 활동이 생기면 댓글, 답글, 반응 알림이 이곳에 쌓입니다."}
-            </p>
-            <Link
-              href="/feed"
-              className="tp-btn-soft mt-4 inline-flex min-h-10 items-center justify-center px-4 py-2 text-sm font-semibold"
-            >
-              피드로 돌아가기
-            </Link>
-          </div>
+                : "게시글 활동이 생기면 댓글, 답글, 반응 알림이 이곳에 쌓입니다."
+            }
+            actionHref={unreadOnly ? buildNotificationListHref(kind, false, 1) : "/feed"}
+            actionLabel={unreadOnly ? "전체 알림 보기" : "피드로 돌아가기"}
+            secondaryActionHref={unreadOnly ? "/feed" : undefined}
+            secondaryActionLabel={unreadOnly ? "피드로 돌아가기" : undefined}
+          />
         ) : (
           <div className="divide-y divide-[#e1e9f5]">
             {items.map((notification) => {
@@ -421,31 +419,12 @@ export function NotificationCenter({
       </section>
 
       {items.length > 0 && totalPages > 1 ? (
-        <div className="tp-border-soft flex flex-wrap items-center justify-center gap-1.5 rounded-[20px] border bg-white px-3 py-3">
-          <Link
-            href={buildNotificationListHref(kind, unreadOnly, Math.max(1, currentPage - 1))}
-            aria-disabled={currentPage <= 1}
-            className={`inline-flex min-h-9 items-center rounded-lg px-3 py-1.5 ${currentPage <= 1 ? "tp-btn-disabled pointer-events-none" : "tp-btn-soft"} text-xs font-semibold transition`}
-          >
-            이전
-          </Link>
-          {buildPaginationWindow(currentPage, totalPages).map((pageNumber) => (
-            <Link
-              key={`notification-page-${pageNumber}`}
-              href={buildNotificationListHref(kind, unreadOnly, pageNumber)}
-              className={`inline-flex min-h-9 min-w-9 items-center justify-center rounded-lg px-3 py-1.5 ${pageNumber === currentPage ? "tp-btn-primary" : "tp-btn-soft"} text-xs font-semibold transition`}
-            >
-              {pageNumber}
-            </Link>
-          ))}
-          <Link
-            href={buildNotificationListHref(kind, unreadOnly, Math.min(totalPages, currentPage + 1))}
-            aria-disabled={currentPage >= totalPages}
-            className={`inline-flex min-h-9 items-center rounded-lg px-3 py-1.5 ${currentPage >= totalPages ? "tp-btn-disabled pointer-events-none" : "tp-btn-soft"} text-xs font-semibold transition`}
-          >
-            다음
-          </Link>
-        </div>
+        <CompactPagination
+          ariaLabel="알림 페이지 이동"
+          currentPage={currentPage}
+          totalPages={totalPages}
+          makeHref={(page) => buildNotificationListHref(kind, unreadOnly, page)}
+        />
       ) : items.length > 0 ? (
         <p className="tp-text-subtle text-xs">마지막 알림까지 모두 확인했습니다.</p>
       ) : null}

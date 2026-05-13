@@ -2720,3 +2720,35 @@
 - 결과:
   - 회원/게스트 feed pagination이 같은 접근성/모바일 기준을 공유한다.
   - 다음 후보는 `P2-5 개인 프로필/알림의 빈 상태와 pagination controls 점검`이다.
+
+### 2026-05-13 | P2-5 알림/공개 프로필 빈 상태와 pagination 보강
+- 완료일: `2026-05-13`
+- 배경:
+  - 알림 센터와 공개 프로필 활동 탭은 비슷한 compact pagination을 직접 구현하고 있었다.
+  - 기존 pagination은 현재 페이지를 `aria-current`로 표시하지 않았고, 일부 control은 40px 미만 touch target이었다.
+  - 공개 프로필 활동 0건 상태는 단순 문장만 보여줘 빈 상태의 문맥과 다음 기대 상태가 약했다.
+- 변경내용:
+  - `app/src/components/ui/compact-pagination.tsx`를 추가했다.
+  - compact pagination에 `nav`, `aria-label`, `aria-current="page"`, `min-h-10`, `min-w-10`, `flex-wrap`을 적용했다.
+  - 알림 센터 pagination을 `CompactPagination`으로 교체했다.
+  - 공개 프로필 posts/comments/reactions pagination을 `CompactPagination`으로 교체했다.
+  - 알림 센터 빈 상태를 공용 `EmptyState`로 교체했다.
+  - unread 0건 상태에서는 `전체 알림 보기`와 `피드로 돌아가기` action을 함께 제공했다.
+  - 공개 프로필 posts/comments/reactions 0건 상태를 공용 `EmptyState`로 교체해 문맥별 eyebrow와 설명을 제공했다.
+  - compact pagination 정적 렌더 unit test를 추가했다.
+- 코드문서:
+  - [app/src/components/ui/compact-pagination.tsx](../app/src/components/ui/compact-pagination.tsx)
+  - [app/src/components/ui/compact-pagination.test.tsx](../app/src/components/ui/compact-pagination.test.tsx)
+  - [app/src/components/notifications/notification-center.tsx](../app/src/components/notifications/notification-center.tsx)
+  - [app/src/app/users/[id]/page.tsx](../app/src/app/users/%5Bid%5D/page.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app exec vitest run src/components/ui/compact-pagination.test.tsx src/components/ui/empty-state.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `corepack pnpm@9.12.3 -C app docs:refresh:check`
+  - `git diff --check`
+- 결과:
+  - 알림 센터와 공개 프로필 활동 탭이 같은 compact pagination 접근성 기준을 사용한다.
+  - 다음 후보는 `P2-6 admin pagination/empty state 중 반복이 큰 화면 점검`이다.
