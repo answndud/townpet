@@ -22,10 +22,6 @@ on:
         required: true
         default: "200"
         type: string
-  schedule:
-    # 00:10 / 08:10 / 16:10 UTC (KST 09:10 / 17:10 / 01:10)
-    - cron: "10 0,8,16 * * *"
-
 jobs:
   latency-snapshot:
     runs-on: ubuntu-latest

@@ -1,9 +1,6 @@
 name: post-integrity-maintenance
 
 on:
-  schedule:
-    # Every Monday 01:10 UTC (KST 10:10)
-    - cron: "10 1 * * 1"
   workflow_dispatch:
     inputs:
       apply_changes:

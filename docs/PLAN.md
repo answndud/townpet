@@ -34,6 +34,7 @@
 
 #### P1-8.1 scheduled maintenance/workflow 축소
 
+- 상태: `completed`
 - 문제:
   - `.github/workflows`에 workflow가 12개 있고, 일부는 schedule로 production secret/DB에 접근한다.
   - `ops-latency-snapshots`는 하루 3회 실행되며, 1인 운영 단계에서는 비용/노이즈 대비 판단 가치가 낮다.
@@ -57,6 +58,7 @@
 
 #### P1-8.2 package script 표면 축소
 
+- 상태: `pending`
 - 문제:
   - `app/package.json` script가 81개로, 일상 명령과 one-off 운영 명령이 같은 레벨에 섞여 있다.
   - 신규 세션/AI agent가 어떤 명령을 기본으로 써야 하는지 판단 비용이 커진다.

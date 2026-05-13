@@ -2399,3 +2399,34 @@
 - 결과:
   - 기본 production smoke는 1인 운영자가 지속 가능한 health-only 생존 확인으로 축소됐다.
   - 관리자 브라우저 smoke, care 계정 readiness, prewarm, Sentry, `pg_trgm`, 성능 snapshot은 on-demand 확장 루틴으로 분리됐다.
+
+### 2026-05-13 | P1-8.1 scheduled maintenance/workflow 축소
+- 완료일: `2026-05-13`
+- 배경:
+  - P1-7에서 production smoke를 health-only로 낮춘 뒤, production DB나 외부 배포를 건드리는 maintenance workflow도 1인 운영 기본 루틴으로는 과했다.
+  - retention cleanup, post integrity repair, latency snapshot은 문제가 보일 때 실행하면 충분하고, 자동 schedule은 비용과 알림 노이즈를 만든다.
+- 변경내용:
+  - `auth-audit-cleanup`, `notification-cleanup`, `search-term-cleanup` workflow에서 schedule trigger를 제거하고 수동 `workflow_dispatch`만 남겼다.
+  - `post-integrity-maintenance` workflow에서 주간 schedule을 제거하고 수동 dry-run/apply 경로만 남겼다.
+  - `ops-latency-snapshots` workflow에서 하루 3회 schedule을 제거하고 수동 성능 조사 경로만 남겼다.
+  - 운영 문서에서 cleanup/backfill/manual-report/latency/post-integrity workflow를 상시 루틴이 아니라 on-demand 유지보수 도구로 정리했다.
+  - 보안 위험 등록부와 진행상황 문서의 auth audit retention 설명을 수동 workflow 기준으로 갱신했다.
+- 코드문서:
+  - [.github/workflows/auth-audit-cleanup.yml](../.github/workflows/auth-audit-cleanup.yml)
+  - [.github/workflows/notification-cleanup.yml](../.github/workflows/notification-cleanup.yml)
+  - [.github/workflows/search-term-cleanup.yml](../.github/workflows/search-term-cleanup.yml)
+  - [.github/workflows/post-integrity-maintenance.yml](../.github/workflows/post-integrity-maintenance.yml)
+  - [.github/workflows/ops-latency-snapshots.yml](../.github/workflows/ops-latency-snapshots.yml)
+  - [app/README.md](../app/README.md)
+  - [business/operations/운영_문서_안내.md](../business/operations/%EC%9A%B4%EC%98%81_%EB%AC%B8%EC%84%9C_%EC%95%88%EB%82%B4.md)
+  - [business/operations/SLO_알림_기준.md](../business/operations/SLO_%EC%95%8C%EB%A6%BC_%EA%B8%B0%EC%A4%80.md)
+  - [business/operations/검색 통계 전환 가이드.md](../business/operations/%EA%B2%80%EC%83%89%20%ED%86%B5%EA%B3%84%20%EC%A0%84%ED%99%98%20%EA%B0%80%EC%9D%B4%EB%93%9C.md)
+  - [business/security/보안_위험_등록부.md](../business/security/%EB%B3%B4%EC%95%88_%EC%9C%84%ED%97%98_%EB%93%B1%EB%A1%9D%EB%B6%80.md)
+  - [business/security/보안_진행상황.md](../business/security/%EB%B3%B4%EC%95%88_%EC%A7%84%ED%96%89%EC%83%81%ED%99%A9.md)
+- 검증:
+  - `ruby -e 'require "yaml"; ARGV.each { |f| YAML.load_file(f); puts "ok #{f}" }' .github/workflows/*.yml`
+  - `corepack pnpm@9.12.3 -C app docs:refresh:check`
+  - `git diff --check`
+- 결과:
+  - 기본 scheduled workflow는 weekly health smoke 중심으로 줄었고, production DB maintenance는 명시 수동 실행으로 낮아졌다.
+  - 다음 작업은 `P1-8.2 package script 표면 축소`다.
