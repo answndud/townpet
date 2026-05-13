@@ -38,6 +38,28 @@ const CONTENT_SCOPE_OPTIONS = [
   { value: "ALL_ACTIVE", label: "전체 범위" },
 ] as const;
 
+function DirectModerationMessage({
+  message,
+  tone,
+}: {
+  message: string | null;
+  tone: "success" | "error";
+}) {
+  if (!message) {
+    return null;
+  }
+
+  return (
+    <span
+      className={`text-xs ${tone === "success" ? "text-[#355988]" : "text-rose-700"}`}
+      role={tone === "success" ? "status" : "alert"}
+      aria-live="polite"
+    >
+      {message}
+    </span>
+  );
+}
+
 function getTargetUserLabel(user: DirectModerationTargetUser) {
   return user.nickname ? `${user.nickname} (${user.email})` : user.email;
 }
@@ -203,7 +225,7 @@ export function DirectModerationPanel() {
           <input
             value={sanctionUserKey}
             onChange={(event) => setSanctionUserKey(event.target.value)}
-            className="tp-input-soft bg-white px-3 py-2 text-sm"
+            className="tp-input-soft min-h-10 bg-white px-3 py-2 text-sm"
             placeholder="userId 또는 user@example.com"
             disabled={isSanctionPending}
           />
@@ -224,7 +246,7 @@ export function DirectModerationPanel() {
           <button
             type="button"
             onClick={handleDirectSanction}
-            className="tp-btn-primary px-4 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0]"
+            className="tp-btn-primary min-h-10 px-4 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0]"
             disabled={
               isSanctionPending ||
               sanctionUserKey.trim().length === 0 ||
@@ -233,10 +255,8 @@ export function DirectModerationPanel() {
           >
             {isSanctionPending ? "처리 중..." : "단계적 제재 적용"}
           </button>
-          {sanctionMessage ? (
-            <span className="text-xs text-[#355988]">{sanctionMessage}</span>
-          ) : null}
-          {sanctionError ? <span className="text-xs text-rose-700">{sanctionError}</span> : null}
+          <DirectModerationMessage message={sanctionMessage} tone="success" />
+          <DirectModerationMessage message={sanctionError} tone="error" />
         </div>
       </section>
 
@@ -258,7 +278,7 @@ export function DirectModerationPanel() {
           <input
             value={hideUserKey}
             onChange={(event) => setHideUserKey(event.target.value)}
-            className="tp-input-soft bg-white px-3 py-2 text-sm"
+            className="tp-input-soft min-h-10 bg-white px-3 py-2 text-sm"
             placeholder="userId 또는 user@example.com"
             disabled={isHidePending}
           />
@@ -271,7 +291,7 @@ export function DirectModerationPanel() {
             onChange={(event) =>
               setHideScope(event.target.value as (typeof CONTENT_SCOPE_OPTIONS)[number]["value"])
             }
-            className="tp-input-soft bg-white px-3 py-2 text-sm"
+            className="tp-input-soft min-h-10 bg-white px-3 py-2 text-sm"
             disabled={isHidePending}
           >
             {CONTENT_SCOPE_OPTIONS.map((option) => (
@@ -297,7 +317,7 @@ export function DirectModerationPanel() {
           <button
             type="button"
             onClick={handleHideContent}
-            className="tp-btn-primary px-4 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0]"
+            className="tp-btn-primary min-h-10 px-4 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0]"
             disabled={
               isHidePending ||
               hideUserKey.trim().length === 0 ||
@@ -306,8 +326,8 @@ export function DirectModerationPanel() {
           >
             {isHidePending ? "처리 중..." : "콘텐츠 숨김 실행"}
           </button>
-          {hideMessage ? <span className="text-xs text-[#355988]">{hideMessage}</span> : null}
-          {hideError ? <span className="text-xs text-rose-700">{hideError}</span> : null}
+          <DirectModerationMessage message={hideMessage} tone="success" />
+          <DirectModerationMessage message={hideError} tone="error" />
         </div>
       </section>
 
@@ -329,7 +349,7 @@ export function DirectModerationPanel() {
           <input
             value={restoreUserKey}
             onChange={(event) => setRestoreUserKey(event.target.value)}
-            className="tp-input-soft bg-white px-3 py-2 text-sm"
+            className="tp-input-soft min-h-10 bg-white px-3 py-2 text-sm"
             placeholder="userId 또는 user@example.com"
             disabled={isRestorePending}
           />
@@ -344,7 +364,7 @@ export function DirectModerationPanel() {
                 event.target.value as (typeof CONTENT_SCOPE_OPTIONS)[number]["value"],
               )
             }
-            className="tp-input-soft bg-white px-3 py-2 text-sm"
+            className="tp-input-soft min-h-10 bg-white px-3 py-2 text-sm"
             disabled={isRestorePending}
           >
             {CONTENT_SCOPE_OPTIONS.map((option) => (
@@ -370,7 +390,7 @@ export function DirectModerationPanel() {
           <button
             type="button"
             onClick={handleRestoreContent}
-            className="tp-btn-primary px-4 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0]"
+            className="tp-btn-primary min-h-10 px-4 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0]"
             disabled={
               isRestorePending ||
               restoreUserKey.trim().length === 0 ||
@@ -379,8 +399,8 @@ export function DirectModerationPanel() {
           >
             {isRestorePending ? "처리 중..." : "직접 숨김 복구"}
           </button>
-          {restoreMessage ? <span className="text-xs text-[#355988]">{restoreMessage}</span> : null}
-          {restoreError ? <span className="text-xs text-rose-700">{restoreError}</span> : null}
+          <DirectModerationMessage message={restoreMessage} tone="success" />
+          <DirectModerationMessage message={restoreError} tone="error" />
         </div>
       </section>
     </div>
