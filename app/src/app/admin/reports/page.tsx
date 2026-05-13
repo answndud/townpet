@@ -270,7 +270,7 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
               <Link
                 key={value}
                 href={buildLink(value as ReportStatus | "ALL", targetType, 1)}
-                className={`inline-flex min-h-9 items-center rounded-lg border px-3 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8bb8ff] ${
+                className={`inline-flex min-h-10 items-center rounded-lg border px-3 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8bb8ff] ${
                   status === value
                     ? "border-[#3567b5] bg-[#3567b5] text-white"
                     : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
@@ -288,7 +288,7 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
               <Link
                 key={value}
                 href={buildLink(status, value as ReportTarget | "ALL", 1)}
-                className={`inline-flex min-h-9 items-center rounded-lg border px-3 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8bb8ff] ${
+                className={`inline-flex min-h-10 items-center rounded-lg border px-3 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8bb8ff] ${
                   targetType === value
                     ? "border-[#3567b5] bg-[#3567b5] text-white"
                     : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"

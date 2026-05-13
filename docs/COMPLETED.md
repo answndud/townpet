@@ -3139,3 +3139,34 @@
 - 결과:
   - 일반 사용자 compact controls 중 알림, 프로필, 유저 관계, 개인 목록 검색 표면이 기존 모바일/접근성 기준에 맞춰졌다.
   - 다음 후보는 `P2-19 remaining compact controls audit, lounge/admin edge surfaces 점검`이다.
+
+### 2026-05-13 | P2-19 remaining compact lounge/admin controls 보강
+- 완료일: `2026-05-13`
+- 배경:
+  - 남은 compact control 검색에서 품종 라운지의 검색/필터/페이지네이션과 공동구매 템플릿 form, 관리자 신고/돌봄 피드백 화면의 필터/저장/일괄 처리 control이 40px 미만 기준으로 남아 있었다.
+  - 신고 처리와 공동구매 저장 실패/완료 메시지는 화면에는 보였지만 보조기술 live region 역할이 약했다.
+- 변경내용:
+  - 품종 라운지 상단 action, 검색 input/button, 정렬/맞춤/기간/type 필터, 페이지네이션을 `min-h-10`과 `min-w-10` 기준으로 보강했다.
+  - 공동구매 템플릿 form input/textarea/submit button을 `min-h-10` 이상으로 맞추고, 오류 메시지에 `role="alert"`와 `aria-live="polite"`를 추가했다.
+  - 관리자 신고 큐의 선택 badge, 일괄 메모 input, checkbox, 일괄 action button을 `min-h-10`/`h-5 w-5` 기준으로 보강했다.
+  - 신고 처리 action input과 checkbox를 보강하고 처리 결과/잠김 상태 메시지를 `role="status"`와 `aria-live="polite"`로 전달한다.
+  - 신고 목록 필터와 돌봄 피드백 필터/저장 action을 `min-h-10` 기준으로 맞추고 `tp-btn-xs/sm` 잔여 사용을 제거했다.
+  - lounge/admin compact controls 접근성 소스 회귀 unit test를 추가했다.
+- 코드문서:
+  - [app/src/app/lounges/breeds/[breedCode]/page.tsx](../app/src/app/lounges/breeds/[breedCode]/page.tsx)
+  - [app/src/components/lounges/breed-groupbuy-form.tsx](../app/src/components/lounges/breed-groupbuy-form.tsx)
+  - [app/src/components/admin/report-actions.tsx](../app/src/components/admin/report-actions.tsx)
+  - [app/src/components/admin/report-queue-table.tsx](../app/src/components/admin/report-queue-table.tsx)
+  - [app/src/app/admin/reports/page.tsx](../app/src/app/admin/reports/page.tsx)
+  - [app/src/app/admin/care-feedbacks/page.tsx](../app/src/app/admin/care-feedbacks/page.tsx)
+  - [app/src/components/admin/admin-lounge-compact-controls-accessibility.test.ts](../app/src/components/admin/admin-lounge-compact-controls-accessibility.test.ts)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app exec vitest run src/components/admin/admin-lounge-compact-controls-accessibility.test.ts src/components/admin/report-actions.test.tsx`
+  - `rg -n "min-h-9|h-9|h-8|min-w-8|tp-btn-xs|tp-btn-sm|sm:h-9" app/src/app/admin/reports/page.tsx app/src/app/admin/care-feedbacks/page.tsx app/src/components/admin app/src/components/lounges 'app/src/app/lounges/breeds/[breedCode]/page.tsx' -g '!*.test.ts' -g '!*.test.tsx'`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+- 결과:
+  - 품종 라운지와 관리자 신고/돌봄 피드백 edge surface의 잔여 compact controls가 기존 모바일/접근성 기준에 맞춰졌다.
+  - 다음 후보는 `P2-20 remaining compact controls audit 최종 sweep`이다.

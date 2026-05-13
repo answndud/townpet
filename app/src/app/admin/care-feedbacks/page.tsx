@@ -192,7 +192,7 @@ export default async function CareFeedbacksPage({ searchParams }: CareFeedbacksP
               <Link
                 key={value}
                 href={buildLink(value as CareFeedbackIssueType | "ALL", outcome, reviewStatus, 1)}
-                className={`inline-flex min-h-9 items-center rounded-lg border px-3 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8bb8ff] ${
+                className={`inline-flex min-h-10 items-center rounded-lg border px-3 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8bb8ff] ${
                   issueType === value
                     ? "border-[#3567b5] bg-[#3567b5] text-white"
                     : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
@@ -210,7 +210,7 @@ export default async function CareFeedbacksPage({ searchParams }: CareFeedbacksP
               <Link
                 key={value}
                 href={buildLink(issueType, value as CareFeedbackOutcome | "ALL", reviewStatus, 1)}
-                className={`inline-flex min-h-9 items-center rounded-lg border px-3 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8bb8ff] ${
+                className={`inline-flex min-h-10 items-center rounded-lg border px-3 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8bb8ff] ${
                   outcome === value
                     ? "border-[#3567b5] bg-[#3567b5] text-white"
                     : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
@@ -228,7 +228,7 @@ export default async function CareFeedbacksPage({ searchParams }: CareFeedbacksP
               <Link
                 key={value}
                 href={buildLink(issueType, outcome, value as CareFeedbackReviewStatus | "ALL", 1)}
-                className={`inline-flex min-h-9 items-center rounded-lg border px-3 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8bb8ff] ${
+                className={`inline-flex min-h-10 items-center rounded-lg border px-3 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8bb8ff] ${
                   reviewStatus === value
                     ? "border-[#3567b5] bg-[#3567b5] text-white"
                     : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
@@ -345,7 +345,7 @@ export default async function CareFeedbacksPage({ searchParams }: CareFeedbacksP
                         defaultValue={feedback.reviewNote ?? ""}
                         maxLength={1000}
                         rows={3}
-                        className="mt-1 w-full rounded-lg border border-[#cbdcf5] bg-white px-2 py-2 text-xs text-[#163462]"
+                        className="mt-1 min-h-24 w-full rounded-lg border border-[#cbdcf5] bg-white px-2 py-2 text-xs text-[#163462]"
                         placeholder="확인한 내용과 다음 조치를 남깁니다"
                       />
                     </label>
@@ -354,7 +354,7 @@ export default async function CareFeedbacksPage({ searchParams }: CareFeedbacksP
                         {formatDateTime(feedback.reviewedAt)} · 담당{" "}
                         {formatUserLabel(feedback.reviewer)}
                       </p>
-                      <button type="submit" className="tp-btn-primary tp-btn-sm rounded-lg">
+                      <button type="submit" className="tp-btn-primary inline-flex min-h-10 items-center justify-center rounded-lg px-3 text-xs">
                         저장
                       </button>
                     </div>
@@ -411,7 +411,7 @@ export default async function CareFeedbacksPage({ searchParams }: CareFeedbacksP
                           <select
                             name="reviewStatus"
                             defaultValue={feedback.reviewStatus}
-                            className="min-h-9 rounded-lg border border-[#cbdcf5] bg-white px-2 text-xs text-[#163462]"
+                            className="min-h-10 rounded-lg border border-[#cbdcf5] bg-white px-2 text-xs text-[#163462]"
                           >
                             {Object.values(CareFeedbackReviewStatus).map((status) => (
                               <option key={status} value={status}>
@@ -424,10 +424,10 @@ export default async function CareFeedbacksPage({ searchParams }: CareFeedbacksP
                             defaultValue={feedback.reviewNote ?? ""}
                             maxLength={1000}
                             rows={2}
-                            className="rounded-lg border border-[#cbdcf5] bg-white px-2 py-1 text-xs text-[#163462]"
+                            className="min-h-20 rounded-lg border border-[#cbdcf5] bg-white px-2 py-2 text-xs text-[#163462]"
                             placeholder="운영자 메모"
                           />
-                          <button type="submit" className="tp-btn-primary tp-btn-xs self-start rounded-lg">
+                          <button type="submit" className="tp-btn-primary inline-flex min-h-10 items-center justify-center self-start rounded-lg px-3 text-xs">
                             저장
                           </button>
                         </form>
