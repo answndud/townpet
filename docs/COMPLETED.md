@@ -2806,3 +2806,33 @@
 - 결과:
   - 신고 큐 0건 상태와 신고 처리 action이 기존 모바일/접근성 기준에 맞춰졌다.
   - 다음 후보는 `P2-8 admin forms의 submit/cancel button touch target과 상태 메시지 점검`이다.
+
+### 2026-05-13 | P2-8 admin policy form touch/status 보강
+- 완료일: `2026-05-13`
+- 배경:
+  - admin 정책 form은 1인 운영자가 직접 저장하는 표면인데, 일부 저장/reset 버튼이 명시적인 40px touch target 기준을 갖지 않았다.
+  - 저장 성공/실패 메시지도 시각적으로만 표시되어 스크린리더 상태 전달이 약했다.
+- 변경내용:
+  - `GuestReadPolicyForm`의 저장/reset 버튼에 `min-h-10`을 적용했다.
+  - `GuestReadPolicyForm`의 성공 메시지에 `role="status"`, 실패 메시지에 `role="alert"`와 `aria-live="polite"`를 추가했다.
+  - `ForbiddenKeywordPolicyForm`의 저장/reset 버튼에 `min-h-10`을 적용했다.
+  - `ForbiddenKeywordPolicyForm`의 성공 메시지에 `role="status"`, 실패 메시지에 `role="alert"`와 `aria-live="polite"`를 추가했다.
+  - `FeedPersonalizationPolicyForm`의 저장 버튼에 `min-h-10`을 적용했다.
+  - `FeedPersonalizationPolicyForm`의 성공 메시지에 `role="status"`, 실패 메시지에 `role="alert"`와 `aria-live="polite"`를 추가했다.
+  - 세 정책 form의 touch target 기준을 고정하는 정적 렌더 unit test를 추가했다.
+- 코드문서:
+  - [app/src/components/admin/guest-read-policy-form.tsx](../app/src/components/admin/guest-read-policy-form.tsx)
+  - [app/src/components/admin/forbidden-keyword-policy-form.tsx](../app/src/components/admin/forbidden-keyword-policy-form.tsx)
+  - [app/src/components/admin/feed-personalization-policy-form.tsx](../app/src/components/admin/feed-personalization-policy-form.tsx)
+  - [app/src/components/admin/admin-policy-form-accessibility.test.tsx](../app/src/components/admin/admin-policy-form-accessibility.test.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app exec vitest run src/components/admin/admin-policy-form-accessibility.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `corepack pnpm@9.12.3 -C app docs:refresh:check`
+  - `git diff --check`
+- 결과:
+  - 주요 admin 정책 저장 form의 버튼과 상태 메시지가 기존 모바일/접근성 기준에 맞춰졌다.
+  - 다음 후보는 `P2-9 admin direct moderation panel의 실행 버튼과 결과 메시지 접근성 점검`이다.

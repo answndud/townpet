@@ -67,7 +67,7 @@ export function ForbiddenKeywordPolicyForm({
           type="button"
           onClick={handleSubmit}
           disabled={isPending}
-          className="tp-btn-primary px-4 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-70"
+          className="tp-btn-primary min-h-10 px-4 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-70"
         >
           {isPending ? "저장 중..." : "금칙어 저장"}
         </button>
@@ -79,14 +79,22 @@ export function ForbiddenKeywordPolicyForm({
             setError(null);
           }}
           disabled={isPending}
-          className="tp-btn-soft px-4 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-70"
+          className="tp-btn-soft min-h-10 px-4 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-70"
         >
           모두 삭제
         </button>
       </div>
 
-      {message ? <p className="text-xs text-emerald-700">{message}</p> : null}
-      {error ? <p className="text-xs text-rose-600">{error}</p> : null}
+      {message ? (
+        <p className="text-xs text-emerald-700" role="status" aria-live="polite">
+          {message}
+        </p>
+      ) : null}
+      {error ? (
+        <p className="text-xs text-rose-600" role="alert" aria-live="polite">
+          {error}
+        </p>
+      ) : null}
     </div>
   );
 }

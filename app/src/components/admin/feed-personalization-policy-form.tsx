@@ -101,18 +101,27 @@ export function FeedPersonalizationPolicyForm({
           type="button"
           onClick={handleSubmit}
           disabled={isPending}
-          className="tp-btn-primary px-4 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-70"
+          className="tp-btn-primary min-h-10 px-4 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-70"
         >
           {isPending ? "저장 중..." : "정책 저장"}
         </button>
       </div>
 
       {message ? (
-        <p data-testid="feed-personalization-policy-success" className="text-xs text-emerald-700">
+        <p
+          data-testid="feed-personalization-policy-success"
+          className="text-xs text-emerald-700"
+          role="status"
+          aria-live="polite"
+        >
           {message}
         </p>
       ) : null}
-      {error ? <p className="text-xs text-rose-600">{error}</p> : null}
+      {error ? (
+        <p className="text-xs text-rose-600" role="alert" aria-live="polite">
+          {error}
+        </p>
+      ) : null}
     </div>
   );
 }
