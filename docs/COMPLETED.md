@@ -2862,3 +2862,33 @@
 - 결과:
   - 직접 모더레이션 패널의 실행 control과 결과 메시지가 기존 모바일/접근성 기준에 맞춰졌다.
   - 다음 후보는 `P2-10 admin/report detail과 auth audit/moderation log의 남은 status/error 상태 점검`이다.
+
+### 2026-05-13 | P2-10 admin detail/log status surface 보강
+- 완료일: `2026-05-13`
+- 배경:
+  - 신고 상세, 인증 감사 로그, 모더레이션 로그는 운영자가 문제 조사 중 반복해서 쓰는 화면이다.
+  - 일부 검색/필터/초기화 control이 40px touch target 기준을 명시하지 않았고, 0건 상태도 복구 action이 약했다.
+- 변경내용:
+  - 신고 상세 not-found 상태를 공용 `EmptyState`로 교체하고 `신고 큐로 돌아가기` action을 제공했다.
+  - 신고 상세 처리 이력 0건 상태를 공용 `EmptyState`로 교체했다.
+  - 신고 상세 처리 이력 검색 input/select/submit/reset control에 `min-h-10` 기준을 적용했다.
+  - 신고 상세 `큐로 돌아가기` 링크도 `min-h-10` 기준으로 보강했다.
+  - 인증 감사 로그 검색 input, submit, reset, CSV export, action filter link에 `min-h-10` 기준을 적용했다.
+  - 인증 감사 로그 0건 상태에 `전체 로그 보기` action을 제공했다.
+  - 모더레이션 로그 검색 input, submit, reset, action filter link에 `min-h-10` 기준을 적용했다.
+  - 모더레이션 로그 0건 상태에 `전체 로그 보기` action을 제공했다.
+- 코드문서:
+  - [app/src/app/admin/reports/[id]/page.tsx](../app/src/app/admin/reports/%5Bid%5D/page.tsx)
+  - [app/src/app/admin/auth-audits/page.tsx](../app/src/app/admin/auth-audits/page.tsx)
+  - [app/src/app/admin/moderation-logs/page.tsx](../app/src/app/admin/moderation-logs/page.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app exec vitest run src/components/ui/empty-state.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `corepack pnpm@9.12.3 -C app docs:refresh:check`
+  - `git diff --check`
+- 결과:
+  - admin 상세/로그 화면의 검색, 필터, 0건 상태가 기존 모바일/접근성 기준에 맞춰졌다.
+  - 다음 후보는 `P2-11 user/profile 설정 화면의 form status와 mobile touch target 점검`이다.
