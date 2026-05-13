@@ -2892,3 +2892,33 @@
 - 결과:
   - admin 상세/로그 화면의 검색, 필터, 0건 상태가 기존 모바일/접근성 기준에 맞춰졌다.
   - 다음 후보는 `P2-11 user/profile 설정 화면의 form status와 mobile touch target 점검`이다.
+
+### 2026-05-13 | P2-11 profile form status/touch target 보강
+- 완료일: `2026-05-13`
+- 배경:
+  - 프로필 설정 화면의 저장 버튼 일부가 `h-9` 기준이라 앞서 맞춘 40px touch target 기준보다 작았다.
+  - 저장 성공/실패 메시지가 시각적으로만 표시되어 스크린리더 상태 전달이 약했다.
+- 변경내용:
+  - `ProfileInfoForm`의 프로필 저장 버튼을 `min-h-10`으로 보강했다.
+  - `ProfileInfoForm` 상태 메시지에 `role="status"`와 `aria-live="polite"`를 추가했다.
+  - `NeighborhoodPreferenceForm`의 동네 저장 버튼을 `min-h-10`으로 보강했다.
+  - `NeighborhoodPreferenceForm` 상태 메시지에 `role="status"`와 `aria-live="polite"`를 추가했다.
+  - `ProfileImageUploader`의 프로필 사진 저장 버튼을 `min-h-10`으로 보강했다.
+  - `ProfileImageUploader` 성공 메시지에 `role="status"`, 실패 메시지에 `role="alert"`와 `aria-live="polite"`를 추가했다.
+  - profile form 접근성 정적 렌더 unit test를 추가했다.
+- 코드문서:
+  - [app/src/components/profile/profile-info-form.tsx](../app/src/components/profile/profile-info-form.tsx)
+  - [app/src/components/profile/neighborhood-preference-form.tsx](../app/src/components/profile/neighborhood-preference-form.tsx)
+  - [app/src/components/profile/profile-image-uploader.tsx](../app/src/components/profile/profile-image-uploader.tsx)
+  - [app/src/components/profile/profile-form-accessibility.test.tsx](../app/src/components/profile/profile-form-accessibility.test.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app exec vitest run src/components/profile/profile-form-accessibility.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `corepack pnpm@9.12.3 -C app docs:refresh:check`
+  - `git diff --check`
+- 결과:
+  - 프로필 설정의 주요 저장 흐름이 기존 모바일/접근성 기준에 맞춰졌다.
+  - 다음 후보는 `P2-12 onboarding/pet profile form의 status와 mobile touch target 점검`이다.

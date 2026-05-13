@@ -4,11 +4,24 @@
 
 - 작업: 현재 active 작업 없음
 - 상태: `idle`
-- 현재 초점: `P2-10 admin detail/log status surface 보강`을 완료 archive했다.
+- 현재 초점: `P2-11 profile form status/touch target 보강`을 완료 archive했다.
 
 ## 변경/탐색한 파일
 
 - 이번 세션 변경:
+  - `app/src/components/profile/profile-info-form.tsx`
+  - `app/src/components/profile/neighborhood-preference-form.tsx`
+  - `app/src/components/profile/profile-image-uploader.tsx`
+  - `app/src/components/profile/profile-form-accessibility.test.tsx`
+  - `docs/PLAN.md`
+  - `docs/PROGRESS.md`
+- 탐색한 파일:
+  - `app/src/components/profile/profile-info-form.tsx`
+  - `app/src/components/profile/neighborhood-preference-form.tsx`
+  - `app/src/components/profile/profile-image-uploader.tsx`
+  - `app/src/components/profile/pet-profile-manager.tsx`
+  - `app/src/components/onboarding/onboarding-form.tsx`
+- 이전 세션 변경:
   - `app/src/app/admin/reports/[id]/page.tsx`
   - `app/src/app/admin/auth-audits/page.tsx`
   - `app/src/app/admin/moderation-logs/page.tsx`
@@ -243,6 +256,11 @@
   - `docs/errors/2026-05-12_vercel-security-env-build-preflight.md`
   - `docs/COMPLETED.md`
 - 이번 세션 결과:
+- 프로필 정보 저장 버튼을 `min-h-10`으로 보강하고 상태 메시지에 `role="status"`와 `aria-live`를 추가했다.
+- 동네 저장 버튼을 `min-h-10`으로 보강하고 상태 메시지에 `role="status"`와 `aria-live`를 추가했다.
+- 프로필 사진 저장 버튼을 `min-h-10`으로 보강하고 성공/실패 메시지에 `role="status"`/`role="alert"`와 `aria-live`를 추가했다.
+- profile form 접근성 정적 렌더 테스트를 추가했다.
+- 이전 세션 결과:
 - 신고 상세 not-found 상태를 공용 `EmptyState`로 교체하고 신고 큐 복귀 action을 제공했다.
 - 신고 상세 처리 이력 0건 상태를 공용 `EmptyState`로 교체했다.
 - 신고 상세 처리 이력 검색 input/select/submit/reset control을 `min-h-10` 기준으로 보강했다.

@@ -305,11 +305,15 @@ export function NeighborhoodPreferenceForm({
           type="button"
           onClick={handleSave}
           disabled={isPending || (selectedIds.length > 0 && !primaryId)}
-          className="tp-btn-primary inline-flex h-9 items-center justify-center px-4 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-70"
+          className="tp-btn-primary inline-flex min-h-10 items-center justify-center px-4 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-70"
         >
           {isPending ? "저장 중..." : "동네 저장"}
         </button>
-        {message ? <span className="text-xs text-[#4f678d]">{message}</span> : null}
+        {message ? (
+          <span className="text-xs text-[#4f678d]" role="status" aria-live="polite">
+            {message}
+          </span>
+        ) : null}
       </div>
     </section>
   );
