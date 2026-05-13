@@ -16,6 +16,7 @@
 현재 active 작업 없음.
 
 최근 완료:
+- `P2-4 feed loading/pagination 모바일 접근성 보강`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
 - `P2-3 핵심 empty state 모바일/복구 액션 보강`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
 - `P2-2 UX/error boundary/mobile/accessibility 보강`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
 - `P2-1 client fetch helper 최소 통일`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
@@ -25,4 +26,4 @@
 
 ## 다음 작업 후보
 
-- P2-4: 남은 loading skeleton과 핵심 목록 pagination/controls의 모바일 overflow를 점검하고 필요한 곳만 보강한다.
+- P2-5: 개인 프로필/알림의 빈 상태와 pagination controls를 같은 기준으로 점검하고 필요한 곳만 보강한다.

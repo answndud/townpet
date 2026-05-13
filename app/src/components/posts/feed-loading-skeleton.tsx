@@ -2,7 +2,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export function FeedLoadingSkeleton() {
   return (
-    <div className="min-h-screen pb-16" data-testid="feed-loading-skeleton">
+    <div
+      className="min-h-screen pb-16"
+      data-testid="feed-loading-skeleton"
+      role="status"
+      aria-busy="true"
+      aria-label="피드를 불러오는 중"
+    >
       <main className="mx-auto flex w-full max-w-[1320px] flex-col gap-5 px-4 py-6 sm:px-6 lg:px-10">
         <Skeleton className="h-36 w-full border border-[#d6e2f3]" />
         <Skeleton className="h-40 w-full border border-[#d6e2f3]" />

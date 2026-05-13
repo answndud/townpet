@@ -2686,3 +2686,37 @@
 - 결과:
   - 핵심 개인 목록의 빈 상태가 더 안정적인 모바일 layout과 복구/탐색 action을 갖게 됐다.
   - 다음 후보는 `P2-4 남은 loading skeleton과 핵심 목록 pagination/controls의 모바일 overflow 점검`이다.
+
+### 2026-05-13 | P2-4 feed loading/pagination 모바일 접근성 보강
+- 완료일: `2026-05-13`
+- 배경:
+  - 회원 feed와 게스트 feed pagination이 같은 마크업을 중복 구현하고 있었다.
+  - 기존 pagination control은 `h-8`, `min-w-8` 기준이라 모바일 터치 target이 작고, 현재 페이지를 스크린리더에 명시하지 않았다.
+  - feed loading skeleton은 시각적으로는 안정적이지만 로딩 상태 의미가 DOM에 드러나지 않았다.
+- 변경내용:
+  - `app/src/components/posts/feed-pagination.tsx`를 추가해 feed pagination을 공용화했다.
+  - 기존 `app/src/app/feed/feed-pagination.tsx`는 공용 컴포넌트 re-export로 유지해 회원 feed import 경로를 깨지 않게 했다.
+  - `guest-feed-page-client`의 pagination 중복 마크업을 공용 `FeedPagination` 사용으로 교체했다.
+  - pagination wrapper를 `nav`로 바꾸고 `aria-label="피드 페이지 이동"`을 추가했다.
+  - 현재 페이지 링크에 `aria-current="page"`를 추가했다.
+  - pagination control을 `min-h-10`, page number를 `min-w-10`으로 키워 모바일 touch target을 보강했다.
+  - `FeedLoadingSkeleton`에 `role="status"`, `aria-busy="true"`, `aria-label="피드를 불러오는 중"`을 추가했다.
+  - pagination과 loading skeleton 정적 렌더 unit test를 추가했다.
+- 코드문서:
+  - [app/src/components/posts/feed-pagination.tsx](../app/src/components/posts/feed-pagination.tsx)
+  - [app/src/components/posts/feed-pagination.test.tsx](../app/src/components/posts/feed-pagination.test.tsx)
+  - [app/src/components/posts/feed-loading-skeleton.tsx](../app/src/components/posts/feed-loading-skeleton.tsx)
+  - [app/src/components/posts/feed-loading-skeleton.test.tsx](../app/src/components/posts/feed-loading-skeleton.test.tsx)
+  - [app/src/app/feed/feed-pagination.tsx](../app/src/app/feed/feed-pagination.tsx)
+  - [app/src/components/posts/guest-feed-page-client.tsx](../app/src/components/posts/guest-feed-page-client.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app exec vitest run src/components/posts/feed-pagination.test.tsx src/components/posts/feed-loading-skeleton.test.tsx src/components/posts/guest-feed-page-client.test.ts`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `corepack pnpm@9.12.3 -C app docs:refresh:check`
+  - `git diff --check`
+- 결과:
+  - 회원/게스트 feed pagination이 같은 접근성/모바일 기준을 공유한다.
+  - 다음 후보는 `P2-5 개인 프로필/알림의 빈 상태와 pagination controls 점검`이다.
