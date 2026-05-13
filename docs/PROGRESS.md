@@ -4,11 +4,20 @@
 
 - 작업: 현재 active 작업 없음
 - 상태: `idle`
-- 현재 초점: `P2-5 알림/공개 프로필 빈 상태와 pagination 보강`을 완료 archive했다.
+- 현재 초점: `P2-6 admin pagination 반복 표면 축소`를 완료 archive했다.
 
 ## 변경/탐색한 파일
 
 - 이번 세션 변경:
+  - `app/src/app/admin/reports/page.tsx`
+  - `app/src/app/admin/care-feedbacks/page.tsx`
+  - `docs/PLAN.md`
+  - `docs/PROGRESS.md`
+- 탐색한 파일:
+  - `app/src/app/admin/reports/page.tsx`
+  - `app/src/app/admin/care-feedbacks/page.tsx`
+  - `app/src/components/admin/report-queue-table.tsx`
+- 이전 세션 변경:
   - `app/src/components/ui/compact-pagination.tsx`
   - `app/src/components/ui/compact-pagination.test.tsx`
   - `app/src/components/notifications/notification-center.tsx`
@@ -197,6 +206,11 @@
   - `docs/errors/2026-05-12_vercel-security-env-build-preflight.md`
   - `docs/COMPLETED.md`
 - 이번 세션 결과:
+- `/admin/reports` pagination을 `CompactPagination`으로 교체했다.
+- `/admin/care-feedbacks` pagination을 `CompactPagination`으로 교체했다.
+- 두 admin 화면에서 직접 `buildPaginationWindow`를 호출하던 중복을 제거했다.
+- 기존 공용 pagination의 `aria-label`, `aria-current`, 40px touch target 기준을 admin 운영 화면에도 적용했다.
+- 이전 세션 결과:
 - `CompactPagination`을 추가해 알림 센터와 공개 프로필 활동 탭 pagination에 적용했다.
 - compact pagination에 `nav`, `aria-label`, `aria-current="page"`, `min-h-10`, `min-w-10`을 적용했다.
 - 알림 센터 빈 상태를 공용 `EmptyState`로 교체하고, unread 0건에서 전체 알림 보기와 피드 이동 action을 제공했다.
