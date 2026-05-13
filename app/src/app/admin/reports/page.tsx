@@ -3,8 +3,9 @@ import { ReportReason, ReportStatus, ReportTarget } from "@prisma/client";
 
 import { ReportQueueTable } from "@/components/admin/report-queue-table";
 import { ReportUpdateBanner } from "@/components/admin/report-update-banner";
+import { CompactPagination } from "@/components/ui/compact-pagination";
 import { createNoIndexPageMetadata } from "@/lib/page-metadata";
-import { buildPaginationWindow, parsePositivePage } from "@/lib/pagination";
+import { parsePositivePage } from "@/lib/pagination";
 import {
   calculateReporterTrustWeight,
   getReportQueuePriorityLabel,
@@ -305,43 +306,13 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
             {reportPage.totalCount}건
           </span>
           {reportPage.totalPages > 1 ? (
-            <div className="flex flex-wrap items-center gap-1.5">
-              <Link
-                href={buildLink(status, targetType, Math.max(1, reportPage.page - 1))}
-                aria-disabled={reportPage.page <= 1}
-                className={`inline-flex items-center rounded-lg ${
-                  reportPage.page <= 1 ? "tp-btn-disabled pointer-events-none" : "tp-btn-soft"
-                } tp-btn-xs transition`}
-              >
-                이전
-              </Link>
-              {buildPaginationWindow(reportPage.page, reportPage.totalPages).map((pageNumber) => (
-                <Link
-                  key={pageNumber}
-                  href={buildLink(status, targetType, pageNumber)}
-                  className={`inline-flex min-w-8 items-center justify-center rounded-lg ${
-                    pageNumber === reportPage.page ? "tp-btn-primary" : "tp-btn-soft"
-                  } tp-btn-xs transition`}
-                >
-                  {pageNumber}
-                </Link>
-              ))}
-              <Link
-                href={buildLink(
-                  status,
-                  targetType,
-                  Math.min(reportPage.totalPages, reportPage.page + 1),
-                )}
-                aria-disabled={reportPage.page >= reportPage.totalPages}
-                className={`inline-flex items-center rounded-lg ${
-                  reportPage.page >= reportPage.totalPages
-                    ? "tp-btn-disabled pointer-events-none"
-                    : "tp-btn-soft"
-                } tp-btn-xs transition`}
-              >
-                다음
-              </Link>
-            </div>
+            <CompactPagination
+              ariaLabel="신고 큐 페이지 이동"
+              currentPage={reportPage.page}
+              totalPages={reportPage.totalPages}
+              makeHref={(page) => buildLink(status, targetType, page)}
+              className="w-full sm:w-auto"
+            />
           ) : null}
         </section>
 

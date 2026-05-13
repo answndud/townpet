@@ -2752,3 +2752,29 @@
 - 결과:
   - 알림 센터와 공개 프로필 활동 탭이 같은 compact pagination 접근성 기준을 사용한다.
   - 다음 후보는 `P2-6 admin pagination/empty state 중 반복이 큰 화면 점검`이다.
+
+### 2026-05-13 | P2-6 admin pagination 반복 표면 축소
+- 완료일: `2026-05-13`
+- 배경:
+  - 신고 큐와 돌봄 피드백 admin 화면은 1인 운영자가 실제로 자주 확인할 가능성이 높은 운영 화면이다.
+  - 두 화면 모두 같은 pagination 마크업을 직접 구현하고 있어 모바일 touch target, `aria-current`, `aria-label` 기준이 새 공용 pagination과 달랐다.
+  - admin 전용 추상화를 새로 만들기보다 기존 `CompactPagination`을 재사용하는 것이 더 단순했다.
+- 변경내용:
+  - `/admin/reports` pagination을 `CompactPagination`으로 교체했다.
+  - `/admin/care-feedbacks` pagination을 `CompactPagination`으로 교체했다.
+  - 두 화면의 직접 `buildPaginationWindow` import와 pagination loop를 제거했다.
+  - 두 admin pagination에 `aria-label`, `aria-current="page"`, `min-h-10`, `min-w-10` 기준이 적용되게 했다.
+- 코드문서:
+  - [app/src/app/admin/reports/page.tsx](../app/src/app/admin/reports/page.tsx)
+  - [app/src/app/admin/care-feedbacks/page.tsx](../app/src/app/admin/care-feedbacks/page.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app exec vitest run src/components/ui/compact-pagination.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `corepack pnpm@9.12.3 -C app docs:refresh:check`
+  - `git diff --check`
+- 결과:
+  - 주요 운영 화면의 반복 pagination이 기존 공용 접근성 기준을 공유하게 됐다.
+  - 다음 후보는 `P2-7 admin table empty state와 action button touch target 점검`이다.

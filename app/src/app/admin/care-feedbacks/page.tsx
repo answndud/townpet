@@ -8,9 +8,10 @@ import {
 
 import { updateCareFeedbackReviewAction } from "@/server/actions/post";
 import { AdminSectionNav } from "@/components/admin/admin-section-nav";
+import { CompactPagination } from "@/components/ui/compact-pagination";
 import { EmptyState } from "@/components/ui/empty-state";
 import { createNoIndexPageMetadata } from "@/lib/page-metadata";
-import { buildPaginationWindow, parsePositivePage } from "@/lib/pagination";
+import { parsePositivePage } from "@/lib/pagination";
 import { requireModeratorPageUser } from "@/server/admin-page-access";
 import {
   getCareFeedbackIssueStats,
@@ -245,44 +246,13 @@ export default async function CareFeedbacksPage({ searchParams }: CareFeedbacksP
             {feedbackPage.totalCount}건
           </span>
           {feedbackPage.totalPages > 1 ? (
-            <div className="flex flex-wrap items-center gap-1.5">
-              <Link
-                href={buildLink(issueType, outcome, reviewStatus, Math.max(1, feedbackPage.page - 1))}
-                aria-disabled={feedbackPage.page <= 1}
-                className={`inline-flex items-center rounded-lg ${
-                  feedbackPage.page <= 1 ? "tp-btn-disabled pointer-events-none" : "tp-btn-soft"
-                } tp-btn-xs transition`}
-              >
-                이전
-              </Link>
-              {buildPaginationWindow(feedbackPage.page, feedbackPage.totalPages).map((pageNumber) => (
-                <Link
-                  key={pageNumber}
-                  href={buildLink(issueType, outcome, reviewStatus, pageNumber)}
-                  className={`inline-flex min-w-8 items-center justify-center rounded-lg ${
-                    pageNumber === feedbackPage.page ? "tp-btn-primary" : "tp-btn-soft"
-                  } tp-btn-xs transition`}
-                >
-                  {pageNumber}
-                </Link>
-              ))}
-              <Link
-                href={buildLink(
-                  issueType,
-                  outcome,
-                  reviewStatus,
-                  Math.min(feedbackPage.totalPages, feedbackPage.page + 1),
-                )}
-                aria-disabled={feedbackPage.page >= feedbackPage.totalPages}
-                className={`inline-flex items-center rounded-lg ${
-                  feedbackPage.page >= feedbackPage.totalPages
-                    ? "tp-btn-disabled pointer-events-none"
-                    : "tp-btn-soft"
-                } tp-btn-xs transition`}
-              >
-                다음
-              </Link>
-            </div>
+            <CompactPagination
+              ariaLabel="돌봄 이슈 신호 페이지 이동"
+              currentPage={feedbackPage.page}
+              totalPages={feedbackPage.totalPages}
+              makeHref={(page) => buildLink(issueType, outcome, reviewStatus, page)}
+              className="w-full sm:w-auto"
+            />
           ) : null}
         </section>
 
