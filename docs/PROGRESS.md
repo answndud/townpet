@@ -4,11 +4,28 @@
 
 - 작업: 현재 active 작업 없음
 - 상태: `idle`
-- 현재 초점: `P2-1 client fetch helper 최소 통일`을 완료 archive했다.
+- 현재 초점: `P2-2 UX/error boundary/mobile/accessibility 보강`을 완료 archive했다.
 
 ## 변경/탐색한 파일
 
 - 이번 세션 변경:
+  - `app/src/components/ui/error-state.tsx`
+  - `app/src/components/ui/error-state-back-button.tsx`
+  - `app/src/components/ui/error-state.test.tsx`
+  - `app/src/app/error.tsx`
+  - `app/src/app/feed/error.tsx`
+  - `app/src/app/posts/[id]/error.tsx`
+  - `app/src/app/admin/error.tsx`
+  - `app/src/app/not-found.tsx`
+  - `docs/PLAN.md`
+  - `docs/PROGRESS.md`
+- 탐색한 파일:
+  - `app/src/app/error.tsx`
+  - `app/src/app/feed/error.tsx`
+  - `app/src/app/posts/[id]/error.tsx`
+  - `app/src/app/admin/error.tsx`
+  - `app/src/app/not-found.tsx`
+- 이전 세션 변경:
   - `app/src/lib/client-json.ts`
   - `app/src/lib/client-json.test.ts`
   - `app/src/components/posts/post-detail-client.tsx`
@@ -143,6 +160,10 @@
   - `docs/errors/2026-05-12_vercel-security-env-build-preflight.md`
   - `docs/COMPLETED.md`
 - 이번 세션 결과:
+- 공용 `ErrorState`를 추가하고 전역, 피드, 게시글 상세, 관리자, 404 fallback에 적용했다.
+- 실패 화면에 `role`, `aria-live`, 모바일 `flex-col -> sm:flex-row` action layout을 통일했다.
+- error boundary에는 재시도 버튼과 안전한 이동 링크를 함께 제공하고, 404에는 피드 이동과 이전 페이지 버튼을 제공했다.
+- 이전 세션 결과:
 - `client-json` helper를 추가해 JSON content-type, invalid JSON, abort 판정을 작은 공용 표면으로 통일했다.
 - `post-detail-client`와 `guest-feed-page-client`의 JSON fetch 처리만 helper로 교체했고, payload `ok`/redirect/error message 처리는 기존 컴포넌트에 남겼다.
 - 이전 세션 결과:

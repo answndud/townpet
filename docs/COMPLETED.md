@@ -2616,3 +2616,42 @@
 - 결과:
   - 큰 client data layer 없이 반복 JSON fetch 처리만 줄였다.
   - 다음 후보는 `P2-2 UX/error boundary/mobile/accessibility 보강`이다.
+
+### 2026-05-13 | P2-2 UX/error boundary/mobile/accessibility 보강
+- 완료일: `2026-05-13`
+- 배경:
+  - 전역, 피드, 게시글 상세, 관리자, 404 실패 화면이 비슷한 UI를 각자 구현하고 있었다.
+  - 일부 error boundary는 재시도 버튼만 있고 안전한 이동 링크가 없어 사용자가 실패 상태에서 빠져나오기 어렵다.
+  - 모바일에서는 버튼이 가로로만 배치되면 긴 문구나 좁은 폭에서 overflow 위험이 있다.
+- 변경내용:
+  - `app/src/components/ui/error-state.tsx`를 추가해 실패 화면의 제목, 설명, recovery action layout을 통일했다.
+  - `role="alert"`와 `aria-live="assertive"`를 기본값으로 두고, 404처럼 오류 알림보다 fallback 상태에 가까운 화면은 `role="status"`로 낮출 수 있게 했다.
+  - `app/src/components/ui/error-state-back-button.tsx`를 추가해 404에서 이전 페이지로 돌아가는 버튼을 제공했다.
+  - 전역 error boundary, feed error boundary, post detail error boundary, admin error boundary, not-found 화면을 공용 `ErrorState`로 교체했다.
+  - error boundary에는 `다시 시도`와 안전한 이동 링크를 함께 제공했다.
+    - 전역: `/feed`
+    - 피드: `/feed/guest`
+    - 게시글 상세: `/feed`
+    - 관리자: `/admin/ops`
+  - action 영역을 모바일에서 `flex-col`, `sm` 이상에서 `flex-row`로 배치해 좁은 화면 overflow 가능성을 줄였다.
+  - 정적 렌더 unit test를 추가해 `role`, `aria-live`, 모바일 action layout, 링크 fallback을 고정했다.
+- 코드문서:
+  - [app/src/components/ui/error-state.tsx](../app/src/components/ui/error-state.tsx)
+  - [app/src/components/ui/error-state-back-button.tsx](../app/src/components/ui/error-state-back-button.tsx)
+  - [app/src/components/ui/error-state.test.tsx](../app/src/components/ui/error-state.test.tsx)
+  - [app/src/app/error.tsx](../app/src/app/error.tsx)
+  - [app/src/app/feed/error.tsx](../app/src/app/feed/error.tsx)
+  - [app/src/app/posts/[id]/error.tsx](../app/src/app/posts/%5Bid%5D/error.tsx)
+  - [app/src/app/admin/error.tsx](../app/src/app/admin/error.tsx)
+  - [app/src/app/not-found.tsx](../app/src/app/not-found.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app exec vitest run src/components/ui/error-state.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `corepack pnpm@9.12.3 -C app docs:refresh:check`
+  - `git diff --check`
+- 결과:
+  - 핵심 실패 화면이 같은 recovery pattern을 사용하게 됐다.
+  - 다음 후보는 `P2-3 남은 empty/loading state 중 핵심 사용자 경로 점검`이다.
