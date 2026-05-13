@@ -13,7 +13,6 @@
     "test": "vitest",
     "test:unit": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "test:unit:notifications": "vitest run src/app/api/notifications/route.test.ts src/server/actions/notification.test.ts src/server/queries/notification.queries.test.ts src/server/auth.test.ts",
     "test:e2e": "playwright test",
     "test:e2e:smoke": "ENABLE_SOCIAL_DEV_LOGIN=1 playwright test e2e/feed-loading-skeleton.spec.ts e2e/kakao-login-entry.spec.ts e2e/naver-login-entry.spec.ts e2e/social-onboarding-flow.spec.ts e2e/post-editor-toolbar.spec.ts --project=chromium",
     "test:e2e:hotpath": "ENABLE_SOCIAL_DEV_LOGIN=1 PLAYWRIGHT_BASE_URL=http://localhost:3000 playwright test e2e/search-and-board-filtering.spec.ts e2e/guest-post-management.spec.ts e2e/post-comment-auth-sync.spec.ts e2e/notification-filter-controls.spec.ts e2e/admin-new-user-policy.spec.ts e2e/report-flow.spec.ts --project=chromium --workers=1",
@@ -72,18 +71,7 @@
     "ops:evidence:solo": "OPS_EVIDENCE_PROFILE=solo tsx scripts/run-ops-evidence.ts",
     "ops:prewarm": "tsx scripts/prewarm-deployment.ts",
     "ops:perf:snapshot": "tsx scripts/collect-latency-snapshot.ts",
-    "search:check:cases": "tsx scripts/check-search-cases.ts",
-    "test:flow:notification-comment": "tsx scripts/e2e-notification-comment-flow.ts",
-    "test:flow:new-user-policy": "tsx scripts/e2e-new-user-safety-policy-flow.ts",
-    "perf:feed:scroll": "playwright test e2e/feed-scroll-performance.spec.ts --project=chromium",
-    "test:e2e:upload": "PLAYWRIGHT_BASE_URL=http://localhost:3000 playwright test e2e/image-upload-flow.spec.ts --project=chromium",
-    "test:e2e:feed-loading": "PLAYWRIGHT_BASE_URL=http://localhost:3000 playwright test e2e/feed-loading-skeleton.spec.ts --project=chromium",
-    "test:e2e:kakao-entry": "PLAYWRIGHT_BASE_URL=http://localhost:3000 playwright test e2e/kakao-login-entry.spec.ts --project=chromium",
-    "test:e2e:naver-entry": "PLAYWRIGHT_BASE_URL=http://localhost:3000 playwright test e2e/naver-login-entry.spec.ts --project=chromium",
-    "test:e2e:social-onboarding": "ENABLE_SOCIAL_DEV_LOGIN=1 PLAYWRIGHT_BASE_URL=http://localhost:3000 playwright test e2e/social-onboarding-flow.spec.ts --project=chromium",
-    "test:e2e:social-real-oauth": "E2E_REAL_SOCIAL_OAUTH=1 PLAYWRIGHT_BASE_URL=http://localhost:3000 playwright test e2e/social-real-oauth-redirect.spec.ts --project=chromium",
-    "test:e2e:notification-filters": "PLAYWRIGHT_BASE_URL=http://localhost:3000 playwright test e2e/notification-filter-controls.spec.ts --project=chromium",
-    "test:e2e:admin-policies": "E2E_RECIPIENT_EMAIL=admin.platform@townpet.dev PLAYWRIGHT_BASE_URL=http://localhost:3000 playwright test e2e/admin-new-user-policy.spec.ts --project=chromium"
+    "search:check:cases": "tsx scripts/check-search-cases.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.7.4",

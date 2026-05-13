@@ -146,6 +146,8 @@ pnpm test:e2e -- e2e/profile-social-account-linking.spec.ts
 pnpm test:e2e -- --project=chromium
 ```
 
+특정 Playwright spec은 `package.json` alias를 늘리지 않고 `pnpm test:e2e -- e2e/<file>.spec.ts --project=chromium` 형태로 직접 실행합니다.
+
 ## 테스트 설정 참고 파일
 
 - `vitest.config.ts`
