@@ -11,6 +11,7 @@ import { FeedFooterSearchForm } from "@/components/posts/feed-footer-search-form
 import { FeedInfiniteList } from "@/components/posts/feed-infinite-list";
 import { FeedLoadingSkeleton } from "@/components/posts/feed-loading-skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
+import { fetchJson, isAbortError } from "@/lib/client-json";
 import { isCommonBoardPostType } from "@/lib/community-board";
 import { buildPaginationWindow } from "@/lib/pagination";
 import type {
@@ -236,13 +237,15 @@ export function GuestFeedPageClient({
       setLoadError(null);
 
       try {
-        const response = await fetch(`/api/feed/guest${queryString ? `?${queryString}` : ""}`, {
-          method: "GET",
-          credentials: "same-origin",
-          cache: "no-store",
-          signal: controller.signal,
-        });
-        const payload = (await response.json()) as GuestFeedResponse;
+        const { response, payload } = await fetchJson<GuestFeedResponse>(
+          `/api/feed/guest${queryString ? `?${queryString}` : ""}`,
+          {
+            method: "GET",
+            credentials: "same-origin",
+            cache: "no-store",
+            signal: controller.signal,
+          },
+        );
 
         if (cancelled) {
           return;
@@ -255,7 +258,7 @@ export function GuestFeedPageClient({
         setData(payload.data);
         setLoadedQueryString(queryString);
       } catch (error) {
-        if (cancelled || (error as { name?: string }).name === "AbortError") {
+        if (cancelled || isAbortError(error)) {
           return;
         }
         setLoadError(

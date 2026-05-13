@@ -2589,3 +2589,30 @@
 - 결과:
   - P1-8 과설계 축소 배치가 완료됐다.
   - 다음 후보는 `P2-1 남은 client useEffect fetch 표면 중 기능 fetch helper 통일 여부 검토`다.
+
+### 2026-05-13 | P2-1 client fetch helper 최소 통일
+- 완료일: `2026-05-13`
+- 배경:
+  - client `useEffect` fetch 표면 전체를 큰 data client로 추상화하면 다시 과설계가 된다.
+  - 반복되는 JSON content-type, invalid JSON, abort 판정만 작은 helper로 통일하는 것이 안전했다.
+- 변경내용:
+  - `app/src/lib/client-json.ts`를 추가해 `fetchJson`, `ClientJsonError`, `isAbortError`를 제공한다.
+  - `post-detail-client`의 게시글 상세 JSON fetch를 helper로 교체하고 401/403/404 redirect 및 payload error 처리는 기존 컴포넌트에 남겼다.
+  - `guest-feed-page-client`의 guest feed JSON fetch를 helper로 교체하고 abort 판정을 `isAbortError`로 통일했다.
+  - helper unit test를 추가했다.
+- 코드문서:
+  - [app/src/lib/client-json.ts](../app/src/lib/client-json.ts)
+  - [app/src/lib/client-json.test.ts](../app/src/lib/client-json.test.ts)
+  - [app/src/components/posts/post-detail-client.tsx](../app/src/components/posts/post-detail-client.tsx)
+  - [app/src/components/posts/guest-feed-page-client.tsx](../app/src/components/posts/guest-feed-page-client.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app exec vitest run src/lib/client-json.test.ts`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `corepack pnpm@9.12.3 -C app docs:refresh:check`
+  - `git diff --check`
+- 결과:
+  - 큰 client data layer 없이 반복 JSON fetch 처리만 줄였다.
+  - 다음 후보는 `P2-2 UX/error boundary/mobile/accessibility 보강`이다.

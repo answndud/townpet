@@ -4,11 +4,18 @@
 
 - 작업: 현재 active 작업 없음
 - 상태: `idle`
-- 현재 초점: `P1-8 1인 운영용 과설계 축소 배치`를 완료 archive했다.
+- 현재 초점: `P2-1 client fetch helper 최소 통일`을 완료 archive했다.
 
 ## 변경/탐색한 파일
 
 - 이번 세션 변경:
+  - `app/src/lib/client-json.ts`
+  - `app/src/lib/client-json.test.ts`
+  - `app/src/components/posts/post-detail-client.tsx`
+  - `app/src/components/posts/guest-feed-page-client.tsx`
+  - `docs/PLAN.md`
+  - `docs/PROGRESS.md`
+- 이전 세션 변경:
   - `AGENTS.md`
   - `business/operations/운영_문서_안내.md`
   - `app/src/lib/client-telemetry.ts`
@@ -136,7 +143,10 @@
   - `docs/errors/2026-05-12_vercel-security-env-build-preflight.md`
   - `docs/COMPLETED.md`
 - 이번 세션 결과:
-- `P1-8` active plan을 생성하고 workflow, package script, production demo/OAuth manual automation, 개인화/광고 판단, client fetch/telemetry, 운영 문서 정리 순서로 세분화했다.
+- `client-json` helper를 추가해 JSON content-type, invalid JSON, abort 판정을 작은 공용 표면으로 통일했다.
+- `post-detail-client`와 `guest-feed-page-client`의 JSON fetch 처리만 helper로 교체했고, payload `ok`/redirect/error message 처리는 기존 컴포넌트에 남겼다.
+- 이전 세션 결과:
+  - `P1-8` active plan을 생성하고 workflow, package script, production demo/OAuth manual automation, 개인화/광고 판단, client fetch/telemetry, 운영 문서 정리 순서로 세분화했다.
 - `auth-audit-cleanup`, `notification-cleanup`, `search-term-cleanup`, `post-integrity-maintenance`, `ops-latency-snapshots`의 schedule trigger를 제거하고 수동 `workflow_dispatch` 전용으로 낮췄다.
 - 운영 문서와 보안 문서에서 retention cleanup, post integrity, latency snapshot을 상시 자동 루틴이 아니라 on-demand 유지보수 루틴으로 정리했다.
 - `package.json` script를 81개에서 69개로 줄였다.
@@ -239,6 +249,11 @@
 - `corepack pnpm@9.12.3 -C app lint` PASS
 - `corepack pnpm@9.12.3 -C app docs:refresh:check` PASS
 - `git diff --check` PASS
+- `corepack pnpm@9.12.3 -C app exec vitest run src/lib/client-json.test.ts` PASS
+- `corepack pnpm@9.12.3 -C app typecheck` PASS
+- `corepack pnpm@9.12.3 -C app lint` PASS
+- `corepack pnpm@9.12.3 -C app docs:refresh:check` PASS
+- `git diff --check` PASS
 - `corepack pnpm@9.12.3 -C app exec vitest run scripts/run-ops-evidence.test.ts scripts/check-care-smoke-readiness.test.ts` PASS
 - `corepack pnpm@9.12.3 -C app typecheck` PASS
 - `corepack pnpm@9.12.3 -C app lint` PASS
@@ -284,4 +299,4 @@
 ## 다음 액션
 
 1. 다음 active 작업을 시작할 때 [PLAN.md](./PLAN.md)의 다음 작업 후보 중 하나를 선택한다.
-2. 현재 후보는 `P2-1 남은 client useEffect fetch 표면 중 기능 fetch helper 통일 여부 검토`다.
+2. 현재 후보는 `P2-2 UX/error boundary/mobile/accessibility 보강`이다.
