@@ -16,6 +16,7 @@
 현재 active 작업 없음.
 
 최근 완료:
+- `P2-21 feed/search/detail Playwright visual smoke`는 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
 - `P2-20 remaining compact controls audit 최종 sweep`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
 - `P2-19 remaining compact lounge/admin controls 보강`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
 - `P2-18 remaining compact user controls 보강`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
@@ -42,4 +43,4 @@
 
 ## 다음 작업 후보
 
-- P2-21: 40px touch target 보강 이후 핵심 feed/search/detail 화면의 Playwright visual smoke를 최소 범위로 확인한다.
+- P2-22: 40px touch target 보강 이후 남은 작성/댓글/관리자 화면 중 실제 Playwright smoke가 필요한 화면만 선별한다.

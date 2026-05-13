@@ -397,7 +397,7 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
 
             {canReportPost ? (
               <details className="group mt-3 text-left">
-                <summary className="inline-flex cursor-pointer items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-medium text-[#8d5a68] transition hover:bg-rose-50 hover:text-rose-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200 focus-visible:ring-offset-2">
+                <summary className="inline-flex min-h-10 cursor-pointer items-center gap-1 rounded-lg px-3 text-[11px] font-medium text-[#8d5a68] transition hover:bg-rose-50 hover:text-rose-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200 focus-visible:ring-offset-2">
                   <svg
                     aria-hidden="true"
                     viewBox="0 0 12 12"

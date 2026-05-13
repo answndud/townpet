@@ -3215,3 +3215,28 @@
 - 결과:
   - 최종 sweep 대상 상호 control의 compact class 재도입 방지 테스트를 추가했고, 전체 검색 잔여는 비상호 요소로 분류했다.
   - 다음 후보는 `P2-21 40px touch target 보강 이후 핵심 feed/search/detail 화면 Playwright visual smoke`다.
+
+### 2026-05-13 | P2-21 feed/search/detail Playwright visual smoke
+- 완료일: `2026-05-13`
+- 배경:
+  - P2-4~P2-20에서 40px touch target 기준을 소스와 unit test 중심으로 보강했다.
+  - 소스 검색만으로는 실제 viewport에서 overflow, hidden state, 렌더링된 bounding box 문제가 남을 수 있어 핵심 공개 feed/search/detail 화면의 최소 Playwright smoke가 필요했다.
+- 변경내용:
+  - 공개 feed/search/detail visual smoke e2e spec를 추가했다.
+  - spec는 seed post를 생성한 뒤 `/feed/guest?q=...&searchIn=TITLE&density=ULTRA`를 desktop/mobile viewport에서 열어 feed list, 검색 결과, 정렬 tab, 하단 검색 select/input/button/reset의 40px height와 horizontal overflow 부재를 확인한다.
+  - spec는 `/posts/[id]/guest`를 mobile viewport에서 열어 상세 제목, 목록으로, 좋아요, 게시글 신고 summary의 40px height와 horizontal overflow 부재를 확인한다.
+  - smoke 과정에서 발견한 게스트 피드 `목록 바로가기` link와 게스트 상세 `게시글 신고` summary의 잔여 small touch target을 `min-h-10` 기준으로 보강했다.
+  - 로컬 Playwright Chromium binary가 없어 `corepack pnpm@9.12.3 -C app exec playwright install chromium`을 1회 실행했다.
+- 코드문서:
+  - [app/e2e/feed-search-detail-visual-smoke.spec.ts](../app/e2e/feed-search-detail-visual-smoke.spec.ts)
+  - [app/src/components/posts/guest-feed-page-client.tsx](../app/src/components/posts/guest-feed-page-client.tsx)
+  - [app/src/app/posts/[id]/guest/page.tsx](../app/src/app/posts/[id]/guest/page.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `PLAYWRIGHT_BASE_URL=http://localhost:3000 corepack pnpm@9.12.3 -C app exec playwright test e2e/feed-search-detail-visual-smoke.spec.ts --project=chromium`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+- 결과:
+  - 핵심 공개 feed/search/detail 화면의 desktop/mobile touch target과 overflow smoke가 통과했다.
+  - 다음 후보는 `P2-22 40px touch target 보강 이후 남은 작성/댓글/관리자 화면 중 실제 Playwright smoke가 필요한 화면 선별`이다.

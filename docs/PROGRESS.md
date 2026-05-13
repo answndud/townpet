@@ -4,11 +4,25 @@
 
 - 작업: 현재 active 작업 없음
 - 상태: `idle`
-- 현재 초점: `P2-20 remaining compact controls audit 최종 sweep`을 완료 archive했다. 다음 후보는 `P2-21 40px touch target 보강 이후 핵심 feed/search/detail 화면 Playwright visual smoke`다.
+- 현재 초점: `P2-21 feed/search/detail Playwright visual smoke`를 완료 archive했다. 다음 후보는 `P2-22 40px touch target 보강 이후 남은 작성/댓글/관리자 화면 중 실제 Playwright smoke가 필요한 화면 선별`이다.
 
 ## 변경/탐색한 파일
 
 - 이번 세션 변경:
+  - `app/e2e/feed-search-detail-visual-smoke.spec.ts`
+  - `app/src/components/posts/guest-feed-page-client.tsx`
+  - `app/src/app/posts/[id]/guest/page.tsx`
+  - `docs/PLAN.md`
+  - `docs/PROGRESS.md`
+- 탐색한 파일:
+  - `app/playwright.config.ts`
+  - `app/e2e/search-and-board-filtering.spec.ts`
+  - `app/e2e/feed-loading-skeleton.spec.ts`
+  - `app/e2e/post-editor-toolbar.spec.ts`
+  - `app/e2e/support/auth-helpers.ts`
+  - `app/src/components/posts/guest-feed-page-client.tsx`
+  - `app/src/app/posts/[id]/guest/page.tsx`
+- 이전 세션 변경:
   - `app/src/app/boards/adoption/page.tsx`
   - `app/src/app/bookmarks/page.tsx`
   - `app/src/app/feed/page.tsx`
