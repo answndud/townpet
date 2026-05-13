@@ -2560,3 +2560,32 @@
 - 결과:
   - 사용자 기능 fetch는 유지하면서 부가 telemetry fetch가 기본 동작에서 빠졌다.
   - 다음 작업은 `P1-8.6 운영 문서 active/archive 정리`다.
+
+### 2026-05-13 | P1-8.6 운영 문서 active/archive 정리
+- 완료일: `2026-05-13`
+- 배경:
+  - 운영 문서가 많아질수록 1인 운영자가 지금 봐야 할 문서와 과거 reference/legacy 문서를 구분하기 어려워진다.
+  - P1-8의 workflow/script/telemetry 축소 기준을 문서 진입점에도 반영해야 했다.
+- 변경내용:
+  - `business/operations/운영_문서_안내.md`에 1인 운영 기본으로 읽는 Active 운영 문서 7개를 명시했다.
+    - `운영_문서_안내.md`
+    - `manual-checks/배포_보안_체크리스트.md`
+    - `장애 대응 런북.md`
+    - `보안 운영 점검 템플릿.md`
+    - `OAuth_외부로그인_운영_가이드.md`
+    - `개인화_운영_판단_기준.md`
+    - `돌봄_운영_런북.md`
+  - 나머지 operations 문서는 특정 기능 변경, 장애 조사, 과거 결정 확인 때만 여는 reference/legacy 문서로 분리했다.
+  - `AGENTS.md`의 운영/배포 변경 시 읽기 규칙도 Active 운영 문서 우선으로 맞췄다.
+  - P1-8 전체 계획은 완료 archive로 이동하고 `PLAN.md`, `PROGRESS.md`는 active 작업 없음으로 되돌렸다.
+- 코드문서:
+  - [AGENTS.md](../AGENTS.md)
+  - [business/operations/운영_문서_안내.md](../business/operations/%EC%9A%B4%EC%98%81_%EB%AC%B8%EC%84%9C_%EC%95%88%EB%82%B4.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app docs:refresh:check`
+  - `git diff --check`
+- 결과:
+  - P1-8 과설계 축소 배치가 완료됐다.
+  - 다음 후보는 `P2-1 남은 client useEffect fetch 표면 중 기능 fetch helper 통일 여부 검토`다.

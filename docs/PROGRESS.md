@@ -2,13 +2,15 @@
 
 ## 현재 상태
 
-- 작업: `P1-8 1인 운영용 과설계 축소 배치`
-- 상태: `in_progress`
-- 현재 초점: `P1-8.5 client useEffect fetch/telemetry 표면 정리`를 완료했고, 다음은 `P1-8.6 운영 문서 active/archive 정리`다.
+- 작업: 현재 active 작업 없음
+- 상태: `idle`
+- 현재 초점: `P1-8 1인 운영용 과설계 축소 배치`를 완료 archive했다.
 
 ## 변경/탐색한 파일
 
 - 이번 세션 변경:
+  - `AGENTS.md`
+  - `business/operations/운영_문서_안내.md`
   - `app/src/lib/client-telemetry.ts`
   - `app/src/lib/client-telemetry.test.ts`
   - `app/src/lib/feed-personalization-tracking.ts`
@@ -147,6 +149,8 @@
 - 개인화 운영 문서는 초기 1인 운영에서 4주 이상 데이터와 최소 표본을 모두 충족하기 전까지 튜닝을 보류하도록 정리했다.
 - `NEXT_PUBLIC_ENABLE_CLIENT_TELEMETRY=1` 명시 opt-in 전에는 검색 결과 telemetry, 검색어 log, 개인화 dwell/feed metric 전송이 no-op이 되도록 줄였다.
 - 기능 필수 fetch는 유지하고, 부가 telemetry fetch만 기본 OFF로 낮췄다.
+- `business/operations/운영_문서_안내.md`에 Active 운영 문서 7개와 reference/legacy 문서 경계를 명시했다.
+- `AGENTS.md`도 운영 문서는 Active 운영 문서 목록을 우선하고, 나머지는 관련 기능 변경/장애 조사 때만 열도록 정리했다.
 - 이전 세션 결과:
   - `ops-smoke-checks` 기본 timeout을 5분으로 낮추고 care smoke readiness/prewarm을 기본 경로에서 제거했다.
   - `ops:evidence:solo`를 추가해 health-only 로컬 evidence profile을 제공했다.
@@ -279,6 +283,5 @@
 
 ## 다음 액션
 
-1. `P1-8.6 운영 문서 active/archive 정리`를 진행한다.
-2. active 운영 문서와 archive/legacy 문서 경계를 명확히 한다.
-3. `AGENTS.md`와 운영 안내의 먼저 볼 문서 목록을 1인 운영 기준으로 맞춘다.
+1. 다음 active 작업을 시작할 때 [PLAN.md](./PLAN.md)의 다음 작업 후보 중 하나를 선택한다.
+2. 현재 후보는 `P2-1 남은 client useEffect fetch 표면 중 기능 fetch helper 통일 여부 검토`다.
