@@ -1,6 +1,7 @@
 import { PostStatus } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
+import { getUploadProxyPath } from "@/lib/upload-url";
 import {
   bumpFeedCacheVersion,
   bumpNotificationListCacheVersion,
@@ -14,6 +15,26 @@ import {
   attachUploadUrls,
   releaseUploadUrlsIfUnreferenced,
 } from "@/server/upload-asset.service";
+
+const MAX_POST_IMAGES = 10;
+
+export const normalizeImageUrls = (imageUrls: string[] | undefined) =>
+  Array.from(
+    new Set(
+      (imageUrls ?? [])
+        .map((url) => {
+          const trimmed = url.trim();
+          return trimmed ? getUploadProxyPath(trimmed) ?? trimmed : "";
+        })
+        .filter((url) => url.length > 0),
+    ),
+  ).slice(0, MAX_POST_IMAGES);
+
+export const buildImageCreateInput = (imageUrls: string[]) =>
+  imageUrls.map((url, index) => ({
+    url,
+    order: index,
+  }));
 
 export const notifyPostCacheChange = () => {
   void bumpFeedCacheVersion().catch(() => undefined);
