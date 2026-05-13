@@ -4,16 +4,17 @@
 
 - 작업: `Release Confidence Hardening P1-6`
 - 상태: `in_progress`
-- 현재 초점: `post.service.ts`의 market workflow 경계 분리를 완료했고, 다음 작업은 care workflow 책임 분리다.
+- 현재 초점: `post.service.ts`의 care workflow 경계 분리를 완료했고, 다음 작업은 create/update structured write orchestration 분리다.
 
 ## 변경/탐색한 파일
 
 - 이번 세션 변경:
-  - `app/src/server/services/posts/post-market-workflow.service.ts`
+  - `app/src/server/services/posts/post-care-workflow.service.ts`
   - `app/src/server/services/posts/post.service.ts`
   - `docs/PLAN.md`
   - `docs/PROGRESS.md`
 - 직전 세션 변경:
+  - `app/src/server/services/posts/post-market-workflow.service.ts`
   - `app/src/server/services/posts/post-guest-management.service.ts`
   - `app/src/server/services/posts/post-delete.service.ts`
   - `app/src/server/services/posts/post-write-support.ts`
@@ -40,10 +41,13 @@
   - `docs/errors/2026-05-12_vercel-security-env-build-preflight.md`
   - `docs/COMPLETED.md`
 - 이번 세션 결과:
+  - care request status, care application, care decision, completion feedback, feedback review workflow를 `post-care-workflow.service.ts`로 분리했다.
+  - 기존 `@/server/services/post.service` export 경로는 re-export로 유지했다.
+  - `post.service.ts`를 3210줄에서 1503줄까지 축소했다.
+- 직전 세션 결과:
   - `updateMarketListingStatus`, 마켓 상태 전환 정책, 마켓 moderation action 기록을 `post-market-workflow.service.ts`로 분리했다.
   - 기존 `@/server/services/post.service` export 경로는 re-export로 유지했다.
   - `post.service.ts`를 3210줄에서 2272줄까지 축소했다.
-- 직전 세션 결과:
   - `updateGuestPost`, `deleteGuestPost`, 비회원 비밀번호 검증, 비회원 identity 매칭, 비회원 수정 정책 검사를 `post-guest-management.service.ts`로 분리했다.
   - 기존 `@/server/services/post.service` export 경로는 re-export로 유지했다.
   - `post.service.ts`를 3210줄에서 2406줄까지 축소했다.
@@ -67,6 +71,7 @@
 ## 직전 검증
 
 - `corepack pnpm@9.12.3 -C app exec vitest run src/server/queries/post.queries.test.ts` PASS
+- `corepack pnpm@9.12.3 -C app exec vitest run src/server/services/post.service.test.ts src/server/queries/care-feedback.queries.test.ts` PASS
 - `corepack pnpm@9.12.3 -C app exec vitest run src/server/services/post.service.test.ts` PASS
 - `corepack pnpm@9.12.3 -C app exec vitest run src/server/services/guest-post-management.service.test.ts src/server/services/post.service.test.ts` PASS
 - `corepack pnpm@9.12.3 -C app exec vitest run src/server/services/post.service.test.ts` PASS
@@ -87,6 +92,6 @@
 
 ## 다음 액션
 
-1. `post.service.ts`의 care workflow 책임 경계를 추가로 분리한다.
+1. `post.service.ts`의 create/update structured write orchestration을 추가로 분리한다.
 2. 어렵거나 결합이 크면 `post-detail-client.tsx`의 media/actions/comments 경계를 먼저 분리한다.
 3. public API/result shape를 유지하고 targeted test, `typecheck`, `lint`를 실행한다.
