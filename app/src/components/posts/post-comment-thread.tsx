@@ -1,18 +1,17 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { PostStatus, ReportTarget } from "@prisma/client";
-import { useEffect, useMemo, useRef, useState, useTransition, type KeyboardEvent } from "react";
+import { ReportTarget } from "@prisma/client";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 
 import {
   canUseCommentReaction,
   CommentReactionControls,
 } from "@/components/posts/comment-reaction-controls";
 import { LinkifiedContent } from "@/components/content/linkified-content";
+import { PostCommentBestItem } from "@/components/posts/post-comment-best-item";
 import {
   POST_COMMENT_FORM_FIELD_CLASS_NAME,
-  POST_COMMENT_FORM_MUTED_CLASS_NAME,
   POST_COMMENT_FORM_PANEL_CLASS_NAME,
   POST_COMMENT_THREAD_CARD_CLASS_NAME,
   POST_COMMENT_THREAD_ACTIONS_CLASS_NAME,
@@ -21,7 +20,22 @@ import {
   POST_COMMENT_THREAD_REPLY_CARD_CLASS_NAME,
   POST_COMMENT_REPLY_GUIDE_CLASS_NAME,
 } from "@/components/posts/post-comment-layout-class";
+import { PostCommentPagination } from "@/components/posts/post-comment-pagination";
+import { PostCommentRootForm } from "@/components/posts/post-comment-root-form";
 import { PostReportForm } from "@/components/posts/post-report-form";
+import {
+  COMMENT_BORDER_CLASS_NAME,
+  COMMENT_DIVIDER_CLASS_NAME,
+  COMMENT_REPLY_BADGE_CLASS_NAME,
+  MUTED_COMMENT_AUTHOR_NAME,
+  MUTED_COMMENT_PLACEHOLDER_TEXT,
+  formatCommentDate,
+  handleCommentSubmitShortcut,
+} from "@/components/posts/post-comment-thread-presenter";
+import type {
+  CommentFormState,
+  CommentItem,
+} from "@/components/posts/post-comment-thread-types";
 import {
   canOpenUserActionMenu,
   canToggleMuteUser,
@@ -40,26 +54,6 @@ import {
 } from "@/server/actions/comment";
 import { unmuteUserAction } from "@/server/actions/user-relation";
 
-type CommentItem = {
-  id: string;
-  content: string;
-  createdAt: Date | string;
-  parentId: string | null;
-  threadRootId?: string | null;
-  threadPage?: number | null;
-  status: PostStatus;
-  likeCount: number;
-  dislikeCount: number;
-  reactions?: Array<{
-    type: "LIKE" | "DISLIKE";
-  }>;
-  guestAuthorId?: string | null;
-  guestDisplayName?: string | null;
-  isGuestAuthor?: boolean;
-  isMutedByViewer?: boolean;
-  author: { id: string; nickname: string | null };
-};
-
 type PostCommentThreadProps = {
   postId: string;
   comments: CommentItem[];
@@ -74,72 +68,9 @@ type PostCommentThreadProps = {
   interactionDisabledMessage?: string;
 };
 
-type CommentFormState = {
-  [key: string]: string;
-};
-
-const COMMENT_DIVIDER_CLASS_NAME = "divide-[#edf3fb]";
-const COMMENT_BORDER_CLASS_NAME = "border-[#eaf1fb]";
-const COMMENT_REPLY_BADGE_CLASS_NAME =
-  "tp-text-muted inline-flex h-5 items-center rounded-md border border-[#e7eef9] bg-white px-1.5 text-[10px] font-medium";
-const MUTED_COMMENT_PLACEHOLDER_TEXT = "뮤트한 사용자 댓글입니다.";
-const MUTED_COMMENT_AUTHOR_NAME = "뮤트한 사용자";
-
 export const shouldCloseCommentAuthorMenu = shouldCloseUserActionMenu;
 export const canOpenCommentAuthorMenu = canOpenUserActionMenu;
 export const canMuteCommentAuthor = canToggleMuteUser;
-
-function formatCommentDate(value: Date | string) {
-  const parsed = value instanceof Date ? value : new Date(value);
-  if (Number.isNaN(parsed.getTime())) {
-    return "";
-  }
-  return parsed.toLocaleDateString("ko-KR");
-}
-
-function buildPaginationItems(currentPage: number, totalPages: number) {
-  const pages = new Set<number>([1, totalPages, currentPage - 1, currentPage, currentPage + 1]);
-  const normalized = [...pages].filter((page) => page >= 1 && page <= totalPages).sort((a, b) => a - b);
-  const items: Array<number | "..."> = [];
-
-  for (const page of normalized) {
-    const last = items[items.length - 1];
-    if (typeof last === "number" && page - last > 1) {
-      items.push("...");
-    }
-    items.push(page);
-  }
-
-  return items;
-}
-
-function ReactionStatIcon({ type }: { type: "LIKE" | "DISLIKE" }) {
-  return type === "LIKE" ? (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 20 20"
-      className="h-3.5 w-3.5"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-    >
-      <path d="M8 8V4.8A2.8 2.8 0 0 1 10.8 2l.5 3.1c.2 1-.1 2-.7 2.8L10 8.6h4.4A2.6 2.6 0 0 1 17 11.2l-.8 4.6a2.6 2.6 0 0 1-2.6 2.2H8z" />
-      <path d="M3 8h3v10H3z" />
-    </svg>
-  ) : (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 20 20"
-      className="h-3.5 w-3.5"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-    >
-      <path d="M12 12v3.2A2.8 2.8 0 0 1 9.2 18l-.5-3.1c-.2-1 .1-2 .7-2.8l.6-.7H5.6A2.6 2.6 0 0 1 3 8.8l.8-4.6A2.6 2.6 0 0 1 6.4 2H12z" />
-      <path d="M17 12h-3V2h3z" />
-    </svg>
-  );
-}
 
 export function PostCommentThread({
   postId,
@@ -175,20 +106,6 @@ export function PostCommentThread({
   const actionLockRef = useRef(false);
   const canComment = canInteract || !currentUserId;
 
-  const handleCommentSubmitShortcut = (
-    event: KeyboardEvent<HTMLTextAreaElement>,
-    submit: () => void,
-  ) => {
-    if (event.nativeEvent.isComposing) {
-      return;
-    }
-
-    if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
-      event.preventDefault();
-      submit();
-    }
-  };
-
   const repliesMap = useMemo(() => {
     const map = new Map<string, CommentItem[]>();
     for (const comment of comments) {
@@ -202,7 +119,6 @@ export function PostCommentThread({
 
   const roots = useMemo(() => comments.filter((comment) => comment.parentId === null), [comments]);
 
-  const pageItems = buildPaginationItems(currentPage, totalPages);
   const hasBestComments = bestComments.length > 0;
 
   useEffect(() => {
@@ -893,96 +809,6 @@ export function PostCommentThread({
     );
   };
 
-  const renderBestComment = (comment: CommentItem) => {
-    const isMutedPlaceholder = Boolean(comment.isMutedByViewer);
-    const isGuestComment = Boolean(
-      comment.isGuestAuthor || comment.guestAuthorId || comment.guestDisplayName?.trim(),
-    );
-    const guestAuthorName = resolvePublicGuestDisplayName(comment.guestDisplayName);
-    const displayName = isMutedPlaceholder
-      ? MUTED_COMMENT_AUTHOR_NAME
-      : isGuestComment
-        ? guestAuthorName
-        : resolveUserDisplayName(comment.author.nickname);
-    const authorNode = isMutedPlaceholder || isGuestComment || !canOpenCommentAuthorMenu(currentUserId) ? (
-      <span className="tp-text-heading truncate text-[14px] font-semibold leading-5">{displayName}</span>
-    ) : (
-      <UserActionMenu
-        userId={comment.author.id}
-        displayName={displayName}
-        currentUserId={currentUserId}
-        onActionMessage={setMessage}
-        onMuteStateChange={async () => {
-          await refreshCommentsForRelationChange(comment.id);
-        }}
-      />
-    );
-
-    return (
-      <article
-        key={`best-${comment.id}`}
-        id={`best-comment-${comment.id}`}
-        className="flex flex-col gap-2 px-3 py-3.5 sm:px-4"
-      >
-        <div className="flex flex-wrap items-start justify-between gap-2">
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-              <span className="inline-flex h-5 items-center rounded-md bg-[#2f6fda] px-1.5 text-[10px] font-semibold tracking-[0.03em] text-white">
-                BEST
-              </span>
-              {comment.parentId ? (
-                <span className={COMMENT_REPLY_BADGE_CLASS_NAME}>
-                  답글
-                </span>
-              ) : null}
-              {authorNode}
-              <span suppressHydrationWarning className="tp-text-subtle text-[11px]">
-                {formatCommentDate(comment.createdAt)}
-              </span>
-            </div>
-            <p className="tp-text-primary mt-1.5 overflow-hidden whitespace-pre-line text-[13px] leading-6 [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:3]">
-              {isMutedPlaceholder ? MUTED_COMMENT_PLACEHOLDER_TEXT : comment.content}
-            </p>
-          </div>
-
-          <div className="ml-auto flex shrink-0 flex-col items-end gap-2">
-            <div className="tp-text-muted flex items-center gap-3 text-[11px] font-semibold">
-              <span className="inline-flex items-center gap-1">
-                <ReactionStatIcon type="LIKE" />
-                <span>{comment.likeCount.toLocaleString()}</span>
-              </span>
-              <span className="inline-flex items-center gap-1">
-                <ReactionStatIcon type="DISLIKE" />
-                <span>{comment.dislikeCount.toLocaleString()}</span>
-              </span>
-            </div>
-            {isMutedPlaceholder && canMuteCommentAuthor(currentUserId, comment.author.id) ? (
-              <button
-                type="button"
-                className="tp-text-muted inline-flex min-h-8 items-center rounded-md px-2 text-[12px] font-medium transition sm:min-h-6 sm:px-1.5 sm:text-[11px] hover:bg-white hover:text-[#2f5da4] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2"
-                onClick={() => handleUnmute(comment.id, comment.author.id)}
-                disabled={isPending}
-              >
-                뮤트 해제
-              </button>
-            ) : null}
-            {comment.threadPage && (comment.threadPage === currentPage || onCommentsChanged) ? (
-              <button
-                type="button"
-                className="tp-text-muted inline-flex min-h-8 items-center rounded-md px-2 text-[12px] font-medium transition sm:min-h-6 sm:px-1.5 sm:text-[11px] hover:bg-white hover:text-[#2f5da4] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2"
-                onClick={() => {
-                  void handleBestCommentJump(comment);
-                }}
-              >
-                원댓글로 가기
-              </button>
-            ) : null}
-          </div>
-        </div>
-      </article>
-    );
-  };
-
   return (
     <div className={POST_COMMENT_THREAD_CARD_CLASS_NAME}>
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -1001,7 +827,22 @@ export function PostCommentThread({
           </div>
           <div className={`${COMMENT_BORDER_CLASS_NAME} overflow-hidden rounded-lg border bg-[#f7fbff]`}>
             <div className={`divide-y ${COMMENT_DIVIDER_CLASS_NAME}`}>
-              {bestComments.map((comment) => renderBestComment(comment))}
+              {bestComments.map((comment) => (
+                <PostCommentBestItem
+                  key={`best-${comment.id}`}
+                  comment={comment}
+                  currentUserId={currentUserId}
+                  currentPage={currentPage}
+                  canLoadPage={Boolean(onCommentsChanged)}
+                  isPending={isPending}
+                  onBestCommentJump={(targetComment) => {
+                    void handleBestCommentJump(targetComment);
+                  }}
+                  onUnmute={handleUnmute}
+                  onActionMessage={setMessage}
+                  onAuthorMuteStateChange={refreshCommentsForRelationChange}
+                />
+              ))}
             </div>
           </div>
         </section>
@@ -1024,111 +865,29 @@ export function PostCommentThread({
         </div>
       )}
 
-      {totalPages > 1 ? (
-        <div className="tp-text-muted mt-3 flex flex-wrap items-center justify-center gap-1.5 text-xs">
-          <button
-            type="button"
-            className={`min-h-9 rounded-lg ${currentPage <= 1 ? "tp-btn-disabled" : "tp-btn-soft"} tp-btn-xs`}
-            onClick={() => void onCommentsChanged?.(Math.max(1, currentPage - 1))}
-            disabled={currentPage <= 1}
-          >
-            이전
-          </button>
-          {pageItems.map((item, index) =>
-            item === "..." ? (
-              <span key={`bottom-ellipsis-${index}`} className="tp-text-placeholder px-1">
-                ...
-              </span>
-            ) : (
-              <button
-                key={`bottom-${item}`}
-                type="button"
-                className={`min-h-9 min-w-9 rounded-lg ${item === currentPage ? "tp-btn-primary" : "tp-btn-soft"} tp-btn-xs`}
-                onClick={() => void onCommentsChanged?.(item)}
-              >
-                {item}
-              </button>
-            ),
-          )}
-          <button
-            type="button"
-            className={`min-h-9 rounded-lg ${currentPage >= totalPages ? "tp-btn-disabled" : "tp-btn-soft"} tp-btn-xs`}
-            onClick={() => void onCommentsChanged?.(Math.min(totalPages, currentPage + 1))}
-            disabled={currentPage >= totalPages}
-          >
-            다음
-          </button>
-        </div>
-      ) : null}
+      <PostCommentPagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={onCommentsChanged}
+      />
 
       <div className={`${COMMENT_BORDER_CLASS_NAME} mt-3 border-t pt-2.5 sm:mt-4 sm:pt-3`}>
-        <div className={`${POST_COMMENT_FORM_PANEL_CLASS_NAME} p-2.5 sm:p-2.5`}>
-          {canComment ? (
-            <>
-              {!currentUserId ? (
-                <div className="mb-1.5 grid gap-1.5 sm:grid-cols-2">
-                  <input
-                    data-testid="post-comment-guest-name"
-                    className={`tp-input-soft ${POST_COMMENT_FORM_FIELD_CLASS_NAME} min-h-11 w-full px-3 py-2 text-[14px] sm:min-h-9 sm:px-2.5 sm:py-1.5 sm:text-[13px]`}
-                    value={guestDisplayName}
-                    onChange={(event) => setGuestDisplayName(event.target.value)}
-                    placeholder="비회원 닉네임"
-                    maxLength={24}
-                  />
-                  <input
-                    data-testid="post-comment-guest-password"
-                    className={`tp-input-soft ${POST_COMMENT_FORM_FIELD_CLASS_NAME} min-h-11 w-full px-3 py-2 text-[14px] sm:min-h-9 sm:px-2.5 sm:py-1.5 sm:text-[13px]`}
-                    type="password"
-                    value={guestPassword}
-                    onChange={(event) => setGuestPassword(event.target.value)}
-                    placeholder="댓글 비밀번호"
-                    maxLength={32}
-                  />
-                </div>
-              ) : null}
-              <textarea
-                data-testid="post-comment-root-input"
-                className={`tp-input-soft ${POST_COMMENT_FORM_FIELD_CLASS_NAME} min-h-24 w-full px-3 py-2 text-[14px] sm:min-h-[72px] sm:px-2.5 sm:py-1.5 sm:text-[13px]`}
-                value={replyContent.root ?? ""}
-                onChange={(event) =>
-                  setReplyContent((prev) => ({ ...prev, root: event.target.value }))
-                }
-                maxLength={COMMENT_CONTENT_MAX_LENGTH}
-                onKeyDown={(event) => handleCommentSubmitShortcut(event, () => handleCreate())}
-                placeholder="댓글을 입력해 주세요"
-              />
-              <div className="mt-1 flex justify-end">
-                <button
-                  data-testid="post-comment-root-submit"
-                  type="button"
-                  className="tp-btn-primary tp-btn-sm"
-                  onClick={() => handleCreate()}
-                  disabled={isPending}
-                >
-                  댓글 등록
-                </button>
-              </div>
-            </>
-          ) : (
-            <div className={`${POST_COMMENT_FORM_MUTED_CLASS_NAME} tp-text-accent px-3 py-2 text-[13px]`}>
-              <div data-testid="post-comment-login-prompt">
-              {interactionDisabledMessage ? (
-                interactionDisabledMessage
-              ) : (
-                <>
-                  댓글 작성/답글/신고는 로그인 후 이용할 수 있습니다.{" "}
-                  <Link
-                    href={loginHref}
-                    className="tp-text-link font-semibold underline underline-offset-2"
-                  >
-                    로그인하기
-                  </Link>
-                </>
-              )}
-              </div>
-            </div>
-          )}
-        </div>
+        <PostCommentRootForm
+          canComment={canComment}
+          currentUserId={currentUserId}
+          guestDisplayName={guestDisplayName}
+          guestPassword={guestPassword}
+          rootContent={replyContent.root ?? ""}
+          isPending={isPending}
+          loginHref={loginHref}
+          interactionDisabledMessage={interactionDisabledMessage}
+          onGuestDisplayNameChange={setGuestDisplayName}
+          onGuestPasswordChange={setGuestPassword}
+          onRootContentChange={(value) =>
+            setReplyContent((prev) => ({ ...prev, root: value }))
+          }
+          onSubmit={() => handleCreate()}
+        />
       </div>
     </div>
   );
