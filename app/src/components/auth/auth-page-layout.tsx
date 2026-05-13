@@ -39,7 +39,7 @@ export function AuthPageLayout({
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <Link
             href={primaryFooterLink.href}
-            className="tp-btn-soft tp-btn-sm inline-flex min-h-10 items-center justify-center text-[#315484] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2f66ba]/35"
+            className="tp-btn-soft inline-flex min-h-10 items-center justify-center px-3 text-xs text-[#315484] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2f66ba]/35"
           >
             {primaryFooterLink.label}
           </Link>

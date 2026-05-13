@@ -3170,3 +3170,48 @@
 - 결과:
   - 품종 라운지와 관리자 신고/돌봄 피드백 edge surface의 잔여 compact controls가 기존 모바일/접근성 기준에 맞춰졌다.
   - 다음 후보는 `P2-20 remaining compact controls audit 최종 sweep`이다.
+
+### 2026-05-13 | P2-20 remaining compact controls audit 최종 sweep
+- 완료일: `2026-05-13`
+- 배경:
+  - P2-4부터 P2-19까지 주요 화면별 compact control을 순차 보강했지만, 전체 `app/src` 기준으로는 feed 검색/필터, footer 검색, auth/header/footer action, 게시글 상세 action, adoption pagination 등에 `h-8/h-9`, `min-h-8/min-h-9`, `tp-btn-xs/sm` 계열이 일부 남아 있었다.
+  - 최종 sweep 목적은 실제 클릭/입력 표면을 40px 기준으로 맞추고, skeleton/avatar/divider 같은 비상호 요소는 명시적으로 잔여로 분류하는 것이다.
+- 변경내용:
+  - 피드 제어 패널의 전체글/베스트글, 정렬, 기간, 리뷰 filter chip을 `min-h-10` 기준으로 보강했다.
+  - feed 검색 form과 footer 검색 form에서 desktop override인 `sm:min-h-8/9`와 `tp-btn-xs` 사용을 제거했다.
+  - auth logout, auth page back link, app shell footer legal link를 `min-h-10` 기준으로 보강했다.
+  - 게시글 상세 신고 button, 상세 error retry, back-to-feed, guest back-to-feed, media viewer close button, rich text toolbar button, 댓글 reaction button을 `min-h-10` 기준으로 보강했다.
+  - 내 글/북마크 pagination, 새 글 작성의 feed return, feed 글쓰기/목록 바로가기, adoption pagination/작성 action을 `min-h-10`/`min-w-10` 기준으로 보강했다.
+  - 최종 sweep 대상 상호 요소 소스 회귀 unit test를 추가했다.
+- 잔여 compact class 분류:
+  - 남은 검색 결과는 loading skeleton, avatar/icon 크기, status text placeholder, aria-hidden divider, 댓글 작성자 이니셜 avatar로 비상호 요소다.
+- 코드문서:
+  - [app/src/components/compact-control-final-sweep.test.ts](../app/src/components/compact-control-final-sweep.test.ts)
+  - [app/src/components/posts/feed-control-panel.tsx](../app/src/components/posts/feed-control-panel.tsx)
+  - [app/src/components/posts/feed-search-form.tsx](../app/src/components/posts/feed-search-form.tsx)
+  - [app/src/components/posts/feed-footer-search-form.tsx](../app/src/components/posts/feed-footer-search-form.tsx)
+  - [app/src/components/posts/comment-reaction-controls.tsx](../app/src/components/posts/comment-reaction-controls.tsx)
+  - [app/src/components/posts/post-detail-primary-card.tsx](../app/src/components/posts/post-detail-primary-card.tsx)
+  - [app/src/components/posts/post-detail-media-gallery.tsx](../app/src/components/posts/post-detail-media-gallery.tsx)
+  - [app/src/components/posts/post-detail-client.tsx](../app/src/components/posts/post-detail-client.tsx)
+  - [app/src/components/posts/post-rich-text-editor-shell.tsx](../app/src/components/posts/post-rich-text-editor-shell.tsx)
+  - [app/src/components/auth/auth-controls.tsx](../app/src/components/auth/auth-controls.tsx)
+  - [app/src/components/auth/auth-page-layout.tsx](../app/src/components/auth/auth-page-layout.tsx)
+  - [app/src/components/navigation/app-shell-footer.tsx](../app/src/components/navigation/app-shell-footer.tsx)
+  - [app/src/app/feed/page.tsx](../app/src/app/feed/page.tsx)
+  - [app/src/app/bookmarks/page.tsx](../app/src/app/bookmarks/page.tsx)
+  - [app/src/app/my-posts/page.tsx](../app/src/app/my-posts/page.tsx)
+  - [app/src/app/posts/new/page.tsx](../app/src/app/posts/new/page.tsx)
+  - [app/src/app/posts/[id]/guest/page.tsx](../app/src/app/posts/[id]/guest/page.tsx)
+  - [app/src/app/profile/page.tsx](../app/src/app/profile/page.tsx)
+  - [app/src/app/boards/adoption/page.tsx](../app/src/app/boards/adoption/page.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app exec vitest run src/components/compact-control-final-sweep.test.ts src/components/compact-control-edge-accessibility.test.ts src/components/admin/admin-lounge-compact-controls-accessibility.test.ts`
+  - `rg -n "\\b(h-6|h-7|h-8|h-9|min-h-6|min-h-7|min-h-8|min-h-9|min-w-6|min-w-7|min-w-8|min-w-9|tp-btn-xs|tp-btn-sm)\\b" app/src -g '*.tsx' -g '!*.test.tsx' -g '!*.test.ts'`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+- 결과:
+  - 최종 sweep 대상 상호 control의 compact class 재도입 방지 테스트를 추가했고, 전체 검색 잔여는 비상호 요소로 분류했다.
+  - 다음 후보는 `P2-21 40px touch target 보강 이후 핵심 feed/search/detail 화면 Playwright visual smoke`다.

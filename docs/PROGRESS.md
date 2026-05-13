@@ -4,11 +4,47 @@
 
 - 작업: 현재 active 작업 없음
 - 상태: `idle`
-- 현재 초점: `P2-19 remaining compact lounge/admin controls 보강`을 완료 archive했다. 다음 후보는 `P2-20 remaining compact controls audit 최종 sweep`이다.
+- 현재 초점: `P2-20 remaining compact controls audit 최종 sweep`을 완료 archive했다. 다음 후보는 `P2-21 40px touch target 보강 이후 핵심 feed/search/detail 화면 Playwright visual smoke`다.
 
 ## 변경/탐색한 파일
 
 - 이번 세션 변경:
+  - `app/src/app/boards/adoption/page.tsx`
+  - `app/src/app/bookmarks/page.tsx`
+  - `app/src/app/feed/page.tsx`
+  - `app/src/app/my-posts/page.tsx`
+  - `app/src/app/posts/[id]/guest/page.tsx`
+  - `app/src/app/posts/new/page.tsx`
+  - `app/src/app/profile/page.tsx`
+  - `app/src/components/auth/auth-controls.tsx`
+  - `app/src/components/auth/auth-page-layout.tsx`
+  - `app/src/components/navigation/app-shell-footer.tsx`
+  - `app/src/components/posts/comment-reaction-controls.tsx`
+  - `app/src/components/posts/feed-control-panel.tsx`
+  - `app/src/components/posts/feed-footer-search-form.tsx`
+  - `app/src/components/posts/feed-search-form.tsx`
+  - `app/src/components/posts/post-detail-client.tsx`
+  - `app/src/components/posts/post-detail-media-gallery.tsx`
+  - `app/src/components/posts/post-detail-primary-card.tsx`
+  - `app/src/components/posts/post-rich-text-editor-shell.tsx`
+  - `app/src/components/compact-control-final-sweep.test.ts`
+  - `docs/PLAN.md`
+  - `docs/PROGRESS.md`
+- 탐색한 파일:
+  - `app/src/components/auth/auth-controls.tsx`
+  - `app/src/components/navigation/app-shell-footer.tsx`
+  - `app/src/components/posts/feed-control-panel.tsx`
+  - `app/src/components/posts/feed-search-form.tsx`
+  - `app/src/components/posts/feed-footer-search-form.tsx`
+  - `app/src/components/posts/post-detail-primary-card.tsx`
+  - `app/src/components/posts/post-detail-media-gallery.tsx`
+  - `app/src/components/posts/post-detail-client.tsx`
+  - `app/src/components/posts/post-rich-text-editor-shell.tsx`
+  - `app/src/components/posts/comment-reaction-controls.tsx`
+  - `app/src/app/feed/page.tsx`
+  - `app/src/app/boards/adoption/page.tsx`
+  - `app/src/app/profile/page.tsx`
+- 이전 세션 변경:
   - `app/src/app/lounges/breeds/[breedCode]/page.tsx`
   - `app/src/components/lounges/breed-groupbuy-form.tsx`
   - `app/src/components/admin/report-actions.tsx`

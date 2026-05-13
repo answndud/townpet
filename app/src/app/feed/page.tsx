@@ -750,7 +750,7 @@ export default async function Home({ searchParams }: HomePageProps) {
 
           <a
             href="#feed-list"
-            className="tp-btn-soft tp-btn-sm hidden w-fit items-center sm:inline-flex lg:hidden"
+            className="tp-btn-soft hidden min-h-10 w-fit items-center px-3 text-xs sm:inline-flex lg:hidden"
           >
             목록 바로가기
           </a>
@@ -871,7 +871,7 @@ export default async function Home({ searchParams }: HomePageProps) {
         <div className="flex justify-end gap-2">
           <Link
             href="/posts/new"
-            className="tp-btn-primary inline-flex h-9 items-center justify-center px-4 text-xs font-semibold hover:bg-[#274f8c]"
+            className="tp-btn-primary inline-flex min-h-10 items-center justify-center px-4 text-xs font-semibold hover:bg-[#274f8c]"
           >
             글쓰기
           </Link>

@@ -310,7 +310,7 @@ export default async function MyPostsPage({ searchParams }: MyPostsPageProps) {
             {currentPage > 1 ? (
               <Link
                 href={makeHref({ nextPage: currentPage - 1 })}
-                className="tp-btn-soft tp-btn-sm text-[#315484]"
+                className="tp-btn-soft inline-flex min-h-10 items-center px-3 text-xs text-[#315484]"
               >
                 이전 페이지
               </Link>
@@ -319,7 +319,7 @@ export default async function MyPostsPage({ searchParams }: MyPostsPageProps) {
             {hasNext ? (
               <Link
                 href={makeHref({ nextPage: currentPage + 1 })}
-                className="tp-btn-soft tp-btn-sm text-[#315484]"
+                className="tp-btn-soft inline-flex min-h-10 items-center px-3 text-xs text-[#315484]"
               >
                 다음 페이지
               </Link>

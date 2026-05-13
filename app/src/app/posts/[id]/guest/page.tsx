@@ -309,7 +309,7 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
         }}
       />
       <main className="mx-auto flex w-full max-w-[1100px] flex-col gap-4 px-4 py-5 sm:gap-5 sm:px-6 sm:py-6 lg:px-8">
-        <BackToFeedButton className="tp-btn-soft tp-btn-sm inline-flex w-fit items-center" />
+        <BackToFeedButton className="tp-btn-soft inline-flex min-h-10 w-fit items-center px-3 text-xs" />
         <div>
           <section className="tp-card p-4 sm:p-7">
             <div className="flex flex-wrap items-center gap-2 text-xs">

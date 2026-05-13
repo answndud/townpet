@@ -177,7 +177,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
             {passwordSetupCopy ? (
               <Link
                 href="/password/setup"
-                className="tp-btn-soft tp-btn-sm tp-text-accent inline-flex min-h-10 items-center"
+                className="tp-btn-soft tp-text-accent inline-flex min-h-10 items-center px-3 text-xs"
               >
                 {passwordSetupCopy.profileLinkLabel}
               </Link>
@@ -248,7 +248,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
                       {hasBreedLoungeRoute(segment.breedCode) ? (
                         <Link
                           href={`/lounges/breeds/${segment.breedCode}`}
-                          className="tp-btn-soft tp-btn-sm tp-text-link mt-3 inline-flex"
+                          className="tp-btn-soft tp-text-link mt-3 inline-flex min-h-10 items-center px-3 text-xs"
                         >
                           품종 라운지 보기
                         </Link>

@@ -181,7 +181,7 @@ export function PostDetailPrimaryCard({
                 {showPostReportControls ? (
                   <button
                     type="button"
-                    className="tp-btn-soft tp-btn-xs border-rose-300 text-rose-700 hover:bg-rose-50"
+                    className="tp-btn-soft inline-flex min-h-10 items-center border-rose-300 px-3 text-xs text-rose-700 hover:bg-rose-50"
                     onClick={onTogglePostReportOpen}
                   >
                     {isPostReportOpen ? "신고 닫기" : "신고"}

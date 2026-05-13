@@ -288,8 +288,8 @@ export function FeedSearchForm({
             }}
             className={
               density === "ULTRA"
-                ? "tp-input-soft min-h-10 px-2.5 text-xs font-medium outline-none transition sm:min-h-8 focus:border-[#4e89d8] focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
-                : "tp-input-soft min-h-11 px-3 text-[13px] outline-none transition sm:min-h-9 focus:border-[#4e89d8] focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
+                ? "tp-input-soft min-h-10 px-2.5 text-xs font-medium outline-none transition focus:border-[#4e89d8] focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
+                : "tp-input-soft min-h-11 px-3 text-[13px] outline-none transition focus:border-[#4e89d8] focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
             }
           >
             {SEARCH_OPTIONS.map((option) => (
@@ -310,8 +310,8 @@ export function FeedSearchForm({
             list={datalistId}
             className={
               density === "ULTRA"
-                ? "tp-input-soft min-h-10 w-full bg-white px-3 text-xs outline-none transition sm:min-h-8 focus:border-[#4e89d8] focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
-                : "tp-input-soft min-h-11 w-full bg-white px-3.5 text-[13px] outline-none transition sm:min-h-9 focus:border-[#4e89d8] focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
+                ? "tp-input-soft min-h-10 w-full bg-white px-3 text-xs outline-none transition focus:border-[#4e89d8] focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
+                : "tp-input-soft min-h-11 w-full bg-white px-3.5 text-[13px] outline-none transition focus:border-[#4e89d8] focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
             }
           />
           <datalist id={datalistId}>
@@ -324,8 +324,8 @@ export function FeedSearchForm({
             type="submit"
             className={
               density === "ULTRA"
-                ? "tp-btn-primary tp-btn-xs inline-flex min-h-10 min-w-[64px] items-center justify-center sm:min-h-8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
-                : "tp-btn-primary tp-btn-md inline-flex min-h-11 min-w-[72px] items-center justify-center sm:min-h-9 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
+                ? "tp-btn-primary inline-flex min-h-10 min-w-[64px] items-center justify-center px-3 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
+                : "tp-btn-primary tp-btn-md inline-flex min-h-11 min-w-[72px] items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
             }
           >
             검색
@@ -336,8 +336,8 @@ export function FeedSearchForm({
               href={resetHref}
               className={
                 density === "ULTRA"
-                  ? "tp-btn-soft tp-btn-xs inline-flex min-h-10 min-w-[56px] items-center justify-center sm:min-h-8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
-                  : "tp-btn-soft tp-btn-md inline-flex min-h-11 min-w-[72px] items-center justify-center sm:min-h-9 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
+                  ? "tp-btn-soft inline-flex min-h-10 min-w-[56px] items-center justify-center px-3 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
+                  : "tp-btn-soft tp-btn-md inline-flex min-h-11 min-w-[72px] items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
               }
             >
               초기화

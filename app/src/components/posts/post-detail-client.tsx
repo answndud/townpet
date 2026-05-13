@@ -458,7 +458,7 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
                 onClick={() => {
                   setLoadVersion((current) => current + 1);
                 }}
-                className="tp-btn-primary tp-btn-sm"
+                className="tp-btn-primary inline-flex min-h-10 items-center px-3 text-xs"
               >
                 다시 시도
               </button>
@@ -605,7 +605,7 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
         />
       ) : null}
       <main className="mx-auto flex w-full max-w-[1100px] flex-col gap-4 px-4 py-5 sm:gap-5 sm:px-6 sm:py-6 lg:px-8">
-        {post ? <BackToFeedButton className="tp-btn-soft tp-btn-sm inline-flex w-fit items-center" /> : null}
+        {post ? <BackToFeedButton className="tp-btn-soft inline-flex min-h-10 w-fit items-center px-3 text-xs" /> : null}
         {post ? (
           <>
             <PostDetailPrimaryCard

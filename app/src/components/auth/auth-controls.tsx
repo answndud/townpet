@@ -21,7 +21,7 @@ export function AuthControls({ label, className }: AuthControlsProps) {
       data-testid="auth-logout-button"
       className={
         className ??
-        "inline-flex h-8 items-center rounded-sm px-1 text-[14px] leading-none text-[#173963] transition hover:bg-[#dcecff] hover:text-[#0f2f56] disabled:opacity-60"
+        "inline-flex min-h-10 items-center rounded-lg px-3 text-[14px] leading-none text-[#173963] transition hover:bg-[#dcecff] hover:text-[#0f2f56] disabled:opacity-60"
       }
       onClick={() =>
         startTransition(async () => {

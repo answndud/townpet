@@ -241,7 +241,7 @@ export default async function AdoptionBoardPage({
                 <Link
                   href={buildAdoptionBoardHref({ q: query, page: Math.max(1, resolvedPage - 1) })}
                   aria-disabled={resolvedPage <= 1}
-                  className={`tp-btn-soft tp-btn-sm inline-flex items-center rounded-xl border transition ${
+                  className={`tp-btn-soft inline-flex min-h-10 items-center rounded-xl border px-3 text-xs transition ${
                     resolvedPage <= 1
                       ? "pointer-events-none border-[#d8e3f4] bg-[#eef3fb] text-[#96aac7]"
                       : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
@@ -262,7 +262,7 @@ export default async function AdoptionBoardPage({
                   <Link
                     key={`adoption-board-page-${pageNumber}`}
                     href={buildAdoptionBoardHref({ q: query, page: pageNumber })}
-                    className={`tp-btn-soft tp-btn-sm inline-flex min-w-8 items-center justify-center rounded-xl border px-2 transition ${
+                    className={`tp-btn-soft inline-flex min-h-10 min-w-10 items-center justify-center rounded-xl border px-2 text-xs transition ${
                       pageNumber === resolvedPage
                         ? "border-[#3567b5] bg-[#3567b5] text-white"
                         : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
@@ -274,7 +274,7 @@ export default async function AdoptionBoardPage({
                 <Link
                   href={buildAdoptionBoardHref({ q: query, page: Math.min(totalPages, resolvedPage + 1) })}
                   aria-disabled={resolvedPage >= totalPages}
-                  className={`tp-btn-soft tp-btn-sm inline-flex items-center rounded-xl border transition ${
+                  className={`tp-btn-soft inline-flex min-h-10 items-center rounded-xl border px-3 text-xs transition ${
                     resolvedPage >= totalPages
                       ? "pointer-events-none border-[#d8e3f4] bg-[#eef3fb] text-[#96aac7]"
                       : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
@@ -291,7 +291,7 @@ export default async function AdoptionBoardPage({
           {canManageAdoptionListings ? (
             <Link
               href="/posts/new"
-              className="tp-btn-primary tp-btn-sm inline-flex items-center justify-center rounded-xl bg-[#b9891f] text-white transition hover:bg-[#9d7419]"
+              className="tp-btn-primary inline-flex min-h-10 items-center justify-center rounded-xl bg-[#b9891f] px-3 text-xs text-white transition hover:bg-[#9d7419]"
             >
               입양 글 작성
             </Link>
