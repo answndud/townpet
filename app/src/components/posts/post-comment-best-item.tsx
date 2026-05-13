@@ -101,7 +101,7 @@ export function PostCommentBestItem({
           {isMutedPlaceholder && canToggleMuteUser(currentUserId, comment.author.id) ? (
             <button
               type="button"
-              className="tp-text-muted inline-flex min-h-8 items-center rounded-md px-2 text-[12px] font-medium transition sm:min-h-6 sm:px-1.5 sm:text-[11px] hover:bg-white hover:text-[#2f5da4] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2"
+              className="tp-text-muted inline-flex min-h-10 items-center rounded-md px-3 text-[12px] font-medium transition hover:bg-white hover:text-[#2f5da4] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2"
               onClick={() => onUnmute(comment.id, comment.author.id)}
               disabled={isPending}
             >
@@ -111,7 +111,7 @@ export function PostCommentBestItem({
           {comment.threadPage && (comment.threadPage === currentPage || canLoadPage) ? (
             <button
               type="button"
-              className="tp-text-muted inline-flex min-h-8 items-center rounded-md px-2 text-[12px] font-medium transition sm:min-h-6 sm:px-1.5 sm:text-[11px] hover:bg-white hover:text-[#2f5da4] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2"
+              className="tp-text-muted inline-flex min-h-10 items-center rounded-md px-3 text-[12px] font-medium transition hover:bg-white hover:text-[#2f5da4] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2"
               onClick={() => onBestCommentJump(comment)}
             >
               원댓글로 가기

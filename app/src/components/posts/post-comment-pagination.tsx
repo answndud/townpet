@@ -23,7 +23,7 @@ export function PostCommentPagination({
     <div className="tp-text-muted mt-3 flex flex-wrap items-center justify-center gap-1.5 text-xs">
       <button
         type="button"
-        className={`min-h-9 rounded-lg ${currentPage <= 1 ? "tp-btn-disabled" : "tp-btn-soft"} tp-btn-xs`}
+        className={`inline-flex min-h-10 items-center justify-center rounded-lg px-3 text-xs font-semibold ${currentPage <= 1 ? "tp-btn-disabled" : "tp-btn-soft"}`}
         onClick={() => void onPageChange?.(Math.max(1, currentPage - 1))}
         disabled={currentPage <= 1}
       >
@@ -38,7 +38,7 @@ export function PostCommentPagination({
           <button
             key={`bottom-${item}`}
             type="button"
-            className={`min-h-9 min-w-9 rounded-lg ${item === currentPage ? "tp-btn-primary" : "tp-btn-soft"} tp-btn-xs`}
+            className={`inline-flex min-h-10 min-w-10 items-center justify-center rounded-lg px-3 text-xs font-semibold ${item === currentPage ? "tp-btn-primary" : "tp-btn-soft"}`}
             onClick={() => void onPageChange?.(item)}
           >
             {item}
@@ -47,7 +47,7 @@ export function PostCommentPagination({
       )}
       <button
         type="button"
-        className={`min-h-9 rounded-lg ${currentPage >= totalPages ? "tp-btn-disabled" : "tp-btn-soft"} tp-btn-xs`}
+        className={`inline-flex min-h-10 items-center justify-center rounded-lg px-3 text-xs font-semibold ${currentPage >= totalPages ? "tp-btn-disabled" : "tp-btn-soft"}`}
         onClick={() => void onPageChange?.(Math.min(totalPages, currentPage + 1))}
         disabled={currentPage >= totalPages}
       >
