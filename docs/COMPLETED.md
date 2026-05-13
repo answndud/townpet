@@ -2364,4 +2364,38 @@
   - P1-6 완료 기준을 충족했다.
   - UI hot path와 post service write path는 700~900줄 이하 또는 명확한 facade/helper 책임 경계로 정리됐다.
   - public import 경로와 result shape를 유지한 채 최종 lint/typecheck/Vitest/build 품질 게이트가 통과했다.
-  - 다음 후보는 `P1-7 운영 관리자 루틴을 10분 smoke로 고정`이다.
+  - 다음 후보는 `P1-7 1인 운영용 최소 production smoke로 축소`이다.
+
+### 2026-05-13 | P1-7 1인 운영용 최소 production smoke 축소
+- 완료일: `2026-05-13`
+- 배경:
+  - 혼자 운영하는 프로젝트에서 10분 관리자 smoke, care 계정 readiness, prewarm, 성능 snapshot을 기본 루틴으로 묶으면 운영자가 결국 실행하지 않을 가능성이 높았다.
+  - 기본 smoke의 목적은 QA 전수검사가 아니라 배포 생존 확인이므로 `/api/health` 중심의 2-3분 루틴으로 줄이는 것이 더 지속 가능하다.
+- 변경내용:
+  - `ops:evidence`에 `OPS_EVIDENCE_PROFILE=solo`를 추가해 health-only evidence report를 생성할 수 있게 했다.
+  - `app/package.json`에 `ops:evidence:solo`를 추가했다.
+  - `ops-smoke-checks` workflow 기본 경로에서 care smoke readiness와 prewarm을 제거하고 timeout을 5분으로 줄였다.
+  - Sentry와 `pg_trgm` 검증은 workflow dispatch 선택 항목으로 유지했다.
+  - 운영 문서의 “주간 10분 루틴” 표현을 1인 운영 2-3분 생존 확인 기준으로 정리했다.
+  - 돌봄 production smoke는 기본 루틴에서 제외하고 돌봄/관리자 관련 변경이 있을 때만 on-demand로 실행하도록 문서화했다.
+- 코드문서:
+  - [.github/workflows/ops-smoke-checks.yml](../.github/workflows/ops-smoke-checks.yml)
+  - [app/scripts/run-ops-evidence.ts](../app/scripts/run-ops-evidence.ts)
+  - [app/scripts/run-ops-evidence.test.ts](../app/scripts/run-ops-evidence.test.ts)
+  - [app/package.json](../app/package.json)
+  - [app/README.md](../app/README.md)
+  - [business/operations/보안 운영 점검 템플릿.md](../business/operations/%EB%B3%B4%EC%95%88%20%EC%9A%B4%EC%98%81%20%EC%A0%90%EA%B2%80%20%ED%85%9C%ED%94%8C%EB%A6%BF.md)
+  - [business/operations/운영_문서_안내.md](../business/operations/%EC%9A%B4%EC%98%81_%EB%AC%B8%EC%84%9C_%EC%95%88%EB%82%B4.md)
+  - [business/operations/돌봄_운영_런북.md](../business/operations/%EB%8F%8C%EB%B4%84_%EC%9A%B4%EC%98%81_%EB%9F%B0%EB%B6%81.md)
+  - [business/operations/캐시_성능_적용_기록.md](../business/operations/%EC%BA%90%EC%8B%9C_%EC%84%B1%EB%8A%A5_%EC%A0%81%EC%9A%A9_%EA%B8%B0%EB%A1%9D.md)
+  - [business/operations/차단 해소 체크리스트.md](../business/operations/%EC%B0%A8%EB%8B%A8%20%ED%95%B4%EC%86%8C%20%EC%B2%B4%ED%81%AC%EB%A6%AC%EC%8A%A4%ED%8A%B8.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app exec vitest run scripts/run-ops-evidence.test.ts scripts/check-care-smoke-readiness.test.ts`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `corepack pnpm@9.12.3 -C app docs:refresh`
+  - `corepack pnpm@9.12.3 -C app docs:refresh:check`
+  - 실패 경로 확인: `OPS_BASE_URL=http://127.0.0.1:9 corepack pnpm@9.12.3 -C app ops:evidence:solo`는 health 실패와 evidence report 생성을 확인했다.
+- 결과:
+  - 기본 production smoke는 1인 운영자가 지속 가능한 health-only 생존 확인으로 축소됐다.
+  - 관리자 브라우저 smoke, care 계정 readiness, prewarm, Sentry, `pg_trgm`, 성능 snapshot은 on-demand 확장 루틴으로 분리됐다.

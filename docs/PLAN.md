@@ -16,11 +16,11 @@
 현재 active 작업 없음.
 
 최근 완료:
+- `P1-7 1인 운영용 최소 production smoke 축소`는 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
 - `Release Confidence Hardening P1-6`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
 
 ## 다음 작업 후보
 
-- P1-7: 운영 관리자 루틴을 10분 smoke로 고정한다.
 - P2-1: client `useEffect` fetch 표면을 정리한다.
 - P2-2: production maintenance workflow guard를 강화한다.
 - P2-3: UX/error boundary/mobile/accessibility를 보강한다.
