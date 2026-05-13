@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
 import {
   CareApplicationStatus,
@@ -13,7 +12,6 @@ import {
 } from "@prisma/client";
 
 import { BackToFeedButton } from "@/components/posts/back-to-feed-button";
-import { PostBoardLinkChip } from "@/components/posts/post-board-link-chip";
 import {
   DEFAULT_POST_COMMENT_ROOT_PAGE_SIZE,
   type PostCommentItem,
@@ -23,27 +21,15 @@ import {
   PostDetailInfoItem,
   PostDetailInfoSection,
 } from "@/components/posts/post-detail-info-section";
-import { PostDetailMediaGallery } from "@/components/posts/post-detail-media-gallery";
-import { GuestPostDetailActions } from "@/components/posts/guest-post-detail-actions";
-import { PostBookmarkButton } from "@/components/posts/post-bookmark-button";
-import { POST_DETAIL_ACTION_BUTTON_CLASS_NAME } from "@/components/posts/post-detail-action-button-class";
-import { PostDetailActions } from "@/components/posts/post-detail-actions";
+import { PostDetailPrimaryCard } from "@/components/posts/post-detail-primary-card";
 import { PostPersonalizationDwellTracker } from "@/components/posts/post-personalization-dwell-tracker";
-import { PostModerationControls } from "@/components/posts/post-moderation-controls";
-import { PostReactionControls } from "@/components/posts/post-reaction-controls";
-import { PostReportForm } from "@/components/posts/post-report-form";
-import { PostShareControls } from "@/components/posts/post-share-controls";
 import { PostCommentSectionClient } from "@/components/posts/post-comment-section-client";
 import { PostViewTracker } from "@/components/posts/post-view-tracker";
-import { UserActionMenu } from "@/components/user/user-action-menu";
 import { fetchPostCommentPage } from "@/lib/comment-client";
-import { extractImageUrlsFromMarkup } from "@/lib/editor-image-markup";
 import { getGuestPostMeta } from "@/lib/post-guest-meta";
 import { buildPostContentExcerpt } from "@/lib/post-content-text";
 import { resolvePublicGuestDisplayName } from "@/lib/public-guest-identity";
 import { serializeJsonForScriptTag } from "@/lib/json-script";
-import { renderLiteMarkdown } from "@/lib/markdown-lite";
-import { formatRelativeDate } from "@/lib/post-presenter";
 import { isReportablePostType } from "@/lib/post-type-groups";
 import { toAbsoluteUrl } from "@/lib/site-url";
 import { resolveUserDisplayName } from "@/lib/user-display";
@@ -67,7 +53,6 @@ import {
   renderNumberValue,
   renderTextValue,
   resolveCareStatusOptions,
-  typeMeta,
   volunteerStatusLabel,
 } from "@/components/posts/post-detail-presenter";
 import type { PostDetailResponse } from "@/components/posts/post-detail-types";
@@ -587,25 +572,12 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
     post?.status !== PostStatus.DELETED;
   const showPostReportControls =
     canReportPost && canInteract && !isAuthor && canInteractWithPostOwner;
-  const meta = post ? typeMeta[post.type] : null;
   const createdAt = post ? ensureDate(post.createdAt) : null;
   const updatedAt = post ? ensureDate(post.updatedAt) : null;
   const resolvedViewCount = post && Number.isFinite(post.viewCount) ? Number(post.viewCount) : 0;
   const resolvedLikeCount = post && Number.isFinite(post.likeCount) ? Number(post.likeCount) : 0;
   const resolvedDislikeCount = post && Number.isFinite(post.dislikeCount) ? Number(post.dislikeCount) : 0;
   const resolvedCommentCount = post && Number.isFinite(post.commentCount) ? Number(post.commentCount) : 0;
-  const renderedContentHtml = post
-    ? (post.renderedContentHtml?.trim() ? post.renderedContentHtml : renderLiteMarkdown(post.content))
-    : "";
-  const renderedContentText = post
-    ? (post.renderedContentText?.trim()
-      ? post.renderedContentText
-      : renderedContentHtml.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim())
-    : "";
-  const shouldUsePlainFallback =
-    renderedContentText.length === 0 || renderedContentText.includes("미리보기 내용이 없습니다");
-  const orderedImages = post ? [...post.images].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)) : [];
-  const hasInlineImages = post ? extractImageUrlsFromMarkup(post.content).length > 0 : false;
   const postUrl = post ? toAbsoluteUrl(`/posts/${post.id}`) : null;
   const guestPostMeta = post ? getGuestPostMeta(post) : null;
   const displayAuthorName = guestPostMeta?.isGuestPost
@@ -662,166 +634,34 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
         {post ? <BackToFeedButton className="tp-btn-soft tp-btn-sm inline-flex w-fit items-center" /> : null}
         {post ? (
           <>
-            <section className="tp-card p-4 sm:p-7">
-              <div className="flex flex-wrap items-center gap-2 text-xs">
-                <PostBoardLinkChip type={post.type} label={meta?.label ?? ""} chipClass={meta?.chipClass ?? ""} />
-                {post.neighborhood ? (
-                  <span className="tp-chip-base tp-chip-muted">
-                    {post.neighborhood.city} {post.neighborhood.name}
-                  </span>
-                ) : null}
-                {post.status === PostStatus.HIDDEN ? (
-                  <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 font-semibold text-amber-700">
-                    운영 숨김 상태
-                  </span>
-                ) : null}
-              </div>
-
-            <div className="tp-border-soft mt-4 border-b pb-4 sm:pb-5">
-              <h1 className="tp-text-post-title tp-text-primary">
-                {post.title}
-              </h1>
-              <div className="mt-3 flex flex-col gap-1.5">
-                <div className="tp-text-muted flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px]">
-                  <div className="tp-text-heading min-w-0 break-all font-semibold">
-                    {guestPostMeta?.isGuestPost ? (
-                      <span>{displayAuthorName}</span>
-                    ) : (
-                      <UserActionMenu
-                        userId={post.author.id}
-                        displayName={displayAuthorName ?? ""}
-                        currentUserId={viewerId ?? undefined}
-                        isMutedByViewer={resolvedRelationState.isMutedByMe}
-                        align="start"
-                        plainTextClassName="tp-text-heading"
-                        onActionMessage={setRelationMessage}
-                        onMuteStateChange={handleAuthorMuteStateChange}
-                      />
-                    )}
-                  </div>
-                  <span className="tp-text-subtle">·</span>
-                  <p className="tp-text-subtle text-[12px]">{formatRelativeDate(createdAt!)}</p>
-                </div>
-                <p className="tp-text-meta tp-text-subtle flex flex-wrap items-center gap-x-2 gap-y-1">
-                  <span>조회 {resolvedViewCount.toLocaleString()}</span>
-                  <span>좋아요 {resolvedLikeCount.toLocaleString()}</span>
-                  <span>댓글 {resolvedCommentCount.toLocaleString()}</span>
-                </p>
-                {relationMessage ? (
-                  <p className="tp-text-subtle text-[11px]">{relationMessage}</p>
-                ) : null}
-              </div>
-            </div>
-
-            <div className="mt-5 sm:mt-6">
-              <article className="tp-text-body tp-text-primary">
-                {shouldUsePlainFallback ? (
-                  <div className="whitespace-pre-wrap">{post.content}</div>
-                ) : (
-                  <div
-                    className="prose prose-sm max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&_img]:!ml-0 [&_img]:!mr-auto [&_img]:block [&_img]:border-0 [&_img]:bg-transparent [&_img]:rounded-none"
-                    dangerouslySetInnerHTML={{ __html: renderedContentHtml }}
-                  />
-                )}
-              </article>
-              {!hasInlineImages ? <PostDetailMediaGallery images={orderedImages} /> : null}
-            </div>
-
-            <div className="tp-border-soft mt-6 space-y-3 border-t pt-4 sm:mt-7 sm:pt-5">
-              {isPostActive ? (
-                <>
-                  <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
-                    <PostReactionControls
-                      key={`${post.id}:${canInteract ? "viewer" : "guest"}:${canInteractWithPostOwner ? "interactive" : "blocked"}`}
-                      postId={post.id}
-                      likeCount={resolvedLikeCount}
-                      dislikeCount={resolvedDislikeCount}
-                      currentReaction={canInteract ? undefined : null}
-                      canReact={canInteract && canInteractWithPostOwner}
-                      loginHref={loginHref}
-                      align="start"
-                      onStateChange={handleReactionStateChange}
-                    />
-                    <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end">
-                      <PostBookmarkButton
-                        key={`${post.id}:${canInteract ? "viewer" : "guest"}`}
-                        postId={post.id}
-                        currentBookmarked={Boolean(post.isBookmarked)}
-                        canBookmark={canInteract && canInteractWithPostOwner}
-                        loginHref={loginHref}
-                        compact
-                      />
-                      <PostShareControls url={postUrl!} compact />
-                      {showPostReportControls ? (
-                        <button
-                          type="button"
-                          className="tp-btn-soft tp-btn-xs border-rose-300 text-rose-700 hover:bg-rose-50"
-                          onClick={() => setIsPostReportOpen((current) => !current)}
-                        >
-                          {isPostReportOpen ? "신고 닫기" : "신고"}
-                        </button>
-                      ) : null}
-                    </div>
-                  </div>
-                  {showPostReportControls && isPostReportOpen ? (
-                    <div className="tp-border-soft rounded-lg border bg-white p-3">
-                      <PostReportForm targetId={post.id} />
-                    </div>
-                  ) : null}
-                  {isAuthor ? (
-                    <>
-                      <div className="hidden flex-wrap items-center justify-end gap-2 sm:flex">
-                        <Link
-                          href={`/posts/${post.id}/edit`}
-                          className={POST_DETAIL_ACTION_BUTTON_CLASS_NAME}
-                        >
-                          수정
-                        </Link>
-                        <PostDetailActions postId={post.id} />
-                      </div>
-                      <details className="sm:hidden">
-                        <summary className={POST_DETAIL_ACTION_BUTTON_CLASS_NAME}>
-                          글 관리
-                        </summary>
-                        <div className="tp-border-soft tp-surface-soft mt-2 flex flex-wrap items-center gap-2 rounded-xl border p-2">
-                          <Link
-                            href={`/posts/${post.id}/edit`}
-                            className={POST_DETAIL_ACTION_BUTTON_CLASS_NAME}
-                          >
-                            수정
-                          </Link>
-                          <PostDetailActions postId={post.id} />
-                        </div>
-                      </details>
-                    </>
-                  ) : null}
-                  {!canInteract && guestPostMeta!.isGuestPost ? (
-                    <GuestPostDetailActions postId={post.id} />
-                  ) : null}
-                </>
-              ) : (
-                <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-3 text-xs text-amber-800">
-                  이 게시글은 현재 숨김 상태입니다. 관리자 검토용으로만 열람되며, 반응/북마크/신고/댓글
-                  작성은 비활성화됩니다.
-                </div>
-              )}
-              {canModeratePost ? (
-                <PostModerationControls
-                  postId={post.id}
-                  postTitle={post.title}
-                  currentStatus={post.status}
-                  onStatusChange={handlePostStatusChange}
-                />
-              ) : null}
-            </div>
-
-            {isPostActive && canInteract && !isAuthor && !canInteractWithPostOwner ? (
-              <div className="mt-4 border border-rose-300 bg-rose-50 px-3 py-2 text-xs text-rose-700">
-                차단 관계에서는 {canReportPost ? "댓글/반응/신고" : "댓글/반응"} 기능을 사용할 수 없습니다.
-              </div>
-            ) : null}
-
-          </section>
+            <PostDetailPrimaryCard
+              post={post}
+              viewerId={viewerId}
+              createdAt={createdAt!}
+              relationState={resolvedRelationState}
+              relationMessage={relationMessage}
+              displayAuthorName={displayAuthorName}
+              isGuestPost={Boolean(guestPostMeta?.isGuestPost)}
+              isAuthor={isAuthor}
+              isPostActive={isPostActive}
+              canInteract={canInteract}
+              canInteractWithPostOwner={canInteractWithPostOwner}
+              canModeratePost={canModeratePost}
+              canReportPost={canReportPost}
+              showPostReportControls={showPostReportControls}
+              isPostReportOpen={isPostReportOpen}
+              loginHref={loginHref}
+              postUrl={postUrl!}
+              resolvedViewCount={resolvedViewCount}
+              resolvedLikeCount={resolvedLikeCount}
+              resolvedDislikeCount={resolvedDislikeCount}
+              resolvedCommentCount={resolvedCommentCount}
+              onTogglePostReportOpen={() => setIsPostReportOpen((current) => !current)}
+              onReactionStateChange={handleReactionStateChange}
+              onAuthorActionMessage={setRelationMessage}
+              onAuthorMuteStateChange={handleAuthorMuteStateChange}
+              onPostStatusChange={handlePostStatusChange}
+            />
 
         {post.hospitalReview ? (
           <PostDetailInfoSection title="병원후기 상세">
