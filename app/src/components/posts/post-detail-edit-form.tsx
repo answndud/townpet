@@ -178,7 +178,7 @@ export function PostDetailEditForm({
         <h2 className="tp-text-page-title-sm tp-text-heading">게시물 수정</h2>
         <button
           type="submit"
-          className="tp-btn-primary tp-btn-sm disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0]"
+          className="tp-btn-primary inline-flex min-h-10 items-center justify-center rounded-lg px-4 text-sm font-semibold disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0]"
           disabled={isPending}
         >
           {isPending ? "저장 중..." : "수정 저장"}
@@ -189,7 +189,7 @@ export function PostDetailEditForm({
         <label className="tp-form-label">
           제목
           <input
-            className="tp-input-soft px-3 py-2 text-sm"
+            className="tp-input-soft min-h-10 px-3 py-2 text-sm"
             value={formState.title}
             onChange={(event) =>
               setFormState((prev) => ({ ...prev, title: event.target.value }))
@@ -202,7 +202,7 @@ export function PostDetailEditForm({
         <label className="tp-form-label">
           범위
           <select
-            className="tp-input-soft px-3 py-2 text-sm"
+            className="tp-input-soft min-h-10 px-3 py-2 text-sm"
             value={formState.scope}
             onChange={(event) =>
               setFormState((prev) => ({
@@ -223,7 +223,7 @@ export function PostDetailEditForm({
         <label className="tp-form-label">
           동네
           <select
-            className="tp-input-soft px-3 py-2 text-sm"
+            className="tp-input-soft min-h-10 px-3 py-2 text-sm"
             value={formState.neighborhoodId}
             onChange={(event) =>
               setFormState((prev) => ({
@@ -249,7 +249,7 @@ export function PostDetailEditForm({
           글 비밀번호
           <input
             type="password"
-            className="tp-input-soft max-w-[260px] px-3 py-2 text-sm"
+            className="tp-input-soft min-h-10 max-w-[260px] px-3 py-2 text-sm"
             value={formState.guestPassword}
             onChange={(event) =>
               setFormState((prev) => ({ ...prev, guestPassword: event.target.value }))
@@ -290,7 +290,11 @@ export function PostDetailEditForm({
         <p className="mt-2 text-xs text-[#5d789f]">비회원 이미지는 최대 1장, 파일당 2MB까지 업로드할 수 있습니다.</p>
       ) : null}
 
-      {error ? <p className="mt-3 text-sm text-rose-600">{error}</p> : null}
+      {error ? (
+        <p className="mt-3 text-sm font-medium text-rose-700" role="alert" aria-live="polite">
+          {error}
+        </p>
+      ) : null}
     </form>
   );
 }
