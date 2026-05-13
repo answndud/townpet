@@ -4,11 +4,18 @@
 
 - 작업: 현재 active 작업 없음
 - 상태: `idle`
-- 현재 초점: `P2-8 admin policy form touch/status 보강`을 완료 archive했다.
+- 현재 초점: `P2-9 admin direct moderation panel 접근성 보강`을 완료 archive했다.
 
 ## 변경/탐색한 파일
 
 - 이번 세션 변경:
+  - `app/src/components/admin/direct-moderation-panel.tsx`
+  - `app/src/components/admin/direct-moderation-panel.test.tsx`
+  - `docs/PLAN.md`
+  - `docs/PROGRESS.md`
+- 탐색한 파일:
+  - `app/src/components/admin/direct-moderation-panel.tsx`
+- 이전 세션 변경:
   - `app/src/components/admin/guest-read-policy-form.tsx`
   - `app/src/components/admin/forbidden-keyword-policy-form.tsx`
   - `app/src/components/admin/feed-personalization-policy-form.tsx`
@@ -226,6 +233,11 @@
   - `docs/errors/2026-05-12_vercel-security-env-build-preflight.md`
   - `docs/COMPLETED.md`
 - 이번 세션 결과:
+- `DirectModerationPanel`의 직접 제재/콘텐츠 숨김/직접 숨김 복구 실행 버튼을 `min-h-10` 기준으로 보강했다.
+- 세 카드의 주요 input/select control을 `min-h-10` 기준으로 보강했다.
+- 성공 메시지와 실패 메시지를 `DirectModerationMessage`로 통일하고 `role="status"`/`role="alert"`와 `aria-live="polite"`를 추가했다.
+- 직접 모더레이션 패널 정적 렌더 테스트를 추가했다.
+- 이전 세션 결과:
 - guest read policy form의 저장/reset 버튼을 `min-h-10` 기준으로 보강하고 성공/실패 메시지에 `role`과 `aria-live`를 추가했다.
 - forbidden keyword policy form의 저장/reset 버튼을 `min-h-10` 기준으로 보강하고 성공/실패 메시지에 `role`과 `aria-live`를 추가했다.
 - feed personalization policy form의 저장 버튼을 `min-h-10` 기준으로 보강하고 성공/실패 메시지에 `role`과 `aria-live`를 추가했다.

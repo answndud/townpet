@@ -2836,3 +2836,29 @@
 - 결과:
   - 주요 admin 정책 저장 form의 버튼과 상태 메시지가 기존 모바일/접근성 기준에 맞춰졌다.
   - 다음 후보는 `P2-9 admin direct moderation panel의 실행 버튼과 결과 메시지 접근성 점검`이다.
+
+### 2026-05-13 | P2-9 admin direct moderation panel 접근성 보강
+- 완료일: `2026-05-13`
+- 배경:
+  - 직접 모더레이션 패널은 운영자가 수동으로 제재, 콘텐츠 숨김, 복구를 실행하는 고위험 표면이다.
+  - 주요 실행 버튼과 input/select control이 명시적인 40px touch target 기준을 갖지 않았고, 결과 메시지도 시각적으로만 표시됐다.
+- 변경내용:
+  - 직접 제재, 콘텐츠 숨김, 직접 숨김 복구 실행 버튼에 `min-h-10`을 적용했다.
+  - 세 카드의 주요 사용자 식별자 input과 scope select에 `min-h-10`을 적용했다.
+  - 성공/실패 메시지를 `DirectModerationMessage`로 통일했다.
+  - 성공 메시지에는 `role="status"`, 실패 메시지에는 `role="alert"`와 `aria-live="polite"`를 적용했다.
+  - 직접 모더레이션 패널 정적 렌더 unit test를 추가했다.
+- 코드문서:
+  - [app/src/components/admin/direct-moderation-panel.tsx](../app/src/components/admin/direct-moderation-panel.tsx)
+  - [app/src/components/admin/direct-moderation-panel.test.tsx](../app/src/components/admin/direct-moderation-panel.test.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app exec vitest run src/components/admin/direct-moderation-panel.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `corepack pnpm@9.12.3 -C app docs:refresh:check`
+  - `git diff --check`
+- 결과:
+  - 직접 모더레이션 패널의 실행 control과 결과 메시지가 기존 모바일/접근성 기준에 맞춰졌다.
+  - 다음 후보는 `P2-10 admin/report detail과 auth audit/moderation log의 남은 status/error 상태 점검`이다.
