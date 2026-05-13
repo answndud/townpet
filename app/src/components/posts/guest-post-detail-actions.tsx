@@ -73,7 +73,7 @@ export function GuestPostDetailActions({ postId }: GuestPostDetailActionsProps) 
   return (
     <div className="w-full">
       <details className="sm:hidden">
-        <summary className="tp-btn-soft inline-flex h-8 items-center px-3 text-xs font-semibold">
+        <summary className="tp-btn-soft inline-flex min-h-10 items-center rounded-lg px-3 text-xs font-semibold">
           비회원 관리
         </summary>
         <div className="mt-2 space-y-2 rounded-lg border border-[#dbe6f6] bg-[#f8fbff] p-2">
@@ -82,12 +82,12 @@ export function GuestPostDetailActions({ postId }: GuestPostDetailActionsProps) 
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             placeholder="글 비밀번호"
-            className="tp-input-soft h-8 w-full bg-white px-2.5 text-xs"
+            className="tp-input-soft min-h-10 w-full bg-white px-2.5 text-xs"
           />
           <div className="flex flex-wrap items-center gap-2">
             <Link
               href={`/posts/${postId}/edit?guest=1&pw=${encodeURIComponent(password.trim())}`}
-              className="tp-btn-soft inline-flex h-8 items-center px-3 text-xs font-semibold"
+              className="tp-btn-soft inline-flex min-h-10 items-center rounded-lg px-3 text-xs font-semibold"
             >
               비회원 수정
             </Link>
@@ -100,7 +100,11 @@ export function GuestPostDetailActions({ postId }: GuestPostDetailActionsProps) 
               {isPending ? "삭제 중..." : "비회원 삭제"}
             </button>
           </div>
-          {error ? <p className="text-xs text-rose-600">{error}</p> : null}
+          {error ? (
+            <p className="text-xs font-medium text-rose-700" role="alert" aria-live="polite">
+              {error}
+            </p>
+          ) : null}
         </div>
       </details>
 
@@ -110,11 +114,11 @@ export function GuestPostDetailActions({ postId }: GuestPostDetailActionsProps) 
           value={password}
           onChange={(event) => setPassword(event.target.value)}
           placeholder="글 비밀번호"
-          className="tp-input-soft h-8 bg-white px-2.5 text-xs"
+          className="tp-input-soft min-h-10 bg-white px-2.5 text-xs"
         />
         <Link
           href={`/posts/${postId}/edit?guest=1&pw=${encodeURIComponent(password.trim())}`}
-          className="tp-btn-soft inline-flex h-8 items-center px-3 text-xs font-semibold"
+          className="tp-btn-soft inline-flex min-h-10 items-center rounded-lg px-3 text-xs font-semibold"
         >
           비회원 수정
         </Link>
@@ -126,7 +130,11 @@ export function GuestPostDetailActions({ postId }: GuestPostDetailActionsProps) 
         >
           {isPending ? "삭제 중..." : "비회원 삭제"}
         </button>
-        {error ? <p className="w-full text-right text-xs text-rose-600">{error}</p> : null}
+        {error ? (
+          <p className="w-full text-right text-xs font-medium text-rose-700" role="alert" aria-live="polite">
+            {error}
+          </p>
+        ) : null}
       </div>
     </div>
   );

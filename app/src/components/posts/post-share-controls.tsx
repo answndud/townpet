@@ -27,15 +27,15 @@ export function PostShareControls({ url, compact = false }: PostShareControlsPro
         onClick={handleCopy}
         className={
           compact
-            ? "tp-btn-soft tp-btn-xs inline-flex items-center rounded-lg"
-            : "tp-btn-soft tp-btn-sm inline-flex items-center rounded-lg"
+            ? "tp-btn-soft inline-flex min-h-10 items-center justify-center rounded-lg px-3 text-xs font-semibold"
+            : "tp-btn-soft inline-flex min-h-10 items-center justify-center rounded-lg px-4 text-sm font-semibold"
         }
       >
         공유
       </button>
 
       {message ? (
-        <span aria-live="polite" className="hidden text-[11px] text-[#5a7398] sm:inline">
+        <span role="status" aria-live="polite" className="text-[11px] font-medium text-[#5a7398]">
           {message}
         </span>
       ) : null}

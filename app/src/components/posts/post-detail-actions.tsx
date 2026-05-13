@@ -34,7 +34,11 @@ export function PostDetailActions({ postId }: PostDetailActionsProps) {
 
   return (
     <div className="flex items-center gap-2">
-      {error ? <span className="text-xs text-rose-600">{error}</span> : null}
+      {error ? (
+        <span className="text-xs font-medium text-rose-700" role="alert" aria-live="polite">
+          {error}
+        </span>
+      ) : null}
       <button
         type="button"
         onClick={handleDelete}
