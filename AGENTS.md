@@ -484,6 +484,7 @@ pnpm -C app ops:check:security-env:strict
 - 관련 문서가 동기화됨
   - 최소: `docs/PLAN.md`, `docs/PROGRESS.md`
   - 필요 시: `docs/COMPLETED.md`, `business/security/*`, `business/policies/*`, 운영 문서
+- 새 문서/스크립트/API/migration 추가 후에는 stage 이후 `node scripts/refresh-docs-index.mjs --check`
 
 ## 20. 파일 우선순위 규칙
 
