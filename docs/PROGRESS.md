@@ -4,14 +4,22 @@
 
 - 작업: `P1-8 1인 운영용 과설계 축소 배치`
 - 상태: `in_progress`
-- 현재 초점: `P1-8.2 package script 표면 축소`를 완료했고, 다음은 `P1-8.3 production demo/OAuth manual automation 격하`다.
+- 현재 초점: `P1-8.3 production demo/OAuth manual automation 격하`를 완료했고, 다음은 `P1-8.4 개인화/광고 운영 판단 기준 축소`다.
 
 ## 변경/탐색한 파일
 
 - 이번 세션 변경:
+  - `.github/workflows/production-demo-content.yml`
   - `app/package.json`
   - `app/README.md`
+  - `app/scripts/generate-oauth-manual-check-report.ts`
+  - `app/scripts/update-oauth-manual-check.ts`
+  - `app/scripts/verify-oauth-manual-check.ts`
+  - `app/scripts/generate-day1-growth-handoff.ts`
   - `business/archive/operations/문서 동기화 리포트.md`
+  - `business/operations/OAuth_외부로그인_운영_가이드.md`
+  - `business/operations/차단 해소 체크리스트.md`
+  - `business/operations/운영_문서_안내.md`
   - `.github/workflows/auth-audit-cleanup.yml`
   - `.github/workflows/notification-cleanup.yml`
   - `.github/workflows/search-term-cleanup.yml`
@@ -121,6 +129,9 @@
 - 운영 문서와 보안 문서에서 retention cleanup, post integrity, latency snapshot을 상시 자동 루틴이 아니라 on-demand 유지보수 루틴으로 정리했다.
 - `package.json` script를 81개에서 69개로 줄였다.
 - 개별 Playwright spec alias, scripted flow alias, feed scroll perf alias, notification unit alias를 제거하고 직접 `pnpm test:e2e -- e2e/<file>.spec.ts --project=chromium` 또는 `pnpm test -- <file>` 실행 기준으로 낮췄다.
+- production demo seed alias와 OAuth/manual/growth helper alias를 제거해 package script를 69개에서 63개로 줄였다.
+- `production-demo-content` workflow는 package alias 대신 `pnpm exec tsx scripts/seed-production-demo-content.ts`를 직접 호출하고, manual-only legacy helper임을 명시했다.
+- OAuth 수동점검 문서는 script-first가 아니라 checklist-first로 낮추고, helper가 필요할 때만 `pnpm exec tsx scripts/...`를 직접 실행하도록 정리했다.
 - 이전 세션 결과:
   - `ops-smoke-checks` 기본 timeout을 5분으로 낮추고 care smoke readiness/prewarm을 기본 경로에서 제거했다.
   - `ops:evidence:solo`를 추가해 health-only 로컬 evidence profile을 제공했다.
@@ -193,6 +204,12 @@
 - `corepack pnpm@9.12.3 -C app lint` PASS
 - `corepack pnpm@9.12.3 -C app docs:refresh` PASS
 - `corepack pnpm@9.12.3 -C app docs:refresh:check` PASS
+- `node -e 'const p=require("./app/package.json"); console.log(Object.keys(p.scripts).length)'` -> `63`
+- `ruby -e 'require "yaml"; YAML.load_file(".github/workflows/production-demo-content.yml"); puts "ok"'` PASS
+- `corepack pnpm@9.12.3 -C app typecheck` PASS
+- `corepack pnpm@9.12.3 -C app lint` PASS
+- `corepack pnpm@9.12.3 -C app docs:refresh` PASS
+- `corepack pnpm@9.12.3 -C app docs:refresh:check` PASS
 - `corepack pnpm@9.12.3 -C app exec vitest run scripts/run-ops-evidence.test.ts scripts/check-care-smoke-readiness.test.ts` PASS
 - `corepack pnpm@9.12.3 -C app typecheck` PASS
 - `corepack pnpm@9.12.3 -C app lint` PASS
@@ -237,6 +254,6 @@
 
 ## 다음 액션
 
-1. `P1-8.3 production demo/OAuth manual automation 격하`를 진행한다.
-2. production demo workflow와 OAuth manual helper를 기본 운영 루틴에서 더 낮출 방법을 정리한다.
-3. 위험한 production DB demo seed 경로는 manual-only/legacy helper로 명확히 표시한다.
+1. `P1-8.4 개인화/광고 운영 판단 기준 축소`를 진행한다.
+2. 개인화/광고 CTR 판단 문서를 초기 운영 보류 기준으로 낮춘다.
+3. UI copy가 과도한 통계 확신을 주는지 확인하고 필요한 최소 수정만 한다.

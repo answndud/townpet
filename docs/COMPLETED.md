@@ -2465,3 +2465,42 @@
   - package script 표면이 81개에서 69개로 줄었다.
   - 특정 테스트와 조사성 flow는 package alias가 아니라 직접 명령으로 실행하는 기준이 생겼다.
   - 다음 작업은 `P1-8.3 production demo/OAuth manual automation 격하`다.
+
+### 2026-05-13 | P1-8.3 production demo/OAuth manual automation 격하
+- 완료일: `2026-05-13`
+- 배경:
+  - production demo content와 OAuth manual helper는 남겨둘 수는 있지만, 1인 운영 기본 package script 표면에 노출될 만큼 자주 쓰는 경로는 아니었다.
+  - 특히 production demo content는 운영 DB에 데모 데이터를 만들거나 지우는 위험한 경로라 package alias보다 명시적 수동 실행이 맞다.
+- 변경내용:
+  - `db:seed:production-demo-content` package alias를 제거했다.
+  - `growth:day1:handoff` package alias를 제거했다.
+  - OAuth manual helper alias 4개를 제거했다.
+    - `ops:oauth:manual-report`
+    - `ops:oauth:preflight`
+    - `ops:oauth:verify-manual`
+    - `ops:oauth:update-manual`
+  - `production-demo-content` workflow는 `pnpm db:seed:production-demo-content` 대신 `pnpm exec tsx scripts/seed-production-demo-content.ts`를 직접 호출하게 바꿨다.
+  - `production-demo-content` workflow에 normal production operations용이 아닌 manual-only legacy helper 주석을 추가했다.
+  - OAuth 운영 가이드는 script-first가 아니라 checklist-first로 낮추고, helper가 필요한 경우에만 `pnpm exec tsx scripts/...`를 직접 실행하도록 정리했다.
+- 코드문서:
+  - [.github/workflows/production-demo-content.yml](../.github/workflows/production-demo-content.yml)
+  - [app/package.json](../app/package.json)
+  - [app/scripts/generate-oauth-manual-check-report.ts](../app/scripts/generate-oauth-manual-check-report.ts)
+  - [app/scripts/update-oauth-manual-check.ts](../app/scripts/update-oauth-manual-check.ts)
+  - [app/scripts/verify-oauth-manual-check.ts](../app/scripts/verify-oauth-manual-check.ts)
+  - [app/scripts/generate-day1-growth-handoff.ts](../app/scripts/generate-day1-growth-handoff.ts)
+  - [business/operations/OAuth_외부로그인_운영_가이드.md](../business/operations/OAuth_%EC%99%B8%EB%B6%80%EB%A1%9C%EA%B7%B8%EC%9D%B8_%EC%9A%B4%EC%98%81_%EA%B0%80%EC%9D%B4%EB%93%9C.md)
+  - [business/operations/차단 해소 체크리스트.md](../business/operations/%EC%B0%A8%EB%8B%A8%20%ED%95%B4%EC%86%8C%20%EC%B2%B4%ED%81%AC%EB%A6%AC%EC%8A%A4%ED%8A%B8.md)
+  - [business/operations/운영_문서_안내.md](../business/operations/%EC%9A%B4%EC%98%81_%EB%AC%B8%EC%84%9C_%EC%95%88%EB%82%B4.md)
+  - [business/archive/operations/문서 동기화 리포트.md](../business/archive/operations/%EB%AC%B8%EC%84%9C%20%EB%8F%99%EA%B8%B0%ED%99%94%20%EB%A6%AC%ED%8F%AC%ED%8A%B8.md)
+- 검증:
+  - `node -e 'const p=require("./app/package.json"); console.log(Object.keys(p.scripts).length)'` -> `63`
+  - `ruby -e 'require "yaml"; YAML.load_file(".github/workflows/production-demo-content.yml"); puts "ok"'`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `corepack pnpm@9.12.3 -C app docs:refresh`
+  - `corepack pnpm@9.12.3 -C app docs:refresh:check`
+- 결과:
+  - package script 표면은 81개에서 63개까지 줄었다.
+  - production demo와 OAuth manual helper는 기본 운영 명령이 아니라 명시적 수동 helper로 격하됐다.
+  - 다음 작업은 `P1-8.4 개인화/광고 운영 판단 기준 축소`다.

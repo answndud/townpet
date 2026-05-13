@@ -25,7 +25,7 @@ const DEFAULT_RUN_URL =
 
 function usage() {
   console.log(`Usage:
-  pnpm -C app ops:oauth:manual-report [options]
+  cd app && pnpm exec tsx scripts/generate-oauth-manual-check-report.ts [options]
 
 Options:
   --base-url <url>           Base URL (default: ${DEFAULT_BASE_URL})

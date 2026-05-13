@@ -33,7 +33,7 @@ type CliOptions = {
 
 function usage() {
   console.log(`Usage:
-  pnpm -C app growth:day1:handoff [options]
+  cd app && pnpm exec tsx scripts/generate-day1-growth-handoff.ts [options]
 
 Options:
   --base-url <url>   Base landing URL (default: ${DEFAULT_BASE_URL})
