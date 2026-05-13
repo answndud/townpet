@@ -102,7 +102,7 @@
 
 #### P1-8.4 개인화/광고 운영 판단 기준 축소
 
-- 상태: `pending`
+- 상태: `completed`
 - 문제:
   - 개인화/광고 CTR, audience concentration 기준은 초기 트래픽이 적을 때 통계적으로 불안정하다.
   - 운영자가 매주 볼 지표로 두면 잘못된 튜닝이나 불필요한 정책 변경을 유도할 수 있다.
@@ -122,6 +122,7 @@
 
 #### P1-8.5 client `useEffect` fetch/telemetry 표면 정리
 
+- 상태: `pending`
 - 문제:
   - 클라이언트 fetch와 `useEffect`가 feed, guest feed, detail, notification, search, reaction, telemetry에 분산되어 있다.
   - 일부 telemetry/prefetch는 있으면 좋지만 초기 1인 운영 단계의 필수 기능은 아니다.
