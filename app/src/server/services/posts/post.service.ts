@@ -58,15 +58,6 @@ import {
   volunteerRecruitmentSchema,
   walkRouteSchema,
 } from "@/lib/validations/post";
-import {
-  bumpFeedCacheVersion,
-  bumpNotificationListCacheVersion,
-  bumpNotificationUnreadCacheVersion,
-  bumpPostCommentsCacheVersion,
-  bumpPostDetailCacheVersion,
-  bumpSearchCacheVersion,
-  bumpSuggestCacheVersion,
-} from "@/server/cache/query-cache";
 import { logger, serializeError } from "@/server/logger";
 import {
   getForbiddenKeywords,
@@ -91,9 +82,11 @@ import {
 import { assertUserInteractionAllowed } from "@/server/services/sanction.service";
 import { ServiceError } from "@/server/services/service-error";
 import {
-  attachUploadUrls,
-  releaseUploadUrlsIfUnreferenced,
-} from "@/server/upload-asset.service";
+  finalizeUploadUrlChanges,
+  notifyNotificationCacheChange,
+  notifyPostCacheChange,
+  softDeletePostDependents,
+} from "./post-write-support";
 
 type CreatePostParams = {
   authorId?: string;
@@ -109,6 +102,7 @@ export {
   togglePostBookmark,
   togglePostReaction,
 } from "./post-engagement.service";
+export { deletePost } from "./post-delete.service";
 
 const MAX_POST_IMAGES = 10;
 const GUEST_LINK_PATTERN = /https?:\/\/[\S]+/i;
@@ -173,106 +167,6 @@ const normalizeAnimalTags = (animalTags: string[] | undefined) =>
         .filter((tag) => tag.length > 0),
     ),
   ).slice(0, 5);
-
-const notifyPostCacheChange = () => {
-  void bumpFeedCacheVersion().catch(() => undefined);
-  void bumpSearchCacheVersion().catch(() => undefined);
-  void bumpSuggestCacheVersion().catch(() => undefined);
-  void bumpPostDetailCacheVersion().catch(() => undefined);
-  void bumpPostCommentsCacheVersion().catch(() => undefined);
-};
-
-const notifyNotificationCacheChange = (userIds: string[]) => {
-  for (const userId of Array.from(new Set(userIds.filter((value) => value.length > 0)))) {
-    void bumpNotificationUnreadCacheVersion(userId).catch(() => undefined);
-    void bumpNotificationListCacheVersion(userId).catch(() => undefined);
-  }
-};
-
-async function softDeletePostDependents(postId: string) {
-  return prisma.$transaction(async (tx) => {
-    const [comments, notifications] = await Promise.all([
-      tx.comment.findMany({
-        where: { postId },
-        select: { id: true },
-      }),
-      tx.notification.findMany({
-        where: {
-          postId,
-          archivedAt: null,
-        },
-        select: { userId: true },
-      }),
-    ]);
-
-    const commentIds = comments.map((comment) => comment.id);
-    const archivedAt = new Date();
-
-    if (commentIds.length > 0) {
-      await tx.commentReaction.deleteMany({
-        where: {
-          commentId: { in: commentIds },
-        },
-      });
-
-      await tx.comment.updateMany({
-        where: { id: { in: commentIds } },
-        data: {
-          status: PostStatus.DELETED,
-          likeCount: 0,
-          dislikeCount: 0,
-        },
-      });
-    }
-
-    await Promise.all([
-      tx.postReaction.deleteMany({
-        where: { postId },
-      }),
-      tx.postBookmark.deleteMany({
-        where: { postId },
-      }),
-      tx.notification.updateMany({
-        where: {
-          postId,
-          archivedAt: null,
-        },
-        data: {
-          archivedAt,
-        },
-      }),
-    ]);
-
-    const deleted = await tx.post.update({
-      where: { id: postId },
-      data: {
-        status: PostStatus.DELETED,
-        commentCount: 0,
-        likeCount: 0,
-        dislikeCount: 0,
-      },
-      select: { id: true, status: true },
-    });
-
-    return {
-      deleted,
-      notificationUserIds: notifications.map((notification) => notification.userId),
-    };
-  });
-}
-
-async function finalizeUploadUrlChanges(params: {
-  attachedUrls?: string[];
-  releasedUrls?: string[];
-}) {
-  if (params.attachedUrls && params.attachedUrls.length > 0) {
-    await attachUploadUrls(params.attachedUrls);
-  }
-
-  if (params.releasedUrls && params.releasedUrls.length > 0) {
-    void releaseUploadUrlsIfUnreferenced(params.releasedUrls).catch(() => undefined);
-  }
-}
 
 const buildImageCreateInput = (imageUrls: string[]) =>
   imageUrls.map((url, index) => ({
@@ -1669,11 +1563,6 @@ export async function updatePost({ postId, authorId, input }: UpdatePostParams) 
   return updated;
 }
 
-type DeletePostParams = {
-  postId: string;
-  authorId: string;
-};
-
 type UpdateMarketListingStatusParams = {
   postId: string;
   actorId: string;
@@ -2566,38 +2455,6 @@ export async function updateCareFeedbackReview({
   });
 
   return updated;
-}
-
-export async function deletePost({ postId, authorId }: DeletePostParams) {
-  await assertUserInteractionAllowed(authorId);
-
-  const existing = await prisma.post.findUnique({
-    where: { id: postId },
-    select: {
-      id: true,
-      status: true,
-      authorId: true,
-      images: {
-        select: { url: true },
-      },
-    },
-  });
-
-  if (!existing || existing.status === PostStatus.DELETED) {
-    throw new ServiceError("게시물을 찾을 수 없습니다.", "POST_NOT_FOUND", 404);
-  }
-
-  if (existing.authorId !== authorId) {
-    throw new ServiceError("삭제 권한이 없습니다.", "FORBIDDEN", 403);
-  }
-
-  const { deleted, notificationUserIds } = await softDeletePostDependents(postId);
-  await finalizeUploadUrlChanges({
-    releasedUrls: (existing.images ?? []).map((image) => image.url),
-  });
-  notifyPostCacheChange();
-  notifyNotificationCacheChange(notificationUserIds);
-  return deleted;
 }
 
 type UpdateGuestPostParams = {
