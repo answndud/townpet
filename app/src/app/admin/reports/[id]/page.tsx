@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ReportStatus } from "@prisma/client";
 
 import { ReportActions } from "@/components/admin/report-actions";
+import { EmptyState } from "@/components/ui/empty-state";
 import { createNoIndexPageMetadata } from "@/lib/page-metadata";
 import { getReportReasonLabel } from "@/lib/report-reason";
 import { getReportTargetLabel, isSupportedReportTarget } from "@/lib/report-target";
@@ -38,10 +39,13 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
     return (
       <div className="min-h-screen">
         <main className="mx-auto flex w-full max-w-[980px] flex-col gap-4 px-4 py-10 sm:px-6">
-          <p className="text-sm text-[#4f678d]">신고를 찾을 수 없습니다.</p>
-          <Link href="/admin/reports" className="text-xs text-[#5a7398]">
-            신고 큐로 돌아가기
-          </Link>
+          <EmptyState
+            eyebrow="신고 상세"
+            title="신고를 찾을 수 없습니다."
+            description="삭제되었거나 접근할 수 없는 신고입니다. 신고 큐에서 최신 목록을 다시 확인해 주세요."
+            actionHref="/admin/reports"
+            actionLabel="신고 큐로 돌아가기"
+          />
         </main>
       </div>
     );
@@ -111,7 +115,7 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
                     {getReportReasonLabel(report.reason)}
                   </h2>
                 </div>
-                <Link href="/admin/reports" className="tp-btn-soft tp-btn-xs">
+                <Link href="/admin/reports" className="tp-btn-soft inline-flex min-h-10 items-center px-3 py-2 text-xs">
                   큐로 돌아가기
                 </Link>
               </div>
@@ -241,24 +245,27 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
               name="q"
               defaultValue={query}
               placeholder="처리자/메모/ID 검색"
-              className="tp-input-soft w-full max-w-xs bg-white px-3 py-2 text-xs"
+              className="tp-input-soft min-h-10 w-full max-w-xs bg-white px-3 py-2 text-xs"
             />
             <select
               name="order"
               defaultValue={order}
-              className="tp-btn-soft px-3 py-2 text-xs"
+              className="tp-btn-soft min-h-10 px-3 py-2 text-xs"
             >
               <option value="desc">최신순</option>
               <option value="asc">오래된순</option>
             </select>
             <button
               type="submit"
-              className="border border-[#3567b5] bg-[#3567b5] px-3 py-2 text-xs font-semibold text-white transition hover:bg-[#2f5da4]"
+              className="inline-flex min-h-10 items-center border border-[#3567b5] bg-[#3567b5] px-3 py-2 text-xs font-semibold text-white transition hover:bg-[#2f5da4]"
             >
               검색
             </button>
             {query ? (
-              <Link href={`/admin/reports/${reportId}`} className="text-xs text-[#5a7398]">
+              <Link
+                href={`/admin/reports/${reportId}`}
+                className="tp-btn-soft inline-flex min-h-10 items-center justify-center px-3 py-2 text-xs"
+              >
                 초기화
               </Link>
             ) : null}
@@ -296,7 +303,11 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
                 ))}
               </div>
             ) : (
-              <span className="text-xs text-[#5a7398]">이력 없음</span>
+              <EmptyState
+                eyebrow="처리 이력"
+                title="처리 이력이 없습니다"
+                description="이 신고를 승인하거나 기각하면 처리 메모와 담당자 기록이 여기에 남습니다."
+              />
             )}
           </div>
         </section>

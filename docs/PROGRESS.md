@@ -4,11 +4,21 @@
 
 - 작업: 현재 active 작업 없음
 - 상태: `idle`
-- 현재 초점: `P2-9 admin direct moderation panel 접근성 보강`을 완료 archive했다.
+- 현재 초점: `P2-10 admin detail/log status surface 보강`을 완료 archive했다.
 
 ## 변경/탐색한 파일
 
 - 이번 세션 변경:
+  - `app/src/app/admin/reports/[id]/page.tsx`
+  - `app/src/app/admin/auth-audits/page.tsx`
+  - `app/src/app/admin/moderation-logs/page.tsx`
+  - `docs/PLAN.md`
+  - `docs/PROGRESS.md`
+- 탐색한 파일:
+  - `app/src/app/admin/reports/[id]/page.tsx`
+  - `app/src/app/admin/auth-audits/page.tsx`
+  - `app/src/app/admin/moderation-logs/page.tsx`
+- 이전 세션 변경:
   - `app/src/components/admin/direct-moderation-panel.tsx`
   - `app/src/components/admin/direct-moderation-panel.test.tsx`
   - `docs/PLAN.md`
@@ -233,6 +243,14 @@
   - `docs/errors/2026-05-12_vercel-security-env-build-preflight.md`
   - `docs/COMPLETED.md`
 - 이번 세션 결과:
+- 신고 상세 not-found 상태를 공용 `EmptyState`로 교체하고 신고 큐 복귀 action을 제공했다.
+- 신고 상세 처리 이력 0건 상태를 공용 `EmptyState`로 교체했다.
+- 신고 상세 처리 이력 검색 input/select/submit/reset control을 `min-h-10` 기준으로 보강했다.
+- 인증 감사 로그 검색, 초기화, CSV 내보내기, action filter control을 `min-h-10` 기준으로 보강했다.
+- 인증 감사 로그 0건 상태에 `전체 로그 보기` action을 제공했다.
+- 모더레이션 로그 검색, 초기화, action filter control을 `min-h-10` 기준으로 보강했다.
+- 모더레이션 로그 0건 상태에 `전체 로그 보기` action을 제공했다.
+- 이전 세션 결과:
 - `DirectModerationPanel`의 직접 제재/콘텐츠 숨김/직접 숨김 복구 실행 버튼을 `min-h-10` 기준으로 보강했다.
 - 세 카드의 주요 input/select control을 `min-h-10` 기준으로 보강했다.
 - 성공 메시지와 실패 메시지를 `DirectModerationMessage`로 통일하고 `role="status"`/`role="alert"`와 `aria-live="polite"`를 추가했다.

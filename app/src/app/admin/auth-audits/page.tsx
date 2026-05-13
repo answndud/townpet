@@ -112,22 +112,25 @@ export default async function AuthAuditPage({ searchParams }: AuthAuditPageProps
               name="q"
               defaultValue={query}
               placeholder="이메일/닉네임/ID/IP/사유 검색"
-              className="tp-input-soft w-full max-w-xs bg-white px-3 py-2 text-xs"
+              className="tp-input-soft min-h-10 w-full max-w-xs bg-white px-3 py-2 text-xs"
             />
             <button
               type="submit"
-              className="tp-btn-primary px-3 py-2 text-xs font-semibold"
+              className="tp-btn-primary min-h-10 px-3 py-2 text-xs font-semibold"
             >
               검색
             </button>
             {query ? (
-              <Link href={buildLink(action)} className="text-xs text-[#5a7398]">
+              <Link
+                href={buildLink(action)}
+                className="tp-btn-soft inline-flex min-h-10 items-center justify-center px-3 py-2 text-xs"
+              >
                 초기화
               </Link>
             ) : null}
             <Link
               href={exportLink}
-              className="tp-btn-soft px-3 py-2 text-xs"
+              className="tp-btn-soft inline-flex min-h-10 items-center justify-center px-3 py-2 text-xs"
             >
               CSV 내보내기
             </Link>
@@ -141,7 +144,7 @@ export default async function AuthAuditPage({ searchParams }: AuthAuditPageProps
               <Link
                 key={value}
                 href={buildLink(value as AuthAuditAction | "ALL")}
-                className={`rounded-lg border px-2.5 py-1 transition ${
+                className={`inline-flex min-h-10 items-center rounded-lg border px-2.5 py-1 transition ${
                   action === value
                     ? "border-[#3567b5] bg-[#3567b5] text-white"
                     : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
@@ -258,8 +261,11 @@ export default async function AuthAuditPage({ searchParams }: AuthAuditPageProps
             </>
           ) : (
             <EmptyState
+              eyebrow="인증 로그"
               title="인증 감사 로그가 없습니다"
               description="필터 조건을 바꾸거나 다른 기간에서 다시 확인해 주세요."
+              actionHref="/admin/auth-audits"
+              actionLabel="전체 로그 보기"
             />
           )}
         </section>
