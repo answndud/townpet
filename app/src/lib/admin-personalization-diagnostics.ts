@@ -23,6 +23,7 @@ export type PersonalizationDiagnostic = {
 const MIN_POST_CTR_VIEWS = 200;
 const MIN_AD_CTR_IMPRESSIONS = 500;
 const MIN_AUDIENCE_CONCENTRATION_VIEWS = 100;
+const MIN_OPERATION_DAYS = 28;
 
 function formatPercent(value: number) {
   return `${(value * 100).toFixed(1)}%`;
@@ -89,8 +90,8 @@ function buildDataDiagnostic(
     label: "데이터 상태",
     level: "normal",
     status: "판단 가능",
-    detail: "개인화 조회, 광고 노출, audience key 요약이 모두 있어 운영 판단을 시작할 수 있습니다.",
-    nextAction: "필요 시 정책 후보 검토",
+    detail: "개인화 조회, 광고 노출, audience key 요약이 있습니다. 30일에 가까운 기간과 최소 표본을 충족할 때만 정책 후보를 검토합니다.",
+    nextAction: "표본 충족 여부 확인",
     href: "/admin/policies",
     hrefLabel: "정책 설정",
   };
@@ -100,6 +101,19 @@ function buildPostCtrDiagnostic(
   overview: FeedPersonalizationOverview,
 ): PersonalizationDiagnostic {
   const { viewCount, postCtr } = overview.totals;
+
+  if (overview.days < MIN_OPERATION_DAYS) {
+    return {
+      id: "postCtr",
+      label: "Feed CTR",
+      level: "pending",
+      status: "관찰 기간",
+      detail: `최근 ${overview.days}일은 회귀 확인용입니다. 정책 판단은 30일에 가까운 기간과 조회 ${MIN_POST_CTR_VIEWS}건 이후에 합니다.`,
+      nextAction: "30일 기준 재검토",
+      href: "/admin/personalization?days=30",
+      hrefLabel: "30일 보기",
+    };
+  }
 
   if (viewCount < MIN_POST_CTR_VIEWS) {
     return {
@@ -156,6 +170,19 @@ function buildAdCtrDiagnostic(
   overview: FeedPersonalizationOverview,
 ): PersonalizationDiagnostic {
   const { adImpressionCount, adCtr } = overview.totals;
+
+  if (overview.days < MIN_OPERATION_DAYS) {
+    return {
+      id: "adCtr",
+      label: "Ad CTR",
+      level: "pending",
+      status: "관찰 기간",
+      detail: `최근 ${overview.days}일은 광고 판단 기간으로 쓰지 않습니다. 광고 판단은 30일에 가까운 기간과 노출 ${MIN_AD_CTR_IMPRESSIONS}건 이후에 합니다.`,
+      nextAction: "30일 기준 재검토",
+      href: "/admin/personalization?days=30",
+      hrefLabel: "30일 보기",
+    };
+  }
 
   if (adImpressionCount < MIN_AD_CTR_IMPRESSIONS) {
     return {
@@ -218,10 +245,20 @@ function buildAudienceDiagnostic(
   );
   const topAudience = overview.topAudienceSummaries[0]?.audienceKey ?? "-";
 
-  if (
-    viewCount < MIN_AUDIENCE_CONCENTRATION_VIEWS ||
-    overview.topAudienceSummaries.length === 0
-  ) {
+  if (overview.days < MIN_OPERATION_DAYS) {
+    return {
+      id: "audience",
+      label: "Audience 쏠림",
+      level: "pending",
+      status: "관찰 기간",
+      detail: `최근 ${overview.days}일은 쏠림 판단 기간으로 쓰지 않습니다. 30일에 가까운 기간과 audience 조회 ${MIN_AUDIENCE_CONCENTRATION_VIEWS}건 이후에 봅니다.`,
+      nextAction: "30일 기준 재검토",
+      href: "/admin/personalization?days=30",
+      hrefLabel: "30일 보기",
+    };
+  }
+
+  if (viewCount < MIN_AUDIENCE_CONCENTRATION_VIEWS || overview.topAudienceSummaries.length === 0) {
     return {
       id: "audience",
       label: "Audience 쏠림",

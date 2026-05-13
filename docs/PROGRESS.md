@@ -4,11 +4,15 @@
 
 - 작업: `P1-8 1인 운영용 과설계 축소 배치`
 - 상태: `in_progress`
-- 현재 초점: `P1-8.3 production demo/OAuth manual automation 격하`를 완료했고, 다음은 `P1-8.4 개인화/광고 운영 판단 기준 축소`다.
+- 현재 초점: `P1-8.4 개인화/광고 운영 판단 기준 축소`를 완료했고, 다음은 `P1-8.5 client useEffect fetch/telemetry 표면 정리`다.
 
 ## 변경/탐색한 파일
 
 - 이번 세션 변경:
+  - `app/src/app/admin/personalization/page.tsx`
+  - `app/src/lib/admin-personalization-diagnostics.ts`
+  - `app/src/lib/admin-personalization-diagnostics.test.ts`
+  - `business/operations/개인화_운영_판단_기준.md`
   - `.github/workflows/production-demo-content.yml`
   - `app/package.json`
   - `app/README.md`
@@ -132,6 +136,9 @@
 - production demo seed alias와 OAuth/manual/growth helper alias를 제거해 package script를 69개에서 63개로 줄였다.
 - `production-demo-content` workflow는 package alias 대신 `pnpm exec tsx scripts/seed-production-demo-content.ts`를 직접 호출하고, manual-only legacy helper임을 명시했다.
 - OAuth 수동점검 문서는 script-first가 아니라 checklist-first로 낮추고, helper가 필요할 때만 `pnpm exec tsx scripts/...`를 직접 실행하도록 정리했다.
+- `/admin/personalization` 기본 기간을 30일로 바꾸고, 7일/14일은 회귀 관찰용이라는 copy로 낮췄다.
+- 개인화 진단은 28일 미만 기간에서는 Feed CTR, Ad CTR, Audience 쏠림을 `pending`으로 유지해 정책 조정으로 이어지지 않게 했다.
+- 개인화 운영 문서는 초기 1인 운영에서 4주 이상 데이터와 최소 표본을 모두 충족하기 전까지 튜닝을 보류하도록 정리했다.
 - 이전 세션 결과:
   - `ops-smoke-checks` 기본 timeout을 5분으로 낮추고 care smoke readiness/prewarm을 기본 경로에서 제거했다.
   - `ops:evidence:solo`를 추가해 health-only 로컬 evidence profile을 제공했다.
@@ -210,6 +217,11 @@
 - `corepack pnpm@9.12.3 -C app lint` PASS
 - `corepack pnpm@9.12.3 -C app docs:refresh` PASS
 - `corepack pnpm@9.12.3 -C app docs:refresh:check` PASS
+- `corepack pnpm@9.12.3 -C app exec vitest run src/lib/admin-personalization-diagnostics.test.ts` PASS
+- `corepack pnpm@9.12.3 -C app typecheck` PASS
+- `corepack pnpm@9.12.3 -C app lint` PASS
+- `corepack pnpm@9.12.3 -C app docs:refresh:check` PASS
+- `git diff --check` PASS
 - `corepack pnpm@9.12.3 -C app exec vitest run scripts/run-ops-evidence.test.ts scripts/check-care-smoke-readiness.test.ts` PASS
 - `corepack pnpm@9.12.3 -C app typecheck` PASS
 - `corepack pnpm@9.12.3 -C app lint` PASS
@@ -254,6 +266,6 @@
 
 ## 다음 액션
 
-1. `P1-8.4 개인화/광고 운영 판단 기준 축소`를 진행한다.
-2. 개인화/광고 CTR 판단 문서를 초기 운영 보류 기준으로 낮춘다.
-3. UI copy가 과도한 통계 확신을 주는지 확인하고 필요한 최소 수정만 한다.
+1. `P1-8.5 client useEffect fetch/telemetry 표면 정리`를 진행한다.
+2. 기능 필수 fetch와 부가 telemetry/prefetch를 분리한다.
+3. 최소 변경으로 telemetry/prefetch 기본 복잡도를 낮춘다.

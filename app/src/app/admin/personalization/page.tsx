@@ -67,7 +67,7 @@ export default async function PersonalizationPage({
   });
   const selectedDays = SUPPORTED_DAYS.includes(parsed.data?.days as 7 | 14 | 30)
     ? (parsed.data?.days as 7 | 14 | 30)
-    : 14;
+    : 30;
 
   const overview = await getFeedPersonalizationOverview(selectedDays);
   const diagnostics = buildPersonalizationDiagnostics(overview);
@@ -84,7 +84,7 @@ export default async function PersonalizationPage({
             개인화 반응 지표
           </h1>
           <p className="mt-2 text-sm text-[#4f678d]">
-            맞춤 추천 피드 조회, 게시글 클릭, 광고 노출/클릭을 최근 기간 기준으로 확인합니다.
+            맞춤 추천 피드 조회, 게시글 클릭, 광고 노출/클릭을 관찰합니다. 초기 운영에서는 30일 기준에서도 표본이 충분할 때만 정책 후보로 봅니다.
           </p>
         </header>
 
@@ -92,7 +92,7 @@ export default async function PersonalizationPage({
           <div>
             <p className="text-[10px] uppercase tracking-[0.24em] text-[#5b78a1]">기간 필터</p>
             <p className="mt-1 text-xs text-[#5a7398]">
-              기본 운영 판단은 14일, 긴급 회귀는 7일, 저트래픽 판단은 30일 기준입니다.
+              7일/14일은 회귀 관찰용, 30일은 최소 표본 충족 여부를 확인하는 보수적 기준입니다.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">

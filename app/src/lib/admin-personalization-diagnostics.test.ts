@@ -7,7 +7,7 @@ function buildOverview(
   overrides: Partial<FeedPersonalizationOverview> = {},
 ): FeedPersonalizationOverview {
   return {
-    days: 14,
+    days: 30,
     totals: {
       viewCount: 600,
       postClickCount: 24,
@@ -86,6 +86,18 @@ describe("admin personalization diagnostics", () => {
           level: "pending",
           href: "/admin/personalization?days=30",
         }),
+      ]),
+    );
+  });
+
+  it("keeps short-window CTR and audience diagnostics pending for solo operations", () => {
+    const diagnostics = buildPersonalizationDiagnostics(buildOverview({ days: 14 }));
+
+    expect(diagnostics).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: "postCtr", level: "pending", status: "관찰 기간" }),
+        expect.objectContaining({ id: "adCtr", level: "pending", status: "관찰 기간" }),
+        expect.objectContaining({ id: "audience", level: "pending", status: "관찰 기간" }),
       ]),
     );
   });

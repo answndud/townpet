@@ -2504,3 +2504,30 @@
   - package script 표면은 81개에서 63개까지 줄었다.
   - production demo와 OAuth manual helper는 기본 운영 명령이 아니라 명시적 수동 helper로 격하됐다.
   - 다음 작업은 `P1-8.4 개인화/광고 운영 판단 기준 축소`다.
+
+### 2026-05-13 | P1-8.4 개인화/광고 운영 판단 기준 축소
+- 완료일: `2026-05-13`
+- 배경:
+  - 개인화/광고 CTR과 audience concentration은 초기 1인 운영 트래픽에서는 표본이 부족해 정책 조정 근거로 쓰기 어렵다.
+  - 기존 `/admin/personalization`은 14일 기본값에서도 action/watch 진단을 낼 수 있어 운영자에게 과도한 통계 확신을 줄 수 있었다.
+- 변경내용:
+  - `/admin/personalization` 기본 기간을 30일로 바꿨다.
+  - 페이지 copy를 “정책 판단”보다 “관찰/표본 충족 확인” 중심으로 낮췄다.
+  - 진단 helper에 최소 판단 기간 `28일` 기준을 추가했다.
+  - 28일 미만 기간에서는 Feed CTR, Ad CTR, Audience 쏠림 진단이 모두 `pending`으로 남도록 바꿨다.
+  - 데이터 상태 정상 문구도 “바로 정책 후보 검토”가 아니라 “30일에 가까운 기간과 최소 표본 충족 시 검토”로 낮췄다.
+  - 개인화 운영 판단 문서를 1인 초기 운영 기준으로 갱신해, 4주 이상 데이터와 최소 표본을 모두 충족하기 전까지 정책값 조정을 보류하도록 명시했다.
+- 코드문서:
+  - [app/src/app/admin/personalization/page.tsx](../app/src/app/admin/personalization/page.tsx)
+  - [app/src/lib/admin-personalization-diagnostics.ts](../app/src/lib/admin-personalization-diagnostics.ts)
+  - [app/src/lib/admin-personalization-diagnostics.test.ts](../app/src/lib/admin-personalization-diagnostics.test.ts)
+  - [business/operations/개인화_운영_판단_기준.md](../business/operations/%EA%B0%9C%EC%9D%B8%ED%99%94_%EC%9A%B4%EC%98%81_%ED%8C%90%EB%8B%A8_%EA%B8%B0%EC%A4%80.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app exec vitest run src/lib/admin-personalization-diagnostics.test.ts`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `corepack pnpm@9.12.3 -C app docs:refresh:check`
+  - `git diff --check`
+- 결과:
+  - 개인화/광고 운영 판단은 초기 트래픽에서 조치가 아니라 보류/관찰 중심으로 축소됐다.
+  - 다음 작업은 `P1-8.5 client useEffect fetch/telemetry 표면 정리`다.
