@@ -16,6 +16,7 @@
 현재 active 작업 없음.
 
 최근 완료:
+- `P2-12 onboarding/pet profile form touch/status 보강`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
 - `P2-11 profile form status/touch target 보강`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
 - `P2-10 admin detail/log status surface 보강`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
 - `P2-9 admin direct moderation panel 접근성 보강`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
@@ -33,4 +34,4 @@
 
 ## 다음 작업 후보
 
-- P2-12: onboarding/pet profile form의 status와 mobile touch target을 점검한다.
+- P2-13: auth form status/touch target과 error recovery를 점검한다.

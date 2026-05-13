@@ -423,12 +423,12 @@ function PetFormFields({
         placeholder="소개(선택)"
         maxLength={240}
       />
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <button
           type="button"
           onClick={onSubmit}
           disabled={isPending}
-          className="tp-btn-primary inline-flex h-9 items-center justify-center self-start px-4 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-70"
+          className="tp-btn-primary inline-flex min-h-10 items-center justify-center self-start px-4 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-70"
         >
           {isPending ? "저장 중..." : submitLabel}
         </button>
@@ -436,7 +436,7 @@ function PetFormFields({
           <button
             type="button"
             onClick={onCancel}
-            className="tp-btn-soft inline-flex h-9 items-center justify-center px-4 text-xs font-semibold"
+            className="tp-btn-soft inline-flex min-h-10 items-center justify-center px-4 text-xs font-semibold"
           >
             취소
           </button>
@@ -619,7 +619,7 @@ export function PetProfileManager({
                           {hasBreedLounge ? (
                             <Link
                               href={`/lounges/breeds/${pet.breedCode}`}
-                              className="tp-btn-soft inline-flex h-8 items-center justify-center px-3 text-[11px] font-semibold text-[#204f8a]"
+                              className="tp-btn-soft inline-flex min-h-10 items-center justify-center px-3 text-[11px] font-semibold text-[#204f8a]"
                             >
                               품종 라운지
                             </Link>
@@ -630,14 +630,14 @@ export function PetProfileManager({
                               setEditTargetId(pet.id);
                               setEditForm(toFormState(pet));
                             }}
-                            className="tp-btn-soft inline-flex h-8 items-center justify-center px-3 text-[11px] font-semibold"
+                            className="tp-btn-soft inline-flex min-h-10 items-center justify-center px-3 text-[11px] font-semibold"
                           >
                             수정
                           </button>
                           <button
                             type="button"
                             onClick={() => removePet(pet.id)}
-                            className="tp-btn-soft inline-flex h-8 items-center justify-center px-3 text-[11px] font-semibold text-rose-700 hover:bg-rose-50"
+                            className="tp-btn-soft inline-flex min-h-10 items-center justify-center px-3 text-[11px] font-semibold text-rose-700 hover:bg-rose-50"
                           >
                             삭제
                           </button>
@@ -652,7 +652,11 @@ export function PetProfileManager({
         </div>
       </div>
 
-      {message ? <p className="mt-3 text-xs text-[#4f678d]">{message}</p> : null}
+      {message ? (
+        <p className="mt-3 text-xs text-[#4f678d]" role="status" aria-live="polite">
+          {message}
+        </p>
+      ) : null}
     </section>
   );
 }

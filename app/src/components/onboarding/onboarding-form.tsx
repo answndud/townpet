@@ -251,7 +251,7 @@ export function OnboardingForm({
           <button
             data-testid="onboarding-profile-submit"
             type="submit"
-            className="tp-btn-primary self-start px-4 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0]"
+            className="tp-btn-primary inline-flex min-h-10 items-center self-start px-4 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0]"
             disabled={isPending}
           >
             닉네임 저장
@@ -379,14 +379,14 @@ export function OnboardingForm({
           <button
             data-testid="onboarding-neighborhood-submit"
             type="submit"
-            className="tp-btn-primary self-start px-4 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0]"
+            className="tp-btn-primary inline-flex min-h-10 items-center self-start px-4 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0]"
             disabled={isPending || selectedIds.length === 0 || !primaryId}
           >
             동네 저장
           </button>
           <Link
             href="/feed"
-            className="tp-btn-soft self-start px-4 py-2 text-xs font-semibold"
+            className="tp-btn-soft inline-flex min-h-10 items-center self-start px-4 py-2 text-xs font-semibold"
           >
             나중에 설정하기
           </Link>
@@ -394,7 +394,11 @@ export function OnboardingForm({
       </section>
 
       {message ? (
-        <div className="rounded-xl border border-[#dbe6f6] bg-[#f6f9ff] px-4 py-3 text-xs text-[#4f678d]">
+        <div
+          className="rounded-xl border border-[#dbe6f6] bg-[#f6f9ff] px-4 py-3 text-xs text-[#4f678d]"
+          role="status"
+          aria-live="polite"
+        >
           {message}
         </div>
       ) : null}
