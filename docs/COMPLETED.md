@@ -2976,3 +2976,34 @@
 - 결과:
   - 인증/비밀번호 복구 흐름의 남은 작은 action이 기존 모바일/접근성 기준에 맞춰졌다.
   - 다음 후보는 `P2-14 post write/comment/report form의 status, touch target, failure recovery 점검`이다.
+
+### 2026-05-13 | P2-14 post write/comment/report form status와 touch target 보강
+- 완료일: `2026-05-13`
+- 배경:
+  - 게시글 수정, 댓글 작성, 신고는 커뮤니티 핵심 쓰기/정책 표면이다.
+  - 일부 입력, select, 제출 버튼, 로그인 복구 링크가 `h-9` 또는 작은 버튼 기준으로 남아 있어 앞선 P2 모바일 touch target 기준과 일관되지 않았다.
+  - 신고 결과와 게시글 수정 오류는 시각 상태에 가까워 스크린리더 전달이 약했다.
+- 변경내용:
+  - 신고 폼의 사유 select, 신고 submit, 로그인 recovery link를 `min-h-10` 기준으로 보강했다.
+  - 신고 결과 메시지를 success/error tone 객체로 분리하고 success는 `role="status"`, error는 `role="alert"`로 전달한다.
+  - 댓글 root form의 비회원 닉네임/비밀번호 입력, 댓글 등록 버튼, 로그인 recovery link를 `min-h-10` 기준으로 보강했다.
+  - 게시글 수정 폼의 저장 버튼, 제목 input, 범위/동네 select, 비회원 비밀번호 input을 `min-h-10` 기준으로 보강했다.
+  - 게시글 수정 validation error에 `role="alert"`와 `aria-live="polite"`를 추가했다.
+  - posts form 접근성 정적 렌더 unit test를 추가하고 신고 폼 테스트를 확장했다.
+- 코드문서:
+  - [app/src/components/posts/post-report-form.tsx](../app/src/components/posts/post-report-form.tsx)
+  - [app/src/components/posts/post-comment-root-form.tsx](../app/src/components/posts/post-comment-root-form.tsx)
+  - [app/src/components/posts/post-detail-edit-form.tsx](../app/src/components/posts/post-detail-edit-form.tsx)
+  - [app/src/components/posts/post-report-form.test.tsx](../app/src/components/posts/post-report-form.test.tsx)
+  - [app/src/components/posts/post-form-accessibility.test.tsx](../app/src/components/posts/post-form-accessibility.test.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app exec vitest run src/components/posts/post-report-form.test.tsx src/components/posts/post-form-accessibility.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `corepack pnpm@9.12.3 -C app docs:refresh:check`
+  - `git diff --check`
+- 결과:
+  - 쓰기/댓글/신고 폼의 주요 입력, 제출, 복구 action과 상태 메시지가 기존 모바일/접근성 기준에 맞춰졌다.
+  - 다음 후보는 `P2-15 post detail action, reaction, bookmark, share control의 touch target과 disabled/failure state 점검`이다.

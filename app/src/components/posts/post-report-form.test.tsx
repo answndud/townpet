@@ -1,4 +1,6 @@
 import type { AnchorHTMLAttributes, ReactNode } from "react";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { ReportTarget } from "@prisma/client";
@@ -29,6 +31,7 @@ describe("PostReportForm", () => {
 
     expect(html).toContain("로그인 후 게시글 신고 가능.");
     expect(html).toContain('/login?next=%2Fposts%2Fpost-1');
+    expect(html).toContain("min-h-10");
     expect(html).not.toContain("textarea");
   });
 
@@ -37,6 +40,7 @@ describe("PostReportForm", () => {
 
     expect(html).toContain("추가 설명");
     expect(html).toContain("신고");
+    expect(html).toContain("min-h-10");
     expect(html).not.toContain("로그인 후 게시글 신고 가능.");
   });
 
@@ -50,5 +54,17 @@ describe("PostReportForm", () => {
     );
 
     expect(html).toContain("로그인 후 댓글 신고 가능.");
+  });
+
+  it("announces report submit outcomes by tone", () => {
+    const source = readFileSync(
+      join(process.cwd(), "src/components/posts/post-report-form.tsx"),
+      "utf8",
+    );
+
+    expect(source).toContain('role={message.tone === "error" ? "alert" : "status"}');
+    expect(source).toContain('aria-live="polite"');
+    expect(source).toContain('tone: "success"');
+    expect(source).toContain('tone: "error"');
   });
 });

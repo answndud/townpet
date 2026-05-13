@@ -47,7 +47,7 @@ export function PostCommentRootForm({
             <div className="mb-1.5 grid gap-1.5 sm:grid-cols-2">
               <input
                 data-testid="post-comment-guest-name"
-                className={`tp-input-soft ${POST_COMMENT_FORM_FIELD_CLASS_NAME} min-h-11 w-full px-3 py-2 text-[14px] sm:min-h-9 sm:px-2.5 sm:py-1.5 sm:text-[13px]`}
+                className={`tp-input-soft ${POST_COMMENT_FORM_FIELD_CLASS_NAME} min-h-11 w-full px-3 py-2 text-[14px] sm:min-h-10 sm:px-2.5 sm:py-1.5 sm:text-[13px]`}
                 value={guestDisplayName}
                 onChange={(event) => onGuestDisplayNameChange(event.target.value)}
                 placeholder="비회원 닉네임"
@@ -55,7 +55,7 @@ export function PostCommentRootForm({
               />
               <input
                 data-testid="post-comment-guest-password"
-                className={`tp-input-soft ${POST_COMMENT_FORM_FIELD_CLASS_NAME} min-h-11 w-full px-3 py-2 text-[14px] sm:min-h-9 sm:px-2.5 sm:py-1.5 sm:text-[13px]`}
+                className={`tp-input-soft ${POST_COMMENT_FORM_FIELD_CLASS_NAME} min-h-11 w-full px-3 py-2 text-[14px] sm:min-h-10 sm:px-2.5 sm:py-1.5 sm:text-[13px]`}
                 type="password"
                 value={guestPassword}
                 onChange={(event) => onGuestPasswordChange(event.target.value)}
@@ -77,7 +77,7 @@ export function PostCommentRootForm({
             <button
               data-testid="post-comment-root-submit"
               type="button"
-              className="tp-btn-primary tp-btn-sm"
+              className="tp-btn-primary inline-flex min-h-10 items-center justify-center rounded-lg px-4 text-sm font-semibold"
               onClick={onSubmit}
               disabled={isPending}
             >
@@ -95,7 +95,7 @@ export function PostCommentRootForm({
                 댓글 작성/답글/신고는 로그인 후 이용할 수 있습니다.{" "}
                 <Link
                   href={loginHref}
-                  className="tp-text-link font-semibold underline underline-offset-2"
+                  className="tp-text-link inline-flex min-h-10 items-center font-semibold underline underline-offset-2"
                 >
                   로그인하기
                 </Link>

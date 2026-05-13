@@ -25,7 +25,10 @@ export function PostReportForm({
   const [isPending, startTransition] = useTransition();
   const [reason, setReason] = useState<ReportReason>(ReportReason.SPAM);
   const [description, setDescription] = useState("");
-  const [message, setMessage] = useState<string | null>(null);
+  const [message, setMessage] = useState<{
+    tone: "success" | "error";
+    text: string;
+  } | null>(null);
   const targetLabel = getReportTargetLabel(targetType);
 
   if (!canReport) {
@@ -34,7 +37,7 @@ export function PostReportForm({
         로그인 후 {targetLabel} 신고 가능.{" "}
         <Link
           href={loginHref}
-          className="tp-text-link font-semibold underline underline-offset-2"
+          className="tp-text-link inline-flex min-h-10 items-center font-semibold underline underline-offset-2"
         >
           로그인하기
         </Link>
@@ -63,12 +66,15 @@ export function PostReportForm({
 
       if (!response.ok) {
         const payload = await response.json();
-        setMessage(payload?.error?.message ?? "신고에 실패했습니다.");
+        setMessage({
+          tone: "error",
+          text: payload?.error?.message ?? "신고에 실패했습니다.",
+        });
         return;
       }
 
       setDescription("");
-      setMessage("신고가 접수되었습니다.");
+      setMessage({ tone: "success", text: "신고가 접수되었습니다." });
     });
   };
 
@@ -83,7 +89,7 @@ export function PostReportForm({
           <span>사유</span>
           <select
             data-testid={`report-reason-${targetType.toLowerCase()}-${targetId}`}
-            className="tp-input-soft h-9 px-3 text-[13px]"
+            className="tp-input-soft min-h-10 px-3 text-[13px]"
             value={reason}
             onChange={(event) =>
               setReason(event.target.value as ReportReason)
@@ -113,15 +119,21 @@ export function PostReportForm({
         {message ? (
           <p
             data-testid={`report-message-${targetType.toLowerCase()}-${targetId}`}
-            className="tp-text-muted text-[11px]"
+            className={
+              message.tone === "error"
+                ? "text-[11px] font-medium text-rose-700"
+                : "text-[11px] font-medium text-emerald-700"
+            }
+            role={message.tone === "error" ? "alert" : "status"}
+            aria-live="polite"
           >
-            {message}
+            {message.text}
           </p>
         ) : <span />}
         <button
           data-testid={`report-submit-${targetType.toLowerCase()}-${targetId}`}
           type="submit"
-          className="tp-btn-soft tp-btn-xs border-rose-300 text-rose-700 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:border-[#d5dfee] disabled:text-[#9fb2cf]"
+          className="tp-btn-soft inline-flex min-h-10 items-center justify-center rounded-lg border-rose-300 px-3 text-xs font-semibold text-rose-700 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:border-[#d5dfee] disabled:text-[#9fb2cf]"
           disabled={isPending}
         >
           {isPending ? "접수 중..." : "신고"}
