@@ -2531,3 +2531,32 @@
 - 결과:
   - 개인화/광고 운영 판단은 초기 트래픽에서 조치가 아니라 보류/관찰 중심으로 축소됐다.
   - 다음 작업은 `P1-8.5 client useEffect fetch/telemetry 표면 정리`다.
+
+### 2026-05-13 | P1-8.5 client fetch/telemetry 표면 축소
+- 완료일: `2026-05-13`
+- 배경:
+  - client `useEffect`와 fetch 표면 중 검색/개인화 telemetry는 초기 1인 운영에서 필수 기능이 아니다.
+  - 기능 fetch를 건드리면 피드/검색/상세 동작 회귀 위험이 커지므로, 먼저 부가 telemetry fetch만 기본 OFF로 낮추는 것이 안전했다.
+- 변경내용:
+  - `NEXT_PUBLIC_ENABLE_CLIENT_TELEMETRY=1` opt-in flag를 추가했다.
+  - 기본값에서는 검색 결과 telemetry, 검색어 log, 개인화 dwell/feed metric 전송이 no-op이 되도록 했다.
+  - `sendFeedPersonalizationMetric`이 flag OFF에서 즉시 return하도록 했다.
+  - `SearchResultTelemetry`, `FeedSearchForm`의 search log, `PostPersonalizationDwellTracker`가 flag OFF에서 side effect를 만들지 않게 했다.
+  - 개인화 운영 판단 문서에 client telemetry는 초기 1인 운영 기본값에서 꺼져 있고, 표본 수집이 필요할 때만 opt-in한다고 명시했다.
+- 코드문서:
+  - [app/src/lib/client-telemetry.ts](../app/src/lib/client-telemetry.ts)
+  - [app/src/lib/client-telemetry.test.ts](../app/src/lib/client-telemetry.test.ts)
+  - [app/src/lib/feed-personalization-tracking.ts](../app/src/lib/feed-personalization-tracking.ts)
+  - [app/src/components/posts/search-result-telemetry.tsx](../app/src/components/posts/search-result-telemetry.tsx)
+  - [app/src/components/posts/feed-search-form.tsx](../app/src/components/posts/feed-search-form.tsx)
+  - [app/src/components/posts/post-personalization-dwell-tracker.tsx](../app/src/components/posts/post-personalization-dwell-tracker.tsx)
+  - [business/operations/개인화_운영_판단_기준.md](../business/operations/%EA%B0%9C%EC%9D%B8%ED%99%94_%EC%9A%B4%EC%98%81_%ED%8C%90%EB%8B%A8_%EA%B8%B0%EC%A4%80.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app exec vitest run src/lib/client-telemetry.test.ts src/components/posts/search-result-telemetry.test.ts src/lib/admin-personalization-diagnostics.test.ts`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `corepack pnpm@9.12.3 -C app docs:refresh:check`
+  - `git diff --check`
+- 결과:
+  - 사용자 기능 fetch는 유지하면서 부가 telemetry fetch가 기본 동작에서 빠졌다.
+  - 다음 작업은 `P1-8.6 운영 문서 active/archive 정리`다.

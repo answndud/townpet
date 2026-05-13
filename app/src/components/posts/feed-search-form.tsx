@@ -10,6 +10,7 @@ import {
   normalizeSearchTerm,
   parseRecentSearches,
 } from "@/lib/recent-search-storage";
+import { isClientTelemetryEnabled } from "@/lib/client-telemetry";
 
 type FeedMode = "ALL" | "BEST";
 type FeedSort = "LATEST" | "LIKE" | "COMMENT";
@@ -122,6 +123,10 @@ export function FeedSearchForm({
   };
 
   const logSearchTerm = (rawValue: string) => {
+    if (!isClientTelemetryEnabled()) {
+      return;
+    }
+
     const term = normalizeSearchTerm(rawValue);
     if (!term || typeof window === "undefined") {
       return;
