@@ -4,21 +4,22 @@
 
 - 작업: `Release Confidence Hardening P1-6`
 - 상태: `in_progress`
-- 현재 초점: `post.service.ts`의 delete/write-support 경계 분리를 완료했고, 다음 작업은 guest-management 또는 care/market workflow 책임 분리다.
+- 현재 초점: `post.service.ts`의 guest-management 경계 분리를 완료했고, 다음 작업은 care/market workflow 책임 분리다.
 
 ## 변경/탐색한 파일
 
 - 이번 세션 변경:
+  - `app/src/server/services/posts/post-guest-management.service.ts`
+  - `app/src/server/services/posts/post.service.ts`
+  - `docs/PLAN.md`
+  - `docs/PROGRESS.md`
+- 직전 세션 변경:
   - `app/src/server/services/posts/post-delete.service.ts`
   - `app/src/server/services/posts/post-write-support.ts`
-  - `app/src/server/services/posts/post.service.ts`
   - `app/vitest.config.mts`
   - `app/vitest.config.ts`
   - `app/package.json`
   - `app/pnpm-lock.yaml`
-  - `docs/PLAN.md`
-  - `docs/PROGRESS.md`
-- 직전 세션 변경:
   - `app/src/server/services/posts/post-engagement.service.ts`
   - `app/src/server/queries/posts/post-detail-fetch-fallback.ts`
   - `app/src/server/queries/posts/post.queries.ts`
@@ -38,11 +39,14 @@
   - `docs/errors/2026-05-12_vercel-security-env-build-preflight.md`
   - `docs/COMPLETED.md`
 - 이번 세션 결과:
+  - `updateGuestPost`, `deleteGuestPost`, 비회원 비밀번호 검증, 비회원 identity 매칭, 비회원 수정 정책 검사를 `post-guest-management.service.ts`로 분리했다.
+  - 기존 `@/server/services/post.service` export 경로는 re-export로 유지했다.
+  - `post.service.ts`를 3210줄에서 2406줄까지 축소했다.
+- 직전 세션 결과:
   - 회원 게시글 삭제 흐름을 `post-delete.service.ts`로 분리하고 기존 `@/server/services/post.service` export 경로는 유지했다.
   - cache invalidation, notification cache invalidation, upload attach/release, soft delete dependent cleanup을 `post-write-support.ts`로 분리했다.
   - `post.service.ts`를 3210줄에서 2761줄까지 축소했다.
   - 로컬 잠금파일 기준 재설치 후 Vitest가 Vite 7 ESM을 CJS로 로드하며 실패하는 문제를 확인해 `vitest.config.mts`로 전환하고 `vite-tsconfig-paths`를 제거했다.
-- 직전 세션 결과:
   - `togglePostReaction`, `togglePostBookmark`, raw SQL reaction fallback, notification/cache invalidation을 `post-engagement.service.ts`로 분리했다.
   - 기존 `@/server/services/post.service` export 경로는 re-export로 유지했다.
   - `post.service.ts`를 3210줄에서 2904줄까지 축소했다.
@@ -59,6 +63,7 @@
 ## 직전 검증
 
 - `corepack pnpm@9.12.3 -C app exec vitest run src/server/queries/post.queries.test.ts` PASS
+- `corepack pnpm@9.12.3 -C app exec vitest run src/server/services/guest-post-management.service.test.ts src/server/services/post.service.test.ts` PASS
 - `corepack pnpm@9.12.3 -C app exec vitest run src/server/services/post.service.test.ts` PASS
 - `corepack pnpm@9.12.3 -C app typecheck` PASS
 - `corepack pnpm@9.12.3 -C app lint` PASS
@@ -77,6 +82,6 @@
 
 ## 다음 액션
 
-1. `post.service.ts`의 guest-management 또는 care/market workflow 책임 경계를 추가로 분리한다.
+1. `post.service.ts`의 care/market workflow 책임 경계를 추가로 분리한다.
 2. 어렵거나 결합이 크면 `post-detail-client.tsx`의 media/actions/comments 경계를 먼저 분리한다.
 3. public API/result shape를 유지하고 targeted test, `typecheck`, `lint`를 실행한다.
