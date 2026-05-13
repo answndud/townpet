@@ -2430,3 +2430,38 @@
 - 결과:
   - 기본 scheduled workflow는 weekly health smoke 중심으로 줄었고, production DB maintenance는 명시 수동 실행으로 낮아졌다.
   - 다음 작업은 `P1-8.2 package script 표면 축소`다.
+
+### 2026-05-13 | P1-8.2 package script 표면 축소
+- 완료일: `2026-05-13`
+- 배경:
+  - `app/package.json` script가 81개까지 늘어나 일상 명령, 특정 spec alias, scripted flow, 성능 측정, one-off 운영 helper가 같은 레벨에 섞여 있었다.
+  - 1인 운영에서는 자주 쓰는 명령만 package script에 노출하고, 특정 테스트/조사 명령은 직접 실행하는 편이 판단 비용이 낮다.
+- 변경내용:
+  - `test:unit:notifications` alias를 제거하고 `pnpm test -- <file>` 직접 실행 기준으로 낮췄다.
+  - `test:flow:notification-comment`, `test:flow:new-user-policy` alias를 제거하고 scripted flow는 필요 시 `tsx scripts/...` 직접 실행하는 one-off helper로 낮췄다.
+  - `perf:feed:scroll` alias를 제거하고 feed scroll 성능 측정은 필요 시 Playwright spec 직접 실행으로 낮췄다.
+  - 개별 e2e alias 8개를 제거했다.
+    - `test:e2e:upload`
+    - `test:e2e:feed-loading`
+    - `test:e2e:kakao-entry`
+    - `test:e2e:naver-entry`
+    - `test:e2e:social-onboarding`
+    - `test:e2e:social-real-oauth`
+    - `test:e2e:notification-filters`
+    - `test:e2e:admin-policies`
+  - high-level e2e entrypoint인 `test:e2e`, `test:e2e:smoke`, `test:e2e:hotpath`, `test:e2e:auth`는 유지했다.
+  - `app/README.md`에 특정 Playwright spec은 alias를 늘리지 않고 `pnpm test:e2e -- e2e/<file>.spec.ts --project=chromium` 형태로 직접 실행한다고 명시했다.
+- 코드문서:
+  - [app/package.json](../app/package.json)
+  - [app/README.md](../app/README.md)
+  - [business/archive/operations/문서 동기화 리포트.md](../business/archive/operations/%EB%AC%B8%EC%84%9C%20%EB%8F%99%EA%B8%B0%ED%99%94%20%EB%A6%AC%ED%8F%AC%ED%8A%B8.md)
+- 검증:
+  - `node -e 'const p=require("./app/package.json"); console.log(Object.keys(p.scripts).length)'` -> `69`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `corepack pnpm@9.12.3 -C app docs:refresh`
+  - `corepack pnpm@9.12.3 -C app docs:refresh:check`
+- 결과:
+  - package script 표면이 81개에서 69개로 줄었다.
+  - 특정 테스트와 조사성 flow는 package alias가 아니라 직접 명령으로 실행하는 기준이 생겼다.
+  - 다음 작업은 `P1-8.3 production demo/OAuth manual automation 격하`다.

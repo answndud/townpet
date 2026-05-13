@@ -4,11 +4,14 @@
 
 - 작업: `P1-8 1인 운영용 과설계 축소 배치`
 - 상태: `in_progress`
-- 현재 초점: `P1-8.1 scheduled maintenance/workflow 축소`를 완료했고, 다음은 `P1-8.2 package script 표면 축소`다.
+- 현재 초점: `P1-8.2 package script 표면 축소`를 완료했고, 다음은 `P1-8.3 production demo/OAuth manual automation 격하`다.
 
 ## 변경/탐색한 파일
 
 - 이번 세션 변경:
+  - `app/package.json`
+  - `app/README.md`
+  - `business/archive/operations/문서 동기화 리포트.md`
   - `.github/workflows/auth-audit-cleanup.yml`
   - `.github/workflows/notification-cleanup.yml`
   - `.github/workflows/search-term-cleanup.yml`
@@ -116,6 +119,8 @@
 - `P1-8` active plan을 생성하고 workflow, package script, production demo/OAuth manual automation, 개인화/광고 판단, client fetch/telemetry, 운영 문서 정리 순서로 세분화했다.
 - `auth-audit-cleanup`, `notification-cleanup`, `search-term-cleanup`, `post-integrity-maintenance`, `ops-latency-snapshots`의 schedule trigger를 제거하고 수동 `workflow_dispatch` 전용으로 낮췄다.
 - 운영 문서와 보안 문서에서 retention cleanup, post integrity, latency snapshot을 상시 자동 루틴이 아니라 on-demand 유지보수 루틴으로 정리했다.
+- `package.json` script를 81개에서 69개로 줄였다.
+- 개별 Playwright spec alias, scripted flow alias, feed scroll perf alias, notification unit alias를 제거하고 직접 `pnpm test:e2e -- e2e/<file>.spec.ts --project=chromium` 또는 `pnpm test -- <file>` 실행 기준으로 낮췄다.
 - 이전 세션 결과:
   - `ops-smoke-checks` 기본 timeout을 5분으로 낮추고 care smoke readiness/prewarm을 기본 경로에서 제거했다.
   - `ops:evidence:solo`를 추가해 health-only 로컬 evidence profile을 제공했다.
@@ -183,6 +188,11 @@
 - `ruby -e 'require "yaml"; ARGV.each { |f| YAML.load_file(f); puts "ok #{f}" }' .github/workflows/*.yml` PASS
 - `corepack pnpm@9.12.3 -C app docs:refresh:check` PASS
 - `git diff --check` PASS
+- `node -e 'const p=require("./app/package.json"); console.log(Object.keys(p.scripts).length)'` -> `69`
+- `corepack pnpm@9.12.3 -C app typecheck` PASS
+- `corepack pnpm@9.12.3 -C app lint` PASS
+- `corepack pnpm@9.12.3 -C app docs:refresh` PASS
+- `corepack pnpm@9.12.3 -C app docs:refresh:check` PASS
 - `corepack pnpm@9.12.3 -C app exec vitest run scripts/run-ops-evidence.test.ts scripts/check-care-smoke-readiness.test.ts` PASS
 - `corepack pnpm@9.12.3 -C app typecheck` PASS
 - `corepack pnpm@9.12.3 -C app lint` PASS
@@ -227,6 +237,6 @@
 
 ## 다음 액션
 
-1. `P1-8.2 package script 표면 축소`를 진행한다.
-2. `package.json` script를 일상/maintenance/legacy 후보로 분류한다.
-3. 제거 또는 격하한 alias는 문서의 직접 실행법과 충돌하지 않게 정리한다.
+1. `P1-8.3 production demo/OAuth manual automation 격하`를 진행한다.
+2. production demo workflow와 OAuth manual helper를 기본 운영 루틴에서 더 낮출 방법을 정리한다.
+3. 위험한 production DB demo seed 경로는 manual-only/legacy helper로 명확히 표시한다.

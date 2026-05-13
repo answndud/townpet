@@ -58,7 +58,7 @@
 
 #### P1-8.2 package script 표면 축소
 
-- 상태: `pending`
+- 상태: `completed`
 - 문제:
   - `app/package.json` script가 81개로, 일상 명령과 one-off 운영 명령이 같은 레벨에 섞여 있다.
   - 신규 세션/AI agent가 어떤 명령을 기본으로 써야 하는지 판단 비용이 커진다.
@@ -79,6 +79,7 @@
 
 #### P1-8.3 production demo/OAuth manual automation 격하
 
+- 상태: `pending`
 - 문제:
   - production demo content workflow는 운영 DB에 데모 데이터를 넣고 지우는 위험한 표면이다.
   - OAuth 수동점검 자동화는 report 생성/갱신/검증까지 3개 script로 쪼개져 있지만, 1인 운영에서는 Markdown 체크리스트와 실제 OAuth 진입 확인으로 충분하다.
