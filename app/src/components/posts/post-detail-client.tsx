@@ -22,6 +22,7 @@ import { PostDetailPrimaryCard } from "@/components/posts/post-detail-primary-ca
 import { PostPersonalizationDwellTracker } from "@/components/posts/post-personalization-dwell-tracker";
 import { PostCommentSectionClient } from "@/components/posts/post-comment-section-client";
 import { PostViewTracker } from "@/components/posts/post-view-tracker";
+import { fetchJson } from "@/lib/client-json";
 import { fetchPostCommentPage } from "@/lib/comment-client";
 import { getGuestPostMeta } from "@/lib/post-guest-meta";
 import { buildPostContentExcerpt } from "@/lib/post-content-text";
@@ -389,11 +390,14 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
 
       for (let attempt = 1; attempt <= 2; attempt += 1) {
         try {
-          const response = await fetch(`/api/posts/${postId}/detail`, {
-            method: "GET",
-            credentials: "same-origin",
-            cache: "no-store",
-          });
+          const { response, payload } = await fetchJson<PostDetailResponse>(
+            `/api/posts/${postId}/detail`,
+            {
+              method: "GET",
+              credentials: "same-origin",
+              cache: "no-store",
+            },
+          );
 
           if (response.status === 403) {
             if (typeof window !== "undefined") {
@@ -411,12 +415,6 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
             throw new Error("로그인이 필요한 게시글입니다.");
           }
 
-          const contentType = response.headers.get("content-type") ?? "";
-          if (!contentType.includes("application/json")) {
-            throw new Error("서버 응답을 처리할 수 없습니다. 잠시 후 다시 시도해 주세요.");
-          }
-
-          const payload = (await response.json()) as PostDetailResponse;
           if (!response.ok || !payload.ok) {
             if (response.status === 404 && typeof window !== "undefined") {
               window.location.href = `/posts/${postId}/guest`;

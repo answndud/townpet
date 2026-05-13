@@ -16,11 +16,11 @@
 현재 active 작업 없음.
 
 최근 완료:
+- `P2-1 client fetch helper 최소 통일`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
 - `P1-8 1인 운영용 과설계 축소 배치`는 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
 - `P1-7 1인 운영용 최소 production smoke 축소`는 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
 - `Release Confidence Hardening P1-6`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
 
 ## 다음 작업 후보
 
-- P2-1: 남은 client `useEffect` fetch 표면 중 기능 fetch helper 통일 여부를 검토한다.
 - P2-2: UX/error boundary/mobile/accessibility를 보강한다.
