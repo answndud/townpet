@@ -4,11 +4,21 @@
 
 - 작업: 현재 active 작업 없음
 - 상태: `idle`
-- 현재 초점: `P2-11 profile form status/touch target 보강`을 완료 archive했다.
+- 현재 초점: `P2-12 onboarding/pet profile form touch/status 보강`을 완료 archive했다.
 
 ## 변경/탐색한 파일
 
 - 이번 세션 변경:
+  - `app/src/components/onboarding/onboarding-form.tsx`
+  - `app/src/components/onboarding/onboarding-form-accessibility.test.tsx`
+  - `app/src/components/profile/pet-profile-manager.tsx`
+  - `app/src/components/profile/pet-profile-manager-accessibility.test.tsx`
+  - `docs/PLAN.md`
+  - `docs/PROGRESS.md`
+- 탐색한 파일:
+  - `app/src/components/onboarding/onboarding-form.tsx`
+  - `app/src/components/profile/pet-profile-manager.tsx`
+- 이전 세션 변경:
   - `app/src/components/profile/profile-info-form.tsx`
   - `app/src/components/profile/neighborhood-preference-form.tsx`
   - `app/src/components/profile/profile-image-uploader.tsx`
@@ -256,6 +266,13 @@
   - `docs/errors/2026-05-12_vercel-security-env-build-preflight.md`
   - `docs/COMPLETED.md`
 - 이번 세션 결과:
+- 온보딩 닉네임 저장, 동네 저장, 나중에 설정하기 action을 `min-h-10` 기준으로 보강했다.
+- 온보딩 상태 메시지에 `role="status"`와 `aria-live`를 추가했다.
+- 반려동물 프로필 등록/저장/취소 action을 `min-h-10` 기준으로 보강했다.
+- 반려동물 목록의 품종 라운지/수정/삭제 action을 `min-h-10` 기준으로 보강했다.
+- 반려동물 프로필 상태 메시지에 `role="status"`와 `aria-live`를 추가했다.
+- 온보딩/반려동물 프로필 접근성 정적 렌더 테스트를 추가했다.
+- 이전 세션 결과:
 - 프로필 정보 저장 버튼을 `min-h-10`으로 보강하고 상태 메시지에 `role="status"`와 `aria-live`를 추가했다.
 - 동네 저장 버튼을 `min-h-10`으로 보강하고 상태 메시지에 `role="status"`와 `aria-live`를 추가했다.
 - 프로필 사진 저장 버튼을 `min-h-10`으로 보강하고 성공/실패 메시지에 `role="status"`/`role="alert"`와 `aria-live`를 추가했다.

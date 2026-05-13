@@ -2922,3 +2922,32 @@
 - 결과:
   - 프로필 설정의 주요 저장 흐름이 기존 모바일/접근성 기준에 맞춰졌다.
   - 다음 후보는 `P2-12 onboarding/pet profile form의 status와 mobile touch target 점검`이다.
+
+### 2026-05-13 | P2-12 onboarding/pet profile form touch/status 보강
+- 완료일: `2026-05-13`
+- 배경:
+  - 온보딩과 반려동물 프로필 form은 초기 설정과 반복 수정 흐름에서 자주 사용하는 사용자 입력 표면이다.
+  - 일부 저장/수정/삭제 action이 40px touch target 기준을 명시하지 않았고, 상태 메시지도 스크린리더 전달이 약했다.
+- 변경내용:
+  - 온보딩 닉네임 저장, 동네 저장, 나중에 설정하기 action에 `min-h-10` 기준을 적용했다.
+  - 온보딩 상태 메시지에 `role="status"`와 `aria-live="polite"`를 추가했다.
+  - 반려동물 프로필 등록/저장/취소 action에 `min-h-10` 기준을 적용했다.
+  - 반려동물 목록의 품종 라운지, 수정, 삭제 action에 `min-h-10` 기준을 적용했다.
+  - 반려동물 프로필 상태 메시지에 `role="status"`와 `aria-live="polite"`를 추가했다.
+  - 온보딩/반려동물 프로필 접근성 정적 렌더 unit test를 추가했다.
+- 코드문서:
+  - [app/src/components/onboarding/onboarding-form.tsx](../app/src/components/onboarding/onboarding-form.tsx)
+  - [app/src/components/onboarding/onboarding-form-accessibility.test.tsx](../app/src/components/onboarding/onboarding-form-accessibility.test.tsx)
+  - [app/src/components/profile/pet-profile-manager.tsx](../app/src/components/profile/pet-profile-manager.tsx)
+  - [app/src/components/profile/pet-profile-manager-accessibility.test.tsx](../app/src/components/profile/pet-profile-manager-accessibility.test.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app exec vitest run src/components/onboarding/onboarding-form-accessibility.test.tsx src/components/profile/pet-profile-manager-accessibility.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `corepack pnpm@9.12.3 -C app docs:refresh:check`
+  - `git diff --check`
+- 결과:
+  - 온보딩과 반려동물 프로필 form의 주요 action과 상태 메시지가 기존 모바일/접근성 기준에 맞춰졌다.
+  - 다음 후보는 `P2-13 auth form status/touch target과 error recovery 점검`이다.
