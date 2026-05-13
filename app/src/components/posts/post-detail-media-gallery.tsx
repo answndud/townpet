@@ -221,7 +221,7 @@ export function PostDetailMediaGallery({ images }: PostDetailMediaGalleryProps) 
               <button
                 type="button"
                 onClick={() => setActiveIndex(null)}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white transition hover:bg-white/18 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[rgba(6,16,32,0.82)]"
+                className="inline-flex min-h-10 min-w-10 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white transition hover:bg-white/18 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[rgba(6,16,32,0.82)]"
                 aria-label="이미지 닫기"
               >
                 <svg

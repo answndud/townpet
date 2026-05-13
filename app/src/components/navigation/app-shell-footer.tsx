@@ -19,7 +19,7 @@ export function AppShellFooter() {
           </div>
           <div className="flex flex-wrap gap-1.5 text-xs">
             {LEGAL_LINKS.map((link) => (
-              <Link key={link.href} href={link.href} className="tp-btn-soft tp-btn-xs inline-flex">
+              <Link key={link.href} href={link.href} className="tp-btn-soft inline-flex min-h-10 items-center px-3 text-xs">
                 {link.label}
               </Link>
             ))}
@@ -33,4 +33,3 @@ export function AppShellFooter() {
     </footer>
   );
 }
-

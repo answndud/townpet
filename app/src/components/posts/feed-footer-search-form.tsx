@@ -45,7 +45,7 @@ export function FeedFooterSearchForm({
           id="feed-footer-search-in"
           name="searchIn"
           defaultValue={searchIn}
-          className="tp-input-soft min-h-10 px-2.5 text-xs font-medium outline-none transition focus:border-[#4e89d8] focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25 sm:min-h-9"
+          className="tp-input-soft min-h-10 px-2.5 text-xs font-medium outline-none transition focus:border-[#4e89d8] focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
         >
           <option value="TITLE">제목</option>
           <option value="CONTENT">내용</option>
@@ -60,12 +60,12 @@ export function FeedFooterSearchForm({
           type="search"
           defaultValue={query}
           placeholder="검색어"
-          className="tp-input-soft min-h-10 w-full bg-white px-3 text-sm outline-none transition focus:border-[#4e89d8] focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25 sm:min-h-9 sm:max-w-[360px]"
+          className="tp-input-soft min-h-10 w-full bg-white px-3 text-sm outline-none transition focus:border-[#4e89d8] focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25 sm:max-w-[360px]"
         />
 
         <button
           type="submit"
-          className="tp-btn-primary inline-flex min-h-10 items-center justify-center px-4 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25 sm:min-h-9"
+          className="tp-btn-primary inline-flex min-h-10 items-center justify-center px-4 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
         >
           검색
         </button>
@@ -73,7 +73,7 @@ export function FeedFooterSearchForm({
         {query.trim().length > 0 ? (
           <Link
             href={resetHref}
-            className="tp-btn-soft inline-flex min-h-10 items-center justify-center px-3 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25 sm:min-h-9"
+            className="tp-btn-soft inline-flex min-h-10 items-center justify-center px-3 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
           >
             초기화
           </Link>
