@@ -158,7 +158,7 @@ describe("GET /api/feed/guest", () => {
         view: "gate",
         gate: {
           title: "로그인 후 이용할 수 있습니다.",
-          description: "MEETUP 게시판은 내 동네 기반으로 노출됩니다. 로그인 후 대표 동네를 설정해 주세요.",
+          description: "동네모임은 내 동네 기반으로 노출됩니다. 로그인 후 대표 동네를 설정해 주세요.",
           primaryLink: "/login?next=%2Ffeed%3Ftype%3DMEETUP",
           primaryLabel: "로그인하기",
           secondaryLink: "/feed",
@@ -167,6 +167,30 @@ describe("GET /api/feed/guest", () => {
       },
     });
     expect(mockListPosts).not.toHaveBeenCalled();
+  });
+
+  it("uses Korean labels in guest feed titles", async () => {
+    mockCountPosts.mockResolvedValue(0);
+    mockListPosts.mockResolvedValue({
+      items: [],
+      nextCursor: null,
+    } as never);
+
+    const lostFoundResponse = await GET(
+      new Request("http://localhost/api/feed/guest?type=LOST_FOUND") as NextRequest,
+    );
+    const lostFoundPayload = await lostFoundResponse.json();
+
+    expect(lostFoundResponse.status).toBe(200);
+    expect(lostFoundPayload.data.feed.feedTitle).toBe("실종/목격 제보 게시판");
+
+    const hospitalResponse = await GET(
+      new Request("http://localhost/api/feed/guest?type=HOSPITAL_REVIEW") as NextRequest,
+    );
+    const hospitalPayload = await hospitalResponse.json();
+
+    expect(hospitalResponse.status).toBe(200);
+    expect(hospitalPayload.data.feed.feedTitle).toBe("병원후기 게시판");
   });
 
   it("returns compact cursor payload for guest infinite scroll", async () => {

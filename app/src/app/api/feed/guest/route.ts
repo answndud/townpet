@@ -7,6 +7,7 @@ import { sanitizePublicGuestIdentity } from "@/lib/public-guest-identity";
 import { isCommonBoardPostType } from "@/lib/community-board";
 import { normalizeFeedPetTypeIds } from "@/lib/feed-pet-type-filter";
 import { isLoginRequiredPostType } from "@/lib/post-access";
+import { getPostTypeMeta } from "@/lib/post-presenter";
 import { isFreeBoardPostType } from "@/lib/post-type-groups";
 import { REVIEW_CATEGORY, REVIEW_CATEGORY_VALUES } from "@/lib/review-category";
 import { isLocalRequiredPostType } from "@/lib/post-scope-policy";
@@ -283,6 +284,7 @@ export async function GET(request: NextRequest) {
     const cursor = parsed.data.cursor?.trim() || undefined;
 
     if (isLocalRequiredType && type) {
+      const typeLabel = getPostTypeMeta(type).label;
       const perfSummary = tracker.flush({
         route: "/api/feed/guest",
         mode,
@@ -299,7 +301,7 @@ export async function GET(request: NextRequest) {
           view: "gate" as const,
           gate: {
             title: "로그인 후 이용할 수 있습니다.",
-            description: `${type} 게시판은 내 동네 기반으로 노출됩니다. 로그인 후 대표 동네를 설정해 주세요.`,
+            description: `${typeLabel}은 내 동네 기반으로 노출됩니다. 로그인 후 대표 동네를 설정해 주세요.`,
             primaryLink: `/login?next=${encodeURIComponent(`/feed?type=${type}`)}`,
             primaryLabel: "로그인하기",
             secondaryLink: "/feed",
@@ -520,7 +522,7 @@ export async function GET(request: NextRequest) {
     const feedTitle = reviewBoard
       ? "리뷰 게시판"
       : type
-        ? `${type} 게시판`
+        ? `${getPostTypeMeta(type).label} 게시판`
         : "전체 게시판";
     const feedQueryKey = [
       mode,
