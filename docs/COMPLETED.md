@@ -3240,3 +3240,34 @@
 - 결과:
   - 핵심 공개 feed/search/detail 화면의 desktop/mobile touch target과 overflow smoke가 통과했다.
   - 다음 후보는 `P2-22 40px touch target 보강 이후 남은 작성/댓글/관리자 화면 중 실제 Playwright smoke가 필요한 화면 선별`이다.
+
+### 2026-05-14 | P2-22 touch target Playwright smoke 선별
+- 완료일: `2026-05-14`
+- 배경:
+  - P2-21에서 공개 feed/search/detail visual smoke를 추가했다.
+  - 남은 작성/댓글/관리자 화면은 기존 기능 e2e가 이미 많아, 1인 운영 기준으로 무작정 smoke를 늘리면 유지 비용이 커진다.
+- 변경내용:
+  - 작성/댓글/관리자/정책/알림/프로필 e2e 커버리지를 비교했다.
+  - `docs/reports/touch-target-playwright-smoke-selection.md`에 추가 필요/조건부/불필요 영역을 정리했다.
+  - 추가 필요 우선순위는 `P2-23 post create/editor mobile visual smoke`, `P2-24 comment/report mobile visual smoke`로 정했다.
+  - 조건부 추가는 기존 `care-feedback-mobile.spec.ts`에 touch target bounding box assertion을 보강하는 방식으로 제한했다.
+  - 정책 관리자, 알림/프로필/소셜 visual smoke는 기존 기능 e2e와 소스 회귀 테스트로 충분해 추가하지 않는 것으로 분류했다.
+- 코드문서:
+  - [docs/reports/touch-target-playwright-smoke-selection.md](./reports/touch-target-playwright-smoke-selection.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - 기존 e2e 파일 검토:
+    - `app/e2e/guest-post-management.spec.ts`
+    - `app/e2e/post-comment-auth-sync.spec.ts`
+    - `app/e2e/report-flow.spec.ts`
+    - `app/e2e/care-feedback-mobile.spec.ts`
+    - `app/e2e/image-upload-flow.spec.ts`
+    - `app/e2e/admin-guest-post-policy.spec.ts`
+  - 관련 source touch target 확인:
+    - `app/src/components/posts/post-comment-root-form.tsx`
+    - `app/src/components/posts/post-comment-thread.tsx`
+    - `app/src/components/admin/report-queue-table.tsx`
+    - `app/src/app/admin/care-feedbacks/page.tsx`
+- 결과:
+  - 다음 구현 후보는 `P2-23 post create/editor mobile visual smoke 추가`다.

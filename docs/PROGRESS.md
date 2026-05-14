@@ -4,11 +4,26 @@
 
 - 작업: 현재 active 작업 없음
 - 상태: `idle`
-- 현재 초점: `P2-21 feed/search/detail Playwright visual smoke`를 완료 archive했다. 다음 후보는 `P2-22 40px touch target 보강 이후 남은 작성/댓글/관리자 화면 중 실제 Playwright smoke가 필요한 화면 선별`이다.
+- 현재 초점: `P2-22 touch target Playwright smoke 선별`을 완료 archive했다. 다음 후보는 `P2-23 post create/editor mobile visual smoke 추가`다.
 
 ## 변경/탐색한 파일
 
 - 이번 세션 변경:
+  - `docs/reports/touch-target-playwright-smoke-selection.md`
+  - `docs/PLAN.md`
+  - `docs/PROGRESS.md`
+- 탐색한 파일:
+  - `app/e2e/guest-post-management.spec.ts`
+  - `app/e2e/post-comment-auth-sync.spec.ts`
+  - `app/e2e/report-flow.spec.ts`
+  - `app/e2e/care-feedback-mobile.spec.ts`
+  - `app/e2e/image-upload-flow.spec.ts`
+  - `app/e2e/admin-guest-post-policy.spec.ts`
+  - `app/src/components/posts/post-comment-root-form.tsx`
+  - `app/src/components/posts/post-comment-thread.tsx`
+  - `app/src/components/admin/report-queue-table.tsx`
+  - `app/src/app/admin/care-feedbacks/page.tsx`
+- 이전 세션 변경:
   - `app/e2e/feed-search-detail-visual-smoke.spec.ts`
   - `app/src/components/posts/guest-feed-page-client.tsx`
   - `app/src/app/posts/[id]/guest/page.tsx`
