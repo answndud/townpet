@@ -3474,3 +3474,25 @@
 - 결과:
   - 저장소 진입 문서 3곳의 운영 루틴 표현이 `quality:check`, health-only smoke, 변경 범위별 on-demand e2e 기준으로 동기화됐다.
   - 다음 후보는 `P2-31 P2 릴리즈 준비 트랙 잔여 작업 최종 점검`이다.
+
+### 2026-05-14 | P2-31 P2 릴리즈 준비 트랙 잔여 작업 최종 점검
+- 완료일: `2026-05-14`
+- 배경:
+  - P2-1부터 P2-30까지 UX/accessibility/mobile quality, visual smoke, quality gate, e2e 범위, 배포 전 on-demand runbook, 운영 문서 동기화를 순차적으로 닫았다.
+  - 마지막으로 active 개발 잔여가 있는지와 실제 배포 시점 조건부 체크를 분리해 기록할 필요가 있었다.
+- 변경내용:
+  - `p2-release-readiness-final-check-2026-05-14.md`를 추가했다.
+  - 완료된 축을 기본 품질 게이트, 모바일 touch target, 핵심 visual smoke, hotpath e2e 범위, 배포 전 체크 순서, 운영 루틴 표현으로 정리했다.
+  - 남은 항목을 P2 active 개발 잔여가 아니라 실제 변경/배포 시점에 실행하는 조건부 체크로 분류했다.
+  - 의도적 보류 범위를 결제/보험/정산, 자동 제재 강행, 카카오맵 deep feature, 마켓/공동구매 deep feature, 전체 Playwright 전수 실행, 실 OAuth 실계정 검증, production secrets 기반 strict/internal health로 재확인했다.
+  - `PLAN.md`와 `PROGRESS.md`를 active 작업 없음 상태로 정리했다.
+- 코드문서:
+  - [docs/reports/p2-release-readiness-final-check-2026-05-14.md](./reports/p2-release-readiness-final-check-2026-05-14.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app docs:refresh`
+  - `node scripts/refresh-docs-index.mjs --check`
+- 결과:
+  - P2 릴리즈 준비 트랙의 active 개발 잔여는 현재 기준으로 없다.
+  - 다음은 새 개발 사이클을 정하거나, 실제 배포 시점에 `business/operations/배포전_on-demand_체크.md` 순서로 on-demand 체크를 실행하는 것이다.
