@@ -2,7 +2,6 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import { notFound } from "next/navigation";
-import { PostType } from "@prisma/client";
 
 import { BackToFeedButton } from "@/components/posts/back-to-feed-button";
 import { NeighborhoodGateNotice } from "@/components/neighborhood/neighborhood-gate-notice";
@@ -27,7 +26,7 @@ import {
 } from "@/lib/post-page-metadata";
 import { getGuestPostMeta } from "@/lib/post-guest-meta";
 import { resolvePublicGuestDisplayName } from "@/lib/public-guest-identity";
-import { formatRelativeDate } from "@/lib/post-presenter";
+import { formatRelativeDate, postTypeMeta } from "@/lib/post-presenter";
 import { isReportablePostType } from "@/lib/post-type-groups";
 import { toAbsoluteUrl } from "@/lib/site-url";
 import { resolveUserDisplayName } from "@/lib/user-display";
@@ -59,73 +58,6 @@ export async function generateMetadata({
 
   return buildPostDetailMetadata(post, loginRequiredTypes);
 }
-
-const typeMeta: Record<PostType, { label: string; chipClass: string }> = {
-  HOSPITAL_REVIEW: {
-    label: "병원후기",
-    chipClass: "border-sky-200 bg-sky-50 text-sky-700",
-  },
-  PLACE_REVIEW: {
-    label: "후기/리뷰",
-    chipClass: "border-blue-200 bg-blue-50 text-blue-700",
-  },
-  WALK_ROUTE: {
-    label: "동네 산책코스",
-    chipClass: "border-cyan-200 bg-cyan-50 text-cyan-700",
-  },
-  MEETUP: {
-    label: "동네모임",
-    chipClass: "border-indigo-200 bg-indigo-50 text-indigo-700",
-  },
-  MARKET_LISTING: {
-    label: "중고/공동구매",
-    chipClass: "border-slate-300 bg-slate-100 text-slate-700",
-  },
-  CARE_REQUEST: {
-    label: "돌봄 요청",
-    chipClass: "border-emerald-200 bg-emerald-50 text-emerald-700",
-  },
-  ADOPTION_LISTING: {
-    label: "유기동물 입양",
-    chipClass: "border-amber-200 bg-amber-50 text-amber-700",
-  },
-  SHELTER_VOLUNTEER: {
-    label: "보호소 봉사 모집",
-    chipClass: "border-lime-200 bg-lime-50 text-lime-700",
-  },
-  LOST_FOUND: {
-    label: "실종/목격 제보",
-    chipClass: "border-rose-200 bg-rose-50 text-rose-700",
-  },
-  QA_QUESTION: {
-    label: "질문/답변",
-    chipClass: "border-teal-200 bg-teal-50 text-teal-700",
-  },
-  QA_ANSWER: {
-    label: "질문/답변",
-    chipClass: "border-cyan-200 bg-cyan-50 text-cyan-700",
-  },
-  FREE_POST: {
-    label: "자유게시판",
-    chipClass: "border-zinc-300 bg-zinc-100 text-zinc-700",
-  },
-  FREE_BOARD: {
-    label: "자유게시판",
-    chipClass: "border-zinc-300 bg-zinc-100 text-zinc-700",
-  },
-  DAILY_SHARE: {
-    label: "자유게시판",
-    chipClass: "border-slate-300 bg-slate-100 text-slate-700",
-  },
-  PRODUCT_REVIEW: {
-    label: "용품리뷰",
-    chipClass: "border-blue-200 bg-blue-50 text-blue-700",
-  },
-  PET_SHOWCASE: {
-    label: "반려동물 자랑",
-    chipClass: "border-sky-200 bg-sky-50 text-sky-700",
-  },
-};
 
 const emptyValue = <span className="text-[#95a8c5]">비어 있음</span>;
 
@@ -255,7 +187,7 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
       resolvePublicGuestDisplayName((post as { guestDisplayName?: string | null }).guestDisplayName)
     : resolveUserDisplayName(post.author.nickname);
   const postUrl = toAbsoluteUrl(`/posts/${post.id}`);
-  const meta = typeMeta[post.type];
+  const meta = postTypeMeta[post.type];
   const createdAt = ensureDate(post.createdAt) ?? new Date();
   const updatedAt = ensureDate(post.updatedAt) ?? createdAt;
   const safeViewCount = Number.isFinite(post.viewCount) ? Number(post.viewCount) : 0;
@@ -420,7 +352,7 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
 
         {post.hospitalReview ? (
           <section className="tp-card p-5 sm:p-6">
-            <h2 className="tp-text-section-title text-[#163462]">병원후기 상세</h2>
+            <h2 className="tp-text-section-title text-[#163462]">병원 후기 상세</h2>
             <div className="mt-4 grid gap-3 text-sm text-[#355988] md:grid-cols-3">
               <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">병원</p>
@@ -452,7 +384,7 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
 
         {post.placeReview ? (
           <section className="tp-card p-5 sm:p-6">
-            <h2 className="tp-text-section-title text-[#163462]">후기/리뷰 상세</h2>
+            <h2 className="tp-text-section-title text-[#163462]">후기 상세</h2>
             <div className="mt-4 grid gap-3 text-sm text-[#355988] md:grid-cols-3">
               <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">장소명</p>
@@ -524,7 +456,7 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
 
         {post.marketListing ? (
           <section className="tp-card p-5 sm:p-6">
-            <h2 className="tp-text-section-title text-[#163462]">마켓 거래 정보</h2>
+            <h2 className="tp-text-section-title text-[#163462]">거래 정보</h2>
             <div className="mt-4 grid gap-3 text-sm text-[#355988] md:grid-cols-3">
               <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">거래 유형</p>

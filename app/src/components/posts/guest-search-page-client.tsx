@@ -220,7 +220,7 @@ export function GuestSearchPageClient() {
 
         {isGuestTypeBlocked && type ? (
           <div className="border border-[#d9c38b] bg-[#fff8e5] px-4 py-3 text-sm text-[#6c5319]">
-            선택한 카테고리({postTypeMeta[type].label})는 로그인 후 검색할 수 있습니다.{" "}
+            선택한 게시판({postTypeMeta[type].label})은 로그인 후 검색할 수 있습니다.{" "}
             <Link
               href={blockedLoginHref}
               className="font-semibold text-[#2f5da4] underline underline-offset-2"

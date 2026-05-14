@@ -59,7 +59,7 @@ export default async function AdminPoliciesPage() {
           <article className="rounded-2xl border border-[#dbe6f6] bg-[#f8fbff] p-4 text-xs text-[#4f678d]">
             <p className="text-[11px] uppercase tracking-[0.22em] text-[#5b78a1]">로그인 필수</p>
             <p className="mt-2 text-2xl font-bold text-[#10284a]">{loginRequiredTypes.length}</p>
-            <p className="mt-1">카테고리</p>
+            <p className="mt-1">게시판</p>
           </article>
           <article className="rounded-2xl border border-[#dbe6f6] bg-[#f8fbff] p-4 text-xs text-[#4f678d]">
             <p className="text-[11px] uppercase tracking-[0.22em] text-[#5b78a1]">금칙어</p>
@@ -69,7 +69,7 @@ export default async function AdminPoliciesPage() {
           <article className="rounded-2xl border border-[#dbe6f6] bg-[#f8fbff] p-4 text-xs text-[#4f678d]">
             <p className="text-[11px] uppercase tracking-[0.22em] text-[#5b78a1]">비회원 작성</p>
             <p className="mt-2 text-2xl font-bold text-[#10284a]">{guestPostPolicy.maxImageCount}</p>
-            <p className="mt-1">최대 이미지 · 차단 카테고리 {guestPostPolicy.blockedPostTypes.length}개</p>
+            <p className="mt-1">최대 이미지 · 차단 게시판 {guestPostPolicy.blockedPostTypes.length}개</p>
           </article>
           <article className="rounded-2xl border border-[#dbe6f6] bg-[#f8fbff] p-4 text-xs text-[#4f678d]">
             <p className="text-[11px] uppercase tracking-[0.22em] text-[#5b78a1]">신규 계정</p>
@@ -79,7 +79,7 @@ export default async function AdminPoliciesPage() {
         </section>
 
         <section className="tp-card p-5 sm:p-6">
-          <h2 className="text-lg font-semibold text-[#153a6a]">현재 로그인 필수 카테고리</h2>
+          <h2 className="text-lg font-semibold text-[#153a6a]">현재 로그인 필수 게시판</h2>
           <div className="mt-3 flex flex-wrap gap-2 text-xs">
             {loginRequiredTypes.length > 0 ? (
               loginRequiredTypes.map((type) => (
@@ -91,7 +91,7 @@ export default async function AdminPoliciesPage() {
                 </span>
               ))
             ) : (
-              <span className="text-[#5a7398]">현재 비회원 제한 카테고리가 없습니다.</span>
+              <span className="text-[#5a7398]">현재 비회원 제한 게시판이 없습니다.</span>
             )}
           </div>
         </section>
@@ -99,7 +99,7 @@ export default async function AdminPoliciesPage() {
         <section className="tp-card p-5 sm:p-6">
           <h2 className="text-lg font-semibold text-[#153a6a]">정책 편집</h2>
           <p className="mt-2 text-xs text-[#5a7398]">
-            체크된 카테고리는 비회원이 열람할 수 없으며 로그인 후 접근 가능합니다.
+            체크된 게시판은 비회원이 열람할 수 없으며 로그인 후 접근 가능합니다.
           </p>
           <div className="mt-4">
             <GuestReadPolicyForm
@@ -140,11 +140,11 @@ export default async function AdminPoliciesPage() {
         <section className="tp-card p-5 sm:p-6">
           <h2 className="text-lg font-semibold text-[#153a6a]">비회원 작성 정책</h2>
           <p className="mt-2 text-xs text-[#5a7398]">
-            비회원 즉시 공개 글의 작성 범위/카테고리/링크/연락처/이미지 제한을 조정합니다.
+            비회원 즉시 공개 글의 작성 범위, 게시판, 링크, 연락처, 이미지 제한을 조정합니다.
           </p>
           <div className="mt-3 flex flex-wrap gap-2 text-[11px]">
             <span className="rounded-md border border-[#cbdcf5] bg-[#f6f9ff] px-2.5 py-1 text-[#315484]">
-              차단 카테고리 {guestPostPolicy.blockedPostTypes.length}개
+              차단 게시판 {guestPostPolicy.blockedPostTypes.length}개
             </span>
             <span className="rounded-md border border-[#cbdcf5] bg-[#f6f9ff] px-2.5 py-1 text-[#315484]">
               이미지 최대 {guestPostPolicy.maxImageCount}장
@@ -173,18 +173,18 @@ export default async function AdminPoliciesPage() {
         <section className="tp-card p-5 sm:p-6">
           <h2 className="text-lg font-semibold text-[#153a6a]">신규 계정 안전 정책</h2>
           <p className="mt-2 text-xs text-[#5a7398]">
-            신규 유저의 고위험 카테고리 작성 제한과 연락처 포함 콘텐츠 차단 시간을
+            신규 유저의 고위험 게시판 작성 제한과 연락처 포함 콘텐츠 차단 시간을
             운영에서 조정할 수 있습니다.
           </p>
           <div className="mt-3 flex flex-wrap gap-2 text-[11px]">
             <span className="rounded-md border border-[#cbdcf5] bg-[#f6f9ff] px-2.5 py-1 text-[#315484]">
-              카테고리 제한: 가입 후 {newUserSafetyPolicy.minAccountAgeHours}시간
+              게시판 제한: 가입 후 {newUserSafetyPolicy.minAccountAgeHours}시간
             </span>
             <span className="rounded-md border border-[#cbdcf5] bg-[#f6f9ff] px-2.5 py-1 text-[#315484]">
               연락처 차단: 가입 후 {newUserSafetyPolicy.contactBlockWindowHours}시간
             </span>
             <span className="rounded-md border border-[#cbdcf5] bg-[#f6f9ff] px-2.5 py-1 text-[#315484]">
-              제한 카테고리 {newUserSafetyPolicy.restrictedPostTypes.length}개
+              제한 게시판 {newUserSafetyPolicy.restrictedPostTypes.length}개
             </span>
           </div>
           <div className="mt-4">

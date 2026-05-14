@@ -51,17 +51,17 @@ export default async function DirectModerationPage() {
               POST /api/admin/moderation/users/restore-content
             </code>
             <p className="mt-1 text-[11px] text-[#5b78a1]">
-              기본 `AUTOMATED`: `hide-content` 허용, `sanction`은 최대 7일 정지까지, `restore-content`
-              는 사람 승인 필요
+              자동 실행 기본값: 콘텐츠 숨김은 허용, 제재는 최대 7일 정지까지, 콘텐츠 복구는
+              사람 승인 필요
             </p>
           </div>
           <div className="flex flex-col gap-1.5">
             <p className="text-[10px] uppercase tracking-[0.24em] text-[#5b78a1]">
               Recommended Flow
             </p>
-            <p>1. `hide-content`로 최근 ACTIVE 글/댓글부터 숨깁니다.</p>
-            <p>2. 반복 계정만 `sanction`으로 경고/정지 단계에 올립니다.</p>
-            <p>3. 오탐이면 `restore-content`로 직접 숨김만 안전하게 복구합니다.</p>
+            <p>1. 콘텐츠 숨김으로 최근 공개 중인 글/댓글부터 숨깁니다.</p>
+            <p>2. 반복 계정만 경고/정지 단계에 올립니다.</p>
+            <p>3. 오탐이면 콘텐츠 복구로 직접 숨김만 안전하게 되돌립니다.</p>
             <p>4. 30일/영구 정지는 로그와 대상 콘텐츠를 함께 확인한 뒤 진행합니다.</p>
           </div>
         </section>

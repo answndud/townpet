@@ -46,7 +46,7 @@ export function HospitalReviewFields({
   setFormState,
 }: StructuredFieldsProps) {
   return (
-    <StructuredFieldSection title="병원후기 정보">
+    <StructuredFieldSection title="병원 후기 정보">
       <label className="tp-form-label">
         병원명
         <input
@@ -429,7 +429,7 @@ export function MarketListingFields({
   setFormState,
 }: StructuredFieldsProps) {
   return (
-    <StructuredFieldSection title="마켓 거래 정보">
+    <StructuredFieldSection title="거래 정보">
       <label className="tp-form-label">
         거래 유형
         <select

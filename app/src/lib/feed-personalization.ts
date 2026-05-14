@@ -174,7 +174,7 @@ function appendPreferredInterestHint(description: string, preferredInterestLabel
     return description;
   }
 
-  return `${description} 관심 태그와 콘텐츠 카테고리 3차 신호도 함께 반영합니다.`;
+  return `${description} 관심 태그와 콘텐츠 분류 신호도 함께 반영합니다.`;
 }
 
 function buildRecentEngagementEmphasis(recentEngagementLabels: string[]) {
@@ -467,7 +467,7 @@ export function buildFeedPersonalizationSummary(context: FeedAudienceContext) {
       context.preferredPetTypeLabels.length > 0
         ? "반려동물 프로필 신호가 부족해 선택한 커뮤니티 선호를 우선 반영합니다. 프로필을 보강하면 품종/체급 기준 정확도가 더 올라갑니다."
         : context.preferredInterestLabels.length > 0
-          ? "반려동물 프로필 신호가 부족해 관심 태그와 콘텐츠 카테고리를 우선 반영합니다. 프로필을 보강하면 품종/체급 기준 정확도가 더 올라갑니다."
+          ? "반려동물 프로필 신호가 부족해 관심 태그와 콘텐츠 분류를 우선 반영합니다. 프로필을 보강하면 품종/체급 기준 정확도가 더 올라갑니다."
           : context.recentEngagementLabels.length > 0
           ? "반려동물 프로필 신호가 부족해 최근 반응한 콘텐츠 주제를 우선 반영합니다. 프로필을 보강하면 품종/체급 기준 정확도가 더 올라갑니다."
           : context.recentBehaviorLabels.length > 0

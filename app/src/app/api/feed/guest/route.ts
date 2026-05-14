@@ -301,7 +301,7 @@ export async function GET(request: NextRequest) {
           view: "gate" as const,
           gate: {
             title: "로그인 후 이용할 수 있습니다.",
-            description: `${typeLabel}은 내 동네 기반으로 노출됩니다. 로그인 후 대표 동네를 설정해 주세요.`,
+            description: `${typeLabel}은 동네 설정 후 볼 수 있습니다. 로그인 후 대표 동네를 설정해 주세요.`,
             primaryLink: `/login?next=${encodeURIComponent(`/feed?type=${type}`)}`,
             primaryLabel: "로그인하기",
             secondaryLink: "/feed",

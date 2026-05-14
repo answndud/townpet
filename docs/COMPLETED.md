@@ -3533,3 +3533,43 @@
   - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health`가 통과했다.
   - production public health는 status 200, payload.status `ok`, elapsed 1535ms로 확인했다.
   - 로컬 검증과 배포 후 public health 기준 배포 판단은 `GO`다.
+
+### 2026-05-14 | 전체 한국어 UI 카피 감사 및 개선
+- 완료일: `2026-05-14`
+- 배경:
+  - 게시판명 일부 수정만으로는 사용자가 요청한 “전체 사용 텍스트 리뷰” 범위를 충족하지 못했다.
+  - 한국인 대상 커뮤니티에서 raw enum, 영어/개발자 용어, 어색한 직역, 용어 불일치가 남지 않도록 public/admin/auth/write/API 메시지를 다시 감사했다.
+  - 검증 시간이 길다는 불만을 반영해 전체 quality gate 전에 실행할 수 있는 빠른 `copy:audit` 스크립트를 repo-local로 추가했다.
+- 변경내용:
+  - `병원후기`, `후기/리뷰`, `용품리뷰`, `동네모임`, `중고/공동구매` 계열 label을 `병원 후기`, `장소 후기`, `용품 후기`, `동네 모임`, `중고·공동구매`로 정리했다.
+  - 북마크/내 글/guest detail의 중복 게시글 유형 label map을 제거하거나 canonical `postTypeMeta` 기준으로 맞췄다.
+  - `entry 저장`, `YouTube video preview`, `townpet-user`, `ACTIVE 글/댓글`, `hide-content`, `전역 검색`, `플래그`, `모집중`, `검토중`, `진행중` 같은 고위험 문구를 한국어 UI 문맥에 맞게 수정했다.
+  - 게시판 맥락의 `카테고리`를 `게시판`으로 바꾸고, form의 `리뷰 카테고리`를 `후기 유형`으로 수정했다.
+  - 신고 상태와 액션을 `대기/승인/기각`에서 `검토 대기/조치 완료/조치 없음`으로 바꿨다.
+  - user-facing `마켓` 문구를 `거래` 중심으로 정리했다.
+  - `app/scripts/audit-ui-copy.ts`와 `copy:audit`, `copy:audit:strict` package script를 추가했다.
+  - 변경 전/후 문구 전체 목록을 [ui-copy-change-report-2026-05-14.md](./reports/ui-copy-change-report-2026-05-14.md)에 정리했다.
+- 코드문서:
+  - [app/scripts/audit-ui-copy.ts](../app/scripts/audit-ui-copy.ts)
+  - [app/package.json](../app/package.json)
+  - [docs/reports/ui-copy-audit-2026-05-14.md](./reports/ui-copy-audit-2026-05-14.md)
+  - [docs/reports/ui-copy-change-report-2026-05-14.md](./reports/ui-copy-change-report-2026-05-14.md)
+  - [docs/reports/ui-copy-screenshots-2026-05-14](./reports/ui-copy-screenshots-2026-05-14)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app copy:audit:strict`
+  - `corepack pnpm@9.12.3 -C app test -- src/components/posts/post-create-basic-fields.test.tsx src/components/posts/post-create-structured-fields.test.tsx src/components/posts/post-create-submit.test.ts src/components/admin/report-actions.test.tsx src/app/api/feed/guest/route.test.ts`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app test`
+  - `corepack pnpm@9.12.3 -C app build`
+  - `corepack pnpm@9.12.3 -C app design:detect`
+  - `corepack pnpm@9.12.3 -C app docs:refresh`
+  - `corepack pnpm@9.12.3 -C app docs:refresh:check`
+- 결과:
+  - `copy:audit:strict`는 P0/P1 위험 문구 없음으로 통과했다.
+  - 전체 Vitest는 239 files / 1146 tests 통과했다.
+  - Next production build, lint, typecheck, design detector, docs index check가 통과했다.
+  - public/auth/write 화면 desktop/mobile screenshot을 저장했다.
+  - Admin screenshot은 인증된 admin browser storage state가 없어 생략했고, admin copy는 static audit, unit/accessibility test, typecheck, lint, build로 검증했다.

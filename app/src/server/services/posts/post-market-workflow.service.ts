@@ -50,7 +50,7 @@ export async function updateMarketListingStatus({
 }: UpdateMarketListingStatusParams) {
   const parsed = marketListingStatusUpdateSchema.safeParse(input);
   if (!parsed.success) {
-    throw new ServiceError("마켓 상태 입력값이 올바르지 않습니다.", "INVALID_INPUT", 400);
+    throw new ServiceError("거래 상태 입력값이 올바르지 않습니다.", "INVALID_INPUT", 400);
   }
 
   const actor = await prisma.user.findUnique({
@@ -87,7 +87,7 @@ export async function updateMarketListingStatus({
   }
 
   if (existing.type !== PostType.MARKET_LISTING || !existing.marketListing) {
-    throw new ServiceError("마켓 글을 찾을 수 없습니다.", "MARKET_LISTING_NOT_FOUND", 404);
+    throw new ServiceError("거래 글을 찾을 수 없습니다.", "MARKET_LISTING_NOT_FOUND", 404);
   }
 
   const previousStatus = existing.marketListing.status;
@@ -103,11 +103,11 @@ export async function updateMarketListingStatus({
   const isAuthor = existing.authorId === actor.id;
   const isModerator = canModerateMarketStatus(actor.role);
   if (!isAuthor && !isModerator) {
-    throw new ServiceError("마켓 상태 변경 권한이 없습니다.", "FORBIDDEN", 403);
+    throw new ServiceError("거래 상태 변경 권한이 없습니다.", "FORBIDDEN", 403);
   }
 
   if (isAuthor && !isModerator && !canAuthorTransitionMarketStatus(previousStatus, nextStatus)) {
-    throw new ServiceError("허용되지 않는 마켓 상태 변경입니다.", "INVALID_MARKET_STATUS_TRANSITION", 400);
+    throw new ServiceError("허용되지 않는 거래 상태 변경입니다.", "INVALID_MARKET_STATUS_TRANSITION", 400);
   }
 
   const updated = await prisma.marketListing.update({

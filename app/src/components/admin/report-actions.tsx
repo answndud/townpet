@@ -67,7 +67,7 @@ export function ReportActions({ reportId, status, redirectTo }: ReportActionsPro
           disabled={isLocked || isPending}
           className="h-5 w-5 accent-[#3567b5]"
         />
-        승인 시 단계적 제재 적용 (경고→7일→30일→영구)
+        조치 완료 시 단계적 제재 적용 (경고→7일→30일→영구)
       </label>
       <div className="flex flex-wrap items-center gap-2">
         <button
@@ -76,7 +76,7 @@ export function ReportActions({ reportId, status, redirectTo }: ReportActionsPro
           className="tp-btn-primary min-h-10 px-3 py-1 text-white"
           disabled={isLocked || isPending}
         >
-          승인
+          조치 완료
         </button>
         <button
           type="button"
@@ -84,7 +84,7 @@ export function ReportActions({ reportId, status, redirectTo }: ReportActionsPro
           className="min-h-10 rounded-lg border border-rose-300 bg-white px-3 py-1 text-rose-700 transition hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200"
           disabled={isLocked || isPending}
         >
-          기각
+          조치 없음
         </button>
         {message ? (
           <span className="text-[#5a7398]" role="status" aria-live="polite">

@@ -21,12 +21,12 @@ export const postTypeMeta: Record<
   PostTypeMeta
 > = {
   HOSPITAL_REVIEW: {
-    label: "병원후기",
+    label: "병원 후기",
     chipClass: "border-sky-200 bg-sky-50 text-sky-700",
     icon: "H",
   },
   PLACE_REVIEW: {
-    label: "리뷰",
+    label: "장소 후기",
     chipClass: "border-blue-200 bg-blue-50 text-blue-700",
     icon: "P",
   },
@@ -36,12 +36,12 @@ export const postTypeMeta: Record<
     icon: "W",
   },
   MEETUP: {
-    label: "동네모임",
+    label: "동네 모임",
     chipClass: "border-indigo-200 bg-indigo-50 text-indigo-700",
     icon: "M",
   },
   MARKET_LISTING: {
-    label: "중고/공동구매",
+    label: "중고·공동구매",
     chipClass: "border-slate-300 bg-slate-100 text-slate-700",
     icon: "K",
   },
@@ -91,7 +91,7 @@ export const postTypeMeta: Record<
     icon: "D",
   },
   PRODUCT_REVIEW: {
-    label: "리뷰",
+    label: "용품 후기",
     chipClass: "border-blue-200 bg-blue-50 text-blue-700",
     icon: "R",
   },

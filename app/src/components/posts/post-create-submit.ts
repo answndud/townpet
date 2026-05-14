@@ -174,7 +174,7 @@ export function buildPostCreateSubmitPayload({
   }
 
   if (showMarketListing && formState.marketListing.price.trim().length === 0) {
-    return { ok: false, message: "마켓 글은 가격을 입력해 주세요. 나눔은 0원을 입력합니다." };
+    return { ok: false, message: "거래 글은 가격을 입력해 주세요. 나눔은 0원을 입력합니다." };
   }
 
   if (showCareRequest && !formState.careRequest.startsAt) {

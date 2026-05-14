@@ -66,7 +66,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     if (!currentUserId && parsed.data.type && loginRequiredTypes.includes(parsed.data.type)) {
       return jsonError(401, {
         code: "AUTH_REQUIRED",
-        message: "선택한 카테고리는 로그인 후 이용할 수 있습니다.",
+        message: "선택한 게시판은 로그인 후 이용할 수 있습니다.",
       });
     }
 

@@ -323,7 +323,7 @@ export default async function Home({ searchParams }: HomePageProps) {
       return (
         <NeighborhoodGateNotice
           title="내 동네 설정이 필요합니다."
-          description={`${postTypeMeta[type].label} 게시판은 내 동네 기반으로 노출됩니다. 프로필에서 동네를 먼저 설정해 주세요.`}
+          description={`${postTypeMeta[type].label}은 동네 설정 후 볼 수 있습니다. 프로필에서 대표 동네를 먼저 설정해 주세요.`}
           primaryLink="/profile"
           primaryLabel="프로필에서 동네 설정"
         />
@@ -757,7 +757,7 @@ export default async function Home({ searchParams }: HomePageProps) {
 
         {isGuestTypeBlocked && type ? (
           <div className="border border-[#d9c38b] bg-[#fff8e5] px-3 py-2.5 text-sm text-[#6c5319]">
-            선택한 카테고리({postTypeMeta[type].label})는 로그인 후 열람할 수 있습니다.{" "}
+            선택한 게시판({postTypeMeta[type].label})은 로그인 후 볼 수 있습니다.{" "}
             <Link
               href={loginHref(`/feed?type=${type}`)}
               className="font-semibold text-[#2f5da4] hover:text-[#244b86]"
@@ -795,10 +795,10 @@ export default async function Home({ searchParams }: HomePageProps) {
               title={mode === "BEST" ? "베스트글이 없습니다" : "게시글이 없습니다"}
               description={
                 isGuestTypeBlocked
-                  ? "해당 카테고리는 로그인 후 확인할 수 있습니다."
+                  ? "해당 게시판은 로그인 후 확인할 수 있습니다."
                   : mode === "BEST"
-                  ? "선택한 카테고리/범위에서 좋아요가 1개 이상인 글이 아직 없습니다."
-                  : "글을 작성하거나 다른 카테고리를 확인해 주세요."
+                  ? "선택한 게시판과 범위에서 좋아요가 1개 이상인 글이 아직 없습니다."
+                  : "글을 작성하거나 다른 게시판을 확인해 주세요."
               }
               actionHref={
                 isGuestTypeBlocked

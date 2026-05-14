@@ -42,9 +42,9 @@ type ReportQueueTableProps = {
 };
 
 const statusLabels: Record<ReportStatus, string> = {
-  PENDING: "대기",
-  RESOLVED: "승인",
-  DISMISSED: "기각",
+  PENDING: "검토 대기",
+  RESOLVED: "조치 완료",
+  DISMISSED: "조치 없음",
 };
 
 export function ReportQueueTable({ reports }: ReportQueueTableProps) {

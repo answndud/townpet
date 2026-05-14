@@ -150,7 +150,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
             eyebrow="내 작성글"
             count={postCount}
             label="작성한 게시글"
-            description="카테고리별로 내가 작성한 글을 모아 확인할 수 있습니다."
+            description="게시판별로 내가 작성한 글을 모아 확인할 수 있습니다."
           />
           <ProfileSummaryLinkCard
             href="/bookmarks"

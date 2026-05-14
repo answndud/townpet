@@ -96,8 +96,8 @@ export default async function NewPostPage() {
             </h1>
             <p className="text-xs text-[#4f678d] sm:text-sm">
               {userId
-                ? "분류와 공개 범위를 먼저 정하고, 핵심 정보 위주로 작성해 주세요."
-                : "비회원 글은 즉시 공개되며, 외부 링크/연락처/고위험 카테고리는 제한됩니다."}
+                ? "게시판과 공개 범위를 먼저 정하고, 핵심 정보 위주로 작성해 주세요."
+                : "비회원 글은 즉시 공개되며, 외부 링크/연락처/고위험 게시판은 제한됩니다."}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2 text-xs">

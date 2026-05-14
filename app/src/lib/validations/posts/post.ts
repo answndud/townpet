@@ -221,7 +221,7 @@ export const postCreateSchema = z.object({
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["reviewCategory"],
-        message: "리뷰 게시글은 세부 카테고리 선택이 필요합니다.",
+        message: "후기 글은 후기 유형 선택이 필요합니다.",
       });
     }
 
@@ -233,7 +233,7 @@ export const postCreateSchema = z.object({
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["reviewCategory"],
-        message: "장소 리뷰는 장소 카테고리만 선택할 수 있습니다.",
+        message: "장소 후기에는 장소 후기 유형만 선택할 수 있습니다.",
       });
     }
 
@@ -241,7 +241,7 @@ export const postCreateSchema = z.object({
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["reviewCategory"],
-        message: "용품 리뷰는 장소 카테고리를 선택할 수 없습니다.",
+        message: "용품 후기에는 장소 후기 유형을 선택할 수 없습니다.",
       });
     }
 
@@ -269,7 +269,7 @@ export const postCreateSchema = z.object({
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ["marketListing"],
-          message: "마켓 글은 거래 정보를 입력해 주세요.",
+          message: "거래 글은 거래 정보를 입력해 주세요.",
         });
       }
 

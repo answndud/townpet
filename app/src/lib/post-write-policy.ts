@@ -4,31 +4,13 @@ import {
   DEFAULT_NEW_USER_MIN_ACCOUNT_AGE_HOURS,
   DEFAULT_NEW_USER_RESTRICTED_POST_TYPES,
 } from "@/lib/new-user-safety-policy";
+import { getPostTypeMeta } from "@/lib/post-presenter";
 import { isAdminOnlyPostType } from "@/lib/post-type-groups";
 
 export const NEW_USER_RESTRICTION_HOURS = DEFAULT_NEW_USER_MIN_ACCOUNT_AGE_HOURS;
 
 export const NEW_USER_RESTRICTED_POST_TYPES: ReadonlyArray<PostType> =
   DEFAULT_NEW_USER_RESTRICTED_POST_TYPES;
-
-const restrictedTypeLabels: Record<PostType, string> = {
-  HOSPITAL_REVIEW: "병원후기",
-  PLACE_REVIEW: "후기/리뷰",
-  WALK_ROUTE: "동네 산책코스",
-  MEETUP: "동네모임",
-  MARKET_LISTING: "중고/공동구매",
-  CARE_REQUEST: "돌봄 요청",
-  ADOPTION_LISTING: "유기동물 입양",
-  SHELTER_VOLUNTEER: "보호소 봉사 모집",
-  LOST_FOUND: "실종/목격 제보",
-  QA_QUESTION: "질문/답변",
-  QA_ANSWER: "질문/답변",
-  FREE_POST: "자유게시판",
-  FREE_BOARD: "자유게시판",
-  DAILY_SHARE: "자유게시판",
-  PRODUCT_REVIEW: "용품리뷰",
-  PET_SHOWCASE: "반려동물 자랑",
-};
 
 type EvaluateNewUserPostWritePolicyParams = {
   role: UserRole;
@@ -79,7 +61,8 @@ export function evaluateNewUserPostWritePolicy({
 
   const remainingMs = Math.max(0, minAgeMs - ageMs);
   const remainingHours = Math.max(1, Math.ceil(remainingMs / (60 * 60 * 1000)));
-  const message = `가입 후 ${minAccountAgeHours}시간 이내에는 ${restrictedTypeLabels[postType]} 카테고리 글을 작성할 수 없습니다. 약 ${remainingHours}시간 후 다시 시도해 주세요.`;
+  const postTypeLabel = getPostTypeMeta(postType).label;
+  const message = `가입 후 ${minAccountAgeHours}시간 이내에는 ${postTypeLabel} 글을 작성할 수 없습니다. 약 ${remainingHours}시간 후 다시 시도해 주세요.`;
 
   return { allowed: false, remainingHours, message };
 }
@@ -98,6 +81,6 @@ export function evaluateAdminOnlyPostWritePolicy({
 
   return {
     allowed: false,
-    message: `${restrictedTypeLabels[postType]} 글은 관리자만 등록하거나 수정할 수 있습니다.`,
+    message: `${getPostTypeMeta(postType).label} 글은 관리자만 등록하거나 수정할 수 있습니다.`,
   };
 }

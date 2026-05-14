@@ -10,11 +10,11 @@ import {
 
 export const typeMeta: Record<PostType, { label: string; chipClass: string }> = {
   HOSPITAL_REVIEW: {
-    label: "병원후기",
+    label: "병원 후기",
     chipClass: "border-sky-200 bg-sky-50 text-sky-700",
   },
   PLACE_REVIEW: {
-    label: "후기/리뷰",
+    label: "장소 후기",
     chipClass: "border-blue-200 bg-blue-50 text-blue-700",
   },
   WALK_ROUTE: {
@@ -22,11 +22,11 @@ export const typeMeta: Record<PostType, { label: string; chipClass: string }> = 
     chipClass: "border-cyan-200 bg-cyan-50 text-cyan-700",
   },
   MEETUP: {
-    label: "동네모임",
+    label: "동네 모임",
     chipClass: "border-indigo-200 bg-indigo-50 text-indigo-700",
   },
   MARKET_LISTING: {
-    label: "중고/공동구매",
+    label: "중고·공동구매",
     chipClass: "border-slate-300 bg-slate-100 text-slate-700",
   },
   CARE_REQUEST: {
@@ -66,7 +66,7 @@ export const typeMeta: Record<PostType, { label: string; chipClass: string }> = 
     chipClass: "border-slate-300 bg-slate-100 text-slate-700",
   },
   PRODUCT_REVIEW: {
-    label: "용품리뷰",
+    label: "용품 후기",
     chipClass: "border-blue-200 bg-blue-50 text-blue-700",
   },
   PET_SHOWCASE: {
@@ -219,7 +219,7 @@ export const resolveCareStatusOptions = ({
 };
 
 export const careApplicationStatusLabel: Record<CareApplicationStatus, string> = {
-  PENDING: "대기",
+  PENDING: "대기 중",
   ACCEPTED: "수락",
   DECLINED: "거절",
   CANCELLED: "취소",

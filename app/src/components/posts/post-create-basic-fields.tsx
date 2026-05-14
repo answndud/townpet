@@ -96,7 +96,7 @@ export function PostCreateBasicFields({
 
         {showReviewCategory ? (
           <label className="tp-form-label">
-            리뷰 카테고리
+            후기 유형
             <select
               className="tp-input-soft min-h-11 px-3 py-2 text-sm"
               value={formState.reviewCategory}

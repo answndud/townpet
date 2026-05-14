@@ -5,14 +5,14 @@ import { REVIEW_CATEGORY, type ReviewCategory } from "@/lib/review-category";
 export const postTypeOptions = [
   { value: PostType.FREE_BOARD, label: "자유게시판" },
   { value: PostType.QA_QUESTION, label: "질문/답변" },
-  { value: PostType.HOSPITAL_REVIEW, label: "병원후기" },
+  { value: PostType.HOSPITAL_REVIEW, label: "병원 후기" },
   { value: PostType.LOST_FOUND, label: "실종/목격 제보" },
-  { value: PostType.MEETUP, label: "동네모임" },
+  { value: PostType.MEETUP, label: "동네 모임" },
   { value: PostType.MARKET_LISTING, label: "중고/공동구매" },
   { value: PostType.CARE_REQUEST, label: "돌봄 요청" },
   { value: PostType.ADOPTION_LISTING, label: "유기동물 입양" },
   { value: PostType.SHELTER_VOLUNTEER, label: "보호소 봉사 모집" },
-  { value: PostType.PRODUCT_REVIEW, label: "리뷰" },
+  { value: PostType.PRODUCT_REVIEW, label: "용품 후기" },
   { value: PostType.PET_SHOWCASE, label: "반려동물 자랑" },
 ] as const;
 
