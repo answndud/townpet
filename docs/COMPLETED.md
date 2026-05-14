@@ -3379,3 +3379,25 @@
 - 결과:
   - 4개 visual/mobile smoke가 모두 통과했다.
   - 다음 후보는 `P2-27 출시 전 품질 게이트 quality:check 재점검`이다.
+
+### 2026-05-14 | P2-27 출시 전 품질 게이트 quality:check 재점검
+- 완료일: `2026-05-14`
+- 배경:
+  - P2-21~P2-26에서 모바일 visual smoke와 helper 정리를 마친 뒤, 현재 main 기준 기본 품질 게이트가 실제로 통과하는지 재확인이 필요했다.
+  - 기준 명령은 `app/package.json`의 `quality:check`이며, 순서는 `eslint -> tsc --noEmit -> vitest run -> next build`다.
+- 변경내용:
+  - `corepack pnpm@9.12.3 -C app quality:check`를 실행했다.
+  - 최초 실행은 unit 단계에서 `src/components/auth/auth-page-layout.test.tsx`가 실패했다.
+  - 실패 원인은 auth layout UI가 이미 `tp-btn-sm` 의존을 제거하고 `min-h-10` 터치 기준으로 바뀌었는데, 테스트가 이전 class 문자열을 기대하고 있었기 때문이다.
+  - 테스트 기대값을 현재 40px touch target 기준 class로 갱신했다.
+- 코드문서:
+  - [app/src/components/auth/auth-page-layout.test.tsx](../app/src/components/auth/auth-page-layout.test.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app exec vitest run src/components/auth/auth-page-layout.test.tsx`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+- 결과:
+  - 단일 auth layout test가 통과했다.
+  - 전체 `quality:check`가 lint, typecheck, 239개 Vitest 파일/1144개 테스트, Next production build까지 통과했다.
+  - 다음 후보는 `P2-28 hotpath e2e 범위 재선별`이다.

@@ -17,4 +17,4 @@
 
 ## 다음 작업 후보
 
-- P2-27: 모바일 visual smoke 이후 남은 출시 전 품질 게이트를 `quality:check` 기준으로 재점검한다.
+- P2-28: `quality:check` 이후 필요한 hotpath e2e 범위를 1인 운영 기준으로 재선별한다.
