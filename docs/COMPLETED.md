@@ -3451,3 +3451,26 @@
 - 결과:
   - 배포 전후 on-demand 체크 순서가 active 운영 문서로 연결됐다.
   - 다음 후보는 `P2-30 릴리즈 준비 문서와 AGENTS/app README 운영 루틴 표현 최종 동기화`다.
+
+### 2026-05-14 | P2-30 릴리즈 준비 문서와 운영 루틴 표현 최종 동기화
+- 완료일: `2026-05-14`
+- 배경:
+  - P2-28/P2-29에서 Playwright와 배포 전 체크를 on-demand 계층으로 재정리했다.
+  - README, AGENTS, app README가 새 기준을 같은 표현으로 안내해야 이후 세션이 오래된 “주간 10분 evidence” 또는 push마다 browser smoke처럼 해석하지 않는다.
+- 변경내용:
+  - `README.md`의 최소 운영 루틴을 health-only `ops:evidence:solo` 기준으로 갱신했다.
+  - `README.md`에서 배포 전 runbook과 hotpath e2e 범위 문서를 연결했다.
+  - `AGENTS.md`의 최소 운영 표면에 `business/operations/배포전_on-demand_체크.md`를 추가하고, `test:e2e:hotpath`와 `quality:gate`를 on-demand 확장으로 명시했다.
+  - `app/README.md`에 배포 전 runbook과 hotpath e2e 범위 문서를 연결했다.
+- 코드문서:
+  - [README.md](../README.md)
+  - [AGENTS.md](../AGENTS.md)
+  - [app/README.md](../app/README.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app exec vitest run scripts/ops-doc-scripts-consistency.test.ts`
+  - `node scripts/refresh-docs-index.mjs --check`
+- 결과:
+  - 저장소 진입 문서 3곳의 운영 루틴 표현이 `quality:check`, health-only smoke, 변경 범위별 on-demand e2e 기준으로 동기화됐다.
+  - 다음 후보는 `P2-31 P2 릴리즈 준비 트랙 잔여 작업 최종 점검`이다.

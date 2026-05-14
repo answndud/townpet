@@ -46,9 +46,11 @@
 ## 최소 운영 루틴
 
 - solo 운영에서 매일 기억할 명령은 `corepack pnpm -C app quality:check`, `corepack pnpm -C app ops:check:health`, `corepack pnpm -C app db:restore:local` 세 개면 충분합니다.
-- 주간 10분 evidence는 `corepack pnpm -C app ops:evidence`로 health/security/prewarm/latency read-only 점검을 한 번에 실행하고 `docs/reports/`에 로컬 결과를 남깁니다.
+- 1인 운영 production smoke는 기본적으로 `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm -C app ops:evidence:solo`로 health만 확인합니다.
+- 배포 전에는 [`배포전_on-demand_체크.md`](/Users/alex/project/townpet/business/operations/%EB%B0%B0%ED%8F%AC%EC%A0%84_on-demand_%EC%B2%B4%ED%81%AC.md)에 따라 `quality:check -> 변경 범위별 e2e -> 배포 -> ops health` 순서로 확인합니다.
 - CI/배포 mental model도 [`quality-gate.yml`](/Users/alex/project/townpet/.github/workflows/quality-gate.yml) 과 [`ops-smoke-checks.yml`](/Users/alex/project/townpet/.github/workflows/ops-smoke-checks.yml) 두 개만 먼저 보면 됩니다.
 - 브라우저 smoke는 hot path에서 뺐고, 필요할 때 [`browser-smoke.yml`](/Users/alex/project/townpet/.github/workflows/browser-smoke.yml)이나 로컬 `test:e2e:smoke`로만 확인합니다.
+- 기능 hotpath e2e 범위는 [`hotpath-e2e-scope-2026-05-14.md`](/Users/alex/project/townpet/docs/reports/hotpath-e2e-scope-2026-05-14.md)에 따라 변경 범위별 on-demand로 실행합니다.
 - 나머지 `db:*`, `ops:*`, `test:e2e:*`, cleanup/backfill 스크립트는 평소 루틴이 아니라 필요할 때 찾는 유지보수 도구입니다.
 
 TownPet은 단순 커뮤니티가 아니라, 반려인이 `병원 · 입양 · 산책 · 거래 · 분실` 같은 상황별 정보를 더 빨리 찾고 더 신뢰할 수 있게 만드는 로컬 반려 플랫폼을 목표로 한 프로젝트입니다.
