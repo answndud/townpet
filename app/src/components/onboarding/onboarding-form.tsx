@@ -232,7 +232,7 @@ export function OnboardingForm({
               className="tp-input-soft px-3 py-2 text-sm"
               value={profileName}
               onChange={(event) => setProfileName(event.target.value)}
-              placeholder="예: townpet-user"
+              placeholder="예: 동네집사"
               required
             />
           </label>

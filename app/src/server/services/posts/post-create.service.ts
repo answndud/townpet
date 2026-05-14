@@ -275,7 +275,7 @@ export async function createPost({ authorId, input, guestIdentity }: CreatePostP
   if (postData.type === PostType.MARKET_LISTING) {
     const listingInput = marketListingSchema.safeParse(rawInput.marketListing ?? marketListing);
     if (!listingInput.success) {
-      throw new ServiceError("마켓 글 입력값이 올바르지 않습니다.", "INVALID_MARKET_LISTING", 400);
+      throw new ServiceError("거래 글 입력값이 올바르지 않습니다.", "INVALID_MARKET_LISTING", 400);
     }
 
     marketListingInput = listingInput.data;
@@ -456,7 +456,7 @@ export async function createPost({ authorId, input, guestIdentity }: CreatePostP
 
     if (isAdminOnlyPostType(postData.type)) {
       throw new ServiceError(
-        "해당 카테고리 글은 관리자만 등록할 수 있습니다.",
+        "해당 게시판 글은 관리자만 등록할 수 있습니다.",
         "ADMIN_ONLY_POST_TYPE",
         403,
       );
@@ -472,7 +472,7 @@ export async function createPost({ authorId, input, guestIdentity }: CreatePostP
 
     if (isGuestPostTypeBlocked(postData.type, guestPostPolicy.blockedPostTypes)) {
       throw new ServiceError(
-        "비회원은 해당 카테고리 글을 작성할 수 없습니다.",
+        "비회원은 해당 게시판 글을 작성할 수 없습니다.",
         "GUEST_RESTRICTED_TYPE",
         403,
       );
@@ -863,7 +863,7 @@ export async function createPost({ authorId, input, guestIdentity }: CreatePostP
 
   if (postData.type === "MARKET_LISTING") {
     if (!marketListingInput) {
-      throw new ServiceError("마켓 글 입력값이 올바르지 않습니다.", "INVALID_MARKET_LISTING", 400);
+      throw new ServiceError("거래 글 입력값이 올바르지 않습니다.", "INVALID_MARKET_LISTING", 400);
     }
 
     const created = await prisma.post.create({

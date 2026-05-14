@@ -202,7 +202,7 @@ function describeSearchContext({
   searchType?: PostType;
   searchIn: SearchTermSearchIn;
 }) {
-  const scopeLabel = searchScope === PostScope.LOCAL ? "동네 검색" : "전역 검색";
+  const scopeLabel = searchScope === PostScope.LOCAL ? "동네 검색" : "전체 검색";
   const typeLabel = searchType ? getPostTypeMeta(searchType).label : "전체 글 유형";
   const searchInLabel = SEARCH_IN_LABELS[searchIn];
   return `${scopeLabel} · ${typeLabel} · ${searchInLabel}`;
@@ -323,7 +323,7 @@ export default async function AdminOpsPage({ searchParams }: AdminOpsPageProps) 
                 defaultValue={selectedSearchScope}
                 className="rounded-xl border border-[#d3def1] bg-white px-3 py-2 text-sm text-[#163462]"
               >
-                <option value={PostScope.GLOBAL}>전역 검색</option>
+                <option value={PostScope.GLOBAL}>전체 검색</option>
                 <option value={PostScope.LOCAL}>동네 검색</option>
               </select>
             </label>
@@ -655,7 +655,7 @@ export default async function AdminOpsPage({ searchParams }: AdminOpsPageProps) 
                       <dd className="font-semibold">{formatCount(careThreshold.pendingCount)}</dd>
                     </div>
                     <div className="flex items-center justify-between gap-2">
-                      <dt>검토중</dt>
+                      <dt>검토 중</dt>
                       <dd className="font-semibold">{formatCount(careThreshold.reviewingCount)}</dd>
                     </div>
                     <div className="flex items-center justify-between gap-2">

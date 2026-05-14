@@ -296,7 +296,7 @@ export function GuestPostPolicyForm({ initialPolicy }: GuestPostPolicyFormProps)
       </div>
 
       <div className="flex flex-col gap-2">
-        <p className="text-xs font-semibold text-[#355988]">비회원 작성 차단 카테고리</p>
+        <p className="text-xs font-semibold text-[#355988]">비회원 작성 차단 게시판</p>
         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {sortedTypes.map((type) => (
             <label

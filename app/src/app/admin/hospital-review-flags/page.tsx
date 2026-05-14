@@ -177,7 +177,7 @@ export default async function HospitalReviewFlagsPage({
           ) : (
             <EmptyState
               title="병원 후기 의심 신호가 없습니다"
-              description="현재 필터 조건에서 검토할 병원 후기 플래그가 없습니다."
+              description="현재 필터 조건에서 검토할 병원 후기 의심 신호가 없습니다."
             />
           )}
         </section>

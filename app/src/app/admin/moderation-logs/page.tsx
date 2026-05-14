@@ -21,16 +21,16 @@ type ModerationLogsPageProps = {
 };
 
 const actionLabels: Record<ModerationActionType, string> = {
-  REPORT_RESOLVED: "신고 승인",
-  REPORT_DISMISSED: "신고 기각",
+  REPORT_RESOLVED: "신고 조치 완료",
+  REPORT_DISMISSED: "신고 조치 없음",
   TARGET_HIDDEN: "대상 숨김",
   TARGET_UNHIDDEN: "숨김 해제",
   SANCTION_ISSUED: "제재 부여",
-  HOSPITAL_REVIEW_FLAGGED: "병원후기 의심 신호",
+  HOSPITAL_REVIEW_FLAGGED: "병원 후기 의심 신호",
   POLICY_UPDATED: "권한 정책 변경",
   AUTH_AUDIT_VIEWED: "인증 로그 조회",
   AUTH_AUDIT_EXPORTED: "인증 로그 내보내기",
-  MARKET_STATUS_CHANGED: "마켓 상태 변경",
+  MARKET_STATUS_CHANGED: "거래 상태 변경",
   CARE_STATUS_CHANGED: "돌봄 요청 상태 변경",
   CARE_FEEDBACK_REVIEWED: "돌봄 이슈 검토",
 };
@@ -125,7 +125,7 @@ export default async function ModerationLogsPage({ searchParams }: ModerationLog
             모더레이션 로그
           </h1>
           <p className="mt-2 text-sm text-[#4f678d]">
-            신고 처리, 대상 숨김/복구, 제재 부여, 병원후기 의심 신호를 한곳에서 추적합니다.
+            신고 처리, 대상 숨김/복구, 제재 부여, 병원 후기 의심 신호를 한곳에서 추적합니다.
           </p>
         </header>
 

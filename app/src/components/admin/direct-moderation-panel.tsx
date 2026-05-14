@@ -160,7 +160,7 @@ export function DirectModerationPanel() {
 
       const summary =
         payload.data.hiddenPostCount === 0 && payload.data.hiddenCommentCount === 0
-          ? `${getTargetUserLabel(payload.data.targetUser)} 사용자의 ${payload.data.scopeLabel} 범위에 숨길 ACTIVE 글/댓글이 없습니다.`
+          ? `${getTargetUserLabel(payload.data.targetUser)} 사용자의 ${payload.data.scopeLabel} 범위에 숨길 공개 중인 글/댓글이 없습니다.`
           : `${getTargetUserLabel(payload.data.targetUser)} 사용자의 ${payload.data.scopeLabel} 범위에서 게시글 ${payload.data.hiddenPostCount}건, 댓글 ${payload.data.hiddenCommentCount}건을 숨겼습니다.`;
 
       setHideMessage(summary);
@@ -265,7 +265,7 @@ export function DirectModerationPanel() {
           <p className="text-[11px] uppercase tracking-[0.22em] text-[#5b78a1]">Content Hide</p>
           <h2 className="mt-1 text-lg font-semibold text-[#14315f]">사용자 최근 글/댓글 일괄 숨김</h2>
           <p className="mt-2 text-sm text-[#4f678d]">
-            같은 사용자의 ACTIVE 게시글과 댓글만 숨깁니다. 매크로 자동화는 먼저 숨김을 적용한
+            같은 사용자의 공개 중인 게시글과 댓글만 숨깁니다. 매크로 자동화는 먼저 숨김을 적용한
             뒤, 필요할 때만 별도 제재를 호출하는 방식이 안전합니다.
           </p>
           <p className="mt-1 text-xs text-[#5f7aa3]">

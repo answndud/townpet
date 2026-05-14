@@ -68,7 +68,7 @@ export function NewUserSafetyPolicyForm({
     <form action={submitAction} className="flex flex-col gap-4">
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="flex flex-col gap-1 text-xs text-[#355988]">
-          <span className="font-semibold">고위험 카테고리 작성 제한 시간</span>
+          <span className="font-semibold">고위험 게시판 작성 제한 시간</span>
           <input
             data-testid="new-user-policy-min-account-age-hours"
             name="minAccountAgeHours"
@@ -99,7 +99,7 @@ export function NewUserSafetyPolicyForm({
 
       <div className="flex flex-col gap-2">
         <p className="text-xs font-semibold text-[#355988]">
-          작성 제한 대상 카테고리
+          작성 제한 대상 게시판
         </p>
         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {sortedTypes.map((type) => (

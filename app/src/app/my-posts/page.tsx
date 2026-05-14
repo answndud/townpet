@@ -32,25 +32,6 @@ type MyPostsPageProps = {
 
 const MY_POSTS_PAGE_SIZE = 20;
 
-const typeLabels: Record<PostType, string> = {
-  HOSPITAL_REVIEW: "병원후기",
-  PLACE_REVIEW: "후기/리뷰",
-  WALK_ROUTE: "동네 산책코스",
-  MEETUP: "동네모임",
-  MARKET_LISTING: "중고/공동구매",
-  CARE_REQUEST: "돌봄 요청",
-  ADOPTION_LISTING: "유기동물 입양",
-  SHELTER_VOLUNTEER: "보호소 봉사 모집",
-  LOST_FOUND: "실종/목격 제보",
-  QA_QUESTION: "질문/답변",
-  QA_ANSWER: "질문/답변",
-  FREE_POST: "자유게시판",
-  FREE_BOARD: "자유게시판",
-  DAILY_SHARE: "자유게시판",
-  PRODUCT_REVIEW: "용품리뷰",
-  PET_SHOWCASE: "반려동물 자랑",
-};
-
 export default async function MyPostsPage({ searchParams }: MyPostsPageProps) {
   const session = await auth();
   const userId = session?.user?.id;
@@ -138,7 +119,7 @@ export default async function MyPostsPage({ searchParams }: MyPostsPageProps) {
             내가 올린 게시글
           </h1>
           <p className="mt-2 text-sm text-[#4f678d]">
-            카테고리별로 내 글을 빠르게 확인할 수 있습니다.
+            게시판별로 내 글을 빠르게 확인할 수 있습니다.
           </p>
         </header>
 
@@ -193,7 +174,7 @@ export default async function MyPostsPage({ searchParams }: MyPostsPageProps) {
                         : ""
                     }`}
                   >
-                    {typeLabels[value]}
+                    {postTypeMeta[value].label}
                   </Link>
                 ))}
               </div>
@@ -212,7 +193,7 @@ export default async function MyPostsPage({ searchParams }: MyPostsPageProps) {
                           : ""
                       }`}
                     >
-                      {typeLabels[value]}
+                      {postTypeMeta[value].label}
                     </Link>
                   ))}
                 </div>

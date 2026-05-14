@@ -158,7 +158,7 @@ describe("GET /api/feed/guest", () => {
         view: "gate",
         gate: {
           title: "로그인 후 이용할 수 있습니다.",
-          description: "동네모임은 내 동네 기반으로 노출됩니다. 로그인 후 대표 동네를 설정해 주세요.",
+          description: "동네 모임은 동네 설정 후 볼 수 있습니다. 로그인 후 대표 동네를 설정해 주세요.",
           primaryLink: "/login?next=%2Ffeed%3Ftype%3DMEETUP",
           primaryLabel: "로그인하기",
           secondaryLink: "/feed",
@@ -190,7 +190,7 @@ describe("GET /api/feed/guest", () => {
     const hospitalPayload = await hospitalResponse.json();
 
     expect(hospitalResponse.status).toBe(200);
-    expect(hospitalPayload.data.feed.feedTitle).toBe("병원후기 게시판");
+    expect(hospitalPayload.data.feed.feedTitle).toBe("병원 후기 게시판");
   });
 
   it("returns compact cursor payload for guest infinite scroll", async () => {

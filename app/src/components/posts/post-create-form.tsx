@@ -188,9 +188,9 @@ export function PostCreateForm({
 
   const policySummary = isAuthenticated
     ? canUseLocalScope
-      ? "병원후기, 입양, 봉사 모집은 온동네로 고정됩니다. 동네모임과 돌봄 요청은 대표 동네 범위로 등록됩니다."
+      ? "병원 후기, 입양, 봉사 모집은 전체 범위로 고정됩니다. 동네 모임과 돌봄 요청은 대표 동네 범위로 등록됩니다."
       : "대표 동네를 설정해야 동네 기반 글을 작성할 수 있습니다."
-    : "비회원 글은 전체로만 등록됩니다. 외부 링크, 연락처, 고위험 카테고리는 제한됩니다.";
+    : "비회원 글은 전체로만 등록됩니다. 외부 링크, 연락처, 고위험 게시판은 제한됩니다.";
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5" noValidate>
       <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">

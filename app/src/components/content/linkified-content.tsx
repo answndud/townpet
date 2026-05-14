@@ -128,7 +128,7 @@ export function LinkifiedContent({
             </div>
             <div className="aspect-video w-full bg-[#071426]">
               <iframe
-                title="YouTube video preview"
+                title="YouTube 영상 미리보기"
                 src={`https://www.youtube-nocookie.com/embed/${activeEmbed.videoId}?autoplay=1&rel=0`}
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowFullScreen

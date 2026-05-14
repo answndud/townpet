@@ -96,7 +96,7 @@ describe("post create submit helpers", () => {
 
     expect(result).toEqual({
       ok: false,
-      message: "마켓 글은 가격을 입력해 주세요. 나눔은 0원을 입력합니다.",
+      message: "거래 글은 가격을 입력해 주세요. 나눔은 0원을 입력합니다.",
     });
   });
 

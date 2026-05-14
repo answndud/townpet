@@ -19,8 +19,8 @@ describe("ReportActions", () => {
 
     expect(html).toContain("min-h-10");
     expect(html).toContain("flex-wrap");
-    expect(html).toContain("승인");
-    expect(html).toContain("기각");
+    expect(html).toContain("조치 완료");
+    expect(html).toContain("조치 없음");
   });
 
   it("marks processed reports as disabled", () => {

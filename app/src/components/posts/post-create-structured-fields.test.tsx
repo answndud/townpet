@@ -35,7 +35,7 @@ describe("post create structured fields", () => {
       />,
     );
 
-    expect(html).toContain("마켓 거래 정보");
+    expect(html).toContain("거래 정보");
     expect(html).toContain("거래 유형");
     expect(html).toContain("가격(원)");
     expect(html).toContain('value="SELL"');
@@ -52,7 +52,7 @@ describe("post create structured fields", () => {
       .map((element) => renderToStaticMarkup(element))
       .join("");
 
-    expect(html).toContain("병원후기 정보");
+    expect(html).toContain("병원 후기 정보");
     expect(html).toContain("진료 항목");
     expect(html).toContain("장소 후기 정보");
     expect(html).toContain("동반 가능 여부");

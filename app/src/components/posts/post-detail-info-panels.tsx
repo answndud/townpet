@@ -121,7 +121,7 @@ export function PostDetailInfoPanels({
   return (
     <>
       {post.hospitalReview ? (
-        <PostDetailInfoSection title="병원후기 상세">
+        <PostDetailInfoSection title="병원 후기 상세">
           <PostDetailInfoItem label="병원" value={renderTextValue(post.hospitalReview.hospitalName)} />
           <PostDetailInfoItem label="치료" value={renderTextValue(post.hospitalReview.treatmentType)} />
           <PostDetailInfoItem label="평점" value={renderNumberValue(post.hospitalReview.rating, "점")} />
@@ -138,7 +138,7 @@ export function PostDetailInfoPanels({
       ) : null}
 
       {post.placeReview ? (
-        <PostDetailInfoSection title="후기/리뷰 상세">
+        <PostDetailInfoSection title="후기 상세">
           <PostDetailInfoItem label="장소명" value={renderTextValue(post.placeReview.placeName)} />
           <PostDetailInfoItem label="유형" value={renderTextValue(post.placeReview.placeType)} />
           <PostDetailInfoItem label="주소" value={renderTextValue(post.placeReview.address)} />
@@ -182,7 +182,7 @@ export function PostDetailInfoPanels({
       ) : null}
 
       {post.marketListing ? (
-        <PostDetailInfoSection title="마켓 거래 정보">
+        <PostDetailInfoSection title="거래 정보">
           <PostDetailInfoItem
             label="거래 유형"
             value={renderTextValue(

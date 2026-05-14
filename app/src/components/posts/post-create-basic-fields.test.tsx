@@ -54,7 +54,7 @@ describe("post create basic fields", () => {
       />,
     );
 
-    expect(html).toContain("리뷰 카테고리");
+    expect(html).toContain("후기 유형");
     expect(html).toContain("동네");
     expect(html).toContain("서울 망원동");
     expect(html).toContain("동물 태그");

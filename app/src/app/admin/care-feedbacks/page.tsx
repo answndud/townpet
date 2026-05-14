@@ -49,16 +49,16 @@ const outcomeLabels: Record<CareFeedbackOutcome, string> = {
 };
 
 const reviewStatusLabels: Record<CareFeedbackReviewStatus, string> = {
-  PENDING: "대기",
-  REVIEWING: "검토중",
-  RESOLVED: "해결",
-  DISMISSED: "종료",
+  PENDING: "검토 대기",
+  REVIEWING: "검토 중",
+  RESOLVED: "처리 완료",
+  DISMISSED: "조치 없음",
 };
 
 const careRequestStatusLabels: Record<CareRequestStatus, string> = {
-  OPEN: "모집중",
+  OPEN: "모집 중",
   MATCHED: "매칭",
-  IN_PROGRESS: "진행중",
+  IN_PROGRESS: "진행 중",
   COMPLETED: "완료",
   CANCELLED: "취소",
 };

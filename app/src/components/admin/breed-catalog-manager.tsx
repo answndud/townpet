@@ -315,7 +315,7 @@ export function BreedCatalogManager({
                 disabled={isPending}
                 className="tp-btn-primary px-4 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-70"
               >
-                {isPending ? "저장 중..." : form.id ? "수정 저장" : "entry 저장"}
+                {isPending ? "저장 중..." : form.id ? "수정 저장" : "품종 저장"}
               </button>
               {form.id ? (
                 <button
