@@ -24,3 +24,7 @@
   - 기본 `corepack pnpm`은 pnpm 11 shim에서 `ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING` 오류가 발생했다.
   - 검증 시간 단축을 위해 이후에도 `corepack pnpm@9.12.3`로 버전을 고정한다.
   - Admin 스크린샷은 인증된 admin storage state가 없어 캡처하지 않았고, admin copy는 static audit/test/typecheck/lint/build로 검증했다.
+  - `179106a` production 배포 확인:
+    - Vercel: `https://vercel.com/jmoon0227-9736s-projects/townpet/HQxvtW9rN5NmfiaD77YioBVxj2Di`
+    - `https://townpet.vercel.app/api/feed/guest?type=MEETUP`가 `동네 모임은 동네 설정 후 볼 수 있습니다. 로그인 후 대표 동네를 설정해 주세요.`를 반환함
+    - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health` 통과, status 200, payload.status `ok`, elapsed 1086ms
