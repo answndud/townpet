@@ -4,7 +4,7 @@
 
 - 작업: 현재 active 작업 없음
 - 상태: `idle`
-- 현재 초점: `P2-23 post create/editor mobile visual smoke`를 완료 archive했다. 다음 후보는 `P2-24 comment/report mobile visual smoke 추가`다.
+- 현재 초점: `P2-24 comment/report mobile visual smoke`를 완료 archive했다. 다음 후보는 `P2-25 care feedback mobile smoke 접근성/터치 회귀 검증 보강`이다.
 
 ## 진행 중 메모
 

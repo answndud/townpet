@@ -3299,3 +3299,27 @@
 - 결과:
   - 모바일 글쓰기 화면의 주요 입력, editor toolbar, submit footer touch target과 overflow smoke가 통과했다.
   - 다음 후보는 `P2-24 comment/report mobile visual smoke 추가`다.
+
+### 2026-05-14 | P2-24 comment/report mobile visual smoke
+- 완료일: `2026-05-14`
+- 배경:
+  - 댓글/신고는 게시글 상세 hot path이지만, 기존 e2e는 기능 성공 여부 중심이라 모바일 viewport에서 실제 control bounding box와 overflow를 직접 검증하지 않았다.
+  - P2-22 선별 결과에 따라 별도 긴 기능 플로우를 늘리지 않고, 한 화면에서 댓글 작성 입력, 내 댓글 메뉴, 타인 댓글 신고 폼의 모바일 사용성을 고정했다.
+- 변경내용:
+  - `comment-report-visual-smoke.spec.ts`를 추가했다.
+  - spec는 로그인 사용자를 seed하고 `/posts/[id]` 모바일 viewport에 진입해 댓글 root input/submit의 최소 높이를 확인한다.
+  - 같은 화면에 내 댓글과 타인 댓글을 seed해, 내 댓글 `summary` 메뉴와 수정/삭제 button, 타인 댓글 답글/신고 button, 댓글 신고 사유 select/설명 textarea/submit button의 bounding box를 검증한다.
+  - 댓글 메뉴와 신고 폼을 연 뒤에도 document horizontal overflow가 생기지 않는지 확인한다.
+  - 소스 UI는 기존 `min-h-10` 기준을 만족해 추가 production code 변경 없이 smoke만 추가했다.
+- 코드문서:
+  - [app/e2e/comment-report-visual-smoke.spec.ts](../app/e2e/comment-report-visual-smoke.spec.ts)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `PLAYWRIGHT_BASE_URL=http://localhost:3000 corepack pnpm@9.12.3 -C app exec playwright test e2e/comment-report-visual-smoke.spec.ts --project=chromium`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `node scripts/refresh-docs-index.mjs --check`
+- 결과:
+  - 댓글 작성, 댓글 메뉴, 댓글 신고 폼의 모바일 touch target과 overflow smoke가 통과했다.
+  - 다음 후보는 `P2-25 care feedback mobile smoke 접근성/터치 회귀 검증 보강`이다.

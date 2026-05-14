@@ -17,4 +17,4 @@
 
 ## 다음 작업 후보
 
-- P2-24: comment/report mobile visual smoke를 추가한다.
+- P2-25: care feedback mobile smoke에서 접근성/터치 회귀 검증 범위를 좁혀 보강한다.
