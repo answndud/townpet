@@ -3573,3 +3573,7 @@
   - Next production build, lint, typecheck, design detector, docs index check가 통과했다.
   - public/auth/write 화면 desktop/mobile screenshot을 저장했다.
   - Admin screenshot은 인증된 admin browser storage state가 없어 생략했고, admin copy는 static audit, unit/accessibility test, typecheck, lint, build로 검증했다.
+  - `179106a` production 배포를 확인했다.
+    - Vercel: `https://vercel.com/jmoon0227-9736s-projects/townpet/HQxvtW9rN5NmfiaD77YioBVxj2Di`
+    - `https://townpet.vercel.app/api/feed/guest?type=MEETUP`가 새 문구 `동네 모임은 동네 설정 후 볼 수 있습니다. 로그인 후 대표 동네를 설정해 주세요.`를 반환했다.
+    - production health check는 status 200, payload.status `ok`, elapsed 1086ms로 통과했다.
