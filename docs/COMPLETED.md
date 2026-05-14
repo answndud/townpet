@@ -3530,5 +3530,6 @@
 - 결과:
   - 최종 `quality:check`가 ESLint, TypeScript, Vitest 239 files/1144 tests, Next production build까지 통과했다.
   - 최종 `test:e2e:hotpath`가 10/10 통과했다.
-  - 로컬 기준 배포 판단은 `GO`다.
-  - production 배포 후 health는 실제 배포 Ready 이후 별도 실행한다.
+  - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health`가 통과했다.
+  - production public health는 status 200, payload.status `ok`, elapsed 1535ms로 확인했다.
+  - 로컬 검증과 배포 후 public health 기준 배포 판단은 `GO`다.
