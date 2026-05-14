@@ -4,7 +4,7 @@
 
 - 작업: 현재 active 작업 없음
 - 상태: `idle`
-- 현재 초점: `P2-27 출시 전 품질 게이트 quality:check 재점검`을 완료 archive했다. 다음 후보는 `P2-28 hotpath e2e 범위 재선별`이다.
+- 현재 초점: `P2-28 hotpath e2e 범위 재선별`을 완료 archive했다. 다음 후보는 `P2-29 배포 전 on-demand 체크 명령 문서화`다.
 
 ## 진행 중 메모
 

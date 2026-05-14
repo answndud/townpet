@@ -3401,3 +3401,26 @@
   - 단일 auth layout test가 통과했다.
   - 전체 `quality:check`가 lint, typecheck, 239개 Vitest 파일/1144개 테스트, Next production build까지 통과했다.
   - 다음 후보는 `P2-28 hotpath e2e 범위 재선별`이다.
+
+### 2026-05-14 | P2-28 hotpath e2e 범위 재선별
+- 완료일: `2026-05-14`
+- 배경:
+  - P2-27에서 `quality:check`가 통과했지만, Playwright는 브라우저에서만 잡히는 클릭/URL/state 회귀를 보완하는 별도 계층으로 남아 있다.
+  - 1인 운영 기준에서는 모든 Playwright spec를 push마다 강제하기보다, 변경 범위별 on-demand 실행으로 유지 비용을 낮추는 편이 적절했다.
+  - README/AGENTS/app README는 브라우저 smoke를 필요할 때만 실행한다고 설명하지만, 실제 `browser-smoke.yml`은 main push마다 실행되고 있어 불일치가 있었다.
+- 변경내용:
+  - `docs/reports/hotpath-e2e-scope-2026-05-14.md`를 추가해 Playwright 실행 계층을 `상시 / on-demand / 보류`로 재분류했다.
+  - 상시 기준은 `quality:check`로 유지하고, `test:e2e:hotpath`, `test:e2e:smoke`, `test:e2e:auth`, visual smoke, care flow, OAuth real e2e를 변경 범위별 on-demand로 분류했다.
+  - `test:e2e:hotpath`의 현재 6개 기능 spec는 유지하되, 최근 추가한 visual smoke 4개는 hotpath script에 합치지 않고 UI/touch target 변경 시 직접 실행하는 것으로 정리했다.
+  - `.github/workflows/browser-smoke.yml`의 push trigger를 제거해 문서 기준처럼 수동 실행 전용 workflow로 낮췄다.
+- 코드문서:
+  - [.github/workflows/browser-smoke.yml](../.github/workflows/browser-smoke.yml)
+  - [docs/reports/hotpath-e2e-scope-2026-05-14.md](./reports/hotpath-e2e-scope-2026-05-14.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `ruby -e 'require "yaml"; YAML.load_file(".github/workflows/browser-smoke.yml"); puts "browser-smoke yaml ok"'`
+  - `node scripts/refresh-docs-index.mjs --check`
+- 결과:
+  - 브라우저 smoke workflow가 1인 운영 기준의 on-demand 루틴과 일치한다.
+  - 다음 후보는 `P2-29 배포 전 on-demand 체크 명령 문서화`다.
