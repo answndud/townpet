@@ -308,7 +308,7 @@ test.describe("search and board filtering", () => {
 
     await page.goto(`/feed/guest?q=${encodeURIComponent("건강덤진")}&searchIn=TITLE`);
 
-    await expect(page.getByRole("link", { name: title })).toBeVisible();
+    await expect(page.getByRole("link").filter({ hasText: title })).toBeVisible();
   });
 
   test("hides blocked authors from adoption board results", async ({ page }) => {

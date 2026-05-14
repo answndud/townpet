@@ -3496,3 +3496,39 @@
 - 결과:
   - P2 릴리즈 준비 트랙의 active 개발 잔여는 현재 기준으로 없다.
   - 다음은 새 개발 사이클을 정하거나, 실제 배포 시점에 `business/operations/배포전_on-demand_체크.md` 순서로 on-demand 체크를 실행하는 것이다.
+
+### 2026-05-14 | Release Candidate Evidence 패키지 작성
+- 완료일: `2026-05-14`
+- 배경:
+  - P2 릴리즈 준비 트랙은 `release-ready candidate`로 닫혔지만, 실제 배포 판단에 사용할 로컬 on-demand 검증 증적이 필요했다.
+  - 목표는 새 기능 개발이 아니라 `quality:check`와 hotpath e2e를 실제 실행하고, 실패/보류/조건부 항목을 배포 판단 가능한 형태로 분류하는 것이었다.
+- 변경내용:
+  - `release-candidate-evidence-2026-05-14.md`를 추가해 최종 `GO` 판정, 실행 명령, 보류 항목, 배포 후 health 후속 조건을 기록했다.
+  - hotpath e2e 최초 실패를 분석해 e2e 준비/격리 취약점을 수정했다.
+  - 관리자 정책 e2e는 관리자 계정의 `passwordHash`를 명시적으로 보장하도록 수정했다.
+  - 비회원 글 관리 e2e는 guest policy/safety 상태를 자체 초기화/복원하고 rich editor 입력을 안정화했다.
+  - 댓글 auth sync e2e는 신규 유저 정책 상태를 테스트 범위 안에서 완화/복원하고, 로그아웃 검증을 실제 header auth state 중심으로 바꿨다.
+  - 검색 typo e2e는 중첩 텍스트 때문에 과엄격했던 accessible name locator를 visible title text 기준으로 조정했다.
+  - credentials login helper는 target URL 도달 후 `load` 이벤트에 묶이지 않도록 `domcontentloaded` 기준으로 낮췄다.
+  - `PLAN.md`와 `PROGRESS.md`를 active 작업 없음 상태로 정리했다.
+- 코드문서:
+  - [app/e2e/admin-guest-post-policy.spec.ts](../app/e2e/admin-guest-post-policy.spec.ts)
+  - [app/e2e/admin-new-user-policy.spec.ts](../app/e2e/admin-new-user-policy.spec.ts)
+  - [app/e2e/guest-post-management.spec.ts](../app/e2e/guest-post-management.spec.ts)
+  - [app/e2e/post-comment-auth-sync.spec.ts](../app/e2e/post-comment-auth-sync.spec.ts)
+  - [app/e2e/search-and-board-filtering.spec.ts](../app/e2e/search-and-board-filtering.spec.ts)
+  - [app/e2e/support/auth-helpers.ts](../app/e2e/support/auth-helpers.ts)
+  - [docs/reports/release-candidate-evidence-2026-05-14.md](./reports/release-candidate-evidence-2026-05-14.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app exec playwright test e2e/admin-new-user-policy.spec.ts e2e/guest-post-management.spec.ts e2e/admin-guest-post-policy.spec.ts --project=chromium --workers=1`
+  - `corepack pnpm@9.12.3 -C app exec playwright test e2e/admin-new-user-policy.spec.ts e2e/guest-post-management.spec.ts e2e/post-comment-auth-sync.spec.ts e2e/search-and-board-filtering.spec.ts e2e/admin-guest-post-policy.spec.ts --project=chromium --workers=1`
+  - `corepack pnpm@9.12.3 -C app exec playwright test e2e/search-and-board-filtering.spec.ts --project=chromium --workers=1`
+  - `corepack pnpm@9.12.3 -C app test:e2e:hotpath`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+- 결과:
+  - 최종 `quality:check`가 ESLint, TypeScript, Vitest 239 files/1144 tests, Next production build까지 통과했다.
+  - 최종 `test:e2e:hotpath`가 10/10 통과했다.
+  - 로컬 기준 배포 판단은 `GO`다.
+  - production 배포 후 health는 실제 배포 Ready 이후 별도 실행한다.

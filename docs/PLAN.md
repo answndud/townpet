@@ -18,3 +18,4 @@
 ## 다음 작업 후보
 
 현재 P2 릴리즈 준비 트랙의 active 개발 잔여 없음.
+실제 production 배포 시점에는 [배포전_on-demand_체크.md](../business/operations/배포전_on-demand_체크.md)에 따라 배포 후 health를 확인한다.
