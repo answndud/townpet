@@ -3323,3 +3323,30 @@
 - 결과:
   - 댓글 작성, 댓글 메뉴, 댓글 신고 폼의 모바일 touch target과 overflow smoke가 통과했다.
   - 다음 후보는 `P2-25 care feedback mobile smoke 접근성/터치 회귀 검증 보강`이다.
+
+### 2026-05-14 | P2-25 care feedback mobile smoke 접근성/터치 회귀 검증
+- 완료일: `2026-05-14`
+- 배경:
+  - P2-22에서 care feedback은 새 spec를 늘리지 않고 기존 모바일 smoke에 bounding box assertion을 붙이는 조건부 보강 대상으로 분류했다.
+  - 기존 `care-feedback-mobile.spec.ts`는 모바일 카드 표시와 horizontal overflow만 확인해, 실제 필터/카드/action/nav의 40px 터치 기준 회귀를 놓칠 수 있었다.
+- 변경내용:
+  - `care-feedback-mobile.spec.ts`에 `expectTouchTarget`/`expectNoHorizontalOverflow` helper를 추가했다.
+  - 모바일 돌봄 이슈 화면에서 상단 운영 링크, 필터 링크, 모바일 카드 게시글 링크, 처리 상태 select, 운영자 메모 textarea, 저장 button, 하단 관리자 nav의 bounding box를 검증한다.
+  - empty state 모바일 화면에서도 대표 필터 링크와 horizontal overflow를 검증한다.
+  - spec 내부 seed 명령을 `corepack pnpm@9.12.3`으로 고정해 pnpm 11 shim 오류를 피하도록 안정화했다.
+  - 테스트가 잡을 수 있는 작은 링크 영역을 `care-feedbacks` 상단 운영 링크, 모바일 카드 게시글 링크, `AdminSectionNav` inline 링크에서 `min-h-10` 기준으로 보강했다.
+- 코드문서:
+  - [app/e2e/care-feedback-mobile.spec.ts](../app/e2e/care-feedback-mobile.spec.ts)
+  - [app/src/app/admin/care-feedbacks/page.tsx](../app/src/app/admin/care-feedbacks/page.tsx)
+  - [app/src/components/admin/admin-section-nav.tsx](../app/src/components/admin/admin-section-nav.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `PLAYWRIGHT_BASE_URL=http://localhost:3000 corepack pnpm@9.12.3 -C app exec playwright test e2e/care-feedback-mobile.spec.ts --project=chromium`
+  - `corepack pnpm@9.12.3 -C app exec vitest run src/components/admin/admin-lounge-compact-controls-accessibility.test.ts`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `node scripts/refresh-docs-index.mjs --check`
+- 결과:
+  - care feedback 모바일 운영 화면의 주요 touch target과 overflow smoke가 통과했다.
+  - 다음 후보는 `P2-26 모바일 visual smoke coverage 최종 점검/중복 정리`다.

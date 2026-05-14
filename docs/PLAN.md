@@ -17,4 +17,4 @@
 
 ## 다음 작업 후보
 
-- P2-25: care feedback mobile smoke에서 접근성/터치 회귀 검증 범위를 좁혀 보강한다.
+- P2-26: 모바일 visual smoke coverage를 최종 점검하고 중복/과잉 smoke를 정리한다.

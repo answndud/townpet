@@ -95,7 +95,7 @@ export function AdminSectionNav({ variant = "inline", role }: AdminSectionNavPro
   return (
     <div className="flex flex-wrap gap-3 text-xs text-[#5a7398]">
       {links.map((item) => (
-        <Link key={item.href} href={item.href}>
+        <Link key={item.href} href={item.href} className="inline-flex min-h-10 items-center">
           {item.label}
         </Link>
       ))}
