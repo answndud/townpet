@@ -4,7 +4,7 @@
 
 - 작업: 현재 active 작업 없음
 - 상태: `idle`
-- 현재 초점: `Release Candidate Evidence 패키지 작성`을 완료 archive했다. 로컬 기준 배포 판단은 `GO`이며, production 배포 후 health는 실제 배포 Ready 이후 확인한다.
+- 현재 초점: `Release Candidate Evidence 패키지 작성`을 완료 archive했다. 로컬 검증과 production public health 기준 배포 판단은 `GO`다.
 
 ## 진행 중 메모
 
