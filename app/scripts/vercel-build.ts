@@ -13,13 +13,39 @@ type CommandRunner = (
   args: string[],
 ) => Promise<CommandResult>;
 
+type SpawnSpec = {
+  command: string;
+  args: string[];
+};
+
 const PRISMA_DEPLOY_MAX_ATTEMPTS = 4;
 const PRISMA_DEPLOY_RETRY_DELAY_MS = 4_000;
 const CURRENT_FILE_PATH = fileURLToPath(import.meta.url);
 
+export function resolveSpawnSpec(
+  command: string,
+  args: string[],
+  env: Record<string, string | undefined> = process.env,
+): SpawnSpec {
+  if (command !== "pnpm") {
+    return { command, args };
+  }
+
+  const npmExecPath = env.npm_execpath?.trim();
+  if (!npmExecPath || !npmExecPath.includes("pnpm")) {
+    return { command, args };
+  }
+
+  return {
+    command: process.execPath,
+    args: [npmExecPath, ...args],
+  };
+}
+
 function runCommand(command: string, args: string[]) {
   return new Promise<CommandResult>((resolve, reject) => {
-    const child = spawn(command, args, {
+    const spawnSpec = resolveSpawnSpec(command, args);
+    const child = spawn(spawnSpec.command, spawnSpec.args, {
       env: process.env,
       cwd: process.cwd(),
       stdio: ["inherit", "pipe", "pipe"],

@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
+  resolveSpawnSpec,
   runBuildVercel,
   shouldRunSecurityEnvPreflight,
 } from "@/../scripts/vercel-build";
@@ -81,6 +82,26 @@ describe("vercel-build security preflight", () => {
         DEPLOY_SECURITY_PREFLIGHT_STRICT: "1",
       }),
     ).toBe(true);
+  });
+
+  it("uses npm_execpath when pnpm is launched through Corepack", () => {
+    expect(
+      resolveSpawnSpec("pnpm", ["next", "build"], {
+        npm_execpath: "/Users/alex/.cache/node/corepack/v1/pnpm/9.12.3/bin/pnpm.cjs",
+      }),
+    ).toEqual({
+      command: process.execPath,
+      args: [
+        "/Users/alex/.cache/node/corepack/v1/pnpm/9.12.3/bin/pnpm.cjs",
+        "next",
+        "build",
+      ],
+    });
+
+    expect(resolveSpawnSpec("node", ["script.js"], {})).toEqual({
+      command: "node",
+      args: ["script.js"],
+    });
   });
 
   it("stops the build before prisma deploy when security preflight fails", async () => {
