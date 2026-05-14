@@ -7,6 +7,7 @@ import {
   getGuestPostPolicy,
   setGuestPostPolicy,
 } from "../src/server/queries/policy.queries";
+import { hashPassword } from "../src/server/password";
 
 const adminEmail = "admin.platform@townpet.dev";
 const adminPassword =
@@ -28,16 +29,20 @@ test.describe("admin guest post policy form", () => {
   });
 
   test.beforeEach(async () => {
+    const passwordHash = await hashPassword(adminPassword);
+
     await prisma.user.upsert({
       where: { email: adminEmail },
       update: {
         role: UserRole.ADMIN,
         emailVerified: new Date(),
+        passwordHash,
       },
       create: {
         email: adminEmail,
         role: UserRole.ADMIN,
         emailVerified: new Date(),
+        passwordHash,
       },
     });
 

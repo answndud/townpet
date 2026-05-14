@@ -123,7 +123,7 @@ export async function loginWithCredentials(
       (url) => {
         return url.pathname === targetPathname;
       },
-      { timeout: 10_000 },
+      { timeout: 10_000, waitUntil: "domcontentloaded" },
     ),
     errorMessage.waitFor({ state: "visible", timeout: 10_000 }),
   ]);
