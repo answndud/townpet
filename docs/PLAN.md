@@ -17,4 +17,4 @@
 
 ## 다음 작업 후보
 
-- P2-23: post create/editor mobile visual smoke를 추가한다.
+- P2-24: comment/report mobile visual smoke를 추가한다.

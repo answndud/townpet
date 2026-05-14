@@ -39,6 +39,7 @@ describe("globals.css semantic color roles", () => {
     expect(css).toContain(".tp-editor-toolbar");
     expect(css).toContain(".tp-editor-toolbar-soft");
     expect(css).toContain(".tp-editor-surface");
+    expect(css).toMatch(/\.tp-sun-editor-wrap \.sun-editor \.se-btn,[\s\S]*min-height:\s*2\.5rem;/);
     expect(css).toContain(".se-list-layer .se-list-inner");
     expect(css).toContain(".tp-divider-soft");
   });

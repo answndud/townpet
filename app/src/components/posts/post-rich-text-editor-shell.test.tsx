@@ -55,9 +55,10 @@ describe("PostRichTextEditorShell", () => {
     );
 
     expect(html).toContain("tp-btn-soft");
-    expect(html).toContain("h-7 px-2.5");
+    expect(html).toContain("min-h-10 px-3");
     expect(html).toContain("tp-btn-primary");
-    expect(html).toContain("tp-btn-sm px-3");
     expect(html).toContain("h-10 rounded-xl px-4");
+    expect(html).not.toContain("h-7 px-2.5");
+    expect(html).not.toContain("tp-btn-sm");
   });
 });

@@ -96,20 +96,20 @@ export function PostCreateSubmitFooter({
         {isAuthenticated && !canUseLocalScope ? (
           <Link
             href="/profile"
-            className="tp-btn-soft tp-btn-md inline-flex w-full items-center justify-center px-4 text-xs sm:w-auto"
+            className="tp-btn-soft inline-flex min-h-10 w-full items-center justify-center px-4 text-xs font-semibold sm:w-auto"
           >
             프로필에서 동네 설정
           </Link>
         ) : null}
         <Link
           href="/feed"
-          className="tp-btn-soft tp-btn-md inline-flex w-full items-center justify-center px-5 text-sm sm:w-auto"
+          className="tp-btn-soft inline-flex min-h-10 w-full items-center justify-center px-5 text-sm font-semibold sm:w-auto"
         >
           취소
         </Link>
         <button
           type="submit"
-          className="tp-btn-primary tp-btn-md inline-flex w-full items-center justify-center px-6 text-sm disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0] sm:w-auto"
+          className="tp-btn-primary inline-flex min-h-10 w-full items-center justify-center px-6 text-sm font-semibold disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0] sm:w-auto"
           disabled={isPending || !isFormInteractive}
         >
           {isPending ? "등록 중..." : "등록"}
