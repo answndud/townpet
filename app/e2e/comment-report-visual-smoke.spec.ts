@@ -1,4 +1,4 @@
-import { expect, test, type Locator, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 import { PostScope, PostType } from "@prisma/client";
 
 import { prisma } from "../src/lib/prisma";
@@ -7,6 +7,7 @@ import {
   ensureCredentialUser,
   loginWithCredentialsApi,
 } from "./support/auth-helpers";
+import { expectNoHorizontalOverflow, expectTouchTarget } from "./support/visual-smoke-helpers";
 
 const authorEmail = "e2e-comment-report-visual-author@townpet.dev";
 const viewerEmail = "e2e-comment-report-visual-viewer@townpet.dev";
@@ -16,23 +17,6 @@ let viewerCommentId: string | null = null;
 let reportableCommentId: string | null = null;
 
 test.use({ viewport: { width: 390, height: 844 } });
-
-async function expectNoHorizontalOverflow(page: Page) {
-  const metrics = await page.evaluate(() => ({
-    clientWidth: document.documentElement.clientWidth,
-    scrollWidth: document.documentElement.scrollWidth,
-  }));
-
-  expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.clientWidth + 1);
-}
-
-async function expectTouchTarget(locator: Locator, minHeight = 40) {
-  await expect(locator).toBeVisible();
-  const box = await locator.boundingBox();
-
-  expect(box).not.toBeNull();
-  expect(box?.height ?? 0).toBeGreaterThanOrEqual(minHeight);
-}
 
 test.describe("comment/report mobile visual smoke", () => {
   test.beforeEach(async () => {
@@ -126,32 +110,48 @@ test.describe("comment/report mobile visual smoke", () => {
       timeout: 15_000,
     });
 
-    await expectTouchTarget(page.getByTestId("post-comment-root-input"), 72);
-    await expectTouchTarget(page.getByTestId("post-comment-root-submit"));
+    await expectTouchTarget(page.getByTestId("post-comment-root-input"), "root comment input", 72);
+    await expectTouchTarget(page.getByTestId("post-comment-root-submit"), "root comment submit");
     await expectNoHorizontalOverflow(page);
 
     const ownComment = page.getByTestId(`post-comment-item-${viewerCommentId}`);
     await expect(ownComment).toBeVisible({ timeout: 15_000 });
     const ownCommentMenu = ownComment.locator("summary").first();
-    await expectTouchTarget(ownCommentMenu);
+    await expectTouchTarget(ownCommentMenu, "own comment menu");
     await ownCommentMenu.click();
-    await expectTouchTarget(ownComment.getByRole("button", { name: "수정", exact: true }));
-    await expectTouchTarget(ownComment.getByRole("button", { name: "삭제", exact: true }));
+    await expectTouchTarget(
+      ownComment.getByRole("button", { name: "수정", exact: true }),
+      "own comment edit button",
+    );
+    await expectTouchTarget(
+      ownComment.getByRole("button", { name: "삭제", exact: true }),
+      "own comment delete button",
+    );
     await expectNoHorizontalOverflow(page);
 
     const reportableComment = page.getByTestId(`post-comment-item-${reportableCommentId}`);
     await expect(reportableComment).toBeVisible({ timeout: 15_000 });
-    await expectTouchTarget(reportableComment.getByRole("button", { name: "답글", exact: true }));
+    await expectTouchTarget(
+      reportableComment.getByRole("button", { name: "답글", exact: true }),
+      "reportable comment reply button",
+    );
     const reportToggle = reportableComment.getByRole("button", { name: "신고", exact: true });
-    await expectTouchTarget(reportToggle);
+    await expectTouchTarget(reportToggle, "reportable comment report button");
     await reportToggle.click();
 
-    await expectTouchTarget(page.getByTestId(`report-reason-comment-${reportableCommentId}`));
+    await expectTouchTarget(
+      page.getByTestId(`report-reason-comment-${reportableCommentId}`),
+      "comment report reason select",
+    );
     await expectTouchTarget(
       page.getByTestId(`report-description-comment-${reportableCommentId}`),
+      "comment report description textarea",
       72,
     );
-    await expectTouchTarget(page.getByTestId(`report-submit-comment-${reportableCommentId}`));
+    await expectTouchTarget(
+      page.getByTestId(`report-submit-comment-${reportableCommentId}`),
+      "comment report submit button",
+    );
     await expectNoHorizontalOverflow(page);
   });
 });

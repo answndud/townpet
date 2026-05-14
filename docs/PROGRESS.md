@@ -4,7 +4,7 @@
 
 - 작업: 현재 active 작업 없음
 - 상태: `idle`
-- 현재 초점: `P2-25 care feedback mobile smoke 접근성/터치 회귀 검증`을 완료 archive했다. 다음 후보는 `P2-26 모바일 visual smoke coverage 최종 점검/중복 정리`다.
+- 현재 초점: `P2-26 모바일 visual smoke coverage 최종 점검/중복 정리`를 완료 archive했다. 다음 후보는 `P2-27 출시 전 품질 게이트 quality:check 재점검`이다.
 
 ## 진행 중 메모
 

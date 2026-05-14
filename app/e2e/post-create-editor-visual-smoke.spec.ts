@@ -1,4 +1,4 @@
-import { expect, test, type Locator, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 import { prisma } from "../src/lib/prisma";
 import {
@@ -6,6 +6,7 @@ import {
   ensureCredentialUser,
   loginWithCredentialsApi,
 } from "./support/auth-helpers";
+import { expectNoHorizontalOverflow, expectTouchTarget } from "./support/visual-smoke-helpers";
 
 const TEST_EMAIL = "e2e.create-visual@townpet.dev";
 
@@ -41,26 +42,6 @@ async function ensureLocalProfile(userId: string) {
       isPrimary: true,
     },
   });
-}
-
-async function expectNoHorizontalOverflow(page: Page) {
-  const metrics = await page.evaluate(() => ({
-    clientWidth: document.documentElement.clientWidth,
-    scrollWidth: document.documentElement.scrollWidth,
-  }));
-
-  expect(metrics.scrollWidth, "page should not create horizontal overflow").toBeLessThanOrEqual(
-    metrics.clientWidth + 1,
-  );
-}
-
-async function expectTouchTarget(locator: Locator, label: string, minHeight = 40) {
-  await expect(locator, `${label} should be visible`).toBeVisible();
-  const box = await locator.boundingBox();
-  expect(box, `${label} should have a measurable layout box`).not.toBeNull();
-  expect(box?.height ?? 0, `${label} should meet the 40px touch target height`).toBeGreaterThanOrEqual(
-    minHeight,
-  );
 }
 
 test.describe("post create editor visual smoke", () => {
