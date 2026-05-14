@@ -17,4 +17,4 @@
 
 ## 다음 작업 후보
 
-- P2-28: `quality:check` 이후 필요한 hotpath e2e 범위를 1인 운영 기준으로 재선별한다.
+- P2-29: 배포 전 on-demand 체크 명령을 `quality:check -> hotpath e2e -> ops health` 순서로 문서화한다.
