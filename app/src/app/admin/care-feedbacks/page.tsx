@@ -172,10 +172,21 @@ export default async function CareFeedbacksPage({ searchParams }: CareFeedbacksP
         </header>
 
         <div className="flex flex-wrap items-center gap-3 text-xs text-[#5a7398]">
-          <Link href="/admin/ops">Ops 대시보드</Link>
-          <Link href="/admin/reports">신고 큐</Link>
-          <Link href="/admin/moderation-logs">모더레이션 로그</Link>
-          <Link href="/admin/hospital-review-flags">병원 후기 의심 신호</Link>
+          <Link className="inline-flex min-h-10 items-center" href="/admin/ops">
+            Ops 대시보드
+          </Link>
+          <Link className="inline-flex min-h-10 items-center" href="/admin/reports">
+            신고 큐
+          </Link>
+          <Link className="inline-flex min-h-10 items-center" href="/admin/moderation-logs">
+            모더레이션 로그
+          </Link>
+          <Link
+            className="inline-flex min-h-10 items-center"
+            href="/admin/hospital-review-flags"
+          >
+            병원 후기 의심 신호
+          </Link>
         </div>
 
         <section className="tp-card flex flex-col gap-3 p-4 text-xs text-[#4f678d]">
@@ -266,7 +277,7 @@ export default async function CareFeedbacksPage({ searchParams }: CareFeedbacksP
                     <div className="min-w-0">
                       <Link
                         href={`/posts/${feedback.careRequest.post.id}`}
-                        className="block break-words text-sm font-semibold leading-5 text-[#163462] hover:text-[#2f5da4]"
+                        className="inline-flex min-h-10 items-center break-words text-sm font-semibold leading-5 text-[#163462] hover:text-[#2f5da4]"
                       >
                         {feedback.careRequest.post.title}
                       </Link>
