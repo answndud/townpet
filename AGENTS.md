@@ -278,12 +278,15 @@ Codex가 저장소에 처음 들어왔을 때 이 파일 하나만 읽어도 현
 - 먼저 볼 워크플로우 2개:
   - `.github/workflows/quality-gate.yml`
   - `.github/workflows/ops-smoke-checks.yml`
+- 배포 전 on-demand 체크:
+  - `business/operations/배포전_on-demand_체크.md`
 
 브라우저 smoke는 hot path에서 분리됐습니다.
 
 - 필요할 때만:
   - `.github/workflows/browser-smoke.yml`
   - `pnpm -C app test:e2e:smoke`
+  - `pnpm -C app test:e2e:hotpath`
 
 나머지 `db:*`, `ops:*`, `test:e2e:*`, cleanup/backfill 스크립트와 주기 워크플로우는 필요할 때만 여는 on-demand 유지보수 도구로 취급합니다.
 
@@ -390,7 +393,7 @@ pnpm -C app dev
   - 현재 흐름은 `lint -> typecheck -> vitest run -> next build`
 - 확장 게이트:
   - `pnpm -C app quality:gate`
-  - 현재 흐름은 `quality:check -> e2e smoke`
+  - 현재 흐름은 `quality:check -> e2e smoke`이며, 1인 운영에서는 필요할 때만 실행하는 on-demand 확장 게이트로 본다.
 
 ## 15. 자주 헷갈리는 포인트
 
