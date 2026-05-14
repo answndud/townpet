@@ -3271,3 +3271,31 @@
     - `app/src/app/admin/care-feedbacks/page.tsx`
 - 결과:
   - 다음 구현 후보는 `P2-23 post create/editor mobile visual smoke 추가`다.
+
+### 2026-05-14 | P2-23 post create/editor mobile visual smoke
+- 완료일: `2026-05-14`
+- 배경:
+  - 글쓰기/에디터는 핵심 생성 hot path지만, 기존 e2e는 작성 성공, toolbar 기능, 이미지 삽입 중심이라 mobile viewport touch target과 overflow를 직접 보지 않았다.
+  - P2-22 선별 결과에 따라 긴 생성 플로우를 늘리지 않고, 모바일 레이아웃 smoke만 추가했다.
+- 변경내용:
+  - `post-create-editor-visual-smoke.spec.ts`를 추가해 로그인 사용자로 `/posts/new`에 진입한 뒤 모바일 viewport에서 제목, 분류, rich editor, toolbar action, 임시저장 삭제, 취소, 등록 action의 bounding box를 확인한다.
+  - page-level horizontal overflow가 없는지도 함께 확인한다.
+  - smoke가 실제로 잡아낸 SunEditor toolbar button 34px 문제를 `.tp-sun-editor-wrap .sun-editor .se-btn`/`.se-btn-select`의 `min-height: 2.5rem`으로 보강했다.
+  - smoke가 실제로 잡아낸 글쓰기 submit footer action 36px 문제를 `PostCreateSubmitFooter`에서 `tp-btn-md` 의존 대신 명시 `min-h-10`으로 보강했다.
+  - 관련 unit test 기대값을 40px 기준으로 갱신했다.
+- 코드문서:
+  - [app/e2e/post-create-editor-visual-smoke.spec.ts](../app/e2e/post-create-editor-visual-smoke.spec.ts)
+  - [app/src/app/globals.css](../app/src/app/globals.css)
+  - [app/src/app/globals-css.test.ts](../app/src/app/globals-css.test.ts)
+  - [app/src/components/posts/post-create-form-shell.tsx](../app/src/components/posts/post-create-form-shell.tsx)
+  - [app/src/components/posts/post-rich-text-editor-shell.test.tsx](../app/src/components/posts/post-rich-text-editor-shell.test.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `PLAYWRIGHT_BASE_URL=http://localhost:3000 corepack pnpm@9.12.3 -C app exec playwright test e2e/post-create-editor-visual-smoke.spec.ts --project=chromium`
+  - `corepack pnpm@9.12.3 -C app exec vitest run src/app/globals-css.test.ts src/components/posts/post-rich-text-editor-shell.test.tsx src/components/posts/post-create-form-shell.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+- 결과:
+  - 모바일 글쓰기 화면의 주요 입력, editor toolbar, submit footer touch target과 overflow smoke가 통과했다.
+  - 다음 후보는 `P2-24 comment/report mobile visual smoke 추가`다.
