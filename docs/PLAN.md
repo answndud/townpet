@@ -15,33 +15,6 @@
 
 현재 active 작업 없음.
 
-최근 완료:
-- `P2-22 touch target Playwright smoke 선별`은 `2026-05-14` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
-- `P2-21 feed/search/detail Playwright visual smoke`는 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
-- `P2-20 remaining compact controls audit 최종 sweep`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
-- `P2-19 remaining compact lounge/admin controls 보강`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
-- `P2-18 remaining compact user controls 보강`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
-- `P2-17 remaining compact comments control 보강`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
-- `P2-16 post detail info panel status/action control 보강`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
-- `P2-15 post detail action/reaction/bookmark/share control 보강`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
-- `P2-14 post write/comment/report form status와 touch target 보강`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
-- `P2-13 auth form status/touch target과 error recovery 점검`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
-- `P2-12 onboarding/pet profile form touch/status 보강`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
-- `P2-11 profile form status/touch target 보강`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
-- `P2-10 admin detail/log status surface 보강`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
-- `P2-9 admin direct moderation panel 접근성 보강`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
-- `P2-8 admin policy form touch/status 보강`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
-- `P2-7 admin table empty/action touch target 보강`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
-- `P2-6 admin pagination 반복 표면 축소`는 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
-- `P2-5 알림/공개 프로필 빈 상태와 pagination 보강`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
-- `P2-4 feed loading/pagination 모바일 접근성 보강`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
-- `P2-3 핵심 empty state 모바일/복구 액션 보강`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
-- `P2-2 UX/error boundary/mobile/accessibility 보강`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
-- `P2-1 client fetch helper 최소 통일`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
-- `P1-8 1인 운영용 과설계 축소 배치`는 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
-- `P1-7 1인 운영용 최소 production smoke 축소`는 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
-- `Release Confidence Hardening P1-6`은 `2026-05-13` 완료했고, 상세 변경/검증은 [COMPLETED.md](./COMPLETED.md)에 기록한다.
-
 ## 다음 작업 후보
 
 - P2-23: post create/editor mobile visual smoke를 추가한다.
