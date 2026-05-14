@@ -17,4 +17,4 @@
 
 ## 다음 작업 후보
 
-- P2-29: 배포 전 on-demand 체크 명령을 `quality:check -> hotpath e2e -> ops health` 순서로 문서화한다.
+- P2-30: 최근 릴리즈 준비 문서와 AGENTS/app README의 운영 루틴 표현을 최종 동기화한다.
