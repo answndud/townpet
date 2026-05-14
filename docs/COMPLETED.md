@@ -3350,3 +3350,32 @@
 - 결과:
   - care feedback 모바일 운영 화면의 주요 touch target과 overflow smoke가 통과했다.
   - 다음 후보는 `P2-26 모바일 visual smoke coverage 최종 점검/중복 정리`다.
+
+### 2026-05-14 | P2-26 모바일 visual smoke coverage 최종 점검/중복 정리
+- 완료일: `2026-05-14`
+- 배경:
+  - P2-21~P2-25에서 feed/search/detail, 글쓰기, 댓글/신고, care feedback 운영 화면의 모바일 visual smoke를 추가/보강했다.
+  - 1인 운영 기준에서는 smoke를 계속 늘리기보다, hot path coverage와 의도적 제외 범위를 고정하고 중복 helper를 줄이는 편이 유지 비용이 낮다.
+- 변경내용:
+  - `docs/reports/touch-target-playwright-smoke-selection.md`를 최종 coverage 문서로 갱신했다.
+  - 최종 유지 smoke를 `feed-search-detail-visual-smoke`, `post-create-editor-visual-smoke`, `comment-report-visual-smoke`, `care-feedback-mobile` 4개로 정리했다.
+  - 신고 관리자, 정책 관리자, 알림/프로필/소셜은 기존 기능 e2e와 소스 touch target 회귀 테스트로 충분해 별도 visual smoke를 만들지 않는 것으로 명시했다.
+  - 반복되던 `expectTouchTarget`/`expectNoHorizontalOverflow` helper를 `app/e2e/support/visual-smoke-helpers.ts`로 분리했다.
+  - 4개 visual/mobile smoke spec가 공용 helper를 사용하도록 정리했다.
+- 코드문서:
+  - [app/e2e/support/visual-smoke-helpers.ts](../app/e2e/support/visual-smoke-helpers.ts)
+  - [app/e2e/feed-search-detail-visual-smoke.spec.ts](../app/e2e/feed-search-detail-visual-smoke.spec.ts)
+  - [app/e2e/post-create-editor-visual-smoke.spec.ts](../app/e2e/post-create-editor-visual-smoke.spec.ts)
+  - [app/e2e/comment-report-visual-smoke.spec.ts](../app/e2e/comment-report-visual-smoke.spec.ts)
+  - [app/e2e/care-feedback-mobile.spec.ts](../app/e2e/care-feedback-mobile.spec.ts)
+  - [docs/reports/touch-target-playwright-smoke-selection.md](./reports/touch-target-playwright-smoke-selection.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `PLAYWRIGHT_BASE_URL=http://localhost:3000 corepack pnpm@9.12.3 -C app exec playwright test e2e/feed-search-detail-visual-smoke.spec.ts e2e/post-create-editor-visual-smoke.spec.ts e2e/comment-report-visual-smoke.spec.ts e2e/care-feedback-mobile.spec.ts --project=chromium`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `node scripts/refresh-docs-index.mjs --check`
+- 결과:
+  - 4개 visual/mobile smoke가 모두 통과했다.
+  - 다음 후보는 `P2-27 출시 전 품질 게이트 quality:check 재점검`이다.

@@ -17,4 +17,4 @@
 
 ## 다음 작업 후보
 
-- P2-26: 모바일 visual smoke coverage를 최종 점검하고 중복/과잉 smoke를 정리한다.
+- P2-27: 모바일 visual smoke 이후 남은 출시 전 품질 게이트를 `quality:check` 기준으로 재점검한다.
