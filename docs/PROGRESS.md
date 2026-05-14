@@ -4,7 +4,7 @@
 
 - 작업: 현재 active 작업 없음
 - 상태: `idle`
-- 현재 초점: `P2-28 hotpath e2e 범위 재선별`을 완료 archive했다. 다음 후보는 `P2-29 배포 전 on-demand 체크 명령 문서화`다.
+- 현재 초점: `P2-29 배포 전 on-demand 체크 명령 문서화`를 완료 archive했다. 다음 후보는 `P2-30 릴리즈 준비 문서와 AGENTS/app README 운영 루틴 표현 최종 동기화`다.
 
 ## 진행 중 메모
 

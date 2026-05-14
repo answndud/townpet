@@ -3424,3 +3424,30 @@
 - 결과:
   - 브라우저 smoke workflow가 1인 운영 기준의 on-demand 루틴과 일치한다.
   - 다음 후보는 `P2-29 배포 전 on-demand 체크 명령 문서화`다.
+
+### 2026-05-14 | P2-29 배포 전 on-demand 체크 명령 문서화
+- 완료일: `2026-05-14`
+- 배경:
+  - P2-28에서 Playwright hotpath를 on-demand 계층으로 재분류했지만, 실제 배포 직전 운영자가 따라 할 단일 실행 순서 문서가 필요했다.
+  - `release-readiness` 기준상 secrets/infra availability는 암묵적으로 가정하지 않고, missing signal은 별도 확인 대상으로 남겨야 한다.
+- 변경내용:
+  - `business/operations/배포전_on-demand_체크.md`를 추가했다.
+  - 기본 순서를 `quality:check -> 변경 범위별 e2e -> 배포 -> ops health`로 문서화했다.
+  - 변경 범위별 e2e 선택 기준을 기능 hotpath, auth hardening, visual smoke, care flow, OAuth real provider, 문서 변경으로 나눴다.
+  - 보안/env 변경 시 `manual-checks/배포_보안_체크리스트.md`를 먼저 보도록 연결했다.
+  - 배포 후 public/internal health 확인 명령과 실패 시 No-Go 기준을 명시했다.
+  - `business/operations/운영_문서_안내.md`의 먼저 읽기/Active 운영 문서/최소 운영 기준에 새 runbook을 연결했다.
+  - 새 운영 문서 추가에 맞춰 문서 동기화 리포트를 갱신했다.
+- 코드문서:
+  - [business/operations/배포전_on-demand_체크.md](../business/operations/%EB%B0%B0%ED%8F%AC%EC%A0%84_on-demand_%EC%B2%B4%ED%81%AC.md)
+  - [business/operations/운영_문서_안내.md](../business/operations/%EC%9A%B4%EC%98%81_%EB%AC%B8%EC%84%9C_%EC%95%88%EB%82%B4.md)
+  - [business/archive/operations/문서 동기화 리포트.md](../business/archive/operations/%EB%AC%B8%EC%84%9C%20%EB%8F%99%EA%B8%B0%ED%99%94%20%EB%A6%AC%ED%8F%AC%ED%8A%B8.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app exec vitest run scripts/ops-doc-scripts-consistency.test.ts`
+  - `corepack pnpm@9.12.3 -C app docs:refresh`
+  - `node scripts/refresh-docs-index.mjs --check`
+- 결과:
+  - 배포 전후 on-demand 체크 순서가 active 운영 문서로 연결됐다.
+  - 다음 후보는 `P2-30 릴리즈 준비 문서와 AGENTS/app README 운영 루틴 표현 최종 동기화`다.
