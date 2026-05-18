@@ -224,22 +224,28 @@ TownPet를 설명할 때 가장 좋은 순서는 보통 이렇습니다.
 ### 제품 구조
 
 - [app/src/app/feed/page.tsx](../app/src/app/feed/page.tsx)
-- [app/src/server/queries/post.queries.ts](../app/src/server/queries/post.queries.ts)
+- [app/src/server/queries/posts/post.queries.ts](../app/src/server/queries/posts/post.queries.ts)
+- [app/src/server/queries/posts/post-list.queries.ts](../app/src/server/queries/posts/post-list.queries.ts)
+- [app/src/server/queries/posts/post-feed-personalization.queries.ts](../app/src/server/queries/posts/post-feed-personalization.queries.ts)
 
 ### 쓰기 정책
 
-- [app/src/server/services/post.service.ts](../app/src/server/services/post.service.ts)
-- [app/src/lib/validations/post.ts](../app/src/lib/validations/post.ts)
+- [app/src/server/services/posts/post.service.ts](../app/src/server/services/posts/post.service.ts)
+- [app/src/server/services/posts/post-create-variants.ts](../app/src/server/services/posts/post-create-variants.ts)
+- [app/src/lib/validations/posts/post.ts](../app/src/lib/validations/posts/post.ts)
 
 ### 운영/모더레이션
 
-- [app/src/server/services/report.service.ts](../app/src/server/services/report.service.ts)
+- [app/src/server/services/moderation/report.service.ts](../app/src/server/services/moderation/report.service.ts)
+- [app/src/server/services/moderation/sanction.service.ts](../app/src/server/services/moderation/sanction.service.ts)
 - [app/src/app/admin/ops/page.tsx](../app/src/app/admin/ops/page.tsx)
 
 ### 품질/운영
 
 - [.github/workflows/quality-gate.yml](../.github/workflows/quality-gate.yml)
 - [app/src/app/api/health/route.ts](../app/src/app/api/health/route.ts)
+- [business/reports/api-route-contracts.generated.md](../business/reports/api-route-contracts.generated.md)
+- [business/reports/production-evidence-latest.md](../business/reports/production-evidence-latest.md)
 
 이 파일들만 잘 설명해도 TownPet의 깊이를 꽤 잘 보여줄 수 있습니다.
 

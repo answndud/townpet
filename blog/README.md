@@ -66,6 +66,7 @@
 29. [25-overengineering-ci-and-deploy-pipelines.md](./25-overengineering-ci-and-deploy-pipelines.md)
 30. [26-suneditor-selection-and-typing-boundary.md](./26-suneditor-selection-and-typing-boundary.md)
 31. [27-backend-portfolio-hardening-log.md](./27-backend-portfolio-hardening-log.md)
+32. [28-interview-qna-and-5min-demo-script.md](./28-interview-qna-and-5min-demo-script.md)
 
 ## 이 시리즈가 다루는 범위
 
@@ -84,3 +85,4 @@
 - CI/CD 과설계 회고와 운영 판단
 - rich text editor selection/typing boundary 안정화
 - 백엔드 포트폴리오 완성도를 높이기 위한 API contract, 테스트 공백, 운영 증거 하드닝
+- 면접 Q&A 카드와 5분 데모 스크립트

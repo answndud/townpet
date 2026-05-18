@@ -3681,3 +3681,27 @@
 - 결과:
   - README와 blog가 최신 백엔드 포트폴리오 상태를 같은 숫자와 같은 파일 구조로 설명한다.
   - 이번 작업은 문서-only 변경이라 앱 lint/typecheck/test/build는 실행하지 않았다.
+
+### 2026-05-18 | Interview Q&A and demo script docs
+- 완료일: `2026-05-18`
+- 배경:
+  - `blog/24`의 데모/문서/면접 패키지와 `blog/27`의 백엔드 하드닝 로그를 실제 면접에서 바로 말할 수 있는 형태로 연결할 필요가 있었다.
+  - README와 하드닝 증거가 준비됐으므로, 5분 데모 순서와 꼬리질문 대응 카드를 별도 문서로 만들었다.
+- 변경내용:
+  - `blog/28-interview-qna-and-5min-demo-script.md`를 추가했다.
+  - 0:00-5:00 기준 데모 스크립트, 화면/파일 순서, 말할 포인트를 정리했다.
+  - 20개 면접 Q&A 카드와 30초 자기소개 버전을 작성했다.
+  - `blog/README.md`, `blog/00_series_plan.md`를 28번 글까지 갱신했다.
+  - `blog/24-demo-docs-and-interview-pack.md`의 오래된 대표 코드 링크를 현재 `posts/*`, `moderation/*`, API contract/evidence 구조 기준으로 수정했다.
+- 코드문서:
+  - [blog/28-interview-qna-and-5min-demo-script.md](../blog/28-interview-qna-and-5min-demo-script.md)
+  - [blog/24-demo-docs-and-interview-pack.md](../blog/24-demo-docs-and-interview-pack.md)
+  - [blog/README.md](../blog/README.md)
+  - [blog/00_series_plan.md](../blog/00_series_plan.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `git diff --check`
+- 결과:
+  - TownPet를 백엔드 포트폴리오로 설명할 때 사용할 5분 데모 스크립트와 Q&A 카드가 준비됐다.
+  - 이번 작업은 문서-only 변경이라 앱 lint/typecheck/test/build는 실행하지 않았다.
