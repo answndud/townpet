@@ -19,6 +19,8 @@ vi.mock("@/lib/env", async () => {
 
 import {
   listBestPosts,
+  getPostContentById,
+  getPostStatsById,
   listRankedSearchPosts,
   listPostSearchSuggestions,
   listPosts,
@@ -34,6 +36,7 @@ vi.mock("@/lib/prisma", () => ({
   prisma: {
     $queryRaw: vi.fn(),
     post: {
+      findFirst: vi.fn(),
       findMany: vi.fn(),
     },
     userAudienceSegment: {
@@ -73,6 +76,7 @@ vi.mock("@/lib/prisma", () => ({
 const mockPrisma = vi.mocked(prisma) as unknown as {
   $queryRaw: ReturnType<typeof vi.fn>;
   post: {
+    findFirst: ReturnType<typeof vi.fn>;
     findMany: ReturnType<typeof vi.fn>;
   };
   userAudienceSegment: {
@@ -112,6 +116,7 @@ describe("post queries", () => {
   beforeEach(() => {
     mockPrisma.$queryRaw.mockReset();
     mockPrisma.$queryRaw.mockResolvedValue([]);
+    mockPrisma.post.findFirst.mockReset();
     mockPrisma.post.findMany.mockReset();
     mockPrisma.userAudienceSegment.findMany.mockReset();
     mockPrisma.userAudienceSegment.findMany.mockResolvedValue([]);
@@ -134,6 +139,62 @@ describe("post queries", () => {
     mockPrisma.userBlock.findMany.mockResolvedValue([]);
     mockPrisma.userMute.findMany.mockReset();
     mockPrisma.userMute.findMany.mockResolvedValue([]);
+  });
+
+  it("applies shared detail widget visibility filters for viewer-specific stats", async () => {
+    mockPrisma.userBlock.findMany.mockResolvedValue([
+      {
+        blockerId: "viewer-1",
+        blockedId: "blocked-author",
+      },
+    ]);
+    mockPrisma.userMute.findMany.mockResolvedValue([
+      {
+        mutedUserId: "muted-author",
+      },
+    ]);
+    mockPrisma.post.findFirst.mockResolvedValue({
+      id: "post-1",
+      authorId: "author-1",
+      type: PostType.FREE_POST,
+      scope: PostScope.GLOBAL,
+      status: "ACTIVE",
+      neighborhoodId: null,
+      likeCount: 3,
+      dislikeCount: 0,
+      commentCount: 2,
+      viewCount: 10,
+    });
+
+    const result = await getPostStatsById("post-1", "viewer-1");
+
+    expect(result).toMatchObject({
+      id: "post-1",
+      likeCount: 3,
+      commentCount: 2,
+    });
+    expect(mockPrisma.post.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          id: "post-1",
+          authorId: { notIn: ["blocked-author", "muted-author"] },
+          author: expect.objectContaining({
+            sanctionsReceived: expect.any(Object),
+          }),
+        }),
+        select: expect.objectContaining({
+          likeCount: true,
+          commentCount: true,
+          viewCount: true,
+        }),
+      }),
+    );
+  });
+
+  it("does not run detail widget queries without an id", async () => {
+    await expect(getPostContentById()).resolves.toBeNull();
+
+    expect(mockPrisma.post.findFirst).not.toHaveBeenCalled();
   });
 
   it("filters local feed by primary neighborhood", async () => {

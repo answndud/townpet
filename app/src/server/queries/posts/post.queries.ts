@@ -57,6 +57,7 @@ import {
   fetchPostRowsWithReactionsWithFallback,
   fetchPostRowsWithoutReactionsWithFallback,
 } from "./post-list-fetch-fallback";
+import { getPostDetailWidgetById } from "./post-detail-widget.queries";
 import { fetchRankedPostListSearchDocumentFallback } from "./post-list-search-document-fallback";
 import {
   DEFAULT_POST_SEARCH_IN,
@@ -1621,164 +1622,80 @@ export async function getPostById(id?: string, viewerId?: string) {
 }
 
 export async function getPostMetadataById(id?: string, viewerId?: string) {
-  if (!id) {
-    return null;
-  }
-  const shouldCache = !viewerId;
-  const runMetadata = async () => {
-    const hiddenAuthorIds = await listHiddenAuthorIdsForViewer(viewerId);
-    const visibilityFilter: Prisma.PostWhereInput = {
-      ...(hiddenAuthorIds.length > 0 ? { authorId: { notIn: hiddenAuthorIds } } : {}),
-      author: buildVisibleAuthorFilter(),
-    };
-
-    return prisma.post.findFirst({
-      where: { id, ...visibilityFilter },
-      select: {
-        id: true,
-        type: true,
-        scope: true,
-        status: true,
-        title: true,
-        content: true,
-        createdAt: true,
-        updatedAt: true,
-        images: {
-          select: { url: true },
-          orderBy: { order: "asc" },
-          take: 1,
-        },
+  return getPostDetailWidgetById({
+    id,
+    viewerId,
+    mode: "meta",
+    ttlSeconds: 30,
+    select: {
+      id: true,
+      type: true,
+      scope: true,
+      status: true,
+      title: true,
+      content: true,
+      createdAt: true,
+      updatedAt: true,
+      images: {
+        select: { url: true },
+        orderBy: { order: "asc" },
+        take: 1,
       },
-    });
-  };
-
-  if (shouldCache) {
-    const cacheKey = await createQueryCacheKey("post-detail", { id, mode: "meta" });
-    return withQueryCache({
-      key: cacheKey,
-      ttlSeconds: 30,
-      fetcher: runMetadata,
-      cacheNull: false,
-    });
-  }
-
-  return runMetadata();
+    },
+  });
 }
 
 export async function getPostStatsById(id?: string, viewerId?: string) {
-  if (!id) {
-    return null;
-  }
-  const shouldCache = !viewerId;
-  const runStats = async () => {
-    const hiddenAuthorIds = await listHiddenAuthorIdsForViewer(viewerId);
-    const visibilityFilter: Prisma.PostWhereInput = {
-      ...(hiddenAuthorIds.length > 0 ? { authorId: { notIn: hiddenAuthorIds } } : {}),
-      author: buildVisibleAuthorFilter(),
-    };
-
-    return prisma.post.findFirst({
-      where: { id, ...visibilityFilter },
-      select: {
-        id: true,
-        authorId: true,
-        type: true,
-        scope: true,
-        status: true,
-        neighborhoodId: true,
-        likeCount: true,
-        dislikeCount: true,
-        commentCount: true,
-        viewCount: true,
-      },
-    });
-  };
-
-  if (shouldCache) {
-    const cacheKey = await createQueryCacheKey("post-detail", { id, mode: "stats" });
-    return withQueryCache({
-      key: cacheKey,
-      ttlSeconds: 60,
-      fetcher: runStats,
-      cacheNull: false,
-    });
-  }
-
-  return runStats();
+  return getPostDetailWidgetById({
+    id,
+    viewerId,
+    mode: "stats",
+    ttlSeconds: 60,
+    select: {
+      id: true,
+      authorId: true,
+      type: true,
+      scope: true,
+      status: true,
+      neighborhoodId: true,
+      likeCount: true,
+      dislikeCount: true,
+      commentCount: true,
+      viewCount: true,
+    },
+  });
 }
 
 export async function getPostReadAccessById(id?: string, viewerId?: string) {
-  if (!id) {
-    return null;
-  }
-  const shouldCache = !viewerId;
-  const runReadAccess = async () => {
-    const hiddenAuthorIds = await listHiddenAuthorIdsForViewer(viewerId);
-    const visibilityFilter: Prisma.PostWhereInput = {
-      ...(hiddenAuthorIds.length > 0 ? { authorId: { notIn: hiddenAuthorIds } } : {}),
-      author: buildVisibleAuthorFilter(),
-    };
-
-    return prisma.post.findFirst({
-      where: { id, ...visibilityFilter },
-      select: {
-        id: true,
-        type: true,
-        scope: true,
-        status: true,
-        neighborhoodId: true,
-      },
-    });
-  };
-
-  if (shouldCache) {
-    const cacheKey = await createQueryCacheKey("post-detail", { id, mode: "read-access" });
-    return withQueryCache({
-      key: cacheKey,
-      ttlSeconds: 60,
-      fetcher: runReadAccess,
-      cacheNull: false,
-    });
-  }
-
-  return runReadAccess();
+  return getPostDetailWidgetById({
+    id,
+    viewerId,
+    mode: "read-access",
+    ttlSeconds: 60,
+    select: {
+      id: true,
+      type: true,
+      scope: true,
+      status: true,
+      neighborhoodId: true,
+    },
+  });
 }
 
 export async function getPostContentById(id?: string, viewerId?: string) {
-  if (!id) {
-    return null;
-  }
-  const shouldCache = !viewerId;
-  const runContent = async () => {
-    const hiddenAuthorIds = await listHiddenAuthorIdsForViewer(viewerId);
-    const visibilityFilter: Prisma.PostWhereInput = {
-      ...(hiddenAuthorIds.length > 0 ? { authorId: { notIn: hiddenAuthorIds } } : {}),
-      author: buildVisibleAuthorFilter(),
-    };
-
-    return prisma.post.findFirst({
-      where: { id, ...visibilityFilter },
-      select: {
-        id: true,
-        type: true,
-        scope: true,
-        status: true,
-        content: true,
-      },
-    });
-  };
-
-  if (shouldCache) {
-    const cacheKey = await createQueryCacheKey("post-detail", { id, mode: "content" });
-    return withQueryCache({
-      key: cacheKey,
-      ttlSeconds: 60,
-      fetcher: runContent,
-      cacheNull: false,
-    });
-  }
-
-  return runContent();
+  return getPostDetailWidgetById({
+    id,
+    viewerId,
+    mode: "content",
+    ttlSeconds: 60,
+    select: {
+      id: true,
+      type: true,
+      scope: true,
+      status: true,
+      content: true,
+    },
+  });
 }
 
 export async function listPosts({
