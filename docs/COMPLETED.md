@@ -3577,3 +3577,60 @@
     - Vercel: `https://vercel.com/jmoon0227-9736s-projects/townpet/HQxvtW9rN5NmfiaD77YioBVxj2Di`
     - `https://townpet.vercel.app/api/feed/guest?type=MEETUP`가 새 문구 `동네 모임은 동네 설정 후 볼 수 있습니다. 로그인 후 대표 동네를 설정해 주세요.`를 반환했다.
     - production health check는 status 200, payload.status `ok`, elapsed 1086ms로 통과했다.
+
+### 2026-05-18 | 2일 백엔드 포트폴리오 고도화 통합 완료
+- 완료일: `2026-05-18`
+- 배경:
+  - Pro 사용 기간이 끝나기 전에 TownPet를 백엔드 개발자 취업 포트폴리오로 읽히기 쉽게 만들기 위해 증거 문서, API 계약, 운영 루틴, 테스트 공백, 대형 모듈 리팩터링을 작은 단위로 닫았다.
+  - 마지막으로 전체 `quality:check`를 실행해 누적 변경이 lint/typecheck/unit/build 기준에서 함께 통과하는지 확인하고 active 문서를 비웠다.
+- 변경내용:
+  - 백엔드 case study와 API route inventory를 작성하고 README에서 포트폴리오 증거 문서로 연결했다.
+  - `app/.env.example`, `app/.env.production.example`을 정리해 clone 실행과 production env 예시를 분리했다.
+  - reports/post detail widget/auth route test gap을 보강했다.
+  - notification outbox retry와 stats helper, `ops:notifications:retry` 운영 스크립트를 추가했다.
+  - cleanup/backfill/repair/retry 스크립트의 기본 실행을 dry-run으로 표준화하고 `--apply` guard를 맞췄다.
+  - `post-create.service.ts`에서 post type별 create variant helper를 추출했다.
+  - `post.queries.ts`에서 detail widget, feed list/count, feed personalization context/scoring을 별도 query module로 분리했다.
+  - API route contract generator를 추가하고 access/validation/monitoring heuristic 및 generated report를 정리했다.
+  - generated contract 기준 `validation=none`과 `monitoring=none` 라벨을 0건으로 정리하고, NextAuth catch-all은 provider-managed adjacent test gap으로 유지했다.
+  - production evidence report를 최신화했다.
+  - `PLAN.md`와 `PROGRESS.md`를 active 작업 없음 상태로 정리했다.
+- 대표 커밋:
+  - `e6643e7` Document backend portfolio evidence
+  - `ebc8022` Add route contract coverage for reports and post widgets
+  - `0e2880f` Add auth route contract coverage
+  - `a00e715` Add notification outbox retry evidence
+  - `ea5df4b` Standardize maintenance script run modes
+  - `ee403ca` Extract post create variant builder
+  - `0347d8d` Extract post detail widget query helper
+  - `0ecb8f` Add API route contract check
+  - `5accbc2` Extract feed list query module
+  - `e716920` Extract feed personalization query module
+  - `fd387f9` Extend API route contract heuristics
+  - `084516f` Resolve API contract none heuristics
+- 코드문서:
+  - [README.md](../README.md)
+  - [app/.env.example](../app/.env.example)
+  - [app/.env.production.example](../app/.env.production.example)
+  - [app/scripts/check-api-route-contracts.ts](../app/scripts/check-api-route-contracts.ts)
+  - [app/scripts/maintenance-run-mode.ts](../app/scripts/maintenance-run-mode.ts)
+  - [app/scripts/retry-notification-deliveries.ts](../app/scripts/retry-notification-deliveries.ts)
+  - [app/src/server/services/posts/post-create-variants.ts](../app/src/server/services/posts/post-create-variants.ts)
+  - [app/src/server/queries/posts/post-detail-widget.queries.ts](../app/src/server/queries/posts/post-detail-widget.queries.ts)
+  - [app/src/server/queries/posts/post-list.queries.ts](../app/src/server/queries/posts/post-list.queries.ts)
+  - [app/src/server/queries/posts/post-feed-personalization.queries.ts](../app/src/server/queries/posts/post-feed-personalization.queries.ts)
+  - [business/reports/backend-portfolio-case-study.md](../business/reports/backend-portfolio-case-study.md)
+  - [business/reports/api-route-inventory.md](../business/reports/api-route-inventory.md)
+  - [business/reports/api-route-contracts.generated.md](../business/reports/api-route-contracts.generated.md)
+  - [business/reports/post-query-create-refactor-slices.md](../business/reports/post-query-create-refactor-slices.md)
+  - [business/reports/production-evidence-latest.md](../business/reports/production-evidence-latest.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app quality:check`
+  - `node scripts/refresh-docs-index.mjs --check`
+- 결과:
+  - `quality:check`가 ESLint, TypeScript, Vitest 248 files / 1198 tests, Next production build까지 통과했다.
+  - Next build 중 로컬 DB credential mismatch 경고가 발생했지만, 해당 조회는 기본값 fallback으로 처리되어 build는 exit 0으로 완료됐다.
+  - 현재 active 작업은 없다.
+  - 다음은 새 개발 사이클을 정하거나, 실제 배포 전 `business/operations/배포전_on-demand_체크.md` 순서로 on-demand 체크를 실행하는 것이다.
