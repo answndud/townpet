@@ -150,9 +150,9 @@ corepack pnpm@9.12.3 -C app quality:check
 
 These are intentionally small, portfolio-visible next slices:
 
-1. Keep production evidence reports current after each release candidate.
-2. Extract the post detail widget query helper selected in `post-query-create-refactor-slices.md`.
-3. Add a lightweight API contract generation/check path.
+1. Add a lightweight API contract generation/check path.
+2. Extract the feed list/count query module selected in `post-query-create-refactor-slices.md`.
+3. Keep production evidence reports current after each release candidate.
 
 ## Interview Talking Points
 

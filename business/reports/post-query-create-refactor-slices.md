@@ -46,6 +46,8 @@ This is not a rewrite plan. The goal is to improve locality and testability whil
 
 ## Candidate 2: Post Detail Widget Query Helper
 
+Status: completed on 2026-05-18.
+
 - Files:
   - `app/src/server/queries/posts/post.queries.ts`
   - possible helper under `app/src/server/queries/posts/`
@@ -129,7 +131,6 @@ Reason:
 
 ## Follow-up Order
 
-1. Refresh production evidence report for the current backend portfolio package.
-2. Candidate 2: extract detail widget query helper.
-3. Candidate 3: move feed list/count orchestration behind a dedicated query module.
-4. Candidate 4: extract feed personalization context/scoring only after feed list/count is isolated.
+1. Add a lightweight API contract generation/check path.
+2. Candidate 3: move feed list/count orchestration behind a dedicated query module.
+3. Candidate 4: extract feed personalization context/scoring only after feed list/count is isolated.

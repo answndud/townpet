@@ -4,7 +4,7 @@
 
 - 작업: 2일 백엔드 포트폴리오 고도화
 - 상태: `in_progress`
-- 현재 초점: P0 증거 패키징, P1 route test gap 보강, 알림 outbox 재처리/관측 루틴, maintenance run mode guard 표준화, post query/create 리팩터링 slice 선정, post create structured variant helper 추출, production evidence report 최신화를 완료했다.
+- 현재 초점: P0 증거 패키징, P1 route test gap 보강, 알림 outbox 재처리/관측 루틴, maintenance run mode guard 표준화, post query/create 리팩터링 slice 선정, post create structured variant helper 추출, production evidence report 최신화, post detail widget query helper 추출을 완료했다.
 
 ## 진행 중 메모
 
@@ -102,3 +102,16 @@
       - local raw evidence: `docs/reports/ops-evidence-2026-05-18T07-11-40-233Z.md` (git ignored)
     - 다음 후보:
       - post detail widget query helper 추출
+    - post detail widget query helper 추출을 완료했다.
+    - 변경:
+      - `app/src/server/queries/posts/post-detail-widget.queries.ts` 추가
+      - metadata/stats/read-access/content detail widget 조회의 hidden author, author sanction visibility, anonymous cache contract를 공통 helper로 이동
+      - `getPostMetadataById`, `getPostStatsById`, `getPostReadAccessById`, `getPostContentById` public 함수명과 return shape 유지
+      - `post.queries.ts` 2,299 lines -> 2,216 lines
+    - 검증:
+      - `corepack pnpm@9.12.3 -C app test -- src/server/queries/post.queries.test.ts 'src/app/api/posts/[id]/stats/route.test.ts' 'src/app/api/posts/[id]/content/route.test.ts' 'src/app/api/posts/[id]/comments/route.test.ts'`: 통과, 4 files / 81 tests
+      - `corepack pnpm@9.12.3 -C app typecheck`: 통과
+      - `corepack pnpm@9.12.3 -C app lint`: 통과
+    - 다음 후보:
+      - lightweight API contract generation/check path
+      - feed list/count query module 추출
