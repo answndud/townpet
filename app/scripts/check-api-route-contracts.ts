@@ -8,11 +8,32 @@ import { fileURLToPath } from "node:url";
 const HTTP_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"] as const;
 const CURRENT_FILE_PATH = fileURLToPath(import.meta.url);
 
+type ApiRouteAccess =
+  | "provider-managed"
+  | "admin"
+  | "moderator"
+  | "authenticated"
+  | "auth-aware"
+  | "public-internal-token"
+  | "public";
+
+type ApiRouteValidation =
+  | "provider-managed"
+  | "schema"
+  | "service-delegated"
+  | "manual"
+  | "none";
+
+type ApiRouteMonitoring = "monitorUnhandledError" | "logger" | "provider-managed" | "none";
+
 export type ApiRouteContract = {
   route: string;
   methods: string[];
   file: string;
   adjacentTest: boolean;
+  access: ApiRouteAccess;
+  validation: ApiRouteValidation;
+  monitoring: ApiRouteMonitoring;
 };
 
 async function listRouteFiles(dir: string): Promise<string[]> {
@@ -46,6 +67,101 @@ export function extractRouteMethods(source: string) {
   });
 }
 
+function isProviderManagedRoute(source: string, route: string) {
+  return route === "/api/auth/[...nextauth]" || source.includes("NextAuth(");
+}
+
+export function inferRouteAccess(source: string, route: string): ApiRouteAccess {
+  if (isProviderManagedRoute(source, route)) {
+    return "provider-managed";
+  }
+  if (source.includes("requireAdminUserId") || source.includes("requireAdmin(")) {
+    return "admin";
+  }
+  if (source.includes("requireModerator")) {
+    return "moderator";
+  }
+  if (source.includes("canAccessInternalDiagnostics") || source.includes("healthInternalToken")) {
+    return "public-internal-token";
+  }
+  if (
+    source.includes("requireCurrentUserId") ||
+    source.includes("requireCurrentUser") ||
+    source.includes("requireAuthenticated") ||
+    source.includes("requireAuth") ||
+    source.includes("requireUser") ||
+    source.includes("requireSession")
+  ) {
+    return "authenticated";
+  }
+  if (source.includes("hasSessionCookieFromRequest") || source.includes("auth().catch")) {
+    return "auth-aware";
+  }
+  if (
+    source.includes("return jsonError(401") ||
+    source.includes("status: 401") ||
+    source.includes("{ status: 401")
+  ) {
+    return "authenticated";
+  }
+  if (
+    source.includes("getCurrentUserId") ||
+    source.includes("getCurrentUserIdFromRequest") ||
+    source.includes("auth()")
+  ) {
+    return "auth-aware";
+  }
+
+  return "public";
+}
+
+export function inferRouteValidation(source: string, route: string): ApiRouteValidation {
+  if (isProviderManagedRoute(source, route)) {
+    return "provider-managed";
+  }
+  if (
+    source.includes(".safeParse(") ||
+    source.includes(".parse(") ||
+    source.includes("z.object(") ||
+    source.includes("z.enum(") ||
+    /Schema\b/.test(source)
+  ) {
+    return "schema";
+  }
+  if (
+    source.includes("request.json()") &&
+    (source.includes("ServiceError") ||
+      source.includes("input: body") ||
+      source.includes("payload: body"))
+  ) {
+    return "service-delegated";
+  }
+  if (
+    source.includes("searchParams") ||
+    source.includes("params.") ||
+    source.includes("jsonError(400") ||
+    source.includes("status: 400") ||
+    source.includes("{ status: 400")
+  ) {
+    return "manual";
+  }
+
+  return "none";
+}
+
+export function inferRouteMonitoring(source: string, route: string): ApiRouteMonitoring {
+  if (isProviderManagedRoute(source, route)) {
+    return "provider-managed";
+  }
+  if (source.includes("monitorUnhandledError")) {
+    return "monitorUnhandledError";
+  }
+  if (source.includes("logger.warn") || source.includes("logger.error")) {
+    return "logger";
+  }
+  return "none";
+}
+
 export async function collectApiRouteContracts(params?: {
   apiRoot?: string;
   appRoot?: string;
@@ -65,6 +181,9 @@ export async function collectApiRouteContracts(params?: {
         methods: extractRouteMethods(source),
         file,
         adjacentTest: existsSync(path.join(routeDir, "route.test.ts")),
+        access: inferRouteAccess(source, routeRelativePath ? `/api/${routeRelativePath}` : "/api"),
+        validation: inferRouteValidation(source, routeRelativePath ? `/api/${routeRelativePath}` : "/api"),
+        monitoring: inferRouteMonitoring(source, routeRelativePath ? `/api/${routeRelativePath}` : "/api"),
       };
     }),
   );
@@ -75,26 +194,34 @@ export async function collectApiRouteContracts(params?: {
 export function renderApiRouteContractsMarkdown(contracts: ApiRouteContract[]) {
   const missingMethods = contracts.filter((contract) => contract.methods.length === 0);
   const missingAdjacentTests = contracts.filter((contract) => !contract.adjacentTest);
+  const accessCounts = countBy(contracts, (contract) => contract.access);
+  const validationCounts = countBy(contracts, (contract) => contract.validation);
+  const monitoringCounts = countBy(contracts, (contract) => contract.monitoring);
   const lines: string[] = [];
 
   lines.push("# TownPet API Route Contracts");
   lines.push("");
-  lines.push("Generated from `app/src/app/api/**/route.ts`.");
+  lines.push("Generated from `app/src/app/api/**/route.ts` with source-text heuristics.");
   lines.push("");
   lines.push("## Summary");
   lines.push("");
   lines.push(`- routeHandlers: ${contracts.length}`);
   lines.push(`- missingMethodExports: ${missingMethods.length}`);
   lines.push(`- missingAdjacentTests: ${missingAdjacentTests.length}`);
+  lines.push(`- accessHeuristics: ${formatCounts(accessCounts)}`);
+  lines.push(`- validationHeuristics: ${formatCounts(validationCounts)}`);
+  lines.push(`- monitoringHeuristics: ${formatCounts(monitoringCounts)}`);
+  lines.push("");
+  lines.push("Heuristic labels are review aids, not a security proof. Source of truth remains route code and tests.");
   lines.push("");
   lines.push("## Routes");
   lines.push("");
-  lines.push("| Route | Methods | Route file | Adjacent test |");
-  lines.push("|---|---:|---|---:|");
+  lines.push("| Route | Methods | Access | Validation | Monitoring | Route file | Adjacent test |");
+  lines.push("|---|---:|---|---|---|---|---:|");
 
   for (const contract of contracts) {
     lines.push(
-      `| \`${contract.route}\` | ${contract.methods.length > 0 ? contract.methods.join(", ") : "NONE"} | \`${contract.file}\` | ${contract.adjacentTest ? "yes" : "no"} |`,
+      `| \`${contract.route}\` | ${contract.methods.length > 0 ? contract.methods.join(", ") : "NONE"} | ${contract.access} | ${contract.validation} | ${contract.monitoring} | \`${contract.file}\` | ${contract.adjacentTest ? "yes" : "no"} |`,
     );
   }
 
@@ -113,6 +240,21 @@ export function renderApiRouteContractsMarkdown(contracts: ApiRouteContract[]) {
   }
 
   return `${lines.join("\n")}\n`;
+}
+
+function countBy<T>(values: T[], getKey: (value: T) => string) {
+  return values.reduce<Record<string, number>>((counts, value) => {
+    const key = getKey(value);
+    counts[key] = (counts[key] ?? 0) + 1;
+    return counts;
+  }, {});
+}
+
+function formatCounts(counts: Record<string, number>) {
+  return Object.entries(counts)
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([key, count]) => `${key}=${count}`)
+    .join(", ");
 }
 
 export async function runApiRouteContractCheck(params?: {

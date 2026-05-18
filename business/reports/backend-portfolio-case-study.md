@@ -150,7 +150,7 @@ corepack pnpm@9.12.3 -C app quality:check
 
 These are intentionally small, portfolio-visible next slices:
 
-1. Extend the generated API route contract report with access/validation heuristics if it becomes useful.
+1. Review `api-route-contracts.generated.md` rows with `validation=none` or `monitoring=none` and document whether each is intentional.
 2. Keep production evidence reports current after each release candidate.
 3. Pause broad post-query extraction unless a future slice has an obvious public behavior contract.
 
@@ -166,6 +166,6 @@ These are intentionally small, portfolio-visible next slices:
 ## Known Tradeoffs
 
 - The project has strong breadth, but some backend modules are still large.
-- API route methods and adjacent test drift now have a generated check path; access/validation contract details remain manual for now.
+- API route methods, adjacent tests, and access/validation/monitoring heuristic labels now have a generated check path; heuristic labels still require human review before they are treated as policy evidence.
 - Sentry is optional, so observability is currently health/log/script based unless external secrets are configured.
 - Production smoke is intentionally small for solo operation; deeper browser smoke is on-demand.
