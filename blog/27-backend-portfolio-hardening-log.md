@@ -1,0 +1,193 @@
+# 27. 백엔드 포트폴리오 하드닝 로그
+
+## 이번 글에서 풀 문제
+
+기능이 많아진 프로젝트는 어느 순간부터 “무엇을 만들었는가”보다 “정말 믿을 수 있는가”를 설명해야 합니다.
+
+TownPet도 마찬가지였습니다.
+
+- 피드, 검색, 글쓰기, 댓글, 알림, 신고, 관리자 화면은 이미 있었습니다.
+- 하지만 면접이나 리뷰 상황에서는 “그 기능이 지금도 깨지지 않는다는 증거”가 필요했습니다.
+- 대형 파일이 계속 커지면 다음 작업자가 구조를 파악하기 어렵고, AI agent도 수정 범위를 잘못 잡을 수 있습니다.
+
+그래서 최근 사이클의 목표는 기능 추가가 아니라 **백엔드 포트폴리오 완성도 하드닝**이었습니다.
+
+## 왜 이 글이 중요한가
+
+개인 프로젝트에서 흔히 부족한 부분은 기능 개수가 아닙니다.
+
+진짜 약점은 보통 아래에 있습니다.
+
+- API surface를 전체로 설명하지 못함
+- route handler별 인증, validation, monitoring 상태가 흩어져 있음
+- 테스트 공백을 감으로만 알고 있음
+- 배포 후 실제 운영 URL이 정상인지 기록이 없음
+- 커진 service/query 파일을 계속 덧붙이기만 함
+
+TownPet는 이 부분을 포트폴리오에서 설명 가능한 산출물로 바꾸는 작업을 했습니다.
+
+## 먼저 볼 핵심 파일
+
+- [README.md](../README.md)
+- [backend-portfolio-case-study.md](../business/reports/backend-portfolio-case-study.md)
+- [api-route-inventory.md](../business/reports/api-route-inventory.md)
+- [api-route-contracts.generated.md](../business/reports/api-route-contracts.generated.md)
+- [production-evidence-latest.md](../business/reports/production-evidence-latest.md)
+- [app/src/server/queries/posts/post-list.queries.ts](../app/src/server/queries/posts/post-list.queries.ts)
+- [app/src/server/queries/posts/post-feed-personalization.queries.ts](../app/src/server/queries/posts/post-feed-personalization.queries.ts)
+- [app/src/server/queries/posts/post-detail-widget.queries.ts](../app/src/server/queries/posts/post-detail-widget.queries.ts)
+- [app/scripts/check-api-route-contracts.ts](../app/scripts/check-api-route-contracts.ts)
+- [app/scripts/run-ops-evidence.ts](../app/scripts/run-ops-evidence.ts)
+
+## 1. API surface를 감이 아니라 contract로 고정하기
+
+TownPet의 App Router API route는 48개입니다.
+
+이 숫자 자체보다 중요한 것은 각 route를 아래 기준으로 다시 본 점입니다.
+
+- 어떤 HTTP method를 노출하는가
+- public, authenticated, admin, internal 중 어떤 접근 수준인가
+- 입력 validation이 어디에 있는가
+- 운영 monitoring 또는 audit 증거가 있는가
+- 인접 테스트가 있는가
+
+이 결과는 [api-route-contracts.generated.md](../business/reports/api-route-contracts.generated.md)에 생성 산출물로 남깁니다.
+
+현재 기준:
+
+- route handlers: 48
+- missing method exports: 0
+- adjacent test gap: 1
+- `validation=none`: 0
+- `monitoring=none`: 0
+
+남은 adjacent test gap 1개는 `/api/auth/[...nextauth]`입니다. 이 route는 NextAuth provider-managed catch-all이기 때문에 일반 route handler처럼 adjacent unit test를 붙이는 것보다 auth integration/e2e로 보는 편이 맞습니다.
+
+## 2. 테스트 공백을 “나중에 봄”에서 “목록화된 risk”로 바꾸기
+
+이전에는 테스트가 많아도 어디가 비어 있는지 설명하기 어려웠습니다.
+
+이번 사이클에서는 route contract report를 통해 공백을 자동으로 드러내고, 실제로 문제가 될 수 있는 부분은 테스트를 추가했습니다.
+
+대표적으로 확인한 영역:
+
+- 신고/관리자 route failure path
+- post detail widget query
+- post create variant 분기
+- feed personalization query
+- API contract script 자체의 heuristic 회귀
+
+핵심은 “테스트 파일 수를 늘렸다”가 아니라, **route별 설명 가능한 공백을 줄였다**는 점입니다.
+
+## 3. 운영 증거를 최신 산출물로 남기기
+
+배포가 됐다는 말만으로는 부족합니다.
+
+TownPet는 production health를 별도 evidence 파일로 남깁니다.
+
+최신 기준:
+
+- target: `https://townpet.vercel.app`
+- endpoint: `/api/health`
+- HTTP status: 200
+- payload status: `ok`
+- elapsed: 3974ms
+
+이 결과는 [production-evidence-latest.md](../business/reports/production-evidence-latest.md)에 기록됩니다.
+
+면접에서 이 파일은 “로컬 테스트는 통과했다”를 넘어, 실제 배포 환경에서 최소 운영 smoke를 확인했다는 증거가 됩니다.
+
+## 4. 대형 post query를 public facade와 내부 모듈로 나누기
+
+TownPet의 post query는 가장 많이 참조되는 read model 중 하나입니다.
+
+처음에는 한 파일에 list, detail, personalization, widget 조회가 계속 쌓였습니다. 기능은 돌아가지만, 장기적으로는 아래 문제가 생깁니다.
+
+- 작은 변경도 큰 파일 전체를 이해해야 함
+- AI agent가 수정 범위를 넓게 잡기 쉬움
+- 테스트 대상이 query 성격별로 분리되지 않음
+
+그래서 public import surface는 유지하면서 내부 구현을 나눴습니다.
+
+- `post-list.queries.ts`: feed/list read model
+- `post-feed-personalization.queries.ts`: 개인화 피드 후보와 이벤트 query
+- `post-detail-widget.queries.ts`: 상세 주변 widget 조회
+- `post.queries.ts`: 기존 import를 유지하는 public facade
+
+이 방식의 장점은 호출부를 대량 수정하지 않고도 내부 복잡도를 낮출 수 있다는 점입니다.
+
+## 5. post create flow도 variant 단위로 읽히게 만들기
+
+글 작성은 단순 insert가 아닙니다.
+
+TownPet의 글 작성은 게시판 type에 따라:
+
+- 일반 글
+- 병원 리뷰
+- 산책로
+- 마켓
+- 돌봄 요청
+- 입양/봉사/장소 리뷰/모임/실종/질문
+
+같은 structured payload를 다룹니다.
+
+그래서 create service도 한 함수가 모든 분기를 직접 들고 있는 대신, variant별 helper로 분리해 읽는 비용을 줄였습니다.
+
+중요한 점은 이 리팩터링이 “예쁜 코드 만들기”가 아니라는 것입니다.
+
+글 작성은 정책, validation, DB transaction이 만나는 고위험 경로이기 때문에, 분기별 책임을 줄이는 것이 곧 회귀 위험을 줄이는 일입니다.
+
+## 6. 품질 게이트 결과를 면접용 숫자로 말하기
+
+최신 로컬 품질 검증은 아래까지 통과했습니다.
+
+```bash
+corepack pnpm@9.12.3 -C app quality:check
+```
+
+검증 범위:
+
+- ESLint
+- TypeScript
+- Vitest 248 files / 1198 tests
+- Next production build
+
+이 숫자는 “테스트가 있다”보다 강합니다.
+
+면접에서는 이렇게 말할 수 있습니다.
+
+> 커뮤니티 기능을 단순히 구현한 뒤 끝낸 게 아니라, route contract inventory, production health evidence, quality gate 결과를 같이 남겨서 백엔드 프로젝트로 검증 가능한 형태를 만들었습니다.
+
+## 7. 이 사이클에서 의도적으로 하지 않은 것
+
+하드닝은 끝없이 커질 수 있습니다.
+
+그래서 이번 사이클에서는 아래를 일부러 제외했습니다.
+
+- 모든 Playwright e2e를 매 push hot path에 넣기
+- Sentry 필수화를 위해 개인 프로젝트 운영 비용을 늘리기
+- post query를 호출부까지 전부 갈아엎는 대형 리라이트
+- production smoke를 10분짜리 운영 루틴으로 키우기
+
+TownPet는 1인 운영 프로젝트입니다.
+
+그래서 검증은 강하게 하되, 매번 실행해야 하는 hot path는 작게 유지하는 방향을 택했습니다.
+
+## 면접에서 이렇게 설명하기
+
+이 작업은 아래 순서로 말하면 좋습니다.
+
+1. 기능을 늘리는 단계는 이미 지나서, API와 운영 증거를 정리하는 단계로 들어갔다.
+2. App Router route 48개를 contract report로 고정했고, validation/monitoring/test gap을 숫자로 관리했다.
+3. production health evidence를 남겨 배포 후 실제 URL 기준 smoke를 기록했다.
+4. 커진 post query/create flow는 public surface를 유지한 채 내부 모듈로 나눠 회귀 위험을 낮췄다.
+5. 최종적으로 `quality:check`에서 lint, typecheck, 1198개 Vitest, Next build까지 통과했다.
+
+## 다음에 더 보강한다면
+
+다음 보강은 기능을 더 붙이는 것보다, 이 증거를 보여주는 방식을 개선하는 쪽이 좋습니다.
+
+- route contract report를 README에 더 시각적으로 요약하기
+- production evidence를 release note와 연결하기
+- `24-demo-docs-and-interview-pack.md`와 이 글을 묶어 면접 Q&A 카드 만들기
+- post query 리팩터링 전/후 call graph를 다이어그램으로 남기기

@@ -14,7 +14,7 @@ TownPet is a service-style backend portfolio project for a pet community product
 - Write orchestration: services under `app/src/server/services`
 - Read models: queries under `app/src/server/queries`
 - API routes: 48 App Router route handlers
-- Tests: 229 Vitest test files and 25 Playwright specs
+- Tests: 248 Vitest test files / 1198 tests plus 25 Playwright specs
 - Operations: health, security env preflight, latency snapshot, cleanup and repair scripts
 
 ## Domain Model Highlights
@@ -130,6 +130,8 @@ See `business/reports/api-route-inventory.md` for the route map. The most backen
 - `/api/upload`
 - `/api/health`
 
+The generated contract report currently covers all 48 route handlers with 0 missing method exports, 1 adjacent test gap for the provider-managed NextAuth catch-all route, and 0 `validation=none` / 0 `monitoring=none` review labels.
+
 ## Test Strategy
 
 The project uses layered verification:
@@ -150,9 +152,9 @@ corepack pnpm@9.12.3 -C app quality:check
 
 These are intentionally small, portfolio-visible next slices:
 
-1. Run the full `quality:check` once after the P1 portfolio slices and archive the result.
-2. Keep production evidence reports current after each release candidate.
-3. Pause broad post-query extraction unless a future slice has an obvious public behavior contract.
+1. Keep production evidence reports current after each release candidate.
+2. Convert the strongest backend slices into interview Q&A cards and demo narration.
+3. Add targeted e2e coverage only when a changed feature has real browser-specific risk.
 
 ## Interview Talking Points
 

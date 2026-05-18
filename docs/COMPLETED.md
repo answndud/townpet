@@ -3656,3 +3656,28 @@
   - elapsedMs는 `3974`, runner duration은 `4538ms`였다.
   - local raw evidence는 `docs/reports/ops-evidence-2026-05-18T08-11-17-318Z.md`에 생성됐고 git ignore 상태로 유지했다.
   - full release readiness는 이 evidence로 주장하지 않는다. 배포 후보나 incident 대응 시에는 `business/operations/배포전_on-demand_체크.md`의 범위별 체크를 추가 실행한다.
+
+### 2026-05-18 | README and blog portfolio refresh
+- 완료일: `2026-05-18`
+- 배경:
+  - 최근 백엔드 포트폴리오 하드닝, API contract, production health evidence, post query/create 리팩터링 결과가 README와 blog 시리즈 인덱스에 아직 충분히 반영되지 않았다.
+  - README는 첫인상 문서이고, blog는 면접/리뷰 상황에서 구현 맥락을 설명하는 장기 해설 자료이므로 최신 개발 상태와 맞췄다.
+- 변경내용:
+  - README의 기술 하이라이트에 notification outbox retry, maintenance run mode guard, production health evidence, API route contract, post query/create 리팩터링을 추가했다.
+  - README의 백엔드 포트폴리오 증거에 `quality:check`, API contract, production health evidence 최신 수치를 요약했다.
+  - 대표 도메인 묶음의 `posts/feed`를 현재 분리된 query module 기준으로 갱신하고, `ops/evidence` 묶음을 추가했다.
+  - blog 시리즈에 `27-backend-portfolio-hardening-log.md`를 추가하고, `blog/README.md`와 `blog/00_series_plan.md`의 읽기 순서와 현재 상태를 갱신했다.
+  - `business/reports/backend-portfolio-case-study.md`의 test count, API contract 상태, current improvement target을 최신 상태로 정리했다.
+- 코드문서:
+  - [README.md](../README.md)
+  - [blog/README.md](../blog/README.md)
+  - [blog/00_series_plan.md](../blog/00_series_plan.md)
+  - [blog/27-backend-portfolio-hardening-log.md](../blog/27-backend-portfolio-hardening-log.md)
+  - [business/reports/backend-portfolio-case-study.md](../business/reports/backend-portfolio-case-study.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `git diff --check`
+- 결과:
+  - README와 blog가 최신 백엔드 포트폴리오 상태를 같은 숫자와 같은 파일 구조로 설명한다.
+  - 이번 작업은 문서-only 변경이라 앱 lint/typecheck/test/build는 실행하지 않았다.
