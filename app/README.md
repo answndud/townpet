@@ -128,6 +128,7 @@ pnpm ops:check:security-env
 pnpm ops:check:security-env:build
 pnpm ops:check:security-env:strict
 pnpm ops:check:auth-email-readiness
+pnpm ops:notifications:retry -- --dry-run
 pnpm ops:perf:snapshot
 ```
 
@@ -135,6 +136,7 @@ GitHub Actions maintenance workflow는 자동 schedule 없이 수동 실행 기�
 
 - `auth-audit-cleanup`
 - `notification-cleanup`
+- `ops:notifications:retry`
 - `search-term-cleanup`
 - `post-integrity-maintenance`
 - `ops-latency-snapshots`

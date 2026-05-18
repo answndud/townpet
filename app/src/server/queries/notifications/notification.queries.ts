@@ -115,7 +115,26 @@ type NotificationDeliveryDelegate = {
   create(args: Prisma.NotificationDeliveryCreateArgs): Promise<unknown>;
   findUnique(args: Prisma.NotificationDeliveryFindUniqueArgs): Promise<unknown>;
   findMany(args: Prisma.NotificationDeliveryFindManyArgs): Promise<unknown[]>;
+  count(args: Prisma.NotificationDeliveryCountArgs): Promise<number>;
   update(args: Prisma.NotificationDeliveryUpdateArgs): Promise<unknown>;
+};
+
+type FlushNotificationDeliveriesOptions = {
+  userId?: string;
+  limit?: number;
+  now?: Date;
+};
+
+type FlushNotificationDeliveriesResult = {
+  scanned: number;
+  delivered: number;
+  failed: number;
+  skipped: number;
+  deliveryIds: {
+    delivered: string[];
+    failed: string[];
+    skipped: string[];
+  };
 };
 
 let notificationTableMissingWarned = false;
@@ -600,41 +619,107 @@ export async function deliverNotificationDelivery(deliveryId: string) {
   return { delivered: true };
 }
 
-export async function flushNotificationDeliveriesForUser(userId: string, limit = 20) {
+function clampNotificationDeliveryFlushLimit(limit: number | undefined, max = 100) {
+  return Math.min(Math.max(limit ?? 50, 1), max);
+}
+
+export async function getNotificationDeliveryOutboxStats(now = new Date()) {
   const delegate = requireNotificationDeliveryDelegate();
 
-  let deliveries: Array<{ id: string }>;
+  try {
+    const [pending, failed, due] = await Promise.all([
+      delegate.count({ where: { status: NotificationDeliveryStatus.PENDING } }),
+      delegate.count({ where: { status: NotificationDeliveryStatus.FAILED } }),
+      delegate.count({
+        where: {
+          status: {
+            in: [NotificationDeliveryStatus.PENDING, NotificationDeliveryStatus.FAILED],
+          },
+          scheduledAt: { lte: now },
+        },
+      }),
+    ]);
+
+    return {
+      pending,
+      failed,
+      due,
+      checkedAt: now,
+    };
+  } catch (error) {
+    throwNotificationDeliverySchemaSyncRequired(error);
+  }
+}
+
+export async function flushNotificationDeliveries({
+  userId,
+  limit,
+  now = new Date(),
+}: FlushNotificationDeliveriesOptions = {}): Promise<FlushNotificationDeliveriesResult> {
+  const delegate = requireNotificationDeliveryDelegate();
+  const safeLimit = clampNotificationDeliveryFlushLimit(limit);
+
+  let deliveries: Array<{ id: string; userId: string }>;
   try {
     deliveries = (await delegate.findMany({
       where: {
-        userId,
+        ...(userId ? { userId } : {}),
         status: {
           in: [NotificationDeliveryStatus.PENDING, NotificationDeliveryStatus.FAILED],
         },
+        scheduledAt: { lte: now },
       },
       orderBy: [{ scheduledAt: "asc" }, { createdAt: "asc" }],
-      take: Math.min(Math.max(limit, 1), 50),
+      take: safeLimit,
       select: {
         id: true,
+        userId: true,
       },
-    })) as Array<{ id: string }>;
+    })) as Array<{ id: string; userId: string }>;
   } catch (error) {
     throwNotificationDeliverySchemaSyncRequired(error);
   }
 
+  const result: FlushNotificationDeliveriesResult = {
+    scanned: deliveries.length,
+    delivered: 0,
+    failed: 0,
+    skipped: 0,
+    deliveryIds: {
+      delivered: [],
+      failed: [],
+      skipped: [],
+    },
+  };
+
   for (const delivery of deliveries) {
     try {
-      await deliverNotificationDelivery(delivery.id);
+      const delivered = await deliverNotificationDelivery(delivery.id);
+      if (delivered?.delivered) {
+        result.delivered += 1;
+        result.deliveryIds.delivered.push(delivery.id);
+      } else {
+        result.skipped += 1;
+        result.deliveryIds.skipped.push(delivery.id);
+      }
     } catch (error) {
+      result.failed += 1;
+      result.deliveryIds.failed.push(delivery.id);
       logger.warn("알림 delivery outbox 재처리에 실패했습니다.", {
-        userId,
+        userId: delivery.userId,
         deliveryId: delivery.id,
         error: serializeError(error),
       });
     }
   }
 
-  return deliveries.length;
+  return result;
+}
+
+export async function flushNotificationDeliveriesForUser(userId: string, limit = 20) {
+  const result = await flushNotificationDeliveries({ userId, limit });
+
+  return result.scanned;
 }
 
 export async function markNotificationRead(userId: string, notificationId: string) {
