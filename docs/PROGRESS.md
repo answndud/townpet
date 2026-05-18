@@ -4,7 +4,7 @@
 
 - 작업: 2일 백엔드 포트폴리오 고도화
 - 상태: `in_progress`
-- 현재 초점: P0 증거 패키징, P1 route test gap 보강, 알림 outbox 재처리/관측 루틴, maintenance run mode guard 표준화, post query/create 리팩터링 slice 선정을 완료했다.
+- 현재 초점: P0 증거 패키징, P1 route test gap 보강, 알림 outbox 재처리/관측 루틴, maintenance run mode guard 표준화, post query/create 리팩터링 slice 선정, post create structured variant helper 추출을 완료했다.
 
 ## 진행 중 메모
 
@@ -79,3 +79,17 @@
     - 검증:
       - repository evidence 기반 문서 작업이며 코드 변경 없음
       - `post.queries.ts` 2,299 lines, `post-create.service.ts` 1,145 lines, 관련 테스트 파일 확인
+    - post create structured variant helper 추출을 완료했다.
+    - 변경:
+      - `app/src/server/services/posts/post-create-variants.ts` 추가
+      - `createPost`에서 post type별 Prisma create payload/include 구성을 helper로 이동
+      - 작성자/게스트/신규 유저/연락처/보드 정책과 hospital review risk logging은 기존 service orchestration에 유지
+      - `post-create.service.ts` 1,145 lines -> 675 lines
+    - 검증:
+      - `corepack pnpm@9.12.3 -C app test -- src/server/services/post-create-policy.test.ts`: 통과, 1 file / 26 tests
+      - `corepack pnpm@9.12.3 -C app typecheck`: 통과
+      - `corepack pnpm@9.12.3 -C app lint`: 통과
+      - `corepack pnpm@9.12.3 -C app test -- src/server/services/post-create-policy.test.ts src/server/services/post.service.test.ts`: 통과, 2 files / 60 tests
+    - 다음 후보:
+      - production evidence report 최신화
+      - post detail widget query helper 추출

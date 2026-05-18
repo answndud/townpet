@@ -150,9 +150,9 @@ corepack pnpm@9.12.3 -C app quality:check
 
 These are intentionally small, portfolio-visible next slices:
 
-1. Implement the selected post create structured variant helper extraction from `post-query-create-refactor-slices.md`.
-2. Add a lightweight API contract generation/check path.
-3. Keep production evidence reports current after each release candidate.
+1. Keep production evidence reports current after each release candidate.
+2. Extract the post detail widget query helper selected in `post-query-create-refactor-slices.md`.
+3. Add a lightweight API contract generation/check path.
 
 ## Interview Talking Points
 
