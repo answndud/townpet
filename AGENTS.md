@@ -114,7 +114,7 @@ Codex가 저장소에 처음 들어왔을 때 이 파일 하나만 읽어도 현
   - 현재 작업 상태 기록
 - `docs/COMPLETED.md`
   - 완료된 app 작업 상세 archive
-- `blog/00_series_plan.md`, `blog/README.md`
+- `blog/00_시리즈_계획.md`, `blog/README.md`
   - 블로그 시리즈 개요와 읽기 순서
 
 `app/README.md`는 로컬 실행 참고만 다루고, 구조/규칙의 소스 오브 트루스는 `AGENTS.md`를 우선합니다.

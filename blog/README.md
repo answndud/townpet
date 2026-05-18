@@ -10,16 +10,16 @@
 
 ## 블로그 작업 SSOT
 
-- [00_series_plan.md](./00_series_plan.md)
-- [00_rebuild_guide.md](./00_rebuild_guide.md)
-- [00_quality_checklist.md](./00_quality_checklist.md)
-- [00_js_for_backend_engineers.md](./00_js_for_backend_engineers.md)
+- [00_시리즈_계획.md](./00_시리즈_계획.md)
+- [00_재구현_가이드.md](./00_재구현_가이드.md)
+- [00_품질_체크리스트.md](./00_품질_체크리스트.md)
+- [00_백엔드_개발자를_위한_자바스크립트.md](./00_백엔드_개발자를_위한_자바스크립트.md)
 
 기존 [PLAN.md](../docs/PLAN.md), [PROGRESS.md](../docs/PROGRESS.md)는 계속 **앱 개발용 active SSOT**로 유지하고, 완료 이력은 [COMPLETED.md](../docs/COMPLETED.md)에 둡니다.
 
 ## active / archive 규칙
 
-- 별도 `BLOG_*` 상태 문서는 두지 않고, 시리즈 방향은 `00_series_plan.md`와 각 글 원고에서 관리합니다.
+- 별도 `BLOG_*` 상태 문서는 두지 않고, 시리즈 방향은 `00_시리즈_계획.md`와 각 글 원고에서 관리합니다.
 
 ## 독자 기준
 
@@ -35,38 +35,38 @@
 
 ## 읽는 순서
 
-1. [00_rebuild_guide.md](./00_rebuild_guide.md)
-2. [00_quality_checklist.md](./00_quality_checklist.md)
-3. [00_js_for_backend_engineers.md](./00_js_for_backend_engineers.md)
-4. [00_series_plan.md](./00_series_plan.md)
-5. [01-why-townpet-exists.md](./01-why-townpet-exists.md)
-6. [02-how-townpet-is-structured.md](./02-how-townpet-is-structured.md)
-7. [03-nextjs-app-router-for-backend-engineers.md](./03-nextjs-app-router-for-backend-engineers.md)
-8. [04-server-component-and-client-component-boundary.md](./04-server-component-and-client-component-boundary.md)
-9. [05-prisma-zod-service-route-order.md](./05-prisma-zod-service-route-order.md)
-10. [06-feed-and-board-architecture.md](./06-feed-and-board-architecture.md)
-11. [07-post-create-edit-delete-flow.md](./07-post-create-edit-delete-flow.md)
-12. [08-comments-and-reactions-architecture.md](./08-comments-and-reactions-architecture.md)
-13. [09-search-structured-search-and-suggestions.md](./09-search-structured-search-and-suggestions.md)
-14. [11-credentials-kakao-naver-auth.md](./11-credentials-kakao-naver-auth.md)
-15. [12-session-role-and-admin-surface.md](./12-session-role-and-admin-surface.md)
-16. [13-social-account-link-unlink-lifecycle.md](./13-social-account-link-unlink-lifecycle.md)
-17. [14-report-block-sanction-direct-moderation.md](./14-report-block-sanction-direct-moderation.md)
-18. [15-admin-hub-and-ops-dashboard.md](./15-admin-hub-and-ops-dashboard.md)
-19. [16-rate-limit-guest-safety-and-abuse-defense.md](./16-rate-limit-guest-safety-and-abuse-defense.md)
-20. [10-notification-center-and-unread-sync.md](./10-notification-center-and-unread-sync.md)
-21. [17-prisma-migrations-and-schema-drift-response.md](./17-prisma-migrations-and-schema-drift-response.md)
-22. [18-health-check-retention-cleanup-and-maintenance-workflows.md](./18-health-check-retention-cleanup-and-maintenance-workflows.md)
-23. [19-testing-and-quality-gate.md](./19-testing-and-quality-gate.md)
-24. [20-performance-story-search-cache-pagination.md](./20-performance-story-search-cache-pagination.md)
-25. [21-business-idea-and-expansion-axes.md](./21-business-idea-and-expansion-axes.md)
-26. [22-phase2-roadmap-and-product-expansion.md](./22-phase2-roadmap-and-product-expansion.md)
-27. [23-how-ai-agents-were-used-in-real-development.md](./23-how-ai-agents-were-used-in-real-development.md)
-28. [24-demo-docs-and-interview-pack.md](./24-demo-docs-and-interview-pack.md)
-29. [25-overengineering-ci-and-deploy-pipelines.md](./25-overengineering-ci-and-deploy-pipelines.md)
-30. [26-suneditor-selection-and-typing-boundary.md](./26-suneditor-selection-and-typing-boundary.md)
-31. [27-backend-portfolio-hardening-log.md](./27-backend-portfolio-hardening-log.md)
-32. [28-interview-qna-and-5min-demo-script.md](./28-interview-qna-and-5min-demo-script.md)
+1. [00_재구현_가이드.md](./00_재구현_가이드.md)
+2. [00_품질_체크리스트.md](./00_품질_체크리스트.md)
+3. [00_백엔드_개발자를_위한_자바스크립트.md](./00_백엔드_개발자를_위한_자바스크립트.md)
+4. [00_시리즈_계획.md](./00_시리즈_계획.md)
+5. [01-townpet를-왜-만들었는가.md](./01-townpet를-왜-만들었는가.md)
+6. [02-townpet-전체-구조.md](./02-townpet-전체-구조.md)
+7. [03-백엔드-개발자를-위한-nextjs-앱라우터.md](./03-백엔드-개발자를-위한-nextjs-앱라우터.md)
+8. [04-서버컴포넌트와-클라이언트컴포넌트-경계.md](./04-서버컴포넌트와-클라이언트컴포넌트-경계.md)
+9. [05-prisma-zod-서비스-라우트-순서로-읽기.md](./05-prisma-zod-서비스-라우트-순서로-읽기.md)
+10. [06-피드와-게시판-구조.md](./06-피드와-게시판-구조.md)
+11. [07-글-작성-수정-삭제-흐름.md](./07-글-작성-수정-삭제-흐름.md)
+12. [08-댓글과-반응-구조.md](./08-댓글과-반응-구조.md)
+13. [09-검색-구조화검색-추천어.md](./09-검색-구조화검색-추천어.md)
+14. [11-자체로그인-kakao-naver-인증구조.md](./11-자체로그인-kakao-naver-인증구조.md)
+15. [12-세션-권한-관리자-화면.md](./12-세션-권한-관리자-화면.md)
+16. [13-소셜계정-연결-해제-수명주기.md](./13-소셜계정-연결-해제-수명주기.md)
+17. [14-신고-차단-제재-직접-모더레이션.md](./14-신고-차단-제재-직접-모더레이션.md)
+18. [15-관리자-허브와-운영-대시보드.md](./15-관리자-허브와-운영-대시보드.md)
+19. [16-레이트리밋-게스트안전-악용방어.md](./16-레이트리밋-게스트안전-악용방어.md)
+20. [10-알림센터와-읽음상태-동기화.md](./10-알림센터와-읽음상태-동기화.md)
+21. [17-prisma-마이그레이션과-스키마-드리프트-대응.md](./17-prisma-마이그레이션과-스키마-드리프트-대응.md)
+22. [18-헬스체크-보관정리-유지보수-흐름.md](./18-헬스체크-보관정리-유지보수-흐름.md)
+23. [19-테스트와-품질게이트-전략.md](./19-테스트와-품질게이트-전략.md)
+24. [20-성능개선-검색-캐시-페이지네이션.md](./20-성능개선-검색-캐시-페이지네이션.md)
+25. [21-비즈니스-아이디어와-확장축.md](./21-비즈니스-아이디어와-확장축.md)
+26. [22-2단계-로드맵과-제품확장.md](./22-2단계-로드맵과-제품확장.md)
+27. [23-ai-에이전트를-실제개발에-녹인-방법.md](./23-ai-에이전트를-실제개발에-녹인-방법.md)
+28. [24-데모-문서-면접-패키지.md](./24-데모-문서-면접-패키지.md)
+29. [25-ci-배포-파이프라인-과설계-회고.md](./25-ci-배포-파이프라인-과설계-회고.md)
+30. [26-suneditor-선택영역-입력경계-고정.md](./26-suneditor-선택영역-입력경계-고정.md)
+31. [27-백엔드-포트폴리오-하드닝-로그.md](./27-백엔드-포트폴리오-하드닝-로그.md)
+32. [28-면접-질문답변과-5분-데모-스크립트.md](./28-면접-질문답변과-5분-데모-스크립트.md)
 
 ## 이 시리즈가 다루는 범위
 

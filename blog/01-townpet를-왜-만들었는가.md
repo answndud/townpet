@@ -223,8 +223,8 @@ TownPet는 콘텐츠를 많이 모으는 것만으로 끝나지 않습니다.
 이 글은 제품 문제 정의 문서라서 unit test보다 아래 자료를 함께 보면 됩니다.
 
 - [README.md](../README.md)
-- [blog/21-business-idea-and-expansion-axes.md](./21-business-idea-and-expansion-axes.md)
-- [blog/22-phase2-roadmap-and-product-expansion.md](./22-phase2-roadmap-and-product-expansion.md)
+- [blog/21-비즈니스-아이디어와-확장축.md](./21-비즈니스-아이디어와-확장축.md)
+- [blog/22-2단계-로드맵과-제품확장.md](./22-2단계-로드맵과-제품확장.md)
 - [business/analytics/수익화_실험_전략.md](../business/analytics/%EC%88%98%EC%9D%B5%ED%99%94_%EC%8B%A4%ED%97%98_%EC%A0%84%EB%9E%B5.md)
 
 그리고 실제 화면은 아래 순서로 보는 것이 좋습니다.
