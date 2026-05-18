@@ -150,7 +150,7 @@ corepack pnpm@9.12.3 -C app quality:check
 
 These are intentionally small, portfolio-visible next slices:
 
-1. Review `api-route-contracts.generated.md` rows with `validation=none` or `monitoring=none` and document whether each is intentional.
+1. Run the full `quality:check` once after the P1 portfolio slices and archive the result.
 2. Keep production evidence reports current after each release candidate.
 3. Pause broad post-query extraction unless a future slice has an obvious public behavior contract.
 

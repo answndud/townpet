@@ -73,15 +73,34 @@ describe("api route contract check", () => {
       "service-delegated",
     );
     expect(inferRouteValidation("const { searchParams } = new URL(request.url);", "/api/items")).toBe("manual");
+    expect(inferRouteValidation("const { id } = await params; await load(id);", "/api/items/[id]")).toBe(
+      "manual",
+    );
+    expect(inferRouteValidation("const report = sanitizeCspReport(await request.json());", "/api/security/csp-report")).toBe(
+      "manual",
+    );
+    expect(inferRouteValidation("const session = await auth().catch(() => null);", "/api/viewer-shell")).toBe(
+      "no-input",
+    );
+    expect(inferRouteValidation("return jsonError(410, { code: 'DIRECT_UPLOAD_DISABLED' });", "/api/upload/client")).toBe(
+      "static-response",
+    );
 
     expect(inferRouteMonitoring("await monitorUnhandledError(error, { request });", "/api/posts")).toBe(
       "monitorUnhandledError",
     );
     expect(inferRouteMonitoring("logger.warn('degraded');", "/api/health")).toBe("logger");
+    expect(inferRouteMonitoring("return jsonError(410, { code: 'DIRECT_UPLOAD_DISABLED' });", "/api/upload/client")).toBe(
+      "static-response",
+    );
   });
 
   it("collects route contracts with methods and adjacent test status", async () => {
-    await writeRoute("posts/[id]", "export async function GET() {}\nexport async function PATCH() {}", true);
+    await writeRoute(
+      "posts/[id]",
+      "export async function GET(_request, { params }) { const { id } = await params; return id; }\nexport async function PATCH() {}",
+      true,
+    );
     await writeRoute("auth/[...nextauth]", "export const { GET, POST } = handlers;\n");
 
     const contracts = await collectApiRouteContracts({ appRoot: tempDir });
@@ -102,7 +121,7 @@ describe("api route contract check", () => {
         file: "src/app/api/posts/[id]/route.ts",
         adjacentTest: true,
         access: "public",
-        validation: "none",
+        validation: "manual",
         monitoring: "none",
       },
     ]);
@@ -127,7 +146,7 @@ describe("api route contract check", () => {
           file: "src/app/api/health/route.ts",
           adjacentTest: true,
           access: "public",
-          validation: "none",
+          validation: "no-input",
           monitoring: "none",
         },
       ]),

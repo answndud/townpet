@@ -22,9 +22,16 @@ type ApiRouteValidation =
   | "schema"
   | "service-delegated"
   | "manual"
+  | "no-input"
+  | "static-response"
   | "none";
 
-type ApiRouteMonitoring = "monitorUnhandledError" | "logger" | "provider-managed" | "none";
+type ApiRouteMonitoring =
+  | "monitorUnhandledError"
+  | "logger"
+  | "provider-managed"
+  | "static-response"
+  | "none";
 
 export type ApiRouteContract = {
   route: string;
@@ -69,6 +76,24 @@ export function extractRouteMethods(source: string) {
 
 function isProviderManagedRoute(source: string, route: string) {
   return route === "/api/auth/[...nextauth]" || source.includes("NextAuth(");
+}
+
+function isStaticResponseRoute(source: string) {
+  return (
+    source.includes("DIRECT_UPLOAD_DISABLED") ||
+    (source.includes("jsonError(410") && !source.includes("request."))
+  );
+}
+
+function hasRouteInput(source: string) {
+  return (
+    source.includes("request.json(") ||
+    source.includes("request.formData(") ||
+    source.includes("searchParams") ||
+    source.includes("nextUrl.searchParams") ||
+    source.includes("await params") ||
+    source.includes("params.")
+  );
 }
 
 export function inferRouteAccess(source: string, route: string): ApiRouteAccess {
@@ -119,6 +144,9 @@ export function inferRouteValidation(source: string, route: string): ApiRouteVal
   if (isProviderManagedRoute(source, route)) {
     return "provider-managed";
   }
+  if (isStaticResponseRoute(source)) {
+    return "static-response";
+  }
   if (
     source.includes(".safeParse(") ||
     source.includes(".parse(") ||
@@ -138,12 +166,18 @@ export function inferRouteValidation(source: string, route: string): ApiRouteVal
   }
   if (
     source.includes("searchParams") ||
+    source.includes("nextUrl.searchParams") ||
+    source.includes("await params") ||
     source.includes("params.") ||
+    source.includes("sanitizeCspReport") ||
     source.includes("jsonError(400") ||
     source.includes("status: 400") ||
     source.includes("{ status: 400")
   ) {
     return "manual";
+  }
+  if (!hasRouteInput(source)) {
+    return "no-input";
   }
 
   return "none";
@@ -152,6 +186,9 @@ export function inferRouteValidation(source: string, route: string): ApiRouteVal
 export function inferRouteMonitoring(source: string, route: string): ApiRouteMonitoring {
   if (isProviderManagedRoute(source, route)) {
     return "provider-managed";
+  }
+  if (isStaticResponseRoute(source)) {
+    return "static-response";
   }
   if (source.includes("monitorUnhandledError")) {
     return "monitorUnhandledError";

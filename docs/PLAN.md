@@ -40,6 +40,7 @@
   - [x] feed list/count query module 추출
   - [x] feed personalization context/scoring 추출
   - [x] API route contract access/validation heuristic 확장
+  - [x] generated contract `validation=none` / `monitoring=none` 라벨 의도성 리뷰
 - 완료 기준:
   - README에서 백엔드 포트폴리오 증거를 바로 찾을 수 있다.
   - clone 사용자가 `app/.env.example` 기준으로 로컬 실행 경로를 이해할 수 있다.
@@ -48,4 +49,4 @@
 
 ## 다음 작업 후보
 
-- 다음 vertical slice는 generated contract heuristic 결과에서 `validation=none` / `monitoring=none` 라벨의 의도성을 리뷰하고, 필요 시 route-level 보강 또는 예외 문서화를 진행한다.
+- 다음 vertical slice는 현재 P1 결과를 기준으로 `quality:check`를 한 번 통합 실행하고, 통과 결과를 완료 archive로 정리하는 것이다.
