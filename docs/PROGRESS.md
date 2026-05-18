@@ -4,7 +4,7 @@
 
 - 작업: 2일 백엔드 포트폴리오 고도화
 - 상태: `in_progress`
-- 현재 초점: P0 증거 패키징, P1 route test gap 보강, 알림 outbox 재처리/관측 루틴, maintenance run mode guard 표준화, post query/create 리팩터링 slice 선정, post create structured variant helper 추출, production evidence report 최신화, post detail widget query helper 추출, lightweight API contract generation/check path, feed list/count query module 추출, feed personalization context/scoring 추출, API route contract access/validation heuristic 확장을 완료했다.
+- 현재 초점: P0 증거 패키징, P1 route test gap 보강, 알림 outbox 재처리/관측 루틴, maintenance run mode guard 표준화, post query/create 리팩터링 slice 선정, post create structured variant helper 추출, production evidence report 최신화, post detail widget query helper 추출, lightweight API contract generation/check path, feed list/count query module 추출, feed personalization context/scoring 추출, API route contract access/validation heuristic 확장, generated contract none 라벨 리뷰를 완료했다.
 
 ## 진행 중 메모
 
@@ -172,3 +172,17 @@
       - `corepack pnpm@9.12.3 -C app lint`: 통과
     - 다음 후보:
       - generated contract heuristic 결과에서 `validation=none` / `monitoring=none` 라벨 의도성 리뷰
+    - generated contract `validation=none` / `monitoring=none` 라벨 리뷰를 완료했다.
+    - 변경:
+      - `app/scripts/check-api-route-contracts.ts`에서 dynamic route `await params`, CSP sanitizer, no-input route, static-response route를 더 정확히 분류
+      - `business/reports/api-route-contracts.generated.md` 기준 `validation=none` 0건, `monitoring=none` 0건으로 정리
+      - `/api/upload/client`는 의도된 410 static response로 라벨링
+      - NextAuth catch-all adjacent test gap 1건은 provider-managed route로 유지
+    - 검증:
+      - `corepack pnpm@9.12.3 -C app test -- scripts/check-api-route-contracts.test.ts`: 통과, 1 file / 5 tests
+      - `corepack pnpm@9.12.3 -C app api:contracts:write`: 통과
+      - `corepack pnpm@9.12.3 -C app api:contracts`: 통과
+      - `corepack pnpm@9.12.3 -C app typecheck`: 통과
+      - `corepack pnpm@9.12.3 -C app lint`: 통과
+    - 다음 후보:
+      - 현재 P1 결과 기준 `corepack pnpm@9.12.3 -C app quality:check` 통합 실행

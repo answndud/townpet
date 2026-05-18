@@ -24,8 +24,9 @@ Generated output: `business/reports/api-route-contracts.generated.md`
 - Generated contract report: `api-route-contracts.generated.md`, currently 48 route handlers, 0 missing method exports, 1 adjacent test gap
 - Generated heuristic snapshot:
   - access: admin=2, auth-aware=16, authenticated=10, moderator=6, provider-managed=1, public=11, public-internal-token=2
-  - validation: manual=2, none=13, provider-managed=1, schema=21, service-delegated=11
-  - monitoring: logger=1, monitorUnhandledError=45, none=1, provider-managed=1
+  - validation: manual=10, no-input=4, provider-managed=1, schema=21, service-delegated=11, static-response=1
+  - monitoring: logger=1, monitorUnhandledError=45, provider-managed=1, static-response=1
+  - review result: `validation=none` 0 routes, `monitoring=none` 0 routes
 
 ## Route Table
 
