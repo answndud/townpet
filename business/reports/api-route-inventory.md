@@ -11,7 +11,7 @@ This inventory turns the App Router API surface into a backend review artifact. 
 - API route handlers: 48
 - Primary auth modes: public/guest, auth-aware, moderator/admin
 - Standard backend concerns: Zod validation, service/query delegation, structured JSON response, `monitorUnhandledError`
-- Immediate test-gap candidates: 4 routes do not have adjacent `route.test.ts`
+- Immediate test-gap candidates: 1 route does not have adjacent `route.test.ts`
 
 ## Route Table
 
@@ -72,9 +72,6 @@ These files currently do not have a sibling `route.test.ts` and should be review
 
 | Priority | Route file | Suggested coverage |
 |---|---|---|
-| P2 | `app/src/app/api/auth/password/reset/confirm/route.ts` | invalid token, weak password, normalized auth response |
-| P2 | `app/src/app/api/auth/password/setup/route.ts` | missing session, invalid password, success path |
-| P2 | `app/src/app/api/auth/verify/confirm/route.ts` | invalid token, expired token, success response |
 | P3 | `app/src/app/api/auth/[...nextauth]/route.ts` | usually covered indirectly by auth/e2e; keep as integration/e2e target |
 
 ## Closed Route Test Gaps
@@ -87,20 +84,23 @@ The following adjacent tests were added after this inventory was created:
 | `app/src/app/api/reports/bulk/route.ts` | `app/src/app/api/reports/bulk/route.test.ts` | moderator required, body forwarding, service error mapping, internal error monitoring |
 | `app/src/app/api/posts/[id]/content/route.ts` | `app/src/app/api/posts/[id]/content/route.test.ts` | guest/auth viewer id, not found, read denial, rendered html/text, no-store header, internal error monitoring |
 | `app/src/app/api/posts/[id]/stats/route.ts` | `app/src/app/api/posts/[id]/stats/route.test.ts` | guest/auth viewer id, not found, read denial, zero-count normalization, no-store header, internal error monitoring |
+| `app/src/app/api/auth/password/reset/confirm/route.ts` | `app/src/app/api/auth/password/reset/confirm/route.test.ts` | invalid payload, rate limit key, metadata forwarding, service error mapping, internal error monitoring |
+| `app/src/app/api/auth/password/setup/route.ts` | `app/src/app/api/auth/password/setup/route.test.ts` | auth required, invalid password, rate limit key, metadata forwarding, service error mapping, internal error monitoring |
+| `app/src/app/api/auth/verify/confirm/route.ts` | `app/src/app/api/auth/verify/confirm/route.test.ts` | invalid token, rate limit key, welcome email side effect, service error mapping, internal error monitoring |
 
 ## Recommended Next Slice
 
-The next test slice is the remaining auth route gap:
+The remaining adjacent test gap is the NextAuth catch-all route. Keep it covered indirectly unless a provider-specific regression needs a route-level harness:
 
-1. password reset confirm
-2. password setup
-3. email verification confirm
-4. keep NextAuth catch-all as indirect integration/e2e coverage unless a specific regression appears
+1. `app/e2e/kakao-login-entry.spec.ts`
+2. `app/e2e/naver-login-entry.spec.ts`
+3. `app/e2e/social-onboarding-flow.spec.ts`
+4. `app/e2e/profile-social-account-linking.spec.ts`
 
 Verification:
 
 ```bash
-corepack pnpm@9.12.3 -C app test -- src/app/api/auth/password/reset/confirm/route.test.ts src/app/api/auth/password/setup/route.test.ts src/app/api/auth/verify/confirm/route.test.ts
+corepack pnpm@9.12.3 -C app test:e2e -- e2e/kakao-login-entry.spec.ts e2e/naver-login-entry.spec.ts e2e/social-onboarding-flow.spec.ts e2e/profile-social-account-linking.spec.ts --project=chromium
 corepack pnpm@9.12.3 -C app lint
 corepack pnpm@9.12.3 -C app typecheck
 ```
