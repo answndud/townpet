@@ -6,12 +6,22 @@ Last updated: 2026-05-18
 
 This inventory turns the App Router API surface into a backend review artifact. It helps reviewers see method coverage, access boundaries, validation, monitoring, and test gaps without reading every `route.ts` first.
 
+Machine-generated method/test drift check:
+
+```bash
+corepack pnpm@9.12.3 -C app api:contracts
+corepack pnpm@9.12.3 -C app api:contracts:write
+```
+
+Generated output: `business/reports/api-route-contracts.generated.md`
+
 ## Summary
 
 - API route handlers: 48
 - Primary auth modes: public/guest, auth-aware, moderator/admin
 - Standard backend concerns: Zod validation, service/query delegation, structured JSON response, `monitorUnhandledError`
 - Immediate test-gap candidates: 1 route does not have adjacent `route.test.ts`
+- Generated contract report: `api-route-contracts.generated.md`, currently 48 route handlers, 0 missing method exports, 1 adjacent test gap
 
 ## Route Table
 

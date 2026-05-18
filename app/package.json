@@ -57,6 +57,8 @@
     "design:detect": "PUPPETEER_SKIP_DOWNLOAD=1 corepack pnpm dlx impeccable detect src/app src/components --fast",
     "design:detect:json": "PUPPETEER_SKIP_DOWNLOAD=1 corepack pnpm dlx impeccable detect src/app src/components --fast --json",
     "agent:prompt": "tsx scripts/generate-agent-prompt.ts",
+    "api:contracts": "tsx scripts/check-api-route-contracts.ts --check",
+    "api:contracts:write": "tsx scripts/check-api-route-contracts.ts --write",
     "ops:check:auth-email-readiness": "tsx scripts/check-auth-email-readiness.ts",
     "ops:check:care-smoke-readiness": "tsx scripts/check-care-smoke-readiness.ts",
     "ops:check:health": "tsx scripts/check-health-endpoint.ts",
