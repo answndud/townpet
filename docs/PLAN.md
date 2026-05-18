@@ -13,40 +13,8 @@
 
 ## Active
 
-### 2일 백엔드 포트폴리오 고도화
-
-- 상태: `in_progress`
-- 목표: 남은 Pro 사용 기간 동안 TownPet를 백엔드 개발자 취업 포트폴리오로 더 선명하게 보이도록 증거화, API 계약화, 운영 신뢰성, 테스트 공백 보강을 우선 처리한다.
-- 원칙:
-  - 새 기능을 무작정 늘리지 않고, 채용자가 백엔드 역량으로 읽을 수 있는 증거를 먼저 만든다.
-  - 큰 재작성보다 작은 vertical slice를 완료하고 검증한다.
-  - 보안/운영/데이터 경계는 기존 `service/query/validation/action-route` 책임을 유지한다.
-- P0:
-  - [x] 백엔드 case study 문서화
-  - [x] API route inventory와 테스트 공백 정리
-  - [x] 안전한 local/prod env example 정리
-  - [x] README에서 백엔드 증거 문서와 안전한 실행 경로 연결
-  - [x] route test gap 중 우선순위 높은 경로 보강 계획 확정
-- P1:
-  - [x] route test gap P1 보강: report detail/bulk, post content/stats
-  - [x] auth route test gap 보강: password reset confirm, password setup, email verification confirm
-  - [x] 알림 outbox 재처리/관측 루틴 개선
-  - [x] cleanup/backfill 스크립트 dry-run/apply guard 표준화
-  - [x] post query/create 대형 모듈 리팩터링 slice 선정
-  - [x] post create structured variant helper 추출
-  - [x] production evidence report 최신화
-  - [x] post detail widget query helper 추출
-  - [x] lightweight API contract generation/check path
-  - [x] feed list/count query module 추출
-  - [x] feed personalization context/scoring 추출
-  - [x] API route contract access/validation heuristic 확장
-  - [x] generated contract `validation=none` / `monitoring=none` 라벨 의도성 리뷰
-- 완료 기준:
-  - README에서 백엔드 포트폴리오 증거를 바로 찾을 수 있다.
-  - clone 사용자가 `app/.env.example` 기준으로 로컬 실행 경로를 이해할 수 있다.
-  - API route별 method/access/validation/monitoring/test gap이 문서화되어 다음 구현 순서가 명확하다.
-  - 변경 파일 검증이 완료되고 결과가 `PROGRESS.md`에 남는다.
+현재 active 작업 없음.
 
 ## 다음 작업 후보
 
-- 다음 vertical slice는 현재 P1 결과를 기준으로 `quality:check`를 한 번 통합 실행하고, 통과 결과를 완료 archive로 정리하는 것이다.
+- 새 개발 사이클을 정하거나, 실제 배포 전에는 `business/operations/배포전_on-demand_체크.md` 순서로 on-demand 체크를 실행한다.
