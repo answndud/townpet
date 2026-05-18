@@ -150,7 +150,7 @@ corepack pnpm@9.12.3 -C app quality:check
 
 These are intentionally small, portfolio-visible next slices:
 
-1. Extract the feed list/count query module selected in `post-query-create-refactor-slices.md`.
+1. Extract feed personalization context/scoring selected in `post-query-create-refactor-slices.md`.
 2. Keep production evidence reports current after each release candidate.
 3. Extend the generated API route contract report with access/validation heuristics if it becomes useful.
 

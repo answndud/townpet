@@ -23,7 +23,7 @@ type PostListFetchRow =
   | Prisma.PostGetPayload<{ select: ReturnType<typeof buildLegacyPostListSelect> }>
   | Prisma.PostGetPayload<{ select: ReturnType<typeof buildLegacyPostListSelectWithoutReactions> }>;
 
-type PostListFetchFallbackHandlers = {
+export type PostListFetchFallbackHandlers = {
   isUnknownGuestPostColumnError: (error: unknown) => boolean;
   isUnknownGuestAuthorIncludeError: (error: unknown) => boolean;
   isMissingCommunityBoardSchemaError: (error: unknown) => boolean;

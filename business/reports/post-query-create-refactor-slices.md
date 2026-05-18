@@ -69,6 +69,8 @@ Status: completed on 2026-05-18.
 
 ## Candidate 3: Feed List/Count Orchestrator Module
 
+Status: completed on 2026-05-18.
+
 - Files:
   - `app/src/server/queries/posts/post.queries.ts`
   - new `post-list.queries.ts` or equivalent internal module
@@ -131,6 +133,5 @@ Reason:
 
 ## Follow-up Order
 
-1. Add a lightweight API contract generation/check path.
-2. Candidate 3: move feed list/count orchestration behind a dedicated query module.
-3. Candidate 4: extract feed personalization context/scoring only after feed list/count is isolated.
+1. Candidate 4: extract feed personalization context/scoring only after feed list/count is isolated.
+2. Extend the generated API route contract report with access/validation heuristics if it becomes useful.
