@@ -120,6 +120,8 @@ pnpm quality:check
 pnpm build
 pnpm test:coverage
 pnpm quality:gate
+pnpm api:contracts
+pnpm api:contracts:write
 pnpm db:migrate
 pnpm db:seed
 pnpm db:restore:local

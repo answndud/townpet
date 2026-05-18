@@ -150,9 +150,9 @@ corepack pnpm@9.12.3 -C app quality:check
 
 These are intentionally small, portfolio-visible next slices:
 
-1. Add a lightweight API contract generation/check path.
-2. Extract the feed list/count query module selected in `post-query-create-refactor-slices.md`.
-3. Keep production evidence reports current after each release candidate.
+1. Extract the feed list/count query module selected in `post-query-create-refactor-slices.md`.
+2. Keep production evidence reports current after each release candidate.
+3. Extend the generated API route contract report with access/validation heuristics if it becomes useful.
 
 ## Interview Talking Points
 
@@ -166,6 +166,6 @@ These are intentionally small, portfolio-visible next slices:
 ## Known Tradeoffs
 
 - The project has strong breadth, but some backend modules are still large.
-- API contracts are documented manually for now; an OpenAPI-style generated contract is a next improvement.
+- API route methods and adjacent test drift now have a generated check path; access/validation contract details remain manual for now.
 - Sentry is optional, so observability is currently health/log/script based unless external secrets are configured.
 - Production smoke is intentionally small for solo operation; deeper browser smoke is on-demand.
