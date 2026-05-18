@@ -29,6 +29,7 @@
   - [x] route test gap 중 우선순위 높은 경로 보강 계획 확정
 - P1:
   - [x] route test gap P1 보강: report detail/bulk, post content/stats
+  - [x] auth route test gap 보강: password reset confirm, password setup, email verification confirm
   - [ ] 알림 outbox 재처리/관측 루틴 개선
   - [ ] cleanup/backfill 스크립트 dry-run/apply guard 표준화
   - [ ] post query/create 대형 모듈 리팩터링 slice 선정
@@ -41,6 +42,5 @@
 
 ## 다음 작업 후보
 
-- 다음 vertical slice는 남은 auth route test gap 보강 또는 알림 outbox 재처리/관측 루틴 개선 중 하나다.
-  - auth route gap: password reset confirm, password setup, email verification confirm
-  - outbox: pending/failed delivery 재처리와 운영 관측 증거 강화
+- 다음 vertical slice는 알림 outbox 재처리/관측 루틴 개선이다.
+  - pending/failed delivery 재처리와 운영 관측 증거 강화
