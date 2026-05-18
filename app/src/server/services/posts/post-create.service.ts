@@ -39,10 +39,8 @@ import {
   careRequestSchema,
   hospitalReviewSchema,
   marketListingSchema,
-  placeReviewSchema,
   postCreateSchema,
   volunteerRecruitmentSchema,
-  walkRouteSchema,
 } from "@/lib/validations/post";
 import { buildHospitalReviewRiskSignals } from "@/server/hospital-review-risk";
 import { recordModerationAction } from "@/server/moderation-action-log";
@@ -65,6 +63,7 @@ import {
   normalizeImageUrls,
   notifyPostCacheChange,
 } from "./post-write-support";
+import { createPostVariant } from "./post-create-variants";
 
 type CreatePostParams = {
   authorId?: string;
@@ -78,25 +77,6 @@ type CreatePostParams = {
 
 const GUEST_LINK_PATTERN = /https?:\/\/[\S]+/i;
 const GUEST_IMAGE_MARKDOWN_PATTERN = /!\[[^\]]*\]\(([^)\s]+)\)(?:\{\s*width\s*=\s*\d{1,4}\s*\})?/gi;
-
-const hasValue = (value: unknown) => {
-  if (value === null || value === undefined) {
-    return false;
-  }
-
-  if (typeof value === "string") {
-    return value.trim().length > 0;
-  }
-
-  if (Array.isArray(value)) {
-    return value.length > 0;
-  }
-
-  return true;
-};
-
-const hasAnyValue = (data: Record<string, unknown>) =>
-  Object.values(data).some((value) => hasValue(value));
 
 const HOSPITAL_REVIEW_TEXT_FIELDS = ["hospitalName", "treatmentType"] as const;
 const ADOPTION_LISTING_TEXT_FIELDS = [
@@ -619,527 +599,78 @@ export async function createPost({ authorId, input, guestIdentity }: CreatePostP
       : {}),
   };
 
-  if (postData.type === "HOSPITAL_REVIEW") {
-    const reviewInput: HospitalReviewInput =
-      hospitalReviewInput ?? {
-        hospitalName: undefined,
-        treatmentType: undefined,
-      };
-    const shouldCreateReview = hasAnyValue(reviewInput);
-
-    const created = await prisma.post.create({
-      data: {
-        ...commonCreateData,
-        structuredSearchText: buildPostStructuredSearchText({
-          animalTags: commonBoardAnimalTags,
-          hospitalReview: reviewInput,
-        }),
-        ...(shouldCreateReview
-          ? {
-              hospitalReview: {
-                create: {
-                  ...reviewInput,
-                },
-              },
-            }
-          : {}),
-      },
-      include: {
-        author: { select: { id: true, nickname: true } },
-        neighborhood: {
-          select: { id: true, name: true, city: true, district: true },
-        },
-        hospitalReview: {
-          select: {
-            hospitalName: true,
-            totalCost: true,
-            waitTime: true,
-            rating: true,
-          },
-        },
-        images: {
-          select: { id: true, url: true, order: true },
-          orderBy: { order: "asc" },
-        },
-      },
-    });
-    await finalizeUploadUrlChanges({ attachedUrls: normalizedImageUrls });
-    if (
-      shouldCreateReview &&
-      resolvedAuthorAccountCreatedAt &&
-      reviewInput.hospitalName?.trim().length
-    ) {
-      const normalizedHospitalName = reviewInput.hospitalName.trim();
-      const [sameHospitalReviewCount30d, recentHospitalReviewCount7d] = await Promise.all([
-        prisma.hospitalReview.count({
-          where: {
-            hospitalName: {
-              equals: normalizedHospitalName,
-              mode: "insensitive",
-            },
-            post: {
-              authorId: resolvedAuthorId,
-              status: PostStatus.ACTIVE,
-              createdAt: {
-                gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-              },
-              id: {
-                not: created.id,
-              },
-            },
-          },
-        }),
-        prisma.hospitalReview.count({
-          where: {
-            post: {
-              authorId: resolvedAuthorId,
-              status: PostStatus.ACTIVE,
-              type: PostType.HOSPITAL_REVIEW,
-              createdAt: {
-                gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-              },
-            },
-          },
-        }),
-      ]);
-      const hospitalReviewRisk = buildHospitalReviewRiskSignals({
-        accountCreatedAt: resolvedAuthorAccountCreatedAt,
-        sameHospitalReviewCount30d,
-        recentHospitalReviewCount7d,
-      });
-
-      if (hospitalReviewRisk.flagged) {
-        await recordModerationAction({
-          actorId: resolvedAuthorId,
-          action: ModerationActionType.HOSPITAL_REVIEW_FLAGGED,
-          targetType: ModerationTargetType.POST,
-          targetId: created.id,
-          targetUserId: resolvedAuthorId,
-          metadata: {
-            hospitalName: normalizedHospitalName,
-            signals: hospitalReviewRisk.signals,
-            sameHospitalReviewCount30d,
-            recentHospitalReviewCount7d,
-          },
-        });
-      }
-    }
-    notifyPostCacheChange();
-    return created;
-  }
-
-  if (postData.type === "PLACE_REVIEW") {
-    const reviewInput = placeReviewSchema.safeParse(rawInput.placeReview ?? {});
-    if (!reviewInput.success) {
-      throw new ServiceError("장소 리뷰 입력값이 올바르지 않습니다.", "INVALID_REVIEW", 400);
-    }
-
-    const shouldCreateReview = hasAnyValue(reviewInput.data);
-
-    const created = await prisma.post.create({
-      data: {
-        ...commonCreateData,
-        structuredSearchText: buildPostStructuredSearchText({
-          animalTags: commonBoardAnimalTags,
-          placeReview: reviewInput.data,
-        }),
-        ...(shouldCreateReview
-          ? {
-              placeReview: {
-                create: {
-                  ...reviewInput.data,
-                },
-              },
-            }
-          : {}),
-      },
-      include: {
-        author: { select: { id: true, nickname: true } },
-        neighborhood: {
-          select: { id: true, name: true, city: true, district: true },
-        },
-        hospitalReview: {
-          select: {
-            hospitalName: true,
-            totalCost: true,
-            waitTime: true,
-            rating: true,
-          },
-        },
-        placeReview: {
-          select: {
-            placeName: true,
-            placeType: true,
-            address: true,
-            isPetAllowed: true,
-            rating: true,
-          },
-        },
-        images: {
-          select: { id: true, url: true, order: true },
-          orderBy: { order: "asc" },
-        },
-      },
-    });
-    await finalizeUploadUrlChanges({ attachedUrls: normalizedImageUrls });
-    notifyPostCacheChange();
-    return created;
-  }
-
-  if (postData.type === "WALK_ROUTE") {
-    const routeInput = walkRouteSchema.safeParse(rawInput.walkRoute ?? {});
-    if (!routeInput.success) {
-      throw new ServiceError("산책로 입력값이 올바르지 않습니다.", "INVALID_REVIEW", 400);
-    }
-
-    const shouldCreateReview = hasAnyValue(routeInput.data);
-
-    const created = await prisma.post.create({
-      data: {
-        ...commonCreateData,
-        structuredSearchText: buildPostStructuredSearchText({
-          animalTags: commonBoardAnimalTags,
-          walkRoute: {
-            routeName: routeInput.data.routeName,
-            safetyTags: routeInput.data.safetyTags ?? [],
-          },
-        }),
-        ...(shouldCreateReview
-          ? {
-              walkRoute: {
-                create: {
-                  ...routeInput.data,
-                  coordinates: [],
-                  safetyTags: routeInput.data.safetyTags ?? [],
-                },
-              },
-            }
-          : {}),
-      },
-      include: {
-        author: { select: { id: true, nickname: true } },
-        neighborhood: {
-          select: { id: true, name: true, city: true, district: true },
-        },
-        hospitalReview: {
-          select: {
-            hospitalName: true,
-            totalCost: true,
-            waitTime: true,
-            rating: true,
-          },
-        },
-        placeReview: {
-          select: {
-            placeName: true,
-            placeType: true,
-            address: true,
-            isPetAllowed: true,
-            rating: true,
-          },
-        },
-        walkRoute: {
-          select: {
-            routeName: true,
-            distance: true,
-            duration: true,
-            difficulty: true,
-            hasStreetLights: true,
-            hasRestroom: true,
-            hasParkingLot: true,
-            safetyTags: true,
-          },
-        },
-        images: {
-          select: { id: true, url: true, order: true },
-          orderBy: { order: "asc" },
-        },
-      },
-    });
-    await finalizeUploadUrlChanges({ attachedUrls: normalizedImageUrls });
-    notifyPostCacheChange();
-    return created;
-  }
-
-  if (postData.type === "MARKET_LISTING") {
-    if (!marketListingInput) {
-      throw new ServiceError("거래 글 입력값이 올바르지 않습니다.", "INVALID_MARKET_LISTING", 400);
-    }
-
-    const created = await prisma.post.create({
-      data: {
-        ...commonCreateData,
-        structuredSearchText: buildPostStructuredSearchText({
-          animalTags: commonBoardAnimalTags,
-          marketListing: marketListingInput,
-        }),
-        marketListing: {
-          create: {
-            listingType: marketListingInput.listingType,
-            price: marketListingInput.price,
-            condition: marketListingInput.condition,
-            depositAmount: marketListingInput.depositAmount,
-            rentalPeriod: marketListingInput.rentalPeriod,
-          },
-        },
-      },
-      include: {
-        author: { select: { id: true, nickname: true } },
-        neighborhood: {
-          select: { id: true, name: true, city: true, district: true },
-        },
-        marketListing: {
-          select: {
-            listingType: true,
-            price: true,
-            condition: true,
-            depositAmount: true,
-            rentalPeriod: true,
-            status: true,
-          },
-        },
-        images: {
-          select: { id: true, url: true, order: true },
-          orderBy: { order: "asc" },
-        },
-      },
-    });
-    await finalizeUploadUrlChanges({ attachedUrls: normalizedImageUrls });
-    notifyPostCacheChange();
-    return created;
-  }
-
-  if (postData.type === "CARE_REQUEST") {
-    if (!careRequestInput) {
-      throw new ServiceError("돌봄 요청 입력값이 올바르지 않습니다.", "INVALID_CARE_REQUEST", 400);
-    }
-
-    const created = await prisma.post.create({
-      data: {
-        ...commonCreateData,
-        structuredSearchText: buildPostStructuredSearchText({
-          animalTags: commonBoardAnimalTags,
-          careRequest: careRequestInput,
-        }),
-        careRequest: {
-          create: {
-            careType: careRequestInput.careType,
-            startsAt: careRequestInput.startsAt,
-            endsAt: careRequestInput.endsAt,
-            locationNote: careRequestInput.locationNote,
-            petNote: careRequestInput.petNote,
-            requirements: careRequestInput.requirements,
-            rewardAmount: careRequestInput.rewardAmount,
-            isUrgent: careRequestInput.isUrgent,
-          },
-        },
-      },
-      include: {
-        author: { select: { id: true, nickname: true } },
-        neighborhood: {
-          select: { id: true, name: true, city: true, district: true },
-        },
-        careRequest: {
-          select: {
-            careType: true,
-            startsAt: true,
-            endsAt: true,
-            locationNote: true,
-            petNote: true,
-            requirements: true,
-            rewardAmount: true,
-            isUrgent: true,
-            status: true,
-          },
-        },
-        images: {
-          select: { id: true, url: true, order: true },
-          orderBy: { order: "asc" },
-        },
-      },
-    });
-    await finalizeUploadUrlChanges({ attachedUrls: normalizedImageUrls });
-    notifyPostCacheChange();
-    return created;
-  }
-
-  if (postData.type === "ADOPTION_LISTING") {
-    const listingInput = adoptionListingInput ?? {};
-    const shouldCreateListing = hasAnyValue(listingInput);
-
-    const created = await prisma.post.create({
-      data: {
-        ...commonCreateData,
-        structuredSearchText: buildPostStructuredSearchText({
-          animalTags: commonBoardAnimalTags,
-          adoptionListing: listingInput,
-        }),
-        ...(shouldCreateListing
-          ? {
-              adoptionListing: {
-                create: {
-                  ...listingInput,
-                },
-              },
-            }
-          : {}),
-      },
-      include: {
-        author: { select: { id: true, nickname: true } },
-        neighborhood: {
-          select: { id: true, name: true, city: true, district: true },
-        },
-        adoptionListing: {
-          select: {
-            shelterName: true,
-            region: true,
-            animalType: true,
-            breed: true,
-            ageLabel: true,
-            sex: true,
-            isNeutered: true,
-            isVaccinated: true,
-            sizeLabel: true,
-            status: true,
-          },
-        },
-        images: {
-          select: { id: true, url: true, order: true },
-          orderBy: { order: "asc" },
-        },
-      },
-    });
-    await finalizeUploadUrlChanges({ attachedUrls: normalizedImageUrls });
-    notifyPostCacheChange();
-    return created;
-  }
-
-  if (postData.type === "SHELTER_VOLUNTEER") {
-    const recruitmentInput = volunteerRecruitmentInput ?? {};
-    const shouldCreateRecruitment = hasAnyValue(recruitmentInput);
-
-    const created = await prisma.post.create({
-      data: {
-        ...commonCreateData,
-        structuredSearchText: buildPostStructuredSearchText({
-          animalTags: commonBoardAnimalTags,
-          volunteerRecruitment: recruitmentInput,
-        }),
-        ...(shouldCreateRecruitment
-          ? {
-              volunteerRecruitment: {
-                create: {
-                  ...recruitmentInput,
-                },
-              },
-            }
-          : {}),
-      },
-      include: {
-        author: { select: { id: true, nickname: true } },
-        neighborhood: {
-          select: { id: true, name: true, city: true, district: true },
-        },
-        volunteerRecruitment: {
-          select: {
-            shelterName: true,
-            region: true,
-            volunteerDate: true,
-            volunteerType: true,
-            capacity: true,
-            status: true,
-          },
-        },
-        images: {
-          select: { id: true, url: true, order: true },
-          orderBy: { order: "asc" },
-        },
-      },
-    });
-    await finalizeUploadUrlChanges({ attachedUrls: normalizedImageUrls });
-    notifyPostCacheChange();
-    return created;
-  }
-
-  const created = await prisma.post.create({
-    data: {
-      ...commonCreateData,
-    },
-    include: {
-      author: { select: { id: true, nickname: true } },
-      neighborhood: {
-        select: { id: true, name: true, city: true, district: true },
-      },
-      hospitalReview: {
-        select: {
-          hospitalName: true,
-          totalCost: true,
-          waitTime: true,
-          rating: true,
-        },
-      },
-      placeReview: {
-        select: {
-          placeName: true,
-          placeType: true,
-          address: true,
-          isPetAllowed: true,
-          rating: true,
-        },
-      },
-      walkRoute: {
-        select: {
-          routeName: true,
-          distance: true,
-          duration: true,
-          difficulty: true,
-          hasStreetLights: true,
-          hasRestroom: true,
-          hasParkingLot: true,
-          safetyTags: true,
-        },
-      },
-      adoptionListing: {
-        select: {
-          shelterName: true,
-          region: true,
-          animalType: true,
-          breed: true,
-          ageLabel: true,
-          sex: true,
-          isNeutered: true,
-          isVaccinated: true,
-          sizeLabel: true,
-          status: true,
-        },
-      },
-      volunteerRecruitment: {
-        select: {
-          shelterName: true,
-          region: true,
-          volunteerDate: true,
-          volunteerType: true,
-          capacity: true,
-          status: true,
-        },
-      },
-      marketListing: {
-        select: {
-          listingType: true,
-          price: true,
-          condition: true,
-          depositAmount: true,
-          rentalPeriod: true,
-          status: true,
-        },
-      },
-      images: {
-        select: { id: true, url: true, order: true },
-        orderBy: { order: "asc" },
-      },
-    },
+  const { created, hospitalReviewRisk } = await createPostVariant({
+    postType: postData.type,
+    rawInput,
+    commonCreateData,
+    commonBoardAnimalTags,
+    hospitalReviewInput,
+    adoptionListingInput,
+    volunteerRecruitmentInput,
+    marketListingInput,
+    careRequestInput,
   });
   await finalizeUploadUrlChanges({ attachedUrls: normalizedImageUrls });
+  if (
+    hospitalReviewRisk?.shouldCreateReview &&
+    resolvedAuthorAccountCreatedAt &&
+    hospitalReviewRisk.reviewInput.hospitalName?.trim().length
+  ) {
+    const normalizedHospitalName = hospitalReviewRisk.reviewInput.hospitalName.trim();
+    const [sameHospitalReviewCount30d, recentHospitalReviewCount7d] = await Promise.all([
+      prisma.hospitalReview.count({
+        where: {
+          hospitalName: {
+            equals: normalizedHospitalName,
+            mode: "insensitive",
+          },
+          post: {
+            authorId: resolvedAuthorId,
+            status: PostStatus.ACTIVE,
+            createdAt: {
+              gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+            },
+            id: {
+              not: created.id,
+            },
+          },
+        },
+      }),
+      prisma.hospitalReview.count({
+        where: {
+          post: {
+            authorId: resolvedAuthorId,
+            status: PostStatus.ACTIVE,
+            type: PostType.HOSPITAL_REVIEW,
+            createdAt: {
+              gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+            },
+          },
+        },
+      }),
+    ]);
+    const hospitalReviewRiskSignals = buildHospitalReviewRiskSignals({
+      accountCreatedAt: resolvedAuthorAccountCreatedAt,
+      sameHospitalReviewCount30d,
+      recentHospitalReviewCount7d,
+    });
+
+    if (hospitalReviewRiskSignals.flagged) {
+      await recordModerationAction({
+        actorId: resolvedAuthorId,
+        action: ModerationActionType.HOSPITAL_REVIEW_FLAGGED,
+        targetType: ModerationTargetType.POST,
+        targetId: created.id,
+        targetUserId: resolvedAuthorId,
+        metadata: {
+          hospitalName: normalizedHospitalName,
+          signals: hospitalReviewRiskSignals.signals,
+          sameHospitalReviewCount30d,
+          recentHospitalReviewCount7d,
+        },
+      });
+    }
+  }
   notifyPostCacheChange();
   return created;
 }
