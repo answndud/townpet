@@ -4,7 +4,7 @@
 
 - 작업: 2일 백엔드 포트폴리오 고도화
 - 상태: `in_progress`
-- 현재 초점: P0 증거 패키징 slice를 완료했고, 다음은 P1 route test gap 보강이다.
+- 현재 초점: P0 증거 패키징과 P1 route test gap 1차 보강을 완료했고, 다음은 남은 auth route gap 또는 알림 outbox 재처리/관측 루틴이다.
 
 ## 진행 중 메모
 
@@ -33,5 +33,14 @@
   - `corepack pnpm@9.12.3 -C app typecheck`: 통과
   - `git diff --check --cached`: 통과
 - 다음 작업:
-  - P1 route test gap 보강부터 진행한다.
-  - 우선순위: reports detail/bulk -> post content/stats.
+  - P1 route test gap 1차 보강을 완료했다.
+  - 추가 테스트:
+    - `app/src/app/api/reports/[id]/route.test.ts`
+    - `app/src/app/api/reports/bulk/route.test.ts`
+    - `app/src/app/api/posts/[id]/content/route.test.ts`
+    - `app/src/app/api/posts/[id]/stats/route.test.ts`
+  - 검증:
+    - `corepack pnpm@9.12.3 -C app test -- 'src/app/api/reports/[id]/route.test.ts' src/app/api/reports/bulk/route.test.ts 'src/app/api/posts/[id]/content/route.test.ts' 'src/app/api/posts/[id]/stats/route.test.ts'`: 통과, 4 files / 19 tests
+  - 다음 후보:
+    - 남은 auth route gap 보강: password reset confirm, password setup, email verification confirm
+    - 알림 outbox 재처리/관측 루틴 개선
