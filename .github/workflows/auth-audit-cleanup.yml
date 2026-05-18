@@ -37,4 +37,4 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           AUTH_AUDIT_RETENTION_DAYS: "180"
-        run: pnpm db:cleanup:auth-audits
+        run: pnpm db:cleanup:auth-audits -- --apply

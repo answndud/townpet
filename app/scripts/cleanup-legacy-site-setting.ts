@@ -1,15 +1,17 @@
 import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
 
+import { isDryRunMode, resolveMaintenanceRunMode } from "./maintenance-run-mode";
+
 const prisma = new PrismaClient();
 const LEGACY_SITE_SETTING_KEYS = ["popular_search_terms_v1"] as const;
 
-function hasApplyFlag() {
-  return process.argv.includes("--apply");
-}
-
 async function main() {
-  const apply = hasApplyFlag();
+  const apply = !isDryRunMode(
+    resolveMaintenanceRunMode({
+      applyEnvName: "LEGACY_SITE_SETTING_CLEANUP_APPLY",
+    }),
+  );
   const keys = [...LEGACY_SITE_SETTING_KEYS];
 
   const legacyRows = await prisma.siteSetting.findMany({

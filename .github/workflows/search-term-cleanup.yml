@@ -37,10 +37,10 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           SEARCH_TERM_RETENTION_DAYS: "90"
-        run: pnpm db:cleanup:search-terms
+        run: pnpm db:cleanup:search-terms -- --apply
 
       - name: Cleanup stale search term daily metrics
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           SEARCH_TERM_DAILY_METRIC_RETENTION_DAYS: "90"
-        run: pnpm db:cleanup:search-term-daily-metrics
+        run: pnpm db:cleanup:search-term-daily-metrics -- --apply

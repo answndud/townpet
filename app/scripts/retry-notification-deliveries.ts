@@ -5,10 +5,7 @@ import {
   flushNotificationDeliveries,
   getNotificationDeliveryOutboxStats,
 } from "@/server/queries/notification.queries";
-
-function hasFlag(name: string) {
-  return process.argv.includes(name);
-}
+import { isDryRunMode, resolveMaintenanceRunMode } from "./maintenance-run-mode";
 
 function readPositiveInt(name: string, fallback: number) {
   const raw = process.env[name];
@@ -26,8 +23,12 @@ function readPositiveInt(name: string, fallback: number) {
 
 async function main() {
   const limit = readPositiveInt("NOTIFICATION_OUTBOX_RETRY_LIMIT", 50);
-  const dryRun =
-    hasFlag("--dry-run") || process.env.NOTIFICATION_OUTBOX_RETRY_DRY_RUN === "1";
+  const dryRun = isDryRunMode(
+    resolveMaintenanceRunMode({
+      dryRunEnvName: "NOTIFICATION_OUTBOX_RETRY_DRY_RUN",
+      applyEnvName: "NOTIFICATION_OUTBOX_RETRY_APPLY",
+    }),
+  );
 
   const before = await getNotificationDeliveryOutboxStats();
 

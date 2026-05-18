@@ -17,6 +17,7 @@ import {
   recountPostEngagementCounts,
   repairDeletedPostIntegrity,
 } from "../src/server/post-integrity.service";
+import { isDryRunMode, resolveMaintenanceRunMode } from "./maintenance-run-mode";
 
 function parseOptionalPositiveInteger(
   rawValue: string | undefined,
@@ -74,7 +75,12 @@ async function bumpNotificationCaches(userIds: string[]) {
 }
 
 async function main() {
-  const dryRun = process.env.POST_INTEGRITY_REPAIR_DRY_RUN === "1";
+  const dryRun = isDryRunMode(
+    resolveMaintenanceRunMode({
+      dryRunEnvName: "POST_INTEGRITY_REPAIR_DRY_RUN",
+      applyEnvName: "POST_INTEGRITY_REPAIR_APPLY",
+    }),
+  );
   const deletedPostLimit = parseOptionalPositiveInteger(
     process.env.POST_INTEGRITY_DELETED_POST_LIMIT,
     "POST_INTEGRITY_DELETED_POST_LIMIT",

@@ -1,4 +1,11 @@
 type NotificationCleanupDelegate = {
+  count(args: {
+    where: {
+      archivedAt: {
+        lt: Date;
+      };
+    };
+  }): Promise<number>;
   deleteMany(args: {
     where: {
       archivedAt: {
@@ -30,14 +37,26 @@ export async function cleanupArchivedNotifications(params: {
   delegate: NotificationCleanupDelegate;
   retentionDays: number;
   now?: Date;
+  dryRun?: boolean;
 }) {
   const cutoff = buildNotificationRetentionCutoff(params.retentionDays, params.now);
-  const result = await params.delegate.deleteMany({
-    where: {
-      archivedAt: {
-        lt: cutoff,
-      },
+  const where = {
+    archivedAt: {
+      lt: cutoff,
     },
+  };
+
+  if (params.dryRun) {
+    const count = await params.delegate.count({ where });
+
+    return {
+      count,
+      cutoff,
+    };
+  }
+
+  const result = await params.delegate.deleteMany({
+    where,
   });
 
   return {

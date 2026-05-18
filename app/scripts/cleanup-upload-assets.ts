@@ -5,8 +5,16 @@ import {
   cleanupTemporaryUploadAssets,
   resolveUploadTemporaryRetentionHours,
 } from "../src/server/upload-asset.service";
+import {
+  formatMaintenanceMode,
+  isDryRunMode,
+  resolveMaintenanceRunMode,
+} from "./maintenance-run-mode";
 
 async function main() {
+  const mode = resolveMaintenanceRunMode({
+    applyEnvName: "UPLOAD_TEMP_CLEANUP_APPLY",
+  });
   const retentionHours = resolveUploadTemporaryRetentionHours();
   const limit = Number(process.env.UPLOAD_TEMP_CLEANUP_LIMIT ?? 100);
 
@@ -17,14 +25,19 @@ async function main() {
   const result = await cleanupTemporaryUploadAssets({
     retentionHours,
     limit,
+    dryRun: isDryRunMode(mode),
   });
 
   console.log("Upload asset cleanup");
+  console.log(`- mode: ${formatMaintenanceMode(mode)}`);
   console.log(`- retentionHours: ${retentionHours}`);
   console.log(`- scanned: ${result.scannedCount}`);
-  console.log(`- deleted: ${result.deletedCount}`);
+  console.log(`- ${isDryRunMode(mode) ? "wouldDelete" : "deleted"}: ${result.deletedCount}`);
   console.log(`- skipped: ${result.skippedCount}`);
   console.log(`- cutoff: ${result.cutoff.toISOString()}`);
+  if (isDryRunMode(mode)) {
+    console.log("Dry-run mode. Re-run with --apply to delete upload assets.");
+  }
 }
 
 main()

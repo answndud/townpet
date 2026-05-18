@@ -4,7 +4,7 @@
 
 - 작업: 2일 백엔드 포트폴리오 고도화
 - 상태: `in_progress`
-- 현재 초점: P0 증거 패키징, P1 route test gap 보강, 알림 outbox 재처리/관측 루틴을 완료했다.
+- 현재 초점: P0 증거 패키징, P1 route test gap 보강, 알림 outbox 재처리/관측 루틴, maintenance run mode guard 표준화를 완료했다.
 
 ## 진행 중 메모
 
@@ -58,5 +58,15 @@
     - 검증:
       - `corepack pnpm@9.12.3 -C app test -- src/server/queries/notification.queries.test.ts`: 통과, 1 file / 20 tests
     - 다음 후보:
-      - cleanup/backfill 스크립트 dry-run/apply guard 표준화
       - post query/create 대형 모듈 리팩터링 slice 선정
+    - cleanup/backfill 스크립트 dry-run/apply guard 표준화를 완료했다.
+    - 변경:
+      - `app/scripts/maintenance-run-mode.ts` 공통 helper 추가
+      - cleanup/backfill/repair/retry 스크립트 기본값 dry-run 통일
+      - 실제 데이터 변경 command와 workflow는 `--apply` 명시
+      - retention/upload cleanup 서비스에 dry-run count 경로 추가
+    - 검증:
+      - `corepack pnpm@9.12.3 -C app test -- scripts/maintenance-run-mode.test.ts src/server/auth-audit-retention.test.ts src/server/notification-retention.test.ts src/server/search-term-stat-retention.test.ts src/server/search-term-daily-metric-retention.test.ts src/server/upload-asset.service.test.ts`: 통과, 6 files / 29 tests
+    - 다음 후보:
+      - post query/create 대형 모듈 리팩터링 slice 선정
+      - production evidence report 최신화

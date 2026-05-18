@@ -1,4 +1,11 @@
 type SearchTermDailyMetricCleanupDelegate = {
+  count(args: {
+    where: {
+      day: {
+        lt: Date;
+      };
+    };
+  }): Promise<number>;
   deleteMany(args: {
     where: {
       day: {
@@ -34,14 +41,26 @@ export async function cleanupSearchTermDailyMetrics(params: {
   delegate: SearchTermDailyMetricCleanupDelegate;
   retentionDays: number;
   now?: Date;
+  dryRun?: boolean;
 }) {
   const cutoff = buildSearchTermDailyMetricRetentionCutoff(params.retentionDays, params.now);
-  const result = await params.delegate.deleteMany({
-    where: {
-      day: {
-        lt: cutoff,
-      },
+  const where = {
+    day: {
+      lt: cutoff,
     },
+  };
+
+  if (params.dryRun) {
+    const count = await params.delegate.count({ where });
+
+    return {
+      count,
+      cutoff,
+    };
+  }
+
+  const result = await params.delegate.deleteMany({
+    where,
   });
 
   return {

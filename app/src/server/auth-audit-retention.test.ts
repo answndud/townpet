@@ -18,11 +18,12 @@ describe("auth audit retention", () => {
   });
 
   it("deletes audit logs older than the cutoff", async () => {
+    const count = vi.fn().mockResolvedValue(8);
     const deleteMany = vi.fn().mockResolvedValue({ count: 8 });
     const now = new Date("2026-03-07T00:00:00.000Z");
 
     const result = await cleanupAuthAuditLogs({
-      delegate: { deleteMany },
+      delegate: { count, deleteMany },
       retentionDays: 180,
       now,
     });
@@ -41,5 +42,28 @@ describe("auth audit retention", () => {
       count: 8,
       cutoff: new Date("2025-09-08T00:00:00.000Z"),
     });
+  });
+
+  it("counts matching audit logs without deleting in dry-run mode", async () => {
+    const count = vi.fn().mockResolvedValue(3);
+    const deleteMany = vi.fn();
+    const now = new Date("2026-03-07T00:00:00.000Z");
+
+    const result = await cleanupAuthAuditLogs({
+      delegate: { count, deleteMany },
+      retentionDays: 180,
+      now,
+      dryRun: true,
+    });
+
+    expect(count).toHaveBeenCalledWith({
+      where: {
+        createdAt: {
+          lt: new Date("2025-09-08T00:00:00.000Z"),
+        },
+      },
+    });
+    expect(deleteMany).not.toHaveBeenCalled();
+    expect(result.count).toBe(3);
   });
 });
