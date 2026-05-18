@@ -110,7 +110,7 @@ It also has on-demand tools:
 - security env strict check
 - Sentry ingestion check
 - latency snapshot
-- notification cleanup
+- notification cleanup and delivery outbox retry
 - auth audit cleanup
 - search-term cleanup
 - post integrity repair
@@ -150,12 +150,10 @@ corepack pnpm@9.12.3 -C app quality:check
 
 These are intentionally small, portfolio-visible next slices:
 
-1. Fill API route test gaps for report bulk/detail and post content/stats.
-2. Turn notification delivery outbox into a clearer retry/observability story.
-3. Standardize cleanup/backfill script guardrails around dry-run/apply and output summaries.
-4. Decompose large post query and post creation modules by public behavior.
-5. Add a lightweight API contract generation/check path.
-6. Keep production evidence reports current after each release candidate.
+1. Standardize cleanup/backfill script guardrails around dry-run/apply and output summaries.
+2. Decompose large post query and post creation modules by public behavior.
+3. Add a lightweight API contract generation/check path.
+4. Keep production evidence reports current after each release candidate.
 
 ## Interview Talking Points
 

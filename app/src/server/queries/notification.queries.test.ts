@@ -6,7 +6,9 @@ import {
   createNotification,
   createNotificationDelivery,
   deliverNotificationDelivery,
+  flushNotificationDeliveries,
   flushNotificationDeliveriesForUser,
+  getNotificationDeliveryOutboxStats,
   getNotificationNavigationTarget,
   listNotificationsByUser,
   markAllNotificationsRead,
@@ -50,6 +52,7 @@ vi.mock("@/lib/prisma", () => ({
       create: vi.fn(),
       findUnique: vi.fn(),
       findMany: vi.fn(),
+      count: vi.fn(),
       update: vi.fn(),
     },
   },
@@ -71,6 +74,7 @@ const mockPrisma = vi.mocked(prisma) as unknown as {
     create: ReturnType<typeof vi.fn>;
     findUnique: ReturnType<typeof vi.fn>;
     findMany: ReturnType<typeof vi.fn>;
+    count: ReturnType<typeof vi.fn>;
     update: ReturnType<typeof vi.fn>;
   };
 };
@@ -90,6 +94,7 @@ describe("notification queries cache behavior", () => {
     mockPrisma.notificationDelivery.create.mockReset();
     mockPrisma.notificationDelivery.findUnique.mockReset();
     mockPrisma.notificationDelivery.findMany.mockReset();
+    mockPrisma.notificationDelivery.count.mockReset();
     mockPrisma.notificationDelivery.update.mockReset();
     mockWithQueryCache.mockClear();
     mockBumpUnreadVersion.mockReset();
@@ -101,6 +106,7 @@ describe("notification queries cache behavior", () => {
     mockPrisma.notification.count.mockResolvedValue(0);
     mockPrisma.notification.findMany.mockResolvedValue([]);
     mockPrisma.notificationDelivery.findMany.mockResolvedValue([]);
+    mockPrisma.notificationDelivery.count.mockResolvedValue(0);
   });
 
   it("uses query cache for first-page notification list", async () => {
@@ -434,8 +440,8 @@ describe("notification queries invalidation behavior", () => {
   it("flushes pending/failed deliveries for the same user", async () => {
     mockPrisma.notificationDelivery.findMany
       .mockResolvedValueOnce([
-        { id: "delivery-a" },
-        { id: "delivery-b" },
+        { id: "delivery-a", userId: "user-7" },
+        { id: "delivery-b", userId: "user-7" },
       ])
       .mockResolvedValue([]);
     mockPrisma.notificationDelivery.findUnique.mockResolvedValue({
@@ -456,19 +462,108 @@ describe("notification queries invalidation behavior", () => {
     mockPrisma.notification.create.mockResolvedValue({ id: "noti-a" });
     mockPrisma.notificationDelivery.update.mockResolvedValue({});
 
-    await flushNotificationDeliveriesForUser("user-7", 5);
+    const scanned = await flushNotificationDeliveriesForUser("user-7", 5);
 
+    expect(scanned).toBe(2);
     expect(mockPrisma.notificationDelivery.findMany).toHaveBeenCalledWith({
       where: {
         userId: "user-7",
         status: {
           in: [NotificationDeliveryStatus.PENDING, NotificationDeliveryStatus.FAILED],
         },
+        scheduledAt: { lte: expect.any(Date) },
       },
       orderBy: [{ scheduledAt: "asc" }, { createdAt: "asc" }],
       take: 5,
       select: {
         id: true,
+        userId: true,
+      },
+    });
+  });
+
+  it("summarizes notification delivery outbox stats", async () => {
+    const now = new Date("2026-05-18T00:00:00.000Z");
+    mockPrisma.notificationDelivery.count
+      .mockResolvedValueOnce(3)
+      .mockResolvedValueOnce(2)
+      .mockResolvedValueOnce(4);
+
+    const stats = await getNotificationDeliveryOutboxStats(now);
+
+    expect(stats).toEqual({
+      pending: 3,
+      failed: 2,
+      due: 4,
+      checkedAt: now,
+    });
+    expect(mockPrisma.notificationDelivery.count).toHaveBeenNthCalledWith(1, {
+      where: { status: NotificationDeliveryStatus.PENDING },
+    });
+    expect(mockPrisma.notificationDelivery.count).toHaveBeenNthCalledWith(2, {
+      where: { status: NotificationDeliveryStatus.FAILED },
+    });
+    expect(mockPrisma.notificationDelivery.count).toHaveBeenNthCalledWith(3, {
+      where: {
+        status: {
+          in: [NotificationDeliveryStatus.PENDING, NotificationDeliveryStatus.FAILED],
+        },
+        scheduledAt: { lte: now },
+      },
+    });
+  });
+
+  it("flushes global due deliveries with retry summary", async () => {
+    const now = new Date("2026-05-18T00:00:00.000Z");
+    mockPrisma.notificationDelivery.findMany.mockResolvedValueOnce([
+      { id: "delivery-due", userId: "user-8" },
+      { id: "delivery-missing", userId: "user-9" },
+    ]);
+    mockPrisma.notificationDelivery.findUnique
+      .mockResolvedValueOnce({
+        id: "delivery-due",
+        userId: "user-8",
+        actorId: null,
+        type: "SYSTEM",
+        entityType: "SYSTEM",
+        entityId: "event-due",
+        postId: null,
+        commentId: null,
+        title: "due",
+        body: null,
+        metadata: null,
+        status: NotificationDeliveryStatus.PENDING,
+        attempts: 0,
+      })
+      .mockResolvedValueOnce(null);
+    mockPrisma.notification.create.mockResolvedValue({ id: "noti-due" });
+    mockPrisma.notificationDelivery.update.mockResolvedValue({});
+
+    const result = await flushNotificationDeliveries({ limit: 120, now });
+
+    expect(result).toEqual({
+      scanned: 2,
+      delivered: 1,
+      failed: 0,
+      skipped: 1,
+      deliveryIds: {
+        delivered: ["delivery-due"],
+        failed: [],
+        skipped: ["delivery-missing"],
+      },
+    });
+    expect(mockPrisma.notificationDelivery.findMany).toHaveBeenCalledWith({
+      where: {
+        status: {
+          in: [NotificationDeliveryStatus.PENDING, NotificationDeliveryStatus.FAILED],
+        },
+        scheduledAt: { lte: now },
+      },
+      orderBy: [{ scheduledAt: "asc" }, { createdAt: "asc" }],
+      take: 100,
+      select: {
+        id: true,
+        userId: true,
       },
     });
   });

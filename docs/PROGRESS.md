@@ -4,7 +4,7 @@
 
 - 작업: 2일 백엔드 포트폴리오 고도화
 - 상태: `in_progress`
-- 현재 초점: P0 증거 패키징과 P1 route test gap 보강을 완료했고, 다음은 알림 outbox 재처리/관측 루틴이다.
+- 현재 초점: P0 증거 패키징, P1 route test gap 보강, 알림 outbox 재처리/관측 루틴을 완료했다.
 
 ## 진행 중 메모
 
@@ -49,4 +49,14 @@
       - `app/src/app/api/auth/verify/confirm/route.test.ts`
     - 검증:
       - `corepack pnpm@9.12.3 -C app test -- src/app/api/auth/password/reset/confirm/route.test.ts src/app/api/auth/password/setup/route.test.ts src/app/api/auth/verify/confirm/route.test.ts`: 통과, 3 files / 13 tests
-    - 다음 작업은 알림 outbox 재처리/관측 루틴 개선이다.
+    - 알림 outbox 재처리/관측 루틴을 완료했다.
+    - 변경:
+      - `flushNotificationDeliveries` 전역 retry summary 추가
+      - `getNotificationDeliveryOutboxStats` pending/failed/due 관측 helper 추가
+      - `ops:notifications:retry` on-demand 운영 스크립트 추가
+      - `pnpm -C app ops:notifications:retry -- --dry-run`으로 dry-run stats 확인 가능
+    - 검증:
+      - `corepack pnpm@9.12.3 -C app test -- src/server/queries/notification.queries.test.ts`: 통과, 1 file / 20 tests
+    - 다음 후보:
+      - cleanup/backfill 스크립트 dry-run/apply guard 표준화
+      - post query/create 대형 모듈 리팩터링 slice 선정
