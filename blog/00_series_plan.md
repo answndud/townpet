@@ -48,13 +48,15 @@
 25. [quality gate와 deploy pipeline을 과하게 설계하면 생기는 일](./25-overengineering-ci-and-deploy-pipelines.md)
 26. [SunEditor 전환에서 selection과 typing boundary를 끝까지 고정하기](./26-suneditor-selection-and-typing-boundary.md)
 27. [백엔드 포트폴리오 하드닝 로그](./27-backend-portfolio-hardening-log.md)
+28. [면접 Q&A 카드와 5분 데모 스크립트](./28-interview-qna-and-5min-demo-script.md)
 
 ## 현재 상태
 
-- 핵심 시리즈 `01`부터 `27`까지 초안 작성 완료
+- 핵심 시리즈 `01`부터 `28`까지 초안 작성 완료
 - `27`은 최근 API contract, 테스트 공백, production health evidence, post query/create 리팩터링 사이클을 면접용 하드닝 로그로 정리한 글입니다.
+- `28`은 `24`, `27`을 바탕으로 실제 면접에서 말할 5분 데모 순서와 Q&A 카드를 정리한 글입니다.
 
 ## 다음 보강 우선순위
 1. `09`, `15`, `19`, `20`, `25`, `27`에 다이어그램/수치 캡처 추가
 2. `01`, `21`, `22`, `24`를 묶는 제품/사업 서사 보강
-3. `24`, `27`을 기반으로 면접 Q&A 카드와 데모 발표 순서 확장
+3. `28`을 기반으로 30초/1분/5분 발표 버전과 예상 꼬리질문을 더 압축
