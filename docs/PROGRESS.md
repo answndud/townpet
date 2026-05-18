@@ -4,7 +4,7 @@
 
 - 작업: 2일 백엔드 포트폴리오 고도화
 - 상태: `in_progress`
-- 현재 초점: P0 증거 패키징, P1 route test gap 보강, 알림 outbox 재처리/관측 루틴, maintenance run mode guard 표준화, post query/create 리팩터링 slice 선정, post create structured variant helper 추출을 완료했다.
+- 현재 초점: P0 증거 패키징, P1 route test gap 보강, 알림 outbox 재처리/관측 루틴, maintenance run mode guard 표준화, post query/create 리팩터링 slice 선정, post create structured variant helper 추출, production evidence report 최신화를 완료했다.
 
 ## 진행 중 메모
 
@@ -92,4 +92,13 @@
       - `corepack pnpm@9.12.3 -C app test -- src/server/services/post-create-policy.test.ts src/server/services/post.service.test.ts`: 통과, 2 files / 60 tests
     - 다음 후보:
       - production evidence report 최신화
+      - post detail widget query helper 추출
+    - production evidence report 최신화를 완료했다.
+    - 기록:
+      - `business/reports/production-evidence-latest.md`
+    - 검증:
+      - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:evidence:solo`: 통과
+      - public health `200`, payload status `ok`, elapsed `2922ms`
+      - local raw evidence: `docs/reports/ops-evidence-2026-05-18T07-11-40-233Z.md` (git ignored)
+    - 다음 후보:
       - post detail widget query helper 추출

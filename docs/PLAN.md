@@ -34,7 +34,7 @@
   - [x] cleanup/backfill 스크립트 dry-run/apply guard 표준화
   - [x] post query/create 대형 모듈 리팩터링 slice 선정
   - [x] post create structured variant helper 추출
-  - [ ] production evidence report 최신화
+  - [x] production evidence report 최신화
 - 완료 기준:
   - README에서 백엔드 포트폴리오 증거를 바로 찾을 수 있다.
   - clone 사용자가 `app/.env.example` 기준으로 로컬 실행 경로를 이해할 수 있다.
@@ -43,4 +43,4 @@
 
 ## 다음 작업 후보
 
-- 다음 vertical slice는 production evidence report 최신화 또는 post detail widget query helper 추출이다.
+- 다음 vertical slice는 post detail widget query helper 추출이다.
