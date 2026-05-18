@@ -150,7 +150,7 @@ corepack pnpm@9.12.3 -C app quality:check
 
 These are intentionally small, portfolio-visible next slices:
 
-1. Decompose large post query and post creation modules by public behavior.
+1. Implement the selected post create structured variant helper extraction from `post-query-create-refactor-slices.md`.
 2. Add a lightweight API contract generation/check path.
 3. Keep production evidence reports current after each release candidate.
 

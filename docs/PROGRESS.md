@@ -4,7 +4,7 @@
 
 - 작업: 2일 백엔드 포트폴리오 고도화
 - 상태: `in_progress`
-- 현재 초점: P0 증거 패키징, P1 route test gap 보강, 알림 outbox 재처리/관측 루틴, maintenance run mode guard 표준화를 완료했다.
+- 현재 초점: P0 증거 패키징, P1 route test gap 보강, 알림 outbox 재처리/관측 루틴, maintenance run mode guard 표준화, post query/create 리팩터링 slice 선정을 완료했다.
 
 ## 진행 중 메모
 
@@ -68,5 +68,14 @@
     - 검증:
       - `corepack pnpm@9.12.3 -C app test -- scripts/maintenance-run-mode.test.ts src/server/auth-audit-retention.test.ts src/server/notification-retention.test.ts src/server/search-term-stat-retention.test.ts src/server/search-term-daily-metric-retention.test.ts src/server/upload-asset.service.test.ts`: 통과, 6 files / 29 tests
     - 다음 후보:
-      - post query/create 대형 모듈 리팩터링 slice 선정
+      - post create structured variant helper 추출
       - production evidence report 최신화
+    - post query/create 대형 모듈 리팩터링 slice 선정을 완료했다.
+    - 기록:
+      - `business/reports/post-query-create-refactor-slices.md`
+    - 선정:
+      - 1순위: post create structured variant helper 추출
+      - 후속: detail widget query helper, feed list/count query module, feed personalization context module
+    - 검증:
+      - repository evidence 기반 문서 작업이며 코드 변경 없음
+      - `post.queries.ts` 2,299 lines, `post-create.service.ts` 1,145 lines, 관련 테스트 파일 확인
