@@ -37,6 +37,7 @@
   - [x] production evidence report 최신화
   - [x] post detail widget query helper 추출
   - [x] lightweight API contract generation/check path
+  - [x] feed list/count query module 추출
 - 완료 기준:
   - README에서 백엔드 포트폴리오 증거를 바로 찾을 수 있다.
   - clone 사용자가 `app/.env.example` 기준으로 로컬 실행 경로를 이해할 수 있다.
@@ -45,4 +46,4 @@
 
 ## 다음 작업 후보
 
-- 다음 vertical slice는 feed list/count query module 추출이다.
+- 다음 vertical slice는 feed personalization context/scoring 추출 또는 API route contract access/validation heuristic 확장이다.
