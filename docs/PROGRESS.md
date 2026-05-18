@@ -3,7 +3,7 @@
 ## 현재 상태
 
 - 현재 active 작업 없음.
-- 최근 완료 archive: [COMPLETED.md](./COMPLETED.md)의 `2026-05-18 | Production health evidence refresh`.
+- 최근 완료 archive: [COMPLETED.md](./COMPLETED.md)의 `2026-05-18 | README and blog portfolio refresh`.
 
 ## 다음 액션
 
