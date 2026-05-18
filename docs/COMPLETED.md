@@ -31,7 +31,7 @@
   - [app/src/components/posts/post-create-form.tsx](../app/src/components/posts/post-create-form.tsx)
   - [app/src/components/posts/post-detail-edit-form.tsx](../app/src/components/posts/post-detail-edit-form.tsx)
   - [app/e2e/post-editor-toolbar.spec.ts](../app/e2e/post-editor-toolbar.spec.ts)
-  - [blog/26-suneditor-selection-and-typing-boundary.md](../blog/26-suneditor-selection-and-typing-boundary.md)
+  - [blog/26-suneditor-선택영역-입력경계-고정.md](../blog/26-suneditor-선택영역-입력경계-고정.md)
 - 검증:
   - `corepack pnpm -C app typecheck`
   - `corepack pnpm -C app exec vitest run src/app/globals-css.test.ts`
@@ -62,7 +62,7 @@
   - [.github/workflows/guest-legacy-maintenance.yml](../.github/workflows/guest-legacy-maintenance.yml)
   - [app/scripts/vercel-build.ts](../app/scripts/vercel-build.ts)
   - [app/scripts/vercel-build.test.ts](../app/scripts/vercel-build.test.ts)
-  - [blog/25-overengineering-ci-and-deploy-pipelines.md](../blog/25-overengineering-ci-and-deploy-pipelines.md)
+  - [blog/25-ci-배포-파이프라인-과설계-회고.md](../blog/25-ci-배포-파이프라인-과설계-회고.md)
 - 검증:
   - `corepack pnpm -C app quality:check`
   - `corepack pnpm -C app exec vitest run scripts/vercel-build.test.ts`
@@ -84,7 +84,7 @@
   - [app/src/app/feed/guest/page.tsx](../app/src/app/feed/guest/page.tsx)
   - [app/src/app/feed/guest/page.test.tsx](../app/src/app/feed/guest/page.test.tsx)
   - [app/src/app/api/feed/guest/route.test.ts](../app/src/app/api/feed/guest/route.test.ts)
-  - [blog/20-performance-story-search-cache-pagination.md](../blog/20-performance-story-search-cache-pagination.md)
+  - [blog/20-성능개선-검색-캐시-페이지네이션.md](../blog/20-성능개선-검색-캐시-페이지네이션.md)
 - 검증:
   - `corepack pnpm -C app exec vitest run src/app/feed/guest/page.test.tsx src/app/api/feed/guest/route.test.ts`
   - `corepack pnpm -C app typecheck`
@@ -128,7 +128,7 @@
   - [app/middleware.ts](../app/middleware.ts)
   - [app/src/middleware.test.ts](../app/src/middleware.test.ts)
   - [app/src/components/posts/guest-feed-page-client.tsx](../app/src/components/posts/guest-feed-page-client.tsx)
-  - [blog/20-performance-story-search-cache-pagination.md](../blog/20-performance-story-search-cache-pagination.md)
+  - [blog/20-성능개선-검색-캐시-페이지네이션.md](../blog/20-성능개선-검색-캐시-페이지네이션.md)
 - 검증:
   - `corepack pnpm -C app exec vitest run src/middleware.test.ts`
   - `corepack pnpm -C app typecheck`
@@ -158,10 +158,10 @@
   - `/feed` 최적화를 반복하면서 무엇을 어떻게 측정했는지와, 언제 더 이상 손대지 않을지 기준이 문서로 남아 있지 않았다.
   - 다음 세션에서 같은 성능 실험을 중복 반복할 위험이 있었다.
 - 변경내용:
-  - `blog/20-performance-story-search-cache-pagination.md`에 헤더 확인, 5회 반복 실측, `curl -L` redirect chain 측정, `perf=1` API 타이밍 확인 순서와 실제 수치를 정리했다.
+  - `blog/20-성능개선-검색-캐시-페이지네이션.md`에 헤더 확인, 5회 반복 실측, `curl -L` redirect chain 측정, `perf=1` API 타이밍 확인 순서와 실제 수치를 정리했다.
   - `/feed`, `/feed/guest`, guest API warmed 기준 실측 범위를 남기고, 현재 단계에서는 추가 최적화보다 회귀 방지가 우선이라는 stop line 판단을 문서화했다.
 - 코드문서:
-  - [blog/20-performance-story-search-cache-pagination.md](../blog/20-performance-story-search-cache-pagination.md)
+  - [blog/20-성능개선-검색-캐시-페이지네이션.md](../blog/20-성능개선-검색-캐시-페이지네이션.md)
   - [PLAN.md](./PLAN.md)
   - [PROGRESS.md](./PROGRESS.md)
 - 검증:
@@ -3666,13 +3666,13 @@
   - README의 기술 하이라이트에 notification outbox retry, maintenance run mode guard, production health evidence, API route contract, post query/create 리팩터링을 추가했다.
   - README의 백엔드 포트폴리오 증거에 `quality:check`, API contract, production health evidence 최신 수치를 요약했다.
   - 대표 도메인 묶음의 `posts/feed`를 현재 분리된 query module 기준으로 갱신하고, `ops/evidence` 묶음을 추가했다.
-  - blog 시리즈에 `27-backend-portfolio-hardening-log.md`를 추가하고, `blog/README.md`와 `blog/00_series_plan.md`의 읽기 순서와 현재 상태를 갱신했다.
+  - blog 시리즈에 `27-백엔드-포트폴리오-하드닝-로그.md`를 추가하고, `blog/README.md`와 `blog/00_시리즈_계획.md`의 읽기 순서와 현재 상태를 갱신했다.
   - `business/reports/backend-portfolio-case-study.md`의 test count, API contract 상태, current improvement target을 최신 상태로 정리했다.
 - 코드문서:
   - [README.md](../README.md)
   - [blog/README.md](../blog/README.md)
-  - [blog/00_series_plan.md](../blog/00_series_plan.md)
-  - [blog/27-backend-portfolio-hardening-log.md](../blog/27-backend-portfolio-hardening-log.md)
+  - [blog/00_시리즈_계획.md](../blog/00_시리즈_계획.md)
+  - [blog/27-백엔드-포트폴리오-하드닝-로그.md](../blog/27-백엔드-포트폴리오-하드닝-로그.md)
   - [business/reports/backend-portfolio-case-study.md](../business/reports/backend-portfolio-case-study.md)
   - [docs/PROGRESS.md](./PROGRESS.md)
 - 검증:
@@ -3688,16 +3688,16 @@
   - `blog/24`의 데모/문서/면접 패키지와 `blog/27`의 백엔드 하드닝 로그를 실제 면접에서 바로 말할 수 있는 형태로 연결할 필요가 있었다.
   - README와 하드닝 증거가 준비됐으므로, 5분 데모 순서와 꼬리질문 대응 카드를 별도 문서로 만들었다.
 - 변경내용:
-  - `blog/28-interview-qna-and-5min-demo-script.md`를 추가했다.
+  - `blog/28-면접-질문답변과-5분-데모-스크립트.md`를 추가했다.
   - 0:00-5:00 기준 데모 스크립트, 화면/파일 순서, 말할 포인트를 정리했다.
   - 20개 면접 Q&A 카드와 30초 자기소개 버전을 작성했다.
-  - `blog/README.md`, `blog/00_series_plan.md`를 28번 글까지 갱신했다.
-  - `blog/24-demo-docs-and-interview-pack.md`의 오래된 대표 코드 링크를 현재 `posts/*`, `moderation/*`, API contract/evidence 구조 기준으로 수정했다.
+  - `blog/README.md`, `blog/00_시리즈_계획.md`를 28번 글까지 갱신했다.
+  - `blog/24-데모-문서-면접-패키지.md`의 오래된 대표 코드 링크를 현재 `posts/*`, `moderation/*`, API contract/evidence 구조 기준으로 수정했다.
 - 코드문서:
-  - [blog/28-interview-qna-and-5min-demo-script.md](../blog/28-interview-qna-and-5min-demo-script.md)
-  - [blog/24-demo-docs-and-interview-pack.md](../blog/24-demo-docs-and-interview-pack.md)
+  - [blog/28-면접-질문답변과-5분-데모-스크립트.md](../blog/28-면접-질문답변과-5분-데모-스크립트.md)
+  - [blog/24-데모-문서-면접-패키지.md](../blog/24-데모-문서-면접-패키지.md)
   - [blog/README.md](../blog/README.md)
-  - [blog/00_series_plan.md](../blog/00_series_plan.md)
+  - [blog/00_시리즈_계획.md](../blog/00_시리즈_계획.md)
   - [docs/PROGRESS.md](./PROGRESS.md)
 - 검증:
   - `node scripts/refresh-docs-index.mjs --check`
@@ -3705,3 +3705,26 @@
 - 결과:
   - TownPet를 백엔드 포트폴리오로 설명할 때 사용할 5분 데모 스크립트와 Q&A 카드가 준비됐다.
   - 이번 작업은 문서-only 변경이라 앱 lint/typecheck/test/build는 실행하지 않았다.
+
+### 2026-05-18 | Blog filenames Korean rename
+- 완료일: `2026-05-18`
+- 배경:
+  - `blog/` 하위 원고 파일명이 대부분 영어 slug라서 한국어 사용자 기준으로 어떤 글인지 한눈에 파악하기 어려웠다.
+  - 블로그는 포트폴리오 설명 자료이므로 파일명도 제목과 비슷하게 읽히도록 정리했다.
+- 변경내용:
+  - `blog/README.md`를 제외한 블로그 원고 파일명을 번호는 유지하고 한국어 중심 파일명으로 변경했다.
+  - `00_*` 보조 문서도 `00_재구현_가이드.md`, `00_품질_체크리스트.md`, `00_백엔드_개발자를_위한_자바스크립트.md`, `00_시리즈_계획.md`로 바꿨다.
+  - `blog/` 내부 링크, `AGENTS.md`, `docs/COMPLETED.md`의 블로그 파일 참조를 새 파일명으로 갱신했다.
+- 코드문서:
+  - [blog/README.md](../blog/README.md)
+  - [blog/00_시리즈_계획.md](../blog/00_%EC%8B%9C%EB%A6%AC%EC%A6%88_%EA%B3%84%ED%9A%8D.md)
+  - [AGENTS.md](../AGENTS.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - old English blog filename exact search
+  - blog markdown relative link existence check
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `git diff --check`
+- 결과:
+  - 블로그 원고 파일명이 한국어 중심으로 바뀌었고, 기존 영어 slug 참조는 관련 문서에서 새 파일명으로 수렴했다.
+  - 이번 작업은 문서 rename/link 변경이라 앱 lint/typecheck/test/build는 실행하지 않았다.
