@@ -11,7 +11,7 @@ This inventory turns the App Router API surface into a backend review artifact. 
 - API route handlers: 48
 - Primary auth modes: public/guest, auth-aware, moderator/admin
 - Standard backend concerns: Zod validation, service/query delegation, structured JSON response, `monitorUnhandledError`
-- Immediate test-gap candidates: 8 routes do not have adjacent `route.test.ts`
+- Immediate test-gap candidates: 4 routes do not have adjacent `route.test.ts`
 
 ## Route Table
 
@@ -72,27 +72,35 @@ These files currently do not have a sibling `route.test.ts` and should be review
 
 | Priority | Route file | Suggested coverage |
 |---|---|---|
-| P1 | `app/src/app/api/reports/[id]/route.ts` | moderator required, service error mapping, internal error monitoring |
-| P1 | `app/src/app/api/reports/bulk/route.ts` | moderator required, invalid bulk input, partial/service failure mapping |
-| P1 | `app/src/app/api/posts/[id]/content/route.ts` | not found, hidden/sanctioned read denial, HTML/text rendering, no-store header |
-| P1 | `app/src/app/api/posts/[id]/stats/route.ts` | not found, read denial, zero-count normalization, no-store header |
 | P2 | `app/src/app/api/auth/password/reset/confirm/route.ts` | invalid token, weak password, normalized auth response |
 | P2 | `app/src/app/api/auth/password/setup/route.ts` | missing session, invalid password, success path |
 | P2 | `app/src/app/api/auth/verify/confirm/route.ts` | invalid token, expired token, success response |
 | P3 | `app/src/app/api/auth/[...nextauth]/route.ts` | usually covered indirectly by auth/e2e; keep as integration/e2e target |
 
+## Closed Route Test Gaps
+
+The following adjacent tests were added after this inventory was created:
+
+| Route file | Test file | Coverage |
+|---|---|---|
+| `app/src/app/api/reports/[id]/route.ts` | `app/src/app/api/reports/[id]/route.test.ts` | moderator required, route id/body forwarding, service error mapping, internal error monitoring |
+| `app/src/app/api/reports/bulk/route.ts` | `app/src/app/api/reports/bulk/route.test.ts` | moderator required, body forwarding, service error mapping, internal error monitoring |
+| `app/src/app/api/posts/[id]/content/route.ts` | `app/src/app/api/posts/[id]/content/route.test.ts` | guest/auth viewer id, not found, read denial, rendered html/text, no-store header, internal error monitoring |
+| `app/src/app/api/posts/[id]/stats/route.ts` | `app/src/app/api/posts/[id]/stats/route.test.ts` | guest/auth viewer id, not found, read denial, zero-count normalization, no-store header, internal error monitoring |
+
 ## Recommended Next Slice
 
-Implement P1 route tests first because they exercise core backend concerns:
+The next test slice is the remaining auth route gap:
 
-1. moderator authorization and service error mapping for report update endpoints
-2. read-access enforcement for post content/stats endpoints
-3. response contract stability for rendered content and engagement stats
+1. password reset confirm
+2. password setup
+3. email verification confirm
+4. keep NextAuth catch-all as indirect integration/e2e coverage unless a specific regression appears
 
 Verification:
 
 ```bash
-corepack pnpm@9.12.3 -C app test -- src/app/api/reports/[id]/route.test.ts src/app/api/reports/bulk/route.test.ts src/app/api/posts/[id]/content/route.test.ts src/app/api/posts/[id]/stats/route.test.ts
+corepack pnpm@9.12.3 -C app test -- src/app/api/auth/password/reset/confirm/route.test.ts src/app/api/auth/password/setup/route.test.ts src/app/api/auth/verify/confirm/route.test.ts
 corepack pnpm@9.12.3 -C app lint
 corepack pnpm@9.12.3 -C app typecheck
 ```
