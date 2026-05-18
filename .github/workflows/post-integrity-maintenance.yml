@@ -93,9 +93,12 @@ jobs:
 
           if [[ "$dry_run" == "1" ]]; then
             export POST_INTEGRITY_REPAIR_DRY_RUN=1
+            mode_args=(--dry-run)
+          else
+            mode_args=(--apply)
           fi
 
-          pnpm db:repair:post-integrity | tee "$output_file"
+          pnpm db:repair:post-integrity -- "${mode_args[@]}" | tee "$output_file"
 
           {
             echo "## post-integrity-maintenance"

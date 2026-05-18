@@ -18,11 +18,12 @@ describe("search term stat retention", () => {
   });
 
   it("deletes rows older than the cutoff", async () => {
+    const count = vi.fn().mockResolvedValue(7);
     const deleteMany = vi.fn().mockResolvedValue({ count: 7 });
     const now = new Date("2026-03-07T00:00:00.000Z");
 
     const result = await cleanupSearchTermStats({
-      delegate: { deleteMany },
+      delegate: { count, deleteMany },
       retentionDays: 90,
       now,
     });
@@ -41,5 +42,28 @@ describe("search term stat retention", () => {
       count: 7,
       cutoff: new Date("2025-12-07T00:00:00.000Z"),
     });
+  });
+
+  it("counts rows without deleting in dry-run mode", async () => {
+    const count = vi.fn().mockResolvedValue(4);
+    const deleteMany = vi.fn();
+    const now = new Date("2026-03-07T00:00:00.000Z");
+
+    const result = await cleanupSearchTermStats({
+      delegate: { count, deleteMany },
+      retentionDays: 90,
+      now,
+      dryRun: true,
+    });
+
+    expect(count).toHaveBeenCalledWith({
+      where: {
+        updatedAt: {
+          lt: new Date("2025-12-07T00:00:00.000Z"),
+        },
+      },
+    });
+    expect(deleteMany).not.toHaveBeenCalled();
+    expect(result.count).toBe(4);
   });
 });

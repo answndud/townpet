@@ -1,4 +1,11 @@
 type AuthAuditCleanupDelegate = {
+  count(args: {
+    where: {
+      createdAt: {
+        lt: Date;
+      };
+    };
+  }): Promise<number>;
   deleteMany(args: {
     where: {
       createdAt: {
@@ -30,14 +37,26 @@ export async function cleanupAuthAuditLogs(params: {
   delegate: AuthAuditCleanupDelegate;
   retentionDays: number;
   now?: Date;
+  dryRun?: boolean;
 }) {
   const cutoff = buildAuthAuditRetentionCutoff(params.retentionDays, params.now);
-  const result = await params.delegate.deleteMany({
-    where: {
-      createdAt: {
-        lt: cutoff,
-      },
+  const where = {
+    createdAt: {
+      lt: cutoff,
     },
+  };
+
+  if (params.dryRun) {
+    const count = await params.delegate.count({ where });
+
+    return {
+      count,
+      cutoff,
+    };
+  }
+
+  const result = await params.delegate.deleteMany({
+    where,
   });
 
   return {

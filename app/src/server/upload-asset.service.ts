@@ -295,7 +295,10 @@ async function deleteStoredUploadUrl(url: string) {
   return true;
 }
 
-export async function releaseUploadUrlsIfUnreferenced(urls: string[]) {
+export async function releaseUploadUrlsIfUnreferenced(
+  urls: string[],
+  options: { dryRun?: boolean } = {},
+) {
   const trustedUrls = normalizeTrustedUploadUrls(urls);
   if (trustedUrls.length === 0) {
     return { deletedUrls: [] as string[], skippedUrls: [] as string[] };
@@ -323,6 +326,11 @@ export async function releaseUploadUrlsIfUnreferenced(urls: string[]) {
       const asset = await findUploadAssetByStorageKey(entry.storageKey);
       const deleteTargetUrl =
         asset?.url ?? (entry.url.startsWith("/media/") ? `/${entry.storageKey}` : entry.url);
+      if (options.dryRun) {
+        deletedUrls.push(entry.url);
+        continue;
+      }
+
       await deleteStoredUploadUrl(deleteTargetUrl);
       if (asset?.thumbnailUrl) {
         await deleteStoredUploadUrl(asset.thumbnailUrl);
@@ -347,6 +355,7 @@ export async function cleanupTemporaryUploadAssets(params?: {
   retentionHours?: number;
   limit?: number;
   now?: Date;
+  dryRun?: boolean;
 }) {
   const retentionHours =
     params?.retentionHours ?? resolveUploadTemporaryRetentionHours();
@@ -366,7 +375,9 @@ export async function cleanupTemporaryUploadAssets(params?: {
   });
 
   const urls = temporaryAssets.map((asset) => asset.url);
-  const result = await releaseUploadUrlsIfUnreferenced(urls);
+  const result = await releaseUploadUrlsIfUnreferenced(urls, {
+    dryRun: params?.dryRun,
+  });
 
   return {
     cutoff,

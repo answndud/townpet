@@ -150,10 +150,9 @@ corepack pnpm@9.12.3 -C app quality:check
 
 These are intentionally small, portfolio-visible next slices:
 
-1. Standardize cleanup/backfill script guardrails around dry-run/apply and output summaries.
-2. Decompose large post query and post creation modules by public behavior.
-3. Add a lightweight API contract generation/check path.
-4. Keep production evidence reports current after each release candidate.
+1. Decompose large post query and post creation modules by public behavior.
+2. Add a lightweight API contract generation/check path.
+3. Keep production evidence reports current after each release candidate.
 
 ## Interview Talking Points
 

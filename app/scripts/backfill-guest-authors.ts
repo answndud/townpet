@@ -1,6 +1,8 @@
 import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
 
+import { isDryRunMode, resolveMaintenanceRunMode } from "./maintenance-run-mode";
+
 const prisma = new PrismaClient();
 
 const BATCH_SIZE = (() => {
@@ -11,7 +13,11 @@ const BATCH_SIZE = (() => {
   return Math.min(Math.floor(raw), 1000);
 })();
 
-const DRY_RUN = process.env.GUEST_AUTHOR_BACKFILL_DRY_RUN === "1";
+const RUN_MODE = resolveMaintenanceRunMode({
+  dryRunEnvName: "GUEST_AUTHOR_BACKFILL_DRY_RUN",
+  applyEnvName: "GUEST_AUTHOR_BACKFILL_APPLY",
+});
+const DRY_RUN = isDryRunMode(RUN_MODE);
 
 type GuestMetaRecord = {
   id: string;
@@ -160,6 +166,7 @@ async function main() {
 
   if (DRY_RUN) {
     console.log(`Dry-run matched ${posts} posts and ${comments} comments for backfill.`);
+    console.log("Re-run with --apply to write guestAuthorId backfill rows.");
     return;
   }
 

@@ -129,10 +129,12 @@ pnpm ops:check:security-env:build
 pnpm ops:check:security-env:strict
 pnpm ops:check:auth-email-readiness
 pnpm ops:notifications:retry -- --dry-run
+pnpm ops:notifications:retry -- --apply
 pnpm ops:perf:snapshot
 ```
 
 GitHub Actions maintenance workflow는 자동 schedule 없이 수동 실행 기준입니다.
+cleanup/backfill/repair 계열 스크립트는 로컬 실행 시 기본값이 dry-run이며, 실제 데이터 변경은 `--apply`를 명시합니다.
 
 - `auth-audit-cleanup`
 - `notification-cleanup`

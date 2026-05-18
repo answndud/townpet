@@ -211,4 +211,30 @@ describe("upload asset service", () => {
     expect(result.deletedCount).toBe(2);
     expect(result.skippedCount).toBe(0);
   });
+
+  it("reports expired temporary upload candidates without deleting in dry-run mode", async () => {
+    mockPrisma.uploadAsset.findMany.mockResolvedValue([
+      { url: "/uploads/expired-1.png" },
+    ]);
+    mockPrisma.uploadAsset.findFirst.mockResolvedValue({
+      url: "/uploads/expired-1.png",
+      storageKey: "uploads/expired-1.png",
+      thumbnailUrl: null,
+      thumbnailStorageKey: null,
+      storageProvider: "LOCAL",
+    });
+
+    const result = await cleanupTemporaryUploadAssets({
+      retentionHours: 24,
+      now: new Date("2026-03-10T12:00:00.000Z"),
+      dryRun: true,
+    });
+
+    expect(mockUnlink).not.toHaveBeenCalled();
+    expect(mockDel).not.toHaveBeenCalled();
+    expect(mockPrisma.uploadAsset.updateMany).not.toHaveBeenCalled();
+    expect(result.scannedCount).toBe(1);
+    expect(result.deletedCount).toBe(1);
+    expect(result.skippedCount).toBe(0);
+  });
 });

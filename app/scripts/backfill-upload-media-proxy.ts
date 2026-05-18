@@ -8,6 +8,7 @@ import {
   getTrustedUploadStorageProvider,
   getUploadProxyPath,
 } from "../src/lib/upload-url";
+import { isDryRunMode, resolveMaintenanceRunMode } from "./maintenance-run-mode";
 
 const BLOB_UPLOAD_URL_PATTERN =
   /https:\/\/[A-Za-z0-9.-]+\.public\.blob\.vercel-storage\.com\/uploads\/[^\s"'<>)]*/g;
@@ -118,7 +119,12 @@ async function ensureUploadAssetsFromUrls(urls: string[], dryRun: boolean) {
 }
 
 async function main() {
-  const dryRun = process.env.UPLOAD_MEDIA_PROXY_BACKFILL_DRY_RUN === "1";
+  const dryRun = isDryRunMode(
+    resolveMaintenanceRunMode({
+      dryRunEnvName: "UPLOAD_MEDIA_PROXY_BACKFILL_DRY_RUN",
+      applyEnvName: "UPLOAD_MEDIA_PROXY_BACKFILL_APPLY",
+    }),
+  );
 
   const [postImages, users, pets, posts] = await Promise.all([
     prisma.postImage.findMany({
@@ -233,6 +239,9 @@ async function main() {
   console.log(`- updatedPetImages: ${updatedPetImageCount}`);
   console.log(`- updatedPostContent: ${updatedPostContentCount}`);
   console.log(`- legacyUrlsSeen: ${allLegacyUrls.length}`);
+  if (dryRun) {
+    console.log("Dry-run mode. Re-run with --apply to rewrite media URLs.");
+  }
 }
 
 main()

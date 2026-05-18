@@ -1,4 +1,11 @@
 type SearchTermStatCleanupDelegate = {
+  count(args: {
+    where: {
+      updatedAt: {
+        lt: Date;
+      };
+    };
+  }): Promise<number>;
   deleteMany(args: {
     where: {
       updatedAt: {
@@ -25,14 +32,26 @@ export async function cleanupSearchTermStats(params: {
   delegate: SearchTermStatCleanupDelegate;
   retentionDays: number;
   now?: Date;
+  dryRun?: boolean;
 }) {
   const cutoff = buildSearchTermRetentionCutoff(params.retentionDays, params.now);
-  const result = await params.delegate.deleteMany({
-    where: {
-      updatedAt: {
-        lt: cutoff,
-      },
+  const where = {
+    updatedAt: {
+      lt: cutoff,
     },
+  };
+
+  if (params.dryRun) {
+    const count = await params.delegate.count({ where });
+
+    return {
+      count,
+      cutoff,
+    };
+  }
+
+  const result = await params.delegate.deleteMany({
+    where,
   });
 
   return {

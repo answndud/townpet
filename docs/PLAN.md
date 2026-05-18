@@ -31,7 +31,7 @@
   - [x] route test gap P1 보강: report detail/bulk, post content/stats
   - [x] auth route test gap 보강: password reset confirm, password setup, email verification confirm
   - [x] 알림 outbox 재처리/관측 루틴 개선
-  - [ ] cleanup/backfill 스크립트 dry-run/apply guard 표준화
+  - [x] cleanup/backfill 스크립트 dry-run/apply guard 표준화
   - [ ] post query/create 대형 모듈 리팩터링 slice 선정
   - [ ] production evidence report 최신화
 - 완료 기준:
@@ -42,4 +42,4 @@
 
 ## 다음 작업 후보
 
-- 다음 vertical slice는 cleanup/backfill 스크립트 dry-run/apply guard 표준화 또는 post query/create 대형 모듈 리팩터링 slice 선정이다.
+- 다음 vertical slice는 post query/create 대형 모듈 리팩터링 slice 선정 또는 production evidence report 최신화다.
