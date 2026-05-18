@@ -8,7 +8,7 @@ Select small, behavior-preserving refactor slices for the two largest post backe
 
 This is not a rewrite plan. The goal is to improve locality and testability while keeping the public import surface stable through `@/server/queries/post.queries` and `createPost`.
 
-## Repository Evidence
+## Initial Repository Evidence
 
 - `app/src/server/queries/posts/post.queries.ts`: 2,299 lines.
   - Still owns schema fallback detection, feed personalization scoring, detail widget queries, feed list/count, best posts, and ranked search orchestration.
@@ -20,6 +20,14 @@ This is not a rewrite plan. The goal is to improve locality and testability whil
   - `app/src/server/queries/post.queries.test.ts`: 1,904 lines.
   - `app/src/server/services/post-create-policy.test.ts`: 1,008 lines.
   - Additional service coverage exists in `post.service.test.ts`, `guest-post-management.service.test.ts`, and `post-read-access.service.test.ts`.
+
+## Current Refactor State
+
+- `app/src/server/queries/posts/post.queries.ts`: 466 lines after detail widget, feed list/count, and feed personalization extraction.
+- `app/src/server/queries/posts/post-list.queries.ts`: owns feed list/count orchestration.
+- `app/src/server/queries/posts/post-feed-personalization.queries.ts`: owns feed personalization context loading, scoring, recent behavior/dwell/bookmark signals, and diversity interleaving.
+- `app/src/server/queries/posts/post-query-schema-support.ts`: owns shared guest/review/community schema fallback guards.
+- Public import surface through `@/server/queries/post.queries` remains stable.
 
 ## Candidate 1: Post Create Structured Variant Builders
 
@@ -92,6 +100,8 @@ Status: completed on 2026-05-18.
 
 ## Candidate 4: Feed Personalization Context Module
 
+Status: completed on 2026-05-18.
+
 - Files:
   - `app/src/server/queries/posts/post.queries.ts`
   - possible `post-feed-personalization.queries.ts`
@@ -133,5 +143,5 @@ Reason:
 
 ## Follow-up Order
 
-1. Candidate 4: extract feed personalization context/scoring only after feed list/count is isolated.
-2. Extend the generated API route contract report with access/validation heuristics if it becomes useful.
+1. Extend the generated API route contract report with access/validation heuristics if it becomes useful.
+2. Keep further post query refactors limited to clearly isolated behavior; the current facade is small enough to pause broad extraction.
