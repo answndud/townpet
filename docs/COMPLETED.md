@@ -3634,3 +3634,25 @@
   - Next build 중 로컬 DB credential mismatch 경고가 발생했지만, 해당 조회는 기본값 fallback으로 처리되어 build는 exit 0으로 완료됐다.
   - 현재 active 작업은 없다.
   - 다음은 새 개발 사이클을 정하거나, 실제 배포 전 `business/operations/배포전_on-demand_체크.md` 순서로 on-demand 체크를 실행하는 것이다.
+
+### 2026-05-18 | Production health evidence refresh
+- 완료일: `2026-05-18`
+- 배경:
+  - P1 포트폴리오 고도화와 통합 `quality:check`가 끝난 뒤, 현재 production public health-only evidence를 최신화했다.
+  - 이 검증은 1인 운영 기준의 reduced smoke이며, browser smoke, real OAuth, internal health token, strict security env 검증은 포함하지 않는다.
+- 변경내용:
+  - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:evidence:solo`를 실행했다.
+  - `business/reports/production-evidence-latest.md`를 새 health 결과로 갱신했다.
+  - `PLAN.md`와 `PROGRESS.md`를 active 작업 없음 상태로 정리했다.
+- 코드문서:
+  - [business/reports/production-evidence-latest.md](../business/reports/production-evidence-latest.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:evidence:solo`
+  - `node scripts/refresh-docs-index.mjs --check`
+- 결과:
+  - production public health는 HTTP status `200`, payload.status `ok`, payload.timestamp `2026-05-18T08:11:21.726Z`로 통과했다.
+  - elapsedMs는 `3974`, runner duration은 `4538ms`였다.
+  - local raw evidence는 `docs/reports/ops-evidence-2026-05-18T08-11-17-318Z.md`에 생성됐고 git ignore 상태로 유지했다.
+  - full release readiness는 이 evidence로 주장하지 않는다. 배포 후보나 incident 대응 시에는 `business/operations/배포전_on-demand_체크.md`의 범위별 체크를 추가 실행한다.

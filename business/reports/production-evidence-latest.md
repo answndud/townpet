@@ -14,7 +14,7 @@ This evidence intentionally uses the reduced 1인 운영 path documented in `bus
 - Base URL: `https://townpet.vercel.app`
 - Profile: `solo`
 - Command: `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:evidence:solo`
-- Local evidence file: `docs/reports/ops-evidence-2026-05-18T07-11-40-233Z.md`
+- Local evidence file: `docs/reports/ops-evidence-2026-05-18T08-11-17-318Z.md`
 - Evidence file tracking: ignored by git as local evidence
 
 ## Health Evidence
@@ -22,11 +22,11 @@ This evidence intentionally uses the reduced 1인 운영 path documented in `bus
 - Endpoint: `https://townpet.vercel.app/api/health`
 - HTTP status: `200`
 - Payload status: `ok`
-- Payload timestamp: `2026-05-18T07:11:43.599Z`
-- Elapsed: `2922ms`
+- Payload timestamp: `2026-05-18T08:11:21.726Z`
+- Elapsed: `3974ms`
 - Runner step: `health`
 - Runner status: `PASS`
-- Runner duration: `3518ms`
+- Runner duration: `4538ms`
 
 ## Release Readiness Judgment
 
