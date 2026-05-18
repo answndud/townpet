@@ -8,6 +8,8 @@ app/.next
 app/out
 app/.env
 app/.env.*
+!app/.env.example
+!app/.env.production.example
 app/.envrc
 app/.turbo
 app/.swc

@@ -2,29 +2,36 @@
 
 ## 현재 상태
 
-- 작업: 전체 한국어 UI 카피 감사 및 개선
-- 상태: `done`
-- 현재 초점: `docs/PLAN.md`의 Phase A-J를 순서대로 실행해 전체 텍스트 감사, 카피 수정, 빠른 copy audit 스크립트, 변경 보고서, 최종 검증을 완료했다.
+- 작업: 2일 백엔드 포트폴리오 고도화
+- 상태: `in_progress`
+- 현재 초점: P0 증거 패키징 slice를 완료했고, 다음은 P1 route test gap 보강이다.
 
 ## 진행 중 메모
 
-- 완료 증적:
-  - [ui-copy-audit-2026-05-14.md](./reports/ui-copy-audit-2026-05-14.md)
-  - [ui-copy-change-report-2026-05-14.md](./reports/ui-copy-change-report-2026-05-14.md)
-  - [ui-copy-screenshots-2026-05-14](./reports/ui-copy-screenshots-2026-05-14)
+- 시작 증거:
+  - API route handler: 48개
+  - App page: 39개
+  - Vitest test file: 229개
+  - Playwright spec: 25개
+  - Prisma model/enum declaration: 60개
+- 이번 slice 변경:
+  - `business/reports/backend-portfolio-case-study.md`
+  - `business/reports/api-route-inventory.md`
+  - `app/.env.example`
+  - `app/.env.production.example`
+  - `README.md`
+  - `docs/PLAN.md`
+  - `docs/PROGRESS.md`
+- 완료한 내용:
+  - 백엔드 case study 문서로 도메인 모델, service/query 구조, 보안, 운영, 테스트, 다음 리팩터링 후보를 정리했다.
+  - API route inventory로 48개 route의 method/access/validation/monitoring 상태와 8개 adjacent route test gap을 정리했다.
+  - clone 사용자가 바로 시작할 수 있도록 `app/.env.example`을 추가하고, 운영 env 예시인 `app/.env.production.example`을 추적 가능하게 했다.
+  - README 빠른 실행을 `cp app/.env.example app/.env`로 수정하고 백엔드 포트폴리오 증거 문서를 연결했다.
 - 검증:
-  - `corepack pnpm@9.12.3 -C app copy:audit:strict`: 통과
+  - `node scripts/refresh-docs-index.mjs --check`: 통과
   - `corepack pnpm@9.12.3 -C app lint`: 통과
   - `corepack pnpm@9.12.3 -C app typecheck`: 통과
-  - `corepack pnpm@9.12.3 -C app test`: 통과, 239 files / 1146 tests
-  - `corepack pnpm@9.12.3 -C app build`: 통과
-  - `corepack pnpm@9.12.3 -C app design:detect`: 통과
-  - `corepack pnpm@9.12.3 -C app docs:refresh:check`: 통과
-- 참고:
-  - 기본 `corepack pnpm`은 pnpm 11 shim에서 `ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING` 오류가 발생했다.
-  - 검증 시간 단축을 위해 이후에도 `corepack pnpm@9.12.3`로 버전을 고정한다.
-  - Admin 스크린샷은 인증된 admin storage state가 없어 캡처하지 않았고, admin copy는 static audit/test/typecheck/lint/build로 검증했다.
-  - `179106a` production 배포 확인:
-    - Vercel: `https://vercel.com/jmoon0227-9736s-projects/townpet/HQxvtW9rN5NmfiaD77YioBVxj2Di`
-    - `https://townpet.vercel.app/api/feed/guest?type=MEETUP`가 `동네 모임은 동네 설정 후 볼 수 있습니다. 로그인 후 대표 동네를 설정해 주세요.`를 반환함
-    - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health` 통과, status 200, payload.status `ok`, elapsed 1086ms
+  - `git diff --check --cached`: 통과
+- 다음 작업:
+  - P1 route test gap 보강부터 진행한다.
+  - 우선순위: reports detail/bulk -> post content/stats.
