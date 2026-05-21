@@ -64,7 +64,7 @@ export default function HomePage() {
               href="/onboarding"
               className="tp-btn-primary tp-btn-md inline-flex min-h-11 items-center justify-center px-5"
             >
-              내 동네 정보 보기
+              내 동네 허브 시작하기
             </Link>
             <Link
               href="/posts/new?type=LOST_FOUND"
@@ -104,7 +104,7 @@ export default function HomePage() {
               href="/onboarding"
               className="tp-btn-soft mt-4 inline-flex min-h-10 items-center px-3 text-xs"
             >
-              내 동네 설정하기
+              내 동네 설정하고 허브 보기
             </Link>
           </div>
           {QUICK_ACTIONS.map((action) => (
