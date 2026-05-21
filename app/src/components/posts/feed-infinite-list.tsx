@@ -210,9 +210,9 @@ const careStatusLabel: Record<string, string> = {
 };
 
 const FEED_POST_ITEM_CLASS_NAME =
-  "group grid h-[132px] grid-cols-[minmax(0,1fr)_80px] items-center gap-x-3 overflow-hidden px-3 py-3 transition hover:bg-[#fbfdff] sm:h-[136px] sm:grid-cols-[minmax(0,1fr)_92px] sm:px-4 sm:py-3.5 md:h-[128px] md:grid-cols-[minmax(0,1fr)_104px] md:gap-x-4";
+  "group grid h-[68px] grid-cols-[minmax(0,1fr)_48px] items-center gap-x-2 overflow-hidden px-3 py-1.5 transition hover:bg-[#fbfdff] sm:h-[72px] sm:grid-cols-[minmax(0,1fr)_52px] sm:px-4 md:h-[68px] md:grid-cols-[minmax(0,1fr)_52px] md:gap-x-3";
 const FEED_POST_THUMBNAIL_PLACEHOLDER_CLASS_NAME =
-  "invisible aspect-square rounded-2xl";
+  "invisible aspect-square rounded-lg";
 
 type StoredReadPost = {
   id: string;
@@ -368,18 +368,18 @@ const FeedPostThumbnail = memo(function FeedPostThumbnail({
   return (
     <Link
       href={href}
-      className="group/thumb relative block aspect-square overflow-hidden rounded-2xl border border-[#dce7f6] bg-[linear-gradient(145deg,#eef5ff,#f8fbff)] shadow-[0_10px_22px_rgba(16,40,74,0.06)] transition hover:-translate-y-0.5 hover:border-[#bfd4ef]"
+      className="group/thumb relative block aspect-square overflow-hidden rounded-lg border border-[#dce7f6] bg-[#eef5ff] transition hover:border-[#bfd4ef]"
       onClick={onClick}
     >
       <Image
         src={imageUrl}
         alt={title}
         fill
-        sizes="(min-width: 768px) 104px, 80px"
+        sizes="52px"
         className="object-cover transition duration-300 group-hover/thumb:scale-[1.03]"
       />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-[linear-gradient(180deg,transparent_0%,rgba(16,40,74,0.42)_100%)]" />
-      <span className="pointer-events-none absolute bottom-2 left-2 inline-flex items-center rounded-full border border-white/70 bg-white/88 px-2 py-0.5 text-[10px] font-semibold text-[#315b9a] shadow-[0_4px_10px_rgba(16,40,74,0.08)]">
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-5 bg-[linear-gradient(180deg,transparent_0%,rgba(16,40,74,0.36)_100%)]" />
+      <span className="sr-only">
         사진 글
       </span>
     </Link>
@@ -740,22 +740,22 @@ export function FeedInfiniteList({
                   post.status === "HIDDEN" ? "bg-[#fff7f7]" : ""
                 }`}
                 topContent={
-                  <div className="mb-1.5 flex min-w-0 items-center gap-1.5 overflow-hidden">
+                  <div className="mb-0.5 flex min-w-0 items-center gap-1 overflow-hidden">
                     <FeedPostMetaBadges
                       label={meta.label}
                       chipClass={meta.chipClass}
                       status={post.status}
-                      className="mb-0 shrink-0 justify-start"
+                      className="mb-0 shrink-0 justify-start gap-1 text-[10px] [&_.tp-chip-base]:px-1.5 [&_.tp-chip-base]:py-[2px] [&_.tp-chip-base]:text-[10px]"
                     />
                     {locationLabel || petTypeLabel ? (
-                      <span className="min-w-0 truncate text-[12px] font-medium text-[#6280aa]">
+                      <span className="min-w-0 truncate text-[11px] font-medium text-[#6280aa]">
                         {[locationLabel, petTypeLabel].filter(Boolean).join(" · ")}
                       </span>
                     ) : null}
                   </div>
                 }
                 title={
-                  <span className="overflow-hidden leading-[1.32] [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]">
+                  <span className="truncate leading-[1.25]">
                     {post.title}
                   </span>
                 }
@@ -763,13 +763,13 @@ export function FeedInfiniteList({
                   <>
                     <PostSignalIcons signals={nonThumbnailSignals} />
                     {post.commentCount > 0 ? (
-                      <span className="inline-flex shrink-0 items-center rounded-full bg-[#edf5ff] px-2 py-0.5 text-[11px] font-semibold text-[#2f5da4]">
+                      <span className="inline-flex shrink-0 items-center rounded-full bg-[#edf5ff] px-1.5 py-0.5 text-[10px] font-semibold text-[#2f5da4]">
                         댓글 {post.commentCount}
                       </span>
                     ) : null}
                   </>
                 }
-                titleLinkClassName={`flex min-w-0 items-center gap-1.5 text-[15px] font-semibold leading-[1.4] transition sm:text-[16px] ${
+                titleLinkClassName={`flex min-w-0 items-center gap-1 text-[13px] font-semibold leading-[1.25] transition sm:text-[13px] ${
                   readPostIds.has(post.id)
                     ? "text-[#8c9db8] hover:text-[#7589a8]"
                     : "text-[#163764] hover:text-[#2f5da4]"
@@ -783,12 +783,14 @@ export function FeedInfiniteList({
                 bottomContent={
                   <>
                     {marketSummary || careSummary || adoptionSummary || volunteerSummary ? (
-                      <p className="mt-1 truncate text-[12px] text-[#5d779e]">
+                      <p className="mt-0.5 truncate text-[11px] leading-4 text-[#5d779e]">
                         {marketSummary ?? careSummary ?? adoptionSummary ?? volunteerSummary}
                       </p>
                     ) : null}
-                    <div className="mt-2 flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1 text-[12px] text-[#5f789d]">
-                      <span className="font-semibold text-[#1f3f71]">{authorNode}</span>
+                    <div className="mt-0.5 flex min-w-0 items-center gap-x-1.5 overflow-hidden text-[11px] leading-4 text-[#5f789d]">
+                      <span className="min-w-0 shrink truncate font-semibold text-[#1f3f71]">
+                        {authorNode}
+                      </span>
                       <span className="text-[#bfd0e4]">·</span>
                       <FeedStatsLabel
                         createdAt={post.createdAt}
