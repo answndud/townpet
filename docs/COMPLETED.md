@@ -3728,3 +3728,39 @@
 - 결과:
   - 블로그 원고 파일명이 한국어 중심으로 바뀌었고, 기존 영어 slug 참조는 관련 문서에서 새 파일명으로 수렴했다.
   - 이번 작업은 문서 rename/link 변경이라 앱 lint/typecheck/test/build는 실행하지 않았다.
+
+### 2026-05-21 | Production 성능 baseline 측정 하네스 추가
+- 완료일: `2026-05-21`
+- 배경:
+  - production `https://townpet.vercel.app/` 첫 진입, 게시판 이동, 댓글 작성이 느리다는 체감 보고가 있었다.
+  - 프레임워크/DB 교체 전에 서버 응답과 브라우저 렌더 비용을 분리해서 측정할 반복 가능한 기준이 필요했다.
+- 변경내용:
+  - Node `fetch` 기반 `app/scripts/measure-production-performance.ts`를 추가했다.
+    - 기본 측정 대상은 `/`, `/feed`, `/feed/guest`, `/api/health`, `/sitemap/0.xml`이다.
+    - `PERF_POST_PATH`, `PERF_POST_ID`, `PERF_EXTRA_PATHS`, `PERF_SAMPLES`, `PERF_BASE_URL`, `PERF_OUT`, `PERF_JSON_OUT`으로 측정 범위를 조정할 수 있다.
+    - status, redirect, header 수신 시간, total time, response size, cache header, p50/p95/slow count를 markdown/JSON으로 남긴다.
+  - Playwright Chromium 기반 `app/scripts/measure-browser-performance.ts`를 추가했다.
+    - desktop/mobile profile을 지원하고, navigation responseEnd, FCP, LCP, DOMContentLoaded/load, total goto, body text length를 기록한다.
+    - `PERF_BROWSER_SAMPLES`, `PERF_BROWSER_PROFILES`, `PERF_BROWSER_SETTLE_MS`, `PERF_BROWSER_EXTRA_PATHS`로 측정 조건을 조정할 수 있다.
+  - `app/package.json`에 `perf:baseline`, `perf:browser` 실행 경로를 정리했다.
+  - active plan은 다음 작업인 `/` 홈 빠른 shell + 캐시 인기글 구조로 이동했다.
+- 코드문서:
+  - [app/scripts/measure-production-performance.ts](../app/scripts/measure-production-performance.ts)
+  - [app/scripts/measure-browser-performance.ts](../app/scripts/measure-browser-performance.ts)
+  - [app/package.json](../app/package.json)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `./node_modules/.bin/tsc --noEmit --pretty false scripts/measure-production-performance.ts scripts/measure-browser-performance.ts`
+  - `PERF_SAMPLES=2 PERF_PAUSE_MS=10 ./node_modules/.bin/tsx scripts/measure-production-performance.ts`
+  - `PERF_BROWSER_SAMPLES=1 PERF_BROWSER_PROFILES=desktop PERF_BROWSER_SETTLE_MS=300 ./node_modules/.bin/tsx scripts/measure-browser-performance.ts`
+- 결과:
+  - 서버 baseline raw report:
+    - `docs/reports/performance-baseline-2026-05-21T02-23-06-258Z.md`
+    - `docs/reports/performance-baseline-2026-05-21T02-23-06-258Z.json`
+  - 브라우저 baseline raw report:
+    - `docs/reports/performance-browser-baseline-2026-05-21T02-23-07-878Z.md`
+    - `docs/reports/performance-browser-baseline-2026-05-21T02-23-07-878Z.json`
+  - 짧은 production 샘플 기준 서버 total time은 `/` 첫 요청 `333ms`, `/feed` 첫 요청 `311ms`, `/feed/guest` 첫 요청 `120ms`, `/api/health` 첫 요청 `355ms`였다.
+  - Playwright desktop 1회 샘플 기준 FCP/LCP는 `/` `632ms/632ms`, `/feed` `424ms/424ms`, `/feed/guest` `236ms/248ms`였다.
+  - 이 짧은 샘플에서는 10초 지연이 재현되지 않았으므로, 다음 작업은 `/` 홈 구조를 빠른 shell + 캐시 인기글로 바꾸면서 같은 스크립트로 개선 전후를 비교한다.
