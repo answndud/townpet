@@ -4012,6 +4012,34 @@
   - `node scripts/refresh-docs-index.mjs --check`
   - `git diff --check`
 
+### 2026-05-21 | 루트 정적 홈 표시 회귀 수정
+- 완료일: `2026-05-21`
+- 배경:
+  - `/` 진입 시 피드 redirect로 해석해 임시로 `/feed/guest` redirect를 넣었지만, 실제 문제는 정적 홈 자체가 보이지 않는 상태였다.
+  - root-level `app/src/app/loading.tsx`가 전역 fallback으로 먼저 렌더링되면서 정적 홈 본문이 stream segment 뒤에 숨겨져, JS 전환이 늦거나 실패하면 사용자가 skeleton/껍데기만 보는 문제가 있었다.
+- 변경내용:
+  - `/`을 다시 정적 홈 페이지로 복구하고 `force-static` 홈 metadata와 CTA를 유지했다.
+  - middleware의 `/` -> `/feed` 또는 `/feed/guest` redirect를 제거했다.
+  - root-level `app/src/app/loading.tsx`를 삭제해 홈 HTML 본문이 초기 응답 body에 직접 포함되게 했다.
+  - 피드 등 route-specific loading 화면은 유지했다.
+  - 홈/미들웨어 테스트를 정적 홈 기준으로 되돌렸다.
+- 코드문서:
+  - [app/src/app/page.tsx](../app/src/app/page.tsx)
+  - [app/src/app/page.test.tsx](../app/src/app/page.test.tsx)
+  - [app/middleware.ts](../app/middleware.ts)
+  - [app/src/middleware.test.ts](../app/src/middleware.test.ts)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/app/page.test.tsx src/middleware.test.ts src/app/sitemap.test.ts`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app build`
+  - local production server `http://localhost:3100/` 응답 확인
+- 결과:
+  - 로컬 production 응답은 `200 OK`, `x-nextjs-prerender: 1`이었다.
+  - HTML 초기 body에 `우리 동네 반려생활 정보, TownPet`과 홈 CTA가 직접 포함되는 것을 확인했다.
+  - `__next-page-redirect` 또는 `NEXT_REDIRECT`는 검출되지 않았다.
+
 ### 2026-05-21 | 초기 지역 선택 UX 명확화
 - 완료일: `2026-05-21`
 - 배경:

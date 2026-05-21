@@ -255,15 +255,6 @@ export async function middleware(request: NextRequest) {
     });
   }
 
-  if ((request.method === "GET" || request.method === "HEAD") && request.nextUrl.pathname === "/") {
-    const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = sessionToken || hasSessionCookie ? "/feed" : "/feed/guest";
-    redirectUrl.search = "";
-    return NextResponse.redirect(redirectUrl, {
-      headers: responseHeaders,
-    });
-  }
-
   const isGuest =
     !sessionToken &&
     !hasSessionCookie;
