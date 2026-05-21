@@ -4,6 +4,7 @@ import {
   CareFeedbackOutcome,
   CareFeedbackReviewStatus,
   CareRequestStatus,
+  LostFoundStatus,
   MarketStatus,
   PostScope,
   PostType,
@@ -20,6 +21,7 @@ import {
   marketListingStatusUpdateSchema,
   careRequestSchema,
   careRequestStatusUpdateSchema,
+  lostFoundStatusUpdateSchema,
   placeReviewSchema,
   postCreateSchema,
   postListSchema,
@@ -404,6 +406,18 @@ describe("careRequestStatusUpdateSchema", () => {
 
   it("rejects invalid care request status updates", () => {
     expect(careRequestStatusUpdateSchema.safeParse({ status: "PENDING" }).success).toBe(false);
+  });
+});
+
+describe("lostFoundStatusUpdateSchema", () => {
+  it("accepts valid lost-found status updates", () => {
+    expect(
+      lostFoundStatusUpdateSchema.safeParse({ status: LostFoundStatus.RESOLVED }).success,
+    ).toBe(true);
+  });
+
+  it("rejects invalid lost-found status updates", () => {
+    expect(lostFoundStatusUpdateSchema.safeParse({ status: "PENDING" }).success).toBe(false);
   });
 });
 

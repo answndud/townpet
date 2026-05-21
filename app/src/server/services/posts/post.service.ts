@@ -15,6 +15,7 @@ export {
   updateGuestPost,
 } from "./post-guest-management.service";
 export { updateMarketListingStatus } from "./post-market-workflow.service";
+export { updateLostFoundStatus } from "./post-lost-found-workflow.service";
 export { updatePost } from "./post-update.service";
 export {
   cancelCareApplication,

@@ -1,8 +1,11 @@
 import {
+  CommentKind,
   CommentReactionType,
   GuestViolationCategory,
+  LostFoundStatus,
   PostScope,
   PostStatus,
+  PostType,
 } from "@prisma/client";
 import { randomBytes, scryptSync, timingSafeEqual } from "crypto";
 
@@ -194,7 +197,13 @@ export async function createComment({
         authorId: true,
         title: true,
         scope: true,
+        type: true,
         neighborhoodId: true,
+        lostFoundAlert: {
+          select: {
+            status: true,
+          },
+        },
       },
     });
 
@@ -226,6 +235,18 @@ export async function createComment({
           "FORBIDDEN",
           403,
         );
+      }
+    }
+
+    if (parsed.data.kind === CommentKind.LOST_FOUND_SIGHTING) {
+      if (parentId) {
+        throw new ServiceError("목격 제보는 댓글 목록에 새로 등록해 주세요.", "INVALID_PARENT", 400);
+      }
+      if (post.type !== PostType.LOST_FOUND || !post.lostFoundAlert) {
+        throw new ServiceError("분실동물 글에만 목격 제보를 남길 수 있습니다.", "INVALID_COMMENT_KIND", 400);
+      }
+      if (post.lostFoundAlert.status !== LostFoundStatus.ACTIVE) {
+        throw new ServiceError("종료된 분실동물 글에는 목격 제보를 남길 수 없습니다.", "LOST_FOUND_CLOSED", 400);
       }
     }
 
@@ -264,9 +285,26 @@ export async function createComment({
       data: {
         postId,
         authorId,
+        kind: parsed.data.kind,
         content: safeContent,
         parentId: parentId ?? null,
         guestAuthorId: guestMeta?.guestAuthorId,
+        sightingLocation:
+          parsed.data.kind === CommentKind.LOST_FOUND_SIGHTING
+            ? parsed.data.sightingLocation?.trim()
+            : null,
+        sightingSeenAt:
+          parsed.data.kind === CommentKind.LOST_FOUND_SIGHTING
+            ? parsed.data.sightingSeenAt
+            : null,
+        sightingImageUrl:
+          parsed.data.kind === CommentKind.LOST_FOUND_SIGHTING
+            ? parsed.data.sightingImageUrl?.trim() || null
+            : null,
+        isPrivateSighting:
+          parsed.data.kind === CommentKind.LOST_FOUND_SIGHTING
+            ? parsed.data.isPrivateSighting
+            : false,
       },
       include: {
         author: { select: { id: true, nickname: true } },

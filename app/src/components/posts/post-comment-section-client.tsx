@@ -25,6 +25,7 @@ type PostCommentSectionClientProps = {
   currentUserId?: string;
   canInteract: boolean;
   canInteractWithPostOwner: boolean;
+  lostFoundSightingEnabled?: boolean;
   loginHref: string;
   onCommentCountChange?: (count: number) => void;
   initialLoadState?: PostCommentPrefetchState;
@@ -36,6 +37,7 @@ export function PostCommentSectionClient({
   currentUserId,
   canInteract,
   canInteractWithPostOwner,
+  lostFoundSightingEnabled = false,
   loginHref,
   onCommentCountChange,
   initialLoadState,
@@ -298,6 +300,7 @@ export function PostCommentSectionClient({
       totalCommentCount={resolvedCommentPage.totalCount}
       currentPage={resolvedCommentPage.page}
       totalPages={resolvedCommentPage.totalPages}
+      lostFoundSightingEnabled={lostFoundSightingEnabled}
       currentUserId={viewerState.currentUserId}
       canInteract={viewerState.canInteract}
       loginHref={loginHref}

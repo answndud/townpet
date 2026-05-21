@@ -49,7 +49,7 @@ model User {
   notifications             Notification[]                @relation("NotificationRecipient")
   actions                   Notification[]                @relation("NotificationActor")
   careApplications          CareApplication[]             @relation("CareApplicationApplicant")
-  careApplicationDecisions   CareApplication[]             @relation("CareApplicationDecider")
+  careApplicationDecisions  CareApplication[]             @relation("CareApplicationDecider")
   careCompletionFeedbacks   CareCompletionFeedback[]      @relation("CareCompletionFeedbackAuthor")
   careFeedbackReviews       CareCompletionFeedback[]      @relation("CareCompletionFeedbackReviewer")
   uploadAssets              UploadAsset[]
@@ -536,9 +536,9 @@ enum MarketStatus {
 }
 
 model CareRequest {
-  id           String            @id @default(cuid())
-  postId       String            @unique
-  post         Post              @relation(fields: [postId], references: [id], onDelete: Cascade)
+  id           String                   @id @default(cuid())
+  postId       String                   @unique
+  post         Post                     @relation(fields: [postId], references: [id], onDelete: Cascade)
   applications CareApplication[]
   feedbacks    CareCompletionFeedback[]
   careType     CareType
@@ -548,8 +548,8 @@ model CareRequest {
   petNote      String?
   requirements String?
   rewardAmount Int?
-  isUrgent     Boolean           @default(false)
-  status       CareRequestStatus @default(OPEN)
+  isUrgent     Boolean                  @default(false)
+  status       CareRequestStatus        @default(OPEN)
 
   @@index([careType, status])
   @@index([startsAt])
@@ -574,19 +574,19 @@ enum CareRequestStatus {
 }
 
 model CareApplication {
-  id            String                @id @default(cuid())
+  id            String                   @id @default(cuid())
   careRequestId String
   applicantId   String
-  message       String?               @db.Text
-  status        CareApplicationStatus @default(PENDING)
+  message       String?                  @db.Text
+  status        CareApplicationStatus    @default(PENDING)
   decidedAt     DateTime?
   decidedBy     String?
-  careRequest   CareRequest           @relation(fields: [careRequestId], references: [id], onDelete: Cascade)
+  careRequest   CareRequest              @relation(fields: [careRequestId], references: [id], onDelete: Cascade)
   feedbacks     CareCompletionFeedback[]
-  applicant     User                  @relation("CareApplicationApplicant", fields: [applicantId], references: [id], onDelete: Cascade)
-  decider       User?                 @relation("CareApplicationDecider", fields: [decidedBy], references: [id], onDelete: SetNull)
-  createdAt     DateTime              @default(now())
-  updatedAt     DateTime              @updatedAt
+  applicant     User                     @relation("CareApplicationApplicant", fields: [applicantId], references: [id], onDelete: Cascade)
+  decider       User?                    @relation("CareApplicationDecider", fields: [decidedBy], references: [id], onDelete: SetNull)
+  createdAt     DateTime                 @default(now())
+  updatedAt     DateTime                 @updatedAt
 
   @@unique([careRequestId, applicantId])
   @@index([applicantId, createdAt(sort: Desc)])
@@ -602,25 +602,25 @@ enum CareApplicationStatus {
 }
 
 model CareCompletionFeedback {
-  id                String                    @id @default(cuid())
+  id                String                   @id @default(cuid())
   careRequestId     String
   careApplicationId String?
   authorId          String
   authorRole        CareFeedbackAuthorRole
   outcome           CareFeedbackOutcome
-  issueType         CareFeedbackIssueType     @default(NONE)
-  reviewStatus      CareFeedbackReviewStatus  @default(PENDING)
-  reviewNote        String?                   @db.Text
+  issueType         CareFeedbackIssueType    @default(NONE)
+  reviewStatus      CareFeedbackReviewStatus @default(PENDING)
+  reviewNote        String?                  @db.Text
   reviewedAt        DateTime?
   reviewedBy        String?
   wouldRepeat       Boolean?
-  comment           String?                   @db.Text
-  careRequest       CareRequest               @relation(fields: [careRequestId], references: [id], onDelete: Cascade)
-  careApplication   CareApplication?          @relation(fields: [careApplicationId], references: [id], onDelete: SetNull)
-  author            User                      @relation("CareCompletionFeedbackAuthor", fields: [authorId], references: [id], onDelete: Cascade)
-  reviewer          User?                     @relation("CareCompletionFeedbackReviewer", fields: [reviewedBy], references: [id], onDelete: SetNull)
-  createdAt         DateTime                  @default(now())
-  updatedAt         DateTime                  @updatedAt
+  comment           String?                  @db.Text
+  careRequest       CareRequest              @relation(fields: [careRequestId], references: [id], onDelete: Cascade)
+  careApplication   CareApplication?         @relation(fields: [careApplicationId], references: [id], onDelete: SetNull)
+  author            User                     @relation("CareCompletionFeedbackAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  reviewer          User?                    @relation("CareCompletionFeedbackReviewer", fields: [reviewedBy], references: [id], onDelete: SetNull)
+  createdAt         DateTime                 @default(now())
+  updatedAt         DateTime                 @updatedAt
 
   @@unique([careRequestId, authorId])
   @@index([careRequestId, authorRole])
@@ -770,28 +770,39 @@ model QaQuestion {
 }
 
 model Comment {
-  id            String            @id @default(cuid())
-  postId        String
-  authorId      String
-  guestAuthorId String?
-  parentId      String?
-  content       String            @db.Text
-  status        PostStatus        @default(ACTIVE)
-  likeCount     Int               @default(0)
-  dislikeCount  Int               @default(0)
-  post          Post              @relation(fields: [postId], references: [id], onDelete: Cascade)
-  author        User              @relation(fields: [authorId], references: [id])
-  guestAuthor   GuestAuthor?      @relation(fields: [guestAuthorId], references: [id], onDelete: SetNull)
-  parent        Comment?          @relation("CommentReplies", fields: [parentId], references: [id])
-  replies       Comment[]         @relation("CommentReplies")
-  reactions     CommentReaction[]
-  notifications Notification[]
-  reports       Report[]          @relation("ReportedComment")
-  createdAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt
+  id                String            @id @default(cuid())
+  postId            String
+  authorId          String
+  guestAuthorId     String?
+  parentId          String?
+  kind              CommentKind       @default(GENERAL)
+  content           String            @db.Text
+  sightingLocation  String?
+  sightingSeenAt    DateTime?
+  sightingImageUrl  String?
+  isPrivateSighting Boolean           @default(false)
+  status            PostStatus        @default(ACTIVE)
+  likeCount         Int               @default(0)
+  dislikeCount      Int               @default(0)
+  post              Post              @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author            User              @relation(fields: [authorId], references: [id])
+  guestAuthor       GuestAuthor?      @relation(fields: [guestAuthorId], references: [id], onDelete: SetNull)
+  parent            Comment?          @relation("CommentReplies", fields: [parentId], references: [id])
+  replies           Comment[]         @relation("CommentReplies")
+  reactions         CommentReaction[]
+  notifications     Notification[]
+  reports           Report[]          @relation("ReportedComment")
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
 
   @@index([postId, createdAt(sort: Desc)])
+  @@index([postId, kind, createdAt(sort: Desc)])
   @@index([guestAuthorId, createdAt(sort: Desc)])
+}
+
+enum CommentKind {
+  GENERAL
+  LOST_FOUND_SIGHTING
 }
 
 model CommentReaction {
@@ -961,6 +972,7 @@ enum ModerationActionType {
   MARKET_STATUS_CHANGED
   CARE_STATUS_CHANGED
   CARE_FEEDBACK_REVIEWED
+  LOST_FOUND_STATUS_CHANGED
 }
 
 model ModerationActionLog {

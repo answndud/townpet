@@ -4,7 +4,7 @@ export const reportReasonLabels: Record<ReportReason, string> = {
   SPAM: "스팸",
   HARASSMENT: "괴롭힘",
   INAPPROPRIATE: "부적절",
-  FAKE: "허위 정보",
+  FAKE: "허위 정보/장난 제보",
   FRAUD: "사기/거래 위험",
   PRIVACY: "개인정보 노출",
   EMERGENCY: "긴급 위험",

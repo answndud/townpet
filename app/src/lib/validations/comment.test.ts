@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { CommentKind } from "@prisma/client";
 
 import { commentCreateSchema, commentUpdateSchema } from "@/lib/validations/comment";
 
@@ -32,5 +33,26 @@ describe("comment validations", () => {
   it("accepts update payload", () => {
     const result = commentUpdateSchema.safeParse({ content: "수정" });
     expect(result.success).toBe(true);
+  });
+
+  it("accepts structured lost-found sighting payloads", () => {
+    const result = commentCreateSchema.safeParse({
+      kind: CommentKind.LOST_FOUND_SIGHTING,
+      content: "북문 쪽으로 이동했습니다.",
+      sightingLocation: "중앙공원 북문",
+      sightingSeenAt: "2026-05-21T10:30:00.000Z",
+      isPrivateSighting: true,
+    });
+
+    expect(result.success).toBe(true);
+  });
+
+  it("requires sighting location and time for lost-found sightings", () => {
+    const result = commentCreateSchema.safeParse({
+      kind: CommentKind.LOST_FOUND_SIGHTING,
+      content: "목격했습니다.",
+    });
+
+    expect(result.success).toBe(false);
   });
 });

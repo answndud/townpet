@@ -1,5 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { CommentReactionType, PostStatus, UserRole } from "@prisma/client";
+import {
+  CommentKind,
+  CommentReactionType,
+  LostFoundStatus,
+  PostStatus,
+  PostType,
+  UserRole,
+} from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 import { findUsersByNicknames } from "@/server/queries/user.queries";
@@ -129,6 +136,62 @@ describe("comment service notification flow", () => {
     });
     expect(mockNotifyReplyToComment).not.toHaveBeenCalled();
     expect(mockNotifyMentionInComment).not.toHaveBeenCalled();
+  });
+
+  it("creates structured lost-found sighting comments only on active lost-found posts", async () => {
+    const commentCreate = vi.fn().mockResolvedValue({
+      id: "sighting-1",
+      kind: CommentKind.LOST_FOUND_SIGHTING,
+      content: "강아지가 횡단보도 쪽으로 이동했습니다.",
+    });
+
+    mockPrisma.$transaction.mockImplementation(async (callback) =>
+      callback({
+        post: {
+          findUnique: vi.fn().mockResolvedValue({
+            id: "post-lost-1",
+            status: PostStatus.ACTIVE,
+            authorId: "owner-1",
+            title: "갈색 푸들을 찾습니다",
+            scope: "GLOBAL",
+            type: PostType.LOST_FOUND,
+            neighborhoodId: null,
+            lostFoundAlert: { status: LostFoundStatus.ACTIVE },
+          }),
+          update: vi.fn().mockResolvedValue({ id: "post-lost-1" }),
+        },
+        comment: {
+          findUnique: vi.fn(),
+          create: commentCreate,
+        },
+      } as never),
+    );
+
+    await createComment({
+      authorId: "actor-1",
+      postId: "post-lost-1",
+      input: {
+        kind: CommentKind.LOST_FOUND_SIGHTING,
+        content: "강아지가 횡단보도 쪽으로 이동했습니다.",
+        sightingLocation: "중앙공원 북문",
+        sightingSeenAt: "2026-05-21T10:30:00.000Z",
+        sightingImageUrl: "https://example.com/sighting.jpg",
+        isPrivateSighting: true,
+      },
+    });
+
+    expect(commentCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          kind: CommentKind.LOST_FOUND_SIGHTING,
+          content: "강아지가 횡단보도 쪽으로 이동했습니다.",
+          sightingLocation: "중앙공원 북문",
+          sightingSeenAt: new Date("2026-05-21T10:30:00.000Z"),
+          sightingImageUrl: "https://example.com/sighting.jpg",
+          isPrivateSighting: true,
+        }),
+      }),
+    );
   });
 
   it("blocks sanctioned users before creating a comment", async () => {

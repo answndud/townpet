@@ -2,7 +2,12 @@ import { PostStatus } from "@prisma/client";
 
 export type CommentItem = {
   id: string;
+  kind?: "GENERAL" | "LOST_FOUND_SIGHTING";
   content: string;
+  sightingLocation?: string | null;
+  sightingSeenAt?: Date | string | null;
+  sightingImageUrl?: string | null;
+  isPrivateSighting?: boolean;
   createdAt: Date | string;
   parentId: string | null;
   threadRootId?: string | null;

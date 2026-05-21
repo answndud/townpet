@@ -1,11 +1,39 @@
 import { z } from "zod";
+import { CommentKind } from "@prisma/client";
 
 import { COMMENT_CONTENT_MAX_LENGTH } from "@/lib/input-limits";
 import { trimmedRequiredString } from "@/lib/validations/text";
 
-export const commentCreateSchema = z.object({
-  content: trimmedRequiredString({ max: COMMENT_CONTENT_MAX_LENGTH }),
-});
+export const commentCreateSchema = z
+  .object({
+    content: trimmedRequiredString({ max: COMMENT_CONTENT_MAX_LENGTH }),
+    kind: z.nativeEnum(CommentKind).default(CommentKind.GENERAL),
+    sightingLocation: z.string().trim().max(160).optional(),
+    sightingSeenAt: z.coerce.date().optional(),
+    sightingImageUrl: z.string().trim().url().max(500).optional(),
+    isPrivateSighting: z.coerce.boolean().default(false),
+  })
+  .superRefine((value, ctx) => {
+    if (value.kind !== CommentKind.LOST_FOUND_SIGHTING) {
+      return;
+    }
+
+    if (!value.sightingLocation?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["sightingLocation"],
+        message: "목격 위치를 입력해 주세요.",
+      });
+    }
+
+    if (!value.sightingSeenAt) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["sightingSeenAt"],
+        message: "목격 시간을 입력해 주세요.",
+      });
+    }
+  });
 
 export const commentUpdateSchema = z.object({
   content: trimmedRequiredString({ max: COMMENT_CONTENT_MAX_LENGTH }),
