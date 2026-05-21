@@ -1139,6 +1139,64 @@ describe("createPost new-user restriction", () => {
     ).resolves.toBeTruthy();
   });
 
+  it("rejects operator content metadata from regular users", async () => {
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: "user-1",
+      role: UserRole.USER,
+      createdAt: new Date(Date.now() - 30 * 60 * 60 * 1000),
+    });
+
+    await expect(
+      createPost({
+        authorId: "user-1",
+        input: {
+          title: "운영자 정리",
+          content: "공개 자료 정리",
+          type: PostType.FREE_BOARD,
+          scope: PostScope.GLOBAL,
+          isOperatorContent: true,
+          operatorSourceName: "서울시 동물보호센터",
+        },
+      }),
+    ).rejects.toMatchObject({
+      code: "OPERATOR_CONTENT_FORBIDDEN",
+      status: 403,
+    });
+    expect(mockPrisma.post.create).not.toHaveBeenCalled();
+  });
+
+  it("stores operator content metadata for moderators", async () => {
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: "moderator-1",
+      role: UserRole.MODERATOR,
+      createdAt: new Date(Date.now() - 30 * 60 * 60 * 1000),
+    });
+
+    await createPost({
+      authorId: "moderator-1",
+      input: {
+        title: "운영자 정리",
+        content: "공개 자료 정리",
+        type: PostType.FREE_BOARD,
+        scope: PostScope.GLOBAL,
+        operatorSourceName: "서울시 동물보호센터",
+        operatorSourceUrl: "https://animal.seoul.go.kr",
+        operatorLastVerifiedAt: "2026-05-21",
+      },
+    });
+
+    expect(mockPrisma.post.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          isOperatorContent: true,
+          operatorSourceName: "서울시 동물보호센터",
+          operatorSourceUrl: "https://animal.seoul.go.kr",
+          operatorLastVerifiedAt: new Date("2026-05-21"),
+        }),
+      }),
+    );
+  });
+
   it("requires community for non-free community-board post types", async () => {
     mockPrisma.user.findUnique.mockResolvedValue({
       id: "user-1",

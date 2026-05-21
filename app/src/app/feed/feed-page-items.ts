@@ -13,6 +13,10 @@ type RawFeedPost = {
   dislikeCount: number;
   viewCount: number;
   createdAt: Date;
+  isOperatorContent?: boolean | null;
+  operatorSourceName?: string | null;
+  operatorSourceUrl?: string | null;
+  operatorLastVerifiedAt?: Date | string | null;
   author: {
     id: string;
     nickname: string | null;
@@ -71,6 +75,13 @@ export function buildInitialFeedItems(items: RawFeedPost[]): FeedPostItem[] {
       dislikeCount: post.dislikeCount,
       viewCount: post.viewCount,
       createdAt: post.createdAt.toISOString(),
+      isOperatorContent: post.isOperatorContent ?? false,
+      operatorSourceName: post.operatorSourceName ?? null,
+      operatorSourceUrl: post.operatorSourceUrl ?? null,
+      operatorLastVerifiedAt:
+        post.operatorLastVerifiedAt instanceof Date
+          ? post.operatorLastVerifiedAt.toISOString()
+          : post.operatorLastVerifiedAt ?? null,
       author: {
         id: post.author.id,
         nickname: post.author.nickname,

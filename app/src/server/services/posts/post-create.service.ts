@@ -216,8 +216,25 @@ export async function createPost({ authorId, input, guestIdentity }: CreatePostP
     marketListing,
     careRequest,
     lostFound,
+    isOperatorContent,
+    operatorSourceName,
+    operatorSourceUrl,
+    operatorLastVerifiedAt,
     ...postData
   } = parsed.data;
+  const hasOperatorContentInput =
+    Boolean(isOperatorContent) ||
+    Boolean(operatorSourceName) ||
+    Boolean(operatorSourceUrl) ||
+    Boolean(operatorLastVerifiedAt);
+  let operatorContentMeta:
+    | {
+        isOperatorContent: boolean;
+        operatorSourceName: string | null;
+        operatorSourceUrl: string | null;
+        operatorLastVerifiedAt: Date | null;
+      }
+    | undefined;
   const normalizedImageUrls = normalizeImageUrls(imageUrls);
   const normalizedAnimalTags = normalizeAnimalTags(animalTags);
   const mappedBoard = resolveBoardByPostType(postData.type);
@@ -390,6 +407,24 @@ export async function createPost({ authorId, input, guestIdentity }: CreatePostP
       );
     }
 
+    const canMarkOperatorContent =
+      author.role === UserRole.ADMIN || author.role === UserRole.MODERATOR;
+    if (hasOperatorContentInput && !canMarkOperatorContent) {
+      throw new ServiceError(
+        "운영자 정리 콘텐츠 표시는 운영자만 설정할 수 있습니다.",
+        "OPERATOR_CONTENT_FORBIDDEN",
+        403,
+      );
+    }
+    if (canMarkOperatorContent && hasOperatorContentInput) {
+      operatorContentMeta = {
+        isOperatorContent: true,
+        operatorSourceName: operatorSourceName ?? null,
+        operatorSourceUrl: operatorSourceUrl ?? null,
+        operatorLastVerifiedAt: operatorLastVerifiedAt ?? null,
+      };
+    }
+
     const contactPolicy = moderateContactContent({
       text: postData.content,
       role: author.role,
@@ -468,6 +503,14 @@ export async function createPost({ authorId, input, guestIdentity }: CreatePostP
       throw new ServiceError(
         "해당 게시판 글은 관리자만 등록할 수 있습니다.",
         "ADMIN_ONLY_POST_TYPE",
+        403,
+      );
+    }
+
+    if (hasOperatorContentInput) {
+      throw new ServiceError(
+        "운영자 정리 콘텐츠 표시는 운영자만 설정할 수 있습니다.",
+        "OPERATOR_CONTENT_FORBIDDEN",
         403,
       );
     }
@@ -623,6 +666,7 @@ export async function createPost({ authorId, input, guestIdentity }: CreatePostP
     animalTags: commonBoardAnimalTags,
     authorId: resolvedAuthorId,
     ...(guestCreateMeta ?? {}),
+    ...(operatorContentMeta ?? {}),
     ...(normalizedImageUrls.length > 0
       ? {
           images: {

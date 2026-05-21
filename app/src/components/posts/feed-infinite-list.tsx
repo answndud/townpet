@@ -15,6 +15,7 @@ import {
 } from "react";
 
 import { FeedPostMetaBadges } from "@/components/posts/feed-post-meta-badges";
+import { OperatorContentBadge } from "@/components/posts/operator-content-source-panel";
 import { PostListItemShell } from "@/components/posts/post-list-item-shell";
 import { PostSignalIcons } from "@/components/posts/post-signal-icons";
 import type {
@@ -56,6 +57,10 @@ export type FeedPostItem = {
   dislikeCount: number;
   viewCount: number;
   createdAt: string;
+  isOperatorContent?: boolean | null;
+  operatorSourceName?: string | null;
+  operatorSourceUrl?: string | null;
+  operatorLastVerifiedAt?: string | Date | null;
   author: {
     id: string;
     nickname: string | null;
@@ -747,6 +752,7 @@ export function FeedInfiniteList({
                       status={post.status}
                       className="mb-0 shrink-0 justify-start gap-1 text-[10px] [&_.tp-chip-base]:px-1.5 [&_.tp-chip-base]:py-[2px] [&_.tp-chip-base]:text-[10px]"
                     />
+                    {post.isOperatorContent ? <OperatorContentBadge compact /> : null}
                     {locationLabel || petTypeLabel ? (
                       <span className="min-w-0 truncate text-[11px] font-medium text-[#6280aa]">
                         {[locationLabel, petTypeLabel].filter(Boolean).join(" · ")}

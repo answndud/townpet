@@ -4,6 +4,7 @@ import Link from "next/link";
 import { PostStatus } from "@prisma/client";
 
 import { GuestPostDetailActions } from "@/components/posts/guest-post-detail-actions";
+import { OperatorContentSourcePanel } from "@/components/posts/operator-content-source-panel";
 import { PostBoardLinkChip } from "@/components/posts/post-board-link-chip";
 import { PostBookmarkButton } from "@/components/posts/post-bookmark-button";
 import { POST_DETAIL_ACTION_BUTTON_CLASS_NAME } from "@/components/posts/post-detail-action-button-class";
@@ -138,6 +139,14 @@ export function PostDetailPrimaryCard({
           ) : null}
         </div>
       </div>
+
+      {post.isOperatorContent ? (
+        <OperatorContentSourcePanel
+          sourceName={post.operatorSourceName}
+          sourceUrl={post.operatorSourceUrl}
+          lastVerifiedAt={post.operatorLastVerifiedAt}
+        />
+      ) : null}
 
       <div className="mt-5 sm:mt-6">
         <article className="tp-text-body tp-text-primary">

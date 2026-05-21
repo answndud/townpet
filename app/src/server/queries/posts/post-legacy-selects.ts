@@ -13,6 +13,10 @@ const LEGACY_POST_BASE_SELECT = {
   likeCount: true,
   dislikeCount: true,
   commentCount: true,
+  isOperatorContent: true,
+  operatorSourceName: true,
+  operatorSourceUrl: true,
+  operatorLastVerifiedAt: true,
   createdAt: true,
   updatedAt: true,
 } as const;

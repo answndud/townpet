@@ -73,6 +73,39 @@ describe("post validations", () => {
     expect(result.data.content).toBe("내용");
   });
 
+  it("accepts operator content metadata with a valid source URL and date", () => {
+    const result = postCreateSchema.safeParse({
+      title: "운영자 정리 글",
+      content: "공개 자료를 정리한 내용",
+      type: PostType.ADOPTION_LISTING,
+      scope: PostScope.GLOBAL,
+      isOperatorContent: "true",
+      operatorSourceName: "서울시 동물보호센터",
+      operatorSourceUrl: "https://animal.seoul.go.kr",
+      operatorLastVerifiedAt: "2026-05-21",
+    });
+
+    expect(result.success).toBe(true);
+    if (!result.success) {
+      return;
+    }
+    expect(result.data.isOperatorContent).toBe(true);
+    expect(result.data.operatorLastVerifiedAt).toEqual(new Date("2026-05-21"));
+  });
+
+  it("rejects invalid operator source URLs", () => {
+    const result = postCreateSchema.safeParse({
+      title: "운영자 정리 글",
+      content: "공개 자료를 정리한 내용",
+      type: PostType.FREE_BOARD,
+      scope: PostScope.GLOBAL,
+      isOperatorContent: true,
+      operatorSourceUrl: "not-a-url",
+    });
+
+    expect(result.success).toBe(false);
+  });
+
   it("rejects invalid hospital review rating", () => {
     const result = hospitalReviewSchema.safeParse({
       hospitalName: "동물병원",

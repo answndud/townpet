@@ -41,6 +41,10 @@ export type PostDetailItem = {
   dislikeCount?: number | null;
   commentCount?: number | null;
   isBookmarked?: boolean | null;
+  isOperatorContent?: boolean | null;
+  operatorSourceName?: string | null;
+  operatorSourceUrl?: string | null;
+  operatorLastVerifiedAt?: string | Date | null;
   author: { id: string; nickname: string | null; image?: string | null };
   guestAuthorId?: string | null;
   guestDisplayName?: string | null;

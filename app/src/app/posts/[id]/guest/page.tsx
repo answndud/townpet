@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 
 import { BackToFeedButton } from "@/components/posts/back-to-feed-button";
 import { NeighborhoodGateNotice } from "@/components/neighborhood/neighborhood-gate-notice";
+import { OperatorContentSourcePanel } from "@/components/posts/operator-content-source-panel";
 import { PostBoardLinkChip } from "@/components/posts/post-board-link-chip";
 import { GuestPostDetailActions } from "@/components/posts/guest-post-detail-actions";
 import { LostFoundSharePanel } from "@/components/posts/lost-found-share-panel";
@@ -291,6 +292,14 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
                 </p>
               </div>
             </div>
+
+            {post.isOperatorContent ? (
+              <OperatorContentSourcePanel
+                sourceName={post.operatorSourceName}
+                sourceUrl={post.operatorSourceUrl}
+                lastVerifiedAt={post.operatorLastVerifiedAt}
+              />
+            ) : null}
 
             <div className="mt-5 sm:mt-6">
               <article className="tp-text-body text-[#17345f]">

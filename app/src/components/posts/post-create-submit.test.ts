@@ -139,6 +139,33 @@ describe("post create submit helpers", () => {
     });
   });
 
+  it("includes operator content metadata when an operator source is set", () => {
+    const formState = {
+      ...createInitialPostCreateFormState(""),
+      type: PostType.FREE_BOARD,
+      operatorSourceName: "서울시 동물보호센터",
+      operatorSourceUrl: "https://animal.seoul.go.kr",
+      operatorLastVerifiedAt: "2026-05-21",
+    };
+
+    const result = buildPostCreateSubmitPayload({
+      ...baseParams,
+      formState,
+      showCommunitySelector: false,
+      isFreeBoardType: true,
+    });
+
+    expect(result).toMatchObject({
+      ok: true,
+      payload: {
+        isOperatorContent: "true",
+        operatorSourceName: "서울시 동물보호센터",
+        operatorSourceUrl: "https://animal.seoul.go.kr",
+        operatorLastVerifiedAt: "2026-05-21",
+      },
+    });
+  });
+
   it("returns a market price validation message before building payload", () => {
     const result = buildPostCreateSubmitPayload({
       ...baseParams,

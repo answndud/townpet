@@ -86,6 +86,31 @@ const optionalBoolean = z.preprocess(
   z.coerce.boolean().optional(),
 );
 
+const optionalUrlString = (options: { max?: number } = {}) =>
+  z.preprocess(
+    (value) => {
+      if (typeof value !== "string") {
+        return value;
+      }
+
+      const trimmed = value.trim();
+      return trimmed.length > 0 ? trimmed : undefined;
+    },
+    z.string().url().max(options.max ?? 300).optional(),
+  ) as z.ZodType<string | undefined>;
+
+const optionalDateString = z.preprocess(
+  (value) => {
+    if (typeof value !== "string") {
+      return value;
+    }
+
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : undefined;
+  },
+  z.coerce.date().optional(),
+);
+
 const optionalDate = z.preprocess(
   (value) => {
     if (value === "" || value === null || value === undefined) {
@@ -222,6 +247,10 @@ export const postCreateSchema = z.object({
   reviewCategory: z.enum(REVIEW_CATEGORY_VALUES).optional(),
   animalTags: z.array(trimmedRequiredString({ max: 24 })).max(5).optional().default([]),
   imageUrls: z.array(imageUrlSchema).max(10).optional().default([]),
+  isOperatorContent: optionalBoolean,
+  operatorSourceName: optionalTrimmedString({ max: 80 }),
+  operatorSourceUrl: optionalUrlString({ max: 300 }),
+  operatorLastVerifiedAt: optionalDateString,
   guestDisplayName: optionalTrimmedString({ min: 2, max: 24 }),
   guestPassword: z.string().min(4).max(32).optional(),
   marketListing: marketListingSchema.optional(),
