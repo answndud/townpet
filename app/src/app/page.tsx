@@ -31,7 +31,7 @@ const TOPIC_LINKS = [
 export default function HomePage() {
   return (
     <main className="tp-page-bg min-h-screen">
-      <section className="mx-auto grid w-full max-w-[1180px] gap-8 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-[minmax(0,1fr)_360px] lg:px-10">
+      <section className="mx-auto w-full max-w-[1180px] px-4 py-10 sm:px-6 sm:py-14 lg:px-10">
         <div className="flex min-w-0 flex-col justify-center">
           <p className="tp-eyebrow">동네 반려생활 정보 지도</p>
           <h1 className="mt-4 max-w-[760px] text-4xl font-semibold leading-[1.08] text-[#10284a] break-keep sm:text-5xl">
@@ -49,29 +49,6 @@ export default function HomePage() {
               내 동네 허브 시작하기
             </Link>
           </div>
-        </div>
-
-        <div className="content-start border-y border-[#dbe6f5] bg-[#fbfdff] px-4 py-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#4e6f9f]">
-            처음 방문했다면
-          </p>
-          <ol className="mt-4 grid gap-4 text-sm leading-6 text-[#4f678d]">
-            <li>
-              <span className="font-semibold text-[#173963]">1. 내 동네를 선택</span>
-              <br />
-              대표 동네를 저장하면 동네 허브에서 정보를 모아볼 수 있습니다.
-            </li>
-            <li>
-              <span className="font-semibold text-[#173963]">2. 필요한 주제를 확인</span>
-              <br />
-              분실/목격, 병원, 산책, 중고거래를 한 곳에서 좁혀봅니다.
-            </li>
-            <li>
-              <span className="font-semibold text-[#173963]">3. 경험을 남기기</span>
-              <br />
-              지역 정보가 부족한 곳은 첫 제보가 바로 기준이 됩니다.
-            </li>
-          </ol>
         </div>
       </section>
 
