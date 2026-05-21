@@ -14,7 +14,7 @@ export function AppShellFooter() {
           <div>
             <p className="text-sm font-semibold text-[#10284a]">TownPet</p>
             <p className="mt-1 text-xs leading-5 text-[#5a7398]">
-              반려생활 커뮤니티의 공개 고지와 운영 정보를 한곳에 모았습니다.
+              동네 반려생활 정보와 공개 고지, 운영 기준을 한곳에 모았습니다.
             </p>
           </div>
           <div className="flex flex-wrap gap-1.5 text-xs">

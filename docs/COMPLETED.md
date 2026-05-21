@@ -3984,3 +3984,30 @@
 - 결과:
   - 성능 개선 작업이 단순 변경 로그가 아니라 “측정 -> 병목 분리 -> 작은 개선 -> 남은 검증” 흐름의 포트폴리오 글로 정리됐다.
   - 성능 루프 active 작업은 종료했고, 다음 작업은 지역/마케팅 획득 루프의 `/` 랜딩과 전역 카피 점검이다.
+
+### 2026-05-21 | 전역 획득 카피와 메타데이터 통일
+- 완료일: `2026-05-21`
+- 배경:
+  - 성능 개선 이후 `마케팅 피드백 기반 제품 획득 루프 재정렬`의 다음 단계로, public surface가 아직 범용 반려동물 커뮤니티처럼 읽히는 문제를 줄여야 했다.
+  - 획득 메시지는 `커뮤니티`보다 `우리 동네 반려생활 정보`, `동물병원`, `산책코스`, `분실동물` intent를 먼저 보여주는 방향으로 맞췄다.
+- 변경내용:
+  - `/` 홈의 eyebrow, 보조 문구, CTA를 `우리 동네 반려생활 정보` 포지셔닝에 맞춰 정리했다.
+  - 전역 layout metadata, feed/search metadata, guest feed/search metadata를 병원/산책/분실/입양/중고거래 intent 중심으로 바꿨다.
+  - 공개 footer와 README 상단 설명을 범용 반려동물 커뮤니티가 아니라 동네 반려생활 정보 서비스로 읽히게 맞췄다.
+  - 홈 CTA 테스트와 public metadata copy 테스트를 추가했다.
+- 코드문서:
+  - [app/src/app/page.tsx](../app/src/app/page.tsx)
+  - [app/src/app/layout.tsx](../app/src/app/layout.tsx)
+  - [app/src/app/feed/page.tsx](../app/src/app/feed/page.tsx)
+  - [app/src/app/feed/guest/page.tsx](../app/src/app/feed/guest/page.tsx)
+  - [app/src/app/search/page.tsx](../app/src/app/search/page.tsx)
+  - [app/src/app/search/guest/page.tsx](../app/src/app/search/guest/page.tsx)
+  - [app/src/components/navigation/app-shell-footer.tsx](../app/src/components/navigation/app-shell-footer.tsx)
+  - [README.md](../README.md)
+- 검증:
+  - `pnpm -C app test -- src/app/page.test.tsx src/app/public-copy-metadata.test.ts`
+  - `pnpm -C app typecheck`
+  - `pnpm -C app lint`
+  - `pnpm -C app build`
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `git diff --check`

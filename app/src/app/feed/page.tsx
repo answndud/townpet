@@ -83,14 +83,14 @@ type BestFeedItems = Awaited<ReturnType<typeof listBestPosts>>;
 type BestFeedItem = BestFeedItems[number];
 
 export const metadata: Metadata = {
-  title: "피드",
-  description: "커뮤니티 게시글을 최신순/인기순으로 확인하세요.",
+  title: "동네 반려생활 피드",
+  description: "병원 후기, 산책코스, 분실/목격 제보와 질문 글을 최신순과 베스트순으로 확인하세요.",
   alternates: {
     canonical: "/feed",
   },
   openGraph: {
-    title: "TownPet 피드",
-    description: "커뮤니티 게시글을 최신순/인기순으로 확인하세요.",
+    title: "TownPet 동네 반려생활 피드",
+    description: "병원 후기, 산책코스, 분실/목격 제보와 질문 글을 최신순과 베스트순으로 확인하세요.",
     url: "/feed",
   },
 };
