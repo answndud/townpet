@@ -3874,3 +3874,44 @@
   - 댓글 섹션 클라이언트 재조회 경로가 있는 상세 화면에서는 mutation 후 전체 route refresh를 중복 호출하지 않는다.
   - 로컬 DB가 꺼져 있어 `next build` 중 Prisma 연결 경고가 출력됐지만 fallback 경로로 build는 통과했다.
   - 다음 작업은 public route bundle/hydration 비용 측정과 절감이다.
+
+### 2026-05-21 | route asset 측정과 auth-only header chunk 분리
+- 완료일: `2026-05-21`
+- 배경:
+  - 서버 TTFB가 짧아도 브라우저 체감이 느릴 수 있어, route별 JS/CSS/fetch transfer와 FCP/LCP를 별도로 측정할 수 있어야 했다.
+  - 전역 header가 게스트 initial route에서도 인증 로그아웃 컨트롤과 알림 위젯을 정적 import하고 있어, public route bundle에 auth-only 코드가 섞일 가능성이 있었다.
+- 변경내용:
+  - `app/scripts/measure-route-assets.ts`를 추가했다.
+    - Playwright로 `/`, `/feed/guest`, 선택 post detail, 추가 route를 열고 resource timing을 수집한다.
+    - route별 script count, script transfer/encoded bytes, CSS/fetch/font transfer, FCP/LCP, long task total, top script 목록을 markdown/JSON으로 남긴다.
+    - `PERF_BASE_URL`, `PERF_ASSET_PROFILES`, `PERF_ASSET_SETTLE_MS`, `PERF_POST_PATH`, `PERF_POST_ID`, `PERF_ASSET_EXTRA_PATHS`로 측정 조건을 조정한다.
+  - `app/package.json`에 `perf:assets` 스크립트를 추가했다.
+  - `AppShellHeader`에서 `AuthControls`, `NotificationBell`을 `next/dynamic` + `ssr: false`로 분리했다.
+    - 게스트 초기 shell에서는 로그인 링크만 렌더하고, 인증 상태가 확인된 뒤 필요한 경우에만 로그아웃/알림 위젯 chunk를 로드한다.
+  - header source test를 추가해 auth-only widget이 정적 import로 돌아가는 회귀를 막았다.
+- 코드문서:
+  - [app/scripts/measure-route-assets.ts](../app/scripts/measure-route-assets.ts)
+  - [app/package.json](../app/package.json)
+  - [app/src/components/navigation/app-shell-header.tsx](../app/src/components/navigation/app-shell-header.tsx)
+  - [app/src/components/navigation/app-shell-header-class.test.ts](../app/src/components/navigation/app-shell-header-class.test.ts)
+  - [docs/reports/performance-route-assets-2026-05-21T02-50-51-174Z.md](./reports/performance-route-assets-2026-05-21T02-50-51-174Z.md)
+  - [docs/reports/performance-route-assets-2026-05-21T02-51-45-079Z.md](./reports/performance-route-assets-2026-05-21T02-51-45-079Z.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `./node_modules/.bin/vitest run src/components/navigation/app-shell-header-class.test.ts`
+  - `./node_modules/.bin/tsc -p tsconfig.json --noEmit --pretty false`
+  - `./node_modules/.bin/eslint`
+  - `./node_modules/.bin/next build`
+  - `./node_modules/.bin/tsx scripts/measure-route-assets.ts`
+  - `PERF_BASE_URL=http://localhost:3100 PERF_ASSET_PROFILES=desktop,mobile PERF_ASSET_SETTLE_MS=500 ./node_modules/.bin/tsx scripts/measure-route-assets.ts`
+- 결과:
+  - production route asset snapshot:
+    - `/feed/guest` desktop/mobile script transfer `180KB`, CSS transfer `78KB`
+    - `/`은 cached script timing 때문에 transfer size가 일부 `0`으로 보고됐지만, script count가 `24`로 확인됐다.
+  - 로컬 production build snapshot:
+    - `/` desktop script transfer `173KB`, CSS transfer `79KB`, fetch transfer `45KB`, FCP `164ms`, LCP `488ms`
+    - `/feed/guest` desktop script transfer `173KB`, CSS transfer `79KB`, fetch transfer `44KB`, FCP/LCP `56ms`
+    - mobile `/feed/guest` script transfer `173KB`, CSS transfer `79KB`, fetch transfer `20KB`, FCP/LCP `40ms`
+  - `next build` 중 로컬 DB 미기동 Prisma 경고는 있었지만 fallback 경로로 build는 통과했다.
+  - 다음 작업은 DB region/index/query plan 점검이다.

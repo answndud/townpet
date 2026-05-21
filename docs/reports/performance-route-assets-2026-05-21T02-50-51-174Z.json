@@ -1,0 +1,290 @@
+{
+  "generatedAt": "2026-05-21T02:50:51.174Z",
+  "baseUrl": "https://townpet.vercel.app",
+  "samples": [
+    {
+      "profile": "desktop",
+      "label": "home",
+      "path": "/",
+      "status": 200,
+      "finalUrl": "https://townpet.vercel.app/",
+      "documentResponseEndMs": 734.9000000059605,
+      "fcpMs": 1096,
+      "lcpMs": 1096,
+      "longTaskTotalMs": 0,
+      "scriptCount": 24,
+      "scriptTransferBytes": 0,
+      "scriptEncodedBytes": 0,
+      "stylesheetCount": 8,
+      "stylesheetTransferBytes": 72780,
+      "fetchCount": 0,
+      "fetchTransferBytes": 0,
+      "fontCount": 0,
+      "fontTransferBytes": 0,
+      "totalTransferBytes": 73380,
+      "topScripts": [
+        {
+          "name": "/_next/static/chunks/73fddf4e13af9960.js",
+          "transferSize": 0,
+          "encodedBodySize": 0,
+          "duration": 0
+        },
+        {
+          "name": "/_next/static/chunks/6635b20ab6385f8d.js",
+          "transferSize": 0,
+          "encodedBodySize": 0,
+          "duration": 0
+        },
+        {
+          "name": "/_next/static/chunks/637ca13bb0df6a29.js",
+          "transferSize": 0,
+          "encodedBodySize": 0,
+          "duration": 0
+        },
+        {
+          "name": "/_next/static/chunks/turbopack-99673d17180a613c.js",
+          "transferSize": 0,
+          "encodedBodySize": 0,
+          "duration": 0
+        },
+        {
+          "name": "/_next/static/chunks/d3b478d03a88ffc7.js",
+          "transferSize": 0,
+          "encodedBodySize": 0,
+          "duration": 0
+        },
+        {
+          "name": "/_next/static/chunks/b986226f9168583f.js",
+          "transferSize": 0,
+          "encodedBodySize": 0,
+          "duration": 0
+        },
+        {
+          "name": "/_next/static/chunks/0e3bc13317f7d37b.js",
+          "transferSize": 0,
+          "encodedBodySize": 0,
+          "duration": 0
+        },
+        {
+          "name": "/_next/static/chunks/5ebd566272256bdb.js",
+          "transferSize": 0,
+          "encodedBodySize": 0,
+          "duration": 0
+        }
+      ]
+    },
+    {
+      "profile": "desktop",
+      "label": "guest_feed",
+      "path": "/feed/guest",
+      "status": 200,
+      "finalUrl": "https://townpet.vercel.app/feed/guest",
+      "documentResponseEndMs": 141.59999999403954,
+      "fcpMs": 216,
+      "lcpMs": 216,
+      "longTaskTotalMs": 0,
+      "scriptCount": 12,
+      "scriptTransferBytes": 184206,
+      "scriptEncodedBytes": 180606,
+      "stylesheetCount": 7,
+      "stylesheetTransferBytes": 79510,
+      "fetchCount": 16,
+      "fetchTransferBytes": 18408,
+      "fontCount": 0,
+      "fontTransferBytes": 0,
+      "totalTransferBytes": 285273,
+      "topScripts": [
+        {
+          "name": "/_next/static/chunks/637ca13bb0df6a29.js",
+          "transferSize": 71629,
+          "encodedBodySize": 71329,
+          "duration": 372.69999998807907
+        },
+        {
+          "name": "/_next/static/chunks/6635b20ab6385f8d.js",
+          "transferSize": 34486,
+          "encodedBodySize": 34186,
+          "duration": 429.09999999403954
+        },
+        {
+          "name": "/_next/static/chunks/d3b478d03a88ffc7.js",
+          "transferSize": 20790,
+          "encodedBodySize": 20490,
+          "duration": 405.40000000596046
+        },
+        {
+          "name": "/_next/static/chunks/b986226f9168583f.js",
+          "transferSize": 20003,
+          "encodedBodySize": 19703,
+          "duration": 47.900000005960464
+        },
+        {
+          "name": "/_next/static/chunks/29f54b9e686c5220.js",
+          "transferSize": 12782,
+          "encodedBodySize": 12482,
+          "duration": 45
+        },
+        {
+          "name": "/_next/static/chunks/5ebd566272256bdb.js",
+          "transferSize": 8079,
+          "encodedBodySize": 7779,
+          "duration": 299.69999998807907
+        },
+        {
+          "name": "/_next/static/chunks/73fddf4e13af9960.js",
+          "transferSize": 7925,
+          "encodedBodySize": 7625,
+          "duration": 304.39999997615814
+        },
+        {
+          "name": "/_next/static/chunks/turbopack-99673d17180a613c.js",
+          "transferSize": 4705,
+          "encodedBodySize": 4405,
+          "duration": 301.7999999821186
+        }
+      ]
+    },
+    {
+      "profile": "mobile",
+      "label": "home",
+      "path": "/",
+      "status": 200,
+      "finalUrl": "https://townpet.vercel.app/",
+      "documentResponseEndMs": 167.7000000178814,
+      "fcpMs": 248,
+      "lcpMs": 248,
+      "longTaskTotalMs": 0,
+      "scriptCount": 24,
+      "scriptTransferBytes": 0,
+      "scriptEncodedBytes": 0,
+      "stylesheetCount": 8,
+      "stylesheetTransferBytes": 72780,
+      "fetchCount": 0,
+      "fetchTransferBytes": 0,
+      "fontCount": 0,
+      "fontTransferBytes": 0,
+      "totalTransferBytes": 77280,
+      "topScripts": [
+        {
+          "name": "/_next/static/chunks/73fddf4e13af9960.js",
+          "transferSize": 0,
+          "encodedBodySize": 0,
+          "duration": 0
+        },
+        {
+          "name": "/_next/static/chunks/6635b20ab6385f8d.js",
+          "transferSize": 0,
+          "encodedBodySize": 0,
+          "duration": 0
+        },
+        {
+          "name": "/_next/static/chunks/637ca13bb0df6a29.js",
+          "transferSize": 0,
+          "encodedBodySize": 0,
+          "duration": 0
+        },
+        {
+          "name": "/_next/static/chunks/turbopack-99673d17180a613c.js",
+          "transferSize": 0,
+          "encodedBodySize": 0,
+          "duration": 0
+        },
+        {
+          "name": "/_next/static/chunks/d3b478d03a88ffc7.js",
+          "transferSize": 0,
+          "encodedBodySize": 0,
+          "duration": 0
+        },
+        {
+          "name": "/_next/static/chunks/b986226f9168583f.js",
+          "transferSize": 0,
+          "encodedBodySize": 0,
+          "duration": 0
+        },
+        {
+          "name": "/_next/static/chunks/0e3bc13317f7d37b.js",
+          "transferSize": 0,
+          "encodedBodySize": 0,
+          "duration": 0
+        },
+        {
+          "name": "/_next/static/chunks/5ebd566272256bdb.js",
+          "transferSize": 0,
+          "encodedBodySize": 0,
+          "duration": 0
+        }
+      ]
+    },
+    {
+      "profile": "mobile",
+      "label": "guest_feed",
+      "path": "/feed/guest",
+      "status": 200,
+      "finalUrl": "https://townpet.vercel.app/feed/guest",
+      "documentResponseEndMs": 150.7000000178814,
+      "fcpMs": 216,
+      "lcpMs": 216,
+      "longTaskTotalMs": 0,
+      "scriptCount": 12,
+      "scriptTransferBytes": 184206,
+      "scriptEncodedBytes": 180606,
+      "stylesheetCount": 7,
+      "stylesheetTransferBytes": 79510,
+      "fetchCount": 22,
+      "fetchTransferBytes": 21819,
+      "fontCount": 0,
+      "fontTransferBytes": 0,
+      "totalTransferBytes": 323608,
+      "topScripts": [
+        {
+          "name": "/_next/static/chunks/637ca13bb0df6a29.js",
+          "transferSize": 71629,
+          "encodedBodySize": 71329,
+          "duration": 46.70000001788139
+        },
+        {
+          "name": "/_next/static/chunks/6635b20ab6385f8d.js",
+          "transferSize": 34486,
+          "encodedBodySize": 34186,
+          "duration": 41.900000005960464
+        },
+        {
+          "name": "/_next/static/chunks/d3b478d03a88ffc7.js",
+          "transferSize": 20790,
+          "encodedBodySize": 20490,
+          "duration": 40.5
+        },
+        {
+          "name": "/_next/static/chunks/b986226f9168583f.js",
+          "transferSize": 20003,
+          "encodedBodySize": 19703,
+          "duration": 38.900000005960464
+        },
+        {
+          "name": "/_next/static/chunks/29f54b9e686c5220.js",
+          "transferSize": 12782,
+          "encodedBodySize": 12482,
+          "duration": 38.599999994039536
+        },
+        {
+          "name": "/_next/static/chunks/5ebd566272256bdb.js",
+          "transferSize": 8079,
+          "encodedBodySize": 7779,
+          "duration": 43.30000001192093
+        },
+        {
+          "name": "/_next/static/chunks/73fddf4e13af9960.js",
+          "transferSize": 7925,
+          "encodedBodySize": 7625,
+          "duration": 41.099999994039536
+        },
+        {
+          "name": "/_next/static/chunks/turbopack-99673d17180a613c.js",
+          "transferSize": 4705,
+          "encodedBodySize": 4405,
+          "duration": 46
+        }
+      ]
+    }
+  ]
+}
