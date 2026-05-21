@@ -80,7 +80,12 @@ type CreatePostParams = {
 const GUEST_LINK_PATTERN = /https?:\/\/[\S]+/i;
 const GUEST_IMAGE_MARKDOWN_PATTERN = /!\[[^\]]*\]\(([^)\s]+)\)(?:\{\s*width\s*=\s*\d{1,4}\s*\})?/gi;
 
-const HOSPITAL_REVIEW_TEXT_FIELDS = ["hospitalName", "treatmentType"] as const;
+const HOSPITAL_REVIEW_TEXT_FIELDS = [
+  "hospitalName",
+  "visitPurpose",
+  "animalType",
+  "treatmentType",
+] as const;
 const ADOPTION_LISTING_TEXT_FIELDS = [
   "shelterName",
   "region",
@@ -682,6 +687,14 @@ export async function createPost({ authorId, input, guestIdentity }: CreatePostP
       accountCreatedAt: resolvedAuthorAccountCreatedAt,
       sameHospitalReviewCount30d,
       recentHospitalReviewCount7d,
+      text: buildModerationText([
+        postData.title,
+        postData.content,
+        hospitalReviewRisk.reviewInput.hospitalName,
+        hospitalReviewRisk.reviewInput.visitPurpose,
+        hospitalReviewRisk.reviewInput.animalType,
+        hospitalReviewRisk.reviewInput.treatmentType,
+      ]),
     });
 
     if (hospitalReviewRiskSignals.flagged) {
@@ -694,6 +707,7 @@ export async function createPost({ authorId, input, guestIdentity }: CreatePostP
         metadata: {
           hospitalName: normalizedHospitalName,
           signals: hospitalReviewRiskSignals.signals,
+          matchedTerms: hospitalReviewRiskSignals.matchedTerms,
           sameHospitalReviewCount30d,
           recentHospitalReviewCount7d,
         },

@@ -54,7 +54,12 @@ describe("post create structured fields", () => {
       .join("");
 
     expect(html).toContain("병원 후기 정보");
+    expect(html).toContain("작성 기준");
+    expect(html).toContain("방문 목적");
+    expect(html).toContain("동물 종류");
     expect(html).toContain("진료 항목");
+    expect(html).toContain("설명 충분성");
+    expect(html).toContain("재방문 의향");
     expect(html).toContain("장소 후기 정보");
     expect(html).toContain("동반 가능 여부");
     expect(html).toContain("산책 코스 정보");

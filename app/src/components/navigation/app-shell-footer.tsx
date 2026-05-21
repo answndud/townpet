@@ -4,6 +4,7 @@ const LEGAL_LINKS = [
   { href: "/terms", label: "이용약관" },
   { href: "/privacy", label: "개인정보처리방침" },
   { href: "/commercial", label: "광고·제휴 고지" },
+  { href: "/commercial#contact", label: "정보 정정 요청" },
 ] as const;
 
 export function AppShellFooter() {
@@ -26,8 +27,8 @@ export function AppShellFooter() {
           </div>
         </div>
         <p className="text-[11px] leading-5 text-[#6c7f9b]">
-          서비스 내 문의/신고 경로는 운영팀과 모더레이션 검토에 사용됩니다. 광고/제휴 콘텐츠는
-          별도 라벨로 표시됩니다.
+          서비스 내 문의/신고 경로는 운영팀과 모더레이션 검토에 사용됩니다. 병원·장소 정보 정정
+          요청은 정보 정정 요청 경로로 접수합니다.
         </p>
       </div>
     </footer>

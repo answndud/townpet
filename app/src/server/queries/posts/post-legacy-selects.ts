@@ -25,8 +25,15 @@ const LEGACY_POST_RELATION_SELECT = {
   hospitalReview: {
     select: {
       hospitalName: true,
+      visitPurpose: true,
+      animalType: true,
       totalCost: true,
       waitTime: true,
+      explanationSatisfaction: true,
+      priceLevel: true,
+      hasParking: true,
+      hasNightCare: true,
+      wouldRevisit: true,
       rating: true,
     },
   },
@@ -97,8 +104,15 @@ export const buildLegacyPostDetailSelect = () =>
     hospitalReview: {
       select: {
         hospitalName: true,
+        visitPurpose: true,
+        animalType: true,
         totalCost: true,
         waitTime: true,
+        explanationSatisfaction: true,
+        priceLevel: true,
+        hasParking: true,
+        hasNightCare: true,
+        wouldRevisit: true,
         rating: true,
         treatmentType: true,
       },
@@ -112,8 +126,15 @@ export const buildLegacyPostDetailSelectWithoutReactions = () =>
     hospitalReview: {
       select: {
         hospitalName: true,
+        visitPurpose: true,
+        animalType: true,
         totalCost: true,
         waitTime: true,
+        explanationSatisfaction: true,
+        priceLevel: true,
+        hasParking: true,
+        hasNightCare: true,
+        wouldRevisit: true,
         rating: true,
         treatmentType: true,
       },

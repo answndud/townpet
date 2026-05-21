@@ -10,7 +10,8 @@ describe("AppShellFooter", () => {
     expect(html).toContain('href="/terms"');
     expect(html).toContain('href="/privacy"');
     expect(html).toContain('href="/commercial"');
+    expect(html).toContain('href="/commercial#contact"');
     expect(html).toContain("광고·제휴 고지");
+    expect(html).toContain("정보 정정 요청");
   });
 });
-

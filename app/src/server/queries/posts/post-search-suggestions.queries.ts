@@ -78,6 +78,8 @@ function buildSuggestionSelect(includeStructuredSuggestionFields: boolean) {
           hospitalReview: {
             select: {
               hospitalName: true,
+              visitPurpose: true,
+              animalType: true,
               treatmentType: true,
             },
           },

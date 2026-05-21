@@ -4497,3 +4497,41 @@
   - 실종동물 글에서 일반 댓글과 목격 제보가 UI와 데이터 subtype으로 구분된다.
   - 제보 작성자는 위치/시간/사진 단서를 구조화해서 남길 수 있다.
   - 보호자는 상세 화면에서 제보를 확인한 뒤 상태를 해결/종료로 변경할 수 있는 서버 액션과 UI를 갖게 됐다.
+
+### 2026-05-21 | 병원 후기 템플릿 안전화
+- 완료일: `2026-05-21`
+- 배경:
+  - 병원 후기는 자유 서술만 앞서면 비방성 표현과 비교 불가능한 감상으로 흐르기 쉽다.
+  - 이미 병원 후기 의심 신호 admin surface가 있으므로, 작성 단계에서 구조화 필드와 안전 안내를 먼저 제공하고 위험 표현은 검토 신호로 연결해야 했다.
+- 변경내용:
+  - `HospitalReview`에 방문 목적, 동물 종류, 설명 충분성, 가격 체감, 주차, 야간진료, 재방문 의향 필드를 추가했다.
+  - 병원 후기 작성 폼을 병원명/방문 목적/동물 종류/진료 항목/비용/대기/설명/가격/주차/야간진료/재방문/평점 순서로 재배치했다.
+  - 작성 중 안전 문구를 추가해 진단 단정, 사기/과잉진료 같은 표현, 직원 실명/연락처가 신고 또는 검토 대상이 될 수 있음을 안내했다.
+  - 병원 후기 상세와 비회원 상세에 새 구조화 필드와 경험 공유 안전 문구를 노출했다.
+  - 검색 구조화 텍스트와 검색 제안 후보에 방문 목적/동물 종류를 포함했다.
+  - `과잉진료`, `사기`, `최악`, `돌팔이`, `고소` 같은 위험 표현을 `RISKY_CLAIM_TERMS` moderation signal로 기록하고 matched terms를 metadata에 남기게 했다.
+  - 푸터와 광고·제휴 고지 문서에 병원·장소 정보 정정 요청 경로를 명시했다.
+- 코드문서:
+  - [app/prisma/schema.prisma](../app/prisma/schema.prisma)
+  - [app/prisma/migrations/20260521203000_add_hospital_review_safety_fields/migration.sql](../app/prisma/migrations/20260521203000_add_hospital_review_safety_fields/migration.sql)
+  - [app/src/lib/validations/posts/post.ts](../app/src/lib/validations/posts/post.ts)
+  - [app/src/components/posts/post-create-structured-fields.tsx](../app/src/components/posts/post-create-structured-fields.tsx)
+  - [app/src/components/posts/post-create-submit.ts](../app/src/components/posts/post-create-submit.ts)
+  - [app/src/components/posts/post-detail-info-panels.tsx](../app/src/components/posts/post-detail-info-panels.tsx)
+  - [app/src/app/posts/[id]/guest/page.tsx](../app/src/app/posts/%5Bid%5D/guest/page.tsx)
+  - [app/src/server/hospital-review-risk.ts](../app/src/server/hospital-review-risk.ts)
+  - [app/src/server/services/posts/post-create.service.ts](../app/src/server/services/posts/post-create.service.ts)
+  - [app/src/components/navigation/app-shell-footer.tsx](../app/src/components/navigation/app-shell-footer.tsx)
+  - [app/src/app/(legal)/commercial/page.tsx](../app/src/app/%28legal%29/commercial/page.tsx)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app exec prisma format`
+  - `corepack pnpm@9.12.3 -C app exec prisma generate`
+  - `corepack pnpm@9.12.3 -C app exec prisma migrate deploy`
+  - `corepack pnpm@9.12.3 -C app test -- src/server/hospital-review-risk.test.ts src/lib/validations/post.test.ts src/components/posts/post-create-structured-fields.test.tsx src/components/posts/post-create-submit.test.ts src/server/services/post-create-policy.test.ts src/components/navigation/app-shell-footer.test.tsx src/server/queries/post.queries.test.ts`
+  - `PUPPETEER_SKIP_DOWNLOAD=1 corepack pnpm@9.12.3 dlx impeccable detect src/app src/components --fast`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+  - local browser smoke: 인증 계정으로 `/posts/new`에 접속해 `병원 후기` 분류 선택 후 desktop/mobile screenshot 확인
+- 결과:
+  - 병원 후기는 자유 비방 글보다 방문 경험 비교 데이터처럼 작성된다.
+  - 위험 표현은 차단이 아니라 admin 검토 신호와 metadata로 남는다.
+  - 병원·장소 정보 정정 요청 경로가 public footer에서 접근 가능하다.

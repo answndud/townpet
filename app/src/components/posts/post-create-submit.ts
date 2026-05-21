@@ -58,9 +58,16 @@ function normalizeAnimalTags(input: string) {
 function hasHospitalReview(formState: PostCreateFormState) {
   return (
     formState.hospitalReview.hospitalName.trim().length > 0 ||
+    formState.hospitalReview.visitPurpose.trim().length > 0 ||
+    formState.hospitalReview.animalType.trim().length > 0 ||
     formState.hospitalReview.treatmentType.trim().length > 0 ||
     formState.hospitalReview.totalCost.trim().length > 0 ||
     formState.hospitalReview.waitTime.trim().length > 0 ||
+    formState.hospitalReview.explanationSatisfaction.trim().length > 0 ||
+    formState.hospitalReview.priceLevel.trim().length > 0 ||
+    formState.hospitalReview.hasParking.trim().length > 0 ||
+    formState.hospitalReview.hasNightCare.trim().length > 0 ||
+    formState.hospitalReview.wouldRevisit.trim().length > 0 ||
     formState.hospitalReview.rating.trim().length > 0
   );
 }
@@ -226,6 +233,12 @@ export function buildPostCreateSubmitPayload({
             ...formState.hospitalReview,
             totalCost: formState.hospitalReview.totalCost || undefined,
             waitTime: formState.hospitalReview.waitTime || undefined,
+            explanationSatisfaction:
+              formState.hospitalReview.explanationSatisfaction || undefined,
+            priceLevel: formState.hospitalReview.priceLevel || undefined,
+            hasParking: formState.hospitalReview.hasParking || undefined,
+            hasNightCare: formState.hospitalReview.hasNightCare || undefined,
+            wouldRevisit: formState.hospitalReview.wouldRevisit || undefined,
           }
         : undefined,
       placeReview: hasPlaceReview(formState, resolvedType)

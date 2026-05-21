@@ -26,6 +26,8 @@ import {
   careTypeLabel,
   emptyValue,
   formatDetailDateTime,
+  hospitalExplanationLabel,
+  hospitalPriceLevelLabel,
   lostFoundAlertTypeLabel,
   lostFoundStatusLabel,
   marketConditionLabel,
@@ -134,8 +136,28 @@ export function PostDetailInfoPanels({
       {post.hospitalReview ? (
         <PostDetailInfoSection title="병원 후기 상세">
           <PostDetailInfoItem label="병원" value={renderTextValue(post.hospitalReview.hospitalName)} />
+          <PostDetailInfoItem label="방문 목적" value={renderTextValue(post.hospitalReview.visitPurpose)} />
+          <PostDetailInfoItem label="동물 종류" value={renderTextValue(post.hospitalReview.animalType)} />
           <PostDetailInfoItem label="치료" value={renderTextValue(post.hospitalReview.treatmentType)} />
           <PostDetailInfoItem label="평점" value={renderNumberValue(post.hospitalReview.rating, "점")} />
+          <PostDetailInfoItem
+            label="설명"
+            value={renderTextValue(
+              post.hospitalReview.explanationSatisfaction
+                ? (hospitalExplanationLabel[post.hospitalReview.explanationSatisfaction] ??
+                  post.hospitalReview.explanationSatisfaction)
+                : null,
+            )}
+          />
+          <PostDetailInfoItem
+            label="가격 체감"
+            value={renderTextValue(
+              post.hospitalReview.priceLevel
+                ? (hospitalPriceLevelLabel[post.hospitalReview.priceLevel] ??
+                  post.hospitalReview.priceLevel)
+                : null,
+            )}
+          />
           <PostDetailInfoItem
             label="비용"
             value={
@@ -145,6 +167,21 @@ export function PostDetailInfoPanels({
             }
           />
           <PostDetailInfoItem label="대기" value={renderNumberValue(post.hospitalReview.waitTime, "분")} />
+          <PostDetailInfoItem
+            label="주차"
+            value={renderBooleanValue(post.hospitalReview.hasParking, "가능", "어려움")}
+          />
+          <PostDetailInfoItem
+            label="야간진료"
+            value={renderBooleanValue(post.hospitalReview.hasNightCare, "경험 있음", "해당 없음")}
+          />
+          <PostDetailInfoItem
+            label="재방문"
+            value={renderBooleanValue(post.hospitalReview.wouldRevisit, "의향 있음", "의향 낮음")}
+          />
+          <div className="col-span-full rounded-lg border border-[#dbe6f5] bg-[#f8fbff] px-3 py-2 text-[12px] leading-5 text-[#4f678d]">
+            병원 후기는 개인 경험 공유입니다. 진단이나 법적 판단으로 단정하지 말고 방문 전 병원에 직접 확인하세요.
+          </div>
         </PostDetailInfoSection>
       ) : null}
 

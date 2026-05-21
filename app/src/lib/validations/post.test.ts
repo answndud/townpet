@@ -86,7 +86,12 @@ describe("post validations", () => {
   it("canonicalizes hospital review and adoption structured text fields", () => {
     const hospital = hospitalReviewSchema.safeParse({
       hospitalName: "서울 24 시간 동물 병원",
+      animalType: "개",
       treatmentType: "중성화",
+      explanationSatisfaction: "ENOUGH",
+      priceLevel: "NORMAL",
+      hasParking: "true",
+      wouldRevisit: "false",
     });
     const adoption = adoptionListingSchema.safeParse({
       shelterName: "서울시 동물 보호 센터",
@@ -101,7 +106,12 @@ describe("post validations", () => {
     expect(adoption.success).toBe(true);
     expect(hospital.data).toMatchObject({
       hospitalName: "서울 24시 동물병원",
+      animalType: "강아지",
       treatmentType: "중성화 수술",
+      explanationSatisfaction: "ENOUGH",
+      priceLevel: "NORMAL",
+      hasParking: true,
+      wouldRevisit: false,
     });
     expect(adoption.data).toMatchObject({
       shelterName: "서울시 동물보호센터",

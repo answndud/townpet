@@ -328,6 +328,59 @@ describe("createPost new-user restriction", () => {
     );
   });
 
+  it("records risky claim terms in hospital review moderation metadata", async () => {
+    const now = new Date();
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: "user-1",
+      role: UserRole.USER,
+      createdAt: new Date(now.getTime() - 45 * 24 * 60 * 60 * 1000),
+    });
+    mockPrisma.post.create.mockResolvedValue({
+      id: "post-hospital-terms",
+      title: "병원 후기",
+      content: "과잉진료 같고 최악이었습니다",
+      type: PostType.HOSPITAL_REVIEW,
+      scope: PostScope.GLOBAL,
+      author: { id: "user-1", nickname: "멍집사" },
+      neighborhood: null,
+      hospitalReview: {
+        hospitalName: "튼튼동물의료원",
+        totalCost: null,
+        waitTime: null,
+        rating: 2,
+      },
+      images: [],
+    });
+    mockPrisma.hospitalReview.count.mockResolvedValue(0);
+
+    await createPost({
+      authorId: "user-1",
+      input: {
+        title: "병원 후기",
+        content: "과잉진료 같고 최악이었습니다",
+        type: PostType.HOSPITAL_REVIEW,
+        scope: PostScope.GLOBAL,
+        animalTags: ["강아지"],
+        imageUrls: [],
+        hospitalReview: {
+          hospitalName: "튼튼동물의료원",
+          rating: 2,
+        },
+      },
+    });
+
+    expect(mockRecordModerationAction).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: "HOSPITAL_REVIEW_FLAGGED",
+        targetId: "post-hospital-terms",
+        metadata: expect.objectContaining({
+          signals: ["RISKY_CLAIM_TERMS"],
+          matchedTerms: ["과잉진료", "최악"],
+        }),
+      }),
+    );
+  });
+
   it("blocks forbidden keywords in adoption listing structured fields", async () => {
     mockPrisma.user.findUnique.mockResolvedValue({
       id: "user-1",

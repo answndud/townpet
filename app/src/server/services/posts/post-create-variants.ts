@@ -186,6 +186,8 @@ export async function createPostVariant(params: CreatePostVariantParams) {
     const reviewInput: HospitalReviewInput =
       params.hospitalReviewInput ?? {
         hospitalName: undefined,
+        visitPurpose: undefined,
+        animalType: undefined,
         treatmentType: undefined,
       };
     const shouldCreateReview = hasAnyValue(reviewInput);

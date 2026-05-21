@@ -7,8 +7,15 @@ import type {
 
 export const HOSPITAL_REVIEW_SELECT = {
   hospitalName: true,
+  visitPurpose: true,
+  animalType: true,
   totalCost: true,
   waitTime: true,
+  explanationSatisfaction: true,
+  priceLevel: true,
+  hasParking: true,
+  hasNightCare: true,
+  wouldRevisit: true,
   rating: true,
   treatmentType: true,
 } as const;
@@ -88,8 +95,15 @@ export const LOST_FOUND_ALERT_SELECT = {
 export type PostDetailExtras = {
   hospitalReview: {
     hospitalName: string | null;
+    visitPurpose: string | null;
+    animalType: string | null;
     totalCost: number | null;
     waitTime: number | null;
+    explanationSatisfaction: string | null;
+    priceLevel: string | null;
+    hasParking: boolean | null;
+    hasNightCare: boolean | null;
+    wouldRevisit: boolean | null;
     rating: number | null;
     treatmentType: string | null;
   } | null;

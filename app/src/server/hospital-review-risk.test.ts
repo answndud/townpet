@@ -27,7 +27,22 @@ describe("hospital review risk", () => {
 
     expect(result).toEqual({
       flagged: false,
+      matchedTerms: [],
       signals: [],
     });
+  });
+
+  it("flags risky claim terms for moderator review", () => {
+    const result = buildHospitalReviewRiskSignals({
+      accountCreatedAt: new Date("2025-12-01T00:00:00.000Z"),
+      sameHospitalReviewCount30d: 0,
+      recentHospitalReviewCount7d: 1,
+      text: "과잉진료 같아서 최악이었습니다.",
+      now,
+    });
+
+    expect(result.flagged).toBe(true);
+    expect(result.signals).toEqual(["RISKY_CLAIM_TERMS"]);
+    expect(result.matchedTerms).toEqual(["과잉진료", "최악"]);
   });
 });
