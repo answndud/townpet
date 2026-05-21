@@ -5,6 +5,7 @@ import { getHealthSnapshot } from "@/server/health-overview";
 import { getAuthAuditOverview } from "@/server/queries/auth-audit.queries";
 import { getCareFeedbackIssueStats } from "@/server/queries/care-feedback.queries";
 import { getFeedPersonalizationOverview } from "@/server/queries/feed-personalization-metrics.queries";
+import { getInitialRegionOpsOverview } from "@/server/queries/initial-region-ops.queries";
 import { getAdminOpsOverview } from "@/server/queries/ops-overview.queries";
 import { getReportStats } from "@/server/queries/report.queries";
 import { getSearchInsightsOverview } from "@/server/queries/search.queries";
@@ -25,6 +26,10 @@ vi.mock("@/server/queries/care-feedback.queries", () => ({
   getCareFeedbackIssueStats: vi.fn(),
 }));
 
+vi.mock("@/server/queries/initial-region-ops.queries", () => ({
+  getInitialRegionOpsOverview: vi.fn(),
+}));
+
 vi.mock("@/server/queries/report.queries", () => ({
   getReportStats: vi.fn(),
 }));
@@ -37,6 +42,7 @@ const mockGetHealthSnapshot = vi.mocked(getHealthSnapshot);
 const mockGetAuthAuditOverview = vi.mocked(getAuthAuditOverview);
 const mockGetCareFeedbackIssueStats = vi.mocked(getCareFeedbackIssueStats);
 const mockGetFeedPersonalizationOverview = vi.mocked(getFeedPersonalizationOverview);
+const mockGetInitialRegionOpsOverview = vi.mocked(getInitialRegionOpsOverview);
 const mockGetReportStats = vi.mocked(getReportStats);
 const mockGetSearchInsightsOverview = vi.mocked(getSearchInsightsOverview);
 
@@ -46,6 +52,7 @@ describe("ops overview queries", () => {
     mockGetAuthAuditOverview.mockReset();
     mockGetCareFeedbackIssueStats.mockReset();
     mockGetFeedPersonalizationOverview.mockReset();
+    mockGetInitialRegionOpsOverview.mockReset();
     mockGetReportStats.mockReset();
     mockGetSearchInsightsOverview.mockReset();
   });
@@ -175,6 +182,48 @@ describe("ops overview queries", () => {
       zeroResultTerms: [],
       lowResultTerms: [],
     });
+    mockGetInitialRegionOpsOverview.mockResolvedValue({
+      days: 7,
+      contentTotals: {
+        hospitals: 3,
+        walks: 2,
+        lost: 1,
+        usedMarket: 0,
+      },
+      topNeighborhoods: [],
+      lostFound: {
+        activeCount: 1,
+        resolvedCount: 1,
+        closedCount: 0,
+        sightingCommentCount: 2,
+      },
+      operatorContent: {
+        totalCount: 3,
+        missingVerificationCount: 1,
+        oldestVerifiedAt: "2026-03-10T00:00:00.000Z",
+        staleItems: [],
+      },
+      acquisition: {
+        totalEventCount: 10,
+        kakaoShareClickCount: 2,
+        guideCtaClickCount: 3,
+        writeTemplateOpenedCount: 4,
+        eventSummaries: [],
+      },
+      firstParticipation: {
+        newUserCount: 5,
+        firstPostAuthorCount: 2,
+        firstPostRate: 0.4,
+        firstPostCount: 3,
+        firstPostWithComment24hCount: 1,
+        firstPostComment24hRate: 1 / 3,
+      },
+      retention: {
+        cohortUserCount: 4,
+        returnedUserCount: 1,
+        d7ReturnRate: 0.25,
+      },
+    });
 
     const overview = await getAdminOpsOverview({
       searchContext: {
@@ -190,11 +239,13 @@ describe("ops overview queries", () => {
       type: PostType.HOSPITAL_REVIEW,
       searchIn: SearchTermSearchIn.TITLE,
     });
+    expect(mockGetInitialRegionOpsOverview).toHaveBeenCalledWith(7);
     expect(overview.health.status).toBe("ok");
     expect(overview.authAudit.totalEvents).toBe(5);
     expect(overview.reports.totalCount).toBe(7);
     expect(overview.careFeedbacks.totalCount).toBe(4);
     expect(overview.personalization.totals.postCtr).toBe(0.3);
     expect(overview.search.zeroResultTerms).toEqual([]);
+    expect(overview.initialRegion.contentTotals.hospitals).toBe(3);
   });
 });

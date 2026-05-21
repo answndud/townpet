@@ -49,12 +49,27 @@ const OPS_SEARCH_TYPE_OPTIONS: PostType[] = [
   PostType.PET_SHOWCASE,
 ];
 
+const INITIAL_REGION_CATEGORY_LABELS = {
+  hospitals: "병원",
+  walks: "산책",
+  lost: "분실",
+  usedMarket: "중고",
+} as const;
+
 function formatPercent(value: number) {
   return `${(value * 100).toFixed(1)}%`;
 }
 
 function formatCount(value: number) {
   return value.toLocaleString("ko-KR");
+}
+
+function formatOptionalDate(value: string | null) {
+  if (!value) {
+    return "미확인";
+  }
+
+  return new Date(value).toLocaleDateString("ko-KR");
 }
 
 function formatStateClass(state: "ok" | "warn" | "error" | "degraded") {
@@ -250,6 +265,7 @@ export default async function AdminOpsPage({ searchParams }: AdminOpsPageProps) 
   const dailySummaries = overview.personalization.dailySummaries.slice(-7);
   const careThreshold = overview.careFeedbacks.reviewThresholds;
   const careThresholdClass = formatCareFeedbackThresholdClass(careThreshold.severity);
+  const initialRegion = overview.initialRegion;
   const searchContextLabel = describeSearchContext({
     searchScope: selectedSearchScope,
     searchType: selectedSearchType,
@@ -305,6 +321,191 @@ export default async function AdminOpsPage({ searchParams }: AdminOpsPageProps) 
               detail={`cache ${cacheState} · pg_trgm ${pgTrgmState}`}
               state={cacheState}
             />
+          </div>
+        </section>
+
+        <section className="tp-card flex flex-col gap-4 p-4 sm:p-5">
+          <div className="flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-[#10284a]">초기 지역 운영 지표</h2>
+              <p className="text-xs text-[#5a7398]">
+                전국 MAU보다 동네별 정보 밀도, 첫 글 전환, 24시간 반응을 먼저 봅니다.
+              </p>
+            </div>
+            <p className="text-xs font-semibold text-[#315b9a]">최근 {initialRegion.days}일</p>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="rounded-xl border border-[#dbe6f6] bg-[#f8fbff] p-3">
+              <p className="text-xs text-[#5a7398]">첫 글 작성률</p>
+              <p className="mt-2 text-2xl font-bold text-[#10284a]">
+                {formatPercent(initialRegion.firstParticipation.firstPostRate)}
+              </p>
+              <p className="mt-1 text-[11px] text-[#6a7f9f]">
+                신규 {formatCount(initialRegion.firstParticipation.newUserCount)}명 중{" "}
+                {formatCount(initialRegion.firstParticipation.firstPostAuthorCount)}명 작성
+              </p>
+            </div>
+            <div className="rounded-xl border border-[#dbe6f6] bg-[#f8fbff] p-3">
+              <p className="text-xs text-[#5a7398]">첫 글 24h 댓글 수신율</p>
+              <p className="mt-2 text-2xl font-bold text-[#10284a]">
+                {formatPercent(initialRegion.firstParticipation.firstPostComment24hRate)}
+              </p>
+              <p className="mt-1 text-[11px] text-[#6a7f9f]">
+                첫 글 {formatCount(initialRegion.firstParticipation.firstPostCount)}건 중{" "}
+                {formatCount(initialRegion.firstParticipation.firstPostWithComment24hCount)}건
+              </p>
+            </div>
+            <div className="rounded-xl border border-[#dbe6f6] bg-[#f8fbff] p-3">
+              <p className="text-xs text-[#5a7398]">7일 재방문률</p>
+              <p className="mt-2 text-2xl font-bold text-[#10284a]">
+                {formatPercent(initialRegion.retention.d7ReturnRate)}
+              </p>
+              <p className="mt-1 text-[11px] text-[#6a7f9f]">
+                코호트 {formatCount(initialRegion.retention.cohortUserCount)}명 중{" "}
+                {formatCount(initialRegion.retention.returnedUserCount)}명 재행동
+              </p>
+            </div>
+            <div className="rounded-xl border border-[#dbe6f6] bg-[#f8fbff] p-3">
+              <p className="text-xs text-[#5a7398]">카카오 공유 클릭</p>
+              <p className="mt-2 text-2xl font-bold text-[#10284a]">
+                {formatCount(initialRegion.acquisition.kakaoShareClickCount)}
+              </p>
+              <p className="mt-1 text-[11px] text-[#6a7f9f]">
+                템플릿 진입 {formatCount(initialRegion.acquisition.writeTemplateOpenedCount)}건
+              </p>
+            </div>
+          </div>
+
+          <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+            <div className="rounded-xl border border-[#dbe6f6] bg-white p-3">
+              <div className="flex items-center justify-between gap-3">
+                <h3 className="text-sm font-semibold text-[#1f3f71]">동네별 콘텐츠 밀도</h3>
+                <span className="text-[11px] text-[#6a7f9f]">
+                  병원 {formatCount(initialRegion.contentTotals.hospitals)} · 산책{" "}
+                  {formatCount(initialRegion.contentTotals.walks)} · 분실{" "}
+                  {formatCount(initialRegion.contentTotals.lost)}
+                </span>
+              </div>
+              <div className="mt-3 overflow-x-auto">
+                {initialRegion.topNeighborhoods.length > 0 ? (
+                  <table className="w-full min-w-[620px] text-left text-xs text-[#355988]">
+                    <thead className="border-b border-[#dbe6f6] text-[10px] uppercase tracking-[0.2em] text-[#5b78a1]">
+                      <tr>
+                        <th className="py-2">동네</th>
+                        <th className="py-2">전체</th>
+                        <th className="py-2">병원</th>
+                        <th className="py-2">산책</th>
+                        <th className="py-2">분실</th>
+                        <th className="py-2">중고</th>
+                        <th className="py-2">빈 카테고리</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {initialRegion.topNeighborhoods.map((neighborhood) => (
+                        <tr key={neighborhood.neighborhoodId} className="border-b border-[#edf2fb]">
+                          <td className="py-3 font-semibold text-[#163462]">{neighborhood.label}</td>
+                          <td className="py-3">{formatCount(neighborhood.totalCount)}</td>
+                          {Object.entries(INITIAL_REGION_CATEGORY_LABELS).map(([key]) => (
+                            <td key={key} className="py-3">
+                              {formatCount(
+                                neighborhood.categories[
+                                  key as keyof typeof INITIAL_REGION_CATEGORY_LABELS
+                                ],
+                              )}
+                            </td>
+                          ))}
+                          <td className="py-3">
+                            {neighborhood.emptyCategoryLabels.length > 0
+                              ? neighborhood.emptyCategoryLabels.join(", ")
+                              : "없음"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : (
+                  <EmptyState
+                    title="동네별 콘텐츠가 없습니다"
+                    description="동네가 지정된 병원, 산책, 분실, 중고 글이 쌓이면 지역 밀도를 볼 수 있습니다."
+                  />
+                )}
+              </div>
+            </div>
+
+            <div className="grid gap-3">
+              <div className="rounded-xl border border-[#dbe6f6] bg-[#f8fbff] p-3">
+                <h3 className="text-sm font-semibold text-[#1f3f71]">분실동물 상태</h3>
+                <dl className="mt-3 grid grid-cols-2 gap-2 text-xs text-[#4f678d]">
+                  <div className="flex items-center justify-between gap-2">
+                    <dt>활성</dt>
+                    <dd className="font-semibold text-[#163462]">
+                      {formatCount(initialRegion.lostFound.activeCount)}
+                    </dd>
+                  </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <dt>해결</dt>
+                    <dd className="font-semibold text-[#163462]">
+                      {formatCount(initialRegion.lostFound.resolvedCount)}
+                    </dd>
+                  </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <dt>종료</dt>
+                    <dd className="font-semibold text-[#163462]">
+                      {formatCount(initialRegion.lostFound.closedCount)}
+                    </dd>
+                  </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <dt>목격 댓글</dt>
+                    <dd className="font-semibold text-[#163462]">
+                      {formatCount(initialRegion.lostFound.sightingCommentCount)}
+                    </dd>
+                  </div>
+                </dl>
+              </div>
+
+              <div className="rounded-xl border border-[#dbe6f6] bg-white p-3">
+                <h3 className="text-sm font-semibold text-[#1f3f71]">병원/장소 확인 상태</h3>
+                <p className="mt-2 text-xs leading-5 text-[#5a7398]">
+                  운영자 콘텐츠 {formatCount(initialRegion.operatorContent.totalCount)}건 · 확인일
+                  누락 {formatCount(initialRegion.operatorContent.missingVerificationCount)}건 · 가장 오래된
+                  확인일 {formatOptionalDate(initialRegion.operatorContent.oldestVerifiedAt)}
+                </p>
+                <div className="mt-3 space-y-2">
+                  {initialRegion.operatorContent.staleItems.length > 0 ? (
+                    initialRegion.operatorContent.staleItems.map((item) => (
+                      <div key={item.postId} className="rounded-lg border border-[#edf2fb] px-3 py-2 text-xs">
+                        <p className="font-semibold text-[#163462]">{item.title}</p>
+                        <p className="mt-1 text-[#6a7f9f]">
+                          {getPostTypeMeta(item.type).label} · {item.neighborhoodLabel} · 확인{" "}
+                          {formatOptionalDate(item.operatorLastVerifiedAt)}
+                        </p>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-xs text-[#6a7f9f]">확인할 운영자 콘텐츠가 없습니다.</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-[#dbe6f6] bg-white p-3">
+                <h3 className="text-sm font-semibold text-[#1f3f71]">획득 이벤트 상위</h3>
+                <div className="mt-3 space-y-2 text-xs text-[#4f678d]">
+                  {initialRegion.acquisition.eventSummaries.length > 0 ? (
+                    initialRegion.acquisition.eventSummaries.map((event) => (
+                      <div key={event.event} className="flex items-center justify-between gap-3">
+                        <span>{event.label}</span>
+                        <span className="font-semibold text-[#163462]">
+                          {formatCount(event.count)}
+                        </span>
+                      </div>
+                    ))
+                  ) : (
+                    <p>획득 이벤트가 아직 없습니다.</p>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
