@@ -119,27 +119,29 @@
 ### P0-4. 지역 허브 route 추가
 
 - 현재 문제:
-  - `/towns/*` route가 없다.
-  - sitemap은 `/feed`, `/search`, `/boards/adoption`, public GLOBAL post 중심이라 지역 검색 유입을 받을 landing surface가 부족하다.
+  - `/towns/*` route는 있으나 특정 고정 지역을 public surface로 밀지 않는다.
+  - 사용자가 선택한 동네/지역을 기준으로 같은 템플릿의 동적 허브를 보여줘야 한다.
+  - sitemap은 `/feed`, `/search`, `/boards/adoption`, public GLOBAL post 중심이라 사용자 선택 지역으로 돌아갈 landing surface가 부족하다.
 - 추가할 route:
-  - `/towns/{confirmed-town}`
-  - `/towns/{confirmed-town}/hospitals`
-  - `/towns/{confirmed-town}/walks`
-  - `/towns/{confirmed-town}/lost`
-  - `/towns/{confirmed-town}/used-market`
+  - `/towns/{city--district}`
+  - `/towns/{city--district}/hospitals`
+  - `/towns/{city--district}/walks`
+  - `/towns/{city--district}/lost`
+  - `/towns/{city--district}/used-market`
 - MVP 화면 구성:
-  - 지역명과 핵심 메시지
+  - 사용자가 선택한 지역명과 핵심 메시지
   - 병원/산책/분실/중고거래 카드
-  - 운영자 콘텐츠와 사용자 글 분리 표시
+  - 카테고리별 글 수와 관련 피드/작성 CTA
   - “최근 분실동물 제보 없음” 같은 안전한 empty state
-  - “첫 후기를 남기면 Founding Member 배지 지급 예정” CTA
+  - 선택 동네가 없거나 존재하지 않으면 404/noindex
 - 완료 기준:
-  - 확정된 지역 허브에서 지역별 콘텐츠 묶음을 볼 수 있다.
+  - 선택한 지역 허브에서 지역별 콘텐츠 묶음을 볼 수 있다.
   - 콘텐츠가 없어도 빈 화면이 아니라 준비 중/가이드/CTA가 표시된다.
-  - route별 metadata, canonical, sitemap entry가 있다.
+  - route별 metadata/canonical은 선택 지역을 기준으로 생성된다.
+  - 특정 지역 기본값은 코드와 문서에 두지 않는다.
 - 검증:
   - page render test
-  - sitemap test 갱신
+  - dynamic town slug parse/build test
   - metadata test
 
 ### P0-5. SEO guide route 추가

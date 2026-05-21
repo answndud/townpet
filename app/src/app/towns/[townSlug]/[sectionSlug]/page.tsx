@@ -2,27 +2,29 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import {
-  getTownLandingSection,
-  TOWN_LANDINGS,
-} from "@/lib/town-landing";
+import { getTownLandingSection } from "@/lib/town-landing";
+import { getTownLandingByNeighborhoodSlug } from "@/server/queries/neighborhood.queries";
+import { isPrismaDatabaseUnavailableError } from "@/server/prisma-database-error";
 
 type TownSectionPageProps = {
   params: Promise<{ townSlug?: string; sectionSlug?: string }>;
 };
 
 export function generateStaticParams() {
-  return TOWN_LANDINGS.flatMap((town) =>
-    town.sections.map((section) => ({
-      townSlug: town.slug,
-      sectionSlug: section.slug,
-    })),
-  );
+  return [];
 }
 
 export async function generateMetadata({ params }: TownSectionPageProps): Promise<Metadata> {
   const { townSlug = "", sectionSlug = "" } = await params;
-  const resolved = getTownLandingSection(townSlug, sectionSlug);
+  const town = await getTownLandingByNeighborhoodSlug(townSlug).catch((error) => {
+    if (isPrismaDatabaseUnavailableError(error)) {
+      return null;
+    }
+    throw error;
+  });
+  const resolved = town
+    ? getTownLandingSection(town, sectionSlug)
+    : null;
   if (!resolved) {
     return {
       title: "지역 정보를 찾을 수 없습니다",
@@ -47,7 +49,15 @@ export async function generateMetadata({ params }: TownSectionPageProps): Promis
 
 export default async function TownSectionPage({ params }: TownSectionPageProps) {
   const { townSlug = "", sectionSlug = "" } = await params;
-  const resolved = getTownLandingSection(townSlug, sectionSlug);
+  const townLanding = await getTownLandingByNeighborhoodSlug(townSlug).catch((error) => {
+    if (isPrismaDatabaseUnavailableError(error)) {
+      return null;
+    }
+    throw error;
+  });
+  const resolved = townLanding
+    ? getTownLandingSection(townLanding, sectionSlug)
+    : null;
   if (!resolved) {
     notFound();
   }
@@ -80,6 +90,9 @@ export default async function TownSectionPage({ params }: TownSectionPageProps) 
         <section className="mt-8 grid gap-4 md:grid-cols-[minmax(0,1fr)_280px]">
           <div className="tp-soft-card p-5">
             <h2 className="text-lg font-semibold text-[#173963]">현재 상태</h2>
+            <p className="mt-2 text-sm font-semibold text-[#315b9a]">
+              등록된 글 {section.count ?? 0}개
+            </p>
             <p className="mt-2 text-sm leading-6 text-[#5a7397]">{section.emptyState}</p>
             <p className="mt-4 text-sm leading-6 text-[#5a7397]">
               운영자 정리 콘텐츠와 사용자 제보를 분리해서 쌓을 예정입니다. 사용자는 공개

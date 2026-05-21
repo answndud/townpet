@@ -4093,6 +4093,37 @@
   - app 내부와 active 문서에서는 이전 특정 지역명 검색 결과가 0건이다.
   - `/towns/*` public route는 초기 지역 확정 전까지 404/noindex로 남는다.
 
+### 2026-05-21 | 사용자 선택 동네 기반 동적 허브 전환
+- 완료일: `2026-05-21`
+- 배경:
+  - 지역 허브를 특정 고정 지역이 아니라 사용자가 선택한 대표 동네/지역 기준으로 보여줘야 한다.
+  - DB에는 이미 `Neighborhood` 모델과 사용자 대표 동네 설정 흐름이 있으므로, 새 schema 없이 read-only 허브를 구성할 수 있었다.
+- 변경내용:
+  - `buildTownSlug`, `parseTownSlug`, `buildTownLanding`을 추가해 `/towns/{city--district}` URL과 허브 section 템플릿을 순수 함수로 생성하게 했다.
+  - `getTownLandingByNeighborhoodSlug` query를 추가해 `Neighborhood`의 city/district를 확인하고, 병원/산책/분실/중고거래 글 수를 집계한다.
+  - `/towns/[townSlug]`와 `/towns/[townSlug]/[sectionSlug]`가 DB에 존재하는 지역이면 동적 허브를 렌더링하고, 없으면 404/noindex로 처리한다.
+  - 프로필의 대표 동네 영역에 `내 동네 허브 보기` 링크를 추가했다.
+  - sitemap은 계속 고정 지역을 싣지 않고, 선택 지역 허브는 사용자 진입/공유 URL로 접근한다.
+- 코드문서:
+  - [app/src/lib/town-landing.ts](../app/src/lib/town-landing.ts)
+  - [app/src/server/queries/neighborhood.queries.ts](../app/src/server/queries/neighborhood.queries.ts)
+  - [app/src/app/towns/[townSlug]/page.tsx](../app/src/app/towns/%5BtownSlug%5D/page.tsx)
+  - [app/src/app/towns/[townSlug]/[sectionSlug]/page.tsx](../app/src/app/towns/%5BtownSlug%5D/%5BsectionSlug%5D/page.tsx)
+  - [app/src/app/profile/page.tsx](../app/src/app/profile/page.tsx)
+  - [app/src/server/queries/neighborhood.queries.test.ts](../app/src/server/queries/neighborhood.queries.test.ts)
+  - [app/src/app/towns/page.test.tsx](../app/src/app/towns/page.test.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/lib/town-landing.test.ts src/server/queries/neighborhood.queries.test.ts src/app/towns/page.test.tsx src/app/sitemap.test.ts src/app/page.test.tsx`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app build`
+- 결과:
+  - 선택 지역 slug가 존재하는 `Neighborhood` city/district와 매칭되면 동적 허브가 렌더링된다.
+  - 알 수 없는 지역 slug는 404/noindex로 처리된다.
+  - 특정 지역 기본값 없이 대표 동네 기반 진입이 가능해졌다.
+
 ### 2026-05-21 | 초기 지역 선택 UX 명확화
 - 완료일: `2026-05-21`
 - 배경:

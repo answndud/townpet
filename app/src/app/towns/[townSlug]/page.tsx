@@ -2,19 +2,25 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { getTownLandingBySlug, TOWN_LANDINGS } from "@/lib/town-landing";
+import { getTownLandingByNeighborhoodSlug } from "@/server/queries/neighborhood.queries";
+import { isPrismaDatabaseUnavailableError } from "@/server/prisma-database-error";
 
 type TownPageProps = {
   params: Promise<{ townSlug?: string }>;
 };
 
 export function generateStaticParams() {
-  return TOWN_LANDINGS.map((town) => ({ townSlug: town.slug }));
+  return [];
 }
 
 export async function generateMetadata({ params }: TownPageProps): Promise<Metadata> {
   const { townSlug = "" } = await params;
-  const town = getTownLandingBySlug(townSlug);
+  const town = await getTownLandingByNeighborhoodSlug(townSlug).catch((error) => {
+    if (isPrismaDatabaseUnavailableError(error)) {
+      return null;
+    }
+    throw error;
+  });
   if (!town) {
     return {
       title: "지역 허브를 찾을 수 없습니다",
@@ -38,7 +44,12 @@ export async function generateMetadata({ params }: TownPageProps): Promise<Metad
 
 export default async function TownPage({ params }: TownPageProps) {
   const { townSlug = "" } = await params;
-  const town = getTownLandingBySlug(townSlug);
+  const town = await getTownLandingByNeighborhoodSlug(townSlug).catch((error) => {
+    if (isPrismaDatabaseUnavailableError(error)) {
+      return null;
+    }
+    throw error;
+  });
   if (!town) {
     notFound();
   }
@@ -74,8 +85,8 @@ export default async function TownPage({ params }: TownPageProps) {
             </p>
             <p className="mt-2 text-xl font-semibold text-[#173963]">{town.label}</p>
             <p className="mt-2 text-sm leading-6 text-[#5a7397]">
-              전국 확장보다 한 지역의 정보 밀도를 먼저 높입니다. 운영자 콘텐츠와 사용자
-              제보를 구분해 쌓는 것이 목표입니다.
+              사용자가 선택한 동네를 기준으로 정보를 모읍니다. 운영자 콘텐츠와 사용자
+              제보를 구분해 쌓아갈 예정입니다.
             </p>
           </aside>
         </div>
@@ -93,6 +104,9 @@ export default async function TownPage({ params }: TownPageProps) {
               <h2 className="mt-2 text-xl font-semibold text-[#173963] group-hover:text-[#214d8d]">
                 {section.title}
               </h2>
+              <p className="mt-2 text-sm font-semibold text-[#315b9a]">
+                등록된 글 {section.count ?? 0}개
+              </p>
               <p className="mt-2 text-sm leading-6 text-[#5a7397]">{section.description}</p>
             </div>
             <p className="mt-auto rounded-md border border-[#dbe6f5] bg-[#f8fbff] px-3 py-2 text-xs leading-5 text-[#5a7397]">
