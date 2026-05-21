@@ -1,21 +1,277 @@
 # PLAN.md
 
-목표: TownPet를 기능/운영/품질 기준에서 실제 유저 획득이 가능한 동네 반려생활 정보 서비스 상태로 끌어올린다.
+목표: TownPet를 기능/운영/품질/속도 기준에서 실제 유저 획득이 가능한 동네 반려생활 정보 서비스 상태로 끌어올린다.
 
 완료 이력 archive: [COMPLETED.md](./COMPLETED.md)
 
 ## 범위/원칙
 
-- 우선순위: `서비스 안정성 -> 커뮤니티 핵심 기능 -> 재방문/유입 -> 운영 자동화`
+- 우선순위: `서비스 속도/안정성 -> 커뮤니티 핵심 기능 -> 재방문/유입 -> 운영 자동화`
 - active 문서에는 현재 진행 중이거나 다음에 바로 착수할 항목만 남긴다.
 - 완료 상세와 긴 검증 로그는 [COMPLETED.md](./COMPLETED.md)에 append한다.
 - Phase 2 보류: 결제/보험/정산, 자동 제재 강행, 카카오맵/마켓/공동구매 deep feature 확장.
 
 ## Active
 
+### P0 성능 측정과 속도 개선 루프
+
+- 상태: `in_progress`
+- 배경:
+  - 사용자가 production `https://townpet.vercel.app/` 첫 진입, 게시판 이동, 댓글 작성이 체감상 너무 느리다고 보고했다.
+  - 프레임워크를 Next.js에서 Vite+React로 바꾸거나 DB를 PostgreSQL에서 SQLite로 바꾸는 대형 교체는 현재 우선순위가 아니다.
+  - TownPet의 다음 제품 개선은 마케팅/지역 랜딩보다 먼저 **현재 체감 속도를 정확히 측정하고, 같은 측정 기준으로 개선 전후를 수치화하는 것**이다.
+  - 이후 결과는 `/blog`에 성능 개선 기록으로 남겨 포트폴리오와 운영 문서 양쪽에서 재사용한다.
+- 현재까지의 빠른 관찰:
+  - Node `fetch` 기준 production 서버 응답은 항상 10초로 재현되지는 않았다.
+    - `/`: 약 `110-220ms`
+    - `/feed -> /feed/guest`: 약 `210-240ms`
+    - `/feed/guest`: 약 `100-120ms`
+    - `/api/health`: 첫 요청 약 `946ms`, 이후 약 `212ms`
+    - `/sitemap/0.xml`: 첫 요청 약 `955ms`, 이후 약 `15-27ms`
+  - 따라서 “서버 HTML 응답이 항상 10초”라기보다 아래 중 하나 또는 복합일 가능성이 높다.
+    - 브라우저 JS bundle/hydration 비용
+    - 첫 방문 cold start 또는 DB connection warm-up
+    - Vercel function region과 PostgreSQL region 거리
+    - `/feed` 서버 렌더 중 auth, user, policy, count/list, personalization query가 한 요청에 과하게 묶이는 문제
+    - 댓글 작성 후 전체 상세/댓글 재조회 또는 revalidation 과다
+    - 이미지/font/third-party script가 first paint를 지연하는 문제
+- 원칙:
+  - Next.js와 PostgreSQL은 유지한다.
+  - 큰 교체보다 측정 가능한 병목 제거를 우선한다.
+  - “빠른 느낌”이 아니라 `TTFB`, `FCP`, `LCP`, `TBT/INP`, route transition time, mutation latency를 전후 수치로 비교한다.
+  - 측정 도구를 먼저 만들고, 개선 후 같은 스크립트를 다시 실행한다.
+  - 성능 개선 결과는 `docs/reports`에 raw evidence로 남기고, 정리본은 `blog/29-성능개선-측정과-최적화-기록.md`로 작성한다.
+
+#### P0-Perf-1. Production baseline 측정 하네스 작성
+
+- 목표:
+  - 현재 production 속도를 감이 아니라 반복 가능한 수치로 남긴다.
+- 측정 대상 URL:
+  - `/`
+  - `/feed`
+  - `/feed/guest`
+  - `/posts/{샘플 post id}` 또는 실제 public post detail
+  - `/api/health`
+  - `/api/feed/guest?...` 또는 feed API가 있다면 해당 API
+  - 댓글 작성은 로컬/스테이징 계정 조건이 필요하므로 가능한 범위에서 별도 측정한다.
+- 측정 항목:
+  - 서버/네트워크:
+    - status
+    - redirect 여부
+    - response header 수신 시간
+    - total download time
+    - response size
+    - cold/warm 반복 차이
+  - 브라우저:
+    - navigation start -> first contentful paint
+    - largest contentful paint
+    - DOMContentLoaded
+    - load event
+    - hydration 이후 주요 버튼 클릭 가능 시점
+    - route transition `/` -> `/feed/guest`, `/feed/guest` -> post detail
+  - 앱 내부:
+    - `/feed?perf=1`의 `feed_page_timing` 로그
+    - `bootstrap.session_and_communities`
+    - `bootstrap.viewer_context`
+    - `page_query.all` / `page_query.best`
+    - `personalization.context`
+- 구현 후보:
+  - `app/scripts/measure-production-performance.ts`
+    - Node `fetch` 기반 server timing 측정
+    - 5-10회 반복
+    - cold-ish 첫 요청과 warm 요청을 분리 기록
+    - markdown/JSON 결과를 `docs/reports/performance-baseline-YYYY-MM-DD.md`에 출력
+  - Playwright 기반 browser trace:
+    - `app/scripts/measure-browser-performance.ts` 또는 `app/e2e/performance-smoke.spec.ts`
+    - production URL을 `PERF_BASE_URL`로 받아 측정
+    - desktop/mobile profile 분리
+- 완료 기준:
+  - baseline report가 `docs/reports/performance-baseline-YYYY-MM-DD.md`에 생성된다.
+  - 최소 5회 반복 측정 평균/중앙값/p95 유사값이 있다.
+  - 서버 응답과 브라우저 렌더 지표가 분리되어 있다.
+  - 측정 결과가 blog 작성에 재사용 가능한 표 형태다.
+- 검증:
+  - script unit test 가능하면 추가
+  - `node` 또는 `tsx`로 production target 측정 실행
+  - raw output과 summary markdown 확인
+
+#### P0-Perf-2. `/` 홈을 빠른 shell + 캐시 인기글 구조로 전환
+
+- 목표:
+  - 첫 방문자가 10초 동안 빈 화면이나 느린 피드를 기다리지 않게 한다.
+  - 동시에 에펨코리아/더쿠/디시인사이드처럼 사람들이 작성한 인기글/최신글을 첫 화면에서 볼 수 있게 한다.
+- 중요한 결정:
+  - `/`을 순수 마케팅 페이지만으로 만들지 않는다.
+  - `/`의 첫 화면 shell은 DB 없이 즉시 보이게 만들고, 그 아래에 `인기글/최신글/분실제보/병원후기/산책코스` 섹션을 캐시 또는 lazy fetch로 붙인다.
+- 구조 후보:
+  1. 정적 shell + ISR/cached home feed
+     - hero/CTA는 정적 렌더
+     - 인기글/최신글은 `revalidate: 30-120초` 또는 query cache
+     - 장점: SEO와 초기 렌더 균형
+  2. 정적 shell + client fetch
+     - shell은 즉시 보임
+     - 인기글은 skeleton 후 `/api/home/trending`에서 가져옴
+     - 장점: 인기글 API가 느려도 첫 화면이 막히지 않음
+  3. 서버 캐시된 home feed
+     - `/`에서 인기글을 서버 렌더하되 게스트 공용 결과를 짧게 캐시
+     - 장점: HTML에 인기글이 포함되어 SEO/공유에 유리
+- 권장 MVP:
+  - 1차는 `정적 shell + 서버 캐시된 home feed` 또는 `정적 shell + client fetch` 중 구현 비용이 낮은 방식으로 시작한다.
+  - 개인화/로그인 상태/내 알림은 홈 초기 렌더에 넣지 않는다.
+- 첫 화면 구성:
+  - H1: `우리 동네 반려생활 정보, TownPet`
+  - CTA:
+    - `분실동물 등록`
+    - `마포구 병원 보기`
+    - `산책코스 보기`
+  - 홈 피드 섹션:
+    - `지금 많이 보는 글`
+    - `최근 올라온 동네 글`
+    - `분실/목격 제보`
+    - `병원 후기`
+    - `산책코스`
+  - 지역 캠페인 teaser:
+    - `마포구 반려생활 지도 만들기`
+- 관련 파일:
+  - `app/src/app/page.tsx`
+  - `app/src/app/feed/page.tsx`
+  - `app/src/server/queries/posts/post-list.queries.ts`
+  - 새 후보: `app/src/server/queries/home/home-feed.queries.ts`
+  - 새 후보: `app/src/app/api/home/trending/route.ts`
+- 완료 기준:
+  - `/`이 `/feed`로 redirect하지 않는다.
+  - 인기글/최신글 섹션은 유지된다.
+  - DB/API가 느려도 hero와 주요 CTA는 즉시 렌더된다.
+  - `/` Lighthouse 또는 Playwright 측정에서 baseline 대비 FCP/LCP가 개선된다.
+
+#### P0-Perf-3. `/feed` query 경량화
+
+- 현재 관찰:
+  - `app/src/app/feed/page.tsx`는 한 서버 렌더에서 auth, community nav, viewer context, guest policy, count/list, best/list, personalization context를 처리한다.
+  - `resolveFeedPageSlice`는 `countItems()`와 `listPage()`를 병렬 실행하지만, 전체 페이지 수를 위해 count query가 매번 필요하다.
+- 개선 후보:
+  - 게스트 feed와 로그인 feed의 서버 경로를 더 명확히 분리한다.
+  - 첫 페이지에서는 `countPosts`를 생략하고 `limit + 1` 기반 `hasNextPage`로 전환한다.
+  - 전체 페이지 수 UI가 꼭 필요한 경우에만 count를 lazy fetch한다.
+  - `personalization.context`는 `personalized=1`일 때만 계산하고, 기본 feed에서는 lazy load한다.
+  - `listCommunityNavItems(50)`는 layout/header에서 중복 호출되는지 확인하고 캐시 TTL을 늘린다.
+  - guest read policy와 login required type 조회는 짧은 TTL cache를 적용한다.
+- 완료 기준:
+  - `/feed/guest`와 `/feed`의 server timing phase가 baseline 대비 감소한다.
+  - feed 첫 페이지 렌더가 count query에 묶이지 않는다.
+  - pagination UX가 깨지지 않는다. 필요하면 “더보기” 중심으로 전환한다.
+- 검증:
+  - `feed-page-query.service` 단위 테스트
+  - feed list/count 관련 query test
+  - `/feed?perf=1` production 또는 local 측정 비교
+
+#### P0-Perf-4. 댓글 작성 체감 속도 개선
+
+- 현재 우려:
+  - 댓글 작성 후 전체 post detail 또는 댓글 목록을 다시 가져오면 사용자는 mutation이 느리다고 느낀다.
+  - revalidation 범위가 넓거나 댓글 count/notification side effect가 동기 처리되면 체감 지연이 커질 수 있다.
+- 개선 후보:
+  - 댓글 작성 시 optimistic UI 적용
+  - 서버 action/API는 새 댓글 payload와 count delta만 반환
+  - 댓글 목록 전체 refetch를 피하고 부분 append로 처리
+  - notification 생성/전송은 outbox 또는 비동기 경로로 분리되어 있는지 확인
+  - `revalidatePath` 또는 cache invalidation 범위를 post detail 최소 단위로 제한
+- 완료 기준:
+  - 댓글 submit 클릭 후 사용자가 보는 화면 반응이 200ms 이내에 시작된다.
+  - 서버 완료 전에는 pending 댓글 상태가 보인다.
+  - 실패 시 rollback과 오류 안내가 있다.
+  - 실제 API latency와 perceived latency를 분리 측정한다.
+- 검증:
+  - comment component test
+  - post-comment auth sync e2e 또는 targeted Playwright
+  - mutation latency 측정
+
+#### P0-Perf-5. route bundle/hydration 비용 측정과 절감
+
+- 목표:
+  - 서버 응답은 빠른데 브라우저 체감이 느린 경우를 잡는다.
+- 확인할 항목:
+  - public feed에 rich editor bundle이 섞이는지
+  - admin/ops/personalization 코드가 public route chunk에 섞이는지
+  - `SunEditor`는 글쓰기/수정 화면에서만 dynamic import되는지
+  - header viewer shell fetch가 first paint를 막지 않는지
+  - Google font 로딩이 render blocking처럼 보이는지
+  - image/media proxy가 LCP를 지연하는지
+- 구현 후보:
+  - bundle analyzer 추가 또는 Next build analyze script 추가
+  - Playwright trace에서 JS parse/evaluate time 확인
+  - public route별 JS size budget 문서화
+- 완료 기준:
+  - `/`, `/feed/guest`, post detail의 주요 JS chunk 크기를 알 수 있다.
+  - 불필요한 heavy client component가 public initial route에서 빠진다.
+  - hydration 이후 첫 클릭 가능 시점이 baseline 대비 줄어든다.
+
+#### P0-Perf-6. DB region/index/query plan 점검
+
+- 목표:
+  - PostgreSQL을 유지하면서 실제 query 병목을 줄인다.
+- 확인할 항목:
+  - Vercel function region
+  - PostgreSQL provider region
+  - connection pooling endpoint 사용 여부
+  - cold connection 시간이 큰지
+  - feed/search/comment query의 `EXPLAIN ANALYZE`
+- 우선 query:
+  - feed list:
+    - `scope,status,createdAt`
+    - `scope,status,likeCount,commentCount,viewCount,createdAt`
+    - `neighborhoodId,type,status,createdAt`
+  - search:
+    - `structuredSearchText`
+    - `title/content contains`
+    - pg_trgm 사용 여부
+  - comments:
+    - `postId,createdAt`
+  - reports/moderation:
+    - 운영 화면에서 느린 query
+- 완료 기준:
+  - 느린 query top 5와 원인 후보가 문서화된다.
+  - index 추가가 필요한 경우 migration 계획이 따로 분리된다.
+  - DB region/pooling 설정 문제가 있으면 운영 체크리스트에 반영한다.
+
+#### P0-Perf-7. 개선 전후 블로그/리포트 산출물
+
+- 목표:
+  - 성능 개선을 단순 작업 로그가 아니라 백엔드 포트폴리오 글로 정리한다.
+- 산출물:
+  - `docs/reports/performance-baseline-YYYY-MM-DD.md`
+  - `docs/reports/performance-after-YYYY-MM-DD.md`
+  - `blog/29-성능개선-측정과-최적화-기록.md`
+- blog 구성:
+  1. 문제: 첫 방문/게시판 이동/댓글 작성이 느리게 느껴짐
+  2. 가설: 서버 TTFB vs 브라우저 hydration vs DB query vs mutation UX
+  3. baseline 측정 표
+  4. 적용한 개선:
+     - `/` shell/cached feed
+     - feed count 제거/lazy
+     - personalization lazy
+     - 댓글 optimistic UI
+     - bundle/hydration 개선
+     - DB query/index 점검
+  5. after 측정 표
+  6. 개선률:
+     - FCP/LCP/route transition/mutation perceived latency
+  7. 남은 tradeoff:
+     - 실시간성 vs 캐시
+     - SEO HTML 포함 vs client fetch
+     - 단순 운영 vs 복잡한 cache invalidation
+- 완료 기준:
+  - 개선 전후 수치가 같은 도구/같은 대상/같은 반복 횟수로 비교된다.
+  - 성능 개선률이 README 또는 blog에서 설명 가능한 숫자로 남는다.
+  - “Next.js/PostgreSQL을 바꾸지 않고 병목을 줄였다”는 서사가 완성된다.
+
 ### 마케팅 피드백 기반 제품 획득 루프 재정렬
 
-- 상태: `pending`
+- 상태: `pending_after_performance`
+- 재개 조건:
+  - P0 성능 측정 baseline이 작성된다.
+  - `/` 첫 화면 또는 feed 핵심 병목 중 최소 1개 이상이 개선된다.
+  - 개선 전후 수치가 `docs/reports`에 남는다.
 - 배경:
   - TownPet를 “반려동물 커뮤니티”로 마케팅하면 기존 네이버카페, 인스타그램, 당근, 펫 SNS 앱과 직접 경쟁하게 되어 차별화가 약하다.
   - 현재 repo의 강점은 이미 `LOCAL / GLOBAL`, 구조화 게시판, 검색, 신고/제재/운영 구조에 있으므로 “커뮤니티”보다 “우리 동네 반려생활 문제 해결 정보 DB”로 제품 표면을 재정렬해야 한다.
