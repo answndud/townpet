@@ -230,6 +230,16 @@ export async function getPostMetadataById(id?: string, viewerId?: string) {
         orderBy: { order: "asc" },
         take: 1,
       },
+      lostFoundAlert: {
+        select: {
+          alertType: true,
+          petType: true,
+          breed: true,
+          lastSeenAt: true,
+          lastSeenLocation: true,
+          status: true,
+        },
+      },
     },
   });
 }

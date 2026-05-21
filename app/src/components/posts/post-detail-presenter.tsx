@@ -164,6 +164,17 @@ export const careStatusLabel: Record<string, string> = {
   CANCELLED: "취소",
 };
 
+export const lostFoundAlertTypeLabel: Record<string, string> = {
+  LOST: "실종",
+  FOUND: "목격/보호",
+};
+
+export const lostFoundStatusLabel: Record<string, string> = {
+  ACTIVE: "제보 접수 중",
+  RESOLVED: "해결됨",
+  CLOSED: "종료",
+};
+
 export const authorMarketStatusOptions: MarketStatus[] = [
   MarketStatus.AVAILABLE,
   MarketStatus.RESERVED,

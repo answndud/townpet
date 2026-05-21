@@ -7,6 +7,7 @@ import { BackToFeedButton } from "@/components/posts/back-to-feed-button";
 import { NeighborhoodGateNotice } from "@/components/neighborhood/neighborhood-gate-notice";
 import { PostBoardLinkChip } from "@/components/posts/post-board-link-chip";
 import { GuestPostDetailActions } from "@/components/posts/guest-post-detail-actions";
+import { LostFoundSharePanel } from "@/components/posts/lost-found-share-panel";
 import { PostBookmarkButton } from "@/components/posts/post-bookmark-button";
 import { PostCommentCountStat } from "@/components/posts/post-comment-count-stat";
 import { PostDetailMediaGallery } from "@/components/posts/post-detail-media-gallery";
@@ -349,6 +350,10 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
             ) : null}
           </section>
         </div>
+
+        {post.type === "LOST_FOUND" && post.lostFoundAlert ? (
+          <LostFoundSharePanel post={post} postUrl={postUrl} />
+        ) : null}
 
         {post.hospitalReview ? (
           <section className="tp-card p-5 sm:p-6">

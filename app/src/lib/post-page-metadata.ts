@@ -2,6 +2,11 @@ import type { Metadata } from "next";
 import type { PostScope, PostStatus, PostType } from "@prisma/client";
 
 import { canGuestReadPost } from "@/lib/post-access";
+import {
+  buildLostFoundMetadataDescription,
+  buildLostFoundPosterUrl,
+  buildLostFoundShareTitle,
+} from "@/lib/lost-found-share";
 import { buildPostContentExcerpt } from "@/lib/post-content-text";
 import { toAbsoluteUrl } from "@/lib/site-url";
 
@@ -19,6 +24,14 @@ export type PostMetadataRecord = {
   createdAt: Date | string | null;
   updatedAt: Date | string | null;
   images: PostImageMetadata[];
+  lostFoundAlert?: {
+    alertType?: string | null;
+    petType?: string | null;
+    breed?: string | null;
+    lastSeenAt?: Date | string | null;
+    lastSeenLocation?: string | null;
+    status?: string | null;
+  } | null;
 };
 
 export function buildExcerpt(text: string, maxLength = 160) {
@@ -55,9 +68,15 @@ export function buildPostDetailMetadata(
     loginRequiredTypes,
   });
   const isIndexable = post.status === "ACTIVE" && guestReadable;
-  const description = buildExcerpt(post.content);
+  const isLostFound = post.type === "LOST_FOUND" && Boolean(post.lostFoundAlert);
+  const description = isLostFound ? buildLostFoundMetadataDescription(post) : buildExcerpt(post.content);
   const url = toAbsoluteUrl(`/posts/${post.id}`);
-  const imageUrl = post.images[0]?.url ? toAbsoluteUrl(post.images[0].url) : undefined;
+  const imageUrl = isLostFound
+    ? buildLostFoundPosterUrl(post.id)
+    : post.images[0]?.url
+      ? toAbsoluteUrl(post.images[0].url)
+      : undefined;
+  const title = isLostFound ? buildLostFoundShareTitle(post) : post.title;
   const createdAt = ensureDate(post.createdAt);
   const updatedAt = ensureDate(post.updatedAt) ?? createdAt;
 
@@ -69,7 +88,7 @@ export function buildPostDetailMetadata(
   }
 
   return {
-    title: post.title,
+    title,
     description,
     alternates: {
       canonical: `/posts/${post.id}`,
@@ -81,7 +100,7 @@ export function buildPostDetailMetadata(
     openGraph: {
       type: "article",
       url,
-      title: post.title,
+      title,
       description,
       publishedTime: createdAt.toISOString(),
       modifiedTime: updatedAt.toISOString(),
@@ -89,7 +108,7 @@ export function buildPostDetailMetadata(
     },
     twitter: {
       card: imageUrl ? "summary_large_image" : "summary",
-      title: post.title,
+      title,
       description,
       images: imageUrl ? [imageUrl] : undefined,
     },

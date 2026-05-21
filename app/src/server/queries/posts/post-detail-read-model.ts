@@ -76,6 +76,15 @@ export const CARE_REQUEST_SELECT = {
   status: true,
 } as const;
 
+export const LOST_FOUND_ALERT_SELECT = {
+  alertType: true,
+  petType: true,
+  breed: true,
+  lastSeenAt: true,
+  lastSeenLocation: true,
+  status: true,
+} as const;
+
 export type PostDetailExtras = {
   hospitalReview: {
     hospitalName: string | null;
@@ -139,6 +148,14 @@ export type PostDetailExtras = {
     requirements: string | null;
     rewardAmount: number | null;
     isUrgent: boolean | null;
+    status: string | null;
+  } | null;
+  lostFoundAlert: {
+    alertType: string;
+    petType: string;
+    breed: string | null;
+    lastSeenAt: Date;
+    lastSeenLocation: string;
     status: string | null;
   } | null;
 };

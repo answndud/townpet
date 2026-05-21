@@ -12,6 +12,7 @@ import {
 } from "@prisma/client";
 
 import { BackToFeedButton } from "@/components/posts/back-to-feed-button";
+import { LostFoundSharePanel } from "@/components/posts/lost-found-share-panel";
 import {
   DEFAULT_POST_COMMENT_ROOT_PAGE_SIZE,
   type PostCommentItem,
@@ -666,6 +667,9 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
               careCompletionFeedbacks={careCompletionFeedbacks}
               careFeedbackMessage={careFeedbackMessage}
             />
+            {post.type === PostType.LOST_FOUND && post.lostFoundAlert ? (
+              <LostFoundSharePanel post={post} postUrl={postUrl!} />
+            ) : null}
 
           </>
         ) : (

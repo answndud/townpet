@@ -110,6 +110,14 @@ export type PostDetailItem = {
     isUrgent?: boolean | null;
     status?: string | null;
   } | null;
+  lostFoundAlert?: {
+    alertType?: string | null;
+    petType?: string | null;
+    breed?: string | null;
+    lastSeenAt?: string | Date | null;
+    lastSeenLocation?: string | null;
+    status?: string | null;
+  } | null;
   careApplications?: Array<{
     id: string;
     applicantId: string;

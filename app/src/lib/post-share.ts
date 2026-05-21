@@ -14,6 +14,13 @@ export async function copyPostShareUrl(
   clipboard: ClipboardLike | null | undefined,
   url: string,
 ): Promise<CopyPostShareResult> {
+  return copyTextToClipboard(clipboard, url);
+}
+
+export async function copyTextToClipboard(
+  clipboard: ClipboardLike | null | undefined,
+  text: string,
+): Promise<CopyPostShareResult> {
   if (!clipboard || typeof clipboard.writeText !== "function") {
     return {
       ok: false,
@@ -22,7 +29,7 @@ export async function copyPostShareUrl(
   }
 
   try {
-    await clipboard.writeText(url);
+    await clipboard.writeText(text);
     return {
       ok: true,
       message: COPY_SUCCESS_MESSAGE,

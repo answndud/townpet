@@ -4426,3 +4426,39 @@
   - `pnpm -C app build`
   - `node scripts/refresh-docs-index.mjs --check`
   - `git diff --check`
+
+### 2026-05-21 | 분실동물 공유 이미지/카카오톡 공유 MVP
+- 완료일: `2026-05-21`
+- 배경:
+  - 분실/목격 제보는 작성보다 확산 루프가 더 중요하지만, 기존 상세 화면의 공유는 일반 링크 복사에 머물러 있었다.
+  - 외부 SDK를 바로 붙이면 운영 키와 도메인 설정이 필요하므로, 우선 repo-local MVP로 카카오톡에 붙여넣을 문구와 공유 이미지 URL을 제공하는 방식이 안전했다.
+- 변경내용:
+  - 상세 read model에 `lostFoundAlert`를 붙여 분실/목격 상세 정보와 공유 도구가 같은 데이터 기준을 사용하게 했다.
+  - 회원 상세와 비회원 상세 모두에 `LostFoundSharePanel`을 추가했다.
+  - 공유 패널은 `링크 복사`, `카카오톡 문구 복사`, `공유 이미지 열기`를 제공한다.
+  - `/api/posts/[id]/lost-found-share.svg` route를 추가해 9:16 비율의 공유용 SVG 이미지를 생성한다.
+  - `/api/posts/[id]/share` route를 추가해 분실/목격 공유 액션을 서버 로그로 기록한다.
+  - `LOST_FOUND` 게시글 metadata는 `[TownPet] 우리 동네 실종/목격 반려동물 제보 요청` 형식의 OG/Twitter title과 공유 이미지 URL을 사용한다.
+  - 공유 문구와 SVG에는 위치, 시간, 동물 종류, 특징만 넣고 개인 연락처/집 주소 전체를 공개 댓글에 남기지 말라는 안내를 포함했다.
+- 코드문서:
+  - [app/src/components/posts/lost-found-share-panel.tsx](../app/src/components/posts/lost-found-share-panel.tsx)
+  - [app/src/app/api/posts/[id]/lost-found-share.svg/route.ts](../app/src/app/api/posts/%5Bid%5D/lost-found-share.svg/route.ts)
+  - [app/src/app/api/posts/[id]/share/route.ts](../app/src/app/api/posts/%5Bid%5D/share/route.ts)
+  - [app/src/lib/lost-found-share.ts](../app/src/lib/lost-found-share.ts)
+  - [app/src/lib/post-page-metadata.ts](../app/src/lib/post-page-metadata.ts)
+  - [app/src/server/queries/posts/post-detail-extras.ts](../app/src/server/queries/posts/post-detail-extras.ts)
+  - [app/src/server/queries/posts/post-detail-read-model.ts](../app/src/server/queries/posts/post-detail-read-model.ts)
+  - [app/src/components/posts/post-detail-client.tsx](../app/src/components/posts/post-detail-client.tsx)
+  - [app/src/app/posts/[id]/guest/page.tsx](../app/src/app/posts/%5Bid%5D/guest/page.tsx)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/lib/lost-found-share.test.ts src/lib/post-page-metadata.test.ts src/components/posts/post-detail-action-accessibility.test.tsx src/components/posts/post-detail-info-panels-accessibility.test.ts src/server/queries/post.queries.test.ts`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `corepack pnpm@9.12.3 -C app build`
+  - `PUPPETEER_SKIP_DOWNLOAD=1 corepack pnpm@9.12.3 dlx impeccable detect src/app src/components --fast`
+  - `git diff --check`
+  - local browser smoke: 임시 `LOST_FOUND` 게시글로 `/posts/{id}/guest`, `/api/posts/{id}/lost-found-share.svg`, `/api/posts/{id}/share` 확인 후 임시 게시글 삭제
+- 결과:
+  - 분실/목격 상세에서 공유 문구와 공유 이미지가 생성된다.
+  - SVG 공유 이미지는 개인정보 대신 확인 위치/시간/특징 중심으로 구성된다.
+  - 공유 액션은 서버 로그로 추적할 수 있다.

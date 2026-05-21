@@ -25,6 +25,8 @@ import {
   careTypeLabel,
   emptyValue,
   formatDetailDateTime,
+  lostFoundAlertTypeLabel,
+  lostFoundStatusLabel,
   marketConditionLabel,
   marketStatusLabel,
   marketTypeLabel,
@@ -578,6 +580,46 @@ export function PostDetailInfoPanels({
               {careFeedbackMessage}
             </p>
           ) : null}
+        </PostDetailInfoSection>
+      ) : null}
+
+      {post.lostFoundAlert ? (
+        <PostDetailInfoSection title="분실/목격 제보 정보">
+          <PostDetailInfoItem
+            label="제보 유형"
+            value={renderTextValue(
+              post.lostFoundAlert.alertType
+                ? (lostFoundAlertTypeLabel[post.lostFoundAlert.alertType] ??
+                  post.lostFoundAlert.alertType)
+                : null,
+            )}
+          />
+          <PostDetailInfoItem
+            label="상태"
+            value={renderTextValue(
+              post.lostFoundAlert.status
+                ? (lostFoundStatusLabel[post.lostFoundAlert.status] ??
+                  post.lostFoundAlert.status)
+                : null,
+            )}
+          />
+          <PostDetailInfoItem
+            label="마지막 확인"
+            value={renderTextValue(formatDetailDateTime(post.lostFoundAlert.lastSeenAt))}
+          />
+          <PostDetailInfoItem
+            label="동물 종류"
+            value={renderTextValue(post.lostFoundAlert.petType)}
+          />
+          <PostDetailInfoItem
+            label="품종/특징"
+            value={renderTextValue(post.lostFoundAlert.breed)}
+          />
+          <PostDetailInfoItem
+            label="확인 위치"
+            span="wide"
+            value={renderTextValue(post.lostFoundAlert.lastSeenLocation)}
+          />
         </PostDetailInfoSection>
       ) : null}
 
