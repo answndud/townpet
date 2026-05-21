@@ -33,4 +33,14 @@ describe("robots", () => {
       ]),
     );
   });
+
+  it("does not block public acquisition and guide routes", () => {
+    const disallowRules = getDisallowRules();
+
+    expect(disallowRules).not.toContain("/");
+    expect(disallowRules).not.toContain("/feed");
+    expect(disallowRules).not.toContain("/boards/adoption");
+    expect(disallowRules).not.toContain("/guides/");
+    expect(disallowRules).not.toContain("/guides/24h-vet-checklist");
+  });
 });

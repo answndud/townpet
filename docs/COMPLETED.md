@@ -4049,6 +4049,36 @@
   - 각 guide는 관련 feed 또는 작성 플로우로 이어진다.
   - 홈 Live board가 비어도 검색형 guide로 이어지는 다음 행동이 생겼다.
 
+### 2026-05-21 | 검색엔진 제출 체크리스트 정리
+- 완료일: `2026-05-21`
+- 배경:
+  - `P0-6. robots/sitemap/canonical/Naver Search Advisor 체크리스트` 단계로, guide와 public landing이 늘어난 뒤 검색엔진 제출/검증 절차를 운영 문서로 고정해야 했다.
+  - robots/sitemap/canonical 정책이 코드와 문서에서 어긋나면 private route 노출, public route 미수집, 중복 URL 색인 문제가 생길 수 있다.
+- 변경내용:
+  - 네이버 서치어드바이저 공식 가이드 기준으로 `검색엔진_제출_체크리스트.md`를 추가했다.
+  - 체크리스트에 production URL, robots/sitemap 확인 명령, 네이버 수동 제출 순서, canonical/noindex 정책, 장애 대응 표를 정리했다.
+  - 운영 문서 안내의 Active 운영 문서 목록에 검색엔진 제출 체크리스트를 추가했다.
+  - robots test에 public acquisition/guide route가 disallow되지 않는 회귀 테스트를 추가했다.
+  - sitemap test에 admin/API가 sitemap에 섞이지 않는 회귀 테스트를 보강했다.
+- 코드문서:
+  - [business/operations/검색엔진_제출_체크리스트.md](../business/operations/검색엔진_제출_체크리스트.md)
+  - [business/operations/운영_문서_안내.md](../business/operations/운영_문서_안내.md)
+  - [app/src/app/robots.test.ts](../app/src/app/robots.test.ts)
+  - [app/src/app/sitemap.test.ts](../app/src/app/sitemap.test.ts)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/app/robots.test.ts src/app/sitemap.test.ts src/app/guides/page.test.tsx src/lib/post-page-metadata.test.ts`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app build`
+  - `node scripts/refresh-docs-index.mjs --check`
+  - production `robots.txt`, `sitemap/0.xml`, health 확인
+- 결과:
+  - public route 추가 이후 검색엔진 제출 전후 확인 순서가 운영 문서로 고정됐다.
+  - robots와 sitemap의 public/private 경계가 테스트로 보강됐다.
+  - 다음 SEO 관련 변경은 같은 체크리스트를 기준으로 검증한다.
+
 ### 2026-05-21 | 홈 CTA 하단 밀도 정리
 - 완료일: `2026-05-21`
 - 배경:

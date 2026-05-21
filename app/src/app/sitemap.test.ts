@@ -64,6 +64,8 @@ describe("sitemap", () => {
     expect(urls).not.toContain("http://localhost:3000/register");
     expect(urls).not.toContain("http://localhost:3000/profile");
     expect(urls).not.toContain("http://localhost:3000/notifications");
+    expect(urls).not.toContain("http://localhost:3000/admin");
+    expect(urls.some((url) => url.includes("/api/"))).toBe(false);
   });
 
   it("falls back to static routes when the database is unavailable", async () => {
