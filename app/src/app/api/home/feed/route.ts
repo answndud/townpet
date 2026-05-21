@@ -58,7 +58,9 @@ function isHomePreviewEligible(rawPost: RawHomePost) {
     .join(" ")
     .toLowerCase();
 
-  return !/\b(e2e|pw search|pwsearch|test-user|playwright)\b/u.test(searchableText);
+  return !/(테스트|\b(e2e|pw search|pwsearch|test-user|playwright)\b)/u.test(
+    searchableText,
+  );
 }
 
 function serializeHomePost(rawPost: RawHomePost) {

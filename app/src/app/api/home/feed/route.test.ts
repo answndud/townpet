@@ -130,6 +130,11 @@ describe("GET /api/home/feed", () => {
       items: [
         createPost({
           id: "post-test",
+          title: "이미지 업로드 테스트",
+          content: "평범한 본문",
+        }),
+        createPost({
+          id: "post-playwright",
           title: "평범한 제목",
           content: "playwright generated body",
         }),
