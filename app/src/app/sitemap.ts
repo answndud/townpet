@@ -4,6 +4,7 @@ import { PostScope, PostStatus } from "@prisma/client";
 import { hasBreedLoungeRoute } from "@/lib/pet-profile";
 import { prisma } from "@/lib/prisma";
 import { getSiteOrigin } from "@/lib/site-url";
+import { listTownLandingPaths } from "@/lib/town-landing";
 import { isPrismaDatabaseUnavailableError } from "@/server/prisma-database-error";
 import { listEffectiveBreedCatalogGroupedBySpecies } from "@/server/queries/breed-catalog.queries";
 import { getGuestReadLoginRequiredPostTypes } from "@/server/queries/policy.queries";
@@ -81,6 +82,11 @@ export default async function sitemap({
             changeFrequency: "daily",
             priority: 0.6,
           },
+          ...listTownLandingPaths().map((path) => ({
+            url: `${siteOrigin}${path}`,
+            changeFrequency: "daily" as const,
+            priority: path === "/towns/mapo" ? 0.8 : 0.7,
+          })),
           {
             url: `${siteOrigin}/terms`,
             changeFrequency: "yearly",

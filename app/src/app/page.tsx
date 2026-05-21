@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { HomeFeedPreview } from "@/components/home/home-feed-preview";
 import { LAUNCH_REGION } from "@/lib/launch-region";
+import { TOWN_LANDING } from "@/lib/town-landing";
 
 export const dynamic = "force-static";
 
@@ -71,6 +72,12 @@ export default function HomePage() {
             >
               병원/산책 정보 보기
             </Link>
+            <Link
+              href={TOWN_LANDING.href}
+              className="tp-btn-soft tp-btn-md inline-flex min-h-11 items-center justify-center px-5"
+            >
+              마포구 지도 보기
+            </Link>
           </div>
         </div>
 
@@ -132,6 +139,12 @@ export default function HomePage() {
                 </span>
               ))}
             </div>
+            <Link
+              href={TOWN_LANDING.href}
+              className="tp-btn-soft mt-4 inline-flex min-h-10 items-center px-3 text-xs"
+            >
+              지역 허브 보기
+            </Link>
           </div>
           <div className="flex flex-wrap gap-2">
             {TOPIC_LINKS.map((topic) => (

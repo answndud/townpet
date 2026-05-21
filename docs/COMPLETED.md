@@ -4036,3 +4036,32 @@
   - local Playwright render check at `http://localhost:3000/`
   - `node scripts/refresh-docs-index.mjs --check`
   - `git diff --check`
+
+### 2026-05-21 | 지역 허브 route 추가
+- 완료일: `2026-05-21`
+- 배경:
+  - `P0-4. 지역 허브 route 추가` 단계로, 초기 지역인 마포구에 대해 SEO/QR/홈 유입을 받을 정적 landing surface가 필요했다.
+  - 커뮤니티 글이 충분히 쌓이기 전에도 병원, 산책, 분실/목격, 중고거래의 빈 상태와 제보 CTA를 명확히 보여줘야 했다.
+- 변경내용:
+  - `TOWN_LANDING` 설정을 추가해 `/towns/mapo`와 하위 섹션 path를 한곳에서 관리하게 했다.
+  - `/towns/mapo`, `/towns/mapo/hospitals`, `/towns/mapo/walks`, `/towns/mapo/lost`, `/towns/mapo/used-market` route를 추가했다.
+  - 각 route에 canonical metadata와 공유용 description을 추가했다.
+  - `/` 홈에서 `/towns/mapo`로 이동하는 CTA를 추가했다.
+  - sitemap에 지역 허브와 하위 섹션 route를 포함했다.
+  - route render, metadata, sitemap, town landing 설정 테스트를 추가했다.
+- 코드문서:
+  - [app/src/lib/town-landing.ts](../app/src/lib/town-landing.ts)
+  - [app/src/lib/town-landing.test.ts](../app/src/lib/town-landing.test.ts)
+  - [app/src/app/towns/[townSlug]/page.tsx](../app/src/app/towns/[townSlug]/page.tsx)
+  - [app/src/app/towns/[townSlug]/[sectionSlug]/page.tsx](../app/src/app/towns/[townSlug]/[sectionSlug]/page.tsx)
+  - [app/src/app/towns/page.test.tsx](../app/src/app/towns/page.test.tsx)
+  - [app/src/app/sitemap.ts](../app/src/app/sitemap.ts)
+  - [app/src/app/sitemap.test.ts](../app/src/app/sitemap.test.ts)
+  - [app/src/app/page.tsx](../app/src/app/page.tsx)
+- 검증:
+  - `pnpm -C app test -- src/app/page.test.tsx src/app/towns/page.test.tsx src/lib/town-landing.test.ts src/app/sitemap.test.ts`
+  - `pnpm -C app typecheck`
+  - `pnpm -C app lint`
+  - `pnpm -C app build`
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `git diff --check`
