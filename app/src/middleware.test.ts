@@ -174,6 +174,20 @@ describe("middleware admin path protection", () => {
 });
 
 describe("middleware guest feed rewrite", () => {
+  it("keeps static CSP on the public home shell even when strict CSP is enabled", async () => {
+    process.env.CSP_ENFORCE_STRICT = "1";
+
+    const request = new NextRequest("https://townpet.test/");
+    const response = await middleware(request);
+
+    expect(response.headers.get("content-security-policy")).toContain(
+      "script-src 'self' 'unsafe-inline'",
+    );
+    expect(response.headers.get("content-security-policy")).not.toContain("'strict-dynamic'");
+    expect(response.headers.get("x-nonce")).toBeNull();
+    expect(response.headers.get("x-csp-nonce")).toBeNull();
+  });
+
   it("redirects guest /search requests to the guest feed search query", async () => {
     const request = new NextRequest("https://townpet.test/search?q=%EC%82%B0%EC%B1%85&searchIn=TITLE");
     const response = await middleware(request);
