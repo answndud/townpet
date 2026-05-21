@@ -4012,6 +4012,32 @@
   - `node scripts/refresh-docs-index.mjs --check`
   - `git diff --check`
 
+### 2026-05-21 | 사용자 선택 동네 허브 진입 흐름 연결
+- 완료일: `2026-05-21`
+- 배경:
+  - `/towns/{city--district}` 동적 허브와 프로필의 `내 동네 허브 보기`는 준비됐지만, 신규 사용자가 홈에서 온보딩을 거쳐 자기 동네 허브까지 이어지는 흐름이 약했다.
+  - `/` 홈은 static/indexable surface로 유지해야 하므로 사용자별 대표 동네 판정은 온보딩/프로필처럼 인증 상태를 아는 화면에서 처리해야 했다.
+- 변경내용:
+  - 홈 CTA 문구를 `내 동네 허브 시작하기`, `내 동네 설정하고 허브 보기`로 조정해 동네 선택 후 허브로 이어지는 흐름을 명확히 했다.
+  - 온보딩 동네 선택 영역에서 현재 대표 동네의 `/towns/{city--district}` 허브 미리보기 링크를 보여준다.
+  - 온보딩에서 동네 저장 성공 시 선택한 대표 동네 허브로 이동한다.
+  - 홈은 계속 `force-static`으로 유지했고, 특정 지역 기본값은 추가하지 않았다.
+- 코드문서:
+  - [app/src/app/page.tsx](../app/src/app/page.tsx)
+  - [app/src/components/onboarding/onboarding-form.tsx](../app/src/components/onboarding/onboarding-form.tsx)
+  - [app/src/app/page.test.tsx](../app/src/app/page.test.tsx)
+  - [app/src/components/onboarding/onboarding-form-accessibility.test.tsx](../app/src/components/onboarding/onboarding-form-accessibility.test.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/components/onboarding/onboarding-form-accessibility.test.tsx src/app/page.test.tsx src/lib/town-landing.test.ts`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app build`
+- 결과:
+  - 신규 사용자는 홈 CTA에서 온보딩으로 들어가 동네 저장 후 선택한 대표 동네 허브로 이동할 수 있다.
+  - 홈은 사용자별 동적 처리 없이 정적 landing 역할을 유지한다.
+
 ### 2026-05-21 | 루트 정적 홈 표시 회귀 수정
 - 완료일: `2026-05-21`
 - 배경:

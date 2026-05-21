@@ -8,6 +8,7 @@ import {
   buildNeighborhoodRegionKey,
   normalizeNeighborhoodCity,
 } from "@/lib/neighborhood-region";
+import { buildTownSlug } from "@/lib/town-landing";
 import {
   setPrimaryNeighborhoodAction,
   updateProfileAction,
@@ -40,6 +41,15 @@ function resolvePrimaryRegionKey(
   }
 
   return "";
+}
+
+function buildTownHref(neighborhood: NeighborhoodOption | undefined) {
+  if (!neighborhood) {
+    return null;
+  }
+
+  const slug = buildTownSlug(neighborhood.city, neighborhood.district);
+  return slug ? `/towns/${encodeURIComponent(slug)}` : null;
 }
 
 type NeighborhoodSearchResponse =
@@ -151,6 +161,7 @@ export function OnboardingForm({
 
     return map;
   }, [searchItems, selectedNeighborhoods]);
+  const primaryTownHref = buildTownHref(selectedNeighborhoodMap.get(primaryId));
 
   const toggleNeighborhood = (neighborhoodId: string) => {
     setSelectedIds((prev) => {
@@ -208,7 +219,16 @@ export function OnboardingForm({
         return;
       }
 
-      setMessage("내 동네가 저장되었습니다.");
+      const nextTownHref = buildTownHref(selectedNeighborhoodMap.get(primaryId));
+      setMessage(
+        nextTownHref
+          ? "내 동네가 저장되었습니다. 동네 허브로 이동합니다."
+          : "내 동네가 저장되었습니다.",
+      );
+      if (nextTownHref) {
+        router.push(nextTownHref);
+        return;
+      }
       router.refresh();
     });
   };
@@ -375,21 +395,34 @@ export function OnboardingForm({
             </div>
           </div>
 
-          <p className="text-xs text-[#5a7398]">나중에 프로필에서 동네를 설정해도 됩니다.</p>
-          <button
-            data-testid="onboarding-neighborhood-submit"
-            type="submit"
-            className="tp-btn-primary inline-flex min-h-10 items-center self-start px-4 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0]"
-            disabled={isPending || selectedIds.length === 0 || !primaryId}
-          >
-            동네 저장
-          </button>
-          <Link
-            href="/feed"
-            className="tp-btn-soft inline-flex min-h-10 items-center self-start px-4 py-2 text-xs font-semibold"
-          >
-            나중에 설정하기
-          </Link>
+          <p className="text-xs text-[#5a7398]">
+            동네를 저장하면 선택한 대표 동네 허브로 이동합니다. 나중에 프로필에서 다시
+            바꿀 수 있습니다.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <button
+              data-testid="onboarding-neighborhood-submit"
+              type="submit"
+              className="tp-btn-primary inline-flex min-h-10 items-center self-start px-4 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0]"
+              disabled={isPending || selectedIds.length === 0 || !primaryId}
+            >
+              동네 저장
+            </button>
+            {primaryTownHref ? (
+              <Link
+                href={primaryTownHref}
+                className="tp-btn-soft inline-flex min-h-10 items-center self-start px-4 py-2 text-xs font-semibold"
+              >
+                선택 동네 허브 미리보기
+              </Link>
+            ) : null}
+            <Link
+              href="/feed"
+              className="tp-btn-soft inline-flex min-h-10 items-center self-start px-4 py-2 text-xs font-semibold"
+            >
+              나중에 설정하기
+            </Link>
+          </div>
         </form>
       </section>
 
