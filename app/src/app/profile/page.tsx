@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 
 import { buildDefaultBreedCatalogBySpecies } from "@/lib/breed-catalog";
 import { getPasswordSetupCopy } from "@/lib/password-setup";
+import { buildTownSlug } from "@/lib/town-landing";
 import {
   canManagePassword,
   getPasswordManagementNoticeMessage,
@@ -85,6 +86,14 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
 
   const isNicknameMissing = !user.nickname?.trim();
   const primaryNeighborhood = user.neighborhoods.find((item) => item.isPrimary);
+  const primaryTownHref = primaryNeighborhood
+    ? `/towns/${encodeURIComponent(
+        buildTownSlug(
+          primaryNeighborhood.neighborhood.city,
+          primaryNeighborhood.neighborhood.district,
+        ),
+      )}`
+    : null;
 
   const [postCount, bookmarkedPostCount] = await Promise.all([
     countUserPosts({ authorId: user.id }),
@@ -186,6 +195,14 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
                 {getPasswordManagementUnavailableMessage()}
               </p>
             )}
+            {primaryTownHref ? (
+              <Link
+                href={primaryTownHref}
+                className="tp-btn-soft tp-text-accent inline-flex min-h-10 items-center px-3 text-xs"
+              >
+                내 동네 허브 보기
+              </Link>
+            ) : null}
           </div>
         </section>
 

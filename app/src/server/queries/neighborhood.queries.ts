@@ -1,3 +1,5 @@
+import { PostStatus, PostType } from "@prisma/client";
+
 import { prisma } from "@/lib/prisma";
 import {
   buildNeighborhoodRegionKey,
@@ -6,6 +8,11 @@ import {
   normalizeNeighborhoodCity,
   normalizeNeighborhoodDistrict,
 } from "@/lib/neighborhood-region";
+import {
+  buildTownLanding,
+  parseTownSlug,
+  type TownLandingSectionSlug,
+} from "@/lib/town-landing";
 
 export async function listNeighborhoods() {
   return prisma.neighborhood.findMany({
@@ -166,4 +173,58 @@ export async function listNeighborhoodDistricts(city?: string) {
     .map((row) => normalizeNeighborhoodDistrict(row.district))
     .filter((district) => isDisplayableNeighborhoodRegion(trimmedCity, district))
     .sort((a, b) => a.localeCompare(b, "ko"));
+}
+
+const TOWN_SECTION_POST_TYPES: Record<TownLandingSectionSlug, PostType> = {
+  hospitals: PostType.HOSPITAL_REVIEW,
+  walks: PostType.WALK_ROUTE,
+  lost: PostType.LOST_FOUND,
+  "used-market": PostType.MARKET_LISTING,
+};
+
+export async function getTownLandingByNeighborhoodSlug(slug: string) {
+  const parsed = parseTownSlug(slug);
+  if (!parsed) {
+    return null;
+  }
+
+  const city = normalizeNeighborhoodCity(parsed.city);
+  const district = normalizeNeighborhoodDistrict(parsed.district);
+  if (!city || !district || !isDisplayableNeighborhoodRegion(city, district)) {
+    return null;
+  }
+
+  const neighborhoods = await prisma.neighborhood.findMany({
+    where: {
+      city: { in: getNeighborhoodCityVariants(city) },
+      district,
+    },
+    select: { id: true },
+  });
+  const neighborhoodIds = neighborhoods.map((item) => item.id);
+  if (neighborhoodIds.length === 0) {
+    return null;
+  }
+
+  const sectionEntries = Object.entries(TOWN_SECTION_POST_TYPES) as Array<
+    [TownLandingSectionSlug, PostType]
+  >;
+  const sectionCounts = await Promise.all(
+    sectionEntries.map(async ([section, type]) => {
+      const count = await prisma.post.count({
+        where: {
+          neighborhoodId: { in: neighborhoodIds },
+          status: PostStatus.ACTIVE,
+          type,
+        },
+      });
+      return [section, count] as const;
+    }),
+  );
+
+  return buildTownLanding({
+    city,
+    district,
+    counts: Object.fromEntries(sectionCounts),
+  });
 }
