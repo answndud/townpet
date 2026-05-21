@@ -69,6 +69,9 @@ export type PostSearchSuggestionRow = {
   } | null;
   walkRoute?: {
     routeName?: string | null;
+    crowdedTime?: string | null;
+    leashRequiredNote?: string | null;
+    cautionNote?: string | null;
     safetyTags?: string[] | null;
   } | null;
   adoptionListing?: {
@@ -97,6 +100,9 @@ export function listStructuredSuggestionCandidates(row: PostSearchSuggestionRow)
     row.placeReview?.placeType,
     row.placeReview?.address,
     row.walkRoute?.routeName,
+    row.walkRoute?.crowdedTime,
+    row.walkRoute?.leashRequiredNote,
+    row.walkRoute?.cautionNote,
     ...(row.walkRoute?.safetyTags ?? []),
     row.adoptionListing?.shelterName,
     row.adoptionListing?.region,

@@ -137,10 +137,19 @@ describe("post validations", () => {
   it("parses walk route defaults", () => {
     const result = walkRouteSchema.safeParse({
       routeName: "산책로",
+      largeDogFriendly: "true",
+      crowdedTime: "주말 오후",
+      leashRequiredNote: "자전거도로 옆",
+      hasWasteBags: "false",
+      hasWaterStation: "true",
+      cautionNote: "공사 구간",
     });
 
     expect(result.success).toBe(true);
     expect(result.data?.difficulty).toBeUndefined();
+    expect(result.data?.largeDogFriendly).toBe(true);
+    expect(result.data?.hasWasteBags).toBe(false);
+    expect(result.data?.hasWaterStation).toBe(true);
   });
 
   it("parses adoption listing enums and false booleans correctly", () => {

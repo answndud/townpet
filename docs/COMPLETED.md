@@ -4535,3 +4535,39 @@
   - 병원 후기는 자유 비방 글보다 방문 경험 비교 데이터처럼 작성된다.
   - 위험 표현은 차단이 아니라 admin 검토 신호와 metadata로 남는다.
   - 병원·장소 정보 정정 요청 경로가 public footer에서 접근 가능하다.
+
+### 2026-05-21 | 산책코스 카드 필드 보강
+- 완료일: `2026-05-21`
+- 배경:
+  - 산책코스 글은 기존 거리, 시간, 난이도, 편의시설만으로는 실제 이용 판단에 필요한 비교 정보가 부족했다.
+  - 첫 웨지인 `분실동물 + 병원 + 산책`에서 산책코스는 지역 허브와 SEO surface에 재사용될 수 있어 구조화된 생활 정보가 필요했다.
+- 변경내용:
+  - `WalkRoute`에 대형견 적합 여부, 혼잡 시간, 목줄 필수 구간, 배변봉투함, 물 마실 곳, 위험/공사 구간 필드를 추가했다.
+  - 산책코스 작성 폼에 새 필드와 작성 기준 안내를 추가했다.
+  - 작성 select에 누락되어 있던 `동네 산책코스` 분류를 추가하고 LOCAL scope로 고정했다.
+  - 산책코스 상세와 비회원 상세에 새 필드와 난이도 한국어 라벨을 노출했다.
+  - 검색 구조화 텍스트와 검색 제안 후보에 혼잡 시간, 목줄 구간, 주의 구간을 포함했다.
+- 코드문서:
+  - [app/prisma/schema.prisma](../app/prisma/schema.prisma)
+  - [app/prisma/migrations/20260521204500_add_walk_route_comparison_fields/migration.sql](../app/prisma/migrations/20260521204500_add_walk_route_comparison_fields/migration.sql)
+  - [app/src/lib/validations/posts/post.ts](../app/src/lib/validations/posts/post.ts)
+  - [app/src/components/posts/post-create-form-options.ts](../app/src/components/posts/post-create-form-options.ts)
+  - [app/src/components/posts/post-create-form-state.ts](../app/src/components/posts/post-create-form-state.ts)
+  - [app/src/components/posts/post-create-structured-fields.tsx](../app/src/components/posts/post-create-structured-fields.tsx)
+  - [app/src/components/posts/post-create-submit.ts](../app/src/components/posts/post-create-submit.ts)
+  - [app/src/components/posts/post-detail-info-panels.tsx](../app/src/components/posts/post-detail-info-panels.tsx)
+  - [app/src/app/posts/[id]/guest/page.tsx](../app/src/app/posts/%5Bid%5D/guest/page.tsx)
+  - [app/src/lib/post-structured-search.ts](../app/src/lib/post-structured-search.ts)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app exec prisma format`
+  - `corepack pnpm@9.12.3 -C app exec prisma generate`
+  - `corepack pnpm@9.12.3 -C app exec prisma migrate deploy`
+  - `corepack pnpm@9.12.3 -C app test -- src/lib/validations/post.test.ts src/components/posts/post-create-submit.test.ts src/components/posts/post-create-structured-fields.test.tsx src/lib/post-structured-search.test.ts src/server/queries/post.queries.test.ts`
+  - `PUPPETEER_SKIP_DOWNLOAD=1 corepack pnpm@9.12.3 dlx impeccable detect src/app src/components --fast`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+  - local browser smoke: 인증 계정으로 `/posts/new`에 접속해 `동네 산책코스` 분류 선택 후 desktop/mobile screenshot 확인
+- 결과:
+  - 산책코스 글은 블로그식 후기보다 대형견/혼잡/목줄/편의/주의 구간을 빠르게 비교할 수 있는 구조가 됐다.
+  - 산책코스 작성 분류가 실제 작성 UI에 노출된다.
+  - 지역 허브와 검색에서 산책코스 구조화 텍스트를 재사용할 수 있다.

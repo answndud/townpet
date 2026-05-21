@@ -36,6 +36,7 @@ import {
   renderBooleanValue,
   renderNumberValue,
   renderTextValue,
+  routeDifficultyLabel,
   volunteerStatusLabel,
 } from "@/components/posts/post-detail-presenter";
 import type { PostDetailItem } from "@/components/posts/post-detail-types";
@@ -203,7 +204,24 @@ export function PostDetailInfoPanels({
           <PostDetailInfoItem label="코스명" value={renderTextValue(post.walkRoute.routeName)} />
           <PostDetailInfoItem label="거리" value={renderNumberValue(post.walkRoute.distance, "km")} />
           <PostDetailInfoItem label="시간" value={renderNumberValue(post.walkRoute.duration, "분")} />
-          <PostDetailInfoItem label="난이도" value={renderTextValue(post.walkRoute.difficulty)} />
+          <PostDetailInfoItem
+            label="난이도"
+            value={renderTextValue(
+              post.walkRoute.difficulty
+                ? (routeDifficultyLabel[post.walkRoute.difficulty] ?? post.walkRoute.difficulty)
+                : null,
+            )}
+          />
+          <PostDetailInfoItem
+            label="대형견"
+            value={renderBooleanValue(post.walkRoute.largeDogFriendly, "적합", "주의 필요")}
+          />
+          <PostDetailInfoItem label="혼잡 시간" value={renderTextValue(post.walkRoute.crowdedTime)} />
+          <PostDetailInfoItem
+            label="목줄 구간"
+            span="wide"
+            value={renderTextValue(post.walkRoute.leashRequiredNote)}
+          />
           <PostDetailInfoItem
             label="편의시설"
             span="wide"
@@ -212,10 +230,17 @@ export function PostDetailInfoPanels({
                 post.walkRoute.hasStreetLights ? "가로등" : null,
                 post.walkRoute.hasRestroom ? "화장실" : null,
                 post.walkRoute.hasParkingLot ? "주차장" : null,
+                post.walkRoute.hasWasteBags ? "배변봉투함" : null,
+                post.walkRoute.hasWaterStation ? "물 마실 곳" : null,
               ]
                 .filter(Boolean)
                 .join(" · ") || "정보 없음"
             }
+          />
+          <PostDetailInfoItem
+            label="주의 구간"
+            span="full"
+            value={renderTextValue(post.walkRoute.cautionNote)}
           />
           <PostDetailInfoItem
             label="안전 태그"

@@ -72,9 +72,15 @@ export type PostDetailItem = {
     distance?: number | null;
     duration?: number | null;
     difficulty?: string | null;
+    largeDogFriendly?: boolean | null;
+    crowdedTime?: string | null;
+    leashRequiredNote?: string | null;
     hasStreetLights?: boolean | null;
     hasRestroom?: boolean | null;
     hasParkingLot?: boolean | null;
+    hasWasteBags?: boolean | null;
+    hasWaterStation?: boolean | null;
+    cautionNote?: string | null;
     safetyTags?: string[] | null;
   } | null;
   adoptionListing?: {

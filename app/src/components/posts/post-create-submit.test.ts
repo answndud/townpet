@@ -64,6 +64,12 @@ describe("post create submit helpers", () => {
       walkRoute: {
         ...createInitialPostCreateFormState("").walkRoute,
         routeName: "양재천",
+        largeDogFriendly: "true",
+        crowdedTime: "주말 오후",
+        leashRequiredNote: "자전거도로 옆",
+        hasWasteBags: "true",
+        hasWaterStation: "false",
+        cautionNote: "데크 미끄럼",
         safetyTags: " 차량주의, 야간조명 , ",
       },
     };
@@ -78,6 +84,12 @@ describe("post create submit helpers", () => {
       payload: {
         walkRoute: {
           routeName: "양재천",
+          largeDogFriendly: "true",
+          crowdedTime: "주말 오후",
+          leashRequiredNote: "자전거도로 옆",
+          hasWasteBags: "true",
+          hasWaterStation: "false",
+          cautionNote: "데크 미끄럼",
           safetyTags: ["차량주의", "야간조명"],
         },
       },

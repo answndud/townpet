@@ -16,6 +16,9 @@ type StructuredSearchTextInput = {
   } | null;
   walkRoute?: {
     routeName?: string | null;
+    crowdedTime?: string | null;
+    leashRequiredNote?: string | null;
+    cautionNote?: string | null;
     safetyTags?: string[] | null;
   } | null;
   adoptionListing?: {
@@ -67,6 +70,9 @@ export function buildPostStructuredSearchText(input: StructuredSearchTextInput) 
       input.placeReview?.placeType,
       input.placeReview?.address,
       input.walkRoute?.routeName,
+      input.walkRoute?.crowdedTime,
+      input.walkRoute?.leashRequiredNote,
+      input.walkRoute?.cautionNote,
       ...(input.walkRoute?.safetyTags ?? []),
       input.adoptionListing?.shelterName,
       input.adoptionListing?.region,

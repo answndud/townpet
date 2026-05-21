@@ -170,6 +170,12 @@ export const careTypeLabel: Record<string, string> = {
   ERRAND: "심부름",
 };
 
+export const routeDifficultyLabel: Record<string, string> = {
+  EASY: "쉬움",
+  MODERATE: "보통",
+  HARD: "어려움",
+};
+
 export const careStatusLabel: Record<string, string> = {
   OPEN: "요청 중",
   MATCHED: "매칭됨",

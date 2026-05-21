@@ -37,9 +37,15 @@ export type PostCreateFormState = {
     distance: string;
     duration: string;
     difficulty: string;
+    largeDogFriendly: string;
+    crowdedTime: string;
+    leashRequiredNote: string;
     hasStreetLights: string;
     hasRestroom: string;
     hasParkingLot: string;
+    hasWasteBags: string;
+    hasWaterStation: string;
+    cautionNote: string;
     safetyTags: string;
   };
   adoptionListing: {
@@ -131,9 +137,15 @@ export function createInitialPostCreateFormState(
       distance: "",
       duration: "",
       difficulty: "",
+      largeDogFriendly: "",
+      crowdedTime: "",
+      leashRequiredNote: "",
       hasStreetLights: "false",
       hasRestroom: "false",
       hasParkingLot: "false",
+      hasWasteBags: "false",
+      hasWaterStation: "false",
+      cautionNote: "",
       safetyTags: "",
     },
     adoptionListing: {
