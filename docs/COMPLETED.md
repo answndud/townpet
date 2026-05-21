@@ -3957,3 +3957,30 @@
   - 느린 query 후보 top 5는 ranked search, best feed, feed 2페이지/count 조합, comment detail, report queue로 정리했다.
   - migration은 즉시 추가하지 않고, production-like data에서 `EXPLAIN (ANALYZE, BUFFERS)` 확인 후 별도 작업으로 분리한다.
   - 다음 작업은 성능 개선 전후 리포트와 블로그 작성이다.
+
+### 2026-05-21 | 성능 개선 전후 리포트와 블로그 작성
+- 완료일: `2026-05-21`
+- 배경:
+  - production 첫 진입, 게시판 이동, 댓글 작성 지연 피드백에 대해 코드 변경만 남기면 포트폴리오 설명력이 약했다.
+  - 서버 응답, 브라우저 paint, route asset, DB readiness를 분리한 측정과 실제 개선 내용을 하나의 서사로 정리해야 했다.
+- 변경내용:
+  - `docs/reports/performance-after-2026-05-21.md`를 추가했다.
+    - baseline evidence, 적용한 변경, 중요한 발견, 남은 작업을 표로 정리했다.
+  - `blog/29-성능개선-측정과-최적화-기록.md`를 추가했다.
+    - Next.js/PostgreSQL을 교체하지 않고 병목을 분리한 이유를 설명했다.
+    - `/` static shell, feed count skip, personalization lazy, 댓글 pending preview, auth-only chunk split, DB readiness 하네스를 하나의 성능 개선 흐름으로 정리했다.
+  - `blog/README.md`, `blog/00_시리즈_계획.md`에 29번 글을 목차에 추가했다.
+  - P0 성능 측정과 속도 개선 루프를 active plan에서 완료 처리하고, 다음 active를 마케팅 피드백 기반 제품 획득 루프로 넘겼다.
+- 코드문서:
+  - [docs/reports/performance-after-2026-05-21.md](./reports/performance-after-2026-05-21.md)
+  - [blog/29-성능개선-측정과-최적화-기록.md](../blog/29-성능개선-측정과-최적화-기록.md)
+  - [blog/README.md](../blog/README.md)
+  - [blog/00_시리즈_계획.md](../blog/00_시리즈_계획.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `git diff --check`
+- 결과:
+  - 성능 개선 작업이 단순 변경 로그가 아니라 “측정 -> 병목 분리 -> 작은 개선 -> 남은 검증” 흐름의 포트폴리오 글로 정리됐다.
+  - 성능 루프 active 작업은 종료했고, 다음 작업은 지역/마케팅 획득 루프의 `/` 랜딩과 전역 카피 점검이다.

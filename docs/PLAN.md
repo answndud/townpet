@@ -13,73 +13,11 @@
 
 ## Active
 
-### P0 성능 측정과 속도 개선 루프
-
-- 상태: `in_progress`
-- 배경:
-  - 사용자가 production `https://townpet.vercel.app/` 첫 진입, 게시판 이동, 댓글 작성이 체감상 너무 느리다고 보고했다.
-  - 프레임워크를 Next.js에서 Vite+React로 바꾸거나 DB를 PostgreSQL에서 SQLite로 바꾸는 대형 교체는 현재 우선순위가 아니다.
-  - TownPet의 다음 제품 개선은 마케팅/지역 랜딩보다 먼저 **현재 체감 속도를 정확히 측정하고, 같은 측정 기준으로 개선 전후를 수치화하는 것**이다.
-  - 이후 결과는 `/blog`에 성능 개선 기록으로 남겨 포트폴리오와 운영 문서 양쪽에서 재사용한다.
-- 현재까지의 빠른 관찰:
-  - Node `fetch` 기준 production 서버 응답은 항상 10초로 재현되지는 않았다.
-    - `/`: 약 `110-220ms`
-    - `/feed -> /feed/guest`: 약 `210-240ms`
-    - `/feed/guest`: 약 `100-120ms`
-    - `/api/health`: 첫 요청 약 `946ms`, 이후 약 `212ms`
-    - `/sitemap/0.xml`: 첫 요청 약 `955ms`, 이후 약 `15-27ms`
-  - 따라서 “서버 HTML 응답이 항상 10초”라기보다 아래 중 하나 또는 복합일 가능성이 높다.
-    - 브라우저 JS bundle/hydration 비용
-    - 첫 방문 cold start 또는 DB connection warm-up
-    - Vercel function region과 PostgreSQL region 거리
-    - `/feed` 서버 렌더 중 auth, user, policy, count/list, personalization query가 한 요청에 과하게 묶이는 문제
-    - 댓글 작성 후 전체 상세/댓글 재조회 또는 revalidation 과다
-    - 이미지/font/third-party script가 first paint를 지연하는 문제
-- 원칙:
-  - Next.js와 PostgreSQL은 유지한다.
-  - 큰 교체보다 측정 가능한 병목 제거를 우선한다.
-  - “빠른 느낌”이 아니라 `TTFB`, `FCP`, `LCP`, `TBT/INP`, route transition time, mutation latency를 전후 수치로 비교한다.
-  - 측정 도구를 먼저 만들고, 개선 후 같은 스크립트를 다시 실행한다.
-  - 성능 개선 결과는 `docs/reports`에 raw evidence로 남기고, 정리본은 `blog/29-성능개선-측정과-최적화-기록.md`로 작성한다.
-
-#### P0-Perf-7. 개선 전후 블로그/리포트 산출물
-
-- 목표:
-  - 성능 개선을 단순 작업 로그가 아니라 백엔드 포트폴리오 글로 정리한다.
-- 산출물:
-  - `docs/reports/performance-baseline-YYYY-MM-DD.md`
-  - `docs/reports/performance-after-YYYY-MM-DD.md`
-  - `blog/29-성능개선-측정과-최적화-기록.md`
-- blog 구성:
-  1. 문제: 첫 방문/게시판 이동/댓글 작성이 느리게 느껴짐
-  2. 가설: 서버 TTFB vs 브라우저 hydration vs DB query vs mutation UX
-  3. baseline 측정 표
-  4. 적용한 개선:
-     - `/` shell/cached feed
-     - feed count 제거/lazy
-     - personalization lazy
-     - 댓글 optimistic UI
-     - bundle/hydration 개선
-     - DB query/index 점검
-  5. after 측정 표
-  6. 개선률:
-     - FCP/LCP/route transition/mutation perceived latency
-  7. 남은 tradeoff:
-     - 실시간성 vs 캐시
-     - SEO HTML 포함 vs client fetch
-     - 단순 운영 vs 복잡한 cache invalidation
-- 완료 기준:
-  - 개선 전후 수치가 같은 도구/같은 대상/같은 반복 횟수로 비교된다.
-  - 성능 개선률이 README 또는 blog에서 설명 가능한 숫자로 남는다.
-  - “Next.js/PostgreSQL을 바꾸지 않고 병목을 줄였다”는 서사가 완성된다.
-
 ### 마케팅 피드백 기반 제품 획득 루프 재정렬
 
-- 상태: `pending_after_performance`
-- 재개 조건:
-  - P0 성능 측정 baseline이 작성된다.
-  - `/` 첫 화면 또는 feed 핵심 병목 중 최소 1개 이상이 개선된다.
-  - 개선 전후 수치가 `docs/reports`에 남는다.
+- 상태: `in_progress`
+- 선행 조건:
+  - P0 성능 측정 baseline, 홈/피드/댓글/browser asset/DB readiness 개선 기록, `blog/29-성능개선-측정과-최적화-기록.md` 작성이 완료됐다.
 - 배경:
   - TownPet를 “반려동물 커뮤니티”로 마케팅하면 기존 네이버카페, 인스타그램, 당근, 펫 SNS 앱과 직접 경쟁하게 되어 차별화가 약하다.
   - 현재 repo의 강점은 이미 `LOCAL / GLOBAL`, 구조화 게시판, 검색, 신고/제재/운영 구조에 있으므로 “커뮤니티”보다 “우리 동네 반려생활 문제 해결 정보 DB”로 제품 표면을 재정렬해야 한다.
