@@ -149,6 +149,8 @@
 - 현재 문제:
   - 검색 의도가 강한 생활형 query를 받을 guide page가 없다.
   - 커뮤니티 글이 쌓이기 전에는 검색 유입을 받을 정보 자산이 부족하다.
+- 상태:
+  - 완료. 상세는 [COMPLETED.md](./COMPLETED.md)의 `2026-05-21 | SEO guide route 추가`를 본다.
 - 추가할 route:
   - `/guides/lost-dog-poster`
   - `/guides/24h-vet-checklist`

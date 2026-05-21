@@ -42,6 +42,11 @@ describe("sitemap", () => {
     expect(urls).toContain("http://localhost:3000/feed");
     expect(urls).toContain("http://localhost:3000/search");
     expect(urls).toContain("http://localhost:3000/boards/adoption");
+    expect(urls).toContain("http://localhost:3000/guides/lost-dog-poster");
+    expect(urls).toContain("http://localhost:3000/guides/24h-vet-checklist");
+    expect(urls).toContain("http://localhost:3000/guides/pet-used-trade-safety");
+    expect(urls).toContain("http://localhost:3000/guides/lost-pet-first-24-hours");
+    expect(urls).toContain("http://localhost:3000/guides/pet-hospital-review-policy");
     expect(urls).toContain("http://localhost:3000/terms");
     expect(urls).toContain("http://localhost:3000/privacy");
     expect(urls).toContain("http://localhost:3000/commercial");
