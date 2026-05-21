@@ -463,6 +463,7 @@ export async function GET(request: NextRequest) {
           resolveFeedPageSlice<GuestFeedListItem>({
             currentPage,
             limit: FEED_PAGE_SIZE,
+            skipCountOnFirstPage: true,
             countItems: () =>
               countPosts({
                 type: type ?? undefined,

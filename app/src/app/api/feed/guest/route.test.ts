@@ -117,10 +117,10 @@ describe("GET /api/feed/guest", () => {
     });
     expect(payload.data.feed.items[0]).not.toHaveProperty("guestIpDisplay");
     expect(payload.data.feed.items[0]).not.toHaveProperty("guestIpLabel");
+    expect(mockCountPosts).not.toHaveBeenCalled();
   });
 
   it("includes timings meta and server-timing header when perf=1 is requested", async () => {
-    mockCountPosts.mockResolvedValue(1);
     mockListPosts.mockResolvedValue({
       items: [],
       nextCursor: null,
@@ -143,6 +143,7 @@ describe("GET /api/feed/guest", () => {
         }),
       },
     });
+    expect(mockCountPosts).not.toHaveBeenCalled();
   });
 
   it("returns gate payload for local-only board types", async () => {
@@ -251,7 +252,6 @@ describe("GET /api/feed/guest", () => {
   });
 
   it("treats an all-petType query as no filter for period feed requests", async () => {
-    mockCountPosts.mockResolvedValue(1);
     mockListPosts.mockResolvedValue({
       items: [],
       nextCursor: null,
@@ -264,18 +264,32 @@ describe("GET /api/feed/guest", () => {
     );
 
     expect(response.status).toBe(200);
-    expect(mockCountPosts).toHaveBeenCalledWith(
+    expect(mockCountPosts).not.toHaveBeenCalled();
+    expect(mockListPosts).toHaveBeenCalledWith(
       expect.objectContaining({
         days: 7,
         petTypeId: undefined,
         petTypeIds: [],
       }),
     );
+  });
+
+  it("keeps exact count for non-first page requests", async () => {
+    mockCountPosts.mockResolvedValue(25);
+    mockListPosts.mockResolvedValue({
+      items: [],
+      nextCursor: null,
+    } as never);
+
+    const response = await GET(
+      new Request("http://localhost/api/feed/guest?page=2") as NextRequest,
+    );
+
+    expect(response.status).toBe(200);
+    expect(mockCountPosts).toHaveBeenCalledOnce();
     expect(mockListPosts).toHaveBeenCalledWith(
       expect.objectContaining({
-        days: 7,
-        petTypeId: undefined,
-        petTypeIds: [],
+        page: 2,
       }),
     );
   });

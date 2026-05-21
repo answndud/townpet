@@ -42,27 +42,6 @@
   - 측정 도구를 먼저 만들고, 개선 후 같은 스크립트를 다시 실행한다.
   - 성능 개선 결과는 `docs/reports`에 raw evidence로 남기고, 정리본은 `blog/29-성능개선-측정과-최적화-기록.md`로 작성한다.
 
-#### P0-Perf-3. `/feed` query 경량화
-
-- 현재 관찰:
-  - `app/src/app/feed/page.tsx`는 한 서버 렌더에서 auth, community nav, viewer context, guest policy, count/list, best/list, personalization context를 처리한다.
-  - `resolveFeedPageSlice`는 `countItems()`와 `listPage()`를 병렬 실행하지만, 전체 페이지 수를 위해 count query가 매번 필요하다.
-- 개선 후보:
-  - 게스트 feed와 로그인 feed의 서버 경로를 더 명확히 분리한다.
-  - 첫 페이지에서는 `countPosts`를 생략하고 `limit + 1` 기반 `hasNextPage`로 전환한다.
-  - 전체 페이지 수 UI가 꼭 필요한 경우에만 count를 lazy fetch한다.
-  - `personalization.context`는 `personalized=1`일 때만 계산하고, 기본 feed에서는 lazy load한다.
-  - `listCommunityNavItems(50)`는 layout/header에서 중복 호출되는지 확인하고 캐시 TTL을 늘린다.
-  - guest read policy와 login required type 조회는 짧은 TTL cache를 적용한다.
-- 완료 기준:
-  - `/feed/guest`와 `/feed`의 server timing phase가 baseline 대비 감소한다.
-  - feed 첫 페이지 렌더가 count query에 묶이지 않는다.
-  - pagination UX가 깨지지 않는다. 필요하면 “더보기” 중심으로 전환한다.
-- 검증:
-  - `feed-page-query.service` 단위 테스트
-  - feed list/count 관련 query test
-  - `/feed?perf=1` production 또는 local 측정 비교
-
 #### P0-Perf-4. 댓글 작성 체감 속도 개선
 
 - 현재 우려:

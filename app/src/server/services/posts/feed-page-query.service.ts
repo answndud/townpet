@@ -8,6 +8,7 @@ export type ResolveFeedPageSliceParams<T> = {
   limit: number;
   countItems: () => Promise<number>;
   listPage: (page: number) => Promise<FeedPageSlice<T>>;
+  skipCountOnFirstPage?: boolean;
 };
 
 export type ResolveFeedPageSliceResult<T> = {
@@ -22,8 +23,20 @@ export async function resolveFeedPageSlice<T>({
   limit,
   countItems,
   listPage,
+  skipCountOnFirstPage = false,
 }: ResolveFeedPageSliceParams<T>): Promise<ResolveFeedPageSliceResult<T>> {
   const requestedPage = Number.isFinite(currentPage) && currentPage > 0 ? currentPage : 1;
+
+  if (skipCountOnFirstPage && requestedPage === 1) {
+    const page = await listPage(1);
+    const totalPages = page.nextCursor ? 2 : 1;
+    return {
+      totalItemCount: page.nextCursor ? limit + 1 : page.items.length,
+      totalPages,
+      resolvedPage: 1,
+      page,
+    };
+  }
 
   const [totalItemCount, requestedPageResult] = await Promise.all([
     countItems(),
