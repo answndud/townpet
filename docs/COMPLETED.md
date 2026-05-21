@@ -4040,6 +4040,31 @@
   - HTML 초기 body에 `우리 동네 반려생활 정보, TownPet`과 홈 CTA가 직접 포함되는 것을 확인했다.
   - `__next-page-redirect` 또는 `NEXT_REDIRECT`는 검출되지 않았다.
 
+### 2026-05-21 | 시작페이지 특정 지역 노출 제거
+- 완료일: `2026-05-21`
+- 배경:
+  - `/` 시작페이지가 `LAUNCH_REGION`, `TOWN_LANDING` 설정을 직접 import하면서 아직 확정하지 않은 특정 지역명이 첫 화면에 노출됐다.
+  - active 계획에도 특정 지역을 기본값으로 두는 문장이 남아 있어, 이후 작업에서 같은 노출이 반복될 위험이 있었다.
+- 변경내용:
+  - `/` 홈에서 지역 허브 CTA와 특정 지역 고지 패널을 제거했다.
+  - 홈 CTA와 빠른 시작 영역을 `내 동네 설정`, `분실동물 등록`, `병원/산책 정보 보기`, `관심 주제별 탐색` 중심으로 정리했다.
+  - 홈 테스트에 특정 지역명과 `/towns/mapo`가 포함되지 않아야 한다는 회귀 assertion을 추가했다.
+  - active 계획의 초기 지역 기본값을 `초기 지역 미확정` 기준으로 바꾸고, 확정 전 public acquisition UI에 특정 지역명을 노출하지 않는 원칙을 추가했다.
+- 코드문서:
+  - [app/src/app/page.tsx](../app/src/app/page.tsx)
+  - [app/src/app/page.test.tsx](../app/src/app/page.test.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/app/page.test.tsx src/lib/launch-region.test.ts src/lib/town-landing.test.ts src/app/towns/page.test.tsx src/app/sitemap.test.ts`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app build`
+  - `git diff --check`
+- 결과:
+  - `/` 시작페이지 소스와 테스트에서는 특정 지역명이 제거됐다.
+  - 기존 `/towns/mapo` route, sitemap, seed/demo/test data에는 아직 특정 지역 기록이 남아 있으며, 이는 별도 정리 범위로 분리한다.
+
 ### 2026-05-21 | 초기 지역 선택 UX 명확화
 - 완료일: `2026-05-21`
 - 배경:

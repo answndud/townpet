@@ -28,7 +28,7 @@
   - 보조 설명: `동물병원 · 산책코스 · 분실동물 · 입양 · 중고거래 정보를 지역별로 모아보세요.`
   - 더 공격적인 설명: `네이버카페보다 찾기 쉽고, 당근보다 반려동물에 특화된 동네 반려생활 게시판`
 - 초기 운영 가정:
-  - 첫 지역은 `마포구`를 기본 후보로 두되, 실제 실행 전 `마포 / 성동 / 송파 / 분당` 중 하나를 최종 선택한다.
+  - 첫 지역은 아직 확정하지 않는다. 실험 지역은 별도 의사결정 후 코드/config에 반영한다.
   - 첫 90일은 전국 서비스가 아니라 `선택 지역 반려인을 위한 동네 반려생활 게시판`으로 운영한다.
   - 첫 웨지는 `분실동물 + 병원 + 산책`으로 고정하고, 마켓/돌봄/입양은 기존 구조를 유지하되 획득 메시지의 전면에는 두지 않는다.
 - 외부 근거:
@@ -53,7 +53,7 @@
     - `분실동물 등록하기`
     - `병원/산책 정보 보기`
   - “커뮤니티 가입”보다 “문제 해결”을 먼저 보여준다.
-  - 초기 지역이 정해지기 전에는 `마포구 반려생활 지도 만들기` 캠페인 teaser를 노출한다.
+  - 초기 지역이 정해지기 전에는 `/`에서 특정 구 이름이나 캠페인 teaser를 노출하지 않는다.
 - 관련 파일:
   - `app/src/app/page.tsx`
   - `app/src/app/layout.tsx`
@@ -99,10 +99,9 @@
   - LOCAL/GLOBAL 정책은 존재하지만, 첫 방문자가 “내 동네 서비스”라고 느끼는 진입점이 약하다.
   - 전국 서비스처럼 보이면 자기 동네 글이 적을 때 바로 이탈할 수 있다.
 - 구현 방향:
-  - launch region config를 둔다.
-    - 후보: `mapo`, `seongdong`, `songpa`, `bundang`
-    - 기본값은 문서상 `mapo`로 둔다.
-  - 랜딩에서 `지금은 마포구부터 만들고 있어요` 같은 범위 고지 UI를 제공한다.
+  - launch region config는 초기 지역이 확정된 뒤에만 public UI와 연결한다.
+    - 후보는 별도 문서/이슈에서 비교하고, 확정 전 코드 기본값으로 특정 지역을 두지 않는다.
+  - 랜딩에서는 확정 전까지 `내 동네 설정`, `주제별 탐색` 중심으로 안내한다.
   - 동네 선택 전에는 전체 피드보다 지역 허브/캠페인으로 유도한다.
   - 이미 `Neighborhood` 모델과 `/api/neighborhoods`가 있으므로, 별도 대규모 지도 기능 없이 선택/허브 구조부터 만든다.
 - 관련 파일:
@@ -123,11 +122,11 @@
   - `/towns/*` route가 없다.
   - sitemap은 `/feed`, `/search`, `/boards/adoption`, public GLOBAL post 중심이라 지역 검색 유입을 받을 landing surface가 부족하다.
 - 추가할 route:
-  - `/towns/mapo`
-  - `/towns/mapo/hospitals`
-  - `/towns/mapo/walks`
-  - `/towns/mapo/lost`
-  - `/towns/mapo/used-market`
+  - `/towns/{confirmed-town}`
+  - `/towns/{confirmed-town}/hospitals`
+  - `/towns/{confirmed-town}/walks`
+  - `/towns/{confirmed-town}/lost`
+  - `/towns/{confirmed-town}/used-market`
 - MVP 화면 구성:
   - 지역명과 핵심 메시지
   - 병원/산책/분실/중고거래 카드
@@ -135,7 +134,7 @@
   - “최근 분실동물 제보 없음” 같은 안전한 empty state
   - “첫 후기를 남기면 Founding Member 배지 지급 예정” CTA
 - 완료 기준:
-  - `/towns/mapo`에서 지역별 콘텐츠 묶음을 볼 수 있다.
+  - 확정된 지역 허브에서 지역별 콘텐츠 묶음을 볼 수 있다.
   - 콘텐츠가 없어도 빈 화면이 아니라 준비 중/가이드/CTA가 표시된다.
   - route별 metadata, canonical, sitemap entry가 있다.
 - 검증:
@@ -161,7 +160,7 @@
   - “병원 후기를 안전하게 남기는 방법”
 - CTA:
   - `우리 동네 분실동물 게시판 보기`
-  - `마포구 24시 동물병원 정보 보기`
+  - `우리 동네 24시 동물병원 정보 보기`
   - `병원/산책 정보를 함께 제보하기`
 - 완료 기준:
   - guide page가 sitemap에 포함된다.
@@ -237,7 +236,7 @@
   - 이미지에는 위치/시간/특징/연락 방식/주의 문구를 포함한다.
 - 완료 기준:
   - 분실동물 글에서 공유 이미지가 생성된다.
-  - OG title이 `[TownPet] 마포구 실종 강아지 제보 요청`처럼 intent 기반으로 나온다.
+  - OG title이 `[TownPet] 우리 동네 실종 강아지 제보 요청`처럼 intent 기반으로 나온다.
   - 공유 클릭 이벤트를 추적할 수 있다.
 
 ### P0-9. “목격했어요” 제보 흐름
@@ -368,7 +367,7 @@
 - 개선 방향:
   - 빈 editor보다 지역 질문/제보 템플릿을 제공한다.
   - 예시:
-    - `마포구 고양이 건강검진 병원 추천받아요`
+    - `우리 동네 고양이 건강검진 병원 추천받아요`
     - `성동구 대형견 산책하기 좋은 곳 있나요?`
     - `송파구 강아지 미용 가격 어느 정도인가요?`
     - `분당에서 고양이 중성화 병원 찾고 있어요`
@@ -420,8 +419,8 @@
 - 구현 방향:
   - 병원/미용실/펫카페/보호소용 QR landing URL을 분리한다.
   - 예:
-    - `/towns/mapo/lost?utm_source=hospital_qr`
-    - `/campaigns/mapo-pet-life-map?utm_source=petcafe_qr`
+    - `/towns/{confirmed-town}/lost?utm_source=hospital_qr`
+    - `/campaigns/{confirmed-town}-pet-life-map?utm_source=petcafe_qr`
   - 파트너 제안 문구와 포스터 PDF는 business 문서로 관리한다.
 - 완료 기준:
   - 오프라인 QR 하나가 “가입”이 아니라 “분실동물/응급병원/산책 정보”로 연결된다.
@@ -531,7 +530,7 @@
 - 캠페인 결과를 지역 가이드 페이지에 반영
 
 완료 기준:
-- 이벤트가 끝나도 `마포구 반려생활 가이드` 같은 콘텐츠 자산이 남는다.
+- 이벤트가 끝나도 `우리 동네 반려생활 가이드` 같은 콘텐츠 자산이 남는다.
 
 ### 9-12주차: 소액 광고/SEO 검증
 
@@ -550,8 +549,8 @@
 ## 첫 개발 사이클 추천 순서
 
 1. `/` 랜딩 전환 + 전역 카피/metadata 통일
-2. `/towns/mapo` 지역 허브 MVP + sitemap/metadata
-3. `/towns/mapo/hospitals`, `/towns/mapo/walks`, `/towns/mapo/lost` read-only MVP
+2. 확정 지역의 `/towns/{confirmed-town}` 지역 허브 MVP + sitemap/metadata
+3. 확정 지역의 `/towns/{confirmed-town}/hospitals`, `/towns/{confirmed-town}/walks`, `/towns/{confirmed-town}/lost` read-only MVP
 4. 분실동물 전용 작성/공유/OG MVP
 5. 병원 후기 안전 템플릿 + 정정 요청 프로세스
 6. 산책코스 카드 필드 보강
@@ -570,4 +569,4 @@
 ## 다음 작업 후보
 
 - 위 Active 계획 중 `P0-1. / 홈을 획득형 랜딩으로 전환`부터 개발한다.
-- 개발 전 초기 실험 지역을 `마포구 / 성동구 / 송파구 / 분당` 중 하나로 확정한다. 확정 전까지 문서와 config 기본 후보는 `마포구`로 둔다.
+- 개발 전 초기 실험 지역을 별도 의사결정으로 확정한다. 확정 전까지 `/`과 public acquisition UI에는 특정 지역명을 노출하지 않는다.
