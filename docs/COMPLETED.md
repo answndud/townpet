@@ -4760,6 +4760,8 @@
   - `git diff --check`
   - `corepack pnpm@9.12.3 -C app quality:check`
   - local browser smoke with `NEXT_PUBLIC_ENABLE_CLIENT_TELEMETRY=1`: `/` mobile, `/campaigns/neighborhood-map` mobile, `/posts/new?type=WALK_ROUTE&template=walk_route_large_dog`; acquisition API responses returned 200 after CTA dimension validation fix.
+  - production deploy: `015e62b Add acquisition event tracking` -> `https://townpet-jcxrex0r7-jmoon0227-9736s-projects.vercel.app` Ready, alias `https://townpet.vercel.app`
+  - production smoke: `GET /api/health` 200, `POST /api/acquisition/events` 200 `{ recorded: true }`
 - 결과:
   - 첫 90일 획득 퍼널의 방문/CTA/템플릿 진입 구간을 제품 이벤트로 볼 수 있는 기반이 생겼다.
   - 다음 단계 `P1-5. 초기 지역 운영 지표`에서 이 집계를 admin 운영 화면에 붙일 수 있다.
