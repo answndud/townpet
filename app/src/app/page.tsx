@@ -20,24 +20,6 @@ export const metadata: Metadata = {
   },
 };
 
-const QUICK_ACTIONS = [
-  {
-    label: "분실동물 등록",
-    href: "/posts/new?type=LOST_FOUND",
-    description: "실종 위치와 특징을 구조화해 바로 공유합니다.",
-  },
-  {
-    label: "동물병원",
-    href: "/feed/guest?type=HOSPITAL_REVIEW",
-    description: "방문 목적과 대기시간, 설명 충분성을 함께 봅니다.",
-  },
-  {
-    label: "산책코스",
-    href: "/feed/guest?type=WALK_ROUTE",
-    description: "동네 산책 경로와 동반 가능 장소를 모읍니다.",
-  },
-];
-
 const TOPIC_LINKS = [
   { label: "분실/목격", href: "/feed/guest?type=LOST_FOUND" },
   { label: "동물병원", href: "/feed/guest?type=HOSPITAL_REVIEW" },
@@ -66,62 +48,35 @@ export default function HomePage() {
             >
               내 동네 허브 시작하기
             </Link>
-            <Link
-              href="/posts/new?type=LOST_FOUND"
-              className="tp-btn-soft tp-btn-md inline-flex min-h-11 items-center justify-center px-5"
-            >
-              분실동물 등록하기
-            </Link>
-            <Link
-              href="/feed/guest?type=HOSPITAL_REVIEW"
-              className="tp-btn-soft tp-btn-md inline-flex min-h-11 items-center justify-center px-5"
-            >
-              병원/산책 정보 보기
-            </Link>
           </div>
         </div>
 
-        <div className="grid content-start gap-3">
-          <div className="tp-card p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#4e6f9f]">
-              빠른 시작
-            </p>
-            <h2 className="mt-2 text-xl font-semibold text-[#173963]">
-              필요한 정보를 바로 찾아보세요
-            </h2>
-            <p className="mt-2 text-sm leading-6 text-[#5a7397]">
-              동네를 선택하면 주변 반려생활 정보를 더 쉽게 모아볼 수 있습니다.
-            </p>
-            <div className="mt-4 flex flex-wrap gap-2">
-              <span className="rounded-md border border-[#cbdcf5] bg-[#f7fbff] px-2.5 py-1 text-xs font-semibold text-[#315b9a]">
-                동네 기반
-              </span>
-              <span className="rounded-md border border-[#dbe6f5] bg-[#fbfdff] px-2.5 py-1 text-xs text-[#5a7397]">
-                병원 · 산책 · 분실 · 입양 · 거래
-              </span>
-            </div>
-            <Link
-              href="/onboarding"
-              className="tp-btn-soft mt-4 inline-flex min-h-10 items-center px-3 text-xs"
-            >
-              내 동네 설정하고 허브 보기
-            </Link>
-          </div>
-          {QUICK_ACTIONS.map((action) => (
-            <Link
-              key={action.href}
-              href={action.href}
-              className="tp-card block p-4 transition hover:border-[#aac5ec] hover:shadow-[0_12px_28px_rgba(30,63,116,0.08)]"
-            >
-              <p className="text-sm font-semibold text-[#173963]">{action.label}</p>
-              <p className="mt-1 text-xs leading-5 text-[#5a7397]">{action.description}</p>
-            </Link>
-          ))}
+        <div className="content-start border-y border-[#dbe6f5] bg-[#fbfdff] px-4 py-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#4e6f9f]">
+            처음 방문했다면
+          </p>
+          <ol className="mt-4 grid gap-4 text-sm leading-6 text-[#4f678d]">
+            <li>
+              <span className="font-semibold text-[#173963]">1. 내 동네를 선택</span>
+              <br />
+              대표 동네를 저장하면 동네 허브에서 정보를 모아볼 수 있습니다.
+            </li>
+            <li>
+              <span className="font-semibold text-[#173963]">2. 필요한 주제를 확인</span>
+              <br />
+              분실/목격, 병원, 산책, 중고거래를 한 곳에서 좁혀봅니다.
+            </li>
+            <li>
+              <span className="font-semibold text-[#173963]">3. 경험을 남기기</span>
+              <br />
+              지역 정보가 부족한 곳은 첫 제보가 바로 기준이 됩니다.
+            </li>
+          </ol>
         </div>
       </section>
 
       <section className="mx-auto w-full max-w-[1180px] px-4 pb-10 sm:px-6 lg:px-10">
-        <div className="tp-soft-card flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="border-y border-[#dbe6f5] py-4 sm:flex sm:items-center sm:justify-between sm:gap-5">
           <div>
             <p className="text-sm font-semibold text-[#173963]">
               관심 주제별로 둘러보기
@@ -130,7 +85,7 @@ export default function HomePage() {
               분실/목격, 병원 후기, 산책코스처럼 반복해서 필요한 정보를 주제별로 확인하세요.
             </p>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="mt-3 flex flex-wrap gap-2 sm:mt-0 sm:justify-end">
             {TOPIC_LINKS.map((topic) => (
               <Link key={topic.href} href={topic.href} className="tp-filter-pill">
                 {topic.label}
