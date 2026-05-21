@@ -4041,6 +4041,34 @@
   - 신규 사용자는 홈 CTA에서 온보딩으로 들어가 동네 저장 후 선택한 대표 동네 허브로 이동할 수 있다.
   - 홈은 사용자별 동적 처리 없이 정적 landing 역할을 유지한다.
 
+### 2026-05-21 | 시작페이지 CTA와 피드 미리보기 정리
+- 완료일: `2026-05-21`
+- 배경:
+  - `/` 시작페이지에 히어로 CTA, 빠른 시작 카드, 빠른 액션 카드, 주제별 링크가 겹쳐 첫 방문자의 선택지가 과했다.
+  - 최근/인기 글 미리보기가 카드 그리드로 보여 실제 피드와 스캔 방식이 달랐다.
+- 변경내용:
+  - 히어로에는 `내 동네 허브 시작하기` primary CTA만 남겼다.
+  - 중복되던 빠른 시작 버튼과 빠른 액션 카드를 제거하고, 오른쪽 영역은 비상호작용 안내 단계로 바꿨다.
+  - 주제 탐색 링크는 `관심 주제별로 둘러보기` 섹션 한 곳에만 배치했다.
+  - 최근 올라온 글과 지금 많이 보는 글은 카드형 그리드 대신 border row 기반의 피드형 세로 목록으로 바꿨다.
+  - empty/loading 상태도 같은 row 계열 표면에 맞춰 조정했다.
+- 코드문서:
+  - [app/src/app/page.tsx](../app/src/app/page.tsx)
+  - [app/src/components/home/home-feed-preview.tsx](../app/src/components/home/home-feed-preview.tsx)
+  - [app/src/app/page.test.tsx](../app/src/app/page.test.tsx)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/app/page.test.tsx src/lib/town-landing.test.ts`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app build`
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app run design:detect`
+  - Playwright desktop/mobile screenshot check at `http://localhost:3000/`
+- 결과:
+  - 홈의 `/onboarding` CTA는 1개로 줄었다.
+  - 피드 미리보기의 게시글 링크는 `tp-card`를 쓰지 않고 세로 row로 표시된다.
+  - desktop/mobile 모두 horizontal overflow 없이 렌더링된다.
+
 ### 2026-05-21 | 루트 정적 홈 표시 회귀 수정
 - 완료일: `2026-05-21`
 - 배경:

@@ -41,16 +41,18 @@ function formatDate(value: string) {
 
 function FeedPreviewSkeleton() {
   return (
-    <div className="grid gap-3 sm:grid-cols-2">
+    <div className="border-y border-[#dbe6f5] bg-[#fbfdff]">
       {[0, 1, 2, 3].map((index) => (
         <div
           key={`home-feed-skeleton-${index}`}
-          className="tp-card min-h-[132px] animate-pulse p-4"
+          className="animate-pulse border-b border-[#e5edf8] px-3 py-3 last:border-b-0"
           aria-hidden="true"
         >
-          <div className="h-3 w-20 rounded bg-[#dce8f8]" />
-          <div className="mt-4 h-4 w-4/5 rounded bg-[#dce8f8]" />
-          <div className="mt-3 h-3 w-full rounded bg-[#edf3fb]" />
+          <div className="flex items-center gap-2">
+            <div className="h-5 w-16 rounded-md bg-[#dce8f8]" />
+            <div className="h-3 w-20 rounded bg-[#edf3fb]" />
+          </div>
+          <div className="mt-2 h-4 w-4/5 rounded bg-[#dce8f8]" />
           <div className="mt-2 h-3 w-2/3 rounded bg-[#edf3fb]" />
         </div>
       ))}
@@ -61,28 +63,28 @@ function FeedPreviewSkeleton() {
 function FeedPreviewList({ items }: { items: HomeFeedItem[] }) {
   if (items.length === 0) {
     return (
-      <div className="tp-soft-card p-4 text-sm leading-6 text-[#5a7397]">
+      <div className="border-y border-[#dbe6f5] bg-[#fbfdff] px-3 py-4 text-sm leading-6 text-[#5a7397]">
         아직 표시할 공개 게시글이 없습니다. 첫 지역 정보를 남겨주세요.
       </div>
     );
   }
 
   return (
-    <div className="grid gap-3 sm:grid-cols-2">
+    <div className="border-y border-[#dbe6f5] bg-[#fbfdff]">
       {items.slice(0, 4).map((item) => (
         <Link
           key={item.id}
           href={item.href}
-          className="tp-card group flex min-h-[132px] flex-col gap-3 p-4 transition hover:border-[#aac5ec] hover:shadow-[0_12px_28px_rgba(30,63,116,0.08)]"
+          className="group grid gap-2 border-b border-[#e5edf8] px-3 py-3 transition last:border-b-0 hover:bg-[#f6faff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#3567b5] sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
         >
-          <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold text-[#5d789f]">
-            <span className="rounded-md border border-[#dbe5f3] bg-[#f7fbff] px-2 py-1 text-[#315b9a]">
-              {item.typeLabel}
-            </span>
-            {item.neighborhoodLabel ? <span>{item.neighborhoodLabel}</span> : null}
-            <span>{formatDate(item.createdAt)}</span>
-          </div>
-          <div>
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] font-semibold text-[#5d789f]">
+              <span className="rounded-md border border-[#dbe5f3] bg-[#f7fbff] px-2 py-0.5 text-[#315b9a]">
+                {item.typeLabel}
+              </span>
+              {item.neighborhoodLabel ? <span>{item.neighborhoodLabel}</span> : null}
+              <span>{formatDate(item.createdAt)}</span>
+            </div>
             <h3 className="line-clamp-2 text-sm font-semibold leading-5 text-[#173963] group-hover:text-[#214d8d]">
               {item.title}
             </h3>
@@ -92,7 +94,7 @@ function FeedPreviewList({ items }: { items: HomeFeedItem[] }) {
               </p>
             ) : null}
           </div>
-          <div className="mt-auto flex flex-wrap items-center gap-2 text-[11px] text-[#6b84a8]">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-[#6b84a8] sm:justify-end">
             <span>{item.authorName}</span>
             <span>좋아요 {item.likeCount}</span>
             <span>댓글 {item.commentCount}</span>
