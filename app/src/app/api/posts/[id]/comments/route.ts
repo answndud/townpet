@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { PostStatus, UserRole } from "@prisma/client";
+import { CommentKind, PostStatus, UserRole } from "@prisma/client";
 
 import { buildGuestIpMeta } from "@/lib/guest-ip-display";
 import { sanitizePublicGuestIdentity } from "@/lib/public-guest-identity";
@@ -145,6 +145,11 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     const body = (await request.json()) as {
       content?: string;
       parentId?: string;
+      kind?: CommentKind;
+      sightingLocation?: string;
+      sightingSeenAt?: string;
+      sightingImageUrl?: string;
+      isPrivateSighting?: boolean;
       guestDisplayName?: string;
       guestPassword?: string;
     };
@@ -174,7 +179,14 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         authorId: userId,
         postId,
         parentId: body.parentId,
-        input: { content: body.content ?? "" },
+        input: {
+          content: body.content ?? "",
+          kind: body.kind,
+          sightingLocation: body.sightingLocation,
+          sightingSeenAt: body.sightingSeenAt,
+          sightingImageUrl: body.sightingImageUrl,
+          isPrivateSighting: body.isPrivateSighting,
+        },
       });
       return jsonOk(comment, { status: 201 });
     }
@@ -229,7 +241,14 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       authorId: guestSystemUserId,
       postId,
       parentId: body.parentId,
-      input: { content: body.content ?? "" },
+      input: {
+        content: body.content ?? "",
+        kind: body.kind,
+        sightingLocation: body.sightingLocation,
+        sightingSeenAt: body.sightingSeenAt,
+        sightingImageUrl: body.sightingImageUrl,
+        isPrivateSighting: body.isPrivateSighting,
+      },
       guestMeta: {
         guestAuthorId: guestAuthor.id,
         guestIdentity: {

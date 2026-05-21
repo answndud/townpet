@@ -33,6 +33,7 @@ const actionLabels: Record<ModerationActionType, string> = {
   MARKET_STATUS_CHANGED: "거래 상태 변경",
   CARE_STATUS_CHANGED: "돌봄 요청 상태 변경",
   CARE_FEEDBACK_REVIEWED: "돌봄 이슈 검토",
+  LOST_FOUND_STATUS_CHANGED: "분실동물 상태 변경",
 };
 
 const targetLabels: Record<ModerationTargetType, string> = {

@@ -6,6 +6,7 @@ import {
   CareRequestStatus,
   CareFeedbackIssueType,
   CareFeedbackOutcome,
+  LostFoundStatus,
   MarketStatus,
   PostStatus,
   PostType,
@@ -40,6 +41,7 @@ import {
   createCareCompletionFeedbackAction,
   decideCareApplicationAction,
   updateCareRequestStatusAction,
+  updateLostFoundStatusAction,
   updateMarketListingStatusAction,
 } from "@/server/actions/post";
 
@@ -55,6 +57,7 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
   const [relationMessage, setRelationMessage] = useState<string | null>(null);
   const [marketStatusMessage, setMarketStatusMessage] = useState<string | null>(null);
   const [careStatusMessage, setCareStatusMessage] = useState<string | null>(null);
+  const [lostFoundStatusMessage, setLostFoundStatusMessage] = useState<string | null>(null);
   const [careApplicationMessage, setCareApplicationMessage] = useState<string | null>(null);
   const [careApplicationInput, setCareApplicationInput] = useState("");
   const [careFeedbackMessage, setCareFeedbackMessage] = useState<string | null>(null);
@@ -71,6 +74,7 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
   });
   const [isMarketStatusPending, startMarketStatusTransition] = useTransition();
   const [isCareStatusPending, startCareStatusTransition] = useTransition();
+  const [isLostFoundStatusPending, startLostFoundStatusTransition] = useTransition();
   const [isCareApplicationPending, startCareApplicationTransition] = useTransition();
   const [isCareFeedbackPending, startCareFeedbackTransition] = useTransition();
   const [loadVersion, setLoadVersion] = useState(0);
@@ -254,6 +258,44 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
       });
       setCareStatusMessage(
         result.changed ? "돌봄 요청 상태가 변경되었습니다." : "이미 선택한 요청 상태입니다.",
+      );
+    });
+  };
+
+  const handleLostFoundStatusChange = (nextStatus: LostFoundStatus) => {
+    if (!postId) {
+      return;
+    }
+
+    setLostFoundStatusMessage(null);
+    startLostFoundStatusTransition(async () => {
+      const result = await updateLostFoundStatusAction(postId, nextStatus);
+      if (!result.ok) {
+        setLostFoundStatusMessage(result.message);
+        return;
+      }
+
+      setData((current) => {
+        if (!current?.ok || !current.data?.post.lostFoundAlert) {
+          return current;
+        }
+
+        return {
+          ...current,
+          data: {
+            ...current.data,
+            post: {
+              ...current.data.post,
+              lostFoundAlert: {
+                ...current.data.post.lostFoundAlert,
+                status: result.status,
+              },
+            },
+          },
+        };
+      });
+      setLostFoundStatusMessage(
+        result.changed ? "분실동물 상태가 변경되었습니다." : "이미 선택한 상태입니다.",
       );
     });
   };
@@ -517,6 +559,13 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
     Boolean(viewerId) &&
     visibleCareStatusOptions.length > 0 &&
     post?.status !== PostStatus.DELETED;
+  const canManageLostFoundStatus =
+    hasLoadedPost &&
+    post?.type === PostType.LOST_FOUND &&
+    Boolean(post?.lostFoundAlert) &&
+    Boolean(viewerId) &&
+    (isAuthor || canModerate) &&
+    post?.status !== PostStatus.DELETED;
   const canApplyCareRequest =
     hasLoadedPost &&
     post?.type === PostType.CARE_REQUEST &&
@@ -648,6 +697,10 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
               isCareStatusPending={isCareStatusPending}
               careStatusMessage={careStatusMessage}
               onCareStatusChange={handleCareStatusChange}
+              canManageLostFoundStatus={canManageLostFoundStatus}
+              isLostFoundStatusPending={isLostFoundStatusPending}
+              lostFoundStatusMessage={lostFoundStatusMessage}
+              onLostFoundStatusChange={handleLostFoundStatusChange}
               canApplyCareRequest={canApplyCareRequest}
               careApplicationInput={careApplicationInput}
               onCareApplicationInputChange={setCareApplicationInput}
@@ -683,6 +736,11 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
           currentUserId={viewerId ?? undefined}
           canInteract={hasLoadedPost ? canInteract : false}
           canInteractWithPostOwner={hasLoadedPost ? canInteractWithPostOwner : false}
+          lostFoundSightingEnabled={
+            hasLoadedPost &&
+            post?.type === PostType.LOST_FOUND &&
+            post?.lostFoundAlert?.status === "ACTIVE"
+          }
           loginHref={loginHref}
           onCommentCountChange={hasLoadedPost ? handleCommentCountChange : undefined}
           initialLoadState={commentLoadState}

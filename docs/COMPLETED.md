@@ -4462,3 +4462,38 @@
   - 분실/목격 상세에서 공유 문구와 공유 이미지가 생성된다.
   - SVG 공유 이미지는 개인정보 대신 확인 위치/시간/특징 중심으로 구성된다.
   - 공유 액션은 서버 로그로 추적할 수 있다.
+
+### 2026-05-21 | “목격했어요” 제보 흐름
+- 완료일: `2026-05-21`
+- 배경:
+  - 분실동물 상세에서 일반 댓글과 실제 목격 제보가 같은 형태로 섞이면 보호자가 위치/시간/사진 단서를 빠르게 찾기 어렵다.
+  - 제보에는 민감한 위치와 사진이 포함될 수 있으므로 공개 댓글 UX 안에서도 보호자 공개 옵션이 필요했다.
+- 변경내용:
+  - `CommentKind` enum과 `Comment.kind`, `sightingLocation`, `sightingSeenAt`, `sightingImageUrl`, `isPrivateSighting` 필드를 추가했다.
+  - `LOST_FOUND` 글의 댓글 작성 폼에 `목격했어요`/`일반 댓글` 모드를 추가했다.
+  - 목격 제보 모드에서는 목격 위치, 목격 시간, 사진 URL, 보호자 공개 여부를 입력한다.
+  - 댓글 목록에서 `목격 제보`, `보호자 공개` 배지와 위치/시간/사진 링크를 일반 댓글과 분리해 보여준다.
+  - 보호자 공개 제보는 게시글 작성자 또는 제보 작성자만 구조화 위치/시간/사진을 볼 수 있고, 다른 사용자는 placeholder로 본다.
+  - 실종글 작성자 또는 운영자가 `LostFoundAlert.status`를 `제보 접수 중/해결됨/종료`로 변경할 수 있게 했다.
+  - 상태 변경은 `LOST_FOUND_STATUS_CHANGED` 모더레이션 액션 로그로 남긴다.
+  - 신고 사유 `FAKE` 라벨을 `허위 정보/장난 제보`로 확장했다.
+- 코드문서:
+  - [app/prisma/schema.prisma](../app/prisma/schema.prisma)
+  - [app/prisma/migrations/20260521195000_add_lost_found_sighting_comments/migration.sql](../app/prisma/migrations/20260521195000_add_lost_found_sighting_comments/migration.sql)
+  - [app/src/lib/validations/comment.ts](../app/src/lib/validations/comment.ts)
+  - [app/src/server/services/comment.service.ts](../app/src/server/services/comment.service.ts)
+  - [app/src/server/services/posts/post-lost-found-workflow.service.ts](../app/src/server/services/posts/post-lost-found-workflow.service.ts)
+  - [app/src/components/posts/post-comment-root-form.tsx](../app/src/components/posts/post-comment-root-form.tsx)
+  - [app/src/components/posts/post-comment-thread.tsx](../app/src/components/posts/post-comment-thread.tsx)
+  - [app/src/components/posts/post-detail-info-panels.tsx](../app/src/components/posts/post-detail-info-panels.tsx)
+  - [app/src/components/posts/post-detail-client.tsx](../app/src/components/posts/post-detail-client.tsx)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app exec prisma migrate deploy`
+  - `corepack pnpm@9.12.3 -C app test -- src/server/services/comment.service.test.ts src/server/services/post-lost-found-workflow.service.test.ts src/components/posts/post-comment-thread.test.tsx src/components/posts/post-form-accessibility.test.tsx src/lib/validations/comment.test.ts src/lib/validations/post.test.ts`
+  - `PUPPETEER_SKIP_DOWNLOAD=1 corepack pnpm@9.12.3 dlx impeccable detect src/app src/components --fast`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+  - local browser smoke: 임시 `LOST_FOUND` 게시글로 `/posts/{id}/guest` desktop/mobile 확인 후 임시 게시글 삭제
+- 결과:
+  - 실종동물 글에서 일반 댓글과 목격 제보가 UI와 데이터 subtype으로 구분된다.
+  - 제보 작성자는 위치/시간/사진 단서를 구조화해서 남길 수 있다.
+  - 보호자는 상세 화면에서 제보를 확인한 뒤 상태를 해결/종료로 변경할 수 있는 서버 액션과 UI를 갖게 됐다.

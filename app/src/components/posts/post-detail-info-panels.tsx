@@ -6,6 +6,7 @@ import {
   CareFeedbackIssueType,
   CareFeedbackOutcome,
   CareRequestStatus,
+  LostFoundStatus,
   MarketStatus,
 } from "@prisma/client";
 
@@ -67,6 +68,10 @@ type PostDetailInfoPanelsProps = {
   isCareStatusPending: boolean;
   careStatusMessage: string | null;
   onCareStatusChange: (nextStatus: CareRequestStatus) => void;
+  canManageLostFoundStatus: boolean;
+  isLostFoundStatusPending: boolean;
+  lostFoundStatusMessage: string | null;
+  onLostFoundStatusChange: (nextStatus: LostFoundStatus) => void;
   canApplyCareRequest: boolean;
   careApplicationInput: string;
   onCareApplicationInputChange: (value: string) => void;
@@ -101,6 +106,10 @@ export function PostDetailInfoPanels({
   isCareStatusPending,
   careStatusMessage,
   onCareStatusChange,
+  canManageLostFoundStatus,
+  isLostFoundStatusPending,
+  lostFoundStatusMessage,
+  onLostFoundStatusChange,
   canApplyCareRequest,
   careApplicationInput,
   onCareApplicationInputChange,
@@ -620,6 +629,37 @@ export function PostDetailInfoPanels({
             span="wide"
             value={renderTextValue(post.lostFoundAlert.lastSeenLocation)}
           />
+          {canManageLostFoundStatus ? (
+            <div className="col-span-full rounded-lg border border-[#dbe6f5] bg-[#f8fbff] px-3 py-2.5">
+              <label className="tp-text-label text-[10px] text-[#5a7398]" htmlFor="lost-found-status">
+                상태 변경
+              </label>
+              <select
+                id="lost-found-status"
+                className={INFO_PANEL_SELECT_CLASS}
+                value={post.lostFoundAlert.status ?? LostFoundStatus.ACTIVE}
+                onChange={(event) =>
+                  onLostFoundStatusChange(event.target.value as LostFoundStatus)
+                }
+                disabled={isLostFoundStatusPending}
+              >
+                {Object.values(LostFoundStatus).map((status) => (
+                  <option key={status} value={status}>
+                    {lostFoundStatusLabel[status] ?? status}
+                  </option>
+                ))}
+              </select>
+              {lostFoundStatusMessage ? (
+                <p
+                  className={`${INFO_PANEL_STATUS_MESSAGE_CLASS} text-[#4b765f]`}
+                  role="status"
+                  aria-live="polite"
+                >
+                  {lostFoundStatusMessage}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
         </PostDetailInfoSection>
       ) : null}
 

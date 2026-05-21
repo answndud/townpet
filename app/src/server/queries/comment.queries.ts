@@ -1,4 +1,4 @@
-import { Prisma, PostStatus } from "@prisma/client";
+import { CommentKind, Prisma, PostStatus } from "@prisma/client";
 
 import { BEST_COMMENT_MIN_LIKES, MAX_BEST_COMMENTS } from "@/lib/comment-ranking";
 import { prisma } from "@/lib/prisma";
@@ -17,6 +17,8 @@ const BEST_COMMENT_ORDER_BY = [
 ];
 const MUTED_COMMENT_PLACEHOLDER_CONTENT = "뮤트한 사용자 댓글입니다.";
 const MUTED_COMMENT_PLACEHOLDER_NAME = "뮤트한 사용자";
+const PRIVATE_SIGHTING_PLACEHOLDER_CONTENT =
+  "보호자에게만 공개된 목격 제보입니다.";
 
 function isUnknownGuestAuthorIncludeError(error: unknown) {
   return error instanceof Error && error.message.includes("Unknown field `guestAuthor`");
@@ -30,7 +32,12 @@ const buildCommentSelect = (
   id: true,
   postId: true,
   parentId: true,
+  kind: true,
   content: true,
+  sightingLocation: true,
+  sightingSeenAt: true,
+  sightingImageUrl: true,
+  isPrivateSighting: true,
   status: true,
   likeCount: true,
   dislikeCount: true,
@@ -269,6 +276,36 @@ function applyMutedCommentPlaceholders<T extends CommentListItem>(
   });
 }
 
+function applyPrivateSightingPlaceholders<T extends CommentListItem>(
+  comments: T[],
+  postAuthorId: string | null,
+  viewerId?: string,
+): T[] {
+  return comments.map((comment) => {
+    if (
+      comment.kind !== CommentKind.LOST_FOUND_SIGHTING ||
+      !comment.isPrivateSighting ||
+      comment.status !== PostStatus.ACTIVE
+    ) {
+      return comment;
+    }
+
+    const canViewPrivateSighting =
+      Boolean(viewerId) && (viewerId === postAuthorId || viewerId === comment.authorId);
+    if (canViewPrivateSighting) {
+      return comment;
+    }
+
+    return {
+      ...comment,
+      content: PRIVATE_SIGHTING_PLACEHOLDER_CONTENT,
+      sightingLocation: null,
+      sightingSeenAt: null,
+      sightingImageUrl: null,
+    };
+  });
+}
+
 async function attachBestCommentThreadContext<
   T extends {
     id: string;
@@ -354,9 +391,14 @@ export async function listComments(
   },
 ) {
   const hiddenAuthorViewerId = options?.hiddenAuthorViewerId ?? viewerId;
-  const { blockedAuthorIds, mutedAuthorIds } = await listHiddenAuthorGroupsForViewer(
-    hiddenAuthorViewerId,
-  );
+  const [{ blockedAuthorIds, mutedAuthorIds }, post] = await Promise.all([
+    listHiddenAuthorGroupsForViewer(hiddenAuthorViewerId),
+    prisma.post.findUnique({
+      where: { id: postId },
+      select: { authorId: true },
+    }),
+  ]);
+  const postAuthorId = post?.authorId ?? null;
   const requestedPage = normalizeCommentPageParam(options?.page);
   const limit = normalizeCommentLimitParam(options?.limit);
 
@@ -370,14 +412,18 @@ export async function listComments(
       prisma.comment.count({ where: totalWhere }),
       listBestComments(postId, blockedAuthorIds, viewerId),
     ]);
-    const bestCommentsWithContext = applyMutedCommentPlaceholders(
-      await attachBestCommentThreadContext(
-        postId,
-        blockedAuthorIds,
-        bestComments,
-        limit,
+    const bestCommentsWithContext = applyPrivateSightingPlaceholders(
+      applyMutedCommentPlaceholders(
+        await attachBestCommentThreadContext(
+          postId,
+          blockedAuthorIds,
+          bestComments,
+          limit,
+        ),
+        mutedAuthorIds,
       ),
-      mutedAuthorIds,
+      postAuthorId,
+      viewerId,
     );
 
     const totalPages = Math.max(1, Math.ceil(totalRootCount / limit));
@@ -397,9 +443,13 @@ export async function listComments(
       roots.map((comment) => comment.id),
       viewerId,
     );
-    const comments = applyMutedCommentPlaceholders(
-      [...roots, ...sortCommentsChronologically(descendants)],
-      mutedAuthorIds,
+    const comments = applyPrivateSightingPlaceholders(
+      applyMutedCommentPlaceholders(
+        [...roots, ...sortCommentsChronologically(descendants)],
+        mutedAuthorIds,
+      ),
+      postAuthorId,
+      viewerId,
     );
 
     return {

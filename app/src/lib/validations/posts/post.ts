@@ -8,6 +8,7 @@ import {
   CareRequestStatus,
   CareType,
   ItemCondition,
+  LostFoundStatus,
   LostFoundType,
   MarketType,
   MarketStatus,
@@ -168,6 +169,10 @@ export const lostFoundSchema = z.object({
   breed: optionalTrimmedString({ max: 80 }),
   lastSeenAt: z.coerce.date(),
   lastSeenLocation: trimmedRequiredString({ max: 160 }),
+});
+
+export const lostFoundStatusUpdateSchema = z.object({
+  status: z.nativeEnum(LostFoundStatus),
 });
 
 export const careApplicationCreateSchema = z.object({
@@ -429,6 +434,7 @@ export type MarketListingStatusUpdateInput = z.infer<typeof marketListingStatusU
 export type CareRequestInput = z.infer<typeof careRequestSchema>;
 export type LostFoundInput = z.infer<typeof lostFoundSchema>;
 export type CareRequestStatusUpdateInput = z.infer<typeof careRequestStatusUpdateSchema>;
+export type LostFoundStatusUpdateInput = z.infer<typeof lostFoundStatusUpdateSchema>;
 export type CareApplicationCreateInput = z.infer<typeof careApplicationCreateSchema>;
 export type CareApplicationDecisionInput = z.infer<typeof careApplicationDecisionSchema>;
 export type CareCompletionFeedbackInput = z.infer<typeof careCompletionFeedbackSchema>;

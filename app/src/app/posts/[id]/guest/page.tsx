@@ -699,6 +699,9 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
           currentUserId={undefined}
           canInteract={false}
           canInteractWithPostOwner={false}
+          lostFoundSightingEnabled={
+            post.type === "LOST_FOUND" && post.lostFoundAlert?.status === "ACTIVE"
+          }
           loginHref={loginHref}
           forceGuestMode
         />

@@ -85,11 +85,21 @@ function buildComment(
     dislikeCount: number;
     authorId: string;
     isMutedByViewer: boolean;
+    kind: "GENERAL" | "LOST_FOUND_SIGHTING";
+    sightingLocation: string;
+    sightingSeenAt: string;
+    sightingImageUrl: string;
+    isPrivateSighting: boolean;
   }>,
 ) {
   return {
     id,
+    kind: overrides?.kind ?? "GENERAL",
     content: overrides?.content ?? `${id} 내용`,
+    sightingLocation: overrides?.sightingLocation,
+    sightingSeenAt: overrides?.sightingSeenAt,
+    sightingImageUrl: overrides?.sightingImageUrl,
+    isPrivateSighting: overrides?.isPrivateSighting,
     createdAt: "2026-03-11T10:00:00.000Z",
     parentId: overrides?.parentId ?? null,
     threadRootId: overrides?.threadRootId,
@@ -204,6 +214,38 @@ describe("PostCommentThread", () => {
     expect(html).not.toContain('aria-haspopup="menu"');
     expect(html).not.toContain("프로필 보기");
     expect(html).not.toContain("뮤트");
+  });
+
+  it("renders lost-found sighting comments with structured metadata", () => {
+    const html = renderToStaticMarkup(
+      <PostCommentThread
+        postId="post-1"
+        comments={[
+          buildComment("sighting-1", {
+            kind: "LOST_FOUND_SIGHTING",
+            content: "북문 쪽으로 이동했습니다.",
+            sightingLocation: "중앙공원 북문",
+            sightingSeenAt: "2026-05-21T10:30:00.000Z",
+            sightingImageUrl: "https://example.com/sighting.jpg",
+            isPrivateSighting: true,
+          }),
+        ]}
+        bestComments={[]}
+        totalCommentCount={1}
+        currentPage={1}
+        totalPages={1}
+        currentUserId="viewer-1"
+        canInteract
+        lostFoundSightingEnabled
+      />,
+    );
+
+    expect(html).toContain("목격 제보");
+    expect(html).toContain("보호자 공개");
+    expect(html).toContain("목격 위치");
+    expect(html).toContain("중앙공원 북문");
+    expect(html).toContain("사진 열기");
+    expect(html).toContain("목격했어요");
   });
 
   it("opens the author menu only for signed-in viewers", () => {

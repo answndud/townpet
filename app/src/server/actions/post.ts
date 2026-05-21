@@ -3,6 +3,7 @@
 import {
   CareFeedbackReviewStatus,
   CareRequestStatus,
+  LostFoundStatus,
   MarketStatus,
   PostReactionType,
 } from "@prisma/client";
@@ -21,6 +22,7 @@ import {
   togglePostReaction,
   updateCareFeedbackReview,
   updateCareRequestStatus,
+  updateLostFoundStatus,
   updateMarketListingStatus,
   updatePost,
 } from "@/server/services/post.service";
@@ -65,6 +67,15 @@ type CareRequestStatusActionResult =
       changed: boolean;
       status: CareRequestStatus;
       previousStatus: CareRequestStatus;
+    }
+  | { ok: false; code: string; message: string };
+
+type LostFoundStatusActionResult =
+  | {
+      ok: true;
+      changed: boolean;
+      status: LostFoundStatus;
+      previousStatus: LostFoundStatus;
     }
   | { ok: false; code: string; message: string };
 
@@ -320,6 +331,45 @@ export async function updateCareRequestStatusAction(
     }
 
     logger.error("updateCareRequestStatusAction 실패", {
+      postId,
+      status,
+      error: serializeError(error),
+    });
+
+    return {
+      ok: false,
+      code: "INTERNAL_SERVER_ERROR",
+      message: "서버 오류가 발생했습니다.",
+    };
+  }
+}
+
+export async function updateLostFoundStatusAction(
+  postId: string,
+  status: LostFoundStatus,
+): Promise<LostFoundStatusActionResult> {
+  try {
+    const user = await requireCurrentUser();
+    const result = await updateLostFoundStatus({
+      postId,
+      actorId: user.id,
+      input: { status },
+    });
+    revalidateFeedPage();
+    revalidatePostDetailPage(postId);
+
+    return {
+      ok: true,
+      changed: result.changed,
+      status: result.status,
+      previousStatus: result.previousStatus,
+    };
+  } catch (error) {
+    if (error instanceof ServiceError) {
+      return { ok: false, code: error.code, message: error.message };
+    }
+
+    logger.error("updateLostFoundStatusAction 실패", {
       postId,
       status,
       error: serializeError(error),

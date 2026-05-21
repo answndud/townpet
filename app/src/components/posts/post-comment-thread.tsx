@@ -61,6 +61,7 @@ type PostCommentThreadProps = {
   totalCommentCount: number;
   currentPage: number;
   totalPages: number;
+  lostFoundSightingEnabled?: boolean;
   currentUserId?: string;
   canInteract?: boolean;
   loginHref?: string;
@@ -81,6 +82,7 @@ export function PostCommentThread({
   totalCommentCount,
   currentPage,
   totalPages,
+  lostFoundSightingEnabled = false,
   currentUserId,
   canInteract = true,
   loginHref = "/login",
@@ -98,6 +100,13 @@ export function PostCommentThread({
   const [guestActionPrompt, setGuestActionPrompt] = useState<Record<string, "EDIT" | "DELETE" | null>>({});
   const [guestDisplayName, setGuestDisplayName] = useState("");
   const [guestPassword, setGuestPassword] = useState("");
+  const [rootCommentMode, setRootCommentMode] = useState<"GENERAL" | "LOST_FOUND_SIGHTING">(
+    lostFoundSightingEnabled ? "LOST_FOUND_SIGHTING" : "GENERAL",
+  );
+  const [sightingLocation, setSightingLocation] = useState("");
+  const [sightingSeenAt, setSightingSeenAt] = useState("");
+  const [sightingImageUrl, setSightingImageUrl] = useState("");
+  const [isPrivateSighting, setIsPrivateSighting] = useState(false);
   const [pendingBestCommentJump, setPendingBestCommentJump] = useState<{
     id: string;
     page: number;
@@ -229,7 +238,21 @@ export function PostCommentThread({
     }
 
     const content = parentId ? replyContent[parentId] : replyContent.root;
+    const isSightingComment =
+      !parentId && lostFoundSightingEnabled && rootCommentMode === "LOST_FOUND_SIGHTING";
     if (!content) return;
+    if (isSightingComment && !sightingLocation.trim()) {
+      const nextMessage = "목격 위치를 입력해 주세요.";
+      setMessage(nextMessage);
+      window.alert(nextMessage);
+      return;
+    }
+    if (isSightingComment && !sightingSeenAt) {
+      const nextMessage = "목격 시간을 입력해 주세요.";
+      setMessage(nextMessage);
+      window.alert(nextMessage);
+      return;
+    }
     if (!currentUserId) {
       if (!guestDisplayName.trim()) {
         const nextMessage = "비회원 닉네임을 입력해 주세요.";
@@ -255,9 +278,21 @@ export function PostCommentThread({
       });
       try {
         const result = currentUserId
-          ? await createCommentAction(postId, { content }, parentId, {
-              clientFingerprint: getClientFingerprint(),
-            })
+          ? await createCommentAction(
+              postId,
+              {
+                content,
+                kind: isSightingComment ? "LOST_FOUND_SIGHTING" : "GENERAL",
+                sightingLocation: isSightingComment ? sightingLocation : undefined,
+                sightingSeenAt: isSightingComment ? sightingSeenAt : undefined,
+                sightingImageUrl: isSightingComment ? sightingImageUrl || undefined : undefined,
+                isPrivateSighting: isSightingComment ? isPrivateSighting : undefined,
+              },
+              parentId,
+              {
+                clientFingerprint: getClientFingerprint(),
+              },
+            )
           : await (async () => {
               try {
                 const guestHeaders = await getGuestWriteHeaders("comment:create");
@@ -270,6 +305,11 @@ export function PostCommentThread({
                   body: JSON.stringify({
                     content,
                     parentId,
+                    kind: isSightingComment ? "LOST_FOUND_SIGHTING" : "GENERAL",
+                    sightingLocation: isSightingComment ? sightingLocation : undefined,
+                    sightingSeenAt: isSightingComment ? sightingSeenAt : undefined,
+                    sightingImageUrl: isSightingComment ? sightingImageUrl || undefined : undefined,
+                    isPrivateSighting: isSightingComment ? isPrivateSighting : undefined,
                     guestDisplayName,
                     guestPassword,
                   }),
@@ -308,6 +348,12 @@ export function PostCommentThread({
         }
 
         setReplyContent((prev) => ({ ...prev, [parentId ?? "root"]: "" }));
+        if (isSightingComment) {
+          setSightingLocation("");
+          setSightingSeenAt("");
+          setSightingImageUrl("");
+          setIsPrivateSighting(false);
+        }
         if (parentId) {
           setReplyOpen((prev) => ({ ...prev, [parentId]: false }));
           setCollapsedReplies((prev) => ({ ...prev, [parentId]: false }));
@@ -509,6 +555,10 @@ export function PostCommentThread({
       : isMutedPlaceholder
         ? MUTED_COMMENT_PLACEHOLDER_TEXT
         : comment.content;
+    const isSighting = comment.kind === "LOST_FOUND_SIGHTING";
+    const sightingSeenAtText = comment.sightingSeenAt
+      ? new Date(comment.sightingSeenAt).toLocaleString("ko-KR")
+      : null;
 
     return (
       <div
@@ -549,6 +599,16 @@ export function PostCommentThread({
                     </p>
                   {comment.parentId ? (
                     <span className={COMMENT_REPLY_BADGE_CLASS_NAME}>답글</span>
+                  ) : null}
+                  {isSighting ? (
+                    <span className="rounded-full border border-[#cbdcf5] bg-[#eef5ff] px-2 py-0.5 text-[10px] font-semibold text-[#2f5da4]">
+                      목격 제보
+                    </span>
+                  ) : null}
+                  {isSighting && comment.isPrivateSighting ? (
+                    <span className="rounded-full border border-[#ead5a5] bg-[#fff9e8] px-2 py-0.5 text-[10px] font-semibold text-[#7a5a18]">
+                      보호자 공개
+                    </span>
                   ) : null}
                 </div>
               </div>
@@ -620,6 +680,38 @@ export function PostCommentThread({
                 showYoutubeEmbeds={!isDeleted && !isMutedPlaceholder}
               />
             </div>
+
+            {isSighting && !isDeleted && !isMutedPlaceholder ? (
+              <dl className="mt-2 grid gap-1.5 rounded-lg border border-[#dbe6f5] bg-[#f8fbff] px-3 py-2 text-[12px] sm:grid-cols-2">
+                {comment.sightingLocation ? (
+                  <div>
+                    <dt className="tp-text-subtle font-semibold">목격 위치</dt>
+                    <dd className="tp-text-heading mt-0.5">{comment.sightingLocation}</dd>
+                  </div>
+                ) : null}
+                {sightingSeenAtText ? (
+                  <div>
+                    <dt className="tp-text-subtle font-semibold">목격 시간</dt>
+                    <dd className="tp-text-heading mt-0.5">{sightingSeenAtText}</dd>
+                  </div>
+                ) : null}
+                {comment.sightingImageUrl ? (
+                  <div className="sm:col-span-2">
+                    <dt className="tp-text-subtle font-semibold">사진</dt>
+                    <dd className="mt-0.5">
+                      <a
+                        href={comment.sightingImageUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="tp-text-link font-semibold underline underline-offset-2"
+                      >
+                        사진 열기
+                      </a>
+                    </dd>
+                  </div>
+                ) : null}
+              </dl>
+            ) : null}
 
             {!isDeleted && (canReply || canReport || (depth === 0 && replies.length > 0) || !isMutedPlaceholder) ? (
               <div className={POST_COMMENT_THREAD_FOOTER_CLASS_NAME}>
@@ -923,18 +1015,29 @@ export function PostCommentThread({
       <div className={`${COMMENT_BORDER_CLASS_NAME} mt-3 border-t pt-2.5 sm:mt-4 sm:pt-3`}>
         <PostCommentRootForm
           canComment={canComment}
+          lostFoundSightingEnabled={lostFoundSightingEnabled}
+          commentMode={rootCommentMode}
           currentUserId={currentUserId}
           guestDisplayName={guestDisplayName}
           guestPassword={guestPassword}
           rootContent={replyContent.root ?? ""}
+          sightingLocation={sightingLocation}
+          sightingSeenAt={sightingSeenAt}
+          sightingImageUrl={sightingImageUrl}
+          isPrivateSighting={isPrivateSighting}
           isPending={isPending}
           loginHref={loginHref}
           interactionDisabledMessage={interactionDisabledMessage}
+          onCommentModeChange={setRootCommentMode}
           onGuestDisplayNameChange={setGuestDisplayName}
           onGuestPasswordChange={setGuestPassword}
           onRootContentChange={(value) =>
             setReplyContent((prev) => ({ ...prev, root: value }))
           }
+          onSightingLocationChange={setSightingLocation}
+          onSightingSeenAtChange={setSightingSeenAt}
+          onSightingImageUrlChange={setSightingImageUrl}
+          onPrivateSightingChange={setIsPrivateSighting}
           onSubmit={() => handleCreate()}
         />
       </div>

@@ -4,7 +4,12 @@ export type PostCommentItem = {
   parentId: string | null;
   threadRootId?: string | null;
   threadPage?: number | null;
+  kind?: "GENERAL" | "LOST_FOUND_SIGHTING";
   content: string;
+  sightingLocation?: string | null;
+  sightingSeenAt?: string | Date | null;
+  sightingImageUrl?: string | null;
+  isPrivateSighting?: boolean;
   status: string;
   likeCount: number;
   dislikeCount: number;

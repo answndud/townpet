@@ -25,6 +25,9 @@ vi.mock("@/lib/prisma", () => ({
       count: vi.fn(),
       findMany: vi.fn(),
     },
+    post: {
+      findUnique: vi.fn(),
+    },
   },
 }));
 
@@ -37,6 +40,9 @@ const mockPrisma = vi.mocked(prisma) as unknown as {
   comment: {
     count: ReturnType<typeof vi.fn>;
     findMany: ReturnType<typeof vi.fn>;
+  };
+  post: {
+    findUnique: ReturnType<typeof vi.fn>;
   };
 };
 
@@ -85,6 +91,8 @@ describe("comment queries", () => {
     mockPrisma.$queryRaw.mockReset();
     mockPrisma.comment.count.mockReset();
     mockPrisma.comment.findMany.mockReset();
+    mockPrisma.post.findUnique.mockReset();
+    mockPrisma.post.findUnique.mockResolvedValue({ authorId: "owner-1" });
     mockListHiddenAuthorGroupsForViewer.mockReset();
     mockListHiddenAuthorGroupsForViewer.mockResolvedValue({
       blockedAuthorIds: [],
