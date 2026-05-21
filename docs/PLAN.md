@@ -42,34 +42,6 @@
   - 측정 도구를 먼저 만들고, 개선 후 같은 스크립트를 다시 실행한다.
   - 성능 개선 결과는 `docs/reports`에 raw evidence로 남기고, 정리본은 `blog/29-성능개선-측정과-최적화-기록.md`로 작성한다.
 
-#### P0-Perf-6. DB region/index/query plan 점검
-
-- 목표:
-  - PostgreSQL을 유지하면서 실제 query 병목을 줄인다.
-- 확인할 항목:
-  - Vercel function region
-  - PostgreSQL provider region
-  - connection pooling endpoint 사용 여부
-  - cold connection 시간이 큰지
-  - feed/search/comment query의 `EXPLAIN ANALYZE`
-- 우선 query:
-  - feed list:
-    - `scope,status,createdAt`
-    - `scope,status,likeCount,commentCount,viewCount,createdAt`
-    - `neighborhoodId,type,status,createdAt`
-  - search:
-    - `structuredSearchText`
-    - `title/content contains`
-    - pg_trgm 사용 여부
-  - comments:
-    - `postId,createdAt`
-  - reports/moderation:
-    - 운영 화면에서 느린 query
-- 완료 기준:
-  - 느린 query top 5와 원인 후보가 문서화된다.
-  - index 추가가 필요한 경우 migration 계획이 따로 분리된다.
-  - DB region/pooling 설정 문제가 있으면 운영 체크리스트에 반영한다.
-
 #### P0-Perf-7. 개선 전후 블로그/리포트 산출물
 
 - 목표:
