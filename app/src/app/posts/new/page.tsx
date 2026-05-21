@@ -11,6 +11,14 @@ import { isPrismaDatabaseUnavailableError } from "@/server/prisma-database-error
 import { listCommunities } from "@/server/queries/community.queries";
 import { getUserWithNeighborhoods } from "@/server/queries/user.queries";
 
+const PUBLIC_INITIAL_POST_TYPES = new Set<PostType>([
+  PostType.HOSPITAL_REVIEW,
+  PostType.WALK_ROUTE,
+  PostType.LOST_FOUND,
+  PostType.MARKET_LISTING,
+  PostType.PRODUCT_REVIEW,
+]);
+
 export const metadata = createNoIndexPageMetadata({
   title: "글쓰기",
   description: "TownPet 게시글을 작성합니다.",
@@ -33,7 +41,9 @@ function parseInitialPostType(type?: string) {
 export default async function NewPostPage({ searchParams }: NewPostPageProps) {
   const requestedInitialPostType = parseInitialPostType((await searchParams)?.type);
   const initialPostType =
-    requestedInitialPostType === PostType.LOST_FOUND ? requestedInitialPostType : undefined;
+    requestedInitialPostType && PUBLIC_INITIAL_POST_TYPES.has(requestedInitialPostType)
+      ? requestedInitialPostType
+      : undefined;
   const session = await auth().catch((error) => {
     if (isPrismaDatabaseUnavailableError(error)) {
       return null;

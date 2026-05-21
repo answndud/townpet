@@ -42,6 +42,7 @@ describe("sitemap", () => {
     expect(urls).toContain("http://localhost:3000/feed");
     expect(urls).toContain("http://localhost:3000/search");
     expect(urls).toContain("http://localhost:3000/boards/adoption");
+    expect(urls).toContain("http://localhost:3000/campaigns/neighborhood-map");
     expect(urls).toContain("http://localhost:3000/guides/lost-dog-poster");
     expect(urls).toContain("http://localhost:3000/guides/24h-vet-checklist");
     expect(urls).toContain("http://localhost:3000/guides/pet-used-trade-safety");

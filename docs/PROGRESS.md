@@ -27,15 +27,18 @@
 - `P0-10. 병원 후기 템플릿 안전화`를 완료했다. 병원 후기 작성 폼을 비교 가능한 구조화 경험 데이터 중심으로 바꾸고, 위험 표현 검토 신호와 병원·장소 정보 정정 요청 경로를 연결했다.
 - `P0-11. 산책코스 카드 필드 보강`을 완료했다. 산책코스 작성/상세/검색 구조를 대형견 적합, 혼잡 시간, 목줄 구간, 배변봉투함, 물 마실 곳, 주의 구간 중심으로 확장했다.
 - `P0-12. 운영자 콘텐츠와 사용자 글 분리`를 완료했다. 운영자/모더레이터가 작성한 조사 콘텐츠는 출처, 원문 URL, 최종 확인일, 정보 정정 요청 CTA와 함께 사용자 글과 분리해 표시된다.
+- `P1-1. 우리 동네 반려생활 지도 만들기 캠페인 페이지`를 완료했다. `/campaigns/neighborhood-map` public 캠페인 페이지, 홈 진입 링크, sitemap entry, 콘텐츠 현황 조회를 추가했다.
 
 ## 다음 액션
 
-- 다음 작업은 `P1-1. 우리 동네 반려생활 지도 만들기 캠페인 페이지`다.
-- P1-1 시작 전 확인할 파일:
+- 다음 작업은 `P1-2. Founding Member 배지`다.
+- P1-2 시작 전 확인할 파일:
   - `app/src/app/page.tsx`
-  - `app/src/app/towns/[slug]/page.tsx`
-  - `app/src/lib/town-region.ts`
-  - `app/src/components/home/*`
+  - `app/src/app/campaigns/neighborhood-map/page.tsx`
+  - `app/src/app/users/[id]/page.tsx`
+  - `app/src/components/posts/feed-infinite-list.tsx`
+  - `app/prisma/schema.prisma`
+  - `app/src/server/queries/campaign.queries.ts`
   - `app/src/components/navigation/app-shell-footer.tsx`
   - `business/product/*`
 - 시작페이지 추가 개선 후보:
@@ -61,3 +64,13 @@
   - `node scripts/refresh-docs-index.mjs --check`
 - 참고:
   - `pnpm -C app design:detect` 스크립트는 Corepack keyid 오류로 실패했다. 같은 detector는 루트 기준 명시 버전 `corepack pnpm@9.12.3 dlx impeccable detect app/src/app app/src/components --fast`로 통과했다.
+
+- `P1-1. 우리 동네 반려생활 지도 만들기 캠페인 페이지`
+  - `corepack pnpm@9.12.3 -C app test -- src/app/campaigns/neighborhood-map/page.test.tsx src/server/queries/campaign.queries.test.ts src/app/page.test.tsx src/app/sitemap.test.ts`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `PUPPETEER_SKIP_DOWNLOAD=1 corepack pnpm@9.12.3 dlx impeccable detect app/src/app app/src/components --fast`
+  - `git diff --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+  - `corepack pnpm@9.12.3 -C app build`
+  - local browser smoke: `/campaigns/neighborhood-map` desktop/mobile screenshot
