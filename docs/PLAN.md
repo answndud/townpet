@@ -42,26 +42,6 @@
   - 측정 도구를 먼저 만들고, 개선 후 같은 스크립트를 다시 실행한다.
   - 성능 개선 결과는 `docs/reports`에 raw evidence로 남기고, 정리본은 `blog/29-성능개선-측정과-최적화-기록.md`로 작성한다.
 
-#### P0-Perf-5. route bundle/hydration 비용 측정과 절감
-
-- 목표:
-  - 서버 응답은 빠른데 브라우저 체감이 느린 경우를 잡는다.
-- 확인할 항목:
-  - public feed에 rich editor bundle이 섞이는지
-  - admin/ops/personalization 코드가 public route chunk에 섞이는지
-  - `SunEditor`는 글쓰기/수정 화면에서만 dynamic import되는지
-  - header viewer shell fetch가 first paint를 막지 않는지
-  - Google font 로딩이 render blocking처럼 보이는지
-  - image/media proxy가 LCP를 지연하는지
-- 구현 후보:
-  - bundle analyzer 추가 또는 Next build analyze script 추가
-  - Playwright trace에서 JS parse/evaluate time 확인
-  - public route별 JS size budget 문서화
-- 완료 기준:
-  - `/`, `/feed/guest`, post detail의 주요 JS chunk 크기를 알 수 있다.
-  - 불필요한 heavy client component가 public initial route에서 빠진다.
-  - hydration 이후 첫 클릭 가능 시점이 baseline 대비 줄어든다.
-
 #### P0-Perf-6. DB region/index/query plan 점검
 
 - 목표:

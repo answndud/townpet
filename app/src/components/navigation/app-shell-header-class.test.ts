@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
 import { describe, expect, it } from "vitest";
 
 import {
@@ -47,5 +50,16 @@ describe("app shell header classes", () => {
     expect(APP_SHELL_MOBILE_DISCLOSURE_TRIGGER_CLASS_NAME).toContain("rounded-full");
     expect(APP_SHELL_MOBILE_DISCLOSURE_TRIGGER_CLASS_NAME).toContain("min-h-11");
     expect(APP_SHELL_MOBILE_DISCLOSURE_TRIGGER_CLASS_NAME).toContain("focus-visible:ring-2");
+  });
+
+  it("keeps authenticated-only header widgets out of the guest initial chunk", () => {
+    const source = readFileSync(
+      join(process.cwd(), "src/components/navigation/app-shell-header.tsx"),
+      "utf8",
+    );
+
+    expect(source).toContain("next/dynamic");
+    expect(source).not.toContain('import { AuthControls } from "@/components/auth/auth-controls"');
+    expect(source).not.toContain('import { NotificationBell } from "@/components/notifications/notification-bell"');
   });
 });

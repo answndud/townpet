@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-import { AuthControls } from "@/components/auth/auth-controls";
 import {
   APP_SHELL_DESKTOP_NAV_CLUSTER_CLASS_NAME,
   APP_SHELL_HEADER_CLASS_NAME,
@@ -14,7 +14,6 @@ import {
   shouldRefreshViewerShellOnFocus,
 } from "@/components/navigation/app-shell-header-class";
 import { FeedHoverMenu } from "@/components/navigation/feed-hover-menu";
-import { NotificationBell } from "@/components/notifications/notification-bell";
 import { emitViewerShellSync, subscribeViewerShellSync } from "@/lib/viewer-shell-sync";
 
 type AppShellHeaderProps = {
@@ -51,6 +50,16 @@ const DEFAULT_VIEWER_SHELL: ViewerShellData = {
   unreadNotificationCount: 0,
   preferredPetTypeIds: [],
 };
+
+const AuthControls = dynamic(
+  () => import("@/components/auth/auth-controls").then((module) => module.AuthControls),
+  { ssr: false },
+);
+
+const NotificationBell = dynamic(
+  () => import("@/components/notifications/notification-bell").then((module) => module.NotificationBell),
+  { ssr: false },
+);
 
 export function AppShellHeader({ communities: initialCommunities = [] }: Partial<AppShellHeaderProps>) {
   const [communities, setCommunities] = useState<CommunityNavItem[]>(initialCommunities);
