@@ -1,10 +1,12 @@
-import type { AnchorHTMLAttributes, ReactNode } from "react";
+import type { AnchorHTMLAttributes, ImgHTMLAttributes, ReactNode } from "react";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
+import { PostScope, PostStatus, PostType } from "@prisma/client";
 
 import { GuestPostDetailActions } from "@/components/posts/guest-post-detail-actions";
+import { LostFoundSharePanel } from "@/components/posts/lost-found-share-panel";
 import { PostBookmarkButton } from "@/components/posts/post-bookmark-button";
 import { PostDetailActions } from "@/components/posts/post-detail-actions";
 import { PostShareControls } from "@/components/posts/post-share-controls";
@@ -18,6 +20,17 @@ vi.mock("next/link", () => ({
     <a href={href} {...props}>
       {children}
     </a>
+  ),
+}));
+
+vi.mock("next/image", () => ({
+  default: ({
+    src,
+    alt,
+    ...props
+  }: { src: string; alt: string } & ImgHTMLAttributes<HTMLImageElement>) => (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={src} alt={alt} {...props} />
   ),
 }));
 
@@ -71,6 +84,40 @@ describe("post detail action accessibility", () => {
 
     expect(html).toContain("공유");
     expect(html).toContain("min-h-10");
+  });
+
+  it("renders lost-found share tools with mobile-safe actions", () => {
+    const html = renderToStaticMarkup(
+      <LostFoundSharePanel
+        post={{
+          id: "post-1",
+          authorId: "author-1",
+          type: PostType.LOST_FOUND,
+          scope: PostScope.GLOBAL,
+          status: PostStatus.ACTIVE,
+          title: "반포동에서 고양이를 봤어요",
+          content: "노란 목줄",
+          createdAt: new Date("2026-05-21T09:30:00.000Z"),
+          updatedAt: new Date("2026-05-21T09:30:00.000Z"),
+          author: { id: "author-1", nickname: "작성자" },
+          images: [],
+          lostFoundAlert: {
+            alertType: "FOUND",
+            petType: "고양이",
+            breed: "치즈태비",
+            lastSeenAt: "2026-05-21T09:30:00.000Z",
+            lastSeenLocation: "서초구 반포동",
+            status: "ACTIVE",
+          },
+        }}
+        postUrl="https://townpet.example/posts/post-1"
+      />,
+    );
+
+    expect(html).toContain("카카오톡 문구 복사");
+    expect(html).toContain("공유 이미지 열기");
+    expect(html).toContain("min-h-10");
+    expect(html).toContain('role="status"');
   });
 
   it("announces action failures and share status", () => {

@@ -68,6 +68,35 @@ describe("buildPostDetailMetadata", () => {
       title: basePost.title,
     });
   });
+
+  it("uses lost-found specific title, description, and share image", () => {
+    const metadata = buildPostDetailMetadata(
+      {
+        ...basePost,
+        type: "LOST_FOUND",
+        title: "고양이를 찾습니다",
+        lostFoundAlert: {
+          alertType: "LOST",
+          petType: "고양이",
+          breed: "검은 꼬리",
+          lastSeenAt: "2026-05-21T09:30:00.000Z",
+          lastSeenLocation: "서초구 반포동",
+        },
+      },
+      [],
+    );
+
+    expect(metadata.title).toBe("[TownPet] 우리 동네 실종 고양이 제보 요청");
+    expect(metadata.description).toContain("서초구 반포동");
+    expect(metadata.openGraph).toMatchObject({
+      title: "[TownPet] 우리 동네 실종 고양이 제보 요청",
+      images: [{ url: expect.stringContaining("/api/posts/c1234567890abcdefghijklmn/lost-found-share.svg") }],
+    });
+    expect(metadata.twitter).toMatchObject({
+      card: "summary_large_image",
+      title: "[TownPet] 우리 동네 실종 고양이 제보 요청",
+    });
+  });
 });
 
 describe("page metadata policy", () => {

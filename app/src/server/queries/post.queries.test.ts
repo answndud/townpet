@@ -19,6 +19,7 @@ vi.mock("@/lib/env", async () => {
 
 import {
   listBestPosts,
+  getPostById,
   getPostContentById,
   getPostStatsById,
   listRankedSearchPosts,
@@ -57,6 +58,9 @@ vi.mock("@/lib/prisma", () => ({
     postBookmark: {
       findMany: vi.fn(),
       count: vi.fn(),
+    },
+    lostFoundAlert: {
+      findUnique: vi.fn(),
     },
     feedPersonalizationEventLog: {
       findMany: vi.fn(),
@@ -98,6 +102,9 @@ const mockPrisma = vi.mocked(prisma) as unknown as {
     findMany: ReturnType<typeof vi.fn>;
     count: ReturnType<typeof vi.fn>;
   };
+  lostFoundAlert: {
+    findUnique: ReturnType<typeof vi.fn>;
+  };
   feedPersonalizationEventLog: {
     findMany: ReturnType<typeof vi.fn>;
   };
@@ -132,6 +139,8 @@ describe("post queries", () => {
     mockPrisma.postBookmark.findMany.mockResolvedValue([]);
     mockPrisma.postBookmark.count.mockReset();
     mockPrisma.postBookmark.count.mockResolvedValue(0);
+    mockPrisma.lostFoundAlert.findUnique.mockReset();
+    mockPrisma.lostFoundAlert.findUnique.mockResolvedValue(null);
     mockPrisma.feedPersonalizationEventLog.findMany.mockReset();
     mockPrisma.feedPersonalizationEventLog.findMany.mockResolvedValue([]);
     mockPrisma.pet.findMany.mockReset();
@@ -195,6 +204,41 @@ describe("post queries", () => {
     await expect(getPostContentById()).resolves.toBeNull();
 
     expect(mockPrisma.post.findFirst).not.toHaveBeenCalled();
+  });
+
+  it("attaches lost-found alert detail for lost-found posts", async () => {
+    mockPrisma.post.findFirst.mockResolvedValue({
+      id: "post-1",
+      authorId: "author-1",
+      type: PostType.LOST_FOUND,
+      scope: PostScope.GLOBAL,
+      status: "ACTIVE",
+      author: { id: "author-1", nickname: "작성자" },
+      images: [],
+    });
+    mockPrisma.lostFoundAlert.findUnique.mockResolvedValue({
+      alertType: "FOUND",
+      petType: "고양이",
+      breed: "치즈태비",
+      lastSeenAt: new Date("2026-05-21T09:30:00.000Z"),
+      lastSeenLocation: "서초구 반포동",
+      status: "ACTIVE",
+    });
+
+    const result = await getPostById("post-1");
+
+    expect(result).toMatchObject({
+      id: "post-1",
+      lostFoundAlert: {
+        alertType: "FOUND",
+        petType: "고양이",
+      },
+    });
+    expect(mockPrisma.lostFoundAlert.findUnique).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { postId: "post-1" },
+      }),
+    );
   });
 
   it("filters local feed by primary neighborhood", async () => {

@@ -5,6 +5,7 @@ import {
   ADOPTION_LISTING_SELECT,
   CARE_REQUEST_SELECT,
   HOSPITAL_REVIEW_SELECT,
+  LOST_FOUND_ALERT_SELECT,
   MARKET_LISTING_SELECT,
   PLACE_REVIEW_SELECT,
   VOLUNTEER_RECRUITMENT_SELECT,
@@ -50,6 +51,7 @@ export async function attachPostDetailExtras<T extends { id: string; type: PostT
   const needsVolunteer = post.type === PostType.SHELTER_VOLUNTEER;
   const needsMarket = post.type === PostType.MARKET_LISTING;
   const needsCare = post.type === PostType.CARE_REQUEST;
+  const needsLostFound = post.type === PostType.LOST_FOUND;
   const tasks: Array<Promise<void>> = [];
   const target = post as T & PostDetailExtras;
 
@@ -149,6 +151,20 @@ export async function attachPostDetailExtras<T extends { id: string; type: PostT
     }
   } else if (target.careRequest === undefined) {
     target.careRequest = null;
+  }
+
+  if (needsLostFound) {
+    if (target.lostFoundAlert === undefined) {
+      tasks.push(
+        prisma.lostFoundAlert
+          .findUnique({ where: { postId: post.id }, select: LOST_FOUND_ALERT_SELECT })
+          .then((alert) => {
+            target.lostFoundAlert = alert;
+          }),
+      );
+    }
+  } else if (target.lostFoundAlert === undefined) {
+    target.lostFoundAlert = null;
   }
 
   if (tasks.length > 0) {
