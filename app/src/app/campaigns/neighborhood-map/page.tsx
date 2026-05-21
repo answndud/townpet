@@ -1,8 +1,11 @@
 import Image from "next/image";
-import Link from "next/link";
 import type { Metadata } from "next";
 import { PostType } from "@prisma/client";
 
+import {
+  AcquisitionEventTracker,
+  AcquisitionTrackedLink,
+} from "@/components/analytics/acquisition-event-tracker";
 import { FoundingMemberBadge } from "@/components/user/founding-member-badge";
 import { NEIGHBORHOOD_MAP_CAMPAIGN_PATH } from "@/lib/campaign-pages";
 import { buildPostCreateTemplateHref } from "@/lib/post-create-templates";
@@ -91,6 +94,14 @@ export default async function NeighborhoodMapCampaignPage() {
 
   return (
     <main className="tp-page-bg min-h-screen">
+      <AcquisitionEventTracker
+        event={{
+          surface: "CAMPAIGN_NEIGHBORHOOD_MAP",
+          event: "CAMPAIGN_VIEWED",
+          targetType: "CAMPAIGN",
+          targetId: "neighborhood_map",
+        }}
+      />
       <section className="mx-auto grid w-full max-w-[1180px] gap-7 px-4 py-9 sm:px-6 sm:py-12 lg:grid-cols-[minmax(0,1fr)_380px] lg:px-10">
         <div className="min-w-0">
           <p className="tp-eyebrow">TownPet campaign</p>
@@ -102,24 +113,42 @@ export default async function NeighborhoodMapCampaignPage() {
             이벤트가 아니라 동네 사람들이 계속 쓰는 정보 자산으로 모읍니다.
           </p>
           <div className="mt-7 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-            <Link
+            <AcquisitionTrackedLink
               href="/posts/new"
               className="tp-btn-primary tp-btn-md inline-flex min-h-11 items-center justify-center px-5"
+              event={{
+                surface: "CAMPAIGN_NEIGHBORHOOD_MAP",
+                event: "CAMPAIGN_CTA_CLICKED",
+                targetType: "CTA",
+                targetId: "hero_first_report",
+              }}
             >
               첫 제보 남기기
-            </Link>
-            <Link
+            </AcquisitionTrackedLink>
+            <AcquisitionTrackedLink
               href="/onboarding"
               className="tp-btn-soft tp-btn-md inline-flex min-h-11 items-center justify-center px-5"
+              event={{
+                surface: "CAMPAIGN_NEIGHBORHOOD_MAP",
+                event: "ONBOARDING_CTA_CLICKED",
+                targetType: "CTA",
+                targetId: "hero_onboarding",
+              }}
             >
               내 동네 설정하기
-            </Link>
-            <Link
+            </AcquisitionTrackedLink>
+            <AcquisitionTrackedLink
               href="/feed/guest"
               className="tp-btn-soft tp-btn-md inline-flex min-h-11 items-center justify-center px-5"
+              event={{
+                surface: "CAMPAIGN_NEIGHBORHOOD_MAP",
+                event: "FEED_CTA_CLICKED",
+                targetType: "CTA",
+                targetId: "hero_feed",
+              }}
             >
               공개 피드 보기
-            </Link>
+            </AcquisitionTrackedLink>
           </div>
         </div>
 
@@ -185,12 +214,18 @@ export default async function NeighborhoodMapCampaignPage() {
                 <h3 className="text-base font-semibold text-[#173963]">{step.label}</h3>
                 <p className="mt-1 text-sm leading-6 text-[#5a7397]">{step.description}</p>
               </div>
-              <Link
+              <AcquisitionTrackedLink
                 href={step.href}
                 className="tp-btn-soft inline-flex min-h-10 items-center justify-center px-3 text-xs font-semibold"
+                event={{
+                  surface: "CAMPAIGN_NEIGHBORHOOD_MAP",
+                  event: "CAMPAIGN_CTA_CLICKED",
+                  targetType: step.href.includes("template=") ? "TEMPLATE" : "CTA",
+                  targetId: step.label,
+                }}
               >
                 {step.cta}
-              </Link>
+              </AcquisitionTrackedLink>
             </div>
           ))}
         </div>

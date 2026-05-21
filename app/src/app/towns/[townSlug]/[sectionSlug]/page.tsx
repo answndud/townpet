@@ -1,7 +1,10 @@
-import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import {
+  AcquisitionEventTracker,
+  AcquisitionTrackedLink,
+} from "@/components/analytics/acquisition-event-tracker";
 import { getTownLandingSection } from "@/lib/town-landing";
 import { getTownLandingByNeighborhoodSlug } from "@/server/queries/neighborhood.queries";
 import { isPrismaDatabaseUnavailableError } from "@/server/prisma-database-error";
@@ -66,10 +69,27 @@ export default async function TownSectionPage({ params }: TownSectionPageProps) 
 
   return (
     <main className="tp-page-bg min-h-screen">
+      <AcquisitionEventTracker
+        event={{
+          surface: "TOWN_SECTION",
+          event: "TOWN_SECTION_VIEWED",
+          targetType: "TOWN_SECTION",
+          targetId: `${town.slug}:${section.slug}`,
+        }}
+      />
       <section className="mx-auto w-full max-w-[980px] px-4 py-10 sm:px-6 sm:py-14 lg:px-10">
-        <Link href={town.href} className="text-sm font-semibold text-[#315b9a]">
+        <AcquisitionTrackedLink
+          href={town.href}
+          className="text-sm font-semibold text-[#315b9a]"
+          event={{
+            surface: "TOWN_SECTION",
+            event: "TOWN_CATEGORY_CLICKED",
+            targetType: "TOWN",
+            targetId: town.slug,
+          }}
+        >
           {town.label} 전체 보기
-        </Link>
+        </AcquisitionTrackedLink>
         <p className="tp-eyebrow mt-6">Town guide</p>
         <h1 className="mt-4 max-w-[760px] text-4xl font-semibold leading-[1.08] text-[#10284a] break-keep sm:text-5xl">
           {section.title}
@@ -79,12 +99,30 @@ export default async function TownSectionPage({ params }: TownSectionPageProps) 
         </p>
 
         <div className="mt-7 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-          <Link href={section.feedHref} className="tp-btn-primary tp-btn-md inline-flex min-h-11 items-center justify-center px-5">
+          <AcquisitionTrackedLink
+            href={section.feedHref}
+            className="tp-btn-primary tp-btn-md inline-flex min-h-11 items-center justify-center px-5"
+            event={{
+              surface: "TOWN_SECTION",
+              event: "FEED_CTA_CLICKED",
+              targetType: "TOWN_SECTION",
+              targetId: `${town.slug}:${section.slug}`,
+            }}
+          >
             관련 글 보기
-          </Link>
-          <Link href={section.writeHref} className="tp-btn-soft tp-btn-md inline-flex min-h-11 items-center justify-center px-5">
+          </AcquisitionTrackedLink>
+          <AcquisitionTrackedLink
+            href={section.writeHref}
+            className="tp-btn-soft tp-btn-md inline-flex min-h-11 items-center justify-center px-5"
+            event={{
+              surface: "TOWN_SECTION",
+              event: "WRITE_TEMPLATE_OPENED",
+              targetType: "TOWN_SECTION",
+              targetId: `${town.slug}:${section.slug}`,
+            }}
+          >
             템플릿으로 제보하기
-          </Link>
+          </AcquisitionTrackedLink>
         </div>
 
         <section className="mt-8 grid gap-4 md:grid-cols-[minmax(0,1fr)_280px]">

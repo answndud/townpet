@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { PostType, UserRole } from "@prisma/client";
 
+import { AcquisitionEventTracker } from "@/components/analytics/acquisition-event-tracker";
 import { PostCreateForm } from "@/components/posts/post-create-form";
 import { ServiceUnavailableState } from "@/components/ui/service-unavailable-state";
 import { auth } from "@/lib/auth";
@@ -135,6 +136,16 @@ export default async function NewPostPage({ searchParams }: NewPostPageProps) {
 
   return (
     <div className="tp-page-bg min-h-screen">
+      {initialTemplate ? (
+        <AcquisitionEventTracker
+          event={{
+            surface: "POST_CREATE",
+            event: "WRITE_TEMPLATE_OPENED",
+            targetType: "TEMPLATE",
+            targetId: initialTemplate.id,
+          }}
+        />
+      ) : null}
       <main className="mx-auto flex w-full max-w-[1320px] flex-col gap-4 px-4 py-5 sm:gap-5 sm:px-6 sm:py-6 lg:px-10">
         <section className="tp-hero flex flex-col gap-4 p-5 sm:p-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
