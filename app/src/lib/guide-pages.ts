@@ -1,3 +1,7 @@
+import { PostType } from "@prisma/client";
+
+import { buildPostCreateTemplateHref } from "@/lib/post-create-templates";
+
 export type GuidePage = {
   slug: string;
   title: string;
@@ -33,7 +37,10 @@ export const GUIDE_PAGES: GuidePage[] = [
     },
     secondaryCta: {
       label: "분실 글 작성하기",
-      href: "/lost/new",
+      href: buildPostCreateTemplateHref({
+        templateId: "lost_pet",
+        type: PostType.LOST_FOUND,
+      }),
     },
     sections: [
       {
@@ -77,7 +84,10 @@ export const GUIDE_PAGES: GuidePage[] = [
     },
     secondaryCta: {
       label: "병원 정보 공유하기",
-      href: "/posts/new?type=HOSPITAL_REVIEW",
+      href: buildPostCreateTemplateHref({
+        templateId: "hospital_review",
+        type: PostType.HOSPITAL_REVIEW,
+      }),
     },
     sections: [
       {
@@ -121,7 +131,10 @@ export const GUIDE_PAGES: GuidePage[] = [
     },
     secondaryCta: {
       label: "중고거래 글 작성하기",
-      href: "/posts/new?type=MARKET_LISTING",
+      href: buildPostCreateTemplateHref({
+        templateId: "used_market",
+        type: PostType.MARKET_LISTING,
+      }),
     },
     sections: [
       {
@@ -165,7 +178,10 @@ export const GUIDE_PAGES: GuidePage[] = [
     },
     secondaryCta: {
       label: "분실 글 작성하기",
-      href: "/lost/new",
+      href: buildPostCreateTemplateHref({
+        templateId: "lost_pet",
+        type: PostType.LOST_FOUND,
+      }),
     },
     sections: [
       {
@@ -209,7 +225,10 @@ export const GUIDE_PAGES: GuidePage[] = [
     },
     secondaryCta: {
       label: "병원 후기 작성하기",
-      href: "/posts/new?type=HOSPITAL_REVIEW",
+      href: buildPostCreateTemplateHref({
+        templateId: "hospital_review",
+        type: PostType.HOSPITAL_REVIEW,
+      }),
     },
     sections: [
       {

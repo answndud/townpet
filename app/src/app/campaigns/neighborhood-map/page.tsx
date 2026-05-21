@@ -1,9 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { PostType } from "@prisma/client";
 
 import { FoundingMemberBadge } from "@/components/user/founding-member-badge";
 import { NEIGHBORHOOD_MAP_CAMPAIGN_PATH } from "@/lib/campaign-pages";
+import { buildPostCreateTemplateHref } from "@/lib/post-create-templates";
 import { getNeighborhoodMapCampaignStats } from "@/server/queries/campaign.queries";
 
 export const dynamic = "force-dynamic";
@@ -27,19 +29,28 @@ const PARTICIPATION_STEPS = [
   {
     label: "산책코스 추천",
     description: "대형견 적합 여부, 혼잡 시간, 목줄 주의 구간을 남겨 주세요.",
-    href: "/posts/new?type=WALK_ROUTE",
+    href: buildPostCreateTemplateHref({
+      templateId: "walk_route_large_dog",
+      type: PostType.WALK_ROUTE,
+    }),
     cta: "산책코스 쓰기",
   },
   {
     label: "병원 방문 경험 공유",
     description: "방문 목적, 대기, 설명 충분성, 야간 진료 여부를 경험 중심으로 기록합니다.",
-    href: "/posts/new?type=HOSPITAL_REVIEW",
+    href: buildPostCreateTemplateHref({
+      templateId: "hospital_review",
+      type: PostType.HOSPITAL_REVIEW,
+    }),
     cta: "병원 경험 쓰기",
   },
   {
     label: "동반가능 장소 제보",
     description: "카페, 매장, 공원처럼 반려동물과 함께 갈 수 있는 장소 정보를 모읍니다.",
-    href: "/posts/new?type=PRODUCT_REVIEW",
+    href: buildPostCreateTemplateHref({
+      templateId: "place_report",
+      type: PostType.PRODUCT_REVIEW,
+    }),
     cta: "장소 제보하기",
   },
   {
@@ -51,7 +62,10 @@ const PARTICIPATION_STEPS = [
   {
     label: "중고용품 거래 글 작성",
     description: "이동장, 유모차, 자동급식기처럼 반려용품 맥락이 필요한 거래를 남깁니다.",
-    href: "/posts/new?type=MARKET_LISTING",
+    href: buildPostCreateTemplateHref({
+      templateId: "used_market",
+      type: PostType.MARKET_LISTING,
+    }),
     cta: "거래 글 쓰기",
   },
 ] as const;

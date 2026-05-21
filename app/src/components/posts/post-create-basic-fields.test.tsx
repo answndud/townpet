@@ -6,6 +6,7 @@ import { describe, expect, it, vi } from "vitest";
 import { PostCreateBasicFields } from "@/components/posts/post-create-basic-fields";
 import { postTypeOptions, reviewCategoryOptions } from "@/components/posts/post-create-form-options";
 import { createInitialPostCreateFormState } from "@/components/posts/post-create-form-state";
+import { listPostCreateTemplatesByType } from "@/lib/post-create-templates";
 import { REVIEW_CATEGORY } from "@/lib/review-category";
 
 const baseProps = {
@@ -83,5 +84,19 @@ describe("post create basic fields", () => {
 
     expect(html).toContain("동네를 먼저 설정해 주세요.");
     expect(html).toContain("/profile");
+  });
+
+  it("renders compact first-post template buttons", () => {
+    const html = renderToStaticMarkup(
+      <PostCreateBasicFields
+        {...baseProps}
+        templates={listPostCreateTemplatesByType(PostType.WALK_ROUTE, "서울 강남구")}
+        onApplyTemplate={vi.fn()}
+      />,
+    );
+
+    expect(html).toContain("첫 글 템플릿");
+    expect(html).toContain("제목과 본문 뼈대를 넣고 필요한 부분만 고쳐 쓰세요.");
+    expect(html).toContain("산책코스");
   });
 });

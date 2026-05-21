@@ -29,20 +29,21 @@
 - `P0-12. 운영자 콘텐츠와 사용자 글 분리`를 완료했다. 운영자/모더레이터가 작성한 조사 콘텐츠는 출처, 원문 URL, 최종 확인일, 정보 정정 요청 CTA와 함께 사용자 글과 분리해 표시된다.
 - `P1-1. 우리 동네 반려생활 지도 만들기 캠페인 페이지`를 완료했다. `/campaigns/neighborhood-map` public 캠페인 페이지, 홈 진입 링크, sitemap entry, 콘텐츠 현황 조회를 추가했다.
 - `P1-2. Founding Member 배지`를 완료했다. 운영자 수동 부여 스크립트, User badge field, 캠페인/피드/프로필 노출, 캠페인 창립 멤버 현황 집계를 추가했다.
+- `P1-3. 제보/추천 버튼과 첫 글 템플릿`을 완료했다. 캠페인/지역 허브/가이드 CTA가 글쓰기 템플릿으로 연결되고, `/posts/new`에서 제목/본문 초안과 템플릿 버튼을 제공한다.
 
 ## 다음 액션
 
-- 다음 작업은 `P1-3. 제보/추천 버튼과 첫 글 템플릿`이다.
-- P1-3 시작 전 확인할 파일:
+- 다음 작업은 `P1-4. 획득 이벤트 정의`다.
+- P1-4 시작 전 확인할 파일:
   - `app/src/app/page.tsx`
   - `app/src/app/campaigns/neighborhood-map/page.tsx`
-  - `app/src/app/posts/new/page.tsx`
-  - `app/src/components/posts/post-create-form.tsx`
-  - `app/src/components/posts/post-create-form-options.ts`
-  - `app/src/components/posts/post-create-form-state.ts`
-  - `app/src/components/posts/post-create-submit.ts`
   - `app/src/app/towns/[townSlug]/page.tsx`
   - `app/src/app/guides/[guideSlug]/page.tsx`
+  - `app/src/lib/client-telemetry.ts`
+  - `app/src/lib/feed-personalization-tracking.ts`
+  - `app/src/server/services/feed-personalization-metrics.service.ts`
+  - `business/analytics/핵심_지표.md`
+  - `business/analytics/온동네_초기유저_30일_실행플레이북.md`
   - `business/product/*`
 - 시작페이지 추가 개선 후보:
   - 홈에는 간소 헤더를 적용했지만, 다른 public route의 모바일 앱 셸 밀도는 아직 기존 제품 헤더 기준이다. 필요 시 `/guides/*` 같은 SEO landing에도 같은 header 정책을 확장한다.
@@ -90,3 +91,12 @@
   - `git diff --check`
   - `corepack pnpm@9.12.3 -C app quality:check`
   - local browser smoke: `/campaigns/neighborhood-map` desktop, `/feed/guest` mobile screenshot
+
+- `P1-3. 제보/추천 버튼과 첫 글 템플릿`
+  - `corepack pnpm@9.12.3 -C app test -- src/lib/post-create-templates.test.ts src/components/posts/post-create-basic-fields.test.tsx src/app/posts/new/page.test.tsx src/app/campaigns/neighborhood-map/page.test.tsx src/app/guides/page.test.tsx src/app/towns/page.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `PUPPETEER_SKIP_DOWNLOAD=1 corepack pnpm@9.12.3 dlx impeccable detect app/src/app app/src/components --fast`
+  - `git diff --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+  - local browser smoke: `/posts/new?type=WALK_ROUTE&template=walk_route_large_dog&town=서울%20강남구` desktop, `/campaigns/neighborhood-map` mobile screenshot

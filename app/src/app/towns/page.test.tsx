@@ -69,6 +69,26 @@ describe("town landing pages", () => {
     });
   });
 
+  it("links dynamic town sections to category-specific writing templates", async () => {
+    const town = buildTownLanding({
+      city: "서울특별시",
+      district: "강남구",
+      counts: { walks: 1 },
+    });
+    mockGetTownLandingByNeighborhoodSlug.mockResolvedValueOnce(town);
+
+    const html = renderToStaticMarkup(
+      await TownSectionPage({
+        params: Promise.resolve({ townSlug: "서울특별시--강남구", sectionSlug: "walks" }),
+      }),
+    );
+
+    expect(html).toContain("템플릿으로 제보하기");
+    expect(html).toContain(
+      "type=WALK_ROUTE&amp;template=walk_route_large_dog&amp;town=%EC%84%9C%EC%9A%B8%ED%8A%B9%EB%B3%84%EC%8B%9C+%EA%B0%95%EB%82%A8%EA%B5%AC",
+    );
+  });
+
   it("returns noindex metadata for unknown town paths", async () => {
     mockGetTownLandingByNeighborhoodSlug.mockResolvedValue(null);
 

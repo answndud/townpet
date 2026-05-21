@@ -4688,3 +4688,39 @@
   - 초기 창립 멤버 30명을 수동 모집할 수 있는 제품 표면과 운영 명령이 생겼다.
   - 배지는 포인트/랭크가 아니라 신뢰와 초기 기여 표시로 작게 노출된다.
   - 자동 부여 조건, admin UI 부여, 캠페인 지역별 badge scope는 이후 운영 기준 확정 후 별도 작업으로 남긴다.
+
+### 2026-05-21 | 제보/추천 버튼과 첫 글 템플릿
+- 완료일: `2026-05-21`
+- 배경:
+  - 캠페인, 지역 허브, 가이드에서 글쓰기 화면으로 이동해도 빈 제목과 빈 에디터가 나오면 첫 글 작성률이 낮다.
+  - 초기 획득 루프는 사용자가 “무엇을 써야 하는지”를 바로 이해하게 만드는 쪽이 우선이다.
+- 변경내용:
+  - `post-create-templates`를 추가해 병원 경험, 산책코스, 분실/목격, 동반 장소, 중고거래, 동네 질문 템플릿을 정의했다.
+  - `/posts/new`가 `type`, `template`, `town` query를 읽어 제목과 본문 초안을 채운다.
+  - 글쓰기 `글 정보` 영역에 현재 분류에 맞는 `첫 글 템플릿` 버튼을 추가했다.
+  - 캠페인 페이지 CTA를 분류별 템플릿 링크로 연결했다.
+  - 지역 섹션 페이지의 `정보 제보하기`를 `템플릿으로 제보하기`로 바꾸고 선택 지역명을 템플릿 제목에 반영한다.
+  - SEO 가이드의 작성 CTA를 병원/분실/중고거래 템플릿 링크로 연결했다.
+- 코드문서:
+  - [app/src/lib/post-create-templates.ts](../app/src/lib/post-create-templates.ts)
+  - [app/src/app/posts/new/page.tsx](../app/src/app/posts/new/page.tsx)
+  - [app/src/components/posts/post-create-form.tsx](../app/src/components/posts/post-create-form.tsx)
+  - [app/src/components/posts/post-create-basic-fields.tsx](../app/src/components/posts/post-create-basic-fields.tsx)
+  - [app/src/app/campaigns/neighborhood-map/page.tsx](../app/src/app/campaigns/neighborhood-map/page.tsx)
+  - [app/src/lib/town-landing.ts](../app/src/lib/town-landing.ts)
+  - [app/src/app/towns/[townSlug]/[sectionSlug]/page.tsx](../app/src/app/towns/%5BtownSlug%5D/%5BsectionSlug%5D/page.tsx)
+  - [app/src/lib/guide-pages.ts](../app/src/lib/guide-pages.ts)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/lib/post-create-templates.test.ts src/components/posts/post-create-basic-fields.test.tsx src/app/posts/new/page.test.tsx src/app/campaigns/neighborhood-map/page.test.tsx src/app/guides/page.test.tsx src/app/towns/page.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `PUPPETEER_SKIP_DOWNLOAD=1 corepack pnpm@9.12.3 dlx impeccable detect app/src/app app/src/components --fast`
+  - `git diff --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+  - local browser smoke:
+    - `/tmp/townpet-post-template-desktop.png`
+    - `/tmp/townpet-campaign-template-links-mobile.png`
+- 결과:
+  - 첫 글 작성자는 빈 에디터 대신 제목과 본문 뼈대에서 시작할 수 있다.
+  - 캠페인/지역/가이드 CTA가 같은 글쓰기 템플릿 규칙을 사용한다.
+  - 자동 추천, 개인화, 이벤트 측정은 P1-4 이후 작업으로 남긴다.
