@@ -1,3 +1,10 @@
+import { PostType } from "@prisma/client";
+
+import {
+  buildPostCreateTemplateHref,
+  type PostCreateTemplateId,
+} from "@/lib/post-create-templates";
+
 export type TownLandingSectionSlug = "hospitals" | "walks" | "lost" | "used-market";
 
 export type TownLandingSection = {
@@ -7,6 +14,7 @@ export type TownLandingSection = {
   description: string;
   href: string;
   feedHref: string;
+  writeHref: string;
   emptyState: string;
   checklist: string[];
   count?: number;
@@ -27,6 +35,8 @@ export const TOWN_LANDING_SECTION_TEMPLATES = [
     slug: "hospitals",
     shortTitle: "동물병원",
     feedHref: "/feed/guest?type=HOSPITAL_REVIEW",
+    postType: PostType.HOSPITAL_REVIEW,
+    templateId: "hospital_review",
     emptyState: "아직 이 지역의 병원 후기와 운영자 정리 정보가 충분하지 않습니다.",
     checklist: ["방문 전 전화 확인", "경험 공유 중심", "정정 요청 가능"],
   },
@@ -34,6 +44,8 @@ export const TOWN_LANDING_SECTION_TEMPLATES = [
     slug: "walks",
     shortTitle: "산책코스",
     feedHref: "/feed/guest?type=WALK_ROUTE",
+    postType: PostType.WALK_ROUTE,
+    templateId: "walk_route_large_dog",
     emptyState: "아직 이 지역의 산책코스 제보가 충분하지 않습니다.",
     checklist: ["대형견 적합 여부", "혼잡 시간", "펫티켓 주의 구간"],
   },
@@ -41,6 +53,8 @@ export const TOWN_LANDING_SECTION_TEMPLATES = [
     slug: "lost",
     shortTitle: "분실/목격",
     feedHref: "/feed/guest?type=LOST_FOUND",
+    postType: PostType.LOST_FOUND,
+    templateId: "lost_pet",
     emptyState: "최근 이 지역에 등록된 분실/목격 제보가 없습니다.",
     checklist: ["실종 시간", "마지막 목격 위치", "공개 연락 방식 제한"],
   },
@@ -48,11 +62,16 @@ export const TOWN_LANDING_SECTION_TEMPLATES = [
     slug: "used-market",
     shortTitle: "중고거래",
     feedHref: "/feed/guest?type=MARKET_LISTING",
+    postType: PostType.MARKET_LISTING,
+    templateId: "used_market",
     emptyState: "아직 이 지역의 반려용품 중고거래 글이 충분하지 않습니다.",
     checklist: ["개봉 사료 주의", "사이즈 확인", "직거래 장소 확인"],
   },
 ] as const satisfies ReadonlyArray<
-  Pick<TownLandingSection, "slug" | "shortTitle" | "feedHref" | "emptyState" | "checklist">
+  Pick<TownLandingSection, "slug" | "shortTitle" | "feedHref" | "emptyState" | "checklist"> & {
+    postType: PostType;
+    templateId: PostCreateTemplateId;
+  }
 >;
 
 export function buildTownSlug(city: string, district: string) {
@@ -102,6 +121,11 @@ export function buildTownLanding({
       title: `${district} ${template.shortTitle}`,
       description: buildSectionDescription(template.slug),
       href: `${href}/${template.slug}`,
+      writeHref: buildPostCreateTemplateHref({
+        templateId: template.templateId,
+        townLabel: label,
+        type: template.postType,
+      }),
       count: counts[template.slug] ?? 0,
     })),
   };

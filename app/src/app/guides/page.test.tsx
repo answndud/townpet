@@ -31,7 +31,7 @@ describe("guide pages", () => {
     expect(html).toContain("24시 동물병원 찾기 전 확인할 것");
     expect(html).toContain("전화로 확인할 것");
     expect(html).toContain('href="/feed/guest?type=HOSPITAL_REVIEW"');
-    expect(html).toContain('href="/posts/new?type=HOSPITAL_REVIEW"');
+    expect(html).toContain('href="/posts/new?type=HOSPITAL_REVIEW&amp;template=hospital_review"');
     expect(html).toContain("진단과 치료 판단은 수의사와 병원의 안내를 따르세요.");
   });
 

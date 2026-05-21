@@ -18,8 +18,8 @@ describe("NeighborhoodMapCampaignPage", () => {
 
     expect(html).toContain("우리 동네 반려생활 지도 만들기");
     expect(html).toContain("첫 제보 남기기");
-    expect(html).toContain('href="/posts/new?type=WALK_ROUTE"');
-    expect(html).toContain('href="/posts/new?type=HOSPITAL_REVIEW"');
+    expect(html).toContain('href="/posts/new?type=WALK_ROUTE&amp;template=walk_route_large_dog"');
+    expect(html).toContain('href="/posts/new?type=HOSPITAL_REVIEW&amp;template=hospital_review"');
     expect(html).toContain('href="/lost/new"');
     expect(html).toContain("운영자 검수 후 Founding Member 배지 부여");
     expect(html).toContain("창립 멤버");

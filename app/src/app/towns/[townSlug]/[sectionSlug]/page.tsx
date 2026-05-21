@@ -82,8 +82,8 @@ export default async function TownSectionPage({ params }: TownSectionPageProps) 
           <Link href={section.feedHref} className="tp-btn-primary tp-btn-md inline-flex min-h-11 items-center justify-center px-5">
             관련 글 보기
           </Link>
-          <Link href="/posts/new" className="tp-btn-soft tp-btn-md inline-flex min-h-11 items-center justify-center px-5">
-            정보 제보하기
+          <Link href={section.writeHref} className="tp-btn-soft tp-btn-md inline-flex min-h-11 items-center justify-center px-5">
+            템플릿으로 제보하기
           </Link>
         </div>
 

@@ -35,6 +35,10 @@ import {
   reviewCategoryOptions,
 } from "@/components/posts/post-create-form-options";
 import {
+  listPostCreateTemplatesByType,
+  type PostCreateTemplate,
+} from "@/lib/post-create-templates";
+import {
   AdoptionListingFields,
   CareRequestFields,
   HospitalReviewFields,
@@ -77,6 +81,8 @@ type PostCreateFormProps = {
   canCreateAdoptionListing?: boolean;
   canMarkOperatorContent?: boolean;
   initialType?: PostType;
+  initialTemplate?: PostCreateTemplate;
+  templateTownLabel?: string;
 };
 
 export function PostCreateForm({
@@ -87,15 +93,24 @@ export function PostCreateForm({
   canCreateAdoptionListing = false,
   canMarkOperatorContent = false,
   initialType,
+  initialTemplate,
+  templateTownLabel,
 }: PostCreateFormProps) {
   const titleInputRef = useRef<HTMLInputElement | null>(null);
-  const latestTitleRef = useRef("");
+  const latestTitleRef = useRef(initialTemplate?.title ?? "");
   const editorHandleRef = useRef<PostBodyRichEditorHandle | null>(null);
   const latestEditorContentRef = useRef("");
   const latestEditorImageUrlsRef = useRef<string[]>([]);
   const [formState, setFormState] = useState<PostCreateFormState>(() => {
     const initialState = createInitialPostCreateFormState(defaultNeighborhoodId);
-    return initialType ? { ...initialState, type: initialType } : initialState;
+    return {
+      ...initialState,
+      type: initialType ?? initialTemplate?.type ?? initialState.type,
+      title: initialTemplate?.title ?? initialState.title,
+      content: initialTemplate?.content ?? initialState.content,
+      reviewCategory:
+        initialTemplate?.reviewCategory ?? initialState.reviewCategory,
+    };
   });
 
   useEffect(() => {
@@ -174,6 +189,25 @@ export function PostCreateForm({
   const showMarketListing = formState.type === PostType.MARKET_LISTING;
   const showCareRequest = formState.type === PostType.CARE_REQUEST;
   const showLostFound = formState.type === PostType.LOST_FOUND;
+  const activeTemplates = useMemo(
+    () => listPostCreateTemplatesByType(formState.type, templateTownLabel),
+    [formState.type, templateTownLabel],
+  );
+
+  const applyTemplate = (template: PostCreateTemplate) => {
+    latestTitleRef.current = template.title;
+    if (titleInputRef.current) {
+      titleInputRef.current.value = template.title;
+      titleInputRef.current.focus();
+    }
+    setFormState((prev) => ({
+      ...prev,
+      type: template.type,
+      title: template.title,
+      content: template.content,
+      reviewCategory: template.reviewCategory ?? prev.reviewCategory,
+    }));
+  };
 
   const { error, handleSubmit, isPending } = usePostCreateSubmit({
     canUseLocalScope,
@@ -220,6 +254,8 @@ export function PostCreateForm({
           reviewCategoryOptions={reviewCategoryOptions}
           neighborhoodOptions={neighborhoodOptions}
           communityOptions={communityOptions}
+          templates={activeTemplates}
+          onApplyTemplate={applyTemplate}
           onTitleChange={(value) => {
             latestTitleRef.current = value;
           }}

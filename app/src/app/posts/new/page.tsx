@@ -8,10 +8,12 @@ import { createNoIndexPageMetadata } from "@/lib/page-metadata";
 import { getCurrentUserRole } from "@/server/auth";
 import { redirectToProfileIfNicknameMissing } from "@/server/nickname-guard";
 import { isPrismaDatabaseUnavailableError } from "@/server/prisma-database-error";
+import { getPostCreateTemplateById } from "@/lib/post-create-templates";
 import { listCommunities } from "@/server/queries/community.queries";
 import { getUserWithNeighborhoods } from "@/server/queries/user.queries";
 
 const PUBLIC_INITIAL_POST_TYPES = new Set<PostType>([
+  PostType.QA_QUESTION,
   PostType.HOSPITAL_REVIEW,
   PostType.WALK_ROUTE,
   PostType.LOST_FOUND,
@@ -27,6 +29,8 @@ export const metadata = createNoIndexPageMetadata({
 
 type NewPostPageProps = {
   searchParams?: Promise<{
+    template?: string;
+    town?: string;
     type?: string;
   }>;
 };
@@ -38,12 +42,28 @@ function parseInitialPostType(type?: string) {
   return Object.values(PostType).includes(type as PostType) ? (type as PostType) : undefined;
 }
 
+function parseTemplateTownLabel(value?: string) {
+  const normalized = value?.replace(/\s+/g, " ").trim();
+  if (!normalized) {
+    return undefined;
+  }
+  return normalized.slice(0, 40);
+}
+
 export default async function NewPostPage({ searchParams }: NewPostPageProps) {
-  const requestedInitialPostType = parseInitialPostType((await searchParams)?.type);
+  const resolvedSearchParams = await searchParams;
+  const templateTownLabel = parseTemplateTownLabel(resolvedSearchParams?.town);
+  const requestedInitialPostType = parseInitialPostType(resolvedSearchParams?.type);
+  const initialTemplate = getPostCreateTemplateById(
+    resolvedSearchParams?.template,
+    templateTownLabel,
+  );
   const initialPostType =
     requestedInitialPostType && PUBLIC_INITIAL_POST_TYPES.has(requestedInitialPostType)
       ? requestedInitialPostType
-      : undefined;
+      : initialTemplate?.type && PUBLIC_INITIAL_POST_TYPES.has(initialTemplate.type)
+        ? initialTemplate.type
+        : undefined;
   const session = await auth().catch((error) => {
     if (isPrismaDatabaseUnavailableError(error)) {
       return null;
@@ -151,6 +171,8 @@ export default async function NewPostPage({ searchParams }: NewPostPageProps) {
           canCreateAdoptionListing={canManageOperatorContent}
           canMarkOperatorContent={canManageOperatorContent}
           initialType={initialPostType}
+          initialTemplate={initialTemplate ?? undefined}
+          templateTownLabel={templateTownLabel}
         />
       </main>
     </div>

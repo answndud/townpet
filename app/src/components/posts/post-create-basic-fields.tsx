@@ -5,6 +5,7 @@ import type { Dispatch, RefObject, SetStateAction } from "react";
 import Link from "next/link";
 
 import type { PostCreateFormState } from "@/components/posts/post-create-form-state";
+import type { PostCreateTemplate } from "@/lib/post-create-templates";
 import type { ReviewCategory } from "@/lib/review-category";
 import { POST_TITLE_MAX_LENGTH } from "@/lib/input-limits";
 
@@ -29,6 +30,8 @@ type PostCreateBasicFieldsProps = {
   reviewCategoryOptions: ReadonlyArray<SelectOption<ReviewCategory>>;
   neighborhoodOptions: ReadonlyArray<SelectOption<string>>;
   communityOptions: ReadonlyArray<SelectOption<string>>;
+  templates?: ReadonlyArray<PostCreateTemplate>;
+  onApplyTemplate?: (template: PostCreateTemplate) => void;
   onTitleChange: (value: string) => void;
 };
 
@@ -48,6 +51,8 @@ export function PostCreateBasicFields({
   reviewCategoryOptions,
   neighborhoodOptions,
   communityOptions,
+  templates = [],
+  onApplyTemplate,
   onTitleChange,
 }: PostCreateBasicFieldsProps) {
   return (
@@ -73,6 +78,32 @@ export function PostCreateBasicFields({
             required
           />
         </label>
+
+        {templates.length > 0 ? (
+          <div className="md:col-span-2">
+            <div className="flex flex-col gap-2 border-y border-[#e3ecf8] bg-[#f8fbff] px-3 py-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-xs font-semibold text-[#173963]">첫 글 템플릿</p>
+                <p className="mt-1 text-xs leading-5 text-[#5a7397]">
+                  제목과 본문 뼈대를 넣고 필요한 부분만 고쳐 쓰세요.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {templates.map((template) => (
+                  <button
+                    key={template.id}
+                    type="button"
+                    disabled={!isFormInteractive || !onApplyTemplate}
+                    onClick={() => onApplyTemplate?.(template)}
+                    className="tp-filter-pill min-h-[1.875rem] px-2.5 py-1 text-[11px] disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {template.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : null}
 
         <label className="tp-form-label">
           분류
