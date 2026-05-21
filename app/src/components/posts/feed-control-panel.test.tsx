@@ -29,6 +29,8 @@ describe("FeedControlPanel", () => {
     );
 
     expect(html).toContain("피드 보기");
+    expect(html).toContain("h-[28px]");
+    expect(html).toContain("py-1");
     expect(html).toContain("추천 방식");
     expect(html).toContain("현재 기준");
     expect(html).toContain("장난감 리뷰를 먼저 보여드려요");

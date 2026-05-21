@@ -60,15 +60,12 @@ describe("FeedInfiniteList", () => {
       />,
     );
 
-    const fixedHeightClass = "h-[132px]";
-    const fixedHeightPattern = new RegExp(
-      fixedHeightClass.replace("[", "\\[").replace("]", "\\]"),
-      "g",
-    );
-
     expect(html.match(/data-testid="feed-post-item"/g)).toHaveLength(2);
-    expect(html.match(fixedHeightPattern)).toHaveLength(2);
-    expect(html).toContain("invisible aspect-square rounded-2xl");
+    expect(html).toContain(
+      "h-[68px] grid-cols-[minmax(0,1fr)_48px]",
+    );
+    expect(html).toContain("sm:h-[72px]");
+    expect(html).toContain("invisible aspect-square rounded-lg");
     expect(html).toContain("사진 글");
   });
 });
