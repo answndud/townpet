@@ -43,8 +43,14 @@ export default function HomePage() {
           </p>
           <div className="mt-7 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
             <Link
-              href="/onboarding"
+              href="/feed/guest"
               className="tp-btn-primary tp-btn-md inline-flex min-h-11 items-center justify-center px-5"
+            >
+              전체 피드 보기
+            </Link>
+            <Link
+              href="/onboarding"
+              className="tp-btn-soft tp-btn-md inline-flex min-h-11 items-center justify-center px-5"
             >
               내 동네 허브 시작하기
             </Link>
