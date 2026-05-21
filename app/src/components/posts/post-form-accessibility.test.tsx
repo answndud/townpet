@@ -89,6 +89,27 @@ describe("post form accessibility", () => {
     expect(html).toContain("min-h-10");
   });
 
+  it("shows immediate pending feedback while a root comment is submitting", () => {
+    const html = renderToStaticMarkup(
+      <PostCommentRootForm
+        canComment
+        currentUserId="viewer-1"
+        guestDisplayName=""
+        guestPassword=""
+        rootContent="등록 중인 댓글"
+        isPending
+        loginHref="/login"
+        onGuestDisplayNameChange={vi.fn()}
+        onGuestPasswordChange={vi.fn()}
+        onRootContentChange={vi.fn()}
+        onSubmit={vi.fn()}
+      />,
+    );
+
+    expect(html).toContain("등록 중...");
+    expect(html).toContain("disabled");
+  });
+
   it("keeps post edit controls mobile-safe", () => {
     const html = renderToStaticMarkup(
       <PostDetailEditForm

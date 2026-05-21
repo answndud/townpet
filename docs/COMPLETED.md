@@ -3840,3 +3840,37 @@
   - 2페이지 이상 요청은 기존처럼 count query를 유지해 overflow page 보정과 pagination 정확도를 보존한다.
   - 로그인 기본 feed에서 개인화 context가 자동 실행되지 않아, 정렬/기간 클릭의 서버 read path가 줄었다.
   - 다음 작업은 댓글 작성 체감 속도 개선이다.
+
+### 2026-05-21 | 댓글 작성 pending preview와 중복 route refresh 제거
+- 완료일: `2026-05-21`
+- 배경:
+  - 댓글 작성/수정/삭제 후 `onCommentsChanged`로 댓글 목록을 이미 다시 가져오면서도 `router.refresh()`를 추가 호출하고 있었다.
+  - 댓글 등록 요청이 진행되는 동안 화면 변화가 버튼 disabled 외에는 약해, 실제 API latency보다 더 느리게 느껴질 수 있었다.
+- 변경내용:
+  - `PostCommentThread`에 mutation 후 갱신 helper를 추가했다.
+    - `onCommentsChanged`가 있으면 댓글 목록 API 재조회만 수행한다.
+    - `onCommentsChanged`가 없는 fallback 상황에서만 `router.refresh()`를 수행한다.
+  - 댓글 작성 중에는 서버 응답 전에도 `post-comment-pending` preview를 즉시 렌더하도록 했다.
+    - 작성자 표시, 본문, `댓글 등록 중`/`답글 등록 중` 상태를 `role="status"`로 노출한다.
+    - 성공 후 목록 재조회가 끝나거나 실패하면 preview를 제거한다.
+  - root 댓글/답글 submit 버튼은 pending 중 `등록 중...` 라벨을 보여준다.
+  - 실패 시 pending preview를 rollback하고 기존 오류 메시지/비회원 alert 경로를 유지한다.
+- 코드문서:
+  - [app/src/components/posts/post-comment-thread.tsx](../app/src/components/posts/post-comment-thread.tsx)
+  - [app/src/components/posts/post-comment-root-form.tsx](../app/src/components/posts/post-comment-root-form.tsx)
+  - [app/src/components/posts/post-comment-thread.test.tsx](../app/src/components/posts/post-comment-thread.test.tsx)
+  - [app/src/components/posts/post-form-accessibility.test.tsx](../app/src/components/posts/post-form-accessibility.test.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `./node_modules/.bin/vitest run src/components/posts/post-comment-thread.test.tsx src/components/posts/post-form-accessibility.test.tsx`
+  - `./node_modules/.bin/tsc -p tsconfig.json --noEmit --pretty false`
+  - `./node_modules/.bin/eslint`
+  - `./node_modules/.bin/next build`
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `git diff --check`
+- 결과:
+  - 댓글 작성 클릭 직후 pending preview가 즉시 표시되어 perceived latency가 서버 완료 시간과 분리된다.
+  - 댓글 섹션 클라이언트 재조회 경로가 있는 상세 화면에서는 mutation 후 전체 route refresh를 중복 호출하지 않는다.
+  - 로컬 DB가 꺼져 있어 `next build` 중 Prisma 연결 경고가 출력됐지만 fallback 경로로 build는 통과했다.
+  - 다음 작업은 public route bundle/hydration 비용 측정과 절감이다.

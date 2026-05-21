@@ -71,6 +71,8 @@ type PostCommentThreadProps = {
 export const shouldCloseCommentAuthorMenu = shouldCloseUserActionMenu;
 export const canOpenCommentAuthorMenu = canOpenUserActionMenu;
 export const canMuteCommentAuthor = canToggleMuteUser;
+export const shouldRefreshCommentRoute = (onCommentsChanged?: PostCommentThreadProps["onCommentsChanged"]) =>
+  !onCommentsChanged;
 
 export function PostCommentThread({
   postId,
@@ -101,6 +103,11 @@ export function PostCommentThread({
     page: number;
   } | null>(null);
   const [pendingRelationFocusCommentId, setPendingRelationFocusCommentId] = useState<string | null>(null);
+  const [pendingCommentPreview, setPendingCommentPreview] = useState<{
+    content: string;
+    displayName: string;
+    parentId: string | null;
+  } | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const actionLockRef = useRef(false);
@@ -184,6 +191,17 @@ export function PostCommentThread({
     router.refresh();
   };
 
+  const refreshCommentsAfterMutation = async (page?: number) => {
+    if (onCommentsChanged) {
+      await onCommentsChanged(page);
+      return;
+    }
+
+    if (shouldRefreshCommentRoute(onCommentsChanged)) {
+      router.refresh();
+    }
+  };
+
   const handleUnmute = (commentId: string, userId: string) => {
     startTransition(async () => {
       const result = await unmuteUserAction(
@@ -230,6 +248,11 @@ export function PostCommentThread({
     actionLockRef.current = true;
     startTransition(async () => {
       setMessage(null);
+      setPendingCommentPreview({
+        content,
+        displayName: currentUserId ? "나" : guestDisplayName.trim(),
+        parentId: parentId ?? null,
+      });
       try {
         const result = currentUserId
           ? await createCommentAction(postId, { content }, parentId, {
@@ -276,6 +299,7 @@ export function PostCommentThread({
             })();
 
         if (!result.ok) {
+          setPendingCommentPreview(null);
           setMessage(result.message);
           if (!currentUserId) {
             window.alert(result.message);
@@ -288,12 +312,18 @@ export function PostCommentThread({
           setReplyOpen((prev) => ({ ...prev, [parentId]: false }));
           setCollapsedReplies((prev) => ({ ...prev, [parentId]: false }));
         }
-        if (onCommentsChanged) {
-          const nextPage = parentId ? currentPage : 1;
-          await onCommentsChanged(nextPage);
+        await refreshCommentsAfterMutation(parentId ? currentPage : 1);
+      } catch (error) {
+        const nextMessage =
+          error instanceof Error && error.message.trim().length > 0
+            ? error.message
+            : "댓글 등록에 실패했습니다.";
+        setMessage(nextMessage);
+        if (!currentUserId) {
+          window.alert(nextMessage);
         }
-        router.refresh();
       } finally {
+        setPendingCommentPreview(null);
         actionLockRef.current = false;
       }
     });
@@ -356,10 +386,7 @@ export function PostCommentThread({
         }
 
         setEditOpen((prev) => ({ ...prev, [commentId]: false }));
-        if (onCommentsChanged) {
-          await onCommentsChanged(currentPage);
-        }
-        router.refresh();
+        await refreshCommentsAfterMutation(currentPage);
       } finally {
         actionLockRef.current = false;
       }
@@ -422,10 +449,7 @@ export function PostCommentThread({
         }
 
         setGuestActionPrompt((prev) => ({ ...prev, [commentId]: null }));
-        if (onCommentsChanged) {
-          await onCommentsChanged(currentPage);
-        }
-        router.refresh();
+        await refreshCommentsAfterMutation(currentPage);
       } finally {
         actionLockRef.current = false;
       }
@@ -726,7 +750,7 @@ export function PostCommentThread({
                     onClick={() => handleCreate(comment.id)}
                     disabled={isPending}
                   >
-                    답글 등록
+                    {isPending ? "등록 중..." : "답글 등록"}
                   </button>
                 </div>
               </div>
@@ -821,6 +845,27 @@ export function PostCommentThread({
         <p className="tp-text-subtle mt-2 text-[11px] font-medium" role="status" aria-live="polite">
           {message}
         </p>
+      ) : null}
+
+      {pendingCommentPreview ? (
+        <div
+          data-testid="post-comment-pending"
+          className={`${COMMENT_BORDER_CLASS_NAME} mt-3 rounded-lg border bg-[#f7fbff] px-3 py-2.5`}
+          role="status"
+          aria-live="polite"
+        >
+          <div className="flex items-center justify-between gap-2">
+            <p className="tp-text-heading text-[13px] font-semibold">
+              {pendingCommentPreview.displayName}
+            </p>
+            <span className="tp-text-label text-[10px]">
+              {pendingCommentPreview.parentId ? "답글 등록 중" : "댓글 등록 중"}
+            </span>
+          </div>
+          <div className="tp-text-primary mt-1 text-[13px] leading-6">
+            <LinkifiedContent text={pendingCommentPreview.content} showYoutubeEmbeds={false} />
+          </div>
+        </div>
       ) : null}
 
       {hasBestComments ? (

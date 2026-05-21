@@ -81,7 +81,7 @@ export function PostCommentRootForm({
               onClick={onSubmit}
               disabled={isPending}
             >
-              댓글 등록
+              {isPending ? "등록 중..." : "댓글 등록"}
             </button>
           </div>
         </>

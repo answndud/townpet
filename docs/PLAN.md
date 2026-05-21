@@ -42,27 +42,6 @@
   - 측정 도구를 먼저 만들고, 개선 후 같은 스크립트를 다시 실행한다.
   - 성능 개선 결과는 `docs/reports`에 raw evidence로 남기고, 정리본은 `blog/29-성능개선-측정과-최적화-기록.md`로 작성한다.
 
-#### P0-Perf-4. 댓글 작성 체감 속도 개선
-
-- 현재 우려:
-  - 댓글 작성 후 전체 post detail 또는 댓글 목록을 다시 가져오면 사용자는 mutation이 느리다고 느낀다.
-  - revalidation 범위가 넓거나 댓글 count/notification side effect가 동기 처리되면 체감 지연이 커질 수 있다.
-- 개선 후보:
-  - 댓글 작성 시 optimistic UI 적용
-  - 서버 action/API는 새 댓글 payload와 count delta만 반환
-  - 댓글 목록 전체 refetch를 피하고 부분 append로 처리
-  - notification 생성/전송은 outbox 또는 비동기 경로로 분리되어 있는지 확인
-  - `revalidatePath` 또는 cache invalidation 범위를 post detail 최소 단위로 제한
-- 완료 기준:
-  - 댓글 submit 클릭 후 사용자가 보는 화면 반응이 200ms 이내에 시작된다.
-  - 서버 완료 전에는 pending 댓글 상태가 보인다.
-  - 실패 시 rollback과 오류 안내가 있다.
-  - 실제 API latency와 perceived latency를 분리 측정한다.
-- 검증:
-  - comment component test
-  - post-comment auth sync e2e 또는 targeted Playwright
-  - mutation latency 측정
-
 #### P0-Perf-5. route bundle/hydration 비용 측정과 절감
 
 - 목표:
