@@ -12,14 +12,14 @@ type SearchPageProps = {
 };
 
 export const metadata: Metadata = {
-  title: "검색",
-  description: "피드 하단 검색에서 제목/내용 기준으로 게시글을 찾으세요.",
+  title: "동네 반려생활 검색",
+  description: "병원, 산책, 분실, 입양, 중고거래 글을 제목과 내용 기준으로 찾으세요.",
   alternates: {
     canonical: "/feed",
   },
   openGraph: {
-    title: "TownPet 피드 검색",
-    description: "피드 하단 검색에서 제목/내용 기준으로 게시글을 찾으세요.",
+    title: "TownPet 동네 반려생활 검색",
+    description: "병원, 산책, 분실, 입양, 중고거래 글을 제목과 내용 기준으로 찾으세요.",
     url: "/feed",
   },
 };

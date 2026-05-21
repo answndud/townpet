@@ -23,11 +23,11 @@ const siteOrigin = getSiteOrigin();
 export const metadata: Metadata = {
   metadataBase: new URL(siteOrigin),
   title: {
-    default: "TownPet | 동네 기반 반려동물 커뮤니티",
+    default: "TownPet | 우리 동네 반려생활 정보",
     template: "%s | TownPet",
   },
   description:
-    "우리 동네 반려생활을 나누는 커뮤니티. 병원 후기, 산책 코스, 질문/답변, 실종 제보까지 한 곳에서.",
+    "동물병원, 산책코스, 분실동물, 입양, 중고거래 정보를 지역별로 찾고 공유하는 동네 반려생활 정보 커뮤니티입니다.",
   alternates: {
     canonical: "/",
   },
@@ -36,15 +36,15 @@ export const metadata: Metadata = {
     locale: "ko_KR",
     url: siteOrigin,
     siteName: "TownPet",
-    title: "TownPet | 동네 기반 반려동물 커뮤니티",
+    title: "TownPet | 우리 동네 반려생활 정보",
     description:
-      "우리 동네 반려생활을 나누는 커뮤니티. 병원 후기, 산책 코스, 질문/답변, 실종 제보까지 한 곳에서.",
+      "동물병원, 산책코스, 분실동물, 입양, 중고거래 정보를 지역별로 찾고 공유하는 동네 반려생활 정보 커뮤니티입니다.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "TownPet | 동네 기반 반려동물 커뮤니티",
+    title: "TownPet | 우리 동네 반려생활 정보",
     description:
-      "우리 동네 반려생활을 나누는 커뮤니티. 병원 후기, 산책 코스, 질문/답변, 실종 제보까지 한 곳에서.",
+      "동물병원, 산책코스, 분실동물, 입양, 중고거래 정보를 지역별로 찾고 공유하는 동네 반려생활 정보 커뮤니티입니다.",
   },
 };
 

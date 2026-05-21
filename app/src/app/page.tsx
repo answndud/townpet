@@ -8,14 +8,14 @@ export const dynamic = "force-static";
 export const metadata: Metadata = {
   title: "우리 동네 반려생활 정보",
   description:
-    "동물병원, 산책코스, 분실동물, 입양, 중고거래 정보를 지역별로 모아보는 반려인 커뮤니티입니다.",
+    "동물병원, 산책코스, 분실동물, 입양, 중고거래 정보를 지역별로 찾고 공유하는 동네 반려생활 정보 커뮤니티입니다.",
   alternates: {
     canonical: "/",
   },
   openGraph: {
     title: "TownPet | 우리 동네 반려생활 정보",
     description:
-      "동물병원, 산책코스, 분실동물, 입양, 중고거래 정보를 지역별로 모아보는 반려인 커뮤니티입니다.",
+      "동물병원, 산책코스, 분실동물, 입양, 중고거래 정보를 지역별로 찾고 공유하는 동네 반려생활 정보 커뮤니티입니다.",
     url: "/",
   },
 };
@@ -51,23 +51,23 @@ export default function HomePage() {
     <main className="tp-page-bg min-h-screen">
       <section className="mx-auto grid w-full max-w-[1180px] gap-8 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-[minmax(0,1fr)_360px] lg:px-10">
         <div className="flex min-w-0 flex-col justify-center">
-          <p className="tp-eyebrow">TownPet local board</p>
+          <p className="tp-eyebrow">동네 반려생활 정보 지도</p>
           <h1 className="mt-4 max-w-[760px] text-4xl font-semibold leading-[1.08] text-[#10284a] break-keep sm:text-5xl">
             우리 동네 반려생활 정보, TownPet
           </h1>
           <p className="mt-5 max-w-[680px] text-base leading-7 text-[#4f6f99] break-keep sm:text-lg">
             동물병원, 산책코스, 분실동물, 입양, 중고거래 정보를 지역별로 찾고 공유하는
-            반려인 커뮤니티입니다.
+            동네 반려생활 정보 커뮤니티입니다.
           </p>
           <div className="mt-7 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
             <Link href="/feed/guest" className="tp-btn-primary tp-btn-md inline-flex min-h-11 items-center justify-center px-5">
-              공개 피드 보기
+              내 동네 정보 보기
             </Link>
             <Link href="/posts/new" className="tp-btn-soft tp-btn-md inline-flex min-h-11 items-center justify-center px-5">
-              글쓰기
+              분실동물 등록하기
             </Link>
             <Link href="/feed/guest?mode=BEST&days=7" className="tp-btn-soft tp-btn-md inline-flex min-h-11 items-center justify-center px-5">
-              베스트글
+              병원/산책 정보 보기
             </Link>
           </div>
         </div>
