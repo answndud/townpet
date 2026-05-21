@@ -4034,6 +4034,9 @@
   - `corepack pnpm@9.12.3 -C app lint`
   - `corepack pnpm@9.12.3 -C app typecheck`
   - `corepack pnpm@9.12.3 -C app build`
+  - GitHub Actions `docs-quality`, `quality-gate`
+  - production `/` 응답에서 `내 동네 허브 시작하기` CTA 반영 확인
+  - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health`
 - 결과:
   - 신규 사용자는 홈 CTA에서 온보딩으로 들어가 동네 저장 후 선택한 대표 동네 허브로 이동할 수 있다.
   - 홈은 사용자별 동적 처리 없이 정적 landing 역할을 유지한다.
