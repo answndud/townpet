@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 
 import { monitorUnhandledError } from "@/server/error-monitor";
+import { isPrismaDatabaseUnavailableError } from "@/server/prisma-database-error";
 import { listCommunities } from "@/server/queries/community.queries";
 import { getClientIp } from "@/server/request-context";
 import { enforceRateLimit } from "@/server/rate-limit";
@@ -39,7 +40,12 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    const data = await listCommunities(parsed.data);
+    const data = await listCommunities(parsed.data).catch((error) => {
+      if (isPrismaDatabaseUnavailableError(error)) {
+        return { items: [], nextCursor: null };
+      }
+      throw error;
+    });
     return jsonOk(data);
   } catch (error) {
     await monitorUnhandledError(error, { route: "GET /api/communities", request });

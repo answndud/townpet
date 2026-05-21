@@ -184,7 +184,7 @@ async function installPerformanceObserver(page: Page) {
         const entries = entryList.getEntries();
         const lastEntry = entries[entries.length - 1];
         if (lastEntry) {
-          window.__townpetPerf.lcp = lastEntry.startTime;
+          window.__townpetPerf = { lcp: lastEntry.startTime };
         }
       });
       observer.observe({ type: "largest-contentful-paint", buffered: true });
