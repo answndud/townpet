@@ -11,6 +11,13 @@ describe("buildPostStructuredSearchText", () => {
           hospitalName: "  해피 동물 병원 ",
           treatmentType: "중성화 수술",
         },
+        walkRoute: {
+          routeName: "양재천 산책길",
+          crowdedTime: "주말 오후",
+          leashRequiredNote: "자전거도로 옆",
+          cautionNote: "공사 구간",
+          safetyTags: ["야간조명"],
+        },
         adoptionListing: {
           shelterName: " 서울 보호 센터 ",
           region: "서울 서초",
@@ -28,7 +35,7 @@ describe("buildPostStructuredSearchText", () => {
         },
       }),
     ).toBe(
-      "강아지 산책 해피 동물 병원 중성화 수술 서울 보호 센터 서울 서초 웰시 코기 SELL LIKE_NEW 2주 대여 고양이 치즈태비 서초구 반포동",
+      "강아지 산책 해피 동물 병원 중성화 수술 양재천 산책길 주말 오후 자전거도로 옆 공사 구간 야간조명 서울 보호 센터 서울 서초 웰시 코기 SELL LIKE_NEW 2주 대여 고양이 치즈태비 서초구 반포동",
     );
   });
 

@@ -93,7 +93,12 @@ export async function listUserPosts({
         select: { placeName: true, rating: true, isPetAllowed: true },
       },
       walkRoute: {
-        select: { routeName: true, distance: true },
+        select: {
+          routeName: true,
+          distance: true,
+          largeDogFriendly: true,
+          crowdedTime: true,
+        },
       },
     },
   });

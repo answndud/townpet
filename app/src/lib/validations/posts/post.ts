@@ -359,9 +359,15 @@ export const walkRouteSchema = z.object({
       z.enum(["EASY", "MODERATE", "HARD"]).optional(),
     )
     .optional(),
+  largeDogFriendly: optionalBoolean,
+  crowdedTime: optionalTrimmedString({ max: 80 }),
+  leashRequiredNote: optionalTrimmedString({ max: 120 }),
   hasStreetLights: optionalBoolean,
   hasRestroom: optionalBoolean,
   hasParkingLot: optionalBoolean,
+  hasWasteBags: optionalBoolean,
+  hasWaterStation: optionalBoolean,
+  cautionNote: optionalTrimmedString({ max: 160 }),
   safetyTags: z.array(z.string().min(1)).optional(),
 });
 

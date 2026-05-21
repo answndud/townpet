@@ -14,6 +14,7 @@ import { REVIEW_CATEGORY } from "@/lib/review-category";
 describe("post create form options", () => {
   it("keeps key option sets available to the write form", () => {
     expect(postTypeOptions.map((option) => option.value)).toContain(PostType.FREE_BOARD);
+    expect(postTypeOptions.map((option) => option.value)).toContain(PostType.WALK_ROUTE);
     expect(reviewCategoryOptions.map((option) => option.value)).toContain(REVIEW_CATEGORY.PLACE);
     expect(marketListingTypeOptions.map((option) => option.value)).toEqual([
       "SELL",
@@ -29,6 +30,9 @@ describe("post create form options", () => {
       PostScope.GLOBAL,
     );
     expect(resolveScopeByPostType(PostType.CARE_REQUEST, PostScope.GLOBAL)).toBe(
+      PostScope.LOCAL,
+    );
+    expect(resolveScopeByPostType(PostType.WALK_ROUTE, PostScope.GLOBAL)).toBe(
       PostScope.LOCAL,
     );
     expect(resolveScopeByPostType(PostType.FREE_BOARD, PostScope.LOCAL)).toBe(

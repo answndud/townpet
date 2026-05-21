@@ -90,10 +90,16 @@ function hasWalkRoute(formState: PostCreateFormState) {
       formState.walkRoute.distance.trim().length > 0 ||
       formState.walkRoute.duration.trim().length > 0 ||
       formState.walkRoute.difficulty.trim().length > 0 ||
+      formState.walkRoute.largeDogFriendly.trim().length > 0 ||
+      formState.walkRoute.crowdedTime.trim().length > 0 ||
+      formState.walkRoute.leashRequiredNote.trim().length > 0 ||
       formState.walkRoute.safetyTags.trim().length > 0 ||
       formState.walkRoute.hasStreetLights === "true" ||
       formState.walkRoute.hasRestroom === "true" ||
-      formState.walkRoute.hasParkingLot === "true")
+      formState.walkRoute.hasParkingLot === "true" ||
+      formState.walkRoute.hasWasteBags === "true" ||
+      formState.walkRoute.hasWaterStation === "true" ||
+      formState.walkRoute.cautionNote.trim().length > 0)
   );
 }
 
@@ -252,6 +258,9 @@ export function buildPostCreateSubmitPayload({
             ...formState.walkRoute,
             distance: formState.walkRoute.distance || undefined,
             duration: formState.walkRoute.duration || undefined,
+            largeDogFriendly: formState.walkRoute.largeDogFriendly || undefined,
+            hasWasteBags: formState.walkRoute.hasWasteBags || undefined,
+            hasWaterStation: formState.walkRoute.hasWaterStation || undefined,
             safetyTags: formState.walkRoute.safetyTags
               .split(",")
               .map((tag) => tag.trim())
@@ -336,6 +345,12 @@ export function createPostCreateSuccessState(prev: PostCreateFormState): PostCre
       distance: "",
       duration: "",
       difficulty: "",
+      largeDogFriendly: "",
+      crowdedTime: "",
+      leashRequiredNote: "",
+      hasWasteBags: "false",
+      hasWaterStation: "false",
+      cautionNote: "",
       safetyTags: "",
     },
     adoptionListing: {

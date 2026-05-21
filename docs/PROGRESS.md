@@ -25,11 +25,12 @@
 - `P0-8. 분실동물 공유 이미지/카카오톡 공유 MVP`를 완료했다. 상세 화면에 분실/목격 공유 패널, 카카오톡 복사용 문구, 링크 복사, SVG 공유 이미지 route, 공유 액션 로그 API, lost-found 전용 OG metadata를 추가했다.
 - `P0-9. “목격했어요” 제보 흐름`을 완료했다. 댓글에 `LOST_FOUND_SIGHTING` subtype과 구조화 목격 위치/시간/사진 URL/보호자 공개 필드를 추가하고, 실종글 작성자/운영자가 상태를 `제보 접수 중/해결됨/종료`로 변경할 수 있게 했다.
 - `P0-10. 병원 후기 템플릿 안전화`를 완료했다. 병원 후기 작성 폼을 비교 가능한 구조화 경험 데이터 중심으로 바꾸고, 위험 표현 검토 신호와 병원·장소 정보 정정 요청 경로를 연결했다.
+- `P0-11. 산책코스 카드 필드 보강`을 완료했다. 산책코스 작성/상세/검색 구조를 대형견 적합, 혼잡 시간, 목줄 구간, 배변봉투함, 물 마실 곳, 주의 구간 중심으로 확장했다.
 
 ## 다음 액션
 
-- 다음 작업은 `P0-11. 산책코스 카드 필드 보강`이다.
-- P0-11 시작 전 확인할 파일:
+- 다음 작업은 `P0-12. 운영자 콘텐츠와 사용자 글 분리`다.
+- P0-12 시작 전 확인할 파일:
   - `app/prisma/schema.prisma`
   - `app/src/lib/validations/posts/post.ts`
   - `app/src/components/posts/post-create-form.tsx`
@@ -37,6 +38,7 @@
   - `app/src/components/posts/post-detail-info-panels.tsx`
   - `app/src/server/services/posts/post-create.service.ts`
   - `app/src/lib/post-structured-search.ts`
+  - `app/src/components/navigation/app-shell-footer.tsx`
 - 시작페이지 추가 개선 후보:
   - 홈에는 간소 헤더를 적용했지만, 다른 public route의 모바일 앱 셸 밀도는 아직 기존 제품 헤더 기준이다. 필요 시 `/guides/*` 같은 SEO landing에도 같은 header 정책을 확장한다.
   - 홈 preview API는 테스트 성격 글을 숨기지만, seed/demo 데이터가 production DB에 섞이는 운영 원인은 별도 정리가 필요하다.

@@ -6,6 +6,7 @@ export const postTypeOptions = [
   { value: PostType.FREE_BOARD, label: "자유게시판" },
   { value: PostType.QA_QUESTION, label: "질문/답변" },
   { value: PostType.HOSPITAL_REVIEW, label: "병원 후기" },
+  { value: PostType.WALK_ROUTE, label: "동네 산책코스" },
   { value: PostType.LOST_FOUND, label: "실종/목격 제보" },
   { value: PostType.MEETUP, label: "동네 모임" },
   { value: PostType.MARKET_LISTING, label: "중고/공동구매" },
@@ -24,7 +25,7 @@ export function resolveScopeByPostType(type: PostType, scope: PostScope) {
   ) {
     return PostScope.GLOBAL;
   }
-  if (type === PostType.MEETUP || type === PostType.CARE_REQUEST) {
+  if (type === PostType.WALK_ROUTE || type === PostType.MEETUP || type === PostType.CARE_REQUEST) {
     return PostScope.LOCAL;
   }
   return scope;

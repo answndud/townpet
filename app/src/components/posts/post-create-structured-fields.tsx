@@ -480,6 +480,63 @@ export function WalkRouteFields({
       </label>
 
       <label className="tp-form-label">
+        대형견 적합
+        <select
+          className="tp-input-soft px-3 py-2 text-sm"
+          value={formState.walkRoute.largeDogFriendly}
+          onChange={(event) =>
+            setFormState((prev) => ({
+              ...prev,
+              walkRoute: {
+                ...prev.walkRoute,
+                largeDogFriendly: event.target.value,
+              },
+            }))
+          }
+        >
+          <option value="">선택 안함</option>
+          <option value="true">적합</option>
+          <option value="false">주의 필요</option>
+        </select>
+      </label>
+
+      <label className="tp-form-label">
+        혼잡 시간
+        <input
+          className="tp-input-soft px-3 py-2 text-sm"
+          value={formState.walkRoute.crowdedTime}
+          onChange={(event) =>
+            setFormState((prev) => ({
+              ...prev,
+              walkRoute: {
+                ...prev.walkRoute,
+                crowdedTime: event.target.value,
+              },
+            }))
+          }
+          placeholder="예: 평일 18-20시, 주말 오후"
+        />
+      </label>
+
+      <label className="tp-form-label">
+        목줄 필수 구간
+        <input
+          className="tp-input-soft px-3 py-2 text-sm"
+          value={formState.walkRoute.leashRequiredNote}
+          onChange={(event) =>
+            setFormState((prev) => ({
+              ...prev,
+              walkRoute: {
+                ...prev.walkRoute,
+                leashRequiredNote: event.target.value,
+              },
+            }))
+          }
+          placeholder="예: 자전거도로 옆 구간"
+        />
+      </label>
+
+      <label className="tp-form-label">
         안전 태그(콤마)
         <input
           className="tp-input-soft px-3 py-2 text-sm"
@@ -494,6 +551,24 @@ export function WalkRouteFields({
             }))
           }
           placeholder="예: 차량주의, 야간조명"
+        />
+      </label>
+
+      <label className="tp-form-label md:col-span-2">
+        위험/공사 구간
+        <input
+          className="tp-input-soft px-3 py-2 text-sm"
+          value={formState.walkRoute.cautionNote}
+          onChange={(event) =>
+            setFormState((prev) => ({
+              ...prev,
+              walkRoute: {
+                ...prev.walkRoute,
+                cautionNote: event.target.value,
+              },
+            }))
+          }
+          placeholder="예: 공사 펜스, 차량 진입로, 미끄러운 데크"
         />
       </label>
 
@@ -551,7 +626,48 @@ export function WalkRouteFields({
             />
             주차장
           </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              className="accent-[#3567b5]"
+              checked={formState.walkRoute.hasWasteBags === "true"}
+              onChange={(event) =>
+                setFormState((prev) => ({
+                  ...prev,
+                  walkRoute: {
+                    ...prev.walkRoute,
+                    hasWasteBags: event.target.checked ? "true" : "false",
+                  },
+                }))
+              }
+            />
+            배변봉투함
+          </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              className="accent-[#3567b5]"
+              checked={formState.walkRoute.hasWaterStation === "true"}
+              onChange={(event) =>
+                setFormState((prev) => ({
+                  ...prev,
+                  walkRoute: {
+                    ...prev.walkRoute,
+                    hasWaterStation: event.target.checked ? "true" : "false",
+                  },
+                }))
+              }
+            />
+            물 마실 곳
+          </label>
         </div>
+      </div>
+      <div className="rounded-lg border border-[#dbe6f5] bg-[#f8fbff] px-3 py-2.5 md:col-span-2">
+        <p className="tp-text-heading text-[13px] font-semibold">작성 기준</p>
+        <p className="tp-text-subtle mt-1 text-[12px] leading-5">
+          산책로 이름보다 실제 이용 조건이 중요합니다. 대형견 적합 여부, 혼잡 시간, 목줄 구간,
+          배변봉투함, 물 마실 곳, 위험 구간을 알 수 있으면 함께 적어 주세요.
+        </p>
       </div>
     </StructuredFieldSection>
   );

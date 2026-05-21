@@ -13,6 +13,7 @@ import { PostCommentCountStat } from "@/components/posts/post-comment-count-stat
 import {
   hospitalExplanationLabel,
   hospitalPriceLevelLabel,
+  routeDifficultyLabel,
 } from "@/components/posts/post-detail-presenter";
 import { PostDetailMediaGallery } from "@/components/posts/post-detail-media-gallery";
 import { PostReactionControls } from "@/components/posts/post-reaction-controls";
@@ -484,7 +485,29 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
               </div>
               <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">난이도</p>
-                <p className="mt-1 font-medium text-[#1f3f71]">{renderTextValue(post.walkRoute.difficulty)}</p>
+                <p className="mt-1 font-medium text-[#1f3f71]">
+                  {renderTextValue(
+                    post.walkRoute.difficulty
+                      ? (routeDifficultyLabel[post.walkRoute.difficulty] ?? post.walkRoute.difficulty)
+                      : null,
+                  )}
+                </p>
+              </div>
+              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
+                <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">대형견</p>
+                <p className="mt-1 font-medium text-[#1f3f71]">
+                  {renderBooleanValue(post.walkRoute.largeDogFriendly, "적합", "주의 필요")}
+                </p>
+              </div>
+              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
+                <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">혼잡 시간</p>
+                <p className="mt-1 font-medium text-[#1f3f71]">{renderTextValue(post.walkRoute.crowdedTime)}</p>
+              </div>
+              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3 md:col-span-2">
+                <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">목줄 구간</p>
+                <p className="mt-1 font-medium text-[#1f3f71]">
+                  {renderTextValue(post.walkRoute.leashRequiredNote)}
+                </p>
               </div>
               <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3 md:col-span-2">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">편의시설</p>
@@ -493,10 +516,16 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
                     post.walkRoute.hasStreetLights ? "가로등" : null,
                     post.walkRoute.hasRestroom ? "화장실" : null,
                     post.walkRoute.hasParkingLot ? "주차장" : null,
+                    post.walkRoute.hasWasteBags ? "배변봉투함" : null,
+                    post.walkRoute.hasWaterStation ? "물 마실 곳" : null,
                   ]
                     .filter(Boolean)
                     .join(" · ") || "정보 없음"}
                 </p>
+              </div>
+              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3 md:col-span-3">
+                <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">주의 구간</p>
+                <p className="mt-1 font-medium text-[#1f3f71]">{renderTextValue(post.walkRoute.cautionNote)}</p>
               </div>
               <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3 md:col-span-3">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">안전 태그</p>

@@ -490,18 +490,24 @@ model HospitalReview {
 }
 
 model WalkRoute {
-  id              String           @id @default(cuid())
-  postId          String           @unique
-  post            Post             @relation(fields: [postId], references: [id], onDelete: Cascade)
-  routeName       String?
-  distance        Float?
-  duration        Int?
-  difficulty      RouteDifficulty?
-  coordinates     Json
-  hasStreetLights Boolean?
-  hasRestroom     Boolean?
-  hasParkingLot   Boolean?
-  safetyTags      String[]         @default([])
+  id                String           @id @default(cuid())
+  postId            String           @unique
+  post              Post             @relation(fields: [postId], references: [id], onDelete: Cascade)
+  routeName         String?
+  distance          Float?
+  duration          Int?
+  difficulty        RouteDifficulty?
+  coordinates       Json
+  largeDogFriendly  Boolean?
+  crowdedTime       String?
+  leashRequiredNote String?
+  hasStreetLights   Boolean?
+  hasRestroom       Boolean?
+  hasParkingLot     Boolean?
+  hasWasteBags      Boolean?
+  hasWaterStation   Boolean?
+  cautionNote       String?
+  safetyTags        String[]         @default([])
 }
 
 enum RouteDifficulty {

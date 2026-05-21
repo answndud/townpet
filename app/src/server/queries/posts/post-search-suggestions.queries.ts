@@ -93,6 +93,9 @@ function buildSuggestionSelect(includeStructuredSuggestionFields: boolean) {
           walkRoute: {
             select: {
               routeName: true,
+              crowdedTime: true,
+              leashRequiredNote: true,
+              cautionNote: true,
               safetyTags: true,
             },
           },
