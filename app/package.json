@@ -68,6 +68,7 @@
     "ops:check:sentry": "tsx scripts/check-sentry-ingestion.ts",
     "ops:evidence": "tsx scripts/run-ops-evidence.ts",
     "ops:evidence:solo": "OPS_EVIDENCE_PROFILE=solo tsx scripts/run-ops-evidence.ts",
+    "perf:baseline": "tsx scripts/measure-production-performance.ts",
     "ops:prewarm": "tsx scripts/prewarm-deployment.ts",
     "ops:perf:snapshot": "tsx scripts/collect-latency-snapshot.ts",
     "search:check:cases": "tsx scripts/check-search-cases.ts"
