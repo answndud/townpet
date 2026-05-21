@@ -3,16 +3,21 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { GET } from "@/app/api/communities/route";
 import { monitorUnhandledError } from "@/server/error-monitor";
+import { isPrismaDatabaseUnavailableError } from "@/server/prisma-database-error";
 import { listCommunities } from "@/server/queries/community.queries";
 import { getClientIp } from "@/server/request-context";
 import { enforceRateLimit } from "@/server/rate-limit";
 
 vi.mock("@/server/error-monitor", () => ({ monitorUnhandledError: vi.fn() }));
+vi.mock("@/server/prisma-database-error", () => ({
+  isPrismaDatabaseUnavailableError: vi.fn(),
+}));
 vi.mock("@/server/queries/community.queries", () => ({ listCommunities: vi.fn() }));
 vi.mock("@/server/request-context", () => ({ getClientIp: vi.fn() }));
 vi.mock("@/server/rate-limit", () => ({ enforceRateLimit: vi.fn() }));
 
 const mockMonitorUnhandledError = vi.mocked(monitorUnhandledError);
+const mockIsPrismaDatabaseUnavailableError = vi.mocked(isPrismaDatabaseUnavailableError);
 const mockListCommunities = vi.mocked(listCommunities);
 const mockGetClientIp = vi.mocked(getClientIp);
 const mockEnforceRateLimit = vi.mocked(enforceRateLimit);
@@ -20,11 +25,13 @@ const mockEnforceRateLimit = vi.mocked(enforceRateLimit);
 describe("GET /api/communities contract", () => {
   beforeEach(() => {
     mockMonitorUnhandledError.mockReset();
+    mockIsPrismaDatabaseUnavailableError.mockReset();
     mockListCommunities.mockReset();
     mockGetClientIp.mockReset();
     mockEnforceRateLimit.mockReset();
 
     mockGetClientIp.mockReturnValue("127.0.0.1");
+    mockIsPrismaDatabaseUnavailableError.mockReturnValue(false);
     mockEnforceRateLimit.mockResolvedValue();
     mockListCommunities.mockResolvedValue({
       items: [
@@ -68,6 +75,22 @@ describe("GET /api/communities contract", () => {
     expect(mockListCommunities).toHaveBeenCalledWith(
       expect.objectContaining({ limit: 10 }),
     );
+  });
+
+  it("falls back to an empty list when the database is unavailable", async () => {
+    const request = new Request("http://localhost/api/communities?limit=50") as NextRequest;
+    mockListCommunities.mockRejectedValue(new Error("db down"));
+    mockIsPrismaDatabaseUnavailableError.mockReturnValue(true);
+
+    const response = await GET(request);
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(payload).toEqual({
+      ok: true,
+      data: { items: [], nextCursor: null },
+    });
+    expect(mockMonitorUnhandledError).not.toHaveBeenCalled();
   });
 
   it("returns 500 and monitors unexpected errors", async () => {

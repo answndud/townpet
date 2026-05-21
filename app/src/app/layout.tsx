@@ -5,7 +5,6 @@ import { AppShellFooter } from "@/components/navigation/app-shell-footer";
 import { AppShellHeader } from "@/components/navigation/app-shell-header";
 import { ScrollToTopButton } from "@/components/ui/scroll-to-top-button";
 import { getSiteOrigin } from "@/lib/site-url";
-import { listCommunityNavItems } from "@/server/queries/community.queries";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -49,20 +48,18 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const communities = await listCommunityNavItems(50).catch(() => []);
-
   return (
     <html lang="ko" suppressHydrationWarning>
       <body
         suppressHydrationWarning
         className={`${spaceGrotesk.variable} ${plexMono.variable} app-shell-bg tp-text-primary min-h-screen antialiased`}
       >
-        <AppShellHeader communities={communities} />
+        <AppShellHeader />
 
         {children}
         <AppShellFooter />

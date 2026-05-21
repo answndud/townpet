@@ -3764,3 +3764,47 @@
   - 짧은 production 샘플 기준 서버 total time은 `/` 첫 요청 `333ms`, `/feed` 첫 요청 `311ms`, `/feed/guest` 첫 요청 `120ms`, `/api/health` 첫 요청 `355ms`였다.
   - Playwright desktop 1회 샘플 기준 FCP/LCP는 `/` `632ms/632ms`, `/feed` `424ms/424ms`, `/feed/guest` `236ms/248ms`였다.
   - 이 짧은 샘플에서는 10초 지연이 재현되지 않았으므로, 다음 작업은 `/` 홈 구조를 빠른 shell + 캐시 인기글로 바꾸면서 같은 스크립트로 개선 전후를 비교한다.
+
+### 2026-05-21 | 홈 빠른 shell과 지연 피드 preview 전환
+- 완료일: `2026-05-21`
+- 배경:
+  - 기존 `/`는 `/feed`로 redirect되어 첫 방문자가 곧바로 피드 서버 렌더 비용을 기다렸다.
+  - root layout도 header 커뮤니티 메뉴를 위해 `listCommunityNavItems(50)`를 서버에서 기다려, 홈을 정적으로 바꿔도 첫 HTML이 DB 의존에 묶일 수 있었다.
+- 변경내용:
+  - `/`를 redirect-only 페이지에서 `force-static` 홈 shell로 전환했다.
+    - 첫 화면은 `우리 동네 반려생활 정보, TownPet` 포지셔닝, 공개 피드/글쓰기/베스트글 CTA, 분실/병원/산책 quick action을 즉시 렌더한다.
+    - 마포구 반려생활 지도 캠페인 teaser와 주제별 링크를 추가했다.
+  - root layout의 서버 커뮤니티 조회를 제거하고, `AppShellHeader`가 `/api/communities?limit=50`를 클라이언트에서 지연 로드하도록 바꿨다.
+  - 홈 전용 `/api/home/feed`를 추가했다.
+    - `listBestPosts`, `listPosts`를 사용해 인기글/최신글 preview용 compact payload만 반환한다.
+    - guest가 읽을 수 없는 타입은 `getGuestReadLoginRequiredPostTypes` 기준으로 제외한다.
+    - DB 연결 실패 시 빈 preview로 fallback하고, 응답은 `public, s-maxage=60, stale-while-revalidate=300` 캐시 헤더를 가진다.
+  - `HomeFeedPreview` 클라이언트 컴포넌트를 추가해 인기글/최신글을 skeleton 이후 지연 로드한다.
+  - `/api/communities`도 DB 연결 실패 시 500 로그 대신 빈 목록으로 graceful fallback 하도록 보강했다.
+  - 직전 성능 측정 하네스의 `window.__townpetPerf` 타입 가드를 보강해 전체 typecheck가 통과하도록 했다.
+- 코드문서:
+  - [app/src/app/page.tsx](../app/src/app/page.tsx)
+  - [app/src/app/page.test.tsx](../app/src/app/page.test.tsx)
+  - [app/src/app/layout.tsx](../app/src/app/layout.tsx)
+  - [app/src/components/navigation/app-shell-header.tsx](../app/src/components/navigation/app-shell-header.tsx)
+  - [app/src/components/home/home-feed-preview.tsx](../app/src/components/home/home-feed-preview.tsx)
+  - [app/src/app/api/home/feed/route.ts](../app/src/app/api/home/feed/route.ts)
+  - [app/src/app/api/home/feed/route.test.ts](../app/src/app/api/home/feed/route.test.ts)
+  - [app/src/app/api/communities/route.ts](../app/src/app/api/communities/route.ts)
+  - [app/src/app/api/communities/route.test.ts](../app/src/app/api/communities/route.test.ts)
+  - [app/scripts/measure-browser-performance.ts](../app/scripts/measure-browser-performance.ts)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `./node_modules/.bin/tsc -p tsconfig.json --noEmit --pretty false`
+  - `./node_modules/.bin/vitest run src/app/page.test.tsx src/app/api/home/feed/route.test.ts src/app/api/communities/route.test.ts`
+  - `./node_modules/.bin/eslint`
+  - `./node_modules/.bin/next build`
+  - `node -e "fetch('http://localhost:3000/').then(...)"`로 `/` status `200`, `redirected=false`, 홈 문구 포함 확인
+  - `PERF_BASE_URL=http://localhost:3000 PERF_BROWSER_SAMPLES=1 PERF_BROWSER_PROFILES=desktop PERF_BROWSER_SETTLE_MS=300 ./node_modules/.bin/tsx scripts/measure-browser-performance.ts`
+  - Playwright desktop/mobile screenshot 수동 확인
+- 결과:
+  - `next build` 결과 `/`가 static route `○ /`로 생성된다.
+  - 로컬 개발 서버 warm 측정 기준 `/` 브라우저 FCP/LCP는 `124ms/124ms`였고, 같은 조건의 `/feed`는 `908ms/908ms`, `/feed/guest`는 `416ms/416ms`였다.
+  - 로컬 DB가 꺼진 상태에서도 `/`는 redirect 없이 200으로 렌더되고, `/api/home/feed`, `/api/communities`는 빈 payload로 fallback한다.
+  - 다음 작업은 `/feed` 자체의 query 경량화다.

@@ -25,6 +25,17 @@ type AppShellHeaderProps = {
   }>;
 };
 
+type CommunityNavItem = AppShellHeaderProps["communities"][number];
+
+type CommunitiesResponse =
+  | {
+      ok: true;
+      data: {
+        items: Array<CommunityNavItem & Record<string, unknown>>;
+      };
+    }
+  | { ok: false };
+
 type ViewerShellData = {
   isAuthenticated: boolean;
   userId?: string | null;
@@ -41,7 +52,8 @@ const DEFAULT_VIEWER_SHELL: ViewerShellData = {
   preferredPetTypeIds: [],
 };
 
-export function AppShellHeader({ communities }: AppShellHeaderProps) {
+export function AppShellHeader({ communities: initialCommunities = [] }: Partial<AppShellHeaderProps>) {
+  const [communities, setCommunities] = useState<CommunityNavItem[]>(initialCommunities);
   const [viewerShell, setViewerShell] = useState<ViewerShellData>(DEFAULT_VIEWER_SHELL);
   const authSnapshotRef = useRef(
     `${DEFAULT_VIEWER_SHELL.isAuthenticated}:${DEFAULT_VIEWER_SHELL.canModerate}`,
@@ -51,6 +63,50 @@ export function AppShellHeader({ communities }: AppShellHeaderProps) {
   const allPetTypeIds = communities.map((item) => item.id);
   const preferredPetTypeIds =
     viewerShell.preferredPetTypeIds.length > 0 ? viewerShell.preferredPetTypeIds : allPetTypeIds;
+
+  useEffect(() => {
+    if (initialCommunities.length > 0) {
+      return;
+    }
+
+    let cancelled = false;
+    const controller = new AbortController();
+
+    const loadCommunities = async () => {
+      try {
+        const response = await fetch("/api/communities?limit=50", {
+          method: "GET",
+          credentials: "same-origin",
+          signal: controller.signal,
+        });
+        const payload = (await response.json()) as CommunitiesResponse;
+        if (!response.ok || !payload.ok) {
+          return;
+        }
+
+        if (!cancelled) {
+          setCommunities(
+            payload.data.items.map((item) => ({
+              id: item.id,
+              slug: item.slug,
+              labelKo: item.labelKo,
+            })),
+          );
+        }
+      } catch (error) {
+        if ((error as { name?: string }).name === "AbortError") {
+          return;
+        }
+      }
+    };
+
+    void loadCommunities();
+
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+  }, [initialCommunities.length]);
 
   useEffect(() => {
     let cancelled = false;
