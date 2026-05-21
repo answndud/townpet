@@ -7,6 +7,7 @@ import {
   canOpenCommentAuthorMenu,
   canMuteCommentAuthor,
   PostCommentThread,
+  shouldRefreshCommentRoute,
   shouldCloseCommentAuthorMenu,
 } from "@/components/posts/post-comment-thread";
 import {
@@ -208,6 +209,11 @@ describe("PostCommentThread", () => {
   it("opens the author menu only for signed-in viewers", () => {
     expect(canOpenCommentAuthorMenu("viewer-1")).toBe(true);
     expect(canOpenCommentAuthorMenu(undefined)).toBe(false);
+  });
+
+  it("uses the lighter client comment reload path when available", () => {
+    expect(shouldRefreshCommentRoute()).toBe(true);
+    expect(shouldRefreshCommentRoute(async () => undefined)).toBe(false);
   });
 
   it("renders muted comments as placeholders while preserving visible replies", () => {
