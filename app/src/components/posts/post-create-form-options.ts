@@ -65,3 +65,28 @@ export const lostFoundAlertTypeOptions = [
   { value: "LOST", label: "실종" },
   { value: "FOUND", label: "목격/보호" },
 ] as const;
+
+export const hospitalVisitPurposeOptions = [
+  { value: "건강 검진", label: "건강 검진" },
+  { value: "예방 접종", label: "예방 접종" },
+  { value: "응급/야간", label: "응급/야간" },
+  { value: "수술/시술", label: "수술/시술" },
+  { value: "피부/귀/눈", label: "피부/귀/눈" },
+  { value: "치과", label: "치과" },
+] as const;
+
+export const hospitalExplanationOptions = [
+  { value: "", label: "선택 안함" },
+  { value: "ENOUGH", label: "충분했음" },
+  { value: "NORMAL", label: "보통" },
+  { value: "LACKING", label: "부족했음" },
+  { value: "NOT_APPLICABLE", label: "해당 없음" },
+] as const;
+
+export const hospitalPriceLevelOptions = [
+  { value: "", label: "선택 안함" },
+  { value: "LOW", label: "낮게 느껴짐" },
+  { value: "NORMAL", label: "보통" },
+  { value: "HIGH", label: "높게 느껴짐" },
+  { value: "UNKNOWN", label: "판단 어려움" },
+] as const;

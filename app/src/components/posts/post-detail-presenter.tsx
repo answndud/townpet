@@ -107,6 +107,20 @@ export const renderBooleanValue = (
   falseLabel: string,
 ) => (value === null || value === undefined ? emptyValue : value ? trueLabel : falseLabel);
 
+export const hospitalExplanationLabel: Record<string, string> = {
+  ENOUGH: "충분했음",
+  NORMAL: "보통",
+  LACKING: "부족했음",
+  NOT_APPLICABLE: "해당 없음",
+};
+
+export const hospitalPriceLevelLabel: Record<string, string> = {
+  LOW: "낮게 느껴짐",
+  NORMAL: "보통",
+  HIGH: "높게 느껴짐",
+  UNKNOWN: "판단 어려움",
+};
+
 export const adoptionStatusLabel: Record<string, string> = {
   OPEN: "입양 가능",
   RESERVED: "상담 중",

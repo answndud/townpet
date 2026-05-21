@@ -58,6 +58,8 @@ export type PostSearchSuggestionRow = {
   };
   hospitalReview?: {
     hospitalName?: string | null;
+    visitPurpose?: string | null;
+    animalType?: string | null;
     treatmentType?: string | null;
   } | null;
   placeReview?: {
@@ -88,6 +90,8 @@ export function listStructuredSuggestionCandidates(row: PostSearchSuggestionRow)
   return [
     ...(row.animalTags ?? []),
     row.hospitalReview?.hospitalName,
+    row.hospitalReview?.visitPurpose,
+    row.hospitalReview?.animalType,
     row.hospitalReview?.treatmentType,
     row.placeReview?.placeName,
     row.placeReview?.placeType,

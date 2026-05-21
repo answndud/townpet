@@ -82,7 +82,12 @@ export async function listUserPosts({
         orderBy: { order: "asc" },
       },
       hospitalReview: {
-        select: { hospitalName: true, rating: true },
+        select: {
+          hospitalName: true,
+          visitPurpose: true,
+          animalType: true,
+          rating: true,
+        },
       },
       placeReview: {
         select: { placeName: true, rating: true, isPetAllowed: true },

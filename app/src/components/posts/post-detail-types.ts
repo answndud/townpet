@@ -48,8 +48,15 @@ export type PostDetailItem = {
   images: Array<{ url: string; order: number }>;
   hospitalReview?: {
     hospitalName?: string | null;
+    visitPurpose?: string | null;
+    animalType?: string | null;
     totalCost?: number | null;
     waitTime?: number | null;
+    explanationSatisfaction?: string | null;
+    priceLevel?: string | null;
+    hasParking?: boolean | null;
+    hasNightCare?: boolean | null;
+    wouldRevisit?: boolean | null;
     rating?: number | null;
     treatmentType?: string | null;
   } | null;

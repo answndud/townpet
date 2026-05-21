@@ -65,14 +65,15 @@ export default function CommercialPage() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="tp-text-section-title tp-text-heading">5. 문의와 수정 요청</h2>
+          <h2 id="contact" className="tp-text-section-title tp-text-heading">
+            5. 문의와 수정 요청
+          </h2>
           <p>
-            광고·제휴 관련 문의는 서비스 내 문의/신고 경로를 통해 접수해 주세요. 운영팀은 콘텐츠
-            표기와 노출 기준을 조정할 수 있습니다.
+            광고·제휴 문의와 병원·장소 정보 정정 요청은 서비스 내 문의/신고 경로를 통해 접수해
+            주세요. 운영팀은 콘텐츠 표기와 노출 기준을 조정할 수 있습니다.
           </p>
         </section>
       </div>
     </LegalDocumentPage>
   );
 }
-

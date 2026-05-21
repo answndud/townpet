@@ -13,9 +13,16 @@ export type PostCreateFormState = {
   animalTagsInput: string;
   hospitalReview: {
     hospitalName: string;
+    visitPurpose: string;
+    animalType: string;
     treatmentType: string;
     totalCost: string;
     waitTime: string;
+    explanationSatisfaction: string;
+    priceLevel: string;
+    hasParking: string;
+    hasNightCare: string;
+    wouldRevisit: string;
     rating: string;
   };
   placeReview: {
@@ -100,9 +107,16 @@ export function createInitialPostCreateFormState(
     animalTagsInput: "",
     hospitalReview: {
       hospitalName: "",
+      visitPurpose: "",
+      animalType: "",
       treatmentType: "",
       totalCost: "",
       waitTime: "",
+      explanationSatisfaction: "",
+      priceLevel: "",
+      hasParking: "",
+      hasNightCare: "",
+      wouldRevisit: "",
       rating: "",
     },
     placeReview: {

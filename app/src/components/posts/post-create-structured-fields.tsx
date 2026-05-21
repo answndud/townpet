@@ -5,6 +5,9 @@ import type { Dispatch, ReactNode, SetStateAction } from "react";
 import type { PostCreateFormState } from "@/components/posts/post-create-form-state";
 import {
   careTypeOptions,
+  hospitalExplanationOptions,
+  hospitalPriceLevelOptions,
+  hospitalVisitPurposeOptions,
   lostFoundAlertTypeOptions,
   marketConditionOptions,
   marketListingTypeOptions,
@@ -67,6 +70,49 @@ export function HospitalReviewFields({
       </label>
 
       <label className="tp-form-label">
+        방문 목적
+        <select
+          className="tp-input-soft px-3 py-2 text-sm"
+          value={formState.hospitalReview.visitPurpose}
+          onChange={(event) =>
+            setFormState((prev) => ({
+              ...prev,
+              hospitalReview: {
+                ...prev.hospitalReview,
+                visitPurpose: event.target.value,
+              },
+            }))
+          }
+        >
+          <option value="">선택 안함</option>
+          {hospitalVisitPurposeOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <label className="tp-form-label">
+        동물 종류
+        <input
+          className="tp-input-soft px-3 py-2 text-sm"
+          value={formState.hospitalReview.animalType}
+          list="adoption-animal-type-options"
+          onChange={(event) =>
+            setFormState((prev) => ({
+              ...prev,
+              hospitalReview: {
+                ...prev.hospitalReview,
+                animalType: event.target.value,
+              },
+            }))
+          }
+          placeholder="예: 강아지"
+        />
+      </label>
+
+      <label className="tp-form-label">
         진료 항목
         <input
           className="tp-input-soft px-3 py-2 text-sm"
@@ -86,7 +132,7 @@ export function HospitalReviewFields({
       </label>
 
       <label className="tp-form-label">
-        비용(원)
+        비용(원, 선택)
         <input
           type="number"
           className="tp-input-soft px-3 py-2 text-sm"
@@ -126,7 +172,86 @@ export function HospitalReviewFields({
       </label>
 
       <label className="tp-form-label">
-        만족도
+        설명 충분성
+        <select
+          className="tp-input-soft px-3 py-2 text-sm"
+          value={formState.hospitalReview.explanationSatisfaction}
+          onChange={(event) =>
+            setFormState((prev) => ({
+              ...prev,
+              hospitalReview: {
+                ...prev.hospitalReview,
+                explanationSatisfaction: event.target.value,
+              },
+            }))
+          }
+        >
+          {hospitalExplanationOptions.map((option) => (
+            <option key={option.value || "empty"} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <label className="tp-form-label">
+        가격 체감
+        <select
+          className="tp-input-soft px-3 py-2 text-sm"
+          value={formState.hospitalReview.priceLevel}
+          onChange={(event) =>
+            setFormState((prev) => ({
+              ...prev,
+              hospitalReview: {
+                ...prev.hospitalReview,
+                priceLevel: event.target.value,
+              },
+            }))
+          }
+        >
+          {hospitalPriceLevelOptions.map((option) => (
+            <option key={option.value || "empty"} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <div className="grid gap-2 md:col-span-2 md:grid-cols-3">
+        {[
+          ["hasParking", "주차 가능"],
+          ["hasNightCare", "야간진료 경험"],
+          ["wouldRevisit", "재방문 의향"],
+        ].map(([key, label]) => (
+          <label key={key} className="tp-form-label">
+            {label}
+            <select
+              className="tp-input-soft px-3 py-2 text-sm"
+              value={
+                formState.hospitalReview[
+                  key as "hasParking" | "hasNightCare" | "wouldRevisit"
+                ]
+              }
+              onChange={(event) =>
+                setFormState((prev) => ({
+                  ...prev,
+                  hospitalReview: {
+                    ...prev.hospitalReview,
+                    [key]: event.target.value,
+                  },
+                }))
+              }
+            >
+              <option value="">선택 안함</option>
+              <option value="true">예</option>
+              <option value="false">아니오</option>
+            </select>
+          </label>
+        ))}
+      </div>
+
+      <label className="tp-form-label">
+        종합 만족도
         <select
           className="tp-input-soft px-3 py-2 text-sm"
           value={formState.hospitalReview.rating}
@@ -148,6 +273,13 @@ export function HospitalReviewFields({
           ))}
         </select>
       </label>
+      <div className="md:col-span-2 rounded-lg border border-[#dbe6f5] bg-[#f8fbff] px-3 py-2.5">
+        <p className="tp-text-heading text-[13px] font-semibold">작성 기준</p>
+        <p className="tp-text-subtle mt-1 text-[12px] leading-5">
+          직접 경험한 대기, 설명, 비용, 재방문 의향을 중심으로 적어 주세요. 진단 단정,
+          사기/과잉진료 같은 표현, 직원 실명과 연락처는 신고 또는 검토 대상이 될 수 있습니다.
+        </p>
+      </div>
     </StructuredFieldSection>
   );
 }

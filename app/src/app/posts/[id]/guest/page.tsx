@@ -10,6 +10,10 @@ import { GuestPostDetailActions } from "@/components/posts/guest-post-detail-act
 import { LostFoundSharePanel } from "@/components/posts/lost-found-share-panel";
 import { PostBookmarkButton } from "@/components/posts/post-bookmark-button";
 import { PostCommentCountStat } from "@/components/posts/post-comment-count-stat";
+import {
+  hospitalExplanationLabel,
+  hospitalPriceLevelLabel,
+} from "@/components/posts/post-detail-presenter";
 import { PostDetailMediaGallery } from "@/components/posts/post-detail-media-gallery";
 import { PostReactionControls } from "@/components/posts/post-reaction-controls";
 import { PostReportForm } from "@/components/posts/post-report-form";
@@ -364,6 +368,14 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
                 <p className="mt-1 font-medium text-[#1f3f71]">{renderTextValue(post.hospitalReview.hospitalName)}</p>
               </div>
               <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
+                <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">방문 목적</p>
+                <p className="mt-1 font-medium text-[#1f3f71]">{renderTextValue(post.hospitalReview.visitPurpose)}</p>
+              </div>
+              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
+                <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">동물 종류</p>
+                <p className="mt-1 font-medium text-[#1f3f71]">{renderTextValue(post.hospitalReview.animalType)}</p>
+              </div>
+              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">치료</p>
                 <p className="mt-1 font-medium text-[#1f3f71]">{renderTextValue(post.hospitalReview.treatmentType)}</p>
               </div>
@@ -383,7 +395,46 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">대기</p>
                 <p className="mt-1 font-medium text-[#1f3f71]">{renderNumberValue(post.hospitalReview.waitTime, "분")}</p>
               </div>
+              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
+                <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">설명</p>
+                <p className="mt-1 font-medium text-[#1f3f71]">
+                  {post.hospitalReview.explanationSatisfaction
+                    ? (hospitalExplanationLabel[post.hospitalReview.explanationSatisfaction] ??
+                      post.hospitalReview.explanationSatisfaction)
+                    : emptyValue}
+                </p>
+              </div>
+              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
+                <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">가격 체감</p>
+                <p className="mt-1 font-medium text-[#1f3f71]">
+                  {post.hospitalReview.priceLevel
+                    ? (hospitalPriceLevelLabel[post.hospitalReview.priceLevel] ?? post.hospitalReview.priceLevel)
+                    : emptyValue}
+                </p>
+              </div>
+              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
+                <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">주차</p>
+                <p className="mt-1 font-medium text-[#1f3f71]">
+                  {renderBooleanValue(post.hospitalReview.hasParking, "가능", "어려움")}
+                </p>
+              </div>
+              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
+                <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">야간진료</p>
+                <p className="mt-1 font-medium text-[#1f3f71]">
+                  {renderBooleanValue(post.hospitalReview.hasNightCare, "경험 있음", "해당 없음")}
+                </p>
+              </div>
+              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
+                <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">재방문</p>
+                <p className="mt-1 font-medium text-[#1f3f71]">
+                  {renderBooleanValue(post.hospitalReview.wouldRevisit, "의향 있음", "의향 낮음")}
+                </p>
+              </div>
             </div>
+            <p className="mt-3 rounded-lg border border-[#dbe8f8] bg-[#f8fbff] px-3 py-2 text-xs leading-5 text-[#526d96]">
+              병원 후기는 개인 경험 공유입니다. 진단이나 법적 판단으로 단정하지 말고 방문 전 병원에
+              직접 확인하세요. 병원 정보 정정 요청은 하단 정보 정정 요청 경로로 접수합니다.
+            </p>
           </section>
         ) : null}
 

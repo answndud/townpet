@@ -5,6 +5,8 @@ type StructuredSearchTextInput = {
   animalTags?: string[] | null;
   hospitalReview?: {
     hospitalName?: string | null;
+    visitPurpose?: string | null;
+    animalType?: string | null;
     treatmentType?: string | null;
   } | null;
   placeReview?: {
@@ -58,6 +60,8 @@ export function buildPostStructuredSearchText(input: StructuredSearchTextInput) 
     ...normalizeArray(input.animalTags),
     ...normalizeArray([
       input.hospitalReview?.hospitalName,
+      input.hospitalReview?.visitPurpose,
+      input.hospitalReview?.animalType,
       input.hospitalReview?.treatmentType,
       input.placeReview?.placeName,
       input.placeReview?.placeType,

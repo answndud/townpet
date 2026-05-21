@@ -84,6 +84,49 @@ describe("post create submit helpers", () => {
     });
   });
 
+  it("builds safer structured hospital review payloads", () => {
+    const formState = {
+      ...createInitialPostCreateFormState(""),
+      type: PostType.HOSPITAL_REVIEW,
+      petTypeId: "pet-type-1",
+      hospitalReview: {
+        ...createInitialPostCreateFormState("").hospitalReview,
+        hospitalName: "서초동물병원",
+        visitPurpose: "건강 검진",
+        animalType: "강아지",
+        treatmentType: "혈액 검사",
+        explanationSatisfaction: "ENOUGH",
+        priceLevel: "NORMAL",
+        hasParking: "true",
+        hasNightCare: "",
+        wouldRevisit: "false",
+      },
+    };
+
+    const result = buildPostCreateSubmitPayload({
+      ...baseParams,
+      formState,
+    });
+
+    expect(result).toMatchObject({
+      ok: true,
+      payload: {
+        type: PostType.HOSPITAL_REVIEW,
+        hospitalReview: {
+          hospitalName: "서초동물병원",
+          visitPurpose: "건강 검진",
+          animalType: "강아지",
+          treatmentType: "혈액 검사",
+          explanationSatisfaction: "ENOUGH",
+          priceLevel: "NORMAL",
+          hasParking: "true",
+          hasNightCare: undefined,
+          wouldRevisit: "false",
+        },
+      },
+    });
+  });
+
   it("returns a market price validation message before building payload", () => {
     const result = buildPostCreateSubmitPayload({
       ...baseParams,

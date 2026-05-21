@@ -318,9 +318,26 @@ export const postCreateSchema = z.object({
 
 export const hospitalReviewSchema = z.object({
   hospitalName: optionalNormalizedString(normalizeHospitalName),
+  visitPurpose: optionalTrimmedString({ max: 80 }),
+  animalType: optionalNormalizedString(normalizeAnimalType),
   treatmentType: optionalNormalizedString(normalizeHospitalTreatmentType),
   totalCost: optionalInt({ min: 0 }),
   waitTime: optionalInt({ min: 0 }),
+  explanationSatisfaction: z
+    .preprocess(
+      (value) => (value === "" ? undefined : value),
+      z.enum(["ENOUGH", "NORMAL", "LACKING", "NOT_APPLICABLE"]).optional(),
+    )
+    .optional(),
+  priceLevel: z
+    .preprocess(
+      (value) => (value === "" ? undefined : value),
+      z.enum(["LOW", "NORMAL", "HIGH", "UNKNOWN"]).optional(),
+    )
+    .optional(),
+  hasParking: optionalBoolean,
+  hasNightCare: optionalBoolean,
+  wouldRevisit: optionalBoolean,
   rating: optionalInt({ min: 1, max: 5 }),
 });
 
