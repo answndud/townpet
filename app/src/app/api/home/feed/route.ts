@@ -48,6 +48,19 @@ function truncate(value: string, maxLength: number) {
   return `${value.slice(0, maxLength - 1).trimEnd()}…`;
 }
 
+function isHomePreviewEligible(rawPost: RawHomePost) {
+  const searchableText = [
+    rawPost.title,
+    rawPost.content,
+    rawPost.author?.nickname ?? "",
+    rawPost.guestDisplayName ?? "",
+  ]
+    .join(" ")
+    .toLowerCase();
+
+  return !/\b(e2e|pw search|pwsearch|test-user|playwright)\b/u.test(searchableText);
+}
+
 function serializeHomePost(rawPost: RawHomePost) {
   const post = sanitizePublicGuestIdentity(rawPost) as RawHomePost;
   const neighborhoodParts = [
@@ -124,8 +137,12 @@ export async function GET(request: NextRequest) {
 
     return jsonOk(
       {
-        best: bestPosts.map((post) => serializeHomePost(post as RawHomePost)),
-        latest: latestPosts.items.map((post) => serializeHomePost(post as RawHomePost)),
+        best: bestPosts
+          .filter((post) => isHomePreviewEligible(post as RawHomePost))
+          .map((post) => serializeHomePost(post as RawHomePost)),
+        latest: latestPosts.items
+          .filter((post) => isHomePreviewEligible(post as RawHomePost))
+          .map((post) => serializeHomePost(post as RawHomePost)),
       },
       {
         headers: {

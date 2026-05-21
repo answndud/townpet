@@ -229,12 +229,6 @@ export function AppShellHeader({ communities: initialCommunities = [] }: Partial
         </div>
         <nav className="flex flex-col gap-1.5 xl:flex-row xl:items-center xl:justify-between">
           <div className="flex flex-wrap items-center gap-1.5">
-            {pathname !== "/feed" ? (
-              <Link href="/feed" className={`${APP_SHELL_NAV_LINK_CLASS_NAME} md:hidden`}>
-                피드
-              </Link>
-            ) : null}
-
             <FeedHoverMenu
               key={`${viewerShell.isAuthenticated ? "auth" : "guest"}:${preferredPetTypeIds.join(",")}`}
               communities={communities}

@@ -4069,6 +4069,37 @@
   - 피드 미리보기의 게시글 링크는 `tp-card`를 쓰지 않고 세로 row로 표시된다.
   - desktop/mobile 모두 horizontal overflow 없이 렌더링된다.
 
+### 2026-05-21 | 시작페이지 피드 row compact와 preview 정리
+- 완료일: `2026-05-21`
+- 배경:
+  - 시작페이지의 최근/인기 글 row가 카드형에서 벗어났지만, 제목/본문/메타가 여러 줄로 쌓여 모바일에서 여전히 높았다.
+  - 모바일 상단 앱 셸은 별도 `피드` 줄과 큰 pill 버튼 때문에 랜딩 본문을 밀어냈다.
+  - 홈 preview에 E2E/테스트 성격 게시글이 노출되어 production 신뢰도를 해쳤다.
+- 변경내용:
+  - 홈 피드 row를 `py-2`, 제목 1줄, 본문 1줄, 메타 1줄 구조로 압축했다.
+  - loading skeleton과 empty state도 같은 compact row 계열로 줄였다.
+  - 모바일 앱 셸의 quick link/disclosure/pill 높이와 radius를 낮추고, 별도 `피드` 모바일 링크를 제거했다.
+  - `/api/home/feed`에서 `e2e`, `PW SEARCH`, `playwright`, `test-user` 성격 글을 public home preview에서 제외했다.
+  - best/latest empty copy를 각각 다르게 바꿔 빈 컬럼이 같은 문장으로 반복되지 않게 했다.
+- 코드문서:
+  - [app/src/components/home/home-feed-preview.tsx](../app/src/components/home/home-feed-preview.tsx)
+  - [app/src/components/navigation/app-shell-header-class.ts](../app/src/components/navigation/app-shell-header-class.ts)
+  - [app/src/components/navigation/app-shell-header.tsx](../app/src/components/navigation/app-shell-header.tsx)
+  - [app/src/app/api/home/feed/route.ts](../app/src/app/api/home/feed/route.ts)
+  - [app/src/app/api/home/feed/route.test.ts](../app/src/app/api/home/feed/route.test.ts)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/app/api/home/feed/route.test.ts src/app/page.test.tsx src/lib/town-landing.test.ts`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app build`
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app run design:detect`
+  - Playwright desktop/mobile screenshot check at `http://localhost:3000/`
+- 결과:
+  - 모바일 header height가 로컬 screenshot 기준 약 `137px -> 95px`로 줄었다.
+  - 홈 preview에서 테스트 성격 글이 제외되어 로컬 DB 기준 E2E 제목 노출이 사라졌다.
+  - compact row와 empty state 모두 horizontal overflow 없이 렌더링된다.
+
 ### 2026-05-21 | 루트 정적 홈 표시 회귀 수정
 - 완료일: `2026-05-21`
 - 배경:

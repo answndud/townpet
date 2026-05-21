@@ -45,26 +45,26 @@ function FeedPreviewSkeleton() {
       {[0, 1, 2, 3].map((index) => (
         <div
           key={`home-feed-skeleton-${index}`}
-          className="animate-pulse border-b border-[#e5edf8] px-3 py-3 last:border-b-0"
+          className="animate-pulse border-b border-[#e5edf8] px-3 py-2 last:border-b-0"
           aria-hidden="true"
         >
           <div className="flex items-center gap-2">
-            <div className="h-5 w-16 rounded-md bg-[#dce8f8]" />
-            <div className="h-3 w-20 rounded bg-[#edf3fb]" />
+            <div className="h-4 w-14 rounded-md bg-[#dce8f8]" />
+            <div className="h-2.5 w-16 rounded bg-[#edf3fb]" />
           </div>
-          <div className="mt-2 h-4 w-4/5 rounded bg-[#dce8f8]" />
-          <div className="mt-2 h-3 w-2/3 rounded bg-[#edf3fb]" />
+          <div className="mt-1.5 h-3.5 w-4/5 rounded bg-[#dce8f8]" />
+          <div className="mt-1.5 h-2.5 w-2/3 rounded bg-[#edf3fb]" />
         </div>
       ))}
     </div>
   );
 }
 
-function FeedPreviewList({ items }: { items: HomeFeedItem[] }) {
+function FeedPreviewList({ items, emptyText }: { items: HomeFeedItem[]; emptyText: string }) {
   if (items.length === 0) {
     return (
-      <div className="border-y border-[#dbe6f5] bg-[#fbfdff] px-3 py-4 text-sm leading-6 text-[#5a7397]">
-        아직 표시할 공개 게시글이 없습니다. 첫 지역 정보를 남겨주세요.
+      <div className="border-y border-[#dbe6f5] bg-[#fbfdff] px-3 py-2 text-xs leading-5 text-[#5a7397]">
+        {emptyText}
       </div>
     );
   }
@@ -75,27 +75,29 @@ function FeedPreviewList({ items }: { items: HomeFeedItem[] }) {
         <Link
           key={item.id}
           href={item.href}
-          className="group grid gap-2 border-b border-[#e5edf8] px-3 py-3 transition last:border-b-0 hover:bg-[#f6faff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#3567b5] sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
+          className="group grid gap-1.5 border-b border-[#e5edf8] px-3 py-2 transition last:border-b-0 hover:bg-[#f6faff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#3567b5] sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
         >
           <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] font-semibold text-[#5d789f]">
-              <span className="rounded-md border border-[#dbe5f3] bg-[#f7fbff] px-2 py-0.5 text-[#315b9a]">
+            <div className="flex min-w-0 items-center gap-x-1.5 text-[10px] font-semibold text-[#5d789f]">
+              <span className="shrink-0 rounded-md border border-[#dbe5f3] bg-[#f7fbff] px-1.5 py-0.5 text-[#315b9a]">
                 {item.typeLabel}
               </span>
-              {item.neighborhoodLabel ? <span>{item.neighborhoodLabel}</span> : null}
-              <span>{formatDate(item.createdAt)}</span>
+              {item.neighborhoodLabel ? (
+                <span className="truncate">{item.neighborhoodLabel}</span>
+              ) : null}
+              <span className="shrink-0">{formatDate(item.createdAt)}</span>
             </div>
-            <h3 className="line-clamp-2 text-sm font-semibold leading-5 text-[#173963] group-hover:text-[#214d8d]">
+            <h3 className="mt-1 truncate text-sm font-semibold leading-5 text-[#173963] group-hover:text-[#214d8d]">
               {item.title}
             </h3>
             {item.excerpt ? (
-              <p className="mt-1 line-clamp-2 text-xs leading-5 text-[#5a7397]">
+              <p className="truncate text-[11px] leading-4 text-[#5a7397]">
                 {item.excerpt}
               </p>
             ) : null}
           </div>
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-[#6b84a8] sm:justify-end">
-            <span>{item.authorName}</span>
+          <div className="flex min-w-0 items-center gap-x-2 overflow-hidden text-[10px] text-[#6b84a8] sm:justify-end">
+            <span className="truncate">{item.authorName}</span>
             <span>좋아요 {item.likeCount}</span>
             <span>댓글 {item.commentCount}</span>
             <span>조회 {item.viewCount}</span>
@@ -171,7 +173,14 @@ export function HomeFeedPreview() {
               더보기
             </Link>
           </div>
-          {data ? <FeedPreviewList items={data.best} /> : <FeedPreviewSkeleton />}
+          {data ? (
+            <FeedPreviewList
+              items={data.best}
+              emptyText="최근 7일 동안 많이 본 공개 글이 아직 없습니다."
+            />
+          ) : (
+            <FeedPreviewSkeleton />
+          )}
         </div>
         <div>
           <div className="mb-3 flex items-center justify-between gap-3">
@@ -180,7 +189,14 @@ export function HomeFeedPreview() {
               더보기
             </Link>
           </div>
-          {data ? <FeedPreviewList items={data.latest} /> : <FeedPreviewSkeleton />}
+          {data ? (
+            <FeedPreviewList
+              items={data.latest}
+              emptyText="최근 올라온 공개 글이 아직 없습니다."
+            />
+          ) : (
+            <FeedPreviewSkeleton />
+          )}
         </div>
       </div>
     </section>

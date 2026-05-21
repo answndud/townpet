@@ -117,6 +117,39 @@ describe("GET /api/home/feed", () => {
     });
   });
 
+  it("excludes e2e and test-like posts from the public home preview", async () => {
+    mockListBestPosts.mockResolvedValue([
+      createPost({ id: "post-visible", title: "우리 동네 산책 후기" }),
+      createPost({
+        id: "post-e2e",
+        title: "[PW SEARCH] 입양 공개 adoption-123",
+        author: { nickname: "e2e-search-visible" },
+      }),
+    ] as never);
+    mockListPosts.mockResolvedValue({
+      items: [
+        createPost({
+          id: "post-test",
+          title: "평범한 제목",
+          content: "playwright generated body",
+        }),
+        createPost({ id: "post-latest", title: "동네 병원 후기" }),
+      ],
+      nextCursor: null,
+    } as never);
+
+    const response = await GET(new Request("http://localhost/api/home/feed") as NextRequest);
+    const payload = await response.json();
+
+    expect(payload.ok).toBe(true);
+    expect(payload.data.best.map((post: { id: string }) => post.id)).toEqual([
+      "post-visible",
+    ]);
+    expect(payload.data.latest.map((post: { id: string }) => post.id)).toEqual([
+      "post-latest",
+    ]);
+  });
+
   it("returns 500 and monitors unexpected failures", async () => {
     mockListBestPosts.mockRejectedValue(new Error("boom"));
 
