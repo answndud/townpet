@@ -62,4 +62,15 @@ describe("app shell header classes", () => {
     expect(source).not.toContain('import { AuthControls } from "@/components/auth/auth-controls"');
     expect(source).not.toContain('import { NotificationBell } from "@/components/notifications/notification-bell"');
   });
+
+  it("uses a simplified public landing header on the home route", () => {
+    const source = readFileSync(
+      join(process.cwd(), "src/components/navigation/app-shell-header.tsx"),
+      "utf8",
+    );
+
+    expect(source).toContain('const isHomePath = pathname === "/"');
+    expect(source).toContain('data-testid="header-login-link-home"');
+    expect(source).toContain('aria-label="시작페이지 주요 이동"');
+  });
 });

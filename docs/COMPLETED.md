@@ -4100,6 +4100,32 @@
   - 홈 preview에서 테스트 성격 글이 제외되어 로컬 DB 기준 E2E 제목 노출이 사라졌다.
   - compact row와 empty state 모두 horizontal overflow 없이 렌더링된다.
 
+### 2026-05-21 | 시작페이지 landing 전용 헤더 적용
+- 완료일: `2026-05-21`
+- 배경:
+  - 모바일 `/` 첫 화면에서 기존 앱 헤더의 `게시판`, `관심 동물` 드롭다운이 본문보다 먼저 크게 노출되어 landing 집중도를 떨어뜨렸다.
+  - 홈의 샘플/예시 글은 유지하되, 상단 navigation은 첫 방문자가 바로 제품 메시지를 보도록 줄여야 했다.
+- 변경내용:
+  - `AppShellHeader`가 `/`에서는 landing 전용 간소 헤더를 렌더링하게 했다.
+  - 홈 헤더는 `로고 + 게시판 + 로그인/내 프로필`만 표시한다.
+  - `/`에서는 커뮤니티 목록 fetch를 생략해 관심 동물/게시판 드롭다운용 데이터를 불러오지 않는다.
+  - 일반 app route에서는 기존 제품 헤더를 유지한다.
+- 코드문서:
+  - [app/src/components/navigation/app-shell-header.tsx](../app/src/components/navigation/app-shell-header.tsx)
+  - [app/src/components/navigation/app-shell-header-class.test.ts](../app/src/components/navigation/app-shell-header-class.test.ts)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/components/navigation/app-shell-header-class.test.ts src/app/page.test.tsx`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app build`
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app run design:detect`
+  - Playwright mobile screenshot check at `http://localhost:3000/`
+- 결과:
+  - 모바일 `/` 헤더 높이가 로컬 screenshot 기준 약 `95px -> 53px`로 줄었다.
+  - 홈 헤더에서 `관심 동물`이 사라지고 `게시판`, `로그인`만 남았다.
+  - horizontal overflow 없이 렌더링된다.
+
 ### 2026-05-21 | 루트 정적 홈 표시 회귀 수정
 - 완료일: `2026-05-21`
 - 배경:

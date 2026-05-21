@@ -68,12 +68,17 @@ export function AppShellHeader({ communities: initialCommunities = [] }: Partial
     `${DEFAULT_VIEWER_SHELL.isAuthenticated}:${DEFAULT_VIEWER_SHELL.canModerate}`,
   );
   const pathname = usePathname();
+  const isHomePath = pathname === "/";
   const refreshOnFocus = shouldRefreshViewerShellOnFocus(pathname);
   const allPetTypeIds = communities.map((item) => item.id);
   const preferredPetTypeIds =
     viewerShell.preferredPetTypeIds.length > 0 ? viewerShell.preferredPetTypeIds : allPetTypeIds;
 
   useEffect(() => {
+    if (isHomePath) {
+      return;
+    }
+
     if (initialCommunities.length > 0) {
       return;
     }
@@ -115,7 +120,7 @@ export function AppShellHeader({ communities: initialCommunities = [] }: Partial
       cancelled = true;
       controller.abort();
     };
-  }, [initialCommunities.length]);
+  }, [initialCommunities.length, isHomePath]);
 
   useEffect(() => {
     let cancelled = false;
@@ -175,6 +180,49 @@ export function AppShellHeader({ communities: initialCommunities = [] }: Partial
       unsubscribe();
     };
   }, [pathname, refreshOnFocus]);
+
+  if (isHomePath) {
+    return (
+      <header className="border-b border-[#d8e4f6] bg-[#f4f8ffeb]">
+        <div className="mx-auto flex w-full max-w-[1320px] items-center justify-between gap-3 px-4 py-2 sm:px-6 sm:py-2.5 lg:px-10">
+          <Link href="/" className="inline-flex items-center" aria-label="TownPet 홈으로 이동">
+            <Image
+              src="/townpet-logo.svg"
+              alt="TownPet"
+              width={274}
+              height={72}
+              priority
+              className="h-[34px] w-auto sm:h-[38px]"
+            />
+          </Link>
+          <nav className="flex items-center gap-1.5" aria-label="시작페이지 주요 이동">
+            <Link
+              href="/feed/guest"
+              className="inline-flex min-h-9 items-center rounded-md px-2.5 text-xs font-semibold text-[#315484] transition hover:bg-[#dcecff] hover:text-[#1f4f8f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
+            >
+              게시판
+            </Link>
+            {viewerShell.isAuthenticated ? (
+              <Link
+                href="/profile"
+                className="inline-flex min-h-9 items-center rounded-md border border-[#d7e4f8] bg-white/92 px-2.5 text-xs font-semibold text-[#315484] transition hover:bg-[#eef5ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
+              >
+                내 프로필
+              </Link>
+            ) : (
+              <Link
+                href="/login"
+                data-testid="header-login-link-home"
+                className="inline-flex min-h-9 items-center rounded-md border border-[#d7e4f8] bg-white/92 px-2.5 text-xs font-semibold text-[#315484] transition hover:bg-[#eef5ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
+              >
+                로그인
+              </Link>
+            )}
+          </nav>
+        </div>
+      </header>
+    );
+  }
 
   return (
     <header className={APP_SHELL_HEADER_CLASS_NAME}>
