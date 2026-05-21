@@ -58,19 +58,21 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto w-full max-w-[1180px] px-4 pb-10 sm:px-6 lg:px-10">
-        <div className="border-y border-[#dbe6f5] py-4 sm:flex sm:items-center sm:justify-between sm:gap-5">
-          <div>
-            <p className="text-sm font-semibold text-[#173963]">
-              관심 주제별로 둘러보기
-            </p>
-            <p className="mt-1 text-sm leading-6 text-[#5a7397]">
-              분실/목격, 병원 후기, 산책코스처럼 반복해서 필요한 정보를 주제별로 확인하세요.
+      <section className="mx-auto w-full max-w-[1180px] px-4 pb-8 sm:px-6 lg:px-10">
+        <div className="border-y border-[#dbe6f5] py-3 sm:flex sm:items-center sm:justify-between sm:gap-5">
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-[#173963]">관심 주제</p>
+            <p className="mt-0.5 text-xs leading-5 text-[#5a7397]">
+              분실, 병원, 산책처럼 자주 찾는 정보를 바로 확인하세요.
             </p>
           </div>
-          <div className="mt-3 flex flex-wrap gap-2 sm:mt-0 sm:justify-end">
+          <div className="mt-2 flex flex-wrap gap-1.5 sm:mt-0 sm:justify-end">
             {TOPIC_LINKS.map((topic) => (
-              <Link key={topic.href} href={topic.href} className="tp-filter-pill">
+              <Link
+                key={topic.href}
+                href={topic.href}
+                className="tp-filter-pill min-h-[1.875rem] px-2.5 py-1 text-[11px]"
+              >
                 {topic.label}
               </Link>
             ))}

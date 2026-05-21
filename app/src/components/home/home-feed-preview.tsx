@@ -45,15 +45,15 @@ function FeedPreviewSkeleton() {
       {[0, 1, 2, 3].map((index) => (
         <div
           key={`home-feed-skeleton-${index}`}
-          className="animate-pulse border-b border-[#e5edf8] px-3 py-2 last:border-b-0"
+          className="animate-pulse border-b border-[#e5edf8] px-2.5 py-1.5 last:border-b-0"
           aria-hidden="true"
         >
           <div className="flex items-center gap-2">
-            <div className="h-4 w-14 rounded-md bg-[#dce8f8]" />
+            <div className="h-3.5 w-14 rounded-md bg-[#dce8f8]" />
             <div className="h-2.5 w-16 rounded bg-[#edf3fb]" />
           </div>
-          <div className="mt-1.5 h-3.5 w-4/5 rounded bg-[#dce8f8]" />
-          <div className="mt-1.5 h-2.5 w-2/3 rounded bg-[#edf3fb]" />
+          <div className="mt-1 h-3 w-4/5 rounded bg-[#dce8f8]" />
+          <div className="mt-1 h-2.5 w-2/3 rounded bg-[#edf3fb]" />
         </div>
       ))}
     </div>
@@ -75,10 +75,10 @@ function FeedPreviewList({ items, emptyText }: { items: HomeFeedItem[]; emptyTex
         <Link
           key={item.id}
           href={item.href}
-          className="group grid gap-1.5 border-b border-[#e5edf8] px-3 py-2 transition last:border-b-0 hover:bg-[#f6faff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#3567b5] sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
+          className="group grid gap-1 border-b border-[#e5edf8] px-2.5 py-1.5 transition last:border-b-0 hover:bg-[#f6faff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#3567b5] sm:grid-cols-[minmax(0,1fr)_minmax(8.5rem,auto)] sm:items-center"
         >
           <div className="min-w-0">
-            <div className="flex min-w-0 items-center gap-x-1.5 text-[10px] font-semibold text-[#5d789f]">
+            <div className="flex min-w-0 items-center gap-x-1 text-[10px] font-semibold leading-4 text-[#5d789f]">
               <span className="shrink-0 rounded-md border border-[#dbe5f3] bg-[#f7fbff] px-1.5 py-0.5 text-[#315b9a]">
                 {item.typeLabel}
               </span>
@@ -91,16 +91,18 @@ function FeedPreviewList({ items, emptyText }: { items: HomeFeedItem[]; emptyTex
               {item.title}
             </h3>
             {item.excerpt ? (
-              <p className="truncate text-[11px] leading-4 text-[#5a7397]">
+              <p className="truncate text-[11px] leading-3.5 text-[#5a7397]">
                 {item.excerpt}
               </p>
             ) : null}
           </div>
-          <div className="flex min-w-0 items-center gap-x-2 overflow-hidden text-[10px] text-[#6b84a8] sm:justify-end">
-            <span className="truncate">{item.authorName}</span>
-            <span>좋아요 {item.likeCount}</span>
-            <span>댓글 {item.commentCount}</span>
-            <span>조회 {item.viewCount}</span>
+          <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5 overflow-hidden text-[10px] leading-4 text-[#6b84a8] sm:justify-end">
+            <span className="max-w-[8rem] truncate font-semibold text-[#48648d] sm:max-w-[6rem]">
+              {item.authorName}
+            </span>
+            <span className="whitespace-nowrap">좋아요 {item.likeCount}</span>
+            <span className="whitespace-nowrap">댓글 {item.commentCount}</span>
+            <span className="whitespace-nowrap">조회 {item.viewCount}</span>
           </div>
         </Link>
       ))}
@@ -148,12 +150,12 @@ export function HomeFeedPreview() {
   }, []);
 
   return (
-    <section className="mx-auto w-full max-w-[1180px] px-4 pb-14 sm:px-6 lg:px-10">
-      <div>
+    <section className="mx-auto w-full max-w-[1180px] px-4 pb-12 sm:px-6 lg:px-10">
+      <div className="border-b border-[#dbe6f5] pb-3">
         <div>
           <p className="tp-eyebrow">Live board</p>
-          <h2 className="mt-2 text-2xl font-semibold text-[#173963]">지금 올라온 동네 반려 정보</h2>
         </div>
+        <h2 className="mt-1.5 text-xl font-semibold text-[#173963]">지금 올라온 동네 반려 정보</h2>
       </div>
 
       {error ? (
@@ -162,10 +164,10 @@ export function HomeFeedPreview() {
         </div>
       ) : null}
 
-      <div className="mt-5 grid gap-6 lg:grid-cols-2">
+      <div className="mt-4 grid gap-5 lg:grid-cols-2">
         <div>
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <h3 className="text-base font-semibold text-[#173963]">지금 많이 보는 글</h3>
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <h3 className="text-sm font-semibold text-[#173963]">지금 많이 보는 글</h3>
             <Link href="/feed/guest?mode=BEST&days=7" className="text-xs font-semibold text-[#315b9a]">
               더보기
             </Link>
@@ -180,8 +182,8 @@ export function HomeFeedPreview() {
           )}
         </div>
         <div>
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <h3 className="text-base font-semibold text-[#173963]">최근 올라온 글</h3>
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <h3 className="text-sm font-semibold text-[#173963]">최근 올라온 글</h3>
             <Link href="/feed/guest?sort=LATEST" className="text-xs font-semibold text-[#315b9a]">
               더보기
             </Link>
