@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { PostScope, PostStatus } from "@prisma/client";
 
 import { hasBreedLoungeRoute } from "@/lib/pet-profile";
+import { listGuidePaths } from "@/lib/guide-pages";
 import { prisma } from "@/lib/prisma";
 import { getSiteOrigin } from "@/lib/site-url";
 import { listTownLandingPaths } from "@/lib/town-landing";
@@ -82,6 +83,11 @@ export default async function sitemap({
             changeFrequency: "daily",
             priority: 0.6,
           },
+          ...listGuidePaths().map((path) => ({
+            url: `${siteOrigin}${path}`,
+            changeFrequency: "monthly" as const,
+            priority: 0.65,
+          })),
           ...listTownLandingPaths().map((path) => ({
             url: `${siteOrigin}${path}`,
             changeFrequency: "daily" as const,

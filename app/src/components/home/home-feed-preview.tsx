@@ -60,11 +60,28 @@ function FeedPreviewSkeleton() {
   );
 }
 
-function FeedPreviewList({ items, emptyText }: { items: HomeFeedItem[]; emptyText: string }) {
+function FeedPreviewList({
+  items,
+  emptyText,
+  emptyAction,
+}: {
+  items: HomeFeedItem[];
+  emptyText: string;
+  emptyAction: {
+    href: string;
+    label: string;
+  };
+}) {
   if (items.length === 0) {
     return (
-      <div className="border-y border-[#dbe6f5] bg-[#fbfdff] px-3 py-2 text-xs leading-5 text-[#5a7397]">
-        {emptyText}
+      <div className="border-y border-[#dbe6f5] bg-[#fbfdff] px-3 py-2">
+        <p className="text-xs leading-5 text-[#5a7397]">{emptyText}</p>
+        <Link
+          href={emptyAction.href}
+          className="mt-1 inline-flex text-xs font-semibold text-[#315b9a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3567b5]"
+        >
+          {emptyAction.label}
+        </Link>
       </div>
     );
   }
@@ -176,6 +193,10 @@ export function HomeFeedPreview() {
             <FeedPreviewList
               items={data.best}
               emptyText="최근 7일 동안 많이 본 공개 글이 아직 없습니다."
+              emptyAction={{
+                href: "/guides/24h-vet-checklist",
+                label: "24시 병원 확인 가이드",
+              }}
             />
           ) : (
             <FeedPreviewSkeleton />
@@ -192,6 +213,10 @@ export function HomeFeedPreview() {
             <FeedPreviewList
               items={data.latest}
               emptyText="최근 올라온 공개 글이 아직 없습니다."
+              emptyAction={{
+                href: "/guides/lost-pet-first-24-hours",
+                label: "분실동물 첫 24시간 가이드",
+              }}
             />
           ) : (
             <FeedPreviewSkeleton />

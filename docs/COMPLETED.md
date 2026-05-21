@@ -4012,6 +4012,43 @@
   - `node scripts/refresh-docs-index.mjs --check`
   - `git diff --check`
 
+### 2026-05-21 | SEO guide route 추가
+- 완료일: `2026-05-21`
+- 배경:
+  - `P0-5. SEO guide route 추가` 단계로, 커뮤니티 글이 쌓이기 전에도 검색 의도가 강한 생활형 query를 받을 정보 자산이 필요했다.
+  - 분실동물, 24시 병원, 중고용품 거래, 병원 후기 같은 주제는 의료/법적 단정 없이 확인 목록과 안전 기준 중심으로 작성해야 했다.
+- 변경내용:
+  - `/guides/[guideSlug]` 정적 route를 추가하고 5개 guide를 `app/src/lib/guide-pages.ts`에서 관리하게 했다.
+  - 추가 route:
+    - `/guides/lost-dog-poster`
+    - `/guides/24h-vet-checklist`
+    - `/guides/pet-used-trade-safety`
+    - `/guides/lost-pet-first-24-hours`
+    - `/guides/pet-hospital-review-policy`
+  - 각 guide에 canonical metadata와 Open Graph description을 추가했다.
+  - sitemap에 guide route를 포함했다.
+  - 홈 Live board empty state에서 24시 병원 확인 가이드, 분실동물 첫 24시간 가이드로 이어지게 했다.
+  - 의료 단정, 보상금 유도, 개인정보 노출을 피하고 전화 확인/공공기관/수의사 안내 우선 문구를 명시했다.
+- 코드문서:
+  - [app/src/lib/guide-pages.ts](../app/src/lib/guide-pages.ts)
+  - [app/src/app/guides/[guideSlug]/page.tsx](../app/src/app/guides/%5BguideSlug%5D/page.tsx)
+  - [app/src/app/guides/page.test.tsx](../app/src/app/guides/page.test.tsx)
+  - [app/src/app/sitemap.ts](../app/src/app/sitemap.ts)
+  - [app/src/app/sitemap.test.ts](../app/src/app/sitemap.test.ts)
+  - [app/src/components/home/home-feed-preview.tsx](../app/src/components/home/home-feed-preview.tsx)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/app/guides/page.test.tsx src/app/sitemap.test.ts src/app/page.test.tsx`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app run design:detect`
+  - `corepack pnpm@9.12.3 -C app build`
+  - local Playwright guide/home render check at `http://localhost:3000/`
+- 결과:
+  - guide route가 정적 public page로 렌더링되고 sitemap에 포함된다.
+  - 각 guide는 관련 feed 또는 작성 플로우로 이어진다.
+  - 홈 Live board가 비어도 검색형 guide로 이어지는 다음 행동이 생겼다.
+
 ### 2026-05-21 | 홈 CTA 하단 밀도 정리
 - 완료일: `2026-05-21`
 - 배경:
