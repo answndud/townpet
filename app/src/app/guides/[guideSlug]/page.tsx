@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import {
+  AcquisitionEventTracker,
+  AcquisitionTrackedLink,
+} from "@/components/analytics/acquisition-event-tracker";
 import {
   getGuidePageBySlug,
   listGuidePages,
@@ -51,6 +54,14 @@ export async function generateMetadata({ params }: GuidePageProps): Promise<Meta
 function GuideSection({ guide }: { guide: GuidePage }) {
   return (
     <article className="mx-auto w-full max-w-[980px] px-4 py-10 sm:px-6 sm:py-14 lg:px-10">
+      <AcquisitionEventTracker
+        event={{
+          surface: "GUIDE",
+          event: "GUIDE_VIEWED",
+          targetType: "GUIDE",
+          targetId: guide.slug,
+        }}
+      />
       <div className="max-w-[760px]">
         <p className="tp-eyebrow">{guide.intentLabel}</p>
         <h1 className="mt-4 text-3xl font-semibold leading-tight text-[#10284a] break-keep sm:text-4xl">
@@ -60,19 +71,31 @@ function GuideSection({ guide }: { guide: GuidePage }) {
           {guide.lead}
         </p>
         <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-          <Link
+          <AcquisitionTrackedLink
             href={guide.primaryCta.href}
             className="tp-btn-primary tp-btn-md inline-flex min-h-10 items-center justify-center px-4"
+            event={{
+              surface: "GUIDE",
+              event: "GUIDE_CTA_CLICKED",
+              targetType: "GUIDE",
+              targetId: `${guide.slug}:primary`,
+            }}
           >
             {guide.primaryCta.label}
-          </Link>
+          </AcquisitionTrackedLink>
           {guide.secondaryCta ? (
-            <Link
+            <AcquisitionTrackedLink
               href={guide.secondaryCta.href}
               className="tp-btn-soft tp-btn-md inline-flex min-h-10 items-center justify-center px-4"
+              event={{
+                surface: "GUIDE",
+                event: "GUIDE_CTA_CLICKED",
+                targetType: "GUIDE",
+                targetId: `${guide.slug}:secondary`,
+              }}
             >
               {guide.secondaryCta.label}
-            </Link>
+            </AcquisitionTrackedLink>
           ) : null}
         </div>
       </div>
@@ -114,13 +137,19 @@ function GuideSection({ guide }: { guide: GuidePage }) {
           {listGuidePages()
             .filter((item) => item.slug !== guide.slug)
             .map((item) => (
-              <Link
+              <AcquisitionTrackedLink
                 key={item.slug}
                 href={`/guides/${item.slug}`}
                 className="tp-filter-pill min-h-[1.875rem] px-2.5 py-1 text-[11px]"
+                event={{
+                  surface: "GUIDE",
+                  event: "GUIDE_CTA_CLICKED",
+                  targetType: "GUIDE",
+                  targetId: `${guide.slug}:related:${item.slug}`,
+                }}
               >
                 {item.intentLabel}
-              </Link>
+              </AcquisitionTrackedLink>
             ))}
         </div>
       </nav>

@@ -4724,3 +4724,42 @@
   - 첫 글 작성자는 빈 에디터 대신 제목과 본문 뼈대에서 시작할 수 있다.
   - 캠페인/지역/가이드 CTA가 같은 글쓰기 템플릿 규칙을 사용한다.
   - 자동 추천, 개인화, 이벤트 측정은 P1-4 이후 작업으로 남긴다.
+
+### 2026-05-21 | P1-4 획득 이벤트 정의
+- 완료일: `2026-05-21`
+- 배경:
+  - 홈, 캠페인, SEO guide, 사용자 선택 동네 허브가 첫 방문자를 글쓰기 템플릿으로 보내기 시작했지만, 어떤 surface와 CTA가 실제 전환을 만드는지 볼 수 있는 획득 이벤트 사전과 집계 경로가 없었다.
+  - 기존 `FeedPersonalizationStat`는 로그인 사용자 개인화 피드 품질용이라 public 랜딩/캠페인 이벤트에 섞기 어렵다.
+- 변경내용:
+  - `AcquisitionEventStat` 일별 집계 테이블과 migration을 추가했다. 개인 식별 로그 없이 `day/surface/event/targetType/targetId/source/count`만 저장한다.
+  - `/api/acquisition/events` public 계측 route를 추가했다. 입력은 Zod로 검증하고, IP rate limit을 적용하며, schema sync 전에는 `202`로 graceful skip한다.
+  - `AcquisitionEventTracker`, `AcquisitionTrackedLink`, `sendAcquisitionEvent`를 추가했다. 클라이언트 전송은 기존 `NEXT_PUBLIC_ENABLE_CLIENT_TELEMETRY=1` opt-in을 따른다.
+  - `/`, `/campaigns/neighborhood-map`, `/guides/[guideSlug]`, `/towns/[townSlug]`, `/towns/[townSlug]/[sectionSlug]`, `/posts/new`에 방문/CTA/템플릿 진입 이벤트를 연결했다.
+  - `business/analytics/핵심_지표.md`에 첫 90일 이벤트 사전과 퍼널 판정표를 추가했다.
+  - `business/analytics/온동네_초기유저_30일_실행플레이북.md`에 운영 질문별 이벤트 연결표를 추가했다.
+- 코드문서:
+  - [app/prisma/schema.prisma](../app/prisma/schema.prisma)
+  - [app/prisma/migrations/20260521223000_add_acquisition_event_stats/migration.sql](../app/prisma/migrations/20260521223000_add_acquisition_event_stats/migration.sql)
+  - [app/src/lib/acquisition-events.ts](../app/src/lib/acquisition-events.ts)
+  - [app/src/lib/validations/acquisition-events.ts](../app/src/lib/validations/acquisition-events.ts)
+  - [app/src/lib/acquisition-tracking.ts](../app/src/lib/acquisition-tracking.ts)
+  - [app/src/components/analytics/acquisition-event-tracker.tsx](../app/src/components/analytics/acquisition-event-tracker.tsx)
+  - [app/src/app/api/acquisition/events/route.ts](../app/src/app/api/acquisition/events/route.ts)
+  - [app/src/server/services/acquisition-events.service.ts](../app/src/server/services/acquisition-events.service.ts)
+  - [business/analytics/핵심_지표.md](../business/analytics/핵심_지표.md)
+  - [business/analytics/온동네_초기유저_30일_실행플레이북.md](../business/analytics/온동네_초기유저_30일_실행플레이북.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app exec prisma format`
+  - `corepack pnpm@9.12.3 -C app exec prisma generate`
+  - `corepack pnpm@9.12.3 -C app exec prisma migrate deploy`
+  - `corepack pnpm@9.12.3 -C app test -- src/server/services/acquisition-events.service.test.ts src/app/api/acquisition/events/route.test.ts src/app/page.test.tsx src/app/campaigns/neighborhood-map/page.test.tsx src/app/guides/page.test.tsx src/app/towns/page.test.tsx src/app/posts/new/page.test.tsx`
+  - `corepack pnpm@9.12.3 -C app test -- src/app/api/acquisition/events/route.test.ts src/server/services/acquisition-events.service.test.ts`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `PUPPETEER_SKIP_DOWNLOAD=1 corepack pnpm@9.12.3 dlx impeccable detect app/src/app app/src/components --fast`
+  - `git diff --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+  - local browser smoke with `NEXT_PUBLIC_ENABLE_CLIENT_TELEMETRY=1`: `/` mobile, `/campaigns/neighborhood-map` mobile, `/posts/new?type=WALK_ROUTE&template=walk_route_large_dog`; acquisition API responses returned 200 after CTA dimension validation fix.
+- 결과:
+  - 첫 90일 획득 퍼널의 방문/CTA/템플릿 진입 구간을 제품 이벤트로 볼 수 있는 기반이 생겼다.
+  - 다음 단계 `P1-5. 초기 지역 운영 지표`에서 이 집계를 admin 운영 화면에 붙일 수 있다.

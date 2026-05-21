@@ -192,26 +192,6 @@
 
 ## P1. 측정과 운영 대시보드
 
-### P1-4. 획득 이벤트 정의
-
-- 추가 이벤트 후보:
-  - `town_landing_viewed`
-  - `town_category_clicked`
-  - `lost_alert_created`
-  - `lost_poster_generated`
-  - `lost_sighting_created`
-  - `kakao_share_clicked`
-  - `guide_cta_clicked`
-  - `operator_content_viewed`
-  - `correction_request_submitted`
-  - `founding_member_joined`
-- 기존 문서 반영:
-  - `business/analytics/핵심_지표.md`
-  - `business/analytics/온동네_초기유저_30일_실행플레이북.md`
-- 완료 기준:
-  - 첫 90일 핵심 지표가 제품 이벤트와 연결된다.
-  - `방문 -> 회원가입 -> 첫 글/댓글 -> 7일 재방문 -> 공유` 흐름을 볼 수 있다.
-
 ### P1-5. 초기 지역 운영 지표
 
 - 운영자에게 필요한 수치:

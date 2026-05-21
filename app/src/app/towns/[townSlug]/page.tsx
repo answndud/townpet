@@ -1,7 +1,10 @@
-import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import {
+  AcquisitionEventTracker,
+  AcquisitionTrackedLink,
+} from "@/components/analytics/acquisition-event-tracker";
 import { getTownLandingByNeighborhoodSlug } from "@/server/queries/neighborhood.queries";
 import { isPrismaDatabaseUnavailableError } from "@/server/prisma-database-error";
 
@@ -56,6 +59,14 @@ export default async function TownPage({ params }: TownPageProps) {
 
   return (
     <main className="tp-page-bg min-h-screen">
+      <AcquisitionEventTracker
+        event={{
+          surface: "TOWN_LANDING",
+          event: "TOWN_LANDING_VIEWED",
+          targetType: "TOWN",
+          targetId: town.slug,
+        }}
+      />
       <section className="mx-auto w-full max-w-[1180px] px-4 py-10 sm:px-6 sm:py-14 lg:px-10">
         <p className="tp-eyebrow">Town guide</p>
         <div className="mt-4 grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
@@ -67,15 +78,42 @@ export default async function TownPage({ params }: TownPageProps) {
               {town.description}
             </p>
             <div className="mt-7 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-              <Link href="/onboarding" className="tp-btn-primary tp-btn-md inline-flex min-h-11 items-center justify-center px-5">
+              <AcquisitionTrackedLink
+                href="/onboarding"
+                className="tp-btn-primary tp-btn-md inline-flex min-h-11 items-center justify-center px-5"
+                event={{
+                  surface: "TOWN_LANDING",
+                  event: "ONBOARDING_CTA_CLICKED",
+                  targetType: "TOWN",
+                  targetId: town.slug,
+                }}
+              >
                 내 동네 설정하기
-              </Link>
-              <Link href="/posts/new?type=LOST_FOUND" className="tp-btn-soft tp-btn-md inline-flex min-h-11 items-center justify-center px-5">
+              </AcquisitionTrackedLink>
+              <AcquisitionTrackedLink
+                href="/posts/new?type=LOST_FOUND"
+                className="tp-btn-soft tp-btn-md inline-flex min-h-11 items-center justify-center px-5"
+                event={{
+                  surface: "TOWN_LANDING",
+                  event: "WRITE_TEMPLATE_OPENED",
+                  targetType: "POST_TYPE",
+                  targetId: "LOST_FOUND",
+                }}
+              >
                 분실동물 등록하기
-              </Link>
-              <Link href="/feed/guest" className="tp-btn-soft tp-btn-md inline-flex min-h-11 items-center justify-center px-5">
+              </AcquisitionTrackedLink>
+              <AcquisitionTrackedLink
+                href="/feed/guest"
+                className="tp-btn-soft tp-btn-md inline-flex min-h-11 items-center justify-center px-5"
+                event={{
+                  surface: "TOWN_LANDING",
+                  event: "FEED_CTA_CLICKED",
+                  targetType: "TOWN",
+                  targetId: town.slug,
+                }}
+              >
                 공개 피드 보기
-              </Link>
+              </AcquisitionTrackedLink>
             </div>
           </div>
 
@@ -94,10 +132,16 @@ export default async function TownPage({ params }: TownPageProps) {
 
       <section className="mx-auto grid w-full max-w-[1180px] gap-3 px-4 pb-12 sm:px-6 md:grid-cols-2 lg:px-10">
         {town.sections.map((section) => (
-          <Link
+          <AcquisitionTrackedLink
             key={section.slug}
             href={section.href}
             className="tp-card group flex min-h-[210px] flex-col gap-4 p-5 transition hover:border-[#aac5ec] hover:shadow-[0_12px_28px_rgba(30,63,116,0.08)]"
+            event={{
+              surface: "TOWN_LANDING",
+              event: "TOWN_CATEGORY_CLICKED",
+              targetType: "TOWN_SECTION",
+              targetId: `${town.slug}:${section.slug}`,
+            }}
           >
             <div>
               <p className="text-xs font-semibold text-[#315b9a]">{section.shortTitle}</p>
@@ -112,7 +156,7 @@ export default async function TownPage({ params }: TownPageProps) {
             <p className="mt-auto rounded-md border border-[#dbe6f5] bg-[#f8fbff] px-3 py-2 text-xs leading-5 text-[#5a7397]">
               {section.emptyState}
             </p>
-          </Link>
+          </AcquisitionTrackedLink>
         ))}
       </section>
     </main>

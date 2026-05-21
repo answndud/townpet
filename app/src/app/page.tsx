@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 
+import {
+  AcquisitionEventTracker,
+  AcquisitionTrackedLink,
+} from "@/components/analytics/acquisition-event-tracker";
 import { HomeFeedPreview } from "@/components/home/home-feed-preview";
 import { NEIGHBORHOOD_MAP_CAMPAIGN_PATH } from "@/lib/campaign-pages";
 
@@ -33,6 +36,14 @@ const TOPIC_LINKS = [
 export default function HomePage() {
   return (
     <main className="tp-page-bg min-h-screen">
+      <AcquisitionEventTracker
+        event={{
+          surface: "HOME",
+          event: "LANDING_VIEWED",
+          targetType: "CTA",
+          targetId: "home",
+        }}
+      />
       <section className="mx-auto w-full max-w-[1180px] px-4 py-10 sm:px-6 sm:py-14 lg:px-10">
         <div className="flex min-w-0 flex-col justify-center">
           <p className="tp-eyebrow">동네 반려생활 정보 지도</p>
@@ -44,18 +55,30 @@ export default function HomePage() {
             동네 반려생활 정보 커뮤니티입니다.
           </p>
           <div className="mt-7 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-            <Link
+            <AcquisitionTrackedLink
               href="/feed/guest"
               className="tp-btn-primary tp-btn-md inline-flex min-h-11 items-center justify-center px-5"
+              event={{
+                surface: "HOME",
+                event: "FEED_CTA_CLICKED",
+                targetType: "CTA",
+                targetId: "hero_feed",
+              }}
             >
               전체 피드 보기
-            </Link>
-            <Link
+            </AcquisitionTrackedLink>
+            <AcquisitionTrackedLink
               href="/onboarding"
               className="tp-btn-soft tp-btn-md inline-flex min-h-11 items-center justify-center px-5"
+              event={{
+                surface: "HOME",
+                event: "ONBOARDING_CTA_CLICKED",
+                targetType: "CTA",
+                targetId: "hero_onboarding",
+              }}
             >
               내 동네 허브 시작하기
-            </Link>
+            </AcquisitionTrackedLink>
           </div>
         </div>
       </section>
@@ -70,13 +93,22 @@ export default function HomePage() {
           </div>
           <div className="mt-2 flex flex-wrap gap-1.5 sm:mt-0 sm:justify-end">
             {TOPIC_LINKS.map((topic) => (
-              <Link
+              <AcquisitionTrackedLink
                 key={topic.href}
                 href={topic.href}
                 className="tp-filter-pill min-h-[1.875rem] px-2.5 py-1 text-[11px]"
+                event={{
+                  surface: "HOME",
+                  event:
+                    topic.href === NEIGHBORHOOD_MAP_CAMPAIGN_PATH
+                      ? "CAMPAIGN_CTA_CLICKED"
+                      : "FEED_CTA_CLICKED",
+                  targetType: "CTA",
+                  targetId: topic.label,
+                }}
               >
                 {topic.label}
-              </Link>
+              </AcquisitionTrackedLink>
             ))}
           </div>
         </div>
