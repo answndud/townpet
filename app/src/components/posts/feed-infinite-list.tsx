@@ -209,6 +209,11 @@ const careStatusLabel: Record<string, string> = {
   CANCELLED: "취소",
 };
 
+const FEED_POST_ITEM_CLASS_NAME =
+  "group grid h-[132px] grid-cols-[minmax(0,1fr)_80px] items-center gap-x-3 overflow-hidden px-3 py-3 transition hover:bg-[#fbfdff] sm:h-[136px] sm:grid-cols-[minmax(0,1fr)_92px] sm:px-4 sm:py-3.5 md:h-[128px] md:grid-cols-[minmax(0,1fr)_104px] md:gap-x-4";
+const FEED_POST_THUMBNAIL_PLACEHOLDER_CLASS_NAME =
+  "invisible aspect-square rounded-2xl";
+
 type StoredReadPost = {
   id: string;
   ts: number;
@@ -731,21 +736,19 @@ export function FeedInfiniteList({
                 testId="feed-post-item"
                 href={detailHref}
                 prefetch={preferGuestDetail ? true : false}
-                articleClassName={`group grid items-start gap-x-3 gap-y-1.5 px-3 py-3.5 transition hover:bg-[#fbfdff] sm:px-4 sm:py-4 md:gap-x-4 ${
-                  hasThumbnail
-                    ? "grid-cols-[minmax(0,1fr)_80px] sm:grid-cols-[minmax(0,1fr)_92px] md:grid-cols-[minmax(0,1fr)_104px] md:items-center"
-                    : "grid-cols-1"
-                } ${post.status === "HIDDEN" ? "bg-[#fff7f7]" : ""}`}
+                articleClassName={`${FEED_POST_ITEM_CLASS_NAME} ${
+                  post.status === "HIDDEN" ? "bg-[#fff7f7]" : ""
+                }`}
                 topContent={
-                  <div className="mb-1.5 flex flex-wrap items-center gap-1.5">
+                  <div className="mb-1.5 flex min-w-0 items-center gap-1.5 overflow-hidden">
                     <FeedPostMetaBadges
                       label={meta.label}
                       chipClass={meta.chipClass}
                       status={post.status}
-                      className="mb-0 justify-start"
+                      className="mb-0 shrink-0 justify-start"
                     />
                     {locationLabel || petTypeLabel ? (
-                      <span className="truncate text-[12px] font-medium text-[#6280aa]">
+                      <span className="min-w-0 truncate text-[12px] font-medium text-[#6280aa]">
                         {[locationLabel, petTypeLabel].filter(Boolean).join(" · ")}
                       </span>
                     ) : null}
@@ -795,7 +798,7 @@ export function FeedInfiniteList({
                     </div>
                   </>
                 }
-                metaClassName={hasThumbnail ? "min-w-0 self-center" : "hidden"}
+                metaClassName="min-w-0 self-center"
                 meta={
                   hasThumbnail ? (
                     <FeedPostThumbnail
@@ -809,7 +812,12 @@ export function FeedInfiniteList({
                         });
                       }}
                     />
-                  ) : null
+                  ) : (
+                    <div
+                      aria-hidden="true"
+                      className={FEED_POST_THUMBNAIL_PLACEHOLDER_CLASS_NAME}
+                    />
+                  )
                 }
               />
             </div>
