@@ -176,6 +176,8 @@
 - 현재 상태:
   - `app/src/app/robots.ts`와 `app/src/app/sitemap.ts`는 존재한다.
   - 지역/가이드 landing이 추가되면 sitemap과 canonical policy를 재정의해야 한다.
+- 상태:
+  - 완료. 상세는 [COMPLETED.md](./COMPLETED.md)의 `2026-05-21 | 검색엔진 제출 체크리스트 정리`를 본다.
 - 구현 방향:
   - sitemap에 public landing, guide, 지역 허브를 포함한다.
   - 로그인/프로필/알림/관리자/API는 계속 noindex 또는 disallow로 둔다.
