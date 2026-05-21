@@ -71,4 +71,27 @@ describe("FeedInfiniteList", () => {
     expect(html).toContain("사진 글");
     expect(html).toContain("댓글 4");
   });
+
+  it("shows a compact founding member badge in the author metadata row", () => {
+    const html = renderToStaticMarkup(
+      <FeedInfiniteList
+        initialItems={[
+          {
+            ...basePost,
+            author: {
+              ...basePost.author,
+              isFoundingMember: true,
+            },
+          },
+        ]}
+        initialNextCursor={null}
+        mode="ALL"
+        query={{ scope: "GLOBAL" }}
+        queryKey="feed-test"
+      />,
+    );
+
+    expect(html).toContain("창립 멤버");
+    expect(html).toContain("text-[10px]");
+  });
 });

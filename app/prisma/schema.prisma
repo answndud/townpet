@@ -16,6 +16,8 @@ model User {
   nicknameUpdatedAt         DateTime?
   bio                       String?                       @db.Text
   image                     String?
+  isFoundingMember          Boolean                       @default(false)
+  foundingMemberSince       DateTime?
   showPublicPosts           Boolean                       @default(true)
   showPublicComments        Boolean                       @default(true)
   showPublicPets            Boolean                       @default(true)

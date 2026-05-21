@@ -22,7 +22,7 @@ const LEGACY_POST_BASE_SELECT = {
 } as const;
 
 const LEGACY_POST_RELATION_SELECT = {
-  author: { select: { id: true, nickname: true } },
+  author: { select: { id: true, nickname: true, isFoundingMember: true } },
   neighborhood: {
     select: { id: true, name: true, city: true },
   },
@@ -76,7 +76,7 @@ const LEGACY_POST_RELATION_SELECT = {
 export const buildLegacyPostListSelect = (viewerId?: string) =>
   ({
     ...LEGACY_POST_BASE_SELECT,
-    author: { select: { id: true, nickname: true, image: true } },
+    author: { select: { id: true, nickname: true, image: true, isFoundingMember: true } },
     neighborhood: {
       select: { id: true, name: true, city: true, district: true },
     },
@@ -96,7 +96,7 @@ export const buildLegacyPostListSelect = (viewerId?: string) =>
 export const buildLegacyPostListSelectWithoutReactions = () =>
   ({
     ...LEGACY_POST_BASE_SELECT,
-    author: { select: { id: true, nickname: true, image: true } },
+    author: { select: { id: true, nickname: true, image: true, isFoundingMember: true } },
     neighborhood: {
       select: { id: true, name: true, city: true, district: true },
     },

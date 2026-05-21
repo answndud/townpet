@@ -1,6 +1,6 @@
 const postListBaseInclude = (includeGuestAuthor: boolean) =>
   ({
-    author: { select: { id: true, nickname: true, image: true } },
+    author: { select: { id: true, nickname: true, image: true, isFoundingMember: true } },
     ...(includeGuestAuthor ? { guestAuthor: { select: { id: true, displayName: true } } } : {}),
     neighborhood: {
       select: { id: true, name: true, city: true, district: true },

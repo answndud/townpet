@@ -135,6 +135,8 @@ function serializeFeedItems(items: Array<Record<string, unknown>>) {
       id: (post.author as { id: string }).id,
       nickname: ((post.author as { nickname?: string | null }).nickname ?? null) as string | null,
       image: ((post.author as { image?: string | null }).image ?? null) as string | null,
+      isFoundingMember:
+        ((post.author as { isFoundingMember?: boolean | null }).isFoundingMember ?? false) as boolean,
     },
     guestAuthorId: ((post as { guestAuthorId?: string | null }).guestAuthorId ?? null) as string | null,
     guestDisplayName: ((post as { guestDisplayName?: string | null }).guestDisplayName ?? null) as string | null,

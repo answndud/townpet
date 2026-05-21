@@ -18,6 +18,7 @@ import { FeedPostMetaBadges } from "@/components/posts/feed-post-meta-badges";
 import { OperatorContentBadge } from "@/components/posts/operator-content-source-panel";
 import { PostListItemShell } from "@/components/posts/post-list-item-shell";
 import { PostSignalIcons } from "@/components/posts/post-signal-icons";
+import { FoundingMemberBadge } from "@/components/user/founding-member-badge";
 import type {
   FeedAudienceSourceValue,
   FeedPersonalizationEventValue,
@@ -65,6 +66,7 @@ export type FeedPostItem = {
     id: string;
     nickname: string | null;
     image?: string | null;
+    isFoundingMember?: boolean | null;
   };
   guestAuthorId?: string | null;
   guestDisplayName?: string | null;
@@ -705,9 +707,15 @@ export function FeedInfiniteList({
           const authorNode = isGuestPost ? (
             <span className="block truncate">{authorLabel}</span>
           ) : (
-            <Link href={`/users/${post.author.id}`} className="block truncate hover:text-[#2f5da4]">
-              {authorLabel}
-            </Link>
+            <span className="inline-flex min-w-0 items-center gap-1">
+              <Link
+                href={`/users/${post.author.id}`}
+                className="block min-w-0 truncate hover:text-[#2f5da4]"
+              >
+                {authorLabel}
+              </Link>
+              {post.author.isFoundingMember ? <FoundingMemberBadge compact /> : null}
+            </span>
           );
           const detailHref = preferGuestDetail ? `/posts/${post.id}/guest` : `/posts/${post.id}`;
           const hasThumbnail = shouldRenderFeedThumbnail(post);
