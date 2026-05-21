@@ -21,9 +21,14 @@ describe("buildPostStructuredSearchText", () => {
           condition: "LIKE_NEW",
           rentalPeriod: "2주 대여",
         },
+        lostFound: {
+          petType: "고양이",
+          breed: "치즈태비",
+          lastSeenLocation: "서초구 반포동",
+        },
       }),
     ).toBe(
-      "강아지 산책 해피 동물 병원 중성화 수술 서울 보호 센터 서울 서초 웰시 코기 SELL LIKE_NEW 2주 대여",
+      "강아지 산책 해피 동물 병원 중성화 수술 서울 보호 센터 서울 서초 웰시 코기 SELL LIKE_NEW 2주 대여 고양이 치즈태비 서초구 반포동",
     );
   });
 

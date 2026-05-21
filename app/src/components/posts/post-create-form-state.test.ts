@@ -26,6 +26,13 @@ describe("post create form state", () => {
         careType: "WALK",
         isUrgent: "false",
       },
+      lostFound: {
+        alertType: "LOST",
+        petType: "",
+        breed: "",
+        lastSeenAt: "",
+        lastSeenLocation: "",
+      },
     });
   });
 
@@ -34,6 +41,7 @@ describe("post create form state", () => {
 
     expect(isDraftFormState(state)).toBe(true);
     expect(isDraftFormState({ ...state, hospitalReview: undefined })).toBe(false);
+    expect(isDraftFormState({ ...state, lostFound: undefined })).toBe(false);
     expect(isDraftFormState({ ...state, imageUrls: "not-array" })).toBe(false);
   });
 });

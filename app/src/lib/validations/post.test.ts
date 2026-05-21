@@ -347,9 +347,26 @@ describe("post validations", () => {
       content: "내용",
       type: PostType.LOST_FOUND,
       scope: PostScope.GLOBAL,
+      lostFound: {
+        alertType: "LOST",
+        petType: "강아지",
+        lastSeenAt: "2026-05-21T18:30:00.000Z",
+        lastSeenLocation: "서초구 반포동",
+      },
     });
 
     expect(result.success).toBe(true);
+  });
+
+  it("rejects lost-found posts without structured alert fields", () => {
+    const result = postCreateSchema.safeParse({
+      title: "실종 제보",
+      content: "내용",
+      type: PostType.LOST_FOUND,
+      scope: PostScope.GLOBAL,
+    });
+
+    expect(result.success).toBe(false);
   });
 
   it("rejects external image urls in post payload", () => {

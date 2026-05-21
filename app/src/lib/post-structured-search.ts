@@ -40,6 +40,11 @@ type StructuredSearchTextInput = {
     petNote?: string | null;
     requirements?: string | null;
   } | null;
+  lostFound?: {
+    petType?: string | null;
+    breed?: string | null;
+    lastSeenLocation?: string | null;
+  } | null;
 };
 
 function normalizeArray(values: Array<string | null | undefined> | null | undefined) {
@@ -75,6 +80,9 @@ export function buildPostStructuredSearchText(input: StructuredSearchTextInput) 
       input.careRequest?.locationNote,
       input.careRequest?.petNote,
       input.careRequest?.requirements,
+      input.lostFound?.petType,
+      input.lostFound?.breed,
+      input.lostFound?.lastSeenLocation,
     ]),
   ];
 

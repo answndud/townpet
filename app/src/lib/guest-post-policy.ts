@@ -20,7 +20,6 @@ export const GUEST_BLOCKED_POST_TYPES: ReadonlyArray<PostType> = [
   PostType.CARE_REQUEST,
   PostType.ADOPTION_LISTING,
   PostType.SHELTER_VOLUNTEER,
-  PostType.LOST_FOUND,
 ];
 
 export type GuestPostPolicy = {

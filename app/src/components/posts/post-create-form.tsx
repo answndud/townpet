@@ -36,6 +36,7 @@ import {
   AdoptionListingFields,
   CareRequestFields,
   HospitalReviewFields,
+  LostFoundFields,
   MarketListingFields,
   PlaceReviewFields,
   StructuredFieldDatalists,
@@ -72,6 +73,7 @@ type PostCreateFormProps = {
   defaultNeighborhoodId?: string;
   isAuthenticated: boolean;
   canCreateAdoptionListing?: boolean;
+  initialType?: PostType;
 };
 
 export function PostCreateForm({
@@ -80,15 +82,17 @@ export function PostCreateForm({
   defaultNeighborhoodId = "",
   isAuthenticated,
   canCreateAdoptionListing = false,
+  initialType,
 }: PostCreateFormProps) {
   const titleInputRef = useRef<HTMLInputElement | null>(null);
   const latestTitleRef = useRef("");
   const editorHandleRef = useRef<PostBodyRichEditorHandle | null>(null);
   const latestEditorContentRef = useRef("");
   const latestEditorImageUrlsRef = useRef<string[]>([]);
-  const [formState, setFormState] = useState<PostCreateFormState>(() =>
-    createInitialPostCreateFormState(defaultNeighborhoodId),
-  );
+  const [formState, setFormState] = useState<PostCreateFormState>(() => {
+    const initialState = createInitialPostCreateFormState(defaultNeighborhoodId);
+    return initialType ? { ...initialState, type: initialType } : initialState;
+  });
 
   useEffect(() => {
     latestEditorContentRef.current = formState.content;
@@ -165,6 +169,7 @@ export function PostCreateForm({
   const showVolunteerRecruitment = formState.type === PostType.SHELTER_VOLUNTEER;
   const showMarketListing = formState.type === PostType.MARKET_LISTING;
   const showCareRequest = formState.type === PostType.CARE_REQUEST;
+  const showLostFound = formState.type === PostType.LOST_FOUND;
 
   const { error, handleSubmit, isPending } = usePostCreateSubmit({
     canUseLocalScope,
@@ -181,6 +186,7 @@ export function PostCreateForm({
     showAnimalTagsInput,
     showCareRequest,
     showCommunitySelector,
+    showLostFound,
     showMarketListing,
     showNeighborhood,
     titleInputRef,
@@ -272,6 +278,10 @@ export function PostCreateForm({
 
       {showCareRequest ? (
         <CareRequestFields formState={formState} setFormState={setFormState} />
+      ) : null}
+
+      {showLostFound ? (
+        <LostFoundFields formState={formState} setFormState={setFormState} />
       ) : null}
 
       {showAdoptionListing ? (

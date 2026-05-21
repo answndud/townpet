@@ -4012,6 +4012,48 @@
   - `node scripts/refresh-docs-index.mjs --check`
   - `git diff --check`
 
+### 2026-05-21 | 분실동물 전용 작성 플로우
+- 완료일: `2026-05-21`
+- 배경:
+  - `LostFoundAlert` 모델과 `LOST_FOUND` 게시글 타입은 있었지만, 작성 화면은 일반 글쓰기 흐름에 가까워 분실/목격 제보에 필요한 핵심 정보가 구조화되지 않았다.
+  - 분실동물은 긴급성과 개인정보/악용 위험이 모두 있는 고위험 UGC라, UI 필드 추가뿐 아니라 Zod 입력 검증, 신규 유저/연락처 정책, 저장 관계, 검색 토큰까지 함께 연결해야 했다.
+- 변경내용:
+  - `/lost/new` 전용 route를 추가했다. 회원과 비회원 모두 `/posts/new?type=LOST_FOUND`로 이동한다.
+  - `/posts/new?type=LOST_FOUND`는 분실/목격 제보 작성 상태를 사전 선택한다. 다른 임의 게시글 타입 query는 사전 선택하지 않도록 제한했다.
+  - 글쓰기 폼 상태에 `lostFound` 구조를 추가하고, 분실/목격 핵심 정보 섹션을 추가했다.
+  - 필수 필드는 `제보 유형`, `동물 종류`, `마지막 확인 시간`, `마지막 확인 위치`로 두고, `품종/색상/특징`은 선택 입력으로 뒀다.
+  - `postCreateSchema`에 `lostFoundSchema`를 추가하고, `LOST_FOUND` 작성 시 구조화 제보 정보가 없으면 거절하도록 했다.
+  - `createPost` 서비스에서 `lostFound` 입력을 재검증하고, 금칙어/연락처/링크 정책 검사 대상에 구조화 필드를 포함했다.
+  - 비회원 분실/목격 제보는 허용하되, 전체 범위 강제, 이미지 1장 제한, 링크/연락처 차단, guest rate limit과 ban 정책은 그대로 적용한다.
+  - `createPostVariant`에서 `LostFoundAlert` 관계를 생성하고, `structuredSearchText`에 동물 종류, 품종/특징, 마지막 확인 위치를 포함했다.
+  - SEO guide의 분실 글 작성 CTA를 새 전용 route `/lost/new`로 연결했다.
+- 코드문서:
+  - [app/src/app/lost/new/page.tsx](../app/src/app/lost/new/page.tsx)
+  - [app/src/app/posts/new/page.tsx](../app/src/app/posts/new/page.tsx)
+  - [app/src/components/posts/post-create-form.tsx](../app/src/components/posts/post-create-form.tsx)
+  - [app/src/components/posts/post-create-form-state.ts](../app/src/components/posts/post-create-form-state.ts)
+  - [app/src/components/posts/post-create-structured-fields.tsx](../app/src/components/posts/post-create-structured-fields.tsx)
+  - [app/src/components/posts/post-create-submit.ts](../app/src/components/posts/post-create-submit.ts)
+  - [app/src/lib/validations/posts/post.ts](../app/src/lib/validations/posts/post.ts)
+  - [app/src/lib/post-structured-search.ts](../app/src/lib/post-structured-search.ts)
+  - [app/src/server/services/posts/post-create.service.ts](../app/src/server/services/posts/post-create.service.ts)
+  - [app/src/server/services/posts/post-create-variants.ts](../app/src/server/services/posts/post-create-variants.ts)
+  - [app/src/lib/guide-pages.ts](../app/src/lib/guide-pages.ts)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/components/posts/post-create-submit.test.ts src/components/posts/post-create-form-state.test.ts src/components/posts/post-create-structured-fields.test.tsx src/lib/validations/post.test.ts src/lib/post-structured-search.test.ts src/server/services/post-create-policy.test.ts`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `corepack pnpm@9.12.3 -C app build`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+  - `PUPPETEER_SKIP_DOWNLOAD=1 corepack pnpm@9.12.3 dlx impeccable detect src/app src/components --fast`
+  - `git diff --check`
+  - local browser smoke: `http://localhost:3000/lost/new` -> `http://localhost:3000/posts/new?type=LOST_FOUND`, desktop/mobile에서 `분실/목격 제보 작성`과 `분실/목격 핵심 정보` 노출 확인
+- 결과:
+  - 분실/목격 글은 구조화 제보 정보가 없으면 클라이언트와 서버에서 모두 거절된다.
+  - 비회원도 구조화 분실/목격 제보를 작성할 수 있고, 기존 guest abuse gate를 통과해야 저장된다.
+  - 저장 시 `LostFoundAlert` 관계가 생성되고 검색용 구조화 텍스트에도 반영된다.
+  - 기존 `design:detect` npm script는 Corepack 서명 키 오류로 실패했지만, 전역 설정 변경 없이 같은 detector를 `corepack pnpm@9.12.3 dlx`로 직접 실행해 통과시켰다.
+
 ### 2026-05-21 | SEO guide route 추가
 - 완료일: `2026-05-21`
 - 배경:

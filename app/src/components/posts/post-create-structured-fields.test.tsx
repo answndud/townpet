@@ -5,6 +5,7 @@ import {
   AdoptionListingFields,
   CareRequestFields,
   HospitalReviewFields,
+  LostFoundFields,
   MarketListingFields,
   PlaceReviewFields,
   StructuredFieldSection,
@@ -99,5 +100,20 @@ describe("post create structured fields", () => {
     expect(html).toContain("요청 유형");
     expect(html).toContain("시작 시간");
     expect(html).toContain('value="WALK"');
+  });
+
+  it("renders lost-found controls", () => {
+    const html = renderToStaticMarkup(
+      <LostFoundFields
+        formState={createInitialPostCreateFormState("")}
+        setFormState={vi.fn()}
+      />,
+    );
+
+    expect(html).toContain("분실/목격 핵심 정보");
+    expect(html).toContain("제보 유형");
+    expect(html).toContain("마지막 확인 시간");
+    expect(html).toContain("마지막 확인 위치");
+    expect(html).toContain('value="LOST"');
   });
 });

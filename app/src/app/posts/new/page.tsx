@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { UserRole } from "@prisma/client";
+import { PostType, UserRole } from "@prisma/client";
 
 import { PostCreateForm } from "@/components/posts/post-create-form";
 import { ServiceUnavailableState } from "@/components/ui/service-unavailable-state";
@@ -17,7 +17,23 @@ export const metadata = createNoIndexPageMetadata({
   path: "/posts/new",
 });
 
-export default async function NewPostPage() {
+type NewPostPageProps = {
+  searchParams?: Promise<{
+    type?: string;
+  }>;
+};
+
+function parseInitialPostType(type?: string) {
+  if (!type) {
+    return undefined;
+  }
+  return Object.values(PostType).includes(type as PostType) ? (type as PostType) : undefined;
+}
+
+export default async function NewPostPage({ searchParams }: NewPostPageProps) {
+  const requestedInitialPostType = parseInitialPostType((await searchParams)?.type);
+  const initialPostType =
+    requestedInitialPostType === PostType.LOST_FOUND ? requestedInitialPostType : undefined;
   const session = await auth().catch((error) => {
     if (isPrismaDatabaseUnavailableError(error)) {
       return null;
@@ -92,10 +108,12 @@ export default async function NewPostPage() {
           <div>
             <p className="text-[11px] uppercase tracking-[0.24em] text-[#3f5f90]">커뮤니티 작성</p>
             <h1 className="mt-2 text-2xl font-bold tracking-tight text-[#10284a] sm:text-3xl">
-              새 글 작성
+              {initialPostType === PostType.LOST_FOUND ? "분실/목격 제보 작성" : "새 글 작성"}
             </h1>
             <p className="text-xs text-[#4f678d] sm:text-sm">
-              {userId
+              {initialPostType === PostType.LOST_FOUND
+                ? "마지막 확인 시간, 위치, 동물 특징을 먼저 구조화해 제보 정확도를 높입니다."
+                : userId
                 ? "게시판과 공개 범위를 먼저 정하고, 핵심 정보 위주로 작성해 주세요."
                 : "비회원 글은 즉시 공개되며, 외부 링크/연락처/고위험 게시판은 제한됩니다."}
             </p>
@@ -122,6 +140,7 @@ export default async function NewPostPage() {
             currentUserRole?.role === UserRole.ADMIN ||
             currentUserRole?.role === UserRole.MODERATOR
           }
+          initialType={initialPostType}
         />
       </main>
     </div>

@@ -33,7 +33,7 @@ export const GUIDE_PAGES: GuidePage[] = [
     },
     secondaryCta: {
       label: "분실 글 작성하기",
-      href: "/posts/new?type=LOST_FOUND",
+      href: "/lost/new",
     },
     sections: [
       {
@@ -165,7 +165,7 @@ export const GUIDE_PAGES: GuidePage[] = [
     },
     secondaryCta: {
       label: "분실 글 작성하기",
-      href: "/posts/new?type=LOST_FOUND",
+      href: "/lost/new",
     },
     sections: [
       {

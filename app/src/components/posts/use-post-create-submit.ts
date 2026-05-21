@@ -46,6 +46,7 @@ type UsePostCreateSubmitParams = {
   showAnimalTagsInput: boolean;
   showCareRequest: boolean;
   showCommunitySelector: boolean;
+  showLostFound: boolean;
   showMarketListing: boolean;
   showNeighborhood: boolean;
   titleInputRef: RefObject<HTMLInputElement | null>;
@@ -121,6 +122,7 @@ export function usePostCreateSubmit({
   showAnimalTagsInput,
   showCareRequest,
   showCommunitySelector,
+  showLostFound,
   showMarketListing,
   showNeighborhood,
   titleInputRef,
@@ -149,6 +151,7 @@ export function usePostCreateSubmit({
       showAnimalTagsInput,
       showMarketListing,
       showCareRequest,
+      showLostFound,
       isFreeBoardType,
     });
     if (!payloadResult.ok) {

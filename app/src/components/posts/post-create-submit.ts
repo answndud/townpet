@@ -23,6 +23,7 @@ export type PostCreateSubmitPayload = {
   volunteerRecruitment?: Record<string, unknown>;
   marketListing?: Record<string, unknown>;
   careRequest?: Record<string, unknown>;
+  lostFound?: Record<string, unknown>;
 };
 
 type BuildPostCreatePayloadParams = {
@@ -38,6 +39,7 @@ type BuildPostCreatePayloadParams = {
   showAnimalTagsInput: boolean;
   showMarketListing: boolean;
   showCareRequest: boolean;
+  showLostFound: boolean;
   isFreeBoardType: boolean;
 };
 
@@ -116,6 +118,17 @@ function hasVolunteerRecruitment(formState: PostCreateFormState) {
   );
 }
 
+function hasLostFound(formState: PostCreateFormState) {
+  return (
+    formState.type === PostType.LOST_FOUND &&
+    (formState.lostFound.alertType.trim().length > 0 ||
+      formState.lostFound.petType.trim().length > 0 ||
+      formState.lostFound.breed.trim().length > 0 ||
+      formState.lostFound.lastSeenAt.trim().length > 0 ||
+      formState.lostFound.lastSeenLocation.trim().length > 0)
+  );
+}
+
 export function resolvePostCreateSubmitType(formState: PostCreateFormState) {
   return formState.type === PostType.PRODUCT_REVIEW &&
     formState.reviewCategory === REVIEW_CATEGORY.PLACE
@@ -136,6 +149,7 @@ export function buildPostCreateSubmitPayload({
   showAnimalTagsInput,
   showMarketListing,
   showCareRequest,
+  showLostFound,
   isFreeBoardType,
 }: BuildPostCreatePayloadParams): BuildPostCreatePayloadResult {
   if (!normalizedTitle) {
@@ -179,6 +193,18 @@ export function buildPostCreateSubmitPayload({
 
   if (showCareRequest && !formState.careRequest.startsAt) {
     return { ok: false, message: "돌봄 요청은 시작 시간을 입력해 주세요." };
+  }
+
+  if (showLostFound) {
+    if (!formState.lostFound.petType.trim()) {
+      return { ok: false, message: "분실/목격 글은 동물 종류를 입력해 주세요." };
+    }
+    if (!formState.lostFound.lastSeenAt) {
+      return { ok: false, message: "분실/목격 글은 마지막 확인 시간을 입력해 주세요." };
+    }
+    if (!formState.lostFound.lastSeenLocation.trim()) {
+      return { ok: false, message: "분실/목격 글은 마지막 확인 위치를 입력해 주세요." };
+    }
   }
 
   return {
@@ -255,6 +281,13 @@ export function buildPostCreateSubmitPayload({
             isUrgent: formState.careRequest.isUrgent === "true",
           }
         : undefined,
+      lostFound: hasLostFound(formState)
+        ? {
+            ...formState.lostFound,
+            breed: formState.lostFound.breed || undefined,
+            lastSeenAt: formState.lostFound.lastSeenAt || undefined,
+          }
+        : undefined,
     },
   };
 }
@@ -321,6 +354,14 @@ export function createPostCreateSuccessState(prev: PostCreateFormState): PostCre
       condition: "GOOD",
       depositAmount: "",
       rentalPeriod: "",
+    },
+    lostFound: {
+      ...prev.lostFound,
+      alertType: "LOST",
+      petType: "",
+      breed: "",
+      lastSeenAt: "",
+      lastSeenLocation: "",
     },
     imageUrls: [],
     guestDisplayName: "",

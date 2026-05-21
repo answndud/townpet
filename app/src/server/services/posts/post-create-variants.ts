@@ -5,6 +5,7 @@ import {
   type AdoptionListingInput,
   type CareRequestInput,
   type HospitalReviewInput,
+  type LostFoundInput,
   type MarketListingInput,
   type VolunteerRecruitmentInput,
   placeReviewSchema,
@@ -23,6 +24,7 @@ type CreatePostVariantParams = {
   volunteerRecruitmentInput: VolunteerRecruitmentInput | null;
   marketListingInput: MarketListingInput | null;
   careRequestInput: CareRequestInput | null;
+  lostFoundInput: LostFoundInput | null;
 };
 
 const hasValue = (value: unknown) => {
@@ -122,6 +124,19 @@ const careRequestInclude = {
   },
 } satisfies Prisma.PostInclude;
 
+const lostFoundAlertInclude = {
+  lostFoundAlert: {
+    select: {
+      alertType: true,
+      petType: true,
+      breed: true,
+      lastSeenAt: true,
+      lastSeenLocation: true,
+      status: true,
+    },
+  },
+} satisfies Prisma.PostInclude;
+
 const adoptionListingInclude = {
   adoptionListing: {
     select: {
@@ -160,6 +175,8 @@ const defaultPostInclude = {
   ...adoptionListingInclude,
   ...volunteerRecruitmentInclude,
   ...marketListingInclude,
+  ...careRequestInclude,
+  ...lostFoundAlertInclude,
 } satisfies Prisma.PostInclude;
 
 export async function createPostVariant(params: CreatePostVariantParams) {
@@ -342,6 +359,38 @@ export async function createPostVariant(params: CreatePostVariantParams) {
       include: {
         ...basePostInclude,
         ...careRequestInclude,
+      },
+    });
+
+    return { created };
+  }
+
+  if (postType === PostType.LOST_FOUND) {
+    if (!params.lostFoundInput) {
+      throw new ServiceError("분실/목격 입력값이 올바르지 않습니다.", "INVALID_LOST_FOUND", 400);
+    }
+
+    const { lostFoundInput } = params;
+    const created = await prisma.post.create({
+      data: {
+        ...commonCreateData,
+        structuredSearchText: buildPostStructuredSearchText({
+          animalTags: commonBoardAnimalTags,
+          lostFound: lostFoundInput,
+        }),
+        lostFoundAlert: {
+          create: {
+            alertType: lostFoundInput.alertType,
+            petType: lostFoundInput.petType,
+            breed: lostFoundInput.breed,
+            lastSeenAt: lostFoundInput.lastSeenAt,
+            lastSeenLocation: lostFoundInput.lastSeenLocation,
+          },
+        },
+      },
+      include: {
+        ...basePostInclude,
+        ...lostFoundAlertInclude,
       },
     });
 
