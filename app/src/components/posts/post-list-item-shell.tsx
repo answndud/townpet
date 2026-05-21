@@ -5,6 +5,7 @@ type PostListItemShellProps = {
   href: string;
   title: ReactNode;
   meta?: ReactNode;
+  sideContent?: ReactNode;
   topContent?: ReactNode;
   titleSuffix?: ReactNode;
   excerpt?: ReactNode;
@@ -12,6 +13,7 @@ type PostListItemShellProps = {
   articleClassName?: string;
   titleLinkClassName?: string;
   excerptClassName?: string;
+  sideClassName?: string;
   metaClassName?: string;
   prefetch?: boolean;
   onTitleClick?: () => void;
@@ -22,6 +24,7 @@ export function PostListItemShell({
   href,
   title,
   meta,
+  sideContent,
   topContent,
   titleSuffix,
   excerpt,
@@ -29,6 +32,7 @@ export function PostListItemShell({
   articleClassName,
   titleLinkClassName,
   excerptClassName,
+  sideClassName,
   metaClassName,
   prefetch,
   onTitleClick,
@@ -61,6 +65,9 @@ export function PostListItemShell({
         ) : null}
         {bottomContent}
       </div>
+      {sideContent !== undefined ? (
+        <div className={sideClassName ?? "text-xs text-[#4f678d]"}>{sideContent}</div>
+      ) : null}
       {meta ? (
         <div className={metaClassName ?? "text-xs text-[#4f678d] md:text-right"}>{meta}</div>
       ) : null}
