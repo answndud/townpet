@@ -42,6 +42,11 @@ describe("sitemap", () => {
     expect(urls).toContain("http://localhost:3000/feed");
     expect(urls).toContain("http://localhost:3000/search");
     expect(urls).toContain("http://localhost:3000/boards/adoption");
+    expect(urls).toContain("http://localhost:3000/towns/mapo");
+    expect(urls).toContain("http://localhost:3000/towns/mapo/hospitals");
+    expect(urls).toContain("http://localhost:3000/towns/mapo/walks");
+    expect(urls).toContain("http://localhost:3000/towns/mapo/lost");
+    expect(urls).toContain("http://localhost:3000/towns/mapo/used-market");
     expect(urls).toContain("http://localhost:3000/terms");
     expect(urls).toContain("http://localhost:3000/privacy");
     expect(urls).toContain("http://localhost:3000/commercial");

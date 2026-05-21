@@ -1,0 +1,106 @@
+import Link from "next/link";
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+
+import { getTownLandingBySlug, TOWN_LANDING } from "@/lib/town-landing";
+
+type TownPageProps = {
+  params: Promise<{ townSlug?: string }>;
+};
+
+export function generateStaticParams() {
+  return [{ townSlug: TOWN_LANDING.slug }];
+}
+
+export async function generateMetadata({ params }: TownPageProps): Promise<Metadata> {
+  const { townSlug = "" } = await params;
+  const town = getTownLandingBySlug(townSlug);
+  if (!town) {
+    return {
+      title: "지역 허브를 찾을 수 없습니다",
+      robots: { index: false, follow: false },
+    };
+  }
+
+  return {
+    title: town.headline,
+    description: town.description,
+    alternates: {
+      canonical: town.href,
+    },
+    openGraph: {
+      title: `TownPet ${town.headline}`,
+      description: town.description,
+      url: town.href,
+    },
+  };
+}
+
+export default async function TownPage({ params }: TownPageProps) {
+  const { townSlug = "" } = await params;
+  const town = getTownLandingBySlug(townSlug);
+  if (!town) {
+    notFound();
+  }
+
+  return (
+    <main className="tp-page-bg min-h-screen">
+      <section className="mx-auto w-full max-w-[1180px] px-4 py-10 sm:px-6 sm:py-14 lg:px-10">
+        <p className="tp-eyebrow">Town guide</p>
+        <div className="mt-4 grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
+          <div>
+            <h1 className="max-w-[720px] text-4xl font-semibold leading-[1.08] text-[#10284a] break-keep sm:text-5xl">
+              {town.headline}
+            </h1>
+            <p className="mt-5 max-w-[700px] text-base leading-7 text-[#4f6f99] break-keep sm:text-lg">
+              {town.description}
+            </p>
+            <div className="mt-7 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+              <Link href="/onboarding" className="tp-btn-primary tp-btn-md inline-flex min-h-11 items-center justify-center px-5">
+                내 동네 설정하기
+              </Link>
+              <Link href="/posts/new?type=LOST_FOUND" className="tp-btn-soft tp-btn-md inline-flex min-h-11 items-center justify-center px-5">
+                분실동물 등록하기
+              </Link>
+              <Link href="/feed/guest" className="tp-btn-soft tp-btn-md inline-flex min-h-11 items-center justify-center px-5">
+                공개 피드 보기
+              </Link>
+            </div>
+          </div>
+
+          <aside className="tp-card p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#4e6f9f]">
+              초기 운영 범위
+            </p>
+            <p className="mt-2 text-xl font-semibold text-[#173963]">{town.label}</p>
+            <p className="mt-2 text-sm leading-6 text-[#5a7397]">
+              전국 확장보다 한 지역의 정보 밀도를 먼저 높입니다. 운영자 콘텐츠와 사용자
+              제보를 구분해 쌓는 것이 목표입니다.
+            </p>
+          </aside>
+        </div>
+      </section>
+
+      <section className="mx-auto grid w-full max-w-[1180px] gap-3 px-4 pb-12 sm:px-6 md:grid-cols-2 lg:px-10">
+        {town.sections.map((section) => (
+          <Link
+            key={section.slug}
+            href={section.href}
+            className="tp-card group flex min-h-[210px] flex-col gap-4 p-5 transition hover:border-[#aac5ec] hover:shadow-[0_12px_28px_rgba(30,63,116,0.08)]"
+          >
+            <div>
+              <p className="text-xs font-semibold text-[#315b9a]">{section.shortTitle}</p>
+              <h2 className="mt-2 text-xl font-semibold text-[#173963] group-hover:text-[#214d8d]">
+                {section.title}
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-[#5a7397]">{section.description}</p>
+            </div>
+            <p className="mt-auto rounded-md border border-[#dbe6f5] bg-[#f8fbff] px-3 py-2 text-xs leading-5 text-[#5a7397]">
+              {section.emptyState}
+            </p>
+          </Link>
+        ))}
+      </section>
+    </main>
+  );
+}
