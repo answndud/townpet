@@ -71,6 +71,7 @@
     "perf:baseline": "tsx scripts/measure-production-performance.ts",
     "perf:browser": "tsx scripts/measure-browser-performance.ts",
     "perf:assets": "tsx scripts/measure-route-assets.ts",
+    "perf:db-readiness": "tsx scripts/measure-db-readiness.ts",
     "ops:prewarm": "tsx scripts/prewarm-deployment.ts",
     "ops:perf:snapshot": "tsx scripts/collect-latency-snapshot.ts",
     "search:check:cases": "tsx scripts/check-search-cases.ts"

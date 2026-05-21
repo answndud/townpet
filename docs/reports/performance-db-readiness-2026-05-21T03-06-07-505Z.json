@@ -1,0 +1,115 @@
+{
+  "generatedAt": "2026-05-21T03:06:07.505Z",
+  "baseUrl": "https://townpet.vercel.app",
+  "databaseUrl": {
+    "configured": true,
+    "protocol": "postgresql",
+    "host": "localhost",
+    "database": "townpet",
+    "usesPoolingHost": false,
+    "poolingSignals": []
+  },
+  "headers": [
+    {
+      "label": "home",
+      "path": "/",
+      "status": 200,
+      "xVercelId": "icn1::8hjsv-1779332767615-6aecf25098d0",
+      "xVercelCache": "HIT",
+      "cacheControl": "public, max-age=0, must-revalidate",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
+    },
+    {
+      "label": "guest_feed_page",
+      "path": "/feed/guest",
+      "status": 200,
+      "xVercelId": "icn1::plnxm-1779332767615-ec86c98e2e7b",
+      "xVercelCache": "HIT",
+      "cacheControl": "public, max-age=0, must-revalidate",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
+    },
+    {
+      "label": "guest_feed_api",
+      "path": "/api/feed/guest?mode=ALL&sort=LATEST&page=1",
+      "status": 200,
+      "xVercelId": "icn1::sin1::5mpzf-1779332767612-c1e2fa1310e5",
+      "xVercelCache": "STALE",
+      "cacheControl": "public",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
+    },
+    {
+      "label": "health",
+      "path": "/api/health",
+      "status": 200,
+      "xVercelId": "icn1::sin1::5jncl-1779332767616-da98054bdf4c",
+      "xVercelCache": "MISS",
+      "cacheControl": "public, max-age=0, must-revalidate",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
+    }
+  ],
+  "querySurfaces": [
+    {
+      "id": "feed_latest_global",
+      "label": "feed latest GLOBAL first page",
+      "expectedIndexSignals": [
+        "Post_scope_status_createdAt_idx"
+      ],
+      "riskIfSlow": "GLOBAL 최신글 목록이 sequential scan 또는 sort로 떨어질 수 있다.",
+      "nextExplain": "EXPLAIN (ANALYZE, BUFFERS) SELECT id FROM \"Post\" WHERE \"scope\" = 'GLOBAL' AND \"status\" = 'ACTIVE' ORDER BY \"createdAt\" DESC LIMIT 21;",
+      "missingIndexSignals": []
+    },
+    {
+      "id": "feed_best_global",
+      "label": "feed best GLOBAL first page",
+      "expectedIndexSignals": [
+        "Post_scope_status_best_order_idx"
+      ],
+      "riskIfSlow": "베스트글 정렬이 like/comment/view/createdAt sort 비용으로 커질 수 있다.",
+      "nextExplain": "EXPLAIN (ANALYZE, BUFFERS) SELECT id FROM \"Post\" WHERE \"scope\" = 'GLOBAL' AND \"status\" = 'ACTIVE' ORDER BY \"likeCount\" DESC, \"commentCount\" DESC, \"viewCount\" DESC, \"createdAt\" DESC, \"id\" DESC LIMIT 21;",
+      "missingIndexSignals": []
+    },
+    {
+      "id": "feed_local_type",
+      "label": "local board/type feed",
+      "expectedIndexSignals": [
+        "@@index([neighborhoodId, type, status, createdAt(sort: Desc)])"
+      ],
+      "riskIfSlow": "지역+게시판 조합에서 neighborhood/type 필터 후 정렬 비용이 커질 수 있다.",
+      "nextExplain": "EXPLAIN (ANALYZE, BUFFERS) SELECT id FROM \"Post\" WHERE \"neighborhoodId\" = $1 AND \"type\" = $2 AND \"status\" = 'ACTIVE' ORDER BY \"createdAt\" DESC LIMIT 21;",
+      "missingIndexSignals": []
+    },
+    {
+      "id": "ranked_search",
+      "label": "ranked search title/content/structured text",
+      "expectedIndexSignals": [
+        "Post_title_trgm_idx",
+        "Post_content_trgm_idx",
+        "Post_structuredSearchText_trgm_idx",
+        "Post_structuredSearchText_tsv_idx"
+      ],
+      "riskIfSlow": "pg_trgm/GIN이 없거나 LIKE 패턴이 index를 타지 못하면 검색이 가장 먼저 병목이 된다.",
+      "nextExplain": "EXPLAIN (ANALYZE, BUFFERS) SELECT id FROM \"Post\" WHERE \"status\" = 'ACTIVE' AND (\"title\" ILIKE $1 OR \"content\" ILIKE $1 OR \"structuredSearchText\" ILIKE $1) LIMIT 80;",
+      "missingIndexSignals": []
+    },
+    {
+      "id": "comments_detail",
+      "label": "post detail comments",
+      "expectedIndexSignals": [
+        "@@index([postId, createdAt(sort: Desc)])"
+      ],
+      "riskIfSlow": "상세 댓글 페이지가 postId 필터 후 createdAt 정렬에서 느려질 수 있다.",
+      "nextExplain": "EXPLAIN (ANALYZE, BUFFERS) SELECT id FROM \"Comment\" WHERE \"postId\" = $1 ORDER BY \"createdAt\" DESC LIMIT 51;",
+      "missingIndexSignals": []
+    },
+    {
+      "id": "report_queue",
+      "label": "admin report queue",
+      "expectedIndexSignals": [
+        "Report_status_targetType_createdAt_idx"
+      ],
+      "riskIfSlow": "운영 큐 count/list가 신고 누적 후 관리자 화면 병목이 될 수 있다.",
+      "nextExplain": "EXPLAIN (ANALYZE, BUFFERS) SELECT id FROM \"Report\" WHERE \"status\" = 'PENDING' AND \"targetType\" IN ('POST', 'COMMENT') ORDER BY \"createdAt\" DESC, \"id\" DESC LIMIT 25;",
+      "missingIndexSignals": []
+    }
+  ]
+}

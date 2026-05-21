@@ -3915,3 +3915,45 @@
     - mobile `/feed/guest` script transfer `173KB`, CSS transfer `79KB`, fetch transfer `20KB`, FCP/LCP `40ms`
   - `next build` 중 로컬 DB 미기동 Prisma 경고는 있었지만 fallback 경로로 build는 통과했다.
   - 다음 작업은 DB region/index/query plan 점검이다.
+
+### 2026-05-21 | DB readiness 측정과 query/index coverage 문서화
+- 완료일: `2026-05-21`
+- 배경:
+  - Next.js/PostgreSQL을 유지하면서 속도를 올리려면, 무작정 DB를 바꾸기보다 runtime region, connection pooling, query/index coverage를 먼저 확인해야 했다.
+  - production DB credential 없이도 반복 가능한 정적/헤더 기반 점검 하네스가 필요했다.
+- 변경내용:
+  - `app/scripts/measure-db-readiness.ts`를 추가했다.
+    - 현재 프로세스의 `DATABASE_URL`을 credential 없이 host/database/pooling signal만 요약한다.
+    - production `/`, `/feed/guest`, `/api/feed/guest`, `/api/health` header를 수집해 `x-vercel-id`, `x-vercel-cache`, `cache-control`을 기록한다.
+    - Prisma schema와 migration SQL을 읽어 feed/search/comment/report query surface의 index signal coverage를 점검한다.
+    - live DB credential이 있을 때 바로 실행할 `EXPLAIN (ANALYZE, BUFFERS)` 후보를 surface별로 출력한다.
+  - `app/package.json`에 `perf:db-readiness`를 추가했다.
+  - helper 테스트로 URL credential 비노출, Vercel region hint parsing, index signal detection을 검증했다.
+  - `docs/reports/performance-db-readiness-2026-05-21T03-06-07-505Z.md`와 JSON raw evidence를 남겼다.
+- 코드문서:
+  - [app/scripts/measure-db-readiness.ts](../app/scripts/measure-db-readiness.ts)
+  - [app/scripts/measure-db-readiness.test.ts](../app/scripts/measure-db-readiness.test.ts)
+  - [app/package.json](../app/package.json)
+  - [docs/reports/performance-db-readiness-2026-05-21T03-06-07-505Z.md](./reports/performance-db-readiness-2026-05-21T03-06-07-505Z.md)
+  - [docs/reports/performance-db-readiness-2026-05-21T03-06-07-505Z.json](./reports/performance-db-readiness-2026-05-21T03-06-07-505Z.json)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `./node_modules/.bin/vitest run scripts/measure-db-readiness.test.ts`
+  - `./node_modules/.bin/tsc -p tsconfig.json --noEmit --pretty false`
+  - `./node_modules/.bin/eslint`
+  - `./node_modules/.bin/next build`
+  - `./node_modules/.bin/tsx scripts/measure-db-readiness.ts`
+- 결과:
+  - production header 기준 `/`와 `/feed/guest`는 `x-vercel-id`가 `icn1` edge signal을 보였고, `/api/feed/guest`, `/api/health`는 `icn1 -> sin1` 형태의 runtime path signal을 보였다.
+  - 현재 로컬 프로세스 `DATABASE_URL`은 `localhost/townpet`이라 production DB region/pooler 여부는 확인하지 못했다.
+  - 정적 coverage 기준 주요 surface는 모두 index signal이 있었다.
+    - feed latest: `Post_scope_status_createdAt_idx`
+    - feed best: `Post_scope_status_best_order_idx`
+    - local board/type: `neighborhoodId,type,status,createdAt`
+    - ranked search: title/content/structured search trigram/tsvector indexes
+    - comments: `postId,createdAt`
+    - reports: `Report_status_targetType_createdAt_idx`
+  - 느린 query 후보 top 5는 ranked search, best feed, feed 2페이지/count 조합, comment detail, report queue로 정리했다.
+  - migration은 즉시 추가하지 않고, production-like data에서 `EXPLAIN (ANALYZE, BUFFERS)` 확인 후 별도 작업으로 분리한다.
+  - 다음 작업은 성능 개선 전후 리포트와 블로그 작성이다.
