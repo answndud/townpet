@@ -22,7 +22,7 @@ const baseProps = {
   isFreeBoardType: true,
   postTypeOptions,
   reviewCategoryOptions,
-  neighborhoodOptions: [{ value: "neighborhood-1", label: "서울 망원동" }],
+  neighborhoodOptions: [{ value: "neighborhood-1", label: "서울 잠원동" }],
   communityOptions: [{ value: "community-1", label: "강아지" }],
   onTitleChange: vi.fn(),
 };
@@ -56,7 +56,7 @@ describe("post create basic fields", () => {
 
     expect(html).toContain("후기 유형");
     expect(html).toContain("동네");
-    expect(html).toContain("서울 망원동");
+    expect(html).toContain("서울 잠원동");
     expect(html).toContain("동물 태그");
   });
 

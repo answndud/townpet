@@ -2,14 +2,14 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { getTownLandingBySlug, TOWN_LANDING } from "@/lib/town-landing";
+import { getTownLandingBySlug, TOWN_LANDINGS } from "@/lib/town-landing";
 
 type TownPageProps = {
   params: Promise<{ townSlug?: string }>;
 };
 
 export function generateStaticParams() {
-  return [{ townSlug: TOWN_LANDING.slug }];
+  return TOWN_LANDINGS.map((town) => ({ townSlug: town.slug }));
 }
 
 export async function generateMetadata({ params }: TownPageProps): Promise<Metadata> {

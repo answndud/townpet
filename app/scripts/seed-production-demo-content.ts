@@ -130,7 +130,7 @@ const DEMO_COMMUNITY_SPECS = [
 type DemoCommunityKey = (typeof DEMO_COMMUNITY_SPECS)[number]["key"];
 
 const DEMO_NEIGHBORHOODS = [
-  { key: "mangwon", city: "서울특별시", district: "마포구", name: "망원동" },
+  { key: "jamwon", city: "서울특별시", district: "서초구", name: "잠원동" },
   { key: "seocho", city: "서울특별시", district: "서초구", name: "서초동" },
   { key: "bundang", city: "경기도", district: "성남시 분당구", name: "정자동" },
 ] as const;
@@ -201,17 +201,17 @@ const DEMO_POST_SPECS: DemoPostSpec[] = [
   },
   {
     author: "nabi",
-    title: "망원한강공원 벚꽃 산책 사진 한 장 남기고 가요",
+    title: "잠원한강공원 벚꽃 산책 사진 한 장 남기고 가요",
     content:
       "바람이 살짝 있었지만 사람도 강아지도 많지 않아서 걷기 좋았어요. 해 질 무렵 조도가 좋아서 사진도 잘 나왔습니다.",
     type: PostType.DAILY_SHARE,
     scope: PostScope.LOCAL,
     createdHoursAgo: 12,
     viewCount: 72,
-    neighborhoodKey: "mangwon",
+    neighborhoodKey: "jamwon",
     communityKey: "dogs",
     animalTags: ["강아지", "산책"],
-    imageSeeds: ["daily-share-mangwon"],
+    imageSeeds: ["daily-share-jamwon"],
   },
   {
     author: "coco",
@@ -275,7 +275,7 @@ const DEMO_POST_SPECS: DemoPostSpec[] = [
   },
   {
     author: "nabi",
-    title: "연남동 반려동물 동반 브런치 카페 후기 남겨요",
+    title: "반포동 반려동물 동반 브런치 카페 후기 남겨요",
     content:
       "소형견 동반 좌석이 따로 있었고, 물그릇 요청도 친절하게 응대해주셨어요. 주말 오픈 직후에 가면 조금 더 여유로웠습니다.",
     type: PostType.PLACE_REVIEW,
@@ -284,9 +284,9 @@ const DEMO_POST_SPECS: DemoPostSpec[] = [
     viewCount: 101,
     animalTags: ["강아지"],
     placeReview: {
-      placeName: "연남 브런치 하우스",
+      placeName: "반포 브런치 하우스",
       placeType: "카페",
-      address: "서울특별시 마포구 연남동",
+      address: "서울특별시 서초구 반포동",
       isPetAllowed: true,
       rating: 4,
     },
@@ -411,8 +411,8 @@ const DEMO_POST_SPECS: DemoPostSpec[] = [
     animalTags: ["고양이"],
     imageSeeds: ["adoption-maru"],
     adoptionListing: {
-      shelterName: "마포 냥이쉼터",
-      region: "서울특별시 마포구",
+      shelterName: "서초 냥이쉼터",
+      region: "서울특별시 서초구",
       animalType: "고양이",
       breed: "코리안숏헤어",
       ageLabel: "3살 추정",
@@ -477,8 +477,8 @@ const DEMO_POST_SPECS: DemoPostSpec[] = [
     viewCount: 93,
     animalTags: ["고양이", "봉사"],
     volunteerRecruitment: {
-      shelterName: "연남 포포 보호실",
-      region: "서울특별시 마포구",
+      shelterName: "반포 포포 보호실",
+      region: "서울특별시 서초구",
       volunteerDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       volunteerType: "사진 촬영",
       capacity: 5,

@@ -7,8 +7,8 @@ const prisma = new PrismaClient();
 
 const neighborhoodSeeds = [
   { name: "서초동", city: "서울", district: "서초구" },
-  { name: "연남동", city: "서울", district: "마포구" },
-  { name: "망원동", city: "서울", district: "마포구" },
+  { name: "반포동", city: "서울", district: "서초구" },
+  { name: "잠원동", city: "서울", district: "서초구" },
   { name: "수영동", city: "부산", district: "수영구" },
   { name: "광안동", city: "부산", district: "수영구" },
   { name: "중앙동", city: "대구", district: "중구" },
@@ -56,8 +56,8 @@ const seedUsers: SeedUser[] = [
     role: UserRole.MODERATOR,
     verified: true,
     withPassword: true,
-    primaryNeighborhood: neighborhoodKey("서울", "마포구", "연남동"),
-    secondaryNeighborhoods: [neighborhoodKey("서울", "마포구", "망원동")],
+    primaryNeighborhood: neighborhoodKey("서울", "서초구", "반포동"),
+    secondaryNeighborhoods: [neighborhoodKey("서울", "서초구", "잠원동")],
     imageSeed: "mod-trust",
   },
   {
@@ -85,7 +85,7 @@ const seedUsers: SeedUser[] = [
     verified: true,
     withPassword: true,
     primaryNeighborhood: neighborhoodKey("서울", "서초구", "서초동"),
-    secondaryNeighborhoods: [neighborhoodKey("서울", "마포구", "연남동")],
+    secondaryNeighborhoods: [neighborhoodKey("서울", "서초구", "반포동")],
     imageSeed: "power-reviewer",
   },
   {
@@ -103,7 +103,7 @@ const seedUsers: SeedUser[] = [
     role: UserRole.USER,
     verified: true,
     withPassword: true,
-    primaryNeighborhood: neighborhoodKey("서울", "마포구", "망원동"),
+    primaryNeighborhood: neighborhoodKey("서울", "서초구", "잠원동"),
     imageSeed: "place-hunter",
   },
   {
@@ -147,7 +147,7 @@ const seedUsers: SeedUser[] = [
     role: UserRole.USER,
     verified: true,
     withPassword: true,
-    primaryNeighborhood: neighborhoodKey("서울", "마포구", "연남동"),
+    primaryNeighborhood: neighborhoodKey("서울", "서초구", "반포동"),
     imageSeed: "newbie-week1",
   },
   {
@@ -165,7 +165,7 @@ const seedUsers: SeedUser[] = [
     role: UserRole.USER,
     verified: true,
     withPassword: true,
-    primaryNeighborhood: neighborhoodKey("서울", "마포구", "망원동"),
+    primaryNeighborhood: neighborhoodKey("서울", "서초구", "잠원동"),
     imageSeed: "cat-parent",
   },
   {
@@ -220,7 +220,7 @@ const seedUsers: SeedUser[] = [
     role: UserRole.USER,
     verified: true,
     withPassword: true,
-    primaryNeighborhood: neighborhoodKey("서울", "마포구", "연남동"),
+    primaryNeighborhood: neighborhoodKey("서울", "서초구", "반포동"),
     imageSeed: "care-helper",
   },
 ];

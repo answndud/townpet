@@ -17,7 +17,7 @@ describe("structured field normalization", () => {
   });
 
   it("normalizes free-text region and age labels", () => {
-    expect(normalizeStructuredRegion("서울 마포")).toBe("서울특별시 마포구");
+    expect(normalizeStructuredRegion("서울 서초")).toBe("서울특별시 서초구");
     expect(normalizeAdoptionAgeLabel("2 세   추정")).toBe("2살 추정");
   });
 
@@ -30,8 +30,8 @@ describe("structured field normalization", () => {
     expect(buildStructuredSearchVariants("코숏")).toEqual(
       expect.arrayContaining(["코숏", "코리안 숏헤어"]),
     );
-    expect(buildStructuredSearchVariants("서울 마포")).toEqual(
-      expect.arrayContaining(["서울 마포", "서울특별시 마포구"]),
+    expect(buildStructuredSearchVariants("서울 서초")).toEqual(
+      expect.arrayContaining(["서울 서초", "서울특별시 서초구"]),
     );
   });
 });

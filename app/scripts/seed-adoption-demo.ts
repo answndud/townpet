@@ -37,8 +37,8 @@ const adoptionPosts = [
       "낯선 공간에서는 차분하게 지켜보는 편이지만 익숙해지면 손을 먼저 내미는 아이입니다. 1묘 가정에 특히 잘 맞습니다.",
     imageUrl: "/uploads/1771498505175-b5b8aecc-1b8c-401e-baf2-f120ae4d2aba.png",
     listing: {
-      shelterName: "마포 냥이쉼터",
-      region: "서울 마포구",
+      shelterName: "서초 냥이쉼터",
+      region: "서울 서초구",
       animalType: "고양이",
       breed: "코리안숏헤어",
       ageLabel: "3살 추정",
@@ -73,8 +73,8 @@ const adoptionPosts = [
       "활발하지만 공격성은 거의 없고, 장난감 반응이 좋아 집 적응이 빠릅니다. 초보 집사도 돌보기 쉬운 편입니다.",
     imageUrl: "/uploads/1771502481440-aea1f0a2-1d77-45fc-bfe1-a6684a478c56.png",
     listing: {
-      shelterName: "연남 포포 보호실",
-      region: "서울 마포구",
+      shelterName: "반포 포포 보호실",
+      region: "서울 서초구",
       animalType: "고양이",
       breed: "코리안숏헤어",
       ageLabel: "5개월 추정",

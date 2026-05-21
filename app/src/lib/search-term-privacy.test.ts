@@ -17,14 +17,14 @@ describe("search term privacy", () => {
 
   it("canonicalizes structured search variants for stats", () => {
     expect(normalizeSearchTermForStats("건강검진")).toBe("건강 검진");
-    expect(buildSearchTermStatVariants("서울 마포구")).toContain("서울특별시 마포구");
+    expect(buildSearchTermStatVariants("서울 서초구")).toContain("서울특별시 서초구");
   });
 
   it("filters out direct contact patterns from search stats", () => {
     expect(detectSensitiveSearchSignals("test@example.com")).toContain("email");
     expect(detectSensitiveSearchSignals("010-1234-5678")).toContain("phone");
     expect(shouldExcludeSearchTermFromStats("https://open.kakao.com/o/test-room")).toBe(true);
-    expect(detectSensitiveSearchSignals("서울 마포구 월드컵로 123")).toContain("address");
+    expect(detectSensitiveSearchSignals("서울 서초구 월드컵로 123")).toContain("address");
     expect(detectSensitiveSearchSignals("Bearer abcdefghijklmnop")).toContain("token");
   });
 

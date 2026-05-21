@@ -568,7 +568,7 @@ describe("createPost new-user restriction", () => {
             careType: "WALK",
             startsAt: "2026-04-27T18:00",
             endsAt: "2026-04-27T19:00",
-            locationNote: "마포구청 근처",
+            locationNote: "서초구청 근처",
             petNote: "겁이 많은 소형견",
             requirements: "하네스를 꼭 확인해 주세요",
             rewardAmount: 12000,
@@ -586,14 +586,14 @@ describe("createPost new-user restriction", () => {
           careRequest: {
             create: expect.objectContaining({
               careType: "WALK",
-              locationNote: "마포구청 근처",
+              locationNote: "서초구청 근처",
               petNote: "겁이 많은 소형견",
               requirements: "하네스를 꼭 확인해 주세요",
               rewardAmount: 12000,
               isUrgent: true,
             }),
           },
-          structuredSearchText: expect.stringContaining("마포구청 근처"),
+          structuredSearchText: expect.stringContaining("서초구청 근처"),
         }),
         include: expect.objectContaining({
           careRequest: expect.any(Object),
@@ -843,7 +843,7 @@ describe("createPost new-user restriction", () => {
           scope: PostScope.GLOBAL,
           adoptionListing: {
             shelterName: "서울시 동물 보호 센터",
-            region: "서울 마포",
+            region: "서울 서초",
             animalType: "개",
             breed: "코기",
             ageLabel: "2 세 추정",
@@ -860,7 +860,7 @@ describe("createPost new-user restriction", () => {
           adoptionListing: {
             create: expect.objectContaining({
               shelterName: "서울시 동물보호센터",
-              region: "서울특별시 마포구",
+              region: "서울특별시 서초구",
               animalType: "강아지",
               breed: "웰시코기",
               ageLabel: "2살 추정",

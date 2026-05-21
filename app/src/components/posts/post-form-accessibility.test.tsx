@@ -123,7 +123,7 @@ describe("post form accessibility", () => {
           id: "neighborhood-1",
           name: "상암동",
           city: "서울",
-          district: "마포구",
+          district: "서초구",
         }]}
         isAuthenticated={false}
         guestPassword=""

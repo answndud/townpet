@@ -4065,6 +4065,34 @@
   - `/` 시작페이지 소스와 테스트에서는 특정 지역명이 제거됐다.
   - 기존 `/towns/mapo` route, sitemap, seed/demo/test data에는 아직 특정 지역 기록이 남아 있으며, 이는 별도 정리 범위로 분리한다.
 
+### 2026-05-21 | 미확정 지역 허브와 예시 데이터 정리
+- 완료일: `2026-05-21`
+- 배경:
+  - 시작페이지에서 특정 지역명은 제거했지만, 지역 허브 config가 여전히 단일 지역을 정적 route와 sitemap에 포함하고 있었다.
+  - seed/demo/test/placeholder 예시에도 이전 특정 지역명이 남아 있어, 이후 구현 중 같은 지역 고정값이 다시 public UI로 유입될 수 있었다.
+- 변경내용:
+  - `TOWN_LANDINGS`를 빈 배열로 바꿔 초기 지역 확정 전에는 `/towns/*` public landing이 정적 생성되지 않게 했다.
+  - `/towns/[townSlug]`, `/towns/[townSlug]/[sectionSlug]`의 `generateStaticParams`를 활성 town 목록 기반으로 바꿨다.
+  - sitemap에서 town landing path를 활성 town 목록 기준으로만 포함하게 유지하고, 고정 지역 우선순위 분기를 제거했다.
+  - 더 이상 사용하지 않는 `launch-region` config와 테스트를 제거했다.
+  - app 내부 seed/demo/test/placeholder 예시의 이전 특정 지역명 흔적을 제거했다.
+  - 전국 행정구역 원본 데이터와 완료 archive는 원본/기록 성격이라 유지했다.
+- 코드문서:
+  - [app/src/lib/town-landing.ts](../app/src/lib/town-landing.ts)
+  - [app/src/app/towns/[townSlug]/page.tsx](../app/src/app/towns/%5BtownSlug%5D/page.tsx)
+  - [app/src/app/towns/[townSlug]/[sectionSlug]/page.tsx](../app/src/app/towns/%5BtownSlug%5D/%5BsectionSlug%5D/page.tsx)
+  - [app/src/app/sitemap.ts](../app/src/app/sitemap.ts)
+  - [app/prisma/seed.ts](../app/prisma/seed.ts)
+  - [app/scripts/seed-board-posts.ts](../app/scripts/seed-board-posts.ts)
+  - [app/scripts/seed-users.ts](../app/scripts/seed-users.ts)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/lib/town-landing.test.ts src/app/towns/page.test.tsx src/app/sitemap.test.ts src/app/page.test.tsx src/lib/structured-field-normalization.test.ts src/lib/validations/post.test.ts src/server/services/post-create-policy.test.ts src/app/api/home/feed/route.test.ts src/components/posts/post-create-basic-fields.test.tsx src/components/posts/post-form-accessibility.test.tsx src/components/posts/post-create-submit.test.ts src/lib/search-term-privacy.test.ts src/lib/post-structured-search.test.ts src/lib/search-document.test.ts`
+  - `rg -n "마포|mapo|Mapo|연남|망원|mangwon" app docs/PLAN.md docs/PROGRESS.md --glob '!app/scripts/data/korean-neighborhoods.json'`
+- 결과:
+  - app 내부와 active 문서에서는 이전 특정 지역명 검색 결과가 0건이다.
+  - `/towns/*` public route는 초기 지역 확정 전까지 404/noindex로 남는다.
+
 ### 2026-05-21 | 초기 지역 선택 UX 명확화
 - 완료일: `2026-05-21`
 - 배경:

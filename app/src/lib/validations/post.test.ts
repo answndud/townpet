@@ -88,7 +88,7 @@ describe("post validations", () => {
     });
     const adoption = adoptionListingSchema.safeParse({
       shelterName: "서울시 동물 보호 센터",
-      region: "서울 마포",
+      region: "서울 서초",
       animalType: "개",
       breed: "코숏",
       ageLabel: "2 세 추정",
@@ -103,7 +103,7 @@ describe("post validations", () => {
     });
     expect(adoption.data).toMatchObject({
       shelterName: "서울시 동물보호센터",
-      region: "서울특별시 마포구",
+      region: "서울특별시 서초구",
       animalType: "강아지",
       breed: "코숏",
       ageLabel: "2살 추정",
@@ -166,7 +166,7 @@ describe("post validations", () => {
       careType: "WALK",
       startsAt: "2026-04-27T09:00",
       endsAt: "2026-04-27T10:00",
-      locationNote: "마포구청 근처",
+      locationNote: "서초구청 근처",
       rewardAmount: "12000",
       isUrgent: "true",
     });
@@ -189,15 +189,15 @@ describe("post validations", () => {
 
   it("canonicalizes volunteer structured text fields", () => {
     const result = volunteerRecruitmentSchema.safeParse({
-      shelterName: "마포 유기 동물 보호 센터",
-      region: "서울 마포",
+      shelterName: "서초 유기 동물 보호 센터",
+      region: "서울 서초",
       volunteerType: "사진촬영봉사",
     });
 
     expect(result.success).toBe(true);
     expect(result.data).toMatchObject({
-      shelterName: "마포 유기동물보호센터",
-      region: "서울특별시 마포구",
+      shelterName: "서초 유기동물보호센터",
+      region: "서울특별시 서초구",
       volunteerType: "사진 촬영",
     });
   });

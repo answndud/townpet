@@ -32,7 +32,7 @@ describe("post create submit helpers", () => {
       petTypeId: "pet-type-1",
       placeReview: {
         ...createInitialPostCreateFormState("").placeReview,
-        placeName: "연남동 펫카페",
+        placeName: "반포동 펫카페",
         isPetAllowed: "true",
       },
     };
@@ -48,7 +48,7 @@ describe("post create submit helpers", () => {
         type: PostType.PLACE_REVIEW,
         reviewCategory: REVIEW_CATEGORY.PLACE,
         placeReview: {
-          placeName: "연남동 펫카페",
+          placeName: "반포동 펫카페",
           isPetAllowed: "true",
         },
       },
