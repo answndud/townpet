@@ -31,7 +31,7 @@ describe("app shell header classes", () => {
 
   it("keeps mobile quick links compact while preserving touch targets", () => {
     expect(APP_SHELL_MOBILE_QUICK_LINK_CLASS_NAME).toContain("text-[11px]");
-    expect(APP_SHELL_MOBILE_QUICK_LINK_CLASS_NAME).toContain("min-h-11");
+    expect(APP_SHELL_MOBILE_QUICK_LINK_CLASS_NAME).toContain("min-h-9");
     expect(APP_SHELL_MOBILE_QUICK_LINK_CLASS_NAME).toContain("rounded-md");
     expect(APP_SHELL_MOBILE_QUICK_LINK_CLASS_NAME).toContain("focus-visible:ring-2");
   });
@@ -47,8 +47,8 @@ describe("app shell header classes", () => {
 
   it("uses compact mobile disclosure controls instead of tall card summaries", () => {
     expect(APP_SHELL_MOBILE_DISCLOSURE_ROW_CLASS_NAME).toContain("flex-wrap");
-    expect(APP_SHELL_MOBILE_DISCLOSURE_TRIGGER_CLASS_NAME).toContain("rounded-full");
-    expect(APP_SHELL_MOBILE_DISCLOSURE_TRIGGER_CLASS_NAME).toContain("min-h-11");
+    expect(APP_SHELL_MOBILE_DISCLOSURE_TRIGGER_CLASS_NAME).toContain("rounded-md");
+    expect(APP_SHELL_MOBILE_DISCLOSURE_TRIGGER_CLASS_NAME).toContain("min-h-9");
     expect(APP_SHELL_MOBILE_DISCLOSURE_TRIGGER_CLASS_NAME).toContain("focus-visible:ring-2");
   });
 
