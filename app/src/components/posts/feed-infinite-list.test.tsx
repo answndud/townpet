@@ -46,6 +46,7 @@ describe("FeedInfiniteList", () => {
         ...basePost,
         id: "post-2",
         title: "이미지가 있는 피드 글",
+        commentCount: 4,
         images: [{ id: "image-1", url: "/media/sample.jpg" }],
       },
     ];
@@ -62,10 +63,12 @@ describe("FeedInfiniteList", () => {
 
     expect(html.match(/data-testid="feed-post-item"/g)).toHaveLength(2);
     expect(html).toContain(
-      "h-[68px] grid-cols-[minmax(0,1fr)_48px]",
+      "h-[68px] grid-cols-[minmax(0,1fr)_48px_48px]",
     );
     expect(html).toContain("sm:h-[72px]");
     expect(html).toContain("invisible aspect-square rounded-lg");
+    expect(html).toContain("justify-end self-center");
     expect(html).toContain("사진 글");
+    expect(html).toContain("댓글 4");
   });
 });

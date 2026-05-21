@@ -210,7 +210,7 @@ const careStatusLabel: Record<string, string> = {
 };
 
 const FEED_POST_ITEM_CLASS_NAME =
-  "group grid h-[68px] grid-cols-[minmax(0,1fr)_48px] items-center gap-x-2 overflow-hidden px-3 py-1.5 transition hover:bg-[#fbfdff] sm:h-[72px] sm:grid-cols-[minmax(0,1fr)_52px] sm:px-4 md:h-[68px] md:grid-cols-[minmax(0,1fr)_52px] md:gap-x-3";
+  "group grid h-[68px] grid-cols-[minmax(0,1fr)_48px_48px] items-center gap-x-2 px-3 py-1.5 transition hover:bg-[#fbfdff] sm:h-[72px] sm:grid-cols-[minmax(0,1fr)_52px_52px] sm:px-4 md:h-[68px] md:grid-cols-[minmax(0,1fr)_56px_52px] md:gap-x-3";
 const FEED_POST_THUMBNAIL_PLACEHOLDER_CLASS_NAME =
   "invisible aspect-square rounded-lg";
 
@@ -752,24 +752,15 @@ export function FeedInfiniteList({
                         {[locationLabel, petTypeLabel].filter(Boolean).join(" · ")}
                       </span>
                     ) : null}
+                    <PostSignalIcons signals={nonThumbnailSignals} />
                   </div>
                 }
                 title={
-                  <span className="truncate leading-[1.25]">
+                  <span className="block min-w-0 truncate leading-[1.25]">
                     {post.title}
                   </span>
                 }
-                titleSuffix={
-                  <>
-                    <PostSignalIcons signals={nonThumbnailSignals} />
-                    {post.commentCount > 0 ? (
-                      <span className="inline-flex shrink-0 items-center rounded-full bg-[#edf5ff] px-1.5 py-0.5 text-[10px] font-semibold text-[#2f5da4]">
-                        댓글 {post.commentCount}
-                      </span>
-                    ) : null}
-                  </>
-                }
-                titleLinkClassName={`flex min-w-0 items-center gap-1 text-[13px] font-semibold leading-[1.25] transition sm:text-[13px] ${
+                titleLinkClassName={`block min-w-0 truncate text-[13px] font-semibold leading-[1.25] transition sm:text-[13px] ${
                   readPostIds.has(post.id)
                     ? "text-[#8c9db8] hover:text-[#7589a8]"
                     : "text-[#163764] hover:text-[#2f5da4]"
@@ -781,24 +772,37 @@ export function FeedInfiniteList({
                   });
                 }}
                 bottomContent={
-                  <>
+                  <div className="mt-0.5 flex min-w-0 items-center gap-x-1.5 overflow-hidden text-[11px] leading-4 text-[#5f789d]">
                     {marketSummary || careSummary || adoptionSummary || volunteerSummary ? (
-                      <p className="mt-0.5 truncate text-[11px] leading-4 text-[#5d779e]">
-                        {marketSummary ?? careSummary ?? adoptionSummary ?? volunteerSummary}
-                      </p>
+                      <>
+                        <span className="min-w-0 shrink truncate text-[#5d779e]">
+                          {marketSummary ?? careSummary ?? adoptionSummary ?? volunteerSummary}
+                        </span>
+                        <span className="shrink-0 text-[#bfd0e4]">·</span>
+                      </>
                     ) : null}
-                    <div className="mt-0.5 flex min-w-0 items-center gap-x-1.5 overflow-hidden text-[11px] leading-4 text-[#5f789d]">
-                      <span className="min-w-0 shrink truncate font-semibold text-[#1f3f71]">
-                        {authorNode}
-                      </span>
-                      <span className="text-[#bfd0e4]">·</span>
+                    <span className="min-w-0 shrink truncate font-semibold text-[#1f3f71]">
+                      {authorNode}
+                    </span>
+                    <span className="shrink-0 text-[#bfd0e4]">·</span>
+                    <span className="min-w-0 shrink-0">
                       <FeedStatsLabel
                         createdAt={post.createdAt}
                         viewCount={post.viewCount}
                         likeCount={post.likeCount}
                       />
-                    </div>
-                  </>
+                    </span>
+                  </div>
+                }
+                sideClassName="flex min-w-0 items-center justify-end self-center"
+                sideContent={
+                  post.commentCount > 0 ? (
+                    <span className="inline-flex h-[24px] max-w-full items-center rounded-full bg-[#edf5ff] px-2 text-[11px] font-semibold leading-none text-[#2f5da4]">
+                      댓글 {post.commentCount}
+                    </span>
+                  ) : (
+                    <span aria-hidden="true" className="invisible h-[24px] w-[44px]" />
+                  )
                 }
                 metaClassName="min-w-0 self-center"
                 meta={
