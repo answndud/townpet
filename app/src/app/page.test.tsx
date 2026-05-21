@@ -12,11 +12,11 @@ describe("HomePage", () => {
     expect(html).toContain("내 동네 정보 보기");
     expect(html).toContain("분실동물 등록하기");
     expect(html).toContain("병원/산책 정보 보기");
-    expect(html).toContain('href="/towns/mapo"');
-    expect(html).toContain("마포구 지도 보기");
+    expect(html).toContain("필요한 정보를 바로 찾아보세요");
+    expect(html).toContain("내 동네 설정하기");
+    expect(html).toContain("관심 주제별로 둘러보기");
     expect(html).toContain("지금 올라온 동네 반려 정보");
-    expect(html).toContain("지금은 마포구부터 만들고 있어요");
-    expect(html).toContain("다음 후보: 서울 성동구");
-    expect(html).toContain("마포구 반려생활 지도 만들기");
+    expect(html).not.toContain("마포구");
+    expect(html).not.toContain("/towns/mapo");
   });
 });

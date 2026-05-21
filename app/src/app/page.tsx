@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { HomeFeedPreview } from "@/components/home/home-feed-preview";
-import { LAUNCH_REGION } from "@/lib/launch-region";
-import { TOWN_LANDING } from "@/lib/town-landing";
 
 export const dynamic = "force-static";
 
@@ -28,14 +26,22 @@ const QUICK_ACTIONS = [
     href: "/posts/new?type=LOST_FOUND",
     description: "실종 위치와 특징을 구조화해 바로 공유합니다.",
   },
-  ...LAUNCH_REGION.priorityLinks.slice(1),
+  {
+    label: "동물병원",
+    href: "/feed/guest?type=HOSPITAL_REVIEW",
+    description: "방문 목적과 대기시간, 설명 충분성을 함께 봅니다.",
+  },
+  {
+    label: "산책코스",
+    href: "/feed/guest?type=WALK_ROUTE",
+    description: "동네 산책 경로와 동반 가능 장소를 모읍니다.",
+  },
 ];
 
 const TOPIC_LINKS = [
-  ...LAUNCH_REGION.priorityLinks.map((link) => ({
-    label: link.label,
-    href: link.href,
-  })),
+  { label: "분실/목격", href: "/feed/guest?type=LOST_FOUND" },
+  { label: "동물병원", href: "/feed/guest?type=HOSPITAL_REVIEW" },
+  { label: "산책코스", href: "/feed/guest?type=WALK_ROUTE" },
   { label: "질문/답변", href: "/feed/guest?type=QA_QUESTION" },
   { label: "중고거래", href: "/feed/guest?type=MARKET_LISTING" },
 ];
@@ -55,7 +61,7 @@ export default function HomePage() {
           </p>
           <div className="mt-7 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
             <Link
-              href={LAUNCH_REGION.selectionHref}
+              href="/onboarding"
               className="tp-btn-primary tp-btn-md inline-flex min-h-11 items-center justify-center px-5"
             >
               내 동네 정보 보기
@@ -67,16 +73,10 @@ export default function HomePage() {
               분실동물 등록하기
             </Link>
             <Link
-              href={LAUNCH_REGION.priorityLinks[1]?.href ?? "/feed/guest"}
+              href="/feed/guest?type=HOSPITAL_REVIEW"
               className="tp-btn-soft tp-btn-md inline-flex min-h-11 items-center justify-center px-5"
             >
               병원/산책 정보 보기
-            </Link>
-            <Link
-              href={TOWN_LANDING.href}
-              className="tp-btn-soft tp-btn-md inline-flex min-h-11 items-center justify-center px-5"
-            >
-              마포구 지도 보기
             </Link>
           </div>
         </div>
@@ -84,25 +84,27 @@ export default function HomePage() {
         <div className="grid content-start gap-3">
           <div className="tp-card p-4">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#4e6f9f]">
-              첫 시작 지역
+              빠른 시작
             </p>
             <h2 className="mt-2 text-xl font-semibold text-[#173963]">
-              {LAUNCH_REGION.headline}
+              필요한 정보를 바로 찾아보세요
             </h2>
-            <p className="mt-2 text-sm leading-6 text-[#5a7397]">{LAUNCH_REGION.description}</p>
+            <p className="mt-2 text-sm leading-6 text-[#5a7397]">
+              동네를 선택하면 주변 반려생활 정보를 더 쉽게 모아볼 수 있습니다.
+            </p>
             <div className="mt-4 flex flex-wrap gap-2">
               <span className="rounded-md border border-[#cbdcf5] bg-[#f7fbff] px-2.5 py-1 text-xs font-semibold text-[#315b9a]">
-                {LAUNCH_REGION.label}
+                동네 기반
               </span>
               <span className="rounded-md border border-[#dbe6f5] bg-[#fbfdff] px-2.5 py-1 text-xs text-[#5a7397]">
-                기준 동네 {LAUNCH_REGION.neighborhood}
+                병원 · 산책 · 분실 · 입양 · 거래
               </span>
             </div>
             <Link
-              href={LAUNCH_REGION.campaignHref}
+              href="/onboarding"
               className="tp-btn-soft mt-4 inline-flex min-h-10 items-center px-3 text-xs"
             >
-              {LAUNCH_REGION.district} 분실/목격 제보 보기
+              내 동네 설정하기
             </Link>
           </div>
           {QUICK_ACTIONS.map((action) => (
@@ -122,29 +124,11 @@ export default function HomePage() {
         <div className="tp-soft-card flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-sm font-semibold text-[#173963]">
-              {LAUNCH_REGION.district} 반려생활 지도 만들기
+              관심 주제별로 둘러보기
             </p>
             <p className="mt-1 text-sm leading-6 text-[#5a7397]">
-              {LAUNCH_REGION.district} 지역 정보를 병원, 산책, 분실/목격 제보 중심으로
-              모으고 있습니다.
+              분실/목격, 병원 후기, 산책코스처럼 반복해서 필요한 정보를 주제별로 확인하세요.
             </p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {LAUNCH_REGION.candidates.map((candidate) => (
-                <span
-                  key={candidate.slug}
-                  className="rounded-md border border-[#dbe6f5] bg-[#fbfdff] px-2.5 py-1 text-xs text-[#5a7397]"
-                  title={candidate.reason}
-                >
-                  다음 후보: {candidate.label}
-                </span>
-              ))}
-            </div>
-            <Link
-              href={TOWN_LANDING.href}
-              className="tp-btn-soft mt-4 inline-flex min-h-10 items-center px-3 text-xs"
-            >
-              지역 허브 보기
-            </Link>
           </div>
           <div className="flex flex-wrap gap-2">
             {TOPIC_LINKS.map((topic) => (
