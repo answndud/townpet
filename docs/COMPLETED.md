@@ -4611,3 +4611,37 @@
   - 운영자 조사 콘텐츠는 일반 사용자 글과 시각적으로 구분된다.
   - 출처와 최종 확인일이 상세 화면에 남아 정보 신뢰와 정정 흐름을 갖게 됐다.
   - 별도 장소/병원 모델 분리는 아직 하지 않았고, 콘텐츠 양이 늘어날 때 독립 모델로 확장한다.
+
+### 2026-05-21 | 우리 동네 반려생활 지도 만들기 캠페인 페이지
+- 완료일: `2026-05-21`
+- 배경:
+  - 초기 획득 루프는 가입보다 첫 제보와 첫 글 작성을 앞세워야 한다.
+  - 온라인 DM, 오프라인 QR, 블로그 CTA에 공통으로 쓸 수 있는 캠페인 대표 링크가 필요했다.
+- 변경내용:
+  - `/campaigns/neighborhood-map` public 캠페인 페이지를 추가했다.
+  - 캠페인 페이지에 산책코스 추천, 병원 방문 경험 공유, 동반가능 장소 제보, 분실동물 공유, 중고용품 글 작성 CTA를 배치했다.
+  - 병원 정보, 산책코스, 장소·분실·거래 제보, 창립 멤버 후보 현황을 기존 `Post` 데이터에서 집계한다.
+  - 홈 관심 주제 영역에 `지도 만들기` 링크를 추가했다.
+  - 캠페인 route를 sitemap에 포함했다.
+  - `/posts/new?type=...` 링크가 캠페인 주요 작성 타입을 초기 선택할 수 있게 했다.
+- 코드문서:
+  - [app/src/app/campaigns/neighborhood-map/page.tsx](../app/src/app/campaigns/neighborhood-map/page.tsx)
+  - [app/src/server/queries/campaign.queries.ts](../app/src/server/queries/campaign.queries.ts)
+  - [app/src/lib/campaign-pages.ts](../app/src/lib/campaign-pages.ts)
+  - [app/src/app/page.tsx](../app/src/app/page.tsx)
+  - [app/src/app/posts/new/page.tsx](../app/src/app/posts/new/page.tsx)
+  - [app/src/app/sitemap.ts](../app/src/app/sitemap.ts)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/app/campaigns/neighborhood-map/page.test.tsx src/server/queries/campaign.queries.test.ts src/app/page.test.tsx src/app/sitemap.test.ts`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `PUPPETEER_SKIP_DOWNLOAD=1 corepack pnpm@9.12.3 dlx impeccable detect app/src/app app/src/components --fast`
+  - `git diff --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+  - `corepack pnpm@9.12.3 -C app build`
+  - local browser smoke: `/campaigns/neighborhood-map` desktop/mobile screenshot
+- 결과:
+  - 캠페인 링크 하나로 QR, DM, 블로그 CTA를 통일할 수 있다.
+  - 첫 화면 CTA가 가입보다 `첫 제보 남기기`를 먼저 강조한다.
+  - 현황 숫자는 빌드 시점 고정이 아니라 요청 시점의 운영 데이터로 조회한다.
+  - Founding Member 실제 badge 모델과 자동/수동 부여는 P1-2로 남겼다.

@@ -15,6 +15,7 @@ describe("HomePage", () => {
     );
     expect(html).toContain("내 동네 허브 시작하기");
     expect(html).toContain("관심 주제");
+    expect(html).toContain('href="/campaigns/neighborhood-map"');
     expect(html).toContain('href="/feed/guest?type=LOST_FOUND"');
     expect(html).toContain("지금 올라온 동네 반려 정보");
     expect(html).not.toContain("첫 시작 지역");
