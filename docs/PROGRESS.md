@@ -21,10 +21,17 @@
 - `/` 시작페이지 CTA 아래의 `관심 주제` 영역과 Live board 목록/헤더 밀도를 줄였다. `전체 피드 보기` CTA는 hero에 1회만 유지하고, Live board에는 중복 CTA를 추가하지 않았다.
 - `P0-5. SEO guide route 추가`를 완료했다. `/guides/*` 5개 정적 route와 canonical metadata, sitemap 포함, 홈 empty state guide 연결을 추가했다.
 - `P0-6. robots/sitemap/canonical/Naver Search Advisor 체크리스트`를 완료했다. 운영 체크리스트 문서를 추가하고 robots/sitemap 회귀 테스트를 보강했다.
+- `P0-7. 분실동물 전용 작성 플로우`를 완료했다. `/lost/new` 전용 진입, `LOST_FOUND` 사전 선택, 비회원 제보 허용, 분실/목격 구조화 필드, `LostFoundAlert` 저장, 검색 구조화 토큰, 정책/검증 테스트를 추가했다.
 
 ## 다음 액션
 
-- 다음 작업은 `P0-7. 분실동물 전용 작성 플로우`다.
+- 다음 작업은 `P0-8. 분실동물 공유 이미지/카카오톡 공유 MVP`다.
+- P0-8 시작 전 확인할 파일:
+  - `app/src/components/posts/post-detail-client.tsx`
+  - `app/src/components/posts/post-detail-presenter.tsx`
+  - `app/src/server/queries/posts/post.queries.ts`
+  - `app/src/lib/page-metadata.ts`
+  - 카카오 공유 연동이 필요하면 최신 Kakao Developers 문서 확인 후 repo-local 구현만 적용한다.
 - 시작페이지 추가 개선 후보:
   - 홈에는 간소 헤더를 적용했지만, 다른 public route의 모바일 앱 셸 밀도는 아직 기존 제품 헤더 기준이다. 필요 시 `/guides/*` 같은 SEO landing에도 같은 header 정책을 확장한다.
   - 홈 preview API는 테스트 성격 글을 숨기지만, seed/demo 데이터가 production DB에 섞이는 운영 원인은 별도 정리가 필요하다.

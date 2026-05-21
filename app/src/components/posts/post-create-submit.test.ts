@@ -20,6 +20,7 @@ const baseParams = {
   showAnimalTagsInput: false,
   showMarketListing: false,
   showCareRequest: false,
+  showLostFound: false,
   isFreeBoardType: false,
 };
 
@@ -100,6 +101,56 @@ describe("post create submit helpers", () => {
     });
   });
 
+  it("requires core lost-found fields before building payload", () => {
+    const result = buildPostCreateSubmitPayload({
+      ...baseParams,
+      formState: {
+        ...createInitialPostCreateFormState(""),
+        type: PostType.LOST_FOUND,
+      },
+      showCommunitySelector: false,
+      showLostFound: true,
+    });
+
+    expect(result).toEqual({
+      ok: false,
+      message: "분실/목격 글은 동물 종류를 입력해 주세요.",
+    });
+  });
+
+  it("builds a structured lost-found payload", () => {
+    const result = buildPostCreateSubmitPayload({
+      ...baseParams,
+      formState: {
+        ...createInitialPostCreateFormState(""),
+        type: PostType.LOST_FOUND,
+        lostFound: {
+          alertType: "FOUND",
+          petType: "고양이",
+          breed: "치즈태비",
+          lastSeenAt: "2026-05-21T18:30",
+          lastSeenLocation: "서초구 반포동 산책로",
+        },
+      },
+      showCommunitySelector: false,
+      showLostFound: true,
+    });
+
+    expect(result).toMatchObject({
+      ok: true,
+      payload: {
+        type: PostType.LOST_FOUND,
+        lostFound: {
+          alertType: "FOUND",
+          petType: "고양이",
+          breed: "치즈태비",
+          lastSeenAt: "2026-05-21T18:30",
+          lastSeenLocation: "서초구 반포동 산책로",
+        },
+      },
+    });
+  });
+
   it("keeps the existing success reset behavior stable", () => {
     const state = {
       ...createInitialPostCreateFormState("neighborhood-1"),
@@ -140,6 +191,12 @@ describe("post create submit helpers", () => {
       },
       careRequest: {
         startsAt: "2026-05-12T10:00",
+      },
+      lostFound: {
+        alertType: "LOST",
+        petType: "",
+        lastSeenAt: "",
+        lastSeenLocation: "",
       },
     });
   });

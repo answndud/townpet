@@ -8,6 +8,7 @@ import {
   CareRequestStatus,
   CareType,
   ItemCondition,
+  LostFoundType,
   MarketType,
   MarketStatus,
   PostScope,
@@ -161,6 +162,14 @@ export const careRequestStatusUpdateSchema = z.object({
   status: z.nativeEnum(CareRequestStatus),
 });
 
+export const lostFoundSchema = z.object({
+  alertType: z.nativeEnum(LostFoundType),
+  petType: trimmedRequiredString({ max: 40 }),
+  breed: optionalTrimmedString({ max: 80 }),
+  lastSeenAt: z.coerce.date(),
+  lastSeenLocation: trimmedRequiredString({ max: 160 }),
+});
+
 export const careApplicationCreateSchema = z.object({
   message: optionalTrimmedString({ max: 500 }),
 });
@@ -212,6 +221,7 @@ export const postCreateSchema = z.object({
   guestPassword: z.string().min(4).max(32).optional(),
   marketListing: marketListingSchema.optional(),
   careRequest: careRequestSchema.optional(),
+  lostFound: lostFoundSchema.optional(),
 })
   .superRefine((value, ctx) => {
     const isReviewType =
@@ -270,6 +280,14 @@ export const postCreateSchema = z.object({
           code: z.ZodIssueCode.custom,
           path: ["marketListing"],
           message: "거래 글은 거래 정보를 입력해 주세요.",
+        });
+      }
+
+      if (value.type === PostType.LOST_FOUND && !value.lostFound) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["lostFound"],
+          message: "분실/목격 글은 제보 정보를 입력해 주세요.",
         });
       }
 
@@ -409,6 +427,7 @@ export type VolunteerRecruitmentInput = z.infer<typeof volunteerRecruitmentSchem
 export type MarketListingInput = z.infer<typeof marketListingSchema>;
 export type MarketListingStatusUpdateInput = z.infer<typeof marketListingStatusUpdateSchema>;
 export type CareRequestInput = z.infer<typeof careRequestSchema>;
+export type LostFoundInput = z.infer<typeof lostFoundSchema>;
 export type CareRequestStatusUpdateInput = z.infer<typeof careRequestStatusUpdateSchema>;
 export type CareApplicationCreateInput = z.infer<typeof careApplicationCreateSchema>;
 export type CareApplicationDecisionInput = z.infer<typeof careApplicationDecisionSchema>;

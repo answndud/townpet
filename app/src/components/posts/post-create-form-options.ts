@@ -60,3 +60,8 @@ export const careTypeOptions = [
   { value: "EMERGENCY_CHECK", label: "긴급 체크" },
   { value: "ERRAND", label: "심부름" },
 ] as const;
+
+export const lostFoundAlertTypeOptions = [
+  { value: "LOST", label: "실종" },
+  { value: "FOUND", label: "목격/보호" },
+] as const;

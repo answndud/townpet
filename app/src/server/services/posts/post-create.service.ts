@@ -33,11 +33,13 @@ import {
   type AdoptionListingInput,
   type CareRequestInput,
   type HospitalReviewInput,
+  type LostFoundInput,
   type MarketListingInput,
   type VolunteerRecruitmentInput,
   adoptionListingSchema,
   careRequestSchema,
   hospitalReviewSchema,
+  lostFoundSchema,
   marketListingSchema,
   postCreateSchema,
   volunteerRecruitmentSchema,
@@ -94,6 +96,7 @@ const VOLUNTEER_RECRUITMENT_TEXT_FIELDS = [
 ] as const;
 const MARKET_LISTING_TEXT_FIELDS = ["rentalPeriod"] as const;
 const CARE_REQUEST_TEXT_FIELDS = ["locationNote", "petNote", "requirements"] as const;
+const LOST_FOUND_TEXT_FIELDS = ["petType", "breed", "lastSeenLocation"] as const;
 
 const normalizeAnimalTags = (animalTags: string[] | undefined) =>
   Array.from(
@@ -207,6 +210,7 @@ export async function createPost({ authorId, input, guestIdentity }: CreatePostP
     guestPassword,
     marketListing,
     careRequest,
+    lostFound,
     ...postData
   } = parsed.data;
   const normalizedImageUrls = normalizeImageUrls(imageUrls);
@@ -226,6 +230,7 @@ export async function createPost({ authorId, input, guestIdentity }: CreatePostP
   let volunteerRecruitmentInput: VolunteerRecruitmentInput | null = null;
   let marketListingInput: MarketListingInput | null = null;
   let careRequestInput: CareRequestInput | null = null;
+  let lostFoundInput: LostFoundInput | null = null;
   if (postData.type === PostType.HOSPITAL_REVIEW) {
     const reviewInput = hospitalReviewSchema.safeParse(rawInput.hospitalReview ?? {});
     if (!reviewInput.success) {
@@ -268,6 +273,14 @@ export async function createPost({ authorId, input, guestIdentity }: CreatePostP
 
     careRequestInput = requestInput.data;
   }
+  if (postData.type === PostType.LOST_FOUND) {
+    const alertInput = lostFoundSchema.safeParse(rawInput.lostFound ?? lostFound);
+    if (!alertInput.success) {
+      throw new ServiceError("분실/목격 입력값이 올바르지 않습니다.", "INVALID_LOST_FOUND", 400);
+    }
+
+    lostFoundInput = alertInput.data;
+  }
   if (hospitalReviewInput) {
     hospitalReviewInput = normalizeHospitalReviewFields(hospitalReviewInput);
   }
@@ -301,6 +314,9 @@ export async function createPost({ authorId, input, guestIdentity }: CreatePostP
       careRequestInput?.locationNote,
       careRequestInput?.petNote,
       careRequestInput?.requirements,
+      lostFoundInput?.petType,
+      lostFoundInput?.breed,
+      lostFoundInput?.lastSeenLocation,
     ]),
     forbiddenKeywords,
   );
@@ -427,6 +443,15 @@ export async function createPost({ authorId, input, guestIdentity }: CreatePostP
         blockWindowHours: newUserSafetyPolicy.contactBlockWindowHours,
       });
     }
+    if (lostFoundInput) {
+      lostFoundInput = moderateStructuredTextFields({
+        data: lostFoundInput,
+        fields: LOST_FOUND_TEXT_FIELDS,
+        role: author.role,
+        accountCreatedAt: author.createdAt,
+        blockWindowHours: newUserSafetyPolicy.contactBlockWindowHours,
+      });
+    }
     resolvedAuthorId = author.id;
     resolvedAuthorAccountCreatedAt = author.createdAt;
   } else {
@@ -491,6 +516,9 @@ export async function createPost({ authorId, input, guestIdentity }: CreatePostP
       careRequestInput?.locationNote,
       careRequestInput?.petNote,
       careRequestInput?.requirements,
+      lostFoundInput?.petType,
+      lostFoundInput?.breed,
+      lostFoundInput?.lastSeenLocation,
     ]);
 
     if (!guestPostPolicy.allowLinks && GUEST_LINK_PATTERN.test(guestPolicyText)) {
@@ -609,6 +637,7 @@ export async function createPost({ authorId, input, guestIdentity }: CreatePostP
     volunteerRecruitmentInput,
     marketListingInput,
     careRequestInput,
+    lostFoundInput,
   });
   await finalizeUploadUrlChanges({ attachedUrls: normalizedImageUrls });
   if (

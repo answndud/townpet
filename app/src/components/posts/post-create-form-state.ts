@@ -72,6 +72,13 @@ export type PostCreateFormState = {
     rewardAmount: string;
     isUrgent: string;
   };
+  lostFound: {
+    alertType: string;
+    petType: string;
+    breed: string;
+    lastSeenAt: string;
+    lastSeenLocation: string;
+  };
   imageUrls: string[];
   guestDisplayName: string;
   guestPassword: string;
@@ -152,6 +159,13 @@ export function createInitialPostCreateFormState(
       rewardAmount: "",
       isUrgent: "false",
     },
+    lostFound: {
+      alertType: "LOST",
+      petType: "",
+      breed: "",
+      lastSeenAt: "",
+      lastSeenLocation: "",
+    },
     imageUrls: [],
     guestDisplayName: "",
     guestPassword: "",
@@ -182,6 +196,7 @@ export function isDraftFormState(value: unknown): value is PostCreateFormState {
     !!candidate.adoptionListing &&
     !!candidate.volunteerRecruitment &&
     !!candidate.marketListing &&
-    !!candidate.careRequest
+    !!candidate.careRequest &&
+    !!candidate.lostFound
   );
 }

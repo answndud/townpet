@@ -5,6 +5,7 @@ import type { Dispatch, ReactNode, SetStateAction } from "react";
 import type { PostCreateFormState } from "@/components/posts/post-create-form-state";
 import {
   careTypeOptions,
+  lostFoundAlertTypeOptions,
   marketConditionOptions,
   marketListingTypeOptions,
 } from "@/components/posts/post-create-form-options";
@@ -694,6 +695,117 @@ export function CareRequestFields({
           }
         />
         긴급 요청
+      </label>
+    </StructuredFieldSection>
+  );
+}
+
+export function LostFoundFields({
+  formState,
+  setFormState,
+}: StructuredFieldsProps) {
+  return (
+    <StructuredFieldSection title="분실/목격 핵심 정보">
+      <label className="tp-form-label">
+        제보 유형
+        <select
+          className="tp-input-soft px-3 py-2 text-sm"
+          value={formState.lostFound.alertType}
+          onChange={(event) =>
+            setFormState((prev) => ({
+              ...prev,
+              lostFound: {
+                ...prev.lostFound,
+                alertType: event.target.value,
+              },
+            }))
+          }
+          required
+        >
+          {lostFoundAlertTypeOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <label className="tp-form-label">
+        동물 종류
+        <input
+          className="tp-input-soft px-3 py-2 text-sm"
+          value={formState.lostFound.petType}
+          onChange={(event) =>
+            setFormState((prev) => ({
+              ...prev,
+              lostFound: {
+                ...prev.lostFound,
+                petType: event.target.value,
+              },
+            }))
+          }
+          placeholder="예: 강아지, 고양이"
+          required
+        />
+      </label>
+
+      <label className="tp-form-label">
+        품종/색상/특징
+        <input
+          className="tp-input-soft px-3 py-2 text-sm"
+          value={formState.lostFound.breed}
+          onChange={(event) =>
+            setFormState((prev) => ({
+              ...prev,
+              lostFound: {
+                ...prev.lostFound,
+                breed: event.target.value,
+              },
+            }))
+          }
+          placeholder="예: 갈색 푸들, 빨간 목줄"
+        />
+      </label>
+
+      <label className="tp-form-label">
+        마지막 확인 시간
+        <input
+          type="datetime-local"
+          className="tp-input-soft px-3 py-2 text-sm"
+          value={formState.lostFound.lastSeenAt}
+          onChange={(event) =>
+            setFormState((prev) => ({
+              ...prev,
+              lostFound: {
+                ...prev.lostFound,
+                lastSeenAt: event.target.value,
+              },
+            }))
+          }
+          required
+        />
+      </label>
+
+      <label className="tp-form-label md:col-span-2">
+        마지막 확인 위치
+        <input
+          className="tp-input-soft px-3 py-2 text-sm"
+          value={formState.lostFound.lastSeenLocation}
+          onChange={(event) =>
+            setFormState((prev) => ({
+              ...prev,
+              lostFound: {
+                ...prev.lostFound,
+                lastSeenLocation: event.target.value,
+              },
+            }))
+          }
+          placeholder="예: 서울 서초구 반포동 산책로 입구"
+          required
+        />
+        <span className="tp-form-note">
+          집 주소 전체나 개인 연락처는 본문에 직접 공개하지 말고, 확인 가능한 위치와 시간 중심으로 적어 주세요.
+        </span>
       </label>
     </StructuredFieldSection>
   );

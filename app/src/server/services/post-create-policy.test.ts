@@ -651,6 +651,13 @@ describe("createPost new-user restriction", () => {
           scope: PostScope.GLOBAL,
           animalTags: ["강아지"],
           imageUrls: [],
+          lostFound: {
+            alertType: "LOST",
+            petType: "강아지",
+            breed: "갈색 푸들",
+            lastSeenAt: new Date("2026-05-21T09:00:00.000Z"),
+            lastSeenLocation: "서초구 반포동",
+          },
         },
       }),
     ).resolves.toBeTruthy();
@@ -709,6 +716,49 @@ describe("createPost new-user restriction", () => {
     expect(mockPrisma.post.create).not.toHaveBeenCalled();
   });
 
+  it("allows guest users to write lost-found with structured fields under guest policy", async () => {
+    await expect(
+      createPost({
+        input: {
+          title: "목격 제보",
+          content: "본문에는 외부 연락처를 쓰지 않습니다",
+          type: PostType.LOST_FOUND,
+          scope: PostScope.GLOBAL,
+          guestDisplayName: "익명제보자",
+          guestPassword: "1234",
+          lostFound: {
+            alertType: "FOUND",
+            petType: "고양이",
+            breed: "치즈태비",
+            lastSeenAt: new Date("2026-05-21T18:30:00.000Z"),
+            lastSeenLocation: "서초구 반포동 산책로",
+          },
+        },
+        guestIdentity: {
+          ip: "127.0.0.1",
+          fingerprint: "guest-lost-found",
+        },
+      }),
+    ).resolves.toBeTruthy();
+
+    expect(mockPrisma.guestAuthor.create).toHaveBeenCalledTimes(1);
+    expect(mockPrisma.post.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          boardScope: "COMMON",
+          commonBoardType: "LOST_FOUND",
+          lostFoundAlert: {
+            create: expect.objectContaining({
+              alertType: "FOUND",
+              petType: "고양이",
+              lastSeenLocation: "서초구 반포동 산책로",
+            }),
+          },
+        }),
+      }),
+    );
+  });
+
   it("maps common board fields by post type", async () => {
     mockPrisma.user.findUnique.mockResolvedValue({
       id: "user-1",
@@ -754,9 +804,62 @@ describe("createPost new-user restriction", () => {
           content: "내용",
           type: PostType.LOST_FOUND,
           scope: PostScope.GLOBAL,
+          lostFound: {
+            alertType: "LOST",
+            petType: "강아지",
+            breed: "갈색 푸들",
+            lastSeenAt: new Date("2026-05-21T09:00:00.000Z"),
+            lastSeenLocation: "서초구 반포동",
+          },
         },
       }),
     ).resolves.toBeTruthy();
+  });
+
+  it("stores structured lost-found alert fields", async () => {
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: "user-1",
+      role: UserRole.USER,
+      createdAt: new Date(Date.now() - 30 * 60 * 60 * 1000),
+    });
+
+    await expect(
+      createPost({
+        authorId: "user-1",
+        input: {
+          title: "목격 제보",
+          content: "잠깐 봤습니다",
+          type: PostType.LOST_FOUND,
+          scope: PostScope.GLOBAL,
+          lostFound: {
+            alertType: "FOUND",
+            petType: "고양이",
+            breed: "치즈태비",
+            lastSeenAt: new Date("2026-05-21T18:30:00.000Z"),
+            lastSeenLocation: "서초구 반포동 산책로",
+          },
+        },
+      }),
+    ).resolves.toBeTruthy();
+
+    expect(mockPrisma.post.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          boardScope: "COMMON",
+          commonBoardType: "LOST_FOUND",
+          petTypeId: null,
+          structuredSearchText: expect.stringContaining("서초구 반포동 산책로"),
+          lostFoundAlert: {
+            create: expect.objectContaining({
+              alertType: "FOUND",
+              petType: "고양이",
+              breed: "치즈태비",
+              lastSeenLocation: "서초구 반포동 산책로",
+            }),
+          },
+        }),
+      }),
+    );
   });
 
   it("allows market-listing common board without animal tags", async () => {

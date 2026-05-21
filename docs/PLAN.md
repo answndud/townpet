@@ -190,43 +190,6 @@
 
 ## P0. 분실동물 웨지 강화
 
-### P0-7. 분실동물 전용 작성 플로우
-
-- 현재 상태:
-  - Prisma에는 `LostFoundAlert` 모델이 있다.
-  - 게시글 type에는 `LOST_FOUND`가 있다.
-  - 하지만 획득용 “분실동물 등록 도구”로는 아직 약하다.
-- 구현 방향:
-  - `/lost/new` 또는 `/posts/new?type=LOST_FOUND` 전용 진입을 명확히 만든다.
-  - 필수 구조화 입력:
-    - 분실/목격 구분
-    - 동물 종류
-    - 이름
-    - 사진
-    - 품종/색상/특징
-    - 실종 또는 목격 위치
-    - 시간
-    - 연락 방식
-  - 선택 입력:
-    - 보상 여부 표시 금지 또는 주의 문구
-    - 보호자 확인 질문
-    - 공개 연락 방식 제한
-  - 게스트도 작성 가능하되 악용 정책을 강하게 적용한다.
-- 관련 파일:
-  - `app/prisma/schema.prisma`
-  - `app/src/lib/validations/posts/post.ts`
-  - `app/src/components/posts/post-create-structured-fields.tsx`
-  - `app/src/server/services/posts/post.service.ts`
-  - `app/src/server/services/moderation/guest-safety.service.ts`
-- 완료 기준:
-  - 분실동물 등록은 일반 글쓰기보다 짧고 명확하다.
-  - 필수 정보가 없으면 공유용 글이 생성되지 않는다.
-  - 연락처/개인정보 노출 정책이 적용된다.
-- 검증:
-  - validation failure-path test
-  - guest/member create service test
-  - mobile form accessibility test
-
 ### P0-8. 분실동물 공유 이미지/카카오톡 공유 MVP
 
 - 현재 문제:
