@@ -149,14 +149,11 @@ export function HomeFeedPreview() {
 
   return (
     <section className="mx-auto w-full max-w-[1180px] px-4 pb-14 sm:px-6 lg:px-10">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div>
         <div>
           <p className="tp-eyebrow">Live board</p>
           <h2 className="mt-2 text-2xl font-semibold text-[#173963]">지금 올라온 동네 반려 정보</h2>
         </div>
-        <Link href="/feed/guest" className="tp-btn-soft tp-btn-md inline-flex justify-center">
-          전체 피드 보기
-        </Link>
       </div>
 
       {error ? (
