@@ -6,6 +6,9 @@ import { getNeighborhoodMapCampaignStats } from "@/server/queries/campaign.queri
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
+    user: {
+      count: vi.fn(),
+    },
     post: {
       count: vi.fn(),
       findMany: vi.fn(),
@@ -14,6 +17,9 @@ vi.mock("@/lib/prisma", () => ({
 }));
 
 const mockPrisma = vi.mocked(prisma) as unknown as {
+  user: {
+    count: ReturnType<typeof vi.fn>;
+  };
   post: {
     count: ReturnType<typeof vi.fn>;
     findMany: ReturnType<typeof vi.fn>;
@@ -22,6 +28,7 @@ const mockPrisma = vi.mocked(prisma) as unknown as {
 
 describe("campaign queries", () => {
   beforeEach(() => {
+    mockPrisma.user.count.mockReset();
     mockPrisma.post.count.mockReset();
     mockPrisma.post.findMany.mockReset();
   });
@@ -35,12 +42,13 @@ describe("campaign queries", () => {
       { authorId: "user-1" },
       { authorId: "user-2" },
     ]);
+    mockPrisma.user.count.mockResolvedValueOnce(6);
 
     await expect(getNeighborhoodMapCampaignStats()).resolves.toEqual({
       hospitalCount: 3,
       walkRouteCount: 4,
       reportCount: 5,
-      contributorCount: 2,
+      contributorCount: 6,
     });
     expect(mockPrisma.post.count).toHaveBeenNthCalledWith(1, {
       where: {
@@ -54,6 +62,11 @@ describe("campaign queries", () => {
         select: { authorId: true },
       }),
     );
+    expect(mockPrisma.user.count).toHaveBeenCalledWith({
+      where: {
+        isFoundingMember: true,
+      },
+    });
   });
 
   it("returns zero status when the database is unavailable", async () => {

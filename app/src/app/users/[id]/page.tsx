@@ -8,6 +8,7 @@ import { RouteRefreshOnReturn } from "@/components/ui/route-refresh-on-return";
 import { CompactPagination } from "@/components/ui/compact-pagination";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PublicProfileSummaryStats } from "@/components/user/public-profile-summary-stats";
+import { FoundingMemberBadge } from "@/components/user/founding-member-badge";
 import { UserRelationControls } from "@/components/user/user-relation-controls";
 import { auth } from "@/lib/auth";
 import { getCspNonce } from "@/lib/csp-nonce";
@@ -258,11 +259,17 @@ export default async function PublicUserProfilePage({
       <main className="mx-auto flex w-full max-w-[1320px] flex-col gap-5 px-4 py-6 sm:px-6 lg:px-10">
         <header className="tp-hero p-5 sm:p-6">
           <p className="text-[11px] uppercase tracking-[0.24em] text-[#3f5f90]">공개 프로필</p>
-          <h1 className="mt-2 text-2xl font-bold tracking-tight text-[#10284a] sm:text-3xl">
-            {displayName}
-          </h1>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <h1 className="text-2xl font-bold tracking-tight text-[#10284a] sm:text-3xl">
+              {displayName}
+            </h1>
+            {profile.isFoundingMember ? <FoundingMemberBadge /> : null}
+          </div>
           <p className="mt-2 text-sm text-[#4f678d]">
             가입일 {profile.createdAt.toLocaleDateString("ko-KR")}
+            {profile.foundingMemberSince
+              ? ` · 창립 멤버 ${profile.foundingMemberSince.toLocaleDateString("ko-KR")}`
+              : ""}
           </p>
           <p className="mt-3 text-sm text-[#355988]">
             {profile.bio?.trim() ? profile.bio : "등록된 소개가 없습니다."}

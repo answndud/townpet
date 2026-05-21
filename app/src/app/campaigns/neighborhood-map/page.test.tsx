@@ -21,8 +21,8 @@ describe("NeighborhoodMapCampaignPage", () => {
     expect(html).toContain('href="/posts/new?type=WALK_ROUTE"');
     expect(html).toContain('href="/posts/new?type=HOSPITAL_REVIEW"');
     expect(html).toContain('href="/lost/new"');
-    expect(html).toContain("Founding Member 배지 후보 등록");
-    expect(html).toContain("창립 멤버 후보");
+    expect(html).toContain("운영자 검수 후 Founding Member 배지 부여");
+    expect(html).toContain("창립 멤버");
     expect(html).toContain(">12<");
     expect(html).toContain("/campaigns/neighborhood-map");
   });

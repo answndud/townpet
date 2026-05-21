@@ -21,6 +21,7 @@ type RawFeedPost = {
     id: string;
     nickname: string | null;
     image?: string | null;
+    isFoundingMember?: boolean | null;
   };
   guestAuthorId?: string | null;
   guestDisplayName?: string | null;
@@ -86,6 +87,7 @@ export function buildInitialFeedItems(items: RawFeedPost[]): FeedPostItem[] {
         id: post.author.id,
         nickname: post.author.nickname,
         image: post.author.image,
+        isFoundingMember: post.author.isFoundingMember ?? false,
       },
       guestAuthorId: post.guestAuthorId ?? null,
       guestDisplayName: post.guestDisplayName ?? null,

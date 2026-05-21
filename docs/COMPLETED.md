@@ -4645,3 +4645,46 @@
   - 첫 화면 CTA가 가입보다 `첫 제보 남기기`를 먼저 강조한다.
   - 현황 숫자는 빌드 시점 고정이 아니라 요청 시점의 운영 데이터로 조회한다.
   - Founding Member 실제 badge 모델과 자동/수동 부여는 P1-2로 남겼다.
+
+### 2026-05-21 | Founding Member 배지
+- 완료일: `2026-05-21`
+- 배경:
+  - 캠페인 참여자를 단순 글 작성자가 아니라 초기 신뢰 기여자로 인정할 표시가 필요했다.
+  - 자동 조건 부여는 운영 기준이 더 필요하므로, 첫 단계는 운영자 검수 후 수동 부여로 제한했다.
+- 변경내용:
+  - `User`에 `isFoundingMember`, `foundingMemberSince` 필드를 추가했다.
+  - `FoundingMemberBadge` 공용 컴포넌트를 추가하고 캠페인, 피드 글 row, 공개 프로필에 노출했다.
+  - 피드 목록 author select와 guest feed serializer에 창립 멤버 여부를 포함했다.
+  - 공개 프로필 query에 창립 멤버 여부와 부여일을 포함해 프로필 헤더에 표시한다.
+  - 캠페인 현황의 `창립 멤버` 숫자는 실제 배지 부여 사용자 수를 우선 집계하고, 없으면 기존 캠페인 기여자 수로 fallback한다.
+  - `pnpm ops:founding-member:grant -- --email user@example.com` 스크립트를 추가해 운영자가 repo-local 명령으로 배지를 부여/회수할 수 있게 했다.
+  - 비로컬 DB에서 수동 부여 스크립트를 실행할 때는 `FOUNDING_MEMBER_GRANT_CONFIRM=GRANT_FOUNDING_MEMBER` 확인 값을 요구한다.
+- 코드문서:
+  - [app/prisma/schema.prisma](../app/prisma/schema.prisma)
+  - [app/prisma/migrations/20260521215000_add_user_founding_member_badge/migration.sql](../app/prisma/migrations/20260521215000_add_user_founding_member_badge/migration.sql)
+  - [app/src/components/user/founding-member-badge.tsx](../app/src/components/user/founding-member-badge.tsx)
+  - [app/src/components/posts/feed-infinite-list.tsx](../app/src/components/posts/feed-infinite-list.tsx)
+  - [app/src/app/users/[id]/page.tsx](../app/src/app/users/%5Bid%5D/page.tsx)
+  - [app/src/app/campaigns/neighborhood-map/page.tsx](../app/src/app/campaigns/neighborhood-map/page.tsx)
+  - [app/src/server/queries/campaign.queries.ts](../app/src/server/queries/campaign.queries.ts)
+  - [app/src/server/queries/user.queries.ts](../app/src/server/queries/user.queries.ts)
+  - [app/scripts/grant-founding-member.ts](../app/scripts/grant-founding-member.ts)
+  - [app/scripts/grant-founding-member.test.ts](../app/scripts/grant-founding-member.test.ts)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app exec prisma format`
+  - `corepack pnpm@9.12.3 -C app exec prisma generate`
+  - `corepack pnpm@9.12.3 -C app exec prisma migrate deploy`
+  - `corepack pnpm@9.12.3 -C app test -- src/server/queries/campaign.queries.test.ts src/app/campaigns/neighborhood-map/page.test.tsx src/components/posts/feed-infinite-list.test.tsx`
+  - `corepack pnpm@9.12.3 -C app test -- scripts/grant-founding-member.test.ts`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `PUPPETEER_SKIP_DOWNLOAD=1 corepack pnpm@9.12.3 dlx impeccable detect app/src/app app/src/components --fast`
+  - `git diff --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+  - local browser smoke: `/campaigns/neighborhood-map` desktop screenshot, `/feed/guest` mobile screenshot
+    - `/tmp/townpet-founding-campaign-desktop.png`
+    - `/tmp/townpet-founding-feed-mobile.png`
+- 결과:
+  - 초기 창립 멤버 30명을 수동 모집할 수 있는 제품 표면과 운영 명령이 생겼다.
+  - 배지는 포인트/랭크가 아니라 신뢰와 초기 기여 표시로 작게 노출된다.
+  - 자동 부여 조건, admin UI 부여, 캠페인 지역별 badge scope는 이후 운영 기준 확정 후 별도 작업으로 남긴다.

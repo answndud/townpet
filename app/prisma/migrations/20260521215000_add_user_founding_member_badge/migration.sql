@@ -1,0 +1,2 @@
+ALTER TABLE "User" ADD COLUMN "isFoundingMember" BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE "User" ADD COLUMN "foundingMemberSince" TIMESTAMP(3);

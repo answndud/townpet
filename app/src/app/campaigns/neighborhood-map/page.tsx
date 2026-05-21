@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 
+import { FoundingMemberBadge } from "@/components/user/founding-member-badge";
 import { NEIGHBORHOOD_MAP_CAMPAIGN_PATH } from "@/lib/campaign-pages";
 import { getNeighborhoodMapCampaignStats } from "@/server/queries/campaign.queries";
 
@@ -56,7 +57,7 @@ const PARTICIPATION_STEPS = [
 ] as const;
 
 const REWARDS = [
-  "Founding Member 배지 후보 등록",
+  "운영자 검수 후 Founding Member 배지 부여",
   "우수 제보자 메인 노출",
   "지역 쿠폰 또는 소액 기프티콘 후보",
 ] as const;
@@ -71,7 +72,7 @@ export default async function NeighborhoodMapCampaignPage() {
     { label: "병원 정보", value: stats.hospitalCount },
     { label: "산책코스", value: stats.walkRouteCount },
     { label: "장소·분실·거래 제보", value: stats.reportCount },
-    { label: "창립 멤버 후보", value: stats.contributorCount },
+    { label: "창립 멤버", value: stats.contributorCount },
   ];
 
   return (
@@ -183,7 +184,10 @@ export default async function NeighborhoodMapCampaignPage() {
 
       <section className="mx-auto grid w-full max-w-[1180px] gap-5 px-4 pb-14 sm:px-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:px-10">
         <div className="rounded-xl border border-[#dbe6f5] bg-white px-4 py-4 sm:px-5">
-          <h2 className="text-xl font-semibold text-[#173963]">보상 안내</h2>
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="text-xl font-semibold text-[#173963]">보상 안내</h2>
+            <FoundingMemberBadge />
+          </div>
           <ul className="mt-3 grid gap-2">
             {REWARDS.map((reward) => (
               <li
@@ -195,8 +199,8 @@ export default async function NeighborhoodMapCampaignPage() {
             ))}
           </ul>
           <p className="mt-3 text-xs leading-5 text-[#6b84a8]">
-            배지와 보상은 P1-2 이후 운영자 검수 기준으로 확정합니다. 이번 페이지는 모집과 첫
-            제보 흐름을 먼저 통일합니다.
+            창립 멤버 배지는 운영자 검수 후 수동 부여합니다. 자동 조건 부여와 보상 지급
+            프로세스는 이후 운영 기준이 확정되면 분리합니다.
           </p>
         </div>
 

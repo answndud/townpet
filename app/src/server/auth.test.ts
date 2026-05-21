@@ -74,6 +74,8 @@ describe("auth helpers", () => {
       nickname: null,
       bio: null,
       image: null,
+      isFoundingMember: false,
+      foundingMemberSince: null,
       role: UserRole.USER,
     });
 
@@ -124,6 +126,8 @@ describe("auth helpers", () => {
       nickname: "demo",
       bio: null,
       image: null,
+      isFoundingMember: false,
+      foundingMemberSince: null,
       role: UserRole.USER,
     });
 
@@ -143,6 +147,8 @@ describe("auth helpers", () => {
       nickname: "demo",
       bio: null,
       image: null,
+      isFoundingMember: false,
+      foundingMemberSince: null,
       role: UserRole.USER,
     });
 
@@ -301,6 +307,8 @@ describe("auth helpers", () => {
       nickname: "admin",
       bio: null,
       image: null,
+      isFoundingMember: false,
+      foundingMemberSince: null,
       role: UserRole.ADMIN,
     });
 
@@ -317,6 +325,8 @@ describe("auth helpers", () => {
       nickname: "user",
       bio: null,
       image: null,
+      isFoundingMember: false,
+      foundingMemberSince: null,
       role: UserRole.USER,
     });
 
@@ -331,6 +341,8 @@ describe("auth helpers", () => {
       nickname: "admin2",
       bio: null,
       image: null,
+      isFoundingMember: false,
+      foundingMemberSince: null,
       role: UserRole.ADMIN,
     });
 
@@ -347,6 +359,8 @@ describe("auth helpers", () => {
       nickname: "mod2",
       bio: null,
       image: null,
+      isFoundingMember: false,
+      foundingMemberSince: null,
       role: UserRole.MODERATOR,
     });
 
@@ -361,6 +375,8 @@ describe("auth helpers", () => {
       nickname: "user3",
       bio: null,
       image: null,
+      isFoundingMember: false,
+      foundingMemberSince: null,
       role: UserRole.USER,
     });
     mockAssertUserInteractionAllowed.mockRejectedValue(

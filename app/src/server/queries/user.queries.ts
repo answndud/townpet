@@ -48,6 +48,8 @@ const USER_BASE_SELECT = {
   nickname: true,
   bio: true,
   image: true,
+  isFoundingMember: true,
+  foundingMemberSince: true,
   role: true,
 } as const;
 
@@ -216,6 +218,8 @@ export async function getUserWithNeighborhoods(id: string) {
     nicknameUpdatedAt: true,
     bio: true,
     image: true,
+    isFoundingMember: true,
+    foundingMemberSince: true,
     createdAt: true,
     showPublicPosts: true,
     showPublicComments: true,
@@ -312,6 +316,8 @@ export async function getPublicUserProfileById(id: string) {
       nickname: true,
       bio: true,
       image: true,
+      isFoundingMember: true,
+      foundingMemberSince: true,
       createdAt: true,
       showPublicPosts: true,
       showPublicComments: true,
