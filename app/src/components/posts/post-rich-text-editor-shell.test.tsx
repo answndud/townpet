@@ -39,6 +39,7 @@ describe("PostRichTextEditorShell", () => {
     expect(html).toContain("tp-editor-toolbar-soft tp-editor-toolbar-scroll");
     expect(html).toContain("tp-editor-toolbar tp-editor-toolbar-scroll");
     expect(html).toContain("tp-btn-primary");
+    expect(html).toContain("h-[30px] px-2.5");
   });
 
   it("renders toolbar button scales and tones", () => {
@@ -55,10 +56,10 @@ describe("PostRichTextEditorShell", () => {
     );
 
     expect(html).toContain("tp-btn-soft");
-    expect(html).toContain("min-h-10 px-3");
+    expect(html).toContain("h-[28px] px-2.5");
     expect(html).toContain("tp-btn-primary");
-    expect(html).toContain("h-10 rounded-xl px-4");
-    expect(html).not.toContain("h-7 px-2.5");
+    expect(html).toContain("h-[30px] rounded-lg px-3");
+    expect(html).not.toContain("min-h-10 px-3");
     expect(html).not.toContain("tp-btn-sm");
   });
 });

@@ -467,7 +467,7 @@ export function GuestFeedPageClient({
               <div className="flex flex-wrap items-center gap-2">
                 <Link
                   href="/posts/new"
-                  className="tp-btn-primary inline-flex min-h-10 items-center justify-center px-3 text-xs font-semibold hover:bg-[#274f8c]"
+                  className="tp-btn-primary inline-flex h-[30px] items-center justify-center px-3 text-[11px] font-semibold leading-none hover:bg-[#274f8c]"
                 >
                   글쓰기
                 </Link>
@@ -477,7 +477,7 @@ export function GuestFeedPageClient({
 
           <a
             href="#feed-list"
-            className="tp-btn-soft hidden min-h-10 w-fit items-center px-3 text-xs font-semibold sm:inline-flex lg:hidden"
+            className="tp-btn-soft hidden h-[30px] w-fit items-center px-2.5 text-[11px] font-semibold leading-none sm:inline-flex lg:hidden"
           >
             목록 바로가기
           </a>

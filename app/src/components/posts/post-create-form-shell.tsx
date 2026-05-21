@@ -90,26 +90,26 @@ export function PostCreateSubmitFooter({
   policySummary,
 }: PostCreateSubmitFooterProps) {
   return (
-    <div className="tp-border-soft flex flex-wrap items-center justify-between gap-3 border-t pt-3">
+    <div className="tp-border-soft flex flex-wrap items-center justify-between gap-2 border-t pt-2">
       <p className="tp-form-note">{policySummary}</p>
-      <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end">
+      <div className="flex w-full flex-wrap items-center gap-1.5 sm:w-auto sm:justify-end">
         {isAuthenticated && !canUseLocalScope ? (
           <Link
             href="/profile"
-            className="tp-btn-soft inline-flex min-h-10 w-full items-center justify-center px-4 text-xs font-semibold sm:w-auto"
+            className="tp-btn-soft inline-flex h-[30px] w-full items-center justify-center px-3 text-[11px] font-semibold leading-none sm:w-auto"
           >
             프로필에서 동네 설정
           </Link>
         ) : null}
         <Link
           href="/feed"
-          className="tp-btn-soft inline-flex min-h-10 w-full items-center justify-center px-5 text-sm font-semibold sm:w-auto"
+          className="tp-btn-soft inline-flex h-[30px] w-full items-center justify-center px-3 text-[11px] font-semibold leading-none sm:w-auto"
         >
           취소
         </Link>
         <button
           type="submit"
-          className="tp-btn-primary inline-flex min-h-10 w-full items-center justify-center px-6 text-sm font-semibold disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0] sm:w-auto"
+          className="tp-btn-primary inline-flex h-[30px] w-full items-center justify-center px-4 text-[11px] font-semibold leading-none disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0] sm:w-auto"
           disabled={isPending || !isFormInteractive}
         >
           {isPending ? "등록 중..." : "등록"}

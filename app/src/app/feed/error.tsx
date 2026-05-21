@@ -25,13 +25,13 @@ export default function FeedError({ error, reset }: FeedErrorProps) {
           <button
             type="button"
             onClick={reset}
-            className="tp-btn-primary inline-flex min-h-11 items-center justify-center px-4 py-2 text-sm font-semibold"
+            className="tp-btn-primary inline-flex h-[30px] items-center justify-center px-3 text-[11px] font-semibold leading-none"
           >
             다시 시도
           </button>
           <Link
             href="/feed/guest"
-            className="tp-btn-soft inline-flex min-h-11 items-center justify-center px-4 py-2 text-sm font-semibold"
+            className="tp-btn-soft inline-flex h-[30px] items-center justify-center px-3 text-[11px] font-semibold leading-none"
           >
             게스트 피드
           </Link>
