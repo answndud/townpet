@@ -122,3 +122,5 @@
   - `git diff --check`
   - `corepack pnpm@9.12.3 -C app quality:check`
   - local browser smoke: admin login 후 `/admin/ops` desktop/mobile screenshot 확인 (`/tmp/townpet-admin-ops-desktop.png`, `/tmp/townpet-admin-ops-mobile.png`)
+  - production deploy: `34d5afc Add initial region ops metrics` -> `https://townpet-9td9moz1a-jmoon0227-9736s-projects.vercel.app` Ready, alias `https://townpet.vercel.app`
+  - production smoke: `GET /api/health` 200, unauthenticated `HEAD /admin/ops` 404 noindex 확인

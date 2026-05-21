@@ -4795,6 +4795,8 @@
   - `git diff --check`
   - `corepack pnpm@9.12.3 -C app quality:check`
   - local browser smoke: admin login 후 `/admin/ops` desktop/mobile screenshot 확인 (`/tmp/townpet-admin-ops-desktop.png`, `/tmp/townpet-admin-ops-mobile.png`)
+  - production deploy: `34d5afc Add initial region ops metrics` -> `https://townpet-9td9moz1a-jmoon0227-9736s-projects.vercel.app` Ready, alias `https://townpet.vercel.app`
+  - production smoke: `GET /api/health` 200, unauthenticated `HEAD /admin/ops` 404 noindex 확인
 - 결과:
   - `/admin/ops`에서 지역별 콘텐츠 밀도와 첫 참여 품질을 확인할 수 있게 됐다.
   - 다음 단계 `P1-6. 오프라인 QR/파트너 운영 준비`에서 QR/파트너 유입 source를 이 지표와 연결할 수 있다.
