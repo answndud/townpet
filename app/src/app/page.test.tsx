@@ -1,22 +1,17 @@
-import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import HomePage from "@/app/page";
 
-describe("HomePage", () => {
-  it("renders a fast public home instead of redirect-only feed shell", () => {
-    const html = renderToStaticMarkup(<HomePage />);
+const redirectMock = vi.hoisted(() => vi.fn());
 
-    expect(html).toContain("우리 동네 반려생활 정보, TownPet");
-    expect(html).toContain('href="/onboarding"');
-    expect(html).toContain("내 동네 정보 보기");
-    expect(html).toContain("분실동물 등록하기");
-    expect(html).toContain("병원/산책 정보 보기");
-    expect(html).toContain('href="/towns/mapo"');
-    expect(html).toContain("마포구 지도 보기");
-    expect(html).toContain("지금 올라온 동네 반려 정보");
-    expect(html).toContain("지금은 마포구부터 만들고 있어요");
-    expect(html).toContain("다음 후보: 서울 성동구");
-    expect(html).toContain("마포구 반려생활 지도 만들기");
+vi.mock("next/navigation", () => ({
+  redirect: redirectMock,
+}));
+
+describe("HomePage", () => {
+  it("sends root traffic to the feed entry instead of rendering a landing page", () => {
+    HomePage();
+
+    expect(redirectMock).toHaveBeenCalledWith("/feed");
   });
 });
