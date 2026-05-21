@@ -4765,3 +4765,36 @@
 - 결과:
   - 첫 90일 획득 퍼널의 방문/CTA/템플릿 진입 구간을 제품 이벤트로 볼 수 있는 기반이 생겼다.
   - 다음 단계 `P1-5. 초기 지역 운영 지표`에서 이 집계를 admin 운영 화면에 붙일 수 있다.
+
+### 2026-05-21 | P1-5 초기 지역 운영 지표
+- 완료일: `2026-05-21`
+- 배경:
+  - P1-4에서 홈/캠페인/가이드/동네 허브의 획득 이벤트 집계 기반을 만들었지만, 운영자가 `/admin/ops`에서 지역별 콘텐츠 밀도와 첫 참여 품질을 한 화면에서 볼 수 없었다.
+  - 초기 운영은 전국 MAU보다 선택 동네의 병원/산책/분실/중고 밀도, 첫 글 전환, 24시간 반응, 7일 재방문을 먼저 봐야 한다.
+- 변경내용:
+  - `getInitialRegionOpsOverview` query를 추가했다.
+  - 지역별 병원/산책/분실/중고 active 글 수와 빈 카테고리를 집계한다.
+  - 분실동물 활성/해결/종료 수와 최근 목격 댓글 수를 집계한다.
+  - 운영자 병원/장소 콘텐츠의 확인일 누락, 가장 오래된 확인일, stale 후보를 집계한다.
+  - `AcquisitionEventStat`에서 카카오 공유, guide CTA, 템플릿 진입, 상위 이벤트를 읽는다.
+  - 신규 사용자 첫 글 작성률, 첫 글 24시간 댓글 수신율, 7일 재방문 proxy를 계산한다.
+  - `/admin/ops`에 `초기 지역 운영 지표` 섹션을 추가해 운영자가 지역 밀도와 획득 루프를 바로 확인할 수 있게 했다.
+- 코드문서:
+  - [app/src/server/queries/initial-region-ops.queries.ts](../app/src/server/queries/initial-region-ops.queries.ts)
+  - [app/src/server/queries/initial-region-ops.queries.test.ts](../app/src/server/queries/initial-region-ops.queries.test.ts)
+  - [app/src/server/queries/ops-overview.queries.ts](../app/src/server/queries/ops-overview.queries.ts)
+  - [app/src/server/queries/ops-overview.queries.test.ts](../app/src/server/queries/ops-overview.queries.test.ts)
+  - [app/src/app/admin/ops/page.tsx](../app/src/app/admin/ops/page.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/server/queries/initial-region-ops.queries.test.ts src/server/queries/ops-overview.queries.test.ts`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `PUPPETEER_SKIP_DOWNLOAD=1 corepack pnpm@9.12.3 dlx impeccable detect app/src/app app/src/components --fast`
+  - `git diff --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+  - local browser smoke: admin login 후 `/admin/ops` desktop/mobile screenshot 확인 (`/tmp/townpet-admin-ops-desktop.png`, `/tmp/townpet-admin-ops-mobile.png`)
+- 결과:
+  - `/admin/ops`에서 지역별 콘텐츠 밀도와 첫 참여 품질을 확인할 수 있게 됐다.
+  - 다음 단계 `P1-6. 오프라인 QR/파트너 운영 준비`에서 QR/파트너 유입 source를 이 지표와 연결할 수 있다.
