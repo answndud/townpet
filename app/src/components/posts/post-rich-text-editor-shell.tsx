@@ -60,10 +60,10 @@ export function PostEditorToolbarButton({
   const toneClassName = tone === "primary" ? "tp-btn-primary" : "tp-btn-soft";
   const scaleClassName =
     scale === "bar"
-      ? "min-h-10 px-3"
+      ? "h-[30px] px-2.5 text-[11px] leading-none"
       : scale === "action"
-        ? "h-10 rounded-xl px-4"
-        : "min-h-10 px-3";
+        ? "h-[30px] rounded-lg px-3 text-[11px] leading-none"
+        : "h-[28px] px-2.5 text-[11px] leading-none";
 
   return (
     <button

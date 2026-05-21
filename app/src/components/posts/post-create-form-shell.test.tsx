@@ -51,6 +51,7 @@ describe("post create form shell", () => {
     expect(html).toContain("프로필에서 동네 설정");
     expect(html).toContain("취소");
     expect(html).toContain("등록");
+    expect(html).toContain("h-[30px]");
   });
 
   it("renders pending submit state", () => {
