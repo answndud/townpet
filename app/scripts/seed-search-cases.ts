@@ -90,7 +90,7 @@ const SEARCH_SEED_POSTS: SearchSeedPost[] = [
     scope: "GLOBAL",
   },
   {
-    title: "망원동 펫프렌들리 카페 리뷰",
+    title: "잠원동 펫프렌들리 카페 리뷰",
     content: "카페 좌석, 동반 규정, 가격을 정리했습니다.",
     type: "PLACE_REVIEW",
     scope: "GLOBAL",

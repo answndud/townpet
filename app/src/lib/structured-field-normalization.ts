@@ -99,7 +99,6 @@ export const HOSPITAL_TREATMENT_TYPE_SUGGESTIONS = [
 ] as const;
 
 export const STRUCTURED_REGION_SUGGESTIONS = [
-  "서울특별시 마포구",
   "서울특별시 서초구",
   "서울특별시 강남구",
   "경기도 성남시 분당구",

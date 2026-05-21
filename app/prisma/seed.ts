@@ -14,7 +14,7 @@ const prisma = new PrismaClient();
 
 const neighborhoods = [
   { name: "서초동", city: "서울", district: "서초구" },
-  { name: "연남동", city: "서울", district: "마포구" },
+  { name: "반포동", city: "서울", district: "서초구" },
   { name: "수영동", city: "부산", district: "수영구" },
 ];
 
@@ -307,13 +307,13 @@ async function main() {
   }
 
   const existingPlace = await prisma.post.findFirst({
-    where: { title: "연남동 카페 리뷰", authorId: user.id },
+    where: { title: "반포동 카페 리뷰", authorId: user.id },
   });
 
   if (!existingPlace) {
     await prisma.post.create({
       data: {
-        title: "연남동 카페 리뷰",
+        title: "반포동 카페 리뷰",
         content: "반려견 동반이 편하고 좌석이 넉넉했습니다.",
         type: "PLACE_REVIEW",
         boardScope: "COMMUNITY",
@@ -326,7 +326,7 @@ async function main() {
           create: {
             placeName: "루프탑 펫카페",
             placeType: "카페",
-            address: "서울 마포구 연남동",
+            address: "서울 서초구 반포동",
             isPetAllowed: true,
             rating: 4,
           },
@@ -525,7 +525,7 @@ async function main() {
         create: {
           placeName: "테스트 펫카페",
           placeType: "카페",
-          address: "서울 마포구",
+          address: "서울 서초구",
           isPetAllowed: true,
           rating: 5,
         },
@@ -590,7 +590,7 @@ async function main() {
       dislikes: [],
     },
     {
-      title: "연남동 카페 리뷰",
+      title: "반포동 카페 리뷰",
       likes: ["demo@townpet.dev", "place.hunter@townpet.dev"],
       dislikes: [],
     },

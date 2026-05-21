@@ -17,7 +17,7 @@ export type DemoContentSeedConfig = {
 };
 
 const DEMO_POST_IMAGE_PATHS: Record<string, string> = {
-  "daily-share-mangwon": "/demo/adoption/coco.jpg",
+  "daily-share-jamwon": "/demo/adoption/coco.jpg",
   "pet-showcase-coco": "/demo/adoption/moka.jpg",
   "adoption-coco": "/demo/adoption/coco.jpg",
   "adoption-maru": "/demo/adoption/maru.jpg",

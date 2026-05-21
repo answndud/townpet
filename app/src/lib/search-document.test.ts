@@ -40,6 +40,6 @@ describe("search document helpers", () => {
   });
 
   it("removes punctuation in compact search text", () => {
-    expect(buildSearchCompactText("서울·마포 / 병원")).toBe("서울마포병원");
+    expect(buildSearchCompactText("서울·서초 / 병원")).toBe("서울서초병원");
   });
 });

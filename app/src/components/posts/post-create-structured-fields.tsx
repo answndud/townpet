@@ -171,7 +171,7 @@ export function PlaceReviewFields({
               },
             }))
           }
-          placeholder="예: 연남동 펫카페"
+          placeholder="예: 반포동 펫카페"
         />
       </label>
 
@@ -207,7 +207,7 @@ export function PlaceReviewFields({
               },
             }))
           }
-          placeholder="예: 마포구 연남동"
+          placeholder="예: 서초구 반포동"
         />
       </label>
 
@@ -738,7 +738,7 @@ export function AdoptionListingFields({
               },
             }))
           }
-          placeholder="예: 서울 마포구"
+          placeholder="예: 서울 서초구"
         />
       </label>
 
@@ -926,7 +926,7 @@ export function VolunteerRecruitmentFields({
               },
             }))
           }
-          placeholder="예: 마포 유기동물 보호소"
+          placeholder="예: 서초 유기동물 보호소"
         />
       </label>
 
@@ -945,7 +945,7 @@ export function VolunteerRecruitmentFields({
               },
             }))
           }
-          placeholder="예: 서울 마포구"
+          placeholder="예: 서울 서초구"
         />
       </label>
 

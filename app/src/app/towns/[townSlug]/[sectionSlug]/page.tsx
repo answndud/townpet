@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 
 import {
   getTownLandingSection,
-  TOWN_LANDING,
+  TOWN_LANDINGS,
 } from "@/lib/town-landing";
 
 type TownSectionPageProps = {
@@ -12,10 +12,12 @@ type TownSectionPageProps = {
 };
 
 export function generateStaticParams() {
-  return TOWN_LANDING.sections.map((section) => ({
-    townSlug: TOWN_LANDING.slug,
-    sectionSlug: section.slug,
-  }));
+  return TOWN_LANDINGS.flatMap((town) =>
+    town.sections.map((section) => ({
+      townSlug: town.slug,
+      sectionSlug: section.slug,
+    })),
+  );
 }
 
 export async function generateMetadata({ params }: TownSectionPageProps): Promise<Metadata> {

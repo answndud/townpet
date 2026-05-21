@@ -33,7 +33,7 @@ function createPost(overrides: Partial<Record<string, unknown>> = {}) {
     type: PostType.HOSPITAL_REVIEW,
     scope: PostScope.GLOBAL,
     status: PostStatus.ACTIVE,
-    title: "마포구 24시 병원 후기",
+    title: "서초구 24시 병원 후기",
     content: "<p>야간 진료 설명이 자세했습니다.</p>",
     commentCount: 3,
     likeCount: 7,
@@ -49,9 +49,9 @@ function createPost(overrides: Partial<Record<string, unknown>> = {}) {
     guestDisplayName: null,
     neighborhood: {
       id: "neighborhood-1",
-      name: "망원동",
+      name: "잠원동",
       city: "서울",
-      district: "마포구",
+      district: "서초구",
     },
     petType: null,
     images: [],
@@ -106,10 +106,10 @@ describe("GET /api/home/feed", () => {
     expect(payload.ok).toBe(true);
     expect(payload.data.best[0]).toMatchObject({
       href: "/posts/post-1",
-      title: "마포구 24시 병원 후기",
+      title: "서초구 24시 병원 후기",
       excerpt: "야간 진료 설명이 자세했습니다.",
       typeLabel: "병원 후기",
-      neighborhoodLabel: "마포구 망원동",
+      neighborhoodLabel: "서초구 잠원동",
     });
     expect(payload.data.latest[0]).toMatchObject({
       href: "/posts/post-2",

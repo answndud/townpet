@@ -1,52 +1,45 @@
-import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
-import TownPage, { generateMetadata as generateTownMetadata } from "@/app/towns/[townSlug]/page";
+import TownPage, {
+  generateMetadata as generateTownMetadata,
+  generateStaticParams as generateTownStaticParams,
+} from "@/app/towns/[townSlug]/page";
 import TownSectionPage, {
   generateMetadata as generateTownSectionMetadata,
+  generateStaticParams as generateTownSectionStaticParams,
 } from "@/app/towns/[townSlug]/[sectionSlug]/page";
 
 describe("town landing pages", () => {
-  it("renders the Mapo town hub with section links", async () => {
-    const html = renderToStaticMarkup(
-      await TownPage({ params: Promise.resolve({ townSlug: "mapo" }) }),
-    );
-
-    expect(html).toContain("마포구 반려생활 지도");
-    expect(html).toContain('href="/towns/mapo/hospitals"');
-    expect(html).toContain('href="/towns/mapo/walks"');
-    expect(html).toContain('href="/towns/mapo/lost"');
-    expect(html).toContain('href="/towns/mapo/used-market"');
-    expect(html).toContain("최근 등록된 분실/목격 제보가 없습니다.");
+  it("does not prerender a fixed town while the launch region is undecided", () => {
+    expect(generateTownStaticParams()).toEqual([]);
+    expect(generateTownSectionStaticParams()).toEqual([]);
   });
 
-  it("renders a section page with feed and contribution links", async () => {
-    const html = renderToStaticMarkup(
-      await TownSectionPage({
-        params: Promise.resolve({ townSlug: "mapo", sectionSlug: "hospitals" }),
-      }),
-    );
-
-    expect(html).toContain("마포구 동물병원 정보");
-    expect(html).toContain('href="/feed/guest?type=HOSPITAL_REVIEW"');
-    expect(html).toContain("방문 전 전화 확인");
-  });
-
-  it("generates canonical metadata for town hub and section pages", async () => {
+  it("returns noindex metadata for old fixed-region town paths", async () => {
     await expect(
-      generateTownMetadata({ params: Promise.resolve({ townSlug: "mapo" }) }),
+      generateTownMetadata({ params: Promise.resolve({ townSlug: "old-town" }) }),
     ).resolves.toMatchObject({
-      title: "마포구 반려생활 지도",
-      alternates: { canonical: "/towns/mapo" },
+      title: "지역 허브를 찾을 수 없습니다",
+      robots: { index: false, follow: false },
     });
 
     await expect(
       generateTownSectionMetadata({
-        params: Promise.resolve({ townSlug: "mapo", sectionSlug: "lost" }),
+        params: Promise.resolve({ townSlug: "old-town", sectionSlug: "lost" }),
       }),
     ).resolves.toMatchObject({
-      title: "마포구 분실/목격 제보",
-      alternates: { canonical: "/towns/mapo/lost" },
+      title: "지역 정보를 찾을 수 없습니다",
+      robots: { index: false, follow: false },
     });
+  });
+
+  it("renders not-found for old fixed-region town pages", async () => {
+    await expect(TownPage({ params: Promise.resolve({ townSlug: "old-town" }) })).rejects.toThrow();
+
+    await expect(
+      TownSectionPage({
+        params: Promise.resolve({ townSlug: "old-town", sectionSlug: "hospitals" }),
+      }),
+    ).rejects.toThrow();
   });
 });

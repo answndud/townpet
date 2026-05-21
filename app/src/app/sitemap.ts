@@ -85,7 +85,7 @@ export default async function sitemap({
           ...listTownLandingPaths().map((path) => ({
             url: `${siteOrigin}${path}`,
             changeFrequency: "daily" as const,
-            priority: path === "/towns/mapo" ? 0.8 : 0.7,
+            priority: 0.7,
           })),
           {
             url: `${siteOrigin}/terms`,
