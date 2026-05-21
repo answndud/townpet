@@ -4011,3 +4011,28 @@
   - `pnpm -C app build`
   - `node scripts/refresh-docs-index.mjs --check`
   - `git diff --check`
+
+### 2026-05-21 | 초기 지역 선택 UX 명확화
+- 완료일: `2026-05-21`
+- 배경:
+  - `P0-3. 초기 지역 선택 UX 명확화` 단계로, 첫 방문자가 전국 서비스가 아니라 특정 지역부터 밀도 있게 시작하는 서비스라는 점을 이해해야 했다.
+  - 초기 지역과 후보 지역을 홈 파일 곳곳에 직접 하드코딩하면 다음 지역 변경 때 회귀가 생기기 쉽다.
+- 변경내용:
+  - `LAUNCH_REGION` 설정을 추가해 첫 시작 지역, 기준 동네, 후보 지역, 우선 카테고리 링크를 한곳에서 관리하게 했다.
+  - `/` 홈에 `지금은 마포구부터 만들고 있어요` 지역 고지 패널과 후보 지역 표시를 추가했다.
+  - 홈의 `내 동네 정보 보기` CTA를 기존 온보딩 동네 선택 플로우로 연결했다.
+  - 분실/목격, 동물병원, 산책코스 링크를 launch region 설정에서 재사용하게 했다.
+  - launch region 설정과 홈 지역 고지에 대한 회귀 테스트를 추가했다.
+- 코드문서:
+  - [app/src/lib/launch-region.ts](../app/src/lib/launch-region.ts)
+  - [app/src/lib/launch-region.test.ts](../app/src/lib/launch-region.test.ts)
+  - [app/src/app/page.tsx](../app/src/app/page.tsx)
+  - [app/src/app/page.test.tsx](../app/src/app/page.test.tsx)
+- 검증:
+  - `pnpm -C app test -- src/app/page.test.tsx src/lib/launch-region.test.ts`
+  - `pnpm -C app typecheck`
+  - `pnpm -C app lint`
+  - `pnpm -C app build`
+  - local Playwright render check at `http://localhost:3000/`
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `git diff --check`
