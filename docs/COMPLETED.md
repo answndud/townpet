@@ -4571,3 +4571,43 @@
   - 산책코스 글은 블로그식 후기보다 대형견/혼잡/목줄/편의/주의 구간을 빠르게 비교할 수 있는 구조가 됐다.
   - 산책코스 작성 분류가 실제 작성 UI에 노출된다.
   - 지역 허브와 검색에서 산책코스 구조화 텍스트를 재사용할 수 있다.
+
+### 2026-05-21 | 운영자 콘텐츠와 사용자 글 분리
+- 완료일: `2026-05-21`
+- 배경:
+  - 초기 운영팀 조사 콘텐츠가 일반 사용자 후기처럼 보이면 서비스 신뢰를 잃을 수 있다.
+  - 병원, 산책, 입양, 봉사 같은 획득용 정보는 공식/운영자/사용자 출처가 UI에서 분리되어야 한다.
+- 변경내용:
+  - `Post`에 운영자 정리 여부, 출처 이름, 출처 URL, 최종 확인일 metadata를 추가했다.
+  - 관리자/모더레이터만 운영자 정리 콘텐츠 metadata를 저장할 수 있게 서버 권한 검사를 추가했다.
+  - 일반 사용자와 비회원이 운영자 metadata를 보내면 `OPERATOR_CONTENT_FORBIDDEN`으로 차단한다.
+  - 글쓰기 화면에 운영자 전용 `운영자 정리 콘텐츠` 섹션을 추가했다.
+  - 피드 목록에는 compact `운영자 정리` badge를 표시한다.
+  - 회원/비회원 상세 화면에는 운영자 정리 안내, 출처, 원문 링크, 최종 확인일, 정보 정정 요청 CTA를 표시한다.
+- 코드문서:
+  - [app/prisma/schema.prisma](../app/prisma/schema.prisma)
+  - [app/prisma/migrations/20260521212000_add_post_operator_content_fields/migration.sql](../app/prisma/migrations/20260521212000_add_post_operator_content_fields/migration.sql)
+  - [app/src/lib/validations/posts/post.ts](../app/src/lib/validations/posts/post.ts)
+  - [app/src/server/services/posts/post-create.service.ts](../app/src/server/services/posts/post-create.service.ts)
+  - [app/src/components/posts/post-create-form.tsx](../app/src/components/posts/post-create-form.tsx)
+  - [app/src/components/posts/post-create-submit.ts](../app/src/components/posts/post-create-submit.ts)
+  - [app/src/components/posts/operator-content-source-panel.tsx](../app/src/components/posts/operator-content-source-panel.tsx)
+  - [app/src/components/posts/feed-infinite-list.tsx](../app/src/components/posts/feed-infinite-list.tsx)
+  - [app/src/components/posts/post-detail-primary-card.tsx](../app/src/components/posts/post-detail-primary-card.tsx)
+  - [app/src/app/posts/[id]/guest/page.tsx](../app/src/app/posts/%5Bid%5D/guest/page.tsx)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app exec prisma format`
+  - `corepack pnpm@9.12.3 -C app exec prisma generate`
+  - `corepack pnpm@9.12.3 -C app exec prisma migrate deploy`
+  - `corepack pnpm@9.12.3 -C app test -- src/components/posts/post-create-submit.test.ts src/lib/validations/post.test.ts src/server/services/post-create-policy.test.ts`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `PUPPETEER_SKIP_DOWNLOAD=1 corepack pnpm@9.12.3 dlx impeccable detect app/src/app app/src/components --fast`
+  - `git diff --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+  - local browser smoke: 운영자 계정으로 `/posts/new` desktop/mobile에서 운영자 정리 섹션 확인, 임시 운영자 정리 글로 `/posts/{id}/guest`와 `/feed/guest` badge/출처/정정 CTA 확인 후 임시 글 삭제
+  - `node scripts/refresh-docs-index.mjs --check`
+- 결과:
+  - 운영자 조사 콘텐츠는 일반 사용자 글과 시각적으로 구분된다.
+  - 출처와 최종 확인일이 상세 화면에 남아 정보 신뢰와 정정 흐름을 갖게 됐다.
+  - 별도 장소/병원 모델 분리는 아직 하지 않았고, 콘텐츠 양이 늘어날 때 독립 모델로 확장한다.

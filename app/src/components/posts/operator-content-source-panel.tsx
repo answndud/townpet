@@ -1,0 +1,98 @@
+import Link from "next/link";
+
+type OperatorContentSourcePanelProps = {
+  sourceName?: string | null;
+  sourceUrl?: string | null;
+  lastVerifiedAt?: string | Date | null;
+};
+
+function formatVerifiedDate(value?: string | Date | null) {
+  if (!value) {
+    return null;
+  }
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+  return new Intl.DateTimeFormat("ko-KR", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
+}
+
+export function OperatorContentBadge({ compact = false }: { compact?: boolean }) {
+  return (
+    <span
+      className={`inline-flex shrink-0 items-center rounded-md border border-[#b8cff0] bg-[#edf5ff] font-semibold text-[#2f5da4] ${
+        compact ? "px-1.5 py-[1px] text-[10px]" : "px-2 py-1 text-[11px]"
+      }`}
+    >
+      운영자 정리
+    </span>
+  );
+}
+
+export function OperatorContentSourcePanel({
+  sourceName,
+  sourceUrl,
+  lastVerifiedAt,
+}: OperatorContentSourcePanelProps) {
+  const verifiedLabel = formatVerifiedDate(lastVerifiedAt);
+
+  return (
+    <section className="mt-4 rounded-xl border border-[#d8e6f7] bg-[#f8fbff] px-3 py-3 text-xs text-[#4f678d] sm:px-4">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <OperatorContentBadge />
+            <span className="font-semibold text-[#17345f]">
+              공개 자료와 운영팀 확인 내용을 분리해 표시합니다.
+            </span>
+          </div>
+          <p className="mt-1 leading-5">
+            사용자 경험담이 아니라 운영팀이 정리한 정보입니다. 방문, 신청, 연락 전에는 출처에서
+            최신 상태를 한 번 더 확인해 주세요.
+          </p>
+        </div>
+        <Link
+          href="/commercial#contact"
+          className="tp-btn-soft inline-flex min-h-9 shrink-0 items-center justify-center px-3 text-[11px] font-semibold"
+        >
+          정보 정정 요청
+        </Link>
+      </div>
+      {sourceName || sourceUrl || verifiedLabel ? (
+        <dl className="mt-3 grid gap-2 sm:grid-cols-3">
+          {sourceName ? (
+            <div>
+              <dt className="font-semibold text-[#355988]">출처</dt>
+              <dd className="mt-0.5 truncate text-[#17345f]">{sourceName}</dd>
+            </div>
+          ) : null}
+          {sourceUrl ? (
+            <div>
+              <dt className="font-semibold text-[#355988]">원문</dt>
+              <dd className="mt-0.5 min-w-0">
+                <a
+                  href={sourceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block truncate rounded-sm text-[#2f5da4] underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0]"
+                >
+                  출처 열기
+                </a>
+              </dd>
+            </div>
+          ) : null}
+          {verifiedLabel ? (
+            <div>
+              <dt className="font-semibold text-[#355988]">최종 확인</dt>
+              <dd className="mt-0.5 text-[#17345f]">{verifiedLabel}</dd>
+            </div>
+          ) : null}
+        </dl>
+      ) : null}
+    </section>
+  );
+}

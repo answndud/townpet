@@ -11,6 +11,10 @@ export type PostCreateFormState = {
   petTypeId: string;
   reviewCategory: ReviewCategory;
   animalTagsInput: string;
+  isOperatorContent: string;
+  operatorSourceName: string;
+  operatorSourceUrl: string;
+  operatorLastVerifiedAt: string;
   hospitalReview: {
     hospitalName: string;
     visitPurpose: string;
@@ -111,6 +115,10 @@ export function createInitialPostCreateFormState(
     petTypeId: "",
     reviewCategory: REVIEW_CATEGORY.SUPPLIES,
     animalTagsInput: "",
+    isOperatorContent: "false",
+    operatorSourceName: "",
+    operatorSourceUrl: "",
+    operatorLastVerifiedAt: "",
     hospitalReview: {
       hospitalName: "",
       visitPurpose: "",

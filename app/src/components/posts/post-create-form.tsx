@@ -2,6 +2,8 @@
 
 import { PostScope, PostType } from "@prisma/client";
 import {
+  type Dispatch,
+  type SetStateAction,
   useEffect,
   useMemo,
   useRef,
@@ -73,6 +75,7 @@ type PostCreateFormProps = {
   defaultNeighborhoodId?: string;
   isAuthenticated: boolean;
   canCreateAdoptionListing?: boolean;
+  canMarkOperatorContent?: boolean;
   initialType?: PostType;
 };
 
@@ -82,6 +85,7 @@ export function PostCreateForm({
   defaultNeighborhoodId = "",
   isAuthenticated,
   canCreateAdoptionListing = false,
+  canMarkOperatorContent = false,
   initialType,
 }: PostCreateFormProps) {
   const titleInputRef = useRef<HTMLInputElement | null>(null);
@@ -200,44 +204,52 @@ export function PostCreateForm({
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5" noValidate>
       <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
-      <PostCreateBasicFields
-        formState={formState}
-        setFormState={setFormState}
-        titleInputRef={titleInputRef}
-        isAuthenticated={isAuthenticated}
-        isFormInteractive={isFormInteractive}
-        canUseLocalScope={canUseLocalScope}
-        showNeighborhood={showNeighborhood}
-        showReviewCategory={showReviewCategory}
-        showCommunitySelector={showCommunitySelector}
-        showAnimalTagsInput={showAnimalTagsInput}
-        isFreeBoardType={isFreeBoardType}
-        postTypeOptions={availablePostTypeOptions}
-        reviewCategoryOptions={reviewCategoryOptions}
-        neighborhoodOptions={neighborhoodOptions}
-        communityOptions={communityOptions}
-        onTitleChange={(value) => {
-          latestTitleRef.current = value;
-        }}
-      />
+        <PostCreateBasicFields
+          formState={formState}
+          setFormState={setFormState}
+          titleInputRef={titleInputRef}
+          isAuthenticated={isAuthenticated}
+          isFormInteractive={isFormInteractive}
+          canUseLocalScope={canUseLocalScope}
+          showNeighborhood={showNeighborhood}
+          showReviewCategory={showReviewCategory}
+          showCommunitySelector={showCommunitySelector}
+          showAnimalTagsInput={showAnimalTagsInput}
+          isFreeBoardType={isFreeBoardType}
+          postTypeOptions={availablePostTypeOptions}
+          reviewCategoryOptions={reviewCategoryOptions}
+          neighborhoodOptions={neighborhoodOptions}
+          communityOptions={communityOptions}
+          onTitleChange={(value) => {
+            latestTitleRef.current = value;
+          }}
+        />
 
-      <PostCreatePolicyAside
-        draftMessage={draftMessage}
-        draftSavedAt={draftSavedAt}
-        policySummary={policySummary}
-      />
+        <PostCreatePolicyAside
+          draftMessage={draftMessage}
+          draftSavedAt={draftSavedAt}
+          policySummary={policySummary}
+        />
       </div>
 
-        <PostBodyRichEditor
-          ref={editorHandleRef}
-          value={formState.content}
-          imageUrls={formState.imageUrls}
-          onChange={(nextContent, nextImageUrls) => {
-            latestEditorContentRef.current = nextContent;
-            latestEditorImageUrlsRef.current = nextImageUrls;
-            setFormState((prev) =>
-              prev.content === nextContent && areSameStringArray(prev.imageUrls, nextImageUrls)
-                ? prev
+      {canMarkOperatorContent ? (
+        <OperatorContentFields
+          formState={formState}
+          setFormState={setFormState}
+          isFormInteractive={isFormInteractive}
+        />
+      ) : null}
+
+      <PostBodyRichEditor
+        ref={editorHandleRef}
+        value={formState.content}
+        imageUrls={formState.imageUrls}
+        onChange={(nextContent, nextImageUrls) => {
+          latestEditorContentRef.current = nextContent;
+          latestEditorImageUrlsRef.current = nextImageUrls;
+          setFormState((prev) =>
+            prev.content === nextContent && areSameStringArray(prev.imageUrls, nextImageUrls)
+              ? prev
               : {
                   ...prev,
                   content: nextContent,
@@ -304,5 +316,95 @@ export function PostCreateForm({
         policySummary={policySummary}
       />
     </form>
+  );
+}
+
+function OperatorContentFields({
+  formState,
+  setFormState,
+  isFormInteractive,
+}: {
+  formState: PostCreateFormState;
+  setFormState: Dispatch<SetStateAction<PostCreateFormState>>;
+  isFormInteractive: boolean;
+}) {
+  const inputClassName =
+    "min-h-10 w-full rounded-lg border border-[#d8e4f6] bg-white px-3 text-sm text-[#17345f] shadow-sm outline-none transition placeholder:text-[#8ca1bf] focus:border-[#8fb4e8] focus:ring-2 focus:ring-[#c9ddf7]";
+
+  return (
+    <section className="rounded-xl border border-[#dbe6f5] bg-[#f8fbff] px-3 py-3 sm:px-4">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+        <label className="inline-flex min-h-10 items-center gap-2 text-sm font-semibold text-[#17345f]">
+          <input
+            type="checkbox"
+            checked={formState.isOperatorContent === "true"}
+            disabled={!isFormInteractive}
+            onChange={(event) =>
+              setFormState((prev) => ({
+                ...prev,
+                isOperatorContent: event.target.checked ? "true" : "false",
+              }))
+            }
+            className="h-4 w-4 rounded border-[#b8cbe6] text-[#2f5da4] focus:ring-[#bfd3f0]"
+          />
+          운영자 정리 콘텐츠
+        </label>
+        <p className="max-w-2xl text-xs leading-5 text-[#5c769f]">
+          공개 자료나 운영팀 확인 내용을 정리한 글에만 사용합니다. 사용자 경험담과 구분되도록
+          출처와 최종 확인일을 함께 남겨 주세요.
+        </p>
+      </div>
+      <div className="mt-3 grid gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)_160px]">
+        <label className="flex flex-col gap-1 text-xs font-semibold text-[#355988]">
+          출처 이름
+          <input
+            type="text"
+            value={formState.operatorSourceName}
+            disabled={!isFormInteractive}
+            maxLength={80}
+            placeholder="서울시 동물보호센터"
+            className={inputClassName}
+            onChange={(event) =>
+              setFormState((prev) => ({
+                ...prev,
+                operatorSourceName: event.target.value,
+              }))
+            }
+          />
+        </label>
+        <label className="flex flex-col gap-1 text-xs font-semibold text-[#355988]">
+          출처 URL
+          <input
+            type="url"
+            value={formState.operatorSourceUrl}
+            disabled={!isFormInteractive}
+            maxLength={300}
+            placeholder="https://..."
+            className={inputClassName}
+            onChange={(event) =>
+              setFormState((prev) => ({
+                ...prev,
+                operatorSourceUrl: event.target.value,
+              }))
+            }
+          />
+        </label>
+        <label className="flex flex-col gap-1 text-xs font-semibold text-[#355988]">
+          최종 확인일
+          <input
+            type="date"
+            value={formState.operatorLastVerifiedAt}
+            disabled={!isFormInteractive}
+            className={inputClassName}
+            onChange={(event) =>
+              setFormState((prev) => ({
+                ...prev,
+                operatorLastVerifiedAt: event.target.value,
+              }))
+            }
+          />
+        </label>
+      </div>
+    </section>
   );
 }

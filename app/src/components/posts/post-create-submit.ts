@@ -24,6 +24,10 @@ export type PostCreateSubmitPayload = {
   marketListing?: Record<string, unknown>;
   careRequest?: Record<string, unknown>;
   lostFound?: Record<string, unknown>;
+  isOperatorContent?: boolean | string;
+  operatorSourceName?: string;
+  operatorSourceUrl?: string;
+  operatorLastVerifiedAt?: string;
 };
 
 type BuildPostCreatePayloadParams = {
@@ -142,6 +146,28 @@ function hasLostFound(formState: PostCreateFormState) {
   );
 }
 
+function buildOperatorContentPayload(formState: PostCreateFormState) {
+  const operatorSourceName = formState.operatorSourceName.trim();
+  const operatorSourceUrl = formState.operatorSourceUrl.trim();
+  const operatorLastVerifiedAt = formState.operatorLastVerifiedAt.trim();
+  const hasOperatorMetadata =
+    operatorSourceName.length > 0 ||
+    operatorSourceUrl.length > 0 ||
+    operatorLastVerifiedAt.length > 0;
+  const isOperatorContent = formState.isOperatorContent === "true" || hasOperatorMetadata;
+
+  if (!isOperatorContent) {
+    return {};
+  }
+
+  return {
+    isOperatorContent: "true",
+    operatorSourceName: operatorSourceName || undefined,
+    operatorSourceUrl: operatorSourceUrl || undefined,
+    operatorLastVerifiedAt: operatorLastVerifiedAt || undefined,
+  };
+}
+
 export function resolvePostCreateSubmitType(formState: PostCreateFormState) {
   return formState.type === PostType.PRODUCT_REVIEW &&
     formState.reviewCategory === REVIEW_CATEGORY.PLACE
@@ -234,6 +260,7 @@ export function buildPostCreateSubmitPayload({
       animalTags: showAnimalTagsInput ? normalizedAnimalTags : undefined,
       guestDisplayName: isAuthenticated ? undefined : formState.guestDisplayName,
       guestPassword: isAuthenticated ? undefined : formState.guestPassword,
+      ...buildOperatorContentPayload(formState),
       hospitalReview: hasHospitalReview(formState)
         ? {
             ...formState.hospitalReview,
@@ -394,5 +421,9 @@ export function createPostCreateSuccessState(prev: PostCreateFormState): PostCre
     imageUrls: [],
     guestDisplayName: "",
     guestPassword: "",
+    isOperatorContent: "false",
+    operatorSourceName: "",
+    operatorSourceUrl: "",
+    operatorLastVerifiedAt: "",
   };
 }

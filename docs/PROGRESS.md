@@ -26,22 +26,38 @@
 - `P0-9. “목격했어요” 제보 흐름`을 완료했다. 댓글에 `LOST_FOUND_SIGHTING` subtype과 구조화 목격 위치/시간/사진 URL/보호자 공개 필드를 추가하고, 실종글 작성자/운영자가 상태를 `제보 접수 중/해결됨/종료`로 변경할 수 있게 했다.
 - `P0-10. 병원 후기 템플릿 안전화`를 완료했다. 병원 후기 작성 폼을 비교 가능한 구조화 경험 데이터 중심으로 바꾸고, 위험 표현 검토 신호와 병원·장소 정보 정정 요청 경로를 연결했다.
 - `P0-11. 산책코스 카드 필드 보강`을 완료했다. 산책코스 작성/상세/검색 구조를 대형견 적합, 혼잡 시간, 목줄 구간, 배변봉투함, 물 마실 곳, 주의 구간 중심으로 확장했다.
+- `P0-12. 운영자 콘텐츠와 사용자 글 분리`를 완료했다. 운영자/모더레이터가 작성한 조사 콘텐츠는 출처, 원문 URL, 최종 확인일, 정보 정정 요청 CTA와 함께 사용자 글과 분리해 표시된다.
 
 ## 다음 액션
 
-- 다음 작업은 `P0-12. 운영자 콘텐츠와 사용자 글 분리`다.
-- P0-12 시작 전 확인할 파일:
-  - `app/prisma/schema.prisma`
-  - `app/src/lib/validations/posts/post.ts`
-  - `app/src/components/posts/post-create-form.tsx`
-  - `app/src/components/posts/post-create-submit.ts`
-  - `app/src/components/posts/post-detail-info-panels.tsx`
-  - `app/src/server/services/posts/post-create.service.ts`
-  - `app/src/lib/post-structured-search.ts`
+- 다음 작업은 `P1-1. 우리 동네 반려생활 지도 만들기 캠페인 페이지`다.
+- P1-1 시작 전 확인할 파일:
+  - `app/src/app/page.tsx`
+  - `app/src/app/towns/[slug]/page.tsx`
+  - `app/src/lib/town-region.ts`
+  - `app/src/components/home/*`
   - `app/src/components/navigation/app-shell-footer.tsx`
+  - `business/product/*`
 - 시작페이지 추가 개선 후보:
   - 홈에는 간소 헤더를 적용했지만, 다른 public route의 모바일 앱 셸 밀도는 아직 기존 제품 헤더 기준이다. 필요 시 `/guides/*` 같은 SEO landing에도 같은 header 정책을 확장한다.
   - 홈 preview API는 테스트 성격 글을 숨기지만, seed/demo 데이터가 production DB에 섞이는 운영 원인은 별도 정리가 필요하다.
   - desktop에서 `지금 많이 보는 글`과 `최근 올라온 글`이 모두 비면 landing 하단이 약하다. 이번 작업에서 guide 링크를 empty 영역에 연결했지만, production seed/demo 데이터 운영 원인은 별도 정리가 필요하다.
 - 확정 전에는 `/`과 public acquisition UI에 특정 지역명을 노출하지 않는다.
 - 성능 후속은 최신 `main` 배포 후 같은 스크립트로 production 재측정할 때 별도 작업으로 연다.
+
+## 최근 검증
+
+- `P0-12. 운영자 콘텐츠와 사용자 글 분리`
+  - `corepack pnpm@9.12.3 -C app exec prisma format`
+  - `corepack pnpm@9.12.3 -C app exec prisma generate`
+  - `corepack pnpm@9.12.3 -C app exec prisma migrate deploy`
+  - `corepack pnpm@9.12.3 -C app test -- src/components/posts/post-create-submit.test.ts src/lib/validations/post.test.ts src/server/services/post-create-policy.test.ts`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `PUPPETEER_SKIP_DOWNLOAD=1 corepack pnpm@9.12.3 dlx impeccable detect app/src/app app/src/components --fast`
+  - `git diff --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+  - local browser smoke: `/posts/new` desktop/mobile, `/posts/{id}/guest`, `/feed/guest`
+  - `node scripts/refresh-docs-index.mjs --check`
+- 참고:
+  - `pnpm -C app design:detect` 스크립트는 Corepack keyid 오류로 실패했다. 같은 detector는 루트 기준 명시 버전 `corepack pnpm@9.12.3 dlx impeccable detect app/src/app app/src/components --fast`로 통과했다.

@@ -62,6 +62,8 @@ export default async function NewPostPage({ searchParams }: NewPostPageProps) {
       })
     : null;
   const primaryNeighborhood = user?.neighborhoods.find((item) => item.isPrimary);
+  const canManageOperatorContent =
+    currentUserRole?.role === UserRole.ADMIN || currentUserRole?.role === UserRole.MODERATOR;
 
   const neighborhoods = user
     ? user.neighborhoods.map((item) => ({
@@ -136,10 +138,8 @@ export default async function NewPostPage({ searchParams }: NewPostPageProps) {
           communities={communities.items}
           defaultNeighborhoodId={primaryNeighborhood?.neighborhood.id}
           isAuthenticated={Boolean(userId)}
-          canCreateAdoptionListing={
-            currentUserRole?.role === UserRole.ADMIN ||
-            currentUserRole?.role === UserRole.MODERATOR
-          }
+          canCreateAdoptionListing={canManageOperatorContent}
+          canMarkOperatorContent={canManageOperatorContent}
           initialType={initialPostType}
         />
       </main>

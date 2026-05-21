@@ -120,6 +120,17 @@ function serializeFeedItems(items: Array<Record<string, unknown>>) {
       post.createdAt instanceof Date
         ? post.createdAt.toISOString()
         : String(post.createdAt),
+    isOperatorContent: ((post as { isOperatorContent?: boolean | null }).isOperatorContent ??
+      false) as boolean,
+    operatorSourceName: ((post as { operatorSourceName?: string | null }).operatorSourceName ??
+      null) as string | null,
+    operatorSourceUrl: ((post as { operatorSourceUrl?: string | null }).operatorSourceUrl ??
+      null) as string | null,
+    operatorLastVerifiedAt:
+      (post as { operatorLastVerifiedAt?: Date | string | null }).operatorLastVerifiedAt instanceof Date
+        ? (post as { operatorLastVerifiedAt: Date }).operatorLastVerifiedAt.toISOString()
+        : (((post as { operatorLastVerifiedAt?: string | null }).operatorLastVerifiedAt ??
+            null) as string | null),
     author: {
       id: (post.author as { id: string }).id,
       nickname: ((post.author as { nickname?: string | null }).nickname ?? null) as string | null,
