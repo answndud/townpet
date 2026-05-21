@@ -421,6 +421,7 @@ export default async function Home({ searchParams }: HomePageProps) {
         resolveFeedPageSlice<FeedListItem>({
           currentPage,
           limit,
+          skipCountOnFirstPage: true,
           countItems: () =>
             countPosts({
               type,
@@ -505,7 +506,7 @@ export default async function Home({ searchParams }: HomePageProps) {
   ].join("|");
   const viewerUserId = user?.id ?? null;
   const shouldLoadViewerPersonalizationContext =
-    Boolean(viewerUserId) && mode === "ALL" && effectiveScope === PostScope.GLOBAL;
+    Boolean(viewerUserId) && usePersonalizedFeed;
   const [
     viewerAudienceSegments,
     viewerPets,

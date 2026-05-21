@@ -57,4 +57,52 @@ describe("resolveFeedPageSlice", () => {
     expect(listPage).toHaveBeenNthCalledWith(1, 4);
     expect(listPage).toHaveBeenNthCalledWith(2, 2);
   });
+
+  it("skips count query on the first page when list result already exposes a next page", async () => {
+    const countItems = vi.fn().mockResolvedValue(45);
+    const listPage = vi.fn().mockResolvedValue({
+      items: ["post-1", "post-2"],
+      nextCursor: "cursor-2",
+    });
+
+    const result = await resolveFeedPageSlice({
+      currentPage: 1,
+      limit: 2,
+      countItems,
+      listPage,
+      skipCountOnFirstPage: true,
+    });
+
+    expect(result).toEqual({
+      totalItemCount: 3,
+      totalPages: 2,
+      resolvedPage: 1,
+      page: {
+        items: ["post-1", "post-2"],
+        nextCursor: "cursor-2",
+      },
+    });
+    expect(countItems).not.toHaveBeenCalled();
+    expect(listPage).toHaveBeenCalledTimes(1);
+    expect(listPage).toHaveBeenCalledWith(1);
+  });
+
+  it("still counts page requests after the first page", async () => {
+    const countItems = vi.fn().mockResolvedValue(45);
+    const listPage = vi.fn().mockResolvedValue({
+      items: ["page-2"],
+      nextCursor: "cursor-3",
+    });
+
+    await resolveFeedPageSlice({
+      currentPage: 2,
+      limit: 20,
+      countItems,
+      listPage,
+      skipCountOnFirstPage: true,
+    });
+
+    expect(countItems).toHaveBeenCalledOnce();
+    expect(listPage).toHaveBeenCalledWith(2);
+  });
 });

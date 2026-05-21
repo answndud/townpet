@@ -3808,3 +3808,35 @@
   - 로컬 개발 서버 warm 측정 기준 `/` 브라우저 FCP/LCP는 `124ms/124ms`였고, 같은 조건의 `/feed`는 `908ms/908ms`, `/feed/guest`는 `416ms/416ms`였다.
   - 로컬 DB가 꺼진 상태에서도 `/`는 redirect 없이 200으로 렌더되고, `/api/home/feed`, `/api/communities`는 빈 payload로 fallback한다.
   - 다음 작업은 `/feed` 자체의 query 경량화다.
+
+### 2026-05-21 | feed 첫 페이지 count query와 기본 개인화 context 지연
+- 완료일: `2026-05-21`
+- 배경:
+  - `/feed`와 `/api/feed/guest`의 일반 feed 첫 페이지가 `listPosts` 결과만으로 다음 페이지 존재 여부를 알 수 있는데도 매번 `countPosts`를 같이 실행했다.
+  - 로그인 사용자의 기본 `ALL/GLOBAL` feed도 `personalized=1`이 아닐 때 개인화 context 조회를 선행해, 일반 정렬/기간 클릭이 불필요한 개인화 read path에 묶일 수 있었다.
+- 변경내용:
+  - `resolveFeedPageSlice`에 `skipCountOnFirstPage` 옵션을 추가했다.
+    - 첫 페이지에서는 `listPage(1)`만 실행한다.
+    - `nextCursor`가 있으면 `totalPages=2`로 최소 next page만 노출하고, 2페이지 이상 요청에서는 기존처럼 count를 실행한다.
+  - `/feed`의 `ALL` 모드 첫 페이지와 `/api/feed/guest`의 `ALL` 모드 첫 페이지에 `skipCountOnFirstPage: true`를 적용했다.
+  - `/feed`의 개인화 context 조회 조건을 `mode=ALL`, `GLOBAL`, 로그인 여부가 아니라 실제 `usePersonalizedFeed` 기준으로 좁혔다.
+    - 일반 feed는 audience segment, pets, recent engagement/behavior/dwell/bookmark summary 조회를 건너뛴다.
+    - `personalized=1`을 명시했을 때만 기존 개인화 context를 계산한다.
+- 코드문서:
+  - [app/src/server/services/posts/feed-page-query.service.ts](../app/src/server/services/posts/feed-page-query.service.ts)
+  - [app/src/server/services/posts/feed-page-query.service.test.ts](../app/src/server/services/posts/feed-page-query.service.test.ts)
+  - [app/src/app/feed/page.tsx](../app/src/app/feed/page.tsx)
+  - [app/src/app/api/feed/guest/route.ts](../app/src/app/api/feed/guest/route.ts)
+  - [app/src/app/api/feed/guest/route.test.ts](../app/src/app/api/feed/guest/route.test.ts)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `./node_modules/.bin/vitest run src/server/services/posts/feed-page-query.service.test.ts src/app/api/feed/guest/route.test.ts`
+  - `./node_modules/.bin/tsc -p tsconfig.json --noEmit --pretty false`
+  - `./node_modules/.bin/eslint`
+  - `./node_modules/.bin/next build`
+- 결과:
+  - 일반 feed 첫 페이지가 `countPosts` 없이 `listPosts`만으로 렌더될 수 있다.
+  - 2페이지 이상 요청은 기존처럼 count query를 유지해 overflow page 보정과 pagination 정확도를 보존한다.
+  - 로그인 기본 feed에서 개인화 context가 자동 실행되지 않아, 정렬/기간 클릭의 서버 read path가 줄었다.
+  - 다음 작업은 댓글 작성 체감 속도 개선이다.
