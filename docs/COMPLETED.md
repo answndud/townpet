@@ -4012,6 +4012,32 @@
   - `node scripts/refresh-docs-index.mjs --check`
   - `git diff --check`
 
+### 2026-05-21 | 홈 CTA 하단 밀도 정리
+- 완료일: `2026-05-21`
+- 배경:
+  - `/` 시작페이지의 primary CTA는 정리됐지만, 그 아래 `관심 주제`와 Live board 영역이 CTA 대비 여전히 여백과 헤더 비중이 컸다.
+  - `전체 피드 보기`는 hero의 대표 행동으로 1회만 유지해야 하므로, 하단 영역에 같은 성격의 CTA를 다시 만들지 않는 기준이 필요했다.
+- 변경내용:
+  - `관심 주제별로 둘러보기`를 `관심 주제`로 줄이고, 설명 문구와 chip 간격/높이를 더 compact하게 조정했다.
+  - Live board 헤더의 제목 크기와 상하 간격을 줄이고, 목록 section 간격을 낮췄다.
+  - 홈 미리보기 row와 skeleton의 padding, line-height, 메타 영역 배치를 줄여 빈 상태와 글 목록이 같은 밀도 기준으로 보이게 했다.
+  - `전체 피드 보기` CTA는 hero에만 남기고 Live board에는 중복 전체 피드 링크를 추가하지 않았다.
+- 코드문서:
+  - [app/src/app/page.tsx](../app/src/app/page.tsx)
+  - [app/src/components/home/home-feed-preview.tsx](../app/src/components/home/home-feed-preview.tsx)
+  - [app/src/app/page.test.tsx](../app/src/app/page.test.tsx)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/app/page.test.tsx`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app run design:detect`
+  - `corepack pnpm@9.12.3 -C app build`
+  - local Playwright mobile/desktop render check at `http://localhost:3000/`
+- 결과:
+  - 시작페이지 hero CTA 아래 영역이 더 조용하고 compact해졌다.
+  - 모바일에서 `처음 방문했다면` 가이드는 계속 노출되지 않고, `전체 피드 보기` 텍스트 CTA는 1회만 유지된다.
+
 ### 2026-05-21 | 사용자 선택 동네 허브 진입 흐름 연결
 - 완료일: `2026-05-21`
 - 배경:
