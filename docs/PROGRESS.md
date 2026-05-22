@@ -176,3 +176,7 @@
   - local browser smoke:
     - `/posts/new?type=LOST_FOUND` desktop screenshot: `/tmp/townpet-lost-found-privacy-desktop.png`
     - `/posts/new?type=LOST_FOUND` mobile screenshot: `/tmp/townpet-lost-found-privacy-mobile.png`
+  - production deploy: `a10bb3e Harden lost found privacy policy` -> `https://townpet-pvd85l67u-jmoon0227-9736s-projects.vercel.app` Ready, alias `https://townpet.vercel.app`
+  - production smoke:
+    - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health` 통과
+    - `GET /posts/new?type=LOST_FOUND` HTML에서 `분실/목격 제보 작성`, `도로명·번지 주소를 적지 마세요`, `보호자 공개 제보` 확인
