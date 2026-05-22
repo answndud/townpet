@@ -4834,6 +4834,10 @@
   - local browser smoke:
     - `/tmp/townpet-offline-qr-campaign-desktop.png`
     - `/tmp/townpet-offline-qr-campaign-mobile.png`
+  - production deploy: `0460e13 Prepare offline QR partner campaign` -> `https://townpet-f4olqj4s4-jmoon0227-9736s-projects.vercel.app` Ready, alias `https://townpet.vercel.app`
+  - production smoke:
+    - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health` 통과
+    - `https://townpet.vercel.app/campaigns/neighborhood-map?utm_source=petcafe_qr&utm_medium=offline_qr&utm_campaign=neighborhood_map` HTML에서 `utm_source=petcafe_qr`, `동반가능 장소 제보 QR`, `분실동물 첫 24시간 QR` 확인
 - 결과:
   - 오프라인 QR 하나가 가입이 아니라 병원 체크, 동반 장소, 산책코스, 분실동물 문제 해결 흐름으로 연결된다.
   - 파트너 10곳 제안에 필요한 문구와 운영 체크리스트가 준비됐다.

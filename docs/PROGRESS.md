@@ -137,4 +137,6 @@
   - local browser smoke:
     - `/campaigns/neighborhood-map?utm_source=petcafe_qr&utm_medium=offline_qr&utm_campaign=neighborhood_map` desktop screenshot: `/tmp/townpet-offline-qr-campaign-desktop.png`
     - `/campaigns/neighborhood-map?utm_source=shelter_qr&utm_medium=offline_qr&utm_campaign=neighborhood_map` mobile screenshot: `/tmp/townpet-offline-qr-campaign-mobile.png`
+  - production deploy: `0460e13 Prepare offline QR partner campaign` -> `https://townpet-f4olqj4s4-jmoon0227-9736s-projects.vercel.app` Ready, alias `https://townpet.vercel.app`
+  - production smoke: `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health` 통과, 캠페인 QR page HTML에서 `utm_source=petcafe_qr`, `동반가능 장소 제보 QR`, `분실동물 첫 24시간 QR` 확인
   - 참고: `pnpm -C app design:detect` 스크립트는 기존 Corepack keyid 오류로 실패했고, 같은 detector는 루트 기준 명시 버전 `corepack pnpm@9.12.3 dlx impeccable detect ...`로 통과했다.
