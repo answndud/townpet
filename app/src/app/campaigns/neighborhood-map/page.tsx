@@ -8,6 +8,10 @@ import {
 } from "@/components/analytics/acquisition-event-tracker";
 import { FoundingMemberBadge } from "@/components/user/founding-member-badge";
 import { NEIGHBORHOOD_MAP_CAMPAIGN_PATH } from "@/lib/campaign-pages";
+import {
+  getOfflinePartnerQrChannelBySource,
+  listOfflinePartnerQrChannels,
+} from "@/lib/offline-partner-campaign";
 import { buildPostCreateTemplateHref } from "@/lib/post-create-templates";
 import { getNeighborhoodMapCampaignStats } from "@/server/queries/campaign.queries";
 
@@ -79,12 +83,31 @@ const REWARDS = [
   "지역 쿠폰 또는 소액 기프티콘 후보",
 ] as const;
 
+type CampaignSearchParams = Record<string, string | string[] | undefined>;
+
 function formatCount(value: number) {
   return value.toLocaleString("ko-KR");
 }
 
-export default async function NeighborhoodMapCampaignPage() {
+function getFirstSearchParamValue(
+  searchParams: CampaignSearchParams,
+  key: string,
+) {
+  const value = searchParams[key];
+  return Array.isArray(value) ? value[0] : value;
+}
+
+export default async function NeighborhoodMapCampaignPage({
+  searchParams,
+}: {
+  searchParams?: CampaignSearchParams | Promise<CampaignSearchParams>;
+} = {}) {
   const stats = await getNeighborhoodMapCampaignStats();
+  const resolvedSearchParams = await Promise.resolve(searchParams ?? {});
+  const sourceChannel = getOfflinePartnerQrChannelBySource(
+    getFirstSearchParamValue(resolvedSearchParams, "utm_source"),
+  );
+  const offlinePartnerChannels = listOfflinePartnerQrChannels();
   const statItems = [
     { label: "병원 정보", value: stats.hospitalCount },
     { label: "산책코스", value: stats.walkRouteCount },
@@ -100,6 +123,7 @@ export default async function NeighborhoodMapCampaignPage() {
           event: "CAMPAIGN_VIEWED",
           targetType: "CAMPAIGN",
           targetId: "neighborhood_map",
+          source: sourceChannel?.source ?? null,
         }}
       />
       <section className="mx-auto grid w-full max-w-[1180px] gap-7 px-4 py-9 sm:px-6 sm:py-12 lg:grid-cols-[minmax(0,1fr)_380px] lg:px-10">
@@ -172,6 +196,38 @@ export default async function NeighborhoodMapCampaignPage() {
               특정 지역을 확정하기 전에는 이 링크로 캠페인을 안내하고, 사용자가 직접 동네를
               선택한 뒤 글을 남기게 합니다.
             </p>
+            <div className="mt-4 divide-y divide-[#dbe6f5] border-y border-[#dbe6f5]">
+              {offlinePartnerChannels.map((channel) => (
+                <div key={channel.source} className="py-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-[#173963]">
+                        {channel.partnerLabel}
+                      </p>
+                      <p className="mt-1 text-xs leading-5 text-[#5a7397]">
+                        {channel.qrLabel}
+                      </p>
+                    </div>
+                    <AcquisitionTrackedLink
+                      href={channel.primaryHref}
+                      className="tp-btn-soft inline-flex min-h-8 shrink-0 items-center justify-center px-2.5 text-[11px] font-semibold"
+                      event={{
+                        surface: "CAMPAIGN_NEIGHBORHOOD_MAP",
+                        event: "CAMPAIGN_CTA_CLICKED",
+                        targetType: "CHANNEL",
+                        targetId: channel.source,
+                        source: channel.source,
+                      }}
+                    >
+                      {channel.primaryCta}
+                    </AcquisitionTrackedLink>
+                  </div>
+                  <p className="mt-2 break-all rounded-md bg-white px-2.5 py-1.5 font-mono text-[11px] leading-5 text-[#456894]">
+                    {channel.landingHref}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
         </aside>
       </section>

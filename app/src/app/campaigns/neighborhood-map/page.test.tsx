@@ -25,6 +25,22 @@ describe("NeighborhoodMapCampaignPage", () => {
     expect(html).toContain("창립 멤버");
     expect(html).toContain(">12<");
     expect(html).toContain("/campaigns/neighborhood-map");
+    expect(html).toContain("응급/야간 병원 체크 QR");
+    expect(html).toContain("utm_source=hospital_qr");
+    expect(html).toContain("분실동물 첫 24시간 QR");
+  });
+
+  it("accepts offline partner QR source on campaign views", async () => {
+    const html = renderToStaticMarkup(
+      await NeighborhoodMapCampaignPage({
+        searchParams: {
+          utm_source: "petcafe_qr",
+        },
+      }),
+    );
+
+    expect(html).toContain("동반가능 장소 제보 QR");
+    expect(html).toContain("petcafe_qr");
   });
 
   it("is public and canonical to the campaign URL", () => {

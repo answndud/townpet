@@ -4800,3 +4800,41 @@
 - 결과:
   - `/admin/ops`에서 지역별 콘텐츠 밀도와 첫 참여 품질을 확인할 수 있게 됐다.
   - 다음 단계 `P1-6. 오프라인 QR/파트너 운영 준비`에서 QR/파트너 유입 source를 이 지표와 연결할 수 있다.
+
+### 2026-05-22 | P1-6 오프라인 QR/파트너 운영 준비
+- 완료일: `2026-05-22`
+- 배경:
+  - 오프라인 QR은 가입 화면으로 보내면 현장 보호자가 바로 쓸 이유가 약하다.
+  - 병원, 펫카페, 미용실, 보호소마다 보호자가 기대하는 문제 해결 흐름이 다르므로 QR source와 landing/action URL을 분리해야 했다.
+- 변경내용:
+  - `offline-partner-campaign` helper를 추가해 병원/펫카페/미용실/보호소 QR source를 repo-local 코드로 정의했다.
+  - QR landing/action URL에 `utm_source`, `utm_medium=offline_qr`, `utm_campaign=neighborhood_map`을 붙인다.
+  - 병원 QR은 24시 병원 체크 가이드와 병원 경험 템플릿으로, 펫카페 QR은 동반가능 장소 제보로, 미용실 QR은 산책코스 추천으로, 보호소 QR은 분실동물 첫 24시간 가이드와 `/lost/new`로 연결했다.
+  - 캠페인 페이지의 QR/DM 영역에 파트너별 QR 링크와 1차 액션 버튼을 추가했다.
+  - 캠페인 조회 이벤트가 `utm_source`를 읽어 `AcquisitionEventStat.source`로 기록할 수 있게 했다.
+  - 파트너 제안 문구, 포스터 원고, 첫 10곳 제안 리스트를 `business/product` 문서로 정리했다.
+  - 오프라인 QR URL 매트릭스, 현장 제안 스크립트, 2주 파일럿 체크, 중단 기준을 `business/operations` 문서로 정리했다.
+- 코드문서:
+  - [app/src/lib/offline-partner-campaign.ts](../app/src/lib/offline-partner-campaign.ts)
+  - [app/src/lib/offline-partner-campaign.test.ts](../app/src/lib/offline-partner-campaign.test.ts)
+  - [app/src/app/campaigns/neighborhood-map/page.tsx](../app/src/app/campaigns/neighborhood-map/page.tsx)
+  - [app/src/app/campaigns/neighborhood-map/page.test.tsx](../app/src/app/campaigns/neighborhood-map/page.test.tsx)
+  - [business/product/오프라인_QR_파트너_제안서.md](../business/product/오프라인_QR_파트너_제안서.md)
+  - [business/operations/오프라인_QR_파트너_운영_체크리스트.md](../business/operations/오프라인_QR_파트너_운영_체크리스트.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/lib/offline-partner-campaign.test.ts src/app/campaigns/neighborhood-map/page.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `PUPPETEER_SKIP_DOWNLOAD=1 corepack pnpm@9.12.3 dlx impeccable detect app/src/app app/src/components --fast`
+  - `git diff --check`
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+  - local browser smoke:
+    - `/tmp/townpet-offline-qr-campaign-desktop.png`
+    - `/tmp/townpet-offline-qr-campaign-mobile.png`
+- 결과:
+  - 오프라인 QR 하나가 가입이 아니라 병원 체크, 동반 장소, 산책코스, 분실동물 문제 해결 흐름으로 연결된다.
+  - 파트너 10곳 제안에 필요한 문구와 운영 체크리스트가 준비됐다.
+  - 다음 단계는 병원/업체 정보 정정 요청 프로세스다.
