@@ -119,7 +119,7 @@ export function PostCommentRootForm({
                 className={`tp-input-soft ${POST_COMMENT_FORM_FIELD_CLASS_NAME} min-h-11 w-full px-3 py-2 text-[14px] sm:min-h-10 sm:px-2.5 sm:py-1.5 sm:text-[13px]`}
                 value={sightingLocation}
                 onChange={(event) => onSightingLocationChange?.(event.target.value)}
-                placeholder="목격 위치"
+                placeholder="목격 위치(공개 시 상세주소 제외)"
                 maxLength={160}
               />
               <input
@@ -146,6 +146,11 @@ export function PostCommentRootForm({
                 />
                 위치/사진은 보호자에게만 공개
               </label>
+              {!isPrivateSighting ? (
+                <p className="tp-text-subtle -mt-0.5 text-[11px] leading-4 sm:col-span-2">
+                  공개 제보에는 전화번호, 오픈채팅, 이메일, 도로명·번지 주소를 적지 마세요.
+                </p>
+              ) : null}
             </div>
           ) : null}
           <textarea
