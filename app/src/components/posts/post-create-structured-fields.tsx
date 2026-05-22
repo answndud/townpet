@@ -1048,11 +1048,11 @@ export function LostFoundFields({
               },
             }))
           }
-          placeholder="예: 서울 서초구 반포동 산책로 입구"
+          placeholder="예: 반포동 산책로 입구, OO공원 북문 근처"
           required
         />
         <span className="tp-form-note">
-          집 주소 전체나 개인 연락처는 본문에 직접 공개하지 말고, 확인 가능한 위치와 시간 중심으로 적어 주세요.
+          공개 글에는 전화번호, 오픈채팅, 이메일, 도로명·번지 주소를 적지 마세요. 연락이 필요한 단서는 댓글의 보호자 공개 제보를 이용합니다.
         </span>
       </label>
     </StructuredFieldSection>

@@ -23,6 +23,10 @@ import {
   isCommonBoardPostType,
 } from "@/lib/community-board";
 import { POST_CONTENT_MAX_LENGTH, POST_TITLE_MAX_LENGTH } from "@/lib/input-limits";
+import {
+  buildLostFoundPublicPrivacyMessage,
+  detectLostFoundPublicPrivacySignals,
+} from "@/lib/lost-found-privacy-policy";
 import { isFreeBoardPostType } from "@/lib/post-type-groups";
 import { REVIEW_CATEGORY, REVIEW_CATEGORY_VALUES, type ReviewCategory } from "@/lib/review-category";
 import {
@@ -194,6 +198,19 @@ export const lostFoundSchema = z.object({
   breed: optionalTrimmedString({ max: 80 }),
   lastSeenAt: z.coerce.date(),
   lastSeenLocation: trimmedRequiredString({ max: 160 }),
+}).superRefine((value, ctx) => {
+  const privacyMessage = buildLostFoundPublicPrivacyMessage(
+    detectLostFoundPublicPrivacySignals(value.lastSeenLocation),
+  );
+  if (!privacyMessage) {
+    return;
+  }
+
+  ctx.addIssue({
+    code: z.ZodIssueCode.custom,
+    path: ["lastSeenLocation"],
+    message: privacyMessage,
+  });
 });
 
 export const lostFoundStatusUpdateSchema = z.object({

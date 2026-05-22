@@ -34,20 +34,20 @@
 - `P1-5. 초기 지역 운영 지표`를 완료했다. `/admin/ops`에서 동네별 콘텐츠 밀도, 빈 카테고리, 분실동물 상태, 운영자 콘텐츠 확인일, 획득 이벤트, 첫 글/24h 댓글/D7 재방문 지표를 볼 수 있다.
 - `P1-6. 오프라인 QR/파트너 운영 준비`를 완료했다. 병원/펫카페/미용실/보호소 QR source와 문제 해결형 landing/action URL, 파트너 제안서, 운영 체크리스트를 추가했다.
 - `P1-7. 병원/업체 정정 요청 프로세스`를 완료했다. 공개 정정 요청 폼, 요청 저장 모델, 관리자 처리 큐, 처리 로그와 정책 문서를 추가했다.
+- `P1-8. 분실동물 허위 제보/개인정보 정책`을 완료했다. 공개 분실동물 위치/공개 목격 제보에서 연락처·메신저·상세주소를 검증하고, 보호자 공개 제보와 허위/개인정보 신고 기준을 UI/정책 문서에 맞췄다.
 
 ## 다음 액션
 
-- 다음 작업은 `P1-8. 분실동물 허위 제보/개인정보 정책`이다.
-- P1-8 시작 전 확인할 파일:
+- 다음 작업은 `P1-9. 중고거래 안전 템플릿`이다.
+- P1-9 시작 전 확인할 파일:
   - `business/policies/*`
-  - `business/security/보안_위험_등록부.md`
-  - `app/src/app/lost/new`
-  - `app/src/app/posts/[id]/guest/page.tsx`
+  - `business/security/개인정보_처리_원칙.md`
   - `app/src/components/posts/post-create-structured-fields.tsx`
-  - `app/src/lib/validations/moderation/*`
+  - `app/src/components/posts/post-detail-info-panels.tsx`
   - `app/src/lib/validations/posts/post.ts`
-  - `app/src/server/services/moderation/*`
-  - `app/src/server/services/posts/post-lost-found-workflow.service.ts`
+  - `app/src/server/services/post-create-policy.test.ts`
+  - `app/src/lib/contact-policy.ts`
+  - `app/src/lib/forbidden-keyword-policy.ts`
 - 시작페이지 추가 개선 후보:
   - 홈에는 간소 헤더를 적용했지만, 다른 public route의 모바일 앱 셸 밀도는 아직 기존 제품 헤더 기준이다. 필요 시 `/guides/*` 같은 SEO landing에도 같은 header 정책을 확장한다.
   - 홈 preview API는 테스트 성격 글을 숨기지만, seed/demo 데이터가 production DB에 섞이는 운영 원인은 별도 정리가 필요하다.
@@ -163,3 +163,16 @@
   - local API smoke: `POST /api/corrections` 201, `PENDING` 정정 요청 생성 확인
   - production deploy: `7d8eecf Add information correction request workflow` -> `https://townpet-42lp4zn73-jmoon0227-9736s-projects.vercel.app` Ready, alias `https://townpet.vercel.app`
   - production smoke: `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health` 통과, `GET /corrections/new` 200, HTML에서 `정보 정정 요청`, `정정 요청 접수`, `병원 후기 작성 기준 보기` 확인
+
+- `P1-8. 분실동물 허위 제보/개인정보 정책`
+  - `corepack pnpm@9.12.3 -C app test -- src/lib/lost-found-privacy-policy.test.ts src/lib/validations/comment.test.ts src/lib/validations/post.test.ts src/components/posts/post-create-structured-fields.test.tsx`
+  - `corepack pnpm@9.12.3 -C app test -- src/lib/lost-found-privacy-policy.test.ts src/lib/validations/comment.test.ts src/lib/validations/post.test.ts src/components/posts/post-create-structured-fields.test.tsx src/components/posts/post-comment-thread.test.tsx src/components/posts/post-detail-action-accessibility.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `PUPPETEER_SKIP_DOWNLOAD=1 corepack pnpm@9.12.3 dlx impeccable detect app/src/app app/src/components --fast`
+  - `git diff --check`
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+  - local browser smoke:
+    - `/posts/new?type=LOST_FOUND` desktop screenshot: `/tmp/townpet-lost-found-privacy-desktop.png`
+    - `/posts/new?type=LOST_FOUND` mobile screenshot: `/tmp/townpet-lost-found-privacy-mobile.png`

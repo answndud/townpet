@@ -412,6 +412,23 @@ describe("post validations", () => {
     expect(result.success).toBe(true);
   });
 
+  it("rejects lost-found public location with direct contact or detailed address", () => {
+    const result = postCreateSchema.safeParse({
+      title: "실종 제보",
+      content: "내용",
+      type: PostType.LOST_FOUND,
+      scope: PostScope.GLOBAL,
+      lostFound: {
+        alertType: "LOST",
+        petType: "강아지",
+        lastSeenAt: "2026-05-21T18:30:00.000Z",
+        lastSeenLocation: "서울특별시 서초구 반포대로 10, 010-1234-5678",
+      },
+    });
+
+    expect(result.success).toBe(false);
+  });
+
   it("rejects lost-found posts without structured alert fields", () => {
     const result = postCreateSchema.safeParse({
       title: "실종 제보",

@@ -699,6 +699,13 @@ export function PostDetailInfoPanels({
             span="wide"
             value={renderTextValue(post.lostFoundAlert.lastSeenLocation)}
           />
+          <div className="col-span-full rounded-lg border border-[#ead5a5] bg-[#fff9e8] px-3 py-2 text-[12px] leading-5 text-[#6f551d]">
+            허위 제보, 장난 제보, 개인정보 노출은 신고 사유에서{" "}
+            <span className="font-semibold">허위 정보/장난 제보</span>{" "}
+            또는{" "}
+            <span className="font-semibold">개인정보 노출</span>을 선택해 주세요.
+            민감한 목격 위치와 사진은 댓글의 보호자 공개 제보로 남깁니다.
+          </div>
           {canManageLostFoundStatus ? (
             <div className="col-span-full rounded-lg border border-[#dbe6f5] bg-[#f8fbff] px-3 py-2.5">
               <label className="tp-text-label text-[10px] text-[#5a7398]" htmlFor="lost-found-status">

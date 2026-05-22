@@ -4893,3 +4893,45 @@
   - 병원/업체 관련 분쟁이 들어왔을 때 공식 접수 경로와 운영 처리 큐가 생겼다.
   - 사용자 후기 본문을 접수 즉시 임의 삭제하지 않고, 근거 확인과 처리 기록을 남기는 기준을 UI와 정책 문서에 맞췄다.
   - 다음 단계는 `P1-8. 분실동물 허위 제보/개인정보 정책`이다.
+
+### 2026-05-22 | P1-8 분실동물 허위 제보/개인정보 정책
+- 완료일: `2026-05-22`
+- 배경:
+  - 분실동물 글은 긴급 확산성이 필요하지만 공개 연락처, 오픈채팅, 상세 주소가 노출되면 스팸·스토킹·장난 제보 리스크가 커진다.
+  - 이미 댓글에는 보호자 공개 목격 제보 옵션이 있었으므로 새 연락 기능을 만들기보다 공개 필드 검증과 UI 안내를 먼저 강화했다.
+- 변경내용:
+  - 분실동물 공개 정보 privacy detector를 추가해 전화번호, 이메일, 오픈채팅, 메신저 링크, 카카오톡 ID, 도로명·번지 주소 신호를 감지한다.
+  - `LOST_FOUND` 글의 마지막 확인 위치에 연락처/상세주소가 들어가면 Zod 검증에서 거부한다.
+  - 공개 목격 제보에는 연락처/상세주소를 직접 적지 못하게 하고, 민감 단서는 `보호자에게만 공개` 옵션을 선택하도록 안내한다.
+  - 보호자 공개 목격 제보는 기존 정책대로 작성자와 제보자에게만 원문 위치/사진을 보여준다.
+  - 분실동물 작성 폼의 placeholder와 안내 문구를 동네·공원·역·상가명 수준의 위치 작성 기준으로 바꿨다.
+  - 분실동물 상세 정보 패널에 허위 제보/장난 제보/개인정보 노출 신고 기준을 노출했다.
+  - 커뮤니티 가이드라인, 모더레이션 운영규칙, 개인정보 처리 원칙, 보안 위험 등록부에 분실동물 개인정보/허위 제보 정책을 반영했다.
+- 코드문서:
+  - [app/src/lib/lost-found-privacy-policy.ts](../app/src/lib/lost-found-privacy-policy.ts)
+  - [app/src/lib/lost-found-privacy-policy.test.ts](../app/src/lib/lost-found-privacy-policy.test.ts)
+  - [app/src/lib/validations/posts/post.ts](../app/src/lib/validations/posts/post.ts)
+  - [app/src/lib/validations/comment.ts](../app/src/lib/validations/comment.ts)
+  - [app/src/components/posts/post-create-structured-fields.tsx](../app/src/components/posts/post-create-structured-fields.tsx)
+  - [app/src/components/posts/post-comment-root-form.tsx](../app/src/components/posts/post-comment-root-form.tsx)
+  - [app/src/components/posts/post-detail-info-panels.tsx](../app/src/components/posts/post-detail-info-panels.tsx)
+  - [business/policies/커뮤니티_가이드라인.md](../business/policies/커뮤니티_가이드라인.md)
+  - [business/policies/모더레이션_운영규칙.md](../business/policies/모더레이션_운영규칙.md)
+  - [business/security/개인정보_처리_원칙.md](../business/security/개인정보_처리_원칙.md)
+  - [business/security/보안_위험_등록부.md](../business/security/보안_위험_등록부.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/lib/lost-found-privacy-policy.test.ts src/lib/validations/comment.test.ts src/lib/validations/post.test.ts src/components/posts/post-create-structured-fields.test.tsx`
+  - `corepack pnpm@9.12.3 -C app test -- src/lib/lost-found-privacy-policy.test.ts src/lib/validations/comment.test.ts src/lib/validations/post.test.ts src/components/posts/post-create-structured-fields.test.tsx src/components/posts/post-comment-thread.test.tsx src/components/posts/post-detail-action-accessibility.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `PUPPETEER_SKIP_DOWNLOAD=1 corepack pnpm@9.12.3 dlx impeccable detect app/src/app app/src/components --fast`
+  - `git diff --check`
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+  - local browser smoke:
+    - `/tmp/townpet-lost-found-privacy-desktop.png`
+    - `/tmp/townpet-lost-found-privacy-mobile.png`
+- 결과:
+  - 분실동물 글은 동네 단위 확산성은 유지하면서 공개 연락처/상세주소 노출을 막는다.
+  - 허위 제보와 개인정보 노출 신고 기준이 UI, 검증, 정책 문서에 같은 언어로 연결됐다.
+  - 다음 단계는 `P1-9. 중고거래 안전 템플릿`이다.

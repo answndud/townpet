@@ -55,4 +55,28 @@ describe("comment validations", () => {
 
     expect(result.success).toBe(false);
   });
+
+  it("rejects public lost-found sightings with direct contact or detailed address", () => {
+    const result = commentCreateSchema.safeParse({
+      kind: CommentKind.LOST_FOUND_SIGHTING,
+      content: "010-1234-5678로 연락 주세요.",
+      sightingLocation: "서울특별시 서초구 반포대로 10",
+      sightingSeenAt: "2026-05-21T10:30:00.000Z",
+      isPrivateSighting: false,
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("allows private lost-found sightings to include sensitive clues for the owner", () => {
+    const result = commentCreateSchema.safeParse({
+      kind: CommentKind.LOST_FOUND_SIGHTING,
+      content: "현관 앞에 보호 중입니다.",
+      sightingLocation: "서울특별시 서초구 반포대로 10",
+      sightingSeenAt: "2026-05-21T10:30:00.000Z",
+      isPrivateSighting: true,
+    });
+
+    expect(result.success).toBe(true);
+  });
 });

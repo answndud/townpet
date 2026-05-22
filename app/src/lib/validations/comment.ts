@@ -2,6 +2,10 @@ import { z } from "zod";
 import { CommentKind } from "@prisma/client";
 
 import { COMMENT_CONTENT_MAX_LENGTH } from "@/lib/input-limits";
+import {
+  buildLostFoundPublicPrivacyMessage,
+  detectLostFoundPublicPrivacySignals,
+} from "@/lib/lost-found-privacy-policy";
 import { trimmedRequiredString } from "@/lib/validations/text";
 
 export const commentCreateSchema = z
@@ -33,6 +37,23 @@ export const commentCreateSchema = z
         message: "목격 시간을 입력해 주세요.",
       });
     }
+
+    if (value.isPrivateSighting) {
+      return;
+    }
+
+    const privacyMessage = buildLostFoundPublicPrivacyMessage(
+      detectLostFoundPublicPrivacySignals(`${value.sightingLocation ?? ""}\n${value.content}`),
+    );
+    if (!privacyMessage) {
+      return;
+    }
+
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["sightingLocation"],
+      message: `${privacyMessage} 민감한 단서는 '보호자에게만 공개'를 선택해 주세요.`,
+    });
   });
 
 export const commentUpdateSchema = z.object({
