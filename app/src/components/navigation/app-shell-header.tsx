@@ -11,6 +11,7 @@ import {
   APP_SHELL_HEADER_CLASS_NAME,
   APP_SHELL_MOBILE_QUICK_LINK_CLASS_NAME,
   APP_SHELL_NAV_LINK_CLASS_NAME,
+  isPublicAcquisitionHeaderPath,
   shouldRefreshViewerShellOnFocus,
 } from "@/components/navigation/app-shell-header-class";
 import { FeedHoverMenu } from "@/components/navigation/feed-hover-menu";
@@ -68,14 +69,14 @@ export function AppShellHeader({ communities: initialCommunities = [] }: Partial
     `${DEFAULT_VIEWER_SHELL.isAuthenticated}:${DEFAULT_VIEWER_SHELL.canModerate}`,
   );
   const pathname = usePathname();
-  const isHomePath = pathname === "/";
+  const isAcquisitionHeaderPath = isPublicAcquisitionHeaderPath(pathname);
   const refreshOnFocus = shouldRefreshViewerShellOnFocus(pathname);
   const allPetTypeIds = communities.map((item) => item.id);
   const preferredPetTypeIds =
     viewerShell.preferredPetTypeIds.length > 0 ? viewerShell.preferredPetTypeIds : allPetTypeIds;
 
   useEffect(() => {
-    if (isHomePath) {
+    if (isAcquisitionHeaderPath) {
       return;
     }
 
@@ -120,7 +121,7 @@ export function AppShellHeader({ communities: initialCommunities = [] }: Partial
       cancelled = true;
       controller.abort();
     };
-  }, [initialCommunities.length, isHomePath]);
+  }, [initialCommunities.length, isAcquisitionHeaderPath]);
 
   useEffect(() => {
     let cancelled = false;
@@ -181,7 +182,7 @@ export function AppShellHeader({ communities: initialCommunities = [] }: Partial
     };
   }, [pathname, refreshOnFocus]);
 
-  if (isHomePath) {
+  if (isAcquisitionHeaderPath) {
     return (
       <header className="border-b border-[#d8e4f6] bg-[#f4f8ffeb]">
         <div className="mx-auto flex w-full max-w-[1320px] items-center justify-between gap-3 px-4 py-2 sm:px-6 sm:py-2.5 lg:px-10">
@@ -195,7 +196,7 @@ export function AppShellHeader({ communities: initialCommunities = [] }: Partial
               className="h-[34px] w-auto sm:h-[38px]"
             />
           </Link>
-          <nav className="flex items-center gap-1.5" aria-label="시작페이지 주요 이동">
+          <nav className="flex items-center gap-1.5" aria-label="공개 안내 페이지 주요 이동">
             <Link
               href="/feed/guest"
               className="inline-flex min-h-9 items-center rounded-md px-2.5 text-xs font-semibold text-[#315484] transition hover:bg-[#dcecff] hover:text-[#1f4f8f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"

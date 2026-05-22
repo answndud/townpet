@@ -36,19 +36,39 @@
 - `P1-7. 병원/업체 정정 요청 프로세스`를 완료했다. 공개 정정 요청 폼, 요청 저장 모델, 관리자 처리 큐, 처리 로그와 정책 문서를 추가했다.
 - `P1-8. 분실동물 허위 제보/개인정보 정책`을 완료했다. 공개 분실동물 위치/공개 목격 제보에서 연락처·메신저·상세주소를 검증하고, 보호자 공개 제보와 허위/개인정보 신고 기준을 UI/정책 문서에 맞췄다.
 - `P1-9. 중고거래 안전 템플릿`을 완료했다. 마켓 글 템플릿과 작성/상세 체크리스트를 반려용품 특화 기준으로 바꾸고, 생체 판매·만료 식품·동물 의약품 거래는 검증에서 차단한다.
+- `P2-1. Public acquisition route 헤더 밀도 정리`를 완료했다. `/guides/*`, `/campaigns/neighborhood-map`, `/towns/*`에는 홈과 같은 간소 헤더를 적용하고, 피드/작성/관리자 등 앱 화면은 기존 헤더를 유지한다.
 
 ## 다음 액션
 
-- 현재 active 구현 항목은 없다.
-- 다음 작업은 P2 보류 항목 중 실제 유저 획득/운영 안정성에 필요한 범위를 다시 선별한 뒤 `docs/PLAN.md`를 먼저 갱신한다.
+- 현재 active 구현 항목 없음.
 - 시작페이지 추가 개선 후보:
-  - 홈에는 간소 헤더를 적용했지만, 다른 public route의 모바일 앱 셸 밀도는 아직 기존 제품 헤더 기준이다. 필요 시 `/guides/*` 같은 SEO landing에도 같은 header 정책을 확장한다.
   - 홈 preview API는 테스트 성격 글을 숨기지만, seed/demo 데이터가 production DB에 섞이는 운영 원인은 별도 정리가 필요하다.
   - desktop에서 `지금 많이 보는 글`과 `최근 올라온 글`이 모두 비면 landing 하단이 약하다. 이번 작업에서 guide 링크를 empty 영역에 연결했지만, production seed/demo 데이터 운영 원인은 별도 정리가 필요하다.
 - 확정 전에는 `/`과 public acquisition UI에 특정 지역명을 노출하지 않는다.
 - 성능 후속은 최신 `main` 배포 후 같은 스크립트로 production 재측정할 때 별도 작업으로 연다.
 
 ## 최근 검증
+
+- `P2-1. Public acquisition route 헤더 밀도 정리`
+  - `corepack pnpm@9.12.3 -C app test -- src/components/navigation/app-shell-header-class.test.ts src/app/guides/page.test.tsx src/app/campaigns/neighborhood-map/page.test.tsx src/app/towns/page.test.tsx src/app/page.test.tsx`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `PUPPETEER_SKIP_DOWNLOAD=1 corepack pnpm@9.12.3 dlx impeccable detect app/src/app app/src/components --fast`
+  - `git diff --check`
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+  - local browser smoke:
+    - `/guides/pet-used-trade-safety` desktop/mobile screenshot
+    - `/campaigns/neighborhood-map` desktop/mobile screenshot
+    - `/towns/서울--서초구` mobile screenshot
+    - `/feed/guest` mobile control screenshot
+  - screenshot files:
+    - `/tmp/townpet-p2-1-guides-desktop.png`
+    - `/tmp/townpet-p2-1-guides-mobile.png`
+    - `/tmp/townpet-p2-1-campaign-desktop.png`
+    - `/tmp/townpet-p2-1-campaign-mobile.png`
+    - `/tmp/townpet-p2-1-town-mobile.png`
+    - `/tmp/townpet-p2-1-feed-mobile-control.png`
 
 - `P0-12. 운영자 콘텐츠와 사용자 글 분리`
   - `corepack pnpm@9.12.3 -C app exec prisma format`

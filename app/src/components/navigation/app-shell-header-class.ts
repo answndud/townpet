@@ -8,6 +8,19 @@ export const APP_SHELL_HEADER_CLASS_NAME = [
   "sm:z-40",
 ].join(" ");
 
+export function isPublicAcquisitionHeaderPath(pathname: string | null | undefined) {
+  if (!pathname) {
+    return false;
+  }
+
+  return (
+    pathname === "/" ||
+    pathname.startsWith("/guides/") ||
+    pathname === "/campaigns/neighborhood-map" ||
+    pathname.startsWith("/towns/")
+  );
+}
+
 export const APP_SHELL_NAV_LINK_CLASS_NAME = [
   "inline-flex",
   "h-9",

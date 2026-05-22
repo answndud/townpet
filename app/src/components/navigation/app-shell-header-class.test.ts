@@ -13,6 +13,7 @@ import {
   APP_SHELL_MOBILE_QUICK_LINK_CLASS_NAME,
   APP_SHELL_NAV_LINK_CLASS_NAME,
   hasMobileStickyHeader,
+  isPublicAcquisitionHeaderPath,
   shouldRefreshViewerShellOnFocus,
 } from "@/components/navigation/app-shell-header-class";
 
@@ -69,8 +70,15 @@ describe("app shell header classes", () => {
       "utf8",
     );
 
-    expect(source).toContain('const isHomePath = pathname === "/"');
+    expect(isPublicAcquisitionHeaderPath("/")).toBe(true);
+    expect(isPublicAcquisitionHeaderPath("/guides/pet-used-trade-safety")).toBe(true);
+    expect(isPublicAcquisitionHeaderPath("/campaigns/neighborhood-map")).toBe(true);
+    expect(isPublicAcquisitionHeaderPath("/towns/%EC%84%9C%EC%9A%B8--%EA%B0%95%EB%82%A8")).toBe(true);
+    expect(isPublicAcquisitionHeaderPath("/feed/guest")).toBe(false);
+    expect(isPublicAcquisitionHeaderPath("/posts/new")).toBe(false);
+    expect(isPublicAcquisitionHeaderPath("/admin/ops")).toBe(false);
+    expect(source).toContain("isPublicAcquisitionHeaderPath(pathname)");
     expect(source).toContain('data-testid="header-login-link-home"');
-    expect(source).toContain('aria-label="시작페이지 주요 이동"');
+    expect(source).toContain('aria-label="공개 안내 페이지 주요 이동"');
   });
 });
