@@ -4884,6 +4884,11 @@
     - `/tmp/townpet-correction-form-mobile.png`
     - `/tmp/townpet-admin-corrections-auth-desktop.png`
   - local API smoke: `POST /api/corrections` 201, `PENDING` 정정 요청 생성 확인
+  - production deploy: `7d8eecf Add information correction request workflow` -> `https://townpet-42lp4zn73-jmoon0227-9736s-projects.vercel.app` Ready, alias `https://townpet.vercel.app`
+  - production smoke:
+    - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health` 통과
+    - `https://townpet.vercel.app/corrections/new` 200
+    - production HTML에서 `정보 정정 요청`, `정정 요청 접수`, `병원 후기 작성 기준 보기` 확인
 - 결과:
   - 병원/업체 관련 분쟁이 들어왔을 때 공식 접수 경로와 운영 처리 큐가 생겼다.
   - 사용자 후기 본문을 접수 즉시 임의 삭제하지 않고, 근거 확인과 처리 기록을 남기는 기준을 UI와 정책 문서에 맞췄다.

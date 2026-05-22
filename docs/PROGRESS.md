@@ -161,3 +161,5 @@
     - `/corrections/new?targetType=HOSPITAL&targetName=타운동물병원` mobile screenshot: `/tmp/townpet-correction-form-mobile.png`
     - `ENABLE_DEMO_AUTH_FALLBACK=1 DEMO_USER_EMAIL=demo@townpet.dev` dev server에서 `/admin/corrections` desktop screenshot: `/tmp/townpet-admin-corrections-auth-desktop.png`
   - local API smoke: `POST /api/corrections` 201, `PENDING` 정정 요청 생성 확인
+  - production deploy: `7d8eecf Add information correction request workflow` -> `https://townpet-42lp4zn73-jmoon0227-9736s-projects.vercel.app` Ready, alias `https://townpet.vercel.app`
+  - production smoke: `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health` 통과, `GET /corrections/new` 200, HTML에서 `정보 정정 요청`, `정정 요청 접수`, `병원 후기 작성 기준 보기` 확인
