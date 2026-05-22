@@ -37,17 +37,31 @@
 - `P1-8. 분실동물 허위 제보/개인정보 정책`을 완료했다. 공개 분실동물 위치/공개 목격 제보에서 연락처·메신저·상세주소를 검증하고, 보호자 공개 제보와 허위/개인정보 신고 기준을 UI/정책 문서에 맞췄다.
 - `P1-9. 중고거래 안전 템플릿`을 완료했다. 마켓 글 템플릿과 작성/상세 체크리스트를 반려용품 특화 기준으로 바꾸고, 생체 판매·만료 식품·동물 의약품 거래는 검증에서 차단한다.
 - `P2-1. Public acquisition route 헤더 밀도 정리`를 완료했다. `/guides/*`, `/campaigns/neighborhood-map`, `/towns/*`에는 홈과 같은 간소 헤더를 적용하고, 피드/작성/관리자 등 앱 화면은 기존 헤더를 유지한다.
+- `P2-2. 홈 preview seed/demo 글 노출 방어`를 완료했다. 홈 preview API가 샘플/demo/test/E2E 글을 더 넓게 제외하고, 내부 후보를 15개까지 가져온 뒤 최종 5개만 반환한다.
 
 ## 다음 액션
 
 - 현재 active 구현 항목 없음.
 - 시작페이지 추가 개선 후보:
-  - 홈 preview API는 테스트 성격 글을 숨기지만, seed/demo 데이터가 production DB에 섞이는 운영 원인은 별도 정리가 필요하다.
-  - desktop에서 `지금 많이 보는 글`과 `최근 올라온 글`이 모두 비면 landing 하단이 약하다. 이번 작업에서 guide 링크를 empty 영역에 연결했지만, production seed/demo 데이터 운영 원인은 별도 정리가 필요하다.
+  - desktop에서 `지금 많이 보는 글`과 `최근 올라온 글`이 모두 비면 landing 하단이 약하다. 이번 작업은 부적절한 preview 노출을 막는 데 집중했고, 빈 상태 콘텐츠 보강은 별도 phase로 다룬다.
+  - production DB에 남은 E2E/demo 데이터의 운영상 정리 절차는 별도 작업으로 문서화한다.
 - 확정 전에는 `/`과 public acquisition UI에 특정 지역명을 노출하지 않는다.
 - 성능 후속은 최신 `main` 배포 후 같은 스크립트로 production 재측정할 때 별도 작업으로 연다.
 
 ## 최근 검증
+
+- `P2-2. 홈 preview seed/demo 글 노출 방어`
+  - `corepack pnpm@9.12.3 -C app test -- src/app/api/home/feed/route.test.ts`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `PUPPETEER_SKIP_DOWNLOAD=1 corepack pnpm@9.12.3 dlx impeccable detect app/src/app app/src/components --fast`
+  - `git diff --check`
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+  - local API smoke: `/api/home/feed`에서 `샘플·`, `[샘플`, `[PW]`, `PW SEARCH`, `테스트`, `playwright`, `townpet-demo`, `비회원E2E`, `[VISUAL SMOKE]`, `visual-smoke` 신호 없음 확인
+  - local browser smoke:
+    - `/tmp/townpet-p2-2-home-desktop.png`
+    - `/tmp/townpet-p2-2-home-mobile.png`
 
 - `P2-1. Public acquisition route 헤더 밀도 정리`
   - `corepack pnpm@9.12.3 -C app test -- src/components/navigation/app-shell-header-class.test.ts src/app/guides/page.test.tsx src/app/campaigns/neighborhood-map/page.test.tsx src/app/towns/page.test.tsx src/app/page.test.tsx`

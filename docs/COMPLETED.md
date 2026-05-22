@@ -5020,3 +5020,35 @@
   - public acquisition route의 CTA와 본문 콘텐츠가 헤더보다 먼저 읽히는 구조가 됐다.
   - 피드와 앱 내부 route는 기존 앱 탐색을 유지한다.
   - 현재 active 구현 항목은 없다. 다음 작업은 새 phase를 PLAN에 먼저 추가한 뒤 진행한다.
+
+### 2026-05-23 | P2-2 홈 preview seed/demo 글 노출 방어
+- 완료일: `2026-05-23`
+- 배경:
+  - production 홈 preview에 `샘플·...` 작성자, `[샘플 ...]`, `[PW]`, `[VISUAL SMOKE]`, E2E 성격 글이 섞이면 실제 서비스 콘텐츠처럼 오해될 수 있다.
+  - 기존 필터는 5개를 가져온 뒤 일부 테스트 문구만 거르는 방식이라 상위 후보가 테스트 글이면 실제 후보를 채우지 못했다.
+- 변경내용:
+  - `/api/home/feed`의 public preview 차단 패턴을 `샘플·`, `[샘플`, `[PW]`, `PW SEARCH`, `E2E`, `playwright`, `townpet-demo`, `visual-smoke`, `[VISUAL SMOKE]`까지 확장했다.
+  - 홈 preview 내부 조회 수를 5개에서 15개로 늘리고, 필터링 후 최종 5개만 반환하도록 바꿨다.
+  - 실제 후보가 없으면 빈 목록을 반환하고 기존 홈 empty state가 표시되도록 했다.
+  - 일반 피드, 검색, 상세, 관리자 노출 정책은 변경하지 않았다.
+- 코드문서:
+  - [app/src/app/api/home/feed/route.ts](../app/src/app/api/home/feed/route.ts)
+  - [app/src/app/api/home/feed/route.test.ts](../app/src/app/api/home/feed/route.test.ts)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/app/api/home/feed/route.test.ts`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `PUPPETEER_SKIP_DOWNLOAD=1 corepack pnpm@9.12.3 dlx impeccable detect app/src/app app/src/components --fast`
+  - `git diff --check`
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+  - local API smoke: `/api/home/feed`에서 `샘플·`, `[샘플`, `[PW]`, `PW SEARCH`, `테스트`, `playwright`, `townpet-demo`, `비회원E2E`, `[VISUAL SMOKE]`, `visual-smoke` 신호 없음 확인
+  - local browser smoke:
+    - `/tmp/townpet-p2-2-home-desktop.png`
+    - `/tmp/townpet-p2-2-home-mobile.png`
+- 결과:
+  - 홈 Live board는 public preview에 적합하지 않은 테스트/샘플/demo 글을 숨긴다.
+  - 부적절한 후보가 상단에 몰려 있어도 뒤쪽 실제 후보를 채울 수 있다.
+  - 현재 active 구현 항목은 없다. 다음 작업은 빈 상태 콘텐츠 보강이나 production DB 정리 절차 문서화 중 하나를 새 phase로 잡고 시작한다.

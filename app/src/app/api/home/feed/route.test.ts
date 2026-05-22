@@ -92,7 +92,7 @@ describe("GET /api/home/feed", () => {
       expect.objectContaining({
         scope: PostScope.GLOBAL,
         excludeTypes: [PostType.MEETUP],
-        limit: 5,
+        limit: 15,
       }),
     );
     expect(mockListPosts).toHaveBeenCalledWith(
@@ -100,7 +100,7 @@ describe("GET /api/home/feed", () => {
         scope: PostScope.GLOBAL,
         excludeTypes: [PostType.MEETUP],
         sort: "LATEST",
-        limit: 5,
+        limit: 15,
       }),
     );
     expect(payload.ok).toBe(true);
@@ -138,6 +138,16 @@ describe("GET /api/home/feed", () => {
           title: "평범한 제목",
           content: "playwright generated body",
         }),
+        createPost({
+          id: "post-pw",
+          title: "[PW] 비회원 글 1778732358441-cmde1f",
+          author: { nickname: "비회원E2E" },
+        }),
+        createPost({
+          id: "post-visual",
+          title: "[VISUAL SMOKE] VISUAL1778720010517",
+          author: { nickname: "visual-smoke" },
+        }),
         createPost({ id: "post-latest", title: "동네 병원 후기" }),
       ],
       nextCursor: null,
@@ -152,6 +162,62 @@ describe("GET /api/home/feed", () => {
     ]);
     expect(payload.data.latest.map((post: { id: string }) => post.id)).toEqual([
       "post-latest",
+    ]);
+  });
+
+  it("excludes production demo sample posts and fills from a wider preview candidate pool", async () => {
+    mockListBestPosts.mockResolvedValue([
+      createPost({
+        id: "post-sample-best",
+        title: "고양이 자동급식기 일주일 사용 후기 공유해요",
+        author: { nickname: "샘플·보리보호자" },
+      }),
+      createPost({ id: "post-real-best-1", title: "우리 동네 산책 후기 1" }),
+      createPost({ id: "post-real-best-2", title: "우리 동네 산책 후기 2" }),
+      createPost({ id: "post-real-best-3", title: "우리 동네 산책 후기 3" }),
+      createPost({ id: "post-real-best-4", title: "우리 동네 산책 후기 4" }),
+      createPost({ id: "post-real-best-5", title: "우리 동네 산책 후기 5" }),
+      createPost({ id: "post-real-best-6", title: "우리 동네 산책 후기 6" }),
+    ] as never);
+    mockListPosts.mockResolvedValue({
+      items: [
+        createPost({
+          id: "post-demo-author",
+          title: "첫 목욕 끝내고 포근해진 코코 자랑합니다",
+          author: { nickname: "townpet-demo" },
+        }),
+        createPost({
+          id: "post-sample-title",
+          title: "[샘플 안내] 실종/목격 게시판은 실제 제보만 등록해 주세요",
+          author: { nickname: "운영 안내" },
+        }),
+        createPost({ id: "post-real-latest-1", title: "동네 병원 후기 1" }),
+        createPost({ id: "post-real-latest-2", title: "동네 병원 후기 2" }),
+        createPost({ id: "post-real-latest-3", title: "동네 병원 후기 3" }),
+        createPost({ id: "post-real-latest-4", title: "동네 병원 후기 4" }),
+        createPost({ id: "post-real-latest-5", title: "동네 병원 후기 5" }),
+        createPost({ id: "post-real-latest-6", title: "동네 병원 후기 6" }),
+      ],
+      nextCursor: null,
+    } as never);
+
+    const response = await GET(new Request("http://localhost/api/home/feed") as NextRequest);
+    const payload = await response.json();
+
+    expect(payload.ok).toBe(true);
+    expect(payload.data.best.map((post: { id: string }) => post.id)).toEqual([
+      "post-real-best-1",
+      "post-real-best-2",
+      "post-real-best-3",
+      "post-real-best-4",
+      "post-real-best-5",
+    ]);
+    expect(payload.data.latest.map((post: { id: string }) => post.id)).toEqual([
+      "post-real-latest-1",
+      "post-real-latest-2",
+      "post-real-latest-3",
+      "post-real-latest-4",
+      "post-real-latest-5",
     ]);
   });
 
