@@ -62,6 +62,10 @@
   - local browser smoke:
     - `/tmp/townpet-p2-2-home-desktop.png`
     - `/tmp/townpet-p2-2-home-mobile.png`
+  - production deploy: `763ddd0 Filter demo posts from home preview` -> `https://townpet-92pedvblw-jmoon0227-9736s-projects.vercel.app` Ready, alias `https://townpet.vercel.app`
+  - production smoke:
+    - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health` 통과
+    - `GET /api/home/feed` 응답에서 `샘플·`, `[샘플`, `[PW]`, `PW SEARCH`, `테스트`, `playwright`, `townpet-demo`, `비회원E2E`, `[VISUAL SMOKE]`, `visual-smoke` 신호 없음 확인
 
 - `P2-1. Public acquisition route 헤더 밀도 정리`
   - `corepack pnpm@9.12.3 -C app test -- src/components/navigation/app-shell-header-class.test.ts src/app/guides/page.test.tsx src/app/campaigns/neighborhood-map/page.test.tsx src/app/towns/page.test.tsx src/app/page.test.tsx`
