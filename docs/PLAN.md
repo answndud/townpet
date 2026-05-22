@@ -192,18 +192,6 @@
 
 ## P1. 측정과 운영 대시보드
 
-### P1-6. 오프라인 QR/파트너 운영 준비
-
-- 구현 방향:
-  - 병원/미용실/펫카페/보호소용 QR landing URL을 분리한다.
-  - 예:
-    - `/towns/{confirmed-town}/lost?utm_source=hospital_qr`
-    - `/campaigns/{confirmed-town}-pet-life-map?utm_source=petcafe_qr`
-  - 파트너 제안 문구와 포스터 PDF는 business 문서로 관리한다.
-- 완료 기준:
-  - 오프라인 QR 하나가 “가입”이 아니라 “분실동물/응급병원/산책 정보”로 연결된다.
-  - 파트너 10곳 제안용 문구와 체크리스트가 준비된다.
-
 ## P1. 정책/법적 리스크 보강
 
 ### P1-7. 병원/업체 정정 요청 프로세스

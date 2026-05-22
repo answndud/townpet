@@ -32,17 +32,18 @@
 - `P1-3. 제보/추천 버튼과 첫 글 템플릿`을 완료했다. 캠페인/지역 허브/가이드 CTA가 글쓰기 템플릿으로 연결되고, `/posts/new`에서 제목/본문 초안과 템플릿 버튼을 제공한다.
 - `P1-4. 획득 이벤트 정의`를 완료했다. public 랜딩/캠페인/가이드/지역 허브의 조회·CTA·템플릿 진입 이벤트를 `AcquisitionEventStat` 일별 집계로 연결하고, 첫 90일 이벤트 사전을 analytics 문서에 반영했다.
 - `P1-5. 초기 지역 운영 지표`를 완료했다. `/admin/ops`에서 동네별 콘텐츠 밀도, 빈 카테고리, 분실동물 상태, 운영자 콘텐츠 확인일, 획득 이벤트, 첫 글/24h 댓글/D7 재방문 지표를 볼 수 있다.
+- `P1-6. 오프라인 QR/파트너 운영 준비`를 완료했다. 병원/펫카페/미용실/보호소 QR source와 문제 해결형 landing/action URL, 파트너 제안서, 운영 체크리스트를 추가했다.
 
 ## 다음 액션
 
-- 다음 작업은 `P1-6. 오프라인 QR/파트너 운영 준비`다.
-- P1-6 시작 전 확인할 파일:
-  - `business/analytics/온동네_초기유저_30일_실행플레이북.md`
-  - `business/analytics/핵심_지표.md`
-  - `business/product/*`
-  - `app/src/app/campaigns/neighborhood-map/page.tsx`
-  - `app/src/lib/acquisition-events.ts`
-  - `app/src/lib/guide-pages.ts`
+- 다음 작업은 `P1-7. 병원/업체 정정 요청 프로세스`다.
+- P1-7 시작 전 확인할 파일:
+  - `business/policies/*`
+  - `business/security/보안_위험_등록부.md`
+  - `app/src/app/admin/hospital-review-flags`
+  - `app/src/lib/validations/moderation/*`
+  - `app/src/server/services/moderation/*`
+  - `app/src/server/queries/moderation/*`
 - 시작페이지 추가 개선 후보:
   - 홈에는 간소 헤더를 적용했지만, 다른 public route의 모바일 앱 셸 밀도는 아직 기존 제품 헤더 기준이다. 필요 시 `/guides/*` 같은 SEO landing에도 같은 header 정책을 확장한다.
   - 홈 preview API는 테스트 성격 글을 숨기지만, seed/demo 데이터가 production DB에 섞이는 운영 원인은 별도 정리가 필요하다.
@@ -124,3 +125,16 @@
   - local browser smoke: admin login 후 `/admin/ops` desktop/mobile screenshot 확인 (`/tmp/townpet-admin-ops-desktop.png`, `/tmp/townpet-admin-ops-mobile.png`)
   - production deploy: `34d5afc Add initial region ops metrics` -> `https://townpet-9td9moz1a-jmoon0227-9736s-projects.vercel.app` Ready, alias `https://townpet.vercel.app`
   - production smoke: `GET /api/health` 200, unauthenticated `HEAD /admin/ops` 404 noindex 확인
+
+- `P1-6. 오프라인 QR/파트너 운영 준비`
+  - `corepack pnpm@9.12.3 -C app test -- src/lib/offline-partner-campaign.test.ts src/app/campaigns/neighborhood-map/page.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `PUPPETEER_SKIP_DOWNLOAD=1 corepack pnpm@9.12.3 dlx impeccable detect app/src/app app/src/components --fast`
+  - `git diff --check`
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+  - local browser smoke:
+    - `/campaigns/neighborhood-map?utm_source=petcafe_qr&utm_medium=offline_qr&utm_campaign=neighborhood_map` desktop screenshot: `/tmp/townpet-offline-qr-campaign-desktop.png`
+    - `/campaigns/neighborhood-map?utm_source=shelter_qr&utm_medium=offline_qr&utm_campaign=neighborhood_map` mobile screenshot: `/tmp/townpet-offline-qr-campaign-mobile.png`
+  - 참고: `pnpm -C app design:detect` 스크립트는 기존 Corepack keyid 오류로 실패했고, 같은 detector는 루트 기준 명시 버전 `corepack pnpm@9.12.3 dlx impeccable detect ...`로 통과했다.
