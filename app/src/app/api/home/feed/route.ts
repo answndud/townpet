@@ -13,7 +13,10 @@ import { enforceRateLimit } from "@/server/rate-limit";
 import { jsonError, jsonOk } from "@/server/response";
 
 const HOME_FEED_LIMIT = 5;
+const HOME_FEED_QUERY_LIMIT = 15;
 const HOME_BEST_DAYS = 7;
+const HOME_PREVIEW_BLOCKED_TEXT_PATTERN =
+  /(테스트|\[샘플|\[pw\b|\[visual smoke\]|샘플·|e2e|visual-smoke|\b(pw search|pwsearch|test-user|playwright|townpet-demo|adoption-demo|demo)\b)/iu;
 
 type RawHomePost = Record<string, unknown> & {
   id: string;
@@ -58,9 +61,14 @@ function isHomePreviewEligible(rawPost: RawHomePost) {
     .join(" ")
     .toLowerCase();
 
-  return !/(테스트|\b(e2e|pw search|pwsearch|test-user|playwright)\b)/u.test(
-    searchableText,
-  );
+  return !HOME_PREVIEW_BLOCKED_TEXT_PATTERN.test(searchableText);
+}
+
+function serializeHomePosts(rawPosts: RawHomePost[]) {
+  return rawPosts
+    .filter(isHomePreviewEligible)
+    .slice(0, HOME_FEED_LIMIT)
+    .map(serializeHomePost);
 }
 
 function serializeHomePost(rawPost: RawHomePost) {
@@ -108,7 +116,7 @@ export async function GET(request: NextRequest) {
 
     const [bestPosts, latestPosts] = await Promise.all([
       listBestPosts({
-        limit: HOME_FEED_LIMIT,
+        limit: HOME_FEED_QUERY_LIMIT,
         page: 1,
         days: HOME_BEST_DAYS,
         scope: PostScope.GLOBAL,
@@ -122,7 +130,7 @@ export async function GET(request: NextRequest) {
         throw error;
       }),
       listPosts({
-        limit: HOME_FEED_LIMIT,
+        limit: HOME_FEED_QUERY_LIMIT,
         page: 1,
         scope: PostScope.GLOBAL,
         sort: "LATEST",
@@ -139,12 +147,8 @@ export async function GET(request: NextRequest) {
 
     return jsonOk(
       {
-        best: bestPosts
-          .filter((post) => isHomePreviewEligible(post as RawHomePost))
-          .map((post) => serializeHomePost(post as RawHomePost)),
-        latest: latestPosts.items
-          .filter((post) => isHomePreviewEligible(post as RawHomePost))
-          .map((post) => serializeHomePost(post as RawHomePost)),
+        best: serializeHomePosts(bestPosts as RawHomePost[]),
+        latest: serializeHomePosts(latestPosts.items as RawHomePost[]),
       },
       {
         headers: {
