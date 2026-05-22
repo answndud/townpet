@@ -100,8 +100,8 @@ function getFirstSearchParamValue(
 export default async function NeighborhoodMapCampaignPage({
   searchParams,
 }: {
-  searchParams?: CampaignSearchParams | Promise<CampaignSearchParams>;
-} = {}) {
+  searchParams?: Promise<CampaignSearchParams>;
+}) {
   const stats = await getNeighborhoodMapCampaignStats();
   const resolvedSearchParams = await Promise.resolve(searchParams ?? {});
   const sourceChannel = getOfflinePartnerQrChannelBySource(

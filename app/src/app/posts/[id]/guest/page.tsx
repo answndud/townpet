@@ -443,7 +443,16 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
             </div>
             <p className="mt-3 rounded-lg border border-[#dbe8f8] bg-[#f8fbff] px-3 py-2 text-xs leading-5 text-[#526d96]">
               병원 후기는 개인 경험 공유입니다. 진단이나 법적 판단으로 단정하지 말고 방문 전 병원에
-              직접 확인하세요. 병원 정보 정정 요청은 하단 정보 정정 요청 경로로 접수합니다.
+              직접 확인하세요.{" "}
+              <Link
+                href={`/corrections/new?postId=${post.id}&targetType=HOSPITAL&targetName=${encodeURIComponent(
+                  post.hospitalReview.hospitalName ?? "",
+                )}`}
+                className="font-semibold text-[#3567b5]"
+              >
+                병원 정보 정정 요청
+              </Link>
+              으로 사실 확인이 필요한 내용을 접수할 수 있습니다.
             </p>
           </section>
         ) : null}

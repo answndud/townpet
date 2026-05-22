@@ -33,17 +33,21 @@
 - `P1-4. 획득 이벤트 정의`를 완료했다. public 랜딩/캠페인/가이드/지역 허브의 조회·CTA·템플릿 진입 이벤트를 `AcquisitionEventStat` 일별 집계로 연결하고, 첫 90일 이벤트 사전을 analytics 문서에 반영했다.
 - `P1-5. 초기 지역 운영 지표`를 완료했다. `/admin/ops`에서 동네별 콘텐츠 밀도, 빈 카테고리, 분실동물 상태, 운영자 콘텐츠 확인일, 획득 이벤트, 첫 글/24h 댓글/D7 재방문 지표를 볼 수 있다.
 - `P1-6. 오프라인 QR/파트너 운영 준비`를 완료했다. 병원/펫카페/미용실/보호소 QR source와 문제 해결형 landing/action URL, 파트너 제안서, 운영 체크리스트를 추가했다.
+- `P1-7. 병원/업체 정정 요청 프로세스`를 완료했다. 공개 정정 요청 폼, 요청 저장 모델, 관리자 처리 큐, 처리 로그와 정책 문서를 추가했다.
 
 ## 다음 액션
 
-- 다음 작업은 `P1-7. 병원/업체 정정 요청 프로세스`다.
-- P1-7 시작 전 확인할 파일:
+- 다음 작업은 `P1-8. 분실동물 허위 제보/개인정보 정책`이다.
+- P1-8 시작 전 확인할 파일:
   - `business/policies/*`
   - `business/security/보안_위험_등록부.md`
-  - `app/src/app/admin/hospital-review-flags`
+  - `app/src/app/lost/new`
+  - `app/src/app/posts/[id]/guest/page.tsx`
+  - `app/src/components/posts/post-create-structured-fields.tsx`
   - `app/src/lib/validations/moderation/*`
+  - `app/src/lib/validations/posts/post.ts`
   - `app/src/server/services/moderation/*`
-  - `app/src/server/queries/moderation/*`
+  - `app/src/server/services/posts/post-lost-found-workflow.service.ts`
 - 시작페이지 추가 개선 후보:
   - 홈에는 간소 헤더를 적용했지만, 다른 public route의 모바일 앱 셸 밀도는 아직 기존 제품 헤더 기준이다. 필요 시 `/guides/*` 같은 SEO landing에도 같은 header 정책을 확장한다.
   - 홈 preview API는 테스트 성격 글을 숨기지만, seed/demo 데이터가 production DB에 섞이는 운영 원인은 별도 정리가 필요하다.
@@ -140,3 +144,20 @@
   - production deploy: `0460e13 Prepare offline QR partner campaign` -> `https://townpet-f4olqj4s4-jmoon0227-9736s-projects.vercel.app` Ready, alias `https://townpet.vercel.app`
   - production smoke: `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health` 통과, 캠페인 QR page HTML에서 `utm_source=petcafe_qr`, `동반가능 장소 제보 QR`, `분실동물 첫 24시간 QR` 확인
   - 참고: `pnpm -C app design:detect` 스크립트는 기존 Corepack keyid 오류로 실패했고, 같은 detector는 루트 기준 명시 버전 `corepack pnpm@9.12.3 dlx impeccable detect ...`로 통과했다.
+
+- `P1-7. 병원/업체 정정 요청 프로세스`
+  - `corepack pnpm@9.12.3 -C app exec prisma format`
+  - `corepack pnpm@9.12.3 -C app exec prisma generate`
+  - `corepack pnpm@9.12.3 -C app exec prisma migrate deploy`
+  - `corepack pnpm@9.12.3 -C app test -- src/server/services/correction-request.service.test.ts src/app/api/corrections/route.test.ts src/app/corrections/new/page.test.tsx src/components/navigation/app-shell-footer.test.tsx src/components/admin/admin-section-nav.test.tsx src/app/campaigns/neighborhood-map/page.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `PUPPETEER_SKIP_DOWNLOAD=1 corepack pnpm@9.12.3 dlx impeccable detect app/src/app app/src/components --fast`
+  - `git diff --check`
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+  - local browser smoke:
+    - `/corrections/new?targetType=HOSPITAL&targetName=타운동물병원` desktop screenshot: `/tmp/townpet-correction-form-desktop.png`
+    - `/corrections/new?targetType=HOSPITAL&targetName=타운동물병원` mobile screenshot: `/tmp/townpet-correction-form-mobile.png`
+    - `ENABLE_DEMO_AUTH_FALLBACK=1 DEMO_USER_EMAIL=demo@townpet.dev` dev server에서 `/admin/corrections` desktop screenshot: `/tmp/townpet-admin-corrections-auth-desktop.png`
+  - local API smoke: `POST /api/corrections` 201, `PENDING` 정정 요청 생성 확인

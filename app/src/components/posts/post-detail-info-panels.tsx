@@ -181,7 +181,15 @@ export function PostDetailInfoPanels({
             value={renderBooleanValue(post.hospitalReview.wouldRevisit, "의향 있음", "의향 낮음")}
           />
           <div className="col-span-full rounded-lg border border-[#dbe6f5] bg-[#f8fbff] px-3 py-2 text-[12px] leading-5 text-[#4f678d]">
-            병원 후기는 개인 경험 공유입니다. 진단이나 법적 판단으로 단정하지 말고 방문 전 병원에 직접 확인하세요.
+            병원 후기는 개인 경험 공유입니다. 진단이나 법적 판단으로 단정하지 말고 방문 전 병원에 직접 확인하세요.{" "}
+            <a
+              href={`/corrections/new?postId=${post.id}&targetType=HOSPITAL&targetName=${encodeURIComponent(
+                post.hospitalReview.hospitalName ?? "",
+              )}`}
+              className="font-semibold text-[#3567b5]"
+            >
+              정보 정정 요청
+            </a>
           </div>
         </PostDetailInfoSection>
       ) : null}
