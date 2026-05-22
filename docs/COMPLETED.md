@@ -5048,6 +5048,10 @@
   - local browser smoke:
     - `/tmp/townpet-p2-2-home-desktop.png`
     - `/tmp/townpet-p2-2-home-mobile.png`
+  - production deploy: `763ddd0 Filter demo posts from home preview` -> `https://townpet-92pedvblw-jmoon0227-9736s-projects.vercel.app` Ready, alias `https://townpet.vercel.app`
+  - production smoke:
+    - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health` 통과
+    - `GET /api/home/feed` 응답에서 `샘플·`, `[샘플`, `[PW]`, `PW SEARCH`, `테스트`, `playwright`, `townpet-demo`, `비회원E2E`, `[VISUAL SMOKE]`, `visual-smoke` 신호 없음 확인
 - 결과:
   - 홈 Live board는 public preview에 적합하지 않은 테스트/샘플/demo 글을 숨긴다.
   - 부적절한 후보가 상단에 몰려 있어도 뒤쪽 실제 후보를 채울 수 있다.
