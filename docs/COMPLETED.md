@@ -5011,6 +5011,10 @@
     - `/tmp/townpet-p2-1-campaign-mobile.png`
     - `/tmp/townpet-p2-1-town-mobile.png`
     - `/tmp/townpet-p2-1-feed-mobile-control.png`
+  - production deploy: `1180971 Simplify acquisition route headers` -> `https://townpet-gghcm9iw8-jmoon0227-9736s-projects.vercel.app` Ready, alias `https://townpet.vercel.app`
+  - production smoke:
+    - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health` 통과
+    - `GET /guides/pet-used-trade-safety` HTML에서 `공개 안내 페이지 주요 이동`, `반려동물 중고용품 거래 안전 체크` 확인
 - 결과:
   - SEO guide, 캠페인, 동네 허브 첫 화면에서 앱 헤더의 과한 탐색 표면이 사라졌다.
   - public acquisition route의 CTA와 본문 콘텐츠가 헤더보다 먼저 읽히는 구조가 됐다.
