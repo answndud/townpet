@@ -69,6 +69,10 @@
     - `/tmp/townpet-p2-1-campaign-mobile.png`
     - `/tmp/townpet-p2-1-town-mobile.png`
     - `/tmp/townpet-p2-1-feed-mobile-control.png`
+  - production deploy: `1180971 Simplify acquisition route headers` -> `https://townpet-gghcm9iw8-jmoon0227-9736s-projects.vercel.app` Ready, alias `https://townpet.vercel.app`
+  - production smoke:
+    - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health` 통과
+    - `GET /guides/pet-used-trade-safety` HTML에서 `공개 안내 페이지 주요 이동`, `반려동물 중고용품 거래 안전 체크` 확인
 
 - `P0-12. 운영자 콘텐츠와 사용자 글 분리`
   - `corepack pnpm@9.12.3 -C app exec prisma format`
