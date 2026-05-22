@@ -4978,3 +4978,41 @@
   - 마켓 글 작성자는 반려용품 특화 확인 기준을 템플릿과 구조화 영역에서 모두 보게 된다.
   - 생체 판매, 만료 식품, 동물 의약품 거래는 저장 전 검증에서 차단된다.
   - P1 정책/법적 리스크 보강 active 항목은 완료됐다.
+
+### 2026-05-22 | P2-1 Public acquisition route 헤더 밀도 정리
+- 완료일: `2026-05-22`
+- 배경:
+  - 홈에는 landing 전용 간소 헤더가 적용됐지만 SEO guide, QR/campaign route, 동네 허브는 여전히 전체 앱 헤더를 사용했다.
+  - 첫 방문 route에서 관심 동물 드롭다운과 전체 앱 탐색이 먼저 보이면 핵심 CTA와 안내 콘텐츠의 위계가 약해진다.
+- 변경내용:
+  - `isPublicAcquisitionHeaderPath`를 추가해 `/`, `/guides/*`, `/campaigns/neighborhood-map`, `/towns/*`를 public acquisition header route로 분리했다.
+  - 해당 route에서는 `TownPet 로고 + 게시판 + 로그인/내 프로필`만 보이는 간소 헤더를 사용한다.
+  - public acquisition route에서는 community 목록 fetch를 생략해 헤더 표면과 불필요한 요청을 줄였다.
+  - `/feed/guest`, `/posts/new`, `/admin/ops` 등 앱 사용 화면은 기존 헤더와 관심 동물 탐색을 유지한다.
+  - 헤더 source test를 보강해 public route와 app route의 헤더 정책이 섞이지 않도록 했다.
+- 코드문서:
+  - [app/src/components/navigation/app-shell-header.tsx](../app/src/components/navigation/app-shell-header.tsx)
+  - [app/src/components/navigation/app-shell-header-class.ts](../app/src/components/navigation/app-shell-header-class.ts)
+  - [app/src/components/navigation/app-shell-header-class.test.ts](../app/src/components/navigation/app-shell-header-class.test.ts)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/components/navigation/app-shell-header-class.test.ts src/app/guides/page.test.tsx src/app/campaigns/neighborhood-map/page.test.tsx src/app/towns/page.test.tsx src/app/page.test.tsx`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `PUPPETEER_SKIP_DOWNLOAD=1 corepack pnpm@9.12.3 dlx impeccable detect app/src/app app/src/components --fast`
+  - `git diff --check`
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+  - local browser smoke:
+    - `/tmp/townpet-p2-1-guides-desktop.png`
+    - `/tmp/townpet-p2-1-guides-mobile.png`
+    - `/tmp/townpet-p2-1-campaign-desktop.png`
+    - `/tmp/townpet-p2-1-campaign-mobile.png`
+    - `/tmp/townpet-p2-1-town-mobile.png`
+    - `/tmp/townpet-p2-1-feed-mobile-control.png`
+- 결과:
+  - SEO guide, 캠페인, 동네 허브 첫 화면에서 앱 헤더의 과한 탐색 표면이 사라졌다.
+  - public acquisition route의 CTA와 본문 콘텐츠가 헤더보다 먼저 읽히는 구조가 됐다.
+  - 피드와 앱 내부 route는 기존 앱 탐색을 유지한다.
+  - 현재 active 구현 항목은 없다. 다음 작업은 새 phase를 PLAN에 먼저 추가한 뒤 진행한다.
