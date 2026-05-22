@@ -40,6 +40,7 @@ import {
   volunteerStatusLabel,
 } from "@/components/posts/post-detail-presenter";
 import type { PostDetailItem } from "@/components/posts/post-detail-types";
+import { MARKET_SAFETY_CHECKLIST } from "@/lib/market-safety-policy";
 import { resolveUserDisplayName } from "@/lib/user-display";
 
 type CareApplicationItem = NonNullable<PostDetailItem["careApplications"]>[number];
@@ -306,6 +307,14 @@ export function PostDetailInfoPanels({
             }
           />
           <PostDetailInfoItem label="기간" value={renderTextValue(post.marketListing.rentalPeriod)} />
+          <div className="col-span-full rounded-lg border border-[#dbe6f5] bg-[#f8fbff] px-3 py-2 text-[12px] leading-5 text-[#4f678d]">
+            <p className="font-semibold text-[#173963]">거래 전 확인</p>
+            <ul className="mt-1 list-disc space-y-1 pl-4">
+              {MARKET_SAFETY_CHECKLIST.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
           {canManageMarketStatus ? (
             <div className="col-span-full mt-1 rounded-lg border border-[#dce7f6] bg-[#f8fbff] p-3">
               <p className="text-xs font-semibold text-[#315b9a]">거래 상태 변경</p>

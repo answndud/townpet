@@ -27,6 +27,10 @@ import {
   buildLostFoundPublicPrivacyMessage,
   detectLostFoundPublicPrivacySignals,
 } from "@/lib/lost-found-privacy-policy";
+import {
+  buildMarketSafetyBlockMessage,
+  detectMarketSafetyBlockReasons,
+} from "@/lib/market-safety-policy";
 import { isFreeBoardPostType } from "@/lib/post-type-groups";
 import { REVIEW_CATEGORY, REVIEW_CATEGORY_VALUES, type ReviewCategory } from "@/lib/review-category";
 import {
@@ -332,6 +336,23 @@ export const postCreateSchema = z.object({
           path: ["marketListing"],
           message: "거래 글은 거래 정보를 입력해 주세요.",
         });
+      }
+
+      if (value.type === PostType.MARKET_LISTING) {
+        const safetyMessage = buildMarketSafetyBlockMessage(
+          detectMarketSafetyBlockReasons(
+            [value.title, value.content, value.marketListing?.rentalPeriod]
+              .filter(Boolean)
+              .join("\n"),
+          ),
+        );
+        if (safetyMessage) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["content"],
+            message: safetyMessage,
+          });
+        }
       }
 
       if (value.type === PostType.LOST_FOUND && !value.lostFound) {

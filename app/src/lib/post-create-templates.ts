@@ -87,9 +87,11 @@ export function buildPostCreateTemplates(townLabel?: string): PostCreateTemplate
       content: [
         "제품명:",
         "사용 기간:",
-        "상태와 구성품:",
-        "거래 희망 방식:",
-        "위생/작동 확인:",
+        "개봉 여부/유통기한(사료·간식일 때):",
+        "사이즈/체중 기준(이동장·하네스·옷일 때):",
+        "상태와 구성품/하자:",
+        "위생 세척/작동 확인:",
+        "거래 희망 장소:",
       ].join("\n"),
     },
     {

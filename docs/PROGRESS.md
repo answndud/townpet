@@ -35,19 +35,12 @@
 - `P1-6. 오프라인 QR/파트너 운영 준비`를 완료했다. 병원/펫카페/미용실/보호소 QR source와 문제 해결형 landing/action URL, 파트너 제안서, 운영 체크리스트를 추가했다.
 - `P1-7. 병원/업체 정정 요청 프로세스`를 완료했다. 공개 정정 요청 폼, 요청 저장 모델, 관리자 처리 큐, 처리 로그와 정책 문서를 추가했다.
 - `P1-8. 분실동물 허위 제보/개인정보 정책`을 완료했다. 공개 분실동물 위치/공개 목격 제보에서 연락처·메신저·상세주소를 검증하고, 보호자 공개 제보와 허위/개인정보 신고 기준을 UI/정책 문서에 맞췄다.
+- `P1-9. 중고거래 안전 템플릿`을 완료했다. 마켓 글 템플릿과 작성/상세 체크리스트를 반려용품 특화 기준으로 바꾸고, 생체 판매·만료 식품·동물 의약품 거래는 검증에서 차단한다.
 
 ## 다음 액션
 
-- 다음 작업은 `P1-9. 중고거래 안전 템플릿`이다.
-- P1-9 시작 전 확인할 파일:
-  - `business/policies/*`
-  - `business/security/개인정보_처리_원칙.md`
-  - `app/src/components/posts/post-create-structured-fields.tsx`
-  - `app/src/components/posts/post-detail-info-panels.tsx`
-  - `app/src/lib/validations/posts/post.ts`
-  - `app/src/server/services/post-create-policy.test.ts`
-  - `app/src/lib/contact-policy.ts`
-  - `app/src/lib/forbidden-keyword-policy.ts`
+- 현재 active 구현 항목은 없다.
+- 다음 작업은 P2 보류 항목 중 실제 유저 획득/운영 안정성에 필요한 범위를 다시 선별한 뒤 `docs/PLAN.md`를 먼저 갱신한다.
 - 시작페이지 추가 개선 후보:
   - 홈에는 간소 헤더를 적용했지만, 다른 public route의 모바일 앱 셸 밀도는 아직 기존 제품 헤더 기준이다. 필요 시 `/guides/*` 같은 SEO landing에도 같은 header 정책을 확장한다.
   - 홈 preview API는 테스트 성격 글을 숨기지만, seed/demo 데이터가 production DB에 섞이는 운영 원인은 별도 정리가 필요하다.
@@ -180,3 +173,16 @@
   - production smoke:
     - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health` 통과
     - `GET /posts/new?type=LOST_FOUND` HTML에서 `분실/목격 제보 작성`, `도로명·번지 주소를 적지 마세요`, `보호자 공개 제보` 확인
+
+- `P1-9. 중고거래 안전 템플릿`
+  - `corepack pnpm@9.12.3 -C app test -- src/lib/market-safety-policy.test.ts src/lib/validations/post.test.ts src/lib/post-create-templates.test.ts src/components/posts/post-create-structured-fields.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `PUPPETEER_SKIP_DOWNLOAD=1 corepack pnpm@9.12.3 dlx impeccable detect app/src/app app/src/components --fast`
+  - `git diff --check`
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+  - local screenshot smoke:
+    - 게스트 작성 정책상 `MARKET_LISTING`은 실제 `/posts/new`에서 선택지가 숨겨져 있어, `MarketListingFields` component-level desktop/mobile screenshot으로 체크리스트 노출을 확인했다.
+    - `/tmp/townpet-market-safety-component-desktop.png`
+    - `/tmp/townpet-market-safety-component-mobile.png`

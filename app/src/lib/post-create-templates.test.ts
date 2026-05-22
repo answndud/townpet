@@ -27,6 +27,14 @@ describe("post create templates", () => {
     });
   });
 
+  it("includes pet-market safety prompts in the used market template", () => {
+    const template = getPostCreateTemplateById("used_market", "우리 동네");
+
+    expect(template?.content).toContain("개봉 여부/유통기한");
+    expect(template?.content).toContain("사이즈/체중 기준");
+    expect(template?.content).toContain("거래 희망 장소");
+  });
+
   it("builds deterministic template links", () => {
     expect(
       buildPostCreateTemplateHref({
