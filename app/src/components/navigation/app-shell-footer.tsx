@@ -4,7 +4,7 @@ const LEGAL_LINKS = [
   { href: "/terms", label: "이용약관" },
   { href: "/privacy", label: "개인정보처리방침" },
   { href: "/commercial", label: "광고·제휴 고지" },
-  { href: "/commercial#contact", label: "정보 정정 요청" },
+  { href: "/corrections/new", label: "정보 정정 요청" },
 ] as const;
 
 export function AppShellFooter() {

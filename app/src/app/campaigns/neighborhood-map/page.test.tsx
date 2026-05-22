@@ -14,7 +14,7 @@ import NeighborhoodMapCampaignPage, { metadata } from "@/app/campaigns/neighborh
 
 describe("NeighborhoodMapCampaignPage", () => {
   it("renders the campaign promise, participation CTAs, rewards, and live status", async () => {
-    const html = renderToStaticMarkup(await NeighborhoodMapCampaignPage());
+    const html = renderToStaticMarkup(await NeighborhoodMapCampaignPage({}));
 
     expect(html).toContain("우리 동네 반려생활 지도 만들기");
     expect(html).toContain("첫 제보 남기기");
@@ -33,9 +33,9 @@ describe("NeighborhoodMapCampaignPage", () => {
   it("accepts offline partner QR source on campaign views", async () => {
     const html = renderToStaticMarkup(
       await NeighborhoodMapCampaignPage({
-        searchParams: {
+        searchParams: Promise.resolve({
           utm_source: "petcafe_qr",
-        },
+        }),
       }),
     );
 

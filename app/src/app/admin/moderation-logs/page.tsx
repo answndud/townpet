@@ -34,6 +34,7 @@ const actionLabels: Record<ModerationActionType, string> = {
   CARE_STATUS_CHANGED: "돌봄 요청 상태 변경",
   CARE_FEEDBACK_REVIEWED: "돌봄 이슈 검토",
   LOST_FOUND_STATUS_CHANGED: "분실동물 상태 변경",
+  CORRECTION_REQUEST_REVIEWED: "정보 정정 요청 검토",
 };
 
 const targetLabels: Record<ModerationTargetType, string> = {
@@ -41,6 +42,7 @@ const targetLabels: Record<ModerationTargetType, string> = {
   COMMENT: "댓글",
   USER: "사용자",
   SYSTEM: "시스템",
+  CORRECTION_REQUEST: "정보 정정 요청",
 };
 
 function buildTargetHref(targetType: ModerationTargetType, targetId: string, metadata: unknown) {
@@ -50,6 +52,10 @@ function buildTargetHref(targetType: ModerationTargetType, targetId: string, met
 
   if (targetType === ModerationTargetType.USER) {
     return `/users/${targetId}`;
+  }
+
+  if (targetType === ModerationTargetType.CORRECTION_REQUEST) {
+    return `/admin/corrections?q=${encodeURIComponent(targetId)}`;
   }
 
   if (

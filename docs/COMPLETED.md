@@ -4842,3 +4842,49 @@
   - 오프라인 QR 하나가 가입이 아니라 병원 체크, 동반 장소, 산책코스, 분실동물 문제 해결 흐름으로 연결된다.
   - 파트너 10곳 제안에 필요한 문구와 운영 체크리스트가 준비됐다.
   - 다음 단계는 병원/업체 정보 정정 요청 프로세스다.
+
+### 2026-05-22 | P1-7 병원/업체 정정 요청 프로세스
+- 완료일: `2026-05-22`
+- 배경:
+  - 병원 후기는 검색/획득에 유효하지만, 업체 분쟁과 정보 오류를 공식 경로 없이 처리하면 명예훼손/영업방해 리스크가 커진다.
+  - 기존 UI에는 “정보 정정 요청” 문구가 있었지만 실제 접수 폼, 상태 관리, 처리 로그가 없었다.
+- 변경내용:
+  - `InformationCorrectionRequest` 모델과 `CorrectionRequestTargetType`, `CorrectionRequestStatus`, `CorrectionRequesterRole` enum을 추가했다.
+  - 공개 `/corrections/new` 폼을 추가해 병원/장소/게시글 정보 정정 요청을 로그인 없이 접수할 수 있게 했다.
+  - `/api/corrections` route를 추가했다. JSON과 browser form submission을 모두 처리하고, IP 기준 rate limit을 적용하며 IP 원문은 저장하지 않는다.
+  - `/admin/corrections` 운영 큐를 추가해 운영자가 접수/검토 중/처리 완료/기각 상태와 처리 메모를 기록할 수 있게 했다.
+  - 정정 요청 처리 시 `ModerationActionLog(CORRECTION_REQUEST_REVIEWED)`로 이력을 남긴다.
+  - 병원 후기 상세의 안내 문구를 실제 정정 요청 폼으로 연결했다.
+  - footer와 광고·제휴 고지의 정보 정정 요청 링크를 `/corrections/new`로 연결했다.
+  - 모더레이션 운영규칙에 병원/업체 정보 정정 요청 처리 기준을 추가했다.
+- 코드문서:
+  - [app/prisma/schema.prisma](../app/prisma/schema.prisma)
+  - [app/prisma/migrations/20260522143000_add_information_correction_requests/migration.sql](../app/prisma/migrations/20260522143000_add_information_correction_requests/migration.sql)
+  - [app/src/lib/validations/moderation/correction-request.ts](../app/src/lib/validations/moderation/correction-request.ts)
+  - [app/src/server/services/correction-request.service.ts](../app/src/server/services/correction-request.service.ts)
+  - [app/src/server/queries/correction-request.queries.ts](../app/src/server/queries/correction-request.queries.ts)
+  - [app/src/app/api/corrections/route.ts](../app/src/app/api/corrections/route.ts)
+  - [app/src/app/corrections/new/page.tsx](../app/src/app/corrections/new/page.tsx)
+  - [app/src/app/admin/corrections/page.tsx](../app/src/app/admin/corrections/page.tsx)
+  - [app/src/app/admin/corrections/actions.ts](../app/src/app/admin/corrections/actions.ts)
+  - [business/policies/모더레이션_운영규칙.md](../business/policies/모더레이션_운영규칙.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app exec prisma format`
+  - `corepack pnpm@9.12.3 -C app exec prisma generate`
+  - `corepack pnpm@9.12.3 -C app exec prisma migrate deploy`
+  - `corepack pnpm@9.12.3 -C app test -- src/server/services/correction-request.service.test.ts src/app/api/corrections/route.test.ts src/app/corrections/new/page.test.tsx src/components/navigation/app-shell-footer.test.tsx src/components/admin/admin-section-nav.test.tsx src/app/campaigns/neighborhood-map/page.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `PUPPETEER_SKIP_DOWNLOAD=1 corepack pnpm@9.12.3 dlx impeccable detect app/src/app app/src/components --fast`
+  - `git diff --check`
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+  - local browser smoke:
+    - `/tmp/townpet-correction-form-desktop.png`
+    - `/tmp/townpet-correction-form-mobile.png`
+    - `/tmp/townpet-admin-corrections-auth-desktop.png`
+  - local API smoke: `POST /api/corrections` 201, `PENDING` 정정 요청 생성 확인
+- 결과:
+  - 병원/업체 관련 분쟁이 들어왔을 때 공식 접수 경로와 운영 처리 큐가 생겼다.
+  - 사용자 후기 본문을 접수 즉시 임의 삭제하지 않고, 근거 확인과 처리 기록을 남기는 기준을 UI와 정책 문서에 맞췄다.
+  - 다음 단계는 `P1-8. 분실동물 허위 제보/개인정보 정책`이다.

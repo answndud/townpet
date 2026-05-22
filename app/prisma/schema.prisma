@@ -10,55 +10,57 @@ datasource db {
 }
 
 model User {
-  id                        String                        @id @default(cuid())
-  email                     String                        @unique @db.Citext
-  nickname                  String?                       @unique
-  nicknameUpdatedAt         DateTime?
-  bio                       String?                       @db.Text
-  image                     String?
-  isFoundingMember          Boolean                       @default(false)
-  foundingMemberSince       DateTime?
-  showPublicPosts           Boolean                       @default(true)
-  showPublicComments        Boolean                       @default(true)
-  showPublicPets            Boolean                       @default(true)
-  passwordHash              String?
-  sessionVersion            Int                           @default(0)
-  emailVerified             DateTime?
-  role                      UserRole                      @default(USER)
-  neighborhoods             UserNeighborhood[]
-  posts                     Post[]
-  comments                  Comment[]
-  reports                   Report[]                      @relation("ReportedBy")
-  receivedReports           Report[]                      @relation("ReportedUser")
-  reportAudits              ReportAudit[]                 @relation("ReportAuditResolvedBy")
-  sanctionsReceived         UserSanction[]                @relation("SanctionedUser")
-  sanctionsIssued           UserSanction[]                @relation("SanctionModerator")
-  moderationActionsIssued   ModerationActionLog[]         @relation("ModerationActionActor")
-  moderationActionsTargeted ModerationActionLog[]         @relation("ModerationActionTargetUser")
-  blocksGiven               UserBlock[]                   @relation("UserBlocksGiven")
-  blocksReceived            UserBlock[]                   @relation("UserBlocksReceived")
-  mutesGiven                UserMute[]                    @relation("UserMutesGiven")
-  mutesReceived             UserMute[]                    @relation("UserMutesReceived")
-  pets                      Pet[]
-  audienceSegments          UserAudienceSegment[]
-  passwordResets            PasswordResetToken[]
-  authAudits                AuthAuditLog[]
-  postReactions             PostReaction[]
-  postBookmarks             PostBookmark[]
-  commentReactions          CommentReaction[]
-  feedPersonalizationEvents FeedPersonalizationEventLog[]
-  preferredPetTypes         UserPetTypePreference[]
-  notifications             Notification[]                @relation("NotificationRecipient")
-  actions                   Notification[]                @relation("NotificationActor")
-  careApplications          CareApplication[]             @relation("CareApplicationApplicant")
-  careApplicationDecisions  CareApplication[]             @relation("CareApplicationDecider")
-  careCompletionFeedbacks   CareCompletionFeedback[]      @relation("CareCompletionFeedbackAuthor")
-  careFeedbackReviews       CareCompletionFeedback[]      @relation("CareCompletionFeedbackReviewer")
-  uploadAssets              UploadAsset[]
-  createdAt                 DateTime                      @default(now())
-  updatedAt                 DateTime                      @updatedAt
-  accounts                  Account[]
-  sessions                  Session[]
+  id                         String                         @id @default(cuid())
+  email                      String                         @unique @db.Citext
+  nickname                   String?                        @unique
+  nicknameUpdatedAt          DateTime?
+  bio                        String?                        @db.Text
+  image                      String?
+  isFoundingMember           Boolean                        @default(false)
+  foundingMemberSince        DateTime?
+  showPublicPosts            Boolean                        @default(true)
+  showPublicComments         Boolean                        @default(true)
+  showPublicPets             Boolean                        @default(true)
+  passwordHash               String?
+  sessionVersion             Int                            @default(0)
+  emailVerified              DateTime?
+  role                       UserRole                       @default(USER)
+  neighborhoods              UserNeighborhood[]
+  posts                      Post[]
+  comments                   Comment[]
+  reports                    Report[]                       @relation("ReportedBy")
+  receivedReports            Report[]                       @relation("ReportedUser")
+  reportAudits               ReportAudit[]                  @relation("ReportAuditResolvedBy")
+  correctionRequests         InformationCorrectionRequest[] @relation("CorrectionRequestRequester")
+  correctionRequestsResolved InformationCorrectionRequest[] @relation("CorrectionRequestResolver")
+  sanctionsReceived          UserSanction[]                 @relation("SanctionedUser")
+  sanctionsIssued            UserSanction[]                 @relation("SanctionModerator")
+  moderationActionsIssued    ModerationActionLog[]          @relation("ModerationActionActor")
+  moderationActionsTargeted  ModerationActionLog[]          @relation("ModerationActionTargetUser")
+  blocksGiven                UserBlock[]                    @relation("UserBlocksGiven")
+  blocksReceived             UserBlock[]                    @relation("UserBlocksReceived")
+  mutesGiven                 UserMute[]                     @relation("UserMutesGiven")
+  mutesReceived              UserMute[]                     @relation("UserMutesReceived")
+  pets                       Pet[]
+  audienceSegments           UserAudienceSegment[]
+  passwordResets             PasswordResetToken[]
+  authAudits                 AuthAuditLog[]
+  postReactions              PostReaction[]
+  postBookmarks              PostBookmark[]
+  commentReactions           CommentReaction[]
+  feedPersonalizationEvents  FeedPersonalizationEventLog[]
+  preferredPetTypes          UserPetTypePreference[]
+  notifications              Notification[]                 @relation("NotificationRecipient")
+  actions                    Notification[]                 @relation("NotificationActor")
+  careApplications           CareApplication[]              @relation("CareApplicationApplicant")
+  careApplicationDecisions   CareApplication[]              @relation("CareApplicationDecider")
+  careCompletionFeedbacks    CareCompletionFeedback[]       @relation("CareCompletionFeedbackAuthor")
+  careFeedbackReviews        CareCompletionFeedback[]       @relation("CareCompletionFeedbackReviewer")
+  uploadAssets               UploadAsset[]
+  createdAt                  DateTime                       @default(now())
+  updatedAt                  DateTime                       @updatedAt
+  accounts                   Account[]
+  sessions                   Session[]
 }
 
 enum PetSpecies {
@@ -277,36 +279,37 @@ model UserPetTypePreference {
 }
 
 model Post {
-  id                        String                        @id @default(cuid())
+  id                        String                         @id @default(cuid())
   authorId                  String
   guestAuthorId             String?
   neighborhoodId            String?
-  boardScope                BoardScope                    @default(COMMUNITY)
-  petTypeId                 String?                       @map("communityId")
+  boardScope                BoardScope                     @default(COMMUNITY)
+  petTypeId                 String?                        @map("communityId")
   commonBoardType           CommonBoardType?
-  animalTags                String[]                      @default([])
+  animalTags                String[]                       @default([])
   reviewCategory            ReviewCategory?
   type                      PostType
-  scope                     PostScope                     @default(LOCAL)
-  status                    PostStatus                    @default(ACTIVE)
+  scope                     PostScope                      @default(LOCAL)
+  status                    PostStatus                     @default(ACTIVE)
   title                     String
-  content                   String                        @db.Text
-  structuredSearchText      String                        @default("") @db.Text
-  isOperatorContent         Boolean                       @default(false)
+  content                   String                         @db.Text
+  structuredSearchText      String                         @default("") @db.Text
+  isOperatorContent         Boolean                        @default(false)
   operatorSourceName        String?
   operatorSourceUrl         String?
   operatorLastVerifiedAt    DateTime?
-  viewCount                 Int                           @default(0)
-  likeCount                 Int                           @default(0)
-  dislikeCount              Int                           @default(0)
-  commentCount              Int                           @default(0)
-  author                    User                          @relation(fields: [authorId], references: [id])
-  guestAuthor               GuestAuthor?                  @relation(fields: [guestAuthorId], references: [id], onDelete: SetNull)
-  neighborhood              Neighborhood?                 @relation(fields: [neighborhoodId], references: [id])
-  petType                   Community?                    @relation(fields: [petTypeId], references: [id])
+  viewCount                 Int                            @default(0)
+  likeCount                 Int                            @default(0)
+  dislikeCount              Int                            @default(0)
+  commentCount              Int                            @default(0)
+  author                    User                           @relation(fields: [authorId], references: [id])
+  guestAuthor               GuestAuthor?                   @relation(fields: [guestAuthorId], references: [id], onDelete: SetNull)
+  neighborhood              Neighborhood?                  @relation(fields: [neighborhoodId], references: [id])
+  petType                   Community?                     @relation(fields: [petTypeId], references: [id])
   comments                  Comment[]
   images                    PostImage[]
-  reports                   Report[]                      @relation("ReportedPost")
+  reports                   Report[]                       @relation("ReportedPost")
+  correctionRequests        InformationCorrectionRequest[]
   reactions                 PostReaction[]
   bookmarks                 PostBookmark[]
   feedPersonalizationEvents FeedPersonalizationEventLog[]
@@ -321,8 +324,8 @@ model Post {
   volunteerRecruitment      VolunteerRecruitment?
   lostFoundAlert            LostFoundAlert?
   qaQuestion                QaQuestion?
-  createdAt                 DateTime                      @default(now())
-  updatedAt                 DateTime                      @updatedAt
+  createdAt                 DateTime                       @default(now())
+  updatedAt                 DateTime                       @updatedAt
 
   @@index([authorId])
   @@index([guestAuthorId, createdAt(sort: Desc)])
@@ -946,6 +949,59 @@ enum ReportStatus {
   DISMISSED
 }
 
+enum CorrectionRequestTargetType {
+  HOSPITAL
+  PLACE
+  POST
+  OTHER
+}
+
+enum CorrectionRequestStatus {
+  PENDING
+  REVIEWING
+  RESOLVED
+  DISMISSED
+}
+
+enum CorrectionRequesterRole {
+  BUSINESS_OWNER
+  STAFF
+  CUSTOMER
+  PUBLIC_AGENCY
+  OTHER
+}
+
+model InformationCorrectionRequest {
+  id               String                      @id @default(cuid())
+  requesterUserId  String?
+  requester        User?                       @relation("CorrectionRequestRequester", fields: [requesterUserId], references: [id], onDelete: SetNull)
+  postId           String?
+  post             Post?                       @relation(fields: [postId], references: [id], onDelete: SetNull)
+  targetType       CorrectionRequestTargetType
+  targetName       String
+  requesterRole    CorrectionRequesterRole
+  organizationName String?
+  requesterName    String
+  requesterEmail   String                      @db.Citext
+  requesterPhone   String?
+  requestedChange  String                      @db.Text
+  evidenceUrl      String?
+  status           CorrectionRequestStatus     @default(PENDING)
+  resolution       String?                     @db.Text
+  resolvedBy       String?
+  resolver         User?                       @relation("CorrectionRequestResolver", fields: [resolvedBy], references: [id], onDelete: SetNull)
+  resolvedAt       DateTime?
+  clientIpHash     String?
+  createdAt        DateTime                    @default(now())
+  updatedAt        DateTime                    @updatedAt
+
+  @@index([status, createdAt(sort: Desc)])
+  @@index([targetType, targetName])
+  @@index([postId, createdAt(sort: Desc)])
+  @@index([requesterEmail, createdAt(sort: Desc)])
+  @@index([resolvedBy, resolvedAt])
+}
+
 enum SanctionLevel {
   WARNING
   SUSPEND_7D
@@ -976,6 +1032,7 @@ enum ModerationTargetType {
   COMMENT
   USER
   SYSTEM
+  CORRECTION_REQUEST
 }
 
 enum ModerationActionType {
@@ -992,6 +1049,7 @@ enum ModerationActionType {
   CARE_STATUS_CHANGED
   CARE_FEEDBACK_REVIEWED
   LOST_FOUND_STATUS_CHANGED
+  CORRECTION_REQUEST_REVIEWED
 }
 
 model ModerationActionLog {

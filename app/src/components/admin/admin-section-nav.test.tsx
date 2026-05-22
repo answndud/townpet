@@ -29,6 +29,7 @@ describe("admin section nav", () => {
         "/admin/moderation/direct",
         "/admin/moderation-logs",
         "/admin/hospital-review-flags",
+        "/admin/corrections",
       ]),
     );
     expect(hrefs).not.toContain("/admin/ops");

@@ -56,6 +56,11 @@ export const ADMIN_SECTION_LINKS: readonly AdminSectionLink[] = [
     description: "위장 후기 가능성이 있는 신호 검토",
   },
   {
+    href: "/admin/corrections",
+    label: "정보 정정 요청",
+    description: "병원/업체 정정 요청 처리",
+  },
+  {
     href: "/admin/breeds",
     label: "품종 사전",
     description: "품종 catalog와 override 관리",
