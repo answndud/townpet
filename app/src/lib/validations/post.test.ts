@@ -373,6 +373,22 @@ describe("post validations", () => {
     expect(result.success).toBe(true);
   });
 
+  it("rejects blocked pet-market items", () => {
+    const result = postCreateSchema.safeParse({
+      title: "유통기한 지난 사료 나눔",
+      content: "심장사상충 약도 같이 드립니다.",
+      type: PostType.MARKET_LISTING,
+      scope: PostScope.GLOBAL,
+      marketListing: {
+        listingType: "SHARE",
+        price: 0,
+        condition: "GOOD",
+      },
+    });
+
+    expect(result.success).toBe(false);
+  });
+
   it("allows adoption-listing posts without animal tags", () => {
     const result = postCreateSchema.safeParse({
       title: "입양 공고",

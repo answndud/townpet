@@ -4939,3 +4939,42 @@
   - 분실동물 글은 동네 단위 확산성은 유지하면서 공개 연락처/상세주소 노출을 막는다.
   - 허위 제보와 개인정보 노출 신고 기준이 UI, 검증, 정책 문서에 같은 언어로 연결됐다.
   - 다음 단계는 `P1-9. 중고거래 안전 템플릿`이다.
+
+### 2026-05-22 | P1-9 중고거래 안전 템플릿
+- 완료일: `2026-05-22`
+- 배경:
+  - TownPet 마켓은 범용 중고거래 복제판이 아니라 반려용품 특화 안전 기준을 제공해야 한다.
+  - 사료·간식, 이동장·하네스, 유모차·자동급식기처럼 반려동물 맥락에서 확인해야 할 기준이 일반 중고거래와 다르다.
+- 변경내용:
+  - 중고거래 첫 글 템플릿에 개봉 여부/유통기한, 사이즈/체중 기준, 구성품/하자, 위생 세척/작동 확인, 거래 희망 장소 항목을 추가했다.
+  - 마켓 작성 구조화 필드에 `반려용품 거래 체크` 안내를 추가했다.
+  - 마켓 상세 정보 패널에도 거래 전 확인 체크리스트를 표시한다.
+  - `MarketSafetyPolicy`를 추가해 동물 생체 판매/분양, 유통기한이 지난 사료·간식, 동물 의약품 거래 신호를 감지한다.
+  - `MARKET_LISTING` 글 생성 검증에서 금지 품목 신호가 있으면 등록을 거부한다.
+  - 마켓 운영규칙, 커뮤니티 가이드라인, 보안 위험 등록부에 반려용품 중고거래 안전 기준을 반영했다.
+- 코드문서:
+  - [app/src/lib/market-safety-policy.ts](../app/src/lib/market-safety-policy.ts)
+  - [app/src/lib/market-safety-policy.test.ts](../app/src/lib/market-safety-policy.test.ts)
+  - [app/src/lib/post-create-templates.ts](../app/src/lib/post-create-templates.ts)
+  - [app/src/lib/validations/posts/post.ts](../app/src/lib/validations/posts/post.ts)
+  - [app/src/components/posts/post-create-structured-fields.tsx](../app/src/components/posts/post-create-structured-fields.tsx)
+  - [app/src/components/posts/post-detail-info-panels.tsx](../app/src/components/posts/post-detail-info-panels.tsx)
+  - [business/policies/마켓_운영규칙.md](../business/policies/마켓_운영규칙.md)
+  - [business/policies/커뮤니티_가이드라인.md](../business/policies/커뮤니티_가이드라인.md)
+  - [business/security/보안_위험_등록부.md](../business/security/보안_위험_등록부.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/lib/market-safety-policy.test.ts src/lib/validations/post.test.ts src/lib/post-create-templates.test.ts src/components/posts/post-create-structured-fields.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `PUPPETEER_SKIP_DOWNLOAD=1 corepack pnpm@9.12.3 dlx impeccable detect app/src/app app/src/components --fast`
+  - `git diff --check`
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+  - local screenshot smoke:
+    - 게스트 작성 정책상 `MARKET_LISTING`은 실제 `/posts/new`에서 선택지가 숨겨져 있어, `MarketListingFields` component-level desktop/mobile screenshot으로 체크리스트 노출을 확인했다.
+    - `/tmp/townpet-market-safety-component-desktop.png`
+    - `/tmp/townpet-market-safety-component-mobile.png`
+- 결과:
+  - 마켓 글 작성자는 반려용품 특화 확인 기준을 템플릿과 구조화 영역에서 모두 보게 된다.
+  - 생체 판매, 만료 식품, 동물 의약품 거래는 저장 전 검증에서 차단된다.
+  - P1 정책/법적 리스크 보강 active 항목은 완료됐다.
