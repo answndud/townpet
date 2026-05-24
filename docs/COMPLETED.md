@@ -5159,3 +5159,37 @@
 - 다음 작업:
   - cleanup을 진행하려면 같은 read-only audit를 직전에 재실행한 뒤, 별도 승인 작업에서 legacy `production-demo-content` workflow를 `mode=cleanup`, `email_domain=demo.townpet.co.kr`, `include_lost_found=false`로 실행한다.
   - 직접 SQL cleanup은 사용하지 않는다.
+
+### 2026-05-24 | P2-6 production demo content cleanup 실행
+- 완료일: `2026-05-24`
+- 배경:
+  - P2-5 read-only audit에서 production DB의 legacy demo content 후보가 users 7, posts 17, comments 68로 확인됐다.
+  - 후보 user는 소유 demo 도메인 `demo.townpet.co.kr`과 `샘플·` nickname prefix를 사용했고, sampled posts는 reports=0이었다.
+- 변경내용:
+  - cleanup 직전 production read-only audit를 재실행해 users 7, posts 17, comments 68을 재확인했다.
+  - GitHub Actions `production-demo-content` workflow를 `mode=cleanup`, `email_domain=demo.townpet.co.kr`, `include_lost_found=false`로 실행했다.
+  - 직접 SQL cleanup, demo seed, production demo 도메인 외 사용자/글 삭제, public query/filter 변경은 실행하지 않았다.
+  - cleanup 결과 report를 추가했다.
+- 결과:
+  - workflow run: `https://github.com/answndud/townpet/actions/runs/26354563190`
+  - conclusion: success
+  - deletedPosts: 17
+  - deletedUsers: 7
+  - cleanup 후 production read-only audit:
+    - users: 0
+    - posts: 0
+    - comments: 0
+  - public home preview에는 demo/E2E blocked signal이 없다.
+- 코드문서:
+  - [docs/reports/production-demo-cleanup-2026-05-24.md](./reports/production-demo-cleanup-2026-05-24.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - cleanup 전 production read-only audit
+  - GitHub Actions workflow conclusion success
+  - cleanup 후 production read-only audit
+  - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health`
+  - `GET https://townpet.vercel.app/api/home/feed`: `ok=true`, `best=0`, `latest=0`, blocked public preview signals 없음
+- 다음 작업:
+  - GitHub Actions annotation에 Node 20 deprecation warning이 남았으므로, 별도 유지보수 작업에서 Actions runtime/Node version 업데이트 후보를 점검한다.
+  - 추가 cleanup은 새 read-only audit와 별도 승인 없이는 실행하지 않는다.
