@@ -5416,7 +5416,12 @@
 - 검증:
   - `corepack pnpm@9.12.3 -C app test -- scripts/audit-legacy-upload-paths.test.ts`
   - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+  - `node scripts/refresh-docs-index.mjs --check`
   - local read-only audit: `corepack pnpm@9.12.3 -C app db:audit:legacy-upload-paths`
+  - production deploy `bf8a24e`: `https://townpet-6e19lxu9p-jmoon0227-9736s-projects.vercel.app`, alias `https://townpet.vercel.app`
+  - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health`
+  - GitHub Actions `docs-quality`, `quality-gate` success.
 - production audit blocker:
   - `/tmp/townpet-production.env`, `/tmp/townpet-vercel-link`, process env, local Vercel CLI에서 production DB env를 찾지 못했다.
   - repo에는 production secret을 저장하지 않는다.
