@@ -5094,3 +5094,39 @@
   - 홈 Live board가 비어도 사용자는 병원 확인, 병원 글 탐색, 분실동물 대처, 첫 글 작성 중 하나를 바로 선택할 수 있다.
   - 빈 상태는 기존 홈 밀도 안에서 유지되어 landing 하단이 과하게 커지지 않는다.
   - 현재 active 구현 항목은 없다.
+
+### 2026-05-24 | P2-4 production demo/E2E 데이터 정리 절차 문서화
+- 완료일: `2026-05-24`
+- 배경:
+  - 홈 preview에서 demo/E2E 글을 숨기더라도 운영 DB에 남은 테스트 성격 데이터의 판정과 정리 절차가 불명확했다.
+  - production DB cleanup은 되돌리기 어려우므로, 실제 삭제 전에 read-only audit과 승인 기준을 먼저 고정해야 했다.
+- 변경내용:
+  - `db:audit:demo-content` read-only audit script를 추가했다.
+  - audit script는 user/post/comment 후보 count와 샘플을 출력하며, non-local DB에서는 `DEMO_CONTENT_AUDIT_CONFIRM=DEMO_CONTENT_AUDIT` 확인값이 필요하다.
+  - 후보 신호는 `샘플·`, `[샘플`, `[PW`, `PW SEARCH`, `[VISUAL SMOKE]`, `visual-smoke`, `E2E`, `playwright`, `townpet-demo`, `adoption-demo`, `test-user`, `비회원E2E` 기준으로 잡았다.
+  - 운영 문서에 read-only audit, No-Go 조건, cleanup 방식 선택, legacy `production-demo-content` workflow cleanup mode 사용 조건을 정리했다.
+  - `운영_문서_안내.md`의 Active 운영 문서와 on-demand maintenance map에 새 절차와 audit 명령을 연결했다.
+  - production DB delete/update는 실행하지 않았다.
+- 코드문서:
+  - [app/scripts/audit-demo-content-candidates.ts](../app/scripts/audit-demo-content-candidates.ts)
+  - [app/scripts/audit-demo-content-candidates.test.ts](../app/scripts/audit-demo-content-candidates.test.ts)
+  - [app/package.json](../app/package.json)
+  - [business/operations/운영_DB_demo_E2E_데이터_정리_절차.md](../business/operations/운영_DB_demo_E2E_데이터_정리_절차.md)
+  - [business/operations/운영_문서_안내.md](../business/operations/운영_문서_안내.md)
+  - [business/archive/operations/문서 동기화 리포트.md](../business/archive/operations/문서%20동기화%20리포트.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- scripts/audit-demo-content-candidates.test.ts`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `git diff --check`
+  - local read-only audit: `corepack pnpm@9.12.3 -C app db:audit:demo-content`
+    - users: 152
+    - posts: 60
+    - comments: 42
+- 결과:
+  - 운영자는 production DB 변경 없이 demo/E2E 후보를 먼저 집계할 수 있다.
+  - cleanup은 후보 목록 승인과 No-Go 조건 확인 후 별도 작업으로만 진행한다.
+  - 현재 active 구현 항목은 없다.

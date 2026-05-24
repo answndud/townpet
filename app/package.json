@@ -51,6 +51,7 @@
     "db:cleanup:search-terms": "tsx scripts/cleanup-search-terms.ts",
     "db:cleanup:search-term-daily-metrics": "tsx scripts/cleanup-search-term-daily-metrics.ts",
     "db:cleanup:legacy-search-setting": "tsx scripts/cleanup-legacy-site-setting.ts",
+    "db:audit:demo-content": "tsx scripts/audit-demo-content-candidates.ts",
     "docs:refresh": "node ../scripts/refresh-docs-index.mjs",
     "docs:refresh:check": "node ../scripts/refresh-docs-index.mjs --check",
     "copy:audit": "tsx scripts/audit-ui-copy.ts",

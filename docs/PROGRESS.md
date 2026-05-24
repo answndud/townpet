@@ -39,16 +39,29 @@
 - `P2-1. Public acquisition route 헤더 밀도 정리`를 완료했다. `/guides/*`, `/campaigns/neighborhood-map`, `/towns/*`에는 홈과 같은 간소 헤더를 적용하고, 피드/작성/관리자 등 앱 화면은 기존 헤더를 유지한다.
 - `P2-2. 홈 preview seed/demo 글 노출 방어`를 완료했다. 홈 preview API가 샘플/demo/test/E2E 글을 더 넓게 제외하고, 내부 후보를 15개까지 가져온 뒤 최종 5개만 반환한다.
 - `P2-3. 홈 Live board 빈 상태 콘텐츠 보강`을 완료했다. 홈 Live board가 비어도 병원 가이드, 병원 글, 분실동물 가이드, 첫 글 작성으로 이어지는 compact action row를 보여준다.
+- `P2-4. production demo/E2E 데이터 정리 절차 문서화`를 완료했다. 운영 DB 변경 없이 read-only audit 명령과 정리 승인 절차를 추가했다.
 
 ## 다음 액션
 
 - 현재 active 구현 항목 없음.
 - 시작페이지 추가 개선 후보:
-  - production DB에 남은 E2E/demo 데이터의 운영상 정리 절차는 별도 작업으로 문서화한다.
+  - production DB demo/E2E 후보 정리는 `운영_DB_demo_E2E_데이터_정리_절차.md`에 따라 read-only audit 결과를 먼저 승인받은 뒤 별도 cleanup 작업으로 연다.
 - 확정 전에는 `/`과 public acquisition UI에 특정 지역명을 노출하지 않는다.
 - 성능 후속은 최신 `main` 배포 후 같은 스크립트로 production 재측정할 때 별도 작업으로 연다.
 
 ## 최근 검증
+
+- `P2-4. production demo/E2E 데이터 정리 절차 문서화`
+  - `corepack pnpm@9.12.3 -C app test -- scripts/audit-demo-content-candidates.test.ts`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `git diff --check`
+  - local read-only audit: `corepack pnpm@9.12.3 -C app db:audit:demo-content`
+    - users: 152
+    - posts: 60
+    - comments: 42
+  - production DB delete/update는 실행하지 않음.
 
 - `P2-3. 홈 Live board 빈 상태 콘텐츠 보강`
   - `corepack pnpm@9.12.3 -C app test -- src/components/home/home-feed-preview.test.tsx src/app/page.test.tsx`
