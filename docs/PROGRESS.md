@@ -110,6 +110,12 @@
   - `node scripts/refresh-docs-index.mjs`
   - `node scripts/refresh-docs-index.mjs --check`
   - `git diff --check`
+  - production deploy `8c480ab`:
+    - Vercel deployment success: `https://townpet-rhts8i9mt-jmoon0227-9736s-projects.vercel.app`
+    - alias `https://townpet.vercel.app`
+    - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health` 통과.
+  - GitHub Actions:
+    - `docs-quality`: success (`https://github.com/answndud/townpet/actions/runs/26361062309`)
 
 - `P2-11. post detail 깨진 업로드 이미지 방어`
   - 상세 화면은 기존에 원본 마크다운 이미지 토큰 존재 여부로 갤러리 표시를 막고, 렌더러는 upload backing asset/file 존재 여부를 확인하지 않았다.

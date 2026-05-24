@@ -5451,6 +5451,9 @@
   - `node scripts/refresh-docs-index.mjs`
   - `node scripts/refresh-docs-index.mjs --check`
   - `git diff --check`
+  - production deploy `8c480ab`: `https://townpet-rhts8i9mt-jmoon0227-9736s-projects.vercel.app`, alias `https://townpet.vercel.app`
+  - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health`
+  - GitHub Actions `docs-quality` success.
 - 다음 작업:
   - 운영자가 production에서 첫 7개 글을 직접 게시한다.
   - 게시 후 `/api/home/feed`, `/feed/guest`, `/search/guest`에서 운영자 정리 배지, 출처 패널, public 노출을 smoke한다.
