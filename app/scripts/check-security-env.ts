@@ -119,8 +119,8 @@ export async function evaluateSecurityEnv(
     detail: !enforceProdRules
       ? "development/test에서는 local tooling 호환을 위해 완화된 CSP가 사용됩니다."
       : strictCspEnabled
-        ? "production은 strict nonce CSP를 enforce합니다. framework inline style 2종은 'unsafe-hashes' + 고정 SHA-256 hash allowlist로만 예외 허용됩니다."
-        : "현재 production은 hydration-safe fallback CSP를 enforce합니다. `CSP_ENFORCE_STRICT=1`을 설정하면 `script-src`에서 `unsafe-inline`이 제거된 strict nonce CSP로 전환됩니다.",
+        ? "production API 응답에는 strict nonce CSP를 유지하고, 사용자-facing HTML shell은 Next hydration 호환을 위해 fallback CSP를 사용합니다."
+        : "현재 production은 hydration-safe fallback CSP를 enforce합니다. strict nonce CSP는 Next hydration 호환성 검증 후 제한적으로만 적용합니다.",
   });
 
   const demoAuthFallbackEnabled = hasTruthyFlag(read(env, "ENABLE_DEMO_AUTH_FALLBACK"));

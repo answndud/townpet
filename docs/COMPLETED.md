@@ -5258,3 +5258,33 @@
   - `git diff --check`
 - 다음 작업:
   - 전국 공통 첫 7개 운영자 정리 글을 실제로 작성하고, 각 글의 출처 패널과 public 화면 노출을 확인한다.
+
+### 2026-05-24 | P2-9 production CSP hydration 차단 복구
+- 완료일: `2026-05-24`
+- 배경:
+  - production 기능 점검 중 `/guides/24h-vet-checklist`, `/campaigns/neighborhood-map`, `/posts/new`에서 Next script chunk 또는 inline style이 `CSP_ENFORCE_STRICT=1`의 strict nonce CSP에 의해 차단되는 것을 확인했다.
+  - HTML은 보이지만 hydration, editor, CTA, 클라이언트 상호작용이 일부 깨질 수 있는 상태였다.
+- 변경내용:
+  - 사용자-facing GET HTML shell은 hydration-safe fallback CSP를 적용하도록 middleware를 조정했다.
+  - `/api/*` 응답은 `CSP_ENFORCE_STRICT=1`일 때 strict nonce CSP 경로를 유지한다.
+  - middleware 회귀 테스트에 guide/write shell fallback CSP와 API strict CSP 유지 케이스를 추가했다.
+  - `ops:check:security-env`의 `CSP_RUNTIME_MODE` 설명과 보안 결정/위험/진행 문서를 실제 runtime 동작에 맞게 수정했다.
+- 코드문서:
+  - [app/middleware.ts](../app/middleware.ts)
+  - [app/src/middleware.test.ts](../app/src/middleware.test.ts)
+  - [app/scripts/check-security-env.ts](../app/scripts/check-security-env.ts)
+  - [business/security/보안_결정기록.md](../business/security/보안_결정기록.md)
+  - [business/security/보안_위험_등록부.md](../business/security/보안_위험_등록부.md)
+  - [business/security/보안_진행상황.md](../business/security/보안_진행상황.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/middleware.test.ts src/lib/security-headers.test.ts`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+  - `CSP_ENFORCE_STRICT=1` local production server + Chrome smoke:
+    - `/guides/24h-vet-checklist`: CSP blocked requests 0, console errors 0
+    - `/campaigns/neighborhood-map`: CSP blocked requests 0, console errors 0
+    - `/posts/new`: CSP blocked requests 0, console errors 0
+    - `/feed/guest`: CSP blocked requests 0, console errors 0
+- 다음 작업:
+  - 배포 후 production에서 같은 route의 CSP 차단이 사라졌는지 Chrome smoke와 health check로 확인한다.
+  - 남은 기능 점검 후보는 public feed의 깨진 이미지 404 조사다.

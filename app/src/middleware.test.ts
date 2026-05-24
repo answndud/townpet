@@ -19,9 +19,11 @@ import { getToken } from "next-auth/jwt";
 const getTokenMock = vi.mocked(getToken);
 
 beforeEach(() => {
+  vi.unstubAllEnvs();
   getTokenMock.mockReset();
   delete process.env.AUTH_SECRET;
   delete process.env.NEXTAUTH_SECRET;
+  delete process.env.CSP_ENFORCE_STRICT;
 });
 
 describe("resolveCspHeaders", () => {
@@ -224,5 +226,45 @@ describe("middleware guest feed rewrite", () => {
     expect(response.headers.get("content-security-policy")).not.toContain("'strict-dynamic'");
     expect(response.headers.get("x-nonce")).toBeNull();
     expect(response.headers.get("x-csp-nonce")).toBeNull();
+  });
+
+  it("keeps hydration-safe CSP on public guide pages even when strict CSP is enabled", async () => {
+    process.env.CSP_ENFORCE_STRICT = "1";
+
+    const request = new NextRequest("https://townpet.test/guides/24h-vet-checklist");
+    const response = await middleware(request);
+
+    expect(response.headers.get("content-security-policy")).toContain(
+      "script-src 'self' 'unsafe-inline'",
+    );
+    expect(response.headers.get("content-security-policy")).not.toContain("'strict-dynamic'");
+    expect(response.headers.get("x-nonce")).toBeNull();
+    expect(response.headers.get("x-csp-nonce")).toBeNull();
+  });
+
+  it("keeps hydration-safe CSP on the public write shell even when strict CSP is enabled", async () => {
+    process.env.CSP_ENFORCE_STRICT = "1";
+
+    const request = new NextRequest("https://townpet.test/posts/new");
+    const response = await middleware(request);
+
+    expect(response.headers.get("content-security-policy")).toContain(
+      "script-src 'self' 'unsafe-inline'",
+    );
+    expect(response.headers.get("content-security-policy")).not.toContain("'strict-dynamic'");
+    expect(response.headers.get("x-nonce")).toBeNull();
+    expect(response.headers.get("x-csp-nonce")).toBeNull();
+  });
+
+  it("keeps strict nonce CSP available for API routes when strict CSP is enabled", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    process.env.CSP_ENFORCE_STRICT = "1";
+
+    const request = new NextRequest("https://townpet.test/api/health");
+    const response = await middleware(request);
+
+    expect(response.headers.get("content-security-policy")).toContain("'strict-dynamic'");
+    expect(response.headers.get("x-nonce")).toBeTruthy();
+    expect(response.headers.get("x-csp-nonce")).toBeTruthy();
   });
 });
