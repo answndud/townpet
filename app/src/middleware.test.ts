@@ -242,6 +242,22 @@ describe("middleware guest feed rewrite", () => {
     expect(response.headers.get("x-csp-nonce")).toBeNull();
   });
 
+  it("keeps hydration-safe CSP on HEAD checks for public guide pages", async () => {
+    process.env.CSP_ENFORCE_STRICT = "1";
+
+    const request = new NextRequest("https://townpet.test/guides/24h-vet-checklist", {
+      method: "HEAD",
+    });
+    const response = await middleware(request);
+
+    expect(response.headers.get("content-security-policy")).toContain(
+      "script-src 'self' 'unsafe-inline'",
+    );
+    expect(response.headers.get("content-security-policy")).not.toContain("'strict-dynamic'");
+    expect(response.headers.get("x-nonce")).toBeNull();
+    expect(response.headers.get("x-csp-nonce")).toBeNull();
+  });
+
   it("keeps hydration-safe CSP on the public write shell even when strict CSP is enabled", async () => {
     process.env.CSP_ENFORCE_STRICT = "1";
 

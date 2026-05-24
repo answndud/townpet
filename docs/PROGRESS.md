@@ -62,7 +62,7 @@
 
 - `P2-9. production CSP hydration 차단 복구`
   - production browser smoke에서 `/guides/24h-vet-checklist`, `/campaigns/neighborhood-map`, `/posts/new`의 CSP script/style 차단 후보를 확인함.
-  - `app/middleware.ts`에서 사용자-facing GET HTML shell은 hydration-safe fallback CSP를 적용하도록 조정.
+  - `app/middleware.ts`에서 사용자-facing GET/HEAD HTML shell은 hydration-safe fallback CSP를 적용하도록 조정.
   - `/api/*`는 `CSP_ENFORCE_STRICT=1`일 때 strict nonce CSP 경로를 유지.
   - `app/scripts/check-security-env.ts`와 보안 문서를 실제 runtime 동작에 맞게 갱신.
   - `corepack pnpm@9.12.3 -C app test -- src/middleware.test.ts src/lib/security-headers.test.ts`
