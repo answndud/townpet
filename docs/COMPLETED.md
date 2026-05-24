@@ -5392,3 +5392,34 @@
   - GitHub Actions `docs-quality`, `quality-gate` success.
 - 다음 작업:
   - production DB에 남아 있는 오래된 `/media/media/uploads/*` 본문 후보를 read-only audit로 집계하고, 데이터 정리 필요성을 판단한다.
+
+### 2026-05-24 | P2-13 legacy upload path read-only audit 준비
+- 완료일: `2026-05-24`
+- 배경:
+  - P2-12에서 새 작성/수정 경로의 `/media/media/uploads/*` 재생성 가능성은 막았다.
+  - 이미 production DB에 저장된 legacy 중복 경로가 남아 있는지는 별도 read-only audit로 먼저 확인해야 한다.
+  - 데이터 정리는 되돌리기 어려우므로 audit 명령과 bounded report를 먼저 추가했다.
+- 변경내용:
+  - `db:audit:legacy-upload-paths` script를 추가했다.
+  - audit 대상은 `Post.content`, `PostImage.url`, `Comment.content`의 `/media/media/uploads/*` 후보로 제한했다.
+  - non-local DB에서는 `LEGACY_UPLOAD_PATH_AUDIT_CONFIRM=LEGACY_UPLOAD_PATH_AUDIT` 확인값이 있어야만 실행된다.
+  - report는 후보 count와 제한된 sample만 출력하고, 데이터 변경은 하지 않는다.
+  - 운영 문서의 on-demand maintenance map에 새 audit 명령을 추가했다.
+  - 현재 세션에는 production 직접 DB env가 없어 production audit는 실행하지 못했고, local DB read-only audit 결과를 report로 남겼다.
+- 코드문서:
+  - [app/scripts/audit-legacy-upload-paths.ts](../app/scripts/audit-legacy-upload-paths.ts)
+  - [app/scripts/audit-legacy-upload-paths.test.ts](../app/scripts/audit-legacy-upload-paths.test.ts)
+  - [app/package.json](../app/package.json)
+  - [business/operations/운영_문서_안내.md](../business/operations/운영_문서_안내.md)
+  - [docs/reports/legacy-upload-path-audit-2026-05-24.md](./reports/legacy-upload-path-audit-2026-05-24.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- scripts/audit-legacy-upload-paths.test.ts`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - local read-only audit: `corepack pnpm@9.12.3 -C app db:audit:legacy-upload-paths`
+- production audit blocker:
+  - `/tmp/townpet-production.env`, `/tmp/townpet-vercel-link`, process env, local Vercel CLI에서 production DB env를 찾지 못했다.
+  - repo에는 production secret을 저장하지 않는다.
+- 다음 작업:
+  - production DB env가 준비된 세션에서 같은 명령을 read-only로 재실행한다.
+  - 후보 count가 0보다 크면 별도 cleanup dry-run 계획과 명시적 승인 후에만 수정 작업을 연다.

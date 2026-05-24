@@ -48,6 +48,7 @@
 - `P2-10. public feed 깨진 업로드 썸네일 방어`를 완료했다. `/media/uploads/*` 이미지가 blob asset 또는 실제 local public 파일로 확인되지 않으면 피드 목록 응답에서 제외한다.
 - `P2-11. post detail 깨진 업로드 이미지 방어`를 완료했다. 상세 본문/갤러리도 renderable upload 기준으로 렌더링한다.
 - `P2-12. upload URL canonicalization 보강`을 완료했다. 작성/수정 경로에서 legacy double-proxied URL이 다시 저장되지 않도록 canonicalize한다.
+- `P2-13. legacy upload path read-only audit 준비`를 완료했다. production 직접 DB env는 현재 세션에 없어 local read-only report와 production 재실행 명령을 남겼다.
 
 ## 다음 액션
 
@@ -60,7 +61,7 @@
   - 지역을 하나로 제한하지 않고 `운영자_정리_콘텐츠_작성_큐.md`의 전국 공통 첫 7개 운영자 정리 글을 먼저 작성한다.
 - `/`과 public acquisition UI에는 사용자가 선택하지 않은 특정 지역명을 기본값처럼 노출하지 않는다.
 - 성능 후속은 최신 `main` 배포 후 같은 스크립트로 production 재측정할 때 별도 작업으로 연다.
-- 다음 기능 점검 후보는 오래된 본문 내 `/media/media/uploads/*` 데이터의 read-only audit와 정리 필요성 판단이다.
+- 다음 기능 점검 후보는 production DB env가 준비된 상태에서 `db:audit:legacy-upload-paths`를 재실행하고, 후보가 있으면 별도 cleanup dry-run 계획을 세우는 것이다.
 
 ## 최근 검증
 
@@ -79,6 +80,16 @@
   - GitHub Actions:
     - `docs-quality`: success (`https://github.com/answndud/townpet/actions/runs/26360616147`)
     - `quality-gate`: success (`https://github.com/answndud/townpet/actions/runs/26360616145`)
+
+- `P2-13. legacy upload path read-only audit 준비`
+  - `db:audit:legacy-upload-paths` script를 추가했다.
+  - read-only 범위는 `Post.content`, `PostImage.url`, `Comment.content`의 `/media/media/uploads/*` 후보 count와 bounded sample이다.
+  - non-local DB에서는 `LEGACY_UPLOAD_PATH_AUDIT_CONFIRM=LEGACY_UPLOAD_PATH_AUDIT` 확인값 없이는 실행되지 않는다.
+  - local DB audit 결과: postContents 0, postImages 0, commentContents 0.
+  - production 직접 DB env는 현재 세션에 없어 실행하지 못했다. 확인한 위치: `/tmp/townpet-production.env`, `/tmp/townpet-vercel-link`, process env, local Vercel CLI.
+  - report: `docs/reports/legacy-upload-path-audit-2026-05-24.md`
+  - `corepack pnpm@9.12.3 -C app test -- scripts/audit-legacy-upload-paths.test.ts`
+  - `corepack pnpm@9.12.3 -C app typecheck`
 
 - `P2-11. post detail 깨진 업로드 이미지 방어`
   - 상세 화면은 기존에 원본 마크다운 이미지 토큰 존재 여부로 갤러리 표시를 막고, 렌더러는 upload backing asset/file 존재 여부를 확인하지 않았다.
