@@ -44,6 +44,7 @@
 - `P2-6. production demo content cleanup 실행`을 완료했다. GitHub Actions cleanup workflow로 demo users 7, posts 17을 삭제했고 cleanup 후 후보 users/posts/comments가 모두 0임을 확인했다.
 - `P2-7. GitHub Actions Node 20 deprecation 정리`를 완료했다. workflow Node 실행 버전을 24로 맞추고 `actions/upload-artifact`를 Node 24 runtime action으로 갱신했다.
 - `P2-8. 실제 운영자 정리 콘텐츠 작성 큐 수립`을 완료했다. production DB 글 생성 없이 첫 14일 운영자 정리 콘텐츠 큐와 작성 기준을 문서화했다.
+- `P2-9. production CSP hydration 차단 복구`를 완료했다. 사용자-facing HTML shell은 hydration-safe fallback CSP를 쓰고, API strict nonce CSP 경로는 유지한다.
 
 ## 다음 액션
 
@@ -58,6 +59,19 @@
 - 성능 후속은 최신 `main` 배포 후 같은 스크립트로 production 재측정할 때 별도 작업으로 연다.
 
 ## 최근 검증
+
+- `P2-9. production CSP hydration 차단 복구`
+  - production browser smoke에서 `/guides/24h-vet-checklist`, `/campaigns/neighborhood-map`, `/posts/new`의 CSP script/style 차단 후보를 확인함.
+  - `app/middleware.ts`에서 사용자-facing GET HTML shell은 hydration-safe fallback CSP를 적용하도록 조정.
+  - `/api/*`는 `CSP_ENFORCE_STRICT=1`일 때 strict nonce CSP 경로를 유지.
+  - `app/scripts/check-security-env.ts`와 보안 문서를 실제 runtime 동작에 맞게 갱신.
+  - `corepack pnpm@9.12.3 -C app test -- src/middleware.test.ts src/lib/security-headers.test.ts`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+  - `CSP_ENFORCE_STRICT=1` local production server + Chrome smoke:
+    - `/guides/24h-vet-checklist`: CSP blocked requests 0, console errors 0
+    - `/campaigns/neighborhood-map`: CSP blocked requests 0, console errors 0
+    - `/posts/new`: CSP blocked requests 0, console errors 0
+    - `/feed/guest`: CSP blocked requests 0, console errors 0
 
 - `P2-8. 실제 운영자 정리 콘텐츠 작성 큐 수립`
   - `business/operations/운영자_정리_콘텐츠_작성_큐.md` 추가

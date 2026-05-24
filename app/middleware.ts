@@ -176,29 +176,16 @@ function createNotFoundResponse(headers: Headers) {
   return response;
 }
 
-function isGuestFeedShellPath(pathname: string) {
-  return pathname === "/feed" || pathname === "/feed/guest";
-}
-
-function isStaticPublicShellPath(pathname: string) {
-  return pathname === "/";
-}
-
-function shouldUseStaticShellCsp(request: NextRequest) {
+function shouldUseHydrationSafeShellCsp(request: NextRequest) {
   if (request.method !== "GET") {
     return false;
   }
 
-  if (isStaticPublicShellPath(request.nextUrl.pathname)) {
-    return true;
-  }
-
-  if (!isGuestFeedShellPath(request.nextUrl.pathname)) {
+  if (request.nextUrl.pathname.startsWith("/api")) {
     return false;
   }
-  const scope = request.nextUrl.searchParams.get("scope");
-  const personalized = request.nextUrl.searchParams.get("personalized");
-  return scope !== "LOCAL" && personalized !== "1";
+
+  return true;
 }
 
 export async function middleware(request: NextRequest) {
@@ -208,7 +195,7 @@ export async function middleware(request: NextRequest) {
 
   const responseHeaders = new Headers();
   responseHeaders.set("x-request-id", requestId);
-  if (shouldUseStaticShellCsp(request)) {
+  if (shouldUseHydrationSafeShellCsp(request)) {
     applyStaticSecurityHeaders(responseHeaders);
     requestHeaders.set(
       "content-security-policy",
