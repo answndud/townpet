@@ -58,7 +58,7 @@ describe("renderLiteMarkdown", () => {
     );
 
     expect(html).toContain('<div class="my-2">');
-    expect(html).toContain('<img src="https://store-1.public.blob.vercel-storage.com/uploads/dog.png"');
+    expect(html).toContain('<img src="/media/uploads/dog.png"');
     expect(html).toContain('alt="강아지 사진"');
     expect(html).toContain('class="block h-auto max-h-[520px] max-w-full border-0 bg-transparent object-contain"');
     expect(html).not.toContain("<p><img");
@@ -96,6 +96,15 @@ describe("renderLiteMarkdown", () => {
     expect(html).toContain('<img src="/media/uploads/ok.webp"');
     expect(html).not.toContain("/media/uploads/missing.jpg");
     expect(html).toContain("누락");
+  });
+
+  it("canonicalizes legacy double-proxied upload image urls", () => {
+    const html = renderLiteMarkdown("![첨부](/media/media/uploads/legacy.webp)", {
+      renderableUploadPathnames: new Set(["uploads/legacy.webp"]),
+    });
+
+    expect(html).toContain('<img src="/media/uploads/legacy.webp"');
+    expect(html).not.toContain("/media/media/uploads/legacy.webp");
   });
 
   it("renders numeric size and hex color tokens", () => {

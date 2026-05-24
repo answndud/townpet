@@ -25,6 +25,11 @@ describe("upload url trust policy", () => {
     expect(isTrustedUploadUrl("/media/uploads/image.webp")).toBe(true);
   });
 
+  it("accepts legacy double-proxied upload urls for canonical cleanup", () => {
+    expect(isTrustedUploadUrl("/media/media/uploads/image.webp")).toBe(true);
+    expect(getTrustedUploadPathname("/media/media/uploads/image.webp")).toBe("uploads/image.webp");
+  });
+
   it("rejects external image urls", () => {
     expect(isTrustedUploadUrl("https://example.com/image.png")).toBe(false);
   });
@@ -60,6 +65,7 @@ describe("upload url trust policy", () => {
       getUploadProxyPath("https://store-1.public.blob.vercel-storage.com/uploads/b.png"),
     ).toBe("/media/uploads/b.png");
     expect(getUploadProxyPath("/media/uploads/c.png")).toBe("/media/uploads/c.png");
+    expect(getUploadProxyPath("/media/media/uploads/c.png")).toBe("/media/uploads/c.png");
     expect(getUploadProxyPath("https://example.com/a.png")).toBeNull();
   });
 });

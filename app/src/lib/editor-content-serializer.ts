@@ -1,4 +1,5 @@
 import { renderLiteMarkdown } from "@/lib/markdown-lite";
+import { getUploadProxyPath } from "@/lib/upload-url";
 
 export function markupToEditorHtml(markup: string) {
   if (!markup.trim()) {
@@ -130,12 +131,16 @@ function serializeEditorNode(node: Node): string {
     if (!src) {
       return "";
     }
+    const canonicalSrc = getUploadProxyPath(src);
+    if (!canonicalSrc) {
+      return normalizeWhitespace(node.getAttribute("alt") ?? "").replace(/[\[\]]/g, "").trim();
+    }
     const rawAlt = normalizeWhitespace(node.getAttribute("alt") ?? "");
     const alt = rawAlt.replace(/[\[\]]/g, "").trim() || "첨부 이미지";
     const widthRaw = node.style.width || node.getAttribute("width") || "";
     const widthMatch = widthRaw.match(/\d+/);
     const widthToken = widthMatch ? `{width=${widthMatch[0]}}` : "";
-    return `![${alt}](${src})${widthToken}\n\n`;
+    return `![${alt}](${canonicalSrc})${widthToken}\n\n`;
   }
 
   if (node.tagName === "STRONG" || node.tagName === "B") {

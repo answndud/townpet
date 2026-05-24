@@ -47,6 +47,7 @@
 - `P2-9. production CSP hydration 차단 복구`를 완료했다. 사용자-facing HTML shell은 hydration-safe fallback CSP를 쓰고, API strict nonce CSP 경로는 유지한다.
 - `P2-10. public feed 깨진 업로드 썸네일 방어`를 완료했다. `/media/uploads/*` 이미지가 blob asset 또는 실제 local public 파일로 확인되지 않으면 피드 목록 응답에서 제외한다.
 - `P2-11. post detail 깨진 업로드 이미지 방어`를 완료했다. 상세 본문/갤러리도 renderable upload 기준으로 렌더링한다.
+- `P2-12. upload URL canonicalization 보강`을 완료했다. 작성/수정 경로에서 legacy double-proxied URL이 다시 저장되지 않도록 canonicalize한다.
 
 ## 다음 액션
 
@@ -59,9 +60,18 @@
   - 지역을 하나로 제한하지 않고 `운영자_정리_콘텐츠_작성_큐.md`의 전국 공통 첫 7개 운영자 정리 글을 먼저 작성한다.
 - `/`과 public acquisition UI에는 사용자가 선택하지 않은 특정 지역명을 기본값처럼 노출하지 않는다.
 - 성능 후속은 최신 `main` 배포 후 같은 스크립트로 production 재측정할 때 별도 작업으로 연다.
-- 다음 기능 점검 후보는 게시글 작성/수정 플로우의 업로드 경로 중복 생성 방지와 오래된 본문 내 `/media/media/uploads/*` 데이터 정리 여부다.
+- 다음 기능 점검 후보는 오래된 본문 내 `/media/media/uploads/*` 데이터의 read-only audit와 정리 필요성 판단이다.
 
 ## 최근 검증
+
+- `P2-12. upload URL canonicalization 보강`
+  - 현재 쓰기 normalize 경로는 `/media/uploads/*`를 `/media/media/uploads/*`로 만들지는 않지만, 에디터가 이미 중복 경로를 가진 `<img>`를 직렬화하면 그대로 저장될 수 있었다.
+  - `upload-url`이 legacy `/media/media/uploads/*`를 `uploads/*` storage key로 인식하고, proxy path는 항상 `/media/uploads/*`로 canonicalize하도록 수정했다.
+  - `markdown-lite`는 blob/local/legacy upload 이미지 URL을 앱 proxy path로 렌더링한다.
+  - `editor-content-serializer`는 `<img>` src를 저장 전 `/media/uploads/*`로 canonicalize하고, trusted upload가 아니면 새 이미지 마크다운으로 저장하지 않는다.
+  - `corepack pnpm@9.12.3 -C app test -- src/lib/upload-url.test.ts src/lib/markdown-lite.test.ts src/lib/post-detail-rendering.test.ts`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app quality:check`
 
 - `P2-11. post detail 깨진 업로드 이미지 방어`
   - 상세 화면은 기존에 원본 마크다운 이미지 토큰 존재 여부로 갤러리 표시를 막고, 렌더러는 upload backing asset/file 존재 여부를 확인하지 않았다.

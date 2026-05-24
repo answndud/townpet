@@ -32,12 +32,16 @@ function normalizeMediaUploadPathname(pathname: string) {
     return "";
   }
 
-  const normalized = trimmed.startsWith("/") ? trimmed.slice(1) : trimmed;
+  let normalized = trimmed.startsWith("/") ? trimmed.slice(1) : trimmed;
   if (!normalized.startsWith("media/")) {
     return "";
   }
 
-  return normalizeUploadPathname(normalized.slice("media/".length));
+  while (normalized.startsWith("media/")) {
+    normalized = normalized.slice("media/".length);
+  }
+
+  return normalizeUploadPathname(normalized);
 }
 
 export function isTrustedUploadPathname(pathname: string) {
