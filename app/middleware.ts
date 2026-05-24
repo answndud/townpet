@@ -177,7 +177,7 @@ function createNotFoundResponse(headers: Headers) {
 }
 
 function shouldUseHydrationSafeShellCsp(request: NextRequest) {
-  if (request.method !== "GET") {
+  if (request.method !== "GET" && request.method !== "HEAD") {
     return false;
   }
 

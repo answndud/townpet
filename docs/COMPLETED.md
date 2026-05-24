@@ -5265,7 +5265,7 @@
   - production 기능 점검 중 `/guides/24h-vet-checklist`, `/campaigns/neighborhood-map`, `/posts/new`에서 Next script chunk 또는 inline style이 `CSP_ENFORCE_STRICT=1`의 strict nonce CSP에 의해 차단되는 것을 확인했다.
   - HTML은 보이지만 hydration, editor, CTA, 클라이언트 상호작용이 일부 깨질 수 있는 상태였다.
 - 변경내용:
-  - 사용자-facing GET HTML shell은 hydration-safe fallback CSP를 적용하도록 middleware를 조정했다.
+  - 사용자-facing GET/HEAD HTML shell은 hydration-safe fallback CSP를 적용하도록 middleware를 조정했다.
   - `/api/*` 응답은 `CSP_ENFORCE_STRICT=1`일 때 strict nonce CSP 경로를 유지한다.
   - middleware 회귀 테스트에 guide/write shell fallback CSP와 API strict CSP 유지 케이스를 추가했다.
   - `ops:check:security-env`의 `CSP_RUNTIME_MODE` 설명과 보안 결정/위험/진행 문서를 실제 runtime 동작에 맞게 수정했다.
