@@ -5193,3 +5193,41 @@
 - 다음 작업:
   - GitHub Actions annotation에 Node 20 deprecation warning이 남았으므로, 별도 유지보수 작업에서 Actions runtime/Node version 업데이트 후보를 점검한다.
   - 추가 cleanup은 새 read-only audit와 별도 승인 없이는 실행하지 않는다.
+
+### 2026-05-24 | P2-7 GitHub Actions Node 20 deprecation 정리
+- 완료일: `2026-05-24`
+- 배경:
+  - P2-6 cleanup workflow run에서 `actions/upload-artifact@v4`의 Node 20 runtime deprecation warning이 발생했다.
+  - Vercel production build는 Node 24.x를 사용하므로 GitHub Actions의 Node 실행 버전도 Node 24로 맞추는 편이 운영 기준과 일치했다.
+- 변경내용:
+  - `.github/workflows/*.yml`의 `node-version: 20`을 `node-version: 24`로 갱신했다.
+  - `actions/upload-artifact@v4`를 `actions/upload-artifact@v7`로 갱신했다.
+  - workflow trigger, secret, environment, 실행 명령, production DB 작업은 변경하지 않았다.
+- 코드문서:
+  - [.github/workflows/auth-audit-cleanup.yml](../.github/workflows/auth-audit-cleanup.yml)
+  - [.github/workflows/browser-smoke.yml](../.github/workflows/browser-smoke.yml)
+  - [.github/workflows/docs-quality.yml](../.github/workflows/docs-quality.yml)
+  - [.github/workflows/guest-legacy-maintenance.yml](../.github/workflows/guest-legacy-maintenance.yml)
+  - [.github/workflows/notification-cleanup.yml](../.github/workflows/notification-cleanup.yml)
+  - [.github/workflows/oauth-real-e2e.yml](../.github/workflows/oauth-real-e2e.yml)
+  - [.github/workflows/ops-latency-snapshots.yml](../.github/workflows/ops-latency-snapshots.yml)
+  - [.github/workflows/ops-smoke-checks.yml](../.github/workflows/ops-smoke-checks.yml)
+  - [.github/workflows/post-integrity-maintenance.yml](../.github/workflows/post-integrity-maintenance.yml)
+  - [.github/workflows/production-demo-content.yml](../.github/workflows/production-demo-content.yml)
+  - [.github/workflows/quality-gate.yml](../.github/workflows/quality-gate.yml)
+  - [.github/workflows/search-term-cleanup.yml](../.github/workflows/search-term-cleanup.yml)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - GitHub API로 action metadata 확인:
+    - `actions/upload-artifact@v7`: `using: node24`
+    - `actions/setup-node@v6`: `using: node24`
+    - `actions/checkout@v6`: `using: node24`
+    - `pnpm/action-setup@v5`: `using: node24`
+  - `rg -n "node-version: 20|actions/upload-artifact@v4" .github/workflows` 결과 없음
+  - `ruby -e 'require "yaml"; Dir[".github/workflows/*.yml"].sort.each { |f| YAML.load_file(f); puts "ok #{f}" }'`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `git diff --check`
+- 다음 작업:
+  - push 후 GitHub Actions `quality-gate`와 `docs-quality` 원격 실행 결과를 확인한다.

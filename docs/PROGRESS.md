@@ -42,16 +42,31 @@
 - `P2-4. production demo/E2E 데이터 정리 절차 문서화`를 완료했다. 운영 DB 변경 없이 read-only audit 명령과 정리 승인 절차를 추가했다.
 - `P2-5. production DB demo/E2E read-only audit 실행`을 완료했다. production DB 변경 없이 후보 users 7, posts 17, comments 68을 확인했고, 마스킹된 report를 남겼다.
 - `P2-6. production demo content cleanup 실행`을 완료했다. GitHub Actions cleanup workflow로 demo users 7, posts 17을 삭제했고 cleanup 후 후보 users/posts/comments가 모두 0임을 확인했다.
+- `P2-7. GitHub Actions Node 20 deprecation 정리`를 완료했다. workflow Node 실행 버전을 24로 맞추고 `actions/upload-artifact`를 Node 24 runtime action으로 갱신했다.
 
 ## 다음 액션
 
 - 현재 active 구현 항목 없음.
 - 시작페이지 추가 개선 후보:
   - production demo content cleanup은 완료됐다. 추가 cleanup은 새 read-only audit와 별도 승인 없이는 실행하지 않는다.
+- 운영 유지보수 후보:
+  - workflow 변경 후 GitHub Actions `quality-gate`와 `docs-quality` 원격 실행 결과를 확인한다.
 - 확정 전에는 `/`과 public acquisition UI에 특정 지역명을 노출하지 않는다.
 - 성능 후속은 최신 `main` 배포 후 같은 스크립트로 production 재측정할 때 별도 작업으로 연다.
 
 ## 최근 검증
+
+- `P2-7. GitHub Actions Node 20 deprecation 정리`
+  - GitHub API로 action metadata 확인:
+    - `actions/upload-artifact@v7`: `using: node24`
+    - `actions/setup-node@v6`: `using: node24`
+    - `actions/checkout@v6`: `using: node24`
+    - `pnpm/action-setup@v5`: `using: node24`
+  - `rg -n "node-version: 20|actions/upload-artifact@v4" .github/workflows` 결과 없음
+  - `ruby -e 'require "yaml"; Dir[".github/workflows/*.yml"].sort.each { |f| YAML.load_file(f); puts "ok #{f}" }'`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `git diff --check`
 
 - `P2-6. production demo content cleanup 실행`
   - cleanup 전 production read-only audit:
