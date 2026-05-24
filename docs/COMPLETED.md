@@ -5231,3 +5231,27 @@
   - `git diff --check`
 - 다음 작업:
   - push 후 GitHub Actions `quality-gate`와 `docs-quality` 원격 실행 결과를 확인한다.
+
+### 2026-05-24 | P2-8 실제 운영자 정리 콘텐츠 작성 큐 수립
+- 완료일: `2026-05-24`
+- 배경:
+  - production demo content cleanup 후 public preview는 안전해졌지만, 실제 공개 콘텐츠 밀도는 낮은 상태다.
+  - 다시 fake/sample/demo seed를 넣는 대신 운영자가 출처를 확인해 작성하는 `운영자 정리 콘텐츠` 큐가 필요했다.
+- 변경내용:
+  - 첫 14일 운영자 정리 콘텐츠 큐를 추가했다.
+  - 콘텐츠 축은 `분실동물 + 병원 + 산책` 중심으로 잡고, 병원 순위/추천/평점형 콘텐츠는 금지했다.
+  - 특정 실험 지역이 아직 확정되지 않았으므로 `{선택 지역}` placeholder로만 작성하고 지역명은 하드코딩하지 않았다.
+  - 운영자 작성 전 체크리스트, 출처 검증 기준, 금지 표현, 게시 후 확인 루틴을 문서화했다.
+  - 30일 실행 플레이북의 Week 1 내부 콘텐츠 기준을 fake seed가 아닌 운영자 정리 큐로 연결했다.
+  - production DB 글 생성은 실행하지 않았다.
+- 코드문서:
+  - [business/operations/운영자_정리_콘텐츠_작성_큐.md](../business/operations/운영자_정리_콘텐츠_작성_큐.md)
+  - [business/operations/운영_문서_안내.md](../business/operations/운영_문서_안내.md)
+  - [business/analytics/온동네_초기유저_30일_실행플레이북.md](../business/analytics/온동네_초기유저_30일_실행플레이북.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `git diff --check`
+- 다음 작업:
+  - 실험 지역이 확정되면 첫 7개 운영자 정리 글을 실제로 작성하고, 각 글의 출처 패널과 public 화면 노출을 확인한다.

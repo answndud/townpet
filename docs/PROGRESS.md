@@ -43,6 +43,7 @@
 - `P2-5. production DB demo/E2E read-only audit 실행`을 완료했다. production DB 변경 없이 후보 users 7, posts 17, comments 68을 확인했고, 마스킹된 report를 남겼다.
 - `P2-6. production demo content cleanup 실행`을 완료했다. GitHub Actions cleanup workflow로 demo users 7, posts 17을 삭제했고 cleanup 후 후보 users/posts/comments가 모두 0임을 확인했다.
 - `P2-7. GitHub Actions Node 20 deprecation 정리`를 완료했다. workflow Node 실행 버전을 24로 맞추고 `actions/upload-artifact`를 Node 24 runtime action으로 갱신했다.
+- `P2-8. 실제 운영자 정리 콘텐츠 작성 큐 수립`을 완료했다. production DB 글 생성 없이 첫 14일 운영자 정리 콘텐츠 큐와 작성 기준을 문서화했다.
 
 ## 다음 액션
 
@@ -51,10 +52,21 @@
   - production demo content cleanup은 완료됐다. 추가 cleanup은 새 read-only audit와 별도 승인 없이는 실행하지 않는다.
 - 운영 유지보수 후보:
   - workflow 변경 후 GitHub Actions `quality-gate`와 `docs-quality` 원격 실행 결과를 확인한다.
+- 콘텐츠 운영 후보:
+  - 실험 지역이 확정되면 `운영자_정리_콘텐츠_작성_큐.md`를 기준으로 첫 7개 운영자 정리 글을 실제로 작성한다.
 - 확정 전에는 `/`과 public acquisition UI에 특정 지역명을 노출하지 않는다.
 - 성능 후속은 최신 `main` 배포 후 같은 스크립트로 production 재측정할 때 별도 작업으로 연다.
 
 ## 최근 검증
+
+- `P2-8. 실제 운영자 정리 콘텐츠 작성 큐 수립`
+  - `business/operations/운영자_정리_콘텐츠_작성_큐.md` 추가
+  - `business/operations/운영_문서_안내.md` Active 운영 문서 목록에 연결
+  - `business/analytics/온동네_초기유저_30일_실행플레이북.md` Week 1 내부 콘텐츠 기준을 fake seed가 아닌 운영자 정리 큐로 연결
+  - production DB 글 생성은 실행하지 않음.
+  - 특정 실험 지역명은 추가하지 않음.
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `git diff --check`
 
 - `P2-7. GitHub Actions Node 20 deprecation 정리`
   - GitHub API로 action metadata 확인:
