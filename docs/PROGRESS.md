@@ -49,6 +49,7 @@
 - `P2-11. post detail 깨진 업로드 이미지 방어`를 완료했다. 상세 본문/갤러리도 renderable upload 기준으로 렌더링한다.
 - `P2-12. upload URL canonicalization 보강`을 완료했다. 작성/수정 경로에서 legacy double-proxied URL이 다시 저장되지 않도록 canonicalize한다.
 - `P2-13. legacy upload path read-only audit 준비`를 완료했다. production 직접 DB env는 현재 세션에 없어 local read-only report와 production 재실행 명령을 남겼다.
+- `P2-14. 전국 공통 운영자 정리 콘텐츠 초안 팩`을 완료했다. production DB에 글을 넣지 않고, `/posts/new`에서 운영자가 직접 작성할 수 있는 첫 7개 초안을 문서화했다.
 
 ## 다음 액션
 
@@ -58,10 +59,11 @@
 - 운영 유지보수 후보:
   - workflow 변경 후 GitHub Actions `quality-gate`와 `docs-quality` 원격 실행 결과를 확인한다.
 - 콘텐츠 운영 후보:
-  - 지역을 하나로 제한하지 않고 `운영자_정리_콘텐츠_작성_큐.md`의 전국 공통 첫 7개 운영자 정리 글을 먼저 작성한다.
+  - `운영자_정리_콘텐츠_초안_팩.md`의 첫 7개 글을 운영자가 production에서 직접 게시한다.
 - `/`과 public acquisition UI에는 사용자가 선택하지 않은 특정 지역명을 기본값처럼 노출하지 않는다.
 - 성능 후속은 최신 `main` 배포 후 같은 스크립트로 production 재측정할 때 별도 작업으로 연다.
 - 다음 기능 점검 후보는 production DB env가 준비된 상태에서 `db:audit:legacy-upload-paths`를 재실행하고, 후보가 있으면 별도 cleanup dry-run 계획을 세우는 것이다.
+- 다음 개발 후보는 운영자 정리 글 게시 후 `/api/home/feed`, `/feed/guest`, `/search/guest`에서 public 노출과 출처 패널을 smoke하는 것이다.
 
 ## 최근 검증
 
@@ -99,6 +101,15 @@
   - GitHub Actions:
     - `docs-quality`: success (`https://github.com/answndud/townpet/actions/runs/26360858762`)
     - `quality-gate`: success (`https://github.com/answndud/townpet/actions/runs/26360843462`)
+
+- `P2-14. 전국 공통 운영자 정리 콘텐츠 초안 팩`
+  - production DB 변경 없이 문서만 추가했다.
+  - 첫 7개 초안은 `L1`, `L2`, `H1`, `W1`, `L3`, `H2`, `W2` 순서다.
+  - 각 초안은 게시판 유형, 제목, 출처 이름, 출처 URL, 최종 확인일, 본문, 게시 전 확인 항목을 포함한다.
+  - source URL은 TownPet public guide/campaign/template route로 제한해 특정 지역이나 외부 미확인 사실을 기본값으로 넣지 않았다.
+  - `node scripts/refresh-docs-index.mjs`
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `git diff --check`
 
 - `P2-11. post detail 깨진 업로드 이미지 방어`
   - 상세 화면은 기존에 원본 마크다운 이미지 토큰 존재 여부로 갤러리 표시를 막고, 렌더러는 upload backing asset/file 존재 여부를 확인하지 않았다.
