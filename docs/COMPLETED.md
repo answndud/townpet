@@ -5478,7 +5478,11 @@
 - 검증:
   - `corepack pnpm@9.12.3 -C app test -- scripts/check-operator-content-public-smoke.test.ts`
   - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint -- scripts/check-operator-content-public-smoke.ts scripts/check-operator-content-public-smoke.test.ts`
   - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:operator-content-public` expected `BLOCKED`
+  - production deploy `7c60fa5`: `https://townpet-2r811r80r-jmoon0227-9736s-projects.vercel.app`, alias `https://townpet.vercel.app`
+  - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health`
+  - GitHub Actions `docs-quality`, `quality-gate` success.
 - production smoke 결과:
   - status: `BLOCKED`
   - foundOperatorItems: `0`
