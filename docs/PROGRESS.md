@@ -51,6 +51,7 @@
 - `P2-13. legacy upload path read-only audit 준비`를 완료했다. production 직접 DB env는 현재 세션에 없어 local read-only report와 production 재실행 명령을 남겼다.
 - `P2-14. 전국 공통 운영자 정리 콘텐츠 초안 팩`을 완료했다. production DB에 글을 넣지 않고, `/posts/new`에서 운영자가 직접 작성할 수 있는 첫 7개 초안을 문서화했다.
 - `P2-15. 운영자 정리 글 public smoke 명령`을 완료했다. 게시 후 바로 확인할 수 있는 repo-local smoke를 추가했고, 현재 production은 운영자 정리 글 0건으로 `BLOCKED`임을 확인했다.
+- `P2-16. 운영자 정리 글 production 자동 게시`를 완료했다. `townpet` production env를 `/tmp` 임시 link로 가져와 첫 7개 글을 `townpet-admin` author로 게시했고 public smoke가 `PASS`했다.
 
 ## 다음 액션
 
@@ -60,11 +61,11 @@
 - 운영 유지보수 후보:
   - workflow 변경 후 GitHub Actions `quality-gate`와 `docs-quality` 원격 실행 결과를 확인한다.
 - 콘텐츠 운영 후보:
-  - `운영자_정리_콘텐츠_초안_팩.md`의 첫 7개 글을 운영자가 production에서 직접 게시한다.
+  - 첫 7개 운영자 정리 글은 production 게시 완료. 다음은 화면에서 문구/밀도/CTA를 점검하고 필요하면 제목/본문을 운영자 수정한다.
 - `/`과 public acquisition UI에는 사용자가 선택하지 않은 특정 지역명을 기본값처럼 노출하지 않는다.
 - 성능 후속은 최신 `main` 배포 후 같은 스크립트로 production 재측정할 때 별도 작업으로 연다.
 - 다음 기능 점검 후보는 production DB env가 준비된 상태에서 `db:audit:legacy-upload-paths`를 재실행하고, 후보가 있으면 별도 cleanup dry-run 계획을 세우는 것이다.
-- 다음 개발 후보는 운영자 정리 글 게시 후 `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:operator-content-public`로 public 노출과 출처 패널을 smoke하는 것이다.
+- 다음 개발 후보는 운영자 정리 글이 들어간 `/`, `/feed/guest`, `/search/guest` 실제 화면에서 목록 밀도와 첫 화면 CTA 중복을 다시 점검하는 것이다.
 
 ## 최근 검증
 
@@ -134,6 +135,24 @@
   - GitHub Actions:
     - `docs-quality`: success (`https://github.com/answndud/townpet/actions/runs/26361277526`)
     - `quality-gate`: success (`https://github.com/answndud/townpet/actions/runs/26361277525`)
+
+- `P2-16. 운영자 정리 글 production 자동 게시`
+  - Vercel CLI의 repo-local project link가 `app`을 가리켜 처음 env pull에는 `DATABASE_URL`이 없었다.
+  - `/tmp/townpet-vercel-link`에서 `townpet` project를 임시 link하고 production env를 다시 pull했다. secret 값은 출력하거나 repo에 저장하지 않았다.
+  - 잘못 local DB에 생성된 7개 글은 즉시 local DB에서 삭제했다.
+  - production dry-run: created 7, skippedExisting 0, author `townpet-admin`.
+  - production apply: created 7, skippedExisting 0.
+  - created production ids:
+    - `cmpjrtwer0001p4j49fv4fyf8` `반려생활 정보는 이렇게 모읍니다`
+    - `cmpjrtwes0003p4j4r2izrfpp` `분실동물 제보 전 공개 위치 작성 기준`
+    - `cmpjrtwes0005p4j4bgbf82nd` `24시/야간 동물병원 확인 전 체크리스트`
+    - `cmpjrtwes0007p4j414sfksfw` `산책코스 제보에 꼭 필요한 6가지`
+    - `cmpjrtwet000ap4j4rg4ja53l` `분실동물 첫 24시간에 해야 할 일`
+    - `cmpjrtwet000cp4j47ie2umr3` `병원 후기를 안전하게 남기는 방법`
+    - `cmpjrtwet000ep4j499ubffgq` `야간 산책 전 확인할 것`
+  - production public smoke: `PASS`, foundOperatorItems 7.
+  - `corepack pnpm@9.12.3 -C app test -- scripts/check-operator-content-public-smoke.test.ts scripts/publish-operator-content-drafts.test.ts`
+  - `corepack pnpm@9.12.3 -C app typecheck`
 
 - `P2-11. post detail 깨진 업로드 이미지 방어`
   - 상세 화면은 기존에 원본 마크다운 이미지 토큰 존재 여부로 갤러리 표시를 막고, 렌더러는 upload backing asset/file 존재 여부를 확인하지 않았다.

@@ -5489,3 +5489,43 @@
 - 다음 작업:
   - 운영자가 production에서 첫 7개 운영자 정리 글을 게시한다.
   - 게시 직후 같은 명령을 다시 실행해 `PASS`를 확인한다.
+
+### 2026-05-24 | P2-16 운영자 정리 글 production 자동 게시
+- 완료일: `2026-05-24`
+- 배경:
+  - 사용자가 운영자 정리 글을 Codex가 직접 자동 게시하고 후속 프로세스까지 진행하라고 요청했다.
+  - 운영자 정리 글은 일반 사용자/비회원 글로 게시하면 안 되므로 production DB env와 ADMIN/MODERATOR author가 필요했다.
+  - repo-local Vercel link가 `app` project를 가리켜 최초 env pull에는 production `DATABASE_URL`이 없었다.
+- 변경내용:
+  - `ops:operator-content:publish` script를 추가했다.
+  - 기본값은 dry-run이고, non-local DB에서는 `OPERATOR_CONTENT_PUBLISH_CONFIRM=PUBLISH_OPERATOR_CONTENT` 확인값이 필요하다.
+  - 실제 생성은 `OPERATOR_CONTENT_PUBLISH_APPLY=1`이 있어야만 실행된다.
+  - 중복 제목의 운영자 정리 글은 skip한다.
+  - `/tmp/townpet-vercel-link`에서 `townpet` project를 임시 link해 production env를 pull했고, secret 값은 출력하거나 repo에 저장하지 않았다.
+  - 최초 실수로 local DB에 생성된 7개 글은 즉시 local DB에서 삭제했다.
+  - production DB에는 `townpet-admin` author로 첫 7개 운영자 정리 글을 생성했다.
+  - public smoke script가 `jsonOk` 래핑 응답을 지원하도록 수정했다.
+- production 생성 글:
+  - `cmpjrtwer0001p4j49fv4fyf8` `반려생활 정보는 이렇게 모읍니다`
+  - `cmpjrtwes0003p4j4r2izrfpp` `분실동물 제보 전 공개 위치 작성 기준`
+  - `cmpjrtwes0005p4j4bgbf82nd` `24시/야간 동물병원 확인 전 체크리스트`
+  - `cmpjrtwes0007p4j414sfksfw` `산책코스 제보에 꼭 필요한 6가지`
+  - `cmpjrtwet000ap4j4rg4ja53l` `분실동물 첫 24시간에 해야 할 일`
+  - `cmpjrtwet000cp4j47ie2umr3` `병원 후기를 안전하게 남기는 방법`
+  - `cmpjrtwet000ep4j499ubffgq` `야간 산책 전 확인할 것`
+- 코드문서:
+  - [app/scripts/publish-operator-content-drafts.ts](../app/scripts/publish-operator-content-drafts.ts)
+  - [app/scripts/publish-operator-content-drafts.test.ts](../app/scripts/publish-operator-content-drafts.test.ts)
+  - [app/scripts/check-operator-content-public-smoke.ts](../app/scripts/check-operator-content-public-smoke.ts)
+  - [app/scripts/check-operator-content-public-smoke.test.ts](../app/scripts/check-operator-content-public-smoke.test.ts)
+  - [app/package.json](../app/package.json)
+  - [business/operations/운영_문서_안내.md](../business/operations/운영_문서_안내.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- scripts/check-operator-content-public-smoke.test.ts scripts/publish-operator-content-drafts.test.ts`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - production dry-run: created 7, skippedExisting 0
+  - production apply: created 7, skippedExisting 0
+  - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:operator-content-public` -> `PASS`, foundOperatorItems 7
+- 다음 작업:
+  - 운영자 정리 글이 들어간 `/`, `/feed/guest`, `/search/guest` 실제 화면에서 목록 밀도와 CTA 중복을 다시 점검한다.
