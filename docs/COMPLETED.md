@@ -5356,5 +5356,10 @@
   - `corepack pnpm@9.12.3 -C app typecheck`
   - `git diff --check`
   - `corepack pnpm@9.12.3 -C app quality:check`
+  - production deploy `4077087`: `https://townpet-cnw13d7ht-jmoon0227-9736s-projects.vercel.app`, alias `https://townpet.vercel.app`
+  - `GET /api/posts/cmm0kczw9000211jw0td3wf71/detail?deploycheck=4077087`: `images=[]`, rendered HTML에는 `<img>` 없음.
+  - browser `/posts/cmm0kczw9000211jw0td3wf71/guest?smoke=4077087`: old missing jpg DOM 노출 없음, upload image 0, broken image 0.
+  - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health`
+  - GitHub Actions `quality-gate` success. Docs index 누락은 후속 커밋 `de8e93e`에서 `docs-quality` success로 복구.
 - 다음 작업:
-  - 배포 후 production old image post 상세에서 missing jpg와 `/media/media/uploads/*`가 더 이상 이미지 요청으로 발생하지 않는지 smoke 확인한다.
+  - 게시글 작성/수정 플로우에서 `/media/media/uploads/*` 중복 경로가 새로 만들어질 가능성을 점검한다.
