@@ -5325,3 +5325,36 @@
   - GitHub Actions `docs-quality`, `quality-gate` success.
 - 다음 작업:
   - 게시글 상세/본문의 오래된 `/media/media/uploads/*` 중복 경로는 별도 데이터 정리 또는 detail fallback 작업으로 다룬다.
+
+### 2026-05-24 | P2-11 post detail 깨진 업로드 이미지 방어
+- 완료일: `2026-05-24`
+- 배경:
+  - P2-10에서 피드 목록의 깨진 업로드 썸네일은 막았지만, 게시글 상세 본문과 갤러리는 별도 렌더링 경로를 사용한다.
+  - 상세 화면은 본문에 이미지 마크다운 토큰이 있으면 갤러리를 숨겼고, 마크다운 렌더러는 upload backing asset/file 존재 여부를 확인하지 않았다.
+  - 오래된 `/media/media/uploads/*` 중복 경로 또는 missing `/media/uploads/*` 경로가 상세에서 깨진 이미지나 갤러리 누락을 만들 수 있었다.
+- 변경내용:
+  - `renderLiteMarkdown`에 `renderableUploadPathnames` 옵션을 추가했다.
+  - `buildPostDetailMediaRendering` helper를 추가해 본문 이미지 URL과 `PostImage` URL을 같은 기준으로 확인한다.
+  - blob-backed asset 또는 실제 local public 파일이 확인된 업로드만 본문 `<img>`와 상세 갤러리에 남긴다.
+  - client detail card는 원본 마크다운 이미지 토큰이 아니라 실제 렌더된 HTML의 `<img>` 여부로 갤러리 표시를 결정한다.
+  - 상세 API, 본문 refresh API, 비회원 상세 페이지에 같은 helper를 적용했다.
+- 코드문서:
+  - [app/src/lib/markdown-lite.ts](../app/src/lib/markdown-lite.ts)
+  - [app/src/lib/markdown-lite.test.ts](../app/src/lib/markdown-lite.test.ts)
+  - [app/src/lib/post-detail-rendering.ts](../app/src/lib/post-detail-rendering.ts)
+  - [app/src/lib/post-detail-rendering.test.ts](../app/src/lib/post-detail-rendering.test.ts)
+  - [app/src/app/api/posts/[id]/detail/route.ts](../app/src/app/api/posts/[id]/detail/route.ts)
+  - [app/src/app/api/posts/[id]/detail/route.test.ts](../app/src/app/api/posts/[id]/detail/route.test.ts)
+  - [app/src/app/api/posts/[id]/content/route.ts](../app/src/app/api/posts/[id]/content/route.ts)
+  - [app/src/app/api/posts/[id]/content/route.test.ts](../app/src/app/api/posts/[id]/content/route.test.ts)
+  - [app/src/app/posts/[id]/guest/page.tsx](../app/src/app/posts/[id]/guest/page.tsx)
+  - [app/src/components/posts/post-detail-primary-card.tsx](../app/src/components/posts/post-detail-primary-card.tsx)
+  - [docs/errors/2026-05-24_post-detail-missing-upload-images.md](./errors/2026-05-24_post-detail-missing-upload-images.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/lib/markdown-lite.test.ts src/lib/post-detail-rendering.test.ts 'src/app/api/posts/[id]/detail/route.test.ts' 'src/app/api/posts/[id]/content/route.test.ts'`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `git diff --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+- 다음 작업:
+  - 배포 후 production old image post 상세에서 missing jpg와 `/media/media/uploads/*`가 더 이상 이미지 요청으로 발생하지 않는지 smoke 확인한다.

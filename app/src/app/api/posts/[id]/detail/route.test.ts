@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { UserRole } from "@prisma/client";
 
 import { GET } from "@/app/api/posts/[id]/detail/route";
+import { buildPostDetailMediaRendering } from "@/lib/post-detail-rendering";
 import { getCurrentUserIdFromRequest, getCurrentUserRole } from "@/server/auth";
 import { monitorUnhandledError } from "@/server/error-monitor";
 import {
@@ -17,6 +18,7 @@ vi.mock("@/server/auth", () => ({
   getCurrentUserIdFromRequest: vi.fn(),
   getCurrentUserRole: vi.fn(),
 }));
+vi.mock("@/lib/post-detail-rendering", () => ({ buildPostDetailMediaRendering: vi.fn() }));
 vi.mock("@/server/error-monitor", () => ({ monitorUnhandledError: vi.fn() }));
 vi.mock("@/server/queries/post.queries", () => ({
   getPostById: vi.fn(),
@@ -32,6 +34,7 @@ vi.mock("@/server/services/post-read-access.service", () => ({
 
 const mockGetCurrentUserIdFromRequest = vi.mocked(getCurrentUserIdFromRequest);
 const mockGetCurrentUserRole = vi.mocked(getCurrentUserRole);
+const mockBuildPostDetailMediaRendering = vi.mocked(buildPostDetailMediaRendering);
 const mockMonitorUnhandledError = vi.mocked(monitorUnhandledError);
 const mockGetPostById = vi.mocked(getPostById);
 const mockListCareApplicationsForPostDetail = vi.mocked(listCareApplicationsForPostDetail);
@@ -43,6 +46,7 @@ describe("GET /api/posts/[id]/detail contract", () => {
   beforeEach(() => {
     mockGetCurrentUserIdFromRequest.mockReset();
     mockGetCurrentUserRole.mockReset();
+    mockBuildPostDetailMediaRendering.mockReset();
     mockMonitorUnhandledError.mockReset();
     mockGetPostById.mockReset();
     mockListCareApplicationsForPostDetail.mockReset();
@@ -55,6 +59,12 @@ describe("GET /api/posts/[id]/detail contract", () => {
       id: "mod-1",
       role: UserRole.ADMIN,
     } as never);
+    mockBuildPostDetailMediaRendering.mockResolvedValue({
+      renderedContentHtml: "<p>본문</p>",
+      renderedContentText: "본문",
+      renderableImages: [],
+      hasInlineImages: false,
+    });
     mockGetPostById.mockResolvedValue({
       id: "post-1",
       authorId: "user-1",
@@ -117,6 +127,45 @@ describe("GET /api/posts/[id]/detail contract", () => {
       viewerId: "mod-1",
       canModerate: true,
     });
+    expect(mockBuildPostDetailMediaRendering).toHaveBeenCalledWith("본문", []);
+  });
+
+  it("returns only renderable images in detail payload", async () => {
+    const renderableImages = [{ id: "image-ok", url: "/media/uploads/ok.webp", order: 2 }];
+    mockGetPostById.mockResolvedValue({
+      id: "post-1",
+      authorId: "user-1",
+      type: "FREE_POST",
+      scope: "GLOBAL",
+      status: "ACTIVE",
+      title: "이미지 글",
+      content: "본문",
+      createdAt: new Date("2026-03-12T00:00:00.000Z"),
+      updatedAt: new Date("2026-03-12T00:00:00.000Z"),
+      author: { id: "user-1", nickname: "writer" },
+      neighborhood: null,
+      images: [
+        { id: "image-missing", url: "/media/uploads/missing.jpg", order: 1 },
+        ...renderableImages,
+      ],
+    } as never);
+    mockBuildPostDetailMediaRendering.mockResolvedValue({
+      renderedContentHtml: "<p>본문</p>",
+      renderedContentText: "본문",
+      renderableImages,
+      hasInlineImages: false,
+    });
+
+    const response = await GET(
+      new Request("http://localhost/api/posts/post-1/detail") as NextRequest,
+      {
+        params: Promise.resolve({ id: "post-1" }),
+      },
+    );
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(payload.data.post.images).toEqual(renderableImages);
   });
 
   it("strips guest network meta from detail payload", async () => {

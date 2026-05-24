@@ -2,14 +2,14 @@ import type { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { GET } from "@/app/api/posts/[id]/content/route";
-import { renderLiteMarkdown } from "@/lib/markdown-lite";
+import { buildPostDetailMediaRendering } from "@/lib/post-detail-rendering";
 import { getCurrentUserIdFromRequest } from "@/server/auth";
 import { monitorUnhandledError } from "@/server/error-monitor";
 import { getPostContentById } from "@/server/queries/post.queries";
 import { assertPostReadable } from "@/server/services/post-read-access.service";
 import { ServiceError } from "@/server/services/service-error";
 
-vi.mock("@/lib/markdown-lite", () => ({ renderLiteMarkdown: vi.fn() }));
+vi.mock("@/lib/post-detail-rendering", () => ({ buildPostDetailMediaRendering: vi.fn() }));
 vi.mock("@/server/auth", () => ({ getCurrentUserIdFromRequest: vi.fn() }));
 vi.mock("@/server/error-monitor", () => ({ monitorUnhandledError: vi.fn() }));
 vi.mock("@/server/queries/post.queries", () => ({ getPostContentById: vi.fn() }));
@@ -17,7 +17,7 @@ vi.mock("@/server/services/post-read-access.service", () => ({
   assertPostReadable: vi.fn(),
 }));
 
-const mockRenderLiteMarkdown = vi.mocked(renderLiteMarkdown);
+const mockBuildPostDetailMediaRendering = vi.mocked(buildPostDetailMediaRendering);
 const mockGetCurrentUserIdFromRequest = vi.mocked(getCurrentUserIdFromRequest);
 const mockMonitorUnhandledError = vi.mocked(monitorUnhandledError);
 const mockGetPostContentById = vi.mocked(getPostContentById);
@@ -25,13 +25,18 @@ const mockAssertPostReadable = vi.mocked(assertPostReadable);
 
 describe("GET /api/posts/[id]/content contract", () => {
   beforeEach(() => {
-    mockRenderLiteMarkdown.mockReset();
+    mockBuildPostDetailMediaRendering.mockReset();
     mockGetCurrentUserIdFromRequest.mockReset();
     mockMonitorUnhandledError.mockReset();
     mockGetPostContentById.mockReset();
     mockAssertPostReadable.mockReset();
 
-    mockRenderLiteMarkdown.mockReturnValue("<p>본문 <strong>강조</strong></p>");
+    mockBuildPostDetailMediaRendering.mockResolvedValue({
+      renderedContentHtml: "<p>본문 <strong>강조</strong></p>",
+      renderedContentText: "본문 강조",
+      renderableImages: [],
+      hasInlineImages: false,
+    });
     mockGetCurrentUserIdFromRequest.mockResolvedValue("user-1");
     mockGetPostContentById.mockResolvedValue({
       id: "post-1",
@@ -65,7 +70,7 @@ describe("GET /api/posts/[id]/content contract", () => {
       expect.objectContaining({ id: "post-1" }),
       "user-1",
     );
-    expect(mockRenderLiteMarkdown).toHaveBeenCalledWith("본문 **강조**");
+    expect(mockBuildPostDetailMediaRendering).toHaveBeenCalledWith("본문 **강조**", []);
   });
 
   it("uses undefined viewer id for guest content reads", async () => {

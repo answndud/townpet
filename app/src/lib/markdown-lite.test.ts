@@ -82,6 +82,22 @@ describe("renderLiteMarkdown", () => {
     expect(html).toContain('style="width:min(100%, 320px);height:auto"');
   });
 
+  it("does not render trusted upload images outside the renderable set", () => {
+    const html = renderLiteMarkdown(
+      [
+        "![정상](/media/uploads/ok.webp)",
+        "![누락](/media/uploads/missing.jpg)",
+      ].join("\n"),
+      {
+        renderableUploadPathnames: new Set(["uploads/ok.webp"]),
+      },
+    );
+
+    expect(html).toContain('<img src="/media/uploads/ok.webp"');
+    expect(html).not.toContain("/media/uploads/missing.jpg");
+    expect(html).toContain("누락");
+  });
+
   it("renders numeric size and hex color tokens", () => {
     const html = renderLiteMarkdown("[size=12][color=#2563eb]본문[/color][/size]");
 

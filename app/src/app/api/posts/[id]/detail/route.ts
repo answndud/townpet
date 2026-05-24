@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { UserRole } from "@prisma/client";
 
-import { renderLiteMarkdown } from "@/lib/markdown-lite";
+import { buildPostDetailMediaRendering } from "@/lib/post-detail-rendering";
 import { sanitizePublicGuestIdentity } from "@/lib/public-guest-identity";
 import { getCurrentUserIdFromRequest, getCurrentUserRole } from "@/server/auth";
 import { monitorUnhandledError } from "@/server/error-monitor";
@@ -40,11 +40,11 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       allowModeratorHiddenRead: true,
     });
 
-    const renderedContentHtml = renderLiteMarkdown(post.content);
-    const renderedContentText = renderedContentHtml
-      .replace(/<[^>]+>/g, " ")
-      .replace(/\s+/g, " ")
-      .trim();
+    const {
+      renderedContentHtml,
+      renderedContentText,
+      renderableImages,
+    } = await buildPostDetailMediaRendering(post.content, post.images);
     const relationState =
       userId && userId !== post.authorId
         ? await getUserRelationState(userId, post.authorId)
@@ -77,6 +77,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       {
         post: {
           ...publicPost,
+          images: renderableImages,
           careApplications,
           careCompletionFeedbacks,
           renderedContentHtml,

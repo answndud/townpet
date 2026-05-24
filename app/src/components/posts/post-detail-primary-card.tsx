@@ -15,7 +15,6 @@ import { PostReactionControls } from "@/components/posts/post-reaction-controls"
 import { PostReportForm } from "@/components/posts/post-report-form";
 import { PostShareControls } from "@/components/posts/post-share-controls";
 import { UserActionMenu } from "@/components/user/user-action-menu";
-import { extractImageUrlsFromMarkup } from "@/lib/editor-image-markup";
 import { renderLiteMarkdown } from "@/lib/markdown-lite";
 import { formatRelativeDate } from "@/lib/post-presenter";
 import { typeMeta } from "@/components/posts/post-detail-presenter";
@@ -88,7 +87,7 @@ export function PostDetailPrimaryCard({
   const shouldUsePlainFallback =
     renderedContentText.length === 0 || renderedContentText.includes("미리보기 내용이 없습니다");
   const orderedImages = [...post.images].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-  const hasInlineImages = extractImageUrlsFromMarkup(post.content).length > 0;
+  const hasInlineImages = /<img[\s>]/i.test(renderedContentHtml);
 
   return (
     <section className="tp-card p-4 sm:p-7">

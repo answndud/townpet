@@ -1,4 +1,8 @@
-import { isTrustedUploadUrl } from "@/lib/upload-url";
+import { getTrustedUploadPathname, isTrustedUploadUrl } from "@/lib/upload-url";
+
+type RenderLiteMarkdownOptions = {
+  renderableUploadPathnames?: Set<string>;
+};
 
 function escapeHtml(value: string) {
   return value
@@ -21,11 +25,25 @@ function sanitizeHttpUrl(value: string) {
   }
 }
 
-function sanitizeImageUrl(value: string) {
-  return isTrustedUploadUrl(value) ? value.trim() : null;
+function sanitizeImageUrl(value: string, options: RenderLiteMarkdownOptions = {}) {
+  const trimmed = value.trim();
+  if (!isTrustedUploadUrl(trimmed)) {
+    return null;
+  }
+
+  const storageKey = getTrustedUploadPathname(trimmed);
+  if (
+    storageKey &&
+    options.renderableUploadPathnames &&
+    !options.renderableUploadPathnames.has(storageKey)
+  ) {
+    return null;
+  }
+
+  return trimmed;
 }
 
-function replaceLinkToken(value: string) {
+function replaceLinkToken(value: string, options: RenderLiteMarkdownOptions = {}) {
   const tokens: string[] = [];
   const tokenPrefix = "\u0000TOWNPET_LINK_TOKEN_";
 
@@ -38,7 +56,7 @@ function replaceLinkToken(value: string) {
   let transformed = value.replace(
     /!\[([^\]]*)\]\(([^\s)]+)\)(?:\{\s*width\s*=\s*(\d{1,4})\s*\})?/gi,
     (_, rawAlt: string, rawUrl: string, rawWidth?: string) => {
-      const safeUrl = sanitizeImageUrl(rawUrl.trim());
+      const safeUrl = sanitizeImageUrl(rawUrl.trim(), options);
       if (!safeUrl) {
         return rawAlt;
       }
@@ -90,9 +108,9 @@ function replaceLinkToken(value: string) {
   };
 }
 
-function renderInline(value: string) {
+function renderInline(value: string, options: RenderLiteMarkdownOptions = {}) {
   const escaped = escapeHtml(value);
-  const { transformed, restore } = replaceLinkToken(escaped);
+  const { transformed, restore } = replaceLinkToken(escaped, options);
 
   const withInlineStyle = transformed
     .replace(/\[size=(small|normal|large|xlarge|\d{1,2})\]([\s\S]*?)\[\/size\]/gi, (_, rawSize: string, inner: string) => {
@@ -143,7 +161,7 @@ function renderInline(value: string) {
 
 const IMAGE_LINE_PATTERN = /^!\[[^\]]*\]\([^\s)]+\)(?:\{\s*width\s*=\s*\d{1,4}\s*\})?$/i;
 
-export function renderLiteMarkdown(value: string) {
+export function renderLiteMarkdown(value: string, options: RenderLiteMarkdownOptions = {}) {
   const normalized = value.replace(/\r\n?/g, "\n").trim();
   if (!normalized) {
     return '<p class="text-sm text-[#5a7398]">미리보기 내용이 없습니다.</p>';
@@ -159,7 +177,7 @@ export function renderLiteMarkdown(value: string) {
     }
     blocks.push(
       `<ul class="list-disc space-y-1 pl-5">${listBuffer
-        .map((item) => `<li>${renderInline(item)}</li>`)
+        .map((item) => `<li>${renderInline(item, options)}</li>`)
         .join("")}</ul>`,
     );
     listBuffer.length = 0;
@@ -171,7 +189,7 @@ export function renderLiteMarkdown(value: string) {
     }
     blocks.push(
       `<ol class="list-decimal space-y-1 pl-5">${orderedListBuffer
-        .map((item) => `<li>${renderInline(item)}</li>`)
+        .map((item) => `<li>${renderInline(item, options)}</li>`)
         .join("")}</ol>`,
     );
     orderedListBuffer.length = 0;
@@ -204,6 +222,7 @@ export function renderLiteMarkdown(value: string) {
       blocks.push(
         `<h3 class="text-base font-semibold text-[#1d3e70]">${renderInline(
           trimmed.slice(4).trim(),
+          options,
         )}</h3>`,
       );
       continue;
@@ -213,6 +232,7 @@ export function renderLiteMarkdown(value: string) {
       blocks.push(
         `<h2 class="text-lg font-semibold text-[#163864]">${renderInline(
           trimmed.slice(3).trim(),
+          options,
         )}</h2>`,
       );
       continue;
@@ -222,6 +242,7 @@ export function renderLiteMarkdown(value: string) {
       blocks.push(
         `<h1 class="text-xl font-bold text-[#10284a]">${renderInline(
           trimmed.slice(2).trim(),
+          options,
         )}</h1>`,
       );
       continue;
@@ -231,17 +252,18 @@ export function renderLiteMarkdown(value: string) {
       blocks.push(
         `<blockquote class="border-l-2 border-[#bfd0ec] pl-3 text-[#4f678d]">${renderInline(
           trimmed.slice(2).trim(),
+          options,
         )}</blockquote>`,
       );
       continue;
     }
 
     if (IMAGE_LINE_PATTERN.test(trimmed)) {
-      blocks.push(`<div class="my-2">${renderInline(trimmed)}</div>`);
+      blocks.push(`<div class="my-2">${renderInline(trimmed, options)}</div>`);
       continue;
     }
 
-    blocks.push(`<p>${renderInline(line)}</p>`);
+    blocks.push(`<p>${renderInline(line, options)}</p>`);
   }
 
   flushList();
