@@ -5457,3 +5457,31 @@
 - 다음 작업:
   - 운영자가 production에서 첫 7개 글을 직접 게시한다.
   - 게시 후 `/api/home/feed`, `/feed/guest`, `/search/guest`에서 운영자 정리 배지, 출처 패널, public 노출을 smoke한다.
+
+### 2026-05-24 | P2-15 운영자 정리 글 public smoke 명령
+- 완료일: `2026-05-24`
+- 배경:
+  - P2-14에서 첫 7개 운영자 정리 글 초안은 준비됐지만 production DB에 글을 자동 생성하지는 않았다.
+  - 글 게시 후 public 노출을 수동으로 여러 화면에서 확인하면 누락이 생기기 쉬우므로 repo-local smoke 명령이 필요했다.
+  - 현재 production에는 운영자 정리 글이 아직 없으므로 smoke는 성공이 아니라 명확한 `BLOCKED`로 끝나야 한다.
+- 변경내용:
+  - `ops:check:operator-content-public` package script를 추가했다.
+  - smoke script는 `/api/feed/guest`에서 운영자 정리 글을 찾고, 찾은 첫 글로 상세 출처 패널, `/feed/guest` 배지, `/search/guest` 검색 결과, `/api/home/feed` preview 노출을 확인한다.
+  - 운영자 정리 글이 없으면 `foundOperatorItems: 0`과 함께 `BLOCKED`로 종료한다.
+  - 운영 문서의 on-demand maintenance map에 smoke 명령을 추가했다.
+- 코드문서:
+  - [app/scripts/check-operator-content-public-smoke.ts](../app/scripts/check-operator-content-public-smoke.ts)
+  - [app/scripts/check-operator-content-public-smoke.test.ts](../app/scripts/check-operator-content-public-smoke.test.ts)
+  - [app/package.json](../app/package.json)
+  - [business/operations/운영_문서_안내.md](../business/operations/운영_문서_안내.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- scripts/check-operator-content-public-smoke.test.ts`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:operator-content-public` expected `BLOCKED`
+- production smoke 결과:
+  - status: `BLOCKED`
+  - foundOperatorItems: `0`
+- 다음 작업:
+  - 운영자가 production에서 첫 7개 운영자 정리 글을 게시한다.
+  - 게시 직후 같은 명령을 다시 실행해 `PASS`를 확인한다.
