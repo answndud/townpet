@@ -5318,6 +5318,10 @@
   - `corepack pnpm@9.12.3 -C app typecheck`
   - `git diff --check`
   - `corepack pnpm@9.12.3 -C app quality:check`
+  - production deploy `07cb736`: `https://townpet-qjzjy3i62-jmoon0227-9736s-projects.vercel.app`, alias `https://townpet.vercel.app`
+  - `GET /api/feed/guest?deploycheck=07cb736`: old missing jpg post의 `images`가 `[]`로 반환됨.
+  - browser `/feed/guest?smoke=07cb736`: old missing jpg DOM 노출 없음, renderable webp 1건 노출, broken image 0.
+  - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health`
+  - GitHub Actions `docs-quality`, `quality-gate` success.
 - 다음 작업:
-  - 배포 후 production `/feed/guest` browser smoke에서 기존 missing jpg 요청이 더 이상 발생하지 않는지 확인한다.
   - 게시글 상세/본문의 오래된 `/media/media/uploads/*` 중복 경로는 별도 데이터 정리 또는 detail fallback 작업으로 다룬다.

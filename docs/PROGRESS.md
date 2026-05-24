@@ -71,6 +71,15 @@
   - `corepack pnpm@9.12.3 -C app typecheck`
   - `git diff --check`
   - `corepack pnpm@9.12.3 -C app quality:check`
+  - production deploy `07cb736` smoke:
+    - Vercel deployment success: `https://townpet-qjzjy3i62-jmoon0227-9736s-projects.vercel.app`
+    - alias `https://townpet.vercel.app`
+    - `GET /api/feed/guest?deploycheck=07cb736`: old missing jpg post의 `images`가 `[]`로 반환됨.
+    - browser `/feed/guest?smoke=07cb736`: old missing jpg DOM 노출 없음, renderable webp 1건 노출, broken image 0.
+    - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health` 통과.
+  - GitHub Actions:
+    - `docs-quality`: success
+    - `quality-gate`: success (`https://github.com/answndud/townpet/actions/runs/26360188611`)
 
 - `P2-9. production CSP hydration 차단 복구`
   - production browser smoke에서 `/guides/24h-vet-checklist`, `/campaigns/neighborhood-map`, `/posts/new`의 CSP script/style 차단 후보를 확인함.
