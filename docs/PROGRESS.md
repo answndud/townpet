@@ -61,6 +61,12 @@
   - local browser smoke:
     - `/tmp/townpet-p2-3-home-desktop.png`
     - `/tmp/townpet-p2-3-home-mobile.png`
+  - production deploy: `e718ec3 Improve home live board empty state` -> `https://townpet-7c9u4mwv6-jmoon0227-9736s-projects.vercel.app` Ready, alias `https://townpet.vercel.app`
+  - production smoke:
+    - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health` 통과
+    - `GET /api/home/feed` 응답이 `best: []`, `latest: []`로 빈 preview를 반환하는 상태 확인
+    - production browser `/` desktop/mobile에서 `24시 병원 확인 가이드`, `동물병원 글 보기`, `분실동물 첫 24시간 가이드`, `첫 글 작성하기` 노출 확인
+    - screenshot: `/tmp/townpet-p2-3-production-home-desktop.png`, `/tmp/townpet-p2-3-production-home-mobile.png`
 
 - `P2-2. 홈 preview seed/demo 글 노출 방어`
   - `corepack pnpm@9.12.3 -C app test -- src/app/api/home/feed/route.test.ts`

@@ -5084,6 +5084,12 @@
   - local browser smoke:
     - `/tmp/townpet-p2-3-home-desktop.png`
     - `/tmp/townpet-p2-3-home-mobile.png`
+  - production deploy: `e718ec3 Improve home live board empty state` -> `https://townpet-7c9u4mwv6-jmoon0227-9736s-projects.vercel.app` Ready, alias `https://townpet.vercel.app`
+  - production smoke:
+    - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health` 통과
+    - `GET /api/home/feed` 응답이 `best: []`, `latest: []`로 빈 preview를 반환하는 상태 확인
+    - production browser `/` desktop/mobile에서 `24시 병원 확인 가이드`, `동물병원 글 보기`, `분실동물 첫 24시간 가이드`, `첫 글 작성하기` 노출 확인
+    - screenshot: `/tmp/townpet-p2-3-production-home-desktop.png`, `/tmp/townpet-p2-3-production-home-mobile.png`
 - 결과:
   - 홈 Live board가 비어도 사용자는 병원 확인, 병원 글 탐색, 분실동물 대처, 첫 글 작성 중 하나를 바로 선택할 수 있다.
   - 빈 상태는 기존 홈 밀도 안에서 유지되어 landing 하단이 과하게 커지지 않는다.
