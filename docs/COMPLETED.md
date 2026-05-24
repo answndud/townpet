@@ -5428,3 +5428,29 @@
 - 다음 작업:
   - production DB env가 준비된 세션에서 같은 명령을 read-only로 재실행한다.
   - 후보 count가 0보다 크면 별도 cleanup dry-run 계획과 명시적 승인 후에만 수정 작업을 연다.
+
+### 2026-05-24 | P2-14 전국 공통 운영자 정리 콘텐츠 초안 팩
+- 완료일: `2026-05-24`
+- 배경:
+  - production demo content cleanup 이후 첫 화면과 지역 허브의 빈 느낌을 줄이려면 샘플이 아니라 실제 운영자 확인 콘텐츠가 필요하다.
+  - `운영자_정리_콘텐츠_작성_큐.md`에는 첫 14일 순서가 있지만, 운영자가 `/posts/new`에 바로 옮겨 쓸 수 있는 본문 초안은 부족했다.
+  - 지역을 하나로 제한하지 않는 원칙 때문에 특정 동네·병원·공원·업체명을 기본값으로 넣지 않는 전국 공통 초안이 먼저 필요했다.
+- 변경내용:
+  - `운영자_정리_콘텐츠_초안_팩.md`를 추가했다.
+  - 첫 7개 초안은 `반려생활 정보는 이렇게 모읍니다`, `분실동물 제보 전 공개 위치 작성 기준`, `24시/야간 동물병원 확인 전 체크리스트`, `산책코스 제보에 꼭 필요한 6가지`, `분실동물 첫 24시간에 해야 할 일`, `병원 후기를 안전하게 남기는 방법`, `야간 산책 전 확인할 것`이다.
+  - 각 초안에 게시판 유형, 출처 이름, 출처 URL, 최종 확인일 기준, 연결 CTA, 본문, 게시 전 확인 항목을 포함했다.
+  - 출처 URL은 TownPet public guide/campaign/template route로 제한했다.
+  - 운영 문서 안내와 기존 작성 큐에서 초안 팩을 연결했다.
+  - production DB에는 글을 생성하지 않았다.
+- 코드문서:
+  - [business/operations/운영자_정리_콘텐츠_초안_팩.md](../business/operations/운영자_정리_콘텐츠_초안_팩.md)
+  - [business/operations/운영자_정리_콘텐츠_작성_큐.md](../business/operations/운영자_정리_콘텐츠_작성_큐.md)
+  - [business/operations/운영_문서_안내.md](../business/operations/운영_문서_안내.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `node scripts/refresh-docs-index.mjs`
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `git diff --check`
+- 다음 작업:
+  - 운영자가 production에서 첫 7개 글을 직접 게시한다.
+  - 게시 후 `/api/home/feed`, `/feed/guest`, `/search/guest`에서 운영자 정리 배지, 출처 패널, public 노출을 smoke한다.
