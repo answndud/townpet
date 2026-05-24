@@ -72,6 +72,12 @@
     - `/campaigns/neighborhood-map`: CSP blocked requests 0, console errors 0
     - `/posts/new`: CSP blocked requests 0, console errors 0
     - `/feed/guest`: CSP blocked requests 0, console errors 0
+  - production deploy `f560841` smoke:
+    - `https://townpet.vercel.app/guides/24h-vet-checklist`: CSP blocked requests 0, console errors 0
+    - `https://townpet.vercel.app/campaigns/neighborhood-map`: CSP blocked requests 0, console errors 0
+    - `https://townpet.vercel.app/posts/new`: CSP blocked requests 0, console errors 0
+    - `https://townpet.vercel.app/feed/guest`: CSP blocked requests 0, 남은 console error는 별도 이미지 404 후보
+    - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health` 통과
 
 - `P2-8. 실제 운영자 정리 콘텐츠 작성 큐 수립`
   - `business/operations/운영자_정리_콘텐츠_작성_큐.md` 추가
