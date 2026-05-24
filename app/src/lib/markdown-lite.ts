@@ -1,4 +1,4 @@
-import { getTrustedUploadPathname, isTrustedUploadUrl } from "@/lib/upload-url";
+import { getTrustedUploadPathname, getUploadProxyPath, isTrustedUploadUrl } from "@/lib/upload-url";
 
 type RenderLiteMarkdownOptions = {
   renderableUploadPathnames?: Set<string>;
@@ -40,7 +40,7 @@ function sanitizeImageUrl(value: string, options: RenderLiteMarkdownOptions = {}
     return null;
   }
 
-  return trimmed;
+  return getUploadProxyPath(trimmed) ?? trimmed;
 }
 
 function replaceLinkToken(value: string, options: RenderLiteMarkdownOptions = {}) {

@@ -5363,3 +5363,29 @@
   - GitHub Actions `quality-gate` success. Docs index 누락은 후속 커밋 `de8e93e`에서 `docs-quality` success로 복구.
 - 다음 작업:
   - 게시글 작성/수정 플로우에서 `/media/media/uploads/*` 중복 경로가 새로 만들어질 가능성을 점검한다.
+
+### 2026-05-24 | P2-12 upload URL canonicalization 보강
+- 완료일: `2026-05-24`
+- 배경:
+  - P2-11 배포 후 다음 후보로 작성/수정 플로우가 `/media/media/uploads/*` 같은 중복 proxy 경로를 새로 만들 가능성을 점검했다.
+  - 서버 write normalize는 이미 `getUploadProxyPath("/media/uploads/x") -> "/media/uploads/x"`로 동작해 단순 double-proxy를 만들지 않았다.
+  - 다만 에디터가 이미 중복 경로가 들어간 `<img src="/media/media/uploads/...">`를 들고 있으면 `serializeEditorHtml`이 그대로 markdown에 저장할 수 있었다.
+- 변경내용:
+  - `upload-url`이 legacy `/media/media/uploads/*`를 `uploads/*` storage key로 인식하도록 했다.
+  - `getUploadProxyPath("/media/media/uploads/x")`는 항상 `/media/uploads/x`로 canonicalize한다.
+  - `markdown-lite`는 blob/local/legacy upload 이미지 URL을 앱 proxy path로 렌더링한다.
+  - `editor-content-serializer`는 `<img>` src를 저장 전 `/media/uploads/*`로 canonicalize한다.
+  - trusted upload가 아닌 `<img>`는 새 이미지 마크다운으로 저장하지 않고 alt text만 남긴다.
+- 코드문서:
+  - [app/src/lib/upload-url.ts](../app/src/lib/upload-url.ts)
+  - [app/src/lib/upload-url.test.ts](../app/src/lib/upload-url.test.ts)
+  - [app/src/lib/markdown-lite.ts](../app/src/lib/markdown-lite.ts)
+  - [app/src/lib/markdown-lite.test.ts](../app/src/lib/markdown-lite.test.ts)
+  - [app/src/lib/editor-content-serializer.ts](../app/src/lib/editor-content-serializer.ts)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/lib/upload-url.test.ts src/lib/markdown-lite.test.ts src/lib/post-detail-rendering.test.ts`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+- 다음 작업:
+  - production DB에 남아 있는 오래된 `/media/media/uploads/*` 본문 후보를 read-only audit로 집계하고, 데이터 정리 필요성을 판단한다.
