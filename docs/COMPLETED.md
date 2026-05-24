@@ -5285,6 +5285,11 @@
     - `/campaigns/neighborhood-map`: CSP blocked requests 0, console errors 0
     - `/posts/new`: CSP blocked requests 0, console errors 0
     - `/feed/guest`: CSP blocked requests 0, console errors 0
+  - production deploy `f560841` smoke:
+    - `/guides/24h-vet-checklist`: CSP blocked requests 0, console errors 0
+    - `/campaigns/neighborhood-map`: CSP blocked requests 0, console errors 0
+    - `/posts/new`: CSP blocked requests 0, console errors 0
+    - `/feed/guest`: CSP blocked requests 0, 남은 console error는 별도 이미지 404 후보
+    - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health`
 - 다음 작업:
-  - 배포 후 production에서 같은 route의 CSP 차단이 사라졌는지 Chrome smoke와 health check로 확인한다.
   - 남은 기능 점검 후보는 public feed의 깨진 이미지 404 조사다.
