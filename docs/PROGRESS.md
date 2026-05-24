@@ -40,16 +40,29 @@
 - `P2-2. 홈 preview seed/demo 글 노출 방어`를 완료했다. 홈 preview API가 샘플/demo/test/E2E 글을 더 넓게 제외하고, 내부 후보를 15개까지 가져온 뒤 최종 5개만 반환한다.
 - `P2-3. 홈 Live board 빈 상태 콘텐츠 보강`을 완료했다. 홈 Live board가 비어도 병원 가이드, 병원 글, 분실동물 가이드, 첫 글 작성으로 이어지는 compact action row를 보여준다.
 - `P2-4. production demo/E2E 데이터 정리 절차 문서화`를 완료했다. 운영 DB 변경 없이 read-only audit 명령과 정리 승인 절차를 추가했다.
+- `P2-5. production DB demo/E2E read-only audit 실행`을 완료했다. production DB 변경 없이 후보 users 7, posts 17, comments 68을 확인했고, 마스킹된 report를 남겼다.
 
 ## 다음 액션
 
 - 현재 active 구현 항목 없음.
 - 시작페이지 추가 개선 후보:
-  - production DB demo/E2E 후보 정리는 `운영_DB_demo_E2E_데이터_정리_절차.md`에 따라 read-only audit 결과를 먼저 승인받은 뒤 별도 cleanup 작업으로 연다.
+  - production demo content cleanup은 `docs/reports/production-demo-e2e-audit-2026-05-24.md`의 후보를 기준으로 별도 승인 작업으로 연다.
+  - cleanup 직전에는 같은 read-only audit를 재실행하고, `production-demo-content` workflow의 `mode=cleanup`, `email_domain=demo.townpet.co.kr`, `include_lost_found=false` 조건만 사용한다.
 - 확정 전에는 `/`과 public acquisition UI에 특정 지역명을 노출하지 않는다.
 - 성능 후속은 최신 `main` 배포 후 같은 스크립트로 production 재측정할 때 별도 작업으로 연다.
 
 ## 최근 검증
+
+- `P2-5. production DB demo/E2E read-only audit 실행`
+  - production env는 `/tmp/townpet-vercel-link`와 `/tmp/townpet-production.env`로만 사용하고 repo에는 저장하지 않음.
+  - `DEMO_CONTENT_AUDIT_CONFIRM=DEMO_CONTENT_AUDIT DEMO_CONTENT_EMAIL_DOMAIN=demo.townpet.co.kr DEMO_CONTENT_AUDIT_LIMIT=50 corepack pnpm@9.12.3 -C app db:audit:demo-content`
+    - users: 7
+    - posts: 17
+    - comments: 68
+  - report: `docs/reports/production-demo-e2e-audit-2026-05-24.md`
+  - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health` 통과
+  - `GET https://townpet.vercel.app/api/home/feed`: `ok=true`, `best=0`, `latest=0`, blocked public preview signals 없음
+  - production DB delete/update는 실행하지 않음.
 
 - `P2-4. production demo/E2E 데이터 정리 절차 문서화`
   - `corepack pnpm@9.12.3 -C app test -- scripts/audit-demo-content-candidates.test.ts`
