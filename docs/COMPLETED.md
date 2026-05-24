@@ -5056,3 +5056,35 @@
   - 홈 Live board는 public preview에 적합하지 않은 테스트/샘플/demo 글을 숨긴다.
   - 부적절한 후보가 상단에 몰려 있어도 뒤쪽 실제 후보를 채울 수 있다.
   - 현재 active 구현 항목은 없다. 다음 작업은 빈 상태 콘텐츠 보강이나 production DB 정리 절차 문서화 중 하나를 새 phase로 잡고 시작한다.
+
+### 2026-05-24 | P2-3 홈 Live board 빈 상태 콘텐츠 보강
+- 완료일: `2026-05-24`
+- 배경:
+  - P2-2 이후 테스트/샘플/demo 글은 홈 preview에서 숨겨지지만, 실제 공개 글이 없으면 `지금 많이 보는 글`, `최근 올라온 글`이 모두 비어 landing 하단 설득력이 약했다.
+  - 빈 상태가 단순 안내 한 줄이면 첫 방문자가 다음 행동을 고르기 어렵다.
+- 변경내용:
+  - 홈 Live board 빈 상태를 기존 border-first 리스트 구조 안에서 확장했다.
+  - `지금 많이 보는 글`이 비면 `24시 병원 확인 가이드`, `동물병원 글 보기`로 연결한다.
+  - `최근 올라온 글`이 비면 `분실동물 첫 24시간 가이드`, `첫 글 작성하기`로 연결한다.
+  - 카드 그리드, nested card, 새 디자인 토큰, 특정 지역명 문구는 추가하지 않았다.
+  - feed/search/admin 화면과 홈 preview API query는 변경하지 않았다.
+- 코드문서:
+  - [app/src/components/home/home-feed-preview.tsx](../app/src/components/home/home-feed-preview.tsx)
+  - [app/src/components/home/home-feed-preview.test.tsx](../app/src/components/home/home-feed-preview.test.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/components/home/home-feed-preview.test.tsx src/app/page.test.tsx`
+  - `corepack pnpm@9.12.3 -C app lint`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `PUPPETEER_SKIP_DOWNLOAD=1 corepack pnpm@9.12.3 dlx impeccable detect app/src/app app/src/components --fast`
+  - `git diff --check`
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+  - local browser smoke:
+    - `/tmp/townpet-p2-3-home-desktop.png`
+    - `/tmp/townpet-p2-3-home-mobile.png`
+- 결과:
+  - 홈 Live board가 비어도 사용자는 병원 확인, 병원 글 탐색, 분실동물 대처, 첫 글 작성 중 하나를 바로 선택할 수 있다.
+  - 빈 상태는 기존 홈 밀도 안에서 유지되어 landing 하단이 과하게 커지지 않는다.
+  - 현재 active 구현 항목은 없다.

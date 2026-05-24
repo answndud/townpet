@@ -28,6 +28,12 @@ type HomeFeedResponse =
   | { ok: true; data: HomeFeedPayload }
   | { ok: false; error: { message: string } };
 
+type EmptyAction = {
+  href: string;
+  label: string;
+  note: string;
+};
+
 function formatDate(value: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
@@ -60,28 +66,35 @@ function FeedPreviewSkeleton() {
   );
 }
 
-function FeedPreviewList({
+export function FeedPreviewList({
   items,
   emptyText,
-  emptyAction,
+  emptyActions,
 }: {
   items: HomeFeedItem[];
   emptyText: string;
-  emptyAction: {
-    href: string;
-    label: string;
-  };
+  emptyActions: EmptyAction[];
 }) {
   if (items.length === 0) {
     return (
-      <div className="border-y border-[#dbe6f5] bg-[#fbfdff] px-3 py-2">
-        <p className="text-xs leading-5 text-[#5a7397]">{emptyText}</p>
-        <Link
-          href={emptyAction.href}
-          className="mt-1 inline-flex text-xs font-semibold text-[#315b9a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3567b5]"
-        >
-          {emptyAction.label}
-        </Link>
+      <div className="border-y border-[#dbe6f5] bg-[#fbfdff]">
+        <div className="px-3 py-2">
+          <p className="text-xs leading-5 text-[#5a7397]">{emptyText}</p>
+        </div>
+        <div className="divide-y divide-[#e5edf8] border-t border-[#e5edf8]">
+          {emptyActions.map((action) => (
+            <Link
+              key={action.href}
+              href={action.href}
+              className="grid gap-0.5 px-3 py-2 transition hover:bg-[#f6faff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#3567b5]"
+            >
+              <span className="text-xs font-semibold leading-5 text-[#315b9a]">
+                {action.label}
+              </span>
+              <span className="text-[11px] leading-4 text-[#6b84a8]">{action.note}</span>
+            </Link>
+          ))}
+        </div>
       </div>
     );
   }
@@ -193,10 +206,18 @@ export function HomeFeedPreview() {
             <FeedPreviewList
               items={data.best}
               emptyText="최근 7일 동안 많이 본 공개 글이 아직 없습니다."
-              emptyAction={{
-                href: "/guides/24h-vet-checklist",
-                label: "24시 병원 확인 가이드",
-              }}
+              emptyActions={[
+                {
+                  href: "/guides/24h-vet-checklist",
+                  label: "24시 병원 확인 가이드",
+                  note: "야간 진료 전 전화로 확인할 항목을 정리했습니다.",
+                },
+                {
+                  href: "/feed/guest?type=HOSPITAL_REVIEW",
+                  label: "동물병원 글 보기",
+                  note: "공개된 병원 경험 글을 최신순으로 확인합니다.",
+                },
+              ]}
             />
           ) : (
             <FeedPreviewSkeleton />
@@ -213,10 +234,18 @@ export function HomeFeedPreview() {
             <FeedPreviewList
               items={data.latest}
               emptyText="최근 올라온 공개 글이 아직 없습니다."
-              emptyAction={{
-                href: "/guides/lost-pet-first-24-hours",
-                label: "분실동물 첫 24시간 가이드",
-              }}
+              emptyActions={[
+                {
+                  href: "/guides/lost-pet-first-24-hours",
+                  label: "분실동물 첫 24시간 가이드",
+                  note: "찾아야 할 장소와 제보 정리 순서를 먼저 확인합니다.",
+                },
+                {
+                  href: "/posts/new",
+                  label: "첫 글 작성하기",
+                  note: "병원, 산책, 분실, 중고거래 정보를 직접 남길 수 있습니다.",
+                },
+              ]}
             />
           ) : (
             <FeedPreviewSkeleton />
