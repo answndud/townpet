@@ -53,8 +53,8 @@
 - 운영 유지보수 후보:
   - workflow 변경 후 GitHub Actions `quality-gate`와 `docs-quality` 원격 실행 결과를 확인한다.
 - 콘텐츠 운영 후보:
-  - 실험 지역이 확정되면 `운영자_정리_콘텐츠_작성_큐.md`를 기준으로 첫 7개 운영자 정리 글을 실제로 작성한다.
-- 확정 전에는 `/`과 public acquisition UI에 특정 지역명을 노출하지 않는다.
+  - 지역을 하나로 제한하지 않고 `운영자_정리_콘텐츠_작성_큐.md`의 전국 공통 첫 7개 운영자 정리 글을 먼저 작성한다.
+- `/`과 public acquisition UI에는 사용자가 선택하지 않은 특정 지역명을 기본값처럼 노출하지 않는다.
 - 성능 후속은 최신 `main` 배포 후 같은 스크립트로 production 재측정할 때 별도 작업으로 연다.
 
 ## 최근 검증
@@ -65,6 +65,7 @@
   - `business/analytics/온동네_초기유저_30일_실행플레이북.md` Week 1 내부 콘텐츠 기준을 fake seed가 아닌 운영자 정리 큐로 연결
   - production DB 글 생성은 실행하지 않음.
   - 특정 실험 지역명은 추가하지 않음.
+  - 2026-05-24 후속 정정: 운영 지역을 하나로 제한하지 않기로 했으므로, 큐와 active 문서에서 `실험 지역 확정 후 작성` 전제를 제거하고 전국 공통 글 우선 운영으로 변경함.
   - `node scripts/refresh-docs-index.mjs --check`
   - `git diff --check`
 
