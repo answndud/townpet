@@ -45,7 +45,7 @@ describe("operator content public smoke", () => {
         return htmlResponse("운영자 정리 TownPet 운영 기준 반려생활 정보는 이렇게 모읍니다");
       }
       if (url.includes("/feed/guest")) {
-        return htmlResponse("운영자 정리 반려생활 정보는 이렇게 모읍니다");
+        return htmlResponse("TownPet");
       }
       if (url.includes("/search/guest")) {
         return htmlResponse("반려생활 정보는 이렇게 모읍니다");
@@ -100,5 +100,59 @@ describe("operator content public smoke", () => {
         detail: "found=0, required=1",
       },
     ]);
+  });
+
+  it("supports jsonOk-wrapped API payloads", async () => {
+    const fetcher = async (input: string | URL | Request) => {
+      const url = String(input);
+      if (url.includes("/api/feed/guest")) {
+        return jsonResponse({
+          ok: true,
+          data: {
+            view: "feed",
+            feed: {
+              items: [
+                {
+                  id: "post-1",
+                  title: "야간 산책 전 확인할 것",
+                  isOperatorContent: true,
+                  operatorSourceName: "TownPet 산책코스 작성 기준",
+                  operatorSourceUrl: "https://townpet.vercel.app/posts/new?type=WALK_ROUTE",
+                  operatorLastVerifiedAt: "2026-05-24T00:00:00.000Z",
+                },
+              ],
+            },
+          },
+        });
+      }
+      if (url.includes("/posts/post-1/guest")) {
+        return htmlResponse("운영자 정리 TownPet 산책코스 작성 기준 야간 산책 전 확인할 것");
+      }
+      if (url.includes("/feed/guest")) {
+        return htmlResponse("TownPet");
+      }
+      if (url.includes("/search/guest")) {
+        return htmlResponse("야간 산책 전 확인할 것");
+      }
+      if (url.includes("/api/home/feed")) {
+        return jsonResponse({
+          ok: true,
+          data: {
+            latest: [{ id: "post-1", title: "야간 산책 전 확인할 것" }],
+            best: [],
+          },
+        });
+      }
+
+      return new Response("not found", { status: 404 });
+    };
+
+    const result = await runOperatorContentPublicSmoke({
+      baseUrl: "https://townpet.example",
+      fetcher: fetcher as typeof fetch,
+    });
+
+    expect(result.status).toBe("PASS");
+    expect(result.operatorItems[0].title).toBe("야간 산책 전 확인할 것");
   });
 });

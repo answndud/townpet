@@ -45,6 +45,7 @@
     "db:cleanup:notifications": "tsx scripts/cleanup-notifications.ts",
     "ops:notifications:retry": "tsx scripts/retry-notification-deliveries.ts",
     "ops:founding-member:grant": "tsx scripts/grant-founding-member.ts",
+    "ops:operator-content:publish": "tsx scripts/publish-operator-content-drafts.ts",
     "db:repair:post-integrity": "tsx scripts/repair-post-integrity.ts",
     "db:cleanup:upload-assets": "tsx scripts/cleanup-upload-assets.ts",
     "db:backfill:upload-media-proxy": "tsx scripts/backfill-upload-media-proxy.ts",
