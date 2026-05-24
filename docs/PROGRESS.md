@@ -45,6 +45,7 @@
 - `P2-7. GitHub Actions Node 20 deprecation 정리`를 완료했다. workflow Node 실행 버전을 24로 맞추고 `actions/upload-artifact`를 Node 24 runtime action으로 갱신했다.
 - `P2-8. 실제 운영자 정리 콘텐츠 작성 큐 수립`을 완료했다. production DB 글 생성 없이 첫 14일 운영자 정리 콘텐츠 큐와 작성 기준을 문서화했다.
 - `P2-9. production CSP hydration 차단 복구`를 완료했다. 사용자-facing HTML shell은 hydration-safe fallback CSP를 쓰고, API strict nonce CSP 경로는 유지한다.
+- `P2-10. public feed 깨진 업로드 썸네일 방어`를 완료했다. `/media/uploads/*` 이미지가 blob asset 또는 실제 local public 파일로 확인되지 않으면 피드 목록 응답에서 제외한다.
 
 ## 다음 액션
 
@@ -57,8 +58,19 @@
   - 지역을 하나로 제한하지 않고 `운영자_정리_콘텐츠_작성_큐.md`의 전국 공통 첫 7개 운영자 정리 글을 먼저 작성한다.
 - `/`과 public acquisition UI에는 사용자가 선택하지 않은 특정 지역명을 기본값처럼 노출하지 않는다.
 - 성능 후속은 최신 `main` 배포 후 같은 스크립트로 production 재측정할 때 별도 작업으로 연다.
+- 다음 기능 점검 후보는 게시글 상세/작성 플로우의 업로드 이미지 복구 UX와 오래된 본문 내 `/media/media/uploads/*` 중복 경로 정리 여부다.
 
 ## 최근 검증
+
+- `P2-10. public feed 깨진 업로드 썸네일 방어`
+  - production API에서 `/feed/guest` 첫 목록에 renderable webp 1건과 missing jpg 1건이 함께 내려오는 상태를 확인함.
+  - missing jpg 직접 확인: `https://townpet.vercel.app/media/uploads/1771935012347-5511bddc-bdf9-49cf-9e55-3fae218fd8fb.jpg` -> `404 application/json`
+  - `app/src/server/upload-asset.service.ts`에 renderable upload pathname 판정과 이미지 필터 helper 추가.
+  - `app/src/app/feed/page.tsx` 초기 목록과 `app/src/app/api/feed/guest/route.ts` infinite-scroll payload에 동일 필터 적용.
+  - `corepack pnpm@9.12.3 -C app test -- src/server/upload-asset.service.test.ts src/app/api/feed/guest/route.test.ts`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `git diff --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
 
 - `P2-9. production CSP hydration 차단 복구`
   - production browser smoke에서 `/guides/24h-vet-checklist`, `/campaigns/neighborhood-map`, `/posts/new`의 CSP script/style 차단 후보를 확인함.

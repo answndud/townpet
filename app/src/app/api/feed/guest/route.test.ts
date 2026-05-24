@@ -15,6 +15,10 @@ import {
 } from "@/server/queries/post.queries";
 import { getClientIp } from "@/server/request-context";
 import { enforceRateLimit } from "@/server/rate-limit";
+import {
+  filterRenderableUploadImages,
+  resolveRenderableUploadPathnames,
+} from "@/server/upload-asset.service";
 
 vi.mock("@/server/error-monitor", () => ({ monitorUnhandledError: vi.fn() }));
 vi.mock("@/server/queries/community.queries", () => ({ listCommunityNavItems: vi.fn() }));
@@ -29,6 +33,18 @@ vi.mock("@/server/queries/post.queries", () => ({
 }));
 vi.mock("@/server/request-context", () => ({ getClientIp: vi.fn() }));
 vi.mock("@/server/rate-limit", () => ({ enforceRateLimit: vi.fn() }));
+vi.mock("@/server/upload-asset.service", () => ({
+  filterRenderableUploadImages: vi.fn((images, renderableUploadPathnames) =>
+    images.filter((image: { url?: string | null }) => {
+      const url = image.url ?? "";
+      if (!url.startsWith("/media/uploads/")) {
+        return Boolean(url);
+      }
+      return renderableUploadPathnames.has(url.slice("/media/".length));
+    }),
+  ),
+  resolveRenderableUploadPathnames: vi.fn(),
+}));
 
 const mockMonitorUnhandledError = vi.mocked(monitorUnhandledError);
 const mockListCommunityNavItems = vi.mocked(listCommunityNavItems);
@@ -39,6 +55,8 @@ const mockListBestPosts = vi.mocked(listBestPosts);
 const mockListPosts = vi.mocked(listPosts);
 const mockGetClientIp = vi.mocked(getClientIp);
 const mockEnforceRateLimit = vi.mocked(enforceRateLimit);
+const mockFilterRenderableUploadImages = vi.mocked(filterRenderableUploadImages);
+const mockResolveRenderableUploadPathnames = vi.mocked(resolveRenderableUploadPathnames);
 
 describe("GET /api/feed/guest", () => {
   beforeEach(() => {
@@ -51,6 +69,8 @@ describe("GET /api/feed/guest", () => {
     mockListPosts.mockReset();
     mockGetClientIp.mockReset();
     mockEnforceRateLimit.mockReset();
+    mockFilterRenderableUploadImages.mockClear();
+    mockResolveRenderableUploadPathnames.mockReset();
 
     mockGetClientIp.mockReturnValue("127.0.0.1");
     mockListCommunityNavItems.mockResolvedValue([
@@ -61,6 +81,7 @@ describe("GET /api/feed/guest", () => {
     mockCountPosts.mockResolvedValue(0);
     mockCountBestPosts.mockResolvedValue(0);
     mockListBestPosts.mockResolvedValue([]);
+    mockResolveRenderableUploadPathnames.mockResolvedValue(new Set());
   });
 
   it("returns guest feed payload with public cache headers", async () => {
@@ -249,6 +270,53 @@ describe("GET /api/feed/guest", () => {
         sort: "LIKE",
       }),
     );
+  });
+
+  it("removes missing upload thumbnails from guest feed payloads", async () => {
+    mockResolveRenderableUploadPathnames.mockResolvedValue(new Set(["uploads/renderable.webp"]));
+    mockListPosts.mockResolvedValue({
+      items: [
+        {
+          id: "post-image-filter",
+          type: PostType.FREE_BOARD,
+          scope: PostScope.GLOBAL,
+          status: PostStatus.ACTIVE,
+          title: "이미지 포함 글",
+          content: "깨진 이미지가 목록에 나오면 안 됩니다.",
+          commentCount: 0,
+          likeCount: 0,
+          dislikeCount: 0,
+          viewCount: 0,
+          createdAt: new Date("2026-03-06T09:00:00.000Z"),
+          author: {
+            id: "user-image-filter",
+            name: "sam",
+            nickname: "샘",
+            image: null,
+          },
+          neighborhood: null,
+          petType: null,
+          images: [
+            { id: "image-ok", url: "/media/uploads/renderable.webp" },
+            { id: "image-missing", url: "/media/uploads/missing.jpg" },
+          ],
+          reactions: [],
+        },
+      ],
+      nextCursor: null,
+    } as never);
+
+    const response = await GET(new Request("http://localhost/api/feed/guest") as NextRequest);
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(mockResolveRenderableUploadPathnames).toHaveBeenCalledWith([
+      "/media/uploads/renderable.webp",
+      "/media/uploads/missing.jpg",
+    ]);
+    expect(payload.data.feed.items[0].images).toEqual([
+      { id: "image-ok", url: "/media/uploads/renderable.webp" },
+    ]);
   });
 
   it("treats an all-petType query as no filter for period feed requests", async () => {

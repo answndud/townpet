@@ -5293,3 +5293,31 @@
     - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health`
 - 다음 작업:
   - 남은 기능 점검 후보는 public feed의 깨진 이미지 404 조사다.
+
+### 2026-05-24 | P2-10 public feed 깨진 업로드 썸네일 방어
+- 완료일: `2026-05-24`
+- 배경:
+  - production browser smoke에서 `/feed/guest`가 CSP 문제 없이 hydrate되지만, 오래된 업로드 이미지 1건이 `_next/image?url=/media/uploads/...jpg` 경유로 404를 발생시키는 것을 확인했다.
+  - API 데이터에는 새 blob-backed webp 이미지와, production filesystem/blob asset으로 더 이상 복구되지 않는 old local jpg 이미지가 함께 남아 있었다.
+  - 목록 카드에서 존재하지 않는 썸네일을 요청하면 UI가 깨져 보이고 console error가 남는다.
+- 변경내용:
+  - upload asset service에 renderable upload pathname 판정 helper를 추가했다.
+  - blob-backed `UploadAsset`은 renderable로 유지하고, local upload는 `public/uploads/*` 파일이 실제로 있을 때만 renderable로 본다.
+  - `/media/uploads/*`처럼 신뢰 가능한 업로드 URL이지만 backing asset/file이 없는 이미지는 피드 목록 응답에서 제외한다.
+  - static demo/public 이미지처럼 upload URL이 아닌 이미지는 기존대로 유지한다.
+  - 서버 렌더 초기 피드(`/feed`)와 guest infinite-scroll API(`/api/feed/guest`) 모두 같은 필터를 사용한다.
+- 코드문서:
+  - [app/src/server/upload-asset.service.ts](../app/src/server/upload-asset.service.ts)
+  - [app/src/server/upload-asset.service.test.ts](../app/src/server/upload-asset.service.test.ts)
+  - [app/src/app/feed/page.tsx](../app/src/app/feed/page.tsx)
+  - [app/src/app/api/feed/guest/route.ts](../app/src/app/api/feed/guest/route.ts)
+  - [app/src/app/api/feed/guest/route.test.ts](../app/src/app/api/feed/guest/route.test.ts)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/server/upload-asset.service.test.ts src/app/api/feed/guest/route.test.ts`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `git diff --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+- 다음 작업:
+  - 배포 후 production `/feed/guest` browser smoke에서 기존 missing jpg 요청이 더 이상 발생하지 않는지 확인한다.
+  - 게시글 상세/본문의 오래된 `/media/media/uploads/*` 중복 경로는 별도 데이터 정리 또는 detail fallback 작업으로 다룬다.

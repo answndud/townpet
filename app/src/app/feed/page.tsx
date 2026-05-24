@@ -53,6 +53,10 @@ import {
 import { isPrismaDatabaseUnavailableError } from "@/server/prisma-database-error";
 import { createFeedPagePerformanceTracker } from "@/server/services/posts/feed-page-performance.service";
 import { resolveFeedPageSlice } from "@/server/services/posts/feed-page-query.service";
+import {
+  filterRenderableUploadImages,
+  resolveRenderableUploadPathnames,
+} from "@/server/upload-asset.service";
 import { buildInitialFeedItems } from "./feed-page-items";
 import { FeedPagination } from "./feed-pagination";
 import {
@@ -593,7 +597,21 @@ export default async function Home({ searchParams }: HomePageProps) {
       : undefined;
   const showPersonalizedToggle =
     isAuthenticated && mode === "ALL" && effectiveScope === PostScope.GLOBAL;
-  const initialFeedItems = buildInitialFeedItems(items);
+  const initialFeedUploadPathnames = await feedPerf.measure("media.image_availability", () =>
+    resolveRenderableUploadPathnames(
+      items.flatMap((item) =>
+        item.images
+          .map((image) => image.url ?? "")
+          .filter((url) => url.length > 0),
+      ),
+    ),
+  );
+  const initialFeedItems = buildInitialFeedItems(
+    items.map((item) => ({
+      ...item,
+      images: filterRenderableUploadImages(item.images, initialFeedUploadPathnames),
+    })),
+  );
 
   const makeHref = ({
     nextType,
