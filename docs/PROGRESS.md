@@ -73,6 +73,15 @@
   - `corepack pnpm@9.12.3 -C app typecheck`
   - `git diff --check`
   - `corepack pnpm@9.12.3 -C app quality:check`
+  - production deploy `4077087` smoke:
+    - Vercel deployment success: `https://townpet-cnw13d7ht-jmoon0227-9736s-projects.vercel.app`
+    - alias `https://townpet.vercel.app`
+    - `GET /api/posts/cmm0kczw9000211jw0td3wf71/detail?deploycheck=4077087`: `images=[]`, rendered HTML에는 `<img>` 없음.
+    - browser `/posts/cmm0kczw9000211jw0td3wf71/guest?smoke=4077087`: old missing jpg DOM 노출 없음, upload image 0, broken image 0.
+    - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health` 통과.
+  - GitHub Actions:
+    - `quality-gate`: success (`https://github.com/answndud/townpet/actions/runs/26360433966`)
+    - 최초 `docs-quality`는 docs index 누락으로 실패했고, 후속 커밋 `de8e93e`에서 success (`https://github.com/answndud/townpet/actions/runs/26360467028`)
 
 - `P2-10. public feed 깨진 업로드 썸네일 방어`
   - production API에서 `/feed/guest` 첫 목록에 renderable webp 1건과 missing jpg 1건이 함께 내려오는 상태를 확인함.
