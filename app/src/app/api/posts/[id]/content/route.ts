@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 
-import { renderLiteMarkdown } from "@/lib/markdown-lite";
+import { buildPostDetailMediaRendering } from "@/lib/post-detail-rendering";
 import { getCurrentUserIdFromRequest } from "@/server/auth";
 import { monitorUnhandledError } from "@/server/error-monitor";
 import { getPostContentById } from "@/server/queries/post.queries";
@@ -27,11 +27,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     await assertPostReadable(post, viewerId);
 
-    const renderedContentHtml = renderLiteMarkdown(post.content);
-    const renderedContentText = renderedContentHtml
-      .replace(/<[^>]+>/g, " ")
-      .replace(/\s+/g, " ")
-      .trim();
+    const { renderedContentHtml, renderedContentText } =
+      await buildPostDetailMediaRendering(post.content, []);
 
     return jsonOk(
       {

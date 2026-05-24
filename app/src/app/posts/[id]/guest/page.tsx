@@ -23,9 +23,8 @@ import { PostShareControls } from "@/components/posts/post-share-controls";
 import { PostCommentSectionClient } from "@/components/posts/post-comment-section-client";
 import { PostViewTracker } from "@/components/posts/post-view-tracker";
 import { getCspNonce } from "@/lib/csp-nonce";
-import { extractImageUrlsFromMarkup } from "@/lib/editor-image-markup";
 import { serializeJsonForScriptTag } from "@/lib/json-script";
-import { renderLiteMarkdown } from "@/lib/markdown-lite";
+import { buildPostDetailMediaRendering } from "@/lib/post-detail-rendering";
 import {
   buildExcerpt,
   buildPostDetailMetadata,
@@ -201,15 +200,15 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
   const safeLikeCount = Number.isFinite(post.likeCount) ? Number(post.likeCount) : 0;
   const safeDislikeCount = Number.isFinite(post.dislikeCount) ? Number(post.dislikeCount) : 0;
   const safeCommentCount = Number.isFinite(post.commentCount) ? Number(post.commentCount) : 0;
-  const renderedContentHtml = renderLiteMarkdown(post.content);
-  const renderedContentText = renderedContentHtml
-    .replace(/<[^>]+>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+  const {
+    renderedContentHtml,
+    renderedContentText,
+    renderableImages,
+    hasInlineImages,
+  } = await buildPostDetailMediaRendering(post.content, post.images);
   const shouldUsePlainFallback =
     renderedContentText.length === 0 || renderedContentText.includes("미리보기 내용이 없습니다");
-  const orderedImages = [...post.images].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-  const hasInlineImages = extractImageUrlsFromMarkup(post.content).length > 0;
+  const orderedImages = renderableImages;
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "SocialMediaPosting",

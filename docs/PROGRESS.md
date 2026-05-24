@@ -46,6 +46,7 @@
 - `P2-8. 실제 운영자 정리 콘텐츠 작성 큐 수립`을 완료했다. production DB 글 생성 없이 첫 14일 운영자 정리 콘텐츠 큐와 작성 기준을 문서화했다.
 - `P2-9. production CSP hydration 차단 복구`를 완료했다. 사용자-facing HTML shell은 hydration-safe fallback CSP를 쓰고, API strict nonce CSP 경로는 유지한다.
 - `P2-10. public feed 깨진 업로드 썸네일 방어`를 완료했다. `/media/uploads/*` 이미지가 blob asset 또는 실제 local public 파일로 확인되지 않으면 피드 목록 응답에서 제외한다.
+- `P2-11. post detail 깨진 업로드 이미지 방어`를 완료했다. 상세 본문/갤러리도 renderable upload 기준으로 렌더링한다.
 
 ## 다음 액션
 
@@ -58,9 +59,20 @@
   - 지역을 하나로 제한하지 않고 `운영자_정리_콘텐츠_작성_큐.md`의 전국 공통 첫 7개 운영자 정리 글을 먼저 작성한다.
 - `/`과 public acquisition UI에는 사용자가 선택하지 않은 특정 지역명을 기본값처럼 노출하지 않는다.
 - 성능 후속은 최신 `main` 배포 후 같은 스크립트로 production 재측정할 때 별도 작업으로 연다.
-- 다음 기능 점검 후보는 게시글 상세/작성 플로우의 업로드 이미지 복구 UX와 오래된 본문 내 `/media/media/uploads/*` 중복 경로 정리 여부다.
+- 다음 기능 점검 후보는 게시글 작성/수정 플로우의 업로드 경로 중복 생성 방지와 오래된 본문 내 `/media/media/uploads/*` 데이터 정리 여부다.
 
 ## 최근 검증
+
+- `P2-11. post detail 깨진 업로드 이미지 방어`
+  - 상세 화면은 기존에 원본 마크다운 이미지 토큰 존재 여부로 갤러리 표시를 막고, 렌더러는 upload backing asset/file 존재 여부를 확인하지 않았다.
+  - `renderLiteMarkdown`에 renderable upload pathname 옵션을 추가했다.
+  - `buildPostDetailMediaRendering` helper로 상세 본문 이미지와 갤러리 이미지를 같은 기준으로 필터링한다.
+  - `/api/posts/[id]/detail`, `/api/posts/[id]/content`, `/posts/[id]/guest`, client detail card에 적용했다.
+  - error record: `docs/errors/2026-05-24_post-detail-missing-upload-images.md`
+  - `corepack pnpm@9.12.3 -C app test -- src/lib/markdown-lite.test.ts src/lib/post-detail-rendering.test.ts 'src/app/api/posts/[id]/detail/route.test.ts' 'src/app/api/posts/[id]/content/route.test.ts'`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `git diff --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
 
 - `P2-10. public feed 깨진 업로드 썸네일 방어`
   - production API에서 `/feed/guest` 첫 목록에 renderable webp 1건과 missing jpg 1건이 함께 내려오는 상태를 확인함.
