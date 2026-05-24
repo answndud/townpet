@@ -29,6 +29,10 @@ import { jsonError, jsonOk } from "@/server/response";
 import { createFeedPagePerformanceTracker } from "@/server/services/posts/feed-page-performance.service";
 import { resolveFeedPageSlice } from "@/server/services/posts/feed-page-query.service";
 import { ServiceError } from "@/server/services/service-error";
+import {
+  filterRenderableUploadImages,
+  resolveRenderableUploadPathnames,
+} from "@/server/upload-asset.service";
 
 type FeedMode = "ALL" | "BEST";
 type FeedSort = "LATEST" | "LIKE" | "COMMENT";
@@ -101,9 +105,20 @@ function toFeedDensity(value?: string): FeedDensity {
   return value === "ULTRA" ? "ULTRA" : "DEFAULT";
 }
 
-function serializeFeedItems(items: Array<Record<string, unknown>>) {
+async function serializeFeedItems(items: Array<Record<string, unknown>>) {
+  const imageUrls = items.flatMap((item) =>
+    (((item.images as Array<{ url?: string | null }> | undefined) ?? [])
+      .map((image) => image.url ?? "")
+      .filter((url) => url.length > 0)),
+  );
+  const renderableUploadPathnames = await resolveRenderableUploadPathnames(imageUrls);
+
   return items.map((rawPost) => {
     const post = sanitizePublicGuestIdentity(rawPost);
+    const renderableImages = filterRenderableUploadImages(
+      (post.images as Array<{ id: string; url?: string | null }> | undefined) ?? [],
+      renderableUploadPathnames,
+    );
 
     return {
     id: post.id,
@@ -163,7 +178,7 @@ function serializeFeedItems(items: Array<Record<string, unknown>>) {
               .category.labelKo,
           }
         : null,
-    images: ((post.images as Array<{ id: string; url?: string | null }>) ?? []).map((image) => ({
+    images: renderableImages.map((image) => ({
       id: image.id,
       url: image.url ?? null,
     })),
@@ -384,7 +399,7 @@ export async function GET(request: NextRequest) {
 
       return jsonOk(
         {
-          items: serializeFeedItems(posts.items as Array<Record<string, unknown>>),
+          items: await serializeFeedItems(posts.items as Array<Record<string, unknown>>),
           nextCursor: posts.nextCursor,
         },
         {
@@ -591,7 +606,7 @@ export async function GET(request: NextRequest) {
           totalPages,
           resolvedPage,
           feedQueryKey,
-          items: serializeFeedItems(items as Array<Record<string, unknown>>),
+          items: await serializeFeedItems(items as Array<Record<string, unknown>>),
           nextCursor: null,
         },
       },

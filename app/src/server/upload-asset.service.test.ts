@@ -4,12 +4,14 @@ import { prisma } from "@/lib/prisma";
 import {
   buildUploadTemporaryCutoff,
   cleanupTemporaryUploadAssets,
+  filterRenderableUploadImages,
   registerUploadAsset,
   releaseUploadUrlsIfUnreferenced,
+  resolveRenderableUploadPathnames,
   resolveUploadTemporaryRetentionHours,
 } from "@/server/upload-asset.service";
 import { del } from "@vercel/blob";
-import { unlink } from "fs/promises";
+import { access, unlink } from "fs/promises";
 
 vi.mock("@/lib/env", () => ({
   runtimeEnv: {
@@ -43,6 +45,7 @@ vi.mock("@vercel/blob", () => ({
 }));
 
 vi.mock("fs/promises", () => ({
+  access: vi.fn(),
   unlink: vi.fn(),
 }));
 
@@ -65,6 +68,7 @@ const mockPrisma = vi.mocked(prisma) as unknown as {
   };
 };
 const mockDel = vi.mocked(del);
+const mockAccess = vi.mocked(access);
 const mockUnlink = vi.mocked(unlink);
 
 describe("upload asset service", () => {
@@ -78,6 +82,7 @@ describe("upload asset service", () => {
     mockPrisma.user.findMany.mockReset();
     mockPrisma.pet.findMany.mockReset();
     mockDel.mockReset();
+    mockAccess.mockReset();
     mockUnlink.mockReset();
 
     mockPrisma.uploadAsset.updateMany.mockResolvedValue({ count: 1 });
@@ -88,6 +93,7 @@ describe("upload asset service", () => {
     mockPrisma.pet.findMany.mockResolvedValue([]);
     mockPrisma.uploadAsset.findMany.mockResolvedValue([]);
     mockDel.mockResolvedValue(undefined as never);
+    mockAccess.mockResolvedValue(undefined as never);
     mockUnlink.mockResolvedValue(undefined as never);
   });
 
@@ -179,6 +185,50 @@ describe("upload asset service", () => {
       deletedUrls: [],
       skippedUrls: [],
     });
+  });
+
+  it("keeps blob-backed and existing local upload pathnames renderable", async () => {
+    mockPrisma.uploadAsset.findMany.mockResolvedValue([
+      {
+        storageKey: "uploads/blob.webp",
+        thumbnailStorageKey: "uploads/blob-thumb.webp",
+        storageProvider: "BLOB",
+      },
+    ]);
+    mockAccess.mockImplementation(async (filePath) => {
+      if (String(filePath).endsWith("uploads/local.jpg")) {
+        return undefined;
+      }
+      throw Object.assign(new Error("missing"), { code: "ENOENT" });
+    });
+
+    const result = await resolveRenderableUploadPathnames([
+      "/media/uploads/blob.webp",
+      "/media/uploads/blob-thumb.webp",
+      "/media/uploads/local.jpg",
+      "/media/uploads/missing.jpg",
+    ]);
+
+    expect(result.has("uploads/blob.webp")).toBe(true);
+    expect(result.has("uploads/blob-thumb.webp")).toBe(true);
+    expect(result.has("uploads/local.jpg")).toBe(true);
+    expect(result.has("uploads/missing.jpg")).toBe(false);
+  });
+
+  it("filters missing trusted uploads while keeping static non-upload images", () => {
+    const images = [
+      { id: "blob", url: "/media/uploads/blob.webp" },
+      { id: "missing", url: "/media/uploads/missing.jpg" },
+      { id: "demo", url: "/demo/adoption/coco.jpg" },
+      { id: "empty", url: "" },
+    ];
+
+    expect(
+      filterRenderableUploadImages(images, new Set(["uploads/blob.webp"])),
+    ).toEqual([
+      { id: "blob", url: "/media/uploads/blob.webp" },
+      { id: "demo", url: "/demo/adoption/coco.jpg" },
+    ]);
   });
 
   it("cleans up expired temporary upload assets", async () => {
