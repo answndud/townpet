@@ -5387,5 +5387,8 @@
   - `corepack pnpm@9.12.3 -C app test -- src/lib/upload-url.test.ts src/lib/markdown-lite.test.ts src/lib/post-detail-rendering.test.ts`
   - `corepack pnpm@9.12.3 -C app typecheck`
   - `corepack pnpm@9.12.3 -C app quality:check`
+  - production deploy `cf89cc7`: `https://townpet-d1uzz2dyu-jmoon0227-9736s-projects.vercel.app`, alias `https://townpet.vercel.app`
+  - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health`
+  - GitHub Actions `docs-quality`, `quality-gate` success.
 - 다음 작업:
   - production DB에 남아 있는 오래된 `/media/media/uploads/*` 본문 후보를 read-only audit로 집계하고, 데이터 정리 필요성을 판단한다.
