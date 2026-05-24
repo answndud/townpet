@@ -5130,3 +5130,32 @@
   - 운영자는 production DB 변경 없이 demo/E2E 후보를 먼저 집계할 수 있다.
   - cleanup은 후보 목록 승인과 No-Go 조건 확인 후 별도 작업으로만 진행한다.
   - 현재 active 구현 항목은 없다.
+
+### 2026-05-24 | P2-5 production DB demo/E2E read-only audit 실행
+- 완료일: `2026-05-24`
+- 배경:
+  - P2-4에서 read-only audit 명령과 운영 절차를 추가했으므로, 실제 production DB 후보 규모를 확인해야 cleanup 여부를 판단할 수 있었다.
+  - production DB 변경 없이 후보만 확인하고, 공개 repo에는 이메일을 마스킹한 요약만 남기는 방식으로 진행했다.
+- 변경내용:
+  - Vercel production env는 `/tmp/townpet-vercel-link`와 `/tmp/townpet-production.env`로만 사용했고 repo에는 저장하지 않았다.
+  - production DB read-only audit를 실행했다.
+  - 원본 audit output은 local `/tmp`에만 보관하고, repo에는 마스킹된 report만 추가했다.
+  - production DB delete/update, GitHub Actions cleanup, public query/filter 변경은 실행하지 않았다.
+- 결과:
+  - 후보 users: 7
+  - 후보 posts: 17
+  - 후보 comments: 68
+  - sampled users는 `demo.townpet.co.kr` 소유 demo 도메인과 `샘플·` nickname prefix를 사용했다.
+  - sampled posts는 모두 `ACTIVE`, `reports=0`이며 legacy production demo content set으로 보인다.
+  - public home preview는 여전히 demo/E2E 신호를 노출하지 않는다.
+- 코드문서:
+  - [docs/reports/production-demo-e2e-audit-2026-05-24.md](./reports/production-demo-e2e-audit-2026-05-24.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `DEMO_CONTENT_AUDIT_CONFIRM=DEMO_CONTENT_AUDIT DEMO_CONTENT_EMAIL_DOMAIN=demo.townpet.co.kr DEMO_CONTENT_AUDIT_LIMIT=50 corepack pnpm@9.12.3 -C app db:audit:demo-content`
+  - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health`
+  - `GET https://townpet.vercel.app/api/home/feed`: `ok=true`, `best=0`, `latest=0`, blocked public preview signals 없음
+- 다음 작업:
+  - cleanup을 진행하려면 같은 read-only audit를 직전에 재실행한 뒤, 별도 승인 작업에서 legacy `production-demo-content` workflow를 `mode=cleanup`, `email_domain=demo.townpet.co.kr`, `include_lost_found=false`로 실행한다.
+  - 직접 SQL cleanup은 사용하지 않는다.
