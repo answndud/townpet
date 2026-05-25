@@ -77,6 +77,7 @@
     - `/search/guest?q=야간`: 검색 결과 3건이 피드 row로 노출됐다.
   - 변경:
     - 홈 best preview query를 `minLikes: 0`으로 바꿔 초기 운영 콘텐츠가 좋아요 0이어도 `지금 많이 보는 글` 후보에 들어오게 했다.
+    - 홈 latest preview는 best preview와 같은 글을 반복하지 않도록 중복 post id를 제외한다.
     - 홈 Live board row의 vertical padding을 줄이고, desktop에서는 excerpt를 숨겨 제목/메타 중심으로 더 compact하게 보이게 했다.
     - 피드 상단 제어 영역에서 `전체 피드/최신순/전체 기간` 요약 pills를 제거했다. 같은 정보는 바로 아래 정렬/기간 controls에 이미 있으므로 중복 표면을 줄였다.
   - local browser 확인:
@@ -87,6 +88,8 @@
     - `corepack pnpm@9.12.3 -C app lint -- src/app/api/home/feed/route.ts src/app/api/home/feed/route.test.ts src/components/home/home-feed-preview.tsx src/components/home/home-feed-preview.test.tsx src/components/posts/feed-control-panel.tsx src/components/posts/feed-control-panel.test.tsx`
     - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/app src/components --fast`
     - `corepack pnpm@9.12.3 -C app quality:check`
+  - production 배포 후 추가 확인:
+    - 첫 배포 확인에서 best/latest가 같은 운영자 글을 반복하는 것을 발견해 latest de-duplication을 추가했다.
   - 참고:
     - `pnpm -C app design:detect` script 자체는 Corepack latest pnpm signature mismatch로 실행 전 실패했다. 동일 detector를 `COREPACK_DEFAULT_TO_LATEST=0`과 `pnpm@9.12.3` 고정으로 실행해 통과했다.
 

@@ -64,9 +64,10 @@ function isHomePreviewEligible(rawPost: RawHomePost) {
   return !HOME_PREVIEW_BLOCKED_TEXT_PATTERN.test(searchableText);
 }
 
-function serializeHomePosts(rawPosts: RawHomePost[]) {
+function serializeHomePosts(rawPosts: RawHomePost[], excludedIds = new Set<string>()) {
   return rawPosts
     .filter(isHomePreviewEligible)
+    .filter((rawPost) => !excludedIds.has(rawPost.id))
     .slice(0, HOME_FEED_LIMIT)
     .map(serializeHomePost);
 }
@@ -145,10 +146,13 @@ export async function GET(request: NextRequest) {
       }),
     ]);
 
+    const serializedBestPosts = serializeHomePosts(bestPosts as RawHomePost[]);
+    const bestPostIds = new Set(serializedBestPosts.map((post) => post.id));
+
     return jsonOk(
       {
-        best: serializeHomePosts(bestPosts as RawHomePost[]),
-        latest: serializeHomePosts(latestPosts.items as RawHomePost[]),
+        best: serializedBestPosts,
+        latest: serializeHomePosts(latestPosts.items as RawHomePost[], bestPostIds),
       },
       {
         headers: {
