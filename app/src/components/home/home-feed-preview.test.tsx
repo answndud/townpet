@@ -1,9 +1,16 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
-import { FeedPreviewList } from "@/components/home/home-feed-preview";
+import { FeedPreviewList, HomeFeedPreview } from "@/components/home/home-feed-preview";
 
 describe("FeedPreviewList", () => {
+  it("uses an early-stage label that does not overclaim popularity", () => {
+    const html = renderToStaticMarkup(<HomeFeedPreview />);
+
+    expect(html).toContain("먼저 확인할 글");
+    expect(html).not.toContain("지금 많이 보는 글");
+  });
+
   it("renders compact action paths when the home live board column is empty", () => {
     const html = renderToStaticMarkup(
       <FeedPreviewList

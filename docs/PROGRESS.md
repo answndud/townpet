@@ -53,6 +53,7 @@
 - `P2-15. 운영자 정리 글 public smoke 명령`을 완료했다. 게시 후 바로 확인할 수 있는 repo-local smoke를 추가했고, 현재 production은 운영자 정리 글 0건으로 `BLOCKED`임을 확인했다.
 - `P2-16. 운영자 정리 글 production 자동 게시`를 완료했다. `townpet` production env를 `/tmp` 임시 link로 가져와 첫 7개 글을 `townpet-admin` author로 게시했고 public smoke가 `PASS`했다.
 - 운영자 정리 글 게시 후 `/`, `/feed/guest`, `/search/guest` 실제 화면을 점검했고, 홈 best preview의 초기 빈 상태와 피드 상단 제어 영역의 중복 요약/높이를 줄이는 UI 조정을 완료했다.
+- 홈 Live board의 첫 컬럼을 `지금 많이 보는 글`에서 `먼저 확인할 글`로 바꿔, 초기 운영자 콘텐츠를 인기 콘텐츠처럼 과장하지 않도록 정리했다.
 
 ## 다음 액션
 
@@ -67,8 +68,24 @@
 - 성능 후속은 최신 `main` 배포 후 같은 스크립트로 production 재측정할 때 별도 작업으로 연다.
 - 다음 기능 점검 후보는 production DB env가 준비된 상태에서 `db:audit:legacy-upload-paths`를 재실행하고, 후보가 있으면 별도 cleanup dry-run 계획을 세우는 것이다.
 - 다음 개발 후보는 최신 배포 후 `/`, `/feed/guest`, `/search/guest` production screenshot smoke로 홈 best preview가 비지 않는지, 피드 상단 제어 영역 높이가 줄었는지 확인하는 것이다.
+- 다음 개발 후보는 홈 Live board의 `먼저 확인할 글` 기준을 운영자 추천/출처 확인/조회 반응 중 어떤 신호로 고정할지 정하고, 필요하면 API 필드명을 `best`보다 정확한 이름으로 정리하는 것이다.
 
 ## 최근 검증
+
+- `2026-05-25. 홈 Live board 초기 카피 정리`
+  - 변경:
+    - 홈 Live board 첫 컬럼 제목을 `지금 많이 보는 글`에서 `먼저 확인할 글`로 변경했다.
+    - empty text도 `먼저 확인할 공개 글을 준비하고 있습니다.`로 바꿨다.
+  - 이유:
+    - 초기 운영자 콘텐츠는 좋아요/조회 데이터가 아직 적으므로 `많이 보는 글`이라고 말하면 실제 신호보다 과장된다.
+    - 사용자는 첫 방문 상태에서 인기보다 확인할 정보와 신뢰 신호를 먼저 이해해야 한다.
+  - 검증:
+    - `corepack pnpm@9.12.3 -C app test -- src/components/home/home-feed-preview.test.tsx`
+    - `corepack pnpm@9.12.3 -C app typecheck`
+    - `corepack pnpm@9.12.3 -C app lint -- src/components/home/home-feed-preview.tsx src/components/home/home-feed-preview.test.tsx`
+    - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/app src/components --fast`
+    - `corepack pnpm@9.12.3 -C app quality:check`
+    - 예정: production deploy smoke.
 
 - `2026-05-25. 운영자 콘텐츠 노출 후 public UI 밀도 조정`
   - production DOM 점검:

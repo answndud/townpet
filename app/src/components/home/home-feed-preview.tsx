@@ -197,7 +197,7 @@ export function HomeFeedPreview() {
       <div className="mt-4 grid gap-5 lg:grid-cols-2">
         <div>
           <div className="mb-2 flex items-center justify-between gap-3">
-            <h3 className="text-sm font-semibold text-[#173963]">지금 많이 보는 글</h3>
+            <h3 className="text-sm font-semibold text-[#173963]">먼저 확인할 글</h3>
             <Link href="/feed/guest?mode=BEST&days=7" className="text-xs font-semibold text-[#315b9a]">
               더보기
             </Link>
@@ -205,7 +205,7 @@ export function HomeFeedPreview() {
           {data ? (
             <FeedPreviewList
               items={data.best}
-              emptyText="최근 7일 동안 많이 본 공개 글이 아직 없습니다."
+              emptyText="먼저 확인할 공개 글을 준비하고 있습니다."
               emptyActions={[
                 {
                   href: "/guides/24h-vet-checklist",
