@@ -222,6 +222,35 @@ describe("GET /api/home/feed", () => {
     ]);
   });
 
+  it("keeps best and latest home preview rows from repeating the same posts", async () => {
+    mockListBestPosts.mockResolvedValue([
+      createPost({ id: "post-shared-1", title: "야간 산책 전 확인할 것" }),
+      createPost({ id: "post-shared-2", title: "병원 후기를 안전하게 남기는 방법" }),
+    ] as never);
+    mockListPosts.mockResolvedValue({
+      items: [
+        createPost({ id: "post-shared-1", title: "야간 산책 전 확인할 것" }),
+        createPost({ id: "post-shared-2", title: "병원 후기를 안전하게 남기는 방법" }),
+        createPost({ id: "post-latest-1", title: "분실동물 첫 24시간에 해야 할 일" }),
+        createPost({ id: "post-latest-2", title: "산책코스 제보에 꼭 필요한 6가지" }),
+      ],
+      nextCursor: null,
+    } as never);
+
+    const response = await GET(new Request("http://localhost/api/home/feed") as NextRequest);
+    const payload = await response.json();
+
+    expect(payload.ok).toBe(true);
+    expect(payload.data.best.map((post: { id: string }) => post.id)).toEqual([
+      "post-shared-1",
+      "post-shared-2",
+    ]);
+    expect(payload.data.latest.map((post: { id: string }) => post.id)).toEqual([
+      "post-latest-1",
+      "post-latest-2",
+    ]);
+  });
+
   it("returns 500 and monitors unexpected failures", async () => {
     mockListBestPosts.mockRejectedValue(new Error("boom"));
 
