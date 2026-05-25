@@ -52,6 +52,7 @@
 - `P2-14. 전국 공통 운영자 정리 콘텐츠 초안 팩`을 완료했다. production DB에 글을 넣지 않고, `/posts/new`에서 운영자가 직접 작성할 수 있는 첫 7개 초안을 문서화했다.
 - `P2-15. 운영자 정리 글 public smoke 명령`을 완료했다. 게시 후 바로 확인할 수 있는 repo-local smoke를 추가했고, 현재 production은 운영자 정리 글 0건으로 `BLOCKED`임을 확인했다.
 - `P2-16. 운영자 정리 글 production 자동 게시`를 완료했다. `townpet` production env를 `/tmp` 임시 link로 가져와 첫 7개 글을 `townpet-admin` author로 게시했고 public smoke가 `PASS`했다.
+- 운영자 정리 글 게시 후 `/`, `/feed/guest`, `/search/guest` 실제 화면을 점검했고, 홈 best preview의 초기 빈 상태와 피드 상단 제어 영역의 중복 요약/높이를 줄이는 UI 조정을 완료했다.
 
 ## 다음 액션
 
@@ -65,9 +66,29 @@
 - `/`과 public acquisition UI에는 사용자가 선택하지 않은 특정 지역명을 기본값처럼 노출하지 않는다.
 - 성능 후속은 최신 `main` 배포 후 같은 스크립트로 production 재측정할 때 별도 작업으로 연다.
 - 다음 기능 점검 후보는 production DB env가 준비된 상태에서 `db:audit:legacy-upload-paths`를 재실행하고, 후보가 있으면 별도 cleanup dry-run 계획을 세우는 것이다.
-- 다음 개발 후보는 운영자 정리 글이 들어간 `/`, `/feed/guest`, `/search/guest` 실제 화면에서 목록 밀도와 첫 화면 CTA 중복을 다시 점검하는 것이다.
+- 다음 개발 후보는 최신 배포 후 `/`, `/feed/guest`, `/search/guest` production screenshot smoke로 홈 best preview가 비지 않는지, 피드 상단 제어 영역 높이가 줄었는지 확인하는 것이다.
 
 ## 최근 검증
+
+- `2026-05-25. 운영자 콘텐츠 노출 후 public UI 밀도 조정`
+  - production DOM 점검:
+    - `/`: 최신 운영자 정리 글 4개가 홈 Live board의 `최근 올라온 글`에 노출되지만 `지금 많이 보는 글`은 좋아요 기준 때문에 빈 상태로 남았다.
+    - `/feed/guest`: 피드 아이템 높이는 68px로 유지됐고, 피드 상단 제어 영역은 100px로 측정됐다.
+    - `/search/guest?q=야간`: 검색 결과 3건이 피드 row로 노출됐다.
+  - 변경:
+    - 홈 best preview query를 `minLikes: 0`으로 바꿔 초기 운영 콘텐츠가 좋아요 0이어도 `지금 많이 보는 글` 후보에 들어오게 했다.
+    - 홈 Live board row의 vertical padding을 줄이고, desktop에서는 excerpt를 숨겨 제목/메타 중심으로 더 compact하게 보이게 했다.
+    - 피드 상단 제어 영역에서 `전체 피드/최신순/전체 기간` 요약 pills를 제거했다. 같은 정보는 바로 아래 정렬/기간 controls에 이미 있으므로 중복 표면을 줄였다.
+  - local browser 확인:
+    - `/feed/guest` 피드 상단 제어 영역 높이: 100px -> 83px.
+  - 검증:
+    - `corepack pnpm@9.12.3 -C app test -- src/app/api/home/feed/route.test.ts src/components/home/home-feed-preview.test.tsx src/components/posts/feed-control-panel.test.tsx`
+    - `corepack pnpm@9.12.3 -C app typecheck`
+    - `corepack pnpm@9.12.3 -C app lint -- src/app/api/home/feed/route.ts src/app/api/home/feed/route.test.ts src/components/home/home-feed-preview.tsx src/components/home/home-feed-preview.test.tsx src/components/posts/feed-control-panel.tsx src/components/posts/feed-control-panel.test.tsx`
+    - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/app src/components --fast`
+    - `corepack pnpm@9.12.3 -C app quality:check`
+  - 참고:
+    - `pnpm -C app design:detect` script 자체는 Corepack latest pnpm signature mismatch로 실행 전 실패했다. 동일 detector를 `COREPACK_DEFAULT_TO_LATEST=0`과 `pnpm@9.12.3` 고정으로 실행해 통과했다.
 
 - `P2-12. upload URL canonicalization 보강`
   - 현재 쓰기 normalize 경로는 `/media/uploads/*`를 `/media/media/uploads/*`로 만들지는 않지만, 에디터가 이미 중복 경로를 가진 `<img>`를 직렬화하면 그대로 저장될 수 있었다.

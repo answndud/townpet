@@ -121,7 +121,7 @@ export async function GET(request: NextRequest) {
         days: HOME_BEST_DAYS,
         scope: PostScope.GLOBAL,
         excludeTypes: excludedTypes,
-        minLikes: 1,
+        minLikes: 0,
         viewerId: undefined,
       }).catch((error) => {
         if (isPrismaDatabaseUnavailableError(error)) {

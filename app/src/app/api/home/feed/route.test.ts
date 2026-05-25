@@ -93,6 +93,7 @@ describe("GET /api/home/feed", () => {
         scope: PostScope.GLOBAL,
         excludeTypes: [PostType.MEETUP],
         limit: 15,
+        minLikes: 0,
       }),
     );
     expect(mockListPosts).toHaveBeenCalledWith(

@@ -51,7 +51,7 @@ function FeedPreviewSkeleton() {
       {[0, 1, 2, 3].map((index) => (
         <div
           key={`home-feed-skeleton-${index}`}
-          className="animate-pulse border-b border-[#e5edf8] px-2.5 py-1.5 last:border-b-0"
+          className="animate-pulse border-b border-[#e5edf8] px-2.5 py-1 last:border-b-0"
           aria-hidden="true"
         >
           <div className="flex items-center gap-2">
@@ -105,7 +105,7 @@ export function FeedPreviewList({
         <Link
           key={item.id}
           href={item.href}
-          className="group grid gap-1 border-b border-[#e5edf8] px-2.5 py-1.5 transition last:border-b-0 hover:bg-[#f6faff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#3567b5] sm:grid-cols-[minmax(0,1fr)_minmax(8.5rem,auto)] sm:items-center"
+          className="group grid gap-1 border-b border-[#e5edf8] px-2.5 py-1 transition last:border-b-0 hover:bg-[#f6faff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#3567b5] sm:grid-cols-[minmax(0,1fr)_minmax(7.5rem,auto)] sm:items-center"
         >
           <div className="min-w-0">
             <div className="flex min-w-0 items-center gap-x-1 text-[10px] font-semibold leading-4 text-[#5d789f]">
@@ -121,13 +121,13 @@ export function FeedPreviewList({
               {item.title}
             </h3>
             {item.excerpt ? (
-              <p className="truncate text-[11px] leading-3.5 text-[#5a7397]">
+              <p className="truncate text-[11px] leading-4 text-[#5a7397] sm:hidden">
                 {item.excerpt}
               </p>
             ) : null}
           </div>
-          <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5 overflow-hidden text-[10px] leading-4 text-[#6b84a8] sm:justify-end">
-            <span className="max-w-[8rem] truncate font-semibold text-[#48648d] sm:max-w-[6rem]">
+          <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5 overflow-hidden text-[10px] leading-4 text-[#6b84a8] sm:justify-end sm:text-right">
+            <span className="max-w-[8rem] truncate font-semibold text-[#48648d] sm:max-w-[7rem]">
               {item.authorName}
             </span>
             <span className="whitespace-nowrap">좋아요 {item.likeCount}</span>
