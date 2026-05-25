@@ -123,7 +123,11 @@
     - `node scripts/refresh-docs-index.mjs --check`
     - `git diff --check`
     - `corepack pnpm@9.12.3 -C app quality:check`
-    - 예정: production deploy smoke.
+    - production deploy `4ae8a84`: `https://townpet-rhwssnetx-jmoon0227-9736s-projects.vercel.app`, alias `https://townpet.vercel.app`
+    - GitHub Actions `docs-quality`, `quality-gate` success.
+    - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health`
+    - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:operator-content-public`
+    - production `/api/home/feed`: keys `featured`, `best`, `latest`; `best`는 `featured` alias와 일치; `featured` 5건은 모두 verified operator content; `latest` 2건은 featured와 중복 없음.
 
 - `2026-05-25. 운영자 콘텐츠 노출 후 public UI 밀도 조정`
   - production DOM 점검:
