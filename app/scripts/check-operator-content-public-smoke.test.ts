@@ -54,7 +54,7 @@ describe("operator content public smoke", () => {
         return jsonResponse({
           ok: true,
           latest: [{ id: "post-1", title: "반려생활 정보는 이렇게 모읍니다" }],
-          best: [],
+          featured: [],
         });
       }
 
@@ -139,7 +139,7 @@ describe("operator content public smoke", () => {
           ok: true,
           data: {
             latest: [{ id: "post-1", title: "야간 산책 전 확인할 것" }],
-            best: [],
+            featured: [],
           },
         });
       }

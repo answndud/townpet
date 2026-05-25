@@ -35,9 +35,11 @@ type HomeFeedItem = {
 
 type HomeFeedResponse = {
   ok?: boolean;
+  featured?: HomeFeedItem[];
   latest?: HomeFeedItem[];
   best?: HomeFeedItem[];
   data?: {
+    featured?: HomeFeedItem[];
     latest?: HomeFeedItem[];
     best?: HomeFeedItem[];
   };
@@ -128,8 +130,9 @@ function extractOperatorItems(payload: GuestFeedResponse) {
 
 function homeFeedContainsTitle(payload: HomeFeedResponse, title: string) {
   const latest = payload.latest ?? payload.data?.latest ?? [];
+  const featured = payload.featured ?? payload.data?.featured ?? [];
   const best = payload.best ?? payload.data?.best ?? [];
-  return [...latest, ...best].some((item) => item.title === title);
+  return [...latest, ...featured, ...best].some((item) => item.title === title);
 }
 
 export async function runOperatorContentPublicSmoke(params: {

@@ -79,7 +79,7 @@ describe("GET /api/home/feed", () => {
     } as never);
   });
 
-  it("returns compact best and latest home feed with public cache headers", async () => {
+  it("returns compact featured and latest home feed with a legacy best alias", async () => {
     const response = await GET(new Request("http://localhost/api/home/feed") as NextRequest);
     const payload = await response.json();
 
@@ -105,13 +105,14 @@ describe("GET /api/home/feed", () => {
       }),
     );
     expect(payload.ok).toBe(true);
-    expect(payload.data.best[0]).toMatchObject({
+    expect(payload.data.featured[0]).toMatchObject({
       href: "/posts/post-1",
       title: "서초구 24시 병원 후기",
       excerpt: "야간 진료 설명이 자세했습니다.",
       typeLabel: "병원 후기",
       neighborhoodLabel: "서초구 잠원동",
     });
+    expect(payload.data.best).toEqual(payload.data.featured);
     expect(payload.data.latest[0]).toMatchObject({
       href: "/posts/post-2",
       title: "산책코스 추천",
@@ -158,7 +159,7 @@ describe("GET /api/home/feed", () => {
     const payload = await response.json();
 
     expect(payload.ok).toBe(true);
-    expect(payload.data.best.map((post: { id: string }) => post.id)).toEqual([
+    expect(payload.data.featured.map((post: { id: string }) => post.id)).toEqual([
       "post-visible",
     ]);
     expect(payload.data.latest.map((post: { id: string }) => post.id)).toEqual([
@@ -206,7 +207,7 @@ describe("GET /api/home/feed", () => {
     const payload = await response.json();
 
     expect(payload.ok).toBe(true);
-    expect(payload.data.best.map((post: { id: string }) => post.id)).toEqual([
+    expect(payload.data.featured.map((post: { id: string }) => post.id)).toEqual([
       "post-real-best-1",
       "post-real-best-2",
       "post-real-best-3",
@@ -222,7 +223,7 @@ describe("GET /api/home/feed", () => {
     ]);
   });
 
-  it("keeps best and latest home preview rows from repeating the same posts", async () => {
+  it("keeps featured and latest home preview rows from repeating the same posts", async () => {
     mockListBestPosts.mockResolvedValue([
       createPost({ id: "post-shared-1", title: "야간 산책 전 확인할 것" }),
       createPost({ id: "post-shared-2", title: "병원 후기를 안전하게 남기는 방법" }),
@@ -241,7 +242,7 @@ describe("GET /api/home/feed", () => {
     const payload = await response.json();
 
     expect(payload.ok).toBe(true);
-    expect(payload.data.best.map((post: { id: string }) => post.id)).toEqual([
+    expect(payload.data.featured.map((post: { id: string }) => post.id)).toEqual([
       "post-shared-1",
       "post-shared-2",
     ]);
