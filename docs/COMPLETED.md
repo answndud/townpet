@@ -5581,3 +5581,31 @@
   - 예정: production deploy smoke.
 - 다음 작업:
   - `먼저 확인할 글`의 정렬 기준을 운영자 추천/출처 확인/조회 반응 중 어떤 신호로 고정할지 결정하고, 필요하면 API 이름을 `best`에서 더 정확한 의미로 바꾼다.
+
+### 2026-05-25 | 홈 featured preview 응답명 정리
+- 완료일: `2026-05-25`
+- 배경:
+  - 홈 첫 컬럼 카피는 `먼저 확인할 글`로 정리됐지만 `/api/home/feed` 응답과 클라이언트 타입은 여전히 `best`를 사용했다.
+  - 초기 운영자 정리 콘텐츠는 인기글이라기보다 먼저 확인할 정보에 가까우므로 내부 계약 이름도 `featured`가 더 정확하다.
+- 변경내용:
+  - `/api/home/feed`가 `featured`를 canonical 첫 컬럼 필드로 반환한다.
+  - 기존 `best`는 같은 배열을 담는 legacy alias로 남겨 호환성을 유지한다.
+  - 홈 클라이언트는 `data.featured`를 사용한다.
+  - 운영자 콘텐츠 public smoke는 `featured`, legacy `best`, `latest`를 모두 확인한다.
+- 코드문서:
+  - [app/src/app/api/home/feed/route.ts](../app/src/app/api/home/feed/route.ts)
+  - [app/src/app/api/home/feed/route.test.ts](../app/src/app/api/home/feed/route.test.ts)
+  - [app/src/components/home/home-feed-preview.tsx](../app/src/components/home/home-feed-preview.tsx)
+  - [app/scripts/check-operator-content-public-smoke.ts](../app/scripts/check-operator-content-public-smoke.ts)
+  - [app/scripts/check-operator-content-public-smoke.test.ts](../app/scripts/check-operator-content-public-smoke.test.ts)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/app/api/home/feed/route.test.ts src/components/home/home-feed-preview.test.tsx scripts/check-operator-content-public-smoke.test.ts`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint -- src/app/api/home/feed/route.ts src/app/api/home/feed/route.test.ts src/components/home/home-feed-preview.tsx src/components/home/home-feed-preview.test.tsx scripts/check-operator-content-public-smoke.ts scripts/check-operator-content-public-smoke.test.ts`
+  - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/app src/components --fast`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+  - 예정: production deploy smoke.
+- 다음 작업:
+  - `featured` 선정 기준을 운영자 추천/출처 확인/조회 반응 중 어떤 신호로 고정할지 정한다.
+  - legacy `best` alias 제거 시점을 정하고 외부 사용 여부를 먼저 확인한다.

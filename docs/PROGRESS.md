@@ -54,6 +54,7 @@
 - `P2-16. 운영자 정리 글 production 자동 게시`를 완료했다. `townpet` production env를 `/tmp` 임시 link로 가져와 첫 7개 글을 `townpet-admin` author로 게시했고 public smoke가 `PASS`했다.
 - 운영자 정리 글 게시 후 `/`, `/feed/guest`, `/search/guest` 실제 화면을 점검했고, 홈 best preview의 초기 빈 상태와 피드 상단 제어 영역의 중복 요약/높이를 줄이는 UI 조정을 완료했다.
 - 홈 Live board의 첫 컬럼을 `지금 많이 보는 글`에서 `먼저 확인할 글`로 바꿔, 초기 운영자 콘텐츠를 인기 콘텐츠처럼 과장하지 않도록 정리했다.
+- 홈 `/api/home/feed`의 첫 컬럼 canonical 응답 필드를 `best`에서 `featured`로 바꿨다. 기존 클라이언트 호환을 위해 `best` alias는 유지한다.
 
 ## 다음 액션
 
@@ -68,7 +69,7 @@
 - 성능 후속은 최신 `main` 배포 후 같은 스크립트로 production 재측정할 때 별도 작업으로 연다.
 - 다음 기능 점검 후보는 production DB env가 준비된 상태에서 `db:audit:legacy-upload-paths`를 재실행하고, 후보가 있으면 별도 cleanup dry-run 계획을 세우는 것이다.
 - 다음 개발 후보는 최신 배포 후 `/`, `/feed/guest`, `/search/guest` production screenshot smoke로 홈 best preview가 비지 않는지, 피드 상단 제어 영역 높이가 줄었는지 확인하는 것이다.
-- 다음 개발 후보는 홈 Live board의 `먼저 확인할 글` 기준을 운영자 추천/출처 확인/조회 반응 중 어떤 신호로 고정할지 정하고, 필요하면 API 필드명을 `best`보다 정확한 이름으로 정리하는 것이다.
+- 다음 개발 후보는 홈 `featured` 선정 기준을 운영자 추천/출처 확인/조회 반응 중 어떤 신호로 고정할지 정하고, legacy `best` alias 제거 시점을 정하는 것이다.
 
 ## 최근 검증
 
@@ -83,6 +84,23 @@
     - `corepack pnpm@9.12.3 -C app test -- src/components/home/home-feed-preview.test.tsx`
     - `corepack pnpm@9.12.3 -C app typecheck`
     - `corepack pnpm@9.12.3 -C app lint -- src/components/home/home-feed-preview.tsx src/components/home/home-feed-preview.test.tsx`
+    - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/app src/components --fast`
+    - `corepack pnpm@9.12.3 -C app quality:check`
+    - 예정: production deploy smoke.
+
+- `2026-05-25. 홈 featured preview 응답명 정리`
+  - 변경:
+    - `/api/home/feed`가 `featured`를 canonical 첫 컬럼 필드로 반환한다.
+    - 기존 `best` 필드는 같은 배열을 담는 legacy alias로 유지한다.
+    - 홈 클라이언트는 `data.featured`를 사용한다.
+    - 운영자 콘텐츠 public smoke도 `featured`를 확인한다.
+  - 이유:
+    - 사용자-facing 카피는 `먼저 확인할 글`인데 API가 `best`만 반환하면 초기 운영자 콘텐츠를 인기글로 오해하는 내부 의미 drift가 남는다.
+    - 즉시 `best`를 제거하면 기존 smoke/외부 호출이 깨질 수 있으므로 alias를 둔다.
+  - 검증:
+    - `corepack pnpm@9.12.3 -C app test -- src/app/api/home/feed/route.test.ts src/components/home/home-feed-preview.test.tsx scripts/check-operator-content-public-smoke.test.ts`
+    - `corepack pnpm@9.12.3 -C app typecheck`
+    - `corepack pnpm@9.12.3 -C app lint -- src/app/api/home/feed/route.ts src/app/api/home/feed/route.test.ts src/components/home/home-feed-preview.tsx src/components/home/home-feed-preview.test.tsx scripts/check-operator-content-public-smoke.ts scripts/check-operator-content-public-smoke.test.ts`
     - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/app src/components --fast`
     - `corepack pnpm@9.12.3 -C app quality:check`
     - 예정: production deploy smoke.

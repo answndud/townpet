@@ -20,7 +20,8 @@ type HomeFeedItem = {
 };
 
 type HomeFeedPayload = {
-  best: HomeFeedItem[];
+  featured: HomeFeedItem[];
+  best?: HomeFeedItem[];
   latest: HomeFeedItem[];
 };
 
@@ -204,7 +205,7 @@ export function HomeFeedPreview() {
           </div>
           {data ? (
             <FeedPreviewList
-              items={data.best}
+              items={data.featured}
               emptyText="먼저 확인할 공개 글을 준비하고 있습니다."
               emptyActions={[
                 {

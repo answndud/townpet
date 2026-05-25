@@ -14,7 +14,7 @@ import { jsonError, jsonOk } from "@/server/response";
 
 const HOME_FEED_LIMIT = 5;
 const HOME_FEED_QUERY_LIMIT = 15;
-const HOME_BEST_DAYS = 7;
+const HOME_FEATURED_DAYS = 7;
 const HOME_PREVIEW_BLOCKED_TEXT_PATTERN =
   /(테스트|\[샘플|\[pw\b|\[visual smoke\]|샘플·|e2e|visual-smoke|\b(pw search|pwsearch|test-user|playwright|townpet-demo|adoption-demo|demo)\b)/iu;
 
@@ -115,11 +115,11 @@ export async function GET(request: NextRequest) {
       throw error;
     });
 
-    const [bestPosts, latestPosts] = await Promise.all([
+    const [featuredPosts, latestPosts] = await Promise.all([
       listBestPosts({
         limit: HOME_FEED_QUERY_LIMIT,
         page: 1,
-        days: HOME_BEST_DAYS,
+        days: HOME_FEATURED_DAYS,
         scope: PostScope.GLOBAL,
         excludeTypes: excludedTypes,
         minLikes: 0,
@@ -146,13 +146,14 @@ export async function GET(request: NextRequest) {
       }),
     ]);
 
-    const serializedBestPosts = serializeHomePosts(bestPosts as RawHomePost[]);
-    const bestPostIds = new Set(serializedBestPosts.map((post) => post.id));
+    const featured = serializeHomePosts(featuredPosts as RawHomePost[]);
+    const featuredPostIds = new Set(featured.map((post) => post.id));
 
     return jsonOk(
       {
-        best: serializedBestPosts,
-        latest: serializeHomePosts(latestPosts.items as RawHomePost[], bestPostIds),
+        featured,
+        best: featured,
+        latest: serializeHomePosts(latestPosts.items as RawHomePost[], featuredPostIds),
       },
       {
         headers: {
