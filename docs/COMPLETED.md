@@ -5529,3 +5529,30 @@
   - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:operator-content-public` -> `PASS`, foundOperatorItems 7
 - 다음 작업:
   - 운영자 정리 글이 들어간 `/`, `/feed/guest`, `/search/guest` 실제 화면에서 목록 밀도와 CTA 중복을 다시 점검한다.
+
+### 2026-05-25 | 운영자 콘텐츠 노출 후 public UI 밀도 조정
+- 완료일: `2026-05-25`
+- 배경:
+  - 운영자 정리 글 7개를 production에 게시한 뒤 실제 public 화면을 확인하니 `/`의 `최근 올라온 글`에는 콘텐츠가 보였지만 `지금 많이 보는 글`은 좋아요 기준 때문에 계속 빈 상태로 남았다.
+  - `/feed/guest`의 게시글 row는 68px로 안정화됐지만 상단 제어 영역이 100px로 측정되어 같은 의미의 요약 pills가 controls와 중복됐다.
+- 변경내용:
+  - 홈 best preview query를 `minLikes: 0`으로 바꿔 초기 운영 콘텐츠가 좋아요 0이어도 `지금 많이 보는 글` 후보에 들어오게 했다.
+  - 홈 Live board row padding을 줄이고 desktop excerpt를 숨겨 피드형 목록을 더 compact하게 만들었다.
+  - 피드 상단의 `전체 피드/최신순/전체 기간` 요약 pills를 제거했다. 피드 보기, 정렬, 기간 controls는 그대로 유지한다.
+- 코드문서:
+  - [app/src/app/api/home/feed/route.ts](../app/src/app/api/home/feed/route.ts)
+  - [app/src/app/api/home/feed/route.test.ts](../app/src/app/api/home/feed/route.test.ts)
+  - [app/src/components/home/home-feed-preview.tsx](../app/src/components/home/home-feed-preview.tsx)
+  - [app/src/components/posts/feed-control-panel.tsx](../app/src/components/posts/feed-control-panel.tsx)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/app/api/home/feed/route.test.ts src/components/home/home-feed-preview.test.tsx src/components/posts/feed-control-panel.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint -- src/app/api/home/feed/route.ts src/app/api/home/feed/route.test.ts src/components/home/home-feed-preview.tsx src/components/home/home-feed-preview.test.tsx src/components/posts/feed-control-panel.tsx src/components/posts/feed-control-panel.test.tsx`
+  - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/app src/components --fast`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+  - local browser `/feed/guest`: 피드 상단 제어 영역 83px 확인.
+- 참고:
+  - `pnpm -C app design:detect` script는 Corepack latest pnpm signature mismatch로 실패했다. repo-local/global 설정은 바꾸지 않고 고정 pnpm 버전으로 detector를 실행했다.
+- 다음 작업:
+  - 변경사항을 commit/push/deploy한 뒤 production `/`, `/feed/guest`, `/search/guest`에서 screenshot smoke를 다시 수행한다.

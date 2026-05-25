@@ -63,36 +63,6 @@ const ACTIVE_FILTER_CHIP_CLASS_NAME = "border-[#3567b5] bg-[#3567b5] text-white"
 const INACTIVE_FILTER_CHIP_CLASS_NAME =
   "border-[#d4e1f3] bg-white text-[#355f99] hover:border-[#bdd2ed] hover:bg-[#f6faff]";
 
-function getSortLabel(sort: FeedSort) {
-  if (sort === "LIKE") {
-    return "좋아요순";
-  }
-  if (sort === "COMMENT") {
-    return "댓글순";
-  }
-  return "최신순";
-}
-
-function getRangeLabel(mode: FeedMode, periodDays: FeedPeriod | null, bestDays: BestDay) {
-  if (mode === "BEST") {
-    return `최근 ${bestDays}일`;
-  }
-
-  if (periodDays) {
-    return `최근 ${periodDays}일`;
-  }
-
-  return "전체 기간";
-}
-
-function SummaryPill({ label }: { label: string }) {
-  return (
-    <span className="inline-flex items-center rounded-full border border-[#d7e4f6] bg-white px-2 py-0.5 text-[10px] font-medium text-[#4f6e97]">
-      {label}
-    </span>
-  );
-}
-
 function SectionLabel({ children }: { children: ReactNode }) {
   return (
     <p className="min-w-[38px] text-[10px] font-semibold leading-none text-[#4f6e97]">
@@ -111,15 +81,12 @@ export function FeedControlPanel({
   makeHref,
   personalized,
 }: FeedControlPanelProps) {
-  const selectedSortLabel = getSortLabel(selectedSort);
-  const rangeLabel = getRangeLabel(mode, periodDays, bestDays);
-
   return (
     <section className="overflow-hidden rounded-xl border border-[#dce7f7] bg-white">
       <div className="border-b border-[#dde8f7] bg-[#f8fbff] px-3 py-1 sm:px-5">
-        <div className="flex flex-col gap-1 lg:flex-row lg:items-start lg:justify-between">
-          <div className="space-y-0.5">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#6b86ab]">
+        <div className="flex flex-wrap items-center gap-1.5">
+          <div className="flex min-w-0 items-center gap-1.5">
+            <p className="text-[10px] font-semibold leading-none text-[#4f6e97]">
               피드 보기
             </p>
             <div className="flex flex-wrap items-center gap-1">
@@ -144,15 +111,6 @@ export function FeedControlPanel({
                 베스트글
               </Link>
             </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-1">
-            <SummaryPill label={mode === "BEST" ? "베스트 기준" : "전체 피드"} />
-            <SummaryPill label={selectedSortLabel} />
-            <SummaryPill label={rangeLabel} />
-            {personalized ? (
-              <SummaryPill label={personalized.active ? "맞춤 추천" : "일반 추천"} />
-            ) : null}
           </div>
         </div>
 
