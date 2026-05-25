@@ -7,14 +7,13 @@ import { buildCacheControlHeader } from "@/server/cache/query-cache";
 import { monitorUnhandledError } from "@/server/error-monitor";
 import { isPrismaDatabaseUnavailableError } from "@/server/prisma-database-error";
 import { getGuestReadLoginRequiredPostTypes } from "@/server/queries/policy.queries";
-import { listBestPosts, listPosts } from "@/server/queries/post.queries";
+import { listPosts } from "@/server/queries/post.queries";
 import { getClientIp } from "@/server/request-context";
 import { enforceRateLimit } from "@/server/rate-limit";
 import { jsonError, jsonOk } from "@/server/response";
 
 const HOME_FEED_LIMIT = 5;
 const HOME_FEED_QUERY_LIMIT = 15;
-const HOME_FEATURED_DAYS = 7;
 const HOME_PREVIEW_BLOCKED_TEXT_PATTERN =
   /(테스트|\[샘플|\[pw\b|\[visual smoke\]|샘플·|e2e|visual-smoke|\b(pw search|pwsearch|test-user|playwright|townpet-demo|adoption-demo|demo)\b)/iu;
 
@@ -27,6 +26,9 @@ type RawHomePost = Record<string, unknown> & {
   commentCount: number;
   likeCount: number;
   viewCount: number;
+  isOperatorContent?: boolean | null;
+  operatorSourceName?: string | null;
+  operatorLastVerifiedAt?: Date | string | null;
   author?: {
     nickname?: string | null;
   } | null;
@@ -68,6 +70,42 @@ function serializeHomePosts(rawPosts: RawHomePost[], excludedIds = new Set<strin
   return rawPosts
     .filter(isHomePreviewEligible)
     .filter((rawPost) => !excludedIds.has(rawPost.id))
+    .slice(0, HOME_FEED_LIMIT)
+    .map(serializeHomePost);
+}
+
+function getTimestamp(value: Date | string | null | undefined) {
+  if (!value) {
+    return 0;
+  }
+  const timestamp = value instanceof Date ? value.getTime() : new Date(value).getTime();
+  return Number.isNaN(timestamp) ? 0 : timestamp;
+}
+
+function getFeaturedScore(rawPost: RawHomePost) {
+  const hasVerifiedOperatorSource = Boolean(
+    rawPost.isOperatorContent &&
+      rawPost.operatorSourceName?.trim() &&
+      rawPost.operatorLastVerifiedAt,
+  );
+  const operatorScore = hasVerifiedOperatorSource ? 1_000_000 : rawPost.isOperatorContent ? 500_000 : 0;
+  const engagementScore =
+    rawPost.likeCount * 30 + rawPost.commentCount * 20 + rawPost.viewCount;
+  const recencyScore = Math.floor(getTimestamp(rawPost.createdAt) / 86_400_000);
+
+  return operatorScore + engagementScore + recencyScore;
+}
+
+function serializeFeaturedHomePosts(rawPosts: RawHomePost[]) {
+  return rawPosts
+    .filter(isHomePreviewEligible)
+    .toSorted((left, right) => {
+      const scoreDiff = getFeaturedScore(right) - getFeaturedScore(left);
+      if (scoreDiff !== 0) {
+        return scoreDiff;
+      }
+      return getTimestamp(right.createdAt) - getTimestamp(left.createdAt);
+    })
     .slice(0, HOME_FEED_LIMIT)
     .map(serializeHomePost);
 }
@@ -115,45 +153,30 @@ export async function GET(request: NextRequest) {
       throw error;
     });
 
-    const [featuredPosts, latestPosts] = await Promise.all([
-      listBestPosts({
-        limit: HOME_FEED_QUERY_LIMIT,
-        page: 1,
-        days: HOME_FEATURED_DAYS,
-        scope: PostScope.GLOBAL,
-        excludeTypes: excludedTypes,
-        minLikes: 0,
-        viewerId: undefined,
-      }).catch((error) => {
-        if (isPrismaDatabaseUnavailableError(error)) {
-          return [];
-        }
-        throw error;
-      }),
-      listPosts({
-        limit: HOME_FEED_QUERY_LIMIT,
-        page: 1,
-        scope: PostScope.GLOBAL,
-        sort: "LATEST",
-        excludeTypes: excludedTypes,
-        viewerId: undefined,
-        personalized: false,
-      }).catch((error) => {
+    const latestPosts = await listPosts({
+      limit: HOME_FEED_QUERY_LIMIT,
+      page: 1,
+      scope: PostScope.GLOBAL,
+      sort: "LATEST",
+      excludeTypes: excludedTypes,
+      viewerId: undefined,
+      personalized: false,
+    }).catch((error) => {
         if (isPrismaDatabaseUnavailableError(error)) {
           return { items: [], nextCursor: null };
         }
         throw error;
-      }),
-    ]);
+      });
 
-    const featured = serializeHomePosts(featuredPosts as RawHomePost[]);
+    const latestCandidates = latestPosts.items as RawHomePost[];
+    const featured = serializeFeaturedHomePosts(latestCandidates);
     const featuredPostIds = new Set(featured.map((post) => post.id));
 
     return jsonOk(
       {
         featured,
         best: featured,
-        latest: serializeHomePosts(latestPosts.items as RawHomePost[], featuredPostIds),
+        latest: serializeHomePosts(latestCandidates, featuredPostIds),
       },
       {
         headers: {
