@@ -55,6 +55,7 @@
 - 운영자 정리 글 게시 후 `/`, `/feed/guest`, `/search/guest` 실제 화면을 점검했고, 홈 best preview의 초기 빈 상태와 피드 상단 제어 영역의 중복 요약/높이를 줄이는 UI 조정을 완료했다.
 - 홈 Live board의 첫 컬럼을 `지금 많이 보는 글`에서 `먼저 확인할 글`로 바꿔, 초기 운영자 콘텐츠를 인기 콘텐츠처럼 과장하지 않도록 정리했다.
 - 홈 `/api/home/feed`의 첫 컬럼 canonical 응답 필드를 `best`에서 `featured`로 바꿨다. 기존 클라이언트 호환을 위해 `best` alias는 유지한다.
+- 홈 `/api/home/feed`의 `featured` 선정 기준을 `검증된 운영자 정리 글 -> 운영자 글 -> 참여도 -> 최신성` 순서로 분리했다. 더 이상 legacy `best` 쿼리를 재사용하지 않는다.
 
 ## 다음 액션
 
@@ -69,7 +70,7 @@
 - 성능 후속은 최신 `main` 배포 후 같은 스크립트로 production 재측정할 때 별도 작업으로 연다.
 - 다음 기능 점검 후보는 production DB env가 준비된 상태에서 `db:audit:legacy-upload-paths`를 재실행하고, 후보가 있으면 별도 cleanup dry-run 계획을 세우는 것이다.
 - 다음 개발 후보는 최신 배포 후 `/`, `/feed/guest`, `/search/guest` production screenshot smoke로 홈 best preview가 비지 않는지, 피드 상단 제어 영역 높이가 줄었는지 확인하는 것이다.
-- 다음 개발 후보는 홈 `featured` 선정 기준을 운영자 추천/출처 확인/조회 반응 중 어떤 신호로 고정할지 정하고, legacy `best` alias 제거 시점을 정하는 것이다.
+- 다음 개발 후보는 legacy `best` alias 제거 시점을 정하기 전에 외부 사용 여부를 확인하는 것이다.
 
 ## 최근 검증
 
@@ -102,6 +103,25 @@
     - `corepack pnpm@9.12.3 -C app typecheck`
     - `corepack pnpm@9.12.3 -C app lint -- src/app/api/home/feed/route.ts src/app/api/home/feed/route.test.ts src/components/home/home-feed-preview.tsx src/components/home/home-feed-preview.test.tsx scripts/check-operator-content-public-smoke.ts scripts/check-operator-content-public-smoke.test.ts`
     - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/app src/components --fast`
+    - `corepack pnpm@9.12.3 -C app quality:check`
+  - 예정: production deploy smoke.
+
+- `2026-05-25. 홈 featured 선정 기준 분리`
+  - 변경:
+    - `/api/home/feed`의 `featured`를 legacy `listBestPosts` 결과가 아니라 최신 public 후보 15개에서 별도 점수로 선정한다.
+    - 점수 우선순위는 `검증된 운영자 정리 글`, `운영자 글`, `참여도(좋아요/댓글/조회)`, `최신성` 순서다.
+    - `latest`는 같은 후보군에서 `featured`에 이미 들어간 글을 제외해 중복 노출을 막는다.
+    - 기존 `best` 응답 필드는 `featured` alias로 유지한다.
+  - 이유:
+    - 홈 첫 컬럼 카피가 `먼저 확인할 글`이므로 단순 인기글 쿼리를 재사용하면 사용자에게 주는 의미와 내부 선정 기준이 어긋난다.
+    - 운영자 출처와 최종 확인일이 있는 글은 초기 방문자가 먼저 신뢰하고 볼 수 있는 정보다.
+  - 검증:
+    - `corepack pnpm@9.12.3 -C app test -- src/app/api/home/feed/route.test.ts src/components/home/home-feed-preview.test.tsx scripts/check-operator-content-public-smoke.test.ts`
+    - `corepack pnpm@9.12.3 -C app typecheck`
+    - `corepack pnpm@9.12.3 -C app lint -- src/app/api/home/feed/route.ts src/app/api/home/feed/route.test.ts src/components/home/home-feed-preview.tsx src/components/home/home-feed-preview.test.tsx scripts/check-operator-content-public-smoke.ts scripts/check-operator-content-public-smoke.test.ts`
+    - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/app src/components --fast`
+    - `node scripts/refresh-docs-index.mjs --check`
+    - `git diff --check`
     - `corepack pnpm@9.12.3 -C app quality:check`
     - 예정: production deploy smoke.
 

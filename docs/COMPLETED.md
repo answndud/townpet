@@ -5609,3 +5609,33 @@
 - 다음 작업:
   - `featured` 선정 기준을 운영자 추천/출처 확인/조회 반응 중 어떤 신호로 고정할지 정한다.
   - legacy `best` alias 제거 시점을 정하고 외부 사용 여부를 먼저 확인한다.
+
+### 2026-05-25 | 홈 featured 선정 기준 분리
+- 완료일: `2026-05-25`
+- 배경:
+  - 홈 Live board의 첫 컬럼은 사용자에게 `먼저 확인할 글`로 보이지만, 내부 구현은 여전히 best/popular 성격의 쿼리에 의존했다.
+  - 운영자 정리 콘텐츠는 초기 서비스에서 “인기글”보다 “출처가 확인된 시작 정보”에 가깝다.
+  - 인기 신호가 적은 초기 상태에서도 신뢰 기준을 먼저 반영해야 홈 화면이 과장 없이 작동한다.
+- 변경내용:
+  - `/api/home/feed`에서 `listBestPosts` 호출을 제거했다.
+  - `featured`는 최신 public 후보 15개 안에서 별도 score로 정렬한다.
+  - score 우선순위는 `출처명과 최종 확인일이 있는 운영자 정리 글`, `운영자 글`, `참여도`, `최신성`이다.
+  - `latest`는 같은 후보군에서 `featured`에 이미 들어간 글을 제외한다.
+  - legacy `best` 응답 필드는 외부 호환을 위해 `featured` alias로 유지한다.
+  - API route test는 운영자 검증 글 우선순위, demo/test 글 제외, featured/latest 중복 제거를 기준으로 갱신했다.
+- 코드문서:
+  - [app/src/app/api/home/feed/route.ts](../app/src/app/api/home/feed/route.ts)
+  - [app/src/app/api/home/feed/route.test.ts](../app/src/app/api/home/feed/route.test.ts)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/app/api/home/feed/route.test.ts src/components/home/home-feed-preview.test.tsx scripts/check-operator-content-public-smoke.test.ts`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint -- src/app/api/home/feed/route.ts src/app/api/home/feed/route.test.ts src/components/home/home-feed-preview.tsx src/components/home/home-feed-preview.test.tsx scripts/check-operator-content-public-smoke.ts scripts/check-operator-content-public-smoke.test.ts`
+  - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/app src/components --fast`
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `git diff --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+  - 예정: production deploy smoke.
+- 다음 작업:
+  - production 배포 후 `/api/home/feed`에서 `featured`, `best`, `latest` shape와 운영자 콘텐츠 노출을 확인한다.
+  - legacy `best` alias 제거는 외부 사용 여부 확인 뒤 별도 작업으로 진행한다.

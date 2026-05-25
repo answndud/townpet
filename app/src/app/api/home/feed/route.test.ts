@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { GET } from "@/app/api/home/feed/route";
 import { monitorUnhandledError } from "@/server/error-monitor";
 import { getGuestReadLoginRequiredPostTypes } from "@/server/queries/policy.queries";
-import { listBestPosts, listPosts } from "@/server/queries/post.queries";
+import { listPosts } from "@/server/queries/post.queries";
 import { getClientIp } from "@/server/request-context";
 import { enforceRateLimit } from "@/server/rate-limit";
 
@@ -14,7 +14,6 @@ vi.mock("@/server/queries/policy.queries", () => ({
   getGuestReadLoginRequiredPostTypes: vi.fn(),
 }));
 vi.mock("@/server/queries/post.queries", () => ({
-  listBestPosts: vi.fn(),
   listPosts: vi.fn(),
 }));
 vi.mock("@/server/request-context", () => ({ getClientIp: vi.fn() }));
@@ -22,7 +21,6 @@ vi.mock("@/server/rate-limit", () => ({ enforceRateLimit: vi.fn() }));
 
 const mockMonitorUnhandledError = vi.mocked(monitorUnhandledError);
 const mockGetGuestReadLoginRequiredPostTypes = vi.mocked(getGuestReadLoginRequiredPostTypes);
-const mockListBestPosts = vi.mocked(listBestPosts);
 const mockListPosts = vi.mocked(listPosts);
 const mockGetClientIp = vi.mocked(getClientIp);
 const mockEnforceRateLimit = vi.mocked(enforceRateLimit);
@@ -64,7 +62,6 @@ describe("GET /api/home/feed", () => {
   beforeEach(() => {
     mockMonitorUnhandledError.mockReset();
     mockGetGuestReadLoginRequiredPostTypes.mockReset();
-    mockListBestPosts.mockReset();
     mockListPosts.mockReset();
     mockGetClientIp.mockReset();
     mockEnforceRateLimit.mockReset();
@@ -72,9 +69,8 @@ describe("GET /api/home/feed", () => {
     mockGetClientIp.mockReturnValue("127.0.0.1");
     mockEnforceRateLimit.mockResolvedValue();
     mockGetGuestReadLoginRequiredPostTypes.mockResolvedValue([PostType.MEETUP]);
-    mockListBestPosts.mockResolvedValue([createPost()] as never);
     mockListPosts.mockResolvedValue({
-      items: [createPost({ id: "post-2", title: "산책코스 추천" })],
+      items: [createPost()],
       nextCursor: null,
     } as never);
   });
@@ -87,14 +83,6 @@ describe("GET /api/home/feed", () => {
     expect(response.headers.get("cache-control")).toBe("public, s-maxage=60, stale-while-revalidate=300");
     expect(mockEnforceRateLimit).toHaveBeenCalledWith(
       expect.objectContaining({ key: "home-feed:ip:127.0.0.1", limit: 60 }),
-    );
-    expect(mockListBestPosts).toHaveBeenCalledWith(
-      expect.objectContaining({
-        scope: PostScope.GLOBAL,
-        excludeTypes: [PostType.MEETUP],
-        limit: 15,
-        minLikes: 0,
-      }),
     );
     expect(mockListPosts).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -113,23 +101,18 @@ describe("GET /api/home/feed", () => {
       neighborhoodLabel: "서초구 잠원동",
     });
     expect(payload.data.best).toEqual(payload.data.featured);
-    expect(payload.data.latest[0]).toMatchObject({
-      href: "/posts/post-2",
-      title: "산책코스 추천",
-    });
+    expect(payload.data.latest).toEqual([]);
   });
 
   it("excludes e2e and test-like posts from the public home preview", async () => {
-    mockListBestPosts.mockResolvedValue([
-      createPost({ id: "post-visible", title: "우리 동네 산책 후기" }),
-      createPost({
-        id: "post-e2e",
-        title: "[PW SEARCH] 입양 공개 adoption-123",
-        author: { nickname: "e2e-search-visible" },
-      }),
-    ] as never);
     mockListPosts.mockResolvedValue({
       items: [
+        createPost({ id: "post-visible", title: "우리 동네 산책 후기" }),
+        createPost({
+          id: "post-e2e",
+          title: "[PW SEARCH] 입양 공개 adoption-123",
+          author: { nickname: "e2e-search-visible" },
+        }),
         createPost({
           id: "post-test",
           title: "이미지 업로드 테스트",
@@ -161,26 +144,49 @@ describe("GET /api/home/feed", () => {
     expect(payload.ok).toBe(true);
     expect(payload.data.featured.map((post: { id: string }) => post.id)).toEqual([
       "post-visible",
-    ]);
-    expect(payload.data.latest.map((post: { id: string }) => post.id)).toEqual([
       "post-latest",
     ]);
+    expect(payload.data.latest).toEqual([]);
   });
 
-  it("excludes production demo sample posts and fills from a wider preview candidate pool", async () => {
-    mockListBestPosts.mockResolvedValue([
-      createPost({
-        id: "post-sample-best",
-        title: "고양이 자동급식기 일주일 사용 후기 공유해요",
-        author: { nickname: "샘플·보리보호자" },
-      }),
-      createPost({ id: "post-real-best-1", title: "우리 동네 산책 후기 1" }),
-      createPost({ id: "post-real-best-2", title: "우리 동네 산책 후기 2" }),
-      createPost({ id: "post-real-best-3", title: "우리 동네 산책 후기 3" }),
-      createPost({ id: "post-real-best-4", title: "우리 동네 산책 후기 4" }),
-      createPost({ id: "post-real-best-5", title: "우리 동네 산책 후기 5" }),
-      createPost({ id: "post-real-best-6", title: "우리 동네 산책 후기 6" }),
-    ] as never);
+  it("prioritizes verified operator content before engagement-only posts", async () => {
+    mockListPosts.mockResolvedValue({
+      items: [
+        createPost({
+          id: "post-popular",
+          title: "댓글이 많은 사용자 글",
+          commentCount: 20,
+          likeCount: 50,
+          viewCount: 1_000,
+          createdAt: new Date("2026-05-25T01:00:00.000Z"),
+        }),
+        createPost({
+          id: "post-operator-verified",
+          title: "야간 산책 전 확인할 것",
+          isOperatorContent: true,
+          operatorSourceName: "TownPet 운영자 정리",
+          operatorLastVerifiedAt: new Date("2026-05-24T01:00:00.000Z"),
+          commentCount: 0,
+          likeCount: 0,
+          viewCount: 0,
+          createdAt: new Date("2026-05-23T01:00:00.000Z"),
+        }),
+      ],
+      nextCursor: null,
+    } as never);
+
+    const response = await GET(new Request("http://localhost/api/home/feed") as NextRequest);
+    const payload = await response.json();
+
+    expect(payload.ok).toBe(true);
+    expect(payload.data.featured.map((post: { id: string }) => post.id)).toEqual([
+      "post-operator-verified",
+      "post-popular",
+    ]);
+    expect(payload.data.best).toEqual(payload.data.featured);
+  });
+
+  it("excludes production demo sample posts and fills featured from a wider preview candidate pool", async () => {
     mockListPosts.mockResolvedValue({
       items: [
         createPost({
@@ -193,12 +199,12 @@ describe("GET /api/home/feed", () => {
           title: "[샘플 안내] 실종/목격 게시판은 실제 제보만 등록해 주세요",
           author: { nickname: "운영 안내" },
         }),
-        createPost({ id: "post-real-latest-1", title: "동네 병원 후기 1" }),
-        createPost({ id: "post-real-latest-2", title: "동네 병원 후기 2" }),
-        createPost({ id: "post-real-latest-3", title: "동네 병원 후기 3" }),
-        createPost({ id: "post-real-latest-4", title: "동네 병원 후기 4" }),
-        createPost({ id: "post-real-latest-5", title: "동네 병원 후기 5" }),
-        createPost({ id: "post-real-latest-6", title: "동네 병원 후기 6" }),
+        createPost({ id: "post-real-1", title: "동네 병원 후기 1" }),
+        createPost({ id: "post-real-2", title: "동네 병원 후기 2" }),
+        createPost({ id: "post-real-3", title: "동네 병원 후기 3" }),
+        createPost({ id: "post-real-4", title: "동네 병원 후기 4" }),
+        createPost({ id: "post-real-5", title: "동네 병원 후기 5" }),
+        createPost({ id: "post-real-6", title: "동네 병원 후기 6" }),
       ],
       nextCursor: null,
     } as never);
@@ -208,52 +214,19 @@ describe("GET /api/home/feed", () => {
 
     expect(payload.ok).toBe(true);
     expect(payload.data.featured.map((post: { id: string }) => post.id)).toEqual([
-      "post-real-best-1",
-      "post-real-best-2",
-      "post-real-best-3",
-      "post-real-best-4",
-      "post-real-best-5",
+      "post-real-1",
+      "post-real-2",
+      "post-real-3",
+      "post-real-4",
+      "post-real-5",
     ]);
     expect(payload.data.latest.map((post: { id: string }) => post.id)).toEqual([
-      "post-real-latest-1",
-      "post-real-latest-2",
-      "post-real-latest-3",
-      "post-real-latest-4",
-      "post-real-latest-5",
-    ]);
-  });
-
-  it("keeps featured and latest home preview rows from repeating the same posts", async () => {
-    mockListBestPosts.mockResolvedValue([
-      createPost({ id: "post-shared-1", title: "야간 산책 전 확인할 것" }),
-      createPost({ id: "post-shared-2", title: "병원 후기를 안전하게 남기는 방법" }),
-    ] as never);
-    mockListPosts.mockResolvedValue({
-      items: [
-        createPost({ id: "post-shared-1", title: "야간 산책 전 확인할 것" }),
-        createPost({ id: "post-shared-2", title: "병원 후기를 안전하게 남기는 방법" }),
-        createPost({ id: "post-latest-1", title: "분실동물 첫 24시간에 해야 할 일" }),
-        createPost({ id: "post-latest-2", title: "산책코스 제보에 꼭 필요한 6가지" }),
-      ],
-      nextCursor: null,
-    } as never);
-
-    const response = await GET(new Request("http://localhost/api/home/feed") as NextRequest);
-    const payload = await response.json();
-
-    expect(payload.ok).toBe(true);
-    expect(payload.data.featured.map((post: { id: string }) => post.id)).toEqual([
-      "post-shared-1",
-      "post-shared-2",
-    ]);
-    expect(payload.data.latest.map((post: { id: string }) => post.id)).toEqual([
-      "post-latest-1",
-      "post-latest-2",
+      "post-real-6",
     ]);
   });
 
   it("returns 500 and monitors unexpected failures", async () => {
-    mockListBestPosts.mockRejectedValue(new Error("boom"));
+    mockListPosts.mockRejectedValue(new Error("boom"));
 
     const response = await GET(new Request("http://localhost/api/home/feed") as NextRequest);
     const payload = await response.json();
