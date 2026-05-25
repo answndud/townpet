@@ -5558,3 +5558,26 @@
   - 첫 production 배포 후 best/latest 중복 노출을 발견해 latest de-duplication을 추가했다.
 - 다음 작업:
   - 변경사항을 commit/push/deploy한 뒤 production `/`, `/feed/guest`, `/search/guest`에서 screenshot smoke를 다시 수행한다.
+
+### 2026-05-25 | 홈 Live board 초기 카피 정리
+- 완료일: `2026-05-25`
+- 배경:
+  - 운영자 정리 콘텐츠가 들어간 초기 상태에서는 조회/좋아요 기반 인기 신호가 아직 충분하지 않다.
+  - `지금 많이 보는 글`은 실제 반응 데이터보다 강하게 읽히므로, 첫 방문자가 확인할 운영자 정리 콘텐츠의 성격과 어긋난다.
+- 변경내용:
+  - 홈 Live board 첫 컬럼 제목을 `지금 많이 보는 글`에서 `먼저 확인할 글`로 바꿨다.
+  - empty text를 `먼저 확인할 공개 글을 준비하고 있습니다.`로 바꿨다.
+  - 회귀 테스트에서 인기 과장 표현이 다시 들어오지 않도록 확인한다.
+- 코드문서:
+  - [app/src/components/home/home-feed-preview.tsx](../app/src/components/home/home-feed-preview.tsx)
+  - [app/src/components/home/home-feed-preview.test.tsx](../app/src/components/home/home-feed-preview.test.tsx)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/components/home/home-feed-preview.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint -- src/components/home/home-feed-preview.tsx src/components/home/home-feed-preview.test.tsx`
+  - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/app src/components --fast`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+  - 예정: production deploy smoke.
+- 다음 작업:
+  - `먼저 확인할 글`의 정렬 기준을 운영자 추천/출처 확인/조회 반응 중 어떤 신호로 고정할지 결정하고, 필요하면 API 이름을 `best`에서 더 정확한 의미로 바꾼다.
