@@ -41,7 +41,7 @@ export function StructuredFieldSection({
       <div className="tp-form-section-bar">
         <p className="tp-form-section-title">{title}</p>
       </div>
-      <div className="grid gap-4 p-4 md:grid-cols-2">{children}</div>
+      <div className="grid gap-3 p-3 sm:p-4 md:grid-cols-2">{children}</div>
     </section>
   );
 }

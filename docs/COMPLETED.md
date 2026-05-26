@@ -5810,3 +5810,43 @@
     - `/lost/new`: status `307`, location `/posts/new?type=LOST_FOUND`.
 - 다음 작업:
   - 글쓰기 본문 editor와 구조화 필드의 모바일 밀도, submit footer, 오류 안내를 한 화면군 안에서 추가 정리한다.
+
+### 2026-05-26 | 글쓰기 editor/submit 밀도 정리
+- 완료일: `2026-05-26`
+- 배경:
+  - 글쓰기 header와 작성 기준 aside는 compact하게 줄였지만, 본문 editor와 구조화 필드 section은 여전히 모바일 첫 화면에서 높이를 많이 차지했다.
+  - submit footer는 긴 정책 요약과 30px 버튼이 함께 노출돼 모바일에서 실제 등록/취소 동작보다 설명 문구가 먼저 보였다.
+  - 제출 오류는 단순 빨간 텍스트라 form surface 안에서 상태 경계가 약했다.
+- 변경내용:
+  - 본문 editor 최소 높이를 `340px`에서 `260px`로 줄였다.
+  - editor 최대 높이를 `640px`에서 `560px`로 낮췄다.
+  - editor wrapper와 preview padding을 줄였다.
+  - SunEditor toolbar padding과 버튼 최소 높이를 줄였다.
+  - 구조화 필드 공통 section의 모바일 padding/gap을 줄였다.
+  - submit footer 버튼 높이를 `30px`에서 `28px`로 줄였다.
+  - submit footer의 긴 정책 요약은 모바일에서 숨기고 desktop에서만 보이게 했다.
+  - 제출 오류 문구를 border/background가 있는 compact alert로 바꿨다.
+- 유지:
+  - editor serialization, upload, submit payload, validation, draft 저장 로직은 변경하지 않았다.
+  - `/lost/new` redirect는 기존처럼 `/posts/new?type=LOST_FOUND`로 유지한다.
+- 코드문서:
+  - [app/src/components/posts/post-body-rich-editor.tsx](../app/src/components/posts/post-body-rich-editor.tsx)
+  - [app/src/components/posts/post-create-form.tsx](../app/src/components/posts/post-create-form.tsx)
+  - [app/src/components/posts/post-create-form-shell.tsx](../app/src/components/posts/post-create-form-shell.tsx)
+  - [app/src/components/posts/post-create-structured-fields.tsx](../app/src/components/posts/post-create-structured-fields.tsx)
+  - [app/src/app/globals.css](../app/src/app/globals.css)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/components/posts/post-create-form-shell.test.tsx src/components/posts/post-rich-text-editor-shell.test.tsx src/components/posts/post-create-structured-fields.test.tsx src/app/globals-css.test.ts src/components/posts/post-create-submit.test.ts`
+  - `corepack pnpm@9.12.3 -C app lint -- src/components/posts/post-body-rich-editor.tsx src/components/posts/post-create-form.tsx src/components/posts/post-create-form-shell.tsx src/components/posts/post-create-structured-fields.tsx src/app/globals.css src/app/globals-css.test.ts src/components/posts/post-create-form-shell.test.tsx`
+    - 참고: CSS 파일은 eslint 설정상 ignored warning이 나오며 command exit는 성공이다.
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/components/posts/post-body-rich-editor.tsx src/components/posts/post-create-form.tsx src/components/posts/post-create-form-shell.tsx src/components/posts/post-create-structured-fields.tsx src/app/globals.css --fast`
+  - local dev SSR `/posts/new`: status `200`; editor `260px`, submit `h-[28px]`, 모바일 정책문구 숨김 class 확인.
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `git diff --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `279 files / 1345 tests`, Next production build 통과.
+  - local dev `/lost/new`: status `307`, location `/posts/new?type=LOST_FOUND`.
+- 다음 작업:
+  - 글쓰기 화면군의 구조화 필드별 세부 안내(병원/산책/분실/거래) 중 남은 nested surface와 긴 문구를 한 유형씩 추가 정리한다.

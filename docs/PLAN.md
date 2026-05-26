@@ -302,7 +302,7 @@
 - 현재 active 구현 항목 없음.
 - 다음 작업을 시작할 때는 코드보다 먼저 이 문서에 새 phase를 추가한다.
 - 후보:
-  - 글쓰기 본문 editor와 구조화 필드의 모바일 밀도, submit footer, 오류 안내 정리
+  - 글쓰기 구조화 필드별 세부 안내(병원/산책/분실/거래)의 남은 nested surface와 긴 문구 정리
   - production DB에 남은 E2E/demo 데이터의 운영상 정리 절차 문서화
   - 최신 `main` 배포 후 production 성능 재측정
 - 지역을 하나로 제한하지 않는다. `/`과 public acquisition UI에는 사용자가 선택하지 않은 특정 지역명을 기본값처럼 노출하지 않는다.

@@ -154,8 +154,8 @@ export const PostBodyRichEditor = forwardRef<PostBodyRichEditorHandle, PostBodyR
   const editorOptions = useMemo<SunEditorOptions>(
     () => ({
       defaultStyle: `font-size:${DEFAULT_POST_EDITOR_FONT_SIZE}px;color:${DEFAULT_POST_EDITOR_TEXT_COLOR};line-height:1.75;`,
-      minHeight: "340px",
-      maxHeight: "640px",
+      minHeight: "260px",
+      maxHeight: "560px",
       placeholder: "내용을 입력해 주세요.",
       buttonList: [
         ["image", "link"],
@@ -594,11 +594,11 @@ export const PostBodyRichEditor = forwardRef<PostBodyRichEditorHandle, PostBodyR
     >
       {mode === "preview" ? (
         <div
-          className="tp-editor-surface prose prose-sm max-w-none px-4 py-4 text-[#1f3f71]"
+          className="tp-editor-surface prose prose-sm max-w-none px-3 py-3 text-[#1f3f71]"
           dangerouslySetInnerHTML={{ __html: previewHtml }}
         />
       ) : (
-        <div className="tp-sun-editor-wrap border-t border-[#dbe6f6] bg-[#fcfdff] px-3 py-3">
+        <div className="tp-sun-editor-wrap border-t border-[#dbe6f6] bg-[#fcfdff] p-2 sm:p-3">
           {isMounted ? (
             <SunEditor
               defaultValue={markupToEditorHtml(value)}
@@ -626,7 +626,7 @@ export const PostBodyRichEditor = forwardRef<PostBodyRichEditorHandle, PostBodyR
               }}
             />
           ) : (
-            <div className="min-h-[340px] rounded-xl border border-[#d7e1f0] bg-white" />
+            <div className="min-h-[260px] rounded-xl border border-[#d7e1f0] bg-white" />
           )}
         </div>
       )}
