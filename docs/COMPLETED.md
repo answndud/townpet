@@ -5837,6 +5837,10 @@
   - `git diff --check`
   - `corepack pnpm@9.12.3 -C app quality:check`
     - ESLint, TypeScript, Vitest `279 files / 1345 tests`, Next production build 통과.
+  - commit `d7e8138`: GitHub Actions `docs-quality`, `quality-gate` success.
+  - commit `d7e8138`: Vercel deployment `success`, alias `https://townpet.vercel.app`.
+  - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health`
+  - production SSR smoke `/posts/new?type=MARKET_LISTING`: status `200`; compact guidance class 있음; 이전 nested guidance class 없음; 금지 품목 문구 있음.
 
 ### 2026-05-26 | 글쓰기 editor/submit 밀도 정리
 - 완료일: `2026-05-26`
