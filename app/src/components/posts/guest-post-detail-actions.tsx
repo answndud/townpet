@@ -76,7 +76,7 @@ export function GuestPostDetailActions({ postId }: GuestPostDetailActionsProps) 
         <summary className="tp-btn-soft inline-flex min-h-10 items-center rounded-lg px-3 text-xs font-semibold">
           비회원 관리
         </summary>
-        <div className="mt-2 space-y-2 rounded-lg border border-[#dbe6f6] bg-[#f8fbff] p-2">
+        <div className="mt-2 grid gap-2 border-t border-[#dbe6f6] pt-2">
           <input
             type="password"
             value={password}

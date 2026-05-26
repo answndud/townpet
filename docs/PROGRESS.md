@@ -85,9 +85,26 @@
 - 성능 후속은 최신 `main` 배포 후 같은 스크립트로 production 재측정할 때 별도 작업으로 연다.
 - 다음 기능 점검 후보는 production DB env가 준비된 상태에서 `db:audit:legacy-upload-paths`를 재실행하고, 후보가 있으면 별도 cleanup dry-run 계획을 세우는 것이다.
 - 현재 active 구현 항목 없음.
-- 다음 개발 후보는 최신 `main` 배포 후 production 성능 재측정 또는 상세 화면의 남은 non-primary auxiliary surface audit이다.
+- 다음 개발 후보는 최신 `main` 배포 후 production 성능 재측정 또는 상세 편집 화면/정보 grid density audit이다.
 
 ## 최근 검증
+
+- `2026-05-26. 상세 비회원 관리 action surface 정리`
+  - 변경:
+    - 상세 화면의 모바일 `비회원 관리` details 내부 wrapper를 rounded bordered soft panel에서 `border-t` divider 기반 inline section으로 바꿨다.
+    - 비회원 비밀번호 입력, 수정 링크, 삭제 버튼의 기존 touch target과 배치 흐름은 유지했다.
+  - 유지:
+    - 비회원 fingerprint, 삭제 API 호출, 수정 URL, confirm/error handling은 변경하지 않았다.
+    - desktop 비회원 관리 action row와 상세 primary card 본문/미디어/신고/공유 영역은 변경하지 않았다.
+  - 검증:
+    - `corepack pnpm@9.12.3 -C app test -- src/components/posts/post-detail-action-accessibility.test.tsx`
+    - `corepack pnpm@9.12.3 -C app lint -- src/components/posts/guest-post-detail-actions.tsx src/components/posts/post-detail-action-accessibility.test.tsx`
+    - `corepack pnpm@9.12.3 -C app typecheck`
+    - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/components/posts/guest-post-detail-actions.tsx --fast`
+    - `node scripts/refresh-docs-index.mjs --check`
+    - `git diff --check`
+    - `corepack pnpm@9.12.3 -C app quality:check`
+      - ESLint, TypeScript, Vitest `280 files / 1351 tests`, Next production build 통과.
 
 - `2026-05-26. 상세 primary card nested surface 정리`
   - 변경:
