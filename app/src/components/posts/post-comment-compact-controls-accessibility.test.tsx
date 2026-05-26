@@ -13,6 +13,9 @@ describe("post comment compact controls accessibility", () => {
 
     expect(html).toContain("이전");
     expect(html).toContain("다음");
+    expect(html).toContain("mt-2");
+    expect(html).toContain("gap-1");
+    expect(html).toContain("px-2.5");
     expect((html.match(/min-h-10/g) ?? []).length).toBeGreaterThanOrEqual(4);
     expect(html).not.toContain("tp-btn-xs");
     expect(html).not.toContain("min-h-9");
@@ -56,6 +59,7 @@ describe("post comment compact controls accessibility", () => {
     expect(code).toContain("다시 시도");
     expect(code).toContain("min-h-10");
     expect(code).toContain('role="alert"');
+    expect(code).toContain('role="status"');
     expect(code).toContain('aria-live="polite"');
   });
 });

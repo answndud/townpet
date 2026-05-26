@@ -258,7 +258,7 @@ export function PostCommentSectionClient({
   if (error && !comments) {
     return (
       <div className={`${POST_COMMENT_SECTION_STATE_CLASS_NAME} border-[#f0d3d3] bg-[#fff7f7] text-[#8b4b4b]`}>
-        <div className="flex flex-wrap items-center justify-between gap-3" role="alert" aria-live="polite">
+        <div className="flex flex-wrap items-center justify-between gap-2" role="alert" aria-live="polite">
           <span>{error}</span>
           <button
             type="button"
@@ -275,7 +275,7 @@ export function PostCommentSectionClient({
   if (!comments) {
     return (
       <div className={`${POST_COMMENT_SECTION_STATE_CLASS_NAME} border-[#dbe6f6] bg-white text-[#6a84ac]`}>
-        댓글을 불러오는 중...
+        <span role="status" aria-live="polite">댓글을 불러오는 중...</span>
       </div>
     );
   }

@@ -942,7 +942,7 @@ export function PostCommentThread({
       {pendingCommentPreview ? (
         <div
           data-testid="post-comment-pending"
-          className={`${COMMENT_BORDER_CLASS_NAME} mt-3 rounded-lg border bg-[#f7fbff] px-3 py-2.5`}
+          className={`${COMMENT_BORDER_CLASS_NAME} mt-2 rounded-lg border bg-[#f7fbff] px-3 py-2`}
           role="status"
           aria-live="polite"
         >
@@ -961,8 +961,8 @@ export function PostCommentThread({
       ) : null}
 
       {hasBestComments ? (
-        <section className="mt-3 sm:mt-4">
-          <div className="flex items-center justify-between gap-2 px-1 pb-2">
+        <section className="mt-3">
+          <div className="flex items-center justify-between gap-2 px-1 pb-1.5">
             <h3 className="tp-text-heading text-[13px] font-semibold">베스트 댓글</h3>
             <span className="tp-text-label text-[10px]">좋아요 기준</span>
           </div>
@@ -990,7 +990,7 @@ export function PostCommentThread({
       ) : null}
 
       {hasBestComments ? (
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-2 sm:mt-5">
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
           <h3 className="tp-text-heading text-[12px] font-semibold">최신 댓글</h3>
           {totalPages > 1 ? (
             <span className="tp-text-label text-[11px]">{currentPage} / {totalPages}</span>
@@ -999,9 +999,9 @@ export function PostCommentThread({
       ) : null}
 
       {roots.length === 0 ? (
-        <p className="tp-text-subtle mt-4 text-[13px]">댓글이 없습니다.</p>
+        <p className="tp-text-subtle mt-3 text-[13px]">댓글이 없습니다.</p>
       ) : (
-        <div className={`mt-3 divide-y border-y bg-white sm:mt-4 ${COMMENT_BORDER_CLASS_NAME} ${COMMENT_DIVIDER_CLASS_NAME}`}>
+        <div className={`mt-2.5 divide-y border-y bg-white sm:mt-3 ${COMMENT_BORDER_CLASS_NAME} ${COMMENT_DIVIDER_CLASS_NAME}`}>
           {roots.map((comment) => renderComment(comment))}
         </div>
       )}
@@ -1012,7 +1012,7 @@ export function PostCommentThread({
         onPageChange={onCommentsChanged}
       />
 
-      <div className={`${COMMENT_BORDER_CLASS_NAME} mt-3 border-t pt-2.5 sm:mt-4 sm:pt-3`}>
+      <div className={`${COMMENT_BORDER_CLASS_NAME} mt-2.5 border-t pt-2`}>
         <PostCommentRootForm
           canComment={canComment}
           lostFoundSightingEnabled={lostFoundSightingEnabled}

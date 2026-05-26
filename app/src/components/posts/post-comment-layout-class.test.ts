@@ -23,7 +23,7 @@ describe("post comment layout classes", () => {
 
   it("keeps comment loading states free of extra top margin without forcing a tinted surface", () => {
     expect(POST_COMMENT_SECTION_STATE_CLASS_NAME).toContain("rounded-lg");
-    expect(POST_COMMENT_SECTION_STATE_CLASS_NAME).toContain("py-2.5");
+    expect(POST_COMMENT_SECTION_STATE_CLASS_NAME).toContain("py-2");
     expect(POST_COMMENT_SECTION_STATE_CLASS_NAME).not.toContain("tp-surface-page-soft");
     expect(POST_COMMENT_SECTION_STATE_CLASS_NAME).not.toContain("mt-5");
   });
