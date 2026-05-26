@@ -69,6 +69,7 @@
 - 상세 화면의 병원 후기 정보 패널에서 후기 확인 안내를 nested bordered box에서 divider 기반 compact guidance로 바꿨다.
 - 상세 화면의 분실/목격 제보 정보 패널에서 허위 제보·개인정보 안내를 nested warning box에서 divider 기반 compact guidance로 바꿨다.
 - 상세 화면의 돌봄 요청 workflow에서 상태 변경, 지원, 지원자 관리, 완료 피드백 panel을 divider 기반 compact section으로 낮췄다.
+- 상세 화면의 거래/분실 상태 변경 workflow를 rounded status box에서 divider 기반 compact section으로 낮췄다.
 
 ## 다음 액션
 
@@ -83,9 +84,27 @@
 - 성능 후속은 최신 `main` 배포 후 같은 스크립트로 production 재측정할 때 별도 작업으로 연다.
 - 다음 기능 점검 후보는 production DB env가 준비된 상태에서 `db:audit:legacy-upload-paths`를 재실행하고, 후보가 있으면 별도 cleanup dry-run 계획을 세우는 것이다.
 - 현재 active 구현 항목 없음.
-- 다음 개발 후보는 최신 `main` 배포 후 production 성능 재측정 또는 다른 상세 화면군의 남은 nested surface audit이다.
+- 다음 개발 후보는 최신 `main` 배포 후 production 성능 재측정 또는 상세 primary card의 남은 nested surface audit이다.
 
 ## 최근 검증
+
+- `2026-05-26. 상세 상태 변경 workflow compact 정리`
+  - 변경:
+    - 상세 화면 `MARKET_LISTING`의 거래 상태 변경 panel을 rounded status box에서 `border-t` divider 기반 compact section으로 바꿨다.
+    - 상세 화면 `LOST_FOUND`의 상태 변경 select panel을 같은 compact section으로 맞췄다.
+    - 상태 변경 버튼 row gap을 줄이고 기존 action/touch target class는 유지했다.
+  - 유지:
+    - 거래 상태 전환 옵션, 분실/목격 상태 select 옵션, pending/disabled/status message 동작은 변경하지 않았다.
+    - 거래 안전 checklist, 분실/목격 제보 확인 기준, 돌봄 workflow는 이번 범위에서 변경하지 않았다.
+  - 검증:
+    - `corepack pnpm@9.12.3 -C app test -- src/components/posts/post-detail-info-panels-accessibility.test.ts`
+    - `corepack pnpm@9.12.3 -C app lint -- src/components/posts/post-detail-info-panels.tsx src/components/posts/post-detail-info-panels-accessibility.test.ts`
+    - `corepack pnpm@9.12.3 -C app typecheck`
+    - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/components/posts/post-detail-info-panels.tsx --fast`
+    - `node scripts/refresh-docs-index.mjs --check`
+    - `git diff --check`
+    - `corepack pnpm@9.12.3 -C app quality:check`
+      - ESLint, TypeScript, Vitest `279 files / 1349 tests`, Next production build 통과.
 
 - `2026-05-26. 돌봄 상세 workflow compact 정리`
   - 변경:

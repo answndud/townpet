@@ -6119,3 +6119,31 @@
     - 변경은 `post-detail-info-panels.tsx` 소스/targeted test/quality gate로 검증했다.
 - 다음 작업:
   - 최신 `main` 배포 후 production 성능 재측정 또는 다른 상세 화면군의 남은 nested surface audit 중 하나를 새 phase로 잡는다.
+
+### 2026-05-26 | 상세 상태 변경 workflow compact 정리
+- 완료일: `2026-05-26`
+- 배경:
+  - 거래/분실 상세 안내와 돌봄 workflow는 compact section으로 정리했지만, 거래 상태 변경과 분실/목격 상태 변경은 아직 별도 rounded status box로 남아 있었다.
+  - 두 UI는 같은 상세 정보 패널 안에서 상태만 바꾸는 운영성 workflow라, 별도 카드보다 divider 기반 section이 더 가볍고 일관적이다.
+- 변경내용:
+  - 상세 화면 `MARKET_LISTING`의 거래 상태 변경 panel을 rounded status box에서 `border-t` divider 기반 compact section으로 바꿨다.
+  - 상세 화면 `LOST_FOUND`의 상태 변경 select panel을 같은 compact section으로 맞췄다.
+  - 상태 변경 버튼 row gap을 줄이고 기존 action/touch target class는 유지했다.
+- 유지:
+  - 거래 상태 전환 옵션, 분실/목격 상태 select 옵션, pending/disabled/status message 동작은 변경하지 않았다.
+  - 거래 안전 checklist, 분실/목격 제보 확인 기준, 돌봄 workflow는 이번 범위에서 변경하지 않았다.
+- 코드문서:
+  - [app/src/components/posts/post-detail-info-panels.tsx](../app/src/components/posts/post-detail-info-panels.tsx)
+  - [app/src/components/posts/post-detail-info-panels-accessibility.test.ts](../app/src/components/posts/post-detail-info-panels-accessibility.test.ts)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/components/posts/post-detail-info-panels-accessibility.test.ts`
+  - `corepack pnpm@9.12.3 -C app lint -- src/components/posts/post-detail-info-panels.tsx src/components/posts/post-detail-info-panels-accessibility.test.ts`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/components/posts/post-detail-info-panels.tsx --fast`
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `git diff --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `279 files / 1349 tests`, Next production build 통과.
+- 다음 작업:
+  - 최신 `main` 배포 후 production 성능 재측정 또는 상세 primary card의 남은 nested surface audit 중 하나를 새 phase로 잡는다.
