@@ -545,7 +545,7 @@ export function PostCommentThread({
         : resolveUserDisplayName(comment.author.nickname);
     const avatarText = (isMutedPlaceholder ? "뮤" : displayName.slice(0, 1)).toUpperCase();
     const actionLinkClass =
-      "tp-text-muted inline-flex min-h-10 items-center rounded-md px-3 text-[12px] font-medium transition hover:bg-[#f4f8ff] hover:text-[#2f5da4] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
+      "tp-text-muted inline-flex min-h-10 items-center rounded-md px-2.5 text-[12px] font-medium transition hover:bg-[#f4f8ff] hover:text-[#2f5da4] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
     const commentCardClassName =
       depth > 0
         ? `flex gap-2.5 ${POST_COMMENT_THREAD_REPLY_CARD_CLASS_NAME}`
@@ -768,7 +768,7 @@ export function PostCommentThread({
                     canReact={canReactToComment}
                     loginHref={loginHref}
                     compact
-                    className="w-full justify-start sm:w-auto sm:justify-end"
+                    className="ml-0 justify-start sm:ml-auto sm:justify-end"
                     loginHintAlign="end"
                   />
                 ) : null}

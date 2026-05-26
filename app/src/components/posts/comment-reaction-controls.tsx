@@ -148,7 +148,7 @@ export function CommentReactionControls({
   );
 
   const buttonClass = compact
-    ? "inline-flex min-h-10 min-w-[64px] items-center justify-center gap-1 rounded-full border border-[#dbe5f4] bg-white px-2 text-[11px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+    ? "inline-flex min-h-10 min-w-[56px] items-center justify-center gap-1 rounded-full border border-[#dbe5f4] bg-white px-2 text-[11px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
     : "inline-flex min-h-10 min-w-[76px] items-center justify-center gap-1.5 rounded-full border border-[#dbe5f4] bg-white px-2.5 text-[11px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60";
   const effectiveCanReact = canReact && !authBlocked;
   const promptAlign = loginHintAlign === "end" ? "end" : loginHintAlign === "start" ? "start" : "center";
