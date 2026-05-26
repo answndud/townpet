@@ -181,16 +181,22 @@ export function PostDetailInfoPanels({
             label="재방문"
             value={renderBooleanValue(post.hospitalReview.wouldRevisit, "의향 있음", "의향 낮음")}
           />
-          <div className="col-span-full rounded-lg border border-[#dbe6f5] bg-[#f8fbff] px-3 py-2 text-[12px] leading-5 text-[#4f678d]">
-            병원 후기는 개인 경험 공유입니다. 진단이나 법적 판단으로 단정하지 말고 방문 전 병원에 직접 확인하세요.{" "}
-            <a
-              href={`/corrections/new?postId=${post.id}&targetType=HOSPITAL&targetName=${encodeURIComponent(
-                post.hospitalReview.hospitalName ?? "",
-              )}`}
-              className="font-semibold text-[#3567b5]"
-            >
-              정보 정정 요청
-            </a>
+          <div className="col-span-full grid gap-1.5 border-t border-[#e3ecf8] pt-2">
+            <p className="tp-text-heading text-[12px] font-semibold">후기 확인 기준</p>
+            <div className="tp-text-subtle grid gap-1 text-[12px] leading-5 sm:grid-cols-[1fr_auto] sm:items-center">
+              <p className="flex gap-1.5">
+                <span className="mt-[0.55em] h-1 w-1 shrink-0 rounded-full bg-[#9fb7d9]" aria-hidden="true" />
+                <span>개인 경험 공유입니다. 진단이나 법적 판단은 방문 전 병원에 직접 확인하세요.</span>
+              </p>
+              <a
+                href={`/corrections/new?postId=${post.id}&targetType=HOSPITAL&targetName=${encodeURIComponent(
+                  post.hospitalReview.hospitalName ?? "",
+                )}`}
+                className="w-fit font-semibold text-[#3567b5] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0]"
+              >
+                정보 정정 요청
+              </a>
+            </div>
           </div>
         </PostDetailInfoSection>
       ) : null}

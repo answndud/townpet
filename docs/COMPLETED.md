@@ -6012,3 +6012,32 @@
   - local dev `/lost/new`: status `307`, location `/posts/new?type=LOST_FOUND`.
 - 다음 작업:
   - 글쓰기 화면군의 구조화 필드별 세부 안내(병원/산책/분실/거래) 중 남은 nested surface와 긴 문구를 한 유형씩 추가 정리한다.
+
+### 2026-05-26 | 병원 상세 안내 compact 정리
+- 완료일: `2026-05-26`
+- 배경:
+  - 글쓰기 병원 후기 안내는 compact guidance로 정리했지만, 상세 화면의 병원 후기 정보 패널에는 경험 공유/정정 요청 안내가 여전히 별도 bordered box로 남아 있었다.
+  - 상세 화면에서는 이미 병원명, 방문 목적, 비용, 대기시간 같은 정보가 많은 만큼 안내문이 카드 안의 또 다른 카드처럼 보이지 않게 낮은 surface로 정리할 필요가 있었다.
+- 변경내용:
+  - 상세 화면 `HOSPITAL_REVIEW` 정보 패널의 후기 확인 안내를 rounded bordered box에서 `border-t` divider 기반 compact guidance로 바꿨다.
+  - 개인 경험 공유/진단·법적 판단 확인 문구를 짧은 한 문장으로 압축했다.
+  - `정보 정정 요청` 링크는 같은 guidance row의 보조 action으로 유지했다.
+- 유지:
+  - 병원명, 방문 목적, 비용, 대기시간, 주차/야간진료/재방문 등 상세 데이터 표시 로직은 변경하지 않았다.
+  - 정정 요청 URL과 병원 후기 안전 정책/검토 로직은 변경하지 않았다.
+  - 거래/분실/돌봄 등 다른 상세 패널은 이번 범위에서 변경하지 않았다.
+- 코드문서:
+  - [app/src/components/posts/post-detail-info-panels.tsx](../app/src/components/posts/post-detail-info-panels.tsx)
+  - [app/src/components/posts/post-detail-info-panels-accessibility.test.ts](../app/src/components/posts/post-detail-info-panels-accessibility.test.ts)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/components/posts/post-detail-info-panels-accessibility.test.ts`
+  - `corepack pnpm@9.12.3 -C app lint -- src/components/posts/post-detail-info-panels.tsx src/components/posts/post-detail-info-panels-accessibility.test.ts`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/components/posts/post-detail-info-panels.tsx --fast`
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `git diff --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `279 files / 1347 tests`, Next production build 통과.
+- 다음 작업:
+  - 상세 화면의 분실 정보 안내 box 또는 돌봄 신청/피드백 workflow panel 중 하나를 한 화면군으로 잡아 정리한다.

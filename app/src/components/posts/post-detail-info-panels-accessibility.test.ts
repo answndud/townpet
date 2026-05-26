@@ -45,4 +45,20 @@ describe("post detail info panels accessibility", () => {
     expect(marketSection).toContain("col-span-full grid gap-1.5 border-t border-[#e3ecf8] pt-2");
     expect(marketSection).not.toContain("col-span-full rounded-lg border border-[#dbe6f5] bg-[#f8fbff] px-3 py-2");
   });
+
+  it("keeps hospital review guidance compact in the detail panel", () => {
+    const code = source();
+    const hospitalSection = code.slice(
+      code.indexOf('{post.hospitalReview ? ('),
+      code.indexOf('{post.placeReview ? ('),
+    );
+
+    expect(hospitalSection).toContain("후기 확인 기준");
+    expect(hospitalSection).toContain("개인 경험 공유입니다. 진단이나 법적 판단은 방문 전 병원에 직접 확인하세요.");
+    expect(hospitalSection).toContain("정보 정정 요청");
+    expect(hospitalSection).toContain("col-span-full grid gap-1.5 border-t border-[#e3ecf8] pt-2");
+    expect(hospitalSection).not.toContain(
+      "col-span-full rounded-lg border border-[#dbe6f5] bg-[#f8fbff] px-3 py-2",
+    );
+  });
 });
