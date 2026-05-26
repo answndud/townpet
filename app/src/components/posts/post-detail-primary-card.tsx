@@ -198,7 +198,7 @@ export function PostDetailPrimaryCard({
               </div>
             </div>
             {showPostReportControls && isPostReportOpen ? (
-              <div className="tp-border-soft rounded-lg border bg-white p-3">
+              <div className="tp-border-soft border-t pt-3">
                 <PostReportForm targetId={post.id} />
               </div>
             ) : null}
@@ -215,7 +215,7 @@ export function PostDetailPrimaryCard({
                 </div>
                 <details className="sm:hidden">
                   <summary className={POST_DETAIL_ACTION_BUTTON_CLASS_NAME}>글 관리</summary>
-                  <div className="tp-border-soft tp-surface-soft mt-2 flex flex-wrap items-center gap-2 rounded-xl border p-2">
+                  <div className="tp-border-soft mt-2 flex flex-wrap items-center gap-2 border-t pt-2">
                     <Link
                       href={`/posts/${post.id}/edit`}
                       className={POST_DETAIL_ACTION_BUTTON_CLASS_NAME}

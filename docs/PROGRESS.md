@@ -70,6 +70,7 @@
 - 상세 화면의 분실/목격 제보 정보 패널에서 허위 제보·개인정보 안내를 nested warning box에서 divider 기반 compact guidance로 바꿨다.
 - 상세 화면의 돌봄 요청 workflow에서 상태 변경, 지원, 지원자 관리, 완료 피드백 panel을 divider 기반 compact section으로 낮췄다.
 - 상세 화면의 거래/분실 상태 변경 workflow를 rounded status box에서 divider 기반 compact section으로 낮췄다.
+- 상세 primary card의 신고 폼 wrapper와 모바일 글 관리 wrapper를 nested card에서 inline divider section으로 낮췄다.
 
 ## 다음 액션
 
@@ -84,9 +85,26 @@
 - 성능 후속은 최신 `main` 배포 후 같은 스크립트로 production 재측정할 때 별도 작업으로 연다.
 - 다음 기능 점검 후보는 production DB env가 준비된 상태에서 `db:audit:legacy-upload-paths`를 재실행하고, 후보가 있으면 별도 cleanup dry-run 계획을 세우는 것이다.
 - 현재 active 구현 항목 없음.
-- 다음 개발 후보는 최신 `main` 배포 후 production 성능 재측정 또는 상세 primary card의 남은 nested surface audit이다.
+- 다음 개발 후보는 최신 `main` 배포 후 production 성능 재측정 또는 상세 화면의 남은 non-primary auxiliary surface audit이다.
 
 ## 최근 검증
+
+- `2026-05-26. 상세 primary card nested surface 정리`
+  - 변경:
+    - 상세 primary card 안의 신고 폼 wrapper를 rounded bordered card에서 `border-t` inline section으로 바꿨다.
+    - 모바일 `글 관리` details 내부 wrapper를 `tp-surface-soft` rounded panel에서 divider 기반 inline action row로 바꿨다.
+  - 유지:
+    - 신고 열기/닫기, `PostReportForm`, 작성자 수정/삭제 action, mobile details 동작은 변경하지 않았다.
+    - post body, media gallery, reaction/bookmark/share controls는 변경하지 않았다.
+  - 검증:
+    - `corepack pnpm@9.12.3 -C app test -- src/components/posts/post-detail-primary-card-layout.test.ts`
+    - `corepack pnpm@9.12.3 -C app lint -- src/components/posts/post-detail-primary-card.tsx src/components/posts/post-detail-primary-card-layout.test.ts`
+    - `corepack pnpm@9.12.3 -C app typecheck`
+    - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/components/posts/post-detail-primary-card.tsx --fast`
+    - `node scripts/refresh-docs-index.mjs --check`
+    - `git diff --check`
+    - `corepack pnpm@9.12.3 -C app quality:check`
+      - ESLint, TypeScript, Vitest `280 files / 1350 tests`, Next production build 통과.
 
 - `2026-05-26. 상세 상태 변경 workflow compact 정리`
   - 변경:
