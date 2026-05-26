@@ -682,7 +682,7 @@ export function PostCommentThread({
             </div>
 
             {isSighting && !isDeleted && !isMutedPlaceholder ? (
-              <dl className="mt-2 grid gap-1.5 rounded-lg border border-[#dbe6f5] bg-[#f8fbff] px-3 py-2 text-[12px] sm:grid-cols-2">
+              <dl className="mt-2 grid gap-x-3 gap-y-1.5 border-t border-[#e7eef9] pt-2 text-[12px] sm:grid-cols-2">
                 {comment.sightingLocation ? (
                   <div>
                     <dt className="tp-text-subtle font-semibold">목격 위치</dt>

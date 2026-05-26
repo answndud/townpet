@@ -246,6 +246,8 @@ describe("PostCommentThread", () => {
     expect(html).toContain("중앙공원 북문");
     expect(html).toContain("사진 열기");
     expect(html).toContain("목격했어요");
+    expect(html).toContain("mt-2 grid gap-x-3 gap-y-1.5 border-t border-[#e7eef9] pt-2");
+    expect(html).not.toContain("rounded-lg border border-[#dbe6f5] bg-[#f8fbff] px-3 py-2");
   });
 
   it("opens the author menu only for signed-in viewers", () => {

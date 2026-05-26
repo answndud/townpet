@@ -77,6 +77,7 @@
 - 분실/목격 공유 패널의 공유 문구 preview를 nested soft box에서 divider 기반 compact preview로 낮췄다.
 - 상세 미디어 갤러리의 thumbnail card radius, hover shadow, caption padding, grid gap을 compact 기준으로 낮췄다.
 - 상세 댓글/제보 root composer의 nested form panel wrapper와 textarea 높이를 줄여 댓글 영역 하단 밀도를 낮췄다.
+- 상세 댓글의 목격 제보 metadata를 rounded box에서 divider 기반 compact metadata로 낮췄다.
 
 ## 다음 액션
 
@@ -91,9 +92,26 @@
 - 성능 후속은 최신 `main` 배포 후 같은 스크립트로 production 재측정할 때 별도 작업으로 연다.
 - 다음 기능 점검 후보는 production DB env가 준비된 상태에서 `db:audit:legacy-upload-paths`를 재실행하고, 후보가 있으면 별도 cleanup dry-run 계획을 세우는 것이다.
 - 현재 active 구현 항목 없음.
-- 다음 개발 후보는 최신 `main` 배포 후 production 성능 재측정 또는 상세 댓글 item/목격 제보 metadata surface audit이다.
+- 다음 개발 후보는 최신 `main` 배포 후 production 성능 재측정 또는 상세 댓글 inline reply/edit/report form surface audit이다.
 
 ## 최근 검증
+
+- `2026-05-26. 상세 댓글 목격 metadata density 정리`
+  - 변경:
+    - 목격 제보 댓글의 위치/시간/사진 metadata를 `rounded border bg px-3 py-2` box에서 `border-t pt-2` divider 기반 compact metadata로 바꿨다.
+    - metadata grid 간격을 `gap-1.5`에서 `gap-x-3 gap-y-1.5`로 분리해 가로 폭은 쓰되 세로 높이는 줄였다.
+  - 유지:
+    - 목격 위치, 목격 시간, 사진 링크, 보호자 공개 badge, 댓글 반응/답글/신고 동작은 변경하지 않았다.
+    - root composer와 답글/수정/신고 inline form은 이번 범위에서 변경하지 않았다.
+  - 검증:
+    - `corepack pnpm@9.12.3 -C app test -- src/components/posts/post-comment-thread.test.tsx`
+    - `corepack pnpm@9.12.3 -C app lint -- src/components/posts/post-comment-thread.tsx src/components/posts/post-comment-thread.test.tsx`
+    - `corepack pnpm@9.12.3 -C app typecheck`
+    - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/components/posts/post-comment-thread.tsx --fast`
+    - `node scripts/refresh-docs-index.mjs --check`
+    - `git diff --check`
+    - `corepack pnpm@9.12.3 -C app quality:check`
+      - ESLint, TypeScript, Vitest `280 files / 1354 tests`, Next production build 통과.
 
 - `2026-05-26. 상세 댓글/제보 root composer density 정리`
   - 변경:
