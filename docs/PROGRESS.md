@@ -58,6 +58,7 @@
 - 홈 `/api/home/feed`의 `featured` 선정 기준을 `검증된 운영자 정리 글 -> 운영자 글 -> 참여도 -> 최신성` 순서로 분리했다. 더 이상 legacy `best` 쿼리를 재사용하지 않는다.
 - repo-local audit 결과 홈 클라이언트와 운영 smoke가 `featured`를 사용하고 있어 `/api/home/feed`의 legacy `best` 응답 alias를 제거했다.
 - 피드의 사용자-facing `베스트글/인기순/베스트순` 표현을 실제 기준에 맞춰 `반응 많은 글/반응순`으로 정리했다. 내부 `mode=BEST`와 query helper 이름은 호환을 위해 유지한다.
+- 피드 화면군의 하단 검색 도구를 더 compact하게 줄이고, 인증 피드 하단의 중복 `글쓰기` CTA를 제거했다.
 
 ## 다음 액션
 
@@ -71,9 +72,29 @@
 - `/`과 public acquisition UI에는 사용자가 선택하지 않은 특정 지역명을 기본값처럼 노출하지 않는다.
 - 성능 후속은 최신 `main` 배포 후 같은 스크립트로 production 재측정할 때 별도 작업으로 연다.
 - 다음 기능 점검 후보는 production DB env가 준비된 상태에서 `db:audit:legacy-upload-paths`를 재실행하고, 후보가 있으면 별도 cleanup dry-run 계획을 세우는 것이다.
-- 다음 개발 후보는 피드/검색/글쓰기처럼 사용 빈도가 높은 공개 흐름에서 남은 과장 표현, 중복 CTA, 과한 surface를 한 화면군씩 줄이는 것이다.
+- 다음 개발 후보는 글쓰기(`/posts/new`, `/lost/new`) form 흐름에서 과한 surface, 긴 안내문, 모바일 첫 viewport 밀도를 줄이는 것이다.
 
 ## 최근 검증
+
+- `2026-05-26. 피드 하단 검색/CTA 밀도 정리`
+  - 변경:
+    - 피드 하단 검색 wrapper의 배경을 `#f8fbff`에서 흰색으로 바꿔 목록 카드 안의 보조 도구처럼 보이게 했다.
+    - 하단 검색 select/input/button 높이를 `30px`에서 `28px`로 줄이고, desktop 검색 입력 최대 폭을 `320px`에서 `260px`로 줄였다.
+    - 하단 검색 placeholder를 `검색어`에서 `목록 검색`으로 바꿔 피드 내부 검색이라는 맥락을 분명히 했다.
+    - 인증 피드 하단의 두 번째 `글쓰기` CTA를 제거했다. 상단 header CTA는 유지한다.
+  - 유지:
+    - `/feed/guest`의 상단 `글쓰기` CTA와 empty state 작성 CTA는 유지한다.
+    - 검색 기능 로직, query parameter, API 동작은 변경하지 않았다.
+  - 검증:
+    - `corepack pnpm@9.12.3 -C app test -- src/components/posts/feed-footer-search-form.test.tsx`
+    - `corepack pnpm@9.12.3 -C app lint -- src/app/feed/page.tsx src/components/posts/feed-footer-search-form.tsx src/components/posts/feed-footer-search-form.test.tsx`
+    - `corepack pnpm@9.12.3 -C app typecheck`
+    - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/app/feed/page.tsx src/components/posts/feed-footer-search-form.tsx --fast`
+    - local dev SSR `/feed`: `목록 검색`, `h-[28px]` 확인.
+    - 참고: `/feed/guest` 하단 검색은 client-rendered 영역이라 SSR HTML에는 직접 노출되지 않는다. 컴포넌트 테스트와 lint/typecheck로 고정했다.
+    - `node scripts/refresh-docs-index.mjs --check`
+    - `git diff --check`
+    - `corepack pnpm@9.12.3 -C app quality:check`
 
 - `2026-05-25. 홈 Live board 초기 카피 정리`
   - 변경:

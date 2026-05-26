@@ -887,15 +887,6 @@ export default async function Home({ searchParams }: HomePageProps) {
           />
         </section>
 
-        <div className="flex justify-end gap-2">
-          <Link
-            href="/posts/new"
-            className="tp-btn-primary inline-flex h-[30px] items-center justify-center px-3 text-[11px] font-semibold leading-none hover:bg-[#274f8c]"
-          >
-            글쓰기
-          </Link>
-        </div>
-
         </div>
       </main>
     </div>

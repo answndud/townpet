@@ -5729,3 +5729,35 @@
   - 참고: production `/feed`의 `반응 많은 글` 제어 라벨은 client-rendered 영역이라 SSR HTML에는 직접 노출되지 않는다. 로컬 dev SSR, unit test, typecheck/lint/build로 고정했다.
 - 다음 작업:
   - 피드/검색/글쓰기처럼 사용 빈도가 높은 공개 흐름에서 남은 과장 표현, 중복 CTA, 과한 surface를 한 화면군씩 줄인다.
+
+### 2026-05-26 | 피드 하단 검색/CTA 밀도 정리
+- 완료일: `2026-05-26`
+- 배경:
+  - 피드 목록 row와 상단 제어 영역은 이미 compact하게 정리했지만, 목록 하단 검색 도구와 인증 피드 하단 `글쓰기` CTA는 별도 surface처럼 남아 있었다.
+  - 같은 화면에 `글쓰기`가 상단과 하단에 반복되면 첫 액션의 위치가 흐려지고, 목록 끝에서는 검색 보조 도구보다 CTA가 더 크게 보인다.
+- 변경내용:
+  - 피드 하단 검색 wrapper를 흰색 배경과 얇은 상단 경계로 바꿔 목록 내부 보조 도구처럼 정리했다.
+  - 하단 검색 select/input/button 높이를 `30px`에서 `28px`로 줄였다.
+  - 하단 검색 입력 최대 폭을 desktop 기준 `320px`에서 `260px`로 줄였다.
+  - placeholder를 `검색어`에서 `목록 검색`으로 바꿨다.
+  - 인증 피드 하단의 중복 `글쓰기` CTA를 제거했다. 상단 header의 primary CTA는 유지한다.
+- 유지:
+  - 검색 기능 로직, query parameter, API 동작은 변경하지 않았다.
+  - `/feed/guest`의 상단 `글쓰기` CTA와 empty state 작성 CTA는 유지한다.
+- 코드문서:
+  - [app/src/app/feed/page.tsx](../app/src/app/feed/page.tsx)
+  - [app/src/components/posts/feed-footer-search-form.tsx](../app/src/components/posts/feed-footer-search-form.tsx)
+  - [app/src/components/posts/feed-footer-search-form.test.tsx](../app/src/components/posts/feed-footer-search-form.test.tsx)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/components/posts/feed-footer-search-form.test.tsx`
+  - `corepack pnpm@9.12.3 -C app lint -- src/app/feed/page.tsx src/components/posts/feed-footer-search-form.tsx src/components/posts/feed-footer-search-form.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/app/feed/page.tsx src/components/posts/feed-footer-search-form.tsx --fast`
+  - local dev SSR `/feed`: `목록 검색`, `h-[28px]` 확인.
+  - 참고: `/feed/guest` 하단 검색은 client-rendered 영역이라 SSR HTML에는 직접 노출되지 않는다. 컴포넌트 테스트와 lint/typecheck로 고정했다.
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `git diff --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+- 다음 작업:
+  - 글쓰기(`/posts/new`, `/lost/new`) form 흐름에서 과한 surface, 긴 안내문, 모바일 첫 viewport 밀도를 줄인다.

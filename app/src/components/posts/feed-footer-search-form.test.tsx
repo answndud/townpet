@@ -27,7 +27,8 @@ describe("FeedFooterSearchForm", () => {
     expect(html).toContain('name="type"');
     expect(html).toContain('name="petType"');
     expect(html).toContain('href="/feed/guest?type=FREE_POST"');
-    expect(html).toContain("h-[30px]");
-    expect(html).toContain("py-1.5");
+    expect(html).toContain("h-[28px]");
+    expect(html).toContain("py-1");
+    expect(html).toContain("목록 검색");
   });
 });
