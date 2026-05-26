@@ -6653,3 +6653,37 @@
   - production smoke: `/api/feed/guest?limit=50` 200, posts `0`; public guest feed에 상세 진입 대상 게시글이 없어 답글 nesting HTML smoke는 보류했다.
 - 다음 작업:
   - 최신 `main` 배포 후 production 성능 재측정 또는 상세 댓글 root item vertical rhythm audit 중 하나를 새 phase로 잡는다.
+
+### 2026-05-26 | 상세 댓글 root item vertical rhythm 정리
+- 완료일: `2026-05-26`
+- 배경:
+  - 답글 nesting을 compact row로 낮춘 뒤에도 root 댓글 item은 `py-3.5`, `gap-3`, `h-8 w-8` avatar, `leading-6` 본문으로 남아 상세 댓글 리스트의 기본 행 높이가 상대적으로 컸다.
+  - root 댓글은 상세 화면에서 반복되는 기본 단위이므로, 액션 터치 영역과 focus state는 유지하면서 본문/metadata의 세로 rhythm만 낮춘다.
+- 변경내용:
+  - root 댓글 item wrapper를 `gap-3 px-1 py-3.5`에서 `gap-2.5 px-1 py-2.5`로 줄였다.
+  - root 댓글 avatar를 `h-8 w-8 text-[11px]`에서 `h-7 w-7 text-[10px]`로 줄였다.
+  - 댓글 본문 spacing을 `mt-1.5 leading-6`에서 `mt-1 leading-[1.55]`로 낮췄다.
+  - 목격 제보 metadata block을 `mt-2 pt-2 gap-y-1.5`에서 `mt-1.5 pt-1.5 gap-y-1`로 줄였다.
+  - root card, avatar, body, sighting metadata class를 `post-comment-layout-class.ts` 상수로 분리하고 테스트 감시를 추가했다.
+- 유지:
+  - 작성자 메뉴, 신고/답글/수정/삭제, reaction controls, 목격 제보 필드, `min-h-10` touch target, focus ring은 변경하지 않았다.
+  - best comment, pagination/load state, reply nesting, root composer는 이번 범위에서 변경하지 않았다.
+- 코드문서:
+  - [app/src/components/posts/post-comment-layout-class.ts](../app/src/components/posts/post-comment-layout-class.ts)
+  - [app/src/components/posts/post-comment-thread.tsx](../app/src/components/posts/post-comment-thread.tsx)
+  - [app/src/components/posts/post-comment-layout-class.test.ts](../app/src/components/posts/post-comment-layout-class.test.ts)
+  - [app/src/components/posts/post-comment-thread.test.tsx](../app/src/components/posts/post-comment-thread.test.tsx)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/components/posts/post-comment-layout-class.test.ts src/components/posts/post-comment-thread.test.tsx src/components/posts/post-comment-compact-controls-accessibility.test.tsx`
+  - `corepack pnpm@9.12.3 -C app lint -- src/components/posts/post-comment-layout-class.ts src/components/posts/post-comment-thread.tsx src/components/posts/post-comment-layout-class.test.ts src/components/posts/post-comment-thread.test.tsx src/components/posts/post-comment-compact-controls-accessibility.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/components/posts/post-comment-layout-class.ts src/components/posts/post-comment-thread.tsx --fast`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `280 files / 1355 tests`, Next production build 통과.
+- screenshot/smoke:
+  - local `/api/feed/guest?limit=20` 200, posts `0`.
+  - production도 직전 확인 기준 `/api/feed/guest?limit=50` 200, posts `0`.
+  - public guest feed에 상세 진입 대상 게시글이 없어 댓글 root item HTML/screenshot smoke는 보류했다.
+- 다음 작업:
+  - 최신 `main` 배포 후 production 성능 재측정 또는 상세 댓글 composer/form vertical rhythm audit 중 하나를 새 phase로 잡는다.

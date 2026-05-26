@@ -13,6 +13,8 @@ import {
 import {
   POST_COMMENT_THREAD_FOOTER_CLASS_NAME,
   POST_COMMENT_THREAD_REPLY_CARD_CLASS_NAME,
+  POST_COMMENT_THREAD_ROOT_CARD_CLASS_NAME,
+  POST_COMMENT_THREAD_SIGHTING_META_CLASS_NAME,
 } from "@/components/posts/post-comment-layout-class";
 
 vi.mock("next/link", () => ({
@@ -153,6 +155,7 @@ describe("PostCommentThread", () => {
     expect(html).toContain('aria-haspopup="menu"');
     expect(html).toContain("best-1닉네임");
     expect(html).toContain(POST_COMMENT_THREAD_FOOTER_CLASS_NAME);
+    expect(html).toContain(POST_COMMENT_THREAD_ROOT_CARD_CLASS_NAME);
     expect(html).toContain(POST_COMMENT_THREAD_REPLY_CARD_CLASS_NAME);
     expect(html).toContain("before:bg-[#dfe9f8]");
     expect(html).toContain("relative mt-1.5 ml-3");
@@ -246,7 +249,7 @@ describe("PostCommentThread", () => {
     expect(html).toContain("중앙공원 북문");
     expect(html).toContain("사진 열기");
     expect(html).toContain("목격했어요");
-    expect(html).toContain("mt-2 grid gap-x-3 gap-y-1.5 border-t border-[#e7eef9] pt-2");
+    expect(html).toContain(POST_COMMENT_THREAD_SIGHTING_META_CLASS_NAME);
     expect(html).not.toContain("rounded-lg border border-[#dbe6f5] bg-[#f8fbff] px-3 py-2");
   });
 

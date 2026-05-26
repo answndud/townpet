@@ -12,11 +12,15 @@ import { LinkifiedContent } from "@/components/content/linkified-content";
 import { PostCommentBestItem } from "@/components/posts/post-comment-best-item";
 import {
   POST_COMMENT_FORM_FIELD_CLASS_NAME,
+  POST_COMMENT_THREAD_AVATAR_CLASS_NAME,
+  POST_COMMENT_THREAD_BODY_CLASS_NAME,
   POST_COMMENT_THREAD_CARD_CLASS_NAME,
   POST_COMMENT_THREAD_ACTIONS_CLASS_NAME,
   POST_COMMENT_THREAD_FOOTER_CLASS_NAME,
   POST_COMMENT_THREAD_META_ROW_CLASS_NAME,
+  POST_COMMENT_THREAD_ROOT_CARD_CLASS_NAME,
   POST_COMMENT_THREAD_REPLY_CARD_CLASS_NAME,
+  POST_COMMENT_THREAD_SIGHTING_META_CLASS_NAME,
   POST_COMMENT_REPLY_GUIDE_CLASS_NAME,
 } from "@/components/posts/post-comment-layout-class";
 import { PostCommentPagination } from "@/components/posts/post-comment-pagination";
@@ -549,7 +553,7 @@ export function PostCommentThread({
     const commentCardClassName =
       depth > 0
         ? `flex gap-2 ${POST_COMMENT_THREAD_REPLY_CARD_CLASS_NAME}`
-        : "flex gap-3 px-1 py-3.5";
+        : POST_COMMENT_THREAD_ROOT_CARD_CLASS_NAME;
     const commentBodyText = isDeleted
       ? "삭제된 댓글입니다."
       : isMutedPlaceholder
@@ -570,7 +574,7 @@ export function PostCommentThread({
           data-testid={`post-comment-item-${comment.id}`}
           className={commentCardClassName}
         >
-          <div className="tp-surface-alt tp-text-accent mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold">
+          <div className={POST_COMMENT_THREAD_AVATAR_CLASS_NAME}>
             {avatarText}
           </div>
 
@@ -671,7 +675,7 @@ export function PostCommentThread({
             </header>
 
             <div
-              className={`mt-1.5 text-[14px] leading-6 ${
+              className={`${POST_COMMENT_THREAD_BODY_CLASS_NAME} ${
                 isDeleted || isMutedPlaceholder ? "tp-text-placeholder" : "tp-text-primary"
               }`}
             >
@@ -682,7 +686,7 @@ export function PostCommentThread({
             </div>
 
             {isSighting && !isDeleted && !isMutedPlaceholder ? (
-              <dl className="mt-2 grid gap-x-3 gap-y-1.5 border-t border-[#e7eef9] pt-2 text-[12px] sm:grid-cols-2">
+              <dl className={POST_COMMENT_THREAD_SIGHTING_META_CLASS_NAME}>
                 {comment.sightingLocation ? (
                   <div>
                     <dt className="tp-text-subtle font-semibold">목격 위치</dt>
