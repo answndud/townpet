@@ -6188,3 +6188,30 @@
     - 변경은 `post-detail-primary-card.tsx` 소스/targeted test/quality gate로 검증했다.
 - 다음 작업:
   - 최신 `main` 배포 후 production 성능 재측정 또는 상세 화면의 남은 non-primary auxiliary surface audit 중 하나를 새 phase로 잡는다.
+
+### 2026-05-26 | 상세 비회원 관리 action surface 정리
+- 완료일: `2026-05-26`
+- 배경:
+  - 상세 primary card의 신고/작성자 관리 surface는 compact section으로 낮췄지만, 비회원 글의 모바일 관리 영역은 아직 rounded bordered soft panel로 남아 있었다.
+  - 해당 영역은 details 안의 보조 action group이므로 별도 카드보다 divider 기반 inline section이 화면 높이와 nested surface를 줄인다.
+- 변경내용:
+  - 상세 화면의 모바일 `비회원 관리` details 내부 wrapper를 rounded bordered soft panel에서 `border-t` divider 기반 inline section으로 바꿨다.
+  - 비회원 비밀번호 입력, 수정 링크, 삭제 버튼의 기존 touch target과 배치 흐름은 유지했다.
+- 유지:
+  - 비회원 fingerprint, 삭제 API 호출, 수정 URL, confirm/error handling은 변경하지 않았다.
+  - desktop 비회원 관리 action row와 상세 primary card 본문/미디어/신고/공유 영역은 변경하지 않았다.
+- 코드문서:
+  - [app/src/components/posts/guest-post-detail-actions.tsx](../app/src/components/posts/guest-post-detail-actions.tsx)
+  - [app/src/components/posts/post-detail-action-accessibility.test.tsx](../app/src/components/posts/post-detail-action-accessibility.test.tsx)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/components/posts/post-detail-action-accessibility.test.tsx`
+  - `corepack pnpm@9.12.3 -C app lint -- src/components/posts/guest-post-detail-actions.tsx src/components/posts/post-detail-action-accessibility.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/components/posts/guest-post-detail-actions.tsx --fast`
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `git diff --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `280 files / 1351 tests`, Next production build 통과.
+- 다음 작업:
+  - 최신 `main` 배포 후 production 성능 재측정 또는 상세 편집 화면/정보 grid density audit 중 하나를 새 phase로 잡는다.

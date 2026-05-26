@@ -64,6 +64,13 @@ describe("post detail action accessibility", () => {
     expect((html.match(/min-h-10/g) ?? []).length).toBeGreaterThanOrEqual(5);
   });
 
+  it("keeps guest mobile management controls inline inside the detail card", () => {
+    const source = readFileSync(join(process.cwd(), "src/components/posts/guest-post-detail-actions.tsx"), "utf8");
+
+    expect(source).toContain("mt-2 grid gap-2 border-t border-[#dbe6f6] pt-2");
+    expect(source).not.toContain("mt-2 space-y-2 rounded-lg border border-[#dbe6f6] bg-[#f8fbff] p-2");
+  });
+
   it("keeps bookmark controls and recovery prompt mobile-safe", () => {
     const html = renderToStaticMarkup(
       <PostBookmarkButton
