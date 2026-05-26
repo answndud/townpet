@@ -61,6 +61,7 @@
 - 피드 화면군의 하단 검색 도구를 더 compact하게 줄이고, 인증 피드 하단의 중복 `글쓰기` CTA를 제거했다.
 - 글쓰기 화면군(`/posts/new`, `/lost/new`)의 상단 header와 작성 기준 aside를 compact하게 줄이고, nested panel과 중복 자동 임시저장 badge를 제거했다.
 - 글쓰기 editor, 구조화 필드, submit footer의 모바일 밀도를 줄이고 오류 안내를 compact alert 형태로 정리했다.
+- 거래 글 작성의 반려용품 거래 체크 안내를 nested bordered box에서 얇은 divider 기반 compact guidance로 바꿨다.
 
 ## 다음 액션
 
@@ -74,9 +75,28 @@
 - `/`과 public acquisition UI에는 사용자가 선택하지 않은 특정 지역명을 기본값처럼 노출하지 않는다.
 - 성능 후속은 최신 `main` 배포 후 같은 스크립트로 production 재측정할 때 별도 작업으로 연다.
 - 다음 기능 점검 후보는 production DB env가 준비된 상태에서 `db:audit:legacy-upload-paths`를 재실행하고, 후보가 있으면 별도 cleanup dry-run 계획을 세우는 것이다.
-- 다음 개발 후보는 글쓰기 화면군의 구조화 필드별 세부 안내(병원/산책/분실/거래) 중 남은 nested surface와 긴 문구를 한 유형씩 추가 정리하는 것이다.
+- 다음 개발 후보는 글쓰기 화면군의 구조화 필드별 세부 안내 중 병원/산책/분실 유형에 남은 nested surface와 긴 문구를 한 유형씩 추가 정리하는 것이다.
 
 ## 최근 검증
+
+- `2026-05-26. 거래 글 작성 안내 compact 정리`
+  - 변경:
+    - `MARKET_LISTING` 구조화 필드의 `반려용품 거래 체크` 안내를 rounded bordered box에서 `border-t` divider 기반 guidance row로 바꿨다.
+    - checklist는 bullets 대신 작은 dot marker와 2-column 가능한 grid로 재배치했다.
+    - 금지 품목 문구는 유지하되 별도 padding box 없이 같은 guidance 흐름 안에 배치했다.
+  - 유지:
+    - 거래 유형, 가격, 상태, 보증금, 기간 입력 필드와 submit payload/validation은 변경하지 않았다.
+    - `MARKET_SAFETY_CHECKLIST` 정책 문구와 차단 로직은 변경하지 않았다.
+  - 검증:
+    - `corepack pnpm@9.12.3 -C app test -- src/components/posts/post-create-structured-fields.test.tsx`
+    - `corepack pnpm@9.12.3 -C app lint -- src/components/posts/post-create-structured-fields.tsx src/components/posts/post-create-structured-fields.test.tsx`
+    - `corepack pnpm@9.12.3 -C app typecheck`
+    - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/components/posts/post-create-structured-fields.tsx --fast`
+    - local dev SSR `/posts/new?type=MARKET_LISTING`: status `200`; compact guidance class 있음; 이전 nested guidance class 없음; 금지 품목 문구 있음.
+    - `node scripts/refresh-docs-index.mjs --check`
+    - `git diff --check`
+    - `corepack pnpm@9.12.3 -C app quality:check`
+      - ESLint, TypeScript, Vitest `279 files / 1345 tests`, Next production build 통과.
 
 - `2026-05-26. 글쓰기 editor/submit 밀도 정리`
   - 변경:
