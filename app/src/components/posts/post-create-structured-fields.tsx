@@ -784,14 +784,17 @@ export function MarketListingFields({
           placeholder="예: 2주 대여, 이번 주말 직거래"
         />
       </label>
-      <div className="rounded-lg border border-[#dbe6f5] bg-[#f8fbff] px-3 py-2.5 md:col-span-2">
-        <p className="tp-text-heading text-[13px] font-semibold">반려용품 거래 체크</p>
-        <ul className="tp-text-subtle mt-1 list-disc space-y-1 pl-4 text-[12px] leading-5">
+      <div className="grid gap-1.5 border-t border-[#e3ecf8] pt-2 md:col-span-2">
+        <p className="tp-text-heading text-[12px] font-semibold">반려용품 거래 체크</p>
+        <ul className="tp-text-subtle grid gap-1 text-[12px] leading-5 sm:grid-cols-2">
           {MARKET_SAFETY_CHECKLIST.map((item) => (
-            <li key={item}>{item}</li>
+            <li key={item} className="flex gap-1.5">
+              <span className="mt-[0.55em] h-1 w-1 shrink-0 rounded-full bg-[#9fb7d9]" aria-hidden="true" />
+              <span>{item}</span>
+            </li>
           ))}
         </ul>
-        <p className="mt-2 text-[12px] leading-5 text-[#8a4b32]">
+        <p className="text-[12px] leading-5 text-[#8a4b32]">
           동물 생체 판매, 유통기한이 지난 사료·간식, 동물 의약품 거래는 등록할 수 없습니다.
         </p>
       </div>

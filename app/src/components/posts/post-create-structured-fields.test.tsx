@@ -40,6 +40,7 @@ describe("post create structured fields", () => {
     expect(html).toContain("거래 유형");
     expect(html).toContain("가격(원)");
     expect(html).toContain("반려용품 거래 체크");
+    expect(html).toContain("border-t border-[#e3ecf8] pt-2");
     expect(html).toContain("유통기한");
     expect(html).toContain("동물 의약품 거래는 등록할 수 없습니다");
     expect(html).toContain('value="SELL"');

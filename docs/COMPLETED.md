@@ -5811,6 +5811,33 @@
 - 다음 작업:
   - 글쓰기 본문 editor와 구조화 필드의 모바일 밀도, submit footer, 오류 안내를 한 화면군 안에서 추가 정리한다.
 
+### 2026-05-26 | 거래 글 작성 안내 compact 정리
+- 완료일: `2026-05-26`
+- 배경:
+  - 글쓰기 구조화 필드 공통 section은 compact하게 줄였지만, 거래 글의 `반려용품 거래 체크`는 form 안에 다시 bordered 안내 box를 얹어 nested surface처럼 보였다.
+  - 거래 정책 문구는 유지해야 하지만, 작성 중인 사용자가 가격/상태/기간 입력보다 안내 박스 높이에 먼저 시선을 빼앗길 필요는 없다.
+- 변경내용:
+  - `MARKET_LISTING` 구조화 필드의 `반려용품 거래 체크` 안내를 rounded bordered box에서 `border-t` divider 기반 compact guidance row로 바꿨다.
+  - checklist는 bullets 대신 작은 dot marker와 2-column 가능한 grid로 재배치했다.
+  - 금지 품목 문구는 유지하되 별도 padding box 없이 같은 guidance 흐름 안에 배치했다.
+- 유지:
+  - 거래 유형, 가격, 상태, 보증금, 기간 입력 필드와 submit payload/validation은 변경하지 않았다.
+  - `MARKET_SAFETY_CHECKLIST` 정책 문구와 차단 로직은 변경하지 않았다.
+- 코드문서:
+  - [app/src/components/posts/post-create-structured-fields.tsx](../app/src/components/posts/post-create-structured-fields.tsx)
+  - [app/src/components/posts/post-create-structured-fields.test.tsx](../app/src/components/posts/post-create-structured-fields.test.tsx)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/components/posts/post-create-structured-fields.test.tsx`
+  - `corepack pnpm@9.12.3 -C app lint -- src/components/posts/post-create-structured-fields.tsx src/components/posts/post-create-structured-fields.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/components/posts/post-create-structured-fields.tsx --fast`
+  - local dev SSR `/posts/new?type=MARKET_LISTING`: status `200`; compact guidance class 있음; 이전 nested guidance class 없음; 금지 품목 문구 있음.
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `git diff --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `279 files / 1345 tests`, Next production build 통과.
+
 ### 2026-05-26 | 글쓰기 editor/submit 밀도 정리
 - 완료일: `2026-05-26`
 - 배경:
