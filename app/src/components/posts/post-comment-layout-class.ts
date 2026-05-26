@@ -8,10 +8,10 @@ export const POST_COMMENT_THREAD_META_ROW_CLASS_NAME =
   "flex flex-wrap items-center gap-x-2 gap-y-0.5";
 
 export const POST_COMMENT_THREAD_FOOTER_CLASS_NAME =
-  "mt-3 flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between";
+  "mt-2.5 flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5";
 
 export const POST_COMMENT_THREAD_ACTIONS_CLASS_NAME =
-  "flex flex-wrap items-center gap-2";
+  "flex flex-wrap items-center gap-1";
 
 export const POST_COMMENT_THREAD_REPLY_CARD_CLASS_NAME =
   "rounded-lg border border-[#e8eff9] bg-[#fbfdff] px-3 py-3 sm:px-3.5 sm:py-3.5";

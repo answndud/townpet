@@ -4,6 +4,7 @@ import {
   POST_COMMENT_FORM_FIELD_CLASS_NAME,
   POST_COMMENT_FORM_MUTED_CLASS_NAME,
   POST_COMMENT_FORM_PANEL_CLASS_NAME,
+  POST_COMMENT_THREAD_ACTIONS_CLASS_NAME,
   POST_COMMENT_REPLY_GUIDE_CLASS_NAME,
   POST_COMMENT_SECTION_STATE_CLASS_NAME,
   POST_COMMENT_THREAD_CARD_CLASS_NAME,
@@ -35,11 +36,15 @@ describe("post comment layout classes", () => {
     expect(POST_COMMENT_FORM_MUTED_CLASS_NAME).toContain("tp-form-field-page-soft");
   });
 
-  it("keeps mobile-first footer and reply guide spacing while restoring desktop alignment with sm classes", () => {
-    expect(POST_COMMENT_THREAD_FOOTER_CLASS_NAME).toContain("flex-col");
-    expect(POST_COMMENT_THREAD_FOOTER_CLASS_NAME).toContain("items-start");
-    expect(POST_COMMENT_THREAD_FOOTER_CLASS_NAME).toContain("sm:flex-row");
-    expect(POST_COMMENT_THREAD_FOOTER_CLASS_NAME).toContain("sm:justify-between");
+  it("keeps the comment footer compact while preserving wrap and touch-safe controls", () => {
+    expect(POST_COMMENT_THREAD_FOOTER_CLASS_NAME).toContain("mt-2.5");
+    expect(POST_COMMENT_THREAD_FOOTER_CLASS_NAME).toContain("flex-wrap");
+    expect(POST_COMMENT_THREAD_FOOTER_CLASS_NAME).toContain("items-center");
+    expect(POST_COMMENT_THREAD_FOOTER_CLASS_NAME).toContain("justify-between");
+    expect(POST_COMMENT_THREAD_FOOTER_CLASS_NAME).toContain("gap-x-2");
+    expect(POST_COMMENT_THREAD_FOOTER_CLASS_NAME).toContain("gap-y-1.5");
+    expect(POST_COMMENT_THREAD_FOOTER_CLASS_NAME).not.toContain("flex-col");
+    expect(POST_COMMENT_THREAD_ACTIONS_CLASS_NAME).toContain("gap-1");
     expect(POST_COMMENT_REPLY_GUIDE_CLASS_NAME).toContain("ml-4");
     expect(POST_COMMENT_REPLY_GUIDE_CLASS_NAME).toContain("pl-3");
     expect(POST_COMMENT_REPLY_GUIDE_CLASS_NAME).toContain("sm:ml-7");

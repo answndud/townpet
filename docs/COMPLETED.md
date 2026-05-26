@@ -6501,3 +6501,34 @@
   - production smoke: `/api/feed/guest?limit=50` 200, posts `0`; public guest feed에 상세 진입 대상 게시글이 없어 댓글 inline form HTML smoke는 보류했다.
 - 다음 작업:
   - 최신 `main` 배포 후 production 성능 재측정 또는 상세 댓글 action row/reaction control density audit 중 하나를 새 phase로 잡는다.
+
+### 2026-05-26 | 상세 댓글 action row/reaction control density 정리
+- 완료일: `2026-05-26`
+- 배경:
+  - 상세 댓글의 inline form surface까지 정리한 뒤에도 댓글 footer가 모바일에서 action row와 reaction controls를 강제로 세로 배치해 댓글 하나당 하단 높이가 커졌다.
+  - reaction button은 icon+count만 보여주는 compact 모드임에도 `min-w-[64px]`로 남아 있어 실제 정보량 대비 가로 폭이 컸다.
+- 변경내용:
+  - 댓글 footer를 `flex-col` 기반 모바일 stacking에서 `flex-wrap items-center justify-between` 구조로 바꿔 action과 reaction이 가능한 경우 같은 줄을 공유하게 했다.
+  - 댓글 action group 간격을 `gap-2`에서 `gap-1`로 줄이고, action link horizontal padding을 `px-3`에서 `px-2.5`로 낮췄다.
+  - compact reaction button의 visual minimum width를 `min-w-[64px]`에서 `min-w-[56px]`로 낮췄다.
+- 유지:
+  - 답글/신고/접기 동작, 좋아요/싫어요 optimistic update, 로그인 안내, `min-h-10` touch target, focus ring은 변경하지 않았다.
+  - 댓글 pagination/load state와 best comment item은 이번 범위에서 변경하지 않았다.
+- 코드문서:
+  - [app/src/components/posts/post-comment-layout-class.ts](../app/src/components/posts/post-comment-layout-class.ts)
+  - [app/src/components/posts/post-comment-thread.tsx](../app/src/components/posts/post-comment-thread.tsx)
+  - [app/src/components/posts/comment-reaction-controls.tsx](../app/src/components/posts/comment-reaction-controls.tsx)
+  - [app/src/components/posts/post-comment-layout-class.test.ts](../app/src/components/posts/post-comment-layout-class.test.ts)
+  - [app/src/components/posts/comment-reaction-controls.test.tsx](../app/src/components/posts/comment-reaction-controls.test.tsx)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/components/posts/post-comment-layout-class.test.ts src/components/posts/comment-reaction-controls.test.tsx src/components/posts/post-comment-compact-controls-accessibility.test.tsx`
+  - `corepack pnpm@9.12.3 -C app lint -- src/components/posts/post-comment-layout-class.ts src/components/posts/post-comment-thread.tsx src/components/posts/comment-reaction-controls.tsx src/components/posts/post-comment-layout-class.test.ts src/components/posts/comment-reaction-controls.test.tsx src/components/posts/post-comment-compact-controls-accessibility.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/components/posts/post-comment-thread.tsx src/components/posts/comment-reaction-controls.tsx --fast`
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `git diff --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `280 files / 1354 tests`, Next production build 통과.
+- 다음 작업:
+  - 최신 `main` 배포 후 production 성능 재측정 또는 상세 댓글 pagination/load state density audit 중 하나를 새 phase로 잡는다.

@@ -79,6 +79,7 @@
 - 상세 댓글/제보 root composer의 nested form panel wrapper와 textarea 높이를 줄여 댓글 영역 하단 밀도를 낮췄다.
 - 상세 댓글의 목격 제보 metadata를 rounded box에서 divider 기반 compact metadata로 낮췄다.
 - 상세 댓글의 답글/수정/삭제 비밀번호/신고 inline form wrapper를 nested form panel에서 divider 기반 compact section으로 낮췄다.
+- 상세 댓글 하단 action row와 compact reaction button 폭/간격을 줄여 댓글 footer 밀도를 낮췄다.
 
 ## 다음 액션
 
@@ -93,9 +94,27 @@
 - 성능 후속은 최신 `main` 배포 후 같은 스크립트로 production 재측정할 때 별도 작업으로 연다.
 - 다음 기능 점검 후보는 production DB env가 준비된 상태에서 `db:audit:legacy-upload-paths`를 재실행하고, 후보가 있으면 별도 cleanup dry-run 계획을 세우는 것이다.
 - 현재 active 구현 항목 없음.
-- 다음 개발 후보는 최신 `main` 배포 후 production 성능 재측정 또는 상세 댓글 action row/reaction control density audit이다.
+- 다음 개발 후보는 최신 `main` 배포 후 production 성능 재측정 또는 상세 댓글 pagination/load state density audit이다.
 
 ## 최근 검증
+
+- `2026-05-26. 상세 댓글 action row/reaction control density 정리`
+  - 변경:
+    - 댓글 footer를 모바일 `flex-col` 강제 stacking에서 `flex-wrap items-center justify-between` 구조로 바꿔 action과 reaction이 가능한 경우 같은 줄을 공유하게 했다.
+    - 댓글 action link 간격을 `gap-2`에서 `gap-1`로 낮추고, action link horizontal padding을 줄였다.
+    - compact reaction button의 visual minimum width를 `64px`에서 `56px`로 낮췄다.
+  - 유지:
+    - 답글/신고/접기 동작, 좋아요/싫어요 optimistic update, 로그인 안내, `min-h-10` touch target, focus ring은 변경하지 않았다.
+    - 댓글 pagination/load state와 best comment item은 이번 범위에서 변경하지 않았다.
+  - 검증:
+    - `corepack pnpm@9.12.3 -C app test -- src/components/posts/post-comment-layout-class.test.ts src/components/posts/comment-reaction-controls.test.tsx src/components/posts/post-comment-compact-controls-accessibility.test.tsx`
+    - `corepack pnpm@9.12.3 -C app lint -- src/components/posts/post-comment-layout-class.ts src/components/posts/post-comment-thread.tsx src/components/posts/comment-reaction-controls.tsx src/components/posts/post-comment-layout-class.test.ts src/components/posts/comment-reaction-controls.test.tsx src/components/posts/post-comment-compact-controls-accessibility.test.tsx`
+    - `corepack pnpm@9.12.3 -C app typecheck`
+    - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/components/posts/post-comment-thread.tsx src/components/posts/comment-reaction-controls.tsx --fast`
+    - `node scripts/refresh-docs-index.mjs --check`
+    - `git diff --check`
+    - `corepack pnpm@9.12.3 -C app quality:check`
+      - ESLint, TypeScript, Vitest `280 files / 1354 tests`, Next production build 통과.
 
 - `2026-05-26. 상세 댓글 inline form surface 정리`
   - 변경:
