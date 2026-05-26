@@ -5759,5 +5759,12 @@
   - `node scripts/refresh-docs-index.mjs --check`
   - `git diff --check`
   - `corepack pnpm@9.12.3 -C app quality:check`
+  - production deploy `a570be7`: Vercel status `success`, alias `https://townpet.vercel.app`
+  - GitHub Actions `docs-quality`, `quality-gate` success.
+  - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health`
+  - production SSR smoke:
+    - `/feed`: status `200`; 하단 중복 `글쓰기` CTA 없음.
+    - `/feed/guest`: status `200`; SSR shell 기준 `글쓰기` CTA 없음.
+  - 참고: production `/feed` 하단 검색 form의 compact class와 placeholder는 SSR HTML에서 직접 확인되지 않았다. local dev SSR, component test, lint/typecheck/build로 고정했다.
 - 다음 작업:
   - 글쓰기(`/posts/new`, `/lost/new`) form 흐름에서 과한 surface, 긴 안내문, 모바일 첫 viewport 밀도를 줄인다.
