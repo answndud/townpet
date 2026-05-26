@@ -148,6 +148,13 @@
     - local `/api/feed/guest?limit=20` 200, posts `0`.
     - production도 직전 확인 기준 `/api/feed/guest?limit=50` 200, posts `0`.
     - public guest feed에 상세 진입 대상 게시글이 없어 댓글 root item HTML/screenshot smoke는 보류했다.
+  - 원격/운영 확인:
+    - commit: `90d576a Compact root comment rhythm`
+    - GitHub commit status: `Vercel` success. GitHub Actions run list에는 새 workflow run이 표시되지 않았다.
+    - Vercel: `https://townpet-qftodycqk-jmoon0227-9736s-projects.vercel.app` Ready, alias `https://townpet.vercel.app`.
+    - `OPS_BASE_URL=https://townpet.vercel.app COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app ops:check:health`
+      - `https://townpet.vercel.app/api/health` 200, `payload.status: ok`.
+    - production smoke: `/api/feed/guest?limit=50` 200, posts `0`; public guest feed에 상세 진입 대상 게시글이 없어 댓글 root item HTML smoke는 보류했다.
 
 - `2026-05-26. 상세 best-comment summary/action density 정리`
   - 변경:
