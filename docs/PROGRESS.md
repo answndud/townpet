@@ -107,6 +107,13 @@
     - `git diff --check`
     - `corepack pnpm@9.12.3 -C app quality:check`
       - ESLint, TypeScript, Vitest `280 files / 1352 tests`, Next production build 통과.
+    - commit `7797fda`: GitHub Actions `docs-quality`, `quality-gate` success.
+    - commit `7797fda`: Vercel deployment `success`, alias `https://townpet.vercel.app`.
+    - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health`
+    - production smoke note:
+      - `/api/feed/guest?limit=50`: status `200`, posts `0`.
+      - guest feed 응답이 비어 있고 인증 세션 없이 편집 대상 글을 열 수 없어 실제 `/posts/[id]/edit` HTML smoke는 보류했다.
+      - 변경은 `post-detail-edit-form.tsx` 소스/targeted test/quality gate로 검증했다.
 
 - `2026-05-26. 상세 비회원 관리 action surface 정리`
   - 변경:
