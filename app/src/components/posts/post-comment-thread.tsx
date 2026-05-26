@@ -548,7 +548,7 @@ export function PostCommentThread({
       "tp-text-muted inline-flex min-h-10 items-center rounded-md px-2.5 text-[12px] font-medium transition hover:bg-[#f4f8ff] hover:text-[#2f5da4] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
     const commentCardClassName =
       depth > 0
-        ? `flex gap-2.5 ${POST_COMMENT_THREAD_REPLY_CARD_CLASS_NAME}`
+        ? `flex gap-2 ${POST_COMMENT_THREAD_REPLY_CARD_CLASS_NAME}`
         : "flex gap-3 px-1 py-3.5";
     const commentBodyText = isDeleted
       ? "삭제된 댓글입니다."
@@ -564,7 +564,7 @@ export function PostCommentThread({
       <div
         key={comment.id}
         id={`comment-${comment.id}`}
-        className={depth > 0 ? "mt-2" : undefined}
+        className={depth > 0 ? "mt-1.5" : undefined}
       >
         <article
           data-testid={`post-comment-item-${comment.id}`}

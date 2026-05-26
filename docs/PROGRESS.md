@@ -82,6 +82,7 @@
 - 상세 댓글 하단 action row와 compact reaction button 폭/간격을 줄여 댓글 footer 밀도를 낮췄다.
 - 상세 댓글 pagination, loading/error state, empty/list/composer 전환 간격을 compact 기준으로 낮췄다.
 - 상세 베스트 댓글 summary item과 wrapper를 compact section 기준으로 낮췄다.
+- 상세 댓글 reply nesting surface와 들여쓰기/간격을 compact 기준으로 낮췄다.
 
 ## 다음 액션
 
@@ -96,9 +97,27 @@
 - 성능 후속은 최신 `main` 배포 후 같은 스크립트로 production 재측정할 때 별도 작업으로 연다.
 - 다음 기능 점검 후보는 production DB env가 준비된 상태에서 `db:audit:legacy-upload-paths`를 재실행하고, 후보가 있으면 별도 cleanup dry-run 계획을 세우는 것이다.
 - 현재 active 구현 항목 없음.
-- 다음 개발 후보는 최신 `main` 배포 후 production 성능 재측정 또는 상세 댓글 reply nesting/indent density audit이다.
+- 다음 개발 후보는 최신 `main` 배포 후 production 성능 재측정 또는 상세 댓글 root item vertical rhythm audit이다.
 
 ## 최근 검증
+
+- `2026-05-26. 상세 댓글 reply nesting/indent density 정리`
+  - 변경:
+    - 답글 item wrapper를 rounded border/background card에서 `border-t` 기반 compact row로 낮췄다.
+    - 답글 guide의 margin, padding, `space-y`, vertical line top/bottom offset을 줄였다.
+    - 답글 item의 wrapper margin과 avatar/content gap을 줄였다.
+  - 유지:
+    - 답글 badge, 답글 접기/펼치기, 답글 작성/신고/수정/삭제, reaction controls, `min-h-10` touch target은 변경하지 않았다.
+    - root comment item과 composer 입력 UI는 이번 범위에서 변경하지 않았다.
+  - 검증:
+    - `corepack pnpm@9.12.3 -C app test -- src/components/posts/post-comment-layout-class.test.ts src/components/posts/post-comment-thread.test.tsx src/components/posts/post-comment-compact-controls-accessibility.test.tsx`
+    - `corepack pnpm@9.12.3 -C app lint -- src/components/posts/post-comment-layout-class.ts src/components/posts/post-comment-thread.tsx src/components/posts/post-comment-layout-class.test.ts src/components/posts/post-comment-thread.test.tsx`
+    - `corepack pnpm@9.12.3 -C app typecheck`
+    - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/components/posts/post-comment-layout-class.ts src/components/posts/post-comment-thread.tsx --fast`
+    - `node scripts/refresh-docs-index.mjs --check`
+    - `git diff --check`
+    - `corepack pnpm@9.12.3 -C app quality:check`
+      - ESLint, TypeScript, Vitest `280 files / 1354 tests`, Next production build 통과.
 
 - `2026-05-26. 상세 best-comment summary/action density 정리`
   - 변경:

@@ -14,7 +14,7 @@ export const POST_COMMENT_THREAD_ACTIONS_CLASS_NAME =
   "flex flex-wrap items-center gap-1";
 
 export const POST_COMMENT_THREAD_REPLY_CARD_CLASS_NAME =
-  "rounded-lg border border-[#e8eff9] bg-[#fbfdff] px-3 py-3 sm:px-3.5 sm:py-3.5";
+  "border-t border-[#e8eff9] px-0 py-2";
 
 export const POST_COMMENT_SECTION_STATE_CLASS_NAME = [
   "rounded-lg",
@@ -31,4 +31,4 @@ export const POST_COMMENT_FORM_FIELD_CLASS_NAME = "tp-form-field-page-soft";
 export const POST_COMMENT_FORM_MUTED_CLASS_NAME = "tp-form-panel-muted tp-form-field-page-soft";
 
 export const POST_COMMENT_REPLY_GUIDE_CLASS_NAME =
-  "before:bg-[#dfe9f8] relative mt-2 ml-4 space-y-2 pl-3 before:absolute before:bottom-2 before:left-0 before:top-2 before:w-px before:content-[''] sm:ml-7 sm:pl-4";
+  "before:bg-[#dfe9f8] relative mt-1.5 ml-3 space-y-1.5 pl-2.5 before:absolute before:bottom-1.5 before:left-0 before:top-1.5 before:w-px before:content-[''] sm:ml-5 sm:pl-3";
