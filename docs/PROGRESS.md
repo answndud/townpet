@@ -112,6 +112,13 @@
     - `git diff --check`
     - `corepack pnpm@9.12.3 -C app quality:check`
       - ESLint, TypeScript, Vitest `280 files / 1354 tests`, Next production build 통과.
+  - 원격/운영 확인:
+    - commit: `ce7e356 Compact post detail comment composer`
+    - GitHub Actions: `docs-quality`, `quality-gate` 성공.
+    - Vercel: `https://townpet-3y8lkbe4y-jmoon0227-9736s-projects.vercel.app` Ready, alias `https://townpet.vercel.app`.
+    - `OPS_BASE_URL=https://townpet.vercel.app COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app ops:check:health`
+      - `https://townpet.vercel.app/api/health` 200, `payload.status: ok`.
+    - production smoke: `/api/feed/guest?limit=50` 200, posts `0`; public guest feed에 상세 진입 대상 게시글이 없어 댓글 composer HTML smoke는 보류했다.
 
 - `2026-05-26. 상세 미디어 갤러리 thumbnail density 정리`
   - 변경:
