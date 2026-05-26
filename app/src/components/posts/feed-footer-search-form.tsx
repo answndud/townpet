@@ -25,11 +25,11 @@ export function FeedFooterSearchForm({
   reviewCategory,
 }: FeedFooterSearchFormProps) {
   return (
-    <div className="border-t border-[#dbe6f6] bg-[#f8fbff] px-3 py-1.5 sm:px-4">
+    <div className="border-t border-[#e4edf9] bg-white px-2 py-1 sm:px-3">
       <form
         action={actionPath}
         method="get"
-        className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-end"
+        className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-end"
         aria-label="피드 하단 게시글 검색"
       >
         {type ? <input type="hidden" name="type" value={type} /> : null}
@@ -45,7 +45,7 @@ export function FeedFooterSearchForm({
           id="feed-footer-search-in"
           name="searchIn"
           defaultValue={searchIn}
-          className="tp-input-soft h-[30px] px-2 text-[11px] font-medium outline-none transition focus:border-[#4e89d8] focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
+          className="tp-input-soft h-[28px] px-2 text-[11px] font-medium outline-none transition focus:border-[#4e89d8] focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
         >
           <option value="TITLE">제목</option>
           <option value="CONTENT">내용</option>
@@ -59,13 +59,13 @@ export function FeedFooterSearchForm({
           name="q"
           type="search"
           defaultValue={query}
-          placeholder="검색어"
-          className="tp-input-soft h-[30px] w-full bg-white px-2.5 text-[12px] outline-none transition focus:border-[#4e89d8] focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25 sm:max-w-[320px]"
+          placeholder="목록 검색"
+          className="tp-input-soft h-[28px] w-full bg-white px-2.5 text-[12px] outline-none transition focus:border-[#4e89d8] focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25 sm:max-w-[260px]"
         />
 
         <button
           type="submit"
-          className="tp-btn-primary inline-flex h-[30px] items-center justify-center px-3 text-[11px] font-semibold leading-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
+          className="tp-btn-primary inline-flex h-[28px] min-w-[52px] items-center justify-center px-2.5 text-[11px] font-semibold leading-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
         >
           검색
         </button>
@@ -73,7 +73,7 @@ export function FeedFooterSearchForm({
         {query.trim().length > 0 ? (
           <Link
             href={resetHref}
-            className="tp-btn-soft inline-flex h-[30px] items-center justify-center px-2.5 text-[11px] font-semibold leading-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
+            className="tp-btn-soft inline-flex h-[28px] min-w-[52px] items-center justify-center px-2.5 text-[11px] font-semibold leading-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
           >
             초기화
           </Link>
