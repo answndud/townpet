@@ -4,8 +4,15 @@ import Link from "next/link";
 
 import { COMMENT_CONTENT_MAX_LENGTH } from "@/lib/input-limits";
 import {
-  POST_COMMENT_FORM_FIELD_CLASS_NAME,
   POST_COMMENT_FORM_MUTED_CLASS_NAME,
+  POST_COMMENT_ROOT_FORM_ACTION_ROW_CLASS_NAME,
+  POST_COMMENT_ROOT_FORM_INPUT_CLASS_NAME,
+  POST_COMMENT_ROOT_FORM_MODE_BUTTON_BASE_CLASS_NAME,
+  POST_COMMENT_ROOT_FORM_MODE_ROW_CLASS_NAME,
+  POST_COMMENT_ROOT_FORM_ROW_CLASS_NAME,
+  POST_COMMENT_ROOT_FORM_SHELL_CLASS_NAME,
+  POST_COMMENT_ROOT_FORM_SUBMIT_CLASS_NAME,
+  POST_COMMENT_ROOT_FORM_TEXTAREA_CLASS_NAME,
 } from "@/components/posts/post-comment-layout-class";
 import { handleCommentSubmitShortcut } from "@/components/posts/post-comment-thread-presenter";
 
@@ -61,14 +68,14 @@ export function PostCommentRootForm({
   onSubmit,
 }: PostCommentRootFormProps) {
   return (
-    <div className="bg-[#fbfdff] px-2 py-2 sm:px-2.5">
+    <div className={POST_COMMENT_ROOT_FORM_SHELL_CLASS_NAME}>
       {canComment ? (
         <>
           {lostFoundSightingEnabled ? (
-            <div className="mb-1.5 flex flex-wrap items-center gap-1.5">
+            <div className={POST_COMMENT_ROOT_FORM_MODE_ROW_CLASS_NAME}>
               <button
                 type="button"
-                className={`inline-flex min-h-9 items-center rounded-md border px-3 text-[12px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 ${
+                className={`${POST_COMMENT_ROOT_FORM_MODE_BUTTON_BASE_CLASS_NAME} ${
                   commentMode === "LOST_FOUND_SIGHTING"
                     ? "border-[#3567b5] bg-[#3567b5] text-white"
                     : "border-[#cbdcf5] bg-white text-[#2f5da4] hover:bg-[#f6faff]"
@@ -79,7 +86,7 @@ export function PostCommentRootForm({
               </button>
               <button
                 type="button"
-                className={`inline-flex min-h-9 items-center rounded-md border px-3 text-[12px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 ${
+                className={`${POST_COMMENT_ROOT_FORM_MODE_BUTTON_BASE_CLASS_NAME} ${
                   commentMode === "GENERAL"
                     ? "border-[#3567b5] bg-[#3567b5] text-white"
                     : "border-[#cbdcf5] bg-white text-[#2f5da4] hover:bg-[#f6faff]"
@@ -91,10 +98,10 @@ export function PostCommentRootForm({
             </div>
           ) : null}
           {!currentUserId ? (
-            <div className="mb-1.5 grid gap-1.5 sm:grid-cols-2">
+            <div className={POST_COMMENT_ROOT_FORM_ROW_CLASS_NAME}>
               <input
                 data-testid="post-comment-guest-name"
-                className={`tp-input-soft ${POST_COMMENT_FORM_FIELD_CLASS_NAME} min-h-11 w-full px-3 py-2 text-[14px] sm:min-h-10 sm:px-2.5 sm:py-1.5 sm:text-[13px]`}
+                className={POST_COMMENT_ROOT_FORM_INPUT_CLASS_NAME}
                 value={guestDisplayName}
                 onChange={(event) => onGuestDisplayNameChange(event.target.value)}
                 placeholder="비회원 닉네임"
@@ -102,7 +109,7 @@ export function PostCommentRootForm({
               />
               <input
                 data-testid="post-comment-guest-password"
-                className={`tp-input-soft ${POST_COMMENT_FORM_FIELD_CLASS_NAME} min-h-11 w-full px-3 py-2 text-[14px] sm:min-h-10 sm:px-2.5 sm:py-1.5 sm:text-[13px]`}
+                className={POST_COMMENT_ROOT_FORM_INPUT_CLASS_NAME}
                 type="password"
                 value={guestPassword}
                 onChange={(event) => onGuestPasswordChange(event.target.value)}
@@ -112,10 +119,10 @@ export function PostCommentRootForm({
             </div>
           ) : null}
           {lostFoundSightingEnabled && commentMode === "LOST_FOUND_SIGHTING" ? (
-            <div className="mb-1.5 grid gap-1.5 sm:grid-cols-2">
+            <div className={POST_COMMENT_ROOT_FORM_ROW_CLASS_NAME}>
               <input
                 data-testid="lost-found-sighting-location"
-                className={`tp-input-soft ${POST_COMMENT_FORM_FIELD_CLASS_NAME} min-h-11 w-full px-3 py-2 text-[14px] sm:min-h-10 sm:px-2.5 sm:py-1.5 sm:text-[13px]`}
+                className={POST_COMMENT_ROOT_FORM_INPUT_CLASS_NAME}
                 value={sightingLocation}
                 onChange={(event) => onSightingLocationChange?.(event.target.value)}
                 placeholder="목격 위치(공개 시 상세주소 제외)"
@@ -123,14 +130,14 @@ export function PostCommentRootForm({
               />
               <input
                 data-testid="lost-found-sighting-seen-at"
-                className={`tp-input-soft ${POST_COMMENT_FORM_FIELD_CLASS_NAME} min-h-11 w-full px-3 py-2 text-[14px] sm:min-h-10 sm:px-2.5 sm:py-1.5 sm:text-[13px]`}
+                className={POST_COMMENT_ROOT_FORM_INPUT_CLASS_NAME}
                 type="datetime-local"
                 value={sightingSeenAt}
                 onChange={(event) => onSightingSeenAtChange?.(event.target.value)}
               />
               <input
                 data-testid="lost-found-sighting-image-url"
-                className={`tp-input-soft ${POST_COMMENT_FORM_FIELD_CLASS_NAME} min-h-11 w-full px-3 py-2 text-[14px] sm:col-span-2 sm:min-h-10 sm:px-2.5 sm:py-1.5 sm:text-[13px]`}
+                className={`${POST_COMMENT_ROOT_FORM_INPUT_CLASS_NAME} sm:col-span-2`}
                 value={sightingImageUrl}
                 onChange={(event) => onSightingImageUrlChange?.(event.target.value)}
                 placeholder="사진 URL 선택 입력"
@@ -154,7 +161,7 @@ export function PostCommentRootForm({
           ) : null}
           <textarea
             data-testid="post-comment-root-input"
-            className={`tp-input-soft ${POST_COMMENT_FORM_FIELD_CLASS_NAME} min-h-20 w-full px-3 py-2 text-[14px] sm:min-h-16 sm:px-2.5 sm:py-1.5 sm:text-[13px]`}
+            className={POST_COMMENT_ROOT_FORM_TEXTAREA_CLASS_NAME}
             value={rootContent}
             onChange={(event) => onRootContentChange(event.target.value)}
             maxLength={COMMENT_CONTENT_MAX_LENGTH}
@@ -165,11 +172,11 @@ export function PostCommentRootForm({
                 : "댓글을 입력해 주세요"
             }
           />
-          <div className="mt-1 flex justify-end">
+          <div className={POST_COMMENT_ROOT_FORM_ACTION_ROW_CLASS_NAME}>
             <button
               data-testid="post-comment-root-submit"
               type="button"
-              className="tp-btn-primary inline-flex min-h-10 items-center justify-center rounded-lg px-4 text-sm font-semibold"
+              className={POST_COMMENT_ROOT_FORM_SUBMIT_CLASS_NAME}
               onClick={onSubmit}
               disabled={isPending}
             >

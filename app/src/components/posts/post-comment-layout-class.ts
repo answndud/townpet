@@ -42,5 +42,32 @@ export const POST_COMMENT_FORM_FIELD_CLASS_NAME = "tp-form-field-page-soft";
 
 export const POST_COMMENT_FORM_MUTED_CLASS_NAME = "tp-form-panel-muted tp-form-field-page-soft";
 
+export const POST_COMMENT_ROOT_COMPOSER_WRAPPER_CLASS_NAME =
+  "border-[#dbe6f5] mt-2 border-t pt-1.5";
+
+export const POST_COMMENT_ROOT_FORM_SHELL_CLASS_NAME =
+  "bg-[#fbfdff] px-2 py-1.5 sm:px-2.5";
+
+export const POST_COMMENT_ROOT_FORM_ROW_CLASS_NAME =
+  "mb-1 grid gap-1.5 sm:grid-cols-2";
+
+export const POST_COMMENT_ROOT_FORM_MODE_ROW_CLASS_NAME =
+  "mb-1 flex flex-wrap items-center gap-1";
+
+export const POST_COMMENT_ROOT_FORM_MODE_BUTTON_BASE_CLASS_NAME =
+  "inline-flex min-h-9 items-center rounded-md border px-2.5 text-[12px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2";
+
+export const POST_COMMENT_ROOT_FORM_INPUT_CLASS_NAME =
+  `tp-input-soft ${POST_COMMENT_FORM_FIELD_CLASS_NAME} min-h-10 w-full px-2.5 py-1.5 text-[13px]`;
+
+export const POST_COMMENT_ROOT_FORM_TEXTAREA_CLASS_NAME =
+  `tp-input-soft ${POST_COMMENT_FORM_FIELD_CLASS_NAME} min-h-[64px] w-full px-2.5 py-1.5 text-[13px] sm:min-h-[56px]`;
+
+export const POST_COMMENT_ROOT_FORM_ACTION_ROW_CLASS_NAME =
+  "mt-1 flex justify-end";
+
+export const POST_COMMENT_ROOT_FORM_SUBMIT_CLASS_NAME =
+  "tp-btn-primary inline-flex min-h-10 items-center justify-center rounded-lg px-3 text-xs font-semibold";
+
 export const POST_COMMENT_REPLY_GUIDE_CLASS_NAME =
   "before:bg-[#dfe9f8] relative mt-1.5 ml-3 space-y-1.5 pl-2.5 before:absolute before:bottom-1.5 before:left-0 before:top-1.5 before:w-px before:content-[''] sm:ml-5 sm:pl-3";
