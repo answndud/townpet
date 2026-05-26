@@ -5835,6 +5835,13 @@
   - `git diff --check`
   - `corepack pnpm@9.12.3 -C app quality:check`
     - ESLint, TypeScript, Vitest `279 files / 1346 tests`, Next production build 통과.
+  - commit `baf1eae`: GitHub Actions `docs-quality`, `quality-gate` success.
+  - commit `baf1eae`: Vercel deployment `success`, alias `https://townpet.vercel.app`.
+  - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health`
+  - production smoke note:
+    - `/api/feed/guest?limit=30`: status `200`.
+    - guest feed 응답에서 `MARKET_LISTING` 상세 대상 글을 찾지 못해 실제 거래 상세 HTML smoke는 보류했다.
+    - 변경은 `post-detail-info-panels.tsx` 소스/targeted test/quality gate로 검증했다.
 
 ### 2026-05-26 | 분실/목격 위치 안내 compact 정리
 - 완료일: `2026-05-26`
