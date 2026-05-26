@@ -64,6 +64,7 @@
 - 거래 글 작성의 반려용품 거래 체크 안내를 nested bordered box에서 얇은 divider 기반 compact guidance로 바꿨다.
 - 병원 후기 작성 기준 안내를 nested bordered box에서 divider 기반 compact guidance로 바꾸고, 위험 표현 안내를 짧게 정리했다.
 - 산책 코스 작성 기준 안내를 nested bordered box에서 divider 기반 compact guidance로 바꾸고, 실제 이용 조건 중심으로 문구를 줄였다.
+- 분실/목격 작성의 위치·개인정보 안내를 필드 note에서 divider 기반 compact guidance로 분리했다.
 
 ## 다음 액션
 
@@ -77,9 +78,28 @@
 - `/`과 public acquisition UI에는 사용자가 선택하지 않은 특정 지역명을 기본값처럼 노출하지 않는다.
 - 성능 후속은 최신 `main` 배포 후 같은 스크립트로 production 재측정할 때 별도 작업으로 연다.
 - 다음 기능 점검 후보는 production DB env가 준비된 상태에서 `db:audit:legacy-upload-paths`를 재실행하고, 후보가 있으면 별도 cleanup dry-run 계획을 세우는 것이다.
-- 다음 개발 후보는 글쓰기 화면군의 분실/목격 작성 유형에 남은 긴 위치/개인정보 안내 문구를 compact하게 정리하는 것이다.
+- 현재 active 구현 항목 없음.
 
 ## 최근 검증
+
+- `2026-05-26. 분실/목격 위치 안내 compact 정리`
+  - 변경:
+    - `LOST_FOUND` 구조화 필드의 긴 위치/개인정보 note를 `마지막 확인 위치` label 내부에서 분리했다.
+    - `위치 공개 기준` guidance를 `border-t` divider 기반 compact layout으로 추가했다.
+    - 공개 금지 정보와 보호자 공개 제보 안내를 두 문장으로 나눠 모바일에서 읽기 쉽게 했다.
+  - 유지:
+    - 제보 유형, 동물 종류, 특징, 시간, 위치 입력 필드와 submit payload/validation은 변경하지 않았다.
+    - 분실/목격 개인정보 차단 정책과 댓글 보호자 공개 제보 흐름은 변경하지 않았다.
+  - 검증:
+    - `corepack pnpm@9.12.3 -C app test -- src/components/posts/post-create-structured-fields.test.tsx`
+    - `corepack pnpm@9.12.3 -C app lint -- src/components/posts/post-create-structured-fields.tsx src/components/posts/post-create-structured-fields.test.tsx`
+    - `corepack pnpm@9.12.3 -C app typecheck`
+    - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/components/posts/post-create-structured-fields.tsx --fast`
+    - local dev SSR `/posts/new?type=LOST_FOUND`: status `200`; compact guidance 있음; 개인정보 안내 문구 있음; 보호자 공개 제보 문구 있음; 이전 긴 문구 없음.
+    - `node scripts/refresh-docs-index.mjs --check`
+    - `git diff --check`
+    - `corepack pnpm@9.12.3 -C app quality:check`
+      - ESLint, TypeScript, Vitest `279 files / 1345 tests`, Next production build 통과.
 
 - `2026-05-26. 산책 코스 작성 안내 compact 정리`
   - 변경:

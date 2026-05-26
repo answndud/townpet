@@ -133,7 +133,9 @@ describe("post create structured fields", () => {
     expect(html).toContain("제보 유형");
     expect(html).toContain("마지막 확인 시간");
     expect(html).toContain("마지막 확인 위치");
+    expect(html).toContain("위치 공개 기준");
     expect(html).toContain("도로명·번지 주소를 적지 마세요");
+    expect(html).toContain("연락이 필요한 단서는 댓글의 보호자 공개 제보로 남깁니다.");
     expect(html).toContain('value="LOST"');
   });
 });

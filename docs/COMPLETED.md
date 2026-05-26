@@ -5811,6 +5811,33 @@
 - 다음 작업:
   - 글쓰기 본문 editor와 구조화 필드의 모바일 밀도, submit footer, 오류 안내를 한 화면군 안에서 추가 정리한다.
 
+### 2026-05-26 | 분실/목격 위치 안내 compact 정리
+- 완료일: `2026-05-26`
+- 배경:
+  - 분실/목격 작성은 개인정보와 상세 위치 노출 위험이 높아 안내가 반드시 필요하다.
+  - 기존 안내는 `마지막 확인 위치` label 내부의 긴 note로 붙어 있어 모바일에서 입력 필드 아래가 길게 늘어졌다.
+- 변경내용:
+  - `LOST_FOUND` 구조화 필드의 긴 위치/개인정보 note를 `마지막 확인 위치` label 내부에서 분리했다.
+  - `위치 공개 기준` guidance를 `border-t` divider 기반 compact layout으로 추가했다.
+  - 공개 금지 정보와 보호자 공개 제보 안내를 두 문장으로 나눠 모바일에서 읽기 쉽게 했다.
+- 유지:
+  - 제보 유형, 동물 종류, 특징, 시간, 위치 입력 필드와 submit payload/validation은 변경하지 않았다.
+  - 분실/목격 개인정보 차단 정책과 댓글 보호자 공개 제보 흐름은 변경하지 않았다.
+- 코드문서:
+  - [app/src/components/posts/post-create-structured-fields.tsx](../app/src/components/posts/post-create-structured-fields.tsx)
+  - [app/src/components/posts/post-create-structured-fields.test.tsx](../app/src/components/posts/post-create-structured-fields.test.tsx)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/components/posts/post-create-structured-fields.test.tsx`
+  - `corepack pnpm@9.12.3 -C app lint -- src/components/posts/post-create-structured-fields.tsx src/components/posts/post-create-structured-fields.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/components/posts/post-create-structured-fields.tsx --fast`
+  - local dev SSR `/posts/new?type=LOST_FOUND`: status `200`; compact guidance 있음; 개인정보 안내 문구 있음; 보호자 공개 제보 문구 있음; 이전 긴 문구 없음.
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `git diff --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `279 files / 1345 tests`, Next production build 통과.
+
 ### 2026-05-26 | 산책 코스 작성 안내 compact 정리
 - 완료일: `2026-05-26`
 - 배경:

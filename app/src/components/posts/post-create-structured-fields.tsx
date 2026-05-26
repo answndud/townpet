@@ -1078,10 +1078,20 @@ export function LostFoundFields({
           placeholder="예: 반포동 산책로 입구, OO공원 북문 근처"
           required
         />
-        <span className="tp-form-note">
-          공개 글에는 전화번호, 오픈채팅, 이메일, 도로명·번지 주소를 적지 마세요. 연락이 필요한 단서는 댓글의 보호자 공개 제보를 이용합니다.
-        </span>
       </label>
+      <div className="grid gap-1.5 border-t border-[#e3ecf8] pt-2 md:col-span-2">
+        <p className="tp-text-heading text-[12px] font-semibold">위치 공개 기준</p>
+        <div className="tp-text-subtle grid gap-1 text-[12px] leading-5 sm:grid-cols-2">
+          <p className="flex gap-1.5">
+            <span className="mt-[0.55em] h-1 w-1 shrink-0 rounded-full bg-[#9fb7d9]" aria-hidden="true" />
+            <span>공개 글에는 전화번호, 오픈채팅, 이메일, 도로명·번지 주소를 적지 마세요.</span>
+          </p>
+          <p className="flex gap-1.5">
+            <span className="mt-[0.55em] h-1 w-1 shrink-0 rounded-full bg-[#9fb7d9]" aria-hidden="true" />
+            <span>연락이 필요한 단서는 댓글의 보호자 공개 제보로 남깁니다.</span>
+          </p>
+        </div>
+      </div>
     </StructuredFieldSection>
   );
 }
