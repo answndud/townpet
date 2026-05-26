@@ -61,4 +61,20 @@ describe("post detail info panels accessibility", () => {
       "col-span-full rounded-lg border border-[#dbe6f5] bg-[#f8fbff] px-3 py-2",
     );
   });
+
+  it("keeps lost found guidance compact in the detail panel", () => {
+    const code = source();
+    const lostFoundSection = code.slice(
+      code.indexOf('{post.lostFoundAlert ? ('),
+      code.indexOf('{post.adoptionListing ? ('),
+    );
+
+    expect(lostFoundSection).toContain("제보 확인 기준");
+    expect(lostFoundSection).toContain("허위 제보, 장난 제보, 개인정보 노출은 신고 사유로 선택해 주세요.");
+    expect(lostFoundSection).toContain("민감한 목격 위치와 사진은 댓글의 보호자 공개 제보로 남깁니다.");
+    expect(lostFoundSection).toContain("col-span-full grid gap-1.5 border-t border-[#ead5a5] pt-2");
+    expect(lostFoundSection).not.toContain(
+      "col-span-full rounded-lg border border-[#ead5a5] bg-[#fff9e8] px-3 py-2",
+    );
+  });
 });
