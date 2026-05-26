@@ -21,7 +21,6 @@ type HomeFeedItem = {
 
 type HomeFeedPayload = {
   featured: HomeFeedItem[];
-  best?: HomeFeedItem[];
   latest: HomeFeedItem[];
 };
 
