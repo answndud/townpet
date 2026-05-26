@@ -172,9 +172,9 @@ export function PostDetailEditForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="tp-card w-full p-5 sm:p-6"
+      className="tp-card w-full p-4 sm:p-5"
     >
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="tp-text-page-title-sm tp-text-heading">게시물 수정</h2>
         <button
           type="submit"
@@ -185,7 +185,7 @@ export function PostDetailEditForm({
         </button>
       </div>
 
-      <div className="mt-6 grid gap-4 md:grid-cols-3">
+      <div className="mt-4 grid gap-3 md:grid-cols-3">
         <label className="tp-form-label">
           제목
           <input
@@ -245,7 +245,7 @@ export function PostDetailEditForm({
       </div>
 
       {!isAuthenticated ? (
-        <label className="tp-form-label mt-4">
+        <label className="tp-form-label mt-3">
           글 비밀번호
           <input
             type="password"
@@ -261,7 +261,7 @@ export function PostDetailEditForm({
         </label>
       ) : null}
 
-      <div className="mt-6">
+      <div className="mt-4">
         <PostBodyRichEditor
           ref={editorHandleRef}
           value={formState.content}
@@ -287,11 +287,11 @@ export function PostDetailEditForm({
         />
       </div>
       {!isAuthenticated ? (
-        <p className="mt-2 text-xs text-[#5d789f]">비회원 이미지는 최대 1장, 파일당 2MB까지 업로드할 수 있습니다.</p>
+        <p className="mt-1.5 text-xs text-[#5d789f]">비회원 이미지는 최대 1장, 파일당 2MB까지 업로드할 수 있습니다.</p>
       ) : null}
 
       {error ? (
-        <p className="mt-3 text-sm font-medium text-rose-700" role="alert" aria-live="polite">
+        <p className="mt-2 text-sm font-medium text-rose-700" role="alert" aria-live="polite">
           {error}
         </p>
       ) : null}

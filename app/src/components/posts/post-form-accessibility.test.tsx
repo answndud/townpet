@@ -135,6 +135,19 @@ describe("post form accessibility", () => {
     expect((html.match(/min-h-10/g) ?? []).length).toBeGreaterThanOrEqual(4);
   });
 
+  it("keeps post edit layout compact without shrinking touch targets", () => {
+    const source = readFileSync(
+      join(process.cwd(), "src/components/posts/post-detail-edit-form.tsx"),
+      "utf8",
+    );
+
+    expect(source).toContain("tp-card w-full p-4 sm:p-5");
+    expect(source).toContain("mt-4 grid gap-3 md:grid-cols-3");
+    expect(source).toContain('<div className="mt-4">');
+    expect(source).not.toContain("tp-card w-full p-5 sm:p-6");
+    expect(source).not.toContain("mt-6 grid gap-4 md:grid-cols-3");
+  });
+
   it("announces post edit validation errors", () => {
     const source = readFileSync(
       join(process.cwd(), "src/components/posts/post-detail-edit-form.tsx"),

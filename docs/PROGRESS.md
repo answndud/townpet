@@ -71,6 +71,7 @@
 - 상세 화면의 돌봄 요청 workflow에서 상태 변경, 지원, 지원자 관리, 완료 피드백 panel을 divider 기반 compact section으로 낮췄다.
 - 상세 화면의 거래/분실 상태 변경 workflow를 rounded status box에서 divider 기반 compact section으로 낮췄다.
 - 상세 primary card의 신고 폼 wrapper와 모바일 글 관리 wrapper를 nested card에서 inline divider section으로 낮췄다.
+- 상세 편집 화면의 form padding과 필드/editor 간격을 줄여 편집 첫 화면 밀도를 높였다.
 
 ## 다음 액션
 
@@ -85,9 +86,27 @@
 - 성능 후속은 최신 `main` 배포 후 같은 스크립트로 production 재측정할 때 별도 작업으로 연다.
 - 다음 기능 점검 후보는 production DB env가 준비된 상태에서 `db:audit:legacy-upload-paths`를 재실행하고, 후보가 있으면 별도 cleanup dry-run 계획을 세우는 것이다.
 - 현재 active 구현 항목 없음.
-- 다음 개발 후보는 최신 `main` 배포 후 production 성능 재측정 또는 상세 편집 화면/정보 grid density audit이다.
+- 다음 개발 후보는 최신 `main` 배포 후 production 성능 재측정 또는 상세 정보 grid density audit이다.
 
 ## 최근 검증
+
+- `2026-05-26. 상세 편집 화면 density 정리`
+  - 변경:
+    - `/posts/[id]/edit`의 `PostDetailEditForm` 내부 padding을 `p-5 sm:p-6`에서 `p-4 sm:p-5`로 줄였다.
+    - 제목/범위/동네 field grid와 editor 사이 간격을 줄이고, 비회원 안내/error 간격도 compact하게 맞췄다.
+    - header row가 모바일에서 자연스럽게 wrap되도록 `gap-3`을 추가했다.
+  - 유지:
+    - 입력/버튼 `min-h-10`, 저장 action, 비회원 수정 API, editor serialization, validation/error announcement는 변경하지 않았다.
+    - 글쓰기 화면, 상세 primary card, 상세 정보 패널은 이번 범위에서 변경하지 않았다.
+  - 검증:
+    - `corepack pnpm@9.12.3 -C app test -- src/components/posts/post-form-accessibility.test.tsx`
+    - `corepack pnpm@9.12.3 -C app lint -- src/components/posts/post-detail-edit-form.tsx src/components/posts/post-form-accessibility.test.tsx`
+    - `corepack pnpm@9.12.3 -C app typecheck`
+    - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/components/posts/post-detail-edit-form.tsx --fast`
+    - `node scripts/refresh-docs-index.mjs --check`
+    - `git diff --check`
+    - `corepack pnpm@9.12.3 -C app quality:check`
+      - ESLint, TypeScript, Vitest `280 files / 1352 tests`, Next production build 통과.
 
 - `2026-05-26. 상세 비회원 관리 action surface 정리`
   - 변경:
