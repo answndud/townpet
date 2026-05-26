@@ -3,6 +3,7 @@
 ## 현재 상태
 
 - 현재 active 계획: [PLAN.md](./PLAN.md)의 `마케팅 피드백 기반 제품 획득 루프 재정렬`.
+- `2026-05-26. 상세 댓글 root item vertical rhythm 정리`를 완료했다. root 댓글 row padding/avatar/body/sighting metadata를 compact 기준으로 낮췄고, action/reaction touch target은 유지했다.
 - 성능 측정과 속도 개선 루프는 `blog/29-성능개선-측정과-최적화-기록.md`까지 작성해 완료했다.
 - `P0-2. 전역 카피와 메타데이터 통일`을 완료했다.
 - `P0-3. 초기 지역 선택 UX 명확화`를 완료했다.
@@ -125,6 +126,28 @@
     - `OPS_BASE_URL=https://townpet.vercel.app COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app ops:check:health`
       - `https://townpet.vercel.app/api/health` 200, `payload.status: ok`.
     - production smoke: `/api/feed/guest?limit=50` 200, posts `0`; public guest feed에 상세 진입 대상 게시글이 없어 답글 nesting HTML smoke는 보류했다.
+
+- `2026-05-26. 상세 댓글 root item vertical rhythm 정리`
+  - 변경:
+    - root 댓글 item wrapper를 `gap-3 px-1 py-3.5`에서 `gap-2.5 px-1 py-2.5`로 줄였다.
+    - root 댓글 avatar를 `h-8 w-8 text-[11px]`에서 `h-7 w-7 text-[10px]`로 낮췄다.
+    - 댓글 본문 spacing을 `mt-1.5 leading-6`에서 `mt-1 leading-[1.55]`로 줄였다.
+    - 목격 제보 metadata block의 margin, padding, row gap을 compact 기준으로 낮췄다.
+    - root/comment/reply layout class를 상수화해 회귀 테스트가 직접 감시하도록 정리했다.
+  - 유지:
+    - 댓글 action/reaction, 작성자 메뉴, 신고/답글/수정/삭제, 목격 제보 필드, `min-h-10` touch target, focus ring은 변경하지 않았다.
+    - root composer, pagination, best comment, reply nesting은 이번 범위에서 변경하지 않았다.
+  - 검증:
+    - `corepack pnpm@9.12.3 -C app test -- src/components/posts/post-comment-layout-class.test.ts src/components/posts/post-comment-thread.test.tsx src/components/posts/post-comment-compact-controls-accessibility.test.tsx`
+    - `corepack pnpm@9.12.3 -C app lint -- src/components/posts/post-comment-layout-class.ts src/components/posts/post-comment-thread.tsx src/components/posts/post-comment-layout-class.test.ts src/components/posts/post-comment-thread.test.tsx src/components/posts/post-comment-compact-controls-accessibility.test.tsx`
+    - `corepack pnpm@9.12.3 -C app typecheck`
+    - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/components/posts/post-comment-layout-class.ts src/components/posts/post-comment-thread.tsx --fast`
+    - `corepack pnpm@9.12.3 -C app quality:check`
+      - ESLint, TypeScript, Vitest `280 files / 1355 tests`, Next production build 통과.
+  - screenshot/smoke:
+    - local `/api/feed/guest?limit=20` 200, posts `0`.
+    - production도 직전 확인 기준 `/api/feed/guest?limit=50` 200, posts `0`.
+    - public guest feed에 상세 진입 대상 게시글이 없어 댓글 root item HTML/screenshot smoke는 보류했다.
 
 - `2026-05-26. 상세 best-comment summary/action density 정리`
   - 변경:

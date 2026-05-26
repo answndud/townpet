@@ -13,8 +13,20 @@ export const POST_COMMENT_THREAD_FOOTER_CLASS_NAME =
 export const POST_COMMENT_THREAD_ACTIONS_CLASS_NAME =
   "flex flex-wrap items-center gap-1";
 
+export const POST_COMMENT_THREAD_ROOT_CARD_CLASS_NAME =
+  "flex gap-2.5 px-1 py-2.5";
+
 export const POST_COMMENT_THREAD_REPLY_CARD_CLASS_NAME =
   "border-t border-[#e8eff9] px-0 py-2";
+
+export const POST_COMMENT_THREAD_AVATAR_CLASS_NAME =
+  "tp-surface-alt tp-text-accent mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold";
+
+export const POST_COMMENT_THREAD_BODY_CLASS_NAME =
+  "mt-1 text-[14px] leading-[1.55]";
+
+export const POST_COMMENT_THREAD_SIGHTING_META_CLASS_NAME =
+  "mt-1.5 grid gap-x-3 gap-y-1 border-t border-[#e7eef9] pt-1.5 text-[12px] sm:grid-cols-2";
 
 export const POST_COMMENT_SECTION_STATE_CLASS_NAME = [
   "rounded-lg",

@@ -5,10 +5,14 @@ import {
   POST_COMMENT_FORM_MUTED_CLASS_NAME,
   POST_COMMENT_FORM_PANEL_CLASS_NAME,
   POST_COMMENT_THREAD_ACTIONS_CLASS_NAME,
+  POST_COMMENT_THREAD_AVATAR_CLASS_NAME,
+  POST_COMMENT_THREAD_BODY_CLASS_NAME,
   POST_COMMENT_REPLY_GUIDE_CLASS_NAME,
   POST_COMMENT_SECTION_STATE_CLASS_NAME,
   POST_COMMENT_THREAD_CARD_CLASS_NAME,
   POST_COMMENT_THREAD_FOOTER_CLASS_NAME,
+  POST_COMMENT_THREAD_ROOT_CARD_CLASS_NAME,
+  POST_COMMENT_THREAD_SIGHTING_META_CLASS_NAME,
 } from "@/components/posts/post-comment-layout-class";
 
 describe("post comment layout classes", () => {
@@ -51,5 +55,19 @@ describe("post comment layout classes", () => {
     expect(POST_COMMENT_REPLY_GUIDE_CLASS_NAME).toContain("pl-2.5");
     expect(POST_COMMENT_REPLY_GUIDE_CLASS_NAME).toContain("sm:ml-5");
     expect(POST_COMMENT_REPLY_GUIDE_CLASS_NAME).toContain("sm:pl-3");
+  });
+
+  it("keeps root comment rows compact without shrinking touch-safe actions", () => {
+    expect(POST_COMMENT_THREAD_ROOT_CARD_CLASS_NAME).toContain("gap-2.5");
+    expect(POST_COMMENT_THREAD_ROOT_CARD_CLASS_NAME).toContain("py-2.5");
+    expect(POST_COMMENT_THREAD_ROOT_CARD_CLASS_NAME).not.toContain("py-3.5");
+    expect(POST_COMMENT_THREAD_AVATAR_CLASS_NAME).toContain("h-7");
+    expect(POST_COMMENT_THREAD_AVATAR_CLASS_NAME).toContain("w-7");
+    expect(POST_COMMENT_THREAD_AVATAR_CLASS_NAME).not.toContain("h-8");
+    expect(POST_COMMENT_THREAD_BODY_CLASS_NAME).toContain("mt-1");
+    expect(POST_COMMENT_THREAD_BODY_CLASS_NAME).toContain("leading-[1.55]");
+    expect(POST_COMMENT_THREAD_SIGHTING_META_CLASS_NAME).toContain("mt-1.5");
+    expect(POST_COMMENT_THREAD_SIGHTING_META_CLASS_NAME).toContain("pt-1.5");
+    expect(POST_COMMENT_THREAD_SIGHTING_META_CLASS_NAME).toContain("gap-y-1");
   });
 });
