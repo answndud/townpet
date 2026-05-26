@@ -54,9 +54,10 @@
 - `P2-16. 운영자 정리 글 production 자동 게시`를 완료했다. `townpet` production env를 `/tmp` 임시 link로 가져와 첫 7개 글을 `townpet-admin` author로 게시했고 public smoke가 `PASS`했다.
 - 운영자 정리 글 게시 후 `/`, `/feed/guest`, `/search/guest` 실제 화면을 점검했고, 홈 best preview의 초기 빈 상태와 피드 상단 제어 영역의 중복 요약/높이를 줄이는 UI 조정을 완료했다.
 - 홈 Live board의 첫 컬럼을 `지금 많이 보는 글`에서 `먼저 확인할 글`로 바꿔, 초기 운영자 콘텐츠를 인기 콘텐츠처럼 과장하지 않도록 정리했다.
-- 홈 `/api/home/feed`의 첫 컬럼 canonical 응답 필드를 `best`에서 `featured`로 바꿨다. 기존 클라이언트 호환을 위해 `best` alias는 유지한다.
+- 홈 `/api/home/feed`의 첫 컬럼 canonical 응답 필드를 `best`에서 `featured`로 바꿨고, 이후 legacy `best` alias도 제거했다.
 - 홈 `/api/home/feed`의 `featured` 선정 기준을 `검증된 운영자 정리 글 -> 운영자 글 -> 참여도 -> 최신성` 순서로 분리했다. 더 이상 legacy `best` 쿼리를 재사용하지 않는다.
 - repo-local audit 결과 홈 클라이언트와 운영 smoke가 `featured`를 사용하고 있어 `/api/home/feed`의 legacy `best` 응답 alias를 제거했다.
+- 피드의 사용자-facing `베스트글/인기순/베스트순` 표현을 실제 기준에 맞춰 `반응 많은 글/반응순`으로 정리했다. 내부 `mode=BEST`와 query helper 이름은 호환을 위해 유지한다.
 
 ## 다음 액션
 
@@ -70,8 +71,7 @@
 - `/`과 public acquisition UI에는 사용자가 선택하지 않은 특정 지역명을 기본값처럼 노출하지 않는다.
 - 성능 후속은 최신 `main` 배포 후 같은 스크립트로 production 재측정할 때 별도 작업으로 연다.
 - 다음 기능 점검 후보는 production DB env가 준비된 상태에서 `db:audit:legacy-upload-paths`를 재실행하고, 후보가 있으면 별도 cleanup dry-run 계획을 세우는 것이다.
-- 다음 개발 후보는 최신 배포 후 `/`, `/feed/guest`, `/search/guest` production screenshot smoke로 홈 best preview가 비지 않는지, 피드 상단 제어 영역 높이가 줄었는지 확인하는 것이다.
-- 다음 개발 후보는 production 배포 후 `/api/home/feed` 응답에서 `best` 키가 제거되고 `featured/latest`만 남는지 smoke하는 것이다.
+- 다음 개발 후보는 production에서 `/feed`, `/feed/guest`, `/best`의 `반응 많은 글` 라벨과 redirect가 정상인지 smoke하는 것이다.
 
 ## 최근 검증
 
@@ -153,6 +153,30 @@
     - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health`
     - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:operator-content-public`
     - production `/api/home/feed`: keys `featured`, `latest`; `best` key 없음; `featured` 5건, `latest` 2건 확인.
+
+- `2026-05-26. 피드 BEST 사용자 라벨 정리`
+  - 변경:
+    - 피드 제어 패널의 `베스트글` 탭을 `반응 많은 글`로 변경했다.
+    - BEST 모드 기간 라벨을 `집계 기간`에서 `반응 기간`으로 바꿨다.
+    - `/feed` metadata 설명과 공개 피드 안내 문구의 `베스트순/인기순`을 `반응순`으로 정리했다.
+    - BEST 모드 empty state를 `반응 많은 글이 없습니다`로 바꿨다.
+    - `/best` alias page metadata를 `반응 많은 글`로 바꿨다.
+    - 홈 `먼저 확인할 글`의 더보기 링크에 `반응 많은 글 더보기` 접근성 라벨을 추가했다.
+  - 유지:
+    - 내부 query parameter `mode=BEST`, `FeedMode = "BEST"`, `listBestPosts`/`countBestPosts` 이름은 route 호환성과 query 계층 안정성을 위해 유지한다.
+    - `인기 검색어`, `베스트 댓글`은 별도 의미가 있어 이번 변경 대상에서 제외했다.
+  - 검증:
+    - `corepack pnpm@9.12.3 -C app test -- src/components/posts/feed-control-panel.test.tsx src/components/home/home-feed-preview.test.tsx src/app/public-copy-metadata.test.ts src/app/sitemap.test.ts`
+    - `corepack pnpm@9.12.3 -C app typecheck`
+    - `corepack pnpm@9.12.3 -C app lint -- src/components/posts/feed-control-panel.tsx src/components/posts/feed-control-panel.test.tsx src/components/home/home-feed-preview.tsx src/components/home/home-feed-preview.test.tsx src/app/feed/page.tsx src/components/posts/guest-feed-page-client.tsx src/app/best/page.tsx src/app/public-copy-metadata.test.ts`
+    - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/app src/components --fast`
+    - local dev SSR `/feed?mode=BEST&days=7`: `반응 많은 글`, `반응 기간` 있음; `베스트글`, `인기순`, `베스트순` 없음.
+    - local dev `/best`: `307`, location `/feed?mode=BEST`.
+    - 참고: Playwright browser binary가 로컬 캐시에 없어 screenshot은 실행하지 않았다. 전역 설치나 홈 설정 변경 없이 SSR smoke로 대체했다.
+    - `node scripts/refresh-docs-index.mjs --check`
+    - `git diff --check`
+    - `corepack pnpm@9.12.3 -C app quality:check`
+    - 예정: production deploy smoke.
 
 - `2026-05-25. 운영자 콘텐츠 노출 후 public UI 밀도 조정`
   - production DOM 점검:

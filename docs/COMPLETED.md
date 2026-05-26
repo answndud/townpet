@@ -5683,3 +5683,42 @@
 - 다음 작업:
   - production 배포 후 `/api/home/feed` 응답에 `featured/latest`만 남고 `best`가 없는지 확인한다.
   - 운영자 콘텐츠 public smoke와 health check를 production alias 기준으로 재실행한다.
+
+### 2026-05-26 | 피드 BEST 사용자 라벨 정리
+- 완료일: `2026-05-26`
+- 배경:
+  - 홈 API의 legacy `best` alias는 제거됐지만, 피드 사용자-facing 표면에는 아직 `베스트글`, `베스트순`, `인기순` 같은 표현이 남아 있었다.
+  - 실제 BEST 피드 정렬은 좋아요, 댓글, 조회, 최신성 기반이므로 “베스트”보다 “반응 많은 글”이 더 정확하다.
+  - TownPet의 제품 톤은 과장된 인기 표현보다 신뢰 가능한 기준 설명을 우선한다.
+- 변경내용:
+  - 피드 제어 패널의 `베스트글` 탭을 `반응 많은 글`로 변경했다.
+  - BEST 모드 기간 라벨을 `집계 기간`에서 `반응 기간`으로 바꿨다.
+  - `/feed` metadata 설명과 공개 피드 안내 문구의 `베스트순/인기순`을 `반응순`으로 정리했다.
+  - BEST 모드 empty state를 `반응 많은 글이 없습니다`로 바꿨다.
+  - `/best` alias page metadata를 `반응 많은 글`로 바꿨다.
+  - 홈 `먼저 확인할 글`의 더보기 링크에 `반응 많은 글 더보기` 접근성 라벨을 추가했다.
+- 유지:
+  - 내부 query parameter `mode=BEST`, `FeedMode = "BEST"`, `listBestPosts`/`countBestPosts` 이름은 route 호환성과 query 계층 안정성을 위해 유지한다.
+  - `인기 검색어`, `베스트 댓글`은 별도 의미가 있어 이번 변경 대상에서 제외했다.
+- 코드문서:
+  - [app/src/components/posts/feed-control-panel.tsx](../app/src/components/posts/feed-control-panel.tsx)
+  - [app/src/components/posts/feed-control-panel.test.tsx](../app/src/components/posts/feed-control-panel.test.tsx)
+  - [app/src/app/feed/page.tsx](../app/src/app/feed/page.tsx)
+  - [app/src/components/posts/guest-feed-page-client.tsx](../app/src/components/posts/guest-feed-page-client.tsx)
+  - [app/src/app/best/page.tsx](../app/src/app/best/page.tsx)
+  - [app/src/components/home/home-feed-preview.tsx](../app/src/components/home/home-feed-preview.tsx)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/components/posts/feed-control-panel.test.tsx src/components/home/home-feed-preview.test.tsx src/app/public-copy-metadata.test.ts src/app/sitemap.test.ts`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint -- src/components/posts/feed-control-panel.tsx src/components/posts/feed-control-panel.test.tsx src/components/home/home-feed-preview.tsx src/components/home/home-feed-preview.test.tsx src/app/feed/page.tsx src/components/posts/guest-feed-page-client.tsx src/app/best/page.tsx src/app/public-copy-metadata.test.ts`
+  - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/app src/components --fast`
+  - local dev SSR `/feed?mode=BEST&days=7`: `반응 많은 글`, `반응 기간` 있음; `베스트글`, `인기순`, `베스트순` 없음.
+  - local dev `/best`: `307`, location `/feed?mode=BEST`.
+  - 참고: Playwright browser binary가 로컬 캐시에 없어 screenshot은 실행하지 않았다. 전역 설치나 홈 설정 변경 없이 SSR smoke로 대체했다.
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `git diff --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+  - 예정: production deploy smoke.
+- 다음 작업:
+  - production 배포 후 `/feed`, `/feed/guest`, `/best`의 `반응 많은 글` 라벨과 redirect를 확인한다.

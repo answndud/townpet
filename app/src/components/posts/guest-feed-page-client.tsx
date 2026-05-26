@@ -461,7 +461,7 @@ export function GuestFeedPageClient({
                   {feedTitle}
                 </h1>
                 <p className="mt-1.5 max-w-[640px] text-sm leading-6 text-[#4f678d]">
-                  비회원에게 공개된 커뮤니티 글을 최신순, 인기순으로 확인할 수 있습니다.
+                  비회원에게 공개된 커뮤니티 글을 최신순, 반응순으로 확인할 수 있습니다.
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
@@ -507,12 +507,12 @@ export function GuestFeedPageClient({
           <section id="feed-list" className="animate-fade-up overflow-hidden rounded-xl border border-[#d9e5f7] bg-white">
             {items.length === 0 ? (
               <EmptyState
-                title={mode === "BEST" ? "베스트글이 없습니다" : "게시글이 없습니다"}
+                title={mode === "BEST" ? "반응 많은 글이 없습니다" : "게시글이 없습니다"}
                 description={
                   isGuestTypeBlocked
                     ? "해당 게시판은 로그인 후 확인할 수 있습니다."
                     : mode === "BEST"
-                      ? "선택한 게시판과 범위에서 좋아요가 1개 이상인 글이 아직 없습니다."
+                      ? "선택한 게시판과 기간에서 좋아요가 1개 이상인 글이 아직 없습니다."
                       : "글을 작성하거나 다른 게시판을 확인해 주세요."
                 }
                 actionHref={
