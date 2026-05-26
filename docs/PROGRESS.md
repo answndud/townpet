@@ -74,6 +74,7 @@
 - 상세 편집 화면의 form padding과 필드/editor 간격을 줄여 편집 첫 화면 밀도를 높였다.
 - 상세 정보 grid의 반복 정보 item을 nested rounded card에서 divider 기반 compact cell로 낮췄다.
 - 상세 화면의 오류/로딩 transient state padding과 radius를 compact하게 낮췄다.
+- 분실/목격 공유 패널의 공유 문구 preview를 nested soft box에서 divider 기반 compact preview로 낮췄다.
 
 ## 다음 액션
 
@@ -88,9 +89,27 @@
 - 성능 후속은 최신 `main` 배포 후 같은 스크립트로 production 재측정할 때 별도 작업으로 연다.
 - 다음 기능 점검 후보는 production DB env가 준비된 상태에서 `db:audit:legacy-upload-paths`를 재실행하고, 후보가 있으면 별도 cleanup dry-run 계획을 세우는 것이다.
 - 현재 active 구현 항목 없음.
-- 다음 개발 후보는 최신 `main` 배포 후 production 성능 재측정 또는 상세 공유/미디어 보조 surface audit이다.
+- 다음 개발 후보는 최신 `main` 배포 후 production 성능 재측정 또는 상세 미디어 thumbnail surface audit이다.
 
 ## 최근 검증
+
+- `2026-05-26. 분실/목격 공유 패널 density 정리`
+  - 변경:
+    - 분실/목격 공유 패널의 공유 문구 preview를 `rounded border bg p-3 min-h-32` box에서 `border-t pt-2 min-h-28` compact preview로 바꿨다.
+    - 공유 preview grid 상단 간격을 `mt-4`에서 `mt-3`으로 줄였다.
+    - 포스터 preview는 이미지 확인용 프레임만 남기고 soft blue background를 흰 surface로 낮췄다.
+  - 유지:
+    - 링크 복사, 카카오톡 문구 복사, 공유 이미지 열기, share action logging, status announcement는 변경하지 않았다.
+    - 상세 미디어 갤러리와 lost-found share SVG route는 이번 범위에서 변경하지 않았다.
+  - 검증:
+    - `corepack pnpm@9.12.3 -C app test -- src/components/posts/post-detail-action-accessibility.test.tsx`
+    - `corepack pnpm@9.12.3 -C app lint -- src/components/posts/lost-found-share-panel.tsx src/components/posts/post-detail-action-accessibility.test.tsx`
+    - `corepack pnpm@9.12.3 -C app typecheck`
+    - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/components/posts/lost-found-share-panel.tsx --fast`
+    - `node scripts/refresh-docs-index.mjs --check`
+    - `git diff --check`
+    - `corepack pnpm@9.12.3 -C app quality:check`
+      - ESLint, TypeScript, Vitest `280 files / 1354 tests`, Next production build 통과.
 
 - `2026-05-26. 상세 transient state density 정리`
   - 변경:

@@ -125,6 +125,8 @@ describe("post detail action accessibility", () => {
     expect(html).toContain("공유 이미지 열기");
     expect(html).toContain("min-h-10");
     expect(html).toContain('role="status"');
+    expect(html).toContain("min-h-28 overflow-auto whitespace-pre-wrap border-t border-[#dbe6f5] pt-2");
+    expect(html).not.toContain("min-h-32 overflow-auto whitespace-pre-wrap rounded-lg border border-[#dbe6f5] bg-[#f8fbff] p-3");
   });
 
   it("announces action failures and share status", () => {
