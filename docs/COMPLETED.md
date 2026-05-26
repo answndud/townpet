@@ -5847,6 +5847,12 @@
   - `git diff --check`
   - `corepack pnpm@9.12.3 -C app quality:check`
     - ESLint, TypeScript, Vitest `279 files / 1345 tests`, Next production build 통과.
+  - commit `c9ef22a`: GitHub Actions `docs-quality`, `quality-gate` success.
+  - commit `c9ef22a`: Vercel deployment `success`, alias `https://townpet.vercel.app`.
+  - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health`
+  - production SSR smoke:
+    - `/posts/new`: status `200`; editor `260px`, submit `h-[28px]`, 모바일 정책문구 숨김 class 확인.
+    - `/lost/new`: status `307`, location `/posts/new?type=LOST_FOUND`.
   - local dev `/lost/new`: status `307`, location `/posts/new?type=LOST_FOUND`.
 - 다음 작업:
   - 글쓰기 화면군의 구조화 필드별 세부 안내(병원/산책/분실/거래) 중 남은 nested surface와 긴 문구를 한 유형씩 추가 정리한다.
