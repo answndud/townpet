@@ -6539,3 +6539,35 @@
   - production smoke: `/api/feed/guest?limit=50` 200, posts `0`; public guest feed에 상세 진입 대상 게시글이 없어 댓글 action row HTML smoke는 보류했다.
 - 다음 작업:
   - 최신 `main` 배포 후 production 성능 재측정 또는 상세 댓글 pagination/load state density audit 중 하나를 새 phase로 잡는다.
+
+### 2026-05-26 | 상세 댓글 pagination/load state density 정리
+- 완료일: `2026-05-26`
+- 배경:
+  - 댓글 action row 정리 후에도 pagination과 loading/error/empty 전환 상태가 이전 spacing을 유지해 댓글 카드 하단에서 세로 높이를 다시 늘렸다.
+  - page 이동, reload, loading announcement 같은 접근성/동작은 유지하고 wrapper margin과 control padding만 낮춘다.
+- 변경내용:
+  - 댓글 pagination wrapper margin을 `mt-3`에서 `mt-2`로, gap을 `gap-1.5`에서 `gap-1`로, 이전/다음 button horizontal padding을 `px-3`에서 `px-2.5`로 낮췄다.
+  - 댓글 loading/error state 공통 padding을 `py-2.5`에서 `py-2`로 낮추고, error row gap을 줄였다.
+  - loading text에 `role="status"`와 `aria-live="polite"`를 명시했다.
+  - pending 댓글 preview, 베스트/최신 댓글 section, empty state, 댓글 목록, root composer 전환 간격을 compact 기준으로 낮췄다.
+- 유지:
+  - pagination `min-h-10` touch target, page 이동 동작, reload button, loading/error fetch policy는 변경하지 않았다.
+  - best comment item 내부 action과 root composer 입력 UI는 이번 범위에서 변경하지 않았다.
+- 코드문서:
+  - [app/src/components/posts/post-comment-pagination.tsx](../app/src/components/posts/post-comment-pagination.tsx)
+  - [app/src/components/posts/post-comment-section-client.tsx](../app/src/components/posts/post-comment-section-client.tsx)
+  - [app/src/components/posts/post-comment-thread.tsx](../app/src/components/posts/post-comment-thread.tsx)
+  - [app/src/components/posts/post-comment-layout-class.ts](../app/src/components/posts/post-comment-layout-class.ts)
+  - [app/src/components/posts/post-comment-compact-controls-accessibility.test.tsx](../app/src/components/posts/post-comment-compact-controls-accessibility.test.tsx)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/components/posts/post-comment-layout-class.test.ts src/components/posts/post-comment-compact-controls-accessibility.test.tsx src/components/posts/post-comment-section-client.test.ts src/components/posts/post-comment-thread.test.tsx`
+  - `corepack pnpm@9.12.3 -C app lint -- src/components/posts/post-comment-pagination.tsx src/components/posts/post-comment-layout-class.ts src/components/posts/post-comment-section-client.tsx src/components/posts/post-comment-thread.tsx src/components/posts/post-comment-layout-class.test.ts src/components/posts/post-comment-compact-controls-accessibility.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/components/posts/post-comment-pagination.tsx src/components/posts/post-comment-section-client.tsx src/components/posts/post-comment-thread.tsx --fast`
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `git diff --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `280 files / 1354 tests`, Next production build 통과.
+- 다음 작업:
+  - 최신 `main` 배포 후 production 성능 재측정 또는 상세 best-comment summary/action density audit 중 하나를 새 phase로 잡는다.
