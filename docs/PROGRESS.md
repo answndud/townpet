@@ -105,6 +105,13 @@
     - `git diff --check`
     - `corepack pnpm@9.12.3 -C app quality:check`
       - ESLint, TypeScript, Vitest `279 files / 1349 tests`, Next production build 통과.
+    - commit `d558483`: GitHub Actions `docs-quality`, `quality-gate` success.
+    - commit `d558483`: Vercel deployment `success`, alias `https://townpet.vercel.app`.
+    - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health`
+    - production smoke note:
+      - `/api/feed/guest?limit=30`: status `200`.
+      - guest feed 응답에서 `CARE_REQUEST` 상세 대상 글을 찾지 못해 실제 돌봄 상세 HTML smoke는 보류했다.
+      - 변경은 `post-detail-info-panels.tsx` 소스/targeted test/quality gate로 검증했다.
 
 - `2026-05-26. 분실/목격 상세 안내 compact 정리`
   - 변경:
