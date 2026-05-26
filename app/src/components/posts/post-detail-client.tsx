@@ -492,10 +492,10 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
     return (
       <div className="tp-page-bg min-h-screen pb-16">
         <main className="mx-auto flex max-w-[1000px] flex-col gap-4 px-4 pb-10 pt-8 sm:px-6 lg:px-8">
-          <div className="tp-border-danger-soft tp-surface-danger-soft rounded-xl border p-6 text-center">
+          <div className="tp-border-danger-soft tp-surface-danger-soft rounded-lg border p-4 text-center sm:p-5">
             <h2 className="tp-text-heading text-lg font-semibold">게시글을 불러오지 못했습니다.</h2>
             <p className="tp-text-subtle mt-2 text-sm">{error}</p>
-            <div className="mt-4 flex flex-wrap justify-center gap-2 text-xs">
+            <div className="mt-3 flex flex-wrap justify-center gap-2 text-xs">
               <button
                 type="button"
                 onClick={() => {
@@ -726,7 +726,7 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
 
           </>
         ) : (
-          <div className="tp-border-soft tp-text-subtle rounded-xl border bg-white p-6 text-center text-sm">
+          <div className="tp-border-soft tp-text-subtle rounded-lg border bg-white p-4 text-center text-sm sm:p-5">
             게시글을 불러오는 중...
           </div>
         )}

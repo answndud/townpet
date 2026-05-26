@@ -43,4 +43,13 @@ describe("compact control final sweep", () => {
     expect(code).not.toContain("sm:min-h-8");
     expect(code).not.toContain("sm:min-h-9");
   });
+
+  it("keeps post detail transient states compact", () => {
+    const code = readSource("src/components/posts/post-detail-client.tsx");
+
+    expect(code).toContain("tp-border-danger-soft tp-surface-danger-soft rounded-lg border p-4 text-center sm:p-5");
+    expect(code).toContain("tp-border-soft tp-text-subtle rounded-lg border bg-white p-4 text-center text-sm sm:p-5");
+    expect(code).not.toContain("tp-border-danger-soft tp-surface-danger-soft rounded-xl border p-6");
+    expect(code).not.toContain("tp-border-soft tp-text-subtle rounded-xl border bg-white p-6");
+  });
 });
