@@ -27,8 +27,11 @@ describe("post comment compact controls accessibility", () => {
     expect(code).toContain("min-h-10 min-w-10");
     expect(code).toContain("flex min-h-10 w-full items-center");
     expect(code).toContain("sm:min-h-10");
+    expect(code).toContain('COMMENT_INLINE_FORM_SECTION_CLASS_NAME = "mt-2 border-t border-[#e7eef9] pt-2"');
     expect(code).toContain('role="status"');
     expect(code).toContain('aria-live="polite"');
+    expect(code).not.toContain("POST_COMMENT_FORM_PANEL_CLASS_NAME} mt-2 p-2");
+    expect(code).not.toContain("POST_COMMENT_FORM_PANEL_CLASS_NAME} mt-2 p-2.5");
     expect(code).not.toContain("sm:min-h-6");
     expect(code).not.toContain("sm:min-h-8");
     expect(code).not.toContain("tp-btn-xs");
