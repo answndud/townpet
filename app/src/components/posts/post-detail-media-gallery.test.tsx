@@ -40,9 +40,14 @@ describe("PostDetailMediaGallery", () => {
     );
 
     expect(html).toContain("첨부 이미지");
-    expect(html).toContain("썸네일을 눌러 크게 보고");
+    expect(html).toContain("눌러서 크게 보고 원본은 새 탭으로 열 수 있습니다.");
     expect(html).toContain('aria-label="moka-0.jpg 크게 보기"');
     expect(html).toContain("확대 보기");
+    expect(html).toContain("mt-2.5 grid gap-2");
+    expect(html).toContain("rounded-lg border bg-white");
+    expect(html).toContain("border-t border-[#edf3fb] px-2.5 py-1.5");
+    expect(html).not.toContain("hover:shadow-[0_12px_28px_rgba(18,47,90,0.08)]");
+    expect(html).not.toContain("rounded-2xl border bg-white");
     expect(html).toContain("focus-visible:ring-2");
     expect(html).toContain('src="/uploads/moka-0.jpg"');
     expect(renderToStaticMarkup(<PostDetailMediaGallery images={[]} />)).toBe("");
