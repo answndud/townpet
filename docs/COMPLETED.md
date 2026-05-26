@@ -6738,3 +6738,36 @@
   - production smoke: `/api/feed/guest?limit=50` 200, posts `0`; public guest feed에 상세 진입 대상 게시글이 없어 댓글 composer HTML smoke는 보류했다.
 - 다음 작업:
   - 최신 `main` 배포 후 production 성능 재측정 또는 댓글 inline edit/reply form compactness audit 중 하나를 새 phase로 잡는다.
+
+### 2026-05-26 | 댓글 inline edit/reply form compactness 정리
+- 완료일: `2026-05-26`
+- 배경:
+  - root composer를 compact 기준으로 낮춘 뒤에도 댓글 내부 답글/수정/비회원 확인 form은 이전 `min-h-11`, `min-h-20`, `mt-2 pt-2` 계열을 유지했다.
+  - 같은 댓글 surface 안에서 root composer와 inline form의 control 비율이 달라 보이면 입력 흐름이 불규칙하게 느껴지므로, inline form도 같은 compact rhythm으로 맞춘다.
+- 변경내용:
+  - 댓글 내부 답글/수정/비회원 확인 form section을 `mt-2 pt-2`에서 `mt-1.5 pt-1.5`로 낮췄다.
+  - 답글 form의 비회원 닉네임/비밀번호 input을 root composer와 같은 `min-h-10 px-2.5 py-1.5 text-[13px]` 기준으로 맞췄다.
+  - 답글/수정 textarea를 root composer와 같은 `min-h-[64px] sm:min-h-[56px]` 기준으로 낮췄다.
+  - 비회원 수정/삭제 확인 password input을 `min-h-11 px-3 text-[14px]`에서 `min-h-10 px-2.5 text-[13px]`로 낮췄다.
+  - inline form section/row/input/textarea/action row class를 `post-comment-layout-class.ts` 상수로 분리하고 테스트 감시를 추가했다.
+- 유지:
+  - 답글 등록/취소, 수정 저장, 비회원 비밀번호 확인/취소, 신고 form 연결, submit shortcut, button `min-h-10`, focus ring은 변경하지 않았다.
+  - root composer, 댓글 목록 item, best comment, pagination은 이번 범위에서 변경하지 않았다.
+- 코드문서:
+  - [app/src/components/posts/post-comment-layout-class.ts](../app/src/components/posts/post-comment-layout-class.ts)
+  - [app/src/components/posts/post-comment-thread.tsx](../app/src/components/posts/post-comment-thread.tsx)
+  - [app/src/components/posts/post-comment-layout-class.test.ts](../app/src/components/posts/post-comment-layout-class.test.ts)
+  - [app/src/components/posts/post-comment-compact-controls-accessibility.test.tsx](../app/src/components/posts/post-comment-compact-controls-accessibility.test.tsx)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/components/posts/post-comment-layout-class.test.ts src/components/posts/post-comment-thread.test.tsx src/components/posts/post-comment-compact-controls-accessibility.test.tsx`
+  - `corepack pnpm@9.12.3 -C app lint -- src/components/posts/post-comment-layout-class.ts src/components/posts/post-comment-thread.tsx src/components/posts/post-comment-layout-class.test.ts src/components/posts/post-comment-thread.test.tsx src/components/posts/post-comment-compact-controls-accessibility.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/components/posts/post-comment-layout-class.ts src/components/posts/post-comment-thread.tsx --fast`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `280 files / 1357 tests`, Next production build 통과.
+- screenshot/smoke:
+  - production `/api/feed/guest?limit=50` 200, posts `0`.
+  - public guest feed에 상세 진입 대상 게시글이 없어 댓글 inline form HTML/screenshot smoke는 보류했다.
+- 다음 작업:
+  - 최신 `main` 배포 후 production 성능 재측정 또는 상세 댓글 compactness final sweep 중 하나를 새 phase로 잡는다.
