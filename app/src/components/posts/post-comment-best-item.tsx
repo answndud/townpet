@@ -66,7 +66,7 @@ export function PostCommentBestItem({
   return (
     <article
       id={`best-comment-${comment.id}`}
-      className="flex flex-col gap-2 px-3 py-3.5 sm:px-4"
+      className="flex flex-col gap-1.5 px-3 py-2.5"
     >
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
@@ -82,13 +82,13 @@ export function PostCommentBestItem({
               {formatCommentDate(comment.createdAt)}
             </span>
           </div>
-          <p className="tp-text-primary mt-1.5 overflow-hidden whitespace-pre-line text-[13px] leading-6 [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:3]">
+          <p className="tp-text-primary mt-1 overflow-hidden whitespace-pre-line text-[13px] leading-5 [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]">
             {isMutedPlaceholder ? MUTED_COMMENT_PLACEHOLDER_TEXT : comment.content}
           </p>
         </div>
 
-        <div className="ml-auto flex shrink-0 flex-col items-end gap-2">
-          <div className="tp-text-muted flex items-center gap-3 text-[11px] font-semibold">
+        <div className="ml-auto flex shrink-0 flex-col items-end gap-1.5">
+          <div className="tp-text-muted flex items-center gap-2 text-[11px] font-semibold">
             <span className="inline-flex items-center gap-1">
               <ReactionStatIcon type="LIKE" />
               <span>{comment.likeCount.toLocaleString()}</span>
@@ -101,7 +101,7 @@ export function PostCommentBestItem({
           {isMutedPlaceholder && canToggleMuteUser(currentUserId, comment.author.id) ? (
             <button
               type="button"
-              className="tp-text-muted inline-flex min-h-10 items-center rounded-md px-3 text-[12px] font-medium transition hover:bg-white hover:text-[#2f5da4] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2"
+              className="tp-text-muted inline-flex min-h-10 items-center rounded-md px-2.5 text-[12px] font-medium transition hover:bg-white hover:text-[#2f5da4] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2"
               onClick={() => onUnmute(comment.id, comment.author.id)}
               disabled={isPending}
             >
@@ -111,7 +111,7 @@ export function PostCommentBestItem({
           {comment.threadPage && (comment.threadPage === currentPage || canLoadPage) ? (
             <button
               type="button"
-              className="tp-text-muted inline-flex min-h-10 items-center rounded-md px-3 text-[12px] font-medium transition hover:bg-white hover:text-[#2f5da4] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2"
+              className="tp-text-muted inline-flex min-h-10 items-center rounded-md px-2.5 text-[12px] font-medium transition hover:bg-white hover:text-[#2f5da4] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2"
               onClick={() => onBestCommentJump(comment)}
             >
               원댓글로 가기
