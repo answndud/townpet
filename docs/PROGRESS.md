@@ -94,6 +94,15 @@
     - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/app/posts/new/page.tsx src/components/posts/post-create-form-shell.tsx src/components/posts/post-create-basic-fields.tsx --fast`
     - local dev SSR `/posts/new`: status `200`; `글 작성` 있음; `커뮤니티 작성`, `자동 임시저장` 없음; compact header padding 확인.
     - local dev `/lost/new`: status `307`, location `/posts/new?type=LOST_FOUND`.
+    - `node scripts/refresh-docs-index.mjs --check`
+    - `git diff --check`
+    - `corepack pnpm@9.12.3 -C app quality:check`
+    - production deploy `e126774`: Vercel status `success`, alias `https://townpet.vercel.app`
+    - GitHub Actions `docs-quality`, `quality-gate` success.
+    - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health`
+    - production SSR smoke:
+      - `/posts/new`: status `200`; `글 작성` 있음; `커뮤니티 작성`, `자동 임시저장` 없음.
+      - `/lost/new`: status `307`, location `/posts/new?type=LOST_FOUND`.
 
 - `2026-05-26. 피드 하단 검색/CTA 밀도 정리`
   - 변경:
