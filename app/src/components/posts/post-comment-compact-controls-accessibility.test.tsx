@@ -47,6 +47,8 @@ describe("post comment compact controls accessibility", () => {
     );
 
     expect(code).toContain("inline-flex min-h-10");
+    expect(code).toContain("py-2.5");
+    expect(code).toContain("[-webkit-line-clamp:2]");
     expect(code).not.toContain("sm:min-h-6");
   });
 

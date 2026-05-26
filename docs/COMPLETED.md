@@ -6578,3 +6578,33 @@
   - production smoke: `/api/feed/guest?limit=50` 200, posts `0`; public guest feed에 상세 진입 대상 게시글이 없어 댓글 pagination/load state HTML smoke는 보류했다.
 - 다음 작업:
   - 최신 `main` 배포 후 production 성능 재측정 또는 상세 best-comment summary/action density audit 중 하나를 새 phase로 잡는다.
+
+### 2026-05-26 | 상세 best-comment summary/action density 정리
+- 완료일: `2026-05-26`
+- 배경:
+  - 댓글 pagination/load state 정리 후에도 베스트 댓글 summary가 댓글 카드 내부에서 다시 rounded border surface를 만들고, item `py-3.5`와 3줄 clamp로 일반 댓글보다 높게 보였다.
+  - 베스트 댓글은 원댓글로 가기 전 요약이므로, 동작과 touch target은 유지하고 summary density와 nested surface만 낮춘다.
+- 변경내용:
+  - 베스트 댓글 item padding을 `py-3.5`에서 `py-2.5`로, 내부 gap을 `gap-2`에서 `gap-1.5`로 줄였다.
+  - 베스트 댓글 summary 본문을 `leading-6`/3줄 clamp에서 `leading-5`/2줄 clamp로 낮췄다.
+  - 좋아요/싫어요 통계 gap과 `원댓글로 가기`/`뮤트 해제` action horizontal padding을 줄였다.
+  - 베스트 댓글 wrapper를 `rounded-lg border bg-[#f7fbff]`에서 `border-y bg-[#fbfdff]` 기반 compact section으로 낮췄다.
+- 유지:
+  - `BEST` badge, 작성자 메뉴, 좋아요/싫어요 숫자, 원댓글 이동, 뮤트 해제, `min-h-10` touch target은 변경하지 않았다.
+  - 최신 댓글 list, pagination, root composer는 이번 범위에서 변경하지 않았다.
+- 코드문서:
+  - [app/src/components/posts/post-comment-best-item.tsx](../app/src/components/posts/post-comment-best-item.tsx)
+  - [app/src/components/posts/post-comment-thread.tsx](../app/src/components/posts/post-comment-thread.tsx)
+  - [app/src/components/posts/post-comment-compact-controls-accessibility.test.tsx](../app/src/components/posts/post-comment-compact-controls-accessibility.test.tsx)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/components/posts/post-comment-thread.test.tsx src/components/posts/post-comment-compact-controls-accessibility.test.tsx`
+  - `corepack pnpm@9.12.3 -C app lint -- src/components/posts/post-comment-best-item.tsx src/components/posts/post-comment-thread.tsx src/components/posts/post-comment-compact-controls-accessibility.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/components/posts/post-comment-best-item.tsx src/components/posts/post-comment-thread.tsx --fast`
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `git diff --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `280 files / 1354 tests`, Next production build 통과.
+- 다음 작업:
+  - 최신 `main` 배포 후 production 성능 재측정 또는 상세 댓글 reply nesting/indent density audit 중 하나를 새 phase로 잡는다.

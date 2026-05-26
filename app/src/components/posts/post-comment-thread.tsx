@@ -961,12 +961,12 @@ export function PostCommentThread({
       ) : null}
 
       {hasBestComments ? (
-        <section className="mt-3">
-          <div className="flex items-center justify-between gap-2 px-1 pb-1.5">
+        <section className="mt-2.5">
+          <div className="flex items-center justify-between gap-2 px-1 pb-1">
             <h3 className="tp-text-heading text-[13px] font-semibold">베스트 댓글</h3>
             <span className="tp-text-label text-[10px]">좋아요 기준</span>
           </div>
-          <div className={`${COMMENT_BORDER_CLASS_NAME} overflow-hidden rounded-lg border bg-[#f7fbff]`}>
+          <div className={`${COMMENT_BORDER_CLASS_NAME} overflow-hidden border-y bg-[#fbfdff]`}>
             <div className={`divide-y ${COMMENT_DIVIDER_CLASS_NAME}`}>
               {bestComments.map((comment) => (
                 <PostCommentBestItem
