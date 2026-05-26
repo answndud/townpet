@@ -6083,3 +6083,32 @@
     - 변경은 `post-detail-info-panels.tsx` 소스/targeted test/quality gate로 검증했다.
 - 다음 작업:
   - 상세 화면의 돌봄 신청/피드백 workflow panel 중 하나를 한 화면군으로 잡아 정리한다.
+
+### 2026-05-26 | 돌봄 상세 workflow compact 정리
+- 완료일: `2026-05-26`
+- 배경:
+  - 상세 화면의 돌봄 요청 정보 패널은 상태 변경, 돌봄 지원, 지원자 관리, 완료 피드백이 각각 별도 bordered panel로 쌓여 있었다.
+  - 돌봄 workflow는 권한과 상태가 많아 구분은 필요하지만, 같은 정보 패널 안에서 카드가 반복 중첩되면 모바일에서 길고 무겁게 보인다.
+- 변경내용:
+  - 상세 화면 `CARE_REQUEST` 정보 패널의 상태 변경, 돌봄 지원, 내 지원 상태, 지원자 관리, 완료 피드백, 비공개 피드백 section을 rounded bordered panel에서 `border-t` divider 기반 compact section으로 바꿨다.
+  - 지원자/피드백 반복 항목은 nested card 대신 row divider로 구분했다.
+  - workflow 내부 gap을 줄이고 helper/action row는 wrap 가능한 compact row로 맞췄다.
+- 유지:
+  - 돌봄 요청 상세 데이터, 상태 변경 권한, 지원/취소/수락/거절/피드백 action handler는 변경하지 않았다.
+  - textarea, select, checkbox의 touch target/focus baseline은 유지했다.
+  - 분실/병원/거래 등 다른 상세 패널은 이번 범위에서 변경하지 않았다.
+- 코드문서:
+  - [app/src/components/posts/post-detail-info-panels.tsx](../app/src/components/posts/post-detail-info-panels.tsx)
+  - [app/src/components/posts/post-detail-info-panels-accessibility.test.ts](../app/src/components/posts/post-detail-info-panels-accessibility.test.ts)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/components/posts/post-detail-info-panels-accessibility.test.ts`
+  - `corepack pnpm@9.12.3 -C app lint -- src/components/posts/post-detail-info-panels.tsx src/components/posts/post-detail-info-panels-accessibility.test.ts`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/components/posts/post-detail-info-panels.tsx --fast`
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `git diff --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `279 files / 1349 tests`, Next production build 통과.
+- 다음 작업:
+  - 최신 `main` 배포 후 production 성능 재측정 또는 다른 상세 화면군의 남은 nested surface audit 중 하나를 새 phase로 잡는다.

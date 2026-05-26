@@ -77,4 +77,22 @@ describe("post detail info panels accessibility", () => {
       "col-span-full rounded-lg border border-[#ead5a5] bg-[#fff9e8] px-3 py-2",
     );
   });
+
+  it("keeps care workflow panels compact in the detail panel", () => {
+    const code = source();
+    const careSection = code.slice(
+      code.indexOf('{post.careRequest ? ('),
+      code.indexOf('{post.lostFoundAlert ? ('),
+    );
+
+    expect(careSection).toContain("CARE_WORKFLOW_SECTION_CLASS");
+    expect(careSection).toContain("돌봄 요청 상태 변경");
+    expect(careSection).toContain("돌봄 지원");
+    expect(careSection).toContain("지원자 관리");
+    expect(careSection).toContain("완료 피드백");
+    expect(careSection).toContain("grid gap-2 border-t border-[#e2e8f0] pt-2 first:border-t-0 first:pt-0");
+    expect(careSection).not.toContain("col-span-full mt-1 rounded-lg border border-[#cfe9dc] bg-[#f3fbf7] p-3");
+    expect(careSection).not.toContain("col-span-full mt-1 rounded-lg border border-[#cfe9dc] bg-white p-3");
+    expect(careSection).not.toContain("rounded-md border border-[#e2e8f0] bg-[#fbfcfe] p-3");
+  });
 });
