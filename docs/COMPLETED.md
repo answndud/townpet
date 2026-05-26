@@ -6389,5 +6389,12 @@
   - `git diff --check`
   - `corepack pnpm@9.12.3 -C app quality:check`
     - ESLint, TypeScript, Vitest `280 files / 1354 tests`, Next production build 통과.
+- 원격/운영 확인:
+  - commit: `d26a50b Compact post detail media gallery`
+  - GitHub Actions: `docs-quality`, `quality-gate` 성공.
+  - Vercel: `https://townpet-o2hocjkc8-jmoon0227-9736s-projects.vercel.app` Ready, alias `https://townpet.vercel.app`.
+  - `OPS_BASE_URL=https://townpet.vercel.app COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app ops:check:health`
+    - `https://townpet.vercel.app/api/health` 200, `payload.status: ok`.
+  - production smoke: `/api/feed/guest?limit=50` 200, posts `0`; public guest feed에 이미지 첨부 게시글이 없어 상세 미디어 갤러리 HTML smoke는 보류했다.
 - 다음 작업:
   - 최신 `main` 배포 후 production 성능 재측정 또는 상세 댓글/제보 입력 surface audit 중 하나를 새 phase로 잡는다.
