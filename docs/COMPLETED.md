@@ -6433,3 +6433,30 @@
   - production smoke: `/api/feed/guest?limit=50` 200, posts `0`; public guest feed에 상세 진입 대상 게시글이 없어 댓글 composer HTML smoke는 보류했다.
 - 다음 작업:
   - 최신 `main` 배포 후 production 성능 재측정 또는 상세 댓글 item/목격 제보 metadata surface audit 중 하나를 새 phase로 잡는다.
+
+### 2026-05-26 | 상세 댓글 목격 metadata density 정리
+- 완료일: `2026-05-26`
+- 배경:
+  - 상세 댓글 root composer 정리 후, 목격 제보 댓글의 위치/시간/사진 metadata가 댓글 본문 아래에서 별도 `rounded border bg` box처럼 남아 있었다.
+  - 목격 metadata는 댓글을 보조하는 구조화 정보이므로, badge와 링크 affordance는 유지하고 divider 기반 compact metadata로 낮춘다.
+- 변경내용:
+  - 목격 제보 댓글의 위치/시간/사진 metadata를 `rounded border bg px-3 py-2` box에서 `border-t pt-2` divider 기반 compact metadata로 바꿨다.
+  - metadata grid 간격을 `gap-1.5`에서 `gap-x-3 gap-y-1.5`로 분리해 가로 폭은 쓰되 세로 높이는 줄였다.
+- 유지:
+  - 목격 위치, 목격 시간, 사진 링크, 보호자 공개 badge, 댓글 반응/답글/신고 동작은 변경하지 않았다.
+  - root composer와 답글/수정/신고 inline form은 이번 범위에서 변경하지 않았다.
+- 코드문서:
+  - [app/src/components/posts/post-comment-thread.tsx](../app/src/components/posts/post-comment-thread.tsx)
+  - [app/src/components/posts/post-comment-thread.test.tsx](../app/src/components/posts/post-comment-thread.test.tsx)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/components/posts/post-comment-thread.test.tsx`
+  - `corepack pnpm@9.12.3 -C app lint -- src/components/posts/post-comment-thread.tsx src/components/posts/post-comment-thread.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/components/posts/post-comment-thread.tsx --fast`
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `git diff --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `280 files / 1354 tests`, Next production build 통과.
+- 다음 작업:
+  - 최신 `main` 배포 후 production 성능 재측정 또는 상세 댓글 inline reply/edit/report form surface audit 중 하나를 새 phase로 잡는다.
