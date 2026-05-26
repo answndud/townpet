@@ -303,5 +303,5 @@
 - 다음 작업을 시작할 때는 코드보다 먼저 이 문서에 새 phase를 추가한다.
 - 후보:
   - 최신 `main` 배포 후 production 성능 재측정
-  - 다른 상세 화면군의 남은 nested surface audit
+  - 상세 primary card의 남은 nested surface audit
 - 지역을 하나로 제한하지 않는다. `/`과 public acquisition UI에는 사용자가 선택하지 않은 특정 지역명을 기본값처럼 노출하지 않는다.

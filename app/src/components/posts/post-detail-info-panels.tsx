@@ -61,6 +61,8 @@ const INFO_PANEL_SELECT_CLASS =
 
 const INFO_PANEL_STATUS_MESSAGE_CLASS = "mt-2 text-xs font-medium";
 
+const STATUS_WORKFLOW_SECTION_CLASS = "col-span-full grid gap-2 border-t border-[#e3ecf8] pt-2";
+
 const CARE_WORKFLOW_SECTION_CLASS = "col-span-full grid gap-2 border-t border-[#dbeee3] pt-2";
 
 type PostDetailInfoPanelsProps = {
@@ -327,9 +329,9 @@ export function PostDetailInfoPanels({
             </ul>
           </div>
           {canManageMarketStatus ? (
-            <div className="col-span-full mt-1 rounded-lg border border-[#dce7f6] bg-[#f8fbff] p-3">
+            <div className={STATUS_WORKFLOW_SECTION_CLASS}>
               <p className="text-xs font-semibold text-[#315b9a]">거래 상태 변경</p>
-              <div className="mt-2 flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5">
                 {authorMarketStatusOptions.map((status) => {
                   const isCurrent = post.marketListing?.status === status;
                   return (
@@ -733,7 +735,7 @@ export function PostDetailInfoPanels({
             </ul>
           </div>
           {canManageLostFoundStatus ? (
-            <div className="col-span-full rounded-lg border border-[#dbe6f5] bg-[#f8fbff] px-3 py-2.5">
+            <div className={STATUS_WORKFLOW_SECTION_CLASS}>
               <label className="tp-text-label text-[10px] text-[#5a7398]" htmlFor="lost-found-status">
                 상태 변경
               </label>
