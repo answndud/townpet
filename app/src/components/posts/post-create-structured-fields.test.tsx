@@ -69,6 +69,8 @@ describe("post create structured fields", () => {
     expect(html).toContain("장소 후기 정보");
     expect(html).toContain("동반 가능 여부");
     expect(html).toContain("산책 코스 정보");
+    expect(html).toContain("코스 이름보다 혼잡 시간, 목줄 구간, 대형견 적합 여부를 우선 적어 주세요.");
+    expect(html).toContain("배변봉투함, 물 마실 곳, 위험 구간이 있으면 함께 남겨 주세요.");
     expect(html).toContain("대형견 적합");
     expect(html).toContain("혼잡 시간");
     expect(html).toContain("목줄 필수 구간");
