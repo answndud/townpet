@@ -6694,3 +6694,40 @@
   - production smoke: `/api/feed/guest?limit=50` 200, posts `0`; public guest feed에 상세 진입 대상 게시글이 없어 댓글 root item HTML smoke는 보류했다.
 - 다음 작업:
   - 최신 `main` 배포 후 production 성능 재측정 또는 상세 댓글 composer/form vertical rhythm audit 중 하나를 새 phase로 잡는다.
+
+### 2026-05-26 | 상세 댓글 composer/form vertical rhythm 정리
+- 완료일: `2026-05-26`
+- 배경:
+  - root 댓글 item을 compact하게 낮춘 뒤에도 하단 댓글 composer는 `py-2`, input `min-h-11`, textarea `min-h-20`, submit `px-4 text-sm` 기준으로 남아 댓글 리스트보다 큰 입력 블록처럼 보였다.
+  - composer는 반복 사용되는 입력 surface이므로, 작성 가능성과 focus/touch 기준은 유지하면서 세로 리듬과 내부 control 비율을 낮춘다.
+- 변경내용:
+  - 댓글 composer wrapper를 `mt-2.5 pt-2`에서 `mt-2 pt-1.5`로 줄였다.
+  - root form shell을 `py-2`에서 `py-1.5`로 낮췄다.
+  - 목격/일반 mode button padding을 `px-3`에서 `px-2.5`로 줄였다.
+  - 비회원/목격 input을 `min-h-11 px-3 py-2 text-[14px]`에서 `min-h-10 px-2.5 py-1.5 text-[13px]`로 맞췄다.
+  - root textarea를 `min-h-20 sm:min-h-16`에서 `min-h-[64px] sm:min-h-[56px]`로 낮췄다.
+  - submit button을 `px-4 text-sm`에서 `px-3 text-xs`로 줄이고 `min-h-10`은 유지했다.
+  - root composer wrapper/shell/row/input/textarea/submit class를 `post-comment-layout-class.ts` 상수로 분리하고 테스트 감시를 추가했다.
+- 유지:
+  - 댓글 등록/목격 제보 등록 동작, guest nickname/password, private sighting checkbox, login prompt, submit shortcut, focus ring, 40px submit touch target은 변경하지 않았다.
+  - 댓글 목록, root item, reply nesting, best comment, pagination은 이번 범위에서 변경하지 않았다.
+- 코드문서:
+  - [app/src/components/posts/post-comment-layout-class.ts](../app/src/components/posts/post-comment-layout-class.ts)
+  - [app/src/components/posts/post-comment-root-form.tsx](../app/src/components/posts/post-comment-root-form.tsx)
+  - [app/src/components/posts/post-comment-thread.tsx](../app/src/components/posts/post-comment-thread.tsx)
+  - [app/src/components/posts/post-comment-layout-class.test.ts](../app/src/components/posts/post-comment-layout-class.test.ts)
+  - [app/src/components/posts/post-form-accessibility.test.tsx](../app/src/components/posts/post-form-accessibility.test.tsx)
+  - [app/src/components/posts/post-comment-thread.test.tsx](../app/src/components/posts/post-comment-thread.test.tsx)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/components/posts/post-comment-layout-class.test.ts src/components/posts/post-form-accessibility.test.tsx src/components/posts/post-comment-thread.test.tsx src/components/posts/post-comment-compact-controls-accessibility.test.tsx`
+  - `corepack pnpm@9.12.3 -C app lint -- src/components/posts/post-comment-layout-class.ts src/components/posts/post-comment-root-form.tsx src/components/posts/post-comment-thread.tsx src/components/posts/post-comment-layout-class.test.ts src/components/posts/post-form-accessibility.test.tsx src/components/posts/post-comment-thread.test.tsx src/components/posts/post-comment-compact-controls-accessibility.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/components/posts/post-comment-layout-class.ts src/components/posts/post-comment-root-form.tsx src/components/posts/post-comment-thread.tsx --fast`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `280 files / 1356 tests`, Next production build 통과.
+- screenshot/smoke:
+  - production `/api/feed/guest?limit=50` 200, posts `0`.
+  - public guest feed에 상세 진입 대상 게시글이 없어 댓글 composer HTML/screenshot smoke는 보류했다.
+- 다음 작업:
+  - 최신 `main` 배포 후 production 성능 재측정 또는 댓글 inline edit/reply form compactness audit 중 하나를 새 phase로 잡는다.

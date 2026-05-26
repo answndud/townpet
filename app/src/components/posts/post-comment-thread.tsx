@@ -12,6 +12,7 @@ import { LinkifiedContent } from "@/components/content/linkified-content";
 import { PostCommentBestItem } from "@/components/posts/post-comment-best-item";
 import {
   POST_COMMENT_FORM_FIELD_CLASS_NAME,
+  POST_COMMENT_ROOT_COMPOSER_WRAPPER_CLASS_NAME,
   POST_COMMENT_THREAD_AVATAR_CLASS_NAME,
   POST_COMMENT_THREAD_BODY_CLASS_NAME,
   POST_COMMENT_THREAD_CARD_CLASS_NAME,
@@ -1016,7 +1017,7 @@ export function PostCommentThread({
         onPageChange={onCommentsChanged}
       />
 
-      <div className={`${COMMENT_BORDER_CLASS_NAME} mt-2.5 border-t pt-2`}>
+      <div className={POST_COMMENT_ROOT_COMPOSER_WRAPPER_CLASS_NAME}>
         <PostCommentRootForm
           canComment={canComment}
           lostFoundSightingEnabled={lostFoundSightingEnabled}
