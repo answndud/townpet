@@ -6048,3 +6048,31 @@
     - 변경은 `post-detail-info-panels.tsx` 소스/targeted test/quality gate로 검증했다.
 - 다음 작업:
   - 상세 화면의 분실 정보 안내 box 또는 돌봄 신청/피드백 workflow panel 중 하나를 한 화면군으로 잡아 정리한다.
+
+### 2026-05-26 | 분실/목격 상세 안내 compact 정리
+- 완료일: `2026-05-26`
+- 배경:
+  - 글쓰기 분실/목격 위치 안내는 compact guidance로 정리했지만, 상세 화면의 분실/목격 제보 정보 패널에는 허위 제보·개인정보 안내가 노란 bordered warning box로 남아 있었다.
+  - 분실/목격 상세는 고위험 public 정보이므로 정책 안내를 숨기면 안 되지만, 제보 정보 카드 안에 또 다른 카드처럼 보이는 surface는 줄일 필요가 있었다.
+- 변경내용:
+  - 상세 화면 `LOST_FOUND` 정보 패널의 허위 제보·개인정보 안내를 rounded warning box에서 `border-t` divider 기반 compact guidance로 바꿨다.
+  - 신고 사유 안내와 보호자 공개 제보 안내를 두 개의 짧은 bullet row로 나눴다.
+- 유지:
+  - 제보 유형, 상태, 마지막 확인 시간, 동물 종류, 품종/특징, 확인 위치 표시 로직은 변경하지 않았다.
+  - 분실/목격 상태 변경 권한, select workflow, 개인정보 정책 로직은 변경하지 않았다.
+  - 병원/거래/돌봄 등 다른 상세 패널은 이번 범위에서 변경하지 않았다.
+- 코드문서:
+  - [app/src/components/posts/post-detail-info-panels.tsx](../app/src/components/posts/post-detail-info-panels.tsx)
+  - [app/src/components/posts/post-detail-info-panels-accessibility.test.ts](../app/src/components/posts/post-detail-info-panels-accessibility.test.ts)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/components/posts/post-detail-info-panels-accessibility.test.ts`
+  - `corepack pnpm@9.12.3 -C app lint -- src/components/posts/post-detail-info-panels.tsx src/components/posts/post-detail-info-panels-accessibility.test.ts`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/components/posts/post-detail-info-panels.tsx --fast`
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `git diff --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `279 files / 1348 tests`, Next production build 통과.
+- 다음 작업:
+  - 상세 화면의 돌봄 신청/피드백 workflow panel 중 하나를 한 화면군으로 잡아 정리한다.

@@ -717,12 +717,18 @@ export function PostDetailInfoPanels({
             span="wide"
             value={renderTextValue(post.lostFoundAlert.lastSeenLocation)}
           />
-          <div className="col-span-full rounded-lg border border-[#ead5a5] bg-[#fff9e8] px-3 py-2 text-[12px] leading-5 text-[#6f551d]">
-            허위 제보, 장난 제보, 개인정보 노출은 신고 사유에서{" "}
-            <span className="font-semibold">허위 정보/장난 제보</span>{" "}
-            또는{" "}
-            <span className="font-semibold">개인정보 노출</span>을 선택해 주세요.
-            민감한 목격 위치와 사진은 댓글의 보호자 공개 제보로 남깁니다.
+          <div className="col-span-full grid gap-1.5 border-t border-[#ead5a5] pt-2">
+            <p className="tp-text-heading text-[12px] font-semibold">제보 확인 기준</p>
+            <ul className="tp-text-subtle grid gap-1 text-[12px] leading-5 sm:grid-cols-2">
+              <li className="flex gap-1.5">
+                <span className="mt-[0.55em] h-1 w-1 shrink-0 rounded-full bg-[#c9a95a]" aria-hidden="true" />
+                <span>허위 제보, 장난 제보, 개인정보 노출은 신고 사유로 선택해 주세요.</span>
+              </li>
+              <li className="flex gap-1.5">
+                <span className="mt-[0.55em] h-1 w-1 shrink-0 rounded-full bg-[#c9a95a]" aria-hidden="true" />
+                <span>민감한 목격 위치와 사진은 댓글의 보호자 공개 제보로 남깁니다.</span>
+              </li>
+            </ul>
           </div>
           {canManageLostFoundStatus ? (
             <div className="col-span-full rounded-lg border border-[#dbe6f5] bg-[#f8fbff] px-3 py-2.5">
