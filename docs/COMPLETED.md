@@ -6292,3 +6292,31 @@
     - 변경은 `post-detail-info-section.tsx` 소스/targeted test/quality gate로 검증했다.
 - 다음 작업:
   - 최신 `main` 배포 후 production 성능 재측정 또는 상세 화면 residual visual audit 중 하나를 새 phase로 잡는다.
+
+### 2026-05-26 | 상세 transient state density 정리
+- 완료일: `2026-05-26`
+- 배경:
+  - 상세 화면의 primary/info/edit surface는 compact하게 정리됐지만, 오류/로딩 transient state는 여전히 `rounded-xl p-6`로 남아 실제 콘텐츠보다 시각적 무게가 컸다.
+  - 해당 상태는 복구 안내와 로딩 피드백이 목적이므로, touch target과 action은 유지하고 panel density만 낮춘다.
+- 변경내용:
+  - 상세 화면의 오류 상태 panel을 `rounded-xl p-6`에서 `rounded-lg p-4 sm:p-5`로 줄였다.
+  - 오류 상태 action row 간격을 `mt-4`에서 `mt-3`으로 줄였다.
+  - 게시글 로딩 상태 panel도 같은 compact padding/radius 기준으로 맞췄다.
+- 유지:
+  - 게시글 재시도, 게스트 페이지 링크, error message, loading copy는 변경하지 않았다.
+  - 상세 primary card, 정보 grid, 댓글, 미디어 갤러리, 공유 패널은 이번 범위에서 변경하지 않았다.
+- 코드문서:
+  - [app/src/components/posts/post-detail-client.tsx](../app/src/components/posts/post-detail-client.tsx)
+  - [app/src/components/compact-control-final-sweep.test.ts](../app/src/components/compact-control-final-sweep.test.ts)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/components/compact-control-final-sweep.test.ts`
+  - `corepack pnpm@9.12.3 -C app lint -- src/components/posts/post-detail-client.tsx src/components/compact-control-final-sweep.test.ts`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/components/posts/post-detail-client.tsx --fast`
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `git diff --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `280 files / 1354 tests`, Next production build 통과.
+- 다음 작업:
+  - 최신 `main` 배포 후 production 성능 재측정 또는 상세 공유/미디어 보조 surface audit 중 하나를 새 phase로 잡는다.
