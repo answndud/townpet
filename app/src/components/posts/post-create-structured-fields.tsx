@@ -669,12 +669,18 @@ export function WalkRouteFields({
           </label>
         </div>
       </div>
-      <div className="rounded-lg border border-[#dbe6f5] bg-[#f8fbff] px-3 py-2.5 md:col-span-2">
-        <p className="tp-text-heading text-[13px] font-semibold">작성 기준</p>
-        <p className="tp-text-subtle mt-1 text-[12px] leading-5">
-          산책로 이름보다 실제 이용 조건이 중요합니다. 대형견 적합 여부, 혼잡 시간, 목줄 구간,
-          배변봉투함, 물 마실 곳, 위험 구간을 알 수 있으면 함께 적어 주세요.
-        </p>
+      <div className="grid gap-1.5 border-t border-[#e3ecf8] pt-2 md:col-span-2">
+        <p className="tp-text-heading text-[12px] font-semibold">작성 기준</p>
+        <div className="tp-text-subtle grid gap-1 text-[12px] leading-5 sm:grid-cols-2">
+          <p className="flex gap-1.5">
+            <span className="mt-[0.55em] h-1 w-1 shrink-0 rounded-full bg-[#9fb7d9]" aria-hidden="true" />
+            <span>코스 이름보다 혼잡 시간, 목줄 구간, 대형견 적합 여부를 우선 적어 주세요.</span>
+          </p>
+          <p className="flex gap-1.5">
+            <span className="mt-[0.55em] h-1 w-1 shrink-0 rounded-full bg-[#9fb7d9]" aria-hidden="true" />
+            <span>배변봉투함, 물 마실 곳, 위험 구간이 있으면 함께 남겨 주세요.</span>
+          </p>
+        </div>
       </div>
     </StructuredFieldSection>
   );

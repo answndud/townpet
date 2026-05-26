@@ -5811,6 +5811,33 @@
 - 다음 작업:
   - 글쓰기 본문 editor와 구조화 필드의 모바일 밀도, submit footer, 오류 안내를 한 화면군 안에서 추가 정리한다.
 
+### 2026-05-26 | 산책 코스 작성 안내 compact 정리
+- 완료일: `2026-05-26`
+- 배경:
+  - 산책 코스 구조화 필드는 이미 세부 입력이 많아서, 작성 기준 안내가 별도 bordered box로 남아 있으면 모바일에서 form이 더 길게 느껴진다.
+  - 안내 자체는 산책 코스 품질을 위해 필요하므로, 별도 surface 대신 divider 기반 guidance로 낮은 밀도에서 보여주는 방식이 적합하다.
+- 변경내용:
+  - `WALK_ROUTE` 구조화 필드의 작성 기준 안내를 rounded bordered box에서 `border-t` divider 기반 compact guidance로 바꿨다.
+  - 산책로 이름보다 혼잡 시간, 목줄 구간, 대형견 적합 여부를 우선 적도록 문구를 압축했다.
+  - 배변봉투함, 물 마실 곳, 위험 구간 안내를 별도 문장으로 분리했다.
+- 유지:
+  - 코스 이름, 거리, 소요시간, 난이도, 편의 시설 입력 필드와 submit payload/validation은 변경하지 않았다.
+  - 산책 코스 검색 토큰과 상세 표시 로직은 변경하지 않았다.
+- 코드문서:
+  - [app/src/components/posts/post-create-structured-fields.tsx](../app/src/components/posts/post-create-structured-fields.tsx)
+  - [app/src/components/posts/post-create-structured-fields.test.tsx](../app/src/components/posts/post-create-structured-fields.test.tsx)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/components/posts/post-create-structured-fields.test.tsx`
+  - `corepack pnpm@9.12.3 -C app lint -- src/components/posts/post-create-structured-fields.tsx src/components/posts/post-create-structured-fields.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/components/posts/post-create-structured-fields.tsx --fast`
+  - local dev SSR `/posts/new?type=WALK_ROUTE`: status `200`; compact guidance 있음; 편의/위험 안내 문구 있음; 이전 긴 문구 없음.
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `git diff --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `279 files / 1345 tests`, Next production build 통과.
+
 ### 2026-05-26 | 병원 후기 작성 안내 compact 정리
 - 완료일: `2026-05-26`
 - 배경:

@@ -63,6 +63,7 @@
 - 글쓰기 editor, 구조화 필드, submit footer의 모바일 밀도를 줄이고 오류 안내를 compact alert 형태로 정리했다.
 - 거래 글 작성의 반려용품 거래 체크 안내를 nested bordered box에서 얇은 divider 기반 compact guidance로 바꿨다.
 - 병원 후기 작성 기준 안내를 nested bordered box에서 divider 기반 compact guidance로 바꾸고, 위험 표현 안내를 짧게 정리했다.
+- 산책 코스 작성 기준 안내를 nested bordered box에서 divider 기반 compact guidance로 바꾸고, 실제 이용 조건 중심으로 문구를 줄였다.
 
 ## 다음 액션
 
@@ -76,9 +77,28 @@
 - `/`과 public acquisition UI에는 사용자가 선택하지 않은 특정 지역명을 기본값처럼 노출하지 않는다.
 - 성능 후속은 최신 `main` 배포 후 같은 스크립트로 production 재측정할 때 별도 작업으로 연다.
 - 다음 기능 점검 후보는 production DB env가 준비된 상태에서 `db:audit:legacy-upload-paths`를 재실행하고, 후보가 있으면 별도 cleanup dry-run 계획을 세우는 것이다.
-- 다음 개발 후보는 글쓰기 화면군의 구조화 필드별 세부 안내 중 산책/분실 유형에 남은 nested surface와 긴 문구를 한 유형씩 추가 정리하는 것이다.
+- 다음 개발 후보는 글쓰기 화면군의 분실/목격 작성 유형에 남은 긴 위치/개인정보 안내 문구를 compact하게 정리하는 것이다.
 
 ## 최근 검증
+
+- `2026-05-26. 산책 코스 작성 안내 compact 정리`
+  - 변경:
+    - `WALK_ROUTE` 구조화 필드의 작성 기준 안내를 rounded bordered box에서 `border-t` divider 기반 compact guidance로 바꿨다.
+    - 산책로 이름보다 혼잡 시간, 목줄 구간, 대형견 적합 여부를 우선 적도록 문구를 압축했다.
+    - 배변봉투함, 물 마실 곳, 위험 구간 안내를 별도 문장으로 분리했다.
+  - 유지:
+    - 코스 이름, 거리, 소요시간, 난이도, 편의 시설 입력 필드와 submit payload/validation은 변경하지 않았다.
+    - 산책 코스 검색 토큰과 상세 표시 로직은 변경하지 않았다.
+  - 검증:
+    - `corepack pnpm@9.12.3 -C app test -- src/components/posts/post-create-structured-fields.test.tsx`
+    - `corepack pnpm@9.12.3 -C app lint -- src/components/posts/post-create-structured-fields.tsx src/components/posts/post-create-structured-fields.test.tsx`
+    - `corepack pnpm@9.12.3 -C app typecheck`
+    - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/components/posts/post-create-structured-fields.tsx --fast`
+    - local dev SSR `/posts/new?type=WALK_ROUTE`: status `200`; compact guidance 있음; 편의/위험 안내 문구 있음; 이전 긴 문구 없음.
+    - `node scripts/refresh-docs-index.mjs --check`
+    - `git diff --check`
+    - `corepack pnpm@9.12.3 -C app quality:check`
+      - ESLint, TypeScript, Vitest `279 files / 1345 tests`, Next production build 통과.
 
 - `2026-05-26. 병원 후기 작성 안내 compact 정리`
   - 변경:
