@@ -342,7 +342,11 @@ export function PostCreateForm({
 
       <StructuredFieldDatalists />
 
-      {error ? <p className="text-sm text-rose-600">{error}</p> : null}
+      {error ? (
+        <p className="rounded-lg border border-[#f0c9cf] bg-[#fff7f7] px-3 py-2 text-[12px] leading-5 text-[#a8525b]">
+          {error}
+        </p>
+      ) : null}
 
       <PostCreateSubmitFooter
         canUseLocalScope={canUseLocalScope}

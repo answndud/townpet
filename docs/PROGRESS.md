@@ -60,6 +60,7 @@
 - 피드의 사용자-facing `베스트글/인기순/베스트순` 표현을 실제 기준에 맞춰 `반응 많은 글/반응순`으로 정리했다. 내부 `mode=BEST`와 query helper 이름은 호환을 위해 유지한다.
 - 피드 화면군의 하단 검색 도구를 더 compact하게 줄이고, 인증 피드 하단의 중복 `글쓰기` CTA를 제거했다.
 - 글쓰기 화면군(`/posts/new`, `/lost/new`)의 상단 header와 작성 기준 aside를 compact하게 줄이고, nested panel과 중복 자동 임시저장 badge를 제거했다.
+- 글쓰기 editor, 구조화 필드, submit footer의 모바일 밀도를 줄이고 오류 안내를 compact alert 형태로 정리했다.
 
 ## 다음 액션
 
@@ -73,9 +74,34 @@
 - `/`과 public acquisition UI에는 사용자가 선택하지 않은 특정 지역명을 기본값처럼 노출하지 않는다.
 - 성능 후속은 최신 `main` 배포 후 같은 스크립트로 production 재측정할 때 별도 작업으로 연다.
 - 다음 기능 점검 후보는 production DB env가 준비된 상태에서 `db:audit:legacy-upload-paths`를 재실행하고, 후보가 있으면 별도 cleanup dry-run 계획을 세우는 것이다.
-- 다음 개발 후보는 글쓰기 본문 editor와 구조화 필드의 모바일 밀도, submit footer, 오류 안내를 한 화면군 안에서 추가 정리하는 것이다.
+- 다음 개발 후보는 글쓰기 화면군의 구조화 필드별 세부 안내(병원/산책/분실/거래) 중 남은 nested surface와 긴 문구를 한 유형씩 추가 정리하는 것이다.
 
 ## 최근 검증
+
+- `2026-05-26. 글쓰기 editor/submit 밀도 정리`
+  - 변경:
+    - 본문 editor 최소 높이를 `340px`에서 `260px`로 줄이고, 최대 높이를 `640px`에서 `560px`로 낮췄다.
+    - editor wrapper와 preview padding을 줄였다.
+    - SunEditor toolbar padding과 버튼 최소 높이를 줄여 모바일 첫 화면에서 본문 입력 영역이 과하게 길어지지 않도록 했다.
+    - 구조화 필드 공통 section의 모바일 padding/gap을 줄였다.
+    - submit footer 버튼 높이를 `30px`에서 `28px`로 줄였다.
+    - submit footer의 긴 정책 요약은 모바일에서 숨기고, desktop에서만 보이게 했다.
+    - 제출 오류 문구를 단순 빨간 텍스트에서 border/background가 있는 compact alert로 바꿨다.
+  - 유지:
+    - editor serialization, upload, submit payload, validation, draft 저장 로직은 변경하지 않았다.
+    - `/lost/new` redirect는 그대로 유지한다.
+  - 검증:
+    - `corepack pnpm@9.12.3 -C app test -- src/components/posts/post-create-form-shell.test.tsx src/components/posts/post-rich-text-editor-shell.test.tsx src/components/posts/post-create-structured-fields.test.tsx src/app/globals-css.test.ts src/components/posts/post-create-submit.test.ts`
+    - `corepack pnpm@9.12.3 -C app lint -- src/components/posts/post-body-rich-editor.tsx src/components/posts/post-create-form.tsx src/components/posts/post-create-form-shell.tsx src/components/posts/post-create-structured-fields.tsx src/app/globals.css src/app/globals-css.test.ts src/components/posts/post-create-form-shell.test.tsx`
+      - 참고: CSS 파일은 eslint 설정상 ignored warning이 나오며 command exit는 성공이다.
+    - `corepack pnpm@9.12.3 -C app typecheck`
+    - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/components/posts/post-body-rich-editor.tsx src/components/posts/post-create-form.tsx src/components/posts/post-create-form-shell.tsx src/components/posts/post-create-structured-fields.tsx src/app/globals.css --fast`
+    - local dev SSR `/posts/new`: status `200`; editor `260px`, submit `h-[28px]`, 모바일 정책문구 숨김 class 확인.
+    - local dev `/lost/new`: status `307`, location `/posts/new?type=LOST_FOUND`.
+    - `node scripts/refresh-docs-index.mjs --check`
+    - `git diff --check`
+    - `corepack pnpm@9.12.3 -C app quality:check`
+      - ESLint, TypeScript, Vitest `279 files / 1345 tests`, Next production build 통과.
 
 - `2026-05-26. 글쓰기 header/작성 기준 밀도 정리`
   - 변경:
