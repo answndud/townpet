@@ -106,9 +106,9 @@ export function FeedControlPanel({
                   mode === "BEST"
                     ? ACTIVE_PRIMARY_TAB_CLASS_NAME
                     : INACTIVE_PRIMARY_TAB_CLASS_NAME
-                }`}
+                  }`}
               >
-                베스트글
+                반응 많은 글
               </Link>
             </div>
           </div>
@@ -216,7 +216,7 @@ export function FeedControlPanel({
           <div className="hidden h-4 w-px bg-[#dbe6f6] lg:block" aria-hidden="true" />
 
           <div className="flex flex-wrap items-center gap-1">
-            <SectionLabel>{mode === "ALL" ? "기간" : "집계 기간"}</SectionLabel>
+            <SectionLabel>{mode === "ALL" ? "기간" : "반응 기간"}</SectionLabel>
             <div className="flex flex-wrap items-center gap-1">
               {mode === "ALL" ? (
                 <>

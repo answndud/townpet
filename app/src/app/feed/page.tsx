@@ -88,13 +88,13 @@ type BestFeedItem = BestFeedItems[number];
 
 export const metadata: Metadata = {
   title: "동네 반려생활 피드",
-  description: "병원 후기, 산책코스, 분실/목격 제보와 질문 글을 최신순과 베스트순으로 확인하세요.",
+  description: "병원 후기, 산책코스, 분실/목격 제보와 질문 글을 최신순과 반응순으로 확인하세요.",
   alternates: {
     canonical: "/feed",
   },
   openGraph: {
     title: "TownPet 동네 반려생활 피드",
-    description: "병원 후기, 산책코스, 분실/목격 제보와 질문 글을 최신순과 베스트순으로 확인하세요.",
+    description: "병원 후기, 산책코스, 분실/목격 제보와 질문 글을 최신순과 반응순으로 확인하세요.",
     url: "/feed",
   },
 };
@@ -811,12 +811,12 @@ export default async function Home({ searchParams }: HomePageProps) {
         <section id="feed-list" className="animate-fade-up overflow-hidden rounded-xl border border-[#d9e5f7] bg-white">
           {items.length === 0 ? (
             <EmptyState
-              title={mode === "BEST" ? "베스트글이 없습니다" : "게시글이 없습니다"}
+              title={mode === "BEST" ? "반응 많은 글이 없습니다" : "게시글이 없습니다"}
               description={
                 isGuestTypeBlocked
                   ? "해당 게시판은 로그인 후 확인할 수 있습니다."
                   : mode === "BEST"
-                  ? "선택한 게시판과 범위에서 좋아요가 1개 이상인 글이 아직 없습니다."
+                  ? "선택한 게시판과 기간에서 좋아요가 1개 이상인 글이 아직 없습니다."
                   : "글을 작성하거나 다른 게시판을 확인해 주세요."
               }
               actionHref={

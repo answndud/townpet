@@ -54,7 +54,9 @@ describe("FeedControlPanel", () => {
     );
 
     expect(html).not.toContain("추천 방식");
-    expect(html).toContain("집계 기간");
+    expect(html).toContain("반응 많은 글");
+    expect(html).not.toContain("베스트글");
+    expect(html).toContain("반응 기간");
     expect(html).toContain("최근 3일");
   });
 
