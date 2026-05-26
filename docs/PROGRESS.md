@@ -208,6 +208,13 @@
   - screenshot/smoke:
     - production `/api/feed/guest?limit=50` 200, posts `0`.
     - public guest feed에 상세 진입 대상 게시글이 없어 댓글 inline form HTML/screenshot smoke는 보류했다.
+  - 원격/운영 확인:
+    - commit: `183eb86 Compact inline comment forms`
+    - GitHub commit status: `Vercel` success.
+    - Vercel: `https://townpet-jfojz3teq-jmoon0227-9736s-projects.vercel.app` Ready, alias `https://townpet.vercel.app`.
+    - `OPS_BASE_URL=https://townpet.vercel.app COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app ops:check:health`
+      - `https://townpet.vercel.app/api/health` 200, `payload.status: ok`.
+    - production smoke: `/api/feed/guest?limit=50` 200, posts `0`; public guest feed에 상세 진입 대상 게시글이 없어 댓글 inline form HTML smoke는 보류했다.
 
 - `2026-05-26. 상세 best-comment summary/action density 정리`
   - 변경:
