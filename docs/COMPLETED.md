@@ -6327,3 +6327,31 @@
     - 변경은 `post-detail-client.tsx` 소스/targeted test/quality gate로 검증했다.
 - 다음 작업:
   - 최신 `main` 배포 후 production 성능 재측정 또는 상세 공유/미디어 보조 surface audit 중 하나를 새 phase로 잡는다.
+
+### 2026-05-26 | 분실/목격 공유 패널 density 정리
+- 완료일: `2026-05-26`
+- 배경:
+  - 상세 공유/미디어 보조 surface audit에서 분실/목격 공유 패널의 공유 문구 preview가 별도 soft card처럼 보여, 이미 `tp-card`인 공유 패널 내부에서 nested surface가 남아 있었다.
+  - 공유 문구와 포스터는 확인용 preview이므로, 주요 action은 유지하고 preview surface만 낮춘다.
+- 변경내용:
+  - 분실/목격 공유 패널의 공유 문구 preview를 `rounded border bg p-3 min-h-32` box에서 `border-t pt-2 min-h-28` compact preview로 바꿨다.
+  - 공유 preview grid 상단 간격을 `mt-4`에서 `mt-3`으로 줄였다.
+  - 포스터 preview는 이미지 확인용 프레임만 남기고 soft blue background를 흰 surface로 낮췄다.
+- 유지:
+  - 링크 복사, 카카오톡 문구 복사, 공유 이미지 열기, share action logging, status announcement는 변경하지 않았다.
+  - 상세 미디어 갤러리와 lost-found share SVG route는 이번 범위에서 변경하지 않았다.
+- 코드문서:
+  - [app/src/components/posts/lost-found-share-panel.tsx](../app/src/components/posts/lost-found-share-panel.tsx)
+  - [app/src/components/posts/post-detail-action-accessibility.test.tsx](../app/src/components/posts/post-detail-action-accessibility.test.tsx)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/components/posts/post-detail-action-accessibility.test.tsx`
+  - `corepack pnpm@9.12.3 -C app lint -- src/components/posts/lost-found-share-panel.tsx src/components/posts/post-detail-action-accessibility.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/components/posts/lost-found-share-panel.tsx --fast`
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `git diff --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `280 files / 1354 tests`, Next production build 통과.
+- 다음 작업:
+  - 최신 `main` 배포 후 production 성능 재측정 또는 상세 미디어 thumbnail surface audit 중 하나를 새 phase로 잡는다.

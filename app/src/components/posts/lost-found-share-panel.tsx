@@ -101,15 +101,15 @@ export function LostFoundSharePanel({ post, postUrl }: LostFoundSharePanelProps)
         </div>
       </div>
 
-      <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_180px]">
-        <pre className="min-h-32 overflow-auto whitespace-pre-wrap rounded-lg border border-[#dbe6f5] bg-[#f8fbff] p-3 text-xs leading-5 text-[#244a7f]">
+      <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1fr)_180px]">
+        <pre className="min-h-28 overflow-auto whitespace-pre-wrap border-t border-[#dbe6f5] pt-2 text-xs leading-5 text-[#244a7f]">
           {shareText}
         </pre>
         <a
           href={posterUrl}
           target="_blank"
           rel="noreferrer"
-          className="block overflow-hidden rounded-lg border border-[#dbe6f5] bg-[#f8fbff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/35"
+          className="block overflow-hidden rounded-lg border border-[#dbe6f5] bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/35"
           onClick={handlePosterOpen}
         >
           <Image
