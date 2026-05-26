@@ -5811,6 +5811,33 @@
 - 다음 작업:
   - 글쓰기 본문 editor와 구조화 필드의 모바일 밀도, submit footer, 오류 안내를 한 화면군 안에서 추가 정리한다.
 
+### 2026-05-26 | 병원 후기 작성 안내 compact 정리
+- 완료일: `2026-05-26`
+- 배경:
+  - 병원 후기 구조화 필드는 비교 가능한 경험 데이터를 받는 핵심 form이지만, 작성 기준 안내가 별도 bordered box로 들어가 form 안의 nested surface처럼 보였다.
+  - 병원 후기 정책은 중요하므로 숨기지 않되, 모바일 첫 화면에서 안내 박스가 입력 필드보다 크게 보이지 않게 줄일 필요가 있었다.
+- 변경내용:
+  - `HOSPITAL_REVIEW` 구조화 필드의 작성 기준 안내를 rounded bordered box에서 `border-t` divider 기반 compact guidance로 바꿨다.
+  - 직접 경험 기준과 위험 표현 안내를 두 문장으로 분리해 모바일에서 읽기 쉽게 했다.
+  - `사기/과잉진료 같은 표현` 문구는 `과잉진료 단정`으로 바꿔 더 구체적이고 덜 자극적인 표현으로 정리했다.
+- 유지:
+  - 병원명, 방문 목적, 비용, 대기시간, 만족도 등 입력 필드와 submit payload/validation은 변경하지 않았다.
+  - 병원 후기 안전 정책과 검토 로직은 변경하지 않았다.
+- 코드문서:
+  - [app/src/components/posts/post-create-structured-fields.tsx](../app/src/components/posts/post-create-structured-fields.tsx)
+  - [app/src/components/posts/post-create-structured-fields.test.tsx](../app/src/components/posts/post-create-structured-fields.test.tsx)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/components/posts/post-create-structured-fields.test.tsx`
+  - `corepack pnpm@9.12.3 -C app lint -- src/components/posts/post-create-structured-fields.tsx src/components/posts/post-create-structured-fields.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/components/posts/post-create-structured-fields.tsx --fast`
+  - local dev SSR `/posts/new?type=HOSPITAL_REVIEW`: status `200`; compact guidance 있음; 짧은 위험 표현 문구 있음; 이전 긴 문구 없음.
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `git diff --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `279 files / 1345 tests`, Next production build 통과.
+
 ### 2026-05-26 | 거래 글 작성 안내 compact 정리
 - 완료일: `2026-05-26`
 - 배경:

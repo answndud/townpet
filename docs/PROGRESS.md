@@ -62,6 +62,7 @@
 - 글쓰기 화면군(`/posts/new`, `/lost/new`)의 상단 header와 작성 기준 aside를 compact하게 줄이고, nested panel과 중복 자동 임시저장 badge를 제거했다.
 - 글쓰기 editor, 구조화 필드, submit footer의 모바일 밀도를 줄이고 오류 안내를 compact alert 형태로 정리했다.
 - 거래 글 작성의 반려용품 거래 체크 안내를 nested bordered box에서 얇은 divider 기반 compact guidance로 바꿨다.
+- 병원 후기 작성 기준 안내를 nested bordered box에서 divider 기반 compact guidance로 바꾸고, 위험 표현 안내를 짧게 정리했다.
 
 ## 다음 액션
 
@@ -75,9 +76,28 @@
 - `/`과 public acquisition UI에는 사용자가 선택하지 않은 특정 지역명을 기본값처럼 노출하지 않는다.
 - 성능 후속은 최신 `main` 배포 후 같은 스크립트로 production 재측정할 때 별도 작업으로 연다.
 - 다음 기능 점검 후보는 production DB env가 준비된 상태에서 `db:audit:legacy-upload-paths`를 재실행하고, 후보가 있으면 별도 cleanup dry-run 계획을 세우는 것이다.
-- 다음 개발 후보는 글쓰기 화면군의 구조화 필드별 세부 안내 중 병원/산책/분실 유형에 남은 nested surface와 긴 문구를 한 유형씩 추가 정리하는 것이다.
+- 다음 개발 후보는 글쓰기 화면군의 구조화 필드별 세부 안내 중 산책/분실 유형에 남은 nested surface와 긴 문구를 한 유형씩 추가 정리하는 것이다.
 
 ## 최근 검증
+
+- `2026-05-26. 병원 후기 작성 안내 compact 정리`
+  - 변경:
+    - `HOSPITAL_REVIEW` 구조화 필드의 작성 기준 안내를 rounded bordered box에서 `border-t` divider 기반 compact guidance로 바꿨다.
+    - 직접 경험 기준과 위험 표현 안내를 두 문장으로 분리해 모바일에서 읽기 쉽게 했다.
+    - `사기/과잉진료 같은 표현` 문구는 `과잉진료 단정`으로 바꿔 더 구체적이고 덜 자극적인 표현으로 정리했다.
+  - 유지:
+    - 병원명, 방문 목적, 비용, 대기시간, 만족도 등 입력 필드와 submit payload/validation은 변경하지 않았다.
+    - 병원 후기 안전 정책과 검토 로직은 변경하지 않았다.
+  - 검증:
+    - `corepack pnpm@9.12.3 -C app test -- src/components/posts/post-create-structured-fields.test.tsx`
+    - `corepack pnpm@9.12.3 -C app lint -- src/components/posts/post-create-structured-fields.tsx src/components/posts/post-create-structured-fields.test.tsx`
+    - `corepack pnpm@9.12.3 -C app typecheck`
+    - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/components/posts/post-create-structured-fields.tsx --fast`
+    - local dev SSR `/posts/new?type=HOSPITAL_REVIEW`: status `200`; compact guidance 있음; 짧은 위험 표현 문구 있음; 이전 긴 문구 없음.
+    - `node scripts/refresh-docs-index.mjs --check`
+    - `git diff --check`
+    - `corepack pnpm@9.12.3 -C app quality:check`
+      - ESLint, TypeScript, Vitest `279 files / 1345 tests`, Next production build 통과.
 
 - `2026-05-26. 거래 글 작성 안내 compact 정리`
   - 변경:

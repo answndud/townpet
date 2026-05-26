@@ -274,12 +274,18 @@ export function HospitalReviewFields({
           ))}
         </select>
       </label>
-      <div className="md:col-span-2 rounded-lg border border-[#dbe6f5] bg-[#f8fbff] px-3 py-2.5">
-        <p className="tp-text-heading text-[13px] font-semibold">작성 기준</p>
-        <p className="tp-text-subtle mt-1 text-[12px] leading-5">
-          직접 경험한 대기, 설명, 비용, 재방문 의향을 중심으로 적어 주세요. 진단 단정,
-          사기/과잉진료 같은 표현, 직원 실명과 연락처는 신고 또는 검토 대상이 될 수 있습니다.
-        </p>
+      <div className="grid gap-1.5 border-t border-[#e3ecf8] pt-2 md:col-span-2">
+        <p className="tp-text-heading text-[12px] font-semibold">작성 기준</p>
+        <div className="tp-text-subtle grid gap-1 text-[12px] leading-5 sm:grid-cols-2">
+          <p className="flex gap-1.5">
+            <span className="mt-[0.55em] h-1 w-1 shrink-0 rounded-full bg-[#9fb7d9]" aria-hidden="true" />
+            <span>대기, 설명, 비용, 재방문 의향처럼 직접 겪은 내용만 적어 주세요.</span>
+          </p>
+          <p className="flex gap-1.5 text-[#8a4b32]">
+            <span className="mt-[0.55em] h-1 w-1 shrink-0 rounded-full bg-[#c99a81]" aria-hidden="true" />
+            <span>진단 단정, 과잉진료 단정, 직원 실명과 연락처는 검토될 수 있습니다.</span>
+          </p>
+        </div>
       </div>
     </StructuredFieldSection>
   );
