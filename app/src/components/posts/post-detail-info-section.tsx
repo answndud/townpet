@@ -28,9 +28,9 @@ export function PostDetailInfoSection({
   children,
 }: PostDetailInfoSectionProps) {
   return (
-    <section className="tp-card p-5 sm:p-6">
+    <section className="tp-card p-4 sm:p-5">
       <h2 className="tp-text-section-title tp-text-heading">{title}</h2>
-      <div className="tp-text-accent mt-4 grid gap-3 text-sm md:grid-cols-3">{children}</div>
+      <div className="tp-text-accent mt-3 grid gap-x-3 gap-y-2 text-sm md:grid-cols-3">{children}</div>
     </section>
   );
 }
@@ -43,7 +43,7 @@ export function PostDetailInfoItem({
   const spanClassName = resolvePostDetailInfoItemSpanClass(span);
 
   return (
-    <div className={`tp-border-soft tp-surface-soft rounded-lg border px-3 py-3 ${spanClassName}`}>
+    <div className={`tp-border-soft border-t py-2.5 ${spanClassName}`}>
       <p className="tp-text-label text-[11px] uppercase tracking-[0.2em]">{label}</p>
       <div className="tp-text-heading mt-1 font-medium">{value}</div>
     </div>
