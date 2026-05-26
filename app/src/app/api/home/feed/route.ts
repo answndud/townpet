@@ -162,11 +162,11 @@ export async function GET(request: NextRequest) {
       viewerId: undefined,
       personalized: false,
     }).catch((error) => {
-        if (isPrismaDatabaseUnavailableError(error)) {
-          return { items: [], nextCursor: null };
-        }
-        throw error;
-      });
+      if (isPrismaDatabaseUnavailableError(error)) {
+        return { items: [], nextCursor: null };
+      }
+      throw error;
+    });
 
     const latestCandidates = latestPosts.items as RawHomePost[];
     const featured = serializeFeaturedHomePosts(latestCandidates);
@@ -175,7 +175,6 @@ export async function GET(request: NextRequest) {
     return jsonOk(
       {
         featured,
-        best: featured,
         latest: serializeHomePosts(latestCandidates, featuredPostIds),
       },
       {

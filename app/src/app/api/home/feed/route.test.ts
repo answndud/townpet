@@ -75,7 +75,7 @@ describe("GET /api/home/feed", () => {
     } as never);
   });
 
-  it("returns compact featured and latest home feed with a legacy best alias", async () => {
+  it("returns compact featured and latest home feed", async () => {
     const response = await GET(new Request("http://localhost/api/home/feed") as NextRequest);
     const payload = await response.json();
 
@@ -100,7 +100,7 @@ describe("GET /api/home/feed", () => {
       typeLabel: "병원 후기",
       neighborhoodLabel: "서초구 잠원동",
     });
-    expect(payload.data.best).toEqual(payload.data.featured);
+    expect(payload.data.best).toBeUndefined();
     expect(payload.data.latest).toEqual([]);
   });
 
@@ -183,7 +183,7 @@ describe("GET /api/home/feed", () => {
       "post-operator-verified",
       "post-popular",
     ]);
-    expect(payload.data.best).toEqual(payload.data.featured);
+    expect(payload.data.best).toBeUndefined();
   });
 
   it("excludes production demo sample posts and fills featured from a wider preview candidate pool", async () => {

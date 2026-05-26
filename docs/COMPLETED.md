@@ -5643,3 +5643,39 @@
 - 다음 작업:
   - production 배포 후 `/api/home/feed`에서 `featured`, `best`, `latest` shape와 운영자 콘텐츠 노출을 확인한다.
   - legacy `best` alias 제거는 외부 사용 여부 확인 뒤 별도 작업으로 진행한다.
+
+### 2026-05-26 | 홈 feed legacy best alias 제거
+- 완료일: `2026-05-26`
+- 배경:
+  - 홈 첫 컬럼의 canonical API field는 `featured`이고, 사용자-facing 카피도 `먼저 확인할 글`이다.
+  - 이전 단계에서 `best`는 임시 호환 alias로 남겼지만, repo-local 사용처 audit 결과 실제 홈 클라이언트는 `featured`만 사용했다.
+  - 운영 smoke fallback이 `best`를 계속 허용하면 canonical field 제거 여부를 검증하지 못한다.
+- audit 결과:
+  - `app/src/components/home/home-feed-preview.tsx`는 `data.featured`와 `data.latest`만 사용한다.
+  - `app/scripts/check-operator-content-public-smoke.ts`만 `best` fallback을 허용하고 있었다.
+  - `app/src/app/api/home/feed/route.test.ts`는 alias 유지 테스트만 남아 있었다.
+  - 문서의 과거 archive 기록 외에 runtime dependency는 확인되지 않았다.
+- 변경내용:
+  - `/api/home/feed` 응답에서 legacy `best` alias를 제거했다.
+  - 홈 preview client payload type에서 `best`를 제거했다.
+  - 운영자 콘텐츠 public smoke는 `featured/latest`만 검사하도록 수정했다.
+  - API route test는 `payload.data.best`가 `undefined`임을 고정한다.
+  - `/api/home/feed` route의 catch indentation을 정리했다.
+- 코드문서:
+  - [app/src/app/api/home/feed/route.ts](../app/src/app/api/home/feed/route.ts)
+  - [app/src/app/api/home/feed/route.test.ts](../app/src/app/api/home/feed/route.test.ts)
+  - [app/src/components/home/home-feed-preview.tsx](../app/src/components/home/home-feed-preview.tsx)
+  - [app/scripts/check-operator-content-public-smoke.ts](../app/scripts/check-operator-content-public-smoke.ts)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/app/api/home/feed/route.test.ts src/components/home/home-feed-preview.test.tsx scripts/check-operator-content-public-smoke.test.ts`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `corepack pnpm@9.12.3 -C app lint -- src/app/api/home/feed/route.ts src/app/api/home/feed/route.test.ts src/components/home/home-feed-preview.tsx src/components/home/home-feed-preview.test.tsx scripts/check-operator-content-public-smoke.ts scripts/check-operator-content-public-smoke.test.ts`
+  - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/app src/components --fast`
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `git diff --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+  - 예정: production deploy smoke.
+- 다음 작업:
+  - production 배포 후 `/api/home/feed` 응답에 `featured/latest`만 남고 `best`가 없는지 확인한다.
+  - 운영자 콘텐츠 public smoke와 health check를 production alias 기준으로 재실행한다.

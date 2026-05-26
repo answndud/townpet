@@ -56,6 +56,7 @@
 - 홈 Live board의 첫 컬럼을 `지금 많이 보는 글`에서 `먼저 확인할 글`로 바꿔, 초기 운영자 콘텐츠를 인기 콘텐츠처럼 과장하지 않도록 정리했다.
 - 홈 `/api/home/feed`의 첫 컬럼 canonical 응답 필드를 `best`에서 `featured`로 바꿨다. 기존 클라이언트 호환을 위해 `best` alias는 유지한다.
 - 홈 `/api/home/feed`의 `featured` 선정 기준을 `검증된 운영자 정리 글 -> 운영자 글 -> 참여도 -> 최신성` 순서로 분리했다. 더 이상 legacy `best` 쿼리를 재사용하지 않는다.
+- repo-local audit 결과 홈 클라이언트와 운영 smoke가 `featured`를 사용하고 있어 `/api/home/feed`의 legacy `best` 응답 alias를 제거했다.
 
 ## 다음 액션
 
@@ -70,7 +71,7 @@
 - 성능 후속은 최신 `main` 배포 후 같은 스크립트로 production 재측정할 때 별도 작업으로 연다.
 - 다음 기능 점검 후보는 production DB env가 준비된 상태에서 `db:audit:legacy-upload-paths`를 재실행하고, 후보가 있으면 별도 cleanup dry-run 계획을 세우는 것이다.
 - 다음 개발 후보는 최신 배포 후 `/`, `/feed/guest`, `/search/guest` production screenshot smoke로 홈 best preview가 비지 않는지, 피드 상단 제어 영역 높이가 줄었는지 확인하는 것이다.
-- 다음 개발 후보는 legacy `best` alias 제거 시점을 정하기 전에 외부 사용 여부를 확인하는 것이다.
+- 다음 개발 후보는 production 배포 후 `/api/home/feed` 응답에서 `best` 키가 제거되고 `featured/latest`만 남는지 smoke하는 것이다.
 
 ## 최근 검증
 
@@ -128,6 +129,26 @@
     - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health`
     - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:operator-content-public`
     - production `/api/home/feed`: keys `featured`, `best`, `latest`; `best`는 `featured` alias와 일치; `featured` 5건은 모두 verified operator content; `latest` 2건은 featured와 중복 없음.
+
+- `2026-05-26. 홈 feed legacy best alias 제거`
+  - 변경:
+    - repo-local audit에서 실제 홈 클라이언트는 `data.featured`만 읽고, `best`는 API 테스트와 운영 smoke fallback에만 남아 있음을 확인했다.
+    - `/api/home/feed` 응답에서 legacy `best` alias를 제거했다.
+    - 홈 preview client type에서 `best`를 제거했다.
+    - 운영자 콘텐츠 public smoke는 `featured/latest`만 검사하도록 정리했다.
+    - API 테스트는 `payload.data.best`가 더 이상 반환되지 않는 것을 고정한다.
+  - 이유:
+    - 사용자-facing 카피와 API canonical field가 모두 `featured`로 정리된 상태에서 `best` alias를 계속 유지하면 내부 의미 drift가 재발한다.
+    - smoke fallback이 alias를 계속 허용하면 제거 회귀를 잡지 못한다.
+  - 검증:
+    - `corepack pnpm@9.12.3 -C app test -- src/app/api/home/feed/route.test.ts src/components/home/home-feed-preview.test.tsx scripts/check-operator-content-public-smoke.test.ts`
+    - `corepack pnpm@9.12.3 -C app typecheck`
+    - `corepack pnpm@9.12.3 -C app lint -- src/app/api/home/feed/route.ts src/app/api/home/feed/route.test.ts src/components/home/home-feed-preview.tsx src/components/home/home-feed-preview.test.tsx scripts/check-operator-content-public-smoke.ts scripts/check-operator-content-public-smoke.test.ts`
+    - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/app src/components --fast`
+    - `node scripts/refresh-docs-index.mjs --check`
+    - `git diff --check`
+    - `corepack pnpm@9.12.3 -C app quality:check`
+    - 예정: production deploy smoke.
 
 - `2026-05-25. 운영자 콘텐츠 노출 후 public UI 밀도 조정`
   - production DOM 점검:
