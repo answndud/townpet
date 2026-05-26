@@ -61,6 +61,8 @@ const INFO_PANEL_SELECT_CLASS =
 
 const INFO_PANEL_STATUS_MESSAGE_CLASS = "mt-2 text-xs font-medium";
 
+const CARE_WORKFLOW_SECTION_CLASS = "col-span-full grid gap-2 border-t border-[#dbeee3] pt-2";
+
 type PostDetailInfoPanelsProps = {
   post: PostDetailItem;
   canManageMarketStatus: boolean;
@@ -412,9 +414,9 @@ export function PostDetailInfoPanels({
             value={renderTextValue(post.careRequest.requirements)}
           />
           {canManageCareStatus ? (
-            <div className="col-span-full mt-1 rounded-lg border border-[#cfe9dc] bg-[#f3fbf7] p-3">
+            <div className={CARE_WORKFLOW_SECTION_CLASS}>
               <p className="text-xs font-semibold text-[#21543d]">돌봄 요청 상태 변경</p>
-              <div className="mt-2 flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5">
                 {visibleCareStatusOptions.map((status) => {
                   const isCurrent = post.careRequest?.status === status;
                   return (
@@ -442,7 +444,7 @@ export function PostDetailInfoPanels({
             </div>
           ) : null}
           {canApplyCareRequest ? (
-            <div className="col-span-full mt-1 rounded-lg border border-[#cfe9dc] bg-white p-3">
+            <div className={CARE_WORKFLOW_SECTION_CLASS}>
               <p className="text-xs font-semibold text-[#21543d]">돌봄 지원</p>
               <textarea
                 value={careApplicationInput}
@@ -452,7 +454,7 @@ export function PostDetailInfoPanels({
                 className="mt-2 min-h-24 w-full rounded-md border border-[#b5dcc9] bg-white px-3 py-2 text-sm text-[#20362b] outline-none transition focus:border-[#2f7b58] focus:ring-2 focus:ring-[#b5dcc9]"
                 placeholder="요청자에게 전달할 메시지를 입력하세요."
               />
-              <div className="mt-2 flex items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="text-xs text-[#6a7f73]">
                   연락처 공유는 정책에 따라 제한될 수 있습니다.
                 </span>
@@ -468,7 +470,7 @@ export function PostDetailInfoPanels({
             </div>
           ) : null}
           {ownCareApplication ? (
-            <div className="col-span-full mt-1 rounded-lg border border-[#dce7f6] bg-[#f8fbff] p-3">
+            <div className={CARE_WORKFLOW_SECTION_CLASS}>
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <p className="text-xs font-semibold text-[#315b9a]">
                   내 지원 상태: {careApplicationStatusLabel[ownCareApplication.status] ?? ownCareApplication.status}
@@ -485,21 +487,21 @@ export function PostDetailInfoPanels({
                 ) : null}
               </div>
               {ownCareApplication.message ? (
-                <p className="mt-2 whitespace-pre-wrap text-xs text-[#5d779e]">
+                <p className="whitespace-pre-wrap border-t border-[#dbeee3] pt-2 text-xs leading-5 text-[#5d779e]">
                   {ownCareApplication.message}
                 </p>
               ) : null}
             </div>
           ) : null}
           {canManageCareApplications ? (
-            <div className="col-span-full mt-1 rounded-lg border border-[#e2e8f0] bg-white p-3">
+            <div className={CARE_WORKFLOW_SECTION_CLASS}>
               <p className="text-xs font-semibold text-[#2f3b4c]">지원자 관리</p>
               {careApplications.length > 0 ? (
-                <div className="mt-2 flex flex-col gap-2">
+                <div className="grid gap-2">
                   {careApplications.map((application) => (
                     <div
                       key={application.id}
-                      className="rounded-md border border-[#e2e8f0] bg-[#fbfcfe] p-3"
+                      className="grid gap-2 border-t border-[#e2e8f0] pt-2 first:border-t-0 first:pt-0"
                     >
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <div>
@@ -542,7 +544,7 @@ export function PostDetailInfoPanels({
                         ) : null}
                       </div>
                       {application.message ? (
-                        <p className="mt-2 whitespace-pre-wrap text-xs text-[#4f5f75]">
+                        <p className="whitespace-pre-wrap text-xs leading-5 text-[#4f5f75]">
                           {application.message}
                         </p>
                       ) : null}
@@ -560,9 +562,9 @@ export function PostDetailInfoPanels({
             </p>
           ) : null}
           {canCreateCareCompletionFeedback ? (
-            <div className="col-span-full mt-1 rounded-lg border border-[#e2e8f0] bg-white p-3">
+            <div className={CARE_WORKFLOW_SECTION_CLASS}>
               <p className="text-xs font-semibold text-[#2f3b4c]">완료 피드백</p>
-              <div className="mt-2 grid gap-2 sm:grid-cols-3">
+              <div className="grid gap-2 sm:grid-cols-3">
                 <label className="text-xs font-semibold text-[#4f5f75]">
                   결과
                   <select
@@ -634,7 +636,7 @@ export function PostDetailInfoPanels({
                 className="mt-2 min-h-24 w-full rounded-md border border-[#d5dae3] bg-white px-3 py-2 text-sm text-[#253449] outline-none transition focus:border-[#7a91b5] focus:ring-2 focus:ring-[#d8e2f1]"
                 placeholder="운영 확인이 필요한 내용이나 간단한 메모를 남겨주세요."
               />
-              <div className="mt-2 flex items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="text-xs text-[#66758a]">피드백은 공개 프로필에 노출되지 않습니다.</span>
                 <button
                   type="button"
@@ -648,11 +650,11 @@ export function PostDetailInfoPanels({
             </div>
           ) : null}
           {careCompletionFeedbacks.length > 0 ? (
-            <div className="col-span-full mt-1 rounded-lg border border-[#e2e8f0] bg-[#fbfcfe] p-3">
+            <div className={CARE_WORKFLOW_SECTION_CLASS}>
               <p className="text-xs font-semibold text-[#2f3b4c]">비공개 피드백</p>
-              <div className="mt-2 flex flex-col gap-2">
+              <div className="grid gap-2">
                 {careCompletionFeedbacks.map((feedback) => (
-                  <div key={feedback.id} className="rounded-md border border-[#e2e8f0] bg-white p-3">
+                  <div key={feedback.id} className="grid gap-2 border-t border-[#e2e8f0] pt-2 first:border-t-0 first:pt-0">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <p className="text-xs font-semibold text-[#253449]">
                         {careFeedbackAuthorRoleLabel[feedback.authorRole]} ·{" "}
@@ -663,7 +665,7 @@ export function PostDetailInfoPanels({
                       </p>
                     </div>
                     {feedback.comment ? (
-                      <p className="mt-2 whitespace-pre-wrap text-xs text-[#4f5f75]">
+                      <p className="whitespace-pre-wrap text-xs leading-5 text-[#4f5f75]">
                         {feedback.comment}
                       </p>
                     ) : null}
