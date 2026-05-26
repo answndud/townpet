@@ -6362,3 +6362,32 @@
   - production smoke: `/api/feed/guest?limit=50` 200, posts `0`; public guest feed에 분실/목격 게시글이 없어 공유 패널 HTML smoke는 보류했다.
 - 다음 작업:
   - 최신 `main` 배포 후 production 성능 재측정 또는 상세 미디어 thumbnail surface audit 중 하나를 새 phase로 잡는다.
+
+### 2026-05-26 | 상세 미디어 갤러리 thumbnail density 정리
+- 완료일: `2026-05-26`
+- 배경:
+  - 상세 화면의 공유 패널까지 compact 정리가 끝난 뒤에도 첨부 이미지 갤러리의 thumbnail card가 `rounded-2xl`, hover shadow, 넓은 caption padding으로 남아 있었다.
+  - 첨부 이미지는 상세 본문을 보조하는 확인 surface이므로, lightbox affordance는 유지하면서 border-first compact surface로 낮춘다.
+- 변경내용:
+  - 상세 미디어 갤러리 section 상단 간격을 `mt-6/pt-4`에서 `mt-5/pt-3` 기준으로 줄였다.
+  - 이미지 thumbnail card의 `rounded-2xl`과 hover shadow를 제거하고 `rounded-lg` border-first surface로 낮췄다.
+  - thumbnail caption padding과 grid gap을 줄이고, helper copy를 짧게 정리했다.
+  - lightbox 이미지 frame과 thumbnail rail radius/gap도 같은 compact 기준으로 맞췄다.
+- 유지:
+  - 이미지 정렬, lightbox 열기, ESC/좌우 방향키 이동, 원본 새 탭 링크, fallback image error state는 변경하지 않았다.
+  - 피드 목록 thumbnail과 업로드 입력 UI는 이번 범위에서 변경하지 않았다.
+- 코드문서:
+  - [app/src/components/posts/post-detail-media-gallery.tsx](../app/src/components/posts/post-detail-media-gallery.tsx)
+  - [app/src/components/posts/post-detail-media-gallery.test.tsx](../app/src/components/posts/post-detail-media-gallery.test.tsx)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/components/posts/post-detail-media-gallery.test.tsx`
+  - `corepack pnpm@9.12.3 -C app lint -- src/components/posts/post-detail-media-gallery.tsx src/components/posts/post-detail-media-gallery.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/components/posts/post-detail-media-gallery.tsx --fast`
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `git diff --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `280 files / 1354 tests`, Next production build 통과.
+- 다음 작업:
+  - 최신 `main` 배포 후 production 성능 재측정 또는 상세 댓글/제보 입력 surface audit 중 하나를 새 phase로 잡는다.

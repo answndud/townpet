@@ -159,18 +159,18 @@ export function PostDetailMediaGallery({ images }: PostDetailMediaGalleryProps) 
 
   return (
     <>
-      <section className="tp-border-soft mt-6 border-t pt-4 sm:mt-7 sm:pt-5">
+      <section className="tp-border-soft mt-5 border-t pt-3 sm:mt-6 sm:pt-4">
         <div className="flex items-center justify-between gap-3">
           <div>
             <h2 className="tp-text-section-title tp-text-heading text-[13px]">첨부 이미지</h2>
             <p className="tp-text-subtle mt-1 text-[11px]">
-              썸네일을 눌러 크게 보고, 원본 이미지는 새 탭으로 열 수 있습니다.
+              눌러서 크게 보고 원본은 새 탭으로 열 수 있습니다.
             </p>
           </div>
           <span className="tp-text-label text-[11px]">{orderedImages.length}장</span>
         </div>
 
-        <div className={`mt-3 grid gap-3 ${getPostDetailMediaGridClassName(orderedImages.length)}`}>
+        <div className={`mt-2.5 grid gap-2 ${getPostDetailMediaGridClassName(orderedImages.length)}`}>
           {orderedImages.map((image, index) => {
             const fileName = extractPostDetailAttachmentName(image.url, index);
 
@@ -179,7 +179,7 @@ export function PostDetailMediaGallery({ images }: PostDetailMediaGalleryProps) 
                 key={`${image.url}-${index}`}
                 type="button"
                 onClick={() => setActiveIndex(index)}
-                className="tp-border-soft group overflow-hidden rounded-2xl border bg-white text-left transition hover:border-[#bfd4f2] hover:shadow-[0_12px_28px_rgba(18,47,90,0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2"
+                className="tp-border-soft group overflow-hidden rounded-lg border bg-white text-left transition hover:border-[#bfd4f2] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2"
                 aria-label={`${fileName} 크게 보기`}
               >
                 <div className="aspect-[4/3] overflow-hidden bg-[#f4f8ff]">
@@ -189,7 +189,7 @@ export function PostDetailMediaGallery({ images }: PostDetailMediaGalleryProps) 
                     className="h-full w-full object-cover transition duration-200 group-hover:scale-[1.02]"
                   />
                 </div>
-                <div className="flex items-center justify-between gap-3 px-3 py-2.5">
+                <div className="flex items-center justify-between gap-2 border-t border-[#edf3fb] px-2.5 py-1.5">
                   <span className="tp-text-primary truncate text-[12px] font-medium">{fileName}</span>
                   <span className="tp-text-link shrink-0 text-[11px] font-semibold">확대 보기</span>
                 </div>
@@ -238,7 +238,7 @@ export function PostDetailMediaGallery({ images }: PostDetailMediaGalleryProps) 
               </button>
             </div>
 
-            <div className="relative mt-4 flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-[24px] border border-white/10 bg-[rgba(8,20,39,0.74)] p-2 sm:p-4">
+            <div className="relative mt-4 flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-[rgba(8,20,39,0.74)] p-2 sm:p-4">
               {orderedImages.length > 1 ? (
                 <button
                   type="button"
@@ -269,7 +269,7 @@ export function PostDetailMediaGallery({ images }: PostDetailMediaGalleryProps) 
                 src={activeImage.url}
                 alt={activeImageName}
                 loading="eager"
-                className="max-h-full max-w-full rounded-[18px] object-contain"
+                className="max-h-full max-w-full rounded-lg object-contain"
               />
 
               {orderedImages.length > 1 ? (
@@ -314,7 +314,7 @@ export function PostDetailMediaGallery({ images }: PostDetailMediaGalleryProps) 
             </div>
 
             {orderedImages.length > 1 ? (
-              <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+              <div className="mt-3 flex gap-1.5 overflow-x-auto pb-1">
                 {orderedImages.map((image, index) => {
                   const thumbName = extractPostDetailAttachmentName(image.url, index);
                   const isActive = index === normalizedActiveIndex;
@@ -323,7 +323,7 @@ export function PostDetailMediaGallery({ images }: PostDetailMediaGalleryProps) 
                       key={`${image.url}-${index}-thumb`}
                       type="button"
                       onClick={() => setActiveIndex(index)}
-                      className={`overflow-hidden rounded-2xl border transition ${
+                      className={`overflow-hidden rounded-lg border transition ${
                         isActive
                           ? "border-white/80 shadow-[0_0_0_1px_rgba(255,255,255,0.75)]"
                           : "border-white/12 opacity-80 hover:border-white/30 hover:opacity-100"

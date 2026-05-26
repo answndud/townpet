@@ -75,6 +75,7 @@
 - 상세 정보 grid의 반복 정보 item을 nested rounded card에서 divider 기반 compact cell로 낮췄다.
 - 상세 화면의 오류/로딩 transient state padding과 radius를 compact하게 낮췄다.
 - 분실/목격 공유 패널의 공유 문구 preview를 nested soft box에서 divider 기반 compact preview로 낮췄다.
+- 상세 미디어 갤러리의 thumbnail card radius, hover shadow, caption padding, grid gap을 compact 기준으로 낮췄다.
 
 ## 다음 액션
 
@@ -89,9 +90,28 @@
 - 성능 후속은 최신 `main` 배포 후 같은 스크립트로 production 재측정할 때 별도 작업으로 연다.
 - 다음 기능 점검 후보는 production DB env가 준비된 상태에서 `db:audit:legacy-upload-paths`를 재실행하고, 후보가 있으면 별도 cleanup dry-run 계획을 세우는 것이다.
 - 현재 active 구현 항목 없음.
-- 다음 개발 후보는 최신 `main` 배포 후 production 성능 재측정 또는 상세 미디어 thumbnail surface audit이다.
+- 다음 개발 후보는 최신 `main` 배포 후 production 성능 재측정 또는 상세 댓글/제보 입력 surface audit이다.
 
 ## 최근 검증
+
+- `2026-05-26. 상세 미디어 갤러리 thumbnail density 정리`
+  - 변경:
+    - 상세 미디어 갤러리 section 상단 간격을 `mt-6/pt-4`에서 `mt-5/pt-3` 기준으로 줄였다.
+    - 이미지 thumbnail card의 `rounded-2xl`과 hover shadow를 제거하고 `rounded-lg` border-first surface로 낮췄다.
+    - thumbnail caption padding과 grid gap을 줄이고, helper copy를 짧게 정리했다.
+    - lightbox 이미지 frame과 thumbnail rail radius/gap도 같은 compact 기준으로 맞췄다.
+  - 유지:
+    - 이미지 정렬, lightbox 열기, ESC/좌우 방향키 이동, 원본 새 탭 링크, fallback image error state는 변경하지 않았다.
+    - 피드 목록 thumbnail과 업로드 입력 UI는 이번 범위에서 변경하지 않았다.
+  - 검증:
+    - `corepack pnpm@9.12.3 -C app test -- src/components/posts/post-detail-media-gallery.test.tsx`
+    - `corepack pnpm@9.12.3 -C app lint -- src/components/posts/post-detail-media-gallery.tsx src/components/posts/post-detail-media-gallery.test.tsx`
+    - `corepack pnpm@9.12.3 -C app typecheck`
+    - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/components/posts/post-detail-media-gallery.tsx --fast`
+    - `node scripts/refresh-docs-index.mjs --check`
+    - `git diff --check`
+    - `corepack pnpm@9.12.3 -C app quality:check`
+      - ESLint, TypeScript, Vitest `280 files / 1354 tests`, Next production build 통과.
 
 - `2026-05-26. 분실/목격 공유 패널 density 정리`
   - 변경:
