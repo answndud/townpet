@@ -5837,6 +5837,10 @@
   - `git diff --check`
   - `corepack pnpm@9.12.3 -C app quality:check`
     - ESLint, TypeScript, Vitest `279 files / 1345 tests`, Next production build 통과.
+  - commit `90bdb4a`: GitHub Actions `docs-quality`, `quality-gate` success.
+  - commit `90bdb4a`: Vercel deployment `success`, alias `https://townpet.vercel.app`.
+  - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health`
+  - production SSR smoke `/posts/new?type=HOSPITAL_REVIEW`: status `200`; compact guidance 있음; 짧은 위험 표현 문구 있음; 이전 긴 문구 없음.
 
 ### 2026-05-26 | 거래 글 작성 안내 compact 정리
 - 완료일: `2026-05-26`
