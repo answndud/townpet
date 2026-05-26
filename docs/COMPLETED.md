@@ -5811,6 +5811,31 @@
 - 다음 작업:
   - 글쓰기 본문 editor와 구조화 필드의 모바일 밀도, submit footer, 오류 안내를 한 화면군 안에서 추가 정리한다.
 
+### 2026-05-26 | 거래 상세 안내 compact 정리
+- 완료일: `2026-05-26`
+- 배경:
+  - 글쓰기 거래 안내는 compact guidance로 정리했지만, 상세 화면의 거래 정보 패널에는 `거래 전 확인`이 여전히 별도 bordered box로 남아 있었다.
+  - 상세 정보 패널은 읽기/상태 확인이 중심이므로, 정책 안내가 카드 안의 또 다른 카드처럼 보이지 않게 낮은 surface로 정리할 필요가 있었다.
+- 변경내용:
+  - 상세 화면 `MARKET_LISTING` 정보 패널의 `거래 전 확인` 안내를 rounded bordered box에서 `border-t` divider 기반 compact checklist로 바꿨다.
+  - checklist는 글쓰기 거래 안내와 같은 dot marker, 2-column 가능한 grid 패턴으로 맞췄다.
+- 유지:
+  - 거래 상태 표시, 작성자 상태 변경 workflow, market status action, safety checklist 원문은 변경하지 않았다.
+  - 병원/분실/돌봄 등 다른 상세 패널은 이번 범위에서 변경하지 않았다.
+- 코드문서:
+  - [app/src/components/posts/post-detail-info-panels.tsx](../app/src/components/posts/post-detail-info-panels.tsx)
+  - [app/src/components/posts/post-detail-info-panels-accessibility.test.ts](../app/src/components/posts/post-detail-info-panels-accessibility.test.ts)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/components/posts/post-detail-info-panels-accessibility.test.ts`
+  - `corepack pnpm@9.12.3 -C app lint -- src/components/posts/post-detail-info-panels.tsx src/components/posts/post-detail-info-panels-accessibility.test.ts`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/components/posts/post-detail-info-panels.tsx --fast`
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `git diff --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `279 files / 1346 tests`, Next production build 통과.
+
 ### 2026-05-26 | 분실/목격 위치 안내 compact 정리
 - 완료일: `2026-05-26`
 - 배경:
