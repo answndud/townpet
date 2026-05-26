@@ -6467,3 +6467,30 @@
   - production smoke: `/api/feed/guest?limit=50` 200, posts `0`; public guest feed에 분실/목격 게시글이 없어 목격 metadata HTML smoke는 보류했다.
 - 다음 작업:
   - 최신 `main` 배포 후 production 성능 재측정 또는 상세 댓글 inline reply/edit/report form surface audit 중 하나를 새 phase로 잡는다.
+
+### 2026-05-26 | 상세 댓글 inline form surface 정리
+- 완료일: `2026-05-26`
+- 배경:
+  - 상세 댓글의 root composer와 목격 metadata는 compact하게 정리됐지만, 댓글 내부에서 펼쳐지는 신고/답글/수정/비밀번호 확인 form은 여전히 `tp-form-panel` wrapper를 사용해 댓글 카드 안에 nested form panel을 만들고 있었다.
+  - 펼침 form은 댓글 action의 보조 상태이므로, 입력과 버튼 affordance는 유지하고 wrapper만 divider 기반 section으로 낮춘다.
+- 변경내용:
+  - 댓글 신고, 답글, 비회원 수정/삭제 비밀번호 확인, 댓글 수정 form wrapper를 `tp-form-panel`에서 `border-t pt-2` divider section으로 낮췄다.
+  - 반복 wrapper class를 `COMMENT_INLINE_FORM_SECTION_CLASS_NAME`으로 묶어 같은 상세 댓글 내부 form 기준을 공유하게 했다.
+- 유지:
+  - 신고 form, 답글 등록, 비회원 비밀번호 확인, 수정 저장 동작과 `min-h-10` touch target은 변경하지 않았다.
+  - root composer, 목격 metadata, pagination, reaction controls는 이번 범위에서 변경하지 않았다.
+- 코드문서:
+  - [app/src/components/posts/post-comment-thread.tsx](../app/src/components/posts/post-comment-thread.tsx)
+  - [app/src/components/posts/post-comment-compact-controls-accessibility.test.tsx](../app/src/components/posts/post-comment-compact-controls-accessibility.test.tsx)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/components/posts/post-comment-compact-controls-accessibility.test.tsx src/components/posts/post-comment-thread.test.tsx`
+  - `corepack pnpm@9.12.3 -C app lint -- src/components/posts/post-comment-thread.tsx src/components/posts/post-comment-compact-controls-accessibility.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/components/posts/post-comment-thread.tsx --fast`
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `git diff --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `280 files / 1354 tests`, Next production build 통과.
+- 다음 작업:
+  - 최신 `main` 배포 후 production 성능 재측정 또는 상세 댓글 action row/reaction control density audit 중 하나를 새 phase로 잡는다.

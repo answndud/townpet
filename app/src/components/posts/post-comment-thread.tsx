@@ -12,7 +12,6 @@ import { LinkifiedContent } from "@/components/content/linkified-content";
 import { PostCommentBestItem } from "@/components/posts/post-comment-best-item";
 import {
   POST_COMMENT_FORM_FIELD_CLASS_NAME,
-  POST_COMMENT_FORM_PANEL_CLASS_NAME,
   POST_COMMENT_THREAD_CARD_CLASS_NAME,
   POST_COMMENT_THREAD_ACTIONS_CLASS_NAME,
   POST_COMMENT_THREAD_FOOTER_CLASS_NAME,
@@ -74,6 +73,7 @@ export const canOpenCommentAuthorMenu = canOpenUserActionMenu;
 export const canMuteCommentAuthor = canToggleMuteUser;
 export const shouldRefreshCommentRoute = (onCommentsChanged?: PostCommentThreadProps["onCommentsChanged"]) =>
   !onCommentsChanged;
+const COMMENT_INLINE_FORM_SECTION_CLASS_NAME = "mt-2 border-t border-[#e7eef9] pt-2";
 
 export function PostCommentThread({
   postId,
@@ -776,7 +776,7 @@ export function PostCommentThread({
             ) : null}
 
             {reportOpen[comment.id] ? (
-              <div className={`${POST_COMMENT_FORM_PANEL_CLASS_NAME} mt-2 p-2.5`}>
+              <div className={COMMENT_INLINE_FORM_SECTION_CLASS_NAME}>
                 <PostReportForm
                   targetId={comment.id}
                   targetType={ReportTarget.COMMENT}
@@ -787,7 +787,7 @@ export function PostCommentThread({
             ) : null}
 
             {canReply && replyOpen[comment.id] ? (
-              <div className={`${POST_COMMENT_FORM_PANEL_CLASS_NAME} mt-2 p-2`}>
+              <div className={COMMENT_INLINE_FORM_SECTION_CLASS_NAME}>
                 {!currentUserId ? (
                   <div className="mb-1.5 grid gap-1.5 sm:grid-cols-2">
                     <input
@@ -849,7 +849,7 @@ export function PostCommentThread({
             ) : null}
 
             {isGuestComment && guestActionPrompt[comment.id] ? (
-              <div className={`${POST_COMMENT_FORM_PANEL_CLASS_NAME} mt-2 p-2`}>
+              <div className={COMMENT_INLINE_FORM_SECTION_CLASS_NAME}>
                 <div className="flex flex-wrap items-center gap-2">
                   <input
                     type="password"
@@ -889,7 +889,7 @@ export function PostCommentThread({
             ) : null}
 
             {(canInteract || isGuestComment) && editOpen[comment.id] && canEdit ? (
-              <div className={`${POST_COMMENT_FORM_PANEL_CLASS_NAME} mt-2 p-2`}>
+              <div className={COMMENT_INLINE_FORM_SECTION_CLASS_NAME}>
                 <textarea
                   className={`tp-input-soft ${POST_COMMENT_FORM_FIELD_CLASS_NAME} min-h-20 w-full px-3 py-2 text-[14px] sm:min-h-[64px] sm:text-[13px]`}
                   value={editContent[comment.id] ?? comment.content}
