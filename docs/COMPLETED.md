@@ -5675,7 +5675,11 @@
   - `node scripts/refresh-docs-index.mjs --check`
   - `git diff --check`
   - `corepack pnpm@9.12.3 -C app quality:check`
-  - 예정: production deploy smoke.
+  - production deploy `394fb85`: `https://townpet-hhrf76z2r-jmoon0227-9736s-projects.vercel.app`, alias `https://townpet.vercel.app`
+  - GitHub Actions `docs-quality`, `quality-gate` success.
+  - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health`
+  - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:operator-content-public`
+  - production `/api/home/feed`: keys `featured`, `latest`; `best` key 없음; `featured` 5건, `latest` 2건 확인.
 - 다음 작업:
   - production 배포 후 `/api/home/feed` 응답에 `featured/latest`만 남고 `best`가 없는지 확인한다.
   - 운영자 콘텐츠 public smoke와 health check를 production alias 기준으로 재실행한다.
