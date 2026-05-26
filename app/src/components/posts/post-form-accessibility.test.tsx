@@ -66,6 +66,11 @@ describe("post form accessibility", () => {
     expect((html.match(/sm:min-h-10/g) ?? []).length).toBeGreaterThanOrEqual(2);
     expect(html).toContain("post-comment-root-submit");
     expect(html).toContain("min-h-10");
+    expect(html).toContain('class="bg-[#fbfdff] px-2 py-2 sm:px-2.5"');
+    expect(html).toContain("min-h-20 w-full");
+    expect(html).toContain("sm:min-h-16");
+    expect(html).not.toContain("tp-form-panel tp-form-panel-page-soft p-2.5");
+    expect(html).not.toContain("min-h-24 w-full");
   });
 
   it("keeps disabled comment recovery action mobile-safe", () => {

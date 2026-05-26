@@ -6398,3 +6398,31 @@
   - production smoke: `/api/feed/guest?limit=50` 200, posts `0`; public guest feed에 이미지 첨부 게시글이 없어 상세 미디어 갤러리 HTML smoke는 보류했다.
 - 다음 작업:
   - 최신 `main` 배포 후 production 성능 재측정 또는 상세 댓글/제보 입력 surface audit 중 하나를 새 phase로 잡는다.
+
+### 2026-05-26 | 상세 댓글/제보 root composer density 정리
+- 완료일: `2026-05-26`
+- 배경:
+  - 상세 화면의 미디어/공유 보조 surface 정리 후에도 댓글 root composer가 `tp-form-panel` border/radius wrapper를 다시 만들어, 댓글 카드 내부에서 중첩 form surface처럼 보였다.
+  - 댓글 입력은 상세 화면의 반복 action이므로, submit touch target과 입력 affordance는 유지하고 wrapper와 textarea 높이를 낮춘다.
+- 변경내용:
+  - 상세 댓글 root composer wrapper에서 `tp-form-panel` border/radius surface를 제거하고 page-soft inline composer로 낮췄다.
+  - 댓글/제보 mode switch와 공개 제보 안내 간격을 줄였다.
+  - root textarea 높이를 `min-h-24`/`sm:min-h-[72px]`에서 `min-h-20`/`sm:min-h-16`으로 낮췄다.
+- 유지:
+  - 댓글 등록, 목격 제보 등록, 비회원 닉네임/비밀번호, 보호자 공개 체크, Ctrl/Meta+Enter submit shortcut은 변경하지 않았다.
+  - 답글/수정/신고 inline form과 댓글 item metadata surface는 이번 범위에서 변경하지 않았다.
+- 코드문서:
+  - [app/src/components/posts/post-comment-root-form.tsx](../app/src/components/posts/post-comment-root-form.tsx)
+  - [app/src/components/posts/post-form-accessibility.test.tsx](../app/src/components/posts/post-form-accessibility.test.tsx)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/components/posts/post-form-accessibility.test.tsx src/components/posts/post-comment-layout-class.test.ts`
+  - `corepack pnpm@9.12.3 -C app lint -- src/components/posts/post-comment-root-form.tsx src/components/posts/post-form-accessibility.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/components/posts/post-comment-root-form.tsx --fast`
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `git diff --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `280 files / 1354 tests`, Next production build 통과.
+- 다음 작업:
+  - 최신 `main` 배포 후 production 성능 재측정 또는 상세 댓글 item/목격 제보 metadata surface audit 중 하나를 새 phase로 잡는다.

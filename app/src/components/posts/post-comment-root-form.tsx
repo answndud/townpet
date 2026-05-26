@@ -6,7 +6,6 @@ import { COMMENT_CONTENT_MAX_LENGTH } from "@/lib/input-limits";
 import {
   POST_COMMENT_FORM_FIELD_CLASS_NAME,
   POST_COMMENT_FORM_MUTED_CLASS_NAME,
-  POST_COMMENT_FORM_PANEL_CLASS_NAME,
 } from "@/components/posts/post-comment-layout-class";
 import { handleCommentSubmitShortcut } from "@/components/posts/post-comment-thread-presenter";
 
@@ -62,11 +61,11 @@ export function PostCommentRootForm({
   onSubmit,
 }: PostCommentRootFormProps) {
   return (
-    <div className={`${POST_COMMENT_FORM_PANEL_CLASS_NAME} p-2.5 sm:p-2.5`}>
+    <div className="bg-[#fbfdff] px-2 py-2 sm:px-2.5">
       {canComment ? (
         <>
           {lostFoundSightingEnabled ? (
-            <div className="mb-2 flex flex-wrap items-center gap-1.5">
+            <div className="mb-1.5 flex flex-wrap items-center gap-1.5">
               <button
                 type="button"
                 className={`inline-flex min-h-9 items-center rounded-md border px-3 text-[12px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 ${
@@ -147,7 +146,7 @@ export function PostCommentRootForm({
                 위치/사진은 보호자에게만 공개
               </label>
               {!isPrivateSighting ? (
-                <p className="tp-text-subtle -mt-0.5 text-[11px] leading-4 sm:col-span-2">
+                <p className="tp-text-subtle -mt-1 text-[11px] leading-4 sm:col-span-2">
                   공개 제보에는 전화번호, 오픈채팅, 이메일, 도로명·번지 주소를 적지 마세요.
                 </p>
               ) : null}
@@ -155,7 +154,7 @@ export function PostCommentRootForm({
           ) : null}
           <textarea
             data-testid="post-comment-root-input"
-            className={`tp-input-soft ${POST_COMMENT_FORM_FIELD_CLASS_NAME} min-h-24 w-full px-3 py-2 text-[14px] sm:min-h-[72px] sm:px-2.5 sm:py-1.5 sm:text-[13px]`}
+            className={`tp-input-soft ${POST_COMMENT_FORM_FIELD_CLASS_NAME} min-h-20 w-full px-3 py-2 text-[14px] sm:min-h-16 sm:px-2.5 sm:py-1.5 sm:text-[13px]`}
             value={rootContent}
             onChange={(event) => onRootContentChange(event.target.value)}
             maxLength={COMMENT_CONTENT_MAX_LENGTH}
