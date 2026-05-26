@@ -71,7 +71,7 @@
 - `/`과 public acquisition UI에는 사용자가 선택하지 않은 특정 지역명을 기본값처럼 노출하지 않는다.
 - 성능 후속은 최신 `main` 배포 후 같은 스크립트로 production 재측정할 때 별도 작업으로 연다.
 - 다음 기능 점검 후보는 production DB env가 준비된 상태에서 `db:audit:legacy-upload-paths`를 재실행하고, 후보가 있으면 별도 cleanup dry-run 계획을 세우는 것이다.
-- 다음 개발 후보는 production에서 `/feed`, `/feed/guest`, `/best`의 `반응 많은 글` 라벨과 redirect가 정상인지 smoke하는 것이다.
+- 다음 개발 후보는 피드/검색/글쓰기처럼 사용 빈도가 높은 공개 흐름에서 남은 과장 표현, 중복 CTA, 과한 surface를 한 화면군씩 줄이는 것이다.
 
 ## 최근 검증
 
@@ -176,7 +176,14 @@
     - `node scripts/refresh-docs-index.mjs --check`
     - `git diff --check`
     - `corepack pnpm@9.12.3 -C app quality:check`
-    - 예정: production deploy smoke.
+    - production deploy `2e2f306`: `https://townpet-ecyes91oe-jmoon0227-9736s-projects.vercel.app`, alias `https://townpet.vercel.app`
+    - GitHub Actions `docs-quality`, `quality-gate` success.
+    - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health`
+    - production SSR smoke:
+      - `/feed?mode=BEST&days=7`: status `200`; `베스트글`, `인기순`, `베스트순` 없음.
+      - `/feed/guest?mode=BEST&days=7`: status `200`; `인기순`, `베스트순` 없음.
+      - `/best`: status `307`, location `/feed?mode=BEST`.
+    - 참고: production `/feed`의 `반응 많은 글` 제어 라벨은 client-rendered 영역이라 SSR HTML에는 직접 노출되지 않는다. 로컬 dev SSR, unit test, typecheck/lint/build로 고정했다.
 
 - `2026-05-25. 운영자 콘텐츠 노출 후 public UI 밀도 조정`
   - production DOM 점검:

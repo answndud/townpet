@@ -5719,6 +5719,13 @@
   - `node scripts/refresh-docs-index.mjs --check`
   - `git diff --check`
   - `corepack pnpm@9.12.3 -C app quality:check`
-  - 예정: production deploy smoke.
+  - production deploy `2e2f306`: `https://townpet-ecyes91oe-jmoon0227-9736s-projects.vercel.app`, alias `https://townpet.vercel.app`
+  - GitHub Actions `docs-quality`, `quality-gate` success.
+  - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health`
+  - production SSR smoke:
+    - `/feed?mode=BEST&days=7`: status `200`; `베스트글`, `인기순`, `베스트순` 없음.
+    - `/feed/guest?mode=BEST&days=7`: status `200`; `인기순`, `베스트순` 없음.
+    - `/best`: status `307`, location `/feed?mode=BEST`.
+  - 참고: production `/feed`의 `반응 많은 글` 제어 라벨은 client-rendered 영역이라 SSR HTML에는 직접 노출되지 않는다. 로컬 dev SSR, unit test, typecheck/lint/build로 고정했다.
 - 다음 작업:
-  - production 배포 후 `/feed`, `/feed/guest`, `/best`의 `반응 많은 글` 라벨과 redirect를 확인한다.
+  - 피드/검색/글쓰기처럼 사용 빈도가 높은 공개 흐름에서 남은 과장 표현, 중복 CTA, 과한 surface를 한 화면군씩 줄인다.
