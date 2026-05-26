@@ -102,6 +102,12 @@
     - `git diff --check`
     - `corepack pnpm@9.12.3 -C app quality:check`
       - ESLint, TypeScript, Vitest `279 files / 1345 tests`, Next production build 통과.
+    - commit `c9ef22a`: GitHub Actions `docs-quality`, `quality-gate` success.
+    - commit `c9ef22a`: Vercel deployment `success`, alias `https://townpet.vercel.app`.
+    - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health`
+    - production SSR smoke:
+      - `/posts/new`: status `200`; editor `260px`, submit `h-[28px]`, 모바일 정책문구 숨김 class 확인.
+      - `/lost/new`: status `307`, location `/posts/new?type=LOST_FOUND`.
 
 - `2026-05-26. 글쓰기 header/작성 기준 밀도 정리`
   - 변경:
