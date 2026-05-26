@@ -6154,3 +6154,30 @@
     - 변경은 `post-detail-info-panels.tsx` 소스/targeted test/quality gate로 검증했다.
 - 다음 작업:
   - 최신 `main` 배포 후 production 성능 재측정 또는 상세 primary card의 남은 nested surface audit 중 하나를 새 phase로 잡는다.
+
+### 2026-05-26 | 상세 primary card nested surface 정리
+- 완료일: `2026-05-26`
+- 배경:
+  - 상세 정보 패널 쪽 nested surface는 대부분 줄였지만, 상세 primary card 안에는 신고 폼 wrapper와 모바일 글 관리 wrapper가 별도 card처럼 남아 있었다.
+  - 두 UI는 primary card 안의 보조 workflow이므로, 별도 card보다 divider 기반 inline section이 더 가볍고 화면 높이도 덜 차지한다.
+- 변경내용:
+  - 상세 primary card 안의 신고 폼 wrapper를 rounded bordered card에서 `border-t` inline section으로 바꿨다.
+  - 모바일 `글 관리` details 내부 wrapper를 `tp-surface-soft` rounded panel에서 divider 기반 inline action row로 바꿨다.
+- 유지:
+  - 신고 열기/닫기, `PostReportForm`, 작성자 수정/삭제 action, mobile details 동작은 변경하지 않았다.
+  - post body, media gallery, reaction/bookmark/share controls는 변경하지 않았다.
+- 코드문서:
+  - [app/src/components/posts/post-detail-primary-card.tsx](../app/src/components/posts/post-detail-primary-card.tsx)
+  - [app/src/components/posts/post-detail-primary-card-layout.test.ts](../app/src/components/posts/post-detail-primary-card-layout.test.ts)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/components/posts/post-detail-primary-card-layout.test.ts`
+  - `corepack pnpm@9.12.3 -C app lint -- src/components/posts/post-detail-primary-card.tsx src/components/posts/post-detail-primary-card-layout.test.ts`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/components/posts/post-detail-primary-card.tsx --fast`
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `git diff --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `280 files / 1350 tests`, Next production build 통과.
+- 다음 작업:
+  - 최신 `main` 배포 후 production 성능 재측정 또는 상세 화면의 남은 non-primary auxiliary surface audit 중 하나를 새 phase로 잡는다.
