@@ -6615,3 +6615,34 @@
   - production smoke: `/api/feed/guest?limit=50` 200, posts `0`; public guest feed에 상세 진입 대상 게시글이 없어 베스트 댓글 summary HTML smoke는 보류했다.
 - 다음 작업:
   - 최신 `main` 배포 후 production 성능 재측정 또는 상세 댓글 reply nesting/indent density audit 중 하나를 새 phase로 잡는다.
+
+### 2026-05-26 | 상세 댓글 reply nesting/indent density 정리
+- 완료일: `2026-05-26`
+- 배경:
+  - 베스트 댓글 summary 정리 후에도 답글 영역은 세로 guide line과 함께 각 답글이 다시 rounded border/background card로 렌더링되어 댓글 카드 내부 nested surface가 남아 있었다.
+  - 답글은 원댓글의 하위 맥락이므로, 답글 구분은 유지하되 들여쓰기와 surface를 더 낮춘다.
+- 변경내용:
+  - 답글 item wrapper를 `rounded-lg border bg px-3 py-3` 카드에서 `border-t px-0 py-2` compact row로 낮췄다.
+  - 답글 guide margin을 `mt-2 ml-4`에서 `mt-1.5 ml-3`으로, desktop indent를 `sm:ml-7`에서 `sm:ml-5`로 줄였다.
+  - 답글 guide `space-y`와 padding, vertical line top/bottom offset을 줄였다.
+  - 답글 item wrapper margin과 avatar/content gap을 줄였다.
+- 유지:
+  - 답글 badge, 답글 접기/펼치기, 답글 작성/신고/수정/삭제, reaction controls, `min-h-10` touch target은 변경하지 않았다.
+  - root comment item과 composer 입력 UI는 이번 범위에서 변경하지 않았다.
+- 코드문서:
+  - [app/src/components/posts/post-comment-layout-class.ts](../app/src/components/posts/post-comment-layout-class.ts)
+  - [app/src/components/posts/post-comment-thread.tsx](../app/src/components/posts/post-comment-thread.tsx)
+  - [app/src/components/posts/post-comment-layout-class.test.ts](../app/src/components/posts/post-comment-layout-class.test.ts)
+  - [app/src/components/posts/post-comment-thread.test.tsx](../app/src/components/posts/post-comment-thread.test.tsx)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/components/posts/post-comment-layout-class.test.ts src/components/posts/post-comment-thread.test.tsx src/components/posts/post-comment-compact-controls-accessibility.test.tsx`
+  - `corepack pnpm@9.12.3 -C app lint -- src/components/posts/post-comment-layout-class.ts src/components/posts/post-comment-thread.tsx src/components/posts/post-comment-layout-class.test.ts src/components/posts/post-comment-thread.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/components/posts/post-comment-layout-class.ts src/components/posts/post-comment-thread.tsx --fast`
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `git diff --check`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `280 files / 1354 tests`, Next production build 통과.
+- 다음 작업:
+  - 최신 `main` 배포 후 production 성능 재측정 또는 상세 댓글 root item vertical rhythm audit 중 하나를 새 phase로 잡는다.
