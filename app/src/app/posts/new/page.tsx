@@ -146,29 +146,26 @@ export default async function NewPostPage({ searchParams }: NewPostPageProps) {
           }}
         />
       ) : null}
-      <main className="mx-auto flex w-full max-w-[1320px] flex-col gap-4 px-4 py-5 sm:gap-5 sm:px-6 sm:py-6 lg:px-10">
-        <section className="tp-hero flex flex-col gap-4 p-5 sm:p-6 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="text-[11px] uppercase tracking-[0.24em] text-[#3f5f90]">커뮤니티 작성</p>
-            <h1 className="mt-2 text-2xl font-bold tracking-tight text-[#10284a] sm:text-3xl">
+      <main className="mx-auto flex w-full max-w-[1320px] flex-col gap-3 px-4 py-3 sm:gap-4 sm:px-6 sm:py-5 lg:px-10">
+        <section className="tp-hero flex flex-col gap-2.5 p-3.5 sm:p-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="min-w-0">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#3f5f90]">글 작성</p>
+            <h1 className="mt-1 text-xl font-bold tracking-tight text-[#10284a] sm:text-2xl">
               {initialPostType === PostType.LOST_FOUND ? "분실/목격 제보 작성" : "새 글 작성"}
             </h1>
-            <p className="text-xs text-[#4f678d] sm:text-sm">
+            <p className="mt-1 max-w-[680px] text-xs leading-5 text-[#4f678d] sm:text-[13px]">
               {initialPostType === PostType.LOST_FOUND
-                ? "마지막 확인 시간, 위치, 동물 특징을 먼저 구조화해 제보 정확도를 높입니다."
+                ? "시간, 위치, 특징을 먼저 정리해 제보 정확도를 높입니다."
                 : userId
-                ? "게시판과 공개 범위를 먼저 정하고, 핵심 정보 위주로 작성해 주세요."
-                : "비회원 글은 즉시 공개되며, 외부 링크/연락처/고위험 게시판은 제한됩니다."}
+                  ? "게시판과 공개 범위를 정한 뒤 핵심 정보부터 작성해 주세요."
+                  : "비회원 글은 전체 공개로 등록되며 연락처, 외부 링크, 고위험 게시판은 제한됩니다."}
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-2 text-xs">
-            <span className="rounded-lg border border-[#d8e4f6] bg-white px-3 py-1.5 text-[#355988]">
+          <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
+            <span className="inline-flex h-[28px] items-center rounded-md border border-[#d8e4f6] bg-white px-2.5 font-semibold text-[#355988]">
               {userId ? "회원 작성" : "비회원 작성"}
             </span>
-            <span className="rounded-lg border border-[#d8e4f6] bg-white px-3 py-1.5 text-[#355988]">
-              자동 임시저장
-            </span>
-            <Link href="/feed" className="tp-btn-soft inline-flex min-h-10 items-center px-3 text-xs">
+            <Link href="/feed" className="tp-btn-soft inline-flex h-[28px] items-center px-2.5 text-[11px] font-semibold">
               피드로 돌아가기
             </Link>
           </div>

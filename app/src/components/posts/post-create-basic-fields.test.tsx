@@ -96,7 +96,8 @@ describe("post create basic fields", () => {
     );
 
     expect(html).toContain("첫 글 템플릿");
-    expect(html).toContain("제목과 본문 뼈대를 넣고 필요한 부분만 고쳐 쓰세요.");
+    expect(html).toContain("제목과 본문 뼈대를 불러온 뒤 필요한 부분만 고쳐 쓰세요.");
+    expect(html).toContain("py-2.5");
     expect(html).toContain("산책코스");
   });
 });

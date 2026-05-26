@@ -59,6 +59,7 @@
 - repo-local audit 결과 홈 클라이언트와 운영 smoke가 `featured`를 사용하고 있어 `/api/home/feed`의 legacy `best` 응답 alias를 제거했다.
 - 피드의 사용자-facing `베스트글/인기순/베스트순` 표현을 실제 기준에 맞춰 `반응 많은 글/반응순`으로 정리했다. 내부 `mode=BEST`와 query helper 이름은 호환을 위해 유지한다.
 - 피드 화면군의 하단 검색 도구를 더 compact하게 줄이고, 인증 피드 하단의 중복 `글쓰기` CTA를 제거했다.
+- 글쓰기 화면군(`/posts/new`, `/lost/new`)의 상단 header와 작성 기준 aside를 compact하게 줄이고, nested panel과 중복 자동 임시저장 badge를 제거했다.
 
 ## 다음 액션
 
@@ -72,9 +73,27 @@
 - `/`과 public acquisition UI에는 사용자가 선택하지 않은 특정 지역명을 기본값처럼 노출하지 않는다.
 - 성능 후속은 최신 `main` 배포 후 같은 스크립트로 production 재측정할 때 별도 작업으로 연다.
 - 다음 기능 점검 후보는 production DB env가 준비된 상태에서 `db:audit:legacy-upload-paths`를 재실행하고, 후보가 있으면 별도 cleanup dry-run 계획을 세우는 것이다.
-- 다음 개발 후보는 글쓰기(`/posts/new`, `/lost/new`) form 흐름에서 과한 surface, 긴 안내문, 모바일 첫 viewport 밀도를 줄이는 것이다.
+- 다음 개발 후보는 글쓰기 본문 editor와 구조화 필드의 모바일 밀도, submit footer, 오류 안내를 한 화면군 안에서 추가 정리하는 것이다.
 
 ## 최근 검증
+
+- `2026-05-26. 글쓰기 header/작성 기준 밀도 정리`
+  - 변경:
+    - `/posts/new` 상단 header padding과 gap을 줄이고, label을 `커뮤니티 작성`에서 `글 작성`으로 간결하게 바꿨다.
+    - 상단 안내 문구를 더 짧게 정리하고, 중복 `자동 임시저장` badge를 제거했다.
+    - `피드로 돌아가기`와 작성 상태 badge 높이를 28px compact control로 맞췄다.
+    - `PostCreatePolicyAside` 안의 nested bordered panel을 제거하고, 작성 전 확인 목록을 4개에서 3개로 줄였다.
+    - 기본 글 정보 card의 모바일 padding과 첫 글 템플릿 panel 높이를 줄였다.
+  - 유지:
+    - 작성 정책, 제출 payload, validation, draft 저장 로직은 변경하지 않았다.
+    - `/lost/new`는 기존처럼 `/posts/new?type=LOST_FOUND`로 redirect한다.
+  - 검증:
+    - `corepack pnpm@9.12.3 -C app test -- src/app/posts/new/page.test.tsx src/components/posts/post-create-form-shell.test.tsx src/components/posts/post-create-basic-fields.test.tsx`
+    - `corepack pnpm@9.12.3 -C app lint -- src/app/posts/new/page.tsx src/app/lost/new/page.tsx src/components/posts/post-create-form-shell.tsx src/components/posts/post-create-basic-fields.tsx src/app/posts/new/page.test.tsx src/components/posts/post-create-form-shell.test.tsx src/components/posts/post-create-basic-fields.test.tsx`
+    - `corepack pnpm@9.12.3 -C app typecheck`
+    - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/app/posts/new/page.tsx src/components/posts/post-create-form-shell.tsx src/components/posts/post-create-basic-fields.tsx --fast`
+    - local dev SSR `/posts/new`: status `200`; `글 작성` 있음; `커뮤니티 작성`, `자동 임시저장` 없음; compact header padding 확인.
+    - local dev `/lost/new`: status `307`, location `/posts/new?type=LOST_FOUND`.
 
 - `2026-05-26. 피드 하단 검색/CTA 밀도 정리`
   - 변경:
