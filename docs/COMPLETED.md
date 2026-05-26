@@ -6145,5 +6145,12 @@
   - `git diff --check`
   - `corepack pnpm@9.12.3 -C app quality:check`
     - ESLint, TypeScript, Vitest `279 files / 1349 tests`, Next production build 통과.
+  - commit `04080c3`: GitHub Actions `docs-quality`, `quality-gate` success.
+  - commit `04080c3`: Vercel deployment `success`, alias `https://townpet.vercel.app`.
+  - `OPS_BASE_URL=https://townpet.vercel.app corepack pnpm@9.12.3 -C app ops:check:health`
+  - production smoke note:
+    - `/api/feed/guest?limit=30`: status `200`.
+    - guest feed 응답에서 `MARKET_LISTING` 또는 `LOST_FOUND` 상세 대상 글을 찾지 못해 실제 상태 변경 상세 HTML smoke는 보류했다.
+    - 변경은 `post-detail-info-panels.tsx` 소스/targeted test/quality gate로 검증했다.
 - 다음 작업:
   - 최신 `main` 배포 후 production 성능 재측정 또는 상세 primary card의 남은 nested surface audit 중 하나를 새 phase로 잡는다.
