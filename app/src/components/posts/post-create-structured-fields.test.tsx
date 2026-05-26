@@ -59,6 +59,8 @@ describe("post create structured fields", () => {
 
     expect(html).toContain("병원 후기 정보");
     expect(html).toContain("작성 기준");
+    expect(html).toContain("대기, 설명, 비용, 재방문 의향처럼 직접 겪은 내용만 적어 주세요.");
+    expect(html).toContain("진단 단정, 과잉진료 단정, 직원 실명과 연락처는 검토될 수 있습니다.");
     expect(html).toContain("방문 목적");
     expect(html).toContain("동물 종류");
     expect(html).toContain("진료 항목");
