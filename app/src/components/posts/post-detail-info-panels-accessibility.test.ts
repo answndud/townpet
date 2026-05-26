@@ -33,4 +33,16 @@ describe("post detail info panels accessibility", () => {
     expect(code).toContain("min-h-24 w-full");
     expect(code).toContain("h-5 w-5");
   });
+
+  it("keeps market safety guidance compact in the detail panel", () => {
+    const code = source();
+    const marketSection = code.slice(
+      code.indexOf('{post.marketListing ? ('),
+      code.indexOf('{post.careRequest ? ('),
+    );
+
+    expect(marketSection).toContain("거래 전 확인");
+    expect(marketSection).toContain("col-span-full grid gap-1.5 border-t border-[#e3ecf8] pt-2");
+    expect(marketSection).not.toContain("col-span-full rounded-lg border border-[#dbe6f5] bg-[#f8fbff] px-3 py-2");
+  });
 });

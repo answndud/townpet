@@ -65,6 +65,7 @@
 - 병원 후기 작성 기준 안내를 nested bordered box에서 divider 기반 compact guidance로 바꾸고, 위험 표현 안내를 짧게 정리했다.
 - 산책 코스 작성 기준 안내를 nested bordered box에서 divider 기반 compact guidance로 바꾸고, 실제 이용 조건 중심으로 문구를 줄였다.
 - 분실/목격 작성의 위치·개인정보 안내를 필드 note에서 divider 기반 compact guidance로 분리했다.
+- 상세 화면의 거래 정보 패널에서 `거래 전 확인` 안내를 nested bordered box에서 divider 기반 compact checklist로 바꿨다.
 
 ## 다음 액션
 
@@ -79,8 +80,26 @@
 - 성능 후속은 최신 `main` 배포 후 같은 스크립트로 production 재측정할 때 별도 작업으로 연다.
 - 다음 기능 점검 후보는 production DB env가 준비된 상태에서 `db:audit:legacy-upload-paths`를 재실행하고, 후보가 있으면 별도 cleanup dry-run 계획을 세우는 것이다.
 - 현재 active 구현 항목 없음.
+- 다음 개발 후보는 상세 화면의 병원 후기/분실 정보 안내 box 또는 돌봄 신청/피드백 workflow panel 중 하나를 한 화면군으로 잡아 정리하는 것이다.
 
 ## 최근 검증
+
+- `2026-05-26. 거래 상세 안내 compact 정리`
+  - 변경:
+    - 상세 화면 `MARKET_LISTING` 정보 패널의 `거래 전 확인` 안내를 rounded bordered box에서 `border-t` divider 기반 compact checklist로 바꿨다.
+    - checklist는 글쓰기 거래 안내와 같은 dot marker, 2-column 가능한 grid 패턴으로 맞췄다.
+  - 유지:
+    - 거래 상태 표시, 작성자 상태 변경 workflow, market status action, safety checklist 원문은 변경하지 않았다.
+    - 병원/분실/돌봄 등 다른 상세 패널은 이번 범위에서 변경하지 않았다.
+  - 검증:
+    - `corepack pnpm@9.12.3 -C app test -- src/components/posts/post-detail-info-panels-accessibility.test.ts`
+    - `corepack pnpm@9.12.3 -C app lint -- src/components/posts/post-detail-info-panels.tsx src/components/posts/post-detail-info-panels-accessibility.test.ts`
+    - `corepack pnpm@9.12.3 -C app typecheck`
+    - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/components/posts/post-detail-info-panels.tsx --fast`
+    - `node scripts/refresh-docs-index.mjs --check`
+    - `git diff --check`
+    - `corepack pnpm@9.12.3 -C app quality:check`
+      - ESLint, TypeScript, Vitest `279 files / 1346 tests`, Next production build 통과.
 
 - `2026-05-26. 분실/목격 위치 안내 compact 정리`
   - 변경:

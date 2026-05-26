@@ -307,11 +307,14 @@ export function PostDetailInfoPanels({
             }
           />
           <PostDetailInfoItem label="기간" value={renderTextValue(post.marketListing.rentalPeriod)} />
-          <div className="col-span-full rounded-lg border border-[#dbe6f5] bg-[#f8fbff] px-3 py-2 text-[12px] leading-5 text-[#4f678d]">
-            <p className="font-semibold text-[#173963]">거래 전 확인</p>
-            <ul className="mt-1 list-disc space-y-1 pl-4">
+          <div className="col-span-full grid gap-1.5 border-t border-[#e3ecf8] pt-2">
+            <p className="tp-text-heading text-[12px] font-semibold">거래 전 확인</p>
+            <ul className="tp-text-subtle grid gap-1 text-[12px] leading-5 sm:grid-cols-2">
               {MARKET_SAFETY_CHECKLIST.map((item) => (
-                <li key={item}>{item}</li>
+                <li key={item} className="flex gap-1.5">
+                  <span className="mt-[0.55em] h-1 w-1 shrink-0 rounded-full bg-[#9fb7d9]" aria-hidden="true" />
+                  <span>{item}</span>
+                </li>
               ))}
             </ul>
           </div>
