@@ -3,6 +3,7 @@
 ## 현재 상태
 
 - 현재 active 계획: [PLAN.md](./PLAN.md)의 `마케팅 피드백 기반 제품 획득 루프 재정렬`.
+- `2026-05-26. 댓글 inline edit/reply form compactness 정리`를 완료했다. 답글/수정/비회원 확인 inline form을 root composer와 같은 compact input/textarea 기준으로 맞췄다.
 - `2026-05-26. 상세 댓글 composer/form vertical rhythm 정리`를 완료했다. root composer wrapper, mode switch, guest/sighting inputs, textarea, submit button을 compact 기준으로 낮췄고 40px touch target은 유지했다.
 - `2026-05-26. 상세 댓글 root item vertical rhythm 정리`를 완료했다. root 댓글 row padding/avatar/body/sighting metadata를 compact 기준으로 낮췄고, action/reaction touch target은 유지했다.
 - 성능 측정과 속도 개선 루프는 `blog/29-성능개선-측정과-최적화-기록.md`까지 작성해 완료했다.
@@ -186,6 +187,27 @@
     - `OPS_BASE_URL=https://townpet.vercel.app COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app ops:check:health`
       - `https://townpet.vercel.app/api/health` 200, `payload.status: ok`.
     - production smoke: `/api/feed/guest?limit=50` 200, posts `0`; public guest feed에 상세 진입 대상 게시글이 없어 댓글 composer HTML smoke는 보류했다.
+
+- `2026-05-26. 댓글 inline edit/reply form compactness 정리`
+  - 변경:
+    - 댓글 내부 답글/수정/비회원 확인 form section을 `mt-2 pt-2`에서 `mt-1.5 pt-1.5`로 낮췄다.
+    - 답글 form의 비회원 닉네임/비밀번호 input을 root composer와 같은 `min-h-10 px-2.5 py-1.5 text-[13px]` 기준으로 맞췄다.
+    - 답글/수정 textarea를 root composer와 같은 `min-h-[64px] sm:min-h-[56px]` 기준으로 낮췄다.
+    - 비회원 수정/삭제 확인 password input을 `min-h-11 px-3 text-[14px]`에서 `min-h-10 px-2.5 text-[13px]`로 낮췄다.
+    - inline form spacing/action row class를 layout constants로 분리해 회귀 테스트가 직접 감시하도록 정리했다.
+  - 유지:
+    - 답글 등록/취소, 수정 저장, 비회원 비밀번호 확인/취소, 신고 form 연결, submit shortcut, button `min-h-10`, focus ring은 변경하지 않았다.
+    - root composer, 댓글 목록 item, best comment, pagination은 이번 범위에서 변경하지 않았다.
+  - 검증:
+    - `corepack pnpm@9.12.3 -C app test -- src/components/posts/post-comment-layout-class.test.ts src/components/posts/post-comment-thread.test.tsx src/components/posts/post-comment-compact-controls-accessibility.test.tsx`
+    - `corepack pnpm@9.12.3 -C app lint -- src/components/posts/post-comment-layout-class.ts src/components/posts/post-comment-thread.tsx src/components/posts/post-comment-layout-class.test.ts src/components/posts/post-comment-thread.test.tsx src/components/posts/post-comment-compact-controls-accessibility.test.tsx`
+    - `corepack pnpm@9.12.3 -C app typecheck`
+    - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/components/posts/post-comment-layout-class.ts src/components/posts/post-comment-thread.tsx --fast`
+    - `corepack pnpm@9.12.3 -C app quality:check`
+      - ESLint, TypeScript, Vitest `280 files / 1357 tests`, Next production build 통과.
+  - screenshot/smoke:
+    - production `/api/feed/guest?limit=50` 200, posts `0`.
+    - public guest feed에 상세 진입 대상 게시글이 없어 댓글 inline form HTML/screenshot smoke는 보류했다.
 
 - `2026-05-26. 상세 best-comment summary/action density 정리`
   - 변경:

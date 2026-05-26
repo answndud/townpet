@@ -11,7 +11,13 @@ import {
 import { LinkifiedContent } from "@/components/content/linkified-content";
 import { PostCommentBestItem } from "@/components/posts/post-comment-best-item";
 import {
-  POST_COMMENT_FORM_FIELD_CLASS_NAME,
+  POST_COMMENT_INLINE_FORM_ACTION_ROW_CLASS_NAME,
+  POST_COMMENT_INLINE_FORM_INPUT_CLASS_NAME,
+  POST_COMMENT_INLINE_FORM_PASSWORD_INPUT_CLASS_NAME,
+  POST_COMMENT_INLINE_FORM_PASSWORD_ROW_CLASS_NAME,
+  POST_COMMENT_INLINE_FORM_ROW_CLASS_NAME,
+  POST_COMMENT_INLINE_FORM_SECTION_CLASS_NAME,
+  POST_COMMENT_INLINE_FORM_TEXTAREA_CLASS_NAME,
   POST_COMMENT_ROOT_COMPOSER_WRAPPER_CLASS_NAME,
   POST_COMMENT_THREAD_AVATAR_CLASS_NAME,
   POST_COMMENT_THREAD_BODY_CLASS_NAME,
@@ -78,7 +84,7 @@ export const canOpenCommentAuthorMenu = canOpenUserActionMenu;
 export const canMuteCommentAuthor = canToggleMuteUser;
 export const shouldRefreshCommentRoute = (onCommentsChanged?: PostCommentThreadProps["onCommentsChanged"]) =>
   !onCommentsChanged;
-const COMMENT_INLINE_FORM_SECTION_CLASS_NAME = "mt-2 border-t border-[#e7eef9] pt-2";
+const COMMENT_INLINE_FORM_SECTION_CLASS_NAME = POST_COMMENT_INLINE_FORM_SECTION_CLASS_NAME;
 
 export function PostCommentThread({
   postId,
@@ -794,16 +800,16 @@ export function PostCommentThread({
             {canReply && replyOpen[comment.id] ? (
               <div className={COMMENT_INLINE_FORM_SECTION_CLASS_NAME}>
                 {!currentUserId ? (
-                  <div className="mb-1.5 grid gap-1.5 sm:grid-cols-2">
+                  <div className={POST_COMMENT_INLINE_FORM_ROW_CLASS_NAME}>
                     <input
-                      className={`tp-input-soft ${POST_COMMENT_FORM_FIELD_CLASS_NAME} min-h-11 w-full px-3 py-2 text-[14px] sm:min-h-10 sm:px-2.5 sm:py-1.5 sm:text-[13px]`}
+                      className={POST_COMMENT_INLINE_FORM_INPUT_CLASS_NAME}
                       value={guestDisplayName}
                       onChange={(event) => setGuestDisplayName(event.target.value)}
                       placeholder="비회원 닉네임"
                       maxLength={24}
                     />
                     <input
-                      className={`tp-input-soft ${POST_COMMENT_FORM_FIELD_CLASS_NAME} min-h-11 w-full px-3 py-2 text-[14px] sm:min-h-10 sm:px-2.5 sm:py-1.5 sm:text-[13px]`}
+                      className={POST_COMMENT_INLINE_FORM_INPUT_CLASS_NAME}
                       type="password"
                       value={guestPassword}
                       onChange={(event) => setGuestPassword(event.target.value)}
@@ -813,7 +819,7 @@ export function PostCommentThread({
                   </div>
                 ) : null}
                 <textarea
-                  className={`tp-input-soft ${POST_COMMENT_FORM_FIELD_CLASS_NAME} min-h-20 w-full px-3 py-2 text-[14px] sm:min-h-[56px] sm:px-2.5 sm:py-1.5 sm:text-[13px]`}
+                  className={POST_COMMENT_INLINE_FORM_TEXTAREA_CLASS_NAME}
                   value={replyContent[comment.id] ?? ""}
                   onChange={(event) =>
                     setReplyContent((prev) => ({
@@ -827,7 +833,7 @@ export function PostCommentThread({
                   }
                   placeholder="답글을 입력하세요"
                 />
-                <div className="mt-1.5 flex justify-end gap-1.5">
+                <div className={POST_COMMENT_INLINE_FORM_ACTION_ROW_CLASS_NAME}>
                   <button
                     type="button"
                     className="tp-btn-soft inline-flex min-h-10 items-center justify-center rounded-lg px-3 text-xs font-semibold"
@@ -855,10 +861,10 @@ export function PostCommentThread({
 
             {isGuestComment && guestActionPrompt[comment.id] ? (
               <div className={COMMENT_INLINE_FORM_SECTION_CLASS_NAME}>
-                <div className="flex flex-wrap items-center gap-2">
+                <div className={POST_COMMENT_INLINE_FORM_PASSWORD_ROW_CLASS_NAME}>
                   <input
                     type="password"
-                    className={`tp-input-soft ${POST_COMMENT_FORM_FIELD_CLASS_NAME} min-h-11 px-3 text-[14px] sm:min-h-10 sm:px-2.5 sm:text-[12px]`}
+                    className={POST_COMMENT_INLINE_FORM_PASSWORD_INPUT_CLASS_NAME}
                     placeholder="댓글 비밀번호"
                     value={guestActionPassword[comment.id] ?? ""}
                     onChange={(event) =>
@@ -896,7 +902,7 @@ export function PostCommentThread({
             {(canInteract || isGuestComment) && editOpen[comment.id] && canEdit ? (
               <div className={COMMENT_INLINE_FORM_SECTION_CLASS_NAME}>
                 <textarea
-                  className={`tp-input-soft ${POST_COMMENT_FORM_FIELD_CLASS_NAME} min-h-20 w-full px-3 py-2 text-[14px] sm:min-h-[64px] sm:text-[13px]`}
+                  className={POST_COMMENT_INLINE_FORM_TEXTAREA_CLASS_NAME}
                   value={editContent[comment.id] ?? comment.content}
                   onChange={(event) =>
                     setEditContent((prev) => ({
@@ -906,7 +912,7 @@ export function PostCommentThread({
                   }
                   maxLength={COMMENT_CONTENT_MAX_LENGTH}
                 />
-                <div className="mt-2 flex justify-end">
+                <div className={POST_COMMENT_INLINE_FORM_ACTION_ROW_CLASS_NAME}>
                   <button
                     type="button"
                     className="tp-btn-primary inline-flex min-h-10 items-center justify-center rounded-lg px-3 text-xs font-semibold"

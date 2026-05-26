@@ -69,5 +69,26 @@ export const POST_COMMENT_ROOT_FORM_ACTION_ROW_CLASS_NAME =
 export const POST_COMMENT_ROOT_FORM_SUBMIT_CLASS_NAME =
   "tp-btn-primary inline-flex min-h-10 items-center justify-center rounded-lg px-3 text-xs font-semibold";
 
+export const POST_COMMENT_INLINE_FORM_SECTION_CLASS_NAME =
+  "mt-1.5 border-t border-[#e7eef9] pt-1.5";
+
+export const POST_COMMENT_INLINE_FORM_ROW_CLASS_NAME =
+  "mb-1 grid gap-1.5 sm:grid-cols-2";
+
+export const POST_COMMENT_INLINE_FORM_INPUT_CLASS_NAME =
+  POST_COMMENT_ROOT_FORM_INPUT_CLASS_NAME;
+
+export const POST_COMMENT_INLINE_FORM_TEXTAREA_CLASS_NAME =
+  POST_COMMENT_ROOT_FORM_TEXTAREA_CLASS_NAME;
+
+export const POST_COMMENT_INLINE_FORM_ACTION_ROW_CLASS_NAME =
+  "mt-1 flex justify-end gap-1.5";
+
+export const POST_COMMENT_INLINE_FORM_PASSWORD_ROW_CLASS_NAME =
+  "flex flex-wrap items-center gap-1.5";
+
+export const POST_COMMENT_INLINE_FORM_PASSWORD_INPUT_CLASS_NAME =
+  `tp-input-soft ${POST_COMMENT_FORM_FIELD_CLASS_NAME} min-h-10 px-2.5 text-[13px]`;
+
 export const POST_COMMENT_REPLY_GUIDE_CLASS_NAME =
   "before:bg-[#dfe9f8] relative mt-1.5 ml-3 space-y-1.5 pl-2.5 before:absolute before:bottom-1.5 before:left-0 before:top-1.5 before:w-px before:content-[''] sm:ml-5 sm:pl-3";
