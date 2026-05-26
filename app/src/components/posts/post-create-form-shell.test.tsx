@@ -20,7 +20,9 @@ describe("post create form shell", () => {
     expect(html).toContain("작성 기준");
     expect(html).toContain("정책 요약");
     expect(html).toContain("등록 전 확인");
+    expect(html).not.toContain("24시간");
     expect(html).toContain("저장됨");
+    expect(html).toContain("p-3");
   });
 
   it("renders editor footer draft controls", () => {

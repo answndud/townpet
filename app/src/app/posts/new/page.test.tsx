@@ -60,5 +60,8 @@ describe("NewPostPage", () => {
     expect(html).toContain('data-initial-type="WALK_ROUTE"');
     expect(html).toContain("서울 강남구 대형견 산책하기 좋은 곳 있나요?");
     expect(html).toContain("혼잡한 시간대");
+    expect(html).toContain("글 작성");
+    expect(html).toContain("p-3.5");
+    expect(html).not.toContain("자동 임시저장");
   });
 });

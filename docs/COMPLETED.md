@@ -5768,3 +5768,36 @@
   - 참고: production `/feed` 하단 검색 form의 compact class와 placeholder는 SSR HTML에서 직접 확인되지 않았다. local dev SSR, component test, lint/typecheck/build로 고정했다.
 - 다음 작업:
   - 글쓰기(`/posts/new`, `/lost/new`) form 흐름에서 과한 surface, 긴 안내문, 모바일 첫 viewport 밀도를 줄인다.
+
+### 2026-05-26 | 글쓰기 header/작성 기준 밀도 정리
+- 완료일: `2026-05-26`
+- 배경:
+  - 피드 목록과 하단 검색은 compact하게 정리됐지만, 글쓰기 화면은 상단 hero와 작성 기준 aside가 상대적으로 높았다.
+  - 모바일 첫 viewport에서 실제 입력 필드보다 안내 표면이 먼저 크게 보이면 작성 흐름이 느려진다.
+  - 작성 기준 aside 내부의 bordered panel은 `tp-card` 안에 다시 표면을 만드는 구조라 nested surface처럼 보였다.
+- 변경내용:
+  - `/posts/new` 상단 header padding과 gap을 줄였다.
+  - header label을 `커뮤니티 작성`에서 `글 작성`으로 간결하게 바꿨다.
+  - 회원/비회원 안내 문구를 짧게 정리했다.
+  - 중복 `자동 임시저장` badge를 제거했다. 임시저장 상태는 aside와 editor footer에서 계속 표시한다.
+  - `피드로 돌아가기`와 작성 상태 badge를 28px compact control로 맞췄다.
+  - `PostCreatePolicyAside` 내부 nested bordered panel을 제거하고, 작성 전 확인 목록을 4개에서 3개로 줄였다.
+  - 기본 글 정보 card의 모바일 padding과 첫 글 템플릿 panel 높이를 줄였다.
+- 유지:
+  - 작성 정책, 제출 payload, validation, draft 저장 로직은 변경하지 않았다.
+  - `/lost/new`는 기존처럼 `/posts/new?type=LOST_FOUND`로 redirect한다.
+- 코드문서:
+  - [app/src/app/posts/new/page.tsx](../app/src/app/posts/new/page.tsx)
+  - [app/src/app/lost/new/page.tsx](../app/src/app/lost/new/page.tsx)
+  - [app/src/components/posts/post-create-form-shell.tsx](../app/src/components/posts/post-create-form-shell.tsx)
+  - [app/src/components/posts/post-create-basic-fields.tsx](../app/src/components/posts/post-create-basic-fields.tsx)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/app/posts/new/page.test.tsx src/components/posts/post-create-form-shell.test.tsx src/components/posts/post-create-basic-fields.test.tsx`
+  - `corepack pnpm@9.12.3 -C app lint -- src/app/posts/new/page.tsx src/app/lost/new/page.tsx src/components/posts/post-create-form-shell.tsx src/components/posts/post-create-basic-fields.tsx src/app/posts/new/page.test.tsx src/components/posts/post-create-form-shell.test.tsx src/components/posts/post-create-basic-fields.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/app/posts/new/page.tsx src/components/posts/post-create-form-shell.tsx src/components/posts/post-create-basic-fields.tsx --fast`
+  - local dev SSR `/posts/new`: status `200`; `글 작성` 있음; `커뮤니티 작성`, `자동 임시저장` 없음; compact header padding 확인.
+  - local dev `/lost/new`: status `307`, location `/posts/new?type=LOST_FOUND`.
+- 다음 작업:
+  - 글쓰기 본문 editor와 구조화 필드의 모바일 밀도, submit footer, 오류 안내를 한 화면군 안에서 추가 정리한다.
