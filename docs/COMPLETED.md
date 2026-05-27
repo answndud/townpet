@@ -6920,3 +6920,34 @@
 - 결과:
   - 상세 댓글/screenshot smoke blocker를 해소했다.
   - 다음은 게시판별 구조화 상세 패널 smoke target을 분리해 확장한다.
+
+### 2026-05-27 | 게시판별 public 상세 smoke target 분리
+- 완료일: `2026-05-27`
+- 배경:
+  - 상세 smoke는 재개됐지만 단일 운영자 글만 확인하고 있어, 게시판별 구조화 상세 패널을 검증하기에는 target 선정 기준이 부족했다.
+  - production public feed에는 현재 실제 `type` 기준으로 `FREE_BOARD`, `WALK_ROUTE`만 노출되고, `LOST_FOUND`, `HOSPITAL_REVIEW`, `MARKET_LISTING`, `CARE_REQUEST`는 public feed item이 없었다.
+- 변경내용:
+  - `ops:check:public-detail-visual`이 public feed item을 type별로 분류하도록 확장했다.
+  - 기본 requested types를 `FREE_BOARD`, `WALK_ROUTE`, `LOST_FOUND`, `HOSPITAL_REVIEW`, `MARKET_LISTING`, `CARE_REQUEST`로 두었다.
+  - 대상이 있는 type은 desktop/mobile screenshot smoke를 실행하고, 대상이 없는 type은 report에 `BLOCKED`로 남긴다.
+  - `PUBLIC_DETAIL_SMOKE_TYPES` 환경변수로 필요한 type만 좁혀 실행할 수 있게 했다.
+- 코드문서:
+  - [app/scripts/check-public-detail-visual-smoke.ts](../app/scripts/check-public-detail-visual-smoke.ts)
+  - [app/scripts/check-public-detail-visual-smoke.test.ts](../app/scripts/check-public-detail-visual-smoke.test.ts)
+  - [docs/reports/public-detail-visual-smoke-2026-05-27T01-35-05-056Z/README.md](./reports/public-detail-visual-smoke-2026-05-27T01-35-05-056Z/README.md)
+  - [docs/reports/public-detail-visual-smoke-2026-05-27T01-35-05-056Z/FREE_BOARD-desktop.png](./reports/public-detail-visual-smoke-2026-05-27T01-35-05-056Z/FREE_BOARD-desktop.png)
+  - [docs/reports/public-detail-visual-smoke-2026-05-27T01-35-05-056Z/FREE_BOARD-mobile.png](./reports/public-detail-visual-smoke-2026-05-27T01-35-05-056Z/FREE_BOARD-mobile.png)
+  - [docs/reports/public-detail-visual-smoke-2026-05-27T01-35-05-056Z/WALK_ROUTE-desktop.png](./reports/public-detail-visual-smoke-2026-05-27T01-35-05-056Z/WALK_ROUTE-desktop.png)
+  - [docs/reports/public-detail-visual-smoke-2026-05-27T01-35-05-056Z/WALK_ROUTE-mobile.png](./reports/public-detail-visual-smoke-2026-05-27T01-35-05-056Z/WALK_ROUTE-mobile.png)
+- 핵심 결과:
+  - `FREE_BOARD`: `병원 후기를 안전하게 남기는 방법`, desktop/mobile PASS.
+  - `WALK_ROUTE`: `야간 산책 전 확인할 것`, desktop/mobile PASS.
+  - `LOST_FOUND`, `HOSPITAL_REVIEW`, `MARKET_LISTING`, `CARE_REQUEST`: no public feed item으로 BLOCKED.
+  - 모든 실행 대상에서 title/comment/report/operator-source/no-overflow가 PASS했다.
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- scripts/check-public-detail-visual-smoke.test.ts`
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app lint -- scripts/check-public-detail-visual-smoke.ts scripts/check-public-detail-visual-smoke.test.ts`
+  - `OPS_BASE_URL=https://townpet.vercel.app COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app ops:check:public-detail-visual`
+- 결과:
+  - 게시판별 smoke 가능/불가 상태가 report로 분리됐다.
+  - 다음 작업은 BLOCKED type에 실제 public smoke fixture를 확보하는 것이다.

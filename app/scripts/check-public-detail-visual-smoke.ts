@@ -8,6 +8,8 @@ import { chromium, devices, type Browser, type Page } from "@playwright/test";
 type FeedItem = {
   id?: string;
   title?: string;
+  type?: string;
+  boardType?: string;
   isOperatorContent?: boolean;
   operatorSourceName?: string | null;
 };
@@ -26,6 +28,7 @@ type FeedPayload = {
 type PublicDetailTarget = {
   id: string;
   title: string;
+  type: string;
   isOperatorContent: boolean;
   operatorSourceName: string | null;
 };
@@ -33,6 +36,8 @@ type PublicDetailTarget = {
 type SmokeProfile = "desktop" | "mobile";
 
 type SmokeResult = {
+  targetType: string;
+  targetTitle: string;
   profile: SmokeProfile;
   url: string;
   screenshot: string;
@@ -44,6 +49,14 @@ type SmokeResult = {
 };
 
 const DEFAULT_BASE_URL = "https://townpet.vercel.app";
+const DEFAULT_SMOKE_TYPES = [
+  "FREE_BOARD",
+  "WALK_ROUTE",
+  "LOST_FOUND",
+  "HOSPITAL_REVIEW",
+  "MARKET_LISTING",
+  "CARE_REQUEST",
+];
 
 function resolveRepoRoot() {
   return path.basename(process.cwd()) === "app" ? path.resolve(process.cwd(), "..") : process.cwd();
@@ -57,6 +70,12 @@ function compactTimestamp(date = new Date()) {
   return date.toISOString().replace(/[:.]/g, "-");
 }
 
+function parseSmokeTypes(value: string | undefined) {
+  return (value?.split(",") ?? DEFAULT_SMOKE_TYPES)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
 export function extractPublicFeedItems(payload: FeedPayload): PublicDetailTarget[] {
   const items = (payload.feed ?? payload.data?.feed)?.items ?? [];
   return items
@@ -64,16 +83,29 @@ export function extractPublicFeedItems(payload: FeedPayload): PublicDetailTarget
     .map((item) => ({
       id: String(item.id),
       title: String(item.title),
+      type: String(item.type ?? item.boardType ?? "UNKNOWN"),
       isOperatorContent: Boolean(item.isOperatorContent),
       operatorSourceName: item.operatorSourceName ?? null,
     }));
 }
 
-function selectSmokeTarget(items: PublicDetailTarget[]) {
+function selectSmokeTarget(items: PublicDetailTarget[], type?: string) {
+  const candidates = type ? items.filter((item) => item.type === type) : items;
+  return candidates.find((item) => item.isOperatorContent) ?? candidates[0] ?? null;
+}
+
+export function selectSmokeTargetsByType(items: PublicDetailTarget[], types: string[]) {
+  return types.map((type) => ({
+    type,
+    target: selectSmokeTarget(items, type),
+  }));
+}
+
+function selectFallbackSmokeTarget(items: PublicDetailTarget[]) {
   return items.find((item) => item.isOperatorContent) ?? items[0] ?? null;
 }
 
-async function readFeedTarget(baseUrl: string) {
+async function readFeedTargets(baseUrl: string, types: string[]) {
   const response = await fetch(`${baseUrl}/api/feed/guest?sort=LATEST&density=ULTRA`, {
     method: "GET",
     headers: {
@@ -87,7 +119,14 @@ async function readFeedTarget(baseUrl: string) {
   }
 
   const payload = (await response.json()) as FeedPayload;
-  return selectSmokeTarget(extractPublicFeedItems(payload));
+  const items = extractPublicFeedItems(payload);
+  const targetsByType = selectSmokeTargetsByType(items, types);
+  if (targetsByType.some((item) => item.target)) {
+    return targetsByType;
+  }
+
+  const fallback = selectFallbackSmokeTarget(items);
+  return fallback ? [{ type: fallback.type, target: fallback }] : [];
 }
 
 async function createPage(browser: Browser, profile: SmokeProfile) {
@@ -141,6 +180,8 @@ async function inspectDetail(params: {
     await page.screenshot({ path: params.screenshotPath, fullPage: true });
 
     return {
+      targetType: params.target.type,
+      targetTitle: params.target.title,
       profile: params.profile,
       url,
       screenshot: params.screenshotPath,
@@ -171,28 +212,31 @@ function resultPassed(result: SmokeResult) {
 function buildMarkdown(params: {
   generatedAt: string;
   baseUrl: string;
-  target: PublicDetailTarget;
+  targetEntries: Array<{ type: string; target: PublicDetailTarget | null }>;
   results: SmokeResult[];
 }) {
+  const blockedEntries = params.targetEntries.filter((entry) => !entry.target);
   const lines = [
     "# Public Detail Visual Smoke",
     "",
     `- generatedAt: \`${params.generatedAt}\``,
     `- baseUrl: \`${params.baseUrl}\``,
-    `- target: \`${params.target.id}\``,
-    `- title: ${params.target.title}`,
-    `- isOperatorContent: ${String(params.target.isOperatorContent)}`,
+    `- requestedTypes: ${params.targetEntries.map((entry) => `\`${entry.type}\``).join(", ")}`,
+    `- blockedTypes: ${blockedEntries.length > 0 ? blockedEntries.map((entry) => `\`${entry.type}\``).join(", ") : "none"}`,
     "",
     "## Summary",
     "",
-    "| profile | title | comments | report | operator source | no overflow | screenshot |",
-    "| --- | ---: | ---: | ---: | ---: | ---: | --- |",
+    "| type | target | profile | title | comments | report | operator source | no overflow | screenshot |",
+    "| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- |",
   ];
 
   for (const result of params.results) {
     lines.push(
-      `| ${result.profile} | ${result.titleVisible ? "PASS" : "FAIL"} | ${result.hasCommentSection ? "PASS" : "FAIL"} | ${result.hasReportEntry ? "PASS" : "FAIL"} | ${result.hasOperatorSource ? "PASS" : "FAIL"} | ${result.noHorizontalOverflow ? "PASS" : "FAIL"} | \`${path.relative(resolveRepoRoot(), result.screenshot)}\` |`,
+      `| ${result.targetType} | ${result.targetTitle} | ${result.profile} | ${result.titleVisible ? "PASS" : "FAIL"} | ${result.hasCommentSection ? "PASS" : "FAIL"} | ${result.hasReportEntry ? "PASS" : "FAIL"} | ${result.hasOperatorSource ? "PASS" : "FAIL"} | ${result.noHorizontalOverflow ? "PASS" : "FAIL"} | \`${path.relative(resolveRepoRoot(), result.screenshot)}\` |`,
     );
+  }
+  for (const entry of blockedEntries) {
+    lines.push(`| ${entry.type} | no public feed item | - | BLOCKED | BLOCKED | BLOCKED | BLOCKED | BLOCKED | - |`);
   }
 
   lines.push("");
@@ -204,8 +248,12 @@ async function main() {
   const timestamp = compactTimestamp(new Date(generatedAt));
   const repoRoot = resolveRepoRoot();
   const baseUrl = normalizeBaseUrl(process.env.OPS_BASE_URL || DEFAULT_BASE_URL);
-  const target = await readFeedTarget(baseUrl);
-  if (!target) {
+  const types = parseSmokeTypes(process.env.PUBLIC_DETAIL_SMOKE_TYPES);
+  const targetEntries = await readFeedTargets(baseUrl, types);
+  const runnableTargets = targetEntries.filter(
+    (entry): entry is { type: string; target: PublicDetailTarget } => Boolean(entry.target),
+  );
+  if (runnableTargets.length === 0) {
     throw new Error("No public guest feed item found for detail visual smoke.");
   }
 
@@ -213,16 +261,18 @@ async function main() {
   const browser = await chromium.launch();
   const results: SmokeResult[] = [];
   try {
-    for (const profile of ["desktop", "mobile"] as const) {
-      results.push(
-        await inspectDetail({
-          browser,
-          baseUrl,
-          target,
-          profile,
-          screenshotPath: path.join(outputDir, `${profile}.png`),
-        }),
-      );
+    for (const entry of runnableTargets) {
+      for (const profile of ["desktop", "mobile"] as const) {
+        results.push(
+          await inspectDetail({
+            browser,
+            baseUrl,
+            target: entry.target,
+            profile,
+            screenshotPath: path.join(outputDir, `${entry.type}-${profile}.png`),
+          }),
+        );
+      }
     }
   } finally {
     await browser.close();
@@ -230,14 +280,17 @@ async function main() {
 
   await writeFile(
     path.join(outputDir, "README.md"),
-    buildMarkdown({ generatedAt, baseUrl, target, results }),
+    buildMarkdown({ generatedAt, baseUrl, targetEntries, results }),
     "utf8",
   );
 
   console.log(`Public detail visual smoke written: ${path.relative(repoRoot, outputDir)}`);
+  for (const entry of targetEntries.filter((item) => !item.target)) {
+    console.log(`${entry.type}: blocked=no-public-feed-item`);
+  }
   for (const result of results) {
     console.log(
-      `${result.profile}: title=${result.titleVisible} comments=${result.hasCommentSection} report=${result.hasReportEntry} operator=${result.hasOperatorSource} overflow=${result.noHorizontalOverflow}`,
+      `${result.targetType}/${result.profile}: title=${result.titleVisible} comments=${result.hasCommentSection} report=${result.hasReportEntry} operator=${result.hasOperatorSource} overflow=${result.noHorizontalOverflow}`,
     );
   }
 
