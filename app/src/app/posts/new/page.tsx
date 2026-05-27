@@ -155,11 +155,20 @@ export default async function NewPostPage({ searchParams }: NewPostPageProps) {
             </h1>
             <p className="mt-1 max-w-[680px] text-xs leading-5 text-[#4f678d] sm:text-[13px]">
               {initialPostType === PostType.LOST_FOUND
-                ? "시간, 위치, 특징을 먼저 정리해 제보 정확도를 높입니다."
+                ? "보호자는 분실 글을 작성하고, 목격자는 기존 글에 제보하고, 주변에는 링크/이미지를 공유합니다."
                 : userId
                   ? "게시판과 공개 범위를 정한 뒤 핵심 정보부터 작성해 주세요."
                   : "비회원 글은 전체 공개로 등록되며 연락처, 외부 링크, 고위험 게시판은 제한됩니다."}
             </p>
+            {initialPostType === PostType.LOST_FOUND ? (
+              <div className="mt-2 flex flex-wrap gap-1.5 text-[11px] text-[#315b9a]">
+                {["분실 글 작성", "목격 제보는 상세 댓글", "공유는 링크/이미지"].map((item) => (
+                  <span key={item} className="rounded-md border border-[#d8e4f6] bg-white px-2 py-1">
+                    {item}
+                  </span>
+                ))}
+              </div>
+            ) : null}
           </div>
           <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
             <span className="inline-flex h-[28px] items-center rounded-md border border-[#d8e4f6] bg-white px-2.5 font-semibold text-[#355988]">

@@ -981,6 +981,14 @@ export function LostFoundFields({
 }: StructuredFieldsProps) {
   return (
     <StructuredFieldSection title="분실/목격 핵심 정보">
+      <div className="grid gap-2 border-b border-[#e3ecf8] pb-2 md:col-span-2">
+        <p className="tp-text-heading text-[12px] font-semibold">처음 행동 구분</p>
+        <div className="tp-text-subtle grid gap-1 text-[12px] leading-5 sm:grid-cols-3">
+          <p>보호자는 여기서 분실 글을 작성합니다.</p>
+          <p>목격자는 기존 분실 글의 목격했어요 댓글을 우선 사용합니다.</p>
+          <p>주변 공유는 상세 화면의 링크/이미지 공유 도구를 사용합니다.</p>
+        </div>
+      </div>
       <label className="tp-form-label">
         제보 유형
         <select

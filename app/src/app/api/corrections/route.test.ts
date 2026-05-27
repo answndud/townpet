@@ -87,11 +87,12 @@ describe("POST /api/corrections", () => {
     });
   });
 
-  it("redirects browser form submissions to receipt page", async () => {
+  it("redirects browser form submissions to receipt page with source context", async () => {
     mockCreateCorrectionRequest.mockResolvedValue({ id: "correction-1" } as never);
     const formData = new FormData();
-    formData.set("targetType", "HOSPITAL");
-    formData.set("targetName", "타운동물병원");
+    formData.set("postId", "ckc7k5qsj0000u0t8qv6d1d7k");
+    formData.set("targetType", "POST");
+    formData.set("targetName", "동네 병원 운영자 정리");
     formData.set("requesterRole", "BUSINESS_OWNER");
     formData.set("requesterName", "홍길동");
     formData.set("requesterEmail", "owner@example.com");
@@ -105,7 +106,28 @@ describe("POST /api/corrections", () => {
 
     expect(response.status).toBe(303);
     expect(response.headers.get("location")).toBe(
-      "http://localhost/corrections/new?submitted=correction-1",
+      "http://localhost/corrections/new?submitted=correction-1&postId=ckc7k5qsj0000u0t8qv6d1d7k&targetType=POST&targetName=%EB%8F%99%EB%84%A4+%EB%B3%91%EC%9B%90+%EC%9A%B4%EC%98%81%EC%9E%90+%EC%A0%95%EB%A6%AC",
+    );
+  });
+
+  it("preserves browser form context when validation fails", async () => {
+    mockCreateCorrectionRequest.mockRejectedValue(
+      new ServiceError("bad", "INVALID_INPUT", 400),
+    );
+    const formData = new FormData();
+    formData.set("postId", "ckc7k5qsj0000u0t8qv6d1d7k");
+    formData.set("targetType", "POST");
+    formData.set("targetName", "동네 병원 운영자 정리");
+    const request = new Request("http://localhost/api/corrections", {
+      method: "POST",
+      body: formData,
+    }) as NextRequest;
+
+    const response = await POST(request);
+
+    expect(response.status).toBe(303);
+    expect(response.headers.get("location")).toBe(
+      "http://localhost/corrections/new?error=INVALID_INPUT&postId=ckc7k5qsj0000u0t8qv6d1d7k&targetType=POST&targetName=%EB%8F%99%EB%84%A4+%EB%B3%91%EC%9B%90+%EC%9A%B4%EC%98%81%EC%9E%90+%EC%A0%95%EB%A6%AC",
     );
   });
 });

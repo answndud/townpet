@@ -294,6 +294,7 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
 
             {post.isOperatorContent ? (
               <OperatorContentSourcePanel
+                postId={post.id}
                 sourceName={post.operatorSourceName}
                 sourceUrl={post.operatorSourceUrl}
                 lastVerifiedAt={post.operatorLastVerifiedAt}
@@ -356,7 +357,7 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
                   </svg>
                   게시글 신고
                 </summary>
-                <div className="mt-2 rounded-[14px] border border-[#e8eff9] bg-[#fbfdff] p-3">
+                <div className="tp-border-soft mt-2 border-t pt-2">
                   <PostReportForm targetId={post.id} canReport={false} loginHref={loginHref} />
                 </div>
               </details>
@@ -369,30 +370,30 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
         ) : null}
 
         {post.hospitalReview ? (
-          <section className="tp-card p-5 sm:p-6">
+          <section className="tp-card p-4 sm:p-5">
             <h2 className="tp-text-section-title text-[#163462]">병원 후기 상세</h2>
-            <div className="mt-4 grid gap-3 text-sm text-[#355988] md:grid-cols-3">
-              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
+            <div className="mt-3 grid gap-x-3 gap-y-2 text-sm text-[#355988] md:grid-cols-3">
+              <div className="tp-border-soft border-t py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">병원</p>
                 <p className="mt-1 font-medium text-[#1f3f71]">{renderTextValue(post.hospitalReview.hospitalName)}</p>
               </div>
-              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
+              <div className="tp-border-soft border-t py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">방문 목적</p>
                 <p className="mt-1 font-medium text-[#1f3f71]">{renderTextValue(post.hospitalReview.visitPurpose)}</p>
               </div>
-              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
+              <div className="tp-border-soft border-t py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">동물 종류</p>
                 <p className="mt-1 font-medium text-[#1f3f71]">{renderTextValue(post.hospitalReview.animalType)}</p>
               </div>
-              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
+              <div className="tp-border-soft border-t py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">치료</p>
                 <p className="mt-1 font-medium text-[#1f3f71]">{renderTextValue(post.hospitalReview.treatmentType)}</p>
               </div>
-              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
+              <div className="tp-border-soft border-t py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">평점</p>
                 <p className="mt-1 font-medium text-[#1f3f71]">{renderNumberValue(post.hospitalReview.rating, "점")}</p>
               </div>
-              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
+              <div className="tp-border-soft border-t py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">비용</p>
                 <p className="mt-1 font-medium text-[#1f3f71]">
                   {post.hospitalReview.totalCost !== null && post.hospitalReview.totalCost !== undefined
@@ -400,11 +401,11 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
                     : emptyValue}
                 </p>
               </div>
-              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
+              <div className="tp-border-soft border-t py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">대기</p>
                 <p className="mt-1 font-medium text-[#1f3f71]">{renderNumberValue(post.hospitalReview.waitTime, "분")}</p>
               </div>
-              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
+              <div className="tp-border-soft border-t py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">설명</p>
                 <p className="mt-1 font-medium text-[#1f3f71]">
                   {post.hospitalReview.explanationSatisfaction
@@ -413,7 +414,7 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
                     : emptyValue}
                 </p>
               </div>
-              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
+              <div className="tp-border-soft border-t py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">가격 체감</p>
                 <p className="mt-1 font-medium text-[#1f3f71]">
                   {post.hospitalReview.priceLevel
@@ -421,26 +422,26 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
                     : emptyValue}
                 </p>
               </div>
-              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
+              <div className="tp-border-soft border-t py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">주차</p>
                 <p className="mt-1 font-medium text-[#1f3f71]">
                   {renderBooleanValue(post.hospitalReview.hasParking, "가능", "어려움")}
                 </p>
               </div>
-              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
+              <div className="tp-border-soft border-t py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">야간진료</p>
                 <p className="mt-1 font-medium text-[#1f3f71]">
                   {renderBooleanValue(post.hospitalReview.hasNightCare, "경험 있음", "해당 없음")}
                 </p>
               </div>
-              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
+              <div className="tp-border-soft border-t py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">재방문</p>
                 <p className="mt-1 font-medium text-[#1f3f71]">
                   {renderBooleanValue(post.hospitalReview.wouldRevisit, "의향 있음", "의향 낮음")}
                 </p>
               </div>
             </div>
-            <p className="mt-3 rounded-lg border border-[#dbe8f8] bg-[#f8fbff] px-3 py-2 text-xs leading-5 text-[#526d96]">
+            <p className="mt-3 border-t border-[#e3ecf8] pt-2 text-xs leading-5 text-[#526d96]">
               병원 후기는 개인 경험 공유입니다. 진단이나 법적 판단으로 단정하지 말고 방문 전 병원에
               직접 확인하세요.{" "}
               <Link
@@ -457,26 +458,26 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
         ) : null}
 
         {post.placeReview ? (
-          <section className="tp-card p-5 sm:p-6">
+          <section className="tp-card p-4 sm:p-5">
             <h2 className="tp-text-section-title text-[#163462]">후기 상세</h2>
-            <div className="mt-4 grid gap-3 text-sm text-[#355988] md:grid-cols-3">
-              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
+            <div className="mt-3 grid gap-x-3 gap-y-2 text-sm text-[#355988] md:grid-cols-3">
+              <div className="tp-border-soft border-t py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">장소명</p>
                 <p className="mt-1 font-medium text-[#1f3f71]">{renderTextValue(post.placeReview.placeName)}</p>
               </div>
-              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
+              <div className="tp-border-soft border-t py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">유형</p>
                 <p className="mt-1 font-medium text-[#1f3f71]">{renderTextValue(post.placeReview.placeType)}</p>
               </div>
-              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
+              <div className="tp-border-soft border-t py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">주소</p>
                 <p className="mt-1 font-medium text-[#1f3f71]">{renderTextValue(post.placeReview.address)}</p>
               </div>
-              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
+              <div className="tp-border-soft border-t py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">반려동물</p>
                 <p className="mt-1 font-medium text-[#1f3f71]">{renderBooleanValue(post.placeReview.isPetAllowed, "가능", "불가")}</p>
               </div>
-              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
+              <div className="tp-border-soft border-t py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">평점</p>
                 <p className="mt-1 font-medium text-[#1f3f71]">{renderNumberValue(post.placeReview.rating, "점")}</p>
               </div>
@@ -485,22 +486,22 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
         ) : null}
 
         {post.walkRoute ? (
-          <section className="tp-card p-5 sm:p-6">
+          <section className="tp-card p-4 sm:p-5">
             <h2 className="tp-text-section-title text-[#163462]">동네 산책코스 상세</h2>
-            <div className="mt-4 grid gap-3 text-sm text-[#355988] md:grid-cols-3">
-              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
+            <div className="mt-3 grid gap-x-3 gap-y-2 text-sm text-[#355988] md:grid-cols-3">
+              <div className="tp-border-soft border-t py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">코스명</p>
                 <p className="mt-1 font-medium text-[#1f3f71]">{renderTextValue(post.walkRoute.routeName)}</p>
               </div>
-              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
+              <div className="tp-border-soft border-t py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">거리</p>
                 <p className="mt-1 font-medium text-[#1f3f71]">{renderNumberValue(post.walkRoute.distance, "km")}</p>
               </div>
-              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
+              <div className="tp-border-soft border-t py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">시간</p>
                 <p className="mt-1 font-medium text-[#1f3f71]">{renderNumberValue(post.walkRoute.duration, "분")}</p>
               </div>
-              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
+              <div className="tp-border-soft border-t py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">난이도</p>
                 <p className="mt-1 font-medium text-[#1f3f71]">
                   {renderTextValue(
@@ -510,23 +511,23 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
                   )}
                 </p>
               </div>
-              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
+              <div className="tp-border-soft border-t py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">대형견</p>
                 <p className="mt-1 font-medium text-[#1f3f71]">
                   {renderBooleanValue(post.walkRoute.largeDogFriendly, "적합", "주의 필요")}
                 </p>
               </div>
-              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
+              <div className="tp-border-soft border-t py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">혼잡 시간</p>
                 <p className="mt-1 font-medium text-[#1f3f71]">{renderTextValue(post.walkRoute.crowdedTime)}</p>
               </div>
-              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3 md:col-span-2">
+              <div className="tp-border-soft border-t py-2.5 md:col-span-2">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">목줄 구간</p>
                 <p className="mt-1 font-medium text-[#1f3f71]">
                   {renderTextValue(post.walkRoute.leashRequiredNote)}
                 </p>
               </div>
-              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3 md:col-span-2">
+              <div className="tp-border-soft border-t py-2.5 md:col-span-2">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">편의시설</p>
                 <p className="mt-1 font-medium text-[#1f3f71]">
                   {[
@@ -540,11 +541,11 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
                     .join(" · ") || "정보 없음"}
                 </p>
               </div>
-              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3 md:col-span-3">
+              <div className="tp-border-soft border-t py-2.5 md:col-span-3">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">주의 구간</p>
                 <p className="mt-1 font-medium text-[#1f3f71]">{renderTextValue(post.walkRoute.cautionNote)}</p>
               </div>
-              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3 md:col-span-3">
+              <div className="tp-border-soft border-t py-2.5 md:col-span-3">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">안전 태그</p>
                 <p className="mt-1 font-medium text-[#1f3f71]">
                   {post.walkRoute.safetyTags && post.walkRoute.safetyTags.length > 0
@@ -557,10 +558,10 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
         ) : null}
 
         {post.marketListing ? (
-          <section className="tp-card p-5 sm:p-6">
+          <section className="tp-card p-4 sm:p-5">
             <h2 className="tp-text-section-title text-[#163462]">거래 정보</h2>
-            <div className="mt-4 grid gap-3 text-sm text-[#355988] md:grid-cols-3">
-              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
+            <div className="mt-3 grid gap-x-3 gap-y-2 text-sm text-[#355988] md:grid-cols-3">
+              <div className="tp-border-soft border-t py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">거래 유형</p>
                 <p className="mt-1 font-medium text-[#1f3f71]">
                   {renderTextValue(
@@ -570,7 +571,7 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
                   )}
                 </p>
               </div>
-              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
+              <div className="tp-border-soft border-t py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">가격</p>
                 <p className="mt-1 font-medium text-[#1f3f71]">
                   {post.marketListing.price !== null && post.marketListing.price !== undefined
@@ -578,7 +579,7 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
                     : emptyValue}
                 </p>
               </div>
-              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
+              <div className="tp-border-soft border-t py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">상품 상태</p>
                 <p className="mt-1 font-medium text-[#1f3f71]">
                   {renderTextValue(
@@ -588,7 +589,7 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
                   )}
                 </p>
               </div>
-              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
+              <div className="tp-border-soft border-t py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">거래 상태</p>
                 <p className="mt-1 font-medium text-[#1f3f71]">
                   {renderTextValue(
@@ -598,7 +599,7 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
                   )}
                 </p>
               </div>
-              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
+              <div className="tp-border-soft border-t py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">보증금</p>
                 <p className="mt-1 font-medium text-[#1f3f71]">
                   {post.marketListing.depositAmount !== null &&
@@ -607,7 +608,7 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
                     : emptyValue}
                 </p>
               </div>
-              <div className="border border-[#dde7f5] bg-[#f8fbff] px-3 py-3">
+              <div className="tp-border-soft border-t py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">기간</p>
                 <p className="mt-1 font-medium text-[#1f3f71]">
                   {renderTextValue(post.marketListing.rentalPeriod)}
@@ -618,10 +619,10 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
         ) : null}
 
         {post.careRequest ? (
-          <section className="tp-card p-5 sm:p-6">
+          <section className="tp-card p-4 sm:p-5">
             <h2 className="tp-text-section-title text-[#163462]">돌봄 요청 정보</h2>
-            <div className="mt-4 grid gap-3 text-sm text-[#355988] md:grid-cols-3">
-              <div className="border border-[#cfe9dc] bg-[#f3fbf7] px-3 py-3">
+            <div className="mt-3 grid gap-x-3 gap-y-2 text-sm text-[#355988] md:grid-cols-3">
+              <div className="border-t border-[#dbeee3] py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#4d8468]">요청 유형</p>
                 <p className="mt-1 font-medium text-[#21543d]">
                   {renderTextValue(
@@ -631,7 +632,7 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
                   )}
                 </p>
               </div>
-              <div className="border border-[#cfe9dc] bg-[#f3fbf7] px-3 py-3">
+              <div className="border-t border-[#dbeee3] py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#4d8468]">상태</p>
                 <p className="mt-1 font-medium text-[#21543d]">
                   {renderTextValue(
@@ -641,25 +642,25 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
                   )}
                 </p>
               </div>
-              <div className="border border-[#cfe9dc] bg-[#f3fbf7] px-3 py-3">
+              <div className="border-t border-[#dbeee3] py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#4d8468]">긴급</p>
                 <p className="mt-1 font-medium text-[#21543d]">
                   {renderBooleanValue(post.careRequest.isUrgent, "긴급 요청", "일반 요청")}
                 </p>
               </div>
-              <div className="border border-[#cfe9dc] bg-[#f3fbf7] px-3 py-3">
+              <div className="border-t border-[#dbeee3] py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#4d8468]">시작</p>
                 <p className="mt-1 font-medium text-[#21543d]">
                   {renderTextValue(formatDetailDateTime(post.careRequest.startsAt))}
                 </p>
               </div>
-              <div className="border border-[#cfe9dc] bg-[#f3fbf7] px-3 py-3">
+              <div className="border-t border-[#dbeee3] py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#4d8468]">종료</p>
                 <p className="mt-1 font-medium text-[#21543d]">
                   {renderTextValue(formatDetailDateTime(post.careRequest.endsAt))}
                 </p>
               </div>
-              <div className="border border-[#cfe9dc] bg-[#f3fbf7] px-3 py-3">
+              <div className="border-t border-[#dbeee3] py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#4d8468]">보상</p>
                 <p className="mt-1 font-medium text-[#21543d]">
                   {post.careRequest.rewardAmount !== null &&
@@ -668,15 +669,15 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
                     : emptyValue}
                 </p>
               </div>
-              <div className="border border-[#cfe9dc] bg-[#f3fbf7] px-3 py-3 md:col-span-2">
+              <div className="border-t border-[#dbeee3] py-2.5 md:col-span-2">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#4d8468]">위치 힌트</p>
                 <p className="mt-1 font-medium text-[#21543d]">{renderTextValue(post.careRequest.locationNote)}</p>
               </div>
-              <div className="border border-[#cfe9dc] bg-[#f3fbf7] px-3 py-3">
+              <div className="border-t border-[#dbeee3] py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#4d8468]">반려동물</p>
                 <p className="mt-1 font-medium text-[#21543d]">{renderTextValue(post.careRequest.petNote)}</p>
               </div>
-              <div className="border border-[#cfe9dc] bg-[#f3fbf7] px-3 py-3 md:col-span-3">
+              <div className="border-t border-[#dbeee3] py-2.5 md:col-span-3">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#4d8468]">요청사항</p>
                 <p className="mt-1 font-medium text-[#21543d]">{renderTextValue(post.careRequest.requirements)}</p>
               </div>
@@ -685,18 +686,18 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
         ) : null}
 
         {post.adoptionListing ? (
-          <section className="tp-card p-5 sm:p-6">
+          <section className="tp-card p-4 sm:p-5">
             <h2 className="tp-text-section-title text-[#163462]">유기동물 입양 정보</h2>
-            <div className="mt-4 grid gap-3 text-sm text-[#355988] md:grid-cols-3">
-              <div className="border border-[#f0dfb8] bg-[#fffaf0] px-3 py-3">
+            <div className="mt-3 grid gap-x-3 gap-y-2 text-sm text-[#355988] md:grid-cols-3">
+              <div className="border-t border-[#ead5a5] py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#9b7a34]">보호소</p>
                 <p className="mt-1 font-medium text-[#5f4712]">{renderTextValue(post.adoptionListing.shelterName)}</p>
               </div>
-              <div className="border border-[#f0dfb8] bg-[#fffaf0] px-3 py-3">
+              <div className="border-t border-[#ead5a5] py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#9b7a34]">지역</p>
                 <p className="mt-1 font-medium text-[#5f4712]">{renderTextValue(post.adoptionListing.region)}</p>
               </div>
-              <div className="border border-[#f0dfb8] bg-[#fffaf0] px-3 py-3">
+              <div className="border-t border-[#ead5a5] py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#9b7a34]">상태</p>
                 <p className="mt-1 font-medium text-[#5f4712]">
                   {renderTextValue(
@@ -706,19 +707,19 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
                   )}
                 </p>
               </div>
-              <div className="border border-[#f0dfb8] bg-[#fffaf0] px-3 py-3">
+              <div className="border-t border-[#ead5a5] py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#9b7a34]">동물 종류</p>
                 <p className="mt-1 font-medium text-[#5f4712]">{renderTextValue(post.adoptionListing.animalType)}</p>
               </div>
-              <div className="border border-[#f0dfb8] bg-[#fffaf0] px-3 py-3">
+              <div className="border-t border-[#ead5a5] py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#9b7a34]">품종</p>
                 <p className="mt-1 font-medium text-[#5f4712]">{renderTextValue(post.adoptionListing.breed)}</p>
               </div>
-              <div className="border border-[#f0dfb8] bg-[#fffaf0] px-3 py-3">
+              <div className="border-t border-[#ead5a5] py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#9b7a34]">나이</p>
                 <p className="mt-1 font-medium text-[#5f4712]">{renderTextValue(post.adoptionListing.ageLabel)}</p>
               </div>
-              <div className="border border-[#f0dfb8] bg-[#fffaf0] px-3 py-3">
+              <div className="border-t border-[#ead5a5] py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#9b7a34]">성별</p>
                 <p className="mt-1 font-medium text-[#5f4712]">
                   {renderTextValue(
@@ -728,19 +729,19 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
                   )}
                 </p>
               </div>
-              <div className="border border-[#f0dfb8] bg-[#fffaf0] px-3 py-3">
+              <div className="border-t border-[#ead5a5] py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#9b7a34]">중성화</p>
                 <p className="mt-1 font-medium text-[#5f4712]">
                   {renderBooleanValue(post.adoptionListing.isNeutered, "완료", "미완료")}
                 </p>
               </div>
-              <div className="border border-[#f0dfb8] bg-[#fffaf0] px-3 py-3">
+              <div className="border-t border-[#ead5a5] py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#9b7a34]">예방접종</p>
                 <p className="mt-1 font-medium text-[#5f4712]">
                   {renderBooleanValue(post.adoptionListing.isVaccinated, "완료", "미완료")}
                 </p>
               </div>
-              <div className="border border-[#f0dfb8] bg-[#fffaf0] px-3 py-3 md:col-span-3">
+              <div className="border-t border-[#ead5a5] py-2.5 md:col-span-3">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#9b7a34]">체형/크기</p>
                 <p className="mt-1 font-medium text-[#5f4712]">{renderTextValue(post.adoptionListing.sizeLabel)}</p>
               </div>
@@ -749,18 +750,18 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
         ) : null}
 
         {post.volunteerRecruitment ? (
-          <section className="tp-card p-5 sm:p-6">
+          <section className="tp-card p-4 sm:p-5">
             <h2 className="tp-text-section-title text-[#163462]">보호소 봉사 모집 정보</h2>
-            <div className="mt-4 grid gap-3 text-sm text-[#355988] md:grid-cols-3">
-              <div className="border border-[#d6e7b3] bg-[#f8fff0] px-3 py-3">
+            <div className="mt-3 grid gap-x-3 gap-y-2 text-sm text-[#355988] md:grid-cols-3">
+              <div className="border-t border-[#dceabf] py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6d8d2d]">보호소</p>
                 <p className="mt-1 font-medium text-[#365412]">{renderTextValue(post.volunteerRecruitment.shelterName)}</p>
               </div>
-              <div className="border border-[#d6e7b3] bg-[#f8fff0] px-3 py-3">
+              <div className="border-t border-[#dceabf] py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6d8d2d]">지역</p>
                 <p className="mt-1 font-medium text-[#365412]">{renderTextValue(post.volunteerRecruitment.region)}</p>
               </div>
-              <div className="border border-[#d6e7b3] bg-[#f8fff0] px-3 py-3">
+              <div className="border-t border-[#dceabf] py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6d8d2d]">모집 상태</p>
                 <p className="mt-1 font-medium text-[#365412]">
                   {renderTextValue(
@@ -771,7 +772,7 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
                   )}
                 </p>
               </div>
-              <div className="border border-[#d6e7b3] bg-[#f8fff0] px-3 py-3">
+              <div className="border-t border-[#dceabf] py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6d8d2d]">봉사 일정</p>
                 <p className="mt-1 font-medium text-[#365412]">
                   {post.volunteerRecruitment.volunteerDate
@@ -779,11 +780,11 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
                     : emptyValue}
                 </p>
               </div>
-              <div className="border border-[#d6e7b3] bg-[#f8fff0] px-3 py-3">
+              <div className="border-t border-[#dceabf] py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6d8d2d]">봉사 유형</p>
                 <p className="mt-1 font-medium text-[#365412]">{renderTextValue(post.volunteerRecruitment.volunteerType)}</p>
               </div>
-              <div className="border border-[#d6e7b3] bg-[#f8fff0] px-3 py-3">
+              <div className="border-t border-[#dceabf] py-2.5">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[#6d8d2d]">모집 인원</p>
                 <p className="mt-1 font-medium text-[#365412]">{renderNumberValue(post.volunteerRecruitment.capacity, "명")}</p>
               </div>

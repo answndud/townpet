@@ -3,13 +3,19 @@ import {
   CorrectionRequesterRole,
   CorrectionRequestStatus,
   CorrectionRequestTargetType,
+  ReportStatus,
 } from "@prisma/client";
 
 import { updateCorrectionRequestAction } from "@/app/admin/corrections/actions";
+import { AdminQueueSwitch } from "@/components/admin/admin-queue-switch";
 import { EmptyState } from "@/components/ui/empty-state";
 import { createNoIndexPageMetadata } from "@/lib/page-metadata";
 import { requireModeratorPageUser } from "@/server/admin-page-access";
-import { listInformationCorrectionRequests } from "@/server/queries/correction-request.queries";
+import {
+  getCorrectionRequestQueueSummary,
+  listInformationCorrectionRequests,
+} from "@/server/queries/correction-request.queries";
+import { getReportStats } from "@/server/queries/report.queries";
 
 export const metadata = createNoIndexPageMetadata({
   title: "정보 정정 요청",
@@ -47,6 +53,18 @@ function isCorrectionRequestStatus(value: string | undefined): value is Correcti
   return Boolean(value && Object.values(CorrectionRequestStatus).includes(value as CorrectionRequestStatus));
 }
 
+function formatOperatorVerifiedDate(value: Date | null) {
+  if (!value) {
+    return null;
+  }
+  return new Intl.DateTimeFormat("ko-KR", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    timeZone: "Asia/Seoul",
+  }).format(value);
+}
+
 export default async function AdminCorrectionRequestsPage({
   searchParams,
 }: AdminCorrectionRequestsPageProps) {
@@ -55,11 +73,15 @@ export default async function AdminCorrectionRequestsPage({
   const status = isCorrectionRequestStatus(params.status) ? params.status : "ALL";
   const query = params.q?.trim() ?? "";
 
-  const requests = await listInformationCorrectionRequests({
-    status,
-    query: query || null,
-    limit: 100,
-  });
+  const [requests, reportStats, correctionSummary] = await Promise.all([
+    listInformationCorrectionRequests({
+      status,
+      query: query || null,
+      limit: 100,
+    }),
+    getReportStats(7),
+    getCorrectionRequestQueueSummary(),
+  ]);
 
   const buildFilterHref = (nextStatus: string) => {
     const nextParams = new URLSearchParams();
@@ -133,6 +155,14 @@ export default async function AdminCorrectionRequestsPage({
           <Link href="/admin/moderation-logs">모더레이션 로그</Link>
         </div>
 
+        <AdminQueueSwitch
+          current="corrections"
+          reportPendingCount={reportStats.statusCounts[ReportStatus.PENDING]}
+          reportCriticalCount={null}
+          correctionActiveCount={correctionSummary.activeCount}
+          correctionOperatorCount={correctionSummary.operatorPendingCount}
+        />
+
         <section className="tp-card p-4 sm:p-5">
           {requests.length > 0 ? (
             <div className="overflow-x-auto">
@@ -155,9 +185,25 @@ export default async function AdminCorrectionRequestsPage({
                           {targetTypeLabels[request.targetType]} · {statusLabels[request.status]}
                         </div>
                         {request.post ? (
-                          <Link href={`/posts/${request.post.id}`} className="mt-2 inline-flex text-[#3567b5]">
-                            연결 글 보기
-                          </Link>
+                          <div className="mt-2 grid gap-1.5">
+                            {request.post.isOperatorContent ? (
+                              <div className="rounded-lg border border-[#d7e2f2] bg-[#f8fbff] px-2 py-1.5 text-[11px] leading-5 text-[#526d96]">
+                                <span className="font-semibold text-[#315b9a]">운영자 정리 글 제보</span>
+                                {request.post.operatorSourceName ? (
+                                  <span> · {request.post.operatorSourceName}</span>
+                                ) : null}
+                                {formatOperatorVerifiedDate(request.post.operatorLastVerifiedAt) ? (
+                                  <span>
+                                    {" "}
+                                    · 확인 {formatOperatorVerifiedDate(request.post.operatorLastVerifiedAt)}
+                                  </span>
+                                ) : null}
+                              </div>
+                            ) : null}
+                            <Link href={`/posts/${request.post.id}`} className="inline-flex text-[#3567b5]">
+                              연결 글 보기
+                            </Link>
+                          </div>
                         ) : null}
                       </td>
                       <td className="py-3 pr-4">

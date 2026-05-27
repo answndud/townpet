@@ -28,6 +28,7 @@ type RawHomePost = Record<string, unknown> & {
   viewCount: number;
   isOperatorContent?: boolean | null;
   operatorSourceName?: string | null;
+  operatorSourceUrl?: string | null;
   operatorLastVerifiedAt?: Date | string | null;
   author?: {
     nickname?: string | null;
@@ -130,6 +131,13 @@ function serializeHomePost(rawPost: RawHomePost) {
         : String(post.createdAt),
     authorName: post.guestDisplayName ?? post.author?.nickname ?? "익명",
     neighborhoodLabel: neighborhoodParts.length > 0 ? neighborhoodParts.join(" ") : null,
+    isOperatorContent: Boolean(post.isOperatorContent),
+    operatorSourceName: post.operatorSourceName ?? null,
+    operatorSourceUrl: post.operatorSourceUrl ?? null,
+    operatorLastVerifiedAt:
+      post.operatorLastVerifiedAt instanceof Date
+        ? post.operatorLastVerifiedAt.toISOString()
+        : post.operatorLastVerifiedAt ?? null,
     commentCount: post.commentCount,
     likeCount: post.likeCount,
     viewCount: post.viewCount,

@@ -1,12 +1,13 @@
 import Link from "next/link";
 
 type OperatorContentSourcePanelProps = {
+  postId?: string | null;
   sourceName?: string | null;
   sourceUrl?: string | null;
   lastVerifiedAt?: string | Date | null;
 };
 
-function formatVerifiedDate(value?: string | Date | null) {
+export function formatOperatorVerifiedDate(value?: string | Date | null) {
   if (!value) {
     return null;
   }
@@ -19,6 +20,31 @@ function formatVerifiedDate(value?: string | Date | null) {
     month: "2-digit",
     day: "2-digit",
   }).format(date);
+}
+
+export function buildOperatorContentMetaLabel({
+  sourceName,
+  lastVerifiedAt,
+}: {
+  sourceName?: string | null;
+  lastVerifiedAt?: string | Date | null;
+}) {
+  const verifiedLabel = formatOperatorVerifiedDate(lastVerifiedAt);
+  const sourceLabel = sourceName?.trim() || null;
+
+  if (sourceLabel && verifiedLabel) {
+    return `${sourceLabel} · ${verifiedLabel} 확인`;
+  }
+
+  if (sourceLabel) {
+    return sourceLabel;
+  }
+
+  if (verifiedLabel) {
+    return `${verifiedLabel} 확인`;
+  }
+
+  return "운영팀 확인";
 }
 
 export function OperatorContentBadge({ compact = false }: { compact?: boolean }) {
@@ -34,14 +60,18 @@ export function OperatorContentBadge({ compact = false }: { compact?: boolean })
 }
 
 export function OperatorContentSourcePanel({
+  postId,
   sourceName,
   sourceUrl,
   lastVerifiedAt,
 }: OperatorContentSourcePanelProps) {
-  const verifiedLabel = formatVerifiedDate(lastVerifiedAt);
+  const verifiedLabel = formatOperatorVerifiedDate(lastVerifiedAt);
+  const correctionHref = postId
+    ? `/corrections/new?postId=${encodeURIComponent(postId)}&targetType=POST`
+    : "/corrections/new?targetType=POST";
 
   return (
-    <section className="mt-4 rounded-xl border border-[#d8e6f7] bg-[#f8fbff] px-3 py-3 text-xs text-[#4f678d] sm:px-4">
+    <section className="mt-4 border-y border-[#d8e6f7] bg-[#f8fbff] px-3 py-3 text-xs text-[#4f678d] sm:px-4">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
@@ -56,7 +86,7 @@ export function OperatorContentSourcePanel({
           </p>
         </div>
         <Link
-          href="/commercial#contact"
+          href={correctionHref}
           className="tp-btn-soft inline-flex min-h-9 shrink-0 items-center justify-center px-3 text-[11px] font-semibold"
         >
           정보 정정 요청

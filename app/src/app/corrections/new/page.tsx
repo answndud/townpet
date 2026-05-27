@@ -6,6 +6,7 @@ import {
 } from "@prisma/client";
 
 import { getSiteOrigin } from "@/lib/site-url";
+import { getCorrectionRequestPostContext } from "@/server/queries/correction-request.queries";
 
 const siteOrigin = getSiteOrigin();
 
@@ -58,15 +59,34 @@ const errorMessages: Record<string, string> = {
   INTERNAL_SERVER_ERROR: "서버 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
 };
 
+function formatVerifiedDate(value: Date | null) {
+  if (!value) {
+    return null;
+  }
+  return new Intl.DateTimeFormat("ko-KR", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    timeZone: "Asia/Seoul",
+  }).format(value);
+}
+
 export default async function CorrectionRequestPage({
   searchParams,
 }: CorrectionRequestPageProps) {
   const params = (await searchParams) ?? {};
   const submittedId = params.submitted?.trim();
   const errorCode = params.error?.trim();
+  const postContext = await getCorrectionRequestPostContext(params.postId);
+  const isOperatorPostContext = Boolean(postContext?.isOperatorContent);
   const initialTargetType = targetTypeOptions.some((item) => item.value === params.targetType)
     ? params.targetType
-    : CorrectionRequestTargetType.HOSPITAL;
+    : postContext
+      ? CorrectionRequestTargetType.POST
+      : CorrectionRequestTargetType.HOSPITAL;
+  const initialTargetName = params.targetName ?? postContext?.title ?? "";
+  const verifiedDate = formatVerifiedDate(postContext?.operatorLastVerifiedAt ?? null);
+  const postContextHref = postContext ? `/posts/${postContext.id}` : null;
 
   return (
     <main className="tp-page-bg min-h-screen">
@@ -82,9 +102,33 @@ export default async function CorrectionRequestPage({
           </p>
 
           {submittedId ? (
-            <div className="mt-5 rounded-xl border border-[#b8d7c3] bg-[#f2fbf5] px-4 py-3 text-sm text-[#245338]">
-              정정 요청이 접수되었습니다. 접수번호는{" "}
-              <span className="font-semibold">{submittedId}</span>입니다.
+            <div className="mt-5 rounded-xl border border-[#b8d7c3] bg-[#f2fbf5] px-4 py-4 text-sm text-[#245338]">
+              <p>
+                정정 요청이 접수되었습니다. 접수번호는{" "}
+                <span className="font-semibold">{submittedId}</span>입니다.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {postContextHref ? (
+                  <Link
+                    href={postContextHref}
+                    className="rounded-lg border border-[#9ccfac] bg-white px-3 py-2 text-xs font-semibold text-[#245338]"
+                  >
+                    연결 글 다시 보기
+                  </Link>
+                ) : null}
+                <Link
+                  href="/posts/new"
+                  className="rounded-lg border border-[#9ccfac] bg-white px-3 py-2 text-xs font-semibold text-[#245338]"
+                >
+                  첫 글 작성하기
+                </Link>
+                <Link
+                  href="/feed"
+                  className="rounded-lg border border-[#9ccfac] bg-white px-3 py-2 text-xs font-semibold text-[#245338]"
+                >
+                  관련 글 더 보기
+                </Link>
+              </div>
             </div>
           ) : null}
 
@@ -96,6 +140,31 @@ export default async function CorrectionRequestPage({
 
           <form action="/api/corrections" method="post" className="mt-6 grid gap-4">
             <input type="hidden" name="postId" value={params.postId ?? ""} />
+
+            {postContext ? (
+              <div className="rounded-xl border border-[#dbe6f5] bg-[#f8fbff] px-4 py-3 text-sm text-[#315277]">
+                <div className="flex flex-wrap items-center gap-2">
+                  {isOperatorPostContext ? (
+                    <span className="rounded-full border border-[#c9d8ee] bg-white px-2 py-0.5 text-[11px] font-semibold text-[#315b9a]">
+                      운영자 정리 글
+                    </span>
+                  ) : null}
+                  <span className="font-semibold text-[#173963]">{postContext.title}</span>
+                </div>
+                {isOperatorPostContext ? (
+                  <p className="mt-2 text-xs leading-5 text-[#526d96]">
+                    이 요청은 운영자 정리 글에 연결됩니다.
+                    {postContext.operatorSourceName ? ` 출처: ${postContext.operatorSourceName}.` : ""}
+                    {verifiedDate ? ` 최종 확인: ${verifiedDate}.` : ""}
+                    {" "}표시된 내용과 다른 사실 또는 보완 근거를 적어 주세요.
+                  </p>
+                ) : (
+                  <p className="mt-2 text-xs leading-5 text-[#526d96]">
+                    이 요청은 연결된 게시글과 함께 관리자 검토 큐에 표시됩니다.
+                  </p>
+                )}
+              </div>
+            ) : null}
 
             <label className="grid gap-1.5 text-sm font-semibold text-[#173963]">
               정정 대상
@@ -117,7 +186,7 @@ export default async function CorrectionRequestPage({
               병원/장소/게시글 이름
               <input
                 name="targetName"
-                defaultValue={params.targetName ?? ""}
+                defaultValue={initialTargetName}
                 className="tp-input-soft bg-white px-3 py-2 text-sm"
                 placeholder="예: 우리동네 24시 동물병원"
                 minLength={2}
