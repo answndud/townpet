@@ -7776,6 +7776,13 @@
     - PASS
   - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
     - ESLint, TypeScript, Vitest `295 files / 1410 tests`, Next production build PASS
+  - GitHub Actions:
+    - `quality-gate` PASS for `b0f5532 Add correction flow daily trend`
+    - `docs-quality` PASS for `c540ff5 Refresh docs index for correction trend report`
+  - Vercel:
+    - deployment for `c540ff5` completed successfully
+  - Production health:
+    - `https://townpet.vercel.app/api/health` 200, `payload.status: ok`, `payload.timestamp: 2026-05-27T07:44:08.170Z`
 - 결과:
   - 운영자는 정정 요청 acquisition loop의 합계뿐 아니라 날짜별 조회, 접수, 전환율, receipt CTA 반응을 `/admin/ops`에서 확인할 수 있다.
   - production data, schema, acquisition event write path, correction request mutation/rate limit/admin queue policy는 변경하지 않았다.
