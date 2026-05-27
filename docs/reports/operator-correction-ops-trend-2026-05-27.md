@@ -28,6 +28,15 @@
   - PASS
 - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
   - ESLint, TypeScript, Vitest `295 files / 1410 tests`, Next production build PASS
+- GitHub Actions
+  - `quality-gate` PASS for `b0f5532 Add correction flow daily trend`
+  - `docs-quality` PASS for `c540ff5 Refresh docs index for correction trend report`
+- Vercel
+  - deployment for `c540ff5` completed successfully
+- Production health
+  - `https://townpet.vercel.app/api/health` 200
+  - `payload.status: ok`
+  - `payload.timestamp: 2026-05-27T07:44:08.170Z`
 
 ## 남은 확인
 
