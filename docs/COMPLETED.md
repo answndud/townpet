@@ -7079,3 +7079,36 @@
 - 결과:
   - production 데이터 변경은 하지 않았다.
   - 후보가 1건 있으므로 cleanup은 [PLAN.md](./PLAN.md)의 별도 dry-run/승인 대기 항목으로 올렸다.
+
+### 2026-05-27 | production legacy upload path cleanup dry-run
+- 완료일: `2026-05-27`
+- 배경:
+  - production read-only audit에서 `Post.content` 1건에 `/media/media/uploads/` legacy double-proxy path가 남아 있었다.
+  - 실제 production mutation 전에 변경 전/후 path preview가 필요했다.
+- 변경내용:
+  - `db:cleanup:legacy-upload-paths:dry-run` 스크립트를 추가했다.
+  - script는 `Post.content` 후보를 읽고 `getUploadProxyPath` 기준으로 `/media/media/uploads/*`를 `/media/uploads/*`로 변환한 preview만 출력한다.
+  - non-local DB에서는 `LEGACY_UPLOAD_PATH_CLEANUP_DRY_RUN_CONFIRM=LEGACY_UPLOAD_PATH_CLEANUP_DRY_RUN` 확인값이 필요하다.
+  - production DB update 로직은 넣지 않았다.
+  - `/tmp/townpet-legacy-upload-cleanup-dry-run`에 Vercel production env를 임시로 pull했고, 실행 후 삭제했다.
+- 코드문서:
+  - [app/scripts/dry-run-legacy-upload-path-cleanup.ts](../app/scripts/dry-run-legacy-upload-path-cleanup.ts)
+  - [app/scripts/dry-run-legacy-upload-path-cleanup.test.ts](../app/scripts/dry-run-legacy-upload-path-cleanup.test.ts)
+  - [app/package.json](../app/package.json)
+  - [docs/reports/legacy-upload-path-cleanup-dry-run-production-2026-05-27.md](./reports/legacy-upload-path-cleanup-dry-run-production-2026-05-27.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 핵심 결과:
+  - candidateCount: 1.
+  - changedCount: 1.
+  - 대상 post: `cmm0kczw9000211jw0td3wf71`, title `이미지 업로드 테스트`.
+  - before: `/media/media/uploads/1771935012347-5511bddc-bdf9-49cf-9e55-3fae218fd8fb.jpg`
+  - after: `/media/uploads/1771935012347-5511bddc-bdf9-49cf-9e55-3fae218fd8fb.jpg`
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- scripts/dry-run-legacy-upload-path-cleanup.test.ts scripts/audit-legacy-upload-paths.test.ts src/lib/upload-url.test.ts`
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app lint -- scripts/dry-run-legacy-upload-path-cleanup.ts scripts/dry-run-legacy-upload-path-cleanup.test.ts`
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+  - `LEGACY_UPLOAD_PATH_CLEANUP_DRY_RUN_CONFIRM=LEGACY_UPLOAD_PATH_CLEANUP_DRY_RUN LEGACY_UPLOAD_PATH_CLEANUP_DRY_RUN_LIMIT=50 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app db:cleanup:legacy-upload-paths:dry-run`
+- 결과:
+  - production 데이터 변경은 하지 않았다.
+  - production apply는 별도 승인 전까지 진행하지 않는다.
