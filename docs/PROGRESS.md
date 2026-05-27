@@ -3,6 +3,7 @@
 ## 현재 상태
 
 - 현재 active 계획: [PLAN.md](./PLAN.md)의 `마케팅 피드백 기반 제품 획득 루프 재정렬`.
+- `2026-05-27. public smoke fixture production 게시`를 완료했다. `LOST_FOUND`, `MARKET_LISTING` 운영자 smoke fixture를 production에 게시했고, public 상세 visual smoke가 `FREE_BOARD`, `WALK_ROUTE`, `LOST_FOUND`, `MARKET_LISTING` desktop/mobile에서 PASS했다. `HOSPITAL_REVIEW`는 guest read policy, `CARE_REQUEST`는 local-required gate 때문에 public smoke 대상에서 계속 BLOCKED다.
 - `2026-05-27. 게시판별 public 상세 smoke target 분리`를 완료했다. public 상세 smoke가 게시판 type별 target을 자동 수집하고, 실제 target이 없는 게시판은 `BLOCKED`로 명확히 보고한다. 현재 production은 `FREE_BOARD`, `WALK_ROUTE`만 PASS target이 있고 `LOST_FOUND`, `HOSPITAL_REVIEW`, `MARKET_LISTING`, `CARE_REQUEST`는 public feed item 없음으로 BLOCKED다.
 - `2026-05-27. public 상세 댓글/screenshot smoke 재개`를 완료했다. `/api/feed/guest` 응답 shape를 `data.feed.items` 기준으로 확인했고, production public 글 상세를 desktop/mobile Playwright로 열어 제목/댓글/신고/운영자 출처/no-overflow를 검증했다.
 - `2026-05-27. repo-local Playwright 성능 측정 재개`를 완료했다. 홈/전역 설치 없이 `.playwright-browsers` repo-local cache를 쓰는 script를 추가했고, browser FCP/LCP와 route asset snapshot을 production에서 재측정했다.
@@ -105,7 +106,7 @@
 - 성능 후속은 route별 post detail/browser smoke fixture가 생기거나 LCP outlier가 반복될 때 다시 연다.
 - 다음 기능 점검 후보는 production DB env가 준비된 상태에서 `db:audit:legacy-upload-paths`를 재실행하고, 후보가 있으면 별도 cleanup dry-run 계획을 세우는 것이다.
 - 현재 active 구현 항목 없음.
-- 다음 개발 후보는 production에 `LOST_FOUND`, `HOSPITAL_REVIEW`, `MARKET_LISTING`, `CARE_REQUEST` public smoke fixture를 운영자 글 또는 seed 절차로 확보하는 것이다.
+- 다음 개발 후보는 `HOSPITAL_REVIEW` guest read policy와 `CARE_REQUEST` local-required 정책을 유지한 상태에서 별도 인증/로컬 smoke를 마련할지 결정하는 것이다.
 
 ## 최근 검증
 
