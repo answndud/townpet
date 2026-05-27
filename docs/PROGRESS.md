@@ -3,6 +3,7 @@
 ## 현재 상태
 
 - 현재 active 계획: [PLAN.md](./PLAN.md)의 `마케팅 피드백 기반 제품 획득 루프 재정렬`.
+- `2026-05-27. auth/local 상세 visual smoke 추가`를 완료했다. `HOSPITAL_REVIEW`는 로그인 세션, `CARE_REQUEST`는 같은 동네 사용자 컨텍스트로 production 상세 화면을 desktop/mobile에서 검증했고 모두 PASS했다.
 - `2026-05-27. public smoke fixture production 게시`를 완료했다. `LOST_FOUND`, `MARKET_LISTING` 운영자 smoke fixture를 production에 게시했고, public 상세 visual smoke가 `FREE_BOARD`, `WALK_ROUTE`, `LOST_FOUND`, `MARKET_LISTING` desktop/mobile에서 PASS했다. `HOSPITAL_REVIEW`는 guest read policy, `CARE_REQUEST`는 local-required gate 때문에 public smoke 대상에서 계속 BLOCKED다.
 - `2026-05-27. 게시판별 public 상세 smoke target 분리`를 완료했다. public 상세 smoke가 게시판 type별 target을 자동 수집하고, 실제 target이 없는 게시판은 `BLOCKED`로 명확히 보고한다. 현재 production은 `FREE_BOARD`, `WALK_ROUTE`만 PASS target이 있고 `LOST_FOUND`, `HOSPITAL_REVIEW`, `MARKET_LISTING`, `CARE_REQUEST`는 public feed item 없음으로 BLOCKED다.
 - `2026-05-27. public 상세 댓글/screenshot smoke 재개`를 완료했다. `/api/feed/guest` 응답 shape를 `data.feed.items` 기준으로 확인했고, production public 글 상세를 desktop/mobile Playwright로 열어 제목/댓글/신고/운영자 출처/no-overflow를 검증했다.
