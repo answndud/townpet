@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ReportReason, ReportStatus, ReportTarget } from "@prisma/client";
 
+import { AdminQueueSwitch } from "@/components/admin/admin-queue-switch";
 import { ReportQueueTable } from "@/components/admin/report-queue-table";
 import { ReportUpdateBanner } from "@/components/admin/report-update-banner";
 import { CompactPagination } from "@/components/ui/compact-pagination";
@@ -19,6 +20,7 @@ import {
   isSupportedReportTarget,
 } from "@/lib/report-target";
 import { requireModeratorPageUser } from "@/server/admin-page-access";
+import { getCorrectionRequestQueueSummary } from "@/server/queries/correction-request.queries";
 import { listReportAuditsByReportIds } from "@/server/queries/report-audit.queries";
 import { getReportStats, listReportsPage } from "@/server/queries/report.queries";
 import { listRecentSanctions } from "@/server/queries/sanction.queries";
@@ -58,10 +60,11 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
   const showUpdated = resolvedParams.updated === "1";
   const currentPage = parsePositivePage(resolvedParams.page);
 
-  const [reportPage, stats, sanctions] = await Promise.all([
+  const [reportPage, stats, sanctions, correctionSummary] = await Promise.all([
     listReportsPage({ status, targetType, page: currentPage }),
     getReportStats(7),
     listRecentSanctions(15),
+    getCorrectionRequestQueueSummary(),
   ]);
 
   const reportIds = reportPage.items.map((report) => report.id);
@@ -260,6 +263,14 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
         {showUpdated ? (
           <ReportUpdateBanner message="신고 처리 결과가 반영되었습니다." />
         ) : null}
+
+        <AdminQueueSwitch
+          current="reports"
+          reportPendingCount={stats.statusCounts[ReportStatus.PENDING]}
+          reportCriticalCount={criticalPendingCount}
+          correctionActiveCount={correctionSummary.activeCount}
+          correctionOperatorCount={correctionSummary.operatorPendingCount}
+        />
 
         <section className="tp-card flex flex-col gap-3 p-4 text-xs text-[#4f678d]">
           <div className="flex flex-wrap items-center gap-2">

@@ -7270,3 +7270,286 @@
 - 결과:
   - 이번 세션의 운영/검증 작업은 app active 문서와 블로그 시리즈 양쪽에 역할에 맞게 남는다.
   - active plan은 계속 `현재 active 작업 없음` 상태로 유지한다.
+
+### 2026-05-27 | 운영 증거 기반 다음 개선 루프 Phase 0~2
+- 완료일: `2026-05-27`
+- 배경:
+  - 다음 세션 handoff에 따라 최신 `main`/production 상태를 먼저 재확인하고, 성능 측정과 상세 화면 auxiliary surface audit을 근거로 다음 작업을 좁혀야 했다.
+- 변경내용:
+  - Phase 0에서 branch, 최신 커밋, worktree 상태, production health를 확인했다.
+  - Phase 1에서 production Node baseline, API latency snapshot, browser baseline, route asset snapshot을 재측정했다.
+  - Phase 2에서 상세 화면 board type별 auxiliary surface를 점검하고, guest public 상세의 보조 정보 셀과 신고 wrapper를 compact divider row 기준으로 낮췄다.
+  - guest 상세 auxiliary surface 회귀 방지 테스트를 추가했다.
+- 코드문서:
+  - [app/src/app/posts/[id]/guest/page.tsx](../app/src/app/posts/[id]/guest/page.tsx)
+  - [app/src/app/posts/[id]/guest/page-layout.test.ts](../app/src/app/posts/[id]/guest/page-layout.test.ts)
+  - [docs/reports/operations-evidence-loop-phase-0-2-2026-05-27.md](./reports/operations-evidence-loop-phase-0-2-2026-05-27.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `curl -sS -i https://townpet.vercel.app/api/health`
+  - `OPS_BASE_URL=https://townpet.vercel.app COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app ops:check:health`
+  - `OPS_BASE_URL=https://townpet.vercel.app PERF_SAMPLES=5 PERF_PAUSE_MS=200 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app perf:baseline`
+  - `OPS_BASE_URL=https://townpet.vercel.app OPS_PERF_GET_SAMPLES=10 OPS_PERF_POST_SAMPLES=6 OPS_PERF_PAUSE_MS=150 OPS_PERF_OUT=../docs/reports/api-latency-snapshot-2026-05-27T04-30-ops.tsv OPS_PERF_SUMMARY_OUT=../docs/reports/api-latency-snapshot-2026-05-27T04-30-ops.summary.md COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app ops:perf:snapshot`
+  - `OPS_BASE_URL=https://townpet.vercel.app PERF_BROWSER_SAMPLES=2 PERF_BROWSER_SETTLE_MS=1500 PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app perf:browser:local`
+  - `OPS_BASE_URL=https://townpet.vercel.app PERF_ASSET_SAMPLES=1 PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app perf:assets:local`
+  - `corepack pnpm@9.12.3 -C app test -- 'src/app/posts/[id]/guest/page-layout.test.ts' src/components/posts/post-detail-info-section.test.tsx src/components/posts/post-detail-primary-card-layout.test.ts`
+  - `corepack pnpm@9.12.3 -C app lint -- 'src/app/posts/[id]/guest/page.tsx' 'src/app/posts/[id]/guest/page-layout.test.ts'`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect 'app/src/app/posts/[id]/guest/page.tsx' app/src/components/posts --fast`
+  - local browser smoke: `http://localhost:3000/posts/cmp4zsinz001v4e0okzumk86k/guest` 200, `compactCells: 10`, `oldCells: 0`, overflow 0.
+- 결과:
+  - Phase 0~2는 완료됐다.
+  - API search outlier는 재측정에서 정상화됐고, `api_posts_suggestions` 단발 p95 outlier는 다음 성능 관찰 후보로 남겼다.
+  - 다음 active 작업은 Phase 3 `첫 7개 운영자 정리 글 화면 문구/밀도/CTA 점검`이다.
+
+### 2026-05-27 | 운영자 정리 글 화면 문구/밀도/CTA 점검 Phase 3
+- 완료일: `2026-05-27`
+- 배경:
+  - production에 게시된 운영자 정리 글이 홈, guest feed, guest search, 상세에서 과장된 인기 콘텐츠처럼 보이지 않고 출처/최종 확인일/정정 요청 CTA를 자연스럽게 보여야 했다.
+  - 운영자 글 본문이나 production DB는 변경하지 않는 read-only audit + UI 표시 개선 범위였다.
+- 변경내용:
+  - `/api/home/feed` preview item에 `isOperatorContent`, `operatorSourceName`, `operatorSourceUrl`, `operatorLastVerifiedAt`를 포함하도록 보강했다.
+  - 홈 preview row에 compact `운영자 정리` badge와 출처/확인일 metadata를 표시했다.
+  - guest feed row와 guest search result row에 운영자 source/최종 확인일 context를 compact하게 표시했다.
+  - 상세 source panel의 `정보 정정 요청` CTA를 `/commercial#contact`가 아니라 `/corrections/new?postId=<id>&targetType=POST`로 연결했다.
+  - 상세 source panel을 rounded nested panel에서 `border-y` compact section으로 낮췄다.
+- 코드문서:
+  - [app/src/app/api/home/feed/route.ts](../app/src/app/api/home/feed/route.ts)
+  - [app/src/components/home/home-feed-preview.tsx](../app/src/components/home/home-feed-preview.tsx)
+  - [app/src/components/posts/feed-infinite-list.tsx](../app/src/components/posts/feed-infinite-list.tsx)
+  - [app/src/components/posts/guest-search-page-client.tsx](../app/src/components/posts/guest-search-page-client.tsx)
+  - [app/src/components/posts/operator-content-source-panel.tsx](../app/src/components/posts/operator-content-source-panel.tsx)
+  - [app/src/components/posts/post-detail-primary-card.tsx](../app/src/components/posts/post-detail-primary-card.tsx)
+  - [app/src/app/posts/[id]/guest/page.tsx](../app/src/app/posts/[id]/guest/page.tsx)
+  - [docs/reports/operator-content-ui-audit-2026-05-27.md](./reports/operator-content-ui-audit-2026-05-27.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/components/posts/operator-content-source-panel.test.tsx src/components/home/home-feed-preview.test.tsx src/components/posts/feed-infinite-list.test.tsx src/components/posts/guest-search-page-client-layout.test.ts src/app/api/home/feed/route.test.ts 'src/app/posts/[id]/guest/page-layout.test.ts'`
+  - `corepack pnpm@9.12.3 -C app lint -- src/components/posts/operator-content-source-panel.tsx src/components/posts/operator-content-source-panel.test.tsx src/components/home/home-feed-preview.tsx src/components/home/home-feed-preview.test.tsx src/components/posts/feed-infinite-list.tsx src/components/posts/feed-infinite-list.test.tsx src/components/posts/guest-search-page-client.tsx src/components/posts/guest-search-page-client-layout.test.ts src/app/api/home/feed/route.ts src/app/api/home/feed/route.test.ts 'src/app/posts/[id]/guest/page.tsx' 'src/app/posts/[id]/guest/page-layout.test.ts'`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect app/src/app app/src/components --fast`
+  - `OPS_BASE_URL=https://townpet.vercel.app COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app ops:check:operator-content-public`
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app docs:refresh`
+  - `git diff --check`
+- 결과:
+  - production read-only smoke 기준 운영자 글 9건이 있고, feed/detail/search/home preview 경로가 PASS했다.
+  - 홈/피드/검색/상세에서 운영자 콘텐츠가 사용자 글과 구분되며, `먼저 확인할 글` 표현은 유지해 인기 콘텐츠처럼 과장하지 않는다.
+  - 다음 active 작업은 Phase 4 `실제 사용자-facing 제품 개발 항목 재선정`이다.
+
+### 2026-05-27 | 실제 사용자-facing 제품 개발 항목 재선정 Phase 4
+- 완료일: `2026-05-27`
+- 배경:
+  - Phase 0~3에서 production 상태, 성능, 상세 auxiliary surface, 운영자 콘텐츠 UI를 점검했다.
+  - 다음 개발 항목은 측정/audit 결과에 직접 연결되는 하나의 사용자-facing 흐름이어야 했다.
+- 선정:
+  - 다음 active phase는 `운영자 콘텐츠 정정/제보 acquisition loop MVP`로 정했다.
+- 선정 근거:
+  - production에는 source/verifiedAt가 있는 운영자 정리 글 9건이 있고, feed/detail/search/home preview smoke가 PASS했다.
+  - 운영자 콘텐츠 source/정정 CTA는 오늘 UI 기준으로 정리됐지만, 사용자가 정정 요청을 제출한 뒤 receipt, 다음 행동, 운영 queue, acquisition tracking으로 이어지는 고리는 아직 약하다.
+  - 이 흐름은 production 데이터 변경 없이 작은 세로 slice로 구현/검증할 수 있고, 운영자 콘텐츠를 실제 사용자 기여로 전환하는 acquisition loop와 직접 연결된다.
+- 코드문서:
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app docs:refresh`
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app docs:refresh:check`
+  - `git diff --check`
+- 결과:
+  - `PLAN.md`에는 `운영자 콘텐츠 정정/제보 acquisition loop MVP` 하나만 active 구현 phase로 남겼다.
+  - 나머지 후보는 `다음 작업 후보`로 되돌렸다.
+
+### 2026-05-27 | 운영자 콘텐츠 정정/제보 acquisition loop MVP
+- 완료일: `2026-05-27`
+- 배경:
+  - 운영자 정리 글은 production read-only smoke 기준 9건이 있고, 홈/피드/검색/상세 경로는 PASS했다.
+  - 이전 단계에서 상세 source panel의 `정보 정정 요청` CTA는 연결됐지만, 제출 후 receipt/다음 행동/admin queue 구분까지 이어지는 acquisition loop가 아직 닫혀 있지 않았다.
+- 변경내용:
+  - `/corrections/new`가 `postId` context를 조회해 연결 글 제목, 운영자 정리 글 marker, source, 최종 확인일 안내를 표시한다.
+  - 연결 글이 있으면 target type 기본값을 `POST`로 두고, target name은 query 값 또는 연결 글 제목으로 prefill한다.
+  - correction form 제출 성공 receipt에 접수번호와 `연결 글 다시 보기`, `첫 글 작성하기`, `관련 글 더 보기` CTA를 추가했다.
+  - `/api/corrections` form redirect가 성공과 ServiceError failure 모두에서 `postId`, `targetType`, `targetName`을 보존한다.
+  - `/admin/corrections` queue가 연결 글이 운영자 콘텐츠이면 `운영자 정리 글 제보` marker와 source/확인일을 표시한다.
+  - 관리자 목록 query가 operator content marker에 필요한 post metadata를 include하고, correction form prefill용 read-only post context query를 추가했다.
+- 코드문서:
+  - [app/src/app/corrections/new/page.tsx](../app/src/app/corrections/new/page.tsx)
+  - [app/src/app/api/corrections/route.ts](../app/src/app/api/corrections/route.ts)
+  - [app/src/app/admin/corrections/page.tsx](../app/src/app/admin/corrections/page.tsx)
+  - [app/src/server/queries/correction-request.queries.ts](../app/src/server/queries/correction-request.queries.ts)
+  - [docs/reports/operator-correction-loop-mvp-2026-05-27.md](./reports/operator-correction-loop-mvp-2026-05-27.md)
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/app/corrections/new/page.test.tsx src/app/api/corrections/route.test.ts src/server/queries/correction-request.queries.test.ts src/app/admin/corrections/page.test.tsx`
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app lint`
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+  - `PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect app/src/app/corrections app/src/app/admin/corrections app/src/components --fast`
+- 결과:
+  - 운영자 콘텐츠에서 시작한 정정 요청은 public form, success receipt, admin queue에서 같은 post context를 유지한다.
+  - 기존 Zod/service validation과 IP 기반 rate limit 경계는 유지했다.
+  - Prisma schema와 production 데이터는 변경하지 않았다.
+  - acquisition event wiring은 기존 correction-specific event surface가 없어 이번 slice에서 넓히지 않았다.
+
+### 2026-05-27 | 실제 사용자 onboarding/지역 선택 흐름 강화
+- 완료일: `2026-05-27`
+- 배경:
+  - 운영자 콘텐츠 정정/제보 loop 이후 다음 acquisition 병목은 가입 사용자가 직접 지역을 확정하고 Local 경험으로 진입하는 activation 흐름이었다.
+  - 제품 기준상 `/`과 public acquisition UI는 특정 지역을 기본값처럼 보여서는 안 되며, 온보딩도 사용자가 직접 선택한 동네만 Local 진입점으로 써야 한다.
+- 변경내용:
+  - `OnboardingForm`의 동네 선택 영역에 "선택 전에는 특정 동네가 기본값으로 정해지지 않는다"는 guard copy를 추가했다.
+  - 동네 미선택 상태에는 Local 피드와 동네 글쓰기가 지역 미확정 상태로 유지된다는 empty state를 표시한다.
+  - 선택 상태에는 대표 동네를 별도 요약해 저장 전 사용자가 기준 동네를 확인할 수 있게 했다.
+  - 동네 저장 성공 후 자동 redirect를 멈추고, success receipt에서 `대표 동네 허브 보기`, `첫 글 작성하기`, `피드 보기` CTA를 제공한다.
+  - 선택 변경/필터 변경/선택 제거 시 이전 저장 성공 CTA를 지워 stale next action이 남지 않게 했다.
+- 코드문서:
+  - [app/src/components/onboarding/onboarding-form.tsx](../app/src/components/onboarding/onboarding-form.tsx)
+  - [app/src/components/onboarding/onboarding-form-accessibility.test.tsx](../app/src/components/onboarding/onboarding-form-accessibility.test.tsx)
+  - [docs/reports/onboarding-region-selection-loop-2026-05-27.md](./reports/onboarding-region-selection-loop-2026-05-27.md)
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/components/onboarding/onboarding-form-accessibility.test.tsx`
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app lint`
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+  - `PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect app/src/app/onboarding app/src/components/onboarding --fast`
+- 결과:
+  - 온보딩 지역 선택은 사용자 직접 선택값만 기반으로 대표 동네 허브 링크를 만든다.
+  - 자동 위치 추정, 특정 지역 기본값, DB schema, production 데이터 변경은 하지 않았다.
+
+### 2026-05-27 | 분실/목격 vertical 첫 행동 완성도 강화
+- 완료일: `2026-05-27`
+- 배경:
+  - 온보딩/지역 선택 흐름 이후 실제 activation 표면으로 긴급성이 높은 `분실/목격` vertical을 강화했다.
+  - 분실/목격은 전용 작성, 공유 이미지, 목격 댓글, 개인정보 정책이 이미 있으므로 새 저장 모델보다 첫 행동 구분과 안전 안내를 명확히 하는 범위로 좁혔다.
+- 변경내용:
+  - `posts/new?type=LOST_FOUND` hero copy를 보호자 작성, 목격자 제보, 주변 공유의 세 행동으로 분리했다.
+  - lost-found 작성 구조화 필드 상단에 `처음 행동 구분` 안내를 추가했다.
+  - lost-found 상세 공유 패널에 보호자 업데이트, 목격 제보 댓글, 링크/이미지 공유의 관계를 compact하게 표시했다.
+  - 기존 개인정보 guard copy와 validation/service 정책은 유지했다.
+- 정책 확인:
+  - public 연락처, 오픈채팅, 이메일, 상세주소 제한은 기존 `post`/`comment` Zod validation이 계속 담당한다.
+  - 자동 위치 추정, 새 연락처 수집, Local/Global 정책 변경, production 데이터 변경은 하지 않았다.
+- 코드문서:
+  - [app/src/app/posts/new/page.tsx](../app/src/app/posts/new/page.tsx)
+  - [app/src/components/posts/post-create-structured-fields.tsx](../app/src/components/posts/post-create-structured-fields.tsx)
+  - [app/src/components/posts/lost-found-share-panel.tsx](../app/src/components/posts/lost-found-share-panel.tsx)
+  - [docs/reports/lost-found-first-action-loop-2026-05-27.md](./reports/lost-found-first-action-loop-2026-05-27.md)
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/app/posts/new/page.test.tsx src/components/posts/post-create-structured-fields.test.tsx src/components/posts/post-detail-action-accessibility.test.tsx src/lib/validations/post.test.ts src/lib/validations/comment.test.ts`
+  - `PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect app/src/app/lost app/src/app/posts/new app/src/components/posts --fast`
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app lint`
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+  - `git diff --check`
+- 결과:
+  - 분실/목격 작성과 상세 공유 surface에서 사용자가 `분실 글 작성`, `목격 제보`, `공유`의 차이를 더 빠르게 이해할 수 있다.
+  - 정책 경계와 데이터 모델은 변경하지 않았다.
+
+### 2026-05-27 | 관리자 운영 큐 빠른 전환/요약 개선
+- 완료일: `2026-05-27`
+- 배경:
+  - 사용자 acquisition과 분실/목격 첫 행동 표면을 정리한 뒤, 운영자가 들어온 신고/정정 요청을 빠르게 분류하는 반복 작업이 다음 병목이었다.
+  - 신고 큐와 정보 정정 요청 큐는 분리되어 있었지만, 현재 큐에서 다른 큐의 대기량과 운영자 콘텐츠 제보 여부를 바로 볼 수 없었다.
+- 변경내용:
+  - 공용 [AdminQueueSwitch](../app/src/components/admin/admin-queue-switch.tsx)를 추가했다.
+  - `/admin/reports` 상단에 정정 요청 진행 건수와 운영자 콘텐츠 제보 건수를 표시하고 정정 큐로 바로 이동할 수 있게 했다.
+  - `/admin/corrections` 상단에 신고 대기 건수와 정정 큐 요약을 표시하고 신고 큐로 바로 이동할 수 있게 했다.
+  - correction request read-only summary query `getCorrectionRequestQueueSummary`를 추가했다.
+  - 정정 큐의 운영자 콘텐츠 marker와 source/확인일 표시는 유지했다.
+- 정책 확인:
+  - 신고/정정 처리 action, 일괄 제재, 숨김/해제, moderation log, correction status update 정책은 변경하지 않았다.
+  - Prisma schema와 production 데이터는 변경하지 않았다.
+- 코드문서:
+  - [app/src/components/admin/admin-queue-switch.tsx](../app/src/components/admin/admin-queue-switch.tsx)
+  - [app/src/app/admin/reports/page.tsx](../app/src/app/admin/reports/page.tsx)
+  - [app/src/app/admin/corrections/page.tsx](../app/src/app/admin/corrections/page.tsx)
+  - [app/src/server/queries/correction-request.queries.ts](../app/src/server/queries/correction-request.queries.ts)
+  - [docs/reports/admin-queue-switch-summary-2026-05-27.md](./reports/admin-queue-switch-summary-2026-05-27.md)
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/components/admin/admin-queue-switch.test.tsx src/server/queries/correction-request.queries.test.ts src/app/admin/corrections/page.test.tsx src/components/admin/admin-section-nav.test.tsx src/components/admin/admin-lounge-compact-controls-accessibility.test.ts`
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app lint`
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+  - `PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect app/src/app/admin app/src/components/admin --fast`
+  - `git diff --check`
+- 결과:
+  - 운영자는 신고 큐와 정정 큐의 대기/진행 상태를 상단에서 함께 보고 바로 이동할 수 있다.
+  - 운영자 콘텐츠에서 들어온 정정 요청은 리스트와 큐 요약 양쪽에서 드러난다.
+
+### 2026-05-27 | `api_posts_suggestions` p95 outlier 반복 관찰
+- 완료일: `2026-05-27`
+- 배경:
+  - 운영 증거 기반 루프 Phase 1 recheck에서 `api_posts_suggestions` p95 `1005.1ms` 단발 outlier가 있었다.
+  - 직전 baseline에서는 PASS였으므로 코드 변경보다 production 재측정으로 반복 여부를 먼저 확인했다.
+- 실행:
+  - production health 확인.
+  - `OPS_PERF_GET_SAMPLES=12`, `OPS_PERF_POST_SAMPLES=6` snapshot 실행.
+  - 첫 snapshot에서 `api_search_guest`가 단발 FAIL해 `OPS_PERF_GET_SAMPLES=8`, `OPS_PERF_POST_SAMPLES=4`로 즉시 recheck 실행.
+- 결과:
+  - health: PASS, `/api/health` 200, `payload.status: ok`.
+  - 첫 snapshot `api_posts_suggestions`: steady p50 `158.5ms`, p95 `393.5ms`, slow `0`, PASS.
+  - recheck `api_posts_suggestions`: steady p50 `148.8ms`, p95 `196.0ms`, slow `0`, PASS.
+  - 첫 snapshot `api_search_guest`: steady p95 `1470.9ms`, slow `2`, FAIL.
+  - recheck `api_search_guest`: steady p95 `286.3ms`, slow `0`, PASS.
+- 코드문서:
+  - [docs/reports/api-posts-suggestions-outlier-observation-2026-05-27.md](./reports/api-posts-suggestions-outlier-observation-2026-05-27.md)
+  - [docs/reports/api-latency-snapshot-2026-05-27T05-59-suggestions.summary.md](./reports/api-latency-snapshot-2026-05-27T05-59-suggestions.summary.md)
+  - [docs/reports/api-latency-snapshot-2026-05-27T06-00-search-recheck.summary.md](./reports/api-latency-snapshot-2026-05-27T06-00-search-recheck.summary.md)
+- 판정:
+  - `api_posts_suggestions`: PASS. 이전 `1005.1ms` p95 outlier는 이번 관찰 window에서 반복되지 않았다.
+  - `api_search_guest`: OBSERVE. 즉시 재측정에서 정상화됐으므로 이번 evidence만으로 query/index/cache refactor를 열지 않는다.
+  - production 데이터, 캐시 정책, 코드 변경은 하지 않았다.
+
+### 2026-05-27 | 누적 변경 release-readiness / quality gate 점검
+- 완료일: `2026-05-27`
+- 배경:
+  - 운영자 콘텐츠 정정 loop, onboarding, 분실/목격 첫 행동, 관리자 큐 요약, production 성능 관찰까지 누적 변경이 생겼다.
+  - 다음 기능 추가 전에 전체 lint/typecheck/test/build와 운영 health/docs freshness를 통합 확인해야 했다.
+- 실행:
+  - `quality:check`로 ESLint, TypeScript, Vitest, Next production build를 통합 실행했다.
+  - production alias health를 확인했다.
+  - docs index freshness와 whitespace diff를 확인했다.
+- 코드문서:
+  - [docs/reports/release-readiness-quality-gate-2026-05-27.md](./reports/release-readiness-quality-gate-2026-05-27.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint PASS
+    - TypeScript PASS
+    - Vitest PASS, `292 files / 1397 tests`
+    - Next production build PASS
+  - `OPS_BASE_URL=https://townpet.vercel.app COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app ops:check:health`
+    - `https://townpet.vercel.app/api/health` 200, `payload.status: ok`, elapsed `418ms`
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app docs:refresh:check`
+    - docs index up to date
+  - `git diff --check`
+    - PASS
+- 판정:
+  - local release-readiness: `PASS`
+  - production 데이터 변경 없음.
+  - 다음 배포 URL이 생기면 post-deploy visual/API smoke를 별도 실행한다.
+
+### 2026-05-27 | 누적 변경사항 diff review / commit 준비
+- 완료일: `2026-05-27`
+- 배경:
+  - release-readiness `PASS` 이후 누적 변경을 커밋 가능한 단위로 정리해야 했다.
+  - 작업트리에는 의도한 app/docs 변경과 별개로, 작업 시작 전부터 있던 `docs/HANDOFF.md` 삭제 상태가 함께 있었다.
+- 리뷰 결과 및 수정:
+  - `/admin/corrections`의 queue switch 숫자가 현재 필터/검색 결과에 묶여 전역 active/operator correction count를 잘못 표시할 수 있어, `getCorrectionRequestQueueSummary()` aggregate를 사용하도록 수정했다.
+  - `/corrections/new?postId=...` public prefill이 비운영자 protected post title을 노출할 수 있어, post context는 운영자 콘텐츠 또는 guest-readable post일 때만 반환하도록 제한했다.
+  - 관련 회귀 테스트를 보강했다.
+- 코드문서:
+  - [app/src/app/admin/corrections/page.tsx](../app/src/app/admin/corrections/page.tsx)
+  - [app/src/server/queries/correction-request.queries.ts](../app/src/server/queries/correction-request.queries.ts)
+  - [app/src/app/admin/corrections/page.test.tsx](../app/src/app/admin/corrections/page.test.tsx)
+  - [app/src/server/queries/correction-request.queries.test.ts](../app/src/server/queries/correction-request.queries.test.ts)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/app/admin/corrections/page.test.tsx src/server/queries/correction-request.queries.test.ts src/app/corrections/new/page.test.tsx src/app/api/corrections/route.test.ts`
+    - `4 files / 14 tests` PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint PASS
+    - TypeScript PASS
+    - Vitest PASS, `292 files / 1399 tests`
+    - Next production build PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app docs:refresh:check`
+    - docs index up to date
+  - `git diff --check`
+    - PASS
+- 결과:
+  - 커밋 후보 파일은 staged set으로 준비했다.
+  - `docs/HANDOFF.md` 삭제는 unrelated dirty change로 남겼고 stage에서 제외했다.

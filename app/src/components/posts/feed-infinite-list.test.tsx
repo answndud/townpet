@@ -94,4 +94,30 @@ describe("FeedInfiniteList", () => {
     expect(html).toContain("창립 멤버");
     expect(html).toContain("text-[10px]");
   });
+
+  it("shows compact operator source context without making the row taller", () => {
+    const html = renderToStaticMarkup(
+      <FeedInfiniteList
+        initialItems={[
+          {
+            ...basePost,
+            isOperatorContent: true,
+            operatorSourceName: "TownPet 운영자 정리",
+            operatorLastVerifiedAt: "2026-05-24T00:00:00.000Z",
+          },
+        ]}
+        initialNextCursor={null}
+        mode="ALL"
+        query={{ scope: "GLOBAL" }}
+        queryKey="feed-test"
+      />,
+    );
+
+    expect(html).toContain("운영자 정리");
+    expect(html).toContain("TownPet 운영자 정리");
+    expect(html).toContain("확인");
+    expect(html).toContain(
+      "h-[68px] grid-cols-[minmax(0,1fr)_48px_48px]",
+    );
+  });
 });

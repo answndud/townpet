@@ -130,6 +130,9 @@ describe("post create structured fields", () => {
     );
 
     expect(html).toContain("분실/목격 핵심 정보");
+    expect(html).toContain("처음 행동 구분");
+    expect(html).toContain("보호자는 여기서 분실 글을 작성합니다.");
+    expect(html).toContain("목격자는 기존 분실 글의 목격했어요 댓글을 우선 사용합니다.");
     expect(html).toContain("제보 유형");
     expect(html).toContain("마지막 확인 시간");
     expect(html).toContain("마지막 확인 위치");

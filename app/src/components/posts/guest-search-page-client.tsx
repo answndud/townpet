@@ -7,6 +7,10 @@ import type { PostType } from "@prisma/client";
 
 import { HighlightText } from "@/components/content/highlight-text";
 import { FeedSearchForm } from "@/components/posts/feed-search-form";
+import {
+  buildOperatorContentMetaLabel,
+  OperatorContentBadge,
+} from "@/components/posts/operator-content-source-panel";
 import { SearchResultTelemetry } from "@/components/posts/search-result-telemetry";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatRelativeDate, postTypeMeta } from "@/lib/post-presenter";
@@ -22,6 +26,10 @@ type GuestSearchPostItem = {
   content: string;
   commentCount: number;
   createdAt: string;
+  isOperatorContent?: boolean | null;
+  operatorSourceName?: string | null;
+  operatorSourceUrl?: string | null;
+  operatorLastVerifiedAt?: string | Date | null;
   author: {
     id: string;
     nickname: string | null;
@@ -280,6 +288,7 @@ export function GuestSearchPageClient() {
                       <div className="mb-2 flex flex-wrap items-center gap-1.5 text-xs text-[#59739b]">
                         <span className={`tp-chip-base ${meta.chipClass}`}>{meta.label}</span>
                         <span className="tp-chip-base tp-chip-muted">전체</span>
+                        {post.isOperatorContent ? <OperatorContentBadge compact /> : null}
                       </div>
                       <Link href={`/posts/${post.id}/guest`} className="block">
                         <h2 className="flex min-w-0 items-center gap-1 text-base font-semibold text-[#12315c] transition hover:text-[#2f5da4] sm:text-lg">
@@ -299,6 +308,14 @@ export function GuestSearchPageClient() {
                     </div>
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[#5f79a0] md:block md:text-right">
                       <p className="font-semibold text-[#1f3f71]">{authorName}</p>
+                      {post.isOperatorContent ? (
+                        <p className="max-w-full truncate text-[11px] text-[#55749e] md:mt-0.5">
+                          {buildOperatorContentMetaLabel({
+                            sourceName: post.operatorSourceName,
+                            lastVerifiedAt: post.operatorLastVerifiedAt,
+                          })}
+                        </p>
+                      ) : null}
                       <p className="md:mt-0.5 text-[11px] text-[#6a84ab]">
                         {formatRelativeDate(post.createdAt)} · 댓글 {post.commentCount}
                       </p>

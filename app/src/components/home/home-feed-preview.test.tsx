@@ -51,6 +51,9 @@ describe("FeedPreviewList", () => {
             createdAt: "2026-05-24T00:00:00.000Z",
             authorName: "알렉스",
             neighborhoodLabel: "서초구 잠원동",
+            isOperatorContent: true,
+            operatorSourceName: "TownPet 운영자 정리",
+            operatorLastVerifiedAt: "2026-05-24T00:00:00.000Z",
             commentCount: 2,
             likeCount: 5,
             viewCount: 12,
@@ -69,6 +72,8 @@ describe("FeedPreviewList", () => {
 
     expect(html).toContain('href="/posts/post-1"');
     expect(html).toContain("동네 병원 후기");
+    expect(html).toContain("운영자 정리");
+    expect(html).toContain("TownPet 운영자 정리");
     expect(html).toContain("댓글 2");
     expect(html).not.toContain("첫 글 작성하기");
   });
