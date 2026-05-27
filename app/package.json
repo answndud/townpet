@@ -69,6 +69,7 @@
     "ops:check:health": "tsx scripts/check-health-endpoint.ts",
     "ops:check:operator-content-public": "tsx scripts/check-operator-content-public-smoke.ts",
     "ops:check:auth-local-detail-visual": "PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers tsx scripts/check-auth-local-detail-visual-smoke.ts",
+    "ops:check:detail-visual": "PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers tsx scripts/run-detail-visual-smoke.ts",
     "ops:check:public-detail-visual": "PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers tsx scripts/check-public-detail-visual-smoke.ts",
     "ops:check:security-env": "tsx scripts/check-security-env.ts",
     "ops:check:security-env:build": "NODE_ENV=production SECURITY_ENV_STRICT=1 tsx scripts/check-security-env.ts --profile=build",

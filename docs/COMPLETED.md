@@ -7021,3 +7021,36 @@
 - 결과:
   - public smoke에서 정책상 제외된 두 상세 화면의 운영 검증 경로를 확보했다.
   - 다음 작업은 public/auth-local smoke를 묶어 배포 후 on-demand smoke runbook으로 정리하는 것이다.
+
+### 2026-05-27 | 배포 후 상세 visual smoke runner 정리
+- 완료일: `2026-05-27`
+- 배경:
+  - public 상세 smoke와 auth/local 상세 smoke가 각각 분리되어 있어 배포 후 확인 순서가 손으로 관리되고 있었다.
+  - `HOSPITAL_REVIEW`, `CARE_REQUEST`는 public smoke에서 `BLOCKED`가 정상이고, 별도 auth/local smoke가 PASS해야 전체 상세 화면군 검증이 닫힌다.
+- 변경내용:
+  - `ops:check:detail-visual` runner를 추가했다.
+  - runner 순서는 `ops:check:health -> ops:check:public-detail-visual -> ops:check:auth-local-detail-visual`이다.
+  - non-local DB에서 전체 실행하려면 `AUTH_LOCAL_DETAIL_SMOKE_CONFIRM=PUBLISH_AUTH_LOCAL_DETAIL_SMOKE_FIXTURES` 확인값이 필요하다.
+  - auth/local upsert 없이 public smoke만 실행할 때는 `DETAIL_VISUAL_SMOKE_SKIP_AUTH_LOCAL=1`을 명시할 수 있다.
+  - 통합 실행 summary report는 `docs/reports/detail-visual-smoke-*.md`에 남기고, 개별 desktop/mobile screenshot은 기존 개별 smoke report 폴더에 남긴다.
+  - 첫 production 실행은 repo-local Playwright browser cache가 비어 있어 실패했고, 전역 설치 없이 `PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers` 기준으로 Chromium을 설치한 뒤 재실행했다.
+- 코드문서:
+  - [app/scripts/run-detail-visual-smoke.ts](../app/scripts/run-detail-visual-smoke.ts)
+  - [app/scripts/run-detail-visual-smoke.test.ts](../app/scripts/run-detail-visual-smoke.test.ts)
+  - [app/package.json](../app/package.json)
+  - [business/operations/운영_문서_안내.md](../business/operations/운영_문서_안내.md)
+  - [docs/reports/detail-visual-smoke-2026-05-27T02-21-19-479Z.md](./reports/detail-visual-smoke-2026-05-27T02-21-19-479Z.md)
+  - [docs/reports/public-detail-visual-smoke-2026-05-27T02-21-22-115Z/README.md](./reports/public-detail-visual-smoke-2026-05-27T02-21-22-115Z/README.md)
+  - [docs/reports/auth-local-detail-visual-smoke-2026-05-27T02-21-41-078Z/README.md](./reports/auth-local-detail-visual-smoke-2026-05-27T02-21-41-078Z/README.md)
+- 핵심 결과:
+  - health: PASS.
+  - public detail visual: `FREE_BOARD`, `WALK_ROUTE`, `LOST_FOUND`, `MARKET_LISTING` desktop/mobile PASS. `HOSPITAL_REVIEW`, `CARE_REQUEST`는 public 정책상 no-public-feed-item BLOCKED로 기록.
+  - auth/local detail visual: `HOSPITAL_REVIEW`, `CARE_REQUEST` desktop/mobile PASS.
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- scripts/run-detail-visual-smoke.test.ts scripts/check-auth-local-detail-visual-smoke.test.ts`
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app lint -- scripts/run-detail-visual-smoke.ts scripts/run-detail-visual-smoke.test.ts`
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+  - `OPS_BASE_URL=https://townpet.vercel.app AUTH_LOCAL_DETAIL_SMOKE_CONFIRM=PUBLISH_AUTH_LOCAL_DETAIL_SMOKE_FIXTURES COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app ops:check:detail-visual`
+- 결과:
+  - 배포 후 상세 화면군 시각 smoke를 한 명령으로 실행할 수 있게 됐다.
+  - 다음 작업 후보는 legacy upload path production audit 재실행 또는 GitHub Actions 품질 결과 확인이다.

@@ -3,6 +3,7 @@
 ## 현재 상태
 
 - 현재 active 계획: [PLAN.md](./PLAN.md)의 `마케팅 피드백 기반 제품 획득 루프 재정렬`.
+- `2026-05-27. 배포 후 상세 visual smoke runner 정리`를 완료했다. `health -> public detail visual -> auth/local detail visual` 순서의 `ops:check:detail-visual` repo-local runner를 추가했고 production 실행이 PASS했다.
 - `2026-05-27. auth/local 상세 visual smoke 추가`를 완료했다. `HOSPITAL_REVIEW`는 로그인 세션, `CARE_REQUEST`는 같은 동네 사용자 컨텍스트로 production 상세 화면을 desktop/mobile에서 검증했고 모두 PASS했다.
 - `2026-05-27. public smoke fixture production 게시`를 완료했다. `LOST_FOUND`, `MARKET_LISTING` 운영자 smoke fixture를 production에 게시했고, public 상세 visual smoke가 `FREE_BOARD`, `WALK_ROUTE`, `LOST_FOUND`, `MARKET_LISTING` desktop/mobile에서 PASS했다. `HOSPITAL_REVIEW`는 guest read policy, `CARE_REQUEST`는 local-required gate 때문에 public smoke 대상에서 계속 BLOCKED다.
 - `2026-05-27. 게시판별 public 상세 smoke target 분리`를 완료했다. public 상세 smoke가 게시판 type별 target을 자동 수집하고, 실제 target이 없는 게시판은 `BLOCKED`로 명확히 보고한다. 현재 production은 `FREE_BOARD`, `WALK_ROUTE`만 PASS target이 있고 `LOST_FOUND`, `HOSPITAL_REVIEW`, `MARKET_LISTING`, `CARE_REQUEST`는 public feed item 없음으로 BLOCKED다.
@@ -106,7 +107,6 @@
 - `/`과 public acquisition UI에는 사용자가 선택하지 않은 특정 지역명을 기본값처럼 노출하지 않는다.
 - 성능 후속은 route별 post detail/browser smoke fixture가 생기거나 LCP outlier가 반복될 때 다시 연다.
 - 다음 기능 점검 후보는 production DB env가 준비된 상태에서 `db:audit:legacy-upload-paths`를 재실행하고, 후보가 있으면 별도 cleanup dry-run 계획을 세우는 것이다.
-- 현재 active 구현 항목 없음.
 - 다음 개발 후보는 `HOSPITAL_REVIEW` guest read policy와 `CARE_REQUEST` local-required 정책을 유지한 상태에서 별도 인증/로컬 smoke를 마련할지 결정하는 것이다.
 
 ## 최근 검증
