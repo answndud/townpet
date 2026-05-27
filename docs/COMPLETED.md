@@ -7202,3 +7202,25 @@
 - 결과:
   - 배포 후 health만으로 끝내면 안 되는 UI/detail 변경 조건이 명확해졌다.
   - 권한형 상세 변경은 auth/local smoke 없이 완료하지 않는 기준이 생겼다.
+
+### 2026-05-27 | 최신 배포 detail visual smoke 절차 검증
+- 완료일: `2026-05-27`
+- 배경:
+  - `post-deploy detail visual smoke 체크리스트 연결` 문서 변경 후, 실제 최신 production 배포에서 새 절차가 문제없이 실행되는지 검증해야 했다.
+  - 대상 배포 기준 commit은 `bbf3703`이다.
+- 실행:
+  - Vercel production env를 `/tmp/townpet-detail-visual-smoke`에 임시로 pull했고, 실행 후 삭제했다.
+  - `OPS_BASE_URL=https://townpet.vercel.app AUTH_LOCAL_DETAIL_SMOKE_CONFIRM=PUBLISH_AUTH_LOCAL_DETAIL_SMOKE_FIXTURES COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app ops:check:detail-visual`
+- report:
+  - [docs/reports/detail-visual-smoke-2026-05-27T03-58-08-197Z.md](./reports/detail-visual-smoke-2026-05-27T03-58-08-197Z.md)
+  - [docs/reports/public-detail-visual-smoke-2026-05-27T03-58-12-088Z/README.md](./reports/public-detail-visual-smoke-2026-05-27T03-58-12-088Z/README.md)
+  - [docs/reports/auth-local-detail-visual-smoke-2026-05-27T03-58-30-214Z/README.md](./reports/auth-local-detail-visual-smoke-2026-05-27T03-58-30-214Z/README.md)
+- 결과:
+  - 통합 status: `PASS`.
+  - health: `PASS`, `/api/health` 200, control plane/search pg_trgm 정상.
+  - public detail visual: `FREE_BOARD`, `WALK_ROUTE`, `LOST_FOUND`, `MARKET_LISTING` desktop/mobile PASS.
+  - public detail visual의 `HOSPITAL_REVIEW`, `CARE_REQUEST`는 정책/target 특성상 `no-public-feed-item` BLOCKED로 기록됐다.
+  - auth/local detail visual: `HOSPITAL_REVIEW`, `CARE_REQUEST` guest gate, desktop, mobile 모두 PASS.
+- 판정:
+  - 새 on-demand 체크리스트의 전체 실행 명령은 production에서 작동한다.
+  - 상세/댓글/피드 item/권한형 상세 UI 변경 배포 후 이 명령을 표준 post-deploy visual smoke로 사용할 수 있다.
