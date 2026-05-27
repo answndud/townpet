@@ -47,10 +47,19 @@ function compactTimestamp(date = new Date()) {
 
 type AdminQueueSmokeEnv = Record<string, string | undefined>;
 
+export class AdminQueueSmokeBlockedError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "AdminQueueSmokeBlockedError";
+  }
+}
+
 function requireCredential(env: AdminQueueSmokeEnv, key: string) {
   const value = env[key]?.trim();
   if (!value) {
-    throw new Error(`${key} is required for authenticated admin queue smoke.`);
+    throw new AdminQueueSmokeBlockedError(
+      `${key} is required for authenticated admin queue smoke.`,
+    );
   }
   return value;
 }
@@ -274,6 +283,12 @@ async function main() {
 
 if (process.env.NODE_ENV !== "test" && require.main === module) {
   main().catch((error) => {
+    if (error instanceof AdminQueueSmokeBlockedError) {
+      console.error("Admin queue smoke BLOCKED");
+      console.error(error.message);
+      process.exit(1);
+    }
+
     console.error("Admin queue smoke failed");
     console.error(error);
     process.exit(1);

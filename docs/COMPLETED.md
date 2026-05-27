@@ -7786,3 +7786,36 @@
 - 결과:
   - 운영자는 정정 요청 acquisition loop의 합계뿐 아니라 날짜별 조회, 접수, 전환율, receipt CTA 반응을 `/admin/ops`에서 확인할 수 있다.
   - production data, schema, acquisition event write path, correction request mutation/rate limit/admin queue policy는 변경하지 않았다.
+
+### 2026-05-27 | Authenticated admin queue smoke credential checkpoint
+- 완료일: `2026-05-27`
+- 배경:
+  - 남은 다음 작업 후보는 production authenticated admin queue smoke 실행이었다.
+  - 이 smoke는 `/admin/reports`, `/admin/corrections`에 실제 admin credential로 로그인해 queue summary와 화면 overflow를 read-only로 확인해야 한다.
+- 실행 결과:
+  - production health는 `https://townpet.vercel.app/api/health` 200, `payload.status: ok`, `payload.timestamp: 2026-05-27T07:49:16.308Z`였다.
+  - `ops:check:admin-queue-smoke`는 `ADMIN_QUEUE_SMOKE_EMAIL` 부재로 BLOCKED됐다.
+- 변경내용:
+  - `check-admin-queue-smoke.ts`에서 credential readiness blocker를 `AdminQueueSmokeBlockedError`로 구분한다.
+  - credential 누락 시 exit code 1은 유지하되 `Admin queue smoke BLOCKED`를 출력해 page/login/render 실패와 구분한다.
+  - production data, admin queue state, schema, auth policy는 변경하지 않았다.
+- 코드문서:
+  - [app/scripts/check-admin-queue-smoke.ts](../app/scripts/check-admin-queue-smoke.ts)
+  - [app/scripts/check-admin-queue-smoke.test.ts](../app/scripts/check-admin-queue-smoke.test.ts)
+  - [docs/reports/admin-queue-smoke-credential-checkpoint-2026-05-27.md](./reports/admin-queue-smoke-credential-checkpoint-2026-05-27.md)
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- scripts/check-admin-queue-smoke.test.ts`
+    - `1 file / 4 tests` PASS
+  - `OPS_BASE_URL=https://townpet.vercel.app COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app ops:check:admin-queue-smoke`
+    - BLOCKED as expected: `ADMIN_QUEUE_SMOKE_EMAIL is required for authenticated admin queue smoke.`
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app lint -- scripts/check-admin-queue-smoke.ts scripts/check-admin-queue-smoke.test.ts`
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `295 files / 1410 tests`, Next production build PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app docs:refresh:check`
+    - PASS
+- 결과:
+  - production authenticated admin smoke는 아직 실행 완료가 아니라 credential 준비 대기 상태다.
+  - 다음 실행에는 `ADMIN_QUEUE_SMOKE_EMAIL`, `ADMIN_QUEUE_SMOKE_PASSWORD`, `OPS_BASE_URL=https://townpet.vercel.app`가 필요하다.
