@@ -6951,3 +6951,39 @@
 - 결과:
   - 게시판별 smoke 가능/불가 상태가 report로 분리됐다.
   - 다음 작업은 BLOCKED type에 실제 public smoke fixture를 확보하는 것이다.
+
+### 2026-05-27 | public smoke fixture production 게시
+- 완료일: `2026-05-27`
+- 배경:
+  - 게시판별 public 상세 smoke에서 `LOST_FOUND`, `MARKET_LISTING`, `HOSPITAL_REVIEW`, `CARE_REQUEST`가 BLOCKED로 남았다.
+  - 정책 확인 결과 `LOST_FOUND`, `MARKET_LISTING`은 public guest smoke 대상이 될 수 있지만, production에 실제 type 글이 없었다.
+  - `HOSPITAL_REVIEW`는 guest read policy에서 막히고, `CARE_REQUEST`는 local-required gate로 막히므로 public guest smoke fixture를 생성해도 같은 방식의 public smoke 대상이 되지 않는다.
+- 변경내용:
+  - `ops:public-smoke-fixtures:publish` 스크립트를 추가했다.
+  - 기본값은 dry-run이고, non-local DB에서는 `PUBLIC_SMOKE_FIXTURE_CONFIRM=PUBLISH_PUBLIC_SMOKE_FIXTURES`, 실제 생성은 추가로 `PUBLIC_SMOKE_FIXTURE_APPLY=1`이 필요하다.
+  - script는 중복 title을 skip하고, `LOST_FOUND`에는 `LostFoundAlert`, `MARKET_LISTING`에는 `MarketListing` relation을 함께 만든다.
+  - `/tmp/townpet-vercel-link`에서 `townpet` project production env를 임시로 pull했고, secret 값을 출력하거나 repo에 저장하지 않았다. 작업 후 임시 디렉터리는 삭제했다.
+  - production DB에 `townpet-admin` author로 public smoke fixture 2개를 생성했다.
+- production 생성 글:
+  - `cmpnejuwa000111t0ggt99sfx` `LOST_FOUND` `분실동물 공개 제보 예시와 위치 기준`
+  - `cmpnejuwa000411t0dazcem8h` `MARKET_LISTING` `반려용품 거래 전 확인할 안전 기준`
+- 코드문서:
+  - [app/scripts/publish-public-smoke-fixtures.ts](../app/scripts/publish-public-smoke-fixtures.ts)
+  - [app/scripts/publish-public-smoke-fixtures.test.ts](../app/scripts/publish-public-smoke-fixtures.test.ts)
+  - [app/package.json](../app/package.json)
+  - [business/operations/운영_문서_안내.md](../business/operations/운영_문서_안내.md)
+  - [docs/reports/public-detail-visual-smoke-2026-05-27T01-45-48-784Z/README.md](./reports/public-detail-visual-smoke-2026-05-27T01-45-48-784Z/README.md)
+- 핵심 결과:
+  - production `/api/feed/guest`에서 public item 13개를 확인했다.
+  - `FREE_BOARD`, `WALK_ROUTE`, `LOST_FOUND`, `MARKET_LISTING` 상세 visual smoke가 desktop/mobile 모두 PASS했다.
+  - `HOSPITAL_REVIEW`, `CARE_REQUEST`는 public guest 정책상 계속 BLOCKED로 기록했다.
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- scripts/publish-public-smoke-fixtures.test.ts scripts/check-public-detail-visual-smoke.test.ts`
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app lint -- scripts/publish-public-smoke-fixtures.ts scripts/publish-public-smoke-fixtures.test.ts scripts/check-public-detail-visual-smoke.ts scripts/check-public-detail-visual-smoke.test.ts`
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+  - production dry-run: created 2, skippedExisting 0
+  - production apply: created 2, skippedExisting 0
+  - `OPS_BASE_URL=https://townpet.vercel.app COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app ops:check:public-detail-visual`
+- 결과:
+  - public guest 상세 smoke는 정책상 가능한 주요 type까지 확장됐다.
+  - 남은 `HOSPITAL_REVIEW`, `CARE_REQUEST`는 public fixture 문제가 아니라 정책/인증 smoke 범위 문제로 분리됐다.
