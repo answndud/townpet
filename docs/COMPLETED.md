@@ -6890,3 +6890,33 @@
 - 결과:
   - Playwright browser 성능 측정 blocker를 repo-local 방식으로 해소했다.
   - 다음 성능 후속은 LCP outlier가 반복되거나 post detail fixture가 생길 때 진행한다.
+
+### 2026-05-27 | public 상세 댓글/screenshot smoke 재개
+- 완료일: `2026-05-27`
+- 배경:
+  - 최근 여러 상세 댓글 compactness 작업에서 production `/api/feed/guest?limit=50` 간이 확인이 `posts 0`으로 기록되어 실제 상세 HTML/screenshot smoke가 보류됐다.
+  - production guest feed는 현재 `data.feed.items` shape로 응답하므로, 기존 간이 파서가 실제 글 목록을 놓치고 있었다.
+- 변경내용:
+  - production `/api/feed/guest?sort=LATEST&density=ULTRA`에서 실제 public item 11개와 운영자 정리 글 7개를 확인했다.
+  - 실제 public 운영자 글 `cmpjrtwet000ep4j499ubffgq` 상세를 대상으로 desktop/mobile Playwright screenshot smoke를 재개했다.
+  - 반복 가능한 `ops:check:public-detail-visual` script를 추가했다.
+  - script는 production guest feed에서 public 상세 target을 찾고, `/posts/{id}/guest`에서 제목, 댓글 영역, 신고 entry, 운영자 출처, horizontal overflow를 검증한 뒤 screenshot과 report를 남긴다.
+- 코드문서:
+  - [app/package.json](../app/package.json)
+  - [app/scripts/check-public-detail-visual-smoke.ts](../app/scripts/check-public-detail-visual-smoke.ts)
+  - [app/scripts/check-public-detail-visual-smoke.test.ts](../app/scripts/check-public-detail-visual-smoke.test.ts)
+  - [docs/reports/public-detail-visual-smoke-2026-05-27T01-26-27-949Z/README.md](./reports/public-detail-visual-smoke-2026-05-27T01-26-27-949Z/README.md)
+  - [docs/reports/public-detail-visual-smoke-2026-05-27T01-26-27-949Z/desktop.png](./reports/public-detail-visual-smoke-2026-05-27T01-26-27-949Z/desktop.png)
+  - [docs/reports/public-detail-visual-smoke-2026-05-27T01-26-27-949Z/mobile.png](./reports/public-detail-visual-smoke-2026-05-27T01-26-27-949Z/mobile.png)
+- 핵심 결과:
+  - target: `cmpjrtwet000ep4j499ubffgq`, `야간 산책 전 확인할 것`.
+  - desktop: title/comment/report/operator-source/no-overflow 모두 PASS.
+  - mobile: title/comment/report/operator-source/no-overflow 모두 PASS.
+  - 기존 `posts 0` 기록은 production 글 부재가 아니라 간이 fetch 파서가 `data.feed.items`를 읽지 못한 문제로 판단했다.
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- scripts/check-public-detail-visual-smoke.test.ts scripts/check-operator-content-public-smoke.test.ts`
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app lint -- scripts/check-public-detail-visual-smoke.ts scripts/check-public-detail-visual-smoke.test.ts scripts/check-operator-content-public-smoke.ts scripts/check-operator-content-public-smoke.test.ts`
+  - `OPS_BASE_URL=https://townpet.vercel.app COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app ops:check:public-detail-visual`
+- 결과:
+  - 상세 댓글/screenshot smoke blocker를 해소했다.
+  - 다음은 게시판별 구조화 상세 패널 smoke target을 분리해 확장한다.
