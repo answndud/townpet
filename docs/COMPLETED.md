@@ -7586,3 +7586,43 @@
 - 판정:
   - post-merge production readiness: `PASS`
   - admin authenticated smoke: `FOLLOW-UP`
+
+### 2026-05-27 | Authenticated admin queue smoke 자동화
+- 완료일: `2026-05-27`
+- 배경:
+  - PR #12 post-merge smoke에서 public/operator/detail 경로는 PASS했지만 `/admin/corrections`, `/admin/reports`는 비인증 curl에서 404로 보호되어 authenticated admin smoke가 남았다.
+  - 관리자 신고/정정 큐 summary surface를 바꾼 뒤, 다음 배포부터 같은 범위를 repo-local 명령으로 확인할 수 있어야 했다.
+- 변경내용:
+  - `ops:check:admin-queue-smoke` script를 추가했다.
+  - script는 `ADMIN_QUEUE_SMOKE_EMAIL`, `ADMIN_QUEUE_SMOKE_PASSWORD` credential로 로그인한 뒤 `/admin/reports`, `/admin/corrections`를 read-only로 연다.
+  - 각 화면에서 `신고 큐`, `정정 큐`, page-specific surface(`신고 우선순위 검토`, `정보 정정 요청 검토`), horizontal overflow를 확인하고 `docs/reports/admin-queue-smoke-*/`에 screenshot/report를 남긴다.
+  - credential이 없으면 명확한 BLOCKED failure로 종료한다.
+  - 운영 체크 문서에 실행 조건과 PASS/BLOCKED/NO-GO 기준을 추가했다.
+- 코드문서:
+  - [app/scripts/check-admin-queue-smoke.ts](../app/scripts/check-admin-queue-smoke.ts)
+  - [app/scripts/check-admin-queue-smoke.test.ts](../app/scripts/check-admin-queue-smoke.test.ts)
+  - [app/package.json](../app/package.json)
+  - [business/operations/배포전_on-demand_체크.md](../business/operations/배포전_on-demand_체크.md)
+  - [business/operations/운영_문서_안내.md](../business/operations/운영_문서_안내.md)
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- scripts/check-admin-queue-smoke.test.ts`
+    - `1 file / 4 tests` PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app lint -- scripts/check-admin-queue-smoke.ts scripts/check-admin-queue-smoke.test.ts`
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint PASS
+    - TypeScript PASS
+    - Vitest PASS, `293 files / 1403 tests`
+    - Next production build PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app docs:refresh`
+  - `git diff --check`
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app ops:check:admin-queue-smoke`
+    - BLOCKED as expected: `ADMIN_QUEUE_SMOKE_EMAIL is required for authenticated admin queue smoke.`
+- 결과:
+  - admin queue smoke 자동화는 준비됐다.
+  - 실제 production authenticated smoke는 admin credential이 있는 운영 컨텍스트에서 실행해야 한다.
+  - production 데이터 변경과 관리자 처리 action 실행은 하지 않았다.
+  - `docs/HANDOFF.md` 삭제 상태는 unrelated dirty change로 유지했다.
