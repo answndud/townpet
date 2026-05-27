@@ -3,6 +3,7 @@
 ## 현재 상태
 
 - 현재 active 계획: [PLAN.md](./PLAN.md)의 `마케팅 피드백 기반 제품 획득 루프 재정렬`.
+- `2026-05-27. auth/local 상세 smoke guest gate 확장`을 완료했다. `HOSPITAL_REVIEW`, `CARE_REQUEST` 상세 smoke가 guest 접근에서는 로그인 gate와 보호 대상 제목 비노출을 확인하고, 로그인/같은 동네 컨텍스트에서는 desktop/mobile 상세 렌더링을 확인한다. production 실행은 모두 PASS했다.
 - `2026-05-27. production legacy upload path cleanup apply`를 완료했다. production DB `Post.content` 후보 1건을 `/media/media/uploads/*`에서 `/media/uploads/*`로 정리했고, 사후 audit에서 `Post.content`, `PostImage.url`, `Comment.content` 모두 0건을 확인했다.
 - `2026-05-27. production legacy upload path cleanup dry-run`을 완료했다. production DB 후보 1건의 변경 전/후 path preview를 report로 남겼고, production 데이터 변경은 하지 않았다.
 - `2026-05-27. production legacy upload path read-only audit 재실행`을 완료했다. production DB 기준 `Post.content` 1건에서 `/media/media/uploads/` 후보를 확인했고, `PostImage.url`, `Comment.content` 후보는 0건이다. 데이터 변경은 하지 않았고 cleanup은 [PLAN.md](./PLAN.md)의 별도 승인 필요 항목으로 올렸다.
@@ -110,7 +111,7 @@
   - 첫 7개 운영자 정리 글은 production 게시 완료. 다음은 화면에서 문구/밀도/CTA를 점검하고 필요하면 제목/본문을 운영자 수정한다.
 - `/`과 public acquisition UI에는 사용자가 선택하지 않은 특정 지역명을 기본값처럼 노출하지 않는다.
 - 성능 후속은 route별 post detail/browser smoke fixture가 생기거나 LCP outlier가 반복될 때 다시 연다.
-- 다음 기능 점검 후보는 `HOSPITAL_REVIEW` guest read policy와 `CARE_REQUEST` local-required 정책을 유지한 상태에서 별도 인증/로컬 smoke를 확장할지 결정하는 것이다.
+- 다음 기능 점검 후보는 production 상세 visual smoke runner를 배포 후 on-demand 체크리스트에 더 강하게 연결하거나, GitHub Actions 원격 `quality-gate`/`docs-quality` 상태를 확인하는 것이다.
 
 ## 최근 검증
 

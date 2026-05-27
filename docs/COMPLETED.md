@@ -7152,3 +7152,33 @@
 - 결과:
   - production legacy double-proxy upload path 후보는 0건으로 정리됐다.
   - 이후 같은 패턴이 다시 저장되지 않도록 `P2-12 upload URL canonicalization` 방어와 audit/apply scripts를 유지한다.
+
+### 2026-05-27 | auth/local 상세 smoke guest gate 확장
+- 완료일: `2026-05-27`
+- 배경:
+  - `HOSPITAL_REVIEW`는 guest read policy 때문에 public guest 상세 smoke 대상이 아니다.
+  - `CARE_REQUEST`는 같은 동네 사용자 컨텍스트가 필요한 local-required 상세다.
+  - 기존 auth/local smoke는 로그인/동네 컨텍스트의 positive path만 확인했으므로, guest 접근에서 보호 대상 상세가 노출되지 않는지도 같은 report에서 확인할 필요가 있었다.
+- 변경내용:
+  - `ops:check:auth-local-detail-visual`에 guest gate negative check를 추가했다.
+  - 각 target의 `/posts/{id}/guest` 모바일 화면에서 `로그인이 필요한 게시글입니다.` gate, `로그인하기` CTA, 보호 대상 상세 제목 비노출, horizontal overflow 없음 여부를 확인한다.
+  - 기존 로그인/같은 동네 desktop/mobile 상세 smoke는 유지했다.
+  - 운영 문서에 auth/local smoke가 positive 상세 렌더링과 guest negative gate를 함께 기록한다고 명시했다.
+- 코드문서:
+  - [app/scripts/check-auth-local-detail-visual-smoke.ts](../app/scripts/check-auth-local-detail-visual-smoke.ts)
+  - [app/scripts/check-auth-local-detail-visual-smoke.test.ts](../app/scripts/check-auth-local-detail-visual-smoke.test.ts)
+  - [business/operations/운영_문서_안내.md](../business/operations/운영_문서_안내.md)
+  - [docs/reports/auth-local-detail-visual-smoke-2026-05-27T03-30-15-928Z/README.md](./reports/auth-local-detail-visual-smoke-2026-05-27T03-30-15-928Z/README.md)
+- production 결과:
+  - `HOSPITAL_REVIEW` guest gate: login gate PASS, protected title hidden PASS, no overflow PASS.
+  - `CARE_REQUEST` guest gate: login gate PASS, protected title hidden PASS, no overflow PASS.
+  - `HOSPITAL_REVIEW` desktop/mobile authenticated detail: title, comments, report, expected detail, local gate, no overflow 모두 PASS.
+  - `CARE_REQUEST` desktop/mobile authenticated detail: title, comments, report, expected detail, local gate, no overflow 모두 PASS.
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- scripts/check-auth-local-detail-visual-smoke.test.ts scripts/run-detail-visual-smoke.test.ts`
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app lint -- scripts/check-auth-local-detail-visual-smoke.ts scripts/check-auth-local-detail-visual-smoke.test.ts scripts/run-detail-visual-smoke.ts scripts/run-detail-visual-smoke.test.ts`
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+  - `OPS_BASE_URL=https://townpet.vercel.app AUTH_LOCAL_DETAIL_SMOKE_CONFIRM=PUBLISH_AUTH_LOCAL_DETAIL_SMOKE_FIXTURES COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app ops:check:auth-local-detail-visual`
+- 결과:
+  - 정책형 상세 화면은 “guest 차단”과 “정상 컨텍스트 접근”을 한 번에 회귀 검증할 수 있게 됐다.
+  - `HOSPITAL_REVIEW`와 `CARE_REQUEST`의 public guest 정책 자체는 변경하지 않았다.

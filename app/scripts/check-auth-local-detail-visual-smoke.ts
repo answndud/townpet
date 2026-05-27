@@ -60,6 +60,16 @@ type SmokeResult = {
   noHorizontalOverflow: boolean;
 };
 
+type GuestGateResult = {
+  targetType: PostType;
+  targetTitle: string;
+  url: string;
+  screenshot: string;
+  hasLoginGate: boolean;
+  hidesProtectedTitle: boolean;
+  noHorizontalOverflow: boolean;
+};
+
 function resolveRepoRoot() {
   return path.basename(process.cwd()) === "app" ? path.resolve(process.cwd(), "..") : process.cwd();
 }
@@ -446,6 +456,47 @@ async function inspectDetail(params: {
   }
 }
 
+async function inspectGuestGate(params: {
+  browser: Browser;
+  baseUrl: string;
+  target: AuthLocalDetailTarget;
+  screenshotPath: string;
+}) {
+  const page = await createPage(params.browser, "mobile");
+  const url = `${params.baseUrl}/posts/${params.target.id}/guest`;
+
+  try {
+    await page.goto(url, { waitUntil: "load", timeout: 30_000 });
+    await page
+      .getByRole("heading", { name: "로그인이 필요한 게시글입니다." })
+      .first()
+      .waitFor({ state: "visible", timeout: 15_000 })
+      .catch(() => undefined);
+
+    const bodyText = await page.locator("body").innerText({ timeout: 10_000 });
+    const hasLoginGate =
+      bodyText.includes("로그인이 필요한 게시글입니다.") &&
+      bodyText.includes("이 게시글은 로그인 사용자에게만 공개됩니다.") &&
+      bodyText.includes("로그인하기");
+    const noHorizontalOverflow = await hasNoHorizontalOverflow(page);
+
+    await mkdir(path.dirname(params.screenshotPath), { recursive: true });
+    await page.screenshot({ path: params.screenshotPath, fullPage: true });
+
+    return {
+      targetType: params.target.type,
+      targetTitle: params.target.title,
+      url,
+      screenshot: params.screenshotPath,
+      hasLoginGate,
+      hidesProtectedTitle: !bodyText.includes(params.target.title),
+      noHorizontalOverflow,
+    } satisfies GuestGateResult;
+  } finally {
+    await page.close();
+  }
+}
+
 export function authLocalDetailResultPassed(result: SmokeResult) {
   return (
     result.titleVisible &&
@@ -457,12 +508,18 @@ export function authLocalDetailResultPassed(result: SmokeResult) {
   );
 }
 
+export function authLocalGuestGateResultPassed(result: GuestGateResult) {
+  return result.hasLoginGate && result.hidesProtectedTitle && result.noHorizontalOverflow;
+}
+
 export function buildAuthLocalDetailSmokeMarkdown(params: {
   generatedAt: string;
   baseUrl: string;
   requestedTypes: AuthLocalSmokePostType[];
   results: SmokeResult[];
+  guestGateResults?: GuestGateResult[];
 }) {
+  const guestGateResults = params.guestGateResults ?? [];
   const lines = [
     "# Auth/Local Detail Visual Smoke",
     "",
@@ -480,6 +537,18 @@ export function buildAuthLocalDetailSmokeMarkdown(params: {
   for (const result of params.results) {
     lines.push(
       `| ${result.targetType} | ${result.targetTitle} | ${result.profile} | ${result.titleVisible ? "PASS" : "FAIL"} | ${result.hasCommentSection ? "PASS" : "FAIL"} | ${result.hasReportEntry ? "PASS" : "FAIL"} | ${result.hasExpectedDetailText ? "PASS" : "FAIL"} | ${result.noLocalGate ? "PASS" : "FAIL"} | ${result.noHorizontalOverflow ? "PASS" : "FAIL"} | \`${path.relative(resolveRepoRoot(), result.screenshot)}\` |`,
+    );
+  }
+
+  lines.push("");
+  lines.push("## Guest Gate");
+  lines.push("");
+  lines.push("| type | target | login gate | protected title hidden | no overflow | screenshot |");
+  lines.push("| --- | --- | ---: | ---: | ---: | --- |");
+
+  for (const result of guestGateResults) {
+    lines.push(
+      `| ${result.targetType} | ${result.targetTitle} | ${result.hasLoginGate ? "PASS" : "FAIL"} | ${result.hidesProtectedTitle ? "PASS" : "FAIL"} | ${result.noHorizontalOverflow ? "PASS" : "FAIL"} | \`${path.relative(resolveRepoRoot(), result.screenshot)}\` |`,
     );
   }
 
@@ -512,8 +581,17 @@ async function main() {
   const outputDir = path.join(repoRoot, "docs/reports", `auth-local-detail-visual-smoke-${timestamp}`);
   const browser = await chromium.launch();
   const results: SmokeResult[] = [];
+  const guestGateResults: GuestGateResult[] = [];
   try {
     for (const target of targets) {
+      guestGateResults.push(
+        await inspectGuestGate({
+          browser,
+          baseUrl,
+          target,
+          screenshotPath: path.join(outputDir, `${target.type}-guest-gate-mobile.png`),
+        }),
+      );
       for (const profile of ["desktop", "mobile"] as const) {
         results.push(
           await inspectDetail({
@@ -534,18 +612,32 @@ async function main() {
 
   await writeFile(
     path.join(outputDir, "README.md"),
-    buildAuthLocalDetailSmokeMarkdown({ generatedAt, baseUrl, requestedTypes, results }),
+    buildAuthLocalDetailSmokeMarkdown({
+      generatedAt,
+      baseUrl,
+      requestedTypes,
+      results,
+      guestGateResults,
+    }),
     "utf8",
   );
 
   console.log(`Auth/local detail visual smoke written: ${path.relative(repoRoot, outputDir)}`);
+  for (const result of guestGateResults) {
+    console.log(
+      `${result.targetType}/guest-gate: loginGate=${result.hasLoginGate} hiddenTitle=${result.hidesProtectedTitle} overflow=${result.noHorizontalOverflow}`,
+    );
+  }
   for (const result of results) {
     console.log(
       `${result.targetType}/${result.profile}: title=${result.titleVisible} comments=${result.hasCommentSection} report=${result.hasReportEntry} expected=${result.hasExpectedDetailText} localGate=${result.noLocalGate} overflow=${result.noHorizontalOverflow}`,
     );
   }
 
-  if (results.some((result) => !authLocalDetailResultPassed(result))) {
+  if (
+    guestGateResults.some((result) => !authLocalGuestGateResultPassed(result)) ||
+    results.some((result) => !authLocalDetailResultPassed(result))
+  ) {
     throw new Error("Auth/local detail visual smoke failed.");
   }
 }
