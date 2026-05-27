@@ -18,4 +18,4 @@
 
 ## 다음 작업 후보
 
-- authenticated admin queue smoke production credential 실행
+- authenticated admin queue smoke production credential 확보 후 재실행

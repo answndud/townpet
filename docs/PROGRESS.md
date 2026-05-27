@@ -3,6 +3,7 @@
 ## 현재 상태
 
 - 현재 active 구현 항목 없음.
+- `2026-05-27. Authenticated admin queue smoke credential checkpoint`를 완료했다. production health는 200 / `payload.status: ok`였고, production admin queue smoke는 `ADMIN_QUEUE_SMOKE_EMAIL` 부재로 `BLOCKED`를 반환했다. script 출력은 credential 누락 시 `Admin queue smoke BLOCKED`로 명확히 구분하도록 보강했다. production 데이터와 관리자 큐 상태는 변경하지 않았다. 기록은 [docs/reports/admin-queue-smoke-credential-checkpoint-2026-05-27.md](./reports/admin-queue-smoke-credential-checkpoint-2026-05-27.md)에 남겼다.
 - `2026-05-27. Operator correction ops trend 보강`을 완료했다. `/admin/ops`의 정정 요청 전환 영역에 최근 이벤트 발생일별 조회/접수/전환/receipt CTA 추세를 read-only로 추가했다. production 데이터, schema, 정정 요청 처리 정책은 변경하지 않았다. `quality-gate`, `docs-quality`, Vercel deployment, production health 200을 확인했다. 기록은 [docs/reports/operator-correction-ops-trend-2026-05-27.md](./reports/operator-correction-ops-trend-2026-05-27.md)에 남겼다.
 - `2026-05-27. Operator content correction processing UX`를 완료했다. `/admin/corrections`에 운영자 콘텐츠만 보기 필터를 추가하고, 운영자 정리 글 제보 행에서 source/최종 확인일/처리 기준/연결 글 이동을 compact하게 보여준다. resolution placeholder도 출처 확인, 반영 내용, 기각 사유를 남기도록 구체화했다. production 데이터와 정정 처리 정책은 변경하지 않았다. 기록은 [docs/reports/operator-correction-processing-ux-2026-05-27.md](./reports/operator-correction-processing-ux-2026-05-27.md)에 남겼다.
 - `2026-05-27. CORRECTION_FLOW admin ops rollup`을 완료했다. 최근 7일 acquisition event 중 `CORRECTION_FLOW`를 read-only로 집계해 `/admin/ops`에서 정정 화면 조회, 정정 요청 접수, receipt CTA, submit/view 전환율, source 요약을 볼 수 있게 했다. `AcquisitionEventStat` schema가 없으면 0값과 schema sync 필요 표시로 degrade한다. production 데이터와 correction request 정책은 변경하지 않았다. 기록은 [docs/reports/correction-flow-admin-ops-rollup-2026-05-27.md](./reports/correction-flow-admin-ops-rollup-2026-05-27.md)에 남겼다.
@@ -129,7 +130,7 @@
 ## 다음 액션
 
 - 현재 active 구현 항목 없음.
-- 다음 작업은 authenticated admin queue smoke production credential 실행 또는 correction flow trend의 production authenticated visual smoke 중 하나를 새 active phase로 승격하는 것이다.
+- 다음 작업은 `ADMIN_QUEUE_SMOKE_EMAIL/PASSWORD` 확보 후 production authenticated admin queue smoke를 재실행하거나, credential 없이 가능한 public/ops read-only 개선 후보를 새 active phase로 승격하는 것이다.
 - legacy upload cleanup 승인 대기 항목은 완료됐다. production 사후 audit 기준 `/media/media/uploads/` 후보는 0건이다.
 - 시작페이지 추가 개선 후보:
   - production demo content cleanup은 완료됐다. 추가 cleanup은 새 read-only audit와 별도 승인 없이는 실행하지 않는다.

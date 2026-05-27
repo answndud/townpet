@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  AdminQueueSmokeBlockedError,
   adminQueuePagePassed,
   buildAdminQueueSmokeMarkdown,
   resolveAdminQueueSmokeConfig,
@@ -11,6 +12,7 @@ describe("admin queue smoke", () => {
     expect(() => resolveAdminQueueSmokeConfig({})).toThrow(
       "ADMIN_QUEUE_SMOKE_EMAIL is required",
     );
+    expect(() => resolveAdminQueueSmokeConfig({})).toThrow(AdminQueueSmokeBlockedError);
     expect(() =>
       resolveAdminQueueSmokeConfig({
         ADMIN_QUEUE_SMOKE_EMAIL: "admin@example.com",
