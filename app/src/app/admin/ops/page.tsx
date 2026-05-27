@@ -72,6 +72,14 @@ function formatOptionalDate(value: string | null) {
   return new Date(value).toLocaleDateString("ko-KR");
 }
 
+function formatDayLabel(value: string) {
+  return new Date(`${value}T00:00:00.000Z`).toLocaleDateString("ko-KR", {
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+}
+
 function formatStateClass(state: "ok" | "warn" | "error" | "degraded") {
   if (state === "ok") {
     return "border-[#cfe6d1] bg-[#f4fbf4] text-[#256342]";
@@ -554,6 +562,33 @@ export default async function AdminOpsPage({ searchParams }: AdminOpsPageProps) 
               <p className="mt-1 text-[11px] text-[#6a7f9f]">
                 접수 대비 {formatPercent(correctionFlow.receiptCtaRate)}
               </p>
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-[#dbe6f6] bg-white p-3">
+            <div className="flex items-center justify-between gap-3">
+              <h3 className="text-sm font-semibold text-[#1f3f71]">일자별 추세</h3>
+              <span className="text-[11px] font-semibold text-[#5a7398]">최근 이벤트 발생일</span>
+            </div>
+            <div className="mt-3 divide-y divide-[#e4edf8] text-xs">
+              {correctionFlow.dailySummaries.length > 0 ? (
+                correctionFlow.dailySummaries.map((summary) => (
+                  <div
+                    key={summary.day}
+                    className="grid gap-2 py-2 text-[#4f678d] sm:grid-cols-[0.9fr_1fr_1fr_1fr_1fr]"
+                  >
+                    <span className="font-semibold text-[#163462]">
+                      {formatDayLabel(summary.day)}
+                    </span>
+                    <span>조회 {formatCount(summary.viewCount)}</span>
+                    <span>접수 {formatCount(summary.submittedCount)}</span>
+                    <span>전환 {formatPercent(summary.submitRate)}</span>
+                    <span>CTA {formatCount(summary.receiptCtaClickCount)}</span>
+                  </div>
+                ))
+              ) : (
+                <p className="py-1 text-[#6a7f9f]">일자별 정정 요청 이벤트가 아직 없습니다.</p>
+              )}
             </div>
           </div>
 
