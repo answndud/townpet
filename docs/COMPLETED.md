@@ -7718,3 +7718,32 @@
 - 결과:
   - 운영자는 correction request acquisition loop의 view -> submit -> receipt CTA 상태를 `/admin/ops`에서 볼 수 있다.
   - production data, schema, correction request mutation/rate limit/admin queue policy는 변경하지 않았다.
+
+### 2026-05-27 | Operator content correction processing UX
+- 완료일: `2026-05-27`
+- 배경:
+  - 운영자 콘텐츠 정정/제보 loop가 public form, admin queue, ops rollup까지 연결됐지만, 실제 처리 화면에서는 운영자 정리 글 제보만 빠르게 걸러 보는 필터가 없었다.
+  - 행 안의 운영자 source/확인일은 보였지만, 처리자가 무엇을 확인하고 resolution에 무엇을 남겨야 하는지 즉시 읽기 어렵다.
+- 변경내용:
+  - `/admin/corrections`에 `운영자 콘텐츠만` 필터를 추가했다. 기존 status/search 조건과 함께 유지된다.
+  - `listInformationCorrectionRequests`에 `operatorOnly` read-only 조건을 추가했다.
+  - 운영자 콘텐츠 제보 행에 source, 최종 확인일, 공식 출처/요청 근거 대조, 수정/기각 기록 기준을 compact하게 표시한다.
+  - 운영자 콘텐츠 제보의 처리 메모 placeholder를 `출처 확인, 반영 내용, 기각 사유` 중심으로 구체화했다.
+- 코드문서:
+  - [app/src/app/admin/corrections/page.tsx](../app/src/app/admin/corrections/page.tsx)
+  - [app/src/app/admin/corrections/page.test.tsx](../app/src/app/admin/corrections/page.test.tsx)
+  - [app/src/server/queries/correction-request.queries.ts](../app/src/server/queries/correction-request.queries.ts)
+  - [app/src/server/queries/correction-request.queries.test.ts](../app/src/server/queries/correction-request.queries.test.ts)
+  - [docs/reports/operator-correction-processing-ux-2026-05-27.md](./reports/operator-correction-processing-ux-2026-05-27.md)
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/app/admin/corrections/page.test.tsx src/server/queries/correction-request.queries.test.ts`
+    - `2 files / 8 tests` PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app lint -- src/app/admin/corrections/page.tsx src/app/admin/corrections/page.test.tsx src/server/queries/correction-request.queries.ts src/server/queries/correction-request.queries.test.ts`
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect app/src/app/admin/corrections/page.tsx app/src/components --fast`
+    - PASS
+- 결과:
+  - 운영자는 운영자 정리 글 제보만 분리해서 보고, source/확인일/처리 기준을 같은 행에서 확인한 뒤 처리 메모를 남길 수 있다.
+  - production data, schema, correction request mutation/rate limit/admin queue policy는 변경하지 않았다.

@@ -3,6 +3,7 @@
 ## 현재 상태
 
 - 현재 active 구현 항목 없음.
+- `2026-05-27. Operator content correction processing UX`를 완료했다. `/admin/corrections`에 운영자 콘텐츠만 보기 필터를 추가하고, 운영자 정리 글 제보 행에서 source/최종 확인일/처리 기준/연결 글 이동을 compact하게 보여준다. resolution placeholder도 출처 확인, 반영 내용, 기각 사유를 남기도록 구체화했다. production 데이터와 정정 처리 정책은 변경하지 않았다. 기록은 [docs/reports/operator-correction-processing-ux-2026-05-27.md](./reports/operator-correction-processing-ux-2026-05-27.md)에 남겼다.
 - `2026-05-27. CORRECTION_FLOW admin ops rollup`을 완료했다. 최근 7일 acquisition event 중 `CORRECTION_FLOW`를 read-only로 집계해 `/admin/ops`에서 정정 화면 조회, 정정 요청 접수, receipt CTA, submit/view 전환율, source 요약을 볼 수 있게 했다. `AcquisitionEventStat` schema가 없으면 0값과 schema sync 필요 표시로 degrade한다. production 데이터와 correction request 정책은 변경하지 않았다. 기록은 [docs/reports/correction-flow-admin-ops-rollup-2026-05-27.md](./reports/correction-flow-admin-ops-rollup-2026-05-27.md)에 남겼다.
 - `2026-05-27. Handoff deletion state reconciliation`을 완료했다. 작업 시작 전부터 남아 있던 `docs/HANDOFF.md` 삭제 상태를 공식 반영했다. 해당 파일은 이미 실행 완료된 과거 인계 문서이며, 현재 재개 source of truth는 `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`로 유지한다. 문서 인덱스는 삭제 상태 기준으로 갱신했다.
 - `2026-05-27. Correction request acquisition event wiring`을 완료했다. `/corrections/new`는 `CORRECTION_FLOW_VIEWED`, `/api/corrections` 성공 접수는 서버 mutation 경계의 `CORRECTION_REQUEST_SUBMITTED`, receipt 다음 행동 CTA는 `CORRECTION_RECEIPT_CTA_CLICKED`로 연결했다. acquisition 기록 실패는 monitor만 남기고 정정 요청 성공/redirect를 막지 않는다. 기록은 [docs/reports/correction-acquisition-event-wiring-2026-05-27.md](./reports/correction-acquisition-event-wiring-2026-05-27.md)에 남겼다.
@@ -127,7 +128,7 @@
 ## 다음 액션
 
 - 현재 active 구현 항목 없음.
-- 다음 작업은 operator content correction 처리 UX 개선 또는 authenticated admin queue smoke production credential 실행 중 하나를 새 active phase로 승격하는 것이다.
+- 다음 작업은 authenticated admin queue smoke production credential 실행 또는 operator correction 처리 후 ops trend 보강 중 하나를 새 active phase로 승격하는 것이다.
 - legacy upload cleanup 승인 대기 항목은 완료됐다. production 사후 audit 기준 `/media/media/uploads/` 후보는 0건이다.
 - 시작페이지 추가 개선 후보:
   - production demo content cleanup은 완료됐다. 추가 cleanup은 새 read-only audit와 별도 승인 없이는 실행하지 않는다.

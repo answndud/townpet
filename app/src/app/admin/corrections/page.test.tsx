@@ -110,11 +110,15 @@ describe("AdminCorrectionRequestsPage", () => {
 
     const html = renderToStaticMarkup(
       await AdminCorrectionRequestsPage({
-        searchParams: Promise.resolve({ status: "PENDING" }),
+        searchParams: Promise.resolve({ status: "PENDING", operatorOnly: "1" }),
       }),
     );
 
     expect(html).toContain("운영자 정리 글 제보");
+    expect(html).toContain("운영자 콘텐츠만");
+    expect(html).toContain("공식 출처와 요청 근거를 먼저 대조합니다.");
+    expect(html).toContain("수정 여부, 반영 위치, 기각 사유를 처리 메모에 남깁니다.");
+    expect(html).toContain("출처 확인, 반영 내용, 기각 사유를 남겨 주세요.");
     expect(html).toContain("신고 큐");
     expect(html).toContain("2건 대기");
     expect(html).toContain("정정 큐");
@@ -122,5 +126,11 @@ describe("AdminCorrectionRequestsPage", () => {
     expect(html).toContain("운영자 콘텐츠 제보 2건");
     expect(html).toContain("TownPet 운영자 정리");
     expect(html).toContain('href="/posts/ckc7k5qsj0000u0t8qv6d1d7k"');
+    expect(mockListInformationCorrectionRequests).toHaveBeenCalledWith({
+      status: "PENDING",
+      query: null,
+      operatorOnly: true,
+      limit: 100,
+    });
   });
 });
