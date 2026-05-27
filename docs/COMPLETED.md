@@ -7224,3 +7224,25 @@
 - 판정:
   - 새 on-demand 체크리스트의 전체 실행 명령은 production에서 작동한다.
   - 상세/댓글/피드 item/권한형 상세 UI 변경 배포 후 이 명령을 표준 post-deploy visual smoke로 사용할 수 있다.
+
+### 2026-05-27 | active 계획 종료 및 세션 문서화 점검
+- 완료일: `2026-05-27`
+- 배경:
+  - [docs/PLAN.md](./PLAN.md)에 `마케팅 피드백 기반 제품 획득 루프 재정렬`이 active `in_progress`로 남아 있었지만, [docs/PROGRESS.md](./PROGRESS.md)는 이미 `현재 active 구현 항목 없음`으로 기록하고 있었다.
+  - 하네스 규칙상 active 문서에는 현재 진행 중이거나 다음에 바로 착수할 항목만 남겨야 한다.
+- 정리내용:
+  - [docs/PLAN.md](./PLAN.md)를 `현재 active 작업 없음` 상태로 정리했다.
+  - 남은 후보는 `다음 작업 후보`로만 유지하고, 실제 착수 전 새 phase로 승격하도록 명시했다.
+  - [docs/PROGRESS.md](./PROGRESS.md)의 현재 active 상태와 다음 액션을 최신 상태로 맞췄다.
+- 이번 세션 문서화 점검:
+  - `production legacy upload path read-only audit 재실행`, `cleanup dry-run`, `cleanup apply` 기록 확인.
+  - `auth/local 상세 smoke guest gate 확장` 기록 확인.
+  - `docs-quality 원격 실패 복구` 기록 확인.
+  - `post-deploy detail visual smoke 체크리스트 연결` 기록 확인.
+  - `최신 배포 detail visual smoke 절차 검증` report와 screenshot 기록 확인.
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app docs:refresh`
+  - `node scripts/refresh-docs-index.mjs --check`
+- 결과:
+  - active 계획과 progress 상태가 일치한다.
+  - 이번 세션의 코드/운영/검증 작업은 완료 archive에 남아 있다.
