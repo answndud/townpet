@@ -2,7 +2,8 @@
 
 ## 현재 상태
 
-- 현재 active 계획: [PLAN.md](./PLAN.md)의 `마케팅 피드백 기반 제품 획득 루프 재정렬`.
+- 현재 active 계획: 없음. [PLAN.md](./PLAN.md)는 `현재 active 작업 없음` 상태다.
+- `2026-05-27. active 계획 종료 및 세션 문서화 점검`을 완료했다. `마케팅 피드백 기반 제품 획득 루프 재정렬`은 완료 archive로 정리했고, 이번 세션의 legacy upload cleanup, auth/local smoke 확장, docs-quality 복구, post-deploy visual smoke 체크리스트, detail visual smoke run 기록이 [COMPLETED.md](./COMPLETED.md)에 남아 있음을 확인했다.
 - `2026-05-27. 최신 배포 detail visual smoke 절차 검증`을 완료했다. 최신 배포 `bbf3703` 기준 `ops:check:detail-visual` 전체 실행이 PASS했고, health/public detail/auth-local detail report와 screenshot을 남겼다.
 - `2026-05-27. post-deploy detail visual smoke 체크리스트 연결`을 완료했다. 배포 전후 on-demand 문서에 `ops:check:detail-visual` 실행 조건, 전체 실행/skip-auth-local 명령, PASS/CONDITIONAL/NO-GO 판정, report 기록 기준을 추가했다.
 - `2026-05-27. docs-quality 원격 실패 복구`를 완료했다. `781b13a`의 원격 `quality-gate`와 Vercel은 성공했지만 `docs-quality`가 문서 동기화 리포트 stale로 실패했다. 원인은 새 auth/local smoke report README가 `business/archive/operations/문서 동기화 리포트.md`에 반영되지 않은 것이며, `docs:refresh`로 복구했다.
@@ -109,12 +110,12 @@
 - 시작페이지 추가 개선 후보:
   - production demo content cleanup은 완료됐다. 추가 cleanup은 새 read-only audit와 별도 승인 없이는 실행하지 않는다.
 - 운영 유지보수 후보:
-  - workflow 변경 후 GitHub Actions `quality-gate`와 `docs-quality` 원격 실행 결과를 확인한다.
+  - GitHub Actions `quality-gate`와 `docs-quality`는 최근 관련 커밋에서 성공을 확인했다. 새 workflow 변경이 생기면 다시 확인한다.
 - 콘텐츠 운영 후보:
   - 첫 7개 운영자 정리 글은 production 게시 완료. 다음은 화면에서 문구/밀도/CTA를 점검하고 필요하면 제목/본문을 운영자 수정한다.
 - `/`과 public acquisition UI에는 사용자가 선택하지 않은 특정 지역명을 기본값처럼 노출하지 않는다.
 - 성능 후속은 route별 post detail/browser smoke fixture가 생기거나 LCP outlier가 반복될 때 다시 연다.
-- 다음 기능 점검 후보는 production 상세 visual smoke runner를 배포 후 on-demand 체크리스트에 더 강하게 연결하거나, GitHub Actions 원격 `quality-gate`/`docs-quality` 상태를 확인하는 것이다.
+- 다음 기능 후보는 [PLAN.md](./PLAN.md)의 `다음 작업 후보`에서 새 phase로 승격한 뒤 진행한다.
 
 ## 최근 검증
 
