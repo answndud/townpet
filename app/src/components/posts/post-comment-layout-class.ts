@@ -36,6 +36,23 @@ export const POST_COMMENT_SECTION_STATE_CLASS_NAME = [
   "text-[13px]",
 ].join(" ");
 
+export const POST_COMMENT_PENDING_PREVIEW_CLASS_NAME =
+  "border-[#eaf1fb] mt-1.5 border-y bg-[#fbfdff] px-2.5 py-1.5";
+
+export const POST_COMMENT_PENDING_PREVIEW_BODY_CLASS_NAME =
+  "tp-text-primary mt-0.5 text-[13px] leading-[1.55]";
+
+export const POST_COMMENT_BEST_SECTION_CLASS_NAME = "mt-2";
+
+export const POST_COMMENT_LATEST_HEADER_CLASS_NAME =
+  "mt-2.5 flex flex-wrap items-center justify-between gap-2";
+
+export const POST_COMMENT_EMPTY_STATE_CLASS_NAME =
+  "tp-text-subtle mt-2 text-[13px]";
+
+export const POST_COMMENT_ROOT_LIST_CLASS_NAME =
+  "mt-2 divide-y border-y bg-white";
+
 export const POST_COMMENT_FORM_PANEL_CLASS_NAME = "tp-form-panel tp-form-panel-page-soft";
 
 export const POST_COMMENT_FORM_FIELD_CLASS_NAME = "tp-form-field-page-soft";

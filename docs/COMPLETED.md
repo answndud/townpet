@@ -6778,3 +6778,37 @@
   - production smoke: `/api/feed/guest?limit=50` 200, posts `0`; public guest feed에 상세 진입 대상 게시글이 없어 댓글 inline form HTML smoke는 보류했다.
 - 다음 작업:
   - 최신 `main` 배포 후 production 성능 재측정 또는 상세 댓글 compactness final sweep 중 하나를 새 phase로 잡는다.
+
+### 2026-05-27 | 상세 댓글 compactness final sweep
+- 완료일: `2026-05-27`
+- 배경:
+  - 댓글 item, reply nesting, composer, inline form을 compact 기준으로 맞춘 뒤에도 pending preview와 section transition 간격이 이전 카드형 rhythm을 일부 유지했다.
+  - final sweep에서는 동작 변경 없이 댓글 section 전환부만 정리해 nested surface와 불필요한 세로 여백을 제거한다.
+- 변경내용:
+  - pending 댓글 preview를 `rounded-lg border bg px-3 py-2` 카드에서 `border-y bg-[#fbfdff] px-2.5 py-1.5` row로 낮췄다.
+  - pending preview 본문 spacing을 `mt-1 leading-6`에서 `mt-0.5 leading-[1.55]`로 낮췄다.
+  - 베스트 댓글 section top margin을 `mt-2.5`에서 `mt-2`로 줄였다.
+  - 최신 댓글 header margin을 `mt-3`에서 `mt-2.5`로 줄였다.
+  - empty state margin을 `mt-3`에서 `mt-2`로 줄였다.
+  - root 댓글 list wrapper를 `mt-2.5 sm:mt-3`에서 `mt-2`로 맞췄다.
+  - pending preview, best/latest transition, empty/list class를 `post-comment-layout-class.ts` 상수로 분리하고 테스트 감시를 추가했다.
+- 유지:
+  - pending status `role/status`, best/latest heading copy, pagination, composer, 댓글 item/action/reaction, focus/touch target은 변경하지 않았다.
+- 코드문서:
+  - [app/src/components/posts/post-comment-layout-class.ts](../app/src/components/posts/post-comment-layout-class.ts)
+  - [app/src/components/posts/post-comment-thread.tsx](../app/src/components/posts/post-comment-thread.tsx)
+  - [app/src/components/posts/post-comment-layout-class.test.ts](../app/src/components/posts/post-comment-layout-class.test.ts)
+  - [app/src/components/posts/post-comment-thread.test.tsx](../app/src/components/posts/post-comment-thread.test.tsx)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/components/posts/post-comment-layout-class.test.ts src/components/posts/post-comment-thread.test.tsx src/components/posts/post-comment-compact-controls-accessibility.test.tsx`
+  - `corepack pnpm@9.12.3 -C app lint -- src/components/posts/post-comment-layout-class.ts src/components/posts/post-comment-thread.tsx src/components/posts/post-comment-layout-class.test.ts src/components/posts/post-comment-thread.test.tsx src/components/posts/post-comment-compact-controls-accessibility.test.tsx`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+  - `cd app && PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect src/components/posts/post-comment-layout-class.ts src/components/posts/post-comment-thread.tsx --fast`
+  - `corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `280 files / 1358 tests`, Next production build 통과.
+- screenshot/smoke:
+  - production `/api/feed/guest?limit=50` 200, posts `0`.
+  - public guest feed에 상세 진입 대상 게시글이 없어 댓글 final sweep HTML/screenshot smoke는 보류했다.
+- 다음 작업:
+  - 최신 `main` 배포 후 production 성능 재측정 또는 피드/상세 compact UI 회귀 screenshot fixture 확보 중 하나를 새 phase로 잡는다.
