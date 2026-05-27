@@ -6819,3 +6819,35 @@
   - production smoke: `/api/feed/guest?limit=50` 200, posts `0`; public guest feed에 상세 진입 대상 게시글이 없어 댓글 final sweep HTML smoke는 보류했다.
 - 다음 작업:
   - 최신 `main` 배포 후 production 성능 재측정 또는 피드/상세 compact UI 회귀 screenshot fixture 확보 중 하나를 새 phase로 잡는다.
+
+### 2026-05-27 | production 성능 재측정
+- 완료일: `2026-05-27`
+- 배경:
+  - 홈/피드/상세 댓글 compactness 작업이 이어진 뒤 production 기준 속도 회귀가 없는지 다시 확인해야 했다.
+  - 이전 성능 기록은 `blog/29-성능개선-측정과-최적화-기록.md`의 2026-05-21 기준이므로, 최신 `main` 배포 후 같은 계열의 측정 명령을 재실행했다.
+- 변경내용:
+  - `https://townpet.vercel.app` 대상으로 Node fetch baseline을 다시 수집했다.
+  - `ops:perf:snapshot`을 production 대상으로 실행해 7개 endpoint, 총 200개 sample을 수집했다.
+  - 사람이 읽는 요약 report와 raw markdown/json/tsv 산출물을 `docs/reports`에 기록했다.
+  - Playwright browser/FCP/LCP 측정은 로컬 Chromium 바이너리 부재로 실패했고, 사용자 홈 cache 설치를 피하기 위해 설치하지 않고 blocker로 기록했다.
+- 코드문서:
+  - [docs/reports/performance-after-comment-compactness-2026-05-27.md](./reports/performance-after-comment-compactness-2026-05-27.md)
+  - [docs/reports/performance-baseline-2026-05-27T01-04-10-563Z.md](./reports/performance-baseline-2026-05-27T01-04-10-563Z.md)
+  - [docs/reports/performance-baseline-2026-05-27T01-04-10-563Z.json](./reports/performance-baseline-2026-05-27T01-04-10-563Z.json)
+  - [docs/reports/api-latency-snapshot-2026-05-27T01-04-45Z.summary.md](./reports/api-latency-snapshot-2026-05-27T01-04-45Z.summary.md)
+  - [docs/reports/api-latency-snapshot-2026-05-27T01-04-45Z.tsv](./reports/api-latency-snapshot-2026-05-27T01-04-45Z.tsv)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 핵심 결과:
+  - Node fetch warm p50: `/` 116ms, `/feed` 215ms, `/feed/guest` 109ms, `/api/health` 215ms, `/sitemap/0.xml` 21ms.
+  - Node fetch first request: `/` 2225ms, `/api/health` 1945ms로 cold/prerender 또는 MISS 영향을 확인했다.
+  - API steady-state threshold: `api_breed_posts`, `api_feed_guest`, `api_posts_global`, `api_posts_suggestions`, `api_search_guest`, `api_search_log`, `page_feed` 모두 PASS.
+  - API steady p95 범위: 148.3ms에서 320.1ms. slow `>500ms`는 steady-state 기준 0건.
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app perf:baseline`
+  - `OPS_BASE_URL=https://townpet.vercel.app OPS_PERF_OUT=../docs/reports/api-latency-snapshot-2026-05-27T01-04-45Z.tsv OPS_PERF_SUMMARY_OUT=../docs/reports/api-latency-snapshot-2026-05-27T01-04-45Z.summary.md COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app ops:perf:snapshot`
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app perf:browser`
+    - 실패: Playwright Chromium executable 없음.
+    - 조치: 홈 cache/global 설치를 하지 않고 blocker로 기록.
+- 결과:
+  - production API steady-state 성능 회귀는 확인되지 않았다.
+  - browser FCP/LCP/asset 측정은 Playwright 바이너리를 repo-safe 방식으로 준비한 뒤 별도 작업으로 재개한다.
