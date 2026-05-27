@@ -35,6 +35,7 @@ AGENTS.local.md
 AGENTS.backup.md
 docs/agent-memory/
 app/test-results/
+.playwright-browsers/
 
 # local planning artifacts
 PLAN.md
