@@ -5,6 +5,10 @@ import {
   CorrectionRequestTargetType,
 } from "@prisma/client";
 
+import {
+  AcquisitionEventTracker,
+  AcquisitionTrackedLink,
+} from "@/components/analytics/acquisition-event-tracker";
 import { getSiteOrigin } from "@/lib/site-url";
 import { getCorrectionRequestPostContext } from "@/server/queries/correction-request.queries";
 
@@ -87,9 +91,27 @@ export default async function CorrectionRequestPage({
   const initialTargetName = params.targetName ?? postContext?.title ?? "";
   const verifiedDate = formatVerifiedDate(postContext?.operatorLastVerifiedAt ?? null);
   const postContextHref = postContext ? `/posts/${postContext.id}` : null;
+  const correctionFlowTarget = postContext
+    ? {
+        targetType: "POST" as const,
+        targetId: postContext.id,
+        source: isOperatorPostContext ? "operator_content" : "linked_post",
+      }
+    : {
+        targetType: "CTA" as const,
+        targetId: initialTargetType,
+        source: "public_form",
+      };
 
   return (
     <main className="tp-page-bg min-h-screen">
+      <AcquisitionEventTracker
+        event={{
+          event: "CORRECTION_FLOW_VIEWED",
+          surface: "CORRECTION_FLOW",
+          ...correctionFlowTarget,
+        }}
+      />
       <section className="mx-auto grid w-full max-w-[1120px] gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:px-10">
         <div className="tp-card p-5 sm:p-6">
           <p className="tp-eyebrow">Correction request</p>
@@ -109,25 +131,46 @@ export default async function CorrectionRequestPage({
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {postContextHref ? (
-                  <Link
+                  <AcquisitionTrackedLink
                     href={postContextHref}
+                    event={{
+                      event: "CORRECTION_RECEIPT_CTA_CLICKED",
+                      surface: "CORRECTION_FLOW",
+                      targetType: "POST",
+                      targetId: postContext?.id ?? "linked_post",
+                      source: "receipt_linked_post",
+                    }}
                     className="rounded-lg border border-[#9ccfac] bg-white px-3 py-2 text-xs font-semibold text-[#245338]"
                   >
                     연결 글 다시 보기
-                  </Link>
+                  </AcquisitionTrackedLink>
                 ) : null}
-                <Link
+                <AcquisitionTrackedLink
                   href="/posts/new"
+                  event={{
+                    event: "CORRECTION_RECEIPT_CTA_CLICKED",
+                    surface: "CORRECTION_FLOW",
+                    targetType: "CTA",
+                    targetId: "write_after_correction",
+                    source: "receipt",
+                  }}
                   className="rounded-lg border border-[#9ccfac] bg-white px-3 py-2 text-xs font-semibold text-[#245338]"
                 >
                   첫 글 작성하기
-                </Link>
-                <Link
+                </AcquisitionTrackedLink>
+                <AcquisitionTrackedLink
                   href="/feed"
+                  event={{
+                    event: "CORRECTION_RECEIPT_CTA_CLICKED",
+                    surface: "CORRECTION_FLOW",
+                    targetType: "CTA",
+                    targetId: "feed_after_correction",
+                    source: "receipt",
+                  }}
                   className="rounded-lg border border-[#9ccfac] bg-white px-3 py-2 text-xs font-semibold text-[#245338]"
                 >
                   관련 글 더 보기
-                </Link>
+                </AcquisitionTrackedLink>
               </div>
             </div>
           ) : null}
