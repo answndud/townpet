@@ -3,6 +3,7 @@
 ## 현재 상태
 
 - 현재 active 계획: [PLAN.md](./PLAN.md)의 `마케팅 피드백 기반 제품 획득 루프 재정렬`.
+- `2026-05-27. production legacy upload path read-only audit 재실행`을 완료했다. production DB 기준 `Post.content` 1건에서 `/media/media/uploads/` 후보를 확인했고, `PostImage.url`, `Comment.content` 후보는 0건이다. 데이터 변경은 하지 않았고 cleanup은 [PLAN.md](./PLAN.md)의 별도 승인 필요 항목으로 올렸다.
 - `2026-05-27. 배포 후 상세 visual smoke runner 정리`를 완료했다. `health -> public detail visual -> auth/local detail visual` 순서의 `ops:check:detail-visual` repo-local runner를 추가했고 production 실행이 PASS했다.
 - `2026-05-27. auth/local 상세 visual smoke 추가`를 완료했다. `HOSPITAL_REVIEW`는 로그인 세션, `CARE_REQUEST`는 같은 동네 사용자 컨텍스트로 production 상세 화면을 desktop/mobile에서 검증했고 모두 PASS했다.
 - `2026-05-27. public smoke fixture production 게시`를 완료했다. `LOST_FOUND`, `MARKET_LISTING` 운영자 smoke fixture를 production에 게시했고, public 상세 visual smoke가 `FREE_BOARD`, `WALK_ROUTE`, `LOST_FOUND`, `MARKET_LISTING` desktop/mobile에서 PASS했다. `HOSPITAL_REVIEW`는 guest read policy, `CARE_REQUEST`는 local-required gate 때문에 public smoke 대상에서 계속 BLOCKED다.
@@ -98,6 +99,7 @@
 ## 다음 액션
 
 - 현재 active 구현 항목 없음.
+- 승인 대기 항목: production legacy upload path cleanup dry-run/apply. `Post.content` 1건이며, production mutation은 별도 dry-run report와 명시 승인 전에는 실행하지 않는다.
 - 시작페이지 추가 개선 후보:
   - production demo content cleanup은 완료됐다. 추가 cleanup은 새 read-only audit와 별도 승인 없이는 실행하지 않는다.
 - 운영 유지보수 후보:
@@ -106,7 +108,7 @@
   - 첫 7개 운영자 정리 글은 production 게시 완료. 다음은 화면에서 문구/밀도/CTA를 점검하고 필요하면 제목/본문을 운영자 수정한다.
 - `/`과 public acquisition UI에는 사용자가 선택하지 않은 특정 지역명을 기본값처럼 노출하지 않는다.
 - 성능 후속은 route별 post detail/browser smoke fixture가 생기거나 LCP outlier가 반복될 때 다시 연다.
-- 다음 기능 점검 후보는 production DB env가 준비된 상태에서 `db:audit:legacy-upload-paths`를 재실행하고, 후보가 있으면 별도 cleanup dry-run 계획을 세우는 것이다.
+- 다음 기능 점검 후보는 legacy upload cleanup dry-run script 작성이다. production apply는 별도 승인 전에는 실행하지 않는다.
 - 다음 개발 후보는 `HOSPITAL_REVIEW` guest read policy와 `CARE_REQUEST` local-required 정책을 유지한 상태에서 별도 인증/로컬 smoke를 마련할지 결정하는 것이다.
 
 ## 최근 검증

@@ -7054,3 +7054,28 @@
 - 결과:
   - 배포 후 상세 화면군 시각 smoke를 한 명령으로 실행할 수 있게 됐다.
   - 다음 작업 후보는 legacy upload path production audit 재실행 또는 GitHub Actions 품질 결과 확인이다.
+
+### 2026-05-27 | production legacy upload path read-only audit 재실행
+- 완료일: `2026-05-27`
+- 배경:
+  - `P2-13 legacy upload path read-only audit 준비` 당시에는 production DB env가 없어 local audit만 실행했다.
+  - 이후 Vercel production env pull이 가능한 상태가 되어 production DB 기준으로 동일한 read-only audit를 재실행했다.
+- 변경내용:
+  - `/tmp/townpet-legacy-upload-audit`에 Vercel production env를 임시로 pull했고, secret 값은 출력하거나 repo에 저장하지 않았다.
+  - `LEGACY_UPLOAD_PATH_AUDIT_CONFIRM=LEGACY_UPLOAD_PATH_AUDIT`, `LEGACY_UPLOAD_PATH_AUDIT_LIMIT=50`으로 `db:audit:legacy-upload-paths`를 실행했다.
+  - 실행 후 임시 env 디렉터리를 삭제했다.
+  - audit report를 `docs/reports/legacy-upload-path-audit-production-2026-05-27.md`에 저장했다.
+- 코드문서:
+  - [docs/reports/legacy-upload-path-audit-production-2026-05-27.md](./reports/legacy-upload-path-audit-production-2026-05-27.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 핵심 결과:
+  - `Post.content`: 1건.
+  - `PostImage.url`: 0건.
+  - `Comment.content`: 0건.
+  - 후보 post: `cmm0kczw9000211jw0td3wf71`, `ACTIVE/FREE_BOARD/GLOBAL`, title `이미지 업로드 테스트`.
+- 검증:
+  - `LEGACY_UPLOAD_PATH_AUDIT_CONFIRM=LEGACY_UPLOAD_PATH_AUDIT LEGACY_UPLOAD_PATH_AUDIT_LIMIT=50 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app db:audit:legacy-upload-paths`
+- 결과:
+  - production 데이터 변경은 하지 않았다.
+  - 후보가 1건 있으므로 cleanup은 [PLAN.md](./PLAN.md)의 별도 dry-run/승인 대기 항목으로 올렸다.
