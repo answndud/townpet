@@ -183,6 +183,11 @@ describe("GET /api/home/feed", () => {
       "post-operator-verified",
       "post-popular",
     ]);
+    expect(payload.data.featured[0]).toMatchObject({
+      isOperatorContent: true,
+      operatorSourceName: "TownPet 운영자 정리",
+      operatorLastVerifiedAt: "2026-05-24T01:00:00.000Z",
+    });
     expect(payload.data.best).toBeUndefined();
   });
 

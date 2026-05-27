@@ -123,6 +123,9 @@ describe("post detail action accessibility", () => {
 
     expect(html).toContain("카카오톡 문구 복사");
     expect(html).toContain("공유 이미지 열기");
+    expect(html).toContain("목격 제보");
+    expect(html).toContain("목격했어요");
+    expect(html).toContain("확인된 시간·위치·특징만 전달합니다.");
     expect(html).toContain("min-h-10");
     expect(html).toContain('role="status"');
     expect(html).toContain("min-h-28 overflow-auto whitespace-pre-wrap border-t border-[#dbe6f5] pt-2");

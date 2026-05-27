@@ -64,4 +64,19 @@ describe("NewPostPage", () => {
     expect(html).toContain("p-3.5");
     expect(html).not.toContain("자동 임시저장");
   });
+
+  it("explains lost-found first actions without changing policy boundaries", async () => {
+    const html = renderToStaticMarkup(
+      await NewPostPage({
+        searchParams: Promise.resolve({
+          type: PostType.LOST_FOUND,
+        }),
+      }),
+    );
+
+    expect(html).toContain("분실/목격 제보 작성");
+    expect(html).toContain("보호자는 분실 글을 작성");
+    expect(html).toContain("목격 제보는 상세 댓글");
+    expect(html).toContain("공유는 링크/이미지");
+  });
 });

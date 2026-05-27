@@ -15,7 +15,10 @@ import {
 } from "react";
 
 import { FeedPostMetaBadges } from "@/components/posts/feed-post-meta-badges";
-import { OperatorContentBadge } from "@/components/posts/operator-content-source-panel";
+import {
+  buildOperatorContentMetaLabel,
+  OperatorContentBadge,
+} from "@/components/posts/operator-content-source-panel";
 import { PostListItemShell } from "@/components/posts/post-list-item-shell";
 import { PostSignalIcons } from "@/components/posts/post-signal-icons";
 import { FoundingMemberBadge } from "@/components/user/founding-member-badge";
@@ -798,6 +801,17 @@ export function FeedInfiniteList({
                     <span className="min-w-0 shrink truncate font-semibold text-[#1f3f71]">
                       {authorNode}
                     </span>
+                    {post.isOperatorContent ? (
+                      <>
+                        <span className="shrink-0 text-[#bfd0e4]">·</span>
+                        <span className="min-w-0 truncate text-[#55749e]">
+                          {buildOperatorContentMetaLabel({
+                            sourceName: post.operatorSourceName,
+                            lastVerifiedAt: post.operatorLastVerifiedAt,
+                          })}
+                        </span>
+                      </>
+                    ) : null}
                     <span className="shrink-0 text-[#bfd0e4]">·</span>
                     <span className="min-w-0 shrink-0">
                       <FeedStatsLabel

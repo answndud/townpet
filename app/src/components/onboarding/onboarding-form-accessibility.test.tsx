@@ -31,6 +31,9 @@ describe("OnboardingForm accessibility", () => {
     expect(html).toContain("닉네임 저장");
     expect(html).toContain("동네 저장");
     expect(html).toContain("나중에 설정하기");
+    expect(html).toContain("선택 전에는 특정 동네가 기본값으로 정해지지 않습니다.");
+    expect(html).toContain("아직 선택한 동네가 없습니다.");
+    expect(html).not.toContain('href="/towns/');
   });
 
   it("links selected primary neighborhood to its dynamic town hub", () => {
@@ -52,6 +55,7 @@ describe("OnboardingForm accessibility", () => {
     );
 
     expect(html).toContain("선택 동네 허브 미리보기");
+    expect(html).toContain("대표 동네");
     expect(html).toContain(
       'href="/towns/%EC%84%9C%EC%9A%B8%ED%8A%B9%EB%B3%84%EC%8B%9C--%EA%B0%95%EB%82%A8%EA%B5%AC"',
     );

@@ -141,6 +141,7 @@ export function PostDetailPrimaryCard({
 
       {post.isOperatorContent ? (
         <OperatorContentSourcePanel
+          postId={post.id}
           sourceName={post.operatorSourceName}
           sourceUrl={post.operatorSourceUrl}
           lastVerifiedAt={post.operatorLastVerifiedAt}

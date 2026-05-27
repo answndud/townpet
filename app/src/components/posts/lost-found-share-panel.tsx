@@ -73,6 +73,17 @@ export function LostFoundSharePanel({ post, postUrl }: LostFoundSharePanelProps)
           <p className="mt-1 max-w-[68ch] text-xs leading-5 text-[#526d95]">
             위치, 시간, 특징 중심으로 공유합니다. 개인 연락처나 집 주소 전체는 공개 문구에 넣지 않습니다.
           </p>
+          <div className="mt-2 grid gap-1.5 border-t border-[#dbe6f5] pt-2 text-xs leading-5 text-[#526d95] sm:grid-cols-3">
+            <p>
+              <span className="font-semibold text-[#315b9a]">분실 글</span>은 보호자가 현재 상황을 갱신합니다.
+            </p>
+            <p>
+              <span className="font-semibold text-[#315b9a]">목격 제보</span>는 아래 댓글의 목격했어요를 사용합니다.
+            </p>
+            <p>
+              <span className="font-semibold text-[#315b9a]">공유</span>는 확인된 시간·위치·특징만 전달합니다.
+            </p>
+          </div>
         </div>
         <div className="flex flex-wrap gap-2">
           <button

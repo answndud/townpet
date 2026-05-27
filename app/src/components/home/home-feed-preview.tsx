@@ -3,6 +3,10 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+import {
+  buildOperatorContentMetaLabel,
+  OperatorContentBadge,
+} from "@/components/posts/operator-content-source-panel";
 import { fetchJson, isAbortError } from "@/lib/client-json";
 
 type HomeFeedItem = {
@@ -14,6 +18,10 @@ type HomeFeedItem = {
   createdAt: string;
   authorName: string;
   neighborhoodLabel: string | null;
+  isOperatorContent?: boolean | null;
+  operatorSourceName?: string | null;
+  operatorSourceUrl?: string | null;
+  operatorLastVerifiedAt?: string | Date | null;
   commentCount: number;
   likeCount: number;
   viewCount: number;
@@ -112,6 +120,7 @@ export function FeedPreviewList({
               <span className="shrink-0 rounded-md border border-[#dbe5f3] bg-[#f7fbff] px-1.5 py-0.5 text-[#315b9a]">
                 {item.typeLabel}
               </span>
+              {item.isOperatorContent ? <OperatorContentBadge compact /> : null}
               {item.neighborhoodLabel ? (
                 <span className="truncate">{item.neighborhoodLabel}</span>
               ) : null}
@@ -130,6 +139,14 @@ export function FeedPreviewList({
             <span className="max-w-[8rem] truncate font-semibold text-[#48648d] sm:max-w-[7rem]">
               {item.authorName}
             </span>
+            {item.isOperatorContent ? (
+              <span className="max-w-[12rem] truncate text-[#48648d]">
+                {buildOperatorContentMetaLabel({
+                  sourceName: item.operatorSourceName,
+                  lastVerifiedAt: item.operatorLastVerifiedAt,
+                })}
+              </span>
+            ) : null}
             <span className="whitespace-nowrap">좋아요 {item.likeCount}</span>
             <span className="whitespace-nowrap">댓글 {item.commentCount}</span>
             <span className="whitespace-nowrap">조회 {item.viewCount}</span>

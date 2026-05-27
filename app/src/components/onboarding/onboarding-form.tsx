@@ -97,6 +97,7 @@ export function OnboardingForm({
   );
   const [cityFilter, setCityFilter] = useState("");
   const [cityOptions, setCityOptions] = useState<string[]>([]);
+  const [savedTownHref, setSavedTownHref] = useState<string | null>(null);
   const [searchItems, setSearchItems] = useState<NeighborhoodOption[]>(
     selectedNeighborhoods.map((item) => ({
       ...item,
@@ -162,8 +163,11 @@ export function OnboardingForm({
     return map;
   }, [searchItems, selectedNeighborhoods]);
   const primaryTownHref = buildTownHref(selectedNeighborhoodMap.get(primaryId));
+  const hasNeighborhoodSelection = selectedIds.length > 0;
+  const selectedPrimaryNeighborhood = selectedNeighborhoodMap.get(primaryId);
 
   const toggleNeighborhood = (neighborhoodId: string) => {
+    setSavedTownHref(null);
     setSelectedIds((prev) => {
       if (prev.includes(neighborhoodId)) {
         const next = prev.filter((item) => item !== neighborhoodId);
@@ -220,15 +224,8 @@ export function OnboardingForm({
       }
 
       const nextTownHref = buildTownHref(selectedNeighborhoodMap.get(primaryId));
-      setMessage(
-        nextTownHref
-          ? "내 동네가 저장되었습니다. 동네 허브로 이동합니다."
-          : "내 동네가 저장되었습니다.",
-      );
-      if (nextTownHref) {
-        router.push(nextTownHref);
-        return;
-      }
+      setSavedTownHref(nextTownHref);
+      setMessage(nextTownHref ? null : "내 동네가 저장되었습니다.");
       router.refresh();
     });
   };
@@ -294,7 +291,10 @@ export function OnboardingForm({
               <select
                 className="tp-input-soft px-3 py-2 text-sm"
                 value={cityFilter}
-                onChange={(event) => setCityFilter(event.target.value)}
+                onChange={(event) => {
+                  setSavedTownHref(null);
+                  setCityFilter(event.target.value);
+                }}
               >
                 <option value="">전체</option>
                 {cityOptions.map((city) => (
@@ -308,7 +308,11 @@ export function OnboardingForm({
 
           <div className="flex flex-col gap-2 text-sm font-medium text-[#355988]">
             <span>동네 선택 (최대 3개)</span>
-            <div className="max-h-64 space-y-2 overflow-auto rounded-xl border border-[#dbe6f6] bg-[#f8fbff] p-3">
+            <div className="rounded-xl border border-[#dbe6f6] bg-[#f8fbff] px-3 py-2 text-xs leading-5 text-[#526d96]">
+              선택 전에는 특정 동네가 기본값으로 정해지지 않습니다. 실제 활동할 시/군/구만 직접
+              선택해 주세요.
+            </div>
+            <div className="max-h-64 space-y-2 overflow-auto rounded-xl border border-[#dbe6f6] bg-white p-3">
               {searchItems.map((neighborhood) => (
                 <label key={neighborhood.id} className="flex items-center gap-2 text-xs text-[#1f3f71]">
                   <input
@@ -335,7 +339,10 @@ export function OnboardingForm({
               data-testid="onboarding-neighborhood"
               className="tp-input-soft px-3 py-2 text-sm"
               value={primaryId}
-              onChange={(event) => setPrimaryId(event.target.value)}
+              onChange={(event) => {
+                setSavedTownHref(null);
+                setPrimaryId(event.target.value);
+              }}
               required
             >
               <option value="">선택</option>
@@ -356,55 +363,101 @@ export function OnboardingForm({
 
           <div className="flex flex-col gap-2 text-sm font-medium text-[#355988]">
             <span>현재 선택한 동네</span>
-            <div className="flex flex-wrap gap-2">
-              {selectedIds.length === 0 ? (
-                <span className="text-xs text-[#5a7398]">선택한 동네가 없습니다.</span>
+            <div className="rounded-xl border border-[#dbe6f6] bg-[#f8fbff] p-3">
+              {!hasNeighborhoodSelection ? (
+                <div className="grid gap-1 text-xs leading-5 text-[#5a7398]">
+                  <span className="font-semibold text-[#355988]">아직 선택한 동네가 없습니다.</span>
+                  <span>저장 전까지 Local 피드와 동네 글쓰기는 지역 미확정 상태로 유지됩니다.</span>
+                </div>
               ) : (
-                selectedIds.map((id) => {
-                  const neighborhood = selectedNeighborhoodMap.get(id);
-                  if (!neighborhood) {
-                    return null;
-                  }
+                <div className="grid gap-3">
+                  {selectedPrimaryNeighborhood ? (
+                    <div className="rounded-lg border border-[#cbdcf5] bg-white px-3 py-2 text-xs text-[#1f3f71]">
+                      <span className="font-semibold">대표 동네</span>
+                      <span className="ml-2">
+                        {selectedPrimaryNeighborhood.city} {selectedPrimaryNeighborhood.district}
+                      </span>
+                    </div>
+                  ) : null}
+                  <div className="flex flex-wrap gap-2">
+                    {selectedIds.map((id) => {
+                      const neighborhood = selectedNeighborhoodMap.get(id);
+                      if (!neighborhood) {
+                        return null;
+                      }
 
-                  return (
-                    <span
-                      key={id}
-                      className="inline-flex items-center gap-2 rounded-md border border-[#cbdcf5] bg-white px-3 py-1 text-xs text-[#1f3f71]"
-                    >
-                      {neighborhood.city} {neighborhood.district}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSelectedIds((prev) => {
-                            const next = prev.filter((item) => item !== id);
-                            if (primaryId === id) {
-                              setPrimaryId(next[0] ?? "");
-                            }
-                            return next;
-                          });
-                        }}
-                        className="text-[#5a7398] hover:text-[#153a6a]"
-                        aria-label={`${neighborhood.city} ${neighborhood.district} 제거`}
-                      >
-                        x
-                      </button>
-                    </span>
-                  );
-                })
+                      return (
+                        <span
+                          key={id}
+                          className="inline-flex items-center gap-2 rounded-md border border-[#cbdcf5] bg-white px-3 py-1 text-xs text-[#1f3f71]"
+                        >
+                          {neighborhood.city} {neighborhood.district}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSavedTownHref(null);
+                              setSelectedIds((prev) => {
+                                const next = prev.filter((item) => item !== id);
+                                if (primaryId === id) {
+                                  setPrimaryId(next[0] ?? "");
+                                }
+                                return next;
+                              });
+                            }}
+                            className="text-[#5a7398] hover:text-[#153a6a]"
+                            aria-label={`${neighborhood.city} ${neighborhood.district} 제거`}
+                          >
+                            x
+                          </button>
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
               )}
             </div>
           </div>
 
           <p className="text-xs text-[#5a7398]">
-            동네를 저장하면 선택한 대표 동네 허브로 이동합니다. 나중에 프로필에서 다시
-            바꿀 수 있습니다.
+            동네를 저장하면 선택한 대표 동네 기준으로 Local 피드와 동네 글쓰기가 열립니다.
+            나중에 프로필에서 다시 바꿀 수 있습니다.
           </p>
+          {savedTownHref ? (
+            <div
+              className="rounded-xl border border-[#b8d7c3] bg-[#f2fbf5] px-4 py-3 text-xs leading-5 text-[#245338]"
+              role="status"
+              aria-live="polite"
+            >
+              <p className="font-semibold">내 동네가 저장되었습니다.</p>
+              <p className="mt-1">이제 대표 동네 허브를 보거나, 첫 글을 작성하거나, 피드로 이동할 수 있습니다.</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Link
+                  href={savedTownHref}
+                  className="rounded-lg border border-[#9ccfac] bg-white px-3 py-2 font-semibold text-[#245338]"
+                >
+                  대표 동네 허브 보기
+                </Link>
+                <Link
+                  href="/posts/new"
+                  className="rounded-lg border border-[#9ccfac] bg-white px-3 py-2 font-semibold text-[#245338]"
+                >
+                  첫 글 작성하기
+                </Link>
+                <Link
+                  href="/feed"
+                  className="rounded-lg border border-[#9ccfac] bg-white px-3 py-2 font-semibold text-[#245338]"
+                >
+                  피드 보기
+                </Link>
+              </div>
+            </div>
+          ) : null}
           <div className="flex flex-wrap gap-2">
             <button
               data-testid="onboarding-neighborhood-submit"
               type="submit"
               className="tp-btn-primary inline-flex min-h-10 items-center self-start px-4 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0]"
-              disabled={isPending || selectedIds.length === 0 || !primaryId}
+              disabled={isPending || !hasNeighborhoodSelection || !primaryId}
             >
               동네 저장
             </button>
