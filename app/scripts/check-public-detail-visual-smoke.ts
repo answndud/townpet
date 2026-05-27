@@ -239,7 +239,6 @@ function buildMarkdown(params: {
     lines.push(`| ${entry.type} | no public feed item | - | BLOCKED | BLOCKED | BLOCKED | BLOCKED | BLOCKED | - |`);
   }
 
-  lines.push("");
   return `${lines.join("\n")}\n`;
 }
 
