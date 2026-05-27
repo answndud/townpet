@@ -266,6 +266,7 @@ export default async function AdminOpsPage({ searchParams }: AdminOpsPageProps) 
   const careThreshold = overview.careFeedbacks.reviewThresholds;
   const careThresholdClass = formatCareFeedbackThresholdClass(careThreshold.severity);
   const initialRegion = overview.initialRegion;
+  const correctionFlow = overview.correctionFlow;
   const searchContextLabel = describeSearchContext({
     searchScope: selectedSearchScope,
     searchType: selectedSearchType,
@@ -504,6 +505,92 @@ export default async function AdminOpsPage({ searchParams }: AdminOpsPageProps) 
                     <p>획득 이벤트가 아직 없습니다.</p>
                   )}
                 </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="tp-card flex flex-col gap-4 p-4 sm:p-5">
+          <div className="flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-[#10284a]">정정 요청 전환</h2>
+              <p className="text-xs text-[#5a7398]">
+                운영자 콘텐츠와 public 정정 요청 화면의 조회, 접수, 접수 후 다음 행동을 확인합니다.
+              </p>
+            </div>
+            <p className="text-xs font-semibold text-[#315b9a]">
+              최근 {correctionFlow.days}일
+              {correctionFlow.schemaSyncRequired ? " · schema sync 필요" : ""}
+            </p>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="rounded-xl border border-[#dbe6f6] bg-[#f8fbff] p-3">
+              <p className="text-xs text-[#5a7398]">정정 화면 조회</p>
+              <p className="mt-2 text-2xl font-bold text-[#10284a]">
+                {formatCount(correctionFlow.viewCount)}
+              </p>
+              <p className="mt-1 text-[11px] text-[#6a7f9f]">CORRECTION_FLOW_VIEWED</p>
+            </div>
+            <div className="rounded-xl border border-[#dbe6f6] bg-[#f8fbff] p-3">
+              <p className="text-xs text-[#5a7398]">정정 요청 접수</p>
+              <p className="mt-2 text-2xl font-bold text-[#10284a]">
+                {formatCount(correctionFlow.submittedCount)}
+              </p>
+              <p className="mt-1 text-[11px] text-[#6a7f9f]">CORRECTION_REQUEST_SUBMITTED</p>
+            </div>
+            <div className="rounded-xl border border-[#dbe6f6] bg-[#f8fbff] p-3">
+              <p className="text-xs text-[#5a7398]">접수 전환율</p>
+              <p className="mt-2 text-2xl font-bold text-[#10284a]">
+                {formatPercent(correctionFlow.submitRate)}
+              </p>
+              <p className="mt-1 text-[11px] text-[#6a7f9f]">접수 / 화면 조회</p>
+            </div>
+            <div className="rounded-xl border border-[#dbe6f6] bg-[#f8fbff] p-3">
+              <p className="text-xs text-[#5a7398]">접수 후 CTA</p>
+              <p className="mt-2 text-2xl font-bold text-[#10284a]">
+                {formatCount(correctionFlow.receiptCtaClickCount)}
+              </p>
+              <p className="mt-1 text-[11px] text-[#6a7f9f]">
+                접수 대비 {formatPercent(correctionFlow.receiptCtaRate)}
+              </p>
+            </div>
+          </div>
+
+          <div className="grid gap-3 lg:grid-cols-2">
+            <div className="rounded-xl border border-[#dbe6f6] bg-white p-3">
+              <h3 className="text-sm font-semibold text-[#1f3f71]">이벤트 구성</h3>
+              <div className="mt-3 space-y-2 text-xs text-[#4f678d]">
+                {correctionFlow.eventCounts.length > 0 ? (
+                  correctionFlow.eventCounts.map((event) => (
+                    <div key={event.event} className="flex items-center justify-between gap-3">
+                      <span>{event.event}</span>
+                      <span className="font-semibold text-[#163462]">
+                        {formatCount(event.count)}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <p>정정 요청 획득 이벤트가 아직 없습니다.</p>
+                )}
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-[#dbe6f6] bg-white p-3">
+              <h3 className="text-sm font-semibold text-[#1f3f71]">유입 source</h3>
+              <div className="mt-3 space-y-2 text-xs text-[#4f678d]">
+                {correctionFlow.sourceSummaries.length > 0 ? (
+                  correctionFlow.sourceSummaries.map((source) => (
+                    <div key={source.source} className="flex items-center justify-between gap-3">
+                      <span>{source.source}</span>
+                      <span className="font-semibold text-[#163462]">
+                        {formatCount(source.count)}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <p>정정 요청 source가 아직 없습니다.</p>
+                )}
               </div>
             </div>
           </div>
