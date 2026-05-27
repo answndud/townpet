@@ -6987,3 +6987,37 @@
 - 결과:
   - public guest 상세 smoke는 정책상 가능한 주요 type까지 확장됐다.
   - 남은 `HOSPITAL_REVIEW`, `CARE_REQUEST`는 public fixture 문제가 아니라 정책/인증 smoke 범위 문제로 분리됐다.
+
+### 2026-05-27 | auth/local 상세 visual smoke 추가
+- 완료일: `2026-05-27`
+- 배경:
+  - `HOSPITAL_REVIEW`는 guest read policy 때문에 public guest 상세 smoke로 열 수 없다.
+  - `CARE_REQUEST`는 local-required gate가 있어 공개/비로그인 컨텍스트로 상세 구조를 검증할 수 없다.
+  - 두 type은 public smoke의 `BLOCKED`가 정상 정책 결과이므로, 별도 authenticated/local smoke가 필요했다.
+- 변경내용:
+  - `ops:check:auth-local-detail-visual` 스크립트를 추가했다.
+  - non-local DB에서는 `AUTH_LOCAL_DETAIL_SMOKE_CONFIRM=PUBLISH_AUTH_LOCAL_DETAIL_SMOKE_FIXTURES` 확인값이 있어야 검증용 사용자/게시글을 upsert한다.
+  - script는 검증용 작성자/방문자를 같은 동네에 묶고, `HOSPITAL_REVIEW`와 `CARE_REQUEST` 상세 fixture를 중복 없이 upsert한다.
+  - Playwright로 production `/posts/{id}` 상세를 로그인 세션에서 열고 desktop/mobile screenshot을 저장한다.
+  - 확인 항목은 title, 댓글 영역, 신고 entry, type별 구조화 상세 텍스트, local gate 해소, horizontal overflow 여부다.
+- production upsert 대상:
+  - `HOSPITAL_REVIEW` `병원 후기 상세 화면 검증용 안전 정보`
+  - `CARE_REQUEST` `동네 돌봄 요청 상세 화면 검증용 정보`
+- 코드문서:
+  - [app/scripts/check-auth-local-detail-visual-smoke.ts](../app/scripts/check-auth-local-detail-visual-smoke.ts)
+  - [app/scripts/check-auth-local-detail-visual-smoke.test.ts](../app/scripts/check-auth-local-detail-visual-smoke.test.ts)
+  - [app/package.json](../app/package.json)
+  - [business/operations/운영_문서_안내.md](../business/operations/운영_문서_안내.md)
+  - [docs/reports/auth-local-detail-visual-smoke-2026-05-27T02-11-09-061Z/README.md](./reports/auth-local-detail-visual-smoke-2026-05-27T02-11-09-061Z/README.md)
+- 핵심 결과:
+  - `HOSPITAL_REVIEW`: desktop/mobile 모두 title/comment/report/expected-detail/local-gate/no-overflow PASS.
+  - `CARE_REQUEST`: desktop/mobile 모두 title/comment/report/expected-detail/local-gate/no-overflow PASS.
+  - 첫 실행에서 `CARE_REQUEST` fixture가 `COMMON` boardScope로 생성되려 하며 DB check constraint에 걸렸고, `COMMUNITY` boardScope로 수정해 재검증했다.
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- scripts/check-auth-local-detail-visual-smoke.test.ts`
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app lint -- scripts/check-auth-local-detail-visual-smoke.ts scripts/check-auth-local-detail-visual-smoke.test.ts`
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+  - `OPS_BASE_URL=https://townpet.vercel.app AUTH_LOCAL_DETAIL_SMOKE_CONFIRM=PUBLISH_AUTH_LOCAL_DETAIL_SMOKE_FIXTURES COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app ops:check:auth-local-detail-visual`
+- 결과:
+  - public smoke에서 정책상 제외된 두 상세 화면의 운영 검증 경로를 확보했다.
+  - 다음 작업은 public/auth-local smoke를 묶어 배포 후 on-demand smoke runbook으로 정리하는 것이다.
