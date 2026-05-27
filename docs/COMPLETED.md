@@ -7663,3 +7663,29 @@
   - correction request acquisition loop는 view -> submit -> receipt CTA 단위까지 측정 가능해졌다.
   - Prisma schema, production data, correction validation/rate limit/admin queue 처리 정책은 변경하지 않았다.
   - `docs/HANDOFF.md` 삭제 상태는 unrelated dirty change로 유지했다.
+
+### 2026-05-27 | Handoff deletion state reconciliation
+- 완료일: `2026-05-27`
+- 배경:
+  - `docs/HANDOFF.md` 삭제 상태가 여러 작업 동안 unrelated dirty change로 남아 있었다.
+  - 파일 내용은 `f574628` 기준 다음 세션 실행용 과거 인계였고, 이후 Phase 0~4와 여러 후속 루프가 이미 `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`에 기록되어 실행 완료됐다.
+  - AGENTS 하네스 기준 현재 재개 문서는 `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`이며, 완료된 과거 인계 파일을 계속 추적하면 문서 인덱스와 상태 판단을 혼란스럽게 만든다.
+- 변경내용:
+  - `docs/HANDOFF.md` 삭제를 공식 반영했다.
+  - `docs/PROGRESS.md`에서 과거 handoff 문서를 남긴다는 오래된 문장을 현재 재개 기준 문서 3종으로 정정했다.
+  - `business/archive/operations/문서 동기화 리포트.md`를 삭제 상태 기준으로 갱신했다.
+- 코드문서:
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+  - `docs/HANDOFF.md` (deleted)
+  - [business/archive/operations/문서 동기화 리포트.md](../business/archive/operations/문서%20동기화%20리포트.md)
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app docs:refresh`
+    - 문서 인덱스 갱신
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app docs:refresh:check`
+    - PASS
+  - `git diff --check`
+    - PASS
+- 결과:
+  - repository-local 재개 기준은 `PLAN/PROGRESS/COMPLETED`로 단순화됐다.
+  - 완료된 과거 handoff 파일은 더 이상 active 상태 문서로 추적하지 않는다.
