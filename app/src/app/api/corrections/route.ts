@@ -4,6 +4,7 @@ import { getCurrentUserIdFromRequest } from "@/server/auth";
 import { monitorUnhandledError } from "@/server/error-monitor";
 import { getClientIp } from "@/server/request-context";
 import { jsonError, jsonOk } from "@/server/response";
+import { recordAcquisitionEvent } from "@/server/services/acquisition-events.service";
 import { createInformationCorrectionRequest } from "@/server/services/correction-request.service";
 import { ServiceError } from "@/server/services/service-error";
 
@@ -60,6 +61,30 @@ function buildCorrectionRedirectUrl({
   return new URL(`/corrections/new?${params.toString()}`, requestUrl);
 }
 
+function buildCorrectionSubmittedEvent(input: unknown) {
+  const postId = getRedirectContextValue(input, "postId");
+  const targetType = getRedirectContextValue(input, "targetType");
+
+  return {
+    event: "CORRECTION_REQUEST_SUBMITTED",
+    surface: "CORRECTION_FLOW",
+    targetType: postId ? "POST" : "CTA",
+    targetId: postId ?? targetType ?? "correction_request",
+    source: postId ? "linked_post" : "public_form",
+  } as const;
+}
+
+async function recordCorrectionSubmittedEvent(input: unknown, request: NextRequest) {
+  try {
+    await recordAcquisitionEvent(buildCorrectionSubmittedEvent(input));
+  } catch (error) {
+    await monitorUnhandledError(error, {
+      route: "POST /api/corrections acquisition event",
+      request,
+    });
+  }
+}
+
 export async function POST(request: NextRequest) {
   let responseMode: "json" | "redirect" = "json";
   let redirectInput: unknown = null;
@@ -75,6 +100,7 @@ export async function POST(request: NextRequest) {
       requesterUserId,
       clientIp: getClientIp(request),
     });
+    await recordCorrectionSubmittedEvent(parsedBody.input, request);
 
     if (responseMode === "redirect") {
       return NextResponse.redirect(

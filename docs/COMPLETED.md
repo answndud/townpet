@@ -7626,3 +7626,40 @@
   - 실제 production authenticated smoke는 admin credential이 있는 운영 컨텍스트에서 실행해야 한다.
   - production 데이터 변경과 관리자 처리 action 실행은 하지 않았다.
   - `docs/HANDOFF.md` 삭제 상태는 unrelated dirty change로 유지했다.
+
+### 2026-05-27 | Correction request acquisition event wiring
+- 완료일: `2026-05-27`
+- 배경:
+  - 운영자 콘텐츠 정정/제보 loop MVP에서 form, receipt, admin queue context는 연결됐지만 acquisition event wiring은 남겨 두었다.
+  - 첫 90일 획득 이벤트 사전에는 correction submit 이벤트가 있었으나 조회와 receipt 다음 행동 CTA가 없어 view -> submit -> next action 전환을 볼 수 없었다.
+- 변경내용:
+  - acquisition event 사전에 `CORRECTION_FLOW_VIEWED`, `CORRECTION_RECEIPT_CTA_CLICKED`를 추가했다.
+  - `/corrections/new` 진입을 `CORRECTION_FLOW_VIEWED`로 계측하고, post context가 있으면 post id/source를 차원으로 남기게 했다.
+  - `/api/corrections` 성공 접수 후 `CORRECTION_REQUEST_SUBMITTED`를 서버 mutation 경계에서 기록한다.
+  - acquisition event 기록 실패는 `monitorUnhandledError`에 남기되 correction request JSON 성공 응답과 browser redirect를 막지 않게 했다.
+  - receipt의 `연결 글 다시 보기`, `첫 글 작성하기`, `관련 글 더 보기` CTA를 `CORRECTION_RECEIPT_CTA_CLICKED`로 감쌌다.
+  - 핵심 지표 문서의 첫 90일 획득 이벤트 사전에 correction flow 조회/접수/receipt CTA 이벤트를 반영했다.
+- 코드문서:
+  - [app/src/lib/acquisition-events.ts](../app/src/lib/acquisition-events.ts)
+  - [app/src/app/corrections/new/page.tsx](../app/src/app/corrections/new/page.tsx)
+  - [app/src/app/api/corrections/route.ts](../app/src/app/api/corrections/route.ts)
+  - [app/src/app/corrections/new/page.test.tsx](../app/src/app/corrections/new/page.test.tsx)
+  - [app/src/app/api/corrections/route.test.ts](../app/src/app/api/corrections/route.test.ts)
+  - [business/analytics/핵심_지표.md](../business/analytics/핵심_지표.md)
+  - [docs/reports/correction-acquisition-event-wiring-2026-05-27.md](./reports/correction-acquisition-event-wiring-2026-05-27.md)
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/app/api/corrections/route.test.ts src/app/corrections/new/page.test.tsx src/server/services/acquisition-events.service.test.ts`
+    - `3 files / 12 tests` PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app lint -- src/app/api/corrections/route.ts src/app/api/corrections/route.test.ts src/app/corrections/new/page.tsx src/app/corrections/new/page.test.tsx src/lib/acquisition-events.ts`
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint PASS
+    - TypeScript PASS
+    - Vitest PASS, `293 files / 1405 tests`
+    - Next production build PASS
+- 결과:
+  - correction request acquisition loop는 view -> submit -> receipt CTA 단위까지 측정 가능해졌다.
+  - Prisma schema, production data, correction validation/rate limit/admin queue 처리 정책은 변경하지 않았다.
+  - `docs/HANDOFF.md` 삭제 상태는 unrelated dirty change로 유지했다.

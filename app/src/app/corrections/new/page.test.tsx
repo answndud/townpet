@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -65,5 +67,13 @@ describe("CorrectionRequestPage", () => {
   it("is noindex and canonical to correction request URL", () => {
     expect(metadata.alternates).toMatchObject({ canonical: "/corrections/new" });
     expect(metadata.robots).toMatchObject({ index: false, follow: true });
+  });
+
+  it("wires correction flow view and receipt CTA acquisition events", () => {
+    const source = readFileSync(new URL("./page.tsx", import.meta.url), "utf8");
+
+    expect(source).toContain("CORRECTION_FLOW_VIEWED");
+    expect(source).toContain("CORRECTION_RECEIPT_CTA_CLICKED");
+    expect(source).toContain('surface: "CORRECTION_FLOW"');
   });
 });
