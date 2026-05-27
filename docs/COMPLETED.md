@@ -6856,3 +6856,37 @@
   - Vercel: `https://townpet-doaimh86k-jmoon0227-9736s-projects.vercel.app` Ready, alias `https://townpet.vercel.app`.
   - `OPS_BASE_URL=https://townpet.vercel.app COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app ops:check:health`
     - `https://townpet.vercel.app/api/health` 200, `payload.status: ok`.
+
+### 2026-05-27 | repo-local Playwright 성능 측정 재개
+- 완료일: `2026-05-27`
+- 배경:
+  - production 성능 재측정에서 Playwright Chromium binary가 없어 browser FCP/LCP와 route asset snapshot이 보류됐다.
+  - 전역 설치, 홈 cache, `~/.codex`, `~/.claude` 변경 없이 repo-local 방식으로만 blocker를 해소해야 했다.
+- 변경내용:
+  - `.playwright-browsers/`를 루트 git ignore에 추가했다.
+  - `app/package.json`에 `playwright:install:local`, `perf:browser:local`, `perf:assets:local`을 추가했다.
+  - Chromium/FFmpeg/headless shell을 repo 내부 `.playwright-browsers`에 설치했다.
+  - 잘못 생성된 parent path `/Users/alex/project/.playwright-browsers`는 삭제했고, repo 밖 cache가 남지 않았음을 확인했다.
+  - production browser baseline과 route asset snapshot을 재실행하고 report를 남겼다.
+- 코드문서:
+  - [.gitignore](../.gitignore)
+  - [app/package.json](../app/package.json)
+  - [docs/reports/performance-browser-local-2026-05-27.md](./reports/performance-browser-local-2026-05-27.md)
+  - [docs/reports/performance-browser-baseline-2026-05-27T01-16-57-383Z.md](./reports/performance-browser-baseline-2026-05-27T01-16-57-383Z.md)
+  - [docs/reports/performance-browser-baseline-2026-05-27T01-16-57-383Z.json](./reports/performance-browser-baseline-2026-05-27T01-16-57-383Z.json)
+  - [docs/reports/performance-route-assets-2026-05-27T01-17-29-165Z.md](./reports/performance-route-assets-2026-05-27T01-17-29-165Z.md)
+  - [docs/reports/performance-route-assets-2026-05-27T01-17-29-165Z.json](./reports/performance-route-assets-2026-05-27T01-17-29-165Z.json)
+- 핵심 결과:
+  - Browser direct `/feed/guest`: desktop LCP p50 216ms, mobile LCP p50 204ms.
+  - Browser `/`: desktop LCP p50 256ms, mobile LCP p50 196ms. desktop run 1은 1424ms outlier였다.
+  - Asset `/`: desktop total transfer 268 KB, mobile 291 KB.
+  - Asset `/feed/guest`: desktop total transfer 284 KB, mobile 308 KB.
+  - route asset snapshot에서 long task는 보고되지 않았다.
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app playwright:install:local`
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app perf:browser:local`
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app perf:assets:local`
+  - `/Users/alex/project/.playwright-browsers` absent 확인.
+- 결과:
+  - Playwright browser 성능 측정 blocker를 repo-local 방식으로 해소했다.
+  - 다음 성능 후속은 LCP outlier가 반복되거나 post detail fixture가 생길 때 진행한다.

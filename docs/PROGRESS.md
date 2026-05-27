@@ -3,6 +3,7 @@
 ## 현재 상태
 
 - 현재 active 계획: [PLAN.md](./PLAN.md)의 `마케팅 피드백 기반 제품 획득 루프 재정렬`.
+- `2026-05-27. repo-local Playwright 성능 측정 재개`를 완료했다. 홈/전역 설치 없이 `.playwright-browsers` repo-local cache를 쓰는 script를 추가했고, browser FCP/LCP와 route asset snapshot을 production에서 재측정했다.
 - `2026-05-27. production 성능 재측정`을 완료했다. Node fetch baseline과 API latency snapshot을 production에서 재실행했고, steady-state API threshold는 모두 PASS했다. Playwright browser 측정은 로컬 브라우저 바이너리 부재로 보류했다. 측정 기록 커밋 `b8e7ce0`은 Vercel production `https://townpet-doaimh86k-jmoon0227-9736s-projects.vercel.app`로 배포 완료했고 alias health도 200이다.
 - `2026-05-27. 상세 댓글 compactness final sweep`를 완료했다. pending preview, best/latest 전환, empty/list 간격을 compact 기준으로 정리했다.
 - `2026-05-26. 댓글 inline edit/reply form compactness 정리`를 완료했다. 답글/수정/비회원 확인 inline form을 root composer와 같은 compact input/textarea 기준으로 맞췄다.
@@ -99,11 +100,10 @@
 - 콘텐츠 운영 후보:
   - 첫 7개 운영자 정리 글은 production 게시 완료. 다음은 화면에서 문구/밀도/CTA를 점검하고 필요하면 제목/본문을 운영자 수정한다.
 - `/`과 public acquisition UI에는 사용자가 선택하지 않은 특정 지역명을 기본값처럼 노출하지 않는다.
-- 성능 후속은 Playwright 브라우저 바이너리를 repo-safe 방식으로 준비할 수 있을 때 FCP/LCP/asset 측정을 다시 연다.
+- 성능 후속은 route별 post detail/browser smoke fixture가 생기거나 LCP outlier가 반복될 때 다시 연다.
 - 다음 기능 점검 후보는 production DB env가 준비된 상태에서 `db:audit:legacy-upload-paths`를 재실행하고, 후보가 있으면 별도 cleanup dry-run 계획을 세우는 것이다.
 - 현재 active 구현 항목 없음.
-- 다음 개발 후보는 상세 댓글 HTML/screenshot smoke fixture 확보 또는 Playwright browser 성능 측정 환경 준비다.
-- 다음 개발 후보는 production public guest feed에 실제 게시글이 다시 노출되는 조건을 확인한 뒤 상세 댓글 HTML/screenshot smoke를 재개하거나, Playwright browser 성능 측정 환경을 repo-safe 방식으로 준비하는 것이다.
+- 다음 개발 후보는 production public guest feed에 실제 게시글이 다시 노출되는 조건을 확인한 뒤 상세 댓글 HTML/screenshot smoke를 재개하는 것이다.
 
 ## 최근 검증
 
