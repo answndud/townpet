@@ -18,5 +18,5 @@
 
 ## 다음 작업 후보
 
-- PR/배포 후 최신 deployment URL 기준 production health와 주요 public/admin smoke 확인
 - 다음 제품 개선 루프를 새 active phase로 승격하기 전, 현재 release-readiness 결과와 `docs/HANDOFF.md` 삭제 상태 처리 방침 확정
+- 다음 제품 개선 루프 후보 선정: admin authenticated smoke 자동화, correction request acquisition event wiring, 또는 operator content correction 처리 UX 개선

@@ -7553,3 +7553,36 @@
 - 결과:
   - 커밋 후보 파일은 staged set으로 준비했다.
   - `docs/HANDOFF.md` 삭제는 unrelated dirty change로 남겼고 stage에서 제외했다.
+
+### 2026-05-27 | PR #12 merge 후 production smoke
+- 완료일: `2026-05-27`
+- 배경:
+  - `Improve acquisition and admin readiness loops` 변경이 PR #12로 준비됐고, preview smoke는 Vercel protected deployment 401로 차단되어 PR 코멘트에 blocker를 남겼다.
+  - merge 이후 production alias에서 health와 주요 public smoke를 확인해야 했다.
+- 배포/CI:
+  - PR: [#12](https://github.com/answndud/townpet/pull/12)
+  - merge commit: `7cbd7527`
+  - GitHub `docs-quality`: PASS
+  - GitHub `quality-gate`: PASS
+  - Vercel production deployment: PASS
+- production smoke:
+  - `OPS_BASE_URL=https://townpet.vercel.app COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app ops:check:health`
+    - `https://townpet.vercel.app/api/health` 200, `payload.status: ok`, elapsed `2473ms`
+  - `curl https://townpet.vercel.app/`
+    - `/` 200
+  - `curl https://townpet.vercel.app/feed/guest`
+    - `/feed/guest` 200
+  - `curl https://townpet.vercel.app/corrections/new`
+    - `/corrections/new` 200
+  - `OPS_BASE_URL=https://townpet.vercel.app COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app ops:check:operator-content-public`
+    - PASS, 운영자 글 9건
+    - feed/detail/search/home preview checks PASS
+  - `OPS_BASE_URL=https://townpet.vercel.app COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app ops:check:public-detail-visual`
+    - `FREE_BOARD`, `WALK_ROUTE`, `LOST_FOUND`, `MARKET_LISTING` desktop/mobile PASS
+    - `HOSPITAL_REVIEW`, `CARE_REQUEST`는 public feed item 부재로 BLOCKED
+- 제한:
+  - `/admin/corrections`, `/admin/reports`는 비인증 curl에서 404로 보호되어 authenticated admin smoke는 별도 세션/계정이 필요하다.
+  - `docs/HANDOFF.md` 삭제는 작업 시작 전부터 있던 unrelated dirty change라 이번 기록에서도 되돌리지 않았다.
+- 판정:
+  - post-merge production readiness: `PASS`
+  - admin authenticated smoke: `FOLLOW-UP`

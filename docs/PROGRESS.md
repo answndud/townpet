@@ -3,6 +3,7 @@
 ## 현재 상태
 
 - 현재 active 구현 항목 없음.
+- `2026-05-27. PR #12 merge 후 production smoke`를 완료했다. PR #12는 `main`에 squash merge되어 merge commit `7cbd7527`가 되었고, `docs-quality`, `quality-gate`, Vercel production deployment가 모두 PASS했다. production alias `https://townpet.vercel.app` 기준 health는 200 / `payload.status: ok`, `/`, `/feed/guest`, `/corrections/new`는 200이었다. `ops:check:operator-content-public`은 운영자 글 9건과 feed/detail/search/home preview 경로 PASS였고, `ops:check:public-detail-visual`은 `FREE_BOARD`, `WALK_ROUTE`, `LOST_FOUND`, `MARKET_LISTING` desktop/mobile PASS였다. `HOSPITAL_REVIEW`, `CARE_REQUEST`는 public feed item 부재로 BLOCKED이며, `/admin/corrections`, `/admin/reports`는 비인증 curl에서 404로 보호되어 authenticated admin smoke는 별도 세션/계정이 필요하다.
 - `2026-05-27. 누적 변경사항 diff review / commit 준비`를 완료했다. diff review에서 `/admin/corrections` 큐 summary가 현재 필터 결과에 묶여 전역 active/operator correction count를 잘못 표시할 수 있는 문제와, public correction prefill이 비운영자 protected post title을 노출할 수 있는 문제를 발견해 수정했다. correction summary는 read-only aggregate query를 사용하도록 바꿨고, public correction post context는 운영자 콘텐츠 또는 guest-readable post만 노출하도록 제한했다. targeted tests와 전체 `quality:check`가 PASS했다. staging은 intended app/docs 변경만 준비하고, 작업 전부터 있던 `docs/HANDOFF.md` 삭제는 제외했다.
 - `2026-05-27. 누적 변경 release-readiness / quality gate 점검`을 완료했다. `quality:check`에서 ESLint, TypeScript, Vitest `292 files / 1397 tests`, Next production build가 통과했다. production health는 `https://townpet.vercel.app/api/health` 200 / `payload.status: ok`였고, docs freshness와 `git diff --check`도 PASS했다. 판정은 local release-readiness `PASS`다. 기록은 [docs/reports/release-readiness-quality-gate-2026-05-27.md](./reports/release-readiness-quality-gate-2026-05-27.md)에 남겼다.
 - `2026-05-27. api_posts_suggestions p95 outlier 반복 관찰`을 완료했다. production health는 PASS였다. 첫 snapshot에서 `api_posts_suggestions`는 steady p95 `393.5ms`로 PASS했고, 재확인 snapshot에서는 p95 `196.0ms`로 PASS했다. 같은 첫 snapshot에서 `api_search_guest` p95 `1470.9ms`가 단발 FAIL했지만 즉시 recheck에서 p95 `286.3ms`로 정상화됐다. 이번 evidence로는 query/index/cache 변경을 열지 않고 관찰 기록으로 닫는다. 기록은 [docs/reports/api-posts-suggestions-outlier-observation-2026-05-27.md](./reports/api-posts-suggestions-outlier-observation-2026-05-27.md)에 남겼다.
@@ -122,7 +123,7 @@
 ## 다음 액션
 
 - 현재 active 구현 항목 없음.
-- 다음 작업은 staged 변경 커밋과 PR/배포 준비다.
+- 다음 작업은 `docs/HANDOFF.md` 삭제 상태 처리 방침 확정 후, 새 제품 개선 루프를 active phase로 승격하는 것이다.
 - `docs/HANDOFF.md` 삭제 상태는 이번 작업 시작 전부터 존재한 unrelated dirty change라 되돌리지 않았고 stage에서도 제외했다. 포함/복구 여부는 별도 지시가 필요하다.
 - legacy upload cleanup 승인 대기 항목은 완료됐다. production 사후 audit 기준 `/media/media/uploads/` 후보는 0건이다.
 - 시작페이지 추가 개선 후보:
