@@ -3,6 +3,8 @@
 - measuredAt: `2026-05-27`
 - baseUrl: `https://townpet.vercel.app`
 - scope: latest production after comment/detail compactness work
+- deployment: `https://townpet-doaimh86k-jmoon0227-9736s-projects.vercel.app`
+- aliasHealth: `https://townpet.vercel.app/api/health` 200
 - raw Node fetch baseline: `docs/reports/performance-baseline-2026-05-27T01-04-10-563Z.md`
 - raw API latency summary: `docs/reports/api-latency-snapshot-2026-05-27T01-04-45Z.summary.md`
 - raw TSV: `docs/reports/api-latency-snapshot-2026-05-27T01-04-45Z.tsv`

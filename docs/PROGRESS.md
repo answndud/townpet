@@ -3,7 +3,7 @@
 ## 현재 상태
 
 - 현재 active 계획: [PLAN.md](./PLAN.md)의 `마케팅 피드백 기반 제품 획득 루프 재정렬`.
-- `2026-05-27. production 성능 재측정`을 완료했다. Node fetch baseline과 API latency snapshot을 production에서 재실행했고, steady-state API threshold는 모두 PASS했다. Playwright browser 측정은 로컬 브라우저 바이너리 부재로 보류했다.
+- `2026-05-27. production 성능 재측정`을 완료했다. Node fetch baseline과 API latency snapshot을 production에서 재실행했고, steady-state API threshold는 모두 PASS했다. Playwright browser 측정은 로컬 브라우저 바이너리 부재로 보류했다. 측정 기록 커밋 `b8e7ce0`은 Vercel production `https://townpet-doaimh86k-jmoon0227-9736s-projects.vercel.app`로 배포 완료했고 alias health도 200이다.
 - `2026-05-27. 상세 댓글 compactness final sweep`를 완료했다. pending preview, best/latest 전환, empty/list 간격을 compact 기준으로 정리했다.
 - `2026-05-26. 댓글 inline edit/reply form compactness 정리`를 완료했다. 답글/수정/비회원 확인 inline form을 root composer와 같은 compact input/textarea 기준으로 맞췄다.
 - `2026-05-26. 상세 댓글 composer/form vertical rhythm 정리`를 완료했다. root composer wrapper, mode switch, guest/sighting inputs, textarea, submit button을 compact 기준으로 낮췄고 40px touch target은 유지했다.
