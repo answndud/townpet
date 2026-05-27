@@ -3,6 +3,7 @@
 ## 현재 상태
 
 - 현재 active 계획: 없음. [PLAN.md](./PLAN.md)는 `현재 active 작업 없음` 상태다.
+- `2026-05-27. 블로그 문서화 최신화 점검`을 완료했다. 블로그 시리즈가 `29`번 성능 개선 글에서 멈춰 있어, 이번 세션의 production cleanup, detail visual smoke, auth/local guest gate, docs-quality 복구, active plan closure를 `blog/30-운영-검증-문서화-루프.md`로 정리하고 목차/시리즈 계획/관련 글 링크를 갱신했다.
 - `2026-05-27. active 계획 종료 및 세션 문서화 점검`을 완료했다. `마케팅 피드백 기반 제품 획득 루프 재정렬`은 완료 archive로 정리했고, 이번 세션의 legacy upload cleanup, auth/local smoke 확장, docs-quality 복구, post-deploy visual smoke 체크리스트, detail visual smoke run 기록이 [COMPLETED.md](./COMPLETED.md)에 남아 있음을 확인했다.
 - `2026-05-27. 최신 배포 detail visual smoke 절차 검증`을 완료했다. 최신 배포 `bbf3703` 기준 `ops:check:detail-visual` 전체 실행이 PASS했고, health/public detail/auth-local detail report와 screenshot을 남겼다.
 - `2026-05-27. post-deploy detail visual smoke 체크리스트 연결`을 완료했다. 배포 전후 on-demand 문서에 `ops:check:detail-visual` 실행 조건, 전체 실행/skip-auth-local 명령, PASS/CONDITIONAL/NO-GO 판정, report 기록 기준을 추가했다.
