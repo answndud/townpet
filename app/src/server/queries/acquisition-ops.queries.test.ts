@@ -25,6 +25,7 @@ describe("acquisition ops queries", () => {
 
   it("summarizes correction flow view, submit, receipt CTA, and source counts", async () => {
     const now = new Date("2026-05-27T00:00:00.000Z");
+    const previousDay = new Date("2026-05-26T00:00:00.000Z");
     mockPrisma.acquisitionEventStat?.findMany.mockResolvedValue([
       {
         id: "event-1",
@@ -62,6 +63,30 @@ describe("acquisition ops queries", () => {
         createdAt: now,
         updatedAt: now,
       },
+      {
+        id: "event-4",
+        day: previousDay,
+        surface: "CORRECTION_FLOW",
+        event: "CORRECTION_FLOW_VIEWED",
+        targetType: "POST",
+        targetId: "post-2",
+        source: "operator_content",
+        count: 5,
+        createdAt: previousDay,
+        updatedAt: previousDay,
+      },
+      {
+        id: "event-5",
+        day: previousDay,
+        surface: "CORRECTION_FLOW",
+        event: "CORRECTION_REQUEST_SUBMITTED",
+        targetType: "POST",
+        targetId: "post-2",
+        source: "linked_post",
+        count: 1,
+        createdAt: previousDay,
+        updatedAt: previousDay,
+      },
     ]);
 
     const overview = await getCorrectionFlowOpsOverview(7);
@@ -83,15 +108,33 @@ describe("acquisition ops queries", () => {
     expect(overview).toMatchObject({
       days: 7,
       schemaSyncRequired: false,
-      viewCount: 10,
-      submittedCount: 4,
+      viewCount: 15,
+      submittedCount: 5,
       receiptCtaClickCount: 2,
-      submitRate: 0.4,
-      receiptCtaRate: 0.5,
+      submitRate: 1 / 3,
+      receiptCtaRate: 0.4,
     });
+    expect(overview.dailySummaries).toEqual([
+      {
+        day: "2026-05-27",
+        viewCount: 10,
+        submittedCount: 4,
+        receiptCtaClickCount: 2,
+        submitRate: 0.4,
+        receiptCtaRate: 0.5,
+      },
+      {
+        day: "2026-05-26",
+        viewCount: 5,
+        submittedCount: 1,
+        receiptCtaClickCount: 0,
+        submitRate: 0.2,
+        receiptCtaRate: 0,
+      },
+    ]);
     expect(overview.sourceSummaries[0]).toEqual({
       source: "operator_content",
-      count: 10,
+      count: 15,
     });
   });
 

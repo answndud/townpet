@@ -13,6 +13,14 @@ export type CorrectionFlowOpsOverview = {
   receiptCtaClickCount: number;
   submitRate: number;
   receiptCtaRate: number;
+  dailySummaries: Array<{
+    day: string;
+    viewCount: number;
+    submittedCount: number;
+    receiptCtaClickCount: number;
+    submitRate: number;
+    receiptCtaRate: number;
+  }>;
   eventCounts: Array<{
     event: string;
     count: number;
@@ -79,8 +87,24 @@ function emptyCorrectionFlowOpsOverview(
     receiptCtaClickCount: 0,
     submitRate: 0,
     receiptCtaRate: 0,
+    dailySummaries: [],
     eventCounts: [],
     sourceSummaries: [],
+  };
+}
+
+function formatDayKey(day: Date) {
+  return day.toISOString().slice(0, 10);
+}
+
+function buildEmptyDailySummary(day: string) {
+  return {
+    day,
+    viewCount: 0,
+    submittedCount: 0,
+    receiptCtaClickCount: 0,
+    submitRate: 0,
+    receiptCtaRate: 0,
   };
 }
 
@@ -90,15 +114,36 @@ function summarizeCorrectionFlowRows(
 ): CorrectionFlowOpsOverview {
   const eventMap = new Map<string, number>();
   const sourceMap = new Map<string, number>();
+  const dailyMap = new Map<string, ReturnType<typeof buildEmptyDailySummary>>();
 
   for (const row of rows) {
     eventMap.set(row.event, (eventMap.get(row.event) ?? 0) + row.count);
     sourceMap.set(row.source, (sourceMap.get(row.source) ?? 0) + row.count);
+
+    const dayKey = formatDayKey(row.day);
+    const dailySummary = dailyMap.get(dayKey) ?? buildEmptyDailySummary(dayKey);
+    if (row.event === "CORRECTION_FLOW_VIEWED") {
+      dailySummary.viewCount += row.count;
+    }
+    if (row.event === "CORRECTION_REQUEST_SUBMITTED") {
+      dailySummary.submittedCount += row.count;
+    }
+    if (row.event === "CORRECTION_RECEIPT_CTA_CLICKED") {
+      dailySummary.receiptCtaClickCount += row.count;
+    }
+    dailyMap.set(dayKey, dailySummary);
   }
 
   const viewCount = eventMap.get("CORRECTION_FLOW_VIEWED") ?? 0;
   const submittedCount = eventMap.get("CORRECTION_REQUEST_SUBMITTED") ?? 0;
   const receiptCtaClickCount = eventMap.get("CORRECTION_RECEIPT_CTA_CLICKED") ?? 0;
+  const dailySummaries = Array.from(dailyMap.values())
+    .map((summary) => ({
+      ...summary,
+      submitRate: calculateRate(summary.submittedCount, summary.viewCount),
+      receiptCtaRate: calculateRate(summary.receiptCtaClickCount, summary.submittedCount),
+    }))
+    .sort((left, right) => right.day.localeCompare(left.day));
 
   return {
     days,
@@ -108,6 +153,7 @@ function summarizeCorrectionFlowRows(
     receiptCtaClickCount,
     submitRate: calculateRate(submittedCount, viewCount),
     receiptCtaRate: calculateRate(receiptCtaClickCount, submittedCount),
+    dailySummaries,
     eventCounts: Array.from(eventMap.entries())
       .map(([event, count]) => ({ event, count }))
       .sort((left, right) => right.count - left.count),

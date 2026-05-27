@@ -239,6 +239,16 @@ describe("ops overview queries", () => {
       receiptCtaClickCount: 2,
       submitRate: 0.4,
       receiptCtaRate: 0.5,
+      dailySummaries: [
+        {
+          day: "2026-05-27",
+          viewCount: 10,
+          submittedCount: 4,
+          receiptCtaClickCount: 2,
+          submitRate: 0.4,
+          receiptCtaRate: 0.5,
+        },
+      ],
       eventCounts: [
         { event: "CORRECTION_FLOW_VIEWED", count: 10 },
         { event: "CORRECTION_REQUEST_SUBMITTED", count: 4 },

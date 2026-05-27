@@ -7747,3 +7747,35 @@
 - 결과:
   - 운영자는 운영자 정리 글 제보만 분리해서 보고, source/확인일/처리 기준을 같은 행에서 확인한 뒤 처리 메모를 남길 수 있다.
   - production data, schema, correction request mutation/rate limit/admin queue policy는 변경하지 않았다.
+
+### 2026-05-27 | Operator correction ops trend 보강
+- 완료일: `2026-05-27`
+- 배경:
+  - `/admin/ops`의 정정 요청 전환 영역은 최근 7일 합계를 보여줬지만, 운영자가 날짜별 조회 대비 접수율과 receipt CTA 반응 변화를 바로 보기 어려웠다.
+  - correction acquisition event는 이미 `AcquisitionEventStat`에 일별 집계되어 있어 schema나 write path를 바꾸지 않고 read-only trend를 만들 수 있었다.
+- 변경내용:
+  - `getCorrectionFlowOpsOverview`에 `dailySummaries`를 추가해 `CORRECTION_FLOW_VIEWED`, `CORRECTION_REQUEST_SUBMITTED`, `CORRECTION_RECEIPT_CTA_CLICKED`를 날짜별로 합산한다.
+  - 날짜별 summary에 조회, 접수, receipt CTA, 접수 전환율, 접수 대비 receipt CTA rate를 포함한다.
+  - `/admin/ops`의 `정정 요청 전환` section에 `일자별 추세` surface를 추가했다.
+  - admin ops source guard test와 acquisition ops query test를 갱신했다.
+- 코드문서:
+  - [app/src/server/queries/acquisition-ops.queries.ts](../app/src/server/queries/acquisition-ops.queries.ts)
+  - [app/src/server/queries/acquisition-ops.queries.test.ts](../app/src/server/queries/acquisition-ops.queries.test.ts)
+  - [app/src/server/queries/ops-overview.queries.test.ts](../app/src/server/queries/ops-overview.queries.test.ts)
+  - [app/src/app/admin/ops/page.tsx](../app/src/app/admin/ops/page.tsx)
+  - [app/src/app/admin/ops/page.test.tsx](../app/src/app/admin/ops/page.test.tsx)
+  - [docs/reports/operator-correction-ops-trend-2026-05-27.md](./reports/operator-correction-ops-trend-2026-05-27.md)
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/server/queries/acquisition-ops.queries.test.ts src/server/queries/ops-overview.queries.test.ts src/app/admin/ops/page.test.tsx`
+    - `3 files / 5 tests` PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app lint -- src/server/queries/acquisition-ops.queries.ts src/server/queries/acquisition-ops.queries.test.ts src/server/queries/ops-overview.queries.test.ts src/app/admin/ops/page.tsx src/app/admin/ops/page.test.tsx`
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `PUPPETEER_SKIP_DOWNLOAD=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 dlx impeccable detect app/src/app/admin/ops/page.tsx app/src/components --fast`
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `295 files / 1410 tests`, Next production build PASS
+- 결과:
+  - 운영자는 정정 요청 acquisition loop의 합계뿐 아니라 날짜별 조회, 접수, 전환율, receipt CTA 반응을 `/admin/ops`에서 확인할 수 있다.
+  - production data, schema, acquisition event write path, correction request mutation/rate limit/admin queue policy는 변경하지 않았다.

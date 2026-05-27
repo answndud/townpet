@@ -11,5 +11,7 @@ describe("AdminOpsPage source", () => {
     expect(source).toContain("정정 요청 접수");
     expect(source).toContain("접수 후 CTA");
     expect(source).toContain("receiptCtaClickCount");
+    expect(source).toContain("일자별 추세");
+    expect(source).toContain("dailySummaries");
   });
 });
