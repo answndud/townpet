@@ -7689,3 +7689,32 @@
 - 결과:
   - repository-local 재개 기준은 `PLAN/PROGRESS/COMPLETED`로 단순화됐다.
   - 완료된 과거 handoff 파일은 더 이상 active 상태 문서로 추적하지 않는다.
+
+### 2026-05-27 | CORRECTION_FLOW admin ops rollup
+- 완료일: `2026-05-27`
+- 배경:
+  - correction request flow는 조회, 접수, receipt CTA event wiring까지 끝났지만 운영자가 `/admin/ops`에서 전환 상태를 바로 볼 수 없었다.
+  - 기존 `/admin/ops`는 health, 검색, 초기 지역, 인증/신고/개인화 지표를 read-only로 모으는 구조라 correction acquisition rollup을 같은 경계에 붙이기 적합했다.
+- 변경내용:
+  - `getCorrectionFlowOpsOverview` read-only query를 추가해 최근 7일 `CORRECTION_FLOW`의 조회/접수/receipt CTA 이벤트를 집계한다.
+  - schema sync 전이거나 `AcquisitionEventStat` delegate/table이 없으면 `/admin/ops`가 깨지지 않도록 0값과 `schemaSyncRequired`로 degrade한다.
+  - `getAdminOpsOverview`가 correction flow overview를 병렬로 가져오도록 연결했다.
+  - `/admin/ops`에 `정정 요청 전환` section을 추가해 화면 조회, 접수, 접수 전환율, 접수 후 CTA, 이벤트 구성, source 요약을 compact하게 표시한다.
+- 코드문서:
+  - [app/src/server/queries/acquisition-ops.queries.ts](../app/src/server/queries/acquisition-ops.queries.ts)
+  - [app/src/server/queries/acquisition-ops.queries.test.ts](../app/src/server/queries/acquisition-ops.queries.test.ts)
+  - [app/src/server/queries/ops-overview.queries.ts](../app/src/server/queries/ops-overview.queries.ts)
+  - [app/src/server/queries/ops-overview.queries.test.ts](../app/src/server/queries/ops-overview.queries.test.ts)
+  - [app/src/app/admin/ops/page.tsx](../app/src/app/admin/ops/page.tsx)
+  - [app/src/app/admin/ops/page.test.tsx](../app/src/app/admin/ops/page.test.tsx)
+  - [docs/reports/correction-flow-admin-ops-rollup-2026-05-27.md](./reports/correction-flow-admin-ops-rollup-2026-05-27.md)
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/server/queries/acquisition-ops.queries.test.ts src/server/queries/ops-overview.queries.test.ts src/app/admin/ops/page.test.tsx`
+    - `3 files / 5 tests` PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app lint -- src/server/queries/acquisition-ops.queries.ts src/server/queries/acquisition-ops.queries.test.ts src/server/queries/ops-overview.queries.ts src/server/queries/ops-overview.queries.test.ts src/app/admin/ops/page.tsx src/app/admin/ops/page.test.tsx`
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+- 결과:
+  - 운영자는 correction request acquisition loop의 view -> submit -> receipt CTA 상태를 `/admin/ops`에서 볼 수 있다.
+  - production data, schema, correction request mutation/rate limit/admin queue policy는 변경하지 않았다.

@@ -1,5 +1,6 @@
 import type { SearchTermContext } from "@/server/queries/search.queries";
 import { getHealthSnapshot } from "@/server/health-overview";
+import { getCorrectionFlowOpsOverview } from "@/server/queries/acquisition-ops.queries";
 import { getAuthAuditOverview } from "@/server/queries/auth-audit.queries";
 import { getCareFeedbackIssueStats } from "@/server/queries/care-feedback.queries";
 import { getFeedPersonalizationOverview } from "@/server/queries/feed-personalization-metrics.queries";
@@ -12,7 +13,16 @@ type AdminOpsOverviewOptions = {
 };
 
 export async function getAdminOpsOverview(options: AdminOpsOverviewOptions = {}) {
-  const [health, authAudit, reports, careFeedbacks, personalization, search, initialRegion] =
+  const [
+    health,
+    authAudit,
+    reports,
+    careFeedbacks,
+    personalization,
+    search,
+    initialRegion,
+    correctionFlow,
+  ] =
     await Promise.all([
       getHealthSnapshot({ includeDetailedHealth: true }),
       getAuthAuditOverview(1),
@@ -21,6 +31,7 @@ export async function getAdminOpsOverview(options: AdminOpsOverviewOptions = {})
       getFeedPersonalizationOverview(7),
       getSearchInsightsOverview(8, options.searchContext),
       getInitialRegionOpsOverview(7),
+      getCorrectionFlowOpsOverview(7),
     ]);
 
   return {
@@ -31,5 +42,6 @@ export async function getAdminOpsOverview(options: AdminOpsOverviewOptions = {})
     personalization,
     search,
     initialRegion,
+    correctionFlow,
   };
 }
