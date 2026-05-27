@@ -3,6 +3,7 @@
 ## 현재 상태
 
 - 현재 active 계획: [PLAN.md](./PLAN.md)의 `마케팅 피드백 기반 제품 획득 루프 재정렬`.
+- `2026-05-27. docs-quality 원격 실패 복구`를 완료했다. `781b13a`의 원격 `quality-gate`와 Vercel은 성공했지만 `docs-quality`가 문서 동기화 리포트 stale로 실패했다. 원인은 새 auth/local smoke report README가 `business/archive/operations/문서 동기화 리포트.md`에 반영되지 않은 것이며, `docs:refresh`로 복구했다.
 - `2026-05-27. auth/local 상세 smoke guest gate 확장`을 완료했다. `HOSPITAL_REVIEW`, `CARE_REQUEST` 상세 smoke가 guest 접근에서는 로그인 gate와 보호 대상 제목 비노출을 확인하고, 로그인/같은 동네 컨텍스트에서는 desktop/mobile 상세 렌더링을 확인한다. production 실행은 모두 PASS했다.
 - `2026-05-27. production legacy upload path cleanup apply`를 완료했다. production DB `Post.content` 후보 1건을 `/media/media/uploads/*`에서 `/media/uploads/*`로 정리했고, 사후 audit에서 `Post.content`, `PostImage.url`, `Comment.content` 모두 0건을 확인했다.
 - `2026-05-27. production legacy upload path cleanup dry-run`을 완료했다. production DB 후보 1건의 변경 전/후 path preview를 report로 남겼고, production 데이터 변경은 하지 않았다.
