@@ -1,0 +1,80 @@
+import { describe, expect, it } from "vitest";
+
+import {
+  adminQueuePagePassed,
+  buildAdminQueueSmokeMarkdown,
+  resolveAdminQueueSmokeConfig,
+} from "./check-admin-queue-smoke";
+
+describe("admin queue smoke", () => {
+  it("requires explicit admin smoke credentials", () => {
+    expect(() => resolveAdminQueueSmokeConfig({})).toThrow(
+      "ADMIN_QUEUE_SMOKE_EMAIL is required",
+    );
+    expect(() =>
+      resolveAdminQueueSmokeConfig({
+        ADMIN_QUEUE_SMOKE_EMAIL: "admin@example.com",
+      }),
+    ).toThrow("ADMIN_QUEUE_SMOKE_PASSWORD is required");
+  });
+
+  it("normalizes base URL and reads credentials", () => {
+    expect(
+      resolveAdminQueueSmokeConfig({
+        OPS_BASE_URL: "https://townpet.vercel.app/",
+        ADMIN_QUEUE_SMOKE_EMAIL: " admin@example.com ",
+        ADMIN_QUEUE_SMOKE_PASSWORD: " secret ",
+      }),
+    ).toEqual({
+      baseUrl: "https://townpet.vercel.app",
+      email: "admin@example.com",
+      password: "secret",
+    });
+  });
+
+  it("requires both queue switch summaries and page-specific surface", () => {
+    expect(
+      adminQueuePagePassed({
+        hasReportQueue: true,
+        hasCorrectionQueue: true,
+        hasExpectedSurface: true,
+        noHorizontalOverflow: true,
+      }),
+    ).toBe(true);
+
+    expect(
+      adminQueuePagePassed({
+        hasReportQueue: true,
+        hasCorrectionQueue: false,
+        hasExpectedSurface: true,
+        noHorizontalOverflow: true,
+      }),
+    ).toBe(false);
+  });
+
+  it("documents read-only admin queue smoke evidence", () => {
+    const markdown = buildAdminQueueSmokeMarkdown({
+      generatedAt: "2026-05-27T00:00:00.000Z",
+      baseUrl: "https://townpet.vercel.app",
+      results: [
+        {
+          id: "reports",
+          path: "/admin/reports",
+          status: "PASS",
+          url: "https://townpet.vercel.app/admin/reports",
+          screenshot: "/tmp/admin-reports.png",
+          hasReportQueue: true,
+          hasCorrectionQueue: true,
+          hasExpectedSurface: true,
+          noHorizontalOverflow: true,
+        },
+      ],
+    });
+
+    expect(markdown).toContain("# Admin Queue Smoke");
+    expect(markdown).toContain("read-only admin page rendering");
+    expect(markdown).toContain("/admin/reports");
+    expect(markdown).toContain("report queue");
+    expect(markdown).toContain("correction queue");
+  });
+});

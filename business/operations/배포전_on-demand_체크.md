@@ -169,6 +169,35 @@ report 위치:
 
 ## 7. 완료 기록
 
+## 7. 관리자 queue smoke
+
+아래 변경이 포함되면 health 통과 후 관리자 credential로 queue smoke를 실행한다.
+
+- `/admin/reports`, `/admin/corrections` 화면 구조, summary, queue switch
+- 신고/정정 요청 read model
+- 관리자 인증/권한 gate
+
+이 smoke는 read-only 화면 렌더링만 확인하고 처리 action은 실행하지 않는다.
+
+```bash
+OPS_BASE_URL=https://townpet.vercel.app \
+ADMIN_QUEUE_SMOKE_EMAIL=<ADMIN_EMAIL> \
+ADMIN_QUEUE_SMOKE_PASSWORD=<ADMIN_PASSWORD> \
+corepack pnpm@9.12.3 -C app ops:check:admin-queue-smoke
+```
+
+판정 기준:
+
+- `PASS`: `/admin/reports`, `/admin/corrections` 모두 렌더링되고 `신고 큐`/`정정 큐` summary와 page-specific surface가 보임
+- `BLOCKED`: admin smoke credential 또는 브라우저 바이너리가 없어 실행하지 못함. 이 경우 PR/배포 기록에 blocker를 명시한다.
+- `NO-GO`: 로그인 실패, 관리자 권한 없음, queue summary 누락, 화면 overflow 실패
+
+report 위치:
+
+- `docs/reports/admin-queue-smoke-*/`
+
+## 8. 완료 기록
+
 배포 전후 체크를 완료하면 아래만 기록한다.
 
 - 실행한 명령
