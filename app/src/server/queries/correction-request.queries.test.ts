@@ -62,6 +62,23 @@ describe("correction request queries", () => {
     );
   });
 
+  it("supports filtering the admin queue to operator-linked correction requests", async () => {
+    mockFindMany.mockResolvedValue([] as never);
+
+    await listInformationCorrectionRequests({
+      status: "ALL",
+      operatorOnly: true,
+    });
+
+    expect(mockFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          post: { isOperatorContent: true },
+        }),
+      }),
+    );
+  });
+
   it("loads active post context for public correction prefill", async () => {
     mockPostFindFirst.mockResolvedValue({
       id: "ckc7k5qsj0000u0t8qv6d1d7k",

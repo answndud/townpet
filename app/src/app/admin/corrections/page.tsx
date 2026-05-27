@@ -24,7 +24,12 @@ export const metadata = createNoIndexPageMetadata({
 });
 
 type AdminCorrectionRequestsPageProps = {
-  searchParams?: Promise<{ status?: string; q?: string; updated?: string }>;
+  searchParams?: Promise<{
+    status?: string;
+    q?: string;
+    operatorOnly?: string;
+    updated?: string;
+  }>;
 };
 
 const statusLabels: Record<CorrectionRequestStatus, string> = {
@@ -72,11 +77,13 @@ export default async function AdminCorrectionRequestsPage({
   const params = (await searchParams) ?? {};
   const status = isCorrectionRequestStatus(params.status) ? params.status : "ALL";
   const query = params.q?.trim() ?? "";
+  const operatorOnly = params.operatorOnly === "1";
 
   const [requests, reportStats, correctionSummary] = await Promise.all([
     listInformationCorrectionRequests({
       status,
       query: query || null,
+      operatorOnly,
       limit: 100,
     }),
     getReportStats(7),
@@ -88,6 +95,21 @@ export default async function AdminCorrectionRequestsPage({
     nextParams.set("status", nextStatus);
     if (query) {
       nextParams.set("q", query);
+    }
+    if (operatorOnly) {
+      nextParams.set("operatorOnly", "1");
+    }
+    return `/admin/corrections?${nextParams.toString()}`;
+  };
+
+  const buildOperatorOnlyHref = (nextOperatorOnly: boolean) => {
+    const nextParams = new URLSearchParams();
+    nextParams.set("status", status);
+    if (query) {
+      nextParams.set("q", query);
+    }
+    if (nextOperatorOnly) {
+      nextParams.set("operatorOnly", "1");
     }
     return `/admin/corrections?${nextParams.toString()}`;
   };
@@ -113,6 +135,7 @@ export default async function AdminCorrectionRequestsPage({
         <section className="tp-card flex flex-col gap-3 p-4 text-xs text-[#4f678d]">
           <form className="flex flex-wrap items-center gap-2" action="">
             <input type="hidden" name="status" value={status} />
+            {operatorOnly ? <input type="hidden" name="operatorOnly" value="1" /> : null}
             <input
               name="q"
               defaultValue={query}
@@ -146,6 +169,16 @@ export default async function AdminCorrectionRequestsPage({
                 {value === "ALL" ? "전체" : statusLabels[value as CorrectionRequestStatus]}
               </Link>
             ))}
+            <Link
+              href={buildOperatorOnlyHref(!operatorOnly)}
+              className={`rounded-lg border px-2.5 py-1 transition ${
+                operatorOnly
+                  ? "border-[#3567b5] bg-[#3567b5] text-white"
+                  : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
+              }`}
+            >
+              운영자 콘텐츠만
+            </Link>
           </div>
         </section>
 
@@ -177,98 +210,116 @@ export default async function AdminCorrectionRequestsPage({
                   </tr>
                 </thead>
                 <tbody>
-                  {requests.map((request) => (
-                    <tr key={request.id} className="align-top border-b border-[#e6edf8]">
-                      <td className="py-3 pr-4">
-                        <div className="font-semibold text-[#163462]">{request.targetName}</div>
-                        <div className="mt-1 text-[11px] text-[#5a7398]">
-                          {targetTypeLabels[request.targetType]} · {statusLabels[request.status]}
-                        </div>
-                        {request.post ? (
-                          <div className="mt-2 grid gap-1.5">
-                            {request.post.isOperatorContent ? (
-                              <div className="rounded-lg border border-[#d7e2f2] bg-[#f8fbff] px-2 py-1.5 text-[11px] leading-5 text-[#526d96]">
-                                <span className="font-semibold text-[#315b9a]">운영자 정리 글 제보</span>
-                                {request.post.operatorSourceName ? (
-                                  <span> · {request.post.operatorSourceName}</span>
-                                ) : null}
-                                {formatOperatorVerifiedDate(request.post.operatorLastVerifiedAt) ? (
-                                  <span>
-                                    {" "}
-                                    · 확인 {formatOperatorVerifiedDate(request.post.operatorLastVerifiedAt)}
-                                  </span>
-                                ) : null}
-                              </div>
-                            ) : null}
-                            <Link href={`/posts/${request.post.id}`} className="inline-flex text-[#3567b5]">
-                              연결 글 보기
-                            </Link>
+                  {requests.map((request) => {
+                    const isOperatorLinked = Boolean(request.post?.isOperatorContent);
+                    const verifiedDate = formatOperatorVerifiedDate(
+                      request.post?.operatorLastVerifiedAt ?? null,
+                    );
+
+                    return (
+                      <tr key={request.id} className="align-top border-b border-[#e6edf8]">
+                        <td className="py-3 pr-4">
+                          <div className="font-semibold text-[#163462]">{request.targetName}</div>
+                          <div className="mt-1 text-[11px] text-[#5a7398]">
+                            {targetTypeLabels[request.targetType]} · {statusLabels[request.status]}
                           </div>
-                        ) : null}
-                      </td>
-                      <td className="py-3 pr-4">
-                        <div className="font-semibold text-[#1f3f71]">{request.requesterName}</div>
-                        <div className="mt-1 text-[#5a7398]">{request.requesterEmail}</div>
-                        <div className="mt-1 text-[#5a7398]">
-                          {requesterRoleLabels[request.requesterRole]}
-                          {request.organizationName ? ` · ${request.organizationName}` : ""}
-                        </div>
-                        {request.requesterPhone ? (
-                          <div className="mt-1 text-[#5a7398]">{request.requesterPhone}</div>
-                        ) : null}
-                      </td>
-                      <td className="max-w-md py-3 pr-4">
-                        <p className="whitespace-pre-wrap text-[#355988]">{request.requestedChange}</p>
-                        {request.evidenceUrl ? (
-                          <a
-                            href={request.evidenceUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="mt-2 inline-flex text-[#3567b5]"
-                          >
-                            근거 URL 열기
-                          </a>
-                        ) : null}
-                      </td>
-                      <td className="w-[260px] py-3 pr-4">
-                        <form action={updateCorrectionRequestAction} className="grid gap-2">
-                          <input type="hidden" name="requestId" value={request.id} />
-                          <select
-                            name="status"
-                            defaultValue={request.status}
-                            className="tp-input-soft bg-white px-2.5 py-2 text-xs"
-                          >
-                            {Object.values(CorrectionRequestStatus).map((value) => (
-                              <option key={value} value={value}>
-                                {statusLabels[value]}
-                              </option>
-                            ))}
-                          </select>
-                          <textarea
-                            name="resolution"
-                            defaultValue={request.resolution ?? ""}
-                            placeholder="처리 메모"
-                            className="tp-input-soft min-h-20 bg-white px-2.5 py-2 text-xs leading-5"
-                            maxLength={1000}
-                          />
-                          <button type="submit" className="tp-btn-soft min-h-9 px-3 text-xs font-semibold">
-                            처리 저장
-                          </button>
-                        </form>
-                      </td>
-                      <td className="py-3 text-[#5a7398]">
-                        <div>{request.createdAt.toLocaleString("ko-KR")}</div>
-                        {request.resolver ? (
-                          <div className="mt-2">
-                            처리자: {request.resolver.nickname ?? request.resolver.email}
+                          {request.post ? (
+                            <div className="mt-2 grid gap-2">
+                              {isOperatorLinked ? (
+                                <div className="grid gap-2 border-t border-[#dbe6f6] pt-2 text-[11px] leading-5 text-[#526d96]">
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <span className="rounded-full border border-[#c9d8ee] bg-[#f8fbff] px-2 py-0.5 font-semibold text-[#315b9a]">
+                                      운영자 정리 글 제보
+                                    </span>
+                                    <span>{request.post.operatorSourceName ?? "출처 미기록"}</span>
+                                    <span>확인 {verifiedDate ?? "미기록"}</span>
+                                  </div>
+                                  <dl className="grid gap-1 text-[11px] text-[#5a7398]">
+                                    <div className="flex gap-2">
+                                      <dt className="shrink-0 font-semibold text-[#315b9a]">확인</dt>
+                                      <dd>공식 출처와 요청 근거를 먼저 대조합니다.</dd>
+                                    </div>
+                                    <div className="flex gap-2">
+                                      <dt className="shrink-0 font-semibold text-[#315b9a]">기록</dt>
+                                      <dd>수정 여부, 반영 위치, 기각 사유를 처리 메모에 남깁니다.</dd>
+                                    </div>
+                                  </dl>
+                                </div>
+                              ) : null}
+                              <Link href={`/posts/${request.post.id}`} className="inline-flex text-[#3567b5]">
+                                연결 글 보기
+                              </Link>
+                            </div>
+                          ) : null}
+                        </td>
+                        <td className="py-3 pr-4">
+                          <div className="font-semibold text-[#1f3f71]">{request.requesterName}</div>
+                          <div className="mt-1 text-[#5a7398]">{request.requesterEmail}</div>
+                          <div className="mt-1 text-[#5a7398]">
+                            {requesterRoleLabels[request.requesterRole]}
+                            {request.organizationName ? ` · ${request.organizationName}` : ""}
                           </div>
-                        ) : null}
-                        {request.resolvedAt ? (
-                          <div className="mt-1">{request.resolvedAt.toLocaleString("ko-KR")}</div>
-                        ) : null}
-                      </td>
-                    </tr>
-                  ))}
+                          {request.requesterPhone ? (
+                            <div className="mt-1 text-[#5a7398]">{request.requesterPhone}</div>
+                          ) : null}
+                        </td>
+                        <td className="max-w-md py-3 pr-4">
+                          <p className="whitespace-pre-wrap text-[#355988]">{request.requestedChange}</p>
+                          {request.evidenceUrl ? (
+                            <a
+                              href={request.evidenceUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="mt-2 inline-flex text-[#3567b5]"
+                            >
+                              근거 URL 열기
+                            </a>
+                          ) : null}
+                        </td>
+                        <td className="w-[260px] py-3 pr-4">
+                          <form action={updateCorrectionRequestAction} className="grid gap-2">
+                            <input type="hidden" name="requestId" value={request.id} />
+                            <select
+                              name="status"
+                              defaultValue={request.status}
+                              className="tp-input-soft bg-white px-2.5 py-2 text-xs"
+                            >
+                              {Object.values(CorrectionRequestStatus).map((value) => (
+                                <option key={value} value={value}>
+                                  {statusLabels[value]}
+                                </option>
+                              ))}
+                            </select>
+                            <textarea
+                              name="resolution"
+                              defaultValue={request.resolution ?? ""}
+                              placeholder={
+                                isOperatorLinked
+                                  ? "출처 확인, 반영 내용, 기각 사유를 남겨 주세요."
+                                  : "처리 메모"
+                              }
+                              className="tp-input-soft min-h-20 bg-white px-2.5 py-2 text-xs leading-5"
+                              maxLength={1000}
+                            />
+                            <button type="submit" className="tp-btn-soft min-h-9 px-3 text-xs font-semibold">
+                              처리 저장
+                            </button>
+                          </form>
+                        </td>
+                        <td className="py-3 text-[#5a7398]">
+                          <div>{request.createdAt.toLocaleString("ko-KR")}</div>
+                          {request.resolver ? (
+                            <div className="mt-2">
+                              처리자: {request.resolver.nickname ?? request.resolver.email}
+                            </div>
+                          ) : null}
+                          {request.resolvedAt ? (
+                            <div className="mt-1">{request.resolvedAt.toLocaleString("ko-KR")}</div>
+                          ) : null}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

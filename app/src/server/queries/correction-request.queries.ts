@@ -10,12 +10,14 @@ export const CORRECTION_REQUEST_LIST_LIMIT_MAX = 200;
 type ListCorrectionRequestOptions = {
   status?: CorrectionRequestStatus | "ALL" | null;
   query?: string | null;
+  operatorOnly?: boolean;
   limit?: number;
 };
 
 export async function listInformationCorrectionRequests({
   status,
   query,
+  operatorOnly = false,
   limit,
 }: ListCorrectionRequestOptions = {}) {
   const trimmedQuery = query?.trim();
@@ -26,6 +28,7 @@ export async function listInformationCorrectionRequests({
 
   const where: Prisma.InformationCorrectionRequestWhereInput = {
     ...(status && status !== "ALL" ? { status } : {}),
+    ...(operatorOnly ? { post: { isOperatorContent: true } } : {}),
     ...(trimmedQuery
       ? {
           OR: [
