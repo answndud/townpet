@@ -7246,3 +7246,27 @@
 - 결과:
   - active 계획과 progress 상태가 일치한다.
   - 이번 세션의 코드/운영/검증 작업은 완료 archive에 남아 있다.
+
+### 2026-05-27 | 블로그 문서화 최신화 점검
+- 완료일: `2026-05-27`
+- 배경:
+  - 블로그 시리즈는 `29-성능개선-측정과-최적화-기록.md`까지 작성되어 있었지만, 이번 세션에서 완료한 production cleanup, detail visual smoke, auth/local guest gate, docs-quality 복구, active plan closure가 블로그 흐름에는 아직 연결되어 있지 않았다.
+  - `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`는 active 작업 상태의 source of truth이고, `blog/`는 운영 판단과 재현 가능한 개발 흐름을 설명하는 공개용 서사로 분리해야 했다.
+- 변경내용:
+  - `blog/30-운영-검증-문서화-루프.md`를 추가해 운영 검증 완료 기준을 정리했다.
+  - 새 글에 `audit -> dry-run -> apply -> post-audit`, public/auth-local detail visual smoke 분리, `ops:check:detail-visual`, docs-quality 누락 복구, active plan closure의 역할을 기록했다.
+  - `blog/README.md`와 `blog/00_시리즈_계획.md`에 30번 글을 공개 순서와 읽는 순서에 추가했다.
+  - `blog/19-테스트와-품질게이트-전략.md`, `blog/25-ci-배포-파이프라인-과설계-회고.md`에서 30번 글을 후속 운영 증거 루프로 연결했다.
+- 코드문서:
+  - [blog/30-운영-검증-문서화-루프.md](../blog/30-운영-검증-문서화-루프.md)
+  - [blog/README.md](../blog/README.md)
+  - [blog/00_시리즈_계획.md](../blog/00_시리즈_계획.md)
+  - [blog/19-테스트와-품질게이트-전략.md](../blog/19-테스트와-품질게이트-전략.md)
+  - [blog/25-ci-배포-파이프라인-과설계-회고.md](../blog/25-ci-배포-파이프라인-과설계-회고.md)
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app docs:refresh`
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `git diff --check`
+- 결과:
+  - 이번 세션의 운영/검증 작업은 app active 문서와 블로그 시리즈 양쪽에 역할에 맞게 남는다.
+  - active plan은 계속 `현재 active 작업 없음` 상태로 유지한다.
