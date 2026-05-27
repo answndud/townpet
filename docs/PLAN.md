@@ -18,5 +18,4 @@
 
 ## 다음 작업 후보
 
-- 다음 제품 개선 루프를 새 active phase로 승격하기 전, 현재 release-readiness 결과와 `docs/HANDOFF.md` 삭제 상태 처리 방침 확정
 - 다음 제품 개선 루프 후보 선정: operator content correction 처리 UX 개선, `CORRECTION_FLOW` admin ops rollup, 또는 authenticated admin queue smoke production credential 실행

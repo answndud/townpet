@@ -3,6 +3,7 @@
 ## 현재 상태
 
 - 현재 active 구현 항목 없음.
+- `2026-05-27. Handoff deletion state reconciliation`을 완료했다. 작업 시작 전부터 남아 있던 `docs/HANDOFF.md` 삭제 상태를 공식 반영했다. 해당 파일은 이미 실행 완료된 과거 인계 문서이며, 현재 재개 source of truth는 `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`로 유지한다. 문서 인덱스는 삭제 상태 기준으로 갱신했다.
 - `2026-05-27. Correction request acquisition event wiring`을 완료했다. `/corrections/new`는 `CORRECTION_FLOW_VIEWED`, `/api/corrections` 성공 접수는 서버 mutation 경계의 `CORRECTION_REQUEST_SUBMITTED`, receipt 다음 행동 CTA는 `CORRECTION_RECEIPT_CTA_CLICKED`로 연결했다. acquisition 기록 실패는 monitor만 남기고 정정 요청 성공/redirect를 막지 않는다. 기록은 [docs/reports/correction-acquisition-event-wiring-2026-05-27.md](./reports/correction-acquisition-event-wiring-2026-05-27.md)에 남겼다.
 - `2026-05-27. Authenticated admin queue smoke 자동화`를 완료했다. `ops:check:admin-queue-smoke` script를 추가해 admin credential 로그인 후 `/admin/reports`, `/admin/corrections`의 `신고 큐`/`정정 큐` summary와 page-specific surface, overflow를 read-only로 확인하게 했다. `ADMIN_QUEUE_SMOKE_EMAIL/PASSWORD`가 없으면 명확히 BLOCKED로 실패한다. 로컬에는 credential이 없어 실제 production authenticated smoke는 BLOCKED로 기록했고, targeted test/lint/typecheck와 전체 `quality:check`는 PASS했다. 운영 문서에는 실행 조건과 PASS/BLOCKED/NO-GO 기준을 연결했다.
 - `2026-05-27. PR #12 merge 후 production smoke`를 완료했다. PR #12는 `main`에 squash merge되어 merge commit `7cbd7527`가 되었고, `docs-quality`, `quality-gate`, Vercel production deployment가 모두 PASS했다. production alias `https://townpet.vercel.app` 기준 health는 200 / `payload.status: ok`, `/`, `/feed/guest`, `/corrections/new`는 200이었다. `ops:check:operator-content-public`은 운영자 글 9건과 feed/detail/search/home preview 경로 PASS였고, `ops:check:public-detail-visual`은 `FREE_BOARD`, `WALK_ROUTE`, `LOST_FOUND`, `MARKET_LISTING` desktop/mobile PASS였다. `HOSPITAL_REVIEW`, `CARE_REQUEST`는 public feed item 부재로 BLOCKED이며, `/admin/corrections`, `/admin/reports`는 비인증 curl에서 404로 보호되어 authenticated admin smoke는 별도 세션/계정이 필요하다.
@@ -20,7 +21,7 @@
 - Phase 2 상세 auxiliary surface audit을 완료했다. auth/local 상세는 기존 compact divider 기준이 유지됐고, guest public 상세의 board별 보조 정보 셀과 신고 wrapper에 legacy bordered mini-cell/nested panel이 남아 있어 [app/src/app/posts/[id]/guest/page.tsx](../app/src/app/posts/[id]/guest/page.tsx)를 divider row 기준으로 낮췄다. 회귀 방지 테스트 [app/src/app/posts/[id]/guest/page-layout.test.ts](../app/src/app/posts/[id]/guest/page-layout.test.ts)를 추가했다.
 - Phase 0~2 통합 기록은 [docs/reports/operations-evidence-loop-phase-0-2-2026-05-27.md](./reports/operations-evidence-loop-phase-0-2-2026-05-27.md)에 남겼다.
 - 다음 세션 인계를 위해 [PLAN.md](./PLAN.md)에 `다음 세션 실행 계획 | 운영 증거 기반 다음 개선 루프`를 추가했다. Phase 0 세션 재개 체크포인트부터 Phase 4 실제 사용자-facing 제품 개발 항목 재선정까지 순차 진행한다.
-- 세션 삭제/이동용 인계 문서는 [HANDOFF.md](./HANDOFF.md)에 남긴다.
+- 과거 세션 삭제/이동용 인계 문서는 실행 완료 후 제거 대상으로 전환했다. 현재 재개 기준은 [PLAN.md](./PLAN.md), [PROGRESS.md](./PROGRESS.md), [COMPLETED.md](./COMPLETED.md)다.
 - `2026-05-27. 블로그 문서화 최신화 점검`을 완료했다. 블로그 시리즈가 `29`번 성능 개선 글에서 멈춰 있어, 이번 세션의 production cleanup, detail visual smoke, auth/local guest gate, docs-quality 복구, active plan closure를 `blog/30-운영-검증-문서화-루프.md`로 정리하고 목차/시리즈 계획/관련 글 링크를 갱신했다.
 - `2026-05-27. active 계획 종료 및 세션 문서화 점검`을 완료했다. `마케팅 피드백 기반 제품 획득 루프 재정렬`은 완료 archive로 정리했고, 이번 세션의 legacy upload cleanup, auth/local smoke 확장, docs-quality 복구, post-deploy visual smoke 체크리스트, detail visual smoke run 기록이 [COMPLETED.md](./COMPLETED.md)에 남아 있음을 확인했다.
 - `2026-05-27. 최신 배포 detail visual smoke 절차 검증`을 완료했다. 최신 배포 `bbf3703` 기준 `ops:check:detail-visual` 전체 실행이 PASS했고, health/public detail/auth-local detail report와 screenshot을 남겼다.
@@ -125,8 +126,7 @@
 ## 다음 액션
 
 - 현재 active 구현 항목 없음.
-- 다음 작업은 `docs/HANDOFF.md` 삭제 상태 처리 방침 확정 후, operator content correction 처리 UX 개선, `CORRECTION_FLOW` admin ops rollup, 또는 authenticated admin queue smoke production credential 실행 중 하나를 새 active phase로 승격하는 것이다.
-- `docs/HANDOFF.md` 삭제 상태는 이번 작업 시작 전부터 존재한 unrelated dirty change라 되돌리지 않았고 stage에서도 제외했다. 포함/복구 여부는 별도 지시가 필요하다.
+- 다음 작업은 operator content correction 처리 UX 개선, `CORRECTION_FLOW` admin ops rollup, 또는 authenticated admin queue smoke production credential 실행 중 하나를 새 active phase로 승격하는 것이다.
 - legacy upload cleanup 승인 대기 항목은 완료됐다. production 사후 audit 기준 `/media/media/uploads/` 후보는 0건이다.
 - 시작페이지 추가 개선 후보:
   - production demo content cleanup은 완료됐다. 추가 cleanup은 새 read-only audit와 별도 승인 없이는 실행하지 않는다.
