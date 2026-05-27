@@ -40,6 +40,7 @@ export type LegacyUploadPathCleanupPreview = {
   replacements: LegacyUploadPathReplacement[];
   beforeSnippet: string;
   afterSnippet: string;
+  updatedContent: string;
 };
 
 export type LegacyUploadPathCleanupDryRunResult = {
@@ -89,10 +90,8 @@ function countOccurrences(values: string[]) {
   return counts;
 }
 
-export function buildLegacyUploadPathCleanupPreview(
-  post: CandidatePost,
-): LegacyUploadPathCleanupPreview | null {
-  const matches = post.content.match(LEGACY_UPLOAD_URL_REGEX) ?? [];
+export function buildLegacyUploadPathReplacementPlan(content: string) {
+  const matches = content.match(LEGACY_UPLOAD_URL_REGEX) ?? [];
   if (matches.length === 0) {
     return null;
   }
@@ -110,25 +109,40 @@ export function buildLegacyUploadPathCleanupPreview(
     return null;
   }
 
-  let nextContent = post.content;
+  let updatedContent = content;
   for (const [before, after] of replacementsByBefore.entries()) {
-    nextContent = nextContent.split(before).join(after);
+    updatedContent = updatedContent.split(before).join(after);
   }
 
   const matchCounts = countOccurrences(matches);
+  return {
+    updatedContent,
+    replacements: Array.from(replacementsByBefore.entries()).map(([before, after]) => ({
+      before,
+      after,
+      occurrences: matchCounts.get(before) ?? 0,
+    })),
+  };
+}
+
+export function buildLegacyUploadPathCleanupPreview(
+  post: CandidatePost,
+): LegacyUploadPathCleanupPreview | null {
+  const plan = buildLegacyUploadPathReplacementPlan(post.content);
+  if (!plan) {
+    return null;
+  }
+
   return {
     postId: post.id,
     title: post.title,
     status: post.status,
     type: post.type,
     scope: post.scope,
-    replacements: Array.from(replacementsByBefore.entries()).map(([before, after]) => ({
-      before,
-      after,
-      occurrences: matchCounts.get(before) ?? 0,
-    })),
+    replacements: plan.replacements,
     beforeSnippet: truncate(post.content),
-    afterSnippet: truncate(nextContent),
+    afterSnippet: truncate(plan.updatedContent),
+    updatedContent: plan.updatedContent,
   };
 }
 

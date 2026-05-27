@@ -7112,3 +7112,43 @@
 - 결과:
   - production 데이터 변경은 하지 않았다.
   - production apply는 별도 승인 전까지 진행하지 않는다.
+
+### 2026-05-27 | production legacy upload path cleanup apply
+- 완료일: `2026-05-27`
+- 배경:
+  - production dry-run에서 `Post.content` 1건에 `/media/media/uploads/` legacy double-proxy path가 남아 있음을 확인했다.
+  - 사용자 승인 후 dry-run에서 preview된 동일 대상만 실제 mutation으로 정리했다.
+- 변경내용:
+  - `db:cleanup:legacy-upload-paths:apply` 스크립트를 추가했다.
+  - apply script는 non-local DB에서 `LEGACY_UPLOAD_PATH_CLEANUP_APPLY_CONFIRM=APPLY_LEGACY_UPLOAD_PATH_CLEANUP` 확인값을 요구한다.
+  - update는 `id + original content` optimistic guard로 실행해, dry-run 이후 본문이 바뀐 글은 `SKIPPED_STALE`로 남기도록 했다.
+  - `/tmp/townpet-legacy-upload-cleanup-apply`에 Vercel production env를 임시로 pull했고, 실행 후 삭제했다.
+- 코드문서:
+  - [app/scripts/apply-legacy-upload-path-cleanup.ts](../app/scripts/apply-legacy-upload-path-cleanup.ts)
+  - [app/scripts/apply-legacy-upload-path-cleanup.test.ts](../app/scripts/apply-legacy-upload-path-cleanup.test.ts)
+  - [app/scripts/dry-run-legacy-upload-path-cleanup.ts](../app/scripts/dry-run-legacy-upload-path-cleanup.ts)
+  - [app/scripts/dry-run-legacy-upload-path-cleanup.test.ts](../app/scripts/dry-run-legacy-upload-path-cleanup.test.ts)
+  - [app/package.json](../app/package.json)
+  - [docs/reports/legacy-upload-path-cleanup-apply-production-2026-05-27.md](./reports/legacy-upload-path-cleanup-apply-production-2026-05-27.md)
+  - [docs/reports/legacy-upload-path-audit-post-cleanup-production-2026-05-27.md](./reports/legacy-upload-path-audit-post-cleanup-production-2026-05-27.md)
+- production 적용 결과:
+  - candidateCount: 1.
+  - plannedCount: 1.
+  - updatedCount: 1.
+  - skippedStaleCount: 0.
+  - 대상 post: `cmm0kczw9000211jw0td3wf71`, title `이미지 업로드 테스트`.
+  - before: `/media/media/uploads/1771935012347-5511bddc-bdf9-49cf-9e55-3fae218fd8fb.jpg`
+  - after: `/media/uploads/1771935012347-5511bddc-bdf9-49cf-9e55-3fae218fd8fb.jpg`
+- 사후 audit:
+  - `Post.content`: 0건.
+  - `PostImage.url`: 0건.
+  - `Comment.content`: 0건.
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- scripts/dry-run-legacy-upload-path-cleanup.test.ts scripts/apply-legacy-upload-path-cleanup.test.ts scripts/audit-legacy-upload-paths.test.ts src/lib/upload-url.test.ts`
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app lint -- scripts/dry-run-legacy-upload-path-cleanup.ts scripts/dry-run-legacy-upload-path-cleanup.test.ts scripts/apply-legacy-upload-path-cleanup.ts scripts/apply-legacy-upload-path-cleanup.test.ts`
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+  - `LEGACY_UPLOAD_PATH_CLEANUP_APPLY_CONFIRM=APPLY_LEGACY_UPLOAD_PATH_CLEANUP LEGACY_UPLOAD_PATH_CLEANUP_APPLY_LIMIT=50 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app db:cleanup:legacy-upload-paths:apply`
+  - `LEGACY_UPLOAD_PATH_AUDIT_CONFIRM=LEGACY_UPLOAD_PATH_AUDIT LEGACY_UPLOAD_PATH_AUDIT_LIMIT=50 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app db:audit:legacy-upload-paths`
+- 결과:
+  - production legacy double-proxy upload path 후보는 0건으로 정리됐다.
+  - 이후 같은 패턴이 다시 저장되지 않도록 `P2-12 upload URL canonicalization` 방어와 audit/apply scripts를 유지한다.

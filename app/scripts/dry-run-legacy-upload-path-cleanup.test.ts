@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  buildLegacyUploadPathReplacementPlan,
   buildLegacyUploadPathCleanupPreview,
   formatLegacyUploadPathCleanupDryRunReport,
   normalizeLegacyUploadPathCleanupLimit,
@@ -52,6 +53,21 @@ describe("legacy upload path cleanup dry-run", () => {
     expect(content).toContain("/media/media/uploads/legacy.webp");
   });
 
+  it("builds the updated content used by apply scripts", () => {
+    const plan = buildLegacyUploadPathReplacementPlan(
+      "![첨부](/media/media/uploads/legacy.webp)",
+    );
+
+    expect(plan?.updatedContent).toBe("![첨부](/media/uploads/legacy.webp)");
+    expect(plan?.replacements).toEqual([
+      {
+        before: "/media/media/uploads/legacy.webp",
+        after: "/media/uploads/legacy.webp",
+        occurrences: 1,
+      },
+    ]);
+  });
+
   it("ignores rows that cannot be converted to a trusted upload proxy path", () => {
     const preview = buildLegacyUploadPathCleanupPreview({
       ...basePost,
@@ -85,6 +101,7 @@ describe("legacy upload path cleanup dry-run", () => {
           ],
           beforeSnippet: "![첨부](/media/media/uploads/legacy.webp)",
           afterSnippet: "![첨부](/media/uploads/legacy.webp)",
+          updatedContent: "![첨부](/media/uploads/legacy.webp)",
         },
       ],
     });

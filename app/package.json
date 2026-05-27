@@ -56,6 +56,7 @@
     "db:audit:demo-content": "tsx scripts/audit-demo-content-candidates.ts",
     "db:audit:legacy-upload-paths": "tsx scripts/audit-legacy-upload-paths.ts",
     "db:cleanup:legacy-upload-paths:dry-run": "tsx scripts/dry-run-legacy-upload-path-cleanup.ts",
+    "db:cleanup:legacy-upload-paths:apply": "tsx scripts/apply-legacy-upload-path-cleanup.ts",
     "docs:refresh": "node ../scripts/refresh-docs-index.mjs",
     "docs:refresh:check": "node ../scripts/refresh-docs-index.mjs --check",
     "copy:audit": "tsx scripts/audit-ui-copy.ts",

@@ -13,33 +13,6 @@
 
 ## Active
 
-### Production legacy upload path cleanup 준비
-
-- 상태: `apply_blocked_until_approval`
-- 배경:
-  - `2026-05-27` production read-only audit에서 `/media/media/uploads/` legacy double-proxy path 후보가 `Post.content` 1건으로 확인됐다.
-  - 대상 post: `cmm0kczw9000211jw0td3wf71`, title `이미지 업로드 테스트`, status/type/scope `ACTIVE/FREE_BOARD/GLOBAL`.
-  - `PostImage.url`, `Comment.content` 후보는 0건이다.
-- 원칙:
-  - production 데이터 변경은 audit 명령에서 하지 않는다.
-  - cleanup은 별도 dry-run report와 명시 승인 후에만 실행한다.
-  - 대상이 1건이라도 게시글 본문 mutation이므로, 자동 수정 전에 원본/변환 후 preview를 문서에 남긴다.
-- 다음 단계:
-  - cleanup dry-run script와 production dry-run report는 작성 완료됐다.
-  - dry-run output에 `postId`, 변경 전 path, 변경 후 path, 본문 diff 요약을 남겼다.
-  - dry-run 결과를 확인한 뒤 production apply 여부를 별도로 결정한다.
-- dry-run 결과:
-  - report: [legacy-upload-path-cleanup-dry-run-production-2026-05-27.md](./reports/legacy-upload-path-cleanup-dry-run-production-2026-05-27.md)
-  - before: `/media/media/uploads/1771935012347-5511bddc-bdf9-49cf-9e55-3fae218fd8fb.jpg`
-  - after: `/media/uploads/1771935012347-5511bddc-bdf9-49cf-9e55-3fae218fd8fb.jpg`
-- 하지 않을 것:
-  - 승인 없이 production `Post.content`를 update하지 않는다.
-  - `PostImage`나 댓글 cleanup을 같이 묶지 않는다. 이번 audit에서는 후보가 0건이다.
-- 검증:
-  - cleanup dry-run script unit test
-  - production dry-run report
-  - apply 승인 시 `quality:check`, `ops:check:health`, affected post detail smoke
-
 ### 마케팅 피드백 기반 제품 획득 루프 재정렬
 
 - 상태: `in_progress`
