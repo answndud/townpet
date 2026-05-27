@@ -1,6 +1,6 @@
 # 배포 전 On-demand 체크
 
-기준일: 2026-05-14
+기준일: 2026-05-27
 
 ## 목적
 
@@ -8,14 +8,14 @@
 기본 순서는 아래다.
 
 ```text
-quality:check -> 필요한 e2e -> 배포 -> ops health
+quality:check -> 필요한 e2e -> 배포 -> ops health -> 필요한 post-deploy visual smoke
 ```
 
 ## 기본 판정
 
 - `PASS`: `quality:check` 통과, 변경 범위에 맞는 e2e 통과, 배포 후 health 통과
 - `CONDITIONAL`: `quality:check` 통과, e2e는 변경 범위상 생략 가능, 배포 후 health 통과
-- `NO-GO`: `quality:check` 실패, 관련 e2e 실패, 또는 배포 후 health 실패
+- `NO-GO`: `quality:check` 실패, 관련 e2e 실패, 배포 후 health 실패, 또는 필수 post-deploy visual smoke 실패
 
 ## 1. 배포 전 기본 품질
 
@@ -47,6 +47,7 @@ corepack pnpm@9.12.3 -C app quality:check
 | feed/search/write/comment/report/admin policy | `corepack pnpm@9.12.3 -C app test:e2e:hotpath` | 기능 hotpath |
 | auth/session/social link/profile account | `ENABLE_SOCIAL_DEV_LOGIN=1 PLAYWRIGHT_BASE_URL=http://localhost:3000 corepack pnpm@9.12.3 -C app test:e2e:auth` | 인증 hardening |
 | UI/touch target/layout | 아래 visual smoke 직접 실행 | 모바일/overflow |
+| post detail/comment/feed item 권한 또는 visual 변경 | 배포 후 `ops:check:detail-visual` | production 상세 화면군 |
 | care request/care feedback 상태 흐름 | `PLAYWRIGHT_BASE_URL=http://localhost:3000 corepack pnpm@9.12.3 -C app exec playwright test e2e/care-request-flow.spec.ts --project=chromium --workers=1` | 돌봄 hotpath |
 | OAuth provider/redirect/env | GitHub Actions `oauth-real-e2e` 수동 실행 | 실제 공급자/secrets 필요 |
 | 단순 문서 변경 | e2e 생략 가능 | `quality:check`와 docs check만 확인 |
@@ -129,7 +130,44 @@ OPS_BASE_URL=https://townpet.vercel.app OPS_HEALTH_INTERNAL_TOKEN=<HEALTH_INTERN
 - `/api/health` 응답, DB 연결, Redis/cache/rate-limit 상태를 먼저 확인한다.
 - 필요하면 [장애 대응 런북.md](./장애%20대응%20런북.md)으로 넘어간다.
 
-## 6. 완료 기록
+## 6. 배포 후 상세 visual smoke
+
+아래 변경이 포함되면 health 통과 후 `ops:check:detail-visual`을 실행한다.
+
+- 게시글 상세, 댓글, 신고, 반응, 미디어 갤러리, 공유 패널 UI
+- 피드 item layout이나 상세 진입 URL
+- `HOSPITAL_REVIEW`, `CARE_REQUEST`처럼 guest/public smoke로 열 수 없는 권한형 상세
+- mobile overflow, touch target, nested surface를 줄인 visual density 변경
+
+production DB fixture upsert가 가능한 운영 컨텍스트에서는 전체 실행을 기본으로 한다.
+
+```bash
+OPS_BASE_URL=https://townpet.vercel.app \
+AUTH_LOCAL_DETAIL_SMOKE_CONFIRM=PUBLISH_AUTH_LOCAL_DETAIL_SMOKE_FIXTURES \
+corepack pnpm@9.12.3 -C app ops:check:detail-visual
+```
+
+DB upsert 권한이 없거나 public 상세만 빠르게 확인할 때는 auth/local 단계를 명시적으로 건너뛴다.
+
+```bash
+OPS_BASE_URL=https://townpet.vercel.app \
+DETAIL_VISUAL_SMOKE_SKIP_AUTH_LOCAL=1 \
+corepack pnpm@9.12.3 -C app ops:check:detail-visual
+```
+
+판정 기준:
+
+- `PASS`: health, public detail visual, 필요한 경우 auth/local detail visual 모두 PASS
+- `CONDITIONAL`: auth/local DB upsert 권한이 없어 `DETAIL_VISUAL_SMOKE_SKIP_AUTH_LOCAL=1`로 public detail만 확인했고, 변경 범위가 권한형 상세를 건드리지 않음
+- `NO-GO`: health 또는 어떤 detail visual smoke라도 FAIL. `BLOCKED`는 실제 public target 부재인지 정책상 정상 차단인지 report에서 확인하고, 권한형 상세 변경이면 auth/local smoke 없이 완료하지 않는다.
+
+report 위치:
+
+- 통합 report: `docs/reports/detail-visual-smoke-*.md`
+- public 상세 screenshot: `docs/reports/public-detail-visual-smoke-*/`
+- auth/local 상세 screenshot: `docs/reports/auth-local-detail-visual-smoke-*/`
+
+## 7. 완료 기록
 
 배포 전후 체크를 완료하면 아래만 기록한다.
 
@@ -138,6 +176,7 @@ OPS_BASE_URL=https://townpet.vercel.app OPS_HEALTH_INTERNAL_TOKEN=<HEALTH_INTERN
 - 생략한 e2e와 생략 사유
 - 배포 URL 또는 Vercel deployment id
 - 배포 후 health 결과
+- 실행한 post-deploy visual smoke와 report path 또는 생략 사유
 
 세부 로그 전체를 `docs/PLAN.md`나 `docs/PROGRESS.md`에 붙이지 않는다.
 현재 작업 완료 상세는 `docs/COMPLETED.md`에만 남긴다.

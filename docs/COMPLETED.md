@@ -7182,3 +7182,23 @@
 - 결과:
   - 정책형 상세 화면은 “guest 차단”과 “정상 컨텍스트 접근”을 한 번에 회귀 검증할 수 있게 됐다.
   - `HOSPITAL_REVIEW`와 `CARE_REQUEST`의 public guest 정책 자체는 변경하지 않았다.
+
+### 2026-05-27 | post-deploy detail visual smoke 체크리스트 연결
+- 완료일: `2026-05-27`
+- 배경:
+  - `ops:check:detail-visual` runner는 health, public detail visual, auth/local detail visual을 묶어 실행할 수 있지만, 배포 전후 on-demand 체크리스트에는 health 이후 언제 필수로 실행해야 하는지 명확하지 않았다.
+  - 상세/댓글/피드 item/권한형 상세 UI 변경은 local `quality:check`만으로 production 정책 gate와 screenshot 회귀를 충분히 확인하기 어렵다.
+- 변경내용:
+  - [business/operations/배포전_on-demand_체크.md](../business/operations/배포전_on-demand_체크.md)에 post-deploy visual smoke 단계를 추가했다.
+  - 상세/댓글/신고/반응/미디어/공유/피드 item/권한형 상세/mobile density 변경 시 `ops:check:detail-visual`을 health 이후 실행하도록 명시했다.
+  - 전체 실행 명령과 `DETAIL_VISUAL_SMOKE_SKIP_AUTH_LOCAL=1` public-only 명령을 구분했다.
+  - PASS/CONDITIONAL/NO-GO 판정 기준과 report 저장 위치를 문서화했다.
+  - [business/operations/운영_문서_안내.md](../business/operations/운영_문서_안내.md)의 배포 흐름 설명도 같은 순서로 맞췄다.
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app docs:refresh`
+  - `node scripts/refresh-docs-index.mjs --check`
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- scripts/ops-doc-scripts-consistency.test.ts`
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app lint -- scripts/ops-doc-scripts-consistency.test.ts`
+- 결과:
+  - 배포 후 health만으로 끝내면 안 되는 UI/detail 변경 조건이 명확해졌다.
+  - 권한형 상세 변경은 auth/local smoke 없이 완료하지 않는 기준이 생겼다.
