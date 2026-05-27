@@ -11,7 +11,10 @@ import {
   shouldCloseCommentAuthorMenu,
 } from "@/components/posts/post-comment-thread";
 import {
+  POST_COMMENT_BEST_SECTION_CLASS_NAME,
+  POST_COMMENT_LATEST_HEADER_CLASS_NAME,
   POST_COMMENT_ROOT_COMPOSER_WRAPPER_CLASS_NAME,
+  POST_COMMENT_ROOT_LIST_CLASS_NAME,
   POST_COMMENT_THREAD_FOOTER_CLASS_NAME,
   POST_COMMENT_THREAD_REPLY_CARD_CLASS_NAME,
   POST_COMMENT_THREAD_ROOT_CARD_CLASS_NAME,
@@ -155,6 +158,9 @@ describe("PostCommentThread", () => {
     expect(html).toContain("원댓글로 가기");
     expect(html).toContain('aria-haspopup="menu"');
     expect(html).toContain("best-1닉네임");
+    expect(html).toContain(POST_COMMENT_BEST_SECTION_CLASS_NAME);
+    expect(html).toContain(POST_COMMENT_LATEST_HEADER_CLASS_NAME);
+    expect(html).toContain(POST_COMMENT_ROOT_LIST_CLASS_NAME);
     expect(html).toContain(POST_COMMENT_THREAD_FOOTER_CLASS_NAME);
     expect(html).toContain(POST_COMMENT_ROOT_COMPOSER_WRAPPER_CLASS_NAME);
     expect(html).toContain(POST_COMMENT_THREAD_ROOT_CARD_CLASS_NAME);

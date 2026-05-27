@@ -18,6 +18,12 @@ import {
   POST_COMMENT_INLINE_FORM_ROW_CLASS_NAME,
   POST_COMMENT_INLINE_FORM_SECTION_CLASS_NAME,
   POST_COMMENT_INLINE_FORM_TEXTAREA_CLASS_NAME,
+  POST_COMMENT_BEST_SECTION_CLASS_NAME,
+  POST_COMMENT_EMPTY_STATE_CLASS_NAME,
+  POST_COMMENT_LATEST_HEADER_CLASS_NAME,
+  POST_COMMENT_PENDING_PREVIEW_BODY_CLASS_NAME,
+  POST_COMMENT_PENDING_PREVIEW_CLASS_NAME,
+  POST_COMMENT_ROOT_LIST_CLASS_NAME,
   POST_COMMENT_ROOT_COMPOSER_WRAPPER_CLASS_NAME,
   POST_COMMENT_THREAD_AVATAR_CLASS_NAME,
   POST_COMMENT_THREAD_BODY_CLASS_NAME,
@@ -953,7 +959,7 @@ export function PostCommentThread({
       {pendingCommentPreview ? (
         <div
           data-testid="post-comment-pending"
-          className={`${COMMENT_BORDER_CLASS_NAME} mt-2 rounded-lg border bg-[#f7fbff] px-3 py-2`}
+          className={POST_COMMENT_PENDING_PREVIEW_CLASS_NAME}
           role="status"
           aria-live="polite"
         >
@@ -965,14 +971,14 @@ export function PostCommentThread({
               {pendingCommentPreview.parentId ? "답글 등록 중" : "댓글 등록 중"}
             </span>
           </div>
-          <div className="tp-text-primary mt-1 text-[13px] leading-6">
+          <div className={POST_COMMENT_PENDING_PREVIEW_BODY_CLASS_NAME}>
             <LinkifiedContent text={pendingCommentPreview.content} showYoutubeEmbeds={false} />
           </div>
         </div>
       ) : null}
 
       {hasBestComments ? (
-        <section className="mt-2.5">
+        <section className={POST_COMMENT_BEST_SECTION_CLASS_NAME}>
           <div className="flex items-center justify-between gap-2 px-1 pb-1">
             <h3 className="tp-text-heading text-[13px] font-semibold">베스트 댓글</h3>
             <span className="tp-text-label text-[10px]">좋아요 기준</span>
@@ -1001,7 +1007,7 @@ export function PostCommentThread({
       ) : null}
 
       {hasBestComments ? (
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+        <div className={POST_COMMENT_LATEST_HEADER_CLASS_NAME}>
           <h3 className="tp-text-heading text-[12px] font-semibold">최신 댓글</h3>
           {totalPages > 1 ? (
             <span className="tp-text-label text-[11px]">{currentPage} / {totalPages}</span>
@@ -1010,9 +1016,9 @@ export function PostCommentThread({
       ) : null}
 
       {roots.length === 0 ? (
-        <p className="tp-text-subtle mt-3 text-[13px]">댓글이 없습니다.</p>
+        <p className={POST_COMMENT_EMPTY_STATE_CLASS_NAME}>댓글이 없습니다.</p>
       ) : (
-        <div className={`mt-2.5 divide-y border-y bg-white sm:mt-3 ${COMMENT_BORDER_CLASS_NAME} ${COMMENT_DIVIDER_CLASS_NAME}`}>
+        <div className={`${POST_COMMENT_ROOT_LIST_CLASS_NAME} ${COMMENT_BORDER_CLASS_NAME} ${COMMENT_DIVIDER_CLASS_NAME}`}>
           {roots.map((comment) => renderComment(comment))}
         </div>
       )}
