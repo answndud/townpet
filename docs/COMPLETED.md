@@ -6851,3 +6851,8 @@
 - 결과:
   - production API steady-state 성능 회귀는 확인되지 않았다.
   - browser FCP/LCP/asset 측정은 Playwright 바이너리를 repo-safe 방식으로 준비한 뒤 별도 작업으로 재개한다.
+- 원격/운영 확인:
+  - commit: `b8e7ce0 Record production performance remeasure`
+  - Vercel: `https://townpet-doaimh86k-jmoon0227-9736s-projects.vercel.app` Ready, alias `https://townpet.vercel.app`.
+  - `OPS_BASE_URL=https://townpet.vercel.app COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app ops:check:health`
+    - `https://townpet.vercel.app/api/health` 200, `payload.status: ok`.
