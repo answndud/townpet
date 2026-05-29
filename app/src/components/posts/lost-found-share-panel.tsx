@@ -18,6 +18,11 @@ type LostFoundSharePanelProps = {
 
 type ShareAction = "LINK_COPY" | "KAKAO_TEXT_COPY" | "POSTER_OPEN";
 
+const lostFoundShareTextActionClassName =
+  "tp-text-muted inline-flex min-h-10 items-center justify-center px-1.5 text-xs font-semibold transition hover:text-[#2f5da4] hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1";
+const lostFoundSharePrimaryActionClassName =
+  "inline-flex min-h-10 items-center justify-center rounded-md bg-[#3567b5] px-3 text-xs font-semibold text-[#fbfdff] transition hover:bg-[#2f5da4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1";
+
 async function recordLostFoundShareAction(postId: string, action: ShareAction) {
   await fetch(`/api/posts/${postId}/share`, {
     method: "POST",
@@ -88,14 +93,14 @@ export function LostFoundSharePanel({ post, postUrl }: LostFoundSharePanelProps)
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
-            className="tp-btn-soft inline-flex min-h-10 items-center px-3 text-xs font-semibold"
+            className={lostFoundShareTextActionClassName}
             onClick={handleCopyLink}
           >
             링크 복사
           </button>
           <button
             type="button"
-            className="tp-btn-primary inline-flex min-h-10 items-center px-3 text-xs font-semibold"
+            className={lostFoundSharePrimaryActionClassName}
             onClick={handleCopyKakaoText}
           >
             카카오톡 문구 복사
@@ -104,7 +109,7 @@ export function LostFoundSharePanel({ post, postUrl }: LostFoundSharePanelProps)
             href={posterUrl}
             target="_blank"
             rel="noreferrer"
-            className="tp-btn-soft inline-flex min-h-10 items-center px-3 text-xs font-semibold"
+            className={lostFoundShareTextActionClassName}
             onClick={handlePosterOpen}
           >
             공유 이미지 열기

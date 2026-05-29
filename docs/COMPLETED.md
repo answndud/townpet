@@ -8426,6 +8426,32 @@
   - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
     - ESLint, TypeScript, Vitest `298 files / 1424 tests`, Next production build PASS
 
+### 2026-05-29 | 분실동물 공유 패널 action 버튼 계층 정리
+- 완료일: `2026-05-29`
+- 배경:
+  - `lost-found-share-panel.tsx`의 공유 도구가 `tp-btn-soft`, `tp-btn-primary` 조합으로 남아 있었다.
+  - 분실동물 공유는 전환 목적이 있는 surface라 모든 action을 같은 무게로 보이게 하기보다 핵심 복사 action과 보조 action을 분리하는 편이 맞았다.
+- 변경내용:
+  - `링크 복사`와 `공유 이미지 열기`를 bordered soft button에서 compact text action으로 낮췄다.
+  - `카카오톡 문구 복사`는 핵심 공유 action으로 유지하되 `tp-btn-primary` 의존 없는 compact primary class로 명시했다.
+  - render/accessibility test가 `tp-btn-soft`, `tp-btn-primary` 재도입을 잡도록 보강했다.
+- 코드문서:
+  - [app/src/components/posts/lost-found-share-panel.tsx](../app/src/components/posts/lost-found-share-panel.tsx)
+  - [app/src/components/posts/post-detail-action-accessibility.test.tsx](../app/src/components/posts/post-detail-action-accessibility.test.tsx)
+- 다음 후보:
+  - [app/src/components/posts/guest-feed-page-client.tsx](../app/src/components/posts/guest-feed-page-client.tsx): guest feed inline action button 정리
+  - [app/src/app/feed/page.tsx](../app/src/app/feed/page.tsx): member feed inline action button 정리
+  - [app/src/components/posts/feed-infinite-list.tsx](../app/src/components/posts/feed-infinite-list.tsx): feed empty/retry action 정리
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/components/posts/post-detail-action-accessibility.test.tsx src/lib/lost-found-share.test.ts src/lib/post-share.test.ts`
+    - Vitest `3 files / 12 tests` PASS
+  - targeted lint:
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `298 files / 1424 tests`, Next production build PASS
+
 ### 2026-05-29 | 댓글 신고 폼과 메뉴 무게 축소
 - 완료일: `2026-05-29`
 - 배경:

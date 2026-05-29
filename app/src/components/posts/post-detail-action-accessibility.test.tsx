@@ -132,8 +132,12 @@ describe("post detail action accessibility", () => {
     expect(html).toContain("목격했어요");
     expect(html).toContain("확인된 시간·위치·특징만 전달합니다.");
     expect(html).toContain("min-h-10");
+    expect(html).toContain("rounded-md bg-[#3567b5]");
+    expect(html).toContain("hover:underline-offset-4");
     expect(html).toContain('role="status"');
     expect(html).toContain("min-h-28 overflow-auto whitespace-pre-wrap border-t border-[#dbe6f5] pt-2");
+    expect(html).not.toContain("tp-btn-soft");
+    expect(html).not.toContain("tp-btn-primary");
     expect(html).not.toContain("min-h-32 overflow-auto whitespace-pre-wrap rounded-lg border border-[#dbe6f5] bg-[#f8fbff] p-3");
   });
 
