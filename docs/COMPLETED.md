@@ -8245,6 +8245,44 @@
   - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
     - ESLint, TypeScript, Vitest `298 files / 1425 tests`, Next production build PASS
 
+### 2026-05-29 | 메뉴/팝오버 바깥 클릭 닫힘 정리
+- 완료일: `2026-05-29`
+- 배경:
+  - 게시글 상세 `...` 신고 메뉴는 `<details>` 기본 동작에 의존해 다른 화면 영역을 클릭해도 닫히지 않았다.
+  - 댓글 작업 메뉴, guest 상세 신고 메뉴, 비회원 관리 모바일 disclosure도 같은 `<details>` 기반이라 닫힘 규칙이 화면별로 달랐다.
+  - `UserActionMenu`, 알림 popover, 피드 검색 keyword panel은 이미 바깥 클릭 닫힘이 있어 누락된 메뉴 계층만 맞추면 됐다.
+- 변경내용:
+  - 공용 client wrapper `DismissibleDetails`를 추가했다.
+  - wrapper는 열려 있을 때 `pointerdown`, `focusin`, `Escape`를 감지해 바깥 클릭/포커스 이동/키보드 취소에서 닫힌다.
+  - `data-dismissible-details-close`가 붙은 메뉴 item을 누르면 해당 details도 닫히게 했다.
+  - 게시글 상세 `...` 신고 메뉴와 모바일 `글 관리` disclosure를 `DismissibleDetails`로 교체했다.
+  - guest 상세 `...` 신고 메뉴와 비회원 관리 모바일 disclosure도 같은 wrapper로 맞췄다.
+  - 댓글 작업 메뉴의 신고/수정/삭제 item도 wrapper와 close marker를 적용했다.
+  - header feed board/pet 메뉴는 기존 hover/click 동작을 유지하면서 바깥 pointer/focus 이동과 Escape에서 닫히도록 보강했다.
+- 제외:
+  - `post-moderation-controls.tsx`의 운영자 도구는 메뉴 popover가 아니라 form accordion이므로 바깥 클릭 닫힘 대상으로 보지 않았다.
+- 코드문서:
+  - [app/src/components/ui/dismissible-details.tsx](../app/src/components/ui/dismissible-details.tsx)
+  - [app/src/components/posts/post-detail-primary-card.tsx](../app/src/components/posts/post-detail-primary-card.tsx)
+  - [app/src/app/posts/[id]/guest/page.tsx](../app/src/app/posts/[id]/guest/page.tsx)
+  - [app/src/components/posts/post-comment-thread.tsx](../app/src/components/posts/post-comment-thread.tsx)
+  - [app/src/components/posts/guest-post-detail-actions.tsx](../app/src/components/posts/guest-post-detail-actions.tsx)
+  - [app/src/components/navigation/feed-hover-menu.tsx](../app/src/components/navigation/feed-hover-menu.tsx)
+  - [app/src/components/compact-control-edge-accessibility.test.ts](../app/src/components/compact-control-edge-accessibility.test.ts)
+- 다음 후보:
+  - [app/src/components/posts/feed-infinite-list.tsx](../app/src/components/posts/feed-infinite-list.tsx): feed empty/retry action 정리
+  - [app/src/components/posts/feed-pagination.tsx](../app/src/components/posts/feed-pagination.tsx): feed pagination 30px control 정책 재검토
+  - [app/src/components/posts/post-moderation-controls.tsx](../app/src/components/posts/post-moderation-controls.tsx): 운영자 도구 button hierarchy 별도 정리
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/components/compact-control-edge-accessibility.test.ts src/components/posts/post-comment-thread.test.tsx src/components/posts/post-comment-compact-controls-accessibility.test.tsx src/components/posts/post-detail-action-accessibility.test.tsx src/components/posts/post-detail-primary-card-layout.test.ts src/app/posts/[id]/guest/page-layout.test.ts`
+    - Vitest `6 files / 30 tests` PASS
+  - targeted lint:
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `298 files / 1426 tests`, Next production build PASS
+
 ### 2026-05-29 | 댓글 답글 접기 토글 compact text화
 - 완료일: `2026-05-29`
 - 배경:

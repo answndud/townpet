@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { PostType } from "@prisma/client";
 
@@ -78,6 +78,8 @@ export function FeedHoverMenu({
   const router = useRouter();
   const pathname = usePathname();
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mobileMenuRef = useRef<HTMLDivElement | null>(null);
+  const desktopMenuRef = useRef<HTMLDivElement | null>(null);
 
   const clearCloseTimer = () => {
     if (!closeTimerRef.current) {
@@ -99,6 +101,50 @@ export function FeedHoverMenu({
       closeTimerRef.current = null;
     }, 140);
   };
+
+  useEffect(() => {
+    if (!openMenu && !mobileOpenMenu) {
+      return;
+    }
+
+    const closeIfOutside = (target: EventTarget | null) => {
+      if (!target) {
+        return;
+      }
+      const targetNode = target as Node;
+      if (mobileMenuRef.current?.contains(targetNode) || desktopMenuRef.current?.contains(targetNode)) {
+        return;
+      }
+      clearCloseTimer();
+      setOpenMenu(null);
+      setMobileOpenMenu(null);
+    };
+
+    const handlePointerDown = (event: globalThis.PointerEvent) => {
+      closeIfOutside(event.target);
+    };
+
+    const handleFocusIn = (event: globalThis.FocusEvent) => {
+      closeIfOutside(event.target);
+    };
+
+    const handleKeyDown = (event: globalThis.KeyboardEvent) => {
+      if (event.key === "Escape") {
+        clearCloseTimer();
+        setOpenMenu(null);
+        setMobileOpenMenu(null);
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("focusin", handleFocusIn);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("focusin", handleFocusIn);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [mobileOpenMenu, openMenu]);
 
   const togglePetType = (petTypeId: string) => {
     setSelectedPetTypeIds((prev) =>
@@ -158,7 +204,7 @@ export function FeedHoverMenu({
 
   return (
     <>
-      <div className="w-full space-y-1.5 md:hidden">
+      <div ref={mobileMenuRef} className="w-full space-y-1.5 md:hidden">
         <div className={APP_SHELL_MOBILE_DISCLOSURE_ROW_CLASS_NAME}>
           <button
             type="button"
@@ -274,7 +320,11 @@ export function FeedHoverMenu({
         ) : null}
       </div>
 
-      <div className={`hidden md:flex ${APP_SHELL_DESKTOP_NAV_CLUSTER_CLASS_NAME}`} onMouseLeave={scheduleClose}>
+      <div
+        ref={desktopMenuRef}
+        className={`hidden md:flex ${APP_SHELL_DESKTOP_NAV_CLUSTER_CLASS_NAME}`}
+        onMouseLeave={scheduleClose}
+      >
         <div className="relative" onMouseEnter={() => openMenuNow("board")} onMouseLeave={scheduleClose}>
           <button
             type="button"

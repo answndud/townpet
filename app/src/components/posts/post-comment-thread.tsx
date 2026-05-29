@@ -17,6 +17,7 @@ import {
 } from "@/components/posts/comment-reaction-controls";
 import { LinkifiedContent } from "@/components/content/linkified-content";
 import { PostCommentBestItem } from "@/components/posts/post-comment-best-item";
+import { DismissibleDetails } from "@/components/ui/dismissible-details";
 import {
   POST_COMMENT_INLINE_FORM_ACTION_ROW_CLASS_NAME,
   POST_COMMENT_INLINE_FORM_CANCEL_CLASS_NAME,
@@ -699,7 +700,7 @@ export function PostCommentThread({
               {!isDeleted && !isMutedPlaceholder ? (
                 <div className="ml-auto shrink-0" data-comment-panel-ignore>
                   {canOpenMenu ? (
-                    <details className="relative">
+                    <DismissibleDetails className="relative">
                       <summary
                         aria-label={`${displayName} 댓글 작업 메뉴`}
                         className={POST_COMMENT_THREAD_MENU_BUTTON_CLASS_NAME}
@@ -718,6 +719,7 @@ export function PostCommentThread({
                                 [comment.id]: !prev[comment.id],
                               }))
                             }
+                            data-dismissible-details-close
                           >
                             {reportOpen[comment.id] ? "신고 닫기" : "신고"}
                           </button>
@@ -735,6 +737,7 @@ export function PostCommentThread({
                                 setEditOpen((prev) => ({ ...prev, [comment.id]: !prev[comment.id] }));
                               }}
                               disabled={isPending}
+                              data-dismissible-details-close
                             >
                               수정
                             </button>
@@ -749,13 +752,14 @@ export function PostCommentThread({
                                 void handleDelete(comment.id, false);
                               }}
                               disabled={isPending}
+                              data-dismissible-details-close
                             >
                               삭제
                             </button>
                           </>
                         ) : null}
                       </div>
-                    </details>
+                    </DismissibleDetails>
                   ) : null}
                 </div>
               ) : null}
