@@ -8188,6 +8188,33 @@
   - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
     - ESLint, TypeScript, Vitest `297 files / 1421 tests`, Next production build PASS
 
+### 2026-05-29 | 피드 오류 화면 recovery action 계층 정리
+- 완료일: `2026-05-29`
+- 배경:
+  - `app/feed/error.tsx`의 오류 복구 action이 `tp-btn-primary/tp-btn-soft + h-[30px]` 패턴으로 남아 있었다.
+  - 피드 오류 화면은 실패 복구 화면이라 모바일에서도 즉시 누를 수 있는 touch target과 명확한 primary/secondary hierarchy가 필요했다.
+- 변경내용:
+  - `다시 시도`를 40px compact primary action으로 변경했다.
+  - `게스트 피드`는 soft bordered button에서 text action으로 낮췄다.
+  - feed error action class를 상수화해 오류 화면의 action hierarchy를 한 곳에서 읽을 수 있게 했다.
+  - source guard test가 legacy 30px `tp-btn-*` 패턴 재도입을 잡도록 보강했다.
+- 코드문서:
+  - [app/src/app/feed/error.tsx](../app/src/app/feed/error.tsx)
+  - [app/src/components/compact-control-edge-accessibility.test.ts](../app/src/components/compact-control-edge-accessibility.test.ts)
+- 다음 후보:
+  - [app/src/components/posts/post-moderation-controls.tsx](../app/src/components/posts/post-moderation-controls.tsx): 운영자 도구 button hierarchy 정리
+  - [app/src/components/ui/service-unavailable-state.tsx](../app/src/components/ui/service-unavailable-state.tsx): service unavailable action 계층 정리
+  - [app/src/components/auth/auth-page-layout.tsx](../app/src/components/auth/auth-page-layout.tsx): auth page auxiliary action 계층 점검
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/components/compact-control-edge-accessibility.test.ts src/components/ui/error-state.test.tsx`
+    - Vitest `2 files / 9 tests` PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app lint -- src/app/feed/error.tsx src/components/compact-control-edge-accessibility.test.ts src/components/ui/error-state.test.tsx`
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `298 files / 1429 tests`, Next production build PASS
+
 ### 2026-05-29 | 헤더 관심 동물 메뉴 action 버튼 계층 정리
 - 완료일: `2026-05-29`
 - 배경:
