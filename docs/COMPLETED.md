@@ -8365,6 +8365,37 @@
   - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
     - ESLint, TypeScript, Vitest `297 files / 1423 tests`, Next production build PASS
 
+### 2026-05-29 | 게시글 rich editor toolbar 버튼 계층 정리
+- 완료일: `2026-05-29`
+- 배경:
+  - 작성/수정 submit 버튼을 정리한 뒤에도 `post-rich-text-editor-shell.tsx`의 공통 toolbar button이 `tp-btn-soft`, `tp-btn-primary`, `h-[28px]`, `h-[30px]`, `rounded-lg` 패턴으로 남아 있었다.
+  - 이 버튼은 작성/수정 에디터의 write/preview 전환과 임시저장 삭제에 반복 사용되므로 작성 surface의 시각 언어와 맞춰야 했다.
+- 변경내용:
+  - `PostEditorToolbarButton`에서 `tp-btn-*` 의존을 제거하고 soft/primary tone을 compact class로 명시했다.
+  - toolbar/action/bar scale의 28px/30px 고정 높이를 제거하고 40px touch target으로 맞췄다.
+  - action scale의 `rounded-lg`를 제거하고 공통 `rounded-md` control로 통일했다.
+  - write/preview segmented wrapper의 `rounded-xl`을 제거하고 gap 기반의 조용한 grouping으로 낮췄다.
+  - shell 테스트가 `tp-btn-*`, `h-[28px]`, `h-[30px]`, `rounded-lg` 재도입을 잡도록 보강했다.
+- 코드문서:
+  - [app/src/components/posts/post-rich-text-editor-shell.tsx](../app/src/components/posts/post-rich-text-editor-shell.tsx)
+  - [app/src/components/posts/post-body-rich-editor.tsx](../app/src/components/posts/post-body-rich-editor.tsx)
+  - [app/src/components/posts/post-rich-text-editor-shell.test.tsx](../app/src/components/posts/post-rich-text-editor-shell.test.tsx)
+- 제외:
+  - SunEditor 내부 toolbar button은 외부 라이브러리 surface라 이번 변경에서 제외했다.
+- 다음 후보:
+  - [app/src/components/posts/feed-search-form.tsx](../app/src/components/posts/feed-search-form.tsx): 피드 검색 action 버튼 정리
+  - [app/src/components/posts/feed-footer-search-form.tsx](../app/src/components/posts/feed-footer-search-form.tsx): 하단 검색 action 버튼 정리
+  - [app/src/components/posts/lost-found-share-panel.tsx](../app/src/components/posts/lost-found-share-panel.tsx): 분실동물 공유 panel 버튼 정리
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/components/posts/post-rich-text-editor-shell.test.tsx src/components/posts/post-create-form-shell.test.tsx src/components/posts/post-form-accessibility.test.tsx`
+    - Vitest `3 files / 13 tests` PASS
+  - targeted lint:
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `297 files / 1423 tests`, Next production build PASS
+
 ### 2026-05-29 | 댓글 신고 폼과 메뉴 무게 축소
 - 완료일: `2026-05-29`
 - 배경:

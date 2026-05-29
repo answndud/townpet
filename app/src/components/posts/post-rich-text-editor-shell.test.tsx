@@ -38,8 +38,8 @@ describe("PostRichTextEditorShell", () => {
     expect(html).toContain("tp-editor-toolbar sm:hidden");
     expect(html).toContain("tp-editor-toolbar-soft tp-editor-toolbar-scroll");
     expect(html).toContain("tp-editor-toolbar tp-editor-toolbar-scroll");
-    expect(html).toContain("tp-btn-primary");
-    expect(html).toContain("h-[30px] px-2.5");
+    expect(html).toContain("bg-[#3567b5]");
+    expect(html).toContain("min-h-10 px-2.5");
   });
 
   it("renders toolbar button scales and tones", () => {
@@ -55,11 +55,15 @@ describe("PostRichTextEditorShell", () => {
       </>,
     );
 
-    expect(html).toContain("tp-btn-soft");
-    expect(html).toContain("h-[28px] px-2.5");
-    expect(html).toContain("tp-btn-primary");
-    expect(html).toContain("h-[30px] rounded-lg px-3");
-    expect(html).not.toContain("min-h-10 px-3");
+    expect(html).toContain("tp-text-muted");
+    expect(html).toContain("min-h-10 px-2.5");
+    expect(html).toContain("bg-[#3567b5]");
+    expect(html).toContain("min-h-10 px-3");
+    expect(html).not.toContain("tp-btn-soft");
+    expect(html).not.toContain("tp-btn-primary");
+    expect(html).not.toContain("h-[28px]");
+    expect(html).not.toContain("h-[30px]");
+    expect(html).not.toContain("rounded-lg");
     expect(html).not.toContain("tp-btn-sm");
   });
 });
