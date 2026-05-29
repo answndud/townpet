@@ -18,5 +18,5 @@
 
 ## 다음 작업 후보
 
-- 상단 네비게이션 active 상태와 공통 버튼/링크 계층 정리
+- UI/UX 인증 정책 문구 정리: 비회원/회원 댓글, 좋아요, 북마크, 신고 조건을 화면별로 일관화
 - authenticated admin queue smoke production credential 확보 후 재실행

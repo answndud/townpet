@@ -8,10 +8,10 @@ import { PostType } from "@prisma/client";
 import {
   APP_SHELL_DESKTOP_NAV_CLUSTER_CLASS_NAME,
   APP_SHELL_MOBILE_DISCLOSURE_ROW_CLASS_NAME,
-  APP_SHELL_MOBILE_DISCLOSURE_TRIGGER_CLASS_NAME,
   APP_SHELL_MOBILE_PANEL_CLASS_NAME,
   APP_SHELL_MOBILE_PANEL_PILL_CLASS_NAME,
-  APP_SHELL_NAV_LINK_CLASS_NAME,
+  getAppShellMobileDisclosureTriggerClassName,
+  getAppShellNavLinkClassName,
 } from "@/components/navigation/app-shell-header-class";
 import {
   PET_TYPE_PREFERENCE_COOKIE,
@@ -34,6 +34,7 @@ type FeedHoverMenuProps = {
   }>;
   isAuthenticated: boolean;
   initialPreferredPetTypeIds: string[];
+  boardActive?: boolean;
 };
 
 function writePetTypePreferenceCookie(petTypeIds: string[]) {
@@ -44,6 +45,7 @@ export function FeedHoverMenu({
   communities,
   isAuthenticated,
   initialPreferredPetTypeIds,
+  boardActive = false,
 }: FeedHoverMenuProps) {
   const groupedCommunities = groupPetTypeCommunities(communities);
   const selectableCommunities = groupedCommunities.flatMap((group) => group.items);
@@ -160,17 +162,18 @@ export function FeedHoverMenu({
         <div className={APP_SHELL_MOBILE_DISCLOSURE_ROW_CLASS_NAME}>
           <button
             type="button"
-            className={APP_SHELL_MOBILE_DISCLOSURE_TRIGGER_CLASS_NAME}
+            className={getAppShellMobileDisclosureTriggerClassName(boardActive)}
             onClick={() =>
               setMobileOpenMenu((prev) => (prev === "board" ? null : "board"))
             }
             aria-expanded={mobileOpenMenu === "board"}
+            aria-current={boardActive ? "page" : undefined}
           >
             게시판
           </button>
           <button
             type="button"
-            className={APP_SHELL_MOBILE_DISCLOSURE_TRIGGER_CLASS_NAME}
+            className={getAppShellMobileDisclosureTriggerClassName(false)}
             onClick={() =>
               setMobileOpenMenu((prev) => (prev === "pet" ? null : "pet"))
             }
@@ -275,11 +278,12 @@ export function FeedHoverMenu({
         <div className="relative" onMouseEnter={() => openMenuNow("board")} onMouseLeave={scheduleClose}>
           <button
             type="button"
-            className={`${APP_SHELL_NAV_LINK_CLASS_NAME} appearance-none`}
+            className={getAppShellNavLinkClassName(boardActive, "appearance-none")}
             onFocus={() => openMenuNow("board")}
             onBlur={scheduleClose}
             onClick={() => setOpenMenu((prev) => (prev === "board" ? null : "board"))}
             aria-expanded={openMenu === "board"}
+            aria-current={boardActive ? "page" : undefined}
           >
             게시판
           </button>
@@ -313,7 +317,7 @@ export function FeedHoverMenu({
         <div className="relative" onMouseEnter={() => openMenuNow("pet")} onMouseLeave={scheduleClose}>
           <button
             type="button"
-            className={`${APP_SHELL_NAV_LINK_CLASS_NAME} appearance-none`}
+            className={getAppShellNavLinkClassName(false, "appearance-none")}
             onFocus={() => openMenuNow("pet")}
             onBlur={scheduleClose}
             onClick={() => setOpenMenu((prev) => (prev === "pet" ? null : "pet"))}

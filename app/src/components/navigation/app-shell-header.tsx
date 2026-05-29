@@ -9,8 +9,9 @@ import { useEffect, useRef, useState } from "react";
 import {
   APP_SHELL_DESKTOP_NAV_CLUSTER_CLASS_NAME,
   APP_SHELL_HEADER_CLASS_NAME,
-  APP_SHELL_MOBILE_QUICK_LINK_CLASS_NAME,
-  APP_SHELL_NAV_LINK_CLASS_NAME,
+  getAppShellNavLinkClassName,
+  getAppShellMobileQuickLinkClassName,
+  isHeaderNavActive,
   isPublicAcquisitionHeaderPath,
   shouldRefreshViewerShellOnFocus,
 } from "@/components/navigation/app-shell-header-class";
@@ -71,6 +72,11 @@ export function AppShellHeader({ communities: initialCommunities = [] }: Partial
   const pathname = usePathname();
   const isAcquisitionHeaderPath = isPublicAcquisitionHeaderPath(pathname);
   const refreshOnFocus = shouldRefreshViewerShellOnFocus(pathname);
+  const boardNavActive = isHeaderNavActive(pathname, "board");
+  const profileNavActive = isHeaderNavActive(pathname, "profile");
+  const notificationNavActive = isHeaderNavActive(pathname, "notifications");
+  const adminNavActive = isHeaderNavActive(pathname, "admin");
+  const loginNavActive = isHeaderNavActive(pathname, "login");
   const allPetTypeIds = communities.map((item) => item.id);
   const preferredPetTypeIds =
     viewerShell.preferredPetTypeIds.length > 0 ? viewerShell.preferredPetTypeIds : allPetTypeIds;
@@ -241,15 +247,27 @@ export function AppShellHeader({ communities: initialCommunities = [] }: Partial
           </Link>
           <div className="flex flex-wrap items-center justify-end gap-1.5 md:hidden">
             {viewerShell.canModerate ? (
-              <Link href="/admin" className={APP_SHELL_MOBILE_QUICK_LINK_CLASS_NAME}>
+              <Link
+                href="/admin"
+                className={getAppShellMobileQuickLinkClassName(adminNavActive)}
+                aria-current={adminNavActive ? "page" : undefined}
+              >
                 관리자
               </Link>
             ) : null}
-            <Link href="/profile" className={APP_SHELL_MOBILE_QUICK_LINK_CLASS_NAME}>
+            <Link
+              href="/profile"
+              className={getAppShellMobileQuickLinkClassName(profileNavActive)}
+              aria-current={profileNavActive ? "page" : undefined}
+            >
               내 프로필
             </Link>
             {viewerShell.isAuthenticated ? (
-              <Link href="/notifications" className={APP_SHELL_MOBILE_QUICK_LINK_CLASS_NAME}>
+              <Link
+                href="/notifications"
+                className={getAppShellMobileQuickLinkClassName(notificationNavActive)}
+                aria-current={notificationNavActive ? "page" : undefined}
+              >
                 알림
                 {viewerShell.unreadNotificationCount > 0 ? (
                   <span className="ml-1 inline-flex min-w-4 items-center justify-center rounded-full bg-[#dcecff] px-1 text-[10px] font-semibold text-[#1f4f8f]">
@@ -263,13 +281,14 @@ export function AppShellHeader({ communities: initialCommunities = [] }: Partial
             {viewerShell.isAuthenticated ? (
               <AuthControls
                 label="로그아웃"
-                className={`${APP_SHELL_MOBILE_QUICK_LINK_CLASS_NAME} text-[#173963] hover:text-[#0f2f56] disabled:opacity-60`}
+                className={getAppShellMobileQuickLinkClassName(false, "text-[#173963] hover:text-[#0f2f56] disabled:opacity-60")}
               />
             ) : (
               <Link
                 href="/login"
                 data-testid="header-login-link-mobile"
-                className={`${APP_SHELL_MOBILE_QUICK_LINK_CLASS_NAME} text-[#173963] hover:text-[#0f2f56]`}
+                className={getAppShellMobileQuickLinkClassName(loginNavActive, "text-[#173963] hover:text-[#0f2f56]")}
+                aria-current={loginNavActive ? "page" : undefined}
               >
                 로그인
               </Link>
@@ -283,20 +302,32 @@ export function AppShellHeader({ communities: initialCommunities = [] }: Partial
               communities={communities}
               isAuthenticated={viewerShell.isAuthenticated}
               initialPreferredPetTypeIds={preferredPetTypeIds}
+              boardActive={boardNavActive}
             />
 
             <div className={`hidden md:flex ${APP_SHELL_DESKTOP_NAV_CLUSTER_CLASS_NAME}`}>
-              <Link href="/profile" className={APP_SHELL_NAV_LINK_CLASS_NAME}>
+              <Link
+                href="/profile"
+                className={getAppShellNavLinkClassName(profileNavActive)}
+                aria-current={profileNavActive ? "page" : undefined}
+              >
                 내 프로필
               </Link>
               {viewerShell.isAuthenticated ? (
-                <NotificationBell unreadCount={viewerShell.unreadNotificationCount} />
+                <NotificationBell
+                  unreadCount={viewerShell.unreadNotificationCount}
+                  active={notificationNavActive}
+                />
               ) : null}
             </div>
 
             {viewerShell.canModerate ? (
               <div className={`hidden md:flex ${APP_SHELL_DESKTOP_NAV_CLUSTER_CLASS_NAME}`}>
-                <Link href="/admin" className={APP_SHELL_NAV_LINK_CLASS_NAME}>
+                <Link
+                  href="/admin"
+                  className={getAppShellNavLinkClassName(adminNavActive)}
+                  aria-current={adminNavActive ? "page" : undefined}
+                >
                   관리자
                 </Link>
               </div>
@@ -306,14 +337,15 @@ export function AppShellHeader({ communities: initialCommunities = [] }: Partial
           <div className={`hidden md:flex ${APP_SHELL_DESKTOP_NAV_CLUSTER_CLASS_NAME}`}>
             {viewerShell.isAuthenticated ? (
               <AuthControls
-                className={`${APP_SHELL_NAV_LINK_CLASS_NAME} text-[#173963] hover:text-[#0f2f56] disabled:opacity-60`}
+                className={getAppShellNavLinkClassName(false, "text-[#173963] hover:text-[#0f2f56] disabled:opacity-60")}
                 label="로그아웃"
               />
             ) : (
               <Link
                 href="/login"
                 data-testid="header-login-link"
-                className={`${APP_SHELL_NAV_LINK_CLASS_NAME} text-[#173963] hover:text-[#0f2f56]`}
+                className={getAppShellNavLinkClassName(loginNavActive, "text-[#173963] hover:text-[#0f2f56]")}
+                aria-current={loginNavActive ? "page" : undefined}
               >
                 로그인
               </Link>

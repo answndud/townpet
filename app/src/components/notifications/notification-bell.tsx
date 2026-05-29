@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 
-import { APP_SHELL_NAV_LINK_CLASS_NAME } from "@/components/navigation/app-shell-header-class";
+import { getAppShellNavLinkClassName } from "@/components/navigation/app-shell-header-class";
 import {
   emitNotificationUnreadSync,
   subscribeNotificationUnreadSync,
@@ -18,6 +18,7 @@ import {
 
 type NotificationBellProps = {
   unreadCount: number;
+  active?: boolean;
 };
 
 type PreviewFilter = "ALL" | "UNREAD";
@@ -101,7 +102,7 @@ function formatRelativeLabel(isoDate: string) {
   return formatKoreanDate(isoDate);
 }
 
-export function NotificationBell({ unreadCount }: NotificationBellProps) {
+export function NotificationBell({ unreadCount, active = false }: NotificationBellProps) {
   const normalizedCount = Number.isFinite(unreadCount) ? Math.max(0, unreadCount) : 0;
   const [localUnreadCount, setLocalUnreadCount] = useState(normalizedCount);
   const [isOpen, setIsOpen] = useState(false);
@@ -331,9 +332,10 @@ export function NotificationBell({ unreadCount }: NotificationBellProps) {
       <button
         type="button"
         onClick={handleOpenToggle}
-        className={`${APP_SHELL_NAV_LINK_CLASS_NAME} gap-1`}
+        className={getAppShellNavLinkClassName(active, "gap-1")}
         aria-label={localUnreadCount > 0 ? `알림 ${localUnreadCount}개 미확인` : "알림함"}
         aria-expanded={isOpen}
+        aria-current={active ? "page" : undefined}
         aria-controls="notification-popover"
       >
         <span>알림</span>

@@ -7926,3 +7926,34 @@
 - 결과:
   - 피드 리스트가 상세 화면과 같은 compact 날짜/메타 기준을 따르게 됐다.
   - feed query, sort/filter, personalization, pagination, action policy는 변경하지 않았다.
+
+### 2026-05-29 | 상단 네비게이션 active 상태와 링크 계층 정리
+- 완료일: `2026-05-29`
+- 배경:
+  - 게시글 상세 화면에서도 헤더의 현재 위치 표시가 없어 사용자가 지금 어느 섹션에 있는지 알기 어려웠다.
+  - 피드/상세/검색/게시판은 모두 반복 탐색의 `게시판` 섹션으로 묶어 표시하는 편이 자연스럽다.
+- 변경내용:
+  - app shell navigation active helper를 추가했다.
+  - `게시판` active 기준을 `/feed`, `/boards`, `/posts`, `/search` 계열로 정의했다.
+  - `프로필` active 기준에 `/profile`, `/my-posts`, `/bookmarks`, `/saved`를 포함했다.
+  - `알림`, `관리자`, `로그인` active 기준을 각각 route prefix로 정의했다.
+  - desktop header link와 mobile quick link에 active border/underline class를 적용했다.
+  - `FeedHoverMenu`의 desktop/mobile `게시판` trigger에 active class와 `aria-current="page"`를 붙였다.
+  - authenticated-only widget lazy loading, viewer-shell refresh, feed filter save 정책은 변경하지 않았다.
+- 코드문서:
+  - [app/src/components/navigation/app-shell-header-class.ts](../app/src/components/navigation/app-shell-header-class.ts)
+  - [app/src/components/navigation/app-shell-header.tsx](../app/src/components/navigation/app-shell-header.tsx)
+  - [app/src/components/navigation/feed-hover-menu.tsx](../app/src/components/navigation/feed-hover-menu.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `./node_modules/.bin/vitest run src/components/navigation/app-shell-header-class.test.ts src/components/compact-control-final-sweep.test.ts`
+    - `2 files / 10 tests` PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `296 files / 1415 tests`, Next production build PASS
+  - 모바일 Playwright smoke:
+    - `/feed/guest`에서 `게시판` trigger `aria-current="page"`, active underline class, overflow 없음 확인.
+    - `/posts/:id/guest`에서도 `게시판` trigger `aria-current="page"`, active underline class, overflow 없음 확인.
+- 결과:
+  - 피드와 게시글 상세를 오가는 사용자가 헤더에서 현재 `게시판` 섹션을 바로 인지할 수 있게 됐다.
+  - 라우팅, 인증, 알림 fetch, feed filter 저장 동작은 변경하지 않았다.
