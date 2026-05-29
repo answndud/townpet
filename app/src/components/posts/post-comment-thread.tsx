@@ -3,7 +3,6 @@
 import { useRouter } from "next/navigation";
 import { ReportTarget } from "@prisma/client";
 import {
-  type KeyboardEvent,
   type MouseEvent,
   useEffect,
   useMemo,
@@ -616,16 +615,6 @@ export function PostCommentThread({
       }
       openReplyFromPanel();
     };
-    const handleCommentPanelKeyDown = (event: KeyboardEvent<HTMLElement>) => {
-      if (!canOpenReplyFromPanel || event.target !== event.currentTarget) {
-        return;
-      }
-      if (event.key !== "Enter" && event.key !== " ") {
-        return;
-      }
-      event.preventDefault();
-      openReplyFromPanel();
-    };
     const commentBodyText = isDeleted
       ? "삭제된 댓글입니다."
       : isMutedPlaceholder
@@ -645,13 +634,8 @@ export function PostCommentThread({
         <article
           data-testid={`post-comment-item-${comment.id}`}
           className={selectableCommentCardClassName}
-          role={canOpenReplyFromPanel ? "button" : undefined}
-          tabIndex={canOpenReplyFromPanel ? 0 : undefined}
-          aria-label={canOpenReplyFromPanel ? `${displayName} 댓글에 답글 작성` : undefined}
-          aria-expanded={canOpenReplyFromPanel ? Boolean(replyOpen[comment.id]) : undefined}
           data-reply-open={canOpenReplyFromPanel ? Boolean(replyOpen[comment.id]) : undefined}
           onClick={handleCommentPanelClick}
-          onKeyDown={handleCommentPanelKeyDown}
         >
           <div className={POST_COMMENT_THREAD_AVATAR_CLASS_NAME}>
             {avatarText}
@@ -692,6 +676,17 @@ export function PostCommentThread({
                     <span className="rounded-full border border-[#ead5a5] bg-[#fff9e8] px-2 py-0.5 text-[10px] font-semibold text-[#7a5a18]">
                       보호자 공개
                     </span>
+                  ) : null}
+                  {canOpenReplyFromPanel ? (
+                    <button
+                      type="button"
+                      className="sr-only focus:not-sr-only focus:inline-flex focus:min-h-8 focus:items-center focus:rounded focus:px-2 focus:text-[12px] focus:font-semibold focus:text-[#2f5da4] focus:outline-none focus:ring-2 focus:ring-[#bfd3f0] focus:ring-offset-1"
+                      onClick={openReplyFromPanel}
+                      aria-expanded={Boolean(replyOpen[comment.id])}
+                      data-comment-panel-ignore
+                    >
+                      댓글에 답글 작성
+                    </button>
                   ) : null}
                 </div>
               </div>

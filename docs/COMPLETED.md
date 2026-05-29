@@ -8161,3 +8161,29 @@
     - PASS
   - `git diff --check`
     - PASS
+
+### 2026-05-29 | 댓글 패널 답글 접근성 구조 정리
+- 완료일: `2026-05-29`
+- 배경:
+  - 댓글 패널 클릭으로 답글을 여는 동작은 유지해야 하지만, `article role="button"` 안에 메뉴/반응/신고 버튼이 함께 있는 구조는 의미상 거칠었다.
+- 변경내용:
+  - 댓글 article의 `role="button"`, `tabIndex`, `aria-label`, keyboard handler를 제거했다.
+  - 마우스/터치 사용자는 기존처럼 댓글 패널 본문 클릭으로 답글 폼을 열 수 있다.
+  - 키보드/스크린리더 사용자는 댓글 메타 영역의 focusable `댓글에 답글 작성` 버튼으로 같은 동작을 수행한다.
+  - 숨겨진 reply trigger는 `aria-expanded`로 답글 폼 open state를 노출한다.
+  - 모바일 visual smoke가 article에는 button role이 없고, 별도 reply trigger의 `aria-expanded`가 false -> true로 변하는지 확인하도록 보강했다.
+- 코드문서:
+  - [app/src/components/posts/post-comment-thread.tsx](../app/src/components/posts/post-comment-thread.tsx)
+  - [app/src/components/posts/post-comment-thread.test.tsx](../app/src/components/posts/post-comment-thread.test.tsx)
+  - [app/e2e/comment-report-visual-smoke.spec.ts](../app/e2e/comment-report-visual-smoke.spec.ts)
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/components/posts/post-comment-thread.test.tsx`
+    - `1 file / 11 tests` PASS
+  - targeted lint:
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers PLAYWRIGHT_BASE_URL=http://localhost:3000 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test:e2e -- e2e/comment-report-visual-smoke.spec.ts --project=chromium --workers=1`
+    - PASS
+  - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `297 files / 1421 tests`, Next production build PASS
