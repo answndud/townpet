@@ -1,5 +1,6 @@
 import type { SearchTermContext } from "@/server/queries/search.queries";
 import { getHealthSnapshot } from "@/server/health-overview";
+import { getAdminQueueSmokeReadiness } from "@/server/queries/admin-queue-smoke-readiness.queries";
 import { getCorrectionFlowOpsOverview } from "@/server/queries/acquisition-ops.queries";
 import { getAuthAuditOverview } from "@/server/queries/auth-audit.queries";
 import { getCareFeedbackIssueStats } from "@/server/queries/care-feedback.queries";
@@ -22,6 +23,7 @@ export async function getAdminOpsOverview(options: AdminOpsOverviewOptions = {})
     search,
     initialRegion,
     correctionFlow,
+    adminQueueSmoke,
   ] =
     await Promise.all([
       getHealthSnapshot({ includeDetailedHealth: true }),
@@ -32,6 +34,7 @@ export async function getAdminOpsOverview(options: AdminOpsOverviewOptions = {})
       getSearchInsightsOverview(8, options.searchContext),
       getInitialRegionOpsOverview(7),
       getCorrectionFlowOpsOverview(7),
+      getAdminQueueSmokeReadiness(),
     ]);
 
   return {
@@ -43,5 +46,6 @@ export async function getAdminOpsOverview(options: AdminOpsOverviewOptions = {})
     search,
     initialRegion,
     correctionFlow,
+    adminQueueSmoke,
   };
 }

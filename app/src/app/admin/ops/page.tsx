@@ -129,6 +129,12 @@ function formatCareFeedbackThresholdLabel(severity: "ok" | "notice" | "warning")
   return "정상";
 }
 
+function formatAdminQueueSmokeStatusClass(status: "PASS" | "BLOCKED") {
+  return status === "PASS"
+    ? "border-[#cfe6d1] bg-[#f4fbf4] text-[#256342]"
+    : "border-[#ead8a4] bg-[#fff9ea] text-[#7f5b0d]";
+}
+
 function normalizeDashboardState(value: string): "ok" | "warn" | "error" | "degraded" {
   if (value === "ok" || value === "warn" || value === "error" || value === "degraded") {
     return value;
@@ -275,6 +281,7 @@ export default async function AdminOpsPage({ searchParams }: AdminOpsPageProps) 
   const careThresholdClass = formatCareFeedbackThresholdClass(careThreshold.severity);
   const initialRegion = overview.initialRegion;
   const correctionFlow = overview.correctionFlow;
+  const adminQueueSmoke = overview.adminQueueSmoke;
   const searchContextLabel = describeSearchContext({
     searchScope: selectedSearchScope,
     searchType: selectedSearchType,
@@ -1001,6 +1008,44 @@ export default async function AdminOpsPage({ searchParams }: AdminOpsPageProps) 
                 <p className="text-xs text-[#5a7398]">병원 후기 CTR</p>
                 <p className="mt-2 text-2xl font-bold text-[#10284a]">
                   {formatPercent(overview.personalization.totals.postCtr)}
+                </p>
+              </div>
+
+              <div className="mt-3 rounded-xl border border-[#dbe6f6] bg-white p-3">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <h3 className="text-sm font-semibold text-[#1f3f71]">
+                      관리자 큐 smoke 준비
+                    </h3>
+                    <p className="mt-1 text-xs text-[#5a7398]">
+                      운영 신고/정정 큐 인증 smoke 실행 조건
+                    </p>
+                  </div>
+                  <span
+                    className={`w-fit rounded-full border px-2 py-0.5 text-[11px] font-semibold ${formatAdminQueueSmokeStatusClass(adminQueueSmoke.status)}`}
+                  >
+                    {adminQueueSmoke.status}
+                  </span>
+                </div>
+                <div className="mt-3 grid gap-2 text-xs text-[#4f678d] sm:grid-cols-2">
+                  <div className="border-t border-[#e4edf8] pt-2">
+                    <p className="font-semibold text-[#163462]">필수 환경 변수</p>
+                    <p className="mt-1">
+                      {adminQueueSmoke.configuredKeys.length} /{" "}
+                      {adminQueueSmoke.requiredKeys.length} 설정됨
+                    </p>
+                  </div>
+                  <div className="border-t border-[#e4edf8] pt-2">
+                    <p className="font-semibold text-[#163462]">누락 key</p>
+                    <p className="mt-1">
+                      {adminQueueSmoke.missingKeys.length > 0
+                        ? adminQueueSmoke.missingKeys.join(", ")
+                        : "없음"}
+                    </p>
+                  </div>
+                </div>
+                <p className="mt-3 break-all border-t border-[#e4edf8] pt-2 text-[11px] text-[#5a7398]">
+                  {adminQueueSmoke.command}
                 </p>
               </div>
 

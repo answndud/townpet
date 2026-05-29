@@ -13,5 +13,8 @@ describe("AdminOpsPage source", () => {
     expect(source).toContain("receiptCtaClickCount");
     expect(source).toContain("일자별 추세");
     expect(source).toContain("dailySummaries");
+    expect(source).toContain("관리자 큐 smoke 준비");
+    expect(source).toContain("overview.adminQueueSmoke");
+    expect(source).toContain("missingKeys");
   });
 });

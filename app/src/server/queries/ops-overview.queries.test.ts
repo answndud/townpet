@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { PostScope, PostType, SearchTermSearchIn } from "@prisma/client";
 
 import { getHealthSnapshot } from "@/server/health-overview";
+import { getAdminQueueSmokeReadiness } from "@/server/queries/admin-queue-smoke-readiness.queries";
 import { getCorrectionFlowOpsOverview } from "@/server/queries/acquisition-ops.queries";
 import { getAuthAuditOverview } from "@/server/queries/auth-audit.queries";
 import { getCareFeedbackIssueStats } from "@/server/queries/care-feedback.queries";
@@ -17,6 +18,10 @@ vi.mock("@/server/health-overview", () => ({
 
 vi.mock("@/server/queries/acquisition-ops.queries", () => ({
   getCorrectionFlowOpsOverview: vi.fn(),
+}));
+
+vi.mock("@/server/queries/admin-queue-smoke-readiness.queries", () => ({
+  getAdminQueueSmokeReadiness: vi.fn(),
 }));
 
 vi.mock("@/server/queries/auth-audit.queries", () => ({
@@ -44,6 +49,7 @@ vi.mock("@/server/queries/search.queries", () => ({
 }));
 
 const mockGetHealthSnapshot = vi.mocked(getHealthSnapshot);
+const mockGetAdminQueueSmokeReadiness = vi.mocked(getAdminQueueSmokeReadiness);
 const mockGetCorrectionFlowOpsOverview = vi.mocked(getCorrectionFlowOpsOverview);
 const mockGetAuthAuditOverview = vi.mocked(getAuthAuditOverview);
 const mockGetCareFeedbackIssueStats = vi.mocked(getCareFeedbackIssueStats);
@@ -55,6 +61,7 @@ const mockGetSearchInsightsOverview = vi.mocked(getSearchInsightsOverview);
 describe("ops overview queries", () => {
   beforeEach(() => {
     mockGetHealthSnapshot.mockReset();
+    mockGetAdminQueueSmokeReadiness.mockReset();
     mockGetCorrectionFlowOpsOverview.mockReset();
     mockGetAuthAuditOverview.mockReset();
     mockGetCareFeedbackIssueStats.mockReset();
@@ -255,6 +262,15 @@ describe("ops overview queries", () => {
       ],
       sourceSummaries: [{ source: "operator_content", count: 10 }],
     });
+    mockGetAdminQueueSmokeReadiness.mockReturnValue({
+      status: "BLOCKED",
+      requiredKeys: ["ADMIN_QUEUE_SMOKE_EMAIL", "ADMIN_QUEUE_SMOKE_PASSWORD"],
+      missingKeys: ["ADMIN_QUEUE_SMOKE_EMAIL", "ADMIN_QUEUE_SMOKE_PASSWORD"],
+      configuredKeys: [],
+      command:
+        "OPS_BASE_URL=https://townpet.vercel.app COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app ops:check:admin-queue-smoke",
+      docsPath: "business/operations/배포전_on-demand_체크.md#7-관리자-queue-smoke",
+    });
 
     const overview = await getAdminOpsOverview({
       searchContext: {
@@ -272,6 +288,7 @@ describe("ops overview queries", () => {
     });
     expect(mockGetInitialRegionOpsOverview).toHaveBeenCalledWith(7);
     expect(mockGetCorrectionFlowOpsOverview).toHaveBeenCalledWith(7);
+    expect(mockGetAdminQueueSmokeReadiness).toHaveBeenCalledWith();
     expect(overview.health.status).toBe("ok");
     expect(overview.authAudit.totalEvents).toBe(5);
     expect(overview.reports.totalCount).toBe(7);
@@ -280,5 +297,6 @@ describe("ops overview queries", () => {
     expect(overview.search.zeroResultTerms).toEqual([]);
     expect(overview.initialRegion.contentTotals.hospitals).toBe(3);
     expect(overview.correctionFlow.submitRate).toBe(0.4);
+    expect(overview.adminQueueSmoke.status).toBe("BLOCKED");
   });
 });
