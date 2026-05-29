@@ -15,8 +15,13 @@ describe("FeedPagination", () => {
 
     expect(html).toContain('aria-label="피드 페이지 이동"');
     expect(html).toContain('aria-current="page"');
-    expect(html).toContain("h-[30px]");
-    expect(html).toContain("min-w-[30px]");
+    expect(html).toContain("min-h-10");
+    expect(html).toContain("min-w-10");
+    expect(html).toContain("hover:underline hover:underline-offset-4");
+    expect(html).toContain("bg-[#3567b5]");
+    expect(html).not.toContain("h-[30px]");
+    expect(html).not.toContain("min-w-[30px]");
+    expect(html).not.toContain("border-[#cbdcf5] bg-white");
     expect(html).toContain("flex-wrap");
     expect(html).toContain('href="/feed?page=2"');
     expect(html).toContain('href="/feed?page=4"');
