@@ -22,6 +22,12 @@ const PUBLIC_INITIAL_POST_TYPES = new Set<PostType>([
   PostType.PRODUCT_REVIEW,
 ]);
 
+const POST_CREATE_BACK_LINK_CLASS_NAME =
+  "tp-text-muted inline-flex min-h-10 w-fit items-center px-1.5 text-xs font-semibold transition hover:text-[#2f5da4] hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1";
+
+const POST_CREATE_HEADER_BACK_LINK_CLASS_NAME =
+  "tp-text-muted inline-flex min-h-10 items-center px-1.5 text-[11px] font-semibold transition hover:text-[#2f5da4] hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1";
+
 export const metadata = createNoIndexPageMetadata({
   title: "글쓰기",
   description: "TownPet 게시글을 작성합니다.",
@@ -117,7 +123,7 @@ export default async function NewPostPage({ searchParams }: NewPostPageProps) {
         <main className="mx-auto flex w-full max-w-[1320px] flex-col gap-4 px-4 py-5 sm:gap-5 sm:px-6 sm:py-6 lg:px-10">
           <Link
             href="/feed"
-            className="tp-btn-soft inline-flex w-fit items-center px-3.5 py-2 text-xs font-semibold"
+            className={POST_CREATE_BACK_LINK_CLASS_NAME}
           >
             목록으로
           </Link>
@@ -174,7 +180,7 @@ export default async function NewPostPage({ searchParams }: NewPostPageProps) {
             <span className="inline-flex h-[28px] items-center rounded-md border border-[#d8e4f6] bg-white px-2.5 font-semibold text-[#355988]">
               {userId ? "회원 작성" : "비회원 작성"}
             </span>
-            <Link href="/feed" className="tp-btn-soft inline-flex h-[28px] items-center px-2.5 text-[11px] font-semibold">
+            <Link href="/feed" className={POST_CREATE_HEADER_BACK_LINK_CLASS_NAME}>
               피드로 돌아가기
             </Link>
           </div>

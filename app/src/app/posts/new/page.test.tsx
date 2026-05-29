@@ -62,6 +62,8 @@ describe("NewPostPage", () => {
     expect(html).toContain("혼잡한 시간대");
     expect(html).toContain("글 작성");
     expect(html).toContain("p-3.5");
+    expect(html).toContain("hover:underline hover:underline-offset-4");
+    expect(html).not.toContain("tp-btn-soft inline-flex h-[28px]");
     expect(html).not.toContain("자동 임시저장");
   });
 

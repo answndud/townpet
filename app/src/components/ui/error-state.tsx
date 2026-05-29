@@ -9,6 +9,12 @@ type ErrorStateProps = {
   role?: "alert" | "status";
 };
 
+export const ERROR_STATE_PRIMARY_ACTION_CLASS_NAME =
+  "inline-flex min-h-10 items-center justify-center rounded-md bg-[#3567b5] px-4 text-xs font-semibold text-[#fbfdff] transition hover:bg-[#2f5da4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1";
+
+export const ERROR_STATE_TEXT_ACTION_CLASS_NAME =
+  "tp-text-muted inline-flex min-h-10 items-center justify-center px-1.5 text-xs font-semibold transition hover:text-[#2f5da4] hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1";
+
 export function ErrorState({
   eyebrow,
   title,

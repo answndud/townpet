@@ -7,6 +7,9 @@ const LEGAL_LINKS = [
   { href: "/corrections/new", label: "정보 정정 요청" },
 ] as const;
 
+const APP_SHELL_FOOTER_LINK_CLASS_NAME =
+  "tp-text-muted inline-flex min-h-10 items-center px-1.5 text-xs font-semibold transition hover:text-[#2f5da4] hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1";
+
 export function AppShellFooter() {
   return (
     <footer className="border-t border-[#d8e4f6] bg-white/70 backdrop-blur-sm">
@@ -20,7 +23,7 @@ export function AppShellFooter() {
           </div>
           <div className="flex flex-wrap gap-1.5 text-xs">
             {LEGAL_LINKS.map((link) => (
-              <Link key={link.href} href={link.href} className="tp-btn-soft inline-flex min-h-10 items-center px-3 text-xs">
+              <Link key={link.href} href={link.href} className={APP_SHELL_FOOTER_LINK_CLASS_NAME}>
                 {link.label}
               </Link>
             ))}

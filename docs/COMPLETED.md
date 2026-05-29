@@ -8242,6 +8242,42 @@
   - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
     - ESLint, TypeScript, Vitest `298 files / 1430 tests`, Next production build PASS
 
+### 2026-05-29 | 남은 user-facing auxiliary/error action 일괄 정리
+- 완료일: `2026-05-29`
+- 배경:
+  - 이전 작업을 작은 단위로 나누다 보니 글쓰기/동네 gate/footer/error fallback 주변에 비슷한 `tp-btn-soft`, `tp-btn-primary`, 28px/11px 보조 button shape가 남아 있었다.
+  - 사용자 요청에 따라 남은 후보를 하나씩 나누지 않고, user-facing 보조 링크와 오류 복구 action을 한 번에 같은 계층 기준으로 맞췄다.
+- 변경내용:
+  - `/posts/new`의 `목록으로`, `피드로 돌아가기`를 soft button에서 text action으로 낮췄다.
+  - `NeighborhoodGateNotice`의 동네 설정/보조/홈 링크를 text link hierarchy로 바꿨다.
+  - `AppShellFooter`의 약관/개인정보/정정 요청 링크를 button shape에서 footer text link로 낮췄다.
+  - `PostDetailClient`의 상세 로드 실패 fallback에서 `다시 시도`는 compact primary, `게스트 페이지 보기`는 text action으로 분리했다.
+  - 전역 오류, 게시글 오류, 관리자 오류, 404와 `ErrorStateBackButton`은 공용 `ERROR_STATE_*_ACTION_CLASS_NAME`을 사용하도록 정리했다.
+  - source guard test가 위 범위의 legacy `tp-btn-*`, 28px soft link, 11px error button 패턴 재도입을 잡도록 보강했다.
+- 코드문서:
+  - [app/src/app/posts/new/page.tsx](../app/src/app/posts/new/page.tsx)
+  - [app/src/components/neighborhood/neighborhood-gate-notice.tsx](../app/src/components/neighborhood/neighborhood-gate-notice.tsx)
+  - [app/src/components/navigation/app-shell-footer.tsx](../app/src/components/navigation/app-shell-footer.tsx)
+  - [app/src/components/posts/post-detail-client.tsx](../app/src/components/posts/post-detail-client.tsx)
+  - [app/src/components/ui/error-state.tsx](../app/src/components/ui/error-state.tsx)
+  - [app/src/components/ui/error-state-back-button.tsx](../app/src/components/ui/error-state-back-button.tsx)
+  - [app/src/app/error.tsx](../app/src/app/error.tsx)
+  - [app/src/app/posts/[id]/error.tsx](../app/src/app/posts/[id]/error.tsx)
+  - [app/src/app/admin/error.tsx](../app/src/app/admin/error.tsx)
+  - [app/src/app/not-found.tsx](../app/src/app/not-found.tsx)
+- 남은 범위 판단:
+  - 이번 묶음은 사용자-facing auxiliary/error/navigation action의 남은 후보를 한 번에 닫는 목적이다.
+  - 관리자 form submit, notification 관리 action, profile edit submit처럼 실제 작업 실행/운영 화면 성격이 강한 버튼은 이번 visual cleanup 범위에서 제외했다.
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/app/posts/new/page.test.tsx src/components/navigation/app-shell-footer.test.tsx src/components/compact-control-edge-accessibility.test.ts src/components/ui/error-state.test.tsx src/components/compact-control-final-sweep.test.ts`
+    - Vitest `5 files / 15 tests` PASS
+  - targeted lint:
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `298 files / 1431 tests`, Next production build PASS
+
 ### 2026-05-29 | AuthPageLayout footer link 계층 정리
 - 완료일: `2026-05-29`
 - 배경:
