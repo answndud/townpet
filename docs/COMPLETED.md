@@ -8242,6 +8242,33 @@
   - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
     - ESLint, TypeScript, Vitest `298 files / 1430 tests`, Next production build PASS
 
+### 2026-05-29 | ServiceUnavailableState action 계층 정리
+- 완료일: `2026-05-29`
+- 배경:
+  - `ServiceUnavailableState`는 게시판/글쓰기 등 지연 fallback에서 재사용되지만, action이 `tp-btn-primary/tp-btn-soft/tp-btn-md`에 묶여 있었다.
+  - 최근 상세/피드 action 정리 기준과 맞추려면 복구 action만 primary로 유지하고 보조 이동은 text action으로 낮추는 편이 일관적이다.
+- 변경내용:
+  - primary action을 explicit compact primary class로 변경했다.
+  - secondary action을 bordered soft button에서 compact text action으로 낮췄다.
+  - action class를 상수화해 공용 fallback의 button hierarchy를 한 곳에서 읽을 수 있게 했다.
+  - 테스트가 `tp-btn-primary`, `tp-btn-soft`, `tp-btn-md` 재도입을 잡도록 보강했다.
+- 코드문서:
+  - [app/src/components/ui/service-unavailable-state.tsx](../app/src/components/ui/service-unavailable-state.tsx)
+  - [app/src/components/ui/service-unavailable-state.test.tsx](../app/src/components/ui/service-unavailable-state.test.tsx)
+- 다음 후보:
+  - [app/src/components/auth/auth-page-layout.tsx](../app/src/components/auth/auth-page-layout.tsx): auth page auxiliary action 계층 점검
+  - [app/src/app/posts/new/page.tsx](../app/src/app/posts/new/page.tsx): 글쓰기 page back link 28px soft button 정리
+  - [app/src/components/neighborhood/neighborhood-gate-notice.tsx](../app/src/components/neighborhood/neighborhood-gate-notice.tsx): 동네 gate notice action 계층 정리
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/components/ui/service-unavailable-state.test.tsx src/app/posts/new/page.test.tsx`
+    - Vitest `2 files / 3 tests` PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app lint -- src/components/ui/service-unavailable-state.tsx src/components/ui/service-unavailable-state.test.tsx src/app/posts/new/page.test.tsx`
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `298 files / 1430 tests`, Next production build PASS
+
 ### 2026-05-29 | 헤더 관심 동물 메뉴 action 버튼 계층 정리
 - 완료일: `2026-05-29`
 - 배경:
