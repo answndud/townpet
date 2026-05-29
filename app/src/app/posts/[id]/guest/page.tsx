@@ -24,6 +24,7 @@ import { PostCommentSectionClient } from "@/components/posts/post-comment-sectio
 import { PostViewTracker } from "@/components/posts/post-view-tracker";
 import { getCspNonce } from "@/lib/csp-nonce";
 import { serializeJsonForScriptTag } from "@/lib/json-script";
+import { formatKoreanIsoDate } from "@/lib/date-format";
 import { buildPostDetailMediaRendering } from "@/lib/post-detail-rendering";
 import {
   buildExcerpt,
@@ -32,7 +33,7 @@ import {
 } from "@/lib/post-page-metadata";
 import { getGuestPostMeta } from "@/lib/post-guest-meta";
 import { resolvePublicGuestDisplayName } from "@/lib/public-guest-identity";
-import { formatRelativeDate, postTypeMeta } from "@/lib/post-presenter";
+import { postTypeMeta } from "@/lib/post-presenter";
 import { isReportablePostType } from "@/lib/post-type-groups";
 import { toAbsoluteUrl } from "@/lib/site-url";
 import { resolveUserDisplayName } from "@/lib/user-display";
@@ -249,23 +250,42 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
       <main className="mx-auto flex w-full max-w-[1100px] flex-col gap-4 px-4 py-5 sm:gap-5 sm:px-6 sm:py-6 lg:px-8">
         <BackToFeedButton className="tp-btn-soft inline-flex min-h-10 w-fit items-center px-3 text-xs" />
         <div>
-          <section className="tp-card p-4 sm:p-7">
-            <div className="flex flex-wrap items-center gap-2 text-xs">
-              <PostBoardLinkChip type={post.type} label={meta.label} chipClass={meta.chipClass} />
-              {post.neighborhood ? (
-                <span className="tp-chip-base tp-chip-muted">
-                  {post.neighborhood.city} {post.neighborhood.name}
-                </span>
+          <section className="tp-card p-4 sm:p-6">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-2 text-xs">
+                <PostBoardLinkChip type={post.type} label={meta.label} chipClass={meta.chipClass} />
+                {post.neighborhood ? (
+                  <span className="tp-chip-base tp-chip-muted">
+                    {post.neighborhood.city} {post.neighborhood.name}
+                  </span>
+                ) : null}
+              </div>
+              {canReportPost ? (
+                <details className="relative shrink-0">
+                  <summary
+                    aria-label="게시글 더보기"
+                    className="tp-text-muted inline-flex min-h-10 min-w-10 cursor-pointer list-none items-center justify-center rounded-full border border-[#dbe6f5] bg-white text-[15px] leading-none transition hover:bg-[#f6f9ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 [&::-webkit-details-marker]:hidden"
+                  >
+                    ···
+                  </summary>
+                  <div className="tp-border-muted absolute right-0 z-20 mt-1.5 min-w-[220px] rounded-md border bg-white p-2 shadow-[0_8px_18px_rgba(16,40,74,0.08)]">
+                    <p className="px-1 pb-1 text-[12px] font-semibold text-rose-700">게시글 신고</p>
+                    <PostReportForm targetId={post.id} canReport={false} loginHref={loginHref} />
+                  </div>
+                </details>
               ) : null}
             </div>
 
-            <div className="tp-border-soft mt-4 border-b pb-4 sm:pb-5">
+            <div className="tp-border-soft mt-4 border-b pb-3 sm:pb-4">
               <h1 className="tp-text-post-title text-[#10284a]">
                 {post.title}
               </h1>
-              <div className="mt-3 flex flex-col gap-1.5">
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-[#4f678d]">
-                  <p className="font-semibold text-[#1f3f71]">
+              <div className="mt-3 flex items-center gap-2">
+                <div className="tp-surface-alt tp-text-accent flex size-[32px] shrink-0 items-center justify-center rounded-full text-[11px] font-semibold">
+                  {displayAuthorName.slice(0, 1).toUpperCase()}
+                </div>
+                <div className="min-w-0">
+                  <div className="min-w-0 break-all text-[13px] font-semibold leading-5 text-[#1f3f71]">
                     {guestPostMeta.isGuestPost ? (
                       <span>{displayAuthorName}</span>
                     ) : (
@@ -276,19 +296,17 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
                         {displayAuthorName}
                       </Link>
                     )}
+                  </div>
+                  <p className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[12px] text-[#516d96]">
+                    <span suppressHydrationWarning>{formatKoreanIsoDate(createdAt)}</span>
+                    <span>조회 {safeViewCount.toLocaleString()}</span>
+                    <PostCommentCountStat
+                      key={`${post.id}:${safeCommentCount}`}
+                      postId={post.id}
+                      initialCount={safeCommentCount}
+                    />
                   </p>
-                  <span className="text-[#90a4c2]">·</span>
-                  <p className="text-[12px] text-[#516d96]">{formatRelativeDate(createdAt)}</p>
                 </div>
-                <p className="tp-text-meta flex flex-wrap items-center gap-x-2 gap-y-1 text-[#56739c]">
-                  <span>조회 {safeViewCount.toLocaleString()}</span>
-                  <span>좋아요 {safeLikeCount.toLocaleString()}</span>
-                  <PostCommentCountStat
-                    key={`${post.id}:${safeCommentCount}`}
-                    postId={post.id}
-                    initialCount={safeCommentCount}
-                  />
-                </p>
               </div>
             </div>
 
@@ -301,7 +319,7 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
               />
             ) : null}
 
-            <div className="mt-5 sm:mt-6">
+            <div className="mt-4 sm:mt-5">
               <article className="tp-text-body text-[#17345f]">
                 {shouldUsePlainFallback ? (
                   <div className="whitespace-pre-wrap">{post.content}</div>
@@ -315,8 +333,8 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
               {!hasInlineImages ? <PostDetailMediaGallery images={orderedImages} /> : null}
             </div>
 
-            <div className="tp-border-soft mt-6 space-y-3 border-t pt-4 sm:mt-7 sm:pt-5">
-              <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="tp-border-soft mt-4 space-y-2.5 border-t pt-3 sm:mt-5 sm:pt-4">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <PostReactionControls
                   key={`${post.id}:guest`}
                   postId={post.id}
@@ -326,8 +344,9 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
                   canReact={false}
                   loginHref={loginHref}
                   align="start"
+                  compact
                 />
-                <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end">
+                <div className="flex w-full flex-wrap items-center gap-1.5 sm:w-auto sm:justify-end">
                   <PostBookmarkButton
                     key={`${post.id}:guest-bookmark`}
                     postId={post.id}
@@ -341,27 +360,6 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
               </div>
               {guestPostMeta.isGuestPost ? <GuestPostDetailActions postId={post.id} /> : null}
             </div>
-
-            {canReportPost ? (
-              <details className="group mt-3 text-left">
-                <summary className="inline-flex min-h-10 cursor-pointer items-center gap-1 rounded-lg px-3 text-[11px] font-medium text-[#8d5a68] transition hover:bg-rose-50 hover:text-rose-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200 focus-visible:ring-offset-2">
-                  <svg
-                    aria-hidden="true"
-                    viewBox="0 0 12 12"
-                    className="h-3 w-3 text-current transition group-open:rotate-90"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.6"
-                  >
-                    <path d="M4 2.5 8 6 4 9.5" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                  게시글 신고
-                </summary>
-                <div className="tp-border-soft mt-2 border-t pt-2">
-                  <PostReportForm targetId={post.id} canReport={false} loginHref={loginHref} />
-                </div>
-              </details>
-            ) : null}
           </section>
         </div>
 

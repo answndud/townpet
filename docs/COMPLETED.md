@@ -7857,3 +7857,43 @@
 - 결과:
   - 운영자는 `/admin/ops`에서 admin queue smoke가 credential 준비 전인지 바로 확인할 수 있다.
   - production data, admin queue state, auth policy, credential values는 변경하거나 노출하지 않았다.
+
+### 2026-05-29 | 게시글 상세/댓글 UI 밀도와 액션 위계 1차 개선
+- 완료일: `2026-05-29`
+- 배경:
+  - 게시글 상세 화면의 카드 내부 상하 여백, 하단 action 버튼 크기, 신고 위치, 댓글 action 위치, 날짜 포맷이 커뮤니티 반복 사용 화면에 비해 무겁고 산만하다는 피드백이 있었다.
+  - 전면 개편보다 우선 게시글 상세/댓글 hot path의 밀도와 action hierarchy를 낮은 위험으로 정리했다.
+- 변경내용:
+  - 게시글 상세 카드의 vertical rhythm을 줄이고 본문과 하단 action 간격을 compact하게 조정했다.
+  - 게시글 신고를 하단 단독 버튼에서 우측 상단 더보기 메뉴로 이동했다.
+  - 좋아요/싫어요는 primary interaction group으로 유지하되 compact touch target으로 줄였다.
+  - 북마크는 icon-only secondary button으로 바꾸고 `aria-label`/`title`/`sr-only` label을 추가했다.
+  - 공유는 secondary compact button으로 낮추고 접근성 label을 보강했다.
+  - 작성자 meta를 작은 profile row로 정리하고 날짜, 조회수, 댓글 수를 한 줄로 묶었다.
+  - 카테고리 chip은 버튼처럼 보이는 회색 배지에서 작고 둥근 게시판 링크 chip으로 낮췄다.
+  - 비회원 댓글 작성 폼 상단에 닉네임/비밀번호 기반 수정/삭제 가능 안내를 추가했다.
+  - 댓글 action/reaction 영역을 댓글 본문에 더 가깝게 붙여 대상이 명확하게 보이도록 조정했다.
+  - 게시글/댓글 날짜 표시를 한국 시간 기준 `YYYY-MM-DD`, 필요 시 `YYYY-MM-DD HH:mm`로 통일했다.
+- 코드문서:
+  - [app/src/components/posts/post-detail-primary-card.tsx](../app/src/components/posts/post-detail-primary-card.tsx)
+  - [app/src/app/posts/[id]/guest/page.tsx](../app/src/app/posts/%5Bid%5D/guest/page.tsx)
+  - [app/src/components/posts/post-reaction-controls.tsx](../app/src/components/posts/post-reaction-controls.tsx)
+  - [app/src/components/posts/post-bookmark-button.tsx](../app/src/components/posts/post-bookmark-button.tsx)
+  - [app/src/components/posts/post-share-controls.tsx](../app/src/components/posts/post-share-controls.tsx)
+  - [app/src/components/posts/post-comment-root-form.tsx](../app/src/components/posts/post-comment-root-form.tsx)
+  - [app/src/components/posts/post-comment-thread.tsx](../app/src/components/posts/post-comment-thread.tsx)
+  - [app/src/lib/date-format.ts](../app/src/lib/date-format.ts)
+- 검증:
+  - `./node_modules/.bin/vitest run src/lib/date-format.test.ts src/components/posts/post-reaction-controls.test.tsx src/components/posts/post-detail-action-accessibility.test.tsx src/components/posts/post-form-accessibility.test.tsx src/components/posts/post-comment-thread.test.tsx 'src/app/posts/[id]/guest/page-layout.test.ts' src/components/compact-control-final-sweep.test.ts`
+    - `7 files / 31 tests` PASS
+  - `./node_modules/.bin/tsc -p tsconfig.json --noEmit --pretty false`
+    - PASS
+  - `./node_modules/.bin/eslint`
+    - PASS
+  - `./node_modules/.bin/next build`
+    - PASS
+  - 모바일 Playwright smoke:
+    - `/posts/cmp4zscrp001l4e0on2axyhoh/guest`에서 비회원 댓글 안내, `YYYY-MM-DD` 날짜, 더보기 신고 메뉴, 북마크 icon-only, 공유 label, 가로 overflow 없음 확인.
+- 결과:
+  - 게시글 상세/댓글 화면의 액션 우선순위가 `primary reaction`, `secondary bookmark/share`, `tertiary report/menu`로 더 명확해졌다.
+  - 인증/신고/댓글 정책과 mutation 동작은 변경하지 않았다.

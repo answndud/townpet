@@ -71,6 +71,12 @@ export function PostCommentRootForm({
     <div className={POST_COMMENT_ROOT_FORM_SHELL_CLASS_NAME}>
       {canComment ? (
         <>
+          {!currentUserId ? (
+            <div className="mb-1.5 rounded-md border border-[#dbe6f5] bg-white px-2.5 py-2 text-[12px] leading-5 text-[#4f678d]">
+              <p className="font-semibold text-[#173963]">비회원 댓글 작성</p>
+              <p>닉네임과 비밀번호를 입력하면 댓글을 수정/삭제할 수 있습니다.</p>
+            </div>
+          ) : null}
           {lostFoundSightingEnabled ? (
             <div className={POST_COMMENT_ROOT_FORM_MODE_ROW_CLASS_NAME}>
               <button

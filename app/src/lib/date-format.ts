@@ -42,6 +42,16 @@ export function formatKoreanDate(value: Date | string | number) {
   return `${parts.year}.${parts.month}.${parts.day}`;
 }
 
+export function formatKoreanIsoDate(value: Date | string | number) {
+  const date = toDate(value);
+  if (!date) {
+    return "";
+  }
+
+  const parts = partsToMap(koreanDateFormatter.formatToParts(date));
+  return `${parts.year}-${parts.month}-${parts.day}`;
+}
+
 export function formatKoreanMonthDay(value: Date | string | number) {
   const date = toDate(value);
   if (!date) {
@@ -60,4 +70,14 @@ export function formatKoreanDateTime(value: Date | string | number) {
 
   const parts = partsToMap(koreanDateTimeFormatter.formatToParts(date));
   return `${parts.year}.${parts.month}.${parts.day} ${parts.hour}:${parts.minute}`;
+}
+
+export function formatKoreanIsoDateTime(value: Date | string | number) {
+  const date = toDate(value);
+  if (!date) {
+    return "";
+  }
+
+  const parts = partsToMap(koreanDateTimeFormatter.formatToParts(date));
+  return `${parts.year}-${parts.month}-${parts.day} ${parts.hour}:${parts.minute}`;
 }
