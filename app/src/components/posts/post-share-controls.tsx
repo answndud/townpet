@@ -25,9 +25,10 @@ export function PostShareControls({ url, compact = false }: PostShareControlsPro
       <button
         type="button"
         onClick={handleCopy}
+        aria-label="게시글 공유 링크 복사"
         className={
           compact
-            ? "tp-btn-soft inline-flex min-h-10 items-center justify-center rounded-lg px-3 text-xs font-semibold"
+            ? "inline-flex min-h-10 items-center justify-center rounded-full border border-[#dbe6f5] bg-white px-2.5 text-xs font-semibold text-[#54739e] transition hover:bg-[#f5f9ff] hover:text-[#315b9a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2"
             : "tp-btn-soft inline-flex min-h-10 items-center justify-center rounded-lg px-4 text-sm font-semibold"
         }
       >

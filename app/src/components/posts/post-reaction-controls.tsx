@@ -202,8 +202,8 @@ export function PostReactionControls({
   }, [effectiveCanReact, hasInteracted, postId, reactionLoaded]);
 
   const buttonClass = compact
-    ? "inline-flex min-h-10 items-center gap-1.5 rounded-lg border px-3 text-[12px] font-semibold transition sm:px-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-    : "inline-flex min-h-11 items-center gap-1.5 rounded-lg border px-3 text-[13px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60";
+    ? "inline-flex min-h-10 items-center gap-1.5 rounded-full border px-2.5 text-[12px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+    : "inline-flex min-h-10 items-center gap-1.5 rounded-lg border px-3 text-[13px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60";
   const rootAlignmentClass =
     align === "start" ? "justify-start" : align === "end" ? "justify-end" : "justify-center";
 
@@ -291,7 +291,7 @@ export function PostReactionControls({
             <path d="M8 8V4.8A2.8 2.8 0 0 1 10.8 2l.5 3.1c.2 1-.1 2-.7 2.8L10 8.6h4.4A2.6 2.6 0 0 1 17 11.2l-.8 4.6a2.6 2.6 0 0 1-2.6 2.2H8z" />
             <path d="M3 8h3v10H3z" />
           </svg>
-          <span className="hidden sm:inline">좋아요</span>
+          <span>{compact ? "좋아요" : "좋아요"}</span>
           <span className="tabular-nums">{likes.toLocaleString()}</span>
         </button>
         {!effectiveCanReact && showLoginHint && loginIntent === REACTION_TYPE.LIKE ? (
@@ -329,7 +329,7 @@ export function PostReactionControls({
             <path d="M12 12v3.2A2.8 2.8 0 0 1 9.2 18l-.5-3.1c-.2-1 .1-2 .7-2.8l.6-.7H5.6A2.6 2.6 0 0 1 3 8.8l.8-4.6A2.6 2.6 0 0 1 6.4 2H12z" />
             <path d="M17 12h-3V2h3z" />
           </svg>
-          <span className="hidden sm:inline">싫어요</span>
+          <span>{compact ? "싫어요" : "싫어요"}</span>
           <span className="tabular-nums">{dislikes.toLocaleString()}</span>
         </button>
         {!effectiveCanReact && showLoginHint && loginIntent === REACTION_TYPE.DISLIKE ? (

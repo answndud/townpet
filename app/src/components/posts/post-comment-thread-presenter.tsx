@@ -1,5 +1,7 @@
 import type { KeyboardEvent } from "react";
 
+import { formatKoreanIsoDate } from "@/lib/date-format";
+
 export const COMMENT_DIVIDER_CLASS_NAME = "divide-[#edf3fb]";
 export const COMMENT_BORDER_CLASS_NAME = "border-[#eaf1fb]";
 export const COMMENT_REPLY_BADGE_CLASS_NAME =
@@ -8,11 +10,7 @@ export const MUTED_COMMENT_PLACEHOLDER_TEXT = "뮤트한 사용자 댓글입니�
 export const MUTED_COMMENT_AUTHOR_NAME = "뮤트한 사용자";
 
 export function formatCommentDate(value: Date | string) {
-  const parsed = value instanceof Date ? value : new Date(value);
-  if (Number.isNaN(parsed.getTime())) {
-    return "";
-  }
-  return parsed.toLocaleDateString("ko-KR");
+  return formatKoreanIsoDate(value);
 }
 
 export function buildPaginationItems(currentPage: number, totalPages: number) {

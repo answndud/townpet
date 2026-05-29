@@ -61,6 +61,7 @@ import {
 import { getClientFingerprint, getGuestFingerprint } from "@/lib/guest-client";
 import { getGuestWriteHeaders } from "@/lib/guest-step-up.client";
 import { COMMENT_CONTENT_MAX_LENGTH } from "@/lib/input-limits";
+import { formatKoreanIsoDateTime } from "@/lib/date-format";
 import { resolvePublicGuestDisplayName } from "@/lib/public-guest-identity";
 import { resolveUserDisplayName } from "@/lib/user-display";
 import {
@@ -574,7 +575,7 @@ export function PostCommentThread({
         : comment.content;
     const isSighting = comment.kind === "LOST_FOUND_SIGHTING";
     const sightingSeenAtText = comment.sightingSeenAt
-      ? new Date(comment.sightingSeenAt).toLocaleString("ko-KR")
+      ? formatKoreanIsoDateTime(comment.sightingSeenAt)
       : null;
 
     return (
@@ -785,7 +786,7 @@ export function PostCommentThread({
                     canReact={canReactToComment}
                     loginHref={loginHref}
                     compact
-                    className="ml-0 justify-start sm:ml-auto sm:justify-end"
+                    className="ml-0 justify-start"
                     loginHintAlign="end"
                   />
                 ) : null}

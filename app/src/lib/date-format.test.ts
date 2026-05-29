@@ -3,6 +3,8 @@ import { describe, expect, it } from "vitest";
 import {
   formatKoreanDate,
   formatKoreanDateTime,
+  formatKoreanIsoDate,
+  formatKoreanIsoDateTime,
   formatKoreanMonthDay,
 } from "@/lib/date-format";
 
@@ -19,9 +21,16 @@ describe("date-format", () => {
     expect(formatKoreanDateTime("2026-03-09T01:05:00.000Z")).toBe("2026.03.09 10:05");
   });
 
+  it("formats detail dates in ISO-like Korea timezone strings", () => {
+    expect(formatKoreanIsoDate("2026-03-09T01:05:00.000Z")).toBe("2026-03-09");
+    expect(formatKoreanIsoDateTime("2026-03-09T01:05:00.000Z")).toBe("2026-03-09 10:05");
+  });
+
   it("returns empty strings for invalid dates", () => {
     expect(formatKoreanDate("bad-date")).toBe("");
+    expect(formatKoreanIsoDate("bad-date")).toBe("");
     expect(formatKoreanMonthDay("bad-date")).toBe("");
     expect(formatKoreanDateTime("bad-date")).toBe("");
+    expect(formatKoreanIsoDateTime("bad-date")).toBe("");
   });
 });

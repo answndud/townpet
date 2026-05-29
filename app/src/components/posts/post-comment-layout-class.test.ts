@@ -63,10 +63,10 @@ describe("post comment layout classes", () => {
   });
 
   it("keeps the comment footer compact while preserving wrap and touch-safe controls", () => {
-    expect(POST_COMMENT_THREAD_FOOTER_CLASS_NAME).toContain("mt-2.5");
+    expect(POST_COMMENT_THREAD_FOOTER_CLASS_NAME).toContain("mt-2");
     expect(POST_COMMENT_THREAD_FOOTER_CLASS_NAME).toContain("flex-wrap");
     expect(POST_COMMENT_THREAD_FOOTER_CLASS_NAME).toContain("items-center");
-    expect(POST_COMMENT_THREAD_FOOTER_CLASS_NAME).toContain("justify-between");
+    expect(POST_COMMENT_THREAD_FOOTER_CLASS_NAME).toContain("justify-start");
     expect(POST_COMMENT_THREAD_FOOTER_CLASS_NAME).toContain("gap-x-2");
     expect(POST_COMMENT_THREAD_FOOTER_CLASS_NAME).toContain("gap-y-1.5");
     expect(POST_COMMENT_THREAD_FOOTER_CLASS_NAME).not.toContain("flex-col");

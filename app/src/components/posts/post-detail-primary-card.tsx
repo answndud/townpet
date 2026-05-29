@@ -16,7 +16,7 @@ import { PostReportForm } from "@/components/posts/post-report-form";
 import { PostShareControls } from "@/components/posts/post-share-controls";
 import { UserActionMenu } from "@/components/user/user-action-menu";
 import { renderLiteMarkdown } from "@/lib/markdown-lite";
-import { formatRelativeDate } from "@/lib/post-presenter";
+import { formatKoreanIsoDate } from "@/lib/date-format";
 import { typeMeta } from "@/components/posts/post-detail-presenter";
 import type { PostDetailItem, RelationState } from "@/components/posts/post-detail-types";
 
@@ -90,26 +90,50 @@ export function PostDetailPrimaryCard({
   const hasInlineImages = /<img[\s>]/i.test(renderedContentHtml);
 
   return (
-    <section className="tp-card p-4 sm:p-7">
-      <div className="flex flex-wrap items-center gap-2 text-xs">
-        <PostBoardLinkChip type={post.type} label={meta.label} chipClass={meta.chipClass} />
-        {post.neighborhood ? (
-          <span className="tp-chip-base tp-chip-muted">
-            {post.neighborhood.city} {post.neighborhood.name}
-          </span>
-        ) : null}
-        {post.status === PostStatus.HIDDEN ? (
-          <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 font-semibold text-amber-700">
-            운영 숨김 상태
-          </span>
+    <section className="tp-card p-4 sm:p-6">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-2 text-xs">
+          <PostBoardLinkChip type={post.type} label={meta.label} chipClass={meta.chipClass} />
+          {post.neighborhood ? (
+            <span className="tp-chip-base tp-chip-muted">
+              {post.neighborhood.city} {post.neighborhood.name}
+            </span>
+          ) : null}
+          {post.status === PostStatus.HIDDEN ? (
+            <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 font-semibold text-amber-700">
+              운영 숨김 상태
+            </span>
+          ) : null}
+        </div>
+        {showPostReportControls ? (
+          <details className="relative shrink-0">
+            <summary
+              aria-label="게시글 더보기"
+              className="tp-text-muted inline-flex min-h-10 min-w-10 cursor-pointer list-none items-center justify-center rounded-full border border-[#dbe6f5] bg-white text-[15px] leading-none transition hover:bg-[#f6f9ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 [&::-webkit-details-marker]:hidden"
+            >
+              ···
+            </summary>
+            <div className="tp-border-muted absolute right-0 z-20 mt-1.5 min-w-28 rounded-md border bg-white p-1 shadow-[0_8px_18px_rgba(16,40,74,0.08)]">
+              <button
+                type="button"
+                className="flex min-h-10 w-full items-center rounded px-3 text-left text-[12px] font-medium text-rose-700 hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200 focus-visible:ring-offset-1"
+                onClick={onTogglePostReportOpen}
+              >
+                {isPostReportOpen ? "신고 닫기" : "게시글 신고"}
+              </button>
+            </div>
+          </details>
         ) : null}
       </div>
 
-      <div className="tp-border-soft mt-4 border-b pb-4 sm:pb-5">
+      <div className="tp-border-soft mt-4 border-b pb-3 sm:pb-4">
         <h1 className="tp-text-post-title tp-text-primary">{post.title}</h1>
-        <div className="mt-3 flex flex-col gap-1.5">
-          <div className="tp-text-muted flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px]">
-            <div className="tp-text-heading min-w-0 break-all font-semibold">
+        <div className="mt-3 flex items-center gap-2">
+          <div className="tp-surface-alt tp-text-accent flex size-[32px] shrink-0 items-center justify-center rounded-full text-[11px] font-semibold">
+            {(displayAuthorName ?? "익").slice(0, 1).toUpperCase()}
+          </div>
+          <div className="min-w-0">
+            <div className="tp-text-heading min-w-0 break-all text-[13px] font-semibold leading-5">
               {isGuestPost ? (
                 <span>{displayAuthorName}</span>
               ) : (
@@ -125,18 +149,16 @@ export function PostDetailPrimaryCard({
                 />
               )}
             </div>
-            <span className="tp-text-subtle">·</span>
-            <p className="tp-text-subtle text-[12px]">{formatRelativeDate(createdAt)}</p>
+            <p className="tp-text-subtle mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[12px]">
+              <span suppressHydrationWarning>{formatKoreanIsoDate(createdAt)}</span>
+              <span>조회 {resolvedViewCount.toLocaleString()}</span>
+              <span>댓글 {resolvedCommentCount.toLocaleString()}</span>
+            </p>
           </div>
-          <p className="tp-text-meta tp-text-subtle flex flex-wrap items-center gap-x-2 gap-y-1">
-            <span>조회 {resolvedViewCount.toLocaleString()}</span>
-            <span>좋아요 {resolvedLikeCount.toLocaleString()}</span>
-            <span>댓글 {resolvedCommentCount.toLocaleString()}</span>
-          </p>
-          {relationMessage ? (
-            <p className="tp-text-subtle text-[11px]">{relationMessage}</p>
-          ) : null}
         </div>
+        {relationMessage ? (
+          <p className="tp-text-subtle mt-2 text-[11px]">{relationMessage}</p>
+        ) : null}
       </div>
 
       {post.isOperatorContent ? (
@@ -148,7 +170,7 @@ export function PostDetailPrimaryCard({
         />
       ) : null}
 
-      <div className="mt-5 sm:mt-6">
+      <div className="mt-4 sm:mt-5">
         <article className="tp-text-body tp-text-primary">
           {shouldUsePlainFallback ? (
             <div className="whitespace-pre-wrap">{post.content}</div>
@@ -162,10 +184,10 @@ export function PostDetailPrimaryCard({
         {!hasInlineImages ? <PostDetailMediaGallery images={orderedImages} /> : null}
       </div>
 
-      <div className="tp-border-soft mt-6 space-y-3 border-t pt-4 sm:mt-7 sm:pt-5">
+      <div className="tp-border-soft mt-4 space-y-2.5 border-t pt-3 sm:mt-5 sm:pt-4">
         {isPostActive ? (
           <>
-            <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <PostReactionControls
                 key={`${post.id}:${canInteract ? "viewer" : "guest"}:${canInteractWithPostOwner ? "interactive" : "blocked"}`}
                 postId={post.id}
@@ -175,9 +197,10 @@ export function PostDetailPrimaryCard({
                 canReact={canInteract && canInteractWithPostOwner}
                 loginHref={loginHref}
                 align="start"
+                compact
                 onStateChange={onReactionStateChange}
               />
-              <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end">
+              <div className="flex w-full flex-wrap items-center gap-1.5 sm:w-auto sm:justify-end">
                 <PostBookmarkButton
                   key={`${post.id}:${canInteract ? "viewer" : "guest"}`}
                   postId={post.id}
@@ -187,15 +210,6 @@ export function PostDetailPrimaryCard({
                   compact
                 />
                 <PostShareControls url={postUrl} compact />
-                {showPostReportControls ? (
-                  <button
-                    type="button"
-                    className="tp-btn-soft inline-flex min-h-10 items-center border-rose-300 px-3 text-xs text-rose-700 hover:bg-rose-50"
-                    onClick={onTogglePostReportOpen}
-                  >
-                    {isPostReportOpen ? "신고 닫기" : "신고"}
-                  </button>
-                ) : null}
               </div>
             </div>
             {showPostReportControls && isPostReportOpen ? (
