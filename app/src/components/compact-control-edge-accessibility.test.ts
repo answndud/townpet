@@ -74,4 +74,15 @@ describe("remaining compact user control accessibility", () => {
     expect(feedHoverMenuCode).toContain('document.addEventListener("focusin"');
     expect(feedHoverMenuCode).toContain('event.key === "Escape"');
   });
+
+  it("keeps feed hover pet menu actions compact but hierarchy-safe", () => {
+    const code = readSource("src/components/navigation/feed-hover-menu.tsx");
+
+    expect(code).toContain("FEED_HOVER_MENU_TEXT_ACTION_CLASS_NAME");
+    expect(code).toContain("FEED_HOVER_MENU_SAVE_ACTION_CLASS_NAME");
+    expect(code).toContain("inline-flex min-h-10 items-center justify-center rounded-md bg-[#3567b5]");
+    expect(code).toContain("hover:underline hover:underline-offset-4");
+    expect(code).not.toContain("tp-btn-soft px-2.5 py-1 text-[11px] font-semibold text-[#204f8a]");
+    expect(code).not.toContain("tp-btn-soft px-2 py-1 text-[11px] font-semibold text-[#204f8a]");
+  });
 });
