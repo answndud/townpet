@@ -3,6 +3,7 @@
 ## 현재 상태
 
 - 현재 active 구현 항목 없음.
+- `2026-05-29. 댓글 답글 접기 토글 compact text화`를 완료했다. 댓글 답글 묶음 토글을 둥근 버튼에서 작은 text action으로 낮추고, `aria-expanded`와 명확한 상태 문구를 붙였다. targeted tests, lint, typecheck, 모바일 Playwright smoke, 전체 `quality:check`를 확인했다.
 - `2026-05-29. 댓글 패널 답글 접근성 구조 정리`를 완료했다. 댓글 패널 클릭 동작은 유지하되 article의 button role을 제거하고, 키보드/스크린리더용 focusable reply trigger로 의미 구조를 분리했다. targeted tests, lint, typecheck, 모바일 Playwright smoke, 전체 `quality:check`를 확인했다.
 - `2026-05-29. 댓글 패널 답글 hover/focus 상태 polish`를 완료했다. 답글 가능한 댓글 패널에 hover/focus/open 상태를 추가하고, 모바일 smoke가 답글 대상 open state까지 확인하도록 보강했다. targeted tests, lint, typecheck, 모바일 Playwright smoke, 전체 `quality:check`, docs index, `git diff --check`를 확인했다.
 - `2026-05-29. 댓글 패널 클릭 답글 작성 전환`을 완료했다. 댓글 footer의 `답글` 버튼을 제거하고, 댓글 패널 자체를 클릭하거나 Enter/Space로 답글 작성 상태에 진입하도록 변경했다. 내부 메뉴/반응/접기/폼 클릭은 답글 열기에서 제외해 기존 작업 버튼과 충돌하지 않게 했다. targeted tests, lint, typecheck, 전체 `quality:check`, 모바일 Playwright smoke를 확인했다.
