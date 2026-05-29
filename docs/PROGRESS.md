@@ -3,6 +3,7 @@
 ## 현재 상태
 
 - 현재 active 구현 항목 없음.
+- `2026-05-29. 개인 목록 검색/페이지 action 버튼 계층 정리`를 완료했다. `/bookmarks`, `/my-posts`의 검색 submit은 compact primary로 유지하고 초기화/이전/다음 페이지는 text action으로 낮췄으며 `tp-btn-*` 의존 재도입을 source guard test로 막았다. targeted tests, lint, typecheck, 전체 `quality:check`를 확인했다.
 - `2026-05-29. 북마크 로그인 힌트 popover 폭 보정`을 완료했다. compact 북마크 버튼에서 비회원 로그인 안내가 버튼 폭으로 shrink되어 세로 표시되던 문제를 막기 위해 명시 width/min-width와 compact right alignment를 적용했고, 유사 floating prompt 폭 패턴을 점검했다. targeted tests, lint, typecheck, 전체 `quality:check`를 확인했다.
 - `2026-05-29. 피드 inline action 버튼 계층 정리`를 완료했다. 게스트 피드 `글쓰기`를 compact primary로 맞추고, 게스트/회원 피드 `목록 바로가기`는 text action으로 낮췄으며 30px legacy button 패턴을 제거했다. targeted tests, lint, typecheck, 전체 `quality:check`를 확인했다.
 - `2026-05-29. 분실동물 공유 패널 action 버튼 계층 정리`를 완료했다. 링크 복사/공유 이미지 열기는 text action으로 낮추고, 카카오톡 문구 복사는 compact primary로 유지했으며 `tp-btn-*` 의존을 제거했다. targeted tests, lint, typecheck, 전체 `quality:check`를 확인했다.

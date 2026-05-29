@@ -8216,6 +8216,35 @@
   - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
     - ESLint, TypeScript, Vitest `298 files / 1425 tests`, Next production build PASS
 
+### 2026-05-29 | 개인 목록 검색/페이지 action 버튼 계층 정리
+- 완료일: `2026-05-29`
+- 배경:
+  - `/bookmarks`와 `/my-posts`는 상세/피드 action cleanup 이후에도 검색 `tp-btn-primary`, 초기화/페이지 이동 `tp-btn-soft` 패턴이 남아 있었다.
+  - 개인 목록 화면은 반복 확인용 utility surface라 검색 submit만 primary로 남기고, 초기화와 페이지 이동은 더 낮은 text action 계층이 맞다.
+- 변경내용:
+  - `/bookmarks` 검색 submit을 `tp-btn-primary tp-btn-md`에서 explicit compact primary class로 바꿨다.
+  - `/my-posts` 검색 submit도 같은 compact primary class로 맞췄다.
+  - 두 화면의 `초기화`, `이전 페이지`, `다음 페이지`는 bordered soft button에서 underline 기반 text action으로 낮췄다.
+  - 기존 입력 높이와 모바일 `min-h-10` touch target은 유지했다.
+  - source guard test가 개인 목록 화면의 `tp-btn-primary`, `tp-btn-soft`, `tp-btn-md` 재도입을 잡도록 보강했다.
+- 코드문서:
+  - [app/src/app/bookmarks/page.tsx](../app/src/app/bookmarks/page.tsx)
+  - [app/src/app/my-posts/page.tsx](../app/src/app/my-posts/page.tsx)
+  - [app/src/components/compact-control-edge-accessibility.test.ts](../app/src/components/compact-control-edge-accessibility.test.ts)
+- 다음 후보:
+  - [app/src/components/posts/feed-infinite-list.tsx](../app/src/components/posts/feed-infinite-list.tsx): feed empty/retry action 정리
+  - [app/src/components/posts/feed-pagination.tsx](../app/src/components/posts/feed-pagination.tsx): feed pagination 30px control 정책 재검토
+  - [app/src/components/posts/post-create-basic-fields.tsx](../app/src/components/posts/post-create-basic-fields.tsx): disabled field action class 점검
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/components/compact-control-edge-accessibility.test.ts src/components/compact-control-final-sweep.test.ts src/app/personal-list-loading.test.tsx`
+    - Vitest `3 files / 8 tests` PASS
+  - targeted lint:
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `298 files / 1425 tests`, Next production build PASS
+
 ### 2026-05-29 | 댓글 답글 접기 토글 compact text화
 - 완료일: `2026-05-29`
 - 배경:
