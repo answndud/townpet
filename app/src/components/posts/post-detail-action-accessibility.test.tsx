@@ -87,6 +87,15 @@ describe("post detail action accessibility", () => {
     expect(html).toContain("min-h-8");
     expect(html).not.toContain("rounded-full");
     expect(html).not.toContain("border-[#dbe6f5]");
+    const source = readFileSync(
+      join(process.cwd(), "src/components/posts/post-bookmark-button.tsx"),
+      "utf8",
+    );
+    expect(source).toContain("w-[min(86vw,260px)]");
+    expect(source).toContain("min-w-[220px]");
+    expect(source).toContain("break-keep");
+    expect(source).toContain('compact ? "right-0" : "left-0"');
+    expect(source).not.toContain("absolute left-0 top-[calc(100%+8px)] z-10 max-w-[min(86vw,260px)]");
   });
 
   it("keeps share control status announcement visible to assistive tech", () => {
