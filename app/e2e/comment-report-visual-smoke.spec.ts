@@ -135,6 +135,7 @@ test.describe("comment/report mobile visual smoke", () => {
     await expect(reportableComment).toHaveAttribute("aria-label", /댓글에 답글 작성/);
     await expectTouchTarget(reportableComment, "reportable comment reply panel", 64);
     await reportableComment.getByText(/신고 가능한 댓글 smoke/).click();
+    await expect(reportableComment).toHaveAttribute("data-reply-open", "true");
     await expect(reportableComment.getByPlaceholder("답글을 입력하세요")).toBeVisible();
     await reportableComment.getByRole("button", { name: "취소", exact: true }).click();
     await reportableComment.locator("summary").first().click();

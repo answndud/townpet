@@ -8132,3 +8132,32 @@
 - 결과:
   - 댓글 하단에서 `답글` 버튼을 제거해 반복 액션 밀도를 낮췄다.
   - 댓글 패널 자체가 답글 대상 선택 surface가 되었고, 기존 메뉴/반응/신고 플로우는 유지했다.
+
+### 2026-05-29 | 댓글 패널 답글 hover/focus 상태 polish
+- 완료일: `2026-05-29`
+- 배경:
+  - 댓글 패널 클릭으로 답글을 열 수 있게 된 뒤, 사용자가 어떤 댓글이 답글 대상인지 즉시 알아볼 수 있는 hover/focus/open 상태가 더 필요했다.
+- 변경내용:
+  - 답글 가능한 댓글 패널에 hover, active, focus-visible 상태를 추가했다.
+  - 답글 폼이 열린 댓글 패널에는 `data-reply-open="true"`와 soft blue background/ring을 적용해 현재 답글 대상이 유지되도록 했다.
+  - 모바일 visual smoke가 댓글 본문 클릭 후 `data-reply-open="true"`까지 확인하도록 보강했다.
+- 코드문서:
+  - [app/src/components/posts/post-comment-thread.tsx](../app/src/components/posts/post-comment-thread.tsx)
+  - [app/src/components/posts/post-comment-thread.test.tsx](../app/src/components/posts/post-comment-thread.test.tsx)
+  - [app/e2e/comment-report-visual-smoke.spec.ts](../app/e2e/comment-report-visual-smoke.spec.ts)
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/components/posts/post-comment-thread.test.tsx`
+    - `1 file / 11 tests` PASS
+  - targeted lint:
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers PLAYWRIGHT_BASE_URL=http://localhost:3000 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test:e2e -- e2e/comment-report-visual-smoke.spec.ts --project=chromium --workers=1`
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `297 files / 1421 tests`, Next production build PASS
+    - 참고: Playwright dev server 이후 생성된 stale `.next/dev/types` 때문에 첫 `quality:check`가 type parse 오류를 냈고, generated `.next` 산출물을 삭제한 뒤 재실행해 통과했다.
+  - `node scripts/refresh-docs-index.mjs --check`
+    - PASS
+  - `git diff --check`
+    - PASS
