@@ -131,12 +131,12 @@ export function PostBookmarkButton({
       </button>
       {!canBookmark && showLoginHint && loginIntent ? (
         <div
-          className={`absolute ${loginHintPositionClassName} top-[calc(100%+8px)] z-10 w-[min(86vw,260px)] min-w-[220px] max-w-[calc(100vw-2rem)] break-keep rounded-lg border border-[#dbe6f6] bg-white px-2.5 py-1.5 leading-5 text-[#355988] shadow-[0_8px_18px_rgba(16,40,74,0.12)] ${
+          className={`absolute ${loginHintPositionClassName} top-[calc(100%+8px)] z-10 flex w-[min(86vw,300px)] min-w-[260px] max-w-[calc(100vw-2rem)] items-center gap-1.5 whitespace-nowrap rounded-md border border-[#dbe6f6] bg-white px-3 py-2 leading-none text-[#355988] shadow-[0_8px_18px_rgba(16,40,74,0.12)] ${
             compact ? "text-[11px]" : "text-xs"
           }`}
         >
-          {BOOKMARK_LOGIN_REQUIRED_MESSAGE}{" "}
-          <Link href={loginHref} className="inline-flex min-h-10 whitespace-nowrap align-middle font-semibold text-[#2f5da4] underline underline-offset-2">
+          <span>{BOOKMARK_LOGIN_REQUIRED_MESSAGE}</span>
+          <Link href={loginHref} className="inline-flex shrink-0 items-center font-semibold leading-none text-[#2f5da4] underline underline-offset-2">
             로그인하기
           </Link>
         </div>
