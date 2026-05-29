@@ -99,6 +99,9 @@ export const metadata: Metadata = {
   },
 };
 
+const feedInlineTextActionClassName =
+  "tp-text-muted inline-flex min-h-10 w-fit items-center px-1.5 text-xs font-semibold transition hover:text-[#2f5da4] hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1";
+
 export default async function Home({ searchParams }: HomePageProps) {
   const resolvedParams = (await searchParams) ?? {};
   const perfRequested = resolvedParams.perf === "1";
@@ -769,7 +772,7 @@ export default async function Home({ searchParams }: HomePageProps) {
 
           <a
             href="#feed-list"
-            className="tp-btn-soft hidden h-[30px] w-fit items-center px-2.5 text-[11px] font-semibold leading-none sm:inline-flex lg:hidden"
+            className={`${feedInlineTextActionClassName} hidden sm:inline-flex lg:hidden`}
           >
             목록 바로가기
           </a>
