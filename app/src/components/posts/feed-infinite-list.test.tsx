@@ -121,4 +121,35 @@ describe("FeedInfiniteList", () => {
       "h-[64px] grid-cols-[minmax(0,1fr)_44px_44px]",
     );
   });
+
+  it("keeps personalized ad CTA in the compact primary action hierarchy", () => {
+    const posts = Array.from({ length: 5 }, (_, index) => ({
+      ...basePost,
+      id: `post-${index + 1}`,
+      title: `피드 글 ${index + 1}`,
+    }));
+
+    const html = renderToStaticMarkup(
+      <FeedInfiniteList
+        initialItems={posts}
+        initialNextCursor={null}
+        mode="ALL"
+        query={{ scope: "GLOBAL", personalized: true }}
+        queryKey="feed-test"
+        adConfig={{
+          audienceKey: "default",
+          headline: "동네 산책 코스 모음",
+          description: "관심 동물 기준으로 추천된 글입니다.",
+          ctaLabel: "자세히 보기",
+          ctaHref: "/feed?personalized=1",
+          sessionCap: 1,
+          dailyCap: 3,
+        }}
+      />,
+    );
+
+    expect(html).toContain("맞춤 추천");
+    expect(html).toContain("rounded-md bg-[#3567b5]");
+    expect(html).not.toContain("tp-btn-primary mt-2 inline-flex items-center px-3 py-1");
+  });
 });
