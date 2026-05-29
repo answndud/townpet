@@ -3,6 +3,7 @@
 ## 현재 상태
 
 - 현재 active 구현 항목 없음.
+- `2026-05-29. GitHub Actions check run 중복 이름 정리`를 완료했다. 최근 커밋의 실제 deployment는 Vercel bot 기준 1개였고, 중복처럼 보인 원인은 `quality-gate`와 `docs-quality`의 job 이름이 모두 `verify`라 GitHub Checks에 같은 이름으로 표시된 것이었다. workflow job/check 이름을 각각 `quality-check`, `docs-check`로 분리했다.
 - `2026-05-29. 댓글/상세 화면 action overflow menu 정리`를 완료했다. 댓글 신고/수정/삭제를 헤더 우측 `댓글 작업 메뉴`로 모으고, 답글/접기/반응은 본문 아래 반복 액션으로 유지했다. 메뉴에는 accessible label, hidden details marker, hover/focus-visible affordance, 40px touch target을 적용했다. targeted tests, lint, typecheck, 전체 `quality:check`를 확인했다. 로컬 모바일 상세 smoke에서는 현재 fixture에 렌더링된 댓글이 없어 실제 메뉴 클릭은 render/static 테스트로 대체했고, 상세 화면 overflow 없음은 확인했다.
 - `2026-05-29. UI/UX 인증 정책 문구 정리`를 완료했다. 댓글, 답글, 게시글/댓글 좋아요·싫어요, 북마크, 게시글/댓글 신고의 로그인 필요 문구를 공통 copy로 묶고, 비회원/회원 댓글 작성 안내를 구분했다. 인증 정책과 API 권한은 변경하지 않았다. targeted tests와 전체 `quality:check`, 모바일 상세 smoke를 확인했다.
 - `2026-05-29. 상단 네비게이션 active 상태와 링크 계층 정리`를 완료했다. app shell header에 board/profile/notifications/admin/login active helper를 추가하고, desktop/mobile 링크와 `게시판` menu trigger에 active class 및 `aria-current`를 적용했다. `/feed/guest`와 `/posts/*/guest` 모바일 smoke에서 `게시판` active와 overflow 없음 확인, 전체 `quality:check` PASS.

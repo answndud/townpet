@@ -24,7 +24,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  verify:
+  docs-check:
+    name: docs-check
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
