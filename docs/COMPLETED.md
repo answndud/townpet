@@ -8264,3 +8264,30 @@
     - PASS
   - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
     - ESLint, TypeScript, Vitest `297 files / 1421 tests`, Next production build PASS
+
+### 2026-05-29 | 비회원 댓글 수정/삭제 확인 버튼 계층 정리
+- 완료일: `2026-05-29`
+- 배경:
+  - 댓글/답글 작성 버튼 계층을 낮춘 뒤에도 비회원 댓글 수정/삭제 비밀번호 확인 UI에는 `tp-btn-primary`, `tp-btn-soft`, `rounded-lg` 버튼 패턴이 남아 있었다.
+- 변경내용:
+  - 비회원 댓글 수정 확인은 댓글 submit과 같은 compact primary class를 사용하도록 맞췄다.
+  - 비회원 댓글 삭제 확인은 rose text danger action으로 분리했다.
+  - 비회원 확인 취소는 soft button에서 text action으로 낮췄다.
+  - 회원 댓글 수정 저장도 root 댓글 submit class를 재사용하도록 맞췄다.
+  - 비밀번호 입력과 확인/취소 버튼의 40px touch target은 유지했다.
+- 코드문서:
+  - [app/src/components/posts/post-comment-layout-class.ts](../app/src/components/posts/post-comment-layout-class.ts)
+  - [app/src/components/posts/post-comment-layout-class.test.ts](../app/src/components/posts/post-comment-layout-class.test.ts)
+  - [app/src/components/posts/post-comment-thread.tsx](../app/src/components/posts/post-comment-thread.tsx)
+  - [app/src/components/posts/post-comment-thread.test.tsx](../app/src/components/posts/post-comment-thread.test.tsx)
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/components/posts/post-comment-layout-class.test.ts src/components/posts/post-comment-thread.test.tsx`
+    - Vitest `2 files / 19 tests` PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app lint -- src/components/posts/post-comment-layout-class.ts src/components/posts/post-comment-layout-class.test.ts src/components/posts/post-comment-thread.tsx src/components/posts/post-comment-thread.test.tsx`
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers PLAYWRIGHT_BASE_URL=http://localhost:3000 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test:e2e -- e2e/comment-report-visual-smoke.spec.ts --project=chromium --workers=1`
+    - Playwright chromium `1 passed`
+  - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `297 files / 1421 tests`, Next production build PASS
