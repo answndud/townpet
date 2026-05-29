@@ -168,6 +168,8 @@ describe("post form accessibility", () => {
     expect(html).toContain("게시물 수정");
     expect(html).toContain("수정 저장");
     expect((html.match(/min-h-10/g) ?? []).length).toBeGreaterThanOrEqual(4);
+    expect(html).toContain("rounded-md bg-[#3567b5]");
+    expect(html).not.toContain("tp-btn-primary inline-flex min-h-10 items-center justify-center rounded-lg");
   });
 
   it("keeps post edit layout compact without shrinking touch targets", () => {

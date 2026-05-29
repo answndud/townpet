@@ -44,6 +44,9 @@ type PostDetailEditFormProps = {
 const GUEST_FP_STORAGE_KEY = "townpet:guest-fingerprint:v1";
 type EditorTab = "write" | "preview";
 
+const postEditSubmitButtonClassName =
+  "inline-flex min-h-10 items-center justify-center rounded-md bg-[#3567b5] px-3 text-xs font-semibold text-[#fbfdff] transition hover:bg-[#2f5da4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:bg-[#9fb2cf]";
+
 function getGuestFingerprint() {
   if (typeof window === "undefined") {
     return "server";
@@ -178,7 +181,7 @@ export function PostDetailEditForm({
         <h2 className="tp-text-page-title-sm tp-text-heading">게시물 수정</h2>
         <button
           type="submit"
-          className="tp-btn-primary inline-flex min-h-10 items-center justify-center rounded-lg px-4 text-sm font-semibold disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0]"
+          className={postEditSubmitButtonClassName}
           disabled={isPending}
         >
           {isPending ? "저장 중..." : "수정 저장"}

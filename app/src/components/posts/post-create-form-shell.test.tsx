@@ -53,8 +53,12 @@ describe("post create form shell", () => {
     expect(html).toContain("프로필에서 동네 설정");
     expect(html).toContain("취소");
     expect(html).toContain("등록");
-    expect(html).toContain("h-[28px]");
+    expect(html).toContain("min-h-10");
+    expect(html).toContain("hover:underline-offset-4");
     expect(html).toContain("hidden min-w-0 flex-1 sm:block");
+    expect(html).not.toContain("h-[28px]");
+    expect(html).not.toContain("tp-btn-soft");
+    expect(html).not.toContain("tp-btn-primary");
   });
 
   it("renders pending submit state", () => {

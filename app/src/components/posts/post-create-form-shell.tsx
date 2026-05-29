@@ -25,6 +25,12 @@ type PostCreateSubmitFooterProps = {
   policySummary: string;
 };
 
+const postCreateFooterTextActionClassName =
+  "tp-text-muted inline-flex min-h-10 w-full items-center justify-center px-1.5 text-xs font-semibold transition hover:text-[#2f5da4] hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1 sm:w-auto";
+
+const postCreateFooterPrimaryActionClassName =
+  "inline-flex min-h-10 w-full items-center justify-center rounded-md bg-[#3567b5] px-3 text-xs font-semibold text-[#fbfdff] transition hover:bg-[#2f5da4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:bg-[#9fb2cf] sm:w-auto";
+
 export function PostCreatePolicyAside({
   draftMessage,
   draftSavedAt,
@@ -95,20 +101,20 @@ export function PostCreateSubmitFooter({
         {isAuthenticated && !canUseLocalScope ? (
           <Link
             href="/profile"
-            className="tp-btn-soft inline-flex h-[28px] w-full items-center justify-center px-3 text-[11px] font-semibold leading-none sm:w-auto"
+            className={postCreateFooterTextActionClassName}
           >
             프로필에서 동네 설정
           </Link>
         ) : null}
         <Link
           href="/feed"
-          className="tp-btn-soft inline-flex h-[28px] w-full items-center justify-center px-3 text-[11px] font-semibold leading-none sm:w-auto"
+          className={postCreateFooterTextActionClassName}
         >
           취소
         </Link>
         <button
           type="submit"
-          className="tp-btn-primary inline-flex h-[28px] w-full items-center justify-center px-4 text-[11px] font-semibold leading-none disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0] sm:w-auto"
+          className={postCreateFooterPrimaryActionClassName}
           disabled={isPending || !isFormInteractive}
         >
           {isPending ? "등록 중..." : "등록"}
