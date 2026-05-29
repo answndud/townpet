@@ -35,5 +35,11 @@ describe("ReactionLoginPrompt", () => {
     expect(html).toContain("sm:hidden");
     expect(html).toContain("hidden min-w-[220px] sm:block");
     expect((html.match(/min-h-10/g) ?? []).length).toBe(4);
+    expect(html).toContain("hover:underline-offset-4");
+    expect(html).toContain("rounded-md bg-[#3567b5]");
+    expect(html).not.toContain("tp-btn-soft");
+    expect(html).not.toContain("tp-btn-primary");
+    expect(html).not.toContain("rounded-lg px-4 text-sm");
+    expect(html).not.toContain("rounded-2xl");
   });
 });

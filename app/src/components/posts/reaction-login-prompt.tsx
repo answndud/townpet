@@ -27,21 +27,25 @@ export function ReactionLoginPrompt({
       : align === "end"
         ? "right-0"
         : "left-1/2 -translate-x-1/2";
+  const closeButtonClassName =
+    "tp-text-muted inline-flex min-h-10 items-center justify-center px-1.5 text-xs font-semibold transition hover:text-[#2f5da4] hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2";
+  const loginLinkClassName =
+    "inline-flex min-h-10 items-center justify-center rounded-md bg-[#3567b5] px-3 text-xs font-semibold text-[#fbfdff] transition hover:bg-[#2f5da4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2";
 
   return (
     <>
       <div className={`absolute top-[calc(100%+8px)] z-10 hidden min-w-[220px] sm:block ${desktopAlignClass}`}>
-        <div className="rounded-xl border border-[#dbe6f6] bg-white px-3 py-2.5 shadow-[0_10px_24px_rgba(16,40,74,0.14)]">
+        <div className="rounded-lg border border-[#dbe6f6] bg-white px-3 py-2.5 shadow-[0_10px_24px_rgba(16,40,74,0.12)]">
           <p className="text-[12px] leading-5 text-[#355988]">{message}</p>
           <div className="mt-2 flex items-center justify-end gap-2">
             <button
               type="button"
-              className="tp-btn-soft inline-flex min-h-10 items-center justify-center rounded-lg px-3 text-xs font-semibold"
+              className={closeButtonClassName}
               onClick={onClose}
             >
               닫기
             </button>
-            <Link href={loginHref} className="tp-btn-primary inline-flex min-h-10 items-center justify-center rounded-lg px-3 text-xs font-semibold">
+            <Link href={loginHref} className={loginLinkClassName}>
               로그인하기
             </Link>
           </div>
@@ -49,17 +53,17 @@ export function ReactionLoginPrompt({
       </div>
 
       <div className="fixed inset-x-4 bottom-4 z-30 sm:hidden">
-        <div className="rounded-2xl border border-[#dbe6f6] bg-white px-4 py-3 shadow-[0_16px_36px_rgba(16,40,74,0.18)]">
+        <div className="rounded-lg border border-[#dbe6f6] bg-white px-4 py-3 shadow-[0_14px_28px_rgba(16,40,74,0.14)]">
           <p className="text-[13px] leading-5 text-[#355988]">{message}</p>
           <div className="mt-3 flex items-center justify-end gap-2">
             <button
               type="button"
-              className="tp-btn-soft inline-flex min-h-10 items-center justify-center rounded-lg px-4 text-sm font-semibold"
+              className={closeButtonClassName}
               onClick={onClose}
             >
               닫기
             </button>
-            <Link href={loginHref} className="tp-btn-primary inline-flex min-h-10 items-center justify-center rounded-lg px-4 text-sm font-semibold">
+            <Link href={loginHref} className={loginLinkClassName}>
               로그인하기
             </Link>
           </div>
