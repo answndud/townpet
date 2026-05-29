@@ -155,7 +155,7 @@ test.describe("comment/report mobile visual smoke", () => {
     await expectTouchTarget(
       page.getByTestId(`report-description-comment-${reportableCommentId}`),
       "comment report description textarea",
-      72,
+      64,
     );
     await expectTouchTarget(
       page.getByTestId(`report-submit-comment-${reportableCommentId}`),

@@ -33,6 +33,7 @@ import {
   POST_COMMENT_SECTION_STATE_CLASS_NAME,
   POST_COMMENT_THREAD_CARD_CLASS_NAME,
   POST_COMMENT_THREAD_FOOTER_CLASS_NAME,
+  POST_COMMENT_THREAD_MENU_PANEL_CLASS_NAME,
   POST_COMMENT_THREAD_ROOT_CARD_CLASS_NAME,
   POST_COMMENT_THREAD_SIGHTING_META_CLASS_NAME,
 } from "@/components/posts/post-comment-layout-class";
@@ -72,6 +73,10 @@ describe("post comment layout classes", () => {
     expect(POST_COMMENT_THREAD_FOOTER_CLASS_NAME).not.toContain("flex-col");
     expect(POST_COMMENT_THREAD_ACTIONS_CLASS_NAME).toContain("gap-1");
     expect(POST_COMMENT_THREAD_ACTIONS_CLASS_NAME).not.toContain("rounded");
+    expect(POST_COMMENT_THREAD_MENU_PANEL_CLASS_NAME).toContain("mt-1");
+    expect(POST_COMMENT_THREAD_MENU_PANEL_CLASS_NAME).toContain("p-0.5");
+    expect(POST_COMMENT_THREAD_MENU_PANEL_CLASS_NAME).toContain("rgba(16,40,74,0.06)");
+    expect(POST_COMMENT_THREAD_MENU_PANEL_CLASS_NAME).not.toContain("0_8px_18px");
     expect(POST_COMMENT_REPLY_GUIDE_CLASS_NAME).toContain("mt-1.5");
     expect(POST_COMMENT_REPLY_GUIDE_CLASS_NAME).toContain("ml-3");
     expect(POST_COMMENT_REPLY_GUIDE_CLASS_NAME).toContain("space-y-1.5");
