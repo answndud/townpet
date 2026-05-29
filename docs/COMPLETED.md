@@ -8242,6 +8242,33 @@
   - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
     - ESLint, TypeScript, Vitest `298 files / 1430 tests`, Next production build PASS
 
+### 2026-05-29 | AuthPageLayout footer link 계층 정리
+- 완료일: `2026-05-29`
+- 배경:
+  - 로그인/회원가입/비밀번호 화면의 실제 primary action은 각 form submit인데, footer의 회원가입/홈/비밀번호 재설정 링크가 `tp-btn-soft` button처럼 보여 action 우선순위가 흐려졌다.
+  - 인증 화면 footer는 탐색 보조 링크 성격이므로 compact text link hierarchy가 더 적절하다.
+- 변경내용:
+  - `primaryFooterLink`를 soft button에서 `tp-text-link` 기반 text action으로 낮췄다.
+  - `secondaryFooterLinks`도 rounded button shape 대신 muted text action으로 통일했다.
+  - footer link class를 상수화해 auth page layout의 보조 action 계층을 한 곳에서 읽을 수 있게 했다.
+  - 테스트가 `tp-btn-soft`와 `rounded-md px-2` 재도입을 잡도록 갱신했다.
+- 코드문서:
+  - [app/src/components/auth/auth-page-layout.tsx](../app/src/components/auth/auth-page-layout.tsx)
+  - [app/src/components/auth/auth-page-layout.test.tsx](../app/src/components/auth/auth-page-layout.test.tsx)
+- 다음 후보:
+  - [app/src/app/posts/new/page.tsx](../app/src/app/posts/new/page.tsx): 글쓰기 page back link 28px soft button 정리
+  - [app/src/components/neighborhood/neighborhood-gate-notice.tsx](../app/src/components/neighborhood/neighborhood-gate-notice.tsx): 동네 gate notice action 계층 정리
+  - [app/src/components/navigation/app-shell-footer.tsx](../app/src/components/navigation/app-shell-footer.tsx): footer link button shape 점검
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/components/auth/auth-page-layout.test.tsx src/components/compact-control-final-sweep.test.ts`
+    - Vitest `2 files / 3 tests` PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app lint -- src/components/auth/auth-page-layout.tsx src/components/auth/auth-page-layout.test.tsx src/components/compact-control-final-sweep.test.ts`
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `298 files / 1430 tests`, Next production build PASS
+
 ### 2026-05-29 | ServiceUnavailableState action 계층 정리
 - 완료일: `2026-05-29`
 - 배경:
