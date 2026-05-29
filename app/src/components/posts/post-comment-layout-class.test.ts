@@ -5,6 +5,7 @@ import {
   POST_COMMENT_FORM_MUTED_CLASS_NAME,
   POST_COMMENT_FORM_PANEL_CLASS_NAME,
   POST_COMMENT_INLINE_FORM_ACTION_ROW_CLASS_NAME,
+  POST_COMMENT_INLINE_FORM_CANCEL_CLASS_NAME,
   POST_COMMENT_INLINE_FORM_INPUT_CLASS_NAME,
   POST_COMMENT_INLINE_FORM_PASSWORD_INPUT_CLASS_NAME,
   POST_COMMENT_INLINE_FORM_PASSWORD_ROW_CLASS_NAME,
@@ -116,6 +117,9 @@ describe("post comment layout classes", () => {
     expect(POST_COMMENT_ROOT_FORM_SUBMIT_CLASS_NAME).toContain("min-h-10");
     expect(POST_COMMENT_ROOT_FORM_SUBMIT_CLASS_NAME).toContain("px-3");
     expect(POST_COMMENT_ROOT_FORM_SUBMIT_CLASS_NAME).toContain("text-xs");
+    expect(POST_COMMENT_ROOT_FORM_SUBMIT_CLASS_NAME).toContain("rounded-md");
+    expect(POST_COMMENT_ROOT_FORM_SUBMIT_CLASS_NAME).not.toContain("tp-btn-primary");
+    expect(POST_COMMENT_ROOT_FORM_SUBMIT_CLASS_NAME).not.toContain("rounded-lg");
   });
 
   it("keeps inline reply and edit forms aligned with the compact composer", () => {
@@ -125,6 +129,9 @@ describe("post comment layout classes", () => {
     expect(POST_COMMENT_INLINE_FORM_INPUT_CLASS_NAME).toBe(POST_COMMENT_ROOT_FORM_INPUT_CLASS_NAME);
     expect(POST_COMMENT_INLINE_FORM_TEXTAREA_CLASS_NAME).toBe(POST_COMMENT_ROOT_FORM_TEXTAREA_CLASS_NAME);
     expect(POST_COMMENT_INLINE_FORM_ACTION_ROW_CLASS_NAME).toContain("mt-1");
+    expect(POST_COMMENT_INLINE_FORM_CANCEL_CLASS_NAME).toContain("hover:underline-offset-4");
+    expect(POST_COMMENT_INLINE_FORM_CANCEL_CLASS_NAME).not.toContain("tp-btn-soft");
+    expect(POST_COMMENT_INLINE_FORM_CANCEL_CLASS_NAME).not.toContain("rounded-lg");
     expect(POST_COMMENT_INLINE_FORM_PASSWORD_ROW_CLASS_NAME).toContain("gap-1.5");
     expect(POST_COMMENT_INLINE_FORM_PASSWORD_INPUT_CLASS_NAME).toContain("min-h-10");
     expect(POST_COMMENT_INLINE_FORM_PASSWORD_INPUT_CLASS_NAME).not.toContain("min-h-11");

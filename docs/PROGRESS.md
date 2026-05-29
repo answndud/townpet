@@ -3,6 +3,7 @@
 ## 현재 상태
 
 - 현재 active 구현 항목 없음.
+- `2026-05-29. 댓글 작성/답글 작성 버튼 계층 정리`를 완료했다. 댓글/답글 submit은 compact primary로 맞추고, 답글 취소는 text action으로 낮췄다. targeted tests, lint, typecheck, 모바일 Playwright smoke, 전체 `quality:check`를 확인했다.
 - `2026-05-29. 댓글 신고 폼과 메뉴 무게 축소`를 완료했다. 댓글 신고 폼 spacing/textarea/button을 더 compact하게 낮추고, 댓글 작업 menu panel의 shadow/padding을 줄였다. targeted tests, lint, typecheck, 모바일 Playwright smoke, 전체 `quality:check`를 확인했다.
 - `2026-05-29. 댓글 답글 접기 토글 compact text화`를 완료했다. 댓글 답글 묶음 토글을 둥근 버튼에서 작은 text action으로 낮추고, `aria-expanded`와 명확한 상태 문구를 붙였다. targeted tests, lint, typecheck, 모바일 Playwright smoke, 전체 `quality:check`를 확인했다.
 - `2026-05-29. 댓글 패널 답글 접근성 구조 정리`를 완료했다. 댓글 패널 클릭 동작은 유지하되 article의 button role을 제거하고, 키보드/스크린리더용 focusable reply trigger로 의미 구조를 분리했다. targeted tests, lint, typecheck, 모바일 Playwright smoke, 전체 `quality:check`를 확인했다.
