@@ -10,6 +10,12 @@ type FeedErrorProps = {
   reset: () => void;
 };
 
+const FEED_ERROR_PRIMARY_ACTION_CLASS_NAME =
+  "inline-flex min-h-10 items-center justify-center rounded-md bg-[#3567b5] px-4 text-[12px] font-semibold text-[#fbfdff] transition hover:bg-[#2f5da4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1";
+
+const FEED_ERROR_TEXT_ACTION_CLASS_NAME =
+  "tp-text-muted inline-flex min-h-10 items-center justify-center px-2 text-[12px] font-semibold transition hover:text-[#2f5da4] hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1";
+
 export default function FeedError({ error, reset }: FeedErrorProps) {
   useEffect(() => {
     console.error(error);
@@ -25,13 +31,13 @@ export default function FeedError({ error, reset }: FeedErrorProps) {
           <button
             type="button"
             onClick={reset}
-            className="tp-btn-primary inline-flex h-[30px] items-center justify-center px-3 text-[11px] font-semibold leading-none"
+            className={FEED_ERROR_PRIMARY_ACTION_CLASS_NAME}
           >
             다시 시도
           </button>
           <Link
             href="/feed/guest"
-            className="tp-btn-soft inline-flex h-[30px] items-center justify-center px-3 text-[11px] font-semibold leading-none"
+            className={FEED_ERROR_TEXT_ACTION_CLASS_NAME}
           >
             게스트 피드
           </Link>

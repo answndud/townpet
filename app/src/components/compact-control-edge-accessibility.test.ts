@@ -85,4 +85,15 @@ describe("remaining compact user control accessibility", () => {
     expect(code).not.toContain("tp-btn-soft px-2.5 py-1 text-[11px] font-semibold text-[#204f8a]");
     expect(code).not.toContain("tp-btn-soft px-2 py-1 text-[11px] font-semibold text-[#204f8a]");
   });
+
+  it("keeps feed error recovery actions mobile-safe without legacy 30px buttons", () => {
+    const code = readSource("src/app/feed/error.tsx");
+
+    expect(code).toContain("FEED_ERROR_PRIMARY_ACTION_CLASS_NAME");
+    expect(code).toContain("FEED_ERROR_TEXT_ACTION_CLASS_NAME");
+    expect(code).toContain("inline-flex min-h-10 items-center justify-center rounded-md bg-[#3567b5]");
+    expect(code).toContain("hover:underline hover:underline-offset-4");
+    expect(code).not.toContain("tp-btn-primary inline-flex h-[30px]");
+    expect(code).not.toContain("tp-btn-soft inline-flex h-[30px]");
+  });
 });
