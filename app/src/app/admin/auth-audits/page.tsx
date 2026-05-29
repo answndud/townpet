@@ -265,7 +265,7 @@ export default async function AuthAuditPage({ searchParams }: AuthAuditPageProps
               title="인증 감사 로그가 없습니다"
               description="필터 조건을 바꾸거나 다른 기간에서 다시 확인해 주세요."
               actionHref="/admin/auth-audits"
-              actionLabel="전체 로그 보기"
+              actionLabel="전체 로그"
             />
           )}
         </section>

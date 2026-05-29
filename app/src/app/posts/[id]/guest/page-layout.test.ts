@@ -12,7 +12,7 @@ describe("guest post detail layout", () => {
     expect(code).toContain("tp-card p-4 sm:p-5");
     expect(code).toContain("mt-3 grid gap-x-3 gap-y-2");
     expect(code).toContain("tp-border-soft border-t py-2.5");
-    expect(code).toContain('aria-label="게시글 더보기"');
+    expect(code).toContain('aria-label="게시글 메뉴"');
     expect(code).toContain("min-w-[260px] rounded-md border bg-white p-2");
     expect(code).toContain("formatKoreanDate(createdAt)");
     expect(code).toContain("authorDisplayLabel");

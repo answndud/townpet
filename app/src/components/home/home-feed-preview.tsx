@@ -215,8 +215,8 @@ export function HomeFeedPreview() {
         <div>
           <div className="mb-2 flex items-center justify-between gap-3">
             <h3 className="text-sm font-semibold text-[#173963]">먼저 확인할 글</h3>
-            <Link href="/feed/guest?mode=BEST&days=7" className="text-xs font-semibold text-[#315b9a]" aria-label="반응 많은 글 더보기">
-              더보기
+            <Link href="/feed/guest?mode=BEST&days=7" className="text-xs font-semibold text-[#315b9a]" aria-label="반응 많은 글">
+              더 읽기
             </Link>
           </div>
           {data ? (
@@ -231,7 +231,7 @@ export function HomeFeedPreview() {
                 },
                 {
                   href: "/feed/guest?type=HOSPITAL_REVIEW",
-                  label: "동물병원 글 보기",
+                  label: "동물병원 글",
                   note: "공개된 병원 경험 글을 최신순으로 확인합니다.",
                 },
               ]}
@@ -244,7 +244,7 @@ export function HomeFeedPreview() {
           <div className="mb-2 flex items-center justify-between gap-3">
             <h3 className="text-sm font-semibold text-[#173963]">최근 올라온 글</h3>
             <Link href="/feed/guest?sort=LATEST" className="text-xs font-semibold text-[#315b9a]">
-              더보기
+              더 읽기
             </Link>
           </div>
           {data ? (

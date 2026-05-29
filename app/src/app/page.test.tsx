@@ -10,7 +10,7 @@ describe("HomePage", () => {
     expect(html).toContain("우리 동네 반려생활 정보, TownPet");
     expect(html).toContain('href="/onboarding"');
     expect(html).toContain('href="/feed/guest"');
-    expect(html.indexOf("전체 피드 보기")).toBeLessThan(
+    expect(html.indexOf("전체 피드")).toBeLessThan(
       html.indexOf("내 동네 허브 시작하기"),
     );
     expect(html).toContain("내 동네 허브 시작하기");
@@ -30,6 +30,5 @@ describe("HomePage", () => {
     expect((html.match(/href="\/onboarding"/g) ?? []).length).toBe(1);
     expect((html.match(/href="\/feed\/guest"/g) ?? []).length).toBe(1);
     expect(html).not.toContain("분실동물 등록하기");
-    expect(html).not.toContain("병원/산책 정보 보기");
   });
 });

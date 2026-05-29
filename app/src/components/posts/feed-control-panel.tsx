@@ -87,7 +87,7 @@ export function FeedControlPanel({
         <div className="flex flex-wrap items-center gap-1.5">
           <div className="flex min-w-0 items-center gap-1.5">
             <p className="text-[10px] font-semibold leading-none text-[#4f6e97]">
-              피드 보기
+              피드
             </p>
             <div className="flex flex-wrap items-center gap-1">
               <Link

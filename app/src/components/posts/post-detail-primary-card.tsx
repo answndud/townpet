@@ -117,7 +117,7 @@ export function PostDetailPrimaryCard({
         {showOverflowMenu ? (
           <DismissibleDetails className="relative shrink-0">
             <summary
-              aria-label="게시글 더보기"
+              aria-label="게시글 메뉴"
               className="tp-text-muted inline-flex min-h-10 min-w-10 cursor-pointer list-none items-center justify-center text-[16px] leading-none transition hover:text-[#1f4f8f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 [&::-webkit-details-marker]:hidden"
             >
               ···

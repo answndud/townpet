@@ -345,7 +345,7 @@ export default async function PublicUserProfilePage({
                             href={`/lounges/breeds/${pet.breedCode}`}
                             className="mt-2 inline-flex text-[11px] font-semibold text-[#2f5da4] hover:text-[#244b86]"
                           >
-                            품종 라운지 보기
+                            품종 라운지
                           </Link>
                         ) : null}
                     </div>

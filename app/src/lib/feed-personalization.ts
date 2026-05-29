@@ -542,7 +542,7 @@ export function buildFeedAdConfig(context: FeedAudienceContext) {
     headline: `${context.label} 보호자를 위한 맞춤 공동구매`,
     description:
       "품종/체급에 맞춘 사료·간식·위생용품 공동구매 모집 글을 확인해 보세요. 광고는 세션/일 빈도 캡 정책으로 제한됩니다.",
-    ctaLabel: "맞춤 공동구매 보기",
+    ctaLabel: "맞춤 공동구매",
     ctaHref: `/lounges/breeds/${context.breedCode}`,
     sessionCap: 3,
     dailyCap: 8,

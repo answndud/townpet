@@ -137,7 +137,7 @@ export function LoginForm({
           className="tp-btn-soft min-h-11 min-w-20 px-3 text-xs font-semibold text-[#2a4e7d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2f66ba]/40"
           aria-pressed={showPassword}
         >
-          {showPassword ? "숨기기" : "보기"}
+          {showPassword ? "숨기기" : "표시"}
         </button>
       </div>
       {capsLockOn ? (

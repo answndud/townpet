@@ -40,7 +40,7 @@ describe("UserActionMenu", () => {
     expect(html).toContain('aria-haspopup="menu"');
     expect(html).toContain("작성자");
     expect(html).toContain('href="/users/author-1"');
-    expect(html).toContain("프로필 보기");
+    expect(html).toContain("프로필");
     expect(html).toContain(">뮤트<");
     expect(html).toContain("focus-visible:ring-2");
   });
@@ -71,7 +71,6 @@ describe("UserActionMenu", () => {
 
     expect(html).toContain("작성자");
     expect(html).not.toContain('aria-haspopup="menu"');
-    expect(html).not.toContain("프로필 보기");
   });
 
   it("keeps helper guards aligned with the menu behavior", () => {

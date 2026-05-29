@@ -101,7 +101,7 @@ export function LinkifiedContent({
               onClick={() => setActiveEmbed(item)}
               className="inline-flex items-center gap-1 border border-[#f0b4b4] bg-[#fff3f3] px-3 py-1.5 text-xs font-semibold text-[#a02828] transition hover:bg-[#ffe7e7]"
             >
-              유튜브 영상 보기
+              YouTube 영상
             </button>
           ))}
         </div>

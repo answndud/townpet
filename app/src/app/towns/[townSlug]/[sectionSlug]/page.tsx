@@ -88,7 +88,7 @@ export default async function TownSectionPage({ params }: TownSectionPageProps) 
             targetId: town.slug,
           }}
         >
-          {town.label} 전체 보기
+          {town.label} 전체
         </AcquisitionTrackedLink>
         <p className="tp-eyebrow mt-6">Town guide</p>
         <h1 className="mt-4 max-w-[760px] text-4xl font-semibold leading-[1.08] text-[#10284a] break-keep sm:text-5xl">
@@ -109,7 +109,7 @@ export default async function TownSectionPage({ params }: TownSectionPageProps) 
               targetId: `${town.slug}:${section.slug}`,
             }}
           >
-            관련 글 보기
+            관련 글
           </AcquisitionTrackedLink>
           <AcquisitionTrackedLink
             href={section.writeHref}

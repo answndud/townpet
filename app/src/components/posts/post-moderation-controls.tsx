@@ -119,7 +119,7 @@ export function PostModerationControls({
             >
               {currentStatusLabel}
             </span>
-            <span className="truncate text-sm font-semibold text-[#14315f]">운영자 도구 보기</span>
+            <span className="truncate text-sm font-semibold text-[#14315f]">운영자 도구</span>
           </div>
           <span className="tp-text-subtle shrink-0 text-xs">
             {isExpanded ? "접기" : "펼치기"}

@@ -351,7 +351,7 @@ export function NotificationCenter({
                 : "게시글 활동이 생기면 댓글, 답글, 반응 알림이 이곳에 쌓입니다."
             }
             actionHref={unreadOnly ? buildNotificationListHref(kind, false, 1) : "/feed"}
-            actionLabel={unreadOnly ? "전체 알림 보기" : "피드로 돌아가기"}
+            actionLabel={unreadOnly ? "전체 알림" : "피드로 돌아가기"}
             secondaryActionHref={unreadOnly ? "/feed" : undefined}
             secondaryActionLabel={unreadOnly ? "피드로 돌아가기" : undefined}
           />

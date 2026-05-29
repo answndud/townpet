@@ -344,7 +344,7 @@ export default async function Home({ searchParams }: HomePageProps) {
         primaryLink="/profile"
         primaryLabel="프로필에서 동네 설정"
         secondaryLink="/feed"
-        secondaryLabel="피드 보기"
+        secondaryLabel="피드"
       />
     );
   }
@@ -774,7 +774,7 @@ export default async function Home({ searchParams }: HomePageProps) {
             href="#feed-list"
             className={`${feedInlineTextActionClassName} hidden sm:inline-flex lg:hidden`}
           >
-            목록 보기
+            목록
           </a>
 
         {isGuestTypeBlocked && type ? (
@@ -831,9 +831,9 @@ export default async function Home({ searchParams }: HomePageProps) {
               }
               actionLabel={
                 isGuestTypeBlocked
-                  ? "로그인하고 보기"
+                  ? "로그인"
                   : mode === "BEST"
-                    ? "전체글 보기"
+                    ? "전체글"
                     : "첫 글 작성하기"
                }
             />

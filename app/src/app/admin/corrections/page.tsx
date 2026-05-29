@@ -247,7 +247,7 @@ export default async function AdminCorrectionRequestsPage({
                                 </div>
                               ) : null}
                               <Link href={`/posts/${request.post.id}`} className="inline-flex text-[#3567b5]">
-                                연결 글 보기
+                                연결 글
                               </Link>
                             </div>
                           ) : null}

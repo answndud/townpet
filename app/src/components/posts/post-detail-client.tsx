@@ -515,7 +515,7 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
                 href={`/posts/${postId}/guest`}
                 className={POST_DETAIL_ERROR_TEXT_LINK_CLASS_NAME}
               >
-                게스트 페이지 보기
+                게스트 페이지
               </a>
             </div>
           </div>

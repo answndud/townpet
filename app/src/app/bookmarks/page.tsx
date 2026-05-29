@@ -203,7 +203,7 @@ export default async function BookmarksPage({ searchParams }: BookmarksPageProps
                 title="조건에 맞는 북마크가 없습니다"
                 description="검색어 또는 게시판 필터를 줄이면 저장한 글을 다시 찾을 수 있습니다."
                 actionHref="/bookmarks"
-                actionLabel="전체 북마크 보기"
+                actionLabel="전체 북마크"
                 secondaryActionHref="/feed"
                 secondaryActionLabel="피드에서 찾기"
               />
@@ -215,7 +215,7 @@ export default async function BookmarksPage({ searchParams }: BookmarksPageProps
                 actionHref="/feed"
                 actionLabel="피드로 이동"
                 secondaryActionHref="/my-posts"
-                secondaryActionLabel="내 작성글 보기"
+                secondaryActionLabel="내 작성글"
               />
             )
           ) : (

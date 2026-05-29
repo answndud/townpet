@@ -20,7 +20,7 @@ describe("PostModerationControls", () => {
       />,
     );
 
-    expect(html).toContain("운영자 도구 보기");
+    expect(html).toContain("운영자 도구");
     expect(html).toContain("공개");
     expect(html).not.toContain("사유");
     expect(html).not.toContain("게시글 숨김");

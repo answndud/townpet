@@ -160,7 +160,7 @@ export function UserActionMenu({
             className="tp-text-heading block rounded px-2 py-1.5 text-[11px] hover:bg-[#f5f9ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1"
             onClick={() => setIsOpen(false)}
           >
-            프로필 보기
+            프로필
           </Link>
           {canToggleMute ? (
             <button

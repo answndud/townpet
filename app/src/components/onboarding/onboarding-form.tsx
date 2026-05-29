@@ -435,7 +435,7 @@ export function OnboardingForm({
                   href={savedTownHref}
                   className="rounded-lg border border-[#9ccfac] bg-white px-3 py-2 font-semibold text-[#245338]"
                 >
-                  대표 동네 허브 보기
+                  대표 동네 허브
                 </Link>
                 <Link
                   href="/posts/new"
@@ -447,7 +447,7 @@ export function OnboardingForm({
                   href="/feed"
                   className="rounded-lg border border-[#9ccfac] bg-white px-3 py-2 font-semibold text-[#245338]"
                 >
-                  피드 보기
+                  피드
                 </Link>
               </div>
             </div>
@@ -466,7 +466,7 @@ export function OnboardingForm({
                 href={primaryTownHref}
                 className="tp-btn-soft inline-flex min-h-10 items-center self-start px-4 py-2 text-xs font-semibold"
               >
-                선택 동네 허브 미리보기
+                선택 동네 허브
               </Link>
             ) : null}
             <Link

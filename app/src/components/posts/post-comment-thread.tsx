@@ -833,7 +833,7 @@ export function PostCommentThread({
                         }))
                       }
                     >
-                      {collapsedReplies[comment.id] ? `답글 ${replies.length}개 보기` : "답글 숨기기"}
+                      {collapsedReplies[comment.id] ? `답글 ${replies.length}개` : "답글 숨기기"}
                     </button>
                   </div>
                 ) : null}

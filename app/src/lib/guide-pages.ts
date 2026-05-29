@@ -32,7 +32,7 @@ export const GUIDE_PAGES: GuidePage[] = [
     intentLabel: "분실동물",
     lead: "전단은 빠르게 퍼져야 하지만, 보호자 연락처와 위치 정보는 필요한 범위만 공개해야 합니다.",
     primaryCta: {
-      label: "분실/목격 게시판 보기",
+      label: "분실/목격 게시판",
       href: "/feed/guest?type=LOST_FOUND",
     },
     secondaryCta: {
@@ -79,7 +79,7 @@ export const GUIDE_PAGES: GuidePage[] = [
     intentLabel: "동물병원",
     lead: "응급 상황에서는 가까운 병원보다 지금 진료 가능한 병원인지 먼저 확인해야 합니다.",
     primaryCta: {
-      label: "병원 후기 게시판 보기",
+      label: "병원 후기 게시판",
       href: "/feed/guest?type=HOSPITAL_REVIEW",
     },
     secondaryCta: {
@@ -126,7 +126,7 @@ export const GUIDE_PAGES: GuidePage[] = [
     intentLabel: "중고거래",
     lead: "반려동물 용품은 상태뿐 아니라 위생, 리콜, 크기, 소모품 여부까지 확인해야 합니다.",
     primaryCta: {
-      label: "중고거래 글 보기",
+      label: "중고거래 글",
       href: "/feed/guest?type=MARKET_LISTING",
     },
     secondaryCta: {
@@ -173,7 +173,7 @@ export const GUIDE_PAGES: GuidePage[] = [
     intentLabel: "분실동물",
     lead: "처음 24시간은 같은 정보를 여러 곳에 정확히 공유하고, 확인한 장소를 기록하는 시간이 중요합니다.",
     primaryCta: {
-      label: "분실/목격 게시판 보기",
+      label: "분실/목격 게시판",
       href: "/feed/guest?type=LOST_FOUND",
     },
     secondaryCta: {
@@ -220,7 +220,7 @@ export const GUIDE_PAGES: GuidePage[] = [
     intentLabel: "후기 작성",
     lead: "좋은 후기는 평가보다 맥락입니다. 방문 목적, 접수 경험, 설명 방식, 재방문 기준이 다른 보호자에게 도움이 됩니다.",
     primaryCta: {
-      label: "병원 후기 보기",
+      label: "병원 후기",
       href: "/feed/guest?type=HOSPITAL_REVIEW",
     },
     secondaryCta: {
