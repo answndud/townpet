@@ -263,7 +263,7 @@ export function PostCommentSectionClient({
           <button
             type="button"
             onClick={() => void reloadComments()}
-            className="tp-btn-soft inline-flex min-h-10 items-center justify-center rounded-lg px-3 text-xs font-semibold"
+            className="inline-flex min-h-10 items-center justify-center px-1.5 text-xs font-semibold text-[#8b4b4b] transition hover:text-[#723c3c] hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#efbcbc] focus-visible:ring-offset-1"
           >
             다시 시도
           </button>

@@ -8308,6 +8308,34 @@
   - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
     - ESLint, TypeScript, Vitest `297 files / 1423 tests`, Next production build PASS
 
+### 2026-05-29 | 댓글 실패 복구와 페이지네이션 버튼 계층 정리
+- 완료일: `2026-05-29`
+- 배경:
+  - 남은 상세 action 감사에서 `post-comment-section-client.tsx`의 댓글 로드 실패 `다시 시도` 버튼과 `post-comment-pagination.tsx`의 페이지네이션이 `tp-btn-* + rounded-lg` 패턴으로 남아 있었다.
+  - 두 surface 모두 댓글 영역에서 반복 노출되므로 버튼 무게를 낮추되 40px touch target과 keyboard focus는 유지해야 했다.
+- 변경내용:
+  - 댓글 로드 실패 `다시 시도`를 bordered soft button에서 error surface 안의 compact text action으로 낮췄다.
+  - 댓글 페이지네이션의 `tp-btn-soft`, `tp-btn-primary`, `tp-btn-disabled`, `rounded-lg` 의존을 제거했다.
+  - 현재 페이지는 `aria-current="page"`와 낮은 blue tint로 표시하고, 이전/다음 disabled 상태는 opacity와 cursor로 구분했다.
+  - compact control guard test가 버튼 토큰과 rounded pattern 재도입을 잡도록 보강했다.
+- 코드문서:
+  - [app/src/components/posts/post-comment-section-client.tsx](../app/src/components/posts/post-comment-section-client.tsx)
+  - [app/src/components/posts/post-comment-pagination.tsx](../app/src/components/posts/post-comment-pagination.tsx)
+  - [app/src/components/posts/post-comment-compact-controls-accessibility.test.tsx](../app/src/components/posts/post-comment-compact-controls-accessibility.test.tsx)
+- 다음 후보:
+  - [app/src/components/posts/post-detail-edit-form.tsx](../app/src/components/posts/post-detail-edit-form.tsx): 수정 저장 primary button 정리
+  - [app/src/components/posts/post-create-form-shell.tsx](../app/src/components/posts/post-create-form-shell.tsx): 작성 footer `h-[28px]` fixed action 정리
+  - [app/src/components/posts/post-body-rich-editor.tsx](../app/src/components/posts/post-body-rich-editor.tsx): editor toolbar는 별도 UX 단위로 정리
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/components/posts/post-comment-compact-controls-accessibility.test.tsx src/components/posts/post-comment-section-client.test.ts src/components/posts/post-comment-thread.test.tsx`
+    - Vitest `3 files / 23 tests` PASS
+  - targeted lint:
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `297 files / 1423 tests`, Next production build PASS
+
 ### 2026-05-29 | 댓글 신고 폼과 메뉴 무게 축소
 - 완료일: `2026-05-29`
 - 배경:

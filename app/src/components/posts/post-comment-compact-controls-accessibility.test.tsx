@@ -15,8 +15,14 @@ describe("post comment compact controls accessibility", () => {
     expect(html).toContain("다음");
     expect(html).toContain("mt-2");
     expect(html).toContain("gap-1");
-    expect(html).toContain("px-2.5");
+    expect(html).toContain("px-2");
+    expect(html).toContain('aria-current="page"');
+    expect(html).toContain("bg-[#eef5ff]");
     expect((html.match(/min-h-10/g) ?? []).length).toBeGreaterThanOrEqual(4);
+    expect(html).not.toContain("tp-btn-soft");
+    expect(html).not.toContain("tp-btn-primary");
+    expect(html).not.toContain("tp-btn-disabled");
+    expect(html).not.toContain("rounded-lg");
     expect(html).not.toContain("tp-btn-xs");
     expect(html).not.toContain("min-h-9");
   });
@@ -74,6 +80,8 @@ describe("post comment compact controls accessibility", () => {
 
     expect(code).toContain("다시 시도");
     expect(code).toContain("min-h-10");
+    expect(code).toContain("hover:underline-offset-4");
+    expect(code).not.toContain("tp-btn-soft inline-flex min-h-10 items-center justify-center rounded-lg");
     expect(code).toContain('role="alert"');
     expect(code).toContain('role="status"');
     expect(code).toContain('aria-live="polite"');
