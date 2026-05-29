@@ -8188,6 +8188,33 @@
   - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
     - ESLint, TypeScript, Vitest `297 files / 1421 tests`, Next production build PASS
 
+### 2026-05-29 | 헤더 관심 동물 메뉴 action 버튼 계층 정리
+- 완료일: `2026-05-29`
+- 배경:
+  - `FeedHoverMenu` 관심 동물 dropdown/mobile panel의 저장 버튼이 `tp-btn-soft`에 묶여 commit action인데도 bordered soft hierarchy로 남아 있었다.
+  - 전체 선택/전체 해제는 작은 text button이지만 touch target, focus-visible 상태, disabled 상태가 약해 모바일 panel에서 조작 안정성이 부족했다.
+- 변경내용:
+  - 관심 동물 `전체 선택`, `전체 해제`를 공용 text action class로 묶고 40px touch target, underline hover, focus-visible ring을 적용했다.
+  - 관심 동물 `저장`은 `tp-btn-soft` 의존을 제거하고 compact primary action으로 명시했다.
+  - desktop dropdown과 mobile disclosure panel이 같은 action class 상수를 쓰게 해 버튼 계층이 다시 어긋나지 않도록 했다.
+  - source guard test가 `tp-btn-soft px-2.5 py-1`, `tp-btn-soft px-2 py-1` 저장 버튼 패턴의 재도입을 막도록 보강했다.
+- 코드문서:
+  - [app/src/components/navigation/feed-hover-menu.tsx](../app/src/components/navigation/feed-hover-menu.tsx)
+  - [app/src/components/compact-control-edge-accessibility.test.ts](../app/src/components/compact-control-edge-accessibility.test.ts)
+- 다음 후보:
+  - [app/src/app/feed/error.tsx](../app/src/app/feed/error.tsx): feed error page action 계층 정리
+  - [app/src/components/posts/post-moderation-controls.tsx](../app/src/components/posts/post-moderation-controls.tsx): 운영자 도구 button hierarchy 정리
+  - [app/src/components/ui/service-unavailable-state.tsx](../app/src/components/ui/service-unavailable-state.tsx): service unavailable action 계층 정리
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/components/navigation/app-shell-header-class.test.ts src/components/compact-control-edge-accessibility.test.ts`
+    - Vitest `2 files / 15 tests` PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app lint -- src/components/navigation/feed-hover-menu.tsx src/components/navigation/app-shell-header-class.test.ts src/components/compact-control-edge-accessibility.test.ts`
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `298 files / 1428 tests`, Next production build PASS
+
 ### 2026-05-29 | 북마크 로그인 힌트 popover 폭 보정
 - 완료일: `2026-05-29`
 - 배경:

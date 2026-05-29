@@ -41,6 +41,12 @@ function writePetTypePreferenceCookie(petTypeIds: string[]) {
   document.cookie = `${PET_TYPE_PREFERENCE_COOKIE}=${encodeURIComponent(serializePetTypePreferenceCookie(petTypeIds))}; path=/; max-age=31536000; samesite=lax`;
 }
 
+const FEED_HOVER_MENU_TEXT_ACTION_CLASS_NAME =
+  "tp-text-muted inline-flex min-h-10 items-center justify-center px-1.5 text-[11px] font-semibold transition hover:text-[#2f5da4] hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60";
+
+const FEED_HOVER_MENU_SAVE_ACTION_CLASS_NAME =
+  "inline-flex min-h-10 items-center justify-center rounded-md bg-[#3567b5] px-3 text-[11px] font-semibold text-[#fbfdff] transition hover:bg-[#2f5da4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:bg-[#9fb9e0] disabled:opacity-70";
+
 export function FeedHoverMenu({
   communities,
   isAuthenticated,
@@ -290,7 +296,7 @@ export function FeedHoverMenu({
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  className="text-[11px] font-semibold text-[#5173a3] hover:text-[#204f8a]"
+                  className={FEED_HOVER_MENU_TEXT_ACTION_CLASS_NAME}
                   onClick={() => setSelectedPetTypeIds(selectableCommunities.map((item) => item.id))}
                   disabled={isPending}
                 >
@@ -298,7 +304,7 @@ export function FeedHoverMenu({
                 </button>
                 <button
                   type="button"
-                  className="text-[11px] font-semibold text-[#5173a3] hover:text-[#204f8a]"
+                  className={FEED_HOVER_MENU_TEXT_ACTION_CLASS_NAME}
                   onClick={() => setSelectedPetTypeIds([])}
                   disabled={isPending}
                 >
@@ -307,7 +313,7 @@ export function FeedHoverMenu({
               </div>
               <button
                 type="button"
-                className="tp-btn-soft px-2.5 py-1 text-[11px] font-semibold text-[#204f8a] disabled:opacity-60"
+                className={FEED_HOVER_MENU_SAVE_ACTION_CLASS_NAME}
                 onClick={savePetTypes}
                 disabled={isPending}
               >
@@ -415,7 +421,7 @@ export function FeedHoverMenu({
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    className="text-[11px] font-semibold text-[#5173a3] hover:text-[#204f8a]"
+                    className={FEED_HOVER_MENU_TEXT_ACTION_CLASS_NAME}
                     onClick={() => setSelectedPetTypeIds(selectableCommunities.map((item) => item.id))}
                     disabled={isPending}
                   >
@@ -423,7 +429,7 @@ export function FeedHoverMenu({
                   </button>
                   <button
                     type="button"
-                    className="text-[11px] font-semibold text-[#5173a3] hover:text-[#204f8a]"
+                    className={FEED_HOVER_MENU_TEXT_ACTION_CLASS_NAME}
                     onClick={() => setSelectedPetTypeIds([])}
                     disabled={isPending}
                   >
@@ -432,7 +438,7 @@ export function FeedHoverMenu({
                 </div>
                 <button
                   type="button"
-                  className="tp-btn-soft px-2 py-1 text-[11px] font-semibold text-[#204f8a] disabled:opacity-60"
+                  className={FEED_HOVER_MENU_SAVE_ACTION_CLASS_NAME}
                   onClick={savePetTypes}
                   disabled={isPending}
                 >
