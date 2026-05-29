@@ -8187,3 +8187,28 @@
     - PASS
   - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
     - ESLint, TypeScript, Vitest `297 files / 1421 tests`, Next production build PASS
+
+### 2026-05-29 | 댓글 답글 접기 토글 compact text화
+- 완료일: `2026-05-29`
+- 배경:
+  - 댓글 패널 클릭 답글 UX를 정리한 뒤에도 답글 묶음 `접기` 컨트롤은 둥근 hover button처럼 남아 댓글 footer에서 시각적 무게가 컸다.
+- 변경내용:
+  - 답글 묶음 토글을 둥근 버튼형에서 작은 text action으로 낮췄다.
+  - 토글 문구를 `접기`/`답글 N`에서 `답글 숨기기`/`답글 N개 보기`로 바꿔 상태를 더 명확히 했다.
+  - 토글에 `aria-expanded`를 추가해 답글 목록의 열린/접힌 상태를 보조기술에 노출했다.
+  - 답글이 없는 댓글에서는 빈 footer action container를 렌더링하지 않도록 정리했다.
+- 코드문서:
+  - [app/src/components/posts/post-comment-thread.tsx](../app/src/components/posts/post-comment-thread.tsx)
+  - [app/src/components/posts/post-comment-thread.test.tsx](../app/src/components/posts/post-comment-thread.test.tsx)
+  - [app/src/components/posts/post-comment-layout-class.test.ts](../app/src/components/posts/post-comment-layout-class.test.ts)
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/components/posts/post-comment-thread.test.tsx src/components/posts/post-comment-layout-class.test.ts`
+    - `2 files / 19 tests` PASS
+  - targeted lint:
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers PLAYWRIGHT_BASE_URL=http://localhost:3000 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test:e2e -- e2e/comment-report-visual-smoke.spec.ts --project=chromium --workers=1`
+    - PASS
+  - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `297 files / 1421 tests`, Next production build PASS

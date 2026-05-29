@@ -170,13 +170,15 @@ describe("PostCommentThread", () => {
     expect(html).toContain("신고");
     expect(html).toContain("댓글에 답글 작성");
     expect(html).toContain("aria-expanded");
+    expect(html).toContain("답글 숨기기");
+    expect(html).toContain("hover:underline-offset-4");
+    expect(html).not.toContain("답글 취소");
     expect(html).toContain("sr-only focus:not-sr-only");
     expect(html).toContain("data-reply-open");
     expect(html).toContain("data-[reply-open=true]:bg-[#f8fbff]");
     expect(html).toContain("focus-visible:ring-offset-1");
     expect(html).not.toContain('aria-label="latest-root닉네임 댓글에 답글 작성"');
     expect(html).not.toContain(">답글</button>");
-    expect(html).not.toContain("답글 취소");
     expect(html).toContain(POST_COMMENT_ROOT_COMPOSER_WRAPPER_CLASS_NAME);
     expect(html).toContain(POST_COMMENT_THREAD_ROOT_CARD_CLASS_NAME);
     expect(html).toContain(POST_COMMENT_THREAD_REPLY_CARD_CLASS_NAME);
