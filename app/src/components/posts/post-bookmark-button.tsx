@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState, useTransition } from "react";
 
+import { BOOKMARK_LOGIN_REQUIRED_MESSAGE } from "@/lib/interaction-auth-copy";
 import { togglePostBookmarkAction } from "@/server/actions/post";
 
 type PostBookmarkButtonProps = {
@@ -121,7 +122,7 @@ export function PostBookmarkButton({
             compact ? "text-[11px]" : "text-xs"
           }`}
         >
-          로그인 후 북마크 가능.{" "}
+          {BOOKMARK_LOGIN_REQUIRED_MESSAGE}{" "}
           <Link href={loginHref} className="inline-flex min-h-10 items-center font-semibold text-[#2f5da4] underline underline-offset-2">
             로그인하기
           </Link>

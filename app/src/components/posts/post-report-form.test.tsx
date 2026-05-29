@@ -29,7 +29,7 @@ describe("PostReportForm", () => {
       />,
     );
 
-    expect(html).toContain("로그인 후 게시글 신고 가능.");
+    expect(html).toContain("게시글 신고는 로그인 후 접수할 수 있습니다.");
     expect(html).toContain('/login?next=%2Fposts%2Fpost-1');
     expect(html).toContain("min-h-10");
     expect(html).not.toContain("textarea");
@@ -41,7 +41,7 @@ describe("PostReportForm", () => {
     expect(html).toContain("추가 설명");
     expect(html).toContain("신고");
     expect(html).toContain("min-h-10");
-    expect(html).not.toContain("로그인 후 게시글 신고 가능.");
+    expect(html).not.toContain("게시글 신고는 로그인 후 접수할 수 있습니다.");
   });
 
   it("adjusts the guest prompt for comment reports", () => {
@@ -53,7 +53,7 @@ describe("PostReportForm", () => {
       />,
     );
 
-    expect(html).toContain("로그인 후 댓글 신고 가능.");
+    expect(html).toContain("댓글 신고는 로그인 후 접수할 수 있습니다.");
   });
 
   it("announces report submit outcomes by tone", () => {

@@ -5,9 +5,9 @@ import { ReportReason, ReportTarget } from "@prisma/client";
 import { useState, useTransition } from "react";
 
 import { getClientFingerprint } from "@/lib/guest-client";
+import { buildReportLoginRequiredMessage } from "@/lib/interaction-auth-copy";
 import { REPORT_DESCRIPTION_MAX_LENGTH } from "@/lib/input-limits";
 import { getReportReasonLabel, reportReasonOptions } from "@/lib/report-reason";
-import { getReportTargetLabel } from "@/lib/report-target";
 
 type PostReportFormProps = {
   targetId: string;
@@ -29,12 +29,11 @@ export function PostReportForm({
     tone: "success" | "error";
     text: string;
   } | null>(null);
-  const targetLabel = getReportTargetLabel(targetType);
 
   if (!canReport) {
     return (
       <div className="tp-border-soft tp-surface-alt tp-text-accent rounded-lg border px-3 py-2 text-xs">
-        로그인 후 {targetLabel} 신고 가능.{" "}
+        {buildReportLoginRequiredMessage(targetType)}{" "}
         <Link
           href={loginHref}
           className="tp-text-link inline-flex min-h-10 items-center font-semibold underline underline-offset-2"

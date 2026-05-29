@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 
 import { ReactionLoginPrompt } from "@/components/posts/reaction-login-prompt";
+import { POST_REACTION_LOGIN_REQUIRED_MESSAGE } from "@/lib/interaction-auth-copy";
 import { subscribeViewerShellSync } from "@/lib/viewer-shell-sync";
 import { togglePostReactionAction } from "@/server/actions/post";
 
@@ -161,7 +162,7 @@ export function PostReactionControls({
 
   const effectiveReaction = hasInteracted ? reaction : (currentReaction ?? reaction);
   const effectiveCanReact = canReact && !authBlocked;
-  const loginPromptMessage = "좋아요/싫어요는 로그인 후 이용할 수 있어요.";
+  const loginPromptMessage = POST_REACTION_LOGIN_REQUIRED_MESSAGE;
 
   useEffect(() => {
     if (!effectiveCanReact || reactionLoaded) {

@@ -21,14 +21,14 @@ describe("ReactionLoginPrompt", () => {
     const html = renderToStaticMarkup(
       <ReactionLoginPrompt
         isOpen
-        message="좋아요/싫어요는 로그인 후 이용할 수 있어요."
+        message="게시글 좋아요/싫어요는 로그인 후 이용할 수 있습니다."
         loginHref="/login?next=%2Fposts%2Fpost-1"
         align="end"
         onClose={() => undefined}
       />,
     );
 
-    expect(html).toContain("좋아요/싫어요는 로그인 후 이용할 수 있어요.");
+    expect(html).toContain("게시글 좋아요/싫어요는 로그인 후 이용할 수 있습니다.");
     expect(html).toContain('/login?next=%2Fposts%2Fpost-1');
     expect(html).toContain("닫기");
     expect(html).toContain("로그인하기");

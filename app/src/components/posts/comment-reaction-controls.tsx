@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 
 import { ReactionLoginPrompt } from "@/components/posts/reaction-login-prompt";
+import { COMMENT_REACTION_LOGIN_REQUIRED_MESSAGE } from "@/lib/interaction-auth-copy";
 import { subscribeViewerShellSync } from "@/lib/viewer-shell-sync";
 import { toggleCommentReactionAction } from "@/server/actions/comment";
 
@@ -152,7 +153,7 @@ export function CommentReactionControls({
     : "inline-flex min-h-10 min-w-[76px] items-center justify-center gap-1.5 rounded-full border border-[#dbe5f4] bg-white px-2.5 text-[11px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60";
   const effectiveCanReact = canReact && !authBlocked;
   const promptAlign = loginHintAlign === "end" ? "end" : loginHintAlign === "start" ? "start" : "center";
-  const loginPromptMessage = "좋아요/싫어요는 로그인 후 이용할 수 있어요.";
+  const loginPromptMessage = COMMENT_REACTION_LOGIN_REQUIRED_MESSAGE;
 
   const handleToggle = (target: ReactionType) => {
     if (actionLockRef.current) {

@@ -7957,3 +7957,34 @@
 - 결과:
   - 피드와 게시글 상세를 오가는 사용자가 헤더에서 현재 `게시판` 섹션을 바로 인지할 수 있게 됐다.
   - 라우팅, 인증, 알림 fetch, feed filter 저장 동작은 변경하지 않았다.
+
+### 2026-05-29 | UI/UX 인증 정책 문구 정리
+- 완료일: `2026-05-29`
+- 배경:
+  - 상세 화면에서 로그인 메뉴는 보이지만 댓글은 비회원 작성이 가능하고, 좋아요/북마크/신고는 로그인 필요 조건이 달라 사용자 입장에서 정책을 추론해야 했다.
+  - 동작 변경 없이 문구와 안내 위치를 먼저 일관화했다.
+- 변경내용:
+  - interaction auth copy를 공통 상수로 분리했다.
+  - 비회원 댓글 안내를 `닉네임과 비밀번호를 입력하면 비회원 댓글을 수정/삭제할 수 있습니다.`로 명확히 했다.
+  - 회원 댓글 안내를 추가해 로그인 상태에서는 계정 권한으로 댓글이 관리된다는 점을 보여준다.
+  - 댓글 작성/답글/신고 login prompt를 `댓글 작성, 답글, 신고는 로그인 후 이용할 수 있습니다.`로 통일했다.
+  - 게시글/댓글 좋아요·싫어요 login prompt를 각각 `게시글`, `댓글` 기준으로 구분했다.
+  - 북마크 login prompt를 `북마크는 로그인 후 저장할 수 있습니다.`로 바꿨다.
+  - 게시글/댓글 신고 login prompt를 `신고는 로그인 후 접수할 수 있습니다.` 계열로 통일했다.
+- 코드문서:
+  - [app/src/lib/interaction-auth-copy.ts](../app/src/lib/interaction-auth-copy.ts)
+  - [app/src/components/posts/post-comment-root-form.tsx](../app/src/components/posts/post-comment-root-form.tsx)
+  - [app/src/components/posts/post-report-form.tsx](../app/src/components/posts/post-report-form.tsx)
+  - [app/src/components/posts/post-reaction-controls.tsx](../app/src/components/posts/post-reaction-controls.tsx)
+  - [app/src/components/posts/comment-reaction-controls.tsx](../app/src/components/posts/comment-reaction-controls.tsx)
+  - [app/src/components/posts/post-bookmark-button.tsx](../app/src/components/posts/post-bookmark-button.tsx)
+- 검증:
+  - `./node_modules/.bin/vitest run src/lib/interaction-auth-copy.test.ts src/components/posts/post-form-accessibility.test.tsx src/components/posts/post-report-form.test.tsx src/components/posts/reaction-login-prompt.test.tsx src/components/posts/post-detail-action-accessibility.test.tsx src/components/posts/comment-reaction-controls.test.tsx src/components/posts/post-reaction-controls.test.tsx`
+    - `7 files / 26 tests` PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `297 files / 1419 tests`, Next production build PASS
+  - 모바일 Playwright smoke:
+    - `/posts/:id/guest`에서 비회원 댓글 안내, 북마크 login prompt, legacy 문구 미검출, overflow 없음 확인.
+- 결과:
+  - 사용자는 댓글은 비회원 작성 가능, 반응/북마크/신고는 로그인 필요라는 정책을 더 명확히 볼 수 있다.
+  - 인증 정책, API 권한, rate limit, 신고/댓글/반응 mutation 동작은 변경하지 않았다.

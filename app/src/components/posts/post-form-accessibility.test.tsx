@@ -90,9 +90,32 @@ describe("post form accessibility", () => {
       />,
     );
 
-    expect(html).toContain("댓글 작성/답글/신고는 로그인 후 이용할 수 있습니다.");
+    expect(html).toContain("댓글 작성, 답글, 신고는 로그인 후 이용할 수 있습니다.");
     expect(html).toContain("로그인하기");
     expect(html).toContain("min-h-10");
+  });
+
+  it("explains signed-in comment ownership without guest password fields", () => {
+    const html = renderToStaticMarkup(
+      <PostCommentRootForm
+        canComment
+        currentUserId="viewer-1"
+        guestDisplayName=""
+        guestPassword=""
+        rootContent=""
+        isPending={false}
+        loginHref="/login"
+        onGuestDisplayNameChange={vi.fn()}
+        onGuestPasswordChange={vi.fn()}
+        onRootContentChange={vi.fn()}
+        onSubmit={vi.fn()}
+      />,
+    );
+
+    expect(html).toContain("회원 댓글 작성");
+    expect(html).toContain("로그인한 계정으로 댓글이 등록");
+    expect(html).not.toContain("post-comment-guest-name");
+    expect(html).not.toContain("post-comment-guest-password");
   });
 
   it("shows immediate pending feedback while a root comment is submitting", () => {
