@@ -8239,3 +8239,28 @@
     - PASS
   - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
     - ESLint, TypeScript, Vitest `297 files / 1421 tests`, Next production build PASS
+
+### 2026-05-29 | 댓글 작성/답글 작성 버튼 계층 정리
+- 완료일: `2026-05-29`
+- 배경:
+  - 댓글 신고와 답글 패널을 낮춘 뒤에도 댓글/답글 작성 폼의 `tp-btn-primary`, `tp-btn-soft`, `rounded-lg` 버튼 패턴이 남아 있었다.
+- 변경내용:
+  - root 댓글 submit을 `tp-btn-primary rounded-lg` 의존에서 벗어나 compact primary class로 명시했다.
+  - inline 답글 `취소`를 soft button에서 text action으로 낮췄다.
+  - inline 답글 `답글 등록`은 root 댓글 submit class를 재사용해 작성/답글 submit 계층을 맞췄다.
+  - 버튼 높이 40px touch target은 유지했다.
+- 코드문서:
+  - [app/src/components/posts/post-comment-layout-class.ts](../app/src/components/posts/post-comment-layout-class.ts)
+  - [app/src/components/posts/post-comment-layout-class.test.ts](../app/src/components/posts/post-comment-layout-class.test.ts)
+  - [app/src/components/posts/post-comment-thread.tsx](../app/src/components/posts/post-comment-thread.tsx)
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/components/posts/post-comment-layout-class.test.ts src/components/posts/post-comment-thread.test.tsx`
+    - `2 files / 19 tests` PASS
+  - targeted lint:
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers PLAYWRIGHT_BASE_URL=http://localhost:3000 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test:e2e -- e2e/comment-report-visual-smoke.spec.ts --project=chromium --workers=1`
+    - PASS
+  - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `297 files / 1421 tests`, Next production build PASS

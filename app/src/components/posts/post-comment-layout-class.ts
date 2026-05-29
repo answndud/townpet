@@ -96,7 +96,7 @@ export const POST_COMMENT_ROOT_FORM_ACTION_ROW_CLASS_NAME =
   "mt-1 flex justify-end";
 
 export const POST_COMMENT_ROOT_FORM_SUBMIT_CLASS_NAME =
-  "tp-btn-primary inline-flex min-h-10 items-center justify-center rounded-lg px-3 text-xs font-semibold";
+  "inline-flex min-h-10 items-center justify-center rounded-md bg-[#3567b5] px-3 text-xs font-semibold text-[#fbfdff] transition hover:bg-[#2f5da4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:bg-[#9fb2cf]";
 
 export const POST_COMMENT_INLINE_FORM_SECTION_CLASS_NAME =
   "mt-1.5 border-t border-[#e7eef9] pt-1.5";
@@ -112,6 +112,9 @@ export const POST_COMMENT_INLINE_FORM_TEXTAREA_CLASS_NAME =
 
 export const POST_COMMENT_INLINE_FORM_ACTION_ROW_CLASS_NAME =
   "mt-1 flex justify-end gap-1.5";
+
+export const POST_COMMENT_INLINE_FORM_CANCEL_CLASS_NAME =
+  "tp-text-muted inline-flex min-h-10 items-center justify-center px-1.5 text-xs font-semibold transition hover:text-[#2f5da4] hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50";
 
 export const POST_COMMENT_INLINE_FORM_PASSWORD_ROW_CLASS_NAME =
   "flex flex-wrap items-center gap-1.5";
