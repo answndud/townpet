@@ -2,7 +2,15 @@
 
 import { useRouter } from "next/navigation";
 import { ReportTarget } from "@prisma/client";
-import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import {
+  type KeyboardEvent,
+  type MouseEvent,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
 
 import {
   canUseCommentReaction,
@@ -96,6 +104,26 @@ export const canMuteCommentAuthor = canToggleMuteUser;
 export const shouldRefreshCommentRoute = (onCommentsChanged?: PostCommentThreadProps["onCommentsChanged"]) =>
   !onCommentsChanged;
 const COMMENT_INLINE_FORM_SECTION_CLASS_NAME = POST_COMMENT_INLINE_FORM_SECTION_CLASS_NAME;
+const COMMENT_PANEL_REPLY_IGNORE_SELECTOR =
+  "a, button, input, textarea, select, summary, details, form, [role='button'], [data-comment-panel-ignore]";
+
+export function shouldIgnoreCommentPanelReplyClick(
+  target: EventTarget | null,
+  currentTarget: EventTarget | null,
+) {
+  const closest =
+    target && "closest" in target && typeof target.closest === "function"
+      ? target.closest.bind(target)
+      : null;
+
+  if (!closest) {
+    return true;
+  }
+
+  const ignoredAncestor = closest(COMMENT_PANEL_REPLY_IGNORE_SELECTOR) as EventTarget | null;
+
+  return Boolean(ignoredAncestor && ignoredAncestor !== currentTarget);
+}
 
 export function PostCommentThread({
   postId,
@@ -566,12 +594,38 @@ export function PostCommentThread({
         ? guestAuthorName
         : resolveUserDisplayName(comment.author.nickname);
     const avatarText = (isMutedPlaceholder ? "뮤" : displayName.slice(0, 1)).toUpperCase();
-    const actionLinkClass =
+    const collapseLinkClass =
       "tp-text-muted inline-flex min-h-10 items-center rounded-md px-2.5 text-[12px] font-medium transition hover:bg-[#f4f8ff] hover:text-[#2f5da4] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
     const commentCardClassName =
       depth > 0
         ? `flex gap-2 ${POST_COMMENT_THREAD_REPLY_CARD_CLASS_NAME}`
         : POST_COMMENT_THREAD_ROOT_CARD_CLASS_NAME;
+    const canOpenReplyFromPanel = canReply;
+    const selectableCommentCardClassName = canOpenReplyFromPanel
+      ? `${commentCardClassName} cursor-pointer transition hover:bg-[#f8fbff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2`
+      : commentCardClassName;
+    const openReplyFromPanel = () => {
+      setReplyOpen((prev) => ({ ...prev, [comment.id]: true }));
+    };
+    const handleCommentPanelClick = (event: MouseEvent<HTMLElement>) => {
+      if (!canOpenReplyFromPanel) {
+        return;
+      }
+      if (shouldIgnoreCommentPanelReplyClick(event.target, event.currentTarget)) {
+        return;
+      }
+      openReplyFromPanel();
+    };
+    const handleCommentPanelKeyDown = (event: KeyboardEvent<HTMLElement>) => {
+      if (!canOpenReplyFromPanel || event.target !== event.currentTarget) {
+        return;
+      }
+      if (event.key !== "Enter" && event.key !== " ") {
+        return;
+      }
+      event.preventDefault();
+      openReplyFromPanel();
+    };
     const commentBodyText = isDeleted
       ? "삭제된 댓글입니다."
       : isMutedPlaceholder
@@ -590,7 +644,13 @@ export function PostCommentThread({
       >
         <article
           data-testid={`post-comment-item-${comment.id}`}
-          className={commentCardClassName}
+          className={selectableCommentCardClassName}
+          role={canOpenReplyFromPanel ? "button" : undefined}
+          tabIndex={canOpenReplyFromPanel ? 0 : undefined}
+          aria-label={canOpenReplyFromPanel ? `${displayName} 댓글에 답글 작성` : undefined}
+          aria-expanded={canOpenReplyFromPanel ? Boolean(replyOpen[comment.id]) : undefined}
+          onClick={handleCommentPanelClick}
+          onKeyDown={handleCommentPanelKeyDown}
         >
           <div className={POST_COMMENT_THREAD_AVATAR_CLASS_NAME}>
             {avatarText}
@@ -636,7 +696,7 @@ export function PostCommentThread({
               </div>
 
               {!isDeleted && !isMutedPlaceholder ? (
-                <div className="ml-auto shrink-0">
+                <div className="ml-auto shrink-0" data-comment-panel-ignore>
                   {canOpenMenu ? (
                     <details className="relative">
                       <summary
@@ -704,6 +764,7 @@ export function PostCommentThread({
                   className="tp-text-muted inline-flex min-h-10 shrink-0 items-center rounded-md px-3 text-[12px] font-medium transition hover:bg-white hover:text-[#2f5da4] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2"
                   onClick={() => handleUnmute(comment.id, comment.author.id)}
                   disabled={isPending}
+                  data-comment-panel-ignore
                 >
                   뮤트 해제
                 </button>
@@ -753,24 +814,13 @@ export function PostCommentThread({
               </dl>
             ) : null}
 
-            {!isDeleted && (canReply || (depth === 0 && replies.length > 0) || !isMutedPlaceholder) ? (
-              <div className={POST_COMMENT_THREAD_FOOTER_CLASS_NAME}>
+            {!isDeleted && ((depth === 0 && replies.length > 0) || !isMutedPlaceholder) ? (
+              <div className={POST_COMMENT_THREAD_FOOTER_CLASS_NAME} data-comment-panel-ignore>
                 <div className={POST_COMMENT_THREAD_ACTIONS_CLASS_NAME}>
-                  {canReply ? (
-                    <button
-                      type="button"
-                      className={actionLinkClass}
-                      onClick={() =>
-                        setReplyOpen((prev) => ({ ...prev, [comment.id]: !prev[comment.id] }))
-                      }
-                    >
-                      {replyOpen[comment.id] ? "답글 취소" : "답글"}
-                    </button>
-                  ) : null}
                   {depth === 0 && replies.length > 0 ? (
                     <button
                       type="button"
-                      className={actionLinkClass}
+                      className={collapseLinkClass}
                       onClick={() =>
                         setCollapsedReplies((prev) => ({
                           ...prev,
@@ -802,7 +852,7 @@ export function PostCommentThread({
             ) : null}
 
             {reportOpen[comment.id] ? (
-              <div className={COMMENT_INLINE_FORM_SECTION_CLASS_NAME}>
+              <div className={COMMENT_INLINE_FORM_SECTION_CLASS_NAME} data-comment-panel-ignore>
                 <PostReportForm
                   targetId={comment.id}
                   targetType={ReportTarget.COMMENT}
@@ -813,7 +863,7 @@ export function PostCommentThread({
             ) : null}
 
             {canReply && replyOpen[comment.id] ? (
-              <div className={COMMENT_INLINE_FORM_SECTION_CLASS_NAME}>
+              <div className={COMMENT_INLINE_FORM_SECTION_CLASS_NAME} data-comment-panel-ignore>
                 {!currentUserId ? (
                   <div className={POST_COMMENT_INLINE_FORM_ROW_CLASS_NAME}>
                     <input
@@ -875,7 +925,7 @@ export function PostCommentThread({
             ) : null}
 
             {isGuestComment && guestActionPrompt[comment.id] ? (
-              <div className={COMMENT_INLINE_FORM_SECTION_CLASS_NAME}>
+              <div className={COMMENT_INLINE_FORM_SECTION_CLASS_NAME} data-comment-panel-ignore>
                 <div className={POST_COMMENT_INLINE_FORM_PASSWORD_ROW_CLASS_NAME}>
                   <input
                     type="password"

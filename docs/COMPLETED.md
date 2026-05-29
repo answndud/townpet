@@ -8100,3 +8100,35 @@
 - 결과:
   - 헤더와 상세 주요 액션에서 “둥근 outline 버튼 + 진한 active line” 패턴을 제거했다.
   - 이후 같은 패턴이 nav/detail action에 재도입되면 테스트에서 잡히도록 했다.
+
+### 2026-05-29 | 댓글 패널 클릭 답글 작성 전환
+- 완료일: `2026-05-29`
+- 배경:
+  - 댓글 footer의 `답글` 텍스트 버튼이 반복 액션처럼 보여 댓글 하단이 복잡해졌다.
+  - 디시인사이드식 댓글 경험처럼 댓글 패널 자체를 답글 대상 선택 affordance로 쓰면, 별도 버튼 없이 더 빠르게 답글을 시작할 수 있다.
+- 변경내용:
+  - 댓글 article이 답글 가능한 상태일 때 `role="button"`, `tabIndex`, `aria-label`, `aria-expanded`를 갖도록 했다.
+  - 댓글 패널 클릭 또는 Enter/Space 키 입력으로 해당 댓글의 답글 폼이 열린다.
+  - 기존 `답글`/`답글 취소` footer 버튼을 제거했다.
+  - 내부 메뉴, 신고/수정/삭제, 접기, 좋아요/싫어요, 신고 폼, 답글 폼, 비회원 비밀번호 입력 영역은 `data-comment-panel-ignore`와 interactive target guard로 패널 클릭 답글 열기에서 제외했다.
+  - 댓글 신고 모바일 visual smoke가 버튼 대신 패널 touch target과 답글 폼 노출을 확인하도록 갱신했다.
+- 코드문서:
+  - [app/src/components/posts/post-comment-thread.tsx](../app/src/components/posts/post-comment-thread.tsx)
+  - [app/src/components/posts/post-comment-thread.test.tsx](../app/src/components/posts/post-comment-thread.test.tsx)
+  - [app/e2e/comment-report-visual-smoke.spec.ts](../app/e2e/comment-report-visual-smoke.spec.ts)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/components/posts/post-comment-thread.test.tsx src/components/posts/post-comment-compact-controls-accessibility.test.tsx src/components/posts/post-comment-layout-class.test.ts`
+    - `3 files / 23 tests` PASS
+  - targeted lint:
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `297 files / 1421 tests`, Next production build PASS
+  - `PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers PLAYWRIGHT_BASE_URL=http://localhost:3000 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test:e2e -- e2e/comment-report-visual-smoke.spec.ts --project=chromium --workers=1`
+    - PASS
+    - 기본 Playwright cache에는 브라우저가 없어 첫 실행이 실패했고, repo-local `.playwright-browsers` 경로로 재실행해 통과했다.
+- 결과:
+  - 댓글 하단에서 `답글` 버튼을 제거해 반복 액션 밀도를 낮췄다.
+  - 댓글 패널 자체가 답글 대상 선택 surface가 되었고, 기존 메뉴/반응/신고 플로우는 유지했다.
