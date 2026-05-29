@@ -1081,7 +1081,10 @@ export function PostCommentThread({
       ) : null}
 
       {roots.length === 0 ? (
-        <p className={POST_COMMENT_EMPTY_STATE_CLASS_NAME}>댓글이 없습니다.</p>
+        <div className={POST_COMMENT_EMPTY_STATE_CLASS_NAME}>
+          <p className="font-semibold text-[#355988]">아직 댓글이 없습니다.</p>
+          <p className="mt-0.5">질문이나 정정이 필요한 부분을 남겨주세요.</p>
+        </div>
       ) : (
         <div className={`${POST_COMMENT_ROOT_LIST_CLASS_NAME} ${COMMENT_BORDER_CLASS_NAME} ${COMMENT_DIVIDER_CLASS_NAME}`}>
           {roots.map((comment) => renderComment(comment))}

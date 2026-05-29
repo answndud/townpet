@@ -11,6 +11,7 @@ describe("post detail primary card layout", () => {
 
     expect(code).toContain("tp-border-soft border-t pt-3");
     expect(code).toContain("tp-border-soft mt-2 flex flex-wrap items-center gap-2 border-t pt-2");
+    expect(code).toContain('<span aria-hidden="true">·</span>');
     expect(code).not.toContain("tp-border-soft rounded-lg border bg-white p-3");
     expect(code).not.toContain("tp-border-soft tp-surface-soft mt-2 flex flex-wrap items-center gap-2 rounded-xl border p-2");
   });

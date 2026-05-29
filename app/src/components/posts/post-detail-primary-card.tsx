@@ -109,7 +109,7 @@ export function PostDetailPrimaryCard({
           <details className="relative shrink-0">
             <summary
               aria-label="게시글 더보기"
-              className="tp-text-muted inline-flex min-h-8 min-w-8 cursor-pointer list-none items-center justify-center text-[16px] leading-none transition hover:text-[#1f4f8f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 [&::-webkit-details-marker]:hidden"
+              className="tp-text-muted inline-flex min-h-10 min-w-10 cursor-pointer list-none items-center justify-center text-[16px] leading-none transition hover:text-[#1f4f8f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 [&::-webkit-details-marker]:hidden"
             >
               ···
             </summary>
@@ -151,7 +151,9 @@ export function PostDetailPrimaryCard({
             </div>
             <p className="tp-text-subtle mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[12px]">
               <span suppressHydrationWarning>{formatKoreanIsoDate(createdAt)}</span>
+              <span aria-hidden="true">·</span>
               <span>조회 {resolvedViewCount.toLocaleString()}</span>
+              <span aria-hidden="true">·</span>
               <span>댓글 {resolvedCommentCount.toLocaleString()}</span>
             </p>
           </div>

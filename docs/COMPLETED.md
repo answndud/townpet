@@ -8213,6 +8213,42 @@
   - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
     - ESLint, TypeScript, Vitest `297 files / 1421 tests`, Next production build PASS
 
+### 2026-05-29 | 게시글 상세 신뢰/메타/댓글 empty state 정리
+- 완료일: `2026-05-29`
+- 배경:
+  - 외부 UI 피드백 중 운영자 정리 글의 신뢰 표면, 작성자/메타 표시, 정정 CTA, 댓글 empty state, 비회원 댓글 입력 접근성은 TownPet의 정책 우선 제품 방향과 맞았다.
+  - 반면 전체 카드 토큰, 본문 타이포그래피, 전역 색상 토큰은 영향 범위가 넓어 이번 작업에서는 제외했다.
+- 변경내용:
+  - 운영자 정리 글의 작성자 표시를 내부 계정명 대신 `TownPet 운영팀`으로 노출한다.
+  - 상세 메타를 `날짜 · 조회 · 댓글` 구조로 구분해 읽기 흐름을 명확히 했다.
+  - `목록으로` 버튼은 `← 게시판으로 돌아가기` text link 계층으로 낮췄다.
+  - 운영자 정리 박스의 정정 CTA를 `이 정보 정정 요청`으로 바꾸고, 모바일에서는 박스 하단으로 내려가도록 분리했다.
+  - 댓글 empty state를 `아직 댓글이 없습니다. 질문이나 정정이 필요한 부분을 남겨주세요.`로 바꿔 민감한 글에서도 과도한 댓글 유도처럼 보이지 않게 했다.
+  - 비회원 댓글 안내 박스는 border를 제거해 입력 필드와 구분하고, 닉네임/비밀번호/댓글 textarea에 접근성 label을 보강했다.
+  - feed/detail smoke에서 같이 드러난 hidden pet menu 가로 overflow와 40px touch target 미달 컨트롤을 보정했다.
+- 코드문서:
+  - [app/src/components/posts/operator-content-source-panel.tsx](../app/src/components/posts/operator-content-source-panel.tsx)
+  - [app/src/components/posts/post-detail-client.tsx](../app/src/components/posts/post-detail-client.tsx)
+  - [app/src/components/posts/post-detail-primary-card.tsx](../app/src/components/posts/post-detail-primary-card.tsx)
+  - [app/src/components/posts/back-to-feed-button.tsx](../app/src/components/posts/back-to-feed-button.tsx)
+  - [app/src/app/posts/[id]/guest/page.tsx](../app/src/app/posts/[id]/guest/page.tsx)
+  - [app/src/components/posts/post-comment-thread.tsx](../app/src/components/posts/post-comment-thread.tsx)
+  - [app/src/components/posts/post-comment-root-form.tsx](../app/src/components/posts/post-comment-root-form.tsx)
+  - [app/src/components/posts/feed-control-panel.tsx](../app/src/components/posts/feed-control-panel.tsx)
+  - [app/src/components/posts/feed-footer-search-form.tsx](../app/src/components/posts/feed-footer-search-form.tsx)
+  - [app/src/components/navigation/feed-hover-menu.tsx](../app/src/components/navigation/feed-hover-menu.tsx)
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/components/posts/operator-content-source-panel.test.tsx src/components/posts/post-comment-thread.test.tsx src/components/posts/post-form-accessibility.test.tsx src/components/posts/post-detail-primary-card-layout.test.ts src/components/posts/post-reaction-controls.test.tsx src/components/navigation/app-shell-header-class.test.ts src/components/posts/feed-control-panel.test.tsx src/components/posts/feed-footer-search-form.test.tsx`
+    - Vitest `8 files / 37 tests` PASS
+  - targeted lint:
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers PLAYWRIGHT_BASE_URL=http://localhost:3000 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test:e2e -- e2e/feed-search-detail-visual-smoke.spec.ts --project=chromium --workers=1`
+    - Playwright chromium `2 passed`
+  - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `297 files / 1423 tests`, Next production build PASS
+
 ### 2026-05-29 | 댓글 신고 폼과 메뉴 무게 축소
 - 완료일: `2026-05-29`
 - 배경:

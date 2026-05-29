@@ -331,7 +331,7 @@ export function FeedHoverMenu({
             ) : null}
           </button>
           <div
-            className={`absolute left-0 top-full z-50 min-w-[240px] transition duration-150 ${
+            className={`absolute right-0 top-full z-50 min-w-[240px] transition duration-150 ${
               openMenu === "pet" ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
             }`}
           >

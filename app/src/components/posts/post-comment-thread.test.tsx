@@ -199,6 +199,24 @@ describe("PostCommentThread", () => {
     expect(html.indexOf("베스트 댓글")).toBeLessThan(html.indexOf("최신 댓글"));
   });
 
+  it("renders a safer empty state for commentable detail pages", () => {
+    const html = renderToStaticMarkup(
+      <PostCommentThread
+        postId="post-1"
+        comments={[]}
+        bestComments={[]}
+        totalCommentCount={0}
+        currentPage={1}
+        totalPages={1}
+        canInteract
+      />,
+    );
+
+    expect(html).toContain("아직 댓글이 없습니다.");
+    expect(html).toContain("질문이나 정정이 필요한 부분을 남겨주세요.");
+    expect(html).not.toContain(">댓글이 없습니다.</p>");
+  });
+
   it("closes the author menu only for outside targets", () => {
     const insideTarget = { id: "inside-node" };
     const menuRoot = {

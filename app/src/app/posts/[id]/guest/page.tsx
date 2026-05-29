@@ -189,7 +189,9 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
   const loginHref = `/login?next=${encodeURIComponent(`/posts/${post.id}`)}`;
   const guestPostMeta = getGuestPostMeta(post);
   const canReportPost = isReportablePostType(post.type);
-  const displayAuthorName = guestPostMeta.isGuestPost
+  const displayAuthorName = post.isOperatorContent && !guestPostMeta.isGuestPost
+    ? "TownPet 운영팀"
+    : guestPostMeta.isGuestPost
     ? guestPostMeta.guestPublicName ??
       resolvePublicGuestDisplayName((post as { guestDisplayName?: string | null }).guestDisplayName)
     : resolveUserDisplayName(post.author.nickname);
@@ -248,7 +250,7 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
         }}
       />
       <main className="mx-auto flex w-full max-w-[1100px] flex-col gap-4 px-4 py-5 sm:gap-5 sm:px-6 sm:py-6 lg:px-8">
-        <BackToFeedButton className="tp-btn-soft inline-flex min-h-10 w-fit items-center px-3 text-xs" />
+        <BackToFeedButton className="tp-text-link inline-flex min-h-10 w-fit items-center text-xs font-semibold underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2" />
         <div>
           <section className="tp-card p-4 sm:p-6">
             <div className="flex items-start justify-between gap-3">
@@ -264,7 +266,7 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
                 <details className="relative shrink-0">
                   <summary
                     aria-label="게시글 더보기"
-                    className="tp-text-muted inline-flex min-h-8 min-w-8 cursor-pointer list-none items-center justify-center text-[16px] leading-none transition hover:text-[#1f4f8f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 [&::-webkit-details-marker]:hidden"
+                    className="tp-text-muted inline-flex min-h-10 min-w-10 cursor-pointer list-none items-center justify-center text-[16px] leading-none transition hover:text-[#1f4f8f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 [&::-webkit-details-marker]:hidden"
                   >
                     ···
                   </summary>
@@ -299,7 +301,9 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
                   </div>
                   <p className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[12px] text-[#516d96]">
                     <span suppressHydrationWarning>{formatKoreanIsoDate(createdAt)}</span>
+                    <span aria-hidden="true">·</span>
                     <span>조회 {safeViewCount.toLocaleString()}</span>
+                    <span aria-hidden="true">·</span>
                     <PostCommentCountStat
                       key={`${post.id}:${safeCommentCount}`}
                       postId={post.id}

@@ -63,10 +63,15 @@ describe("post form accessibility", () => {
 
     expect(html).toContain("post-comment-guest-name");
     expect(html).toContain("post-comment-guest-password");
+    expect(html).toContain('for="post-comment-guest-name"');
+    expect(html).toContain('for="post-comment-guest-password"');
+    expect(html).toContain('aria-label="댓글 내용"');
+    expect(html).toContain("비회원 댓글 작성");
     expect((html.match(/min-h-10/g) ?? []).length).toBeGreaterThanOrEqual(3);
     expect(html).toContain("post-comment-root-submit");
     expect(html).toContain("min-h-10");
     expect(html).toContain('class="bg-[#fbfdff] px-2 py-1.5 sm:px-2.5"');
+    expect(html).toContain("rounded-md bg-[#f8fbff] px-2.5 py-2");
     expect(html).toContain("min-h-[64px] w-full");
     expect(html).toContain("sm:min-h-[56px]");
     expect(html).not.toContain("tp-form-panel tp-form-panel-page-soft p-2.5");
@@ -114,6 +119,7 @@ describe("post form accessibility", () => {
 
     expect(html).toContain("회원 댓글 작성");
     expect(html).toContain("로그인한 계정으로 댓글이 등록");
+    expect(html).toContain('aria-label="댓글 내용"');
     expect(html).not.toContain("post-comment-guest-name");
     expect(html).not.toContain("post-comment-guest-password");
   });

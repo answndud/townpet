@@ -86,6 +86,16 @@ describe("app shell header classes", () => {
     expect(source).not.toContain('import { NotificationBell } from "@/components/notifications/notification-bell"');
   });
 
+  it("keeps hidden pet menu inside the viewport on desktop", () => {
+    const source = readFileSync(
+      join(process.cwd(), "src/components/navigation/feed-hover-menu.tsx"),
+      "utf8",
+    );
+
+    expect(source).toContain("absolute right-0 top-full z-50 min-w-[240px]");
+    expect(source).not.toContain("absolute left-0 top-full z-50 min-w-[240px]");
+  });
+
   it("uses a simplified public landing header on the home route", () => {
     const source = readFileSync(
       join(process.cwd(), "src/components/navigation/app-shell-header.tsx"),

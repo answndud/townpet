@@ -52,13 +52,13 @@ const REVIEW_FILTER_OPTIONS: Array<{ label: string; value?: ReviewCategory }> = 
 ];
 
 const PRIMARY_TAB_CLASS_NAME =
-  "inline-flex h-[28px] items-center rounded-md border px-2 text-[11px] font-medium leading-none transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25";
+  "inline-flex min-h-10 items-center rounded-md border px-2.5 text-[11px] font-medium leading-none transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25";
 const ACTIVE_PRIMARY_TAB_CLASS_NAME =
   "border-[#3567b5] bg-[#3567b5] text-white";
 const INACTIVE_PRIMARY_TAB_CLASS_NAME =
   "border-[#d5e3f5] bg-white text-[#315b9a] hover:border-[#b8cceb] hover:bg-[#f5f9ff]";
 const FILTER_CHIP_CLASS_NAME =
-  "inline-flex h-[28px] items-center rounded-md border px-2 text-[11px] font-medium leading-none transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25";
+  "inline-flex min-h-10 items-center rounded-md border px-2.5 text-[11px] font-medium leading-none transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25";
 const ACTIVE_FILTER_CHIP_CLASS_NAME = "border-[#3567b5] bg-[#3567b5] text-white";
 const INACTIVE_FILTER_CHIP_CLASS_NAME =
   "border-[#d4e1f3] bg-white text-[#355f99] hover:border-[#bdd2ed] hover:bg-[#f6faff]";

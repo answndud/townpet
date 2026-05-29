@@ -63,6 +63,8 @@ export function OperatorContentSourcePanel({
   const correctionHref = postId
     ? `/corrections/new?postId=${encodeURIComponent(postId)}&targetType=POST`
     : "/corrections/new?targetType=POST";
+  const correctionLinkClassName =
+    "inline-flex min-h-9 shrink-0 items-center justify-center text-[11px] font-semibold text-[#2f5da4] underline-offset-4 transition hover:text-[#1f4f8f] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2";
 
   return (
     <section className="mt-4 border-y border-[#d8e6f7] bg-[#f8fbff] px-3 py-3 text-xs text-[#4f678d] sm:px-4">
@@ -81,9 +83,9 @@ export function OperatorContentSourcePanel({
         </div>
         <Link
           href={correctionHref}
-          className="tp-btn-soft inline-flex min-h-9 shrink-0 items-center justify-center px-3 text-[11px] font-semibold"
+          className={`${correctionLinkClassName} hidden sm:inline-flex`}
         >
-          정보 정정 요청
+          이 정보 정정 요청
         </Link>
       </div>
       {sourceName || sourceUrl || verifiedLabel ? (
@@ -117,6 +119,12 @@ export function OperatorContentSourcePanel({
           ) : null}
         </dl>
       ) : null}
+      <Link
+        href={correctionHref}
+        className={`${correctionLinkClassName} mt-3 sm:hidden`}
+      >
+        이 정보 정정 요청
+      </Link>
     </section>
   );
 }

@@ -18,11 +18,14 @@ describe("OperatorContentSourcePanel", () => {
     );
 
     expect(html).toContain("운영자 정리");
-    expect(html).toContain("정보 정정 요청");
+    expect(html).toContain("이 정보 정정 요청");
     expect(html).toContain('href="/corrections/new?postId=post-1&amp;targetType=POST"');
+    expect(html).toContain("hidden sm:inline-flex");
+    expect(html).toContain("mt-3 sm:hidden");
     expect(html).toContain("최종 확인");
     expect(html).toContain("2026-05-24");
     expect(html).not.toContain("/commercial#contact");
+    expect(html).not.toContain("tp-btn-soft");
     expect(html).not.toContain("rounded-xl border");
   });
 
