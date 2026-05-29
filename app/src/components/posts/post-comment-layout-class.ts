@@ -13,6 +13,18 @@ export const POST_COMMENT_THREAD_FOOTER_CLASS_NAME =
 export const POST_COMMENT_THREAD_ACTIONS_CLASS_NAME =
   "flex flex-wrap items-center gap-1";
 
+export const POST_COMMENT_THREAD_MENU_BUTTON_CLASS_NAME =
+  "tp-text-muted inline-flex min-h-10 min-w-10 cursor-pointer list-none items-center justify-center rounded-md text-[15px] leading-none transition hover:bg-[#f1f5fb] hover:text-[#2f5da4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 [&::-webkit-details-marker]:hidden";
+
+export const POST_COMMENT_THREAD_MENU_PANEL_CLASS_NAME =
+  "tp-border-muted absolute right-0 z-20 mt-1.5 min-w-28 rounded-md border bg-white p-1 shadow-[0_8px_18px_rgba(16,40,74,0.08)]";
+
+export const POST_COMMENT_THREAD_MENU_ITEM_CLASS_NAME =
+  "tp-text-heading flex min-h-10 w-full items-center rounded px-3 text-left text-[12px] font-medium transition hover:bg-[#f5f9ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1";
+
+export const POST_COMMENT_THREAD_MENU_DANGER_ITEM_CLASS_NAME =
+  "flex min-h-10 w-full items-center rounded px-3 text-left text-[12px] font-medium text-rose-700 transition hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200 focus-visible:ring-offset-1";
+
 export const POST_COMMENT_THREAD_ROOT_CARD_CLASS_NAME =
   "flex gap-2.5 px-1 py-2.5";
 

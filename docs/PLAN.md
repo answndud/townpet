@@ -18,5 +18,4 @@
 
 ## 다음 작업 후보
 
-- 댓글/상세 화면 action overflow menu 정리: 댓글 신고/답글/수정/삭제 위치와 hover/focus affordance 일관화
 - authenticated admin queue smoke production credential 확보 후 재실행

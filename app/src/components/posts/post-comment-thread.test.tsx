@@ -16,6 +16,7 @@ import {
   POST_COMMENT_ROOT_COMPOSER_WRAPPER_CLASS_NAME,
   POST_COMMENT_ROOT_LIST_CLASS_NAME,
   POST_COMMENT_THREAD_FOOTER_CLASS_NAME,
+  POST_COMMENT_THREAD_MENU_PANEL_CLASS_NAME,
   POST_COMMENT_THREAD_REPLY_CARD_CLASS_NAME,
   POST_COMMENT_THREAD_ROOT_CARD_CLASS_NAME,
   POST_COMMENT_THREAD_SIGHTING_META_CLASS_NAME,
@@ -162,6 +163,10 @@ describe("PostCommentThread", () => {
     expect(html).toContain(POST_COMMENT_LATEST_HEADER_CLASS_NAME);
     expect(html).toContain(POST_COMMENT_ROOT_LIST_CLASS_NAME);
     expect(html).toContain(POST_COMMENT_THREAD_FOOTER_CLASS_NAME);
+    expect(html).toContain("tp-text-muted inline-flex min-h-10 min-w-10 cursor-pointer list-none");
+    expect(html).toContain(POST_COMMENT_THREAD_MENU_PANEL_CLASS_NAME);
+    expect(html).toContain("댓글 작업 메뉴");
+    expect(html).toContain("신고");
     expect(html).toContain(POST_COMMENT_ROOT_COMPOSER_WRAPPER_CLASS_NAME);
     expect(html).toContain(POST_COMMENT_THREAD_ROOT_CARD_CLASS_NAME);
     expect(html).toContain(POST_COMMENT_THREAD_REPLY_CARD_CLASS_NAME);
@@ -264,6 +269,31 @@ describe("PostCommentThread", () => {
   it("opens the author menu only for signed-in viewers", () => {
     expect(canOpenCommentAuthorMenu("viewer-1")).toBe(true);
     expect(canOpenCommentAuthorMenu(undefined)).toBe(false);
+  });
+
+  it("keeps report in the comment overflow menu instead of the footer actions", () => {
+    const html = renderToStaticMarkup(
+      <PostCommentThread
+        postId="post-1"
+        comments={[buildComment("reportable-root", { content: "신고 가능한 댓글" })]}
+        bestComments={[]}
+        totalCommentCount={1}
+        currentPage={1}
+        totalPages={1}
+        currentUserId="viewer-1"
+        canInteract
+      />,
+    );
+
+    const footerIndex = html.indexOf(POST_COMMENT_THREAD_FOOTER_CLASS_NAME);
+    const menuIndex = html.indexOf(POST_COMMENT_THREAD_MENU_PANEL_CLASS_NAME);
+    const reportIndex = html.indexOf(">신고</button>");
+
+    expect(html).toContain("reportable-root닉네임 댓글 작업 메뉴");
+    expect(menuIndex).toBeGreaterThan(-1);
+    expect(reportIndex).toBeGreaterThan(menuIndex);
+    expect(reportIndex).toBeLessThan(footerIndex);
+    expect(html).toContain('data-comment-reaction="reportable-root"');
   });
 
   it("uses the lighter client comment reload path when available", () => {

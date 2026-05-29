@@ -22,13 +22,23 @@ describe("post comment compact controls accessibility", () => {
   });
 
   it("keeps comment thread menu and inline form controls mobile-safe", () => {
-    const code = readFileSync(
+    const threadCode = readFileSync(
       join(process.cwd(), "src/components/posts/post-comment-thread.tsx"),
       "utf8",
     );
+    const layoutCode = readFileSync(
+      join(process.cwd(), "src/components/posts/post-comment-layout-class.ts"),
+      "utf8",
+    );
+    const code = `${threadCode}\n${layoutCode}`;
 
     expect(code).toContain("min-h-10 min-w-10");
     expect(code).toContain("flex min-h-10 w-full items-center");
+    expect(code).toContain("POST_COMMENT_THREAD_MENU_BUTTON_CLASS_NAME");
+    expect(code).toContain("POST_COMMENT_THREAD_MENU_PANEL_CLASS_NAME");
+    expect(code).toContain("POST_COMMENT_THREAD_MENU_DANGER_ITEM_CLASS_NAME");
+    expect(code).toContain("댓글 작업 메뉴");
+    expect(code).toContain("[&::-webkit-details-marker]:hidden");
     expect(code).toContain("POST_COMMENT_INLINE_FORM_SECTION_CLASS_NAME");
     expect(code).toContain("POST_COMMENT_INLINE_FORM_INPUT_CLASS_NAME");
     expect(code).toContain("POST_COMMENT_INLINE_FORM_TEXTAREA_CLASS_NAME");
