@@ -79,12 +79,12 @@ export function PostCommentRootForm({
       {canComment ? (
         <>
           {!currentUserId ? (
-            <div className="mb-1.5 rounded-md border border-[#dbe6f5] bg-white px-2.5 py-2 text-[12px] leading-5 text-[#4f678d]">
+            <div className="mb-1.5 rounded-md bg-[#f8fbff] px-2.5 py-2 text-[12px] leading-5 text-[#4f678d]">
               <p className="font-semibold text-[#173963]">{GUEST_COMMENT_GUIDE_TITLE}</p>
               <p>{GUEST_COMMENT_GUIDE_BODY}</p>
             </div>
           ) : (
-            <div className="mb-1.5 rounded-md border border-[#dbe6f5] bg-white px-2.5 py-2 text-[12px] leading-5 text-[#4f678d]">
+            <div className="mb-1.5 rounded-md bg-[#f8fbff] px-2.5 py-2 text-[12px] leading-5 text-[#4f678d]">
               <p className="font-semibold text-[#173963]">{MEMBER_COMMENT_GUIDE_TITLE}</p>
               <p>{MEMBER_COMMENT_GUIDE_BODY}</p>
             </div>
@@ -117,7 +117,11 @@ export function PostCommentRootForm({
           ) : null}
           {!currentUserId ? (
             <div className={POST_COMMENT_ROOT_FORM_ROW_CLASS_NAME}>
+              <label className="sr-only" htmlFor="post-comment-guest-name">
+                비회원 닉네임
+              </label>
               <input
+                id="post-comment-guest-name"
                 data-testid="post-comment-guest-name"
                 className={POST_COMMENT_ROOT_FORM_INPUT_CLASS_NAME}
                 value={guestDisplayName}
@@ -125,7 +129,11 @@ export function PostCommentRootForm({
                 placeholder="비회원 닉네임"
                 maxLength={24}
               />
+              <label className="sr-only" htmlFor="post-comment-guest-password">
+                댓글 비밀번호
+              </label>
               <input
+                id="post-comment-guest-password"
                 data-testid="post-comment-guest-password"
                 className={POST_COMMENT_ROOT_FORM_INPUT_CLASS_NAME}
                 type="password"
@@ -178,6 +186,11 @@ export function PostCommentRootForm({
             </div>
           ) : null}
           <textarea
+            aria-label={
+              lostFoundSightingEnabled && commentMode === "LOST_FOUND_SIGHTING"
+                ? "목격 제보 내용"
+                : "댓글 내용"
+            }
             data-testid="post-comment-root-input"
             className={POST_COMMENT_ROOT_FORM_TEXTAREA_CLASS_NAME}
             value={rootContent}

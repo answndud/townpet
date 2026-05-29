@@ -45,7 +45,7 @@ export function FeedFooterSearchForm({
           id="feed-footer-search-in"
           name="searchIn"
           defaultValue={searchIn}
-          className="tp-input-soft h-[28px] px-2 text-[11px] font-medium outline-none transition focus:border-[#4e89d8] focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
+          className="tp-input-soft min-h-10 px-2 text-[11px] font-medium outline-none transition focus:border-[#4e89d8] focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
         >
           <option value="TITLE">제목</option>
           <option value="CONTENT">내용</option>
@@ -60,12 +60,12 @@ export function FeedFooterSearchForm({
           type="search"
           defaultValue={query}
           placeholder="목록 검색"
-          className="tp-input-soft h-[28px] w-full bg-white px-2.5 text-[12px] outline-none transition focus:border-[#4e89d8] focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25 sm:max-w-[260px]"
+          className="tp-input-soft min-h-10 w-full bg-white px-2.5 text-[12px] outline-none transition focus:border-[#4e89d8] focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25 sm:max-w-[260px]"
         />
 
         <button
           type="submit"
-          className="tp-btn-primary inline-flex h-[28px] min-w-[52px] items-center justify-center px-2.5 text-[11px] font-semibold leading-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
+          className="tp-btn-primary inline-flex min-h-10 min-w-[52px] items-center justify-center px-2.5 text-[11px] font-semibold leading-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
         >
           검색
         </button>
@@ -73,7 +73,7 @@ export function FeedFooterSearchForm({
         {query.trim().length > 0 ? (
           <Link
             href={resetHref}
-            className="tp-btn-soft inline-flex h-[28px] min-w-[52px] items-center justify-center px-2.5 text-[11px] font-semibold leading-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
+            className="tp-btn-soft inline-flex min-h-10 min-w-[52px] items-center justify-center px-2.5 text-[11px] font-semibold leading-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
           >
             초기화
           </Link>

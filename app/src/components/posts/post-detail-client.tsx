@@ -604,7 +604,9 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
   const resolvedCommentCount = post && Number.isFinite(post.commentCount) ? Number(post.commentCount) : 0;
   const postUrl = post ? toAbsoluteUrl(`/posts/${post.id}`) : null;
   const guestPostMeta = post ? getGuestPostMeta(post) : null;
-  const displayAuthorName = guestPostMeta?.isGuestPost
+  const displayAuthorName = post?.isOperatorContent && !guestPostMeta?.isGuestPost
+    ? "TownPet 운영팀"
+    : guestPostMeta?.isGuestPost
     ? guestPostMeta.guestPublicName ?? resolvePublicGuestDisplayName(post?.guestDisplayName)
     : post
       ? resolveUserDisplayName(post.author.nickname)
@@ -655,7 +657,7 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
         />
       ) : null}
       <main className="mx-auto flex w-full max-w-[1100px] flex-col gap-4 px-4 py-5 sm:gap-5 sm:px-6 sm:py-6 lg:px-8">
-        {post ? <BackToFeedButton className="tp-btn-soft inline-flex min-h-10 w-fit items-center px-3 text-xs" /> : null}
+        {post ? <BackToFeedButton className="tp-text-link inline-flex min-h-10 w-fit items-center text-xs font-semibold underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2" /> : null}
         {post ? (
           <>
             <PostDetailPrimaryCard

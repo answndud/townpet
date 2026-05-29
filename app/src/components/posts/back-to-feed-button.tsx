@@ -25,7 +25,7 @@ export function BackToFeedButton({
         router.push(href);
       }}
     >
-      목록으로
+      ← 게시판으로 돌아가기
     </button>
   );
 }

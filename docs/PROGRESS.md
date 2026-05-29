@@ -3,6 +3,7 @@
 ## 현재 상태
 
 - 현재 active 구현 항목 없음.
+- `2026-05-29. 게시글 상세 신뢰/메타/댓글 empty state 정리`를 완료했다. 외부 UI 피드백 중 타당한 항목만 좁게 적용해 운영자 정리 CTA, 작성자/메타, 목록 링크, 댓글 empty state, 비회원 댓글 label을 정리했다. feed/detail smoke에서 드러난 hidden pet menu overflow와 40px touch target 미달도 같이 보정했다. targeted tests, lint, typecheck, feed/detail Playwright smoke, 전체 `quality:check`를 확인했다.
 - `2026-05-29. 비회원 댓글 수정/삭제 확인 버튼 계층 정리`를 완료했다. 비회원 댓글 수정/삭제 비밀번호 확인 UI의 남은 rounded button 패턴을 compact primary/text danger/text cancel 계층으로 맞췄다. targeted tests, lint, typecheck, 모바일 Playwright smoke, 전체 `quality:check`를 확인했다.
 - `2026-05-29. 댓글 작성/답글 작성 버튼 계층 정리`를 완료했다. 댓글/답글 submit은 compact primary로 맞추고, 답글 취소는 text action으로 낮췄다. targeted tests, lint, typecheck, 모바일 Playwright smoke, 전체 `quality:check`를 확인했다.
 - `2026-05-29. 댓글 신고 폼과 메뉴 무게 축소`를 완료했다. 댓글 신고 폼 spacing/textarea/button을 더 compact하게 낮추고, 댓글 작업 menu panel의 shadow/padding을 줄였다. targeted tests, lint, typecheck, 모바일 Playwright smoke, 전체 `quality:check`를 확인했다.

@@ -79,7 +79,7 @@ test.describe("feed/search/detail visual smoke", () => {
       await expectNoHorizontalOverflow(page);
 
       await expectTouchTarget(page.getByRole("link", { name: "전체글" }), "feed all tab");
-      await expectTouchTarget(page.getByRole("link", { name: "베스트글" }), "feed best tab");
+      await expectTouchTarget(page.getByRole("link", { name: "반응 많은 글" }), "feed best tab");
       await expectTouchTarget(page.getByRole("link", { name: "최신" }), "feed latest sort");
       await expectTouchTarget(page.getByRole("link", { name: "좋아요" }), "feed like sort");
       await expectTouchTarget(page.getByRole("link", { name: "댓글" }), "feed comment sort");
@@ -100,11 +100,11 @@ test.describe("feed/search/detail visual smoke", () => {
       timeout: 15_000,
     });
     await expectNoHorizontalOverflow(page);
-    await expectTouchTarget(page.getByRole("button", { name: "목록으로" }), "detail back button");
-    await expectTouchTarget(page.getByRole("button", { name: /좋아요/ }).first(), "detail like button");
     await expectTouchTarget(
-      page.locator("summary").filter({ hasText: "게시글 신고" }),
-      "detail report summary",
+      page.getByRole("button", { name: /게시판으로 돌아가기/ }),
+      "detail back button",
     );
+    await expectTouchTarget(page.getByRole("button", { name: /좋아요/ }).first(), "detail like button");
+    await expectTouchTarget(page.getByLabel("게시글 더보기"), "detail report summary");
   });
 });
