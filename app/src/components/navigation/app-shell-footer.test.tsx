@@ -13,5 +13,8 @@ describe("AppShellFooter", () => {
     expect(html).toContain('href="/corrections/new"');
     expect(html).toContain("광고·제휴 고지");
     expect(html).toContain("정보 정정 요청");
+    expect(html).toContain("tp-text-muted inline-flex min-h-10");
+    expect(html).toContain("hover:underline hover:underline-offset-4");
+    expect(html).not.toContain("tp-btn-soft");
   });
 });

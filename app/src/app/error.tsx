@@ -3,7 +3,11 @@
 import { useEffect } from "react";
 import Link from "next/link";
 
-import { ErrorState } from "@/components/ui/error-state";
+import {
+  ERROR_STATE_PRIMARY_ACTION_CLASS_NAME,
+  ERROR_STATE_TEXT_ACTION_CLASS_NAME,
+  ErrorState,
+} from "@/components/ui/error-state";
 
 type GlobalErrorProps = {
   error: Error & { digest?: string };
@@ -27,13 +31,13 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
               <button
                 type="button"
                 onClick={reset}
-                className="tp-btn-primary inline-flex min-h-11 items-center justify-center px-4 py-2 text-sm font-semibold"
+                className={ERROR_STATE_PRIMARY_ACTION_CLASS_NAME}
               >
                 다시 시도
               </button>
               <Link
                 href="/feed"
-                className="tp-btn-soft inline-flex min-h-11 items-center justify-center px-4 py-2 text-sm font-semibold"
+                className={ERROR_STATE_TEXT_ACTION_CLASS_NAME}
               >
                 피드로 이동
               </Link>

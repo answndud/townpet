@@ -45,6 +45,12 @@ import {
   updateMarketListingStatusAction,
 } from "@/server/actions/post";
 
+const POST_DETAIL_ERROR_RETRY_CLASS_NAME =
+  "inline-flex min-h-10 items-center justify-center rounded-md bg-[#3567b5] px-3 text-xs font-semibold text-[#fbfdff] transition hover:bg-[#2f5da4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1";
+
+const POST_DETAIL_ERROR_TEXT_LINK_CLASS_NAME =
+  "tp-text-muted inline-flex min-h-10 items-center justify-center px-1.5 text-xs font-semibold transition hover:text-[#2f5da4] hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1";
+
 type PostDetailClientProps = {
   postId: string;
   cspNonce?: string;
@@ -501,13 +507,13 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
                 onClick={() => {
                   setLoadVersion((current) => current + 1);
                 }}
-                className="tp-btn-primary inline-flex min-h-10 items-center px-3 text-xs"
+                className={POST_DETAIL_ERROR_RETRY_CLASS_NAME}
               >
                 다시 시도
               </button>
               <a
                 href={`/posts/${postId}/guest`}
-                className="tp-btn-soft px-4 py-2"
+                className={POST_DETAIL_ERROR_TEXT_LINK_CLASS_NAME}
               >
                 게스트 페이지 보기
               </a>

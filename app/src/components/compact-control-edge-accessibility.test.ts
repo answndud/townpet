@@ -96,4 +96,29 @@ describe("remaining compact user control accessibility", () => {
     expect(code).not.toContain("tp-btn-primary inline-flex h-[30px]");
     expect(code).not.toContain("tp-btn-soft inline-flex h-[30px]");
   });
+
+  it("keeps auxiliary navigation and error recovery links out of legacy button styling", () => {
+    const sources = [
+      "src/app/error.tsx",
+      "src/app/not-found.tsx",
+      "src/app/posts/[id]/error.tsx",
+      "src/app/admin/error.tsx",
+      "src/components/ui/error-state-back-button.tsx",
+      "src/components/neighborhood/neighborhood-gate-notice.tsx",
+      "src/components/navigation/app-shell-footer.tsx",
+      "src/app/posts/new/page.tsx",
+      "src/components/posts/post-detail-client.tsx",
+    ].map(readSource).join("\n");
+
+    expect(sources).toContain("ERROR_STATE_PRIMARY_ACTION_CLASS_NAME");
+    expect(sources).toContain("ERROR_STATE_TEXT_ACTION_CLASS_NAME");
+    expect(sources).toContain("hover:underline hover:underline-offset-4");
+    expect(sources).not.toContain("tp-btn-soft inline-flex h-[28px]");
+    expect(sources).not.toContain("tp-btn-soft inline-flex min-h-10 items-center px-3 text-xs");
+    expect(sources).not.toContain("tp-btn-soft px-4 py-2 text-[#315484]");
+    expect(sources).not.toContain("tp-btn-primary inline-flex min-h-11");
+    expect(sources).not.toContain("tp-btn-soft inline-flex min-h-11");
+    expect(sources).not.toContain("tp-btn-primary inline-flex min-h-10 items-center px-3 text-xs");
+    expect(sources).not.toContain("tp-btn-soft px-4 py-2");
+  });
 });

@@ -1,6 +1,9 @@
 import Link from "next/link";
 
-import { ErrorState } from "@/components/ui/error-state";
+import {
+  ERROR_STATE_PRIMARY_ACTION_CLASS_NAME,
+  ErrorState,
+} from "@/components/ui/error-state";
 import { ErrorStateBackButton } from "@/components/ui/error-state-back-button";
 
 export default function NotFound() {
@@ -16,7 +19,7 @@ export default function NotFound() {
             <>
               <Link
                 href="/feed"
-                className="tp-btn-primary inline-flex min-h-11 items-center justify-center px-4 py-2 text-sm font-semibold"
+                className={ERROR_STATE_PRIMARY_ACTION_CLASS_NAME}
               >
                 피드로 이동
               </Link>

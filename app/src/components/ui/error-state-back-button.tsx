@@ -2,6 +2,8 @@
 
 import { useRouter } from "next/navigation";
 
+import { ERROR_STATE_TEXT_ACTION_CLASS_NAME } from "@/components/ui/error-state";
+
 type ErrorStateBackButtonProps = {
   children?: string;
 };
@@ -15,7 +17,7 @@ export function ErrorStateBackButton({
     <button
       type="button"
       onClick={() => router.back()}
-      className="tp-btn-soft inline-flex min-h-11 items-center justify-center px-4 py-2 text-sm font-semibold"
+      className={ERROR_STATE_TEXT_ACTION_CLASS_NAME}
     >
       {children}
     </button>
