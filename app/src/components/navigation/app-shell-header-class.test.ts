@@ -12,7 +12,11 @@ import {
   APP_SHELL_MOBILE_PANEL_CLASS_NAME,
   APP_SHELL_MOBILE_QUICK_LINK_CLASS_NAME,
   APP_SHELL_NAV_LINK_CLASS_NAME,
+  getAppShellMobileDisclosureTriggerClassName,
+  getAppShellMobileQuickLinkClassName,
+  getAppShellNavLinkClassName,
   hasMobileStickyHeader,
+  isHeaderNavActive,
   isPublicAcquisitionHeaderPath,
   shouldRefreshViewerShellOnFocus,
 } from "@/components/navigation/app-shell-header-class";
@@ -40,6 +44,7 @@ describe("app shell header classes", () => {
   it("uses shared desktop link sizing and softer mobile panels for header navigation", () => {
     expect(APP_SHELL_NAV_LINK_CLASS_NAME).toContain("rounded-md");
     expect(APP_SHELL_NAV_LINK_CLASS_NAME).toContain("px-3");
+    expect(getAppShellNavLinkClassName(true)).toContain("shadow-[inset_0_-2px_0_#3567b5]");
     expect(APP_SHELL_DESKTOP_NAV_CLUSTER_CLASS_NAME).toContain("gap-1.5");
     expect(APP_SHELL_DESKTOP_SEARCH_INPUT_CLASS_NAME).toContain("rounded-md");
     expect(APP_SHELL_DESKTOP_SEARCH_INPUT_CLASS_NAME).toContain("h-9");
@@ -51,6 +56,20 @@ describe("app shell header classes", () => {
     expect(APP_SHELL_MOBILE_DISCLOSURE_TRIGGER_CLASS_NAME).toContain("rounded-md");
     expect(APP_SHELL_MOBILE_DISCLOSURE_TRIGGER_CLASS_NAME).toContain("min-h-9");
     expect(APP_SHELL_MOBILE_DISCLOSURE_TRIGGER_CLASS_NAME).toContain("focus-visible:ring-2");
+    expect(getAppShellMobileDisclosureTriggerClassName(true)).toContain("shadow-[inset_0_-2px_0_#3567b5]");
+    expect(getAppShellMobileQuickLinkClassName(true)).toContain("border-[#b8d1f2]");
+  });
+
+  it("maps app routes to header navigation sections", () => {
+    expect(isHeaderNavActive("/feed/guest", "board")).toBe(true);
+    expect(isHeaderNavActive("/posts/post-1/guest", "board")).toBe(true);
+    expect(isHeaderNavActive("/search/guest", "board")).toBe(true);
+    expect(isHeaderNavActive("/profile", "profile")).toBe(true);
+    expect(isHeaderNavActive("/bookmarks", "profile")).toBe(true);
+    expect(isHeaderNavActive("/notifications", "notifications")).toBe(true);
+    expect(isHeaderNavActive("/admin/ops", "admin")).toBe(true);
+    expect(isHeaderNavActive("/login", "login")).toBe(true);
+    expect(isHeaderNavActive("/", "board")).toBe(false);
   });
 
   it("keeps authenticated-only header widgets out of the guest initial chunk", () => {

@@ -36,6 +36,58 @@ export const APP_SHELL_NAV_LINK_CLASS_NAME = [
   "hover:text-[#1f4f8f]",
 ].join(" ");
 
+export const APP_SHELL_NAV_LINK_ACTIVE_CLASS_NAME = [
+  "border",
+  "border-[#b8d1f2]",
+  "bg-white/95",
+  "text-[#173963]",
+  "shadow-[inset_0_-2px_0_#3567b5]",
+].join(" ");
+
+export function getAppShellNavLinkClassName(active = false, extraClassName = "") {
+  return [
+    APP_SHELL_NAV_LINK_CLASS_NAME,
+    active ? APP_SHELL_NAV_LINK_ACTIVE_CLASS_NAME : "",
+    extraClassName,
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
+
+export function isHeaderNavActive(
+  pathname: string | null | undefined,
+  section: "board" | "profile" | "notifications" | "admin" | "login",
+) {
+  if (!pathname) {
+    return false;
+  }
+
+  if (section === "board") {
+    return (
+      pathname === "/feed" ||
+      pathname.startsWith("/feed/") ||
+      pathname.startsWith("/boards/") ||
+      pathname.startsWith("/posts/") ||
+      pathname === "/search" ||
+      pathname.startsWith("/search/")
+    );
+  }
+
+  if (section === "profile") {
+    return pathname === "/profile" || pathname === "/my-posts" || pathname === "/bookmarks" || pathname === "/saved";
+  }
+
+  if (section === "notifications") {
+    return pathname === "/notifications" || pathname.startsWith("/notifications/");
+  }
+
+  if (section === "admin") {
+    return pathname === "/admin" || pathname.startsWith("/admin/");
+  }
+
+  return pathname === "/login";
+}
+
 export const APP_SHELL_DESKTOP_NAV_CLUSTER_CLASS_NAME = [
   "items-center",
   "gap-1.5",
@@ -81,6 +133,23 @@ export const APP_SHELL_MOBILE_QUICK_LINK_CLASS_NAME = [
   "focus-visible:ring-[#4e89d8]/25",
 ].join(" ");
 
+export const APP_SHELL_MOBILE_QUICK_LINK_ACTIVE_CLASS_NAME = [
+  "border-[#b8d1f2]",
+  "bg-white",
+  "text-[#173963]",
+  "shadow-[inset_0_-2px_0_#3567b5]",
+].join(" ");
+
+export function getAppShellMobileQuickLinkClassName(active = false, extraClassName = "") {
+  return [
+    APP_SHELL_MOBILE_QUICK_LINK_CLASS_NAME,
+    active ? APP_SHELL_MOBILE_QUICK_LINK_ACTIVE_CLASS_NAME : "",
+    extraClassName,
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
+
 export const APP_SHELL_MOBILE_DISCLOSURE_ROW_CLASS_NAME = [
   "flex",
   "flex-wrap",
@@ -108,6 +177,15 @@ export const APP_SHELL_MOBILE_DISCLOSURE_TRIGGER_CLASS_NAME = [
   "focus-visible:ring-2",
   "focus-visible:ring-[#4e89d8]/25",
 ].join(" ");
+
+export function getAppShellMobileDisclosureTriggerClassName(active = false) {
+  return [
+    APP_SHELL_MOBILE_DISCLOSURE_TRIGGER_CLASS_NAME,
+    active ? APP_SHELL_MOBILE_QUICK_LINK_ACTIVE_CLASS_NAME : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
 
 export const APP_SHELL_MOBILE_PANEL_CLASS_NAME = [
   "overflow-hidden",

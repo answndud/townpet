@@ -3,6 +3,7 @@
 ## 현재 상태
 
 - 현재 active 구현 항목 없음.
+- `2026-05-29. 상단 네비게이션 active 상태와 링크 계층 정리`를 완료했다. app shell header에 board/profile/notifications/admin/login active helper를 추가하고, desktop/mobile 링크와 `게시판` menu trigger에 active class 및 `aria-current`를 적용했다. `/feed/guest`와 `/posts/*/guest` 모바일 smoke에서 `게시판` active와 overflow 없음 확인, 전체 `quality:check` PASS.
 - `2026-05-29. 피드 리스트 카드 밀도와 메타 위계 1차 개선`을 완료했다. `/feed/guest` 모바일 기준 게시글 row 높이를 64px로 낮추고, thumbnail/comment badge slot을 더 compact하게 맞췄으며, feed stats와 운영자 확인일 표시를 `YYYY-MM-DD`로 통일했다. targeted tests, lint, typecheck, 전체 `quality:check`, 모바일 Playwright smoke를 확인했다.
 - `2026-05-29. 게시글 상세/댓글 UI 밀도와 액션 위계 1차 개선`을 완료했다. 게시글 상세 카드의 상하 여백을 줄이고, 게시글 신고를 우측 상단 더보기 메뉴로 이동했으며, 좋아요/싫어요/북마크/공유를 compact action hierarchy로 조정했다. 비회원 댓글 안내, 댓글 action 위치, 카테고리 chip, 한국 시간 기준 `YYYY-MM-DD` 날짜 포맷도 함께 정리했다. targeted Vitest, lint, typecheck, Next production build, 모바일 Playwright smoke를 확인했다.
 - `2026-05-29. Admin queue smoke readiness surface`를 완료했다. `/admin/ops` 운영 큐 요약에 admin queue smoke credential readiness를 값 노출 없이 표시하고, 누락 key와 production 재실행 명령을 확인할 수 있게 했다. production 데이터, 관리자 큐 상태, auth policy는 변경하지 않았다. 작업 중 production health가 1회 503 degraded를 반환했지만 즉시 재확인에서 200 / `payload.status: ok`로 정상화됐다. 기록은 [docs/reports/admin-queue-smoke-readiness-surface-2026-05-29.md](./reports/admin-queue-smoke-readiness-surface-2026-05-29.md)에 남겼다.
