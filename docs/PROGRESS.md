@@ -3,6 +3,7 @@
 ## 현재 상태
 
 - 현재 active 구현 항목 없음.
+- `2026-05-29. 피드 pagination 30px control 정리`를 완료했다. `FeedPagination`의 30px 고정 버튼을 40px touch target으로 올리고, 이전/다음/비활성 page link는 text action에 가깝게 낮췄으며 현재 page만 primary state로 남겼다. targeted tests, lint, typecheck, 전체 `quality:check`를 확인했다.
 - `2026-05-29. 공용 empty state와 feed 광고 CTA 버튼 계층 정리`를 완료했다. `EmptyState`의 primary/secondary action에서 `tp-btn-*` 의존을 제거하고 secondary는 text action으로 낮췄으며, `FeedInfiniteList`의 맞춤 추천 광고 CTA도 explicit compact primary class로 맞췄다. targeted tests, lint, typecheck, 전체 `quality:check`를 확인했다.
 - `2026-05-29. 메뉴/팝오버 바깥 클릭 닫힘 정리`를 완료했다. 상세 `...` 신고 메뉴, guest 상세 신고 메뉴, 댓글 작업 메뉴, 비회원 관리 모바일 disclosure를 `DismissibleDetails`로 묶어 바깥 pointer/focus 이동과 Escape에서 닫히게 했고, feed header board/pet 메뉴도 동일하게 바깥 클릭/포커스/Escape 닫힘을 적용했다. targeted tests, lint, typecheck, 전체 `quality:check`를 확인했다.
 - `2026-05-29. 개인 목록 검색/페이지 action 버튼 계층 정리`를 완료했다. `/bookmarks`, `/my-posts`의 검색 submit은 compact primary로 유지하고 초기화/이전/다음 페이지는 text action으로 낮췄으며 `tp-btn-*` 의존 재도입을 source guard test로 막았다. targeted tests, lint, typecheck, 전체 `quality:check`를 확인했다.

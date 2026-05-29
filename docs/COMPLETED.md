@@ -8314,6 +8314,36 @@
   - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
     - ESLint, TypeScript, Vitest `298 files / 1427 tests`, Next production build PASS
 
+### 2026-05-29 | 피드 pagination 30px control 정리
+- 완료일: `2026-05-29`
+- 배경:
+  - `FeedPagination`은 테스트가 `h-[30px]`, `min-w-[30px]`를 명시적으로 보장하고 있어 최근 action cleanup 방향과 반대로 고정되어 있었다.
+  - 피드 하단 페이지 이동은 반복 컨트롤이지만 모바일에서도 누르기 쉬워야 하므로 40px touch target이 맞다.
+  - 모든 page link를 bordered button처럼 보이게 하면 현재 page와 보조 이동의 위계가 흐려진다.
+- 변경내용:
+  - `pageLinkBaseClass`를 `h-[30px]`에서 `min-h-10` 기준으로 변경했다.
+  - page number 최소 폭을 `min-w-[30px]`에서 `min-w-10`으로 올렸다.
+  - 이전/다음과 비활성 page link는 border/background를 제거하고 text action hover underline으로 낮췄다.
+  - 현재 page만 primary blue background 상태로 남겨 위치 인지를 유지했다.
+  - nav vertical padding을 `py-1.5`에서 `py-2`로 소폭 올려 40px control과 충돌하지 않게 했다.
+  - 테스트가 30px 재도입과 legacy bordered white page link 패턴을 잡도록 갱신했다.
+- 코드문서:
+  - [app/src/components/posts/feed-pagination.tsx](../app/src/components/posts/feed-pagination.tsx)
+  - [app/src/components/posts/feed-pagination.test.tsx](../app/src/components/posts/feed-pagination.test.tsx)
+- 다음 후보:
+  - [app/src/components/navigation/feed-hover-menu.tsx](../app/src/components/navigation/feed-hover-menu.tsx): 관심 동물 저장 버튼 hierarchy 정리
+  - [app/src/app/feed/error.tsx](../app/src/app/feed/error.tsx): feed error page 30px action 정리
+  - [app/src/components/posts/post-moderation-controls.tsx](../app/src/components/posts/post-moderation-controls.tsx): 운영자 도구 button hierarchy 정리
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/components/posts/feed-pagination.test.tsx src/components/compact-control-final-sweep.test.ts src/components/posts/guest-feed-page-client.test.ts`
+    - Vitest `3 files / 7 tests` PASS
+  - targeted lint:
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `298 files / 1427 tests`, Next production build PASS
+
 ### 2026-05-29 | 댓글 답글 접기 토글 compact text화
 - 완료일: `2026-05-29`
 - 배경:
