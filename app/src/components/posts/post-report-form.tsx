@@ -81,14 +81,14 @@ export function PostReportForm({
     <form
       data-testid={`report-form-${targetType.toLowerCase()}-${targetId}`}
       onSubmit={handleSubmit}
-      className="space-y-3"
+      className="space-y-2"
     >
-      <div className="grid gap-2">
+      <div className="grid gap-1.5">
         <label className="tp-text-accent flex flex-col gap-1 text-[11px] font-semibold">
           <span>사유</span>
           <select
             data-testid={`report-reason-${targetType.toLowerCase()}-${targetId}`}
-            className="tp-input-soft min-h-10 px-3 text-[13px]"
+            className="tp-input-soft min-h-10 px-2.5 text-[13px]"
             value={reason}
             onChange={(event) =>
               setReason(event.target.value as ReportReason)
@@ -105,7 +105,7 @@ export function PostReportForm({
           <span>추가 설명</span>
           <textarea
             data-testid={`report-description-${targetType.toLowerCase()}-${targetId}`}
-            className="tp-input-soft min-h-[72px] px-3 py-2 text-[13px]"
+            className="tp-input-soft min-h-[64px] px-2.5 py-1.5 text-[13px]"
             value={description}
             onChange={(event) => setDescription(event.target.value)}
             maxLength={REPORT_DESCRIPTION_MAX_LENGTH}
@@ -132,7 +132,7 @@ export function PostReportForm({
         <button
           data-testid={`report-submit-${targetType.toLowerCase()}-${targetId}`}
           type="submit"
-          className="tp-btn-soft inline-flex min-h-10 items-center justify-center rounded-lg border-rose-300 px-3 text-xs font-semibold text-rose-700 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:border-[#d5dfee] disabled:text-[#9fb2cf]"
+          className="inline-flex min-h-10 items-center justify-center px-1.5 text-xs font-semibold text-rose-700 transition hover:text-rose-800 hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:text-[#9fb2cf]"
           disabled={isPending}
         >
           {isPending ? "접수 중..." : "신고"}

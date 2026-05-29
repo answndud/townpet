@@ -8212,3 +8212,30 @@
     - PASS
   - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
     - ESLint, TypeScript, Vitest `297 files / 1421 tests`, Next production build PASS
+
+### 2026-05-29 | 댓글 신고 폼과 메뉴 무게 축소
+- 완료일: `2026-05-29`
+- 배경:
+  - 댓글 신고는 primary action이 아니지만, 신고 폼 submit과 댓글 menu panel이 댓글 본문 영역 안에서 다소 무겁게 보였다.
+- 변경내용:
+  - 신고 폼 spacing을 `space-y-3`에서 `space-y-2`로 줄였다.
+  - 신고 설명 textarea 높이를 `72px`에서 `64px`로 낮췄다.
+  - 신고 submit을 bordered soft button에서 border/background 없는 danger text action으로 낮췄다.
+  - 댓글 작업 menu panel의 margin/padding/shadow를 줄여 floating panel의 시각적 무게를 낮췄다.
+  - submit touch target과 report input touch target은 유지했다.
+- 코드문서:
+  - [app/src/components/posts/post-report-form.tsx](../app/src/components/posts/post-report-form.tsx)
+  - [app/src/components/posts/post-report-form.test.tsx](../app/src/components/posts/post-report-form.test.tsx)
+  - [app/src/components/posts/post-comment-layout-class.ts](../app/src/components/posts/post-comment-layout-class.ts)
+  - [app/src/components/posts/post-comment-layout-class.test.ts](../app/src/components/posts/post-comment-layout-class.test.ts)
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/components/posts/post-report-form.test.tsx src/components/posts/post-comment-layout-class.test.ts`
+    - `2 files / 12 tests` PASS
+  - targeted lint:
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers PLAYWRIGHT_BASE_URL=http://localhost:3000 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test:e2e -- e2e/comment-report-visual-smoke.spec.ts --project=chromium --workers=1`
+    - PASS
+  - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `297 files / 1421 tests`, Next production build PASS

@@ -17,7 +17,7 @@ export const POST_COMMENT_THREAD_MENU_BUTTON_CLASS_NAME =
   "tp-text-muted inline-flex min-h-8 min-w-8 cursor-pointer list-none items-center justify-center text-[16px] leading-none transition hover:text-[#2f5da4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 [&::-webkit-details-marker]:hidden";
 
 export const POST_COMMENT_THREAD_MENU_PANEL_CLASS_NAME =
-  "tp-border-muted absolute right-0 z-20 mt-1.5 min-w-28 rounded-md border bg-white p-1 shadow-[0_8px_18px_rgba(16,40,74,0.08)]";
+  "tp-border-muted absolute right-0 z-20 mt-1 min-w-28 rounded-md border bg-white p-0.5 shadow-[0_4px_12px_rgba(16,40,74,0.06)]";
 
 export const POST_COMMENT_THREAD_MENU_ITEM_CLASS_NAME =
   "tp-text-heading flex min-h-10 w-full items-center rounded px-3 text-left text-[12px] font-medium transition hover:bg-[#f5f9ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1";

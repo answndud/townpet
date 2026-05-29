@@ -41,6 +41,10 @@ describe("PostReportForm", () => {
     expect(html).toContain("추가 설명");
     expect(html).toContain("신고");
     expect(html).toContain("min-h-10");
+    expect(html).toContain("min-h-[64px]");
+    expect(html).toContain("hover:underline-offset-4");
+    expect(html).not.toContain("tp-btn-soft inline-flex min-h-10");
+    expect(html).not.toContain("border-rose-300");
     expect(html).not.toContain("게시글 신고는 로그인 후 접수할 수 있습니다.");
   });
 
