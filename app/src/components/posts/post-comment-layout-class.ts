@@ -59,9 +59,6 @@ export const POST_COMMENT_BEST_SECTION_CLASS_NAME = "mt-2";
 export const POST_COMMENT_LATEST_HEADER_CLASS_NAME =
   "mt-2.5 flex flex-wrap items-center justify-between gap-2";
 
-export const POST_COMMENT_EMPTY_STATE_CLASS_NAME =
-  "tp-text-subtle mt-2 text-[13px]";
-
 export const POST_COMMENT_ROOT_LIST_CLASS_NAME =
   "mt-2 divide-y border-y bg-white";
 

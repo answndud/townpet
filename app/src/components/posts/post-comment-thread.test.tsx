@@ -199,7 +199,7 @@ describe("PostCommentThread", () => {
     expect(html.indexOf("베스트 댓글")).toBeLessThan(html.indexOf("최신 댓글"));
   });
 
-  it("renders a safer empty state for commentable detail pages", () => {
+  it("does not render an empty comment message before the composer", () => {
     const html = renderToStaticMarkup(
       <PostCommentThread
         postId="post-1"
@@ -212,9 +212,10 @@ describe("PostCommentThread", () => {
       />,
     );
 
-    expect(html).toContain("아직 댓글이 없습니다.");
-    expect(html).toContain("질문이나 정정이 필요한 부분을 남겨주세요.");
+    expect(html).not.toContain("아직 댓글이 없습니다.");
+    expect(html).not.toContain("질문이나 정정이 필요한 부분을 남겨주세요.");
     expect(html).not.toContain(">댓글이 없습니다.</p>");
+    expect(html).toContain("post-comment-root-submit");
   });
 
   it("closes the author menu only for outside targets", () => {

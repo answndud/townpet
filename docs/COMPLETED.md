@@ -8924,3 +8924,41 @@
 - 결과:
   - 피드백의 P0/P1 중 상세 화면에서 즉시 확인 가능한 항목은 반영했다.
   - 라이트박스, EXIF 제거, 다중 이미지 grid, 게시글 타입별 상세 템플릿 분화는 별도 기능 범위로 남겼다.
+
+### 2026-05-29 | 게시글 상세 feedback 후속 polish
+- 완료일: `2026-05-29`
+- 배경:
+  - 상세 본문 이미지가 커진 뒤에도 카드 안에서 왼쪽 정렬이 명확하지 않아 부유해 보였다.
+  - 좋아요/싫어요는 왼쪽보다 중앙 정렬이 더 안정적으로 보였다.
+  - 비회원용 좋아요/싫어요, 북마크 로그인 안내처럼 떠 있는 prompt가 바깥 클릭/focus 이동/Escape에서 일관되게 닫히지 않았다.
+  - 상세 제목은 뉴스 기사처럼 무겁고, 댓글 0건 문구는 불필요하게 공간을 차지했다.
+- 변경내용:
+  - 상세/게스트 상세 본문 HTML 영역에 `text-left`, figure/image/paragraph 왼쪽 정렬 guard를 추가했다.
+  - 상세/게스트 상세 하단 action bar를 다시 3-column grid로 두고 좋아요/싫어요를 중앙에 배치했다.
+  - `useDismissibleLayer` 공용 hook을 추가하고 반응 로그인 prompt, 북마크 로그인 prompt, 알림 popover, 피드 검색어 panel에 적용했다.
+  - 게시글 상세 제목 scale을 `1.25rem -> 1.55rem` 범위와 weight `600`으로 낮췄다.
+  - 댓글 0건 상태 문구를 제거하고 바로 작성 composer로 이어지게 했다.
+- 코드문서:
+  - [app/src/components/ui/use-dismissible-layer.ts](../app/src/components/ui/use-dismissible-layer.ts)
+  - [app/src/components/posts/post-detail-primary-card.tsx](../app/src/components/posts/post-detail-primary-card.tsx)
+  - [app/src/app/posts/[id]/guest/page.tsx](../app/src/app/posts/[id]/guest/page.tsx)
+  - [app/src/components/posts/reaction-login-prompt.tsx](../app/src/components/posts/reaction-login-prompt.tsx)
+  - [app/src/components/posts/post-bookmark-button.tsx](../app/src/components/posts/post-bookmark-button.tsx)
+  - [app/src/components/notifications/notification-bell.tsx](../app/src/components/notifications/notification-bell.tsx)
+  - [app/src/components/posts/feed-search-form.tsx](../app/src/components/posts/feed-search-form.tsx)
+  - [app/src/components/posts/post-comment-thread.tsx](../app/src/components/posts/post-comment-thread.tsx)
+  - [app/src/app/globals.css](../app/src/app/globals.css)
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/components/posts/post-detail-primary-card-layout.test.ts 'src/app/posts/[id]/guest/page-layout.test.ts' src/components/posts/post-comment-thread.test.tsx src/components/posts/post-comment-layout-class.test.ts src/components/posts/reaction-login-prompt.test.tsx src/components/posts/post-detail-action-accessibility.test.tsx src/components/posts/post-reaction-controls.test.tsx src/components/posts/comment-reaction-controls.test.tsx src/components/compact-control-edge-accessibility.test.ts src/app/globals-css.test.ts`
+    - Vitest `10 files / 44 tests` PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app lint`
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers ENABLE_SOCIAL_DEV_LOGIN=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test:e2e -- e2e/comment-report-visual-smoke.spec.ts --project=chromium --workers=1`
+    - Playwright chromium `1 passed`
+  - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `298 files / 1432 tests`, Next production build PASS
+- 결과:
+  - 이번 피드백의 직접 지적 사항은 반영 완료했다.
+  - 공용 dismissible layer는 이번에 확인한 floating prompt에 적용했고, 앞으로 새 floating UI를 만들 때 같은 hook을 쓰는 기준으로 유지한다.

@@ -16,9 +16,10 @@ describe("post detail primary card layout", () => {
     expect(code).toContain("authorDisplayLabel");
     expect(code).toContain("max-w-[760px]");
     expect(code).toContain("sm:[&_img]:max-w-[640px]");
-    expect(code).toContain('align="start"');
-    expect(code).not.toContain('align="center"');
-    expect(code).not.toContain("sm:grid-cols-[1fr_auto_1fr]");
+    expect(code).toContain("[&_figure]:!mx-0");
+    expect(code).toContain("[&_p]:text-left");
+    expect(code).toContain('align="center"');
+    expect(code).toContain("sm:grid-cols-[1fr_auto_1fr]");
     expect(code).not.toContain("tp-border-soft rounded-lg border bg-white p-3");
     expect(code).not.toContain("tp-border-soft tp-surface-soft mt-2 flex flex-wrap items-center gap-2 rounded-xl border p-2");
   });

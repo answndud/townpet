@@ -3,6 +3,7 @@
 ## 현재 상태
 
 - 현재 active 구현 항목 없음.
+- `2026-05-29. 게시글 상세 feedback 후속 polish`를 완료했다. 상세 본문 이미지를 왼쪽 정렬로 고정하고, 좋아요/싫어요를 다시 중앙 정렬했으며, 반응/북마크/알림/검색어 floating prompt를 공용 outside-click/focus/Escape dismissible layer로 맞췄다. 제목 타이포그래피를 낮추고 빈 댓글 문구도 제거했다. targeted tests, lint, typecheck, 모바일 Playwright smoke, 전체 `quality:check`를 확인했다.
 - `2026-05-29. 게시글 상세 feedback P0/P1 1-8 일괄 반영`을 완료했다. 작성자 표시, 날짜 포맷, 카테고리 badge, 본문 이미지 spacing, 비회원 글 수정/삭제 노출, 댓글 textarea, 헤더 active 상태를 정리하고 모바일 상세 smoke와 전체 `quality:check`를 확인했다.
 - `2026-05-29. 남은 user-facing auxiliary/error action 일괄 정리`를 완료했다. 글쓰기/동네 gate/app footer/상세 fallback/전역 오류/상세 오류/관리자 오류/404 뒤로가기의 legacy `tp-btn-*` 보조 button shape를 text action 또는 compact primary로 일괄 정리했다. targeted tests, lint, typecheck, 전체 `quality:check`를 확인했다.
 - `2026-05-29. AuthPageLayout footer link 계층 정리`를 완료했다. 인증 페이지 footer의 회원가입/홈/비밀번호 재설정 보조 링크를 soft button에서 text link 계층으로 낮췄고, auth layout/final sweep 테스트와 전체 `quality:check`를 확인했다.

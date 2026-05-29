@@ -186,12 +186,12 @@ export function PostDetailPrimaryCard({
       ) : null}
 
       <div className="mt-4 sm:mt-5">
-        <article className="tp-text-body tp-text-primary max-w-[760px]">
+        <article className="tp-text-body tp-text-primary max-w-[760px] text-left">
           {shouldUsePlainFallback ? (
             <div className="whitespace-pre-wrap">{post.content}</div>
           ) : (
             <div
-              className="prose prose-sm max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&_img]:!ml-0 [&_img]:!mr-auto [&_img]:my-3 [&_img]:block [&_img]:h-auto [&_img]:w-full [&_img]:max-w-full sm:[&_img]:max-w-[640px] [&_img]:rounded-lg [&_img]:border-0 [&_img]:bg-transparent [&_img]:object-contain"
+              className="prose prose-sm max-w-none text-left [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&_figure]:!mx-0 [&_figure]:text-left [&_img]:!float-none [&_img]:!ml-0 [&_img]:!mr-auto [&_img]:my-3 [&_img]:block [&_img]:h-auto [&_img]:w-full [&_img]:max-w-full sm:[&_img]:max-w-[640px] [&_img]:rounded-lg [&_img]:border-0 [&_img]:bg-transparent [&_img]:object-contain [&_p]:!mx-0 [&_p]:text-left"
               dangerouslySetInnerHTML={{ __html: renderedContentHtml }}
             />
           )}
@@ -202,19 +202,22 @@ export function PostDetailPrimaryCard({
       <div className="tp-border-soft mt-4 space-y-2.5 border-t pt-3 sm:mt-5 sm:pt-4">
         {isPostActive ? (
           <>
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <PostReactionControls
-                key={`${post.id}:${canInteract ? "viewer" : "guest"}:${canInteractWithPostOwner ? "interactive" : "blocked"}`}
-                postId={post.id}
-                likeCount={resolvedLikeCount}
-                dislikeCount={resolvedDislikeCount}
-                currentReaction={canInteract ? undefined : null}
-                canReact={canInteract && canInteractWithPostOwner}
-                loginHref={loginHref}
-                align="start"
-                compact
-                onStateChange={onReactionStateChange}
-              />
+            <div className="grid gap-2 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
+              <div className="hidden sm:block" aria-hidden="true" />
+              <div className="flex justify-center">
+                <PostReactionControls
+                  key={`${post.id}:${canInteract ? "viewer" : "guest"}:${canInteractWithPostOwner ? "interactive" : "blocked"}`}
+                  postId={post.id}
+                  likeCount={resolvedLikeCount}
+                  dislikeCount={resolvedDislikeCount}
+                  currentReaction={canInteract ? undefined : null}
+                  canReact={canInteract && canInteractWithPostOwner}
+                  loginHref={loginHref}
+                  align="center"
+                  compact
+                  onStateChange={onReactionStateChange}
+                />
+              </div>
               <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
                 <PostBookmarkButton
                   key={`${post.id}:${canInteract ? "viewer" : "guest"}`}
