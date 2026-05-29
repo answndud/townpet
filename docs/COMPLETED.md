@@ -8396,6 +8396,36 @@
   - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
     - ESLint, TypeScript, Vitest `297 files / 1423 tests`, Next production build PASS
 
+### 2026-05-29 | 피드 검색 action 버튼 계층 정리
+- 완료일: `2026-05-29`
+- 배경:
+  - `feed-search-form.tsx`와 `feed-footer-search-form.tsx`의 검색 action이 `tp-btn-primary`, `tp-btn-soft`, `tp-btn-md`, default `min-h-11` 조합으로 남아 있었다.
+  - 검색 폼은 피드에서 반복 노출되므로 primary는 검색 제출에만 남기고, 초기화는 버튼보다 낮은 text action으로 정리하는 편이 맞았다.
+- 변경내용:
+  - 상단 피드 검색 `검색`을 `tp-btn-primary` 의존 없는 compact primary class로 명시했다.
+  - 상단 피드 검색 `초기화`를 soft button에서 text action으로 낮췄다.
+  - 하단 검색 `검색`과 `초기화`도 같은 계층으로 맞췄다.
+  - 입력/셀렉트 높이는 조작성에 직접 연결되므로 이번 범위에서는 유지했다.
+  - `FeedSearchForm` 테스트를 추가하고, 하단 검색 테스트가 `tp-btn-*` 재도입을 잡도록 보강했다.
+- 코드문서:
+  - [app/src/components/posts/feed-search-form.tsx](../app/src/components/posts/feed-search-form.tsx)
+  - [app/src/components/posts/feed-search-form.test.tsx](../app/src/components/posts/feed-search-form.test.tsx)
+  - [app/src/components/posts/feed-footer-search-form.tsx](../app/src/components/posts/feed-footer-search-form.tsx)
+  - [app/src/components/posts/feed-footer-search-form.test.tsx](../app/src/components/posts/feed-footer-search-form.test.tsx)
+- 다음 후보:
+  - [app/src/components/posts/lost-found-share-panel.tsx](../app/src/components/posts/lost-found-share-panel.tsx): 분실동물 공유 panel 버튼 정리
+  - [app/src/components/posts/guest-feed-page-client.tsx](../app/src/components/posts/guest-feed-page-client.tsx): guest feed inline action button 정리
+  - [app/src/app/feed/page.tsx](../app/src/app/feed/page.tsx): member feed inline action button 정리
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/components/posts/feed-search-form.test.tsx src/components/posts/feed-footer-search-form.test.tsx src/components/posts/guest-feed-page-client.test.ts`
+    - Vitest `3 files / 4 tests` PASS
+  - targeted lint:
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `298 files / 1424 tests`, Next production build PASS
+
 ### 2026-05-29 | 댓글 신고 폼과 메뉴 무게 축소
 - 완료일: `2026-05-29`
 - 배경:

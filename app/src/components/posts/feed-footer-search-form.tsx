@@ -15,6 +15,11 @@ type FeedFooterSearchFormProps = {
   reviewCategory?: ReviewCategory | null;
 };
 
+const feedFooterSearchPrimaryActionClassName =
+  "inline-flex min-h-10 min-w-[52px] items-center justify-center rounded-md bg-[#3567b5] px-2.5 text-[11px] font-semibold leading-none text-[#fbfdff] transition hover:bg-[#2f5da4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1";
+const feedFooterSearchResetActionClassName =
+  "tp-text-muted inline-flex min-h-10 min-w-[52px] items-center justify-center px-1.5 text-[11px] font-semibold leading-none transition hover:text-[#2f5da4] hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1";
+
 export function FeedFooterSearchForm({
   actionPath,
   query,
@@ -65,7 +70,7 @@ export function FeedFooterSearchForm({
 
         <button
           type="submit"
-          className="tp-btn-primary inline-flex min-h-10 min-w-[52px] items-center justify-center px-2.5 text-[11px] font-semibold leading-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
+          className={feedFooterSearchPrimaryActionClassName}
         >
           검색
         </button>
@@ -73,7 +78,7 @@ export function FeedFooterSearchForm({
         {query.trim().length > 0 ? (
           <Link
             href={resetHref}
-            className="tp-btn-soft inline-flex min-h-10 min-w-[52px] items-center justify-center px-2.5 text-[11px] font-semibold leading-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
+            className={feedFooterSearchResetActionClassName}
           >
             초기화
           </Link>

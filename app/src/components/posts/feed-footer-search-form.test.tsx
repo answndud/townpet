@@ -30,5 +30,9 @@ describe("FeedFooterSearchForm", () => {
     expect(html).toContain("min-h-10");
     expect(html).toContain("py-1");
     expect(html).toContain("목록 검색");
+    expect(html).toContain("rounded-md bg-[#3567b5]");
+    expect(html).toContain("hover:underline-offset-4");
+    expect(html).not.toContain("tp-btn-primary");
+    expect(html).not.toContain("tp-btn-soft");
   });
 });
