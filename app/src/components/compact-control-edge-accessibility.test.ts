@@ -34,7 +34,12 @@ describe("remaining compact user control accessibility", () => {
     ].map(readSource).join("\n");
 
     expect(sources).toContain("min-h-10 w-full");
+    expect(sources).toContain("rounded-md bg-[#3567b5]");
+    expect(sources).toContain("hover:underline hover:underline-offset-4");
     expect(sources).not.toContain("tp-input-soft h-9");
+    expect(sources).not.toContain("tp-btn-primary");
+    expect(sources).not.toContain("tp-btn-soft");
+    expect(sources).not.toContain("tp-btn-md");
   });
 
   it("keeps profile and relation controls mobile-safe with status announcements", () => {

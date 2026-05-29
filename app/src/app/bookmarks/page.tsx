@@ -24,6 +24,10 @@ type BookmarksPageProps = {
 };
 
 const BOOKMARKS_PAGE_SIZE = 20;
+const savedPostsPrimaryActionClassName =
+  "inline-flex min-h-10 items-center justify-center rounded-md bg-[#3567b5] px-3 text-xs font-semibold text-[#fbfdff] transition hover:bg-[#2f5da4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1";
+const savedPostsTextActionClassName =
+  "tp-text-muted inline-flex min-h-10 items-center justify-center px-1.5 text-xs font-semibold transition hover:text-[#2f5da4] hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1";
 
 export const metadata: Metadata = {
   title: "북마크",
@@ -121,14 +125,14 @@ export default async function BookmarksPage({ searchParams }: BookmarksPageProps
               />
               <button
                 type="submit"
-                className="tp-btn-primary tp-btn-md min-w-[72px]"
+                className={`${savedPostsPrimaryActionClassName} min-w-[72px]`}
               >
                 검색
               </button>
               {query ? (
                 <Link
                   href={makeHref({ nextQuery: null })}
-                  className="tp-btn-soft tp-btn-md inline-flex min-w-[72px] items-center justify-center"
+                  className={`${savedPostsTextActionClassName} min-w-[72px]`}
                 >
                   초기화
                 </Link>
@@ -279,7 +283,7 @@ export default async function BookmarksPage({ searchParams }: BookmarksPageProps
             {currentPage > 1 ? (
               <Link
                 href={makeHref({ nextPage: currentPage - 1 })}
-                className="tp-btn-soft inline-flex min-h-10 items-center px-3 text-xs text-[#315484]"
+                className={`${savedPostsTextActionClassName} px-3`}
               >
                 이전 페이지
               </Link>
@@ -288,7 +292,7 @@ export default async function BookmarksPage({ searchParams }: BookmarksPageProps
             {hasNext ? (
               <Link
                 href={makeHref({ nextPage: currentPage + 1 })}
-                className="tp-btn-soft inline-flex min-h-10 items-center px-3 text-xs text-[#315484]"
+                className={`${savedPostsTextActionClassName} px-3`}
               >
                 다음 페이지
               </Link>
