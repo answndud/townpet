@@ -4,7 +4,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
-import { POST_DETAIL_ACTION_DANGER_BUTTON_CLASS_NAME } from "@/components/posts/post-detail-action-button-class";
+import {
+  POST_DETAIL_ACTION_BUTTON_CLASS_NAME,
+  POST_DETAIL_ACTION_DANGER_BUTTON_CLASS_NAME,
+} from "@/components/posts/post-detail-action-button-class";
 
 const GUEST_FP_STORAGE_KEY = "townpet:guest-fingerprint:v1";
 
@@ -73,7 +76,7 @@ export function GuestPostDetailActions({ postId }: GuestPostDetailActionsProps) 
   return (
     <div className="w-full">
       <details className="sm:hidden">
-        <summary className="tp-btn-soft inline-flex min-h-10 items-center rounded-lg px-3 text-xs font-semibold">
+        <summary className="tp-text-link inline-flex min-h-10 cursor-pointer list-none items-center px-1.5 text-xs font-semibold underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 [&::-webkit-details-marker]:hidden">
           비회원 관리
         </summary>
         <div className="mt-2 grid gap-2 border-t border-[#dbe6f6] pt-2">
@@ -87,7 +90,7 @@ export function GuestPostDetailActions({ postId }: GuestPostDetailActionsProps) 
           <div className="flex flex-wrap items-center gap-2">
             <Link
               href={`/posts/${postId}/edit?guest=1&pw=${encodeURIComponent(password.trim())}`}
-              className="tp-btn-soft inline-flex min-h-10 items-center rounded-lg px-3 text-xs font-semibold"
+              className={POST_DETAIL_ACTION_BUTTON_CLASS_NAME}
             >
               비회원 수정
             </Link>
@@ -118,7 +121,7 @@ export function GuestPostDetailActions({ postId }: GuestPostDetailActionsProps) 
         />
         <Link
           href={`/posts/${postId}/edit?guest=1&pw=${encodeURIComponent(password.trim())}`}
-          className="tp-btn-soft inline-flex min-h-10 items-center rounded-lg px-3 text-xs font-semibold"
+          className={POST_DETAIL_ACTION_BUTTON_CLASS_NAME}
         >
           비회원 수정
         </Link>

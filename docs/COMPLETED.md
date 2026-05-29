@@ -8249,6 +8249,37 @@
   - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
     - ESLint, TypeScript, Vitest `297 files / 1423 tests`, Next production build PASS
 
+### 2026-05-29 | 남은 상세 액션 버튼 패턴 감사와 비회원 관리 버튼 정리
+- 완료일: `2026-05-29`
+- 배경:
+  - 비회원 글 상세의 `비회원 수정`, `비회원 삭제`, `비회원 관리`가 `tp-btn-soft + rounded-lg` 계층으로 남아 있어 최근 상세 화면 디자인 정리 기조와 맞지 않았다.
+  - 같은 기준으로 남은 legacy 후보를 검색해 즉시 수정 대상과 별도 화면 범위를 분리했다.
+- 변경내용:
+  - 상세 글 관리 공통 action class를 bordered rounded button에서 compact text action으로 낮췄다.
+  - delete/danger action은 rose text action으로 분리했다.
+  - 비회원 글 상세 모바일 `비회원 관리` summary와 desktop/mobile `비회원 수정`, `비회원 삭제`가 같은 compact action 계층을 쓰도록 정리했다.
+  - guard test가 `tp-btn-soft inline-flex min-h-10 items-center rounded-lg`, `border-rose-300` 재도입을 잡도록 보강했다.
+- 추가 발견 사항:
+  - 즉시 개선 후보:
+    - [app/src/components/posts/reaction-login-prompt.tsx](../app/src/components/posts/reaction-login-prompt.tsx): 로그인 유도 primary/soft action이 `tp-btn-* + rounded-lg`로 남아 있다.
+    - [app/src/components/posts/post-comment-section-client.tsx](../app/src/components/posts/post-comment-section-client.tsx): 댓글 로드 실패 `다시 시도`가 rounded soft button이다.
+    - [app/src/components/posts/post-comment-pagination.tsx](../app/src/components/posts/post-comment-pagination.tsx): pagination control이 `tp-btn-soft/tp-btn-primary + rounded-lg` 조합이다.
+    - [app/src/components/posts/post-detail-edit-form.tsx](../app/src/components/posts/post-detail-edit-form.tsx): 수정 저장 primary가 `tp-btn-primary + rounded-lg`다.
+    - [app/src/components/posts/post-create-form-shell.tsx](../app/src/components/posts/post-create-form-shell.tsx): 작성 footer의 취소/등록/동네 설정이 `h-[28px]` fixed action으로 남아 있다.
+  - 별도 범위로 볼 후보:
+    - [app/src/components/posts/post-body-rich-editor.tsx](../app/src/components/posts/post-body-rich-editor.tsx): 에디터 toolbar segmented control과 28px toolbar button은 에디터 전체 UX 단위로 봐야 한다.
+    - [app/src/components/posts/post-bookmark-button.tsx](../app/src/components/posts/post-bookmark-button.tsx), [app/src/components/posts/post-share-controls.tsx](../app/src/components/posts/post-share-controls.tsx), [app/src/components/posts/comment-reaction-controls.tsx](../app/src/components/posts/comment-reaction-controls.tsx): 의도적으로 compact icon/text action이라 touch target 기준과 시각 밀도 기준을 별도 결정해야 한다.
+    - admin/onboarding/profile의 rounded bordered white panels는 화면 성격이 달라 상세 게시글 디자인 cleanup과 분리한다.
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/components/posts/post-detail-action-button-class.test.ts src/components/posts/post-detail-action-accessibility.test.tsx`
+    - Vitest `2 files / 9 tests` PASS
+  - targeted lint:
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `297 files / 1423 tests`, Next production build PASS
+
 ### 2026-05-29 | 댓글 신고 폼과 메뉴 무게 축소
 - 완료일: `2026-05-29`
 - 배경:
