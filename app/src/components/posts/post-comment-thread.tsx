@@ -602,7 +602,7 @@ export function PostCommentThread({
         : POST_COMMENT_THREAD_ROOT_CARD_CLASS_NAME;
     const canOpenReplyFromPanel = canReply;
     const selectableCommentCardClassName = canOpenReplyFromPanel
-      ? `${commentCardClassName} cursor-pointer transition hover:bg-[#f8fbff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2`
+      ? `${commentCardClassName} cursor-pointer rounded-md transition hover:bg-[#f8fbff] active:bg-[#f3f8ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1 data-[reply-open=true]:bg-[#f8fbff] data-[reply-open=true]:ring-1 data-[reply-open=true]:ring-[#dbe6f5]`
       : commentCardClassName;
     const openReplyFromPanel = () => {
       setReplyOpen((prev) => ({ ...prev, [comment.id]: true }));
@@ -649,6 +649,7 @@ export function PostCommentThread({
           tabIndex={canOpenReplyFromPanel ? 0 : undefined}
           aria-label={canOpenReplyFromPanel ? `${displayName} 댓글에 답글 작성` : undefined}
           aria-expanded={canOpenReplyFromPanel ? Boolean(replyOpen[comment.id]) : undefined}
+          data-reply-open={canOpenReplyFromPanel ? Boolean(replyOpen[comment.id]) : undefined}
           onClick={handleCommentPanelClick}
           onKeyDown={handleCommentPanelKeyDown}
         >

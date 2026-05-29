@@ -171,6 +171,9 @@ describe("PostCommentThread", () => {
     expect(html).toContain('role="button"');
     expect(html).toContain("댓글에 답글 작성");
     expect(html).toContain("aria-expanded");
+    expect(html).toContain("data-reply-open");
+    expect(html).toContain("data-[reply-open=true]:bg-[#f8fbff]");
+    expect(html).toContain("focus-visible:ring-offset-1");
     expect(html).not.toContain(">답글</button>");
     expect(html).not.toContain("답글 취소");
     expect(html).toContain(POST_COMMENT_ROOT_COMPOSER_WRAPPER_CLASS_NAME);
