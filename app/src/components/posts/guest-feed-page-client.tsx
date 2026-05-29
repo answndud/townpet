@@ -484,7 +484,7 @@ export function GuestFeedPageClient({
             href="#feed-list"
             className={`${feedInlineTextActionClassName} hidden sm:inline-flex lg:hidden`}
           >
-            목록 바로가기
+            목록 보기
           </a>
 
           {isGuestTypeBlocked && type ? (

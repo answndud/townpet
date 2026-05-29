@@ -3181,7 +3181,7 @@
   - feed 검색 form과 footer 검색 form에서 desktop override인 `sm:min-h-8/9`와 `tp-btn-xs` 사용을 제거했다.
   - auth logout, auth page back link, app shell footer legal link를 `min-h-10` 기준으로 보강했다.
   - 게시글 상세 신고 button, 상세 error retry, back-to-feed, guest back-to-feed, media viewer close button, rich text toolbar button, 댓글 reaction button을 `min-h-10` 기준으로 보강했다.
-  - 내 글/북마크 pagination, 새 글 작성의 feed return, feed 글쓰기/목록 바로가기, adoption pagination/작성 action을 `min-h-10`/`min-w-10` 기준으로 보강했다.
+  - 내 글/북마크 pagination, 새 글 작성의 feed return, feed 글쓰기/목록 anchor, adoption pagination/작성 action을 `min-h-10`/`min-w-10` 기준으로 보강했다.
   - 최종 sweep 대상 상호 요소 소스 회귀 unit test를 추가했다.
 - 잔여 compact class 분류:
   - 남은 검색 결과는 loading skeleton, avatar/icon 크기, status text placeholder, aria-hidden divider, 댓글 작성자 이니셜 avatar로 비상호 요소다.
@@ -3225,7 +3225,7 @@
   - 공개 feed/search/detail visual smoke e2e spec를 추가했다.
   - spec는 seed post를 생성한 뒤 `/feed/guest?q=...&searchIn=TITLE&density=ULTRA`를 desktop/mobile viewport에서 열어 feed list, 검색 결과, 정렬 tab, 하단 검색 select/input/button/reset의 40px height와 horizontal overflow 부재를 확인한다.
   - spec는 `/posts/[id]/guest`를 mobile viewport에서 열어 상세 제목, 목록으로, 좋아요, 게시글 신고 summary의 40px height와 horizontal overflow 부재를 확인한다.
-  - smoke 과정에서 발견한 게스트 피드 `목록 바로가기` link와 게스트 상세 `게시글 신고` summary의 잔여 small touch target을 `min-h-10` 기준으로 보강했다.
+  - smoke 과정에서 발견한 게스트 피드 목록 anchor와 게스트 상세 `게시글 신고` summary의 잔여 small touch target을 `min-h-10` 기준으로 보강했다.
   - 로컬 Playwright Chromium binary가 없어 `corepack pnpm@9.12.3 -C app exec playwright install chromium`을 1회 실행했다.
 - 코드문서:
   - [app/e2e/feed-search-detail-visual-smoke.spec.ts](../app/e2e/feed-search-detail-visual-smoke.spec.ts)
@@ -8782,11 +8782,11 @@
 ### 2026-05-29 | 피드 inline action 버튼 계층 정리
 - 완료일: `2026-05-29`
 - 배경:
-  - `guest-feed-page-client.tsx`의 `글쓰기`, 게스트/회원 피드의 `목록 바로가기`가 `tp-btn-* + h-[30px]` 패턴으로 남아 있었다.
+  - `guest-feed-page-client.tsx`의 `글쓰기`, 게스트/회원 피드의 목록 anchor가 `tp-btn-* + h-[30px]` 패턴으로 남아 있었다.
   - 피드 상단/하단 검색 버튼을 정리한 뒤, 피드 화면의 남은 inline action도 같은 계층으로 맞출 필요가 있었다.
 - 변경내용:
   - 게스트 피드 `글쓰기`를 `tp-btn-primary h-[30px]`에서 compact primary class로 변경했다.
-  - 게스트/회원 피드 `목록 바로가기`를 `tp-btn-soft h-[30px]`에서 compact text action으로 낮췄다.
+  - 게스트/회원 피드 목록 anchor를 `tp-btn-soft h-[30px]`에서 compact text action으로 낮췄다.
   - source guard test가 `tp-btn-primary inline-flex h-[30px]`, `tp-btn-soft hidden h-[30px]` 재도입을 잡도록 보강했다.
 - 코드문서:
   - [app/src/components/posts/guest-feed-page-client.tsx](../app/src/components/posts/guest-feed-page-client.tsx)
@@ -8966,10 +8966,10 @@
 ### 2026-05-29 | 게시판 chip과 북마크 로그인 안내 정렬 polish
 - 완료일: `2026-05-29`
 - 배경:
-  - 상세 상단 게시판 이동 chip이 pill 형태라 상세 화면의 최근 compact action 기조와 맞지 않았다.
+  - 상세 상단 게시판 chip이 pill 형태라 상세 화면의 최근 compact action 기조와 맞지 않았다.
   - 비회원 북마크 시도 시 로그인 안내 문구와 `로그인하기` 링크가 같은 줄 baseline에 놓이지 않았다.
 - 변경내용:
-  - `PostBoardLinkChip`을 `rounded-full` pill에서 `rounded-md` compact link로 낮추고, `이동` 보조 텍스트를 추가해 게시판 목록 이동 affordance를 명확히 했다.
+  - `PostBoardLinkChip`을 `rounded-full` pill에서 `rounded-md` compact link로 낮췄다.
   - 북마크 로그인 prompt를 `flex items-center` row로 바꾸고, `로그인하기` 링크의 40px 높이를 제거해 문구와 같은 baseline으로 정렬했다.
 - 코드문서:
   - [app/src/components/posts/post-board-link-chip.tsx](../app/src/components/posts/post-board-link-chip.tsx)

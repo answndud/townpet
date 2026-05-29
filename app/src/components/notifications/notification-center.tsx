@@ -384,7 +384,7 @@ export function NotificationCenter({
                       disabled={isPending}
                       className="tp-btn-soft inline-flex min-h-10 items-center justify-center px-3 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                      이동
+                      확인
                     </button>
                     <button
                       data-testid={`notification-dismiss-${notification.id}`}
