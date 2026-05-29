@@ -3,6 +3,7 @@
 ## 현재 상태
 
 - 현재 active 구현 항목 없음.
+- `2026-05-29. 댓글 실패 복구와 페이지네이션 버튼 계층 정리`를 완료했다. 댓글 로드 실패 `다시 시도`를 error text action으로 낮추고, 댓글 페이지네이션은 `tp-btn-* + rounded-lg` 버튼 패턴에서 flat compact control로 바꿨다. targeted tests, lint, typecheck, 전체 `quality:check`를 확인했다.
 - `2026-05-29. 반응 로그인 프롬프트 버튼 계층 정리`를 완료했다. 반응 로그인 prompt의 `닫기`를 tertiary text action으로 낮추고, `로그인하기`는 `tp-btn-primary + rounded-lg` 의존 없는 compact primary로 정리했다. targeted tests, lint, typecheck, 전체 `quality:check`를 확인했다.
 - `2026-05-29. 남은 상세 액션 버튼 패턴 감사와 비회원 관리 버튼 정리`를 완료했다. 비회원 글 상세의 `비회원 관리/수정/삭제`를 compact text/danger text action으로 낮추고, 남은 legacy 후보를 즉시 개선 후보와 별도 화면 범위로 분류했다. targeted tests, lint, typecheck, 전체 `quality:check`를 확인했다.
 - `2026-05-29. 게시글 상세 신뢰/메타/댓글 empty state 정리`를 완료했다. 외부 UI 피드백 중 타당한 항목만 좁게 적용해 운영자 정리 CTA, 작성자/메타, 목록 링크, 댓글 empty state, 비회원 댓글 label을 정리했다. feed/detail smoke에서 드러난 hidden pet menu overflow와 40px touch target 미달도 같이 보정했다. targeted tests, lint, typecheck, feed/detail Playwright smoke, 전체 `quality:check`를 확인했다.
