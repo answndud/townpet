@@ -30,6 +30,10 @@ import {
   POST_COMMENT_THREAD_CARD_CLASS_NAME,
   POST_COMMENT_THREAD_ACTIONS_CLASS_NAME,
   POST_COMMENT_THREAD_FOOTER_CLASS_NAME,
+  POST_COMMENT_THREAD_MENU_BUTTON_CLASS_NAME,
+  POST_COMMENT_THREAD_MENU_DANGER_ITEM_CLASS_NAME,
+  POST_COMMENT_THREAD_MENU_ITEM_CLASS_NAME,
+  POST_COMMENT_THREAD_MENU_PANEL_CLASS_NAME,
   POST_COMMENT_THREAD_META_ROW_CLASS_NAME,
   POST_COMMENT_THREAD_ROOT_CARD_CLASS_NAME,
   POST_COMMENT_THREAD_REPLY_CARD_CLASS_NAME,
@@ -548,9 +552,9 @@ export function PostCommentThread({
     const hasActiveReply = replies.some((reply) => reply.status === "ACTIVE");
     const canEdit =
       !isMutedPlaceholder && (isAuthor || isGuestComment) && !hasActiveReply && comment.status === "ACTIVE";
-    const canOpenMenu = !isDeleted && !isMutedPlaceholder && canEdit;
     const canReply = !isMutedPlaceholder && canComment && comment.status === "ACTIVE";
     const canReport = Boolean(currentUserId) && !isMutedPlaceholder && comment.status === "ACTIVE" && !isAuthor;
+    const canOpenMenu = !isDeleted && !isMutedPlaceholder && (canEdit || canReport);
     const canReactToComment = canUseCommentReaction({
       currentUserId,
       canInteract,
@@ -635,15 +639,33 @@ export function PostCommentThread({
                 <div className="ml-auto shrink-0">
                   {canOpenMenu ? (
                     <details className="relative">
-                      <summary className="tp-text-muted inline-flex min-h-10 min-w-10 items-center justify-center rounded-md text-[15px] leading-none hover:bg-[#f1f5fb] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2">
-                        ···
+                      <summary
+                        aria-label={`${displayName} 댓글 작업 메뉴`}
+                        className={POST_COMMENT_THREAD_MENU_BUTTON_CLASS_NAME}
+                        title="댓글 작업"
+                      >
+                        <span aria-hidden="true">···</span>
                       </summary>
-                      <div className="tp-border-muted absolute right-0 z-20 mt-1.5 min-w-24 rounded-md border bg-white p-1 shadow-[0_8px_18px_rgba(16,40,74,0.08)]">
+                      <div className={POST_COMMENT_THREAD_MENU_PANEL_CLASS_NAME}>
+                        {canReport ? (
+                          <button
+                            type="button"
+                            className={POST_COMMENT_THREAD_MENU_DANGER_ITEM_CLASS_NAME}
+                            onClick={() =>
+                              setReportOpen((prev) => ({
+                                ...prev,
+                                [comment.id]: !prev[comment.id],
+                              }))
+                            }
+                          >
+                            {reportOpen[comment.id] ? "신고 닫기" : "신고"}
+                          </button>
+                        ) : null}
                         {canEdit ? (
                           <>
                             <button
                               type="button"
-                              className="tp-text-heading flex min-h-10 w-full items-center rounded px-3 text-left text-[12px] font-medium hover:bg-[#f5f9ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1"
+                              className={POST_COMMENT_THREAD_MENU_ITEM_CLASS_NAME}
                               onClick={() => {
                                 if (isGuestComment) {
                                   setGuestActionPrompt((prev) => ({ ...prev, [comment.id]: "EDIT" }));
@@ -657,7 +679,7 @@ export function PostCommentThread({
                             </button>
                             <button
                               type="button"
-                              className="flex min-h-10 w-full items-center rounded px-3 text-left text-[12px] font-medium text-rose-700 hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200 focus-visible:ring-offset-1"
+                              className={POST_COMMENT_THREAD_MENU_DANGER_ITEM_CLASS_NAME}
                               onClick={() => {
                                 if (isGuestComment) {
                                   setGuestActionPrompt((prev) => ({ ...prev, [comment.id]: "DELETE" }));
@@ -731,7 +753,7 @@ export function PostCommentThread({
               </dl>
             ) : null}
 
-            {!isDeleted && (canReply || canReport || (depth === 0 && replies.length > 0) || !isMutedPlaceholder) ? (
+            {!isDeleted && (canReply || (depth === 0 && replies.length > 0) || !isMutedPlaceholder) ? (
               <div className={POST_COMMENT_THREAD_FOOTER_CLASS_NAME}>
                 <div className={POST_COMMENT_THREAD_ACTIONS_CLASS_NAME}>
                   {canReply ? (
@@ -743,20 +765,6 @@ export function PostCommentThread({
                       }
                     >
                       {replyOpen[comment.id] ? "답글 취소" : "답글"}
-                    </button>
-                  ) : null}
-                  {canReport ? (
-                    <button
-                      type="button"
-                      className={actionLinkClass}
-                      onClick={() =>
-                        setReportOpen((prev) => ({
-                          ...prev,
-                          [comment.id]: !prev[comment.id],
-                        }))
-                      }
-                    >
-                      {reportOpen[comment.id] ? "신고 닫기" : "신고"}
                     </button>
                   ) : null}
                   {depth === 0 && replies.length > 0 ? (

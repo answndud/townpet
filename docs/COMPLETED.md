@@ -7988,3 +7988,38 @@
 - 결과:
   - 사용자는 댓글은 비회원 작성 가능, 반응/북마크/신고는 로그인 필요라는 정책을 더 명확히 볼 수 있다.
   - 인증 정책, API 권한, rate limit, 신고/댓글/반응 mutation 동작은 변경하지 않았다.
+
+### 2026-05-29 | 댓글/상세 화면 action overflow menu 정리
+- 완료일: `2026-05-29`
+- 배경:
+  - 댓글의 `신고`가 footer 액션에 있어 답글/반응과 같은 반복 액션처럼 보였고, 신고/수정/삭제의 위치도 분산되어 있었다.
+  - 댓글 신고는 primary interaction이 아니므로 본문 아래 공간을 차지하기보다 작업 메뉴 안의 낮은 우선순위 동작으로 묶는 편이 자연스럽다.
+- 변경내용:
+  - 댓글 헤더 우측 `...`를 `댓글 작업 메뉴`로 명확히 라벨링했다.
+  - 댓글 신고를 footer 텍스트 버튼에서 overflow menu 안으로 이동했다.
+  - 댓글 수정/삭제와 신고가 같은 menu surface를 사용하도록 class 상수를 추가했다.
+  - menu summary의 default details marker를 숨기고, hover/focus-visible affordance와 40px touch target을 유지했다.
+  - 답글, 답글 접기/펼치기, 댓글 reaction controls는 본문 아래 반복 액션 위치에 그대로 유지했다.
+  - 댓글 작성, 신고, 수정, 삭제 mutation 정책과 인증 정책은 변경하지 않았다.
+- 코드문서:
+  - [app/src/components/posts/post-comment-layout-class.ts](../app/src/components/posts/post-comment-layout-class.ts)
+  - [app/src/components/posts/post-comment-thread.tsx](../app/src/components/posts/post-comment-thread.tsx)
+  - [app/src/components/posts/post-comment-thread.test.tsx](../app/src/components/posts/post-comment-thread.test.tsx)
+  - [app/src/components/posts/post-comment-compact-controls-accessibility.test.tsx](../app/src/components/posts/post-comment-compact-controls-accessibility.test.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/components/posts/post-comment-thread.test.tsx src/components/posts/post-comment-compact-controls-accessibility.test.tsx src/components/posts/post-comment-layout-class.test.ts`
+    - `3 files / 22 tests` PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app lint -- src/components/posts/post-comment-layout-class.ts src/components/posts/post-comment-thread.tsx src/components/posts/post-comment-thread.test.tsx src/components/posts/post-comment-compact-controls-accessibility.test.tsx`
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `297 files / 1420 tests`, Next production build PASS
+  - 모바일 Playwright smoke:
+    - `/posts/:id/guest` 390px viewport에서 상세 화면 가로 overflow 없음 확인.
+    - 현재 로컬 fixture에 렌더링된 댓글이 없어 실제 menu click smoke는 보류했고, `PostCommentThread` render test가 신고/수정/삭제 menu 위치를 검증한다.
+- 결과:
+  - 댓글 본문 아래는 답글/접기/반응 중심으로 남고, 신고/수정/삭제는 명확한 secondary 작업 메뉴로 분리됐다.
+  - 사용자-facing 동작과 서버 정책은 변경하지 않고 UI 계층만 정리했다.
