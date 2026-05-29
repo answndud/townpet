@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { formatKoreanIsoDate } from "@/lib/date-format";
+import { formatKoreanDate } from "@/lib/date-format";
 
 type OperatorContentSourcePanelProps = {
   postId?: string | null;
@@ -13,7 +13,7 @@ export function formatOperatorVerifiedDate(value?: string | Date | null) {
   if (!value) {
     return null;
   }
-  return formatKoreanIsoDate(value) || null;
+  return formatKoreanDate(value) || null;
 }
 
 export function buildOperatorContentMetaLabel({

@@ -17,7 +17,7 @@ import { PostShareControls } from "@/components/posts/post-share-controls";
 import { DismissibleDetails } from "@/components/ui/dismissible-details";
 import { UserActionMenu } from "@/components/user/user-action-menu";
 import { renderLiteMarkdown } from "@/lib/markdown-lite";
-import { formatKoreanIsoDate } from "@/lib/date-format";
+import { formatKoreanDate } from "@/lib/date-format";
 import { typeMeta } from "@/components/posts/post-detail-presenter";
 import type { PostDetailItem, RelationState } from "@/components/posts/post-detail-types";
 
@@ -89,6 +89,14 @@ export function PostDetailPrimaryCard({
     renderedContentText.length === 0 || renderedContentText.includes("미리보기 내용이 없습니다");
   const orderedImages = [...post.images].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   const hasInlineImages = /<img[\s>]/i.test(renderedContentHtml);
+  const trimmedAuthorName = displayAuthorName?.trim() ?? "";
+  const authorDisplayLabel = isGuestPost
+    ? trimmedAuthorName
+      ? `비회원 ${trimmedAuthorName}`
+      : "비회원 사용자"
+    : trimmedAuthorName || "익명";
+  const avatarLabel = isGuestPost ? "비" : authorDisplayLabel.slice(0, 1).toUpperCase();
+  const showOverflowMenu = showPostReportControls || (!canInteract && isGuestPost);
 
   return (
     <section className="tp-card p-4 sm:p-6">
@@ -106,7 +114,7 @@ export function PostDetailPrimaryCard({
             </span>
           ) : null}
         </div>
-        {showPostReportControls ? (
+        {showOverflowMenu ? (
           <DismissibleDetails className="relative shrink-0">
             <summary
               aria-label="게시글 더보기"
@@ -114,15 +122,18 @@ export function PostDetailPrimaryCard({
             >
               ···
             </summary>
-            <div className="tp-border-muted absolute right-0 z-20 mt-1.5 min-w-28 rounded-md border bg-white p-1 shadow-[0_8px_18px_rgba(16,40,74,0.08)]">
-              <button
-                type="button"
-                className="flex min-h-10 w-full items-center rounded px-3 text-left text-[12px] font-medium text-rose-700 hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200 focus-visible:ring-offset-1"
-                onClick={onTogglePostReportOpen}
-                data-dismissible-details-close
-              >
-                {isPostReportOpen ? "신고 닫기" : "게시글 신고"}
-              </button>
+            <div className="tp-border-muted absolute right-0 z-20 mt-1.5 min-w-[260px] rounded-md border bg-white p-1.5 shadow-[0_8px_18px_rgba(16,40,74,0.08)]">
+              {showPostReportControls ? (
+                <button
+                  type="button"
+                  className="flex min-h-10 w-full items-center rounded px-3 text-left text-[12px] font-medium text-rose-700 hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200 focus-visible:ring-offset-1"
+                  onClick={onTogglePostReportOpen}
+                  data-dismissible-details-close
+                >
+                  {isPostReportOpen ? "신고 닫기" : "게시글 신고"}
+                </button>
+              ) : null}
+              {!canInteract && isGuestPost ? <GuestPostDetailActions postId={post.id} /> : null}
             </div>
           </DismissibleDetails>
         ) : null}
@@ -130,18 +141,18 @@ export function PostDetailPrimaryCard({
 
       <div className="tp-border-soft mt-4 border-b pb-3 sm:pb-4">
         <h1 className="tp-text-post-title tp-text-primary">{post.title}</h1>
-        <div className="mt-3 flex items-center gap-2">
-          <div className="tp-surface-alt tp-text-accent flex size-[32px] shrink-0 items-center justify-center rounded-full text-[11px] font-semibold">
-            {(displayAuthorName ?? "익").slice(0, 1).toUpperCase()}
+        <div className="mt-3 flex items-start gap-2.5">
+          <div className="tp-surface-alt tp-text-accent flex size-[34px] shrink-0 items-center justify-center rounded-full text-[11px] font-semibold">
+            {avatarLabel}
           </div>
           <div className="min-w-0">
-            <div className="tp-text-heading min-w-0 break-all text-[13px] font-semibold leading-5">
+            <div className="tp-text-heading min-w-0 break-all text-[14px] font-semibold leading-5">
               {isGuestPost ? (
-                <span>{displayAuthorName}</span>
+                <span>{authorDisplayLabel}</span>
               ) : (
                 <UserActionMenu
                   userId={post.author.id}
-                  displayName={displayAuthorName ?? ""}
+                  displayName={authorDisplayLabel}
                   currentUserId={viewerId ?? undefined}
                   isMutedByViewer={relationState.isMutedByMe}
                   align="start"
@@ -152,7 +163,7 @@ export function PostDetailPrimaryCard({
               )}
             </div>
             <p className="tp-text-subtle mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[12px]">
-              <span suppressHydrationWarning>{formatKoreanIsoDate(createdAt)}</span>
+              <span suppressHydrationWarning>{formatKoreanDate(createdAt)}</span>
               <span aria-hidden="true">·</span>
               <span>조회 {resolvedViewCount.toLocaleString()}</span>
               <span aria-hidden="true">·</span>
@@ -175,12 +186,12 @@ export function PostDetailPrimaryCard({
       ) : null}
 
       <div className="mt-4 sm:mt-5">
-        <article className="tp-text-body tp-text-primary">
+        <article className="tp-text-body tp-text-primary max-w-[760px]">
           {shouldUsePlainFallback ? (
             <div className="whitespace-pre-wrap">{post.content}</div>
           ) : (
             <div
-              className="prose prose-sm max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&_img]:!ml-0 [&_img]:!mr-auto [&_img]:block [&_img]:border-0 [&_img]:bg-transparent [&_img]:rounded-none"
+              className="prose prose-sm max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&_img]:!ml-0 [&_img]:!mr-auto [&_img]:my-3 [&_img]:block [&_img]:h-auto [&_img]:w-full [&_img]:max-w-full sm:[&_img]:max-w-[640px] [&_img]:rounded-lg [&_img]:border-0 [&_img]:bg-transparent [&_img]:object-contain"
               dangerouslySetInnerHTML={{ __html: renderedContentHtml }}
             />
           )}
@@ -191,8 +202,7 @@ export function PostDetailPrimaryCard({
       <div className="tp-border-soft mt-4 space-y-2.5 border-t pt-3 sm:mt-5 sm:pt-4">
         {isPostActive ? (
           <>
-            <div className="grid gap-2 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
-              <div className="hidden sm:block" aria-hidden="true" />
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <PostReactionControls
                 key={`${post.id}:${canInteract ? "viewer" : "guest"}:${canInteractWithPostOwner ? "interactive" : "blocked"}`}
                 postId={post.id}
@@ -201,11 +211,11 @@ export function PostDetailPrimaryCard({
                 currentReaction={canInteract ? undefined : null}
                 canReact={canInteract && canInteractWithPostOwner}
                 loginHref={loginHref}
-                align="center"
+                align="start"
                 compact
                 onStateChange={onReactionStateChange}
               />
-              <div className="flex w-full flex-wrap items-center justify-end gap-2 sm:w-auto">
+              <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
                 <PostBookmarkButton
                   key={`${post.id}:${canInteract ? "viewer" : "guest"}`}
                   postId={post.id}
@@ -248,7 +258,6 @@ export function PostDetailPrimaryCard({
                 </DismissibleDetails>
               </>
             ) : null}
-            {!canInteract && isGuestPost ? <GuestPostDetailActions postId={post.id} /> : null}
           </>
         ) : (
           <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-3 text-xs text-amber-800">

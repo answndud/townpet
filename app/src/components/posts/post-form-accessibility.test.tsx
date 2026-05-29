@@ -70,10 +70,10 @@ describe("post form accessibility", () => {
     expect((html.match(/min-h-10/g) ?? []).length).toBeGreaterThanOrEqual(3);
     expect(html).toContain("post-comment-root-submit");
     expect(html).toContain("min-h-10");
-    expect(html).toContain('class="bg-[#fbfdff] px-2 py-1.5 sm:px-2.5"');
+    expect(html).toContain('class="bg-[#fbfdff] px-2 py-2 sm:px-2.5"');
     expect(html).toContain("rounded-md bg-[#f8fbff] px-2.5 py-2");
-    expect(html).toContain("min-h-[64px] w-full");
-    expect(html).toContain("sm:min-h-[56px]");
+    expect(html).toContain("min-h-[88px] w-full");
+    expect(html).not.toContain("sm:min-h-[56px]");
     expect(html).not.toContain("tp-form-panel tp-form-panel-page-soft p-2.5");
     expect(html).not.toContain("min-h-11");
     expect(html).not.toContain("min-h-24 w-full");

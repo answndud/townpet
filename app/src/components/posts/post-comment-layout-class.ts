@@ -75,7 +75,7 @@ export const POST_COMMENT_ROOT_COMPOSER_WRAPPER_CLASS_NAME =
   "border-[#dbe6f5] mt-2 border-t pt-1.5";
 
 export const POST_COMMENT_ROOT_FORM_SHELL_CLASS_NAME =
-  "bg-[#fbfdff] px-2 py-1.5 sm:px-2.5";
+  "bg-[#fbfdff] px-2 py-2 sm:px-2.5";
 
 export const POST_COMMENT_ROOT_FORM_ROW_CLASS_NAME =
   "mb-1 grid gap-1.5 sm:grid-cols-2";
@@ -90,10 +90,10 @@ export const POST_COMMENT_ROOT_FORM_INPUT_CLASS_NAME =
   `tp-input-soft ${POST_COMMENT_FORM_FIELD_CLASS_NAME} min-h-10 w-full px-2.5 py-1.5 text-[13px]`;
 
 export const POST_COMMENT_ROOT_FORM_TEXTAREA_CLASS_NAME =
-  `tp-input-soft ${POST_COMMENT_FORM_FIELD_CLASS_NAME} min-h-[64px] w-full px-2.5 py-1.5 text-[13px] sm:min-h-[56px]`;
+  `tp-input-soft ${POST_COMMENT_FORM_FIELD_CLASS_NAME} min-h-[88px] w-full px-2.5 py-1.5 text-[13px]`;
 
 export const POST_COMMENT_ROOT_FORM_ACTION_ROW_CLASS_NAME =
-  "mt-1 flex justify-end";
+  "mt-2 flex justify-end";
 
 export const POST_COMMENT_ROOT_FORM_SUBMIT_CLASS_NAME =
   "inline-flex min-h-10 items-center justify-center rounded-md bg-[#3567b5] px-3 text-xs font-semibold text-[#fbfdff] transition hover:bg-[#2f5da4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:bg-[#9fb2cf]";

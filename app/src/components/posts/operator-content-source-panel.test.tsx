@@ -23,7 +23,7 @@ describe("OperatorContentSourcePanel", () => {
     expect(html).toContain("hidden sm:inline-flex");
     expect(html).toContain("mt-3 sm:hidden");
     expect(html).toContain("최종 확인");
-    expect(html).toContain("2026-05-24");
+    expect(html).toContain("2026.05.24");
     expect(html).not.toContain("/commercial#contact");
     expect(html).not.toContain("tp-btn-soft");
     expect(html).not.toContain("rounded-xl border");
@@ -35,7 +35,7 @@ describe("OperatorContentSourcePanel", () => {
         sourceName: "TownPet 운영자 정리",
         lastVerifiedAt: "2026-05-24T00:00:00.000Z",
       }),
-    ).toBe("TownPet 운영자 정리 · 2026-05-24 확인");
+    ).toBe("TownPet 운영자 정리 · 2026.05.24 확인");
     expect(
       buildOperatorContentMetaLabel({
         sourceName: null,

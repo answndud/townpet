@@ -8,7 +8,6 @@ import {
   POST_DETAIL_ACTION_BUTTON_CLASS_NAME,
   POST_DETAIL_ACTION_DANGER_BUTTON_CLASS_NAME,
 } from "@/components/posts/post-detail-action-button-class";
-import { DismissibleDetails } from "@/components/ui/dismissible-details";
 
 const GUEST_FP_STORAGE_KEY = "townpet:guest-fingerprint:v1";
 
@@ -75,58 +74,28 @@ export function GuestPostDetailActions({ postId }: GuestPostDetailActionsProps) 
   };
 
   return (
-    <div className="w-full">
-      <DismissibleDetails className="sm:hidden">
-        <summary className="tp-text-link inline-flex min-h-10 cursor-pointer list-none items-center px-1.5 text-xs font-semibold underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 [&::-webkit-details-marker]:hidden">
-          비회원 관리
-        </summary>
-        <div className="mt-2 grid gap-2 border-t border-[#dbe6f6] pt-2">
-          <input
-            type="password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            placeholder="글 비밀번호"
-            className="tp-input-soft min-h-10 w-full bg-white px-2.5 text-xs"
-          />
-          <div className="flex flex-wrap items-center gap-2">
-            <Link
-              href={`/posts/${postId}/edit?guest=1&pw=${encodeURIComponent(password.trim())}`}
-              className={POST_DETAIL_ACTION_BUTTON_CLASS_NAME}
-              data-dismissible-details-close
-            >
-              비회원 수정
-            </Link>
-            <button
-              type="button"
-              onClick={handleDelete}
-              className={POST_DETAIL_ACTION_DANGER_BUTTON_CLASS_NAME}
-              disabled={isPending}
-              data-dismissible-details-close
-            >
-              {isPending ? "삭제 중..." : "비회원 삭제"}
-            </button>
-          </div>
-          {error ? (
-            <p className="text-xs font-medium text-rose-700" role="alert" aria-live="polite">
-              {error}
-            </p>
-          ) : null}
-        </div>
-      </DismissibleDetails>
-
-      <div className="hidden flex-wrap items-center justify-end gap-2 sm:flex">
-        <input
-          type="password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          placeholder="글 비밀번호"
-          className="tp-input-soft min-h-10 bg-white px-2.5 text-xs"
-        />
+    <div className="mt-1 grid w-full gap-2 border-t border-[#e8eff9] pt-2">
+      <p className="tp-text-subtle px-1 text-[12px] leading-5">
+        글 비밀번호를 입력하면 비회원 글을 수정하거나 삭제할 수 있습니다.
+      </p>
+      <label className="sr-only" htmlFor={`guest-post-password-${postId}`}>
+        비회원 글 비밀번호
+      </label>
+      <input
+        id={`guest-post-password-${postId}`}
+        type="password"
+        value={password}
+        onChange={(event) => setPassword(event.target.value)}
+        placeholder="글 비밀번호"
+        className="tp-input-soft min-h-10 w-full bg-white px-2.5 text-xs"
+      />
+      <div className="flex flex-wrap items-center gap-1.5">
         <Link
           href={`/posts/${postId}/edit?guest=1&pw=${encodeURIComponent(password.trim())}`}
           className={POST_DETAIL_ACTION_BUTTON_CLASS_NAME}
+          data-dismissible-details-close
         >
-          비회원 수정
+          비회원 글 수정
         </Link>
         <button
           type="button"
@@ -134,14 +103,14 @@ export function GuestPostDetailActions({ postId }: GuestPostDetailActionsProps) 
           className={POST_DETAIL_ACTION_DANGER_BUTTON_CLASS_NAME}
           disabled={isPending}
         >
-          {isPending ? "삭제 중..." : "비회원 삭제"}
+          {isPending ? "삭제 중..." : "비회원 글 삭제"}
         </button>
-        {error ? (
-          <p className="w-full text-right text-xs font-medium text-rose-700" role="alert" aria-live="polite">
-            {error}
-          </p>
-        ) : null}
       </div>
+      {error ? (
+        <p className="text-xs font-medium text-rose-700" role="alert" aria-live="polite">
+          {error}
+        </p>
+      ) : null}
     </div>
   );
 }
