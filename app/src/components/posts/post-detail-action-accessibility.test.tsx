@@ -101,9 +101,12 @@ describe("post detail action accessibility", () => {
       join(process.cwd(), "src/components/posts/post-bookmark-button.tsx"),
       "utf8",
     );
-    expect(source).toContain("w-[min(86vw,260px)]");
-    expect(source).toContain("min-w-[220px]");
-    expect(source).toContain("break-keep");
+    expect(source).toContain("flex w-[min(86vw,300px)]");
+    expect(source).toContain("min-w-[260px]");
+    expect(source).toContain("items-center gap-1.5 whitespace-nowrap");
+    expect(source).toContain("inline-flex shrink-0 items-center");
+    expect(source).not.toContain("min-h-10 whitespace-nowrap align-middle");
+    expect(source).not.toContain("break-keep");
     expect(source).toContain('compact ? "right-0" : "left-0"');
     expect(source).not.toContain("absolute left-0 top-[calc(100%+8px)] z-10 max-w-[min(86vw,260px)]");
   });

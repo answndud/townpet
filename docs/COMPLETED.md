@@ -8962,3 +8962,26 @@
 - 결과:
   - 이번 피드백의 직접 지적 사항은 반영 완료했다.
   - 공용 dismissible layer는 이번에 확인한 floating prompt에 적용했고, 앞으로 새 floating UI를 만들 때 같은 hook을 쓰는 기준으로 유지한다.
+
+### 2026-05-29 | 게시판 chip과 북마크 로그인 안내 정렬 polish
+- 완료일: `2026-05-29`
+- 배경:
+  - 상세 상단 게시판 이동 chip이 pill 형태라 상세 화면의 최근 compact action 기조와 맞지 않았다.
+  - 비회원 북마크 시도 시 로그인 안내 문구와 `로그인하기` 링크가 같은 줄 baseline에 놓이지 않았다.
+- 변경내용:
+  - `PostBoardLinkChip`을 `rounded-full` pill에서 `rounded-md` compact link로 낮추고, `이동` 보조 텍스트를 추가해 게시판 목록 이동 affordance를 명확히 했다.
+  - 북마크 로그인 prompt를 `flex items-center` row로 바꾸고, `로그인하기` 링크의 40px 높이를 제거해 문구와 같은 baseline으로 정렬했다.
+- 코드문서:
+  - [app/src/components/posts/post-board-link-chip.tsx](../app/src/components/posts/post-board-link-chip.tsx)
+  - [app/src/components/posts/post-bookmark-button.tsx](../app/src/components/posts/post-bookmark-button.tsx)
+  - [app/src/components/posts/post-board-link-chip.test.tsx](../app/src/components/posts/post-board-link-chip.test.tsx)
+  - [app/src/components/posts/post-detail-action-accessibility.test.tsx](../app/src/components/posts/post-detail-action-accessibility.test.tsx)
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/components/posts/post-board-link-chip.test.tsx src/components/posts/post-detail-action-accessibility.test.tsx`
+    - Vitest `2 files / 8 tests` PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app lint`
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `299 files / 1433 tests`, Next production build PASS
