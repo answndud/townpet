@@ -20,6 +20,7 @@ import { PostCommentBestItem } from "@/components/posts/post-comment-best-item";
 import {
   POST_COMMENT_INLINE_FORM_ACTION_ROW_CLASS_NAME,
   POST_COMMENT_INLINE_FORM_CANCEL_CLASS_NAME,
+  POST_COMMENT_INLINE_FORM_DANGER_CLASS_NAME,
   POST_COMMENT_INLINE_FORM_INPUT_CLASS_NAME,
   POST_COMMENT_INLINE_FORM_PASSWORD_INPUT_CLASS_NAME,
   POST_COMMENT_INLINE_FORM_PASSWORD_ROW_CLASS_NAME,
@@ -584,6 +585,8 @@ export function PostCommentThread({
     const canReply = !isMutedPlaceholder && canComment && comment.status === "ACTIVE";
     const canReport = Boolean(currentUserId) && !isMutedPlaceholder && comment.status === "ACTIVE" && !isAuthor;
     const canOpenMenu = !isDeleted && !isMutedPlaceholder && (canEdit || canReport);
+    const guestActionType = guestActionPrompt[comment.id];
+    const isGuestDeletePrompt = guestActionType === "DELETE";
     const canReactToComment = canUseCommentReaction({
       currentUserId,
       canInteract,
@@ -923,7 +926,7 @@ export function PostCommentThread({
               </div>
             ) : null}
 
-            {isGuestComment && guestActionPrompt[comment.id] ? (
+            {isGuestComment && guestActionType ? (
               <div className={COMMENT_INLINE_FORM_SECTION_CLASS_NAME} data-comment-panel-ignore>
                 <div className={POST_COMMENT_INLINE_FORM_PASSWORD_ROW_CLASS_NAME}>
                   <input
@@ -940,20 +943,24 @@ export function PostCommentThread({
                   />
                   <button
                     type="button"
-                    className="tp-btn-primary inline-flex min-h-10 items-center justify-center rounded-lg px-3 text-xs font-semibold"
+                    className={
+                      isGuestDeletePrompt
+                        ? POST_COMMENT_INLINE_FORM_DANGER_CLASS_NAME
+                        : POST_COMMENT_ROOT_FORM_SUBMIT_CLASS_NAME
+                    }
                     onClick={() =>
                       confirmGuestAction(
                         comment.id,
-                        guestActionPrompt[comment.id] === "EDIT" ? "EDIT" : "DELETE",
+                        guestActionType === "EDIT" ? "EDIT" : "DELETE",
                       )
                     }
                     disabled={isPending}
                   >
-                    확인
+                    {isGuestDeletePrompt ? "삭제 확인" : "수정 확인"}
                   </button>
                   <button
                     type="button"
-                    className="tp-btn-soft inline-flex min-h-10 items-center justify-center rounded-lg px-3 text-xs font-semibold"
+                    className={POST_COMMENT_INLINE_FORM_CANCEL_CLASS_NAME}
                     onClick={() => setGuestActionPrompt((prev) => ({ ...prev, [comment.id]: null }))}
                     disabled={isPending}
                   >
@@ -979,7 +986,7 @@ export function PostCommentThread({
                 <div className={POST_COMMENT_INLINE_FORM_ACTION_ROW_CLASS_NAME}>
                   <button
                     type="button"
-                    className="tp-btn-primary inline-flex min-h-10 items-center justify-center rounded-lg px-3 text-xs font-semibold"
+                    className={POST_COMMENT_ROOT_FORM_SUBMIT_CLASS_NAME}
                     onClick={() => handleUpdate(comment.id, isGuestComment)}
                     disabled={isPending}
                   >

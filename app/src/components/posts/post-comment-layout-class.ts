@@ -116,6 +116,9 @@ export const POST_COMMENT_INLINE_FORM_ACTION_ROW_CLASS_NAME =
 export const POST_COMMENT_INLINE_FORM_CANCEL_CLASS_NAME =
   "tp-text-muted inline-flex min-h-10 items-center justify-center px-1.5 text-xs font-semibold transition hover:text-[#2f5da4] hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50";
 
+export const POST_COMMENT_INLINE_FORM_DANGER_CLASS_NAME =
+  "inline-flex min-h-10 items-center justify-center px-1.5 text-xs font-semibold text-rose-700 transition hover:text-rose-800 hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50";
+
 export const POST_COMMENT_INLINE_FORM_PASSWORD_ROW_CLASS_NAME =
   "flex flex-wrap items-center gap-1.5";
 

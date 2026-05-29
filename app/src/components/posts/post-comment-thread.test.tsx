@@ -173,6 +173,8 @@ describe("PostCommentThread", () => {
     expect(html).toContain("답글 숨기기");
     expect(html).toContain("hover:underline-offset-4");
     expect(html).not.toContain("답글 취소");
+    expect(html).not.toContain("tp-btn-primary inline-flex min-h-10 items-center justify-center rounded-lg");
+    expect(html).not.toContain("tp-btn-soft inline-flex min-h-10 items-center justify-center rounded-lg");
     expect(html).toContain("sr-only focus:not-sr-only");
     expect(html).toContain("data-reply-open");
     expect(html).toContain("data-[reply-open=true]:bg-[#f8fbff]");
