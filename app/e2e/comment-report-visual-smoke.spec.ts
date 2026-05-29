@@ -131,11 +131,16 @@ test.describe("comment/report mobile visual smoke", () => {
 
     const reportableComment = page.getByTestId(`post-comment-item-${reportableCommentId}`);
     await expect(reportableComment).toBeVisible({ timeout: 15_000 });
-    await expect(reportableComment).toHaveAttribute("role", "button");
-    await expect(reportableComment).toHaveAttribute("aria-label", /댓글에 답글 작성/);
+    await expect(reportableComment).not.toHaveAttribute("role", "button");
+    await expect(
+      reportableComment.getByRole("button", { name: "댓글에 답글 작성", exact: true }),
+    ).toHaveAttribute("aria-expanded", "false");
     await expectTouchTarget(reportableComment, "reportable comment reply panel", 64);
     await reportableComment.getByText(/신고 가능한 댓글 smoke/).click();
     await expect(reportableComment).toHaveAttribute("data-reply-open", "true");
+    await expect(
+      reportableComment.getByRole("button", { name: "댓글에 답글 작성", exact: true }),
+    ).toHaveAttribute("aria-expanded", "true");
     await expect(reportableComment.getByPlaceholder("답글을 입력하세요")).toBeVisible();
     await reportableComment.getByRole("button", { name: "취소", exact: true }).click();
     await reportableComment.locator("summary").first().click();
