@@ -3,6 +3,7 @@
 ## 현재 상태
 
 - 현재 active 구현 항목 없음.
+- `2026-05-29. 상세/헤더 action button visual reset`을 완료했다. 헤더 `게시판` active의 둥근 outline/진한 하단 라인을 제거하고, 상세/게스트 상세의 `...` 더보기는 원형 border 없이 텍스트만 보이도록 낮췄다. 게시글 좋아요/싫어요는 border pill 대신 텍스트형 compact action으로 바꾸고 상세 하단 중앙에 배치했다. 북마크/공유도 둥근 outline 버튼에서 plain icon/text action으로 낮췄다. 댓글 좋아요/싫어요는 더 작게 만들고 border/background를 제거했으며 댓글 footer 오른쪽 끝에 붙였다. targeted tests, lint, typecheck, 전체 `quality:check`, docs index, `git diff --check`, 모바일 Playwright smoke를 확인했다.
 - `2026-05-29. GitHub Actions check run 중복 이름 정리`를 완료했다. 최근 커밋의 실제 deployment는 Vercel bot 기준 1개였고, 중복처럼 보인 원인은 `quality-gate`와 `docs-quality`의 job 이름이 모두 `verify`라 GitHub Checks에 같은 이름으로 표시된 것이었다. workflow job/check 이름을 각각 `quality-check`, `docs-check`로 분리했다.
 - `2026-05-29. 댓글/상세 화면 action overflow menu 정리`를 완료했다. 댓글 신고/수정/삭제를 헤더 우측 `댓글 작업 메뉴`로 모으고, 답글/접기/반응은 본문 아래 반복 액션으로 유지했다. 메뉴에는 accessible label, hidden details marker, hover/focus-visible affordance, 40px touch target을 적용했다. targeted tests, lint, typecheck, 전체 `quality:check`를 확인했다. 로컬 모바일 상세 smoke에서는 현재 fixture에 렌더링된 댓글이 없어 실제 메뉴 클릭은 render/static 테스트로 대체했고, 상세 화면 overflow 없음은 확인했다.
 - `2026-05-29. UI/UX 인증 정책 문구 정리`를 완료했다. 댓글, 답글, 게시글/댓글 좋아요·싫어요, 북마크, 게시글/댓글 신고의 로그인 필요 문구를 공통 copy로 묶고, 비회원/회원 댓글 작성 안내를 구분했다. 인증 정책과 API 권한은 변경하지 않았다. targeted tests와 전체 `quality:check`, 모바일 상세 smoke를 확인했다.

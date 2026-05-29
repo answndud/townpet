@@ -109,7 +109,7 @@ export function PostDetailPrimaryCard({
           <details className="relative shrink-0">
             <summary
               aria-label="게시글 더보기"
-              className="tp-text-muted inline-flex min-h-10 min-w-10 cursor-pointer list-none items-center justify-center rounded-full border border-[#dbe6f5] bg-white text-[15px] leading-none transition hover:bg-[#f6f9ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 [&::-webkit-details-marker]:hidden"
+              className="tp-text-muted inline-flex min-h-8 min-w-8 cursor-pointer list-none items-center justify-center text-[16px] leading-none transition hover:text-[#1f4f8f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 [&::-webkit-details-marker]:hidden"
             >
               ···
             </summary>
@@ -187,7 +187,8 @@ export function PostDetailPrimaryCard({
       <div className="tp-border-soft mt-4 space-y-2.5 border-t pt-3 sm:mt-5 sm:pt-4">
         {isPostActive ? (
           <>
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="grid gap-2 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
+              <div className="hidden sm:block" aria-hidden="true" />
               <PostReactionControls
                 key={`${post.id}:${canInteract ? "viewer" : "guest"}:${canInteractWithPostOwner ? "interactive" : "blocked"}`}
                 postId={post.id}
@@ -196,11 +197,11 @@ export function PostDetailPrimaryCard({
                 currentReaction={canInteract ? undefined : null}
                 canReact={canInteract && canInteractWithPostOwner}
                 loginHref={loginHref}
-                align="start"
+                align="center"
                 compact
                 onStateChange={onReactionStateChange}
               />
-              <div className="flex w-full flex-wrap items-center gap-1.5 sm:w-auto sm:justify-end">
+              <div className="flex w-full flex-wrap items-center justify-end gap-2 sm:w-auto">
                 <PostBookmarkButton
                   key={`${post.id}:${canInteract ? "viewer" : "guest"}`}
                   postId={post.id}

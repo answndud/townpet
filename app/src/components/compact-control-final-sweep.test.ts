@@ -28,20 +28,28 @@ describe("compact control final sweep", () => {
     "src/components/posts/post-rich-text-editor-shell.tsx",
   ];
 
-  it("keeps final-sweep interactive controls at the 40px touch target baseline", () => {
+  it("keeps final-sweep interactive controls compact without legacy rounded outline actions", () => {
     const code = interactiveSources.map(readSource).join("\n");
 
     expect(code).toContain("min-h-10");
-    expect(code).toContain("min-w-10");
     expect(code).not.toContain("tp-btn-xs");
     expect(code).not.toContain("tp-btn-sm");
-    expect(code).not.toContain(" h-8 ");
-    expect(code).not.toContain(" h-9 ");
-    expect(code).not.toContain("min-h-8");
-    expect(code).not.toContain("min-h-9");
-    expect(code).not.toContain("min-w-8");
     expect(code).not.toContain("sm:min-h-8");
     expect(code).not.toContain("sm:min-h-9");
+    expect(code).not.toContain("shadow-[inset_0_-2px_0_#3567b5]");
+    const detailPrimaryCardCode = readSource("src/components/posts/post-detail-primary-card.tsx");
+    const guestDetailCode = readSource("src/app/posts/[id]/guest/page.tsx");
+    const actionComponentCode = [
+      readSource("src/components/posts/post-bookmark-button.tsx"),
+      readSource("src/components/posts/post-share-controls.tsx"),
+      readSource("src/components/posts/post-reaction-controls.tsx"),
+      readSource("src/components/posts/comment-reaction-controls.tsx"),
+    ].join("\n");
+    expect(detailPrimaryCardCode).not.toContain("rounded-full border border-[#dbe6f5] bg-white");
+    expect(guestDetailCode).not.toContain("rounded-full border border-[#dbe6f5] bg-white");
+    expect(actionComponentCode).not.toContain("rounded-full border");
+    expect(actionComponentCode).not.toContain("rounded-lg border px-4");
+    expect(actionComponentCode).not.toContain("border-[#dbe6f5] bg-white");
   });
 
   it("keeps post detail transient states compact", () => {

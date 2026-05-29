@@ -37,14 +37,16 @@ describe("app shell header classes", () => {
   it("keeps mobile quick links compact while preserving touch targets", () => {
     expect(APP_SHELL_MOBILE_QUICK_LINK_CLASS_NAME).toContain("text-[11px]");
     expect(APP_SHELL_MOBILE_QUICK_LINK_CLASS_NAME).toContain("min-h-9");
-    expect(APP_SHELL_MOBILE_QUICK_LINK_CLASS_NAME).toContain("rounded-md");
+    expect(APP_SHELL_MOBILE_QUICK_LINK_CLASS_NAME).not.toContain("rounded-md");
+    expect(APP_SHELL_MOBILE_QUICK_LINK_CLASS_NAME).not.toContain("border");
     expect(APP_SHELL_MOBILE_QUICK_LINK_CLASS_NAME).toContain("focus-visible:ring-2");
   });
 
   it("uses shared desktop link sizing and softer mobile panels for header navigation", () => {
-    expect(APP_SHELL_NAV_LINK_CLASS_NAME).toContain("rounded-md");
-    expect(APP_SHELL_NAV_LINK_CLASS_NAME).toContain("px-3");
-    expect(getAppShellNavLinkClassName(true)).toContain("shadow-[inset_0_-2px_0_#3567b5]");
+    expect(APP_SHELL_NAV_LINK_CLASS_NAME).not.toContain("rounded-md");
+    expect(APP_SHELL_NAV_LINK_CLASS_NAME).not.toContain("hover:bg");
+    expect(getAppShellNavLinkClassName(true)).not.toContain("shadow-[inset_0_-2px_0_#3567b5]");
+    expect(getAppShellNavLinkClassName(true)).not.toContain("border-[#b8d1f2]");
     expect(APP_SHELL_DESKTOP_NAV_CLUSTER_CLASS_NAME).toContain("gap-1.5");
     expect(APP_SHELL_DESKTOP_SEARCH_INPUT_CLASS_NAME).toContain("rounded-md");
     expect(APP_SHELL_DESKTOP_SEARCH_INPUT_CLASS_NAME).toContain("h-9");
@@ -53,11 +55,12 @@ describe("app shell header classes", () => {
 
   it("uses compact mobile disclosure controls instead of tall card summaries", () => {
     expect(APP_SHELL_MOBILE_DISCLOSURE_ROW_CLASS_NAME).toContain("flex-wrap");
-    expect(APP_SHELL_MOBILE_DISCLOSURE_TRIGGER_CLASS_NAME).toContain("rounded-md");
+    expect(APP_SHELL_MOBILE_DISCLOSURE_TRIGGER_CLASS_NAME).not.toContain("rounded-md");
+    expect(APP_SHELL_MOBILE_DISCLOSURE_TRIGGER_CLASS_NAME).not.toContain("border");
     expect(APP_SHELL_MOBILE_DISCLOSURE_TRIGGER_CLASS_NAME).toContain("min-h-9");
     expect(APP_SHELL_MOBILE_DISCLOSURE_TRIGGER_CLASS_NAME).toContain("focus-visible:ring-2");
-    expect(getAppShellMobileDisclosureTriggerClassName(true)).toContain("shadow-[inset_0_-2px_0_#3567b5]");
-    expect(getAppShellMobileQuickLinkClassName(true)).toContain("border-[#b8d1f2]");
+    expect(getAppShellMobileDisclosureTriggerClassName(true)).not.toContain("shadow-[inset_0_-2px_0_#3567b5]");
+    expect(getAppShellMobileQuickLinkClassName(true)).not.toContain("border-[#b8d1f2]");
   });
 
   it("maps app routes to header navigation sections", () => {

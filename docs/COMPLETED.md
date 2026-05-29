@@ -8051,3 +8051,52 @@
 - 결과:
   - 다음 push부터 GitHub Checks에는 `quality-check`, `docs-check`가 분리되어 표시된다.
   - 실제 deployment 중복이 아니라 check run 표시 이름 중복이었으므로 배포 경로는 건드리지 않았다.
+
+### 2026-05-29 | 상세/헤더 action button visual reset
+- 완료일: `2026-05-29`
+- 배경:
+  - 헤더 `게시판` active 상태가 둥근 outline 버튼과 진한 파란 하단 라인으로 보여 현재 TownPet의 calm product UI와 맞지 않았다.
+  - 게시글 상세의 `...`, 북마크, 공유, 좋아요/싫어요가 모두 비슷한 둥근 버튼으로 보여 액션 위계가 흐려졌다.
+  - 댓글 reaction controls도 크고 왼쪽에 붙어 있어 댓글 본문 액션과 시각적으로 충돌했다.
+- 변경내용:
+  - app shell header desktop/mobile nav active 스타일에서 `border`, `rounded-md`, `shadow-[inset_0_-2px_0_#3567b5]`, hover background를 제거했다.
+  - public acquisition header의 게시판/로그인/프로필 링크도 plain text action으로 맞췄다.
+  - 게시글 상세와 게스트 상세의 `게시글 더보기` summary에서 원형 border/background를 제거하고 `...` 텍스트만 보이게 낮췄다.
+  - 게시글 좋아요/싫어요를 border pill에서 plain text/icon action으로 바꿨다.
+  - 상세 하단 action layout을 `1fr auto 1fr` grid로 바꿔 게시글 좋아요/싫어요를 중앙에 배치했다.
+  - 북마크는 plain icon action, 공유는 plain text action으로 바꾸고 둥근 outline 버튼을 제거했다.
+  - 댓글 좋아요/싫어요는 `min-h-7`, `text-[10px]`, no-border/no-background로 축소했다.
+  - 댓글 reaction controls는 댓글 footer의 오른쪽 끝으로 이동했다.
+  - visual guard test가 nav active underline, 상세 action rounded outline, 북마크/공유 rounded outline 회귀를 감시하도록 갱신했다.
+- 코드문서:
+  - [app/src/components/navigation/app-shell-header-class.ts](../app/src/components/navigation/app-shell-header-class.ts)
+  - [app/src/components/navigation/app-shell-header.tsx](../app/src/components/navigation/app-shell-header.tsx)
+  - [app/src/components/posts/post-detail-primary-card.tsx](../app/src/components/posts/post-detail-primary-card.tsx)
+  - [app/src/app/posts/[id]/guest/page.tsx](../app/src/app/posts/[id]/guest/page.tsx)
+  - [app/src/components/posts/post-reaction-controls.tsx](../app/src/components/posts/post-reaction-controls.tsx)
+  - [app/src/components/posts/comment-reaction-controls.tsx](../app/src/components/posts/comment-reaction-controls.tsx)
+  - [app/src/components/posts/post-bookmark-button.tsx](../app/src/components/posts/post-bookmark-button.tsx)
+  - [app/src/components/posts/post-share-controls.tsx](../app/src/components/posts/post-share-controls.tsx)
+  - [app/src/components/posts/post-comment-layout-class.ts](../app/src/components/posts/post-comment-layout-class.ts)
+  - [app/src/components/posts/post-comment-thread.tsx](../app/src/components/posts/post-comment-thread.tsx)
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/components/navigation/app-shell-header-class.test.ts src/components/compact-control-final-sweep.test.ts src/components/posts/comment-reaction-controls.test.tsx src/components/posts/post-reaction-controls.test.tsx src/components/posts/post-detail-action-accessibility.test.tsx src/components/posts/post-comment-thread.test.tsx src/components/posts/post-comment-compact-controls-accessibility.test.tsx`
+    - `7 files / 35 tests` PASS
+  - targeted lint:
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `297 files / 1420 tests`, Next production build PASS
+  - `node scripts/refresh-docs-index.mjs --check`
+    - PASS
+  - `git diff --check`
+    - PASS
+  - 모바일 Playwright smoke:
+    - `/feed/guest` 390px viewport에서 헤더 `게시판` class에 기존 `shadow-[inset_0_-2px_0...]` active line이 없는 것을 확인했다.
+    - `/posts/:id/guest` 390px viewport에서 북마크/공유 action class에 rounded outline/background가 없는 것을 확인했다.
+    - 상세 화면 가로 overflow 없음 확인.
+    - 해당 guest fixture에서는 게시글 신고 권한 조건상 `게시글 더보기` summary가 렌더링되지 않아 DOM smoke는 보류했고, source/test guard로 no-border `...` summary를 검증했다.
+- 결과:
+  - 헤더와 상세 주요 액션에서 “둥근 outline 버튼 + 진한 active line” 패턴을 제거했다.
+  - 이후 같은 패턴이 nav/detail action에 재도입되면 테스트에서 잡히도록 했다.

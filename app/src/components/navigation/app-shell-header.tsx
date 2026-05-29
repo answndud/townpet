@@ -205,14 +205,14 @@ export function AppShellHeader({ communities: initialCommunities = [] }: Partial
           <nav className="flex items-center gap-1.5" aria-label="공개 안내 페이지 주요 이동">
             <Link
               href="/feed/guest"
-              className="inline-flex min-h-9 items-center rounded-md px-2.5 text-xs font-semibold text-[#315484] transition hover:bg-[#dcecff] hover:text-[#1f4f8f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
+              className="inline-flex min-h-9 items-center px-2 text-xs font-semibold text-[#315484] transition hover:text-[#1f4f8f] hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
             >
               게시판
             </Link>
             {viewerShell.isAuthenticated ? (
               <Link
                 href="/profile"
-                className="inline-flex min-h-9 items-center rounded-md border border-[#d7e4f8] bg-white/92 px-2.5 text-xs font-semibold text-[#315484] transition hover:bg-[#eef5ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
+                className="inline-flex min-h-9 items-center px-2 text-xs font-semibold text-[#315484] transition hover:text-[#1f4f8f] hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
               >
                 내 프로필
               </Link>
@@ -220,7 +220,7 @@ export function AppShellHeader({ communities: initialCommunities = [] }: Partial
               <Link
                 href="/login"
                 data-testid="header-login-link-home"
-                className="inline-flex min-h-9 items-center rounded-md border border-[#d7e4f8] bg-white/92 px-2.5 text-xs font-semibold text-[#315484] transition hover:bg-[#eef5ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
+                className="inline-flex min-h-9 items-center px-2 text-xs font-semibold text-[#315484] transition hover:text-[#1f4f8f] hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
               >
                 로그인
               </Link>
