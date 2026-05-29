@@ -63,11 +63,12 @@ describe("FeedInfiniteList", () => {
 
     expect(html.match(/data-testid="feed-post-item"/g)).toHaveLength(2);
     expect(html).toContain(
-      "h-[68px] grid-cols-[minmax(0,1fr)_48px_48px]",
+      "h-[64px] grid-cols-[minmax(0,1fr)_44px_44px]",
     );
-    expect(html).toContain("sm:h-[72px]");
+    expect(html).toContain("sm:h-[68px]");
     expect(html).toContain("invisible aspect-square rounded-lg");
     expect(html).toContain("justify-end self-center");
+    expect(html).toContain("h-[22px]");
     expect(html).toContain("사진 글");
     expect(html).toContain("댓글 4");
   });
@@ -117,7 +118,7 @@ describe("FeedInfiniteList", () => {
     expect(html).toContain("TownPet 운영자 정리");
     expect(html).toContain("확인");
     expect(html).toContain(
-      "h-[68px] grid-cols-[minmax(0,1fr)_48px_48px]",
+      "h-[64px] grid-cols-[minmax(0,1fr)_44px_44px]",
     );
   });
 });

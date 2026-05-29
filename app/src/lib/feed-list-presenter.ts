@@ -1,30 +1,22 @@
-import { formatCount, formatRelativeDate } from "@/lib/post-presenter";
+import { formatKoreanIsoDate } from "@/lib/date-format";
+import { formatCount } from "@/lib/post-presenter";
 
 export function getStableFeedDateLabel(isoDate: string) {
-  const date = new Date(isoDate);
-  if (Number.isNaN(date.getTime())) {
-    return "";
-  }
-  return date.toISOString().slice(0, 10).replace(/-/g, ".");
+  return formatKoreanIsoDate(isoDate);
 }
 
 type BuildFeedMobileStatsLabelParams = {
   createdAt: string;
-  relativeNow: number | null;
   viewCount: number;
   likeCount: number;
 };
 
 export function buildFeedStatsLabel({
   createdAt,
-  relativeNow,
   viewCount,
   likeCount,
 }: BuildFeedMobileStatsLabelParams) {
-  const dateLabel =
-    relativeNow === null
-      ? getStableFeedDateLabel(createdAt)
-      : formatRelativeDate(createdAt, relativeNow);
+  const dateLabel = getStableFeedDateLabel(createdAt);
 
   return [dateLabel, `조회 ${formatCount(viewCount)}`, `좋아요 ${formatCount(likeCount)}`]
     .filter((part) => part.length > 0)

@@ -11,7 +11,6 @@ import {
   useMemo,
   useRef,
   useState,
-  useSyncExternalStore,
 } from "react";
 
 import { FeedPostMetaBadges } from "@/components/posts/feed-post-meta-badges";
@@ -220,7 +219,7 @@ const careStatusLabel: Record<string, string> = {
 };
 
 const FEED_POST_ITEM_CLASS_NAME =
-  "group grid h-[68px] grid-cols-[minmax(0,1fr)_48px_48px] items-center gap-x-2 px-3 py-1.5 transition hover:bg-[#fbfdff] sm:h-[72px] sm:grid-cols-[minmax(0,1fr)_52px_52px] sm:px-4 md:h-[68px] md:grid-cols-[minmax(0,1fr)_56px_52px] md:gap-x-3";
+  "group grid h-[64px] grid-cols-[minmax(0,1fr)_44px_44px] items-center gap-x-2 px-3 py-1 transition hover:bg-[#fbfdff] sm:h-[68px] sm:grid-cols-[minmax(0,1fr)_48px_48px] sm:px-4 md:h-[64px] md:grid-cols-[minmax(0,1fr)_52px_48px] md:gap-x-2.5";
 const FEED_POST_THUMBNAIL_PLACEHOLDER_CLASS_NAME =
   "invisible aspect-square rounded-lg";
 
@@ -228,56 +227,6 @@ type StoredReadPost = {
   id: string;
   ts: number;
 };
-
-let relativeNowSnapshot: number | null = null;
-let relativeNowPrimed = false;
-let relativeNowInterval: number | null = null;
-const relativeNowListeners = new Set<() => void>();
-
-function emitRelativeNow(next: number) {
-  relativeNowSnapshot = next;
-}
-
-function refreshRelativeNow() {
-  emitRelativeNow(Date.now());
-  for (const listener of relativeNowListeners) {
-    listener();
-  }
-}
-
-function subscribeRelativeNow(onStoreChange: () => void) {
-  if (typeof window === "undefined") {
-    return () => {};
-  }
-
-  relativeNowListeners.add(onStoreChange);
-
-  if (!relativeNowPrimed) {
-    relativeNowPrimed = true;
-    queueMicrotask(refreshRelativeNow);
-  }
-
-  if (relativeNowInterval === null) {
-    relativeNowInterval = window.setInterval(refreshRelativeNow, 60_000);
-  }
-
-  const handlePageShow = () => {
-    refreshRelativeNow();
-  };
-
-  window.addEventListener("pageshow", handlePageShow);
-  window.addEventListener("focus", refreshRelativeNow);
-
-  return () => {
-    relativeNowListeners.delete(onStoreChange);
-    window.removeEventListener("pageshow", handlePageShow);
-    window.removeEventListener("focus", refreshRelativeNow);
-    if (relativeNowListeners.size === 0 && relativeNowInterval !== null) {
-      window.clearInterval(relativeNowInterval);
-      relativeNowInterval = null;
-    }
-  };
-}
 
 function formatListDate(value: string | Date | null | undefined) {
   if (!value) {
@@ -345,14 +294,8 @@ const FeedStatsLabel = memo(function FeedStatsLabel({
   viewCount,
   likeCount,
 }: FeedStatsLabelProps) {
-  const relativeNow = useSyncExternalStore(
-    subscribeRelativeNow,
-    () => relativeNowSnapshot,
-    () => null,
-  );
   const statsLabel = buildFeedStatsLabel({
     createdAt,
-    relativeNow,
     viewCount,
     likeCount,
   });
@@ -385,7 +328,7 @@ const FeedPostThumbnail = memo(function FeedPostThumbnail({
         src={imageUrl}
         alt={title}
         fill
-        sizes="52px"
+        sizes="48px"
         className="object-cover transition duration-300 group-hover/thumb:scale-[1.03]"
       />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-5 bg-[linear-gradient(180deg,transparent_0%,rgba(16,40,74,0.36)_100%)]" />
@@ -756,7 +699,7 @@ export function FeedInfiniteList({
                   post.status === "HIDDEN" ? "bg-[#fff7f7]" : ""
                 }`}
                 topContent={
-                  <div className="mb-0.5 flex min-w-0 items-center gap-1 overflow-hidden">
+                  <div className="flex min-w-0 items-center gap-1 overflow-hidden">
                     <FeedPostMetaBadges
                       label={meta.label}
                       chipClass={meta.chipClass}
@@ -777,7 +720,7 @@ export function FeedInfiniteList({
                     {post.title}
                   </span>
                 }
-                titleLinkClassName={`block min-w-0 truncate text-[13px] font-semibold leading-[1.25] transition sm:text-[13px] ${
+                titleLinkClassName={`mt-0.5 block min-w-0 truncate text-[13px] font-semibold leading-[1.22] transition sm:text-[13px] ${
                   readPostIds.has(post.id)
                     ? "text-[#8c9db8] hover:text-[#7589a8]"
                     : "text-[#163764] hover:text-[#2f5da4]"
@@ -789,7 +732,7 @@ export function FeedInfiniteList({
                   });
                 }}
                 bottomContent={
-                  <div className="mt-0.5 flex min-w-0 items-center gap-x-1.5 overflow-hidden text-[11px] leading-4 text-[#5f789d]">
+                  <div className="mt-0.5 flex min-w-0 items-center gap-x-1.5 overflow-hidden text-[11px] leading-[1.35] text-[#5f789d]">
                     {marketSummary || careSummary || adoptionSummary || volunteerSummary ? (
                       <>
                         <span className="min-w-0 shrink truncate text-[#5d779e]">
@@ -798,7 +741,7 @@ export function FeedInfiniteList({
                         <span className="shrink-0 text-[#bfd0e4]">·</span>
                       </>
                     ) : null}
-                    <span className="min-w-0 shrink truncate font-semibold text-[#1f3f71]">
+                    <span className="min-w-0 shrink truncate font-medium text-[#1f3f71]">
                       {authorNode}
                     </span>
                     {post.isOperatorContent ? (
@@ -812,8 +755,8 @@ export function FeedInfiniteList({
                         </span>
                       </>
                     ) : null}
-                    <span className="shrink-0 text-[#bfd0e4]">·</span>
-                    <span className="min-w-0 shrink-0">
+                    <span className="shrink-0 text-[#c8d6e8]">·</span>
+                    <span className="min-w-0 shrink-0 text-[#58739a]">
                       <FeedStatsLabel
                         createdAt={post.createdAt}
                         viewCount={post.viewCount}
@@ -825,11 +768,11 @@ export function FeedInfiniteList({
                 sideClassName="flex min-w-0 items-center justify-end self-center"
                 sideContent={
                   post.commentCount > 0 ? (
-                    <span className="inline-flex h-[24px] max-w-full items-center rounded-full bg-[#edf5ff] px-2 text-[11px] font-semibold leading-none text-[#2f5da4]">
+                    <span className="inline-flex h-[22px] max-w-full items-center rounded-full border border-[#dbe6f5] bg-[#f6f9ff] px-1.5 text-[10px] font-semibold leading-none text-[#315b9a]">
                       댓글 {post.commentCount}
                     </span>
                   ) : (
-                    <span aria-hidden="true" className="invisible h-[24px] w-[44px]" />
+                    <span aria-hidden="true" className="invisible h-[22px] w-[40px]" />
                   )
                 }
                 metaClassName="min-w-0 self-center"
