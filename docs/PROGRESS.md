@@ -3,6 +3,7 @@
 ## 현재 상태
 
 - 현재 active 구현 항목 없음.
+- `2026-05-29. 운영자 도구 button hierarchy 정리`를 완료했다. `PostModerationControls`의 summary를 내부 bordered card에서 divider row로 낮추고, 게시글 숨김은 danger text action, 숨김 해제는 compact primary로 분리했다. legacy `tp-btn-*` 재도입 방지 테스트와 전체 `quality:check`를 확인했다.
 - `2026-05-29. 피드 오류 화면 recovery action 계층 정리`를 완료했다. `app/feed/error.tsx`의 `다시 시도`는 40px compact primary로 유지하고 `게스트 피드`는 text action으로 낮췄으며, 30px `tp-btn-*` 패턴 재도입을 source guard test로 막았다. targeted tests, lint, typecheck, 전체 `quality:check`를 확인했다.
 - `2026-05-29. 헤더 관심 동물 메뉴 action 버튼 계층 정리`를 완료했다. `FeedHoverMenu`의 관심 동물 전체 선택/해제는 40px text action으로 낮추고, 저장은 explicit compact primary로 맞췄으며 desktop/mobile 모두 동일 상수를 쓰게 했다. targeted tests, lint, typecheck, 전체 `quality:check`를 확인했다.
 - `2026-05-29. 피드 pagination 30px control 정리`를 완료했다. `FeedPagination`의 30px 고정 버튼을 40px touch target으로 올리고, 이전/다음/비활성 page link는 text action에 가깝게 낮췄으며 현재 page만 primary state로 남겼다. targeted tests, lint, typecheck, 전체 `quality:check`를 확인했다.
