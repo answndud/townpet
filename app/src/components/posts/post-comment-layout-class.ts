@@ -8,13 +8,13 @@ export const POST_COMMENT_THREAD_META_ROW_CLASS_NAME =
   "flex flex-wrap items-center gap-x-2 gap-y-0.5";
 
 export const POST_COMMENT_THREAD_FOOTER_CLASS_NAME =
-  "mt-2 flex flex-wrap items-center justify-start gap-x-2 gap-y-1.5";
+  "mt-1.5 flex flex-wrap items-center justify-between gap-x-2 gap-y-1";
 
 export const POST_COMMENT_THREAD_ACTIONS_CLASS_NAME =
   "flex flex-wrap items-center gap-1";
 
 export const POST_COMMENT_THREAD_MENU_BUTTON_CLASS_NAME =
-  "tp-text-muted inline-flex min-h-10 min-w-10 cursor-pointer list-none items-center justify-center rounded-md text-[15px] leading-none transition hover:bg-[#f1f5fb] hover:text-[#2f5da4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 [&::-webkit-details-marker]:hidden";
+  "tp-text-muted inline-flex min-h-8 min-w-8 cursor-pointer list-none items-center justify-center text-[16px] leading-none transition hover:text-[#2f5da4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 [&::-webkit-details-marker]:hidden";
 
 export const POST_COMMENT_THREAD_MENU_PANEL_CLASS_NAME =
   "tp-border-muted absolute right-0 z-20 mt-1.5 min-w-28 rounded-md border bg-white p-1 shadow-[0_8px_18px_rgba(16,40,74,0.08)]";

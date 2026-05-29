@@ -794,7 +794,7 @@ export function PostCommentThread({
                     canReact={canReactToComment}
                     loginHref={loginHref}
                     compact
-                    className="ml-0 justify-start"
+                    className="ml-auto justify-end"
                     loginHintAlign="end"
                   />
                 ) : null}

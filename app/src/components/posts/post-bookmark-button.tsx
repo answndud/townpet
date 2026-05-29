@@ -50,8 +50,8 @@ export function PostBookmarkButton({
   }, [loginIntent]);
 
   const buttonClass = compact
-    ? "inline-flex min-h-10 min-w-10 items-center justify-center rounded-full border px-2 text-xs font-semibold leading-none transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-    : "inline-flex min-h-10 min-w-[72px] items-center justify-center rounded-lg border px-4 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60";
+    ? "inline-flex min-h-8 min-w-8 items-center justify-center px-1 text-xs font-semibold leading-none transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+    : "inline-flex min-h-9 items-center justify-center px-2 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60";
   const buttonLabel = bookmarked ? "북마크 해제" : "북마크";
 
   const handleToggle = () => {
@@ -96,8 +96,8 @@ export function PostBookmarkButton({
         title={buttonLabel}
         className={`${buttonClass} ${
           bookmarked
-            ? "border-[#3567b5] bg-[#f5f9ff] text-[#2d5fab]"
-            : "border-[#dbe6f5] bg-white text-[#54739e] hover:bg-[#f5f9ff] hover:text-[#315b9a]"
+            ? "text-[#1f4f8f]"
+            : "text-[#54739e] hover:text-[#1f4f8f]"
         }`}
       >
         {compact ? (

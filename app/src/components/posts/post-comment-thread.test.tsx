@@ -163,7 +163,7 @@ describe("PostCommentThread", () => {
     expect(html).toContain(POST_COMMENT_LATEST_HEADER_CLASS_NAME);
     expect(html).toContain(POST_COMMENT_ROOT_LIST_CLASS_NAME);
     expect(html).toContain(POST_COMMENT_THREAD_FOOTER_CLASS_NAME);
-    expect(html).toContain("tp-text-muted inline-flex min-h-10 min-w-10 cursor-pointer list-none");
+    expect(html).toContain("tp-text-muted inline-flex min-h-8 min-w-8 cursor-pointer list-none");
     expect(html).toContain(POST_COMMENT_THREAD_MENU_PANEL_CLASS_NAME);
     expect(html).toContain("댓글 작업 메뉴");
     expect(html).toContain("신고");

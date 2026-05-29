@@ -32,7 +32,8 @@ describe("post comment compact controls accessibility", () => {
     );
     const code = `${threadCode}\n${layoutCode}`;
 
-    expect(code).toContain("min-h-10 min-w-10");
+    expect(code).toContain("min-h-8 min-w-8");
+    expect(code).not.toContain("min-h-10 min-w-10");
     expect(code).toContain("flex min-h-10 w-full items-center");
     expect(code).toContain("POST_COMMENT_THREAD_MENU_BUTTON_CLASS_NAME");
     expect(code).toContain("POST_COMMENT_THREAD_MENU_PANEL_CLASS_NAME");

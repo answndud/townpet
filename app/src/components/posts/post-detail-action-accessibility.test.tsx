@@ -83,14 +83,18 @@ describe("post detail action accessibility", () => {
     );
 
     expect(html).toContain("북마크");
-    expect(html).toContain("min-h-10");
+    expect(html).toContain("min-h-8");
+    expect(html).not.toContain("rounded-full");
+    expect(html).not.toContain("border-[#dbe6f5]");
   });
 
   it("keeps share control status announcement visible to assistive tech", () => {
     const html = renderToStaticMarkup(<PostShareControls url="https://townpet.example/posts/post-1" />);
 
     expect(html).toContain("공유");
-    expect(html).toContain("min-h-10");
+    expect(html).toContain("min-h-9");
+    expect(html).not.toContain("tp-btn-soft");
+    expect(html).not.toContain("rounded-lg");
   });
 
   it("renders lost-found share tools with mobile-safe actions", () => {

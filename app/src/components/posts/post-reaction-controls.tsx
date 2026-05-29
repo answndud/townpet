@@ -203,8 +203,8 @@ export function PostReactionControls({
   }, [effectiveCanReact, hasInteracted, postId, reactionLoaded]);
 
   const buttonClass = compact
-    ? "inline-flex min-h-10 items-center gap-1.5 rounded-full border px-2.5 text-[12px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-    : "inline-flex min-h-10 items-center gap-1.5 rounded-lg border px-3 text-[13px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60";
+    ? "inline-flex min-h-9 items-center gap-1.5 px-2 text-[12px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+    : "inline-flex min-h-10 items-center gap-1.5 px-2.5 text-[13px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60";
   const rootAlignmentClass =
     align === "start" ? "justify-start" : align === "end" ? "justify-end" : "justify-center";
 
@@ -266,7 +266,7 @@ export function PostReactionControls({
   };
 
   return (
-    <div className={`flex flex-wrap items-center gap-2 ${rootAlignmentClass}`}>
+    <div className={`flex flex-wrap items-center gap-3 ${rootAlignmentClass}`}>
       <div className="relative">
         <button
           type="button"
@@ -277,8 +277,8 @@ export function PostReactionControls({
           title={`좋아요 ${likes.toLocaleString()}개`}
           className={`${buttonClass} ${
             effectiveReaction === REACTION_TYPE.LIKE
-              ? "border-[#3567b5] bg-[#f5f9ff] text-[#2d5fab]"
-              : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
+              ? "text-[#1f4f8f]"
+              : "text-[#54739e] hover:text-[#1f4f8f]"
           }`}
         >
           <svg
@@ -315,8 +315,8 @@ export function PostReactionControls({
           title={`싫어요 ${dislikes.toLocaleString()}개`}
           className={`${buttonClass} ${
             effectiveReaction === REACTION_TYPE.DISLIKE
-              ? "border-[#d94b60] bg-[#fff7f8] text-[#d83b52]"
-              : "border-[#cbdcf5] bg-white text-[#315b9a] hover:bg-[#f5f9ff]"
+              ? "text-[#9d4252]"
+              : "text-[#54739e] hover:text-[#1f4f8f]"
           }`}
         >
           <svg

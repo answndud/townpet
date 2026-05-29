@@ -40,9 +40,10 @@ describe("CommentReactionControls", () => {
     expect(html).toContain('aria-label="싫어요 59"');
     expect(html).not.toContain("추천 8");
     expect(html).not.toContain("비추천 59");
-    expect(html).toContain("min-w-[56px]");
-    expect(html).toContain("rounded-full");
-    expect(html).toContain("bg-white");
+    expect(html).toContain("min-h-7");
+    expect(html).not.toContain("rounded-full");
+    expect(html).not.toContain("border");
+    expect(html).not.toContain("bg-white");
     expect(html).toContain("focus-visible:ring-2");
     expect((html.match(/<svg/g) ?? []).length).toBe(2);
   });

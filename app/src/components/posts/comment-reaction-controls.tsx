@@ -149,8 +149,8 @@ export function CommentReactionControls({
   );
 
   const buttonClass = compact
-    ? "inline-flex min-h-10 min-w-[56px] items-center justify-center gap-1 rounded-full border border-[#dbe5f4] bg-white px-2 text-[11px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-    : "inline-flex min-h-10 min-w-[76px] items-center justify-center gap-1.5 rounded-full border border-[#dbe5f4] bg-white px-2.5 text-[11px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60";
+    ? "inline-flex min-h-7 items-center justify-center gap-0.5 px-1 text-[10px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+    : "inline-flex min-h-8 items-center justify-center gap-1 px-1.5 text-[11px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60";
   const effectiveCanReact = canReact && !authBlocked;
   const promptAlign = loginHintAlign === "end" ? "end" : loginHintAlign === "start" ? "start" : "center";
   const loginPromptMessage = COMMENT_REACTION_LOGIN_REQUIRED_MESSAGE;
@@ -209,8 +209,8 @@ export function CommentReactionControls({
           aria-label={`좋아요 ${likes.toLocaleString()}`}
           className={`${buttonClass} ${
             reaction === REACTION_TYPE.LIKE
-              ? "border-[#bfd3f0] bg-[#f4f8ff] text-[#1f4f94]"
-              : "text-[#4f6f9a] hover:border-[#bfd3f0] hover:bg-[#f7fbff] hover:text-[#315484]"
+              ? "text-[#1f4f94]"
+              : "text-[#7087a8] hover:text-[#315484]"
           }`}
         >
           {compact ? (
@@ -218,7 +218,7 @@ export function CommentReactionControls({
               <svg
                 aria-hidden="true"
                 viewBox="0 0 20 20"
-                className="h-3.5 w-3.5"
+                className="h-3 w-3"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="1.8"
@@ -251,10 +251,10 @@ export function CommentReactionControls({
             disabled={isPending}
             aria-disabled={!effectiveCanReact || isPending}
             aria-label={`싫어요 ${dislikes.toLocaleString()}`}
-          className={`${buttonClass} ${
+            className={`${buttonClass} ${
             reaction === REACTION_TYPE.DISLIKE
-              ? "border-[#d6dff0] bg-[#f6f9ff] text-[#4a5f83]"
-              : "text-[#4f6f9a] hover:border-[#bfd3f0] hover:bg-[#f7fbff] hover:text-[#315484]"
+              ? "text-[#4a5f83]"
+              : "text-[#7087a8] hover:text-[#315484]"
           }`}
           >
             {compact ? (
@@ -262,7 +262,7 @@ export function CommentReactionControls({
                 <svg
                   aria-hidden="true"
                   viewBox="0 0 20 20"
-                  className="h-3.5 w-3.5"
+                  className="h-3 w-3"
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="1.8"
