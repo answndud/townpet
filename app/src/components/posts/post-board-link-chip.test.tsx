@@ -28,10 +28,10 @@ describe("PostBoardLinkChip", () => {
     );
 
     expect(html).toContain("자유게시판");
-    expect(html).toContain("이동");
     expect(html).toContain("rounded-md");
     expect(html).toContain("min-h-7");
     expect(html).toContain("hover:underline-offset-4");
     expect(html).not.toContain("rounded-full");
+    expect(html).not.toContain("이동");
   });
 });

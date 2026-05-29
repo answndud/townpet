@@ -3,7 +3,7 @@
 ## 현재 상태
 
 - 현재 active 구현 항목 없음.
-- `2026-05-29. 게시판 chip과 북마크 로그인 안내 정렬 polish`를 완료했다. 상세 상단 게시판 이동 chip을 pill에서 낮은 radius의 compact link로 바꾸고, 비회원 북마크 로그인 안내 문구와 링크 baseline이 어긋나던 문제를 flex row로 정렬했다. targeted tests, lint, typecheck, 전체 `quality:check`를 확인했다.
+- `2026-05-29. 게시판 chip과 북마크 로그인 안내 정렬 polish`를 완료했다. 상세 상단 게시판 chip을 pill에서 낮은 radius의 compact link로 바꾸고, 비회원 북마크 로그인 안내 문구와 링크 baseline이 어긋나던 문제를 flex row로 정렬했다. targeted tests, lint, typecheck, 전체 `quality:check`를 확인했다.
 - `2026-05-29. 게시글 상세 feedback 후속 polish`를 완료했다. 상세 본문 이미지를 왼쪽 정렬로 고정하고, 좋아요/싫어요를 다시 중앙 정렬했으며, 반응/북마크/알림/검색어 floating prompt를 공용 outside-click/focus/Escape dismissible layer로 맞췄다. 제목 타이포그래피를 낮추고 빈 댓글 문구도 제거했다. targeted tests, lint, typecheck, 모바일 Playwright smoke, 전체 `quality:check`를 확인했다.
 - `2026-05-29. 게시글 상세 feedback P0/P1 1-8 일괄 반영`을 완료했다. 작성자 표시, 날짜 포맷, 카테고리 badge, 본문 이미지 spacing, 비회원 글 수정/삭제 노출, 댓글 textarea, 헤더 active 상태를 정리하고 모바일 상세 smoke와 전체 `quality:check`를 확인했다.
 - `2026-05-29. 남은 user-facing auxiliary/error action 일괄 정리`를 완료했다. 글쓰기/동네 gate/app footer/상세 fallback/전역 오류/상세 오류/관리자 오류/404 뒤로가기의 legacy `tp-btn-*` 보조 button shape를 text action 또는 compact primary로 일괄 정리했다. targeted tests, lint, typecheck, 전체 `quality:check`를 확인했다.
@@ -17,7 +17,7 @@
 - `2026-05-29. 메뉴/팝오버 바깥 클릭 닫힘 정리`를 완료했다. 상세 `...` 신고 메뉴, guest 상세 신고 메뉴, 댓글 작업 메뉴, 비회원 관리 모바일 disclosure를 `DismissibleDetails`로 묶어 바깥 pointer/focus 이동과 Escape에서 닫히게 했고, feed header board/pet 메뉴도 동일하게 바깥 클릭/포커스/Escape 닫힘을 적용했다. targeted tests, lint, typecheck, 전체 `quality:check`를 확인했다.
 - `2026-05-29. 개인 목록 검색/페이지 action 버튼 계층 정리`를 완료했다. `/bookmarks`, `/my-posts`의 검색 submit은 compact primary로 유지하고 초기화/이전/다음 페이지는 text action으로 낮췄으며 `tp-btn-*` 의존 재도입을 source guard test로 막았다. targeted tests, lint, typecheck, 전체 `quality:check`를 확인했다.
 - `2026-05-29. 북마크 로그인 힌트 popover 폭 보정`을 완료했다. compact 북마크 버튼에서 비회원 로그인 안내가 버튼 폭으로 shrink되어 세로 표시되던 문제를 막기 위해 명시 width/min-width와 compact right alignment를 적용했고, 유사 floating prompt 폭 패턴을 점검했다. targeted tests, lint, typecheck, 전체 `quality:check`를 확인했다.
-- `2026-05-29. 피드 inline action 버튼 계층 정리`를 완료했다. 게스트 피드 `글쓰기`를 compact primary로 맞추고, 게스트/회원 피드 `목록 바로가기`는 text action으로 낮췄으며 30px legacy button 패턴을 제거했다. targeted tests, lint, typecheck, 전체 `quality:check`를 확인했다.
+- `2026-05-29. 피드 inline action 버튼 계층 정리`를 완료했다. 게스트 피드 `글쓰기`를 compact primary로 맞추고, 게스트/회원 피드의 목록 anchor는 text action으로 낮췄으며 30px legacy button 패턴을 제거했다. targeted tests, lint, typecheck, 전체 `quality:check`를 확인했다.
 - `2026-05-29. 분실동물 공유 패널 action 버튼 계층 정리`를 완료했다. 링크 복사/공유 이미지 열기는 text action으로 낮추고, 카카오톡 문구 복사는 compact primary로 유지했으며 `tp-btn-*` 의존을 제거했다. targeted tests, lint, typecheck, 전체 `quality:check`를 확인했다.
 - `2026-05-29. 피드 검색 action 버튼 계층 정리`를 완료했다. 상단/하단 피드 검색의 `검색`은 compact primary로 유지하고 `초기화`는 text action으로 낮췄으며 `tp-btn-*` 의존을 제거했다. targeted tests, lint, typecheck, 전체 `quality:check`를 확인했다.
 - `2026-05-29. 게시글 rich editor toolbar 버튼 계층 정리`를 완료했다. 에디터 toolbar 공통 버튼에서 `tp-btn-*`, `h-[28px]/h-[30px]`, `rounded-lg` 패턴을 제거하고 40px compact control로 맞췄다. targeted tests, lint, typecheck, 전체 `quality:check`를 확인했다.

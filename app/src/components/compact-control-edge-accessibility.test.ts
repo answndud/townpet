@@ -11,7 +11,9 @@ describe("remaining compact user control accessibility", () => {
     const code = readSource("src/components/notifications/notification-center.tsx");
 
     expect(code).toContain("notification-move");
+    expect(code).toContain("확인");
     expect(code).toContain("inline-flex min-h-10");
+    expect(code).not.toContain("                      이동");
     expect(code).not.toContain("min-h-9 px-3 py-1.5");
   });
 
