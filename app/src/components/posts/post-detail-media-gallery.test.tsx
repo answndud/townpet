@@ -41,8 +41,8 @@ describe("PostDetailMediaGallery", () => {
 
     expect(html).toContain("첨부 이미지");
     expect(html).toContain("눌러서 크게 보고 원본은 새 탭으로 열 수 있습니다.");
-    expect(html).toContain('aria-label="moka-0.jpg 크게 보기"');
-    expect(html).toContain("확대 보기");
+    expect(html).toContain('aria-label="moka-0.jpg 확대"');
+    expect(html).toContain("확대");
     expect(html).toContain("mt-2.5 grid gap-2");
     expect(html).toContain("rounded-lg border bg-white");
     expect(html).toContain("border-t border-[#edf3fb] px-2.5 py-1.5");

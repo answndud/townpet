@@ -171,7 +171,7 @@ export default async function NeighborhoodMapCampaignPage({
                 targetId: "hero_feed",
               }}
             >
-              공개 피드 보기
+              공개 피드
             </AcquisitionTrackedLink>
           </div>
         </div>

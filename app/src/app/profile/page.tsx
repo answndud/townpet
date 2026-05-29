@@ -200,7 +200,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
                 href={primaryTownHref}
                 className="tp-btn-soft tp-text-accent inline-flex min-h-10 items-center px-3 text-xs"
               >
-                내 동네 허브 보기
+                내 동네 허브
               </Link>
             ) : null}
           </div>
@@ -267,7 +267,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
                           href={`/lounges/breeds/${segment.breedCode}`}
                           className="tp-btn-soft tp-text-link mt-3 inline-flex min-h-10 items-center px-3 text-xs"
                         >
-                          품종 라운지 보기
+                          품종 라운지
                         </Link>
                       ) : null}
                     </article>

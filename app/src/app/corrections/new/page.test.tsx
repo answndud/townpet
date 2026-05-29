@@ -59,9 +59,9 @@ describe("CorrectionRequestPage", () => {
     expect(html).toContain("TownPet 운영자 정리");
     expect(html).toContain("동네 병원 운영자 정리");
     expect(html).toContain('value="POST" selected=""');
-    expect(html).toContain("연결 글 다시 보기");
+    expect(html).toContain("연결 글");
     expect(html).toContain("첫 글 작성하기");
-    expect(html).toContain("관련 글 더 보기");
+    expect(html).toContain("관련 글");
   });
 
   it("is noindex and canonical to correction request URL", () => {

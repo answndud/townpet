@@ -199,7 +199,7 @@ export default async function ModerationLogsPage({ searchParams }: ModerationLog
                         </div>
                         {log.reportId ? (
                           <Link href={`/admin/reports/${log.reportId}`} className="text-[11px] text-[#3567b5]">
-                            신고 보기
+                            신고
                           </Link>
                         ) : null}
                       </div>
@@ -322,7 +322,7 @@ export default async function ModerationLogsPage({ searchParams }: ModerationLog
               title="모더레이션 로그가 없습니다"
               description="필터 조건을 바꾸거나 다른 기간에서 다시 확인해 주세요."
               actionHref="/admin/moderation-logs"
-              actionLabel="전체 로그 보기"
+              actionLabel="전체 로그"
             />
           )}
         </section>

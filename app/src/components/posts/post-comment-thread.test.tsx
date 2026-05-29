@@ -191,9 +191,7 @@ describe("PostCommentThread", () => {
     expect(html).toContain("space-y-1.5 pl-2.5");
     expect(html).toContain("sm:pl-3");
     expect(html).not.toContain('href="/users/user-best-1"');
-    expect(html).not.toContain("프로필 보기");
     expect(html).not.toContain("뮤트");
-    expect(html).not.toContain("작성 글 보기");
     expect(html).toContain("divide-[#edf3fb]");
     expect(html).not.toContain("TOP 4");
     expect(html.indexOf("베스트 댓글")).toBeLessThan(html.indexOf("최신 댓글"));
@@ -290,7 +288,6 @@ describe("PostCommentThread", () => {
     expect(html).toContain("best-1닉네임");
     expect(html).toContain("latest-root닉네임");
     expect(html).not.toContain('aria-haspopup="menu"');
-    expect(html).not.toContain("프로필 보기");
     expect(html).not.toContain("뮤트");
   });
 

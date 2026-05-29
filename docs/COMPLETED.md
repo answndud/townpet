@@ -8985,3 +8985,32 @@
     - PASS
   - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
     - ESLint, TypeScript, Vitest `299 files / 1433 tests`, Next production build PASS
+
+### 2026-05-30 | user-facing action label suffix 정리
+- 완료일: `2026-05-30`
+- 배경:
+  - 상세 게시판 chip, 피드 목록 anchor처럼 짧은 action 라벨에 `보기`, `바로가기`, `이동` 같은 설명 suffix가 붙으면 화면 밀도와 UI 톤이 촌스러워진다.
+  - 사용자는 `게시판 보기`, `목록 보기`가 아니라 `게시판`, `목록` 같은 단일 명사형 라벨을 요구했다.
+- 변경내용:
+  - 게시판 chip aria label과 피드/목록/상세/운영/프로필/가이드/온보딩/알림/관리자 action label의 `보기` suffix를 제거했다.
+  - `더보기`는 홈 preview link에서 `더 읽기`로 바꾸고, 이미지 gallery의 `확대 보기`는 `확대`로 줄였다.
+  - 비밀번호 표시 토글의 단독 `보기`는 `표시`로 바꿔 `보기` 문자열 재도입을 막았다.
+  - `app/src`에서 ` 보기`, `더보기`, `크게 보기`, `확대 보기`, `게시글 더보기`, 단독 `"보기"` 패턴을 검색해 잔여가 없음을 확인했다.
+- 코드문서:
+  - [app/src/components/posts/post-board-link-chip.tsx](../app/src/components/posts/post-board-link-chip.tsx)
+  - [app/src/app/feed/page.tsx](../app/src/app/feed/page.tsx)
+  - [app/src/components/posts/guest-feed-page-client.tsx](../app/src/components/posts/guest-feed-page-client.tsx)
+  - [app/src/components/posts/feed-control-panel.tsx](../app/src/components/posts/feed-control-panel.tsx)
+  - [app/src/components/posts/post-detail-media-gallery.tsx](../app/src/components/posts/post-detail-media-gallery.tsx)
+  - [app/src/components/home/home-feed-preview.tsx](../app/src/components/home/home-feed-preview.tsx)
+  - [app/src/lib/guide-pages.ts](../app/src/lib/guide-pages.ts)
+  - [app/src/lib/admin-personalization-diagnostics.ts](../app/src/lib/admin-personalization-diagnostics.ts)
+- 검증:
+  - `rg -n ' 보기|더보기|크게 보기|확대 보기|게시글 더보기|"보기"|>보기<' app/src -g '*.{tsx,ts}'`
+    - no matches
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/components/posts/post-board-link-chip.test.tsx src/components/posts/feed-control-panel.test.tsx src/components/posts/post-detail-media-gallery.test.tsx src/components/posts/post-moderation-controls.test.tsx src/components/user/user-action-menu.test.tsx src/components/posts/post-comment-thread.test.tsx src/app/page.test.tsx src/app/corrections/new/page.test.tsx src/components/onboarding/onboarding-form-accessibility.test.tsx src/app/api/feed/guest/route.test.ts 'src/app/posts/[id]/guest/page-layout.test.ts'`
+    - Vitest `11 files / 47 tests` PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app lint`
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+    - PASS

@@ -184,7 +184,7 @@ describe("GET /api/feed/guest", () => {
           primaryLink: "/login?next=%2Ffeed%3Ftype%3DMEETUP",
           primaryLabel: "로그인하기",
           secondaryLink: "/feed",
-          secondaryLabel: "전체 피드 보기",
+          secondaryLabel: "전체 피드",
         },
       },
     });

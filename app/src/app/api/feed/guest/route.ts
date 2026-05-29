@@ -333,7 +333,7 @@ export async function GET(request: NextRequest) {
             primaryLink: `/login?next=${encodeURIComponent(`/feed?type=${type}`)}`,
             primaryLabel: "로그인하기",
             secondaryLink: "/feed",
-            secondaryLabel: "전체 피드 보기",
+            secondaryLabel: "전체 피드",
           },
         },
         {

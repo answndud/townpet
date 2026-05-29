@@ -140,7 +140,7 @@ describe("FeedInfiniteList", () => {
           audienceKey: "default",
           headline: "동네 산책 코스 모음",
           description: "관심 동물 기준으로 추천된 글입니다.",
-          ctaLabel: "자세히 보기",
+          ctaLabel: "자세히",
           ctaHref: "/feed?personalized=1",
           sessionCap: 1,
           dailyCap: 3,

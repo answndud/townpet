@@ -55,7 +55,7 @@ function buildDataDiagnostic(
       detail: `${overview.days}일 동안 personalized feed view가 없습니다. 추천 정책보다 계측, 라우팅, 세그먼트 생성을 먼저 확인합니다.`,
       nextAction: "계측과 운영 상태 확인",
       href: "/admin/ops",
-      hrefLabel: "Ops 보기",
+      hrefLabel: "Ops",
     };
   }
 
@@ -111,7 +111,7 @@ function buildPostCtrDiagnostic(
       detail: `최근 ${overview.days}일은 회귀 확인용입니다. 정책 판단은 30일에 가까운 기간과 조회 ${MIN_POST_CTR_VIEWS}건 이후에 합니다.`,
       nextAction: "30일 기준 재검토",
       href: "/admin/personalization?days=30",
-      hrefLabel: "30일 보기",
+      hrefLabel: "30일",
     };
   }
 
@@ -124,7 +124,7 @@ function buildPostCtrDiagnostic(
       detail: `조회 ${viewCount}건입니다. 운영 기준은 최소 ${MIN_POST_CTR_VIEWS}건 이후 판단합니다.`,
       nextAction: "데이터 축적 후 재검토",
       href: "/admin/personalization?days=30",
-      hrefLabel: "30일 보기",
+      hrefLabel: "30일",
     };
   }
 
@@ -137,7 +137,7 @@ function buildPostCtrDiagnostic(
       detail: `게시글 CTR ${formatPercent(postCtr)}입니다. surface/source와 최근 정책 변경을 함께 확인합니다.`,
       nextAction: "정책 후보와 Ops 안정성 확인",
       href: "/admin/ops",
-      hrefLabel: "Ops 보기",
+      hrefLabel: "Ops",
     };
   }
 
@@ -180,7 +180,7 @@ function buildAdCtrDiagnostic(
       detail: `최근 ${overview.days}일은 광고 판단 기간으로 쓰지 않습니다. 광고 판단은 30일에 가까운 기간과 노출 ${MIN_AD_CTR_IMPRESSIONS}건 이후에 합니다.`,
       nextAction: "30일 기준 재검토",
       href: "/admin/personalization?days=30",
-      hrefLabel: "30일 보기",
+      hrefLabel: "30일",
     };
   }
 
@@ -193,7 +193,7 @@ function buildAdCtrDiagnostic(
       detail: `광고 노출 ${adImpressionCount}건입니다. 운영 기준은 최소 ${MIN_AD_CTR_IMPRESSIONS}건 이후 판단합니다.`,
       nextAction: "데이터 축적 후 재검토",
       href: "/admin/personalization?days=30",
-      hrefLabel: "30일 보기",
+      hrefLabel: "30일",
     };
   }
 
@@ -254,7 +254,7 @@ function buildAudienceDiagnostic(
       detail: `최근 ${overview.days}일은 쏠림 판단 기간으로 쓰지 않습니다. 30일에 가까운 기간과 audience 조회 ${MIN_AUDIENCE_CONCENTRATION_VIEWS}건 이후에 봅니다.`,
       nextAction: "30일 기준 재검토",
       href: "/admin/personalization?days=30",
-      hrefLabel: "30일 보기",
+      hrefLabel: "30일",
     };
   }
 
@@ -267,7 +267,7 @@ function buildAudienceDiagnostic(
       detail: `조회 ${viewCount}건입니다. 쏠림 판단은 audience 조회 ${MIN_AUDIENCE_CONCENTRATION_VIEWS}건 이후에 합니다.`,
       nextAction: "데이터 축적 후 재검토",
       href: "/admin/personalization?days=30",
-      hrefLabel: "30일 보기",
+      hrefLabel: "30일",
     };
   }
 

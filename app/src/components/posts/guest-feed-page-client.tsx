@@ -484,7 +484,7 @@ export function GuestFeedPageClient({
             href="#feed-list"
             className={`${feedInlineTextActionClassName} hidden sm:inline-flex lg:hidden`}
           >
-            목록 보기
+            목록
           </a>
 
           {isGuestTypeBlocked && type ? (
@@ -529,9 +529,9 @@ export function GuestFeedPageClient({
                 }
                 actionLabel={
                   isGuestTypeBlocked
-                    ? "로그인하고 보기"
+                    ? "로그인"
                     : mode === "BEST"
-                      ? "전체글 보기"
+                      ? "전체글"
                       : "첫 글 작성하기"
                 }
               />

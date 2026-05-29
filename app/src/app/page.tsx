@@ -65,7 +65,7 @@ export default function HomePage() {
                 targetId: "hero_feed",
               }}
             >
-              전체 피드 보기
+              전체 피드
             </AcquisitionTrackedLink>
             <AcquisitionTrackedLink
               href="/onboarding"

@@ -112,7 +112,7 @@ export default async function TownPage({ params }: TownPageProps) {
                   targetId: town.slug,
                 }}
               >
-                공개 피드 보기
+                공개 피드
               </AcquisitionTrackedLink>
             </div>
           </div>

@@ -54,7 +54,7 @@ describe("OnboardingForm accessibility", () => {
       />,
     );
 
-    expect(html).toContain("선택 동네 허브 미리보기");
+    expect(html).toContain("선택 동네 허브");
     expect(html).toContain("대표 동네");
     expect(html).toContain(
       'href="/towns/%EC%84%9C%EC%9A%B8%ED%8A%B9%EB%B3%84%EC%8B%9C--%EA%B0%95%EB%82%A8%EA%B5%AC"',

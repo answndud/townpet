@@ -180,7 +180,7 @@ export function PostDetailMediaGallery({ images }: PostDetailMediaGalleryProps) 
                 type="button"
                 onClick={() => setActiveIndex(index)}
                 className="tp-border-soft group overflow-hidden rounded-lg border bg-white text-left transition hover:border-[#bfd4f2] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2"
-                aria-label={`${fileName} 크게 보기`}
+                aria-label={`${fileName} 확대`}
               >
                 <div className="aspect-[4/3] overflow-hidden bg-[#f4f8ff]">
                   <PostDetailUploadImage
@@ -191,7 +191,7 @@ export function PostDetailMediaGallery({ images }: PostDetailMediaGalleryProps) 
                 </div>
                 <div className="flex items-center justify-between gap-2 border-t border-[#edf3fb] px-2.5 py-1.5">
                   <span className="tp-text-primary truncate text-[12px] font-medium">{fileName}</span>
-                  <span className="tp-text-link shrink-0 text-[11px] font-semibold">확대 보기</span>
+                  <span className="tp-text-link shrink-0 text-[11px] font-semibold">확대</span>
                 </div>
               </button>
             );
@@ -204,7 +204,7 @@ export function PostDetailMediaGallery({ images }: PostDetailMediaGalleryProps) 
           className="fixed inset-0 z-[90] bg-[rgba(6,16,32,0.82)] px-3 py-4 sm:px-6 sm:py-8"
           role="dialog"
           aria-modal="true"
-          aria-label={`${activeImageName} 이미지 크게 보기`}
+          aria-label={`${activeImageName} 이미지 확대`}
           onClick={() => setActiveIndex(null)}
         >
           <div

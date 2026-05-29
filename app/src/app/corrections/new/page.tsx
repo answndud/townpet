@@ -142,7 +142,7 @@ export default async function CorrectionRequestPage({
                     }}
                     className="rounded-lg border border-[#9ccfac] bg-white px-3 py-2 text-xs font-semibold text-[#245338]"
                   >
-                    연결 글 다시 보기
+                    연결 글
                   </AcquisitionTrackedLink>
                 ) : null}
                 <AcquisitionTrackedLink
@@ -169,7 +169,7 @@ export default async function CorrectionRequestPage({
                   }}
                   className="rounded-lg border border-[#9ccfac] bg-white px-3 py-2 text-xs font-semibold text-[#245338]"
                 >
-                  관련 글 더 보기
+                  관련 글
                 </AcquisitionTrackedLink>
               </div>
             </div>
@@ -345,7 +345,7 @@ export default async function CorrectionRequestPage({
             </ul>
           </div>
           <Link href="/guides/pet-hospital-review-policy" className="tp-btn-soft inline-flex min-h-10 w-full items-center justify-center px-3 text-sm">
-            병원 후기 작성 기준 보기
+            작성 기준
           </Link>
         </aside>
       </section>

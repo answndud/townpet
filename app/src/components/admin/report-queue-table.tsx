@@ -196,7 +196,7 @@ export function ReportQueueTable({ reports }: ReportQueueTableProps) {
             title="선택한 상태의 신고가 없습니다."
             description="필터를 바꾸거나 새 신고가 들어오면 이 큐에서 우선순위와 처리 이력을 확인할 수 있습니다."
             actionHref="/admin/reports"
-            actionLabel="전체 신고 보기"
+            actionLabel="전체 신고"
           />
         </div>
       ) : (
@@ -243,7 +243,7 @@ export function ReportQueueTable({ reports }: ReportQueueTableProps) {
                     <p className="font-semibold text-[#163462]">{report.targetTitle}</p>
                   )}
                   <Link href={`/admin/reports/${report.id}`} className="text-[11px] text-[#5a7398]">
-                    상세 보기
+                    상세
                   </Link>
                 </div>
                 <input
@@ -352,7 +352,7 @@ export function ReportQueueTable({ reports }: ReportQueueTableProps) {
                           href={`/admin/reports/${report.id}`}
                           className="text-[10px] text-[#5a7398]"
                         >
-                          상세 보기
+                          상세
                         </Link>
                       </div>
                     </td>
