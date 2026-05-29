@@ -22,6 +22,7 @@ import { PostReportForm } from "@/components/posts/post-report-form";
 import { PostShareControls } from "@/components/posts/post-share-controls";
 import { PostCommentSectionClient } from "@/components/posts/post-comment-section-client";
 import { PostViewTracker } from "@/components/posts/post-view-tracker";
+import { DismissibleDetails } from "@/components/ui/dismissible-details";
 import { getCspNonce } from "@/lib/csp-nonce";
 import { serializeJsonForScriptTag } from "@/lib/json-script";
 import { formatKoreanIsoDate } from "@/lib/date-format";
@@ -263,7 +264,7 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
                 ) : null}
               </div>
               {canReportPost ? (
-                <details className="relative shrink-0">
+                <DismissibleDetails className="relative shrink-0">
                   <summary
                     aria-label="게시글 더보기"
                     className="tp-text-muted inline-flex min-h-10 min-w-10 cursor-pointer list-none items-center justify-center text-[16px] leading-none transition hover:text-[#1f4f8f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 [&::-webkit-details-marker]:hidden"
@@ -274,7 +275,7 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
                     <p className="px-1 pb-1 text-[12px] font-semibold text-rose-700">게시글 신고</p>
                     <PostReportForm targetId={post.id} canReport={false} loginHref={loginHref} />
                   </div>
-                </details>
+                </DismissibleDetails>
               ) : null}
             </div>
 

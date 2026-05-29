@@ -8,6 +8,7 @@ import {
   POST_DETAIL_ACTION_BUTTON_CLASS_NAME,
   POST_DETAIL_ACTION_DANGER_BUTTON_CLASS_NAME,
 } from "@/components/posts/post-detail-action-button-class";
+import { DismissibleDetails } from "@/components/ui/dismissible-details";
 
 const GUEST_FP_STORAGE_KEY = "townpet:guest-fingerprint:v1";
 
@@ -75,7 +76,7 @@ export function GuestPostDetailActions({ postId }: GuestPostDetailActionsProps) 
 
   return (
     <div className="w-full">
-      <details className="sm:hidden">
+      <DismissibleDetails className="sm:hidden">
         <summary className="tp-text-link inline-flex min-h-10 cursor-pointer list-none items-center px-1.5 text-xs font-semibold underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 [&::-webkit-details-marker]:hidden">
           비회원 관리
         </summary>
@@ -91,6 +92,7 @@ export function GuestPostDetailActions({ postId }: GuestPostDetailActionsProps) 
             <Link
               href={`/posts/${postId}/edit?guest=1&pw=${encodeURIComponent(password.trim())}`}
               className={POST_DETAIL_ACTION_BUTTON_CLASS_NAME}
+              data-dismissible-details-close
             >
               비회원 수정
             </Link>
@@ -99,6 +101,7 @@ export function GuestPostDetailActions({ postId }: GuestPostDetailActionsProps) 
               onClick={handleDelete}
               className={POST_DETAIL_ACTION_DANGER_BUTTON_CLASS_NAME}
               disabled={isPending}
+              data-dismissible-details-close
             >
               {isPending ? "삭제 중..." : "비회원 삭제"}
             </button>
@@ -109,7 +112,7 @@ export function GuestPostDetailActions({ postId }: GuestPostDetailActionsProps) 
             </p>
           ) : null}
         </div>
-      </details>
+      </DismissibleDetails>
 
       <div className="hidden flex-wrap items-center justify-end gap-2 sm:flex">
         <input

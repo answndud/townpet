@@ -14,6 +14,7 @@ import { PostModerationControls } from "@/components/posts/post-moderation-contr
 import { PostReactionControls } from "@/components/posts/post-reaction-controls";
 import { PostReportForm } from "@/components/posts/post-report-form";
 import { PostShareControls } from "@/components/posts/post-share-controls";
+import { DismissibleDetails } from "@/components/ui/dismissible-details";
 import { UserActionMenu } from "@/components/user/user-action-menu";
 import { renderLiteMarkdown } from "@/lib/markdown-lite";
 import { formatKoreanIsoDate } from "@/lib/date-format";
@@ -106,7 +107,7 @@ export function PostDetailPrimaryCard({
           ) : null}
         </div>
         {showPostReportControls ? (
-          <details className="relative shrink-0">
+          <DismissibleDetails className="relative shrink-0">
             <summary
               aria-label="게시글 더보기"
               className="tp-text-muted inline-flex min-h-10 min-w-10 cursor-pointer list-none items-center justify-center text-[16px] leading-none transition hover:text-[#1f4f8f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 [&::-webkit-details-marker]:hidden"
@@ -118,11 +119,12 @@ export function PostDetailPrimaryCard({
                 type="button"
                 className="flex min-h-10 w-full items-center rounded px-3 text-left text-[12px] font-medium text-rose-700 hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200 focus-visible:ring-offset-1"
                 onClick={onTogglePostReportOpen}
+                data-dismissible-details-close
               >
                 {isPostReportOpen ? "신고 닫기" : "게시글 신고"}
               </button>
             </div>
-          </details>
+          </DismissibleDetails>
         ) : null}
       </div>
 
@@ -231,18 +233,19 @@ export function PostDetailPrimaryCard({
                   </Link>
                   <PostDetailActions postId={post.id} />
                 </div>
-                <details className="sm:hidden">
+                <DismissibleDetails className="sm:hidden">
                   <summary className={POST_DETAIL_ACTION_BUTTON_CLASS_NAME}>글 관리</summary>
                   <div className="tp-border-soft mt-2 flex flex-wrap items-center gap-2 border-t pt-2">
                     <Link
                       href={`/posts/${post.id}/edit`}
                       className={POST_DETAIL_ACTION_BUTTON_CLASS_NAME}
+                      data-dismissible-details-close
                     >
                       수정
                     </Link>
                     <PostDetailActions postId={post.id} />
                   </div>
-                </details>
+                </DismissibleDetails>
               </>
             ) : null}
             {!canInteract && isGuestPost ? <GuestPostDetailActions postId={post.id} /> : null}

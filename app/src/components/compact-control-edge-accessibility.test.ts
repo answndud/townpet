@@ -53,4 +53,25 @@ describe("remaining compact user control accessibility", () => {
     expect(sources).toContain('aria-live="polite"');
     expect(sources).not.toContain("min-h-9 items-center");
   });
+
+  it("keeps menu popovers dismissible outside their trigger area", () => {
+    const dismissibleDetailsCode = readSource("src/components/ui/dismissible-details.tsx");
+    const menuSources = [
+      "src/components/posts/post-detail-primary-card.tsx",
+      "src/app/posts/[id]/guest/page.tsx",
+      "src/components/posts/post-comment-thread.tsx",
+      "src/components/posts/guest-post-detail-actions.tsx",
+    ].map(readSource).join("\n");
+    const feedHoverMenuCode = readSource("src/components/navigation/feed-hover-menu.tsx");
+
+    expect(dismissibleDetailsCode).toContain('document.addEventListener("pointerdown"');
+    expect(dismissibleDetailsCode).toContain('document.addEventListener("focusin"');
+    expect(dismissibleDetailsCode).toContain('event.key === "Escape"');
+    expect(dismissibleDetailsCode).toContain("[data-dismissible-details-close]");
+    expect(menuSources).toContain("DismissibleDetails");
+    expect(menuSources).toContain("data-dismissible-details-close");
+    expect(feedHoverMenuCode).toContain('document.addEventListener("pointerdown"');
+    expect(feedHoverMenuCode).toContain('document.addEventListener("focusin"');
+    expect(feedHoverMenuCode).toContain('event.key === "Escape"');
+  });
 });
