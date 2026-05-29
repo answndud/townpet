@@ -8188,6 +8188,34 @@
   - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
     - ESLint, TypeScript, Vitest `297 files / 1421 tests`, Next production build PASS
 
+### 2026-05-29 | 북마크 로그인 힌트 popover 폭 보정
+- 완료일: `2026-05-29`
+- 배경:
+  - compact 북마크 버튼에서 비회원 클릭 시 로그인 안내가 trigger button 폭으로 shrink되어 한국어가 한 글자씩 세로로 표시됐다.
+  - 원인은 popover에 `max-w`만 있고 명시 `width/min-width`가 없어 좁은 `inline-flex` trigger 안에서 shrink-to-fit 계산이 발생한 것이다.
+- 변경내용:
+  - 북마크 로그인 힌트에 `w-[min(86vw,260px)]`, `min-w-[220px]`, `max-w-[calc(100vw-2rem)]`, `break-keep`을 적용했다.
+  - compact 버튼에서는 popover가 `right-0` 기준으로 열리게 해 우측 아이콘 버튼에서 화면 밖으로 밀릴 위험을 줄였다.
+  - 로그인 링크는 `whitespace-nowrap`로 유지했다.
+  - 유사 floating prompt를 점검했고, `ReactionLoginPrompt`, notification popover, feed search keyword panel, detail overflow menu는 이미 min-width/explicit width/left-right bounds가 있었다.
+  - source guard test가 이전 `max-w` only absolute pattern 재도입을 잡도록 보강했다.
+- 코드문서:
+  - [app/src/components/posts/post-bookmark-button.tsx](../app/src/components/posts/post-bookmark-button.tsx)
+  - [app/src/components/posts/post-detail-action-accessibility.test.tsx](../app/src/components/posts/post-detail-action-accessibility.test.tsx)
+- 다음 후보:
+  - [app/src/components/posts/feed-infinite-list.tsx](../app/src/components/posts/feed-infinite-list.tsx): feed empty/retry action 정리
+  - [app/src/components/posts/feed-pagination.tsx](../app/src/components/posts/feed-pagination.tsx): feed pagination 30px control 정책 재검토
+  - [app/src/app/bookmarks/page.tsx](../app/src/app/bookmarks/page.tsx), [app/src/app/my-posts/page.tsx](../app/src/app/my-posts/page.tsx): 목록 검색 action 버튼 계층 점검
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/components/posts/post-detail-action-accessibility.test.tsx src/components/posts/reaction-login-prompt.test.tsx src/components/posts/post-comment-compact-controls-accessibility.test.tsx`
+    - Vitest `3 files / 12 tests` PASS
+  - targeted lint:
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `298 files / 1425 tests`, Next production build PASS
+
 ### 2026-05-29 | 댓글 답글 접기 토글 compact text화
 - 완료일: `2026-05-29`
 - 배경:

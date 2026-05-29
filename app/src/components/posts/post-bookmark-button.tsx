@@ -53,6 +53,7 @@ export function PostBookmarkButton({
     ? "inline-flex min-h-8 min-w-8 items-center justify-center px-1 text-xs font-semibold leading-none transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
     : "inline-flex min-h-9 items-center justify-center px-2 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60";
   const buttonLabel = bookmarked ? "북마크 해제" : "북마크";
+  const loginHintPositionClassName = compact ? "right-0" : "left-0";
 
   const handleToggle = () => {
     if (actionLockRef.current) {
@@ -118,12 +119,12 @@ export function PostBookmarkButton({
       </button>
       {!canBookmark && showLoginHint && loginIntent ? (
         <div
-          className={`absolute left-0 top-[calc(100%+8px)] z-10 max-w-[min(86vw,260px)] rounded-lg border border-[#dbe6f6] bg-white px-2.5 py-1.5 text-[#355988] shadow-[0_8px_18px_rgba(16,40,74,0.12)] ${
+          className={`absolute ${loginHintPositionClassName} top-[calc(100%+8px)] z-10 w-[min(86vw,260px)] min-w-[220px] max-w-[calc(100vw-2rem)] break-keep rounded-lg border border-[#dbe6f6] bg-white px-2.5 py-1.5 leading-5 text-[#355988] shadow-[0_8px_18px_rgba(16,40,74,0.12)] ${
             compact ? "text-[11px]" : "text-xs"
           }`}
         >
           {BOOKMARK_LOGIN_REQUIRED_MESSAGE}{" "}
-          <Link href={loginHref} className="inline-flex min-h-10 items-center font-semibold text-[#2f5da4] underline underline-offset-2">
+          <Link href={loginHref} className="inline-flex min-h-10 whitespace-nowrap align-middle font-semibold text-[#2f5da4] underline underline-offset-2">
             로그인하기
           </Link>
         </div>
