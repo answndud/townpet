@@ -7,6 +7,7 @@ import {
   canOpenCommentAuthorMenu,
   canMuteCommentAuthor,
   PostCommentThread,
+  shouldIgnoreCommentPanelReplyClick,
   shouldRefreshCommentRoute,
   shouldCloseCommentAuthorMenu,
 } from "@/components/posts/post-comment-thread";
@@ -167,6 +168,11 @@ describe("PostCommentThread", () => {
     expect(html).toContain(POST_COMMENT_THREAD_MENU_PANEL_CLASS_NAME);
     expect(html).toContain("댓글 작업 메뉴");
     expect(html).toContain("신고");
+    expect(html).toContain('role="button"');
+    expect(html).toContain("댓글에 답글 작성");
+    expect(html).toContain("aria-expanded");
+    expect(html).not.toContain(">답글</button>");
+    expect(html).not.toContain("답글 취소");
     expect(html).toContain(POST_COMMENT_ROOT_COMPOSER_WRAPPER_CLASS_NAME);
     expect(html).toContain(POST_COMMENT_THREAD_ROOT_CARD_CLASS_NAME);
     expect(html).toContain(POST_COMMENT_THREAD_REPLY_CARD_CLASS_NAME);
@@ -196,6 +202,35 @@ describe("PostCommentThread", () => {
       shouldCloseCommentAuthorMenu(menuRoot, { id: "outside-node" } as unknown as EventTarget),
     ).toBe(true);
     expect(shouldCloseCommentAuthorMenu(menuRoot, null)).toBe(false);
+  });
+
+  it("ignores nested controls when opening reply from the comment panel", () => {
+    const article = {
+      name: "article",
+      closest: vi.fn((): unknown => article),
+    };
+    const body = {
+      closest: vi.fn(() => article),
+    };
+    const button = {
+      closest: vi.fn(() => ({ name: "nested-button" })),
+    };
+    const ignoredText = {
+      closest: vi.fn(() => ({ name: "ignored-region" })),
+    };
+
+    expect(
+      shouldIgnoreCommentPanelReplyClick(body as unknown as EventTarget, article as unknown as EventTarget),
+    ).toBe(false);
+    expect(
+      shouldIgnoreCommentPanelReplyClick(article as unknown as EventTarget, article as unknown as EventTarget),
+    ).toBe(false);
+    expect(
+      shouldIgnoreCommentPanelReplyClick(button as unknown as EventTarget, article as unknown as EventTarget),
+    ).toBe(true);
+    expect(
+      shouldIgnoreCommentPanelReplyClick(ignoredText as unknown as EventTarget, article as unknown as EventTarget),
+    ).toBe(true);
   });
 
   it("allows mute only for other signed-in users", () => {

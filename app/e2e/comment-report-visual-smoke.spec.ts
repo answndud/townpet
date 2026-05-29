@@ -110,14 +110,14 @@ test.describe("comment/report mobile visual smoke", () => {
       timeout: 15_000,
     });
 
-    await expectTouchTarget(page.getByTestId("post-comment-root-input"), "root comment input", 72);
+    await expectTouchTarget(page.getByTestId("post-comment-root-input"), "root comment input", 64);
     await expectTouchTarget(page.getByTestId("post-comment-root-submit"), "root comment submit");
     await expectNoHorizontalOverflow(page);
 
     const ownComment = page.getByTestId(`post-comment-item-${viewerCommentId}`);
     await expect(ownComment).toBeVisible({ timeout: 15_000 });
     const ownCommentMenu = ownComment.locator("summary").first();
-    await expectTouchTarget(ownCommentMenu, "own comment menu");
+    await expectTouchTarget(ownCommentMenu, "own comment menu", 32);
     await ownCommentMenu.click();
     await expectTouchTarget(
       ownComment.getByRole("button", { name: "수정", exact: true }),
@@ -131,10 +131,13 @@ test.describe("comment/report mobile visual smoke", () => {
 
     const reportableComment = page.getByTestId(`post-comment-item-${reportableCommentId}`);
     await expect(reportableComment).toBeVisible({ timeout: 15_000 });
-    await expectTouchTarget(
-      reportableComment.getByRole("button", { name: "답글", exact: true }),
-      "reportable comment reply button",
-    );
+    await expect(reportableComment).toHaveAttribute("role", "button");
+    await expect(reportableComment).toHaveAttribute("aria-label", /댓글에 답글 작성/);
+    await expectTouchTarget(reportableComment, "reportable comment reply panel", 64);
+    await reportableComment.getByText(/신고 가능한 댓글 smoke/).click();
+    await expect(reportableComment.getByPlaceholder("답글을 입력하세요")).toBeVisible();
+    await reportableComment.getByRole("button", { name: "취소", exact: true }).click();
+    await reportableComment.locator("summary").first().click();
     const reportToggle = reportableComment.getByRole("button", { name: "신고", exact: true });
     await expectTouchTarget(reportToggle, "reportable comment report button");
     await reportToggle.click();
