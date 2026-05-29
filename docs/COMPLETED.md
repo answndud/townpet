@@ -7897,3 +7897,32 @@
 - 결과:
   - 게시글 상세/댓글 화면의 액션 우선순위가 `primary reaction`, `secondary bookmark/share`, `tertiary report/menu`로 더 명확해졌다.
   - 인증/신고/댓글 정책과 mutation 동작은 변경하지 않았다.
+
+### 2026-05-29 | 피드 리스트 카드 밀도와 메타 위계 1차 개선
+- 완료일: `2026-05-29`
+- 배경:
+  - 게시글 상세 화면의 compact action hierarchy를 적용한 뒤, 반복 사용 빈도가 높은 피드 리스트 row도 같은 밀도 기준으로 맞출 필요가 있었다.
+  - 피드 화면은 모바일에서 빠르게 훑는 표면이므로 thumbnail/comment badge 유무가 row 높이나 scan path를 흔들지 않아야 한다.
+- 변경내용:
+  - `/feed`, `/feed/guest`에서 사용하는 `FeedInfiniteList` row 높이를 모바일 64px, sm 68px로 낮췄다.
+  - thumbnail slot과 댓글 badge slot을 더 작은 고정 폭으로 맞춰 thumbnail 유무에 따른 layout shift를 줄였다.
+  - 댓글 badge를 채운 파란 pill에서 얇은 border 기반 secondary badge로 낮췄다.
+  - 제목과 meta line의 vertical rhythm을 줄이고 작성자/통계 텍스트 무게를 낮춰 반복 row에서 더 빨리 스캔되도록 했다.
+  - feed stats의 날짜를 hydrate 전후 모두 `YYYY-MM-DD`로 고정했다.
+  - 운영자 정리 콘텐츠의 최종 확인일도 `YYYY-MM-DD`로 통일했다.
+- 코드문서:
+  - [app/src/components/posts/feed-infinite-list.tsx](../app/src/components/posts/feed-infinite-list.tsx)
+  - [app/src/lib/feed-list-presenter.ts](../app/src/lib/feed-list-presenter.ts)
+  - [app/src/components/posts/operator-content-source-panel.tsx](../app/src/components/posts/operator-content-source-panel.tsx)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `./node_modules/.bin/vitest run src/lib/feed-list-presenter.test.ts src/components/posts/feed-infinite-list.test.tsx src/components/posts/operator-content-source-panel.test.tsx src/components/home/home-feed-preview.test.tsx`
+    - `4 files / 12 tests` PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `296 files / 1414 tests`, Next production build PASS
+  - 모바일 Playwright smoke:
+    - `/feed/guest` 390px viewport에서 feed item 15개, 첫 row 높이 64px, `YYYY-MM-DD` 표시, 기존 dot date 미검출, 가로 overflow 없음 확인.
+- 결과:
+  - 피드 리스트가 상세 화면과 같은 compact 날짜/메타 기준을 따르게 됐다.
+  - feed query, sort/filter, personalization, pagination, action policy는 변경하지 않았다.

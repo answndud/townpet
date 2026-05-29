@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { formatKoreanIsoDate } from "@/lib/date-format";
+
 type OperatorContentSourcePanelProps = {
   postId?: string | null;
   sourceName?: string | null;
@@ -11,15 +13,7 @@ export function formatOperatorVerifiedDate(value?: string | Date | null) {
   if (!value) {
     return null;
   }
-  const date = value instanceof Date ? value : new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return null;
-  }
-  return new Intl.DateTimeFormat("ko-KR", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(date);
+  return formatKoreanIsoDate(value) || null;
 }
 
 export function buildOperatorContentMetaLabel({

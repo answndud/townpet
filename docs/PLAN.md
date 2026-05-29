@@ -18,4 +18,5 @@
 
 ## 다음 작업 후보
 
+- 상단 네비게이션 active 상태와 공통 버튼/링크 계층 정리
 - authenticated admin queue smoke production credential 확보 후 재실행

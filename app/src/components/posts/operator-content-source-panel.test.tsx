@@ -21,6 +21,7 @@ describe("OperatorContentSourcePanel", () => {
     expect(html).toContain("정보 정정 요청");
     expect(html).toContain('href="/corrections/new?postId=post-1&amp;targetType=POST"');
     expect(html).toContain("최종 확인");
+    expect(html).toContain("2026-05-24");
     expect(html).not.toContain("/commercial#contact");
     expect(html).not.toContain("rounded-xl border");
   });
@@ -31,7 +32,7 @@ describe("OperatorContentSourcePanel", () => {
         sourceName: "TownPet 운영자 정리",
         lastVerifiedAt: "2026-05-24T00:00:00.000Z",
       }),
-    ).toContain("TownPet 운영자 정리");
+    ).toBe("TownPet 운영자 정리 · 2026-05-24 확인");
     expect(
       buildOperatorContentMetaLabel({
         sourceName: null,
