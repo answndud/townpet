@@ -21,6 +21,15 @@ type PostVisibilityResponse = {
   };
 };
 
+const POST_MODERATION_SUMMARY_CLASS_NAME =
+  "flex cursor-pointer list-none items-center justify-between gap-3 border-b border-[#e3ebf8] pb-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 [&::-webkit-details-marker]:hidden";
+
+const POST_MODERATION_DANGER_ACTION_CLASS_NAME =
+  "inline-flex min-h-10 items-center justify-center px-1.5 text-xs font-semibold text-rose-700 transition hover:text-rose-800 hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:text-[#b99aa2]";
+
+const POST_MODERATION_PRIMARY_ACTION_CLASS_NAME =
+  "inline-flex min-h-10 items-center justify-center rounded-md bg-[#3567b5] px-3 text-xs font-semibold text-[#fbfdff] transition hover:bg-[#2f5da4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:bg-[#9fb9e0] disabled:opacity-70";
+
 export async function parsePostModerationResponsePayload<T>(response: Response) {
   const payload = (await response.json()) as
     | { ok: true; data: T }
@@ -102,7 +111,7 @@ export function PostModerationControls({
           setIsExpanded(event.currentTarget.open);
         }}
       >
-        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-xl border border-[#dbe6f5] bg-white px-3 py-2.5">
+        <summary className={POST_MODERATION_SUMMARY_CLASS_NAME}>
           <div className="flex min-w-0 items-center gap-2">
             <span
               className="inline-flex shrink-0 items-center rounded-full border border-[#d8e4f6] bg-[#f7faff] px-2.5 py-1 text-[11px] font-semibold text-[#426391]"
@@ -139,11 +148,11 @@ export function PostModerationControls({
               <button
                 type="button"
                 onClick={handleSubmit}
-                className={`px-4 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-70 ${
+                className={
                   action === "HIDE"
-                    ? "tp-btn-soft text-rose-700 hover:bg-rose-50"
-                    : "tp-btn-primary"
-                }`}
+                    ? POST_MODERATION_DANGER_ACTION_CLASS_NAME
+                    : POST_MODERATION_PRIMARY_ACTION_CLASS_NAME
+                }
                 disabled={isPending || reason.trim().length === 0}
               >
                 {isPending ? "처리 중..." : actionLabel}

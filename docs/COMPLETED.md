@@ -8215,6 +8215,33 @@
   - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
     - ESLint, TypeScript, Vitest `298 files / 1429 tests`, Next production build PASS
 
+### 2026-05-29 | 운영자 도구 button hierarchy 정리
+- 완료일: `2026-05-29`
+- 배경:
+  - `PostModerationControls`의 접힌 summary가 상세 카드 안에서 다시 둥근 border 카드처럼 보여 시각적 무게가 컸다.
+  - 게시글 숨김/숨김 해제 submit이 `tp-btn-soft`/`tp-btn-primary`에 묶여 있어 최근 상세 화면 button hierarchy 정리 기준과 어긋났다.
+- 변경내용:
+  - 운영자 도구 summary를 내부 card형 button에서 divider row 성격으로 낮추고 focus-visible ring을 명시했다.
+  - `게시글 숨김`은 destructive action으로 danger text action을 사용하게 했다.
+  - `숨김 해제`는 복구 commit action으로 compact primary action을 사용하게 했다.
+  - summary/action class를 상수화하고 source guard test가 legacy soft/primary button class 재도입을 잡도록 보강했다.
+- 코드문서:
+  - [app/src/components/posts/post-moderation-controls.tsx](../app/src/components/posts/post-moderation-controls.tsx)
+  - [app/src/components/posts/post-moderation-controls.test.tsx](../app/src/components/posts/post-moderation-controls.test.tsx)
+- 다음 후보:
+  - [app/src/components/ui/service-unavailable-state.tsx](../app/src/components/ui/service-unavailable-state.tsx): service unavailable action 계층 정리
+  - [app/src/components/auth/auth-page-layout.tsx](../app/src/components/auth/auth-page-layout.tsx): auth page auxiliary action 계층 점검
+  - [app/src/app/posts/new/page.tsx](../app/src/app/posts/new/page.tsx): 글쓰기 page back link 28px soft button 정리
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/components/posts/post-moderation-controls.test.tsx src/components/compact-control-edge-accessibility.test.ts`
+    - Vitest `2 files / 10 tests` PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app lint -- src/components/posts/post-moderation-controls.tsx src/components/posts/post-moderation-controls.test.tsx src/components/compact-control-edge-accessibility.test.ts`
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `298 files / 1430 tests`, Next production build PASS
+
 ### 2026-05-29 | 헤더 관심 동물 메뉴 action 버튼 계층 정리
 - 완료일: `2026-05-29`
 - 배경:
