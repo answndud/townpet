@@ -57,17 +57,27 @@ describe("post detail action accessibility", () => {
   it("keeps guest management controls mobile-safe", () => {
     const html = renderToStaticMarkup(<GuestPostDetailActions postId="post-1" />);
 
-    expect(html).toContain("비회원 관리");
+    expect(html).toContain("글 비밀번호를 입력하면");
     expect(html).toContain("글 비밀번호");
-    expect(html).toContain("비회원 수정");
-    expect(html).toContain("비회원 삭제");
-    expect((html.match(/min-h-10/g) ?? []).length).toBeGreaterThanOrEqual(5);
+    expect(html).toContain("비회원 글 수정");
+    expect(html).toContain("비회원 글 삭제");
+    expect(html).toContain('for="guest-post-password-post-1"');
+    expect((html.match(/min-h-10/g) ?? []).length).toBeGreaterThanOrEqual(3);
   });
 
-  it("keeps guest mobile management controls inline inside the detail card", () => {
+  it("keeps guest management controls inside the overflow menu instead of the action bar", () => {
     const source = readFileSync(join(process.cwd(), "src/components/posts/guest-post-detail-actions.tsx"), "utf8");
+    const primaryCardSource = readFileSync(
+      join(process.cwd(), "src/components/posts/post-detail-primary-card.tsx"),
+      "utf8",
+    );
 
-    expect(source).toContain("mt-2 grid gap-2 border-t border-[#dbe6f6] pt-2");
+    expect(source).toContain("mt-1 grid w-full gap-2 border-t border-[#e8eff9] pt-2");
+    expect(primaryCardSource).toContain("showOverflowMenu");
+    expect(primaryCardSource).toContain("<GuestPostDetailActions postId={post.id} />");
+    expect(primaryCardSource.split("<GuestPostDetailActions postId={post.id} />").length - 1).toBe(1);
+    expect(source).not.toContain("sm:hidden");
+    expect(source).not.toContain("hidden flex-wrap");
     expect(source).not.toContain("tp-btn-soft inline-flex min-h-10 items-center rounded-lg");
     expect(source).not.toContain("mt-2 space-y-2 rounded-lg border border-[#dbe6f6] bg-[#f8fbff] p-2");
   });

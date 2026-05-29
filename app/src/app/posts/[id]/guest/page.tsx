@@ -25,7 +25,7 @@ import { PostViewTracker } from "@/components/posts/post-view-tracker";
 import { DismissibleDetails } from "@/components/ui/dismissible-details";
 import { getCspNonce } from "@/lib/csp-nonce";
 import { serializeJsonForScriptTag } from "@/lib/json-script";
-import { formatKoreanIsoDate } from "@/lib/date-format";
+import { formatKoreanDate } from "@/lib/date-format";
 import { buildPostDetailMediaRendering } from "@/lib/post-detail-rendering";
 import {
   buildExcerpt,
@@ -196,6 +196,14 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
     ? guestPostMeta.guestPublicName ??
       resolvePublicGuestDisplayName((post as { guestDisplayName?: string | null }).guestDisplayName)
     : resolveUserDisplayName(post.author.nickname);
+  const authorDisplayLabel = guestPostMeta.isGuestPost
+    ? displayAuthorName.trim()
+      ? `비회원 ${displayAuthorName.trim()}`
+      : "비회원 사용자"
+    : displayAuthorName.trim() || "익명";
+  const avatarLabel = guestPostMeta.isGuestPost
+    ? "비"
+    : authorDisplayLabel.slice(0, 1).toUpperCase();
   const postUrl = toAbsoluteUrl(`/posts/${post.id}`);
   const meta = postTypeMeta[post.type];
   const createdAt = ensureDate(post.createdAt) ?? new Date();
@@ -263,7 +271,7 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
                   </span>
                 ) : null}
               </div>
-              {canReportPost ? (
+              {canReportPost || guestPostMeta.isGuestPost ? (
                 <DismissibleDetails className="relative shrink-0">
                   <summary
                     aria-label="게시글 더보기"
@@ -271,9 +279,16 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
                   >
                     ···
                   </summary>
-                  <div className="tp-border-muted absolute right-0 z-20 mt-1.5 min-w-[220px] rounded-md border bg-white p-2 shadow-[0_8px_18px_rgba(16,40,74,0.08)]">
-                    <p className="px-1 pb-1 text-[12px] font-semibold text-rose-700">게시글 신고</p>
-                    <PostReportForm targetId={post.id} canReport={false} loginHref={loginHref} />
+                  <div className="tp-border-muted absolute right-0 z-20 mt-1.5 min-w-[260px] rounded-md border bg-white p-2 shadow-[0_8px_18px_rgba(16,40,74,0.08)]">
+                    {canReportPost ? (
+                      <>
+                        <p className="px-1 pb-1 text-[12px] font-semibold text-rose-700">
+                          게시글 신고
+                        </p>
+                        <PostReportForm targetId={post.id} canReport={false} loginHref={loginHref} />
+                      </>
+                    ) : null}
+                    {guestPostMeta.isGuestPost ? <GuestPostDetailActions postId={post.id} /> : null}
                   </div>
                 </DismissibleDetails>
               ) : null}
@@ -283,25 +298,25 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
               <h1 className="tp-text-post-title text-[#10284a]">
                 {post.title}
               </h1>
-              <div className="mt-3 flex items-center gap-2">
-                <div className="tp-surface-alt tp-text-accent flex size-[32px] shrink-0 items-center justify-center rounded-full text-[11px] font-semibold">
-                  {displayAuthorName.slice(0, 1).toUpperCase()}
+              <div className="mt-3 flex items-start gap-2.5">
+                <div className="tp-surface-alt tp-text-accent flex size-[34px] shrink-0 items-center justify-center rounded-full text-[11px] font-semibold">
+                  {avatarLabel}
                 </div>
                 <div className="min-w-0">
-                  <div className="min-w-0 break-all text-[13px] font-semibold leading-5 text-[#1f3f71]">
+                  <div className="min-w-0 break-all text-[14px] font-semibold leading-5 text-[#1f3f71]">
                     {guestPostMeta.isGuestPost ? (
-                      <span>{displayAuthorName}</span>
+                      <span>{authorDisplayLabel}</span>
                     ) : (
                       <Link
                         href={`/users/${post.author.id}`}
                         className="rounded-sm transition hover:text-[#2f5da4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2"
                       >
-                        {displayAuthorName}
+                        {authorDisplayLabel}
                       </Link>
                     )}
                   </div>
                   <p className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[12px] text-[#516d96]">
-                    <span suppressHydrationWarning>{formatKoreanIsoDate(createdAt)}</span>
+                    <span suppressHydrationWarning>{formatKoreanDate(createdAt)}</span>
                     <span aria-hidden="true">·</span>
                     <span>조회 {safeViewCount.toLocaleString()}</span>
                     <span aria-hidden="true">·</span>
@@ -325,12 +340,12 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
             ) : null}
 
             <div className="mt-4 sm:mt-5">
-              <article className="tp-text-body text-[#17345f]">
+              <article className="tp-text-body max-w-[760px] text-[#17345f]">
                 {shouldUsePlainFallback ? (
                   <div className="whitespace-pre-wrap">{post.content}</div>
                 ) : (
                   <div
-                    className="prose prose-sm max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&_img]:!ml-0 [&_img]:!mr-auto [&_img]:block [&_img]:border-0 [&_img]:bg-transparent [&_img]:rounded-none"
+                    className="prose prose-sm max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&_img]:!ml-0 [&_img]:!mr-auto [&_img]:my-3 [&_img]:block [&_img]:h-auto [&_img]:w-full [&_img]:max-w-full sm:[&_img]:max-w-[640px] [&_img]:rounded-lg [&_img]:border-0 [&_img]:bg-transparent [&_img]:object-contain"
                     dangerouslySetInnerHTML={{ __html: renderedContentHtml }}
                   />
                 )}
@@ -339,8 +354,7 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
             </div>
 
             <div className="tp-border-soft mt-4 space-y-2.5 border-t pt-3 sm:mt-5 sm:pt-4">
-              <div className="grid gap-2 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
-                <div className="hidden sm:block" aria-hidden="true" />
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <PostReactionControls
                   key={`${post.id}:guest`}
                   postId={post.id}
@@ -349,10 +363,10 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
                   currentReaction={null}
                   canReact={false}
                   loginHref={loginHref}
-                  align="center"
+                  align="start"
                   compact
                 />
-                <div className="flex w-full flex-wrap items-center justify-end gap-2 sm:w-auto">
+                <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
                   <PostBookmarkButton
                     key={`${post.id}:guest-bookmark`}
                     postId={post.id}
@@ -364,7 +378,6 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
                   <PostShareControls url={postUrl} compact />
                 </div>
               </div>
-              {guestPostMeta.isGuestPost ? <GuestPostDetailActions postId={post.id} /> : null}
             </div>
           </section>
         </div>

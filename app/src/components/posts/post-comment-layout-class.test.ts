@@ -104,17 +104,17 @@ describe("post comment layout classes", () => {
   it("keeps the root composer compact while preserving 40px touch targets", () => {
     expect(POST_COMMENT_ROOT_COMPOSER_WRAPPER_CLASS_NAME).toContain("mt-2");
     expect(POST_COMMENT_ROOT_COMPOSER_WRAPPER_CLASS_NAME).toContain("pt-1.5");
-    expect(POST_COMMENT_ROOT_FORM_SHELL_CLASS_NAME).toContain("py-1.5");
-    expect(POST_COMMENT_ROOT_FORM_SHELL_CLASS_NAME).not.toContain("py-2");
+    expect(POST_COMMENT_ROOT_FORM_SHELL_CLASS_NAME).toContain("py-2");
+    expect(POST_COMMENT_ROOT_FORM_SHELL_CLASS_NAME).not.toContain("py-3");
     expect(POST_COMMENT_ROOT_FORM_MODE_ROW_CLASS_NAME).toContain("mb-1");
     expect(POST_COMMENT_ROOT_FORM_MODE_BUTTON_BASE_CLASS_NAME).toContain("min-h-9");
     expect(POST_COMMENT_ROOT_FORM_MODE_BUTTON_BASE_CLASS_NAME).toContain("px-2.5");
     expect(POST_COMMENT_ROOT_FORM_ROW_CLASS_NAME).toContain("mb-1");
     expect(POST_COMMENT_ROOT_FORM_INPUT_CLASS_NAME).toContain("min-h-10");
     expect(POST_COMMENT_ROOT_FORM_INPUT_CLASS_NAME).not.toContain("min-h-11");
-    expect(POST_COMMENT_ROOT_FORM_TEXTAREA_CLASS_NAME).toContain("min-h-[64px]");
-    expect(POST_COMMENT_ROOT_FORM_TEXTAREA_CLASS_NAME).toContain("sm:min-h-[56px]");
-    expect(POST_COMMENT_ROOT_FORM_ACTION_ROW_CLASS_NAME).toContain("mt-1");
+    expect(POST_COMMENT_ROOT_FORM_TEXTAREA_CLASS_NAME).toContain("min-h-[88px]");
+    expect(POST_COMMENT_ROOT_FORM_TEXTAREA_CLASS_NAME).not.toContain("sm:min-h-[56px]");
+    expect(POST_COMMENT_ROOT_FORM_ACTION_ROW_CLASS_NAME).toContain("mt-2");
     expect(POST_COMMENT_ROOT_FORM_SUBMIT_CLASS_NAME).toContain("min-h-10");
     expect(POST_COMMENT_ROOT_FORM_SUBMIT_CLASS_NAME).toContain("px-3");
     expect(POST_COMMENT_ROOT_FORM_SUBMIT_CLASS_NAME).toContain("text-xs");

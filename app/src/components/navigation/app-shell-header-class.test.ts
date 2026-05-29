@@ -45,6 +45,9 @@ describe("app shell header classes", () => {
   it("uses shared desktop link sizing and softer mobile panels for header navigation", () => {
     expect(APP_SHELL_NAV_LINK_CLASS_NAME).not.toContain("rounded-md");
     expect(APP_SHELL_NAV_LINK_CLASS_NAME).not.toContain("hover:bg");
+    expect(getAppShellNavLinkClassName(true)).toContain("text-[#2563eb]");
+    expect(getAppShellNavLinkClassName(true)).toContain("underline");
+    expect(getAppShellNavLinkClassName(true)).toContain("decoration-2");
     expect(getAppShellNavLinkClassName(true)).not.toContain("shadow-[inset_0_-2px_0_#3567b5]");
     expect(getAppShellNavLinkClassName(true)).not.toContain("border-[#b8d1f2]");
     expect(APP_SHELL_DESKTOP_NAV_CLUSTER_CLASS_NAME).toContain("gap-1.5");
@@ -59,6 +62,8 @@ describe("app shell header classes", () => {
     expect(APP_SHELL_MOBILE_DISCLOSURE_TRIGGER_CLASS_NAME).not.toContain("border");
     expect(APP_SHELL_MOBILE_DISCLOSURE_TRIGGER_CLASS_NAME).toContain("min-h-9");
     expect(APP_SHELL_MOBILE_DISCLOSURE_TRIGGER_CLASS_NAME).toContain("focus-visible:ring-2");
+    expect(getAppShellMobileDisclosureTriggerClassName(true)).toContain("text-[#2563eb]");
+    expect(getAppShellMobileQuickLinkClassName(true)).toContain("underline");
     expect(getAppShellMobileDisclosureTriggerClassName(true)).not.toContain("shadow-[inset_0_-2px_0_#3567b5]");
     expect(getAppShellMobileQuickLinkClassName(true)).not.toContain("border-[#b8d1f2]");
   });

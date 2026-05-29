@@ -8884,3 +8884,43 @@
     - Playwright chromium `1 passed`
   - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
     - ESLint, TypeScript, Vitest `297 files / 1421 tests`, Next production build PASS
+
+### 2026-05-29 | 게시글 상세 feedback P0/P1 1-8 일괄 반영
+- 완료일: `2026-05-29`
+- 배경:
+  - 게시글 상세에서 작성자 영역이 테스트 데이터처럼 약하고, 날짜 포맷이 user-facing 화면에서 혼재될 수 있었다.
+  - 본문 이미지가 작은 왼쪽 preview처럼 보이고 이미지 아래 텍스트와 간격이 붙어 있었다.
+  - 비회원 글 수정/삭제가 모든 사용자에게 하단에 노출되어 관리 화면처럼 보였고, 댓글 입력 폼은 실제 댓글 작성에는 낮았다.
+  - 헤더 현재 위치 표시와 상세 하단 action bar의 정보 위계도 더 명확히 해야 했다.
+- 변경내용:
+  - 상세/게스트 상세 작성자 영역에 `비회원 {닉네임}` fallback과 더 명확한 avatar/author label을 적용했다.
+  - 상세 날짜와 운영자 정리 최종 확인일을 `YYYY.MM.DD`로 표시하도록 바꿨다.
+  - 자유게시판 계열 badge를 더 작고 가벼운 slate badge로 낮췄다.
+  - 본문 영역에 읽기 폭 `760px`와 inline image 최대 폭 `640px`, 이미지 상하 여백을 적용했다.
+  - 비회원 글 수정/삭제/password 입력을 하단 action bar에서 제거하고 우측 상단 `...` 메뉴 안으로 이동했다.
+  - 상세 하단 action bar를 한 줄 flex 구조로 바꾸고 좋아요/싫어요는 왼쪽, 북마크/공유는 오른쪽에 배치했다.
+  - 댓글 root textarea 최소 높이를 `88px`로 늘리고 composer spacing을 재조정했다.
+  - header desktop/mobile active class를 파란색 bold underline으로 강화했다.
+- 코드문서:
+  - [app/src/components/posts/post-detail-primary-card.tsx](../app/src/components/posts/post-detail-primary-card.tsx)
+  - [app/src/app/posts/[id]/guest/page.tsx](../app/src/app/posts/[id]/guest/page.tsx)
+  - [app/src/components/posts/guest-post-detail-actions.tsx](../app/src/components/posts/guest-post-detail-actions.tsx)
+  - [app/src/components/posts/post-comment-layout-class.ts](../app/src/components/posts/post-comment-layout-class.ts)
+  - [app/src/components/navigation/app-shell-header-class.ts](../app/src/components/navigation/app-shell-header-class.ts)
+  - [app/src/components/posts/operator-content-source-panel.tsx](../app/src/components/posts/operator-content-source-panel.tsx)
+  - [app/src/components/posts/post-detail-presenter.tsx](../app/src/components/posts/post-detail-presenter.tsx)
+  - [app/src/lib/post-presenter.ts](../app/src/lib/post-presenter.ts)
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/components/posts/post-detail-action-accessibility.test.tsx src/components/posts/post-detail-primary-card-layout.test.ts src/components/posts/post-comment-layout-class.test.ts src/components/posts/post-form-accessibility.test.tsx src/components/posts/operator-content-source-panel.test.tsx src/components/navigation/app-shell-header-class.test.ts 'src/app/posts/[id]/guest/page-layout.test.ts'`
+    - Vitest `7 files / 35 tests` PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app lint`
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers ENABLE_SOCIAL_DEV_LOGIN=1 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test:e2e -- e2e/comment-report-visual-smoke.spec.ts --project=chromium --workers=1`
+    - Playwright chromium `1 passed`
+  - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `298 files / 1431 tests`, Next production build PASS
+- 결과:
+  - 피드백의 P0/P1 중 상세 화면에서 즉시 확인 가능한 항목은 반영했다.
+  - 라이트박스, EXIF 제거, 다중 이미지 grid, 게시글 타입별 상세 템플릿 분화는 별도 기능 범위로 남겼다.

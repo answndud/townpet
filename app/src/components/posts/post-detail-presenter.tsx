@@ -55,15 +55,15 @@ export const typeMeta: Record<PostType, { label: string; chipClass: string }> = 
   },
   FREE_POST: {
     label: "자유게시판",
-    chipClass: "border-zinc-300 bg-zinc-100 text-zinc-700",
+    chipClass: "border-slate-200 bg-slate-50 text-slate-600",
   },
   FREE_BOARD: {
     label: "자유게시판",
-    chipClass: "border-zinc-300 bg-zinc-100 text-zinc-700",
+    chipClass: "border-slate-200 bg-slate-50 text-slate-600",
   },
   DAILY_SHARE: {
     label: "자유게시판",
-    chipClass: "border-slate-300 bg-slate-100 text-slate-700",
+    chipClass: "border-slate-200 bg-slate-50 text-slate-600",
   },
   PRODUCT_REVIEW: {
     label: "용품 후기",

@@ -40,8 +40,12 @@ export const APP_SHELL_NAV_LINK_CLASS_NAME = [
 ].join(" ");
 
 export const APP_SHELL_NAV_LINK_ACTIVE_CLASS_NAME = [
-  "text-[#173963]",
-  "font-semibold",
+  "font-bold",
+  "text-[#2563eb]",
+  "underline",
+  "underline-offset-4",
+  "decoration-2",
+  "decoration-[#2563eb]",
 ].join(" ");
 
 export function getAppShellNavLinkClassName(active = false, extraClassName = "") {
@@ -131,8 +135,12 @@ export const APP_SHELL_MOBILE_QUICK_LINK_CLASS_NAME = [
 ].join(" ");
 
 export const APP_SHELL_MOBILE_QUICK_LINK_ACTIVE_CLASS_NAME = [
-  "text-[#173963]",
   "font-bold",
+  "text-[#2563eb]",
+  "underline",
+  "underline-offset-4",
+  "decoration-2",
+  "decoration-[#2563eb]",
 ].join(" ");
 
 export function getAppShellMobileQuickLinkClassName(active = false, extraClassName = "") {
