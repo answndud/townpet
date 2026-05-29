@@ -14,7 +14,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  verify:
+  quality-check:
+    name: quality-check
     runs-on: ubuntu-latest
     timeout-minutes: 20
     defaults:

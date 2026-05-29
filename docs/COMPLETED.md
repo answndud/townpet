@@ -8023,3 +8023,31 @@
 - 결과:
   - 댓글 본문 아래는 답글/접기/반응 중심으로 남고, 신고/수정/삭제는 명확한 secondary 작업 메뉴로 분리됐다.
   - 사용자-facing 동작과 서버 정책은 변경하지 않고 UI 계층만 정리했다.
+
+### 2026-05-29 | GitHub Actions check run 중복 이름 정리
+- 완료일: `2026-05-29`
+- 배경:
+  - GitHub Actions 화면에서 같은 이름의 check가 두 개씩 표시되어 배포가 중복되는 것처럼 보였다.
+  - 최근 커밋 `5ecf5d0d56ed7f3f8deff8b812ec4990f9a615bb` 기준 GitHub deployments API 확인 결과 Vercel production deployment는 1개였다.
+  - 같은 커밋의 check runs에는 GitHub Actions job 이름 `verify`가 2개 있었고, 각각 `quality-gate`, `docs-quality` workflow에서 생성된 것이었다.
+- 원인:
+  - `.github/workflows/quality-gate.yml`과 `.github/workflows/docs-quality.yml`의 job key가 모두 `verify`였다.
+  - GitHub Checks 화면은 workflow 이름뿐 아니라 job/check 이름도 크게 보여주기 때문에, 서로 다른 workflow라도 같은 job 이름이면 중복 실행처럼 보인다.
+- 변경내용:
+  - `quality-gate` workflow job을 `quality-check`로 변경하고 explicit `name: quality-check`를 추가했다.
+  - `docs-quality` workflow job을 `docs-check`로 변경하고 explicit `name: docs-check`를 추가했다.
+  - workflow trigger, 실행 조건, Vercel deployment 설정, build command는 변경하지 않았다.
+- 코드문서:
+  - [.github/workflows/quality-gate.yml](../.github/workflows/quality-gate.yml)
+  - [.github/workflows/docs-quality.yml](../.github/workflows/docs-quality.yml)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `gh run list --repo answndud/townpet --limit 20 --json databaseId,name,event,headBranch,headSha,status,conclusion,workflowName,createdAt,url`
+    - 최근 push마다 `quality-gate`, `docs-quality`가 각각 1회씩 실행됨을 확인했다.
+  - `gh api 'repos/answndud/townpet/deployments?per_page=20'`
+    - 최근 커밋별 Vercel `Production` deployment는 1개씩 생성됨을 확인했다.
+  - `gh api repos/answndud/townpet/commits/5ecf5d0d56ed7f3f8deff8b812ec4990f9a615bb/check-runs`
+    - 같은 커밋의 GitHub Actions check run 이름이 `verify` 2개였음을 확인했다.
+- 결과:
+  - 다음 push부터 GitHub Checks에는 `quality-check`, `docs-check`가 분리되어 표시된다.
+  - 실제 deployment 중복이 아니라 check run 표시 이름 중복이었으므로 배포 경로는 건드리지 않았다.
