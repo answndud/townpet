@@ -3,6 +3,7 @@
 ## 현재 상태
 
 - 현재 active 구현 항목 없음.
+- `2026-05-29. AuthPageLayout footer link 계층 정리`를 완료했다. 인증 페이지 footer의 회원가입/홈/비밀번호 재설정 보조 링크를 soft button에서 text link 계층으로 낮췄고, auth layout/final sweep 테스트와 전체 `quality:check`를 확인했다.
 - `2026-05-29. ServiceUnavailableState action 계층 정리`를 완료했다. 공용 지연/장애 fallback의 primary action은 compact primary로 유지하고 secondary action은 text action으로 낮췄으며, `tp-btn-*`/`tp-btn-md` 재도입 방지 테스트를 추가했다. targeted tests, lint, typecheck, 전체 `quality:check`를 확인했다.
 - `2026-05-29. 운영자 도구 button hierarchy 정리`를 완료했다. `PostModerationControls`의 summary를 내부 bordered card에서 divider row로 낮추고, 게시글 숨김은 danger text action, 숨김 해제는 compact primary로 분리했다. legacy `tp-btn-*` 재도입 방지 테스트와 전체 `quality:check`를 확인했다.
 - `2026-05-29. 피드 오류 화면 recovery action 계층 정리`를 완료했다. `app/feed/error.tsx`의 `다시 시도`는 40px compact primary로 유지하고 `게스트 피드`는 text action으로 낮췄으며, 30px `tp-btn-*` 패턴 재도입을 source guard test로 막았다. targeted tests, lint, typecheck, 전체 `quality:check`를 확인했다.

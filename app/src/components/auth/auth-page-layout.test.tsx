@@ -19,7 +19,10 @@ describe("AuthPageLayout", () => {
     expect(html).toContain("tp-page-bg");
     expect(html).toContain("tp-hero");
     expect(html).toContain("tp-card");
-    expect(html).toContain("tp-btn-soft inline-flex min-h-10");
-    expect(html).toContain("inline-flex min-h-10 items-center rounded-md");
+    expect(html).toContain("tp-text-link inline-flex min-h-10");
+    expect(html).toContain("tp-text-muted inline-flex min-h-10");
+    expect(html).toContain("hover:underline hover:underline-offset-4");
+    expect(html).not.toContain("tp-btn-soft");
+    expect(html).not.toContain("rounded-md px-2");
   });
 });

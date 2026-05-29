@@ -15,6 +15,12 @@ type AuthPageLayoutProps = {
   secondaryFooterLinks: AuthFooterLink[];
 };
 
+const AUTH_PAGE_PRIMARY_FOOTER_LINK_CLASS_NAME =
+  "tp-text-link inline-flex min-h-10 items-center justify-center px-1.5 text-xs font-semibold transition hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2f66ba]/35 focus-visible:ring-offset-1";
+
+const AUTH_PAGE_SECONDARY_FOOTER_LINK_CLASS_NAME =
+  "tp-text-muted inline-flex min-h-10 items-center px-1.5 text-sm transition hover:text-[#274b7a] hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2f66ba]/35 focus-visible:ring-offset-1";
+
 export function AuthPageLayout({
   eyebrow,
   title,
@@ -39,7 +45,7 @@ export function AuthPageLayout({
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <Link
             href={primaryFooterLink.href}
-            className="tp-btn-soft inline-flex min-h-10 items-center justify-center px-3 text-xs text-[#315484] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2f66ba]/35"
+            className={AUTH_PAGE_PRIMARY_FOOTER_LINK_CLASS_NAME}
           >
             {primaryFooterLink.label}
           </Link>
@@ -48,7 +54,7 @@ export function AuthPageLayout({
               <Link
                 key={`${link.href}:${link.label}`}
                 href={link.href}
-                className="inline-flex min-h-10 items-center rounded-md px-2 transition hover:text-[#274b7a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2f66ba]/35"
+                className={AUTH_PAGE_SECONDARY_FOOTER_LINK_CLASS_NAME}
               >
                 {link.label}
               </Link>
