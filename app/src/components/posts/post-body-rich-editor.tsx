@@ -556,7 +556,7 @@ export const PostBodyRichEditor = forwardRef<PostBodyRichEditorHandle, PostBodyR
   const headerContent = (
     <div className="ml-auto flex items-center gap-2">
       {onModeChange ? (
-        <div className="inline-flex items-center rounded-xl border border-[#d7e1f0] bg-white p-1">
+        <div className="inline-flex items-center gap-1 border border-[#d7e1f0] bg-white p-1">
           <PostEditorToolbarButton
             scale="bar"
             tone={mode === "write" ? "primary" : "soft"}

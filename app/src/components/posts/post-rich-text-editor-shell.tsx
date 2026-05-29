@@ -57,18 +57,21 @@ export function PostEditorToolbarButton({
   className = "",
   ...props
 }: PostEditorToolbarButtonProps) {
-  const toneClassName = tone === "primary" ? "tp-btn-primary" : "tp-btn-soft";
+  const toneClassName =
+    tone === "primary"
+      ? "bg-[#3567b5] text-[#fbfdff] hover:bg-[#2f5da4] disabled:bg-[#9fb2cf]"
+      : "tp-text-muted hover:bg-[#f6f9fe] hover:text-[#2f5da4] disabled:text-[#9aacbf]";
   const scaleClassName =
     scale === "bar"
-      ? "h-[30px] px-2.5 text-[11px] leading-none"
+      ? "min-h-10 px-2.5 text-xs leading-none"
       : scale === "action"
-        ? "h-[30px] rounded-lg px-3 text-[11px] leading-none"
-        : "h-[28px] px-2.5 text-[11px] leading-none";
+        ? "min-h-10 px-3 text-xs leading-none"
+        : "min-h-10 px-2.5 text-xs leading-none";
 
   return (
     <button
       type={type}
-      className={`${toneClassName} inline-flex items-center ${scaleClassName} font-semibold ${className}`.trim()}
+      className={`${toneClassName} inline-flex items-center rounded-md ${scaleClassName} font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1 disabled:cursor-not-allowed ${className}`.trim()}
       {...props}
     />
   );
