@@ -8283,6 +8283,37 @@
   - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
     - ESLint, TypeScript, Vitest `298 files / 1426 tests`, Next production build PASS
 
+### 2026-05-29 | 공용 empty state와 feed 광고 CTA 버튼 계층 정리
+- 완료일: `2026-05-29`
+- 배경:
+  - `feed-infinite-list.tsx`에는 load-more retry action은 없지만 맞춤 추천 광고 CTA가 `tp-btn-primary`에 남아 있었다.
+  - 피드 empty/error/loading 상태는 공용 `EmptyState`가 담당하며, 이 컴포넌트의 action도 `tp-btn-primary`, `tp-btn-soft`, `tp-btn-md` 조합으로 남아 있었다.
+  - 공용 empty state는 여러 화면에서 반복되므로 primary CTA와 secondary CTA 계층을 최근 상세/피드 기준에 맞출 필요가 있었다.
+- 변경내용:
+  - `EmptyState` primary action을 explicit compact primary class로 교체했다.
+  - `EmptyState` secondary action은 bordered soft button에서 underline 기반 text action으로 낮췄다.
+  - `FeedInfiniteList` 맞춤 추천 광고 CTA도 explicit compact primary class로 맞추고 40px touch target을 확보했다.
+  - `EmptyState` test가 `tp-btn-primary`, `tp-btn-soft`, `tp-btn-md` 재도입을 잡도록 갱신했다.
+  - `FeedInfiniteList` test에 맞춤 추천 광고 CTA 계층 guard를 추가했다.
+- 코드문서:
+  - [app/src/components/ui/empty-state.tsx](../app/src/components/ui/empty-state.tsx)
+  - [app/src/components/ui/empty-state.test.tsx](../app/src/components/ui/empty-state.test.tsx)
+  - [app/src/components/posts/feed-infinite-list.tsx](../app/src/components/posts/feed-infinite-list.tsx)
+  - [app/src/components/posts/feed-infinite-list.test.tsx](../app/src/components/posts/feed-infinite-list.test.tsx)
+- 다음 후보:
+  - [app/src/components/posts/feed-pagination.tsx](../app/src/components/posts/feed-pagination.tsx): feed pagination 30px control 정책 재검토
+  - [app/src/components/navigation/feed-hover-menu.tsx](../app/src/components/navigation/feed-hover-menu.tsx): 관심 동물 저장 버튼 hierarchy 정리
+  - [app/src/app/feed/error.tsx](../app/src/app/feed/error.tsx): feed error page 30px action 정리
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/components/ui/empty-state.test.tsx src/components/posts/feed-infinite-list.test.tsx src/components/compact-control-final-sweep.test.ts`
+    - Vitest `3 files / 8 tests` PASS
+  - targeted lint:
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `298 files / 1427 tests`, Next production build PASS
+
 ### 2026-05-29 | 댓글 답글 접기 토글 compact text화
 - 완료일: `2026-05-29`
 - 배경:

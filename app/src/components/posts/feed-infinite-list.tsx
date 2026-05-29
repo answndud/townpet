@@ -222,6 +222,8 @@ const FEED_POST_ITEM_CLASS_NAME =
   "group grid h-[64px] grid-cols-[minmax(0,1fr)_44px_44px] items-center gap-x-2 px-3 py-1 transition hover:bg-[#fbfdff] sm:h-[68px] sm:grid-cols-[minmax(0,1fr)_48px_48px] sm:px-4 md:h-[64px] md:grid-cols-[minmax(0,1fr)_52px_48px] md:gap-x-2.5";
 const FEED_POST_THUMBNAIL_PLACEHOLDER_CLASS_NAME =
   "invisible aspect-square rounded-lg";
+const FEED_AD_CTA_CLASS_NAME =
+  "mt-2 inline-flex min-h-10 items-center justify-center rounded-md bg-[#3567b5] px-3 text-xs font-semibold text-[#fbfdff] transition hover:bg-[#2f5da4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1";
 
 type StoredReadPost = {
   id: string;
@@ -684,7 +686,7 @@ export function FeedInfiniteList({
                   <p className="mt-1 text-xs leading-5 text-[#446792]">{adConfig.description}</p>
                   <Link
                     href={adConfig.ctaHref}
-                    className="tp-btn-primary mt-2 inline-flex items-center px-3 py-1 text-xs font-semibold"
+                    className={FEED_AD_CTA_CLASS_NAME}
                     onClick={() => trackPersonalizationEvent("AD_CLICK")}
                   >
                     {adConfig.ctaLabel}

@@ -10,6 +10,11 @@ type EmptyStateProps = {
   secondaryActionLabel?: string;
 };
 
+const emptyStatePrimaryActionClassName =
+  "inline-flex min-h-10 items-center justify-center rounded-md bg-[#3567b5] px-3.5 text-xs font-semibold text-[#fbfdff] transition hover:bg-[#2f5da4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1";
+const emptyStateSecondaryActionClassName =
+  "tp-text-muted inline-flex min-h-10 items-center justify-center px-1.5 text-xs font-semibold transition hover:text-[#2f5da4] hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1";
+
 export function EmptyState({
   eyebrow = "현재 상태",
   title,
@@ -48,14 +53,14 @@ export function EmptyState({
           <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:items-center">
             <Link
               href={actionHref}
-              className="tp-btn-primary tp-btn-md inline-flex min-h-10 items-center justify-center"
+              className={emptyStatePrimaryActionClassName}
             >
               {actionLabel}
             </Link>
             {secondaryActionHref && secondaryActionLabel ? (
               <Link
                 href={secondaryActionHref}
-                className="tp-btn-soft tp-btn-md inline-flex min-h-10 items-center justify-center"
+                className={emptyStateSecondaryActionClassName}
               >
                 {secondaryActionLabel}
               </Link>

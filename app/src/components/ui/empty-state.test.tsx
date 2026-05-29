@@ -18,8 +18,11 @@ describe("EmptyState", () => {
 
     expect(html).toContain("현재 상태");
     expect(html).toContain("tp-eyebrow");
-    expect(html).toContain("tp-btn-primary tp-btn-md");
-    expect(html).toContain("tp-btn-soft tp-btn-md");
+    expect(html).toContain("rounded-md bg-[#3567b5]");
+    expect(html).toContain("hover:underline hover:underline-offset-4");
+    expect(html).not.toContain("tp-btn-primary");
+    expect(html).not.toContain("tp-btn-soft");
+    expect(html).not.toContain("tp-btn-md");
     expect(html).toContain("text-left");
     expect(html).toContain("flex-col");
     expect(html).toContain("sm:flex-row");
