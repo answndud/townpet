@@ -8336,6 +8336,35 @@
   - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
     - ESLint, TypeScript, Vitest `297 files / 1423 tests`, Next production build PASS
 
+### 2026-05-29 | 게시글 작성/수정 submit 버튼 계층 정리
+- 완료일: `2026-05-29`
+- 배경:
+  - `post-create-form-shell.tsx`의 작성 footer에는 `h-[28px]`, `tp-btn-soft`, `tp-btn-primary` 기반 버튼이 남아 있어 모바일 touch target과 최근 상세 action 정리 기조에 맞지 않았다.
+  - `post-detail-edit-form.tsx`의 `수정 저장`도 `tp-btn-primary + rounded-lg` 패턴으로 남아 있었다.
+- 변경내용:
+  - 작성 footer의 `프로필에서 동네 설정`, `취소`는 bordered soft button에서 compact text action으로 낮췄다.
+  - 작성 `등록`은 40px touch target을 유지하는 compact primary로 명시하고 `h-[28px]` 고정 높이를 제거했다.
+  - 수정 화면 `수정 저장`도 동일한 compact primary 계층으로 낮췄다.
+  - 렌더 테스트가 `h-[28px]`, `tp-btn-soft`, `tp-btn-primary`, 수정 저장의 `rounded-lg` 재도입을 잡도록 보강했다.
+- 코드문서:
+  - [app/src/components/posts/post-create-form-shell.tsx](../app/src/components/posts/post-create-form-shell.tsx)
+  - [app/src/components/posts/post-detail-edit-form.tsx](../app/src/components/posts/post-detail-edit-form.tsx)
+  - [app/src/components/posts/post-create-form-shell.test.tsx](../app/src/components/posts/post-create-form-shell.test.tsx)
+  - [app/src/components/posts/post-form-accessibility.test.tsx](../app/src/components/posts/post-form-accessibility.test.tsx)
+- 다음 후보:
+  - [app/src/components/posts/post-body-rich-editor.tsx](../app/src/components/posts/post-body-rich-editor.tsx): editor toolbar button은 별도 UX 단위로 정리
+  - [app/src/components/posts/feed-search-form.tsx](../app/src/components/posts/feed-search-form.tsx): 검색 footer/form action 버튼은 피드 검색 surface 단위로 정리
+  - [app/src/components/posts/lost-found-share-panel.tsx](../app/src/components/posts/lost-found-share-panel.tsx): 공유 패널 action 버튼은 분실동물 공유 flow 단위로 정리
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/components/posts/post-create-form-shell.test.tsx src/components/posts/post-form-accessibility.test.tsx`
+    - Vitest `2 files / 11 tests` PASS
+  - targeted lint:
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `297 files / 1423 tests`, Next production build PASS
+
 ### 2026-05-29 | 댓글 신고 폼과 메뉴 무게 축소
 - 완료일: `2026-05-29`
 - 배경:
