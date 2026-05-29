@@ -4,6 +4,13 @@ import Link from "next/link";
 
 import { COMMENT_CONTENT_MAX_LENGTH } from "@/lib/input-limits";
 import {
+  COMMENT_LOGIN_REQUIRED_MESSAGE,
+  GUEST_COMMENT_GUIDE_BODY,
+  GUEST_COMMENT_GUIDE_TITLE,
+  MEMBER_COMMENT_GUIDE_BODY,
+  MEMBER_COMMENT_GUIDE_TITLE,
+} from "@/lib/interaction-auth-copy";
+import {
   POST_COMMENT_FORM_MUTED_CLASS_NAME,
   POST_COMMENT_ROOT_FORM_ACTION_ROW_CLASS_NAME,
   POST_COMMENT_ROOT_FORM_INPUT_CLASS_NAME,
@@ -73,10 +80,15 @@ export function PostCommentRootForm({
         <>
           {!currentUserId ? (
             <div className="mb-1.5 rounded-md border border-[#dbe6f5] bg-white px-2.5 py-2 text-[12px] leading-5 text-[#4f678d]">
-              <p className="font-semibold text-[#173963]">비회원 댓글 작성</p>
-              <p>닉네임과 비밀번호를 입력하면 댓글을 수정/삭제할 수 있습니다.</p>
+              <p className="font-semibold text-[#173963]">{GUEST_COMMENT_GUIDE_TITLE}</p>
+              <p>{GUEST_COMMENT_GUIDE_BODY}</p>
             </div>
-          ) : null}
+          ) : (
+            <div className="mb-1.5 rounded-md border border-[#dbe6f5] bg-white px-2.5 py-2 text-[12px] leading-5 text-[#4f678d]">
+              <p className="font-semibold text-[#173963]">{MEMBER_COMMENT_GUIDE_TITLE}</p>
+              <p>{MEMBER_COMMENT_GUIDE_BODY}</p>
+            </div>
+          )}
           {lostFoundSightingEnabled ? (
             <div className={POST_COMMENT_ROOT_FORM_MODE_ROW_CLASS_NAME}>
               <button
@@ -201,7 +213,7 @@ export function PostCommentRootForm({
               interactionDisabledMessage
             ) : (
               <>
-                댓글 작성/답글/신고는 로그인 후 이용할 수 있습니다.{" "}
+                {COMMENT_LOGIN_REQUIRED_MESSAGE}{" "}
                 <Link
                   href={loginHref}
                   className="tp-text-link inline-flex min-h-10 items-center font-semibold underline underline-offset-2"
