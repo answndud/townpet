@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import type { PostType } from "@prisma/client";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { useDismissibleLayer } from "@/components/ui/use-dismissible-layer";
 import {
   addRecentSearchTerm,
   buildRecentSearchesPayload,
@@ -240,22 +241,16 @@ export function FeedSearchForm({
     };
   }, [queryValue, scope, searchInValue, type]);
 
-  useEffect(() => {
-    if (!isKeywordPanelOpen) {
-      return;
-    }
+  const layerRefs = useMemo(() => [searchBoxRef], []);
+  const closeKeywordPanel = useCallback(() => {
+    setIsKeywordPanelOpen(false);
+  }, []);
 
-    const handlePointerDown = (event: MouseEvent) => {
-      if (!searchBoxRef.current?.contains(event.target as Node)) {
-        setIsKeywordPanelOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handlePointerDown);
-    return () => {
-      document.removeEventListener("mousedown", handlePointerDown);
-    };
-  }, [isKeywordPanelOpen]);
+  useDismissibleLayer({
+    enabled: isKeywordPanelOpen,
+    refs: layerRefs,
+    onDismiss: closeKeywordPanel,
+  });
 
   return (
     <div className={density === "ULTRA" ? "space-y-2" : "space-y-2.5"}>

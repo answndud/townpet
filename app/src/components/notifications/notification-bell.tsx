@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 
 import { getAppShellNavLinkClassName } from "@/components/navigation/app-shell-header-class";
+import { useDismissibleLayer } from "@/components/ui/use-dismissible-layer";
 import {
   emitNotificationUnreadSync,
   subscribeNotificationUnreadSync,
@@ -113,6 +114,7 @@ export function NotificationBell({ unreadCount, active = false }: NotificationBe
   const [previewFilter, setPreviewFilter] = useState<PreviewFilter>("ALL");
   const [isActionPending, startActionTransition] = useTransition();
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const layerRefs = useMemo(() => [containerRef], []);
   const badgeLabel = localUnreadCount > 99 ? "99+" : String(localUnreadCount);
   const filteredItems =
     previewFilter === "UNREAD" ? items.filter((item) => !item.isRead) : items;
@@ -164,31 +166,15 @@ export function NotificationBell({ unreadCount, active = false }: NotificationBe
     });
   }, []);
 
-  useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
+  const closePopover = useCallback(() => {
+    setIsOpen(false);
+  }, []);
 
-    const handleClickOutside = (event: MouseEvent) => {
-      if (!containerRef.current?.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-
-    const handleEsc = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("keydown", handleEsc);
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("keydown", handleEsc);
-    };
-  }, [isOpen]);
+  useDismissibleLayer({
+    enabled: isOpen,
+    refs: layerRefs,
+    onDismiss: closePopover,
+  });
 
   const loadPreview = useCallback(async () => {
     setIsLoading(true);

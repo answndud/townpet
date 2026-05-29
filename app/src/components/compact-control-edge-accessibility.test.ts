@@ -56,11 +56,16 @@ describe("remaining compact user control accessibility", () => {
 
   it("keeps menu popovers dismissible outside their trigger area", () => {
     const dismissibleDetailsCode = readSource("src/components/ui/dismissible-details.tsx");
+    const dismissibleLayerCode = readSource("src/components/ui/use-dismissible-layer.ts");
     const menuSources = [
       "src/components/posts/post-detail-primary-card.tsx",
       "src/app/posts/[id]/guest/page.tsx",
       "src/components/posts/post-comment-thread.tsx",
       "src/components/posts/guest-post-detail-actions.tsx",
+      "src/components/posts/post-bookmark-button.tsx",
+      "src/components/posts/reaction-login-prompt.tsx",
+      "src/components/posts/feed-search-form.tsx",
+      "src/components/notifications/notification-bell.tsx",
     ].map(readSource).join("\n");
     const feedHoverMenuCode = readSource("src/components/navigation/feed-hover-menu.tsx");
 
@@ -68,7 +73,11 @@ describe("remaining compact user control accessibility", () => {
     expect(dismissibleDetailsCode).toContain('document.addEventListener("focusin"');
     expect(dismissibleDetailsCode).toContain('event.key === "Escape"');
     expect(dismissibleDetailsCode).toContain("[data-dismissible-details-close]");
+    expect(dismissibleLayerCode).toContain('document.addEventListener("pointerdown"');
+    expect(dismissibleLayerCode).toContain('document.addEventListener("focusin"');
+    expect(dismissibleLayerCode).toContain('event.key === "Escape"');
     expect(menuSources).toContain("DismissibleDetails");
+    expect(menuSources).toContain("useDismissibleLayer");
     expect(menuSources).toContain("data-dismissible-details-close");
     expect(feedHoverMenuCode).toContain('document.addEventListener("pointerdown"');
     expect(feedHoverMenuCode).toContain('document.addEventListener("focusin"');

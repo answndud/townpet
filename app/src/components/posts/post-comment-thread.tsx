@@ -29,7 +29,6 @@ import {
   POST_COMMENT_INLINE_FORM_SECTION_CLASS_NAME,
   POST_COMMENT_INLINE_FORM_TEXTAREA_CLASS_NAME,
   POST_COMMENT_BEST_SECTION_CLASS_NAME,
-  POST_COMMENT_EMPTY_STATE_CLASS_NAME,
   POST_COMMENT_LATEST_HEADER_CLASS_NAME,
   POST_COMMENT_PENDING_PREVIEW_BODY_CLASS_NAME,
   POST_COMMENT_PENDING_PREVIEW_CLASS_NAME,
@@ -1084,16 +1083,11 @@ export function PostCommentThread({
         </div>
       ) : null}
 
-      {roots.length === 0 ? (
-        <div className={POST_COMMENT_EMPTY_STATE_CLASS_NAME}>
-          <p className="font-semibold text-[#355988]">아직 댓글이 없습니다.</p>
-          <p className="mt-0.5">질문이나 정정이 필요한 부분을 남겨주세요.</p>
-        </div>
-      ) : (
+      {roots.length > 0 ? (
         <div className={`${POST_COMMENT_ROOT_LIST_CLASS_NAME} ${COMMENT_BORDER_CLASS_NAME} ${COMMENT_DIVIDER_CLASS_NAME}`}>
           {roots.map((comment) => renderComment(comment))}
         </div>
-      )}
+      ) : null}
 
       <PostCommentPagination
         currentPage={currentPage}

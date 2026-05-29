@@ -43,5 +43,7 @@ describe("globals.css semantic color roles", () => {
     expect(css).toMatch(/\.tp-sun-editor-wrap \.sun-editor \.sun-editor-editable[\s\S]*min-height:\s*260px;/);
     expect(css).toContain(".se-list-layer .se-list-inner");
     expect(css).toContain(".tp-divider-soft");
+    expect(css).toMatch(/\.tp-text-post-title\s*\{[^}]*font-size:\s*1\.25rem;[\s\S]*font-weight:\s*600;[\s\S]*letter-spacing:\s*0;/);
+    expect(css).toMatch(/\.tp-text-post-title\s*\{[\s\S]*font-size:\s*1\.55rem;/);
   });
 });

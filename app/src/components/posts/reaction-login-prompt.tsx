@@ -1,6 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useCallback, useMemo, useRef } from "react";
+
+import { useDismissibleLayer } from "@/components/ui/use-dismissible-layer";
 
 type ReactionLoginPromptProps = {
   isOpen: boolean;
@@ -17,6 +20,19 @@ export function ReactionLoginPrompt({
   align = "center",
   onClose,
 }: ReactionLoginPromptProps) {
+  const desktopLayerRef = useRef<HTMLDivElement | null>(null);
+  const mobileLayerRef = useRef<HTMLDivElement | null>(null);
+  const layerRefs = useMemo(() => [desktopLayerRef, mobileLayerRef], []);
+  const handleDismiss = useCallback(() => {
+    onClose();
+  }, [onClose]);
+
+  useDismissibleLayer({
+    enabled: isOpen,
+    refs: layerRefs,
+    onDismiss: handleDismiss,
+  });
+
   if (!isOpen) {
     return null;
   }
@@ -34,7 +50,10 @@ export function ReactionLoginPrompt({
 
   return (
     <>
-      <div className={`absolute top-[calc(100%+8px)] z-10 hidden min-w-[220px] sm:block ${desktopAlignClass}`}>
+      <div
+        ref={desktopLayerRef}
+        className={`absolute top-[calc(100%+8px)] z-10 hidden min-w-[220px] sm:block ${desktopAlignClass}`}
+      >
         <div className="rounded-lg border border-[#dbe6f6] bg-white px-3 py-2.5 shadow-[0_10px_24px_rgba(16,40,74,0.12)]">
           <p className="text-[12px] leading-5 text-[#355988]">{message}</p>
           <div className="mt-2 flex items-center justify-end gap-2">
@@ -52,7 +71,7 @@ export function ReactionLoginPrompt({
         </div>
       </div>
 
-      <div className="fixed inset-x-4 bottom-4 z-30 sm:hidden">
+      <div ref={mobileLayerRef} className="fixed inset-x-4 bottom-4 z-30 sm:hidden">
         <div className="rounded-lg border border-[#dbe6f6] bg-white px-4 py-3 shadow-[0_14px_28px_rgba(16,40,74,0.14)]">
           <p className="text-[13px] leading-5 text-[#355988]">{message}</p>
           <div className="mt-3 flex items-center justify-end gap-2">

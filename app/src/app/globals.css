@@ -237,10 +237,10 @@ body {
 }
 
 .tp-text-post-title {
-  font-size: 1.375rem;
-  line-height: 1.18;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-size: 1.25rem;
+  line-height: 1.28;
+  font-weight: 600;
+  letter-spacing: 0;
 }
 
 .tp-text-section-title {
@@ -612,7 +612,7 @@ body {
   }
 
   .tp-text-post-title {
-    font-size: 1.95rem;
+    font-size: 1.55rem;
   }
 
   .tp-text-section-title {

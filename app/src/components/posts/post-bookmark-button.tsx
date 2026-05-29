@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 
+import { useDismissibleLayer } from "@/components/ui/use-dismissible-layer";
 import { BOOKMARK_LOGIN_REQUIRED_MESSAGE } from "@/lib/interaction-auth-copy";
 import { togglePostBookmarkAction } from "@/server/actions/post";
 
@@ -28,6 +29,11 @@ export function PostBookmarkButton({
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const actionLockRef = useRef(false);
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const layerRefs = useMemo(() => [rootRef], []);
+  const closeLoginHint = useCallback(() => {
+    setLoginIntent(false);
+  }, []);
 
   useEffect(() => {
     setBookmarked(Boolean(currentBookmarked));
@@ -48,6 +54,12 @@ export function PostBookmarkButton({
       window.clearTimeout(timer);
     };
   }, [loginIntent]);
+
+  useDismissibleLayer({
+    enabled: !canBookmark && showLoginHint && loginIntent,
+    refs: layerRefs,
+    onDismiss: closeLoginHint,
+  });
 
   const buttonClass = compact
     ? "inline-flex min-h-8 min-w-8 items-center justify-center px-1 text-xs font-semibold leading-none transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
@@ -88,7 +100,7 @@ export function PostBookmarkButton({
   };
 
   return (
-    <div className={`relative ${compact ? "inline-flex" : "flex flex-col items-start gap-1"}`}>
+    <div ref={rootRef} className={`relative ${compact ? "inline-flex" : "flex flex-col items-start gap-1"}`}>
       <button
         type="button"
         onClick={handleToggle}

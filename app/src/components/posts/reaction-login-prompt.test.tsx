@@ -1,4 +1,6 @@
 import type { AnchorHTMLAttributes, ReactNode } from "react";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 
@@ -41,5 +43,17 @@ describe("ReactionLoginPrompt", () => {
     expect(html).not.toContain("tp-btn-primary");
     expect(html).not.toContain("rounded-lg px-4 text-sm");
     expect(html).not.toContain("rounded-2xl");
+  });
+
+  it("uses the shared dismissible layer behavior", () => {
+    const source = readFileSync(
+      join(process.cwd(), "src/components/posts/reaction-login-prompt.tsx"),
+      "utf8",
+    );
+
+    expect(source).toContain("useDismissibleLayer");
+    expect(source).toContain("desktopLayerRef");
+    expect(source).toContain("mobileLayerRef");
+    expect(source).toContain("enabled: isOpen");
   });
 });
