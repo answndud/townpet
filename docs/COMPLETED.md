@@ -8452,6 +8452,33 @@
   - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
     - ESLint, TypeScript, Vitest `298 files / 1424 tests`, Next production build PASS
 
+### 2026-05-29 | 피드 inline action 버튼 계층 정리
+- 완료일: `2026-05-29`
+- 배경:
+  - `guest-feed-page-client.tsx`의 `글쓰기`, 게스트/회원 피드의 `목록 바로가기`가 `tp-btn-* + h-[30px]` 패턴으로 남아 있었다.
+  - 피드 상단/하단 검색 버튼을 정리한 뒤, 피드 화면의 남은 inline action도 같은 계층으로 맞출 필요가 있었다.
+- 변경내용:
+  - 게스트 피드 `글쓰기`를 `tp-btn-primary h-[30px]`에서 compact primary class로 변경했다.
+  - 게스트/회원 피드 `목록 바로가기`를 `tp-btn-soft h-[30px]`에서 compact text action으로 낮췄다.
+  - source guard test가 `tp-btn-primary inline-flex h-[30px]`, `tp-btn-soft hidden h-[30px]` 재도입을 잡도록 보강했다.
+- 코드문서:
+  - [app/src/components/posts/guest-feed-page-client.tsx](../app/src/components/posts/guest-feed-page-client.tsx)
+  - [app/src/components/posts/guest-feed-page-client.test.ts](../app/src/components/posts/guest-feed-page-client.test.ts)
+  - [app/src/app/feed/page.tsx](../app/src/app/feed/page.tsx)
+- 다음 후보:
+  - [app/src/components/posts/feed-infinite-list.tsx](../app/src/components/posts/feed-infinite-list.tsx): feed empty/retry action 정리
+  - [app/src/components/posts/feed-pagination.tsx](../app/src/components/posts/feed-pagination.tsx): feed pagination 30px control 정책 재검토
+  - [app/src/app/posts/new/page.tsx](../app/src/app/posts/new/page.tsx): 글쓰기 page back/cancel link 정리
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/components/posts/guest-feed-page-client.test.ts src/app/feed/guest/page.test.tsx`
+    - Vitest `2 files / 4 tests` PASS
+  - targeted lint:
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `298 files / 1425 tests`, Next production build PASS
+
 ### 2026-05-29 | 댓글 신고 폼과 메뉴 무게 축소
 - 완료일: `2026-05-29`
 - 배경:

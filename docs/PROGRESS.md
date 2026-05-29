@@ -3,6 +3,7 @@
 ## 현재 상태
 
 - 현재 active 구현 항목 없음.
+- `2026-05-29. 피드 inline action 버튼 계층 정리`를 완료했다. 게스트 피드 `글쓰기`를 compact primary로 맞추고, 게스트/회원 피드 `목록 바로가기`는 text action으로 낮췄으며 30px legacy button 패턴을 제거했다. targeted tests, lint, typecheck, 전체 `quality:check`를 확인했다.
 - `2026-05-29. 분실동물 공유 패널 action 버튼 계층 정리`를 완료했다. 링크 복사/공유 이미지 열기는 text action으로 낮추고, 카카오톡 문구 복사는 compact primary로 유지했으며 `tp-btn-*` 의존을 제거했다. targeted tests, lint, typecheck, 전체 `quality:check`를 확인했다.
 - `2026-05-29. 피드 검색 action 버튼 계층 정리`를 완료했다. 상단/하단 피드 검색의 `검색`은 compact primary로 유지하고 `초기화`는 text action으로 낮췄으며 `tp-btn-*` 의존을 제거했다. targeted tests, lint, typecheck, 전체 `quality:check`를 확인했다.
 - `2026-05-29. 게시글 rich editor toolbar 버튼 계층 정리`를 완료했다. 에디터 toolbar 공통 버튼에서 `tp-btn-*`, `h-[28px]/h-[30px]`, `rounded-lg` 패턴을 제거하고 40px compact control로 맞췄다. targeted tests, lint, typecheck, 전체 `quality:check`를 확인했다.
