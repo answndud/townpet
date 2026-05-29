@@ -21,5 +21,11 @@ describe("ServiceUnavailableState", () => {
     expect(html).toContain("목록 데이터 연결이 지연되고 있습니다");
     expect(html).toContain("href=\"/boards/adoption\"");
     expect(html).toContain("href=\"/feed\"");
+    expect(html).toContain("min-h-10");
+    expect(html).toContain("rounded-md bg-[#3567b5]");
+    expect(html).toContain("hover:underline hover:underline-offset-4");
+    expect(html).not.toContain("tp-btn-primary");
+    expect(html).not.toContain("tp-btn-soft");
+    expect(html).not.toContain("tp-btn-md");
   });
 });
