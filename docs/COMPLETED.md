@@ -9202,3 +9202,38 @@
 - 결과:
   - Web Vitals를 개인정보 없이 route 단위로 수집하고, p75/p95를 운영 리포트로 조회할 수 있는 최소 루프가 생겼다.
   - 다음 Phase 3은 `/` 첫 화면 live board 로딩 체감 개선이다.
+
+### 2026-05-30 | 성능 개선 Phase 3 홈 첫 화면 데이터 표시 개선
+- 완료일: `2026-05-30`
+- 배경:
+  - `/` 첫 화면의 live board는 정적 shell 뒤에 client component가 `/api/home/feed`를 호출하기 전까지 skeleton을 보여줬다.
+  - 실제 사용자는 첫 HTML에서 글 목록 또는 의미 있는 empty action을 보지 못하고, 추가 client fetch를 기다려야 했다.
+- 변경내용:
+  - 홈 피드 직렬화/필터링/운영자 콘텐츠 우선순위 로직을 `getHomeFeedPayload()` read-only query로 분리했다.
+  - `/api/home/feed` route는 같은 query를 재사용하고, 기존 rate limit/cache-control/error monitoring 경계만 유지하도록 단순화했다.
+  - `HomeFeedPreview`를 client component에서 server-rendered component로 바꾸고 `useEffect` fetch, skeleton, client-json 의존성을 제거했다.
+  - `/` page를 `revalidate = 60` ISR 정적 페이지로 바꿔 첫 HTML에 home feed preview를 포함하면서도 1분 단위로 최신화되게 했다.
+  - 홈 page test는 async page rendering과 server-rendered feed row를 검증하도록 갱신했다.
+- 코드문서:
+  - [app/src/server/queries/home-feed.queries.ts](../app/src/server/queries/home-feed.queries.ts)
+  - [app/src/app/api/home/feed/route.ts](../app/src/app/api/home/feed/route.ts)
+  - [app/src/components/home/home-feed-preview.tsx](../app/src/components/home/home-feed-preview.tsx)
+  - [app/src/app/page.tsx](../app/src/app/page.tsx)
+  - [app/src/app/page.test.tsx](../app/src/app/page.test.tsx)
+  - [app/src/components/home/home-feed-preview.test.tsx](../app/src/components/home/home-feed-preview.test.tsx)
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/app/page.test.tsx src/components/home/home-feed-preview.test.tsx src/app/api/home/feed/route.test.ts`
+    - Vitest `3 files / 11 tests` PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app lint`
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app build`
+    - PASS, `/` route가 `Revalidate 1m` 정적 ISR로 출력됨
+  - local production server `http://localhost:3100/` HTML 확인
+    - `animate-pulse` 없음
+    - `/api/home/feed` client fetch 문자열 없음
+    - `먼저 확인할 글`, `최근 올라온 공개 글`, `24시 병원 확인 가이드`가 첫 HTML에 포함됨
+- 결과:
+  - `/` 첫 화면 live board가 client fetch 대기 skeleton에서 server-rendered ISR 콘텐츠로 바뀌었다.
+  - 다음 Phase 4는 `/`, `/login`, `/feed/guest` 초기 JS/resource diet다.

@@ -1,37 +1,7 @@
-"use client";
-
 import Link from "next/link";
-import { useEffect, useState } from "react";
 
 import { buildOperatorContentMetaLabel } from "@/components/posts/operator-content-source-panel";
-import { fetchJson, isAbortError } from "@/lib/client-json";
-
-type HomeFeedItem = {
-  id: string;
-  href: string;
-  title: string;
-  excerpt: string;
-  typeLabel: string;
-  createdAt: string;
-  authorName: string;
-  neighborhoodLabel: string | null;
-  isOperatorContent?: boolean | null;
-  operatorSourceName?: string | null;
-  operatorSourceUrl?: string | null;
-  operatorLastVerifiedAt?: string | Date | null;
-  commentCount: number;
-  likeCount: number;
-  viewCount: number;
-};
-
-type HomeFeedPayload = {
-  featured: HomeFeedItem[];
-  latest: HomeFeedItem[];
-};
-
-type HomeFeedResponse =
-  | { ok: true; data: HomeFeedPayload }
-  | { ok: false; error: { message: string } };
+import type { HomeFeedItem, HomeFeedPayload } from "@/server/queries/home-feed.queries";
 
 type EmptyAction = {
   href: string;
@@ -48,27 +18,6 @@ function formatDate(value: string) {
     month: "short",
     day: "numeric",
   });
-}
-
-function FeedPreviewSkeleton() {
-  return (
-    <div className="border-y border-[#dbe6f5] bg-[#fbfdff]">
-      {[0, 1, 2, 3].map((index) => (
-        <div
-          key={`home-feed-skeleton-${index}`}
-          className="animate-pulse border-b border-[#e5edf8] px-2.5 py-1 last:border-b-0"
-          aria-hidden="true"
-        >
-          <div className="flex items-center gap-2">
-            <div className="h-3.5 w-14 rounded-md bg-[#dce8f8]" />
-            <div className="h-2.5 w-16 rounded bg-[#edf3fb]" />
-          </div>
-          <div className="mt-1 h-3 w-4/5 rounded bg-[#dce8f8]" />
-          <div className="mt-1 h-2.5 w-2/3 rounded bg-[#edf3fb]" />
-        </div>
-      ))}
-    </div>
-  );
 }
 
 export function FeedPreviewList({
@@ -155,45 +104,7 @@ export function FeedPreviewList({
   );
 }
 
-export function HomeFeedPreview() {
-  const [data, setData] = useState<HomeFeedPayload | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    const controller = new AbortController();
-
-    const load = async () => {
-      try {
-        const { response, payload } = await fetchJson<HomeFeedResponse>("/api/home/feed", {
-          method: "GET",
-          credentials: "same-origin",
-          signal: controller.signal,
-        });
-        if (cancelled) {
-          return;
-        }
-        if (!response.ok || !payload.ok) {
-          throw new Error(payload.ok ? "홈 피드를 불러오지 못했습니다." : payload.error.message);
-        }
-        setData(payload.data);
-        setError(null);
-      } catch (loadError) {
-        if (isAbortError(loadError) || cancelled) {
-          return;
-        }
-        setError(loadError instanceof Error ? loadError.message : "홈 피드를 불러오지 못했습니다.");
-      }
-    };
-
-    void load();
-
-    return () => {
-      cancelled = true;
-      controller.abort();
-    };
-  }, []);
-
+export function HomeFeedPreview({ data }: { data: HomeFeedPayload }) {
   return (
     <section className="mx-auto w-full max-w-[1180px] px-4 pb-10 sm:px-6 sm:pb-12 lg:px-10">
       <div className="border-b border-[#dbe6f5] pb-2.5 sm:pb-3">
@@ -207,12 +118,6 @@ export function HomeFeedPreview() {
         </h2>
       </div>
 
-      {error ? (
-        <div className="tp-soft-card mt-4 p-4 text-sm leading-6 text-[#5a7397]">
-          {error}
-        </div>
-      ) : null}
-
       <div className="mt-3 grid gap-4 lg:grid-cols-2">
         <div>
           <div className="mb-2 flex items-center justify-between gap-3">
@@ -221,26 +126,22 @@ export function HomeFeedPreview() {
               더 읽기
             </Link>
           </div>
-          {data ? (
-            <FeedPreviewList
-              items={data.featured}
-              emptyText="먼저 확인할 공개 글을 준비하고 있습니다."
-              emptyActions={[
-                {
-                  href: "/guides/24h-vet-checklist",
-                  label: "24시 병원 확인 가이드",
-                  note: "야간 진료 전 전화로 확인할 항목을 정리했습니다.",
-                },
-                {
-                  href: "/feed/guest?type=HOSPITAL_REVIEW",
-                  label: "동물병원 글",
-                  note: "공개된 병원 경험 글을 최신순으로 확인합니다.",
-                },
-              ]}
-            />
-          ) : (
-            <FeedPreviewSkeleton />
-          )}
+          <FeedPreviewList
+            items={data.featured}
+            emptyText="먼저 확인할 공개 글을 준비하고 있습니다."
+            emptyActions={[
+              {
+                href: "/guides/24h-vet-checklist",
+                label: "24시 병원 확인 가이드",
+                note: "야간 진료 전 전화로 확인할 항목을 정리했습니다.",
+              },
+              {
+                href: "/feed/guest?type=HOSPITAL_REVIEW",
+                label: "동물병원 글",
+                note: "공개된 병원 경험 글을 최신순으로 확인합니다.",
+              },
+            ]}
+          />
         </div>
         <div>
           <div className="mb-2 flex items-center justify-between gap-3">
@@ -249,26 +150,22 @@ export function HomeFeedPreview() {
               더 읽기
             </Link>
           </div>
-          {data ? (
-            <FeedPreviewList
-              items={data.latest}
-              emptyText="최근 올라온 공개 글이 아직 없습니다."
-              emptyActions={[
-                {
-                  href: "/guides/lost-pet-first-24-hours",
-                  label: "분실동물 첫 24시간 가이드",
-                  note: "찾아야 할 장소와 제보 정리 순서를 먼저 확인합니다.",
-                },
-                {
-                  href: "/posts/new",
-                  label: "첫 글 작성하기",
-                  note: "병원, 산책, 분실, 중고거래 정보를 직접 남길 수 있습니다.",
-                },
-              ]}
-            />
-          ) : (
-            <FeedPreviewSkeleton />
-          )}
+          <FeedPreviewList
+            items={data.latest}
+            emptyText="최근 올라온 공개 글이 아직 없습니다."
+            emptyActions={[
+              {
+                href: "/guides/lost-pet-first-24-hours",
+                label: "분실동물 첫 24시간 가이드",
+                note: "찾아야 할 장소와 제보 정리 순서를 먼저 확인합니다.",
+              },
+              {
+                href: "/posts/new",
+                label: "첫 글 작성하기",
+                note: "병원, 산책, 분실, 중고거래 정보를 직접 남길 수 있습니다.",
+              },
+            ]}
+          />
         </div>
       </div>
     </section>
