@@ -51,13 +51,13 @@
   - 불필요한 client boundary와 모든 페이지에 실리는 client code를 점검한다.
 
 #### Phase 5. API outlier 원인 분리
-- 상태: `in_progress`
+- 상태: `completed`
 - 작업:
   - `/api/health`, `/api/home/feed`, `/api/feed/guest`의 cold/warm outlier를 endpoint 내부 단계별 timing으로 분리한다.
   - Vercel cold start, DB/Prisma warm-up, cache miss, query 비용을 구분한다.
 
 #### Phase 6. Feed/API cache와 query 최적화
-- 상태: `pending`
+- 상태: `in_progress`
 - 작업:
   - guest feed/home preview query select, aggregate, cache key를 점검한다.
   - sort/filter/type 조합별 p95가 안정적인지 확인한다.

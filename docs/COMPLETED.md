@@ -9280,3 +9280,41 @@
 - 결과:
   - 클릭 전 필요 없는 RSC prefetch를 hot path에서 제거해 모바일 초기 fetch/transfer를 크게 줄였다.
   - 다음 Phase 5는 API cold/warm outlier 원인 분리다.
+
+### 2026-05-30 | 성능 개선 Phase 5 API outlier 원인 분리
+- 완료일: `2026-05-30`
+- 배경:
+  - Phase 1 baseline에서 cold/cache-miss outlier가 `/api/health`, `/api/home/feed`, `/api/feed/guest`에 관찰됐지만 endpoint 내부 어느 단계가 원인인지 분리되지 않았다.
+  - `/api/feed/guest`는 기존 `perf=1` timing이 있었지만 `/api/health`, `/api/home/feed`는 coarse phase timing을 노출하지 않았다.
+- 변경내용:
+  - 공용 `route-timing` helper를 추가해 phase 측정과 `Server-Timing` header formatting을 표준화했다.
+  - `/api/home/feed?perf=1`에 `rate_limit`, `home_feed_query`, `total` timing meta와 `Server-Timing` header를 추가했다.
+  - `/api/health?perf=1`에 `env_validation`, `diagnostics_access`, `health_snapshot`, `total` `Server-Timing` header를 추가했다. public health body는 기존처럼 상세 진단을 숨긴다.
+  - 세 endpoint(`/api/health?perf=1`, `/api/home/feed?perf=1`, `/api/feed/guest?perf=1`)를 반복 호출해 first/p50/p95와 phase p50/p95를 markdown report로 남기는 `perf:api-timings` script를 추가했다.
+  - local production 기준 API timing snapshot [api-route-timings-2026-05-30T06-57-20-421Z.md](./reports/api-route-timings-2026-05-30T06-57-20-421Z.md)를 생성했다.
+- 코드문서:
+  - [app/src/server/route-timing.ts](../app/src/server/route-timing.ts)
+  - [app/src/app/api/home/feed/route.ts](../app/src/app/api/home/feed/route.ts)
+  - [app/src/app/api/health/route.ts](../app/src/app/api/health/route.ts)
+  - [app/scripts/measure-api-route-timings.ts](../app/scripts/measure-api-route-timings.ts)
+  - [app/package.json](../app/package.json)
+  - [docs/reports/api-route-timings-2026-05-30T06-57-20-421Z.md](./reports/api-route-timings-2026-05-30T06-57-20-421Z.md)
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/server/route-timing.test.ts src/app/api/home/feed/route.test.ts src/app/api/health/route.test.ts src/app/api/feed/guest/route.test.ts`
+    - Vitest `4 files / 25 tests` PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app lint`
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app build`
+    - PASS
+  - `PERF_BASE_URL=http://localhost:3100 PERF_API_TIMING_SAMPLES=3 PERF_API_TIMING_PAUSE_MS=50 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app perf:api-timings`
+    - PASS, local production report 생성
+- 주요 결과:
+  - local first/p50/p95:
+    - `/api/health?perf=1`: first `134.3ms`, p50 `13.5ms`, p95 `134.3ms`; 주요 phase는 `health_snapshot`.
+    - `/api/home/feed?perf=1`: first `35.5ms`, p50 `5.6ms`, p95 `35.5ms`; 주요 phase는 cold `home_feed_query`.
+    - `/api/feed/guest?perf=1`: first `18.3ms`, p50 `9.3ms`, p95 `18.3ms`; 주요 phase는 `bootstrap.policy_and_communities`.
+- 결과:
+  - API outlier를 endpoint 내부 phase로 나눠 볼 수 있는 반복 측정 루프가 생겼다.
+  - 다음 Phase 6은 feed/home preview query와 cache key 최적화다.

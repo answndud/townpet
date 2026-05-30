@@ -113,6 +113,16 @@ describe("GET /api/health", () => {
     expect(payload.durationMs).toBeUndefined();
   });
 
+  it("exposes coarse server timing when perf=1 is requested", async () => {
+    const request = new Request("http://localhost/api/health?perf=1");
+
+    const response = await GET(request);
+
+    expect(response.headers.get("server-timing")).toContain("env_validation");
+    expect(response.headers.get("server-timing")).toContain("diagnostics_access");
+    expect(response.headers.get("server-timing")).toContain("health_snapshot");
+  });
+
   it("includes detailed diagnostics with valid internal token", async () => {
     const request = new Request("http://localhost/api/health", {
       headers: {

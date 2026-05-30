@@ -104,6 +104,24 @@ describe("GET /api/home/feed", () => {
     expect(payload.data.latest).toEqual([]);
   });
 
+  it("includes route timings when perf=1 is requested", async () => {
+    const response = await GET(new Request("http://localhost/api/home/feed?perf=1") as NextRequest);
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("server-timing")).toContain("rate_limit");
+    expect(response.headers.get("server-timing")).toContain("home_feed_query");
+    expect(payload.meta).toEqual({
+      timings: {
+        totalMs: expect.any(Number),
+        phases: expect.objectContaining({
+          rate_limit: expect.any(Number),
+          home_feed_query: expect.any(Number),
+        }),
+      },
+    });
+  });
+
   it("excludes e2e and test-like posts from the public home preview", async () => {
     mockListPosts.mockResolvedValue({
       items: [
