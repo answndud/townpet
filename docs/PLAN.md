@@ -39,13 +39,13 @@
   - production p75/p95를 볼 수 있는 read-only query 또는 report를 추가한다.
 
 #### Phase 3. 홈 첫 화면 데이터 표시 개선
-- 상태: `in_progress`
+- 상태: `completed`
 - 작업:
   - `/`의 live board client fetch/skeleton 체감을 줄인다.
   - 필요 시 `/api/home/feed` cache 또는 server-rendered preview 구조를 조정한다.
 
 #### Phase 4. 초기 JS/resource diet
-- 상태: `pending`
+- 상태: `in_progress`
 - 작업:
   - `/login`, `/`, `/feed/guest`의 route resource count와 JS transfer를 줄인다.
   - 불필요한 client boundary와 모든 페이지에 실리는 client code를 점검한다.

@@ -5,7 +5,14 @@ import { FeedPreviewList, HomeFeedPreview } from "@/components/home/home-feed-pr
 
 describe("FeedPreviewList", () => {
   it("uses an early-stage label that does not overclaim popularity", () => {
-    const html = renderToStaticMarkup(<HomeFeedPreview />);
+    const html = renderToStaticMarkup(
+      <HomeFeedPreview
+        data={{
+          featured: [],
+          latest: [],
+        }}
+      />,
+    );
 
     expect(html).toContain("먼저 확인할 글");
     expect(html).toContain("실시간 게시판");
@@ -50,12 +57,14 @@ describe("FeedPreviewList", () => {
             href: "/posts/post-1",
             title: "동네 병원 후기",
             excerpt: "야간 진료 설명이 자세했습니다.",
+            type: "HOSPITAL_REVIEW",
             typeLabel: "병원 후기",
             createdAt: "2026-05-24T00:00:00.000Z",
             authorName: "알렉스",
             neighborhoodLabel: "서초구 잠원동",
             isOperatorContent: true,
             operatorSourceName: "TownPet 운영자 정리",
+            operatorSourceUrl: null,
             operatorLastVerifiedAt: "2026-05-24T00:00:00.000Z",
             commentCount: 2,
             likeCount: 5,

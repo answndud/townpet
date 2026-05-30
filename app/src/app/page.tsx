@@ -6,8 +6,9 @@ import {
 } from "@/components/analytics/acquisition-event-tracker";
 import { HomeFeedPreview } from "@/components/home/home-feed-preview";
 import { NEIGHBORHOOD_MAP_CAMPAIGN_PATH } from "@/lib/campaign-pages";
+import { getHomeFeedPayload } from "@/server/queries/home-feed.queries";
 
-export const dynamic = "force-static";
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "우리 동네 반려생활 정보",
@@ -33,7 +34,9 @@ const TOPIC_LINKS = [
   { label: "중고거래", href: "/feed/guest?type=MARKET_LISTING" },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const homeFeed = await getHomeFeedPayload();
+
   return (
     <main className="tp-page-bg min-h-screen">
       <AcquisitionEventTracker
@@ -116,7 +119,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <HomeFeedPreview />
+      <HomeFeedPreview data={homeFeed} />
     </main>
   );
 }
