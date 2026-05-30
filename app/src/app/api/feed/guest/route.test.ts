@@ -153,18 +153,19 @@ describe("GET /api/feed/guest", () => {
     const payload = await response.json();
 
     expect(response.status).toBe(200);
-    expect(response.headers.get("server-timing")).toContain("bootstrap.policy_and_communities");
+    expect(response.headers.get("server-timing")).toContain("bootstrap.policy");
     expect(response.headers.get("server-timing")).toContain("page_query.all");
     expect(payload.meta).toEqual({
       timings: {
         totalMs: expect.any(Number),
         phases: expect.objectContaining({
-          "bootstrap.policy_and_communities": expect.any(Number),
+          "bootstrap.policy": expect.any(Number),
           "page_query.all": expect.any(Number),
         }),
       },
     });
     expect(mockCountPosts).not.toHaveBeenCalled();
+    expect(mockListCommunityNavItems).not.toHaveBeenCalled();
   });
 
   it("returns gate payload for local-only board types", async () => {

@@ -57,13 +57,13 @@
   - Vercel cold start, DB/Prisma warm-up, cache miss, query 비용을 구분한다.
 
 #### Phase 6. Feed/API cache와 query 최적화
-- 상태: `in_progress`
+- 상태: `completed`
 - 작업:
   - guest feed/home preview query select, aggregate, cache key를 점검한다.
   - sort/filter/type 조합별 p95가 안정적인지 확인한다.
 
 #### Phase 7. 이미지/폰트/정적 리소스 최적화
-- 상태: `pending`
+- 상태: `in_progress`
 - 작업:
   - 로고, font, upload thumbnail, above-the-fold image loading을 점검한다.
   - 모바일 data transfer와 LCP blocking resource를 줄인다.

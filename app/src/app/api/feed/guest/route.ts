@@ -250,20 +250,9 @@ export async function GET(request: NextRequest) {
     }
 
     const isCursorPagination = Boolean(parsed.data.cursor?.trim());
-    const [loginRequiredTypes, communities] = await tracker.measure("bootstrap.policy_and_communities", async () => {
-      const resolvedLoginRequiredTypes = await getGuestReadLoginRequiredPostTypes();
-      const resolvedCommunities = isCursorPagination
-        ? []
-        : await listCommunityNavItems(50).catch((error) => {
-            if (isPrismaDatabaseUnavailableError(error)) {
-              return [];
-            }
-            throw error;
-          });
-
-      return [resolvedLoginRequiredTypes, resolvedCommunities] as const;
-    });
-    const allPetTypeIds = communities.map((item) => item.id);
+    const loginRequiredTypes = await tracker.measure("bootstrap.policy", () =>
+      getGuestReadLoginRequiredPostTypes(),
+    );
     const parsedParams = postListSchema.safeParse({
       ...parsed.data,
       petType: parsedPetTypes.data[0],
@@ -280,6 +269,18 @@ export async function GET(request: NextRequest) {
       (requestedType === PostType.PLACE_REVIEW ? REVIEW_CATEGORY.PLACE : undefined);
     const reviewBoard = isLegacyReviewType || Boolean(reviewCategory);
     const requestedPetTypeId = listInput?.petTypeId;
+    const needsPetTypeCatalog = parsedPetTypes.data.length > 0 || Boolean(requestedPetTypeId);
+    const allPetTypeIds = needsPetTypeCatalog
+      ? await tracker.measure("bootstrap.communities", async () => {
+          const communities = await listCommunityNavItems(50).catch((error) => {
+            if (isPrismaDatabaseUnavailableError(error)) {
+              return [];
+            }
+            throw error;
+          });
+          return communities.map((item) => item.id);
+        })
+      : [];
     const requestedPetTypeIds = normalizeFeedPetTypeIds(
       parsedPetTypes.data.length > 0
         ? parsedPetTypes.data

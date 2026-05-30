@@ -9318,3 +9318,36 @@
 - 결과:
   - API outlier를 endpoint 내부 phase로 나눠 볼 수 있는 반복 측정 루프가 생겼다.
   - 다음 Phase 6은 feed/home preview query와 cache key 최적화다.
+
+### 2026-05-30 | 성능 개선 Phase 6 Feed/API cache와 query 최적화
+- 완료일: `2026-05-30`
+- 배경:
+  - Phase 5 timing에서 `/api/feed/guest`의 기본 hot path는 `bootstrap.policy_and_communities`가 별도 phase로 잡혔다.
+  - 기본 guest feed 요청에는 petType catalog가 필요 없는데도 `listCommunityNavItems(50)`를 호출하고 있었다.
+- 변경내용:
+  - `/api/feed/guest` bootstrap을 `bootstrap.policy`와 조건부 `bootstrap.communities`로 분리했다.
+  - petType query 또는 `petType` input이 있을 때만 community catalog를 조회하고, 기본 목록/정렬/기간 hot path에서는 catalog 조회를 건너뛴다.
+  - `perf=1` test expectation을 새 phase 이름으로 갱신하고, 기본 요청에서는 `listCommunityNavItems`가 호출되지 않는 회귀 검증을 추가했다.
+  - Phase 6 후 local production timing snapshot [api-route-timings-2026-05-30T07-03-05-839Z.md](./reports/api-route-timings-2026-05-30T07-03-05-839Z.md)를 생성했다.
+- 코드문서:
+  - [app/src/app/api/feed/guest/route.ts](../app/src/app/api/feed/guest/route.ts)
+  - [app/src/app/api/feed/guest/route.test.ts](../app/src/app/api/feed/guest/route.test.ts)
+  - [docs/reports/api-route-timings-2026-05-30T07-03-05-839Z.md](./reports/api-route-timings-2026-05-30T07-03-05-839Z.md)
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/app/api/feed/guest/route.test.ts`
+    - Vitest `1 file / 10 tests` PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app lint`
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app build`
+    - PASS
+  - `PERF_BASE_URL=http://localhost:3100 PERF_API_TIMING_SAMPLES=3 PERF_API_TIMING_PAUSE_MS=50 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app perf:api-timings`
+    - PASS, local production report 생성
+- 주요 결과:
+  - `/api/feed/guest?perf=1` phase가 기본 요청에서 `bootstrap.policy`와 `page_query.all`만 남는다.
+  - Phase 5 local snapshot 대비 guest feed phase total p95가 `9.0ms -> 6.0ms`로 감소했다.
+  - home feed p95는 local first sample 영향을 받아 여전히 cold `home_feed_query`가 튀므로, 이후 production Web Vitals/API timing 표본으로 재확인한다.
+- 결과:
+  - 기본 guest feed hot path에서 불필요한 community catalog query를 제거했다.
+  - 다음 Phase 7은 이미지/폰트/정적 리소스 최적화다.
