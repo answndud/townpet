@@ -186,9 +186,12 @@ function summarizeTargets(samples: MeasurementSample[], slowThresholdMs: number)
 function buildDefaultTargets(env: NodeJS.ProcessEnv): MeasurementTarget[] {
   const targets: MeasurementTarget[] = [
     { label: "home", path: "/", method: "GET" },
+    { label: "login", path: "/login", method: "GET" },
     { label: "feed", path: "/feed", method: "GET" },
     { label: "guest_feed", path: "/feed/guest", method: "GET" },
     { label: "health", path: "/api/health", method: "GET" },
+    { label: "home_feed_api", path: "/api/home/feed", method: "GET" },
+    { label: "guest_feed_api", path: "/api/feed/guest?limit=20", method: "GET" },
     { label: "sitemap", path: "/sitemap/0.xml", method: "GET" },
   ];
 
