@@ -9388,3 +9388,31 @@
 - 결과:
   - 한국어 서비스에 맞는 system font stack으로 바꾸면서 font static asset과 CSS transfer를 줄였다.
   - 다음 Phase 8은 performance budget과 before/after 블로그 정리다.
+
+### 2026-05-30 | 성능 개선 Phase 8 성능 budget과 개선 전후 블로그
+- 완료일: `2026-05-30`
+- 배경:
+  - 성능 개선은 단발 최적화로 끝나면 다음 UI/API 변경 때 쉽게 회귀한다.
+  - 1인 운영에서는 매 배포마다 무거운 성능 smoke를 강제하기보다, 홈/로그인/피드/상세 성능을 건드렸을 때만 확인할 budget과 재현 가능한 측정 명령이 필요했다.
+- 변경내용:
+  - `business/operations/성능_budget.md`를 추가해 hot path별 mobile transfer, LCP, API p50/p95 기준을 문서화했다.
+  - 운영 문서 안내의 Active 운영 문서 목록에 성능 budget을 연결했다.
+  - `blog/31-성능개선-8단계-전후-기록.md`를 추가해 기준선, Web Vitals 수집, 홈 ISR, prefetch 제거, API timing, guest feed query 최적화, webfont 제거, before/after 수치를 한 글로 정리했다.
+  - `blog/README.md`, `blog/00_시리즈_계획.md`에 31번 글을 추가하고 블로그 시리즈 상태를 `01`부터 `31`까지로 갱신했다.
+- 코드문서:
+  - [business/operations/성능_budget.md](../business/operations/성능_budget.md)
+  - [business/operations/운영_문서_안내.md](../business/operations/운영_문서_안내.md)
+  - [blog/31-성능개선-8단계-전후-기록.md](../blog/31-성능개선-8단계-전후-기록.md)
+  - [blog/README.md](../blog/README.md)
+  - [blog/00_시리즈_계획.md](../blog/00_시리즈_계획.md)
+- 검증:
+  - `node scripts/refresh-docs-index.mjs --check`
+    - PASS
+  - `git diff --check`
+    - PASS
+- 주요 결과:
+  - local production mobile transfer 기준 `/`는 `288KB -> 198KB`, `/login`은 `283KB -> 220KB`, `/feed/guest`는 `433KB -> 230KB`로 정리됐다.
+  - `/` 첫 진입 fetch는 `34 -> 0`, `/feed/guest` 첫 진입 fetch는 `51 -> 3`으로 줄어든 상태를 budget 문서와 블로그에 남겼다.
+  - 성능 관련 변경 후 다시 확인할 on-demand 명령과 회귀 판단선을 확보했다.
+- 결과:
+  - 성능 개선 8단계 루프가 측정, 개선, budget, 공개 설명 자료까지 닫혔다.
