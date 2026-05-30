@@ -91,8 +91,8 @@ export function LoginForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
-      <label className="flex flex-col gap-2 text-sm font-medium text-[#274b7a]">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3.5 sm:gap-4" noValidate>
+      <label className="flex flex-col gap-1.5 text-sm font-medium text-[#274b7a]">
         이메일
         <input
           data-testid="login-email"
@@ -100,7 +100,7 @@ export function LoginForm({
           autoComplete="email"
           inputMode="email"
           spellCheck={false}
-          className="tp-input-soft min-h-11 px-3 py-2 text-sm placeholder:text-[#6887b2] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2f66ba]/40"
+          className="tp-input-soft min-h-10 px-3 py-2 text-sm placeholder:text-[#6887b2] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2f66ba]/40 sm:min-h-11"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
           placeholder="you@townpet.dev"
@@ -112,17 +112,17 @@ export function LoginForm({
         <span className="text-sm font-medium text-[#274b7a]">비밀번호</span>
         <Link
           href="/password/reset"
-          className="text-xs font-medium text-[#46628c] underline-offset-2 transition hover:text-[#1f3f71] hover:underline"
+          className="text-[11px] font-medium text-[#5a7398] underline-offset-2 transition hover:text-[#1f3f71] hover:underline sm:text-xs"
         >
           비밀번호 재설정
         </Link>
       </div>
-      <div className="flex gap-2">
+      <div className="flex gap-1.5 sm:gap-2">
         <input
           data-testid="login-password"
           type={showPassword ? "text" : "password"}
           autoComplete="current-password"
-          className="tp-input-soft min-h-11 flex-1 px-3 py-2 text-sm placeholder:text-[#6887b2] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2f66ba]/40"
+          className="tp-input-soft min-h-10 flex-1 px-3 py-2 text-sm placeholder:text-[#6887b2] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2f66ba]/40 sm:min-h-11"
           value={password}
           onChange={(event) => setPassword(event.target.value)}
           onKeyUp={(event) => setCapsLockOn(event.getModifierState("CapsLock"))}
@@ -134,7 +134,7 @@ export function LoginForm({
         <button
           type="button"
           onClick={() => setShowPassword((prev) => !prev)}
-          className="tp-btn-soft min-h-11 min-w-20 px-3 text-xs font-semibold text-[#2a4e7d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2f66ba]/40"
+          className="inline-flex min-h-10 min-w-14 items-center justify-center rounded-md border border-[#d2dfef] bg-[#fbfdff] px-2.5 text-xs font-semibold text-[#46628c] transition hover:border-[#bdd1ea] hover:bg-[#f6faff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2f66ba]/40 sm:min-h-11 sm:min-w-16"
           aria-pressed={showPassword}
         >
           {showPassword ? "숨기기" : "표시"}
@@ -158,19 +158,19 @@ export function LoginForm({
       <button
         data-testid="login-submit"
         type="submit"
-        className="tp-btn-primary min-h-11 px-5 py-2 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2f66ba]/40 disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0]"
+        className="tp-btn-primary min-h-10 px-5 py-2 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2f66ba]/40 disabled:cursor-not-allowed disabled:border-[#9fb9e0] disabled:bg-[#9fb9e0] sm:min-h-11"
         disabled={isPending || !email.trim() || !password}
       >
         {isPending ? "로그인 중..." : "이메일로 로그인"}
       </button>
       {kakaoEnabled || naverEnabled ? (
         <>
-          <div className="my-2 flex items-center gap-3" aria-hidden>
+          <div className="my-1 flex items-center gap-3" aria-hidden>
             <div className="h-px flex-1 bg-[#d8e4f6]" />
             <span className="text-xs font-medium text-[#5f7fa8]">또는</span>
             <div className="h-px flex-1 bg-[#d8e4f6]" />
           </div>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-1.5 sm:gap-2">
             {kakaoEnabled ? (
               <KakaoSignInButton
                 label="카카오로 로그인"

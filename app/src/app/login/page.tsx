@@ -52,7 +52,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       primaryFooterLink={{ href: "/register", label: "회원가입" }}
       secondaryFooterLinks={[
         { href: "/verify-email", label: "이메일 인증" },
-        { href: "/", label: "홈으로 돌아가기" },
+        { href: "/", label: "홈" },
       ]}
     />
   );

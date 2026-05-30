@@ -8,7 +8,10 @@ describe("FeedPreviewList", () => {
     const html = renderToStaticMarkup(<HomeFeedPreview />);
 
     expect(html).toContain("먼저 확인할 글");
+    expect(html).toContain("실시간 게시판");
+    expect(html).toContain("지금 올라온 글");
     expect(html).not.toContain("지금 많이 보는 글");
+    expect(html).not.toContain("Live board");
   });
 
   it("renders compact action paths when the home live board column is empty", () => {
@@ -72,7 +75,6 @@ describe("FeedPreviewList", () => {
 
     expect(html).toContain('href="/posts/post-1"');
     expect(html).toContain("동네 병원 후기");
-    expect(html).toContain("운영자 정리");
     expect(html).toContain("TownPet 운영자 정리");
     expect(html).toContain("댓글 2");
     expect(html).not.toContain("첫 글 작성하기");
