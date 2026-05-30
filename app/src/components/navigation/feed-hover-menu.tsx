@@ -245,6 +245,7 @@ export function FeedHoverMenu({
           <div className="flex flex-wrap gap-1.5 bg-white p-2.5">
             <Link
               href={buildFeedHref({ page: "1" })}
+              prefetch={false}
               className={APP_SHELL_MOBILE_PANEL_PILL_CLASS_NAME}
               onClick={() => setMobileOpenMenu(null)}
             >
@@ -254,6 +255,7 @@ export function FeedHoverMenu({
               <Link
                 key={`mobile-nav-type-${value}`}
                 href={buildBoardListingHref(value)}
+                prefetch={false}
                 className={APP_SHELL_MOBILE_PANEL_PILL_CLASS_NAME}
                 onClick={() => setMobileOpenMenu(null)}
               >
@@ -351,6 +353,7 @@ export function FeedHoverMenu({
             <div className="rounded-xl border border-[#dbe6f6] bg-white py-1.5 shadow-[0_12px_24px_rgba(16,40,74,0.10)]">
               <Link
                 href={buildFeedHref({ page: "1" })}
+                prefetch={false}
                 className="block px-3 py-1.5 text-xs text-[#315b9a] transition hover:bg-[#f5f9ff]"
                 onClick={() => setOpenMenu(null)}
               >
@@ -360,6 +363,7 @@ export function FeedHoverMenu({
                 <Link
                   key={`nav-type-${value}`}
                   href={buildBoardListingHref(value)}
+                  prefetch={false}
                   className="block px-3 py-1.5 text-xs text-[#315b9a] transition hover:bg-[#f5f9ff]"
                   onClick={() => setOpenMenu(null)}
                 >

@@ -40,6 +40,7 @@ export function FeedPreviewList({
             <Link
               key={action.href}
               href={action.href}
+              prefetch={false}
               className="grid gap-0.5 px-3 py-2 transition hover:bg-[#f6faff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#3567b5]"
             >
               <span className="text-xs font-semibold leading-5 text-[#315b9a]">
@@ -59,6 +60,7 @@ export function FeedPreviewList({
         <Link
           key={item.id}
           href={item.href}
+          prefetch={false}
           className="group grid gap-0.5 border-b border-[#e5edf8] px-2.5 py-1.5 transition last:border-b-0 hover:bg-[#f6faff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#3567b5] sm:grid-cols-[minmax(0,1fr)_minmax(7.5rem,auto)] sm:items-center"
         >
           <div className="min-w-0">
@@ -122,7 +124,12 @@ export function HomeFeedPreview({ data }: { data: HomeFeedPayload }) {
         <div>
           <div className="mb-2 flex items-center justify-between gap-3">
             <h3 className="text-sm font-semibold text-[#173963]">먼저 확인할 글</h3>
-            <Link href="/feed/guest?mode=BEST&days=7" className="text-xs font-semibold text-[#315b9a]" aria-label="반응 많은 글">
+            <Link
+              href="/feed/guest?mode=BEST&days=7"
+              prefetch={false}
+              className="text-xs font-semibold text-[#315b9a]"
+              aria-label="반응 많은 글"
+            >
               더 읽기
             </Link>
           </div>
@@ -146,7 +153,11 @@ export function HomeFeedPreview({ data }: { data: HomeFeedPayload }) {
         <div>
           <div className="mb-2 flex items-center justify-between gap-3">
             <h3 className="text-sm font-semibold text-[#173963]">최근 올라온 글</h3>
-            <Link href="/feed/guest?sort=LATEST" className="text-xs font-semibold text-[#315b9a]">
+            <Link
+              href="/feed/guest?sort=LATEST"
+              prefetch={false}
+              className="text-xs font-semibold text-[#315b9a]"
+            >
               더 읽기
             </Link>
           </div>

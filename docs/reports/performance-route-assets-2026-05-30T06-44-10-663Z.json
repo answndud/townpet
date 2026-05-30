@@ -1,0 +1,219 @@
+{
+  "generatedAt": "2026-05-30T06:44:10.663Z",
+  "baseUrl": "http://localhost:3100",
+  "samples": [
+    {
+      "profile": "mobile",
+      "label": "home",
+      "path": "/",
+      "status": 200,
+      "finalUrl": "http://localhost:3100/",
+      "documentResponseEndMs": 140.19999998807907,
+      "fcpMs": 268,
+      "lcpMs": 268,
+      "longTaskTotalMs": 0,
+      "scriptCount": 13,
+      "scriptTransferBytes": 179520,
+      "scriptEncodedBytes": 175620,
+      "stylesheetCount": 7,
+      "stylesheetTransferBytes": 82447,
+      "fetchCount": 34,
+      "fetchTransferBytes": 32994,
+      "fontCount": 0,
+      "fontTransferBytes": 0,
+      "totalTransferBytes": 294961,
+      "topScripts": [
+        {
+          "name": "/_next/static/chunks/e1fbad3f90ef4b9b.js",
+          "transferSize": 70385,
+          "encodedBodySize": 70085,
+          "duration": 105.2999999821186
+        },
+        {
+          "name": "/_next/static/chunks/7b37b37d6c73aaf3.js",
+          "transferSize": 31983,
+          "encodedBodySize": 31683,
+          "duration": 83.09999999403954
+        },
+        {
+          "name": "/_next/static/chunks/11017aee32587d10.js",
+          "transferSize": 20916,
+          "encodedBodySize": 20616,
+          "duration": 98.19999998807907
+        },
+        {
+          "name": "/_next/static/chunks/bc4201aae88d225e.js",
+          "transferSize": 18005,
+          "encodedBodySize": 17705,
+          "duration": 88.59999999403954
+        },
+        {
+          "name": "/_next/static/chunks/99429284810fec16.js",
+          "transferSize": 12910,
+          "encodedBodySize": 12610,
+          "duration": 25.400000005960464
+        },
+        {
+          "name": "/_next/static/chunks/63c201a36e8b5820.js",
+          "transferSize": 7729,
+          "encodedBodySize": 7429,
+          "duration": 104.5
+        },
+        {
+          "name": "/_next/static/chunks/9264945788f4e12a.js",
+          "transferSize": 7575,
+          "encodedBodySize": 7275,
+          "duration": 43.19999998807907
+        },
+        {
+          "name": "/_next/static/chunks/turbopack-faefc417be98b42d.js",
+          "transferSize": 4314,
+          "encodedBodySize": 4014,
+          "duration": 83.7999999821186
+        }
+      ]
+    },
+    {
+      "profile": "mobile",
+      "label": "login",
+      "path": "/login",
+      "status": 200,
+      "finalUrl": "http://localhost:3100/login",
+      "documentResponseEndMs": 24.900000005960464,
+      "fcpMs": 68,
+      "lcpMs": 68,
+      "longTaskTotalMs": 0,
+      "scriptCount": 12,
+      "scriptTransferBytes": 170699,
+      "scriptEncodedBytes": 167099,
+      "stylesheetCount": 7,
+      "stylesheetTransferBytes": 82447,
+      "fetchCount": 31,
+      "fetchTransferBytes": 37099,
+      "fontCount": 0,
+      "fontTransferBytes": 0,
+      "totalTransferBytes": 290245,
+      "topScripts": [
+        {
+          "name": "/_next/static/chunks/e1fbad3f90ef4b9b.js",
+          "transferSize": 70385,
+          "encodedBodySize": 70085,
+          "duration": 26.30000001192093
+        },
+        {
+          "name": "/_next/static/chunks/7b37b37d6c73aaf3.js",
+          "transferSize": 31983,
+          "encodedBodySize": 31683,
+          "duration": 22.600000023841858
+        },
+        {
+          "name": "/_next/static/chunks/11017aee32587d10.js",
+          "transferSize": 20916,
+          "encodedBodySize": 20616,
+          "duration": 19
+        },
+        {
+          "name": "/_next/static/chunks/bc4201aae88d225e.js",
+          "transferSize": 18005,
+          "encodedBodySize": 17705,
+          "duration": 21.099999994039536
+        },
+        {
+          "name": "/_next/static/chunks/63c201a36e8b5820.js",
+          "transferSize": 7729,
+          "encodedBodySize": 7429,
+          "duration": 25.599999994039536
+        },
+        {
+          "name": "/_next/static/chunks/9264945788f4e12a.js",
+          "transferSize": 7575,
+          "encodedBodySize": 7275,
+          "duration": 10.700000017881393
+        },
+        {
+          "name": "/_next/static/chunks/ad5d89da90864320.js",
+          "transferSize": 5491,
+          "encodedBodySize": 5191,
+          "duration": 27.799999982118607
+        },
+        {
+          "name": "/_next/static/chunks/turbopack-faefc417be98b42d.js",
+          "transferSize": 4314,
+          "encodedBodySize": 4014,
+          "duration": 15.600000023841858
+        }
+      ]
+    },
+    {
+      "profile": "mobile",
+      "label": "guest_feed",
+      "path": "/feed/guest",
+      "status": 200,
+      "finalUrl": "http://localhost:3100/feed/guest",
+      "documentResponseEndMs": 6.800000011920929,
+      "fcpMs": 72,
+      "lcpMs": 72,
+      "longTaskTotalMs": 0,
+      "scriptCount": 17,
+      "scriptTransferBytes": 272955,
+      "scriptEncodedBytes": 267855,
+      "stylesheetCount": 7,
+      "stylesheetTransferBytes": 82447,
+      "fetchCount": 51,
+      "fetchTransferBytes": 86325,
+      "fontCount": 0,
+      "fontTransferBytes": 0,
+      "totalTransferBytes": 443447,
+      "topScripts": [
+        {
+          "name": "/_next/static/chunks/e1fbad3f90ef4b9b.js",
+          "transferSize": 70385,
+          "encodedBodySize": 70085,
+          "duration": 26.400000005960464
+        },
+        {
+          "name": "/_next/static/chunks/f3174bcc81fdebcd.js",
+          "transferSize": 64343,
+          "encodedBodySize": 64043,
+          "duration": 62.099999994039536
+        },
+        {
+          "name": "/_next/static/chunks/7b37b37d6c73aaf3.js",
+          "transferSize": 31983,
+          "encodedBodySize": 31683,
+          "duration": 18.30000001192093
+        },
+        {
+          "name": "/_next/static/chunks/6bea4308c21f3e80.js",
+          "transferSize": 23763,
+          "encodedBodySize": 23463,
+          "duration": 43.599999994039536
+        },
+        {
+          "name": "/_next/static/chunks/11017aee32587d10.js",
+          "transferSize": 20916,
+          "encodedBodySize": 20616,
+          "duration": 21.799999982118607
+        },
+        {
+          "name": "/_next/static/chunks/bc4201aae88d225e.js",
+          "transferSize": 18005,
+          "encodedBodySize": 17705,
+          "duration": 21.399999976158142
+        },
+        {
+          "name": "/_next/static/chunks/99429284810fec16.js",
+          "transferSize": 12910,
+          "encodedBodySize": 12610,
+          "duration": 28.299999982118607
+        },
+        {
+          "name": "/_next/static/chunks/63c201a36e8b5820.js",
+          "transferSize": 7729,
+          "encodedBodySize": 7429,
+          "duration": 24.099999994039536
+        }
+      ]
+    }
+  ]
+}

@@ -92,6 +92,7 @@ export function FeedControlPanel({
             <div className="flex items-center gap-1">
               <Link
                 href={makeHref({ nextMode: "ALL", nextPage: 1 })}
+                prefetch={false}
                 className={`${PRIMARY_TAB_CLASS_NAME} ${
                   mode === "ALL"
                     ? ACTIVE_PRIMARY_TAB_CLASS_NAME
@@ -102,6 +103,7 @@ export function FeedControlPanel({
               </Link>
               <Link
                 href={makeHref({ nextMode: "BEST", nextPage: 1 })}
+                prefetch={false}
                 className={`${PRIMARY_TAB_CLASS_NAME} ${
                   mode === "BEST"
                     ? ACTIVE_PRIMARY_TAB_CLASS_NAME
@@ -122,6 +124,7 @@ export function FeedControlPanel({
                 <div className="flex flex-wrap items-center gap-1">
                   <Link
                     href={makeHref({ nextPersonalized: "0", nextPage: 1 })}
+                    prefetch={false}
                     className={`${FILTER_CHIP_CLASS_NAME} ${
                       !personalized.active
                         ? ACTIVE_FILTER_CHIP_CLASS_NAME
@@ -132,6 +135,7 @@ export function FeedControlPanel({
                   </Link>
                   <Link
                     href={makeHref({ nextPersonalized: "1", nextPage: 1 })}
+                    prefetch={false}
                     className={`${FILTER_CHIP_CLASS_NAME} ${
                       personalized.active
                         ? ACTIVE_FILTER_CHIP_CLASS_NAME
@@ -168,6 +172,7 @@ export function FeedControlPanel({
                   {!personalized.currentLabel && personalized.profileHref ? (
                     <Link
                       href={personalized.profileHref}
+                      prefetch={false}
                       className="font-semibold text-[#2f5da4] hover:text-[#244b86]"
                     >
                       반려동물 프로필 보강하기
@@ -201,6 +206,7 @@ export function FeedControlPanel({
                     nextPersonalized: "0",
                     nextPage: 1,
                   })}
+                  prefetch={false}
                   className={`${FILTER_CHIP_CLASS_NAME} ${
                     mode === "ALL" && selectedSort === option.value
                       ? ACTIVE_FILTER_CHIP_CLASS_NAME
@@ -227,6 +233,7 @@ export function FeedControlPanel({
                       nextPersonalized: "0",
                       nextPage: 1,
                     })}
+                    prefetch={false}
                     className={`${FILTER_CHIP_CLASS_NAME} ${
                       !periodDays
                         ? ACTIVE_FILTER_CHIP_CLASS_NAME
@@ -244,6 +251,7 @@ export function FeedControlPanel({
                         nextPersonalized: "0",
                         nextPage: 1,
                       })}
+                      prefetch={false}
                       className={`${FILTER_CHIP_CLASS_NAME} ${
                         periodDays === day
                           ? ACTIVE_FILTER_CHIP_CLASS_NAME
@@ -260,6 +268,7 @@ export function FeedControlPanel({
                     <Link
                       key={`feed-best-day-${day}`}
                       href={makeHref({ nextDays: day, nextPage: 1 })}
+                      prefetch={false}
                       className={`${FILTER_CHIP_CLASS_NAME} ${
                         bestDays === day
                           ? ACTIVE_FILTER_CHIP_CLASS_NAME
@@ -289,6 +298,7 @@ export function FeedControlPanel({
                       nextReviewCategory: option.value ?? null,
                       nextPage: 1,
                     })}
+                    prefetch={false}
                     className={`${FILTER_CHIP_CLASS_NAME} ${
                       isActive
                         ? ACTIVE_FILTER_CHIP_CLASS_NAME

@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import type { PostType } from "@prisma/client";
 import {
   memo,
@@ -329,6 +328,7 @@ const FeedPostThumbnail = memo(function FeedPostThumbnail({
   return (
     <Link
       href={href}
+      prefetch={false}
       className="group/thumb relative block aspect-square overflow-hidden rounded-lg border border-[#dce7f6] bg-[#eef5ff] transition hover:border-[#bfd4ef]"
       onClick={onClick}
     >
@@ -363,7 +363,6 @@ export function FeedInfiniteList({
   const showAdSlot = Boolean(adConfig && mode === "ALL" && initialItems.length >= 5);
   const trackedViewKeyRef = useRef<string | null>(null);
   const trackedAdKeyRef = useRef<string | null>(null);
-  const router = useRouter();
   const isPersonalizedQuery = Boolean(query.personalized);
 
   useEffect(() => {
@@ -561,21 +560,6 @@ export function FeedInfiniteList({
     };
   }, [scrollStorageKey]);
 
-  useEffect(() => {
-    if (preferGuestDetail) {
-      const targets = items.slice(0, 3);
-      for (const post of targets) {
-        router.prefetch(`/posts/${post.id}/guest`);
-      }
-      return;
-    }
-
-    const targets = items.slice(0, 2);
-    for (const post of targets) {
-      router.prefetch(`/posts/${post.id}`);
-    }
-  }, [items, preferGuestDetail, router]);
-
   return (
     <>
       <div className="divide-y divide-[#e7eef9]" data-testid="feed-post-list">
@@ -664,6 +648,7 @@ export function FeedInfiniteList({
             <span className="inline-flex min-w-0 items-center gap-1">
               <Link
                 href={`/users/${post.author.id}`}
+                prefetch={false}
                 className="block min-w-0 truncate hover:text-[#2f5da4]"
               >
                 {authorLabel}
@@ -692,6 +677,7 @@ export function FeedInfiniteList({
                   <p className="mt-1 text-xs leading-5 text-[#446792]">{adConfig.description}</p>
                   <Link
                     href={adConfig.ctaHref}
+                    prefetch={false}
                     className={FEED_AD_CTA_CLASS_NAME}
                     onClick={() => trackPersonalizationEvent("AD_CLICK")}
                   >
@@ -702,7 +688,7 @@ export function FeedInfiniteList({
               <PostListItemShell
                 testId="feed-post-item"
                 href={detailHref}
-                prefetch={preferGuestDetail ? true : false}
+                prefetch={false}
                 articleClassName={`${hasThumbnail ? FEED_POST_ITEM_WITH_THUMBNAIL_CLASS_NAME : FEED_POST_ITEM_CLASS_NAME} ${
                   post.status === "HIDDEN" ? "bg-[#fff7f7]" : ""
                 }`}

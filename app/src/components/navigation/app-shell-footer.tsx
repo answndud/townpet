@@ -23,7 +23,12 @@ export function AppShellFooter() {
           </div>
           <div className="flex flex-wrap gap-x-2 gap-y-0.5 text-xs">
             {LEGAL_LINKS.map((link) => (
-              <Link key={link.href} href={link.href} className={APP_SHELL_FOOTER_LINK_CLASS_NAME}>
+              <Link
+                key={link.href}
+                href={link.href}
+                prefetch={false}
+                className={APP_SHELL_FOOTER_LINK_CLASS_NAME}
+              >
                 {link.label}
               </Link>
             ))}
