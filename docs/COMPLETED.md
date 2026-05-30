@@ -9351,3 +9351,40 @@
 - 결과:
   - 기본 guest feed hot path에서 불필요한 community catalog query를 제거했다.
   - 다음 Phase 7은 이미지/폰트/정적 리소스 최적화다.
+
+### 2026-05-30 | 성능 개선 Phase 7 이미지/폰트/정적 리소스 최적화
+- 완료일: `2026-05-30`
+- 배경:
+  - Phase 4 이후에도 mobile hot path의 CSS transfer가 `81KB`로 고정되어 있었고, `.next/static/media`에는 Space Grotesk/IBM Plex Mono latin font 파일이 다수 생성됐다.
+  - TownPet UI는 대부분 한국어라 latin webfont보다 OS 한글 폰트 stack이 더 적합하고, monospace는 소수의 token/code 표시에서만 필요하다.
+- 변경내용:
+  - root layout에서 `next/font/google`의 `Space_Grotesk`, `IBM_Plex_Mono` import와 font variable class를 제거했다.
+  - `globals.css`의 `--font-sans`, `--font-mono`를 OS/system font stack으로 정의했다.
+  - build 후 `.next/static/media`가 favicon만 남는지 확인했다.
+  - Phase 7 후 local production asset snapshot [performance-route-assets-2026-05-30T07-06-48-043Z.md](./reports/performance-route-assets-2026-05-30T07-06-48-043Z.md)를 생성했다.
+- 코드문서:
+  - [app/src/app/layout.tsx](../app/src/app/layout.tsx)
+  - [app/src/app/globals.css](../app/src/app/globals.css)
+  - [docs/reports/performance-route-assets-2026-05-30T07-06-48-043Z.md](./reports/performance-route-assets-2026-05-30T07-06-48-043Z.md)
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/app/page.test.tsx src/app/globals-css.test.ts`
+    - Vitest `2 files / 4 tests` PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app lint`
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app build`
+    - PASS
+  - `.next/static/media` 확인
+    - font 파일 제거, `favicon.0b3bf435.ico`만 남음
+  - `PERF_BASE_URL=http://localhost:3100 PERF_ASSET_SETTLE_MS=1200 PERF_ASSET_PROFILES=mobile PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app perf:assets:local`
+    - PASS, local production asset report 생성
+- 주요 결과:
+  - CSS transfer: `/`, `/login`, `/feed/guest` 모두 `81KB -> 37KB`.
+  - total transfer:
+    - `/`: `242KB -> 198KB`
+    - `/login`: `264KB -> 220KB`
+    - `/feed/guest`: `273KB -> 230KB`
+- 결과:
+  - 한국어 서비스에 맞는 system font stack으로 바꾸면서 font static asset과 CSS transfer를 줄였다.
+  - 다음 Phase 8은 performance budget과 before/after 블로그 정리다.

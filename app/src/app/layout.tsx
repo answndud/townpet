@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Mono, Space_Grotesk } from "next/font/google";
 
 import { WebVitalsReporter } from "@/components/analytics/web-vitals-reporter";
 import { AppShellFooter } from "@/components/navigation/app-shell-footer";
@@ -7,17 +6,6 @@ import { AppShellHeader } from "@/components/navigation/app-shell-header";
 import { ScrollToTopButton } from "@/components/ui/scroll-to-top-button";
 import { getSiteOrigin } from "@/lib/site-url";
 import "./globals.css";
-
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-sans",
-  subsets: ["latin"],
-});
-
-const plexMono = IBM_Plex_Mono({
-  variable: "--font-mono",
-  subsets: ["latin"],
-  weight: ["400", "500"],
-});
 
 const siteOrigin = getSiteOrigin();
 
@@ -58,7 +46,7 @@ export default function RootLayout({
     <html lang="ko" suppressHydrationWarning>
       <body
         suppressHydrationWarning
-        className={`${spaceGrotesk.variable} ${plexMono.variable} app-shell-bg tp-text-primary min-h-screen antialiased`}
+        className="app-shell-bg tp-text-primary min-h-screen antialiased"
       >
         <AppShellHeader />
 

@@ -1,0 +1,219 @@
+{
+  "generatedAt": "2026-05-30T07:06:48.043Z",
+  "baseUrl": "http://localhost:3100",
+  "samples": [
+    {
+      "profile": "mobile",
+      "label": "home",
+      "path": "/",
+      "status": 200,
+      "finalUrl": "http://localhost:3100/",
+      "documentResponseEndMs": 65.7000000178814,
+      "fcpMs": 140,
+      "lcpMs": 140,
+      "longTaskTotalMs": 0,
+      "scriptCount": 11,
+      "scriptTransferBytes": 165263,
+      "scriptEncodedBytes": 161963,
+      "stylesheetCount": 3,
+      "stylesheetTransferBytes": 37973,
+      "fetchCount": 0,
+      "fetchTransferBytes": 0,
+      "fontCount": 0,
+      "fontTransferBytes": 0,
+      "totalTransferBytes": 203236,
+      "topScripts": [
+        {
+          "name": "/_next/static/chunks/e1fbad3f90ef4b9b.js",
+          "transferSize": 70385,
+          "encodedBodySize": 70085,
+          "duration": 28.599999994039536
+        },
+        {
+          "name": "/_next/static/chunks/7b37b37d6c73aaf3.js",
+          "transferSize": 31983,
+          "encodedBodySize": 31683,
+          "duration": 21.099999994039536
+        },
+        {
+          "name": "/_next/static/chunks/11017aee32587d10.js",
+          "transferSize": 20916,
+          "encodedBodySize": 20616,
+          "duration": 22.900000005960464
+        },
+        {
+          "name": "/_next/static/chunks/5c04e4b71d80ee15.js",
+          "transferSize": 18035,
+          "encodedBodySize": 17735,
+          "duration": 23.30000001192093
+        },
+        {
+          "name": "/_next/static/chunks/63c201a36e8b5820.js",
+          "transferSize": 7729,
+          "encodedBodySize": 7429,
+          "duration": 27.900000005960464
+        },
+        {
+          "name": "/_next/static/chunks/9264945788f4e12a.js",
+          "transferSize": 7575,
+          "encodedBodySize": 7275,
+          "duration": 13.300000011920929
+        },
+        {
+          "name": "/_next/static/chunks/turbopack-faefc417be98b42d.js",
+          "transferSize": 4314,
+          "encodedBodySize": 4014,
+          "duration": 18
+        },
+        {
+          "name": "/_next/static/chunks/e70117f48a5fe0c1.js",
+          "transferSize": 1403,
+          "encodedBodySize": 1103,
+          "duration": 28.30000001192093
+        }
+      ]
+    },
+    {
+      "profile": "mobile",
+      "label": "login",
+      "path": "/login",
+      "status": 200,
+      "finalUrl": "http://localhost:3100/login",
+      "documentResponseEndMs": 423,
+      "fcpMs": 412,
+      "lcpMs": 412,
+      "longTaskTotalMs": 0,
+      "scriptCount": 12,
+      "scriptTransferBytes": 170754,
+      "scriptEncodedBytes": 167154,
+      "stylesheetCount": 3,
+      "stylesheetTransferBytes": 37973,
+      "fetchCount": 12,
+      "fetchTransferBytes": 16852,
+      "fontCount": 0,
+      "fontTransferBytes": 0,
+      "totalTransferBytes": 225579,
+      "topScripts": [
+        {
+          "name": "/_next/static/chunks/e1fbad3f90ef4b9b.js",
+          "transferSize": 70385,
+          "encodedBodySize": 70085,
+          "duration": 103.40000000596046
+        },
+        {
+          "name": "/_next/static/chunks/7b37b37d6c73aaf3.js",
+          "transferSize": 31983,
+          "encodedBodySize": 31683,
+          "duration": 87.90000000596046
+        },
+        {
+          "name": "/_next/static/chunks/11017aee32587d10.js",
+          "transferSize": 20916,
+          "encodedBodySize": 20616,
+          "duration": 96.90000000596046
+        },
+        {
+          "name": "/_next/static/chunks/5c04e4b71d80ee15.js",
+          "transferSize": 18035,
+          "encodedBodySize": 17735,
+          "duration": 105.2000000178814
+        },
+        {
+          "name": "/_next/static/chunks/63c201a36e8b5820.js",
+          "transferSize": 7729,
+          "encodedBodySize": 7429,
+          "duration": 104.60000002384186
+        },
+        {
+          "name": "/_next/static/chunks/9264945788f4e12a.js",
+          "transferSize": 7575,
+          "encodedBodySize": 7275,
+          "duration": 42.5
+        },
+        {
+          "name": "/_next/static/chunks/ad5d89da90864320.js",
+          "transferSize": 5491,
+          "encodedBodySize": 5191,
+          "duration": 109.80000001192093
+        },
+        {
+          "name": "/_next/static/chunks/turbopack-faefc417be98b42d.js",
+          "transferSize": 4314,
+          "encodedBodySize": 4014,
+          "duration": 87.7000000178814
+        }
+      ]
+    },
+    {
+      "profile": "mobile",
+      "label": "guest_feed",
+      "path": "/feed/guest",
+      "status": 200,
+      "finalUrl": "http://localhost:3100/feed/guest",
+      "documentResponseEndMs": 14.099999994039536,
+      "fcpMs": 64,
+      "lcpMs": 64,
+      "longTaskTotalMs": 0,
+      "scriptCount": 12,
+      "scriptTransferBytes": 178359,
+      "scriptEncodedBytes": 174759,
+      "stylesheetCount": 3,
+      "stylesheetTransferBytes": 37973,
+      "fetchCount": 3,
+      "fetchTransferBytes": 17148,
+      "fontCount": 0,
+      "fontTransferBytes": 0,
+      "totalTransferBytes": 235200,
+      "topScripts": [
+        {
+          "name": "/_next/static/chunks/e1fbad3f90ef4b9b.js",
+          "transferSize": 70385,
+          "encodedBodySize": 70085,
+          "duration": 33.599999994039536
+        },
+        {
+          "name": "/_next/static/chunks/7b37b37d6c73aaf3.js",
+          "transferSize": 31983,
+          "encodedBodySize": 31683,
+          "duration": 21.099999994039536
+        },
+        {
+          "name": "/_next/static/chunks/11017aee32587d10.js",
+          "transferSize": 20916,
+          "encodedBodySize": 20616,
+          "duration": 27.900000005960464
+        },
+        {
+          "name": "/_next/static/chunks/5c04e4b71d80ee15.js",
+          "transferSize": 18035,
+          "encodedBodySize": 17735,
+          "duration": 28.599999994039536
+        },
+        {
+          "name": "/_next/static/chunks/48810de4fe8b8a07.js",
+          "transferSize": 12876,
+          "encodedBodySize": 12576,
+          "duration": 43.70000001788139
+        },
+        {
+          "name": "/_next/static/chunks/63c201a36e8b5820.js",
+          "transferSize": 7729,
+          "encodedBodySize": 7429,
+          "duration": 30.30000001192093
+        },
+        {
+          "name": "/_next/static/chunks/9264945788f4e12a.js",
+          "transferSize": 7575,
+          "encodedBodySize": 7275,
+          "duration": 11.799999982118607
+        },
+        {
+          "name": "/_next/static/chunks/turbopack-faefc417be98b42d.js",
+          "transferSize": 4314,
+          "encodedBodySize": 4014,
+          "duration": 16.5
+        }
+      ]
+    }
+  ]
+}

@@ -7,6 +7,12 @@
   --muted: #5f7ea8;
   --surface: #ffffff;
   --border: #dbe6f5;
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR",
+    "Segoe UI", sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    monospace;
 }
 
 @theme inline {

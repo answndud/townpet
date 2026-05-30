@@ -63,13 +63,13 @@
   - sort/filter/type 조합별 p95가 안정적인지 확인한다.
 
 #### Phase 7. 이미지/폰트/정적 리소스 최적화
-- 상태: `in_progress`
+- 상태: `completed`
 - 작업:
   - 로고, font, upload thumbnail, above-the-fold image loading을 점검한다.
   - 모바일 data transfer와 LCP blocking resource를 줄인다.
 
 #### Phase 8. 성능 budget과 개선 전후 블로그
-- 상태: `pending`
+- 상태: `in_progress`
 - 작업:
   - route별 budget과 on-demand performance smoke를 문서화한다.
   - `blog/`에 baseline, 병목, 개선, before/after 수치를 정리한다.
