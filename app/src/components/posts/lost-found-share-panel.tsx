@@ -7,6 +7,7 @@ import type { PostDetailItem } from "@/components/posts/post-detail-types";
 import {
   buildLostFoundPosterAlt,
   buildLostFoundPosterUrl,
+  buildLostFoundShareChecklist,
   buildLostFoundShareText,
 } from "@/lib/lost-found-share";
 import { copyTextToClipboard } from "@/lib/post-share";
@@ -39,6 +40,7 @@ async function recordLostFoundShareAction(postId: string, action: ShareAction) {
 export function LostFoundSharePanel({ post, postUrl }: LostFoundSharePanelProps) {
   const [message, setMessage] = useState<string | null>(null);
   const shareText = useMemo(() => buildLostFoundShareText(post), [post]);
+  const checklist = useMemo(() => buildLostFoundShareChecklist(post), [post]);
   const posterUrl = buildLostFoundPosterUrl(post.id);
   const posterPath = `/api/posts/${post.id}/lost-found-share.svg`;
   const posterAlt = buildLostFoundPosterAlt(post);
@@ -78,17 +80,16 @@ export function LostFoundSharePanel({ post, postUrl }: LostFoundSharePanelProps)
           <p className="mt-1 max-w-[68ch] text-xs leading-5 text-[#526d95]">
             위치, 시간, 특징 중심으로 공유합니다. 개인 연락처나 집 주소 전체는 공개 문구에 넣지 않습니다.
           </p>
-          <div className="mt-2 grid gap-1.5 border-t border-[#dbe6f5] pt-2 text-xs leading-5 text-[#526d95] sm:grid-cols-3">
-            <p>
-              <span className="font-semibold text-[#315b9a]">분실 글</span>은 보호자가 현재 상황을 갱신합니다.
-            </p>
-            <p>
-              <span className="font-semibold text-[#315b9a]">목격 제보</span>는 아래 댓글의 목격했어요를 사용합니다.
-            </p>
-            <p>
-              <span className="font-semibold text-[#315b9a]">공유</span>는 확인된 시간·위치·특징만 전달합니다.
-            </p>
-          </div>
+          <ol className="mt-2 grid gap-1.5 border-t border-[#dbe6f5] pt-2 text-xs leading-5 text-[#526d95] sm:grid-cols-2">
+            {checklist.map((item, index) => (
+              <li key={item} className="flex gap-2">
+                <span className="mt-0.5 inline-flex size-5 shrink-0 items-center justify-center rounded-md bg-[#eef4fd] text-[11px] font-semibold text-[#315b9a]">
+                  {index + 1}
+                </span>
+                <span>{item}</span>
+              </li>
+            ))}
+          </ol>
         </div>
         <div className="flex flex-wrap gap-2">
           <button
@@ -112,15 +113,20 @@ export function LostFoundSharePanel({ post, postUrl }: LostFoundSharePanelProps)
             className={lostFoundShareTextActionClassName}
             onClick={handlePosterOpen}
           >
-            공유 이미지 열기
+            인스타/전단 이미지
           </a>
         </div>
       </div>
 
       <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1fr)_180px]">
-        <pre className="min-h-28 overflow-auto whitespace-pre-wrap border-t border-[#dbe6f5] pt-2 text-xs leading-5 text-[#244a7f]">
-          {shareText}
-        </pre>
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#6c84ab]">
+            공유 문구
+          </p>
+          <pre className="mt-2 min-h-28 overflow-auto whitespace-pre-wrap border-t border-[#dbe6f5] pt-2 text-xs leading-5 text-[#244a7f]">
+            {shareText}
+          </pre>
+        </div>
         <a
           href={posterUrl}
           target="_blank"

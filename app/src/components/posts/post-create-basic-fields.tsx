@@ -83,9 +83,9 @@ export function PostCreateBasicFields({
           <div className="md:col-span-2">
             <div className="flex flex-col gap-2 border-y border-[#e3ecf8] bg-[#f8fbff] px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-xs font-semibold text-[#173963]">첫 글 템플릿</p>
+                <p className="text-xs font-semibold text-[#173963]">작성 템플릿</p>
                 <p className="mt-1 text-xs leading-5 text-[#5a7397]">
-                  제목과 본문 뼈대를 불러온 뒤 필요한 부분만 고쳐 쓰세요.
+                  제목, 본문 뼈대, 구조화 필드를 불러온 뒤 필요한 부분만 고쳐 쓰세요.
                 </p>
               </div>
               <div className="flex flex-wrap gap-1.5">

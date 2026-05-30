@@ -24,6 +24,7 @@ import {
   PostCreateSubmitFooter,
 } from "@/components/posts/post-create-form-shell";
 import {
+  applyPostCreateTemplateToFormState,
   createInitialPostCreateFormState,
   type PostCreateFormState,
 } from "@/components/posts/post-create-form-state";
@@ -103,7 +104,7 @@ export function PostCreateForm({
   const latestEditorImageUrlsRef = useRef<string[]>([]);
   const [formState, setFormState] = useState<PostCreateFormState>(() => {
     const initialState = createInitialPostCreateFormState(defaultNeighborhoodId);
-    return {
+    const typedInitialState = {
       ...initialState,
       type: initialType ?? initialTemplate?.type ?? initialState.type,
       title: initialTemplate?.title ?? initialState.title,
@@ -111,6 +112,9 @@ export function PostCreateForm({
       reviewCategory:
         initialTemplate?.reviewCategory ?? initialState.reviewCategory,
     };
+    return initialTemplate
+      ? applyPostCreateTemplateToFormState(typedInitialState, initialTemplate)
+      : typedInitialState;
   });
 
   useEffect(() => {
@@ -200,13 +204,7 @@ export function PostCreateForm({
       titleInputRef.current.value = template.title;
       titleInputRef.current.focus();
     }
-    setFormState((prev) => ({
-      ...prev,
-      type: template.type,
-      title: template.title,
-      content: template.content,
-      reviewCategory: template.reviewCategory ?? prev.reviewCategory,
-    }));
+    setFormState((prev) => applyPostCreateTemplateToFormState(prev, template));
   };
 
   const { error, handleSubmit, isPending } = usePostCreateSubmit({

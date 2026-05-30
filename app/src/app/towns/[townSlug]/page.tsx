@@ -126,6 +126,23 @@ export default async function TownPage({ params }: TownPageProps) {
               사용자가 선택한 동네를 기준으로 정보를 모읍니다. 운영자 콘텐츠와 사용자
               제보를 구분해 쌓아갈 예정입니다.
             </p>
+            <div className="mt-4 border-t border-[#e3edf8] pt-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#6b82a4]">
+                먼저 찾는 정보
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {town.sections.flatMap((section) =>
+                  section.searchIntents.slice(0, 1).map((intent) => (
+                    <span
+                      key={`${section.slug}:${intent}`}
+                      className="rounded-sm border border-[#dce7f5] bg-white px-2.5 py-1 text-xs font-medium text-[#48688f]"
+                    >
+                      {intent}
+                    </span>
+                  )),
+                )}
+              </div>
+            </div>
           </aside>
         </div>
       </section>
@@ -153,9 +170,24 @@ export default async function TownPage({ params }: TownPageProps) {
               </p>
               <p className="mt-2 text-sm leading-6 text-[#5a7397]">{section.description}</p>
             </div>
-            <p className="mt-auto rounded-md border border-[#dbe6f5] bg-[#f8fbff] px-3 py-2 text-xs leading-5 text-[#5a7397]">
-              {section.emptyState}
-            </p>
+            <div className="mt-auto space-y-3">
+              <div className="flex flex-wrap gap-1.5">
+                {section.searchIntents.map((intent) => (
+                  <span
+                    key={intent}
+                    className="rounded-sm bg-[#f1f6fd] px-2 py-1 text-xs font-medium text-[#48688f]"
+                  >
+                    {intent}
+                  </span>
+                ))}
+              </div>
+              <div className="flex items-center justify-between gap-3 border-t border-[#e3edf8] pt-3">
+                <span className="text-xs leading-5 text-[#6b82a4]">{section.emptyState}</span>
+                <span className="shrink-0 text-sm font-semibold text-[#315b9a]">
+                  {section.primaryActionLabel}
+                </span>
+              </div>
+            </div>
           </AcquisitionTrackedLink>
         ))}
       </section>

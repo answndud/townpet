@@ -9,7 +9,10 @@ import { createNoIndexPageMetadata } from "@/lib/page-metadata";
 import { getCurrentUserRole } from "@/server/auth";
 import { redirectToProfileIfNicknameMissing } from "@/server/nickname-guard";
 import { isPrismaDatabaseUnavailableError } from "@/server/prisma-database-error";
-import { getPostCreateTemplateById } from "@/lib/post-create-templates";
+import {
+  getPostCreateTemplateById,
+  type PostCreateTemplateId,
+} from "@/lib/post-create-templates";
 import { listCommunities } from "@/server/queries/community.queries";
 import { getUserWithNeighborhoods } from "@/server/queries/user.queries";
 
@@ -21,6 +24,15 @@ const PUBLIC_INITIAL_POST_TYPES = new Set<PostType>([
   PostType.MARKET_LISTING,
   PostType.PRODUCT_REVIEW,
 ]);
+
+const DEFAULT_TEMPLATE_BY_POST_TYPE: Partial<Record<PostType, PostCreateTemplateId>> = {
+  [PostType.QA_QUESTION]: "local_question",
+  [PostType.HOSPITAL_REVIEW]: "hospital_review",
+  [PostType.WALK_ROUTE]: "walk_route_large_dog",
+  [PostType.LOST_FOUND]: "lost_pet",
+  [PostType.MARKET_LISTING]: "used_market",
+  [PostType.PRODUCT_REVIEW]: "place_report",
+};
 
 const POST_CREATE_BACK_LINK_CLASS_NAME =
   "tp-text-muted inline-flex min-h-10 w-fit items-center px-1.5 text-xs font-semibold transition hover:text-[#2f5da4] hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1";
@@ -61,8 +73,11 @@ export default async function NewPostPage({ searchParams }: NewPostPageProps) {
   const resolvedSearchParams = await searchParams;
   const templateTownLabel = parseTemplateTownLabel(resolvedSearchParams?.town);
   const requestedInitialPostType = parseInitialPostType(resolvedSearchParams?.type);
+  const fallbackTemplateId = requestedInitialPostType
+    ? DEFAULT_TEMPLATE_BY_POST_TYPE[requestedInitialPostType]
+    : undefined;
   const initialTemplate = getPostCreateTemplateById(
-    resolvedSearchParams?.template,
+    resolvedSearchParams?.template ?? fallbackTemplateId,
     templateTownLabel,
   );
   const initialPostType =

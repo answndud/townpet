@@ -52,6 +52,7 @@ export function buildLostFoundShareTitle(post: LostFoundSharePostLike) {
 
 export function buildLostFoundShareText(post: LostFoundSharePostLike) {
   const alert = post.lostFoundAlert;
+  const location = alert?.lastSeenLocation?.trim() || "위치 미확인";
   const lines = [
     buildLostFoundShareTitle(post),
     "",
@@ -59,13 +60,26 @@ export function buildLostFoundShareText(post: LostFoundSharePostLike) {
     `동물: ${alert?.petType?.trim() || "미확인"}`,
     alert?.breed?.trim() ? `특징: ${alert.breed.trim()}` : null,
     `마지막 확인: ${formatLostFoundShareDate(alert?.lastSeenAt)}`,
-    `위치: ${alert?.lastSeenLocation?.trim() || "위치 미확인"}`,
+    `위치: ${location}`,
     "",
-    "제보 전 위치와 시간을 함께 확인해 주세요. 집 주소 전체나 개인 연락처는 공개 댓글에 남기지 마세요.",
+    "제보할 때는 위치와 시간을 함께 남겨 주세요.",
+    "집 주소 전체, 전화번호, 오픈채팅 링크는 공개 댓글에 남기지 마세요.",
     toAbsoluteUrl(`/posts/${post.id}/guest`),
   ];
 
   return lines.filter((line): line is string => Boolean(line)).join("\n");
+}
+
+export function buildLostFoundShareChecklist(post: LostFoundSharePostLike) {
+  const alert = post.lostFoundAlert;
+  const alertLabel = getLostFoundAlertTypeLabel(alert?.alertType);
+  const petType = alert?.petType?.trim() || "반려동물";
+  return [
+    `${alertLabel} ${petType} 사진과 특징 확인`,
+    "마지막 확인 시간과 위치를 함께 공유",
+    "목격자는 게시글 댓글로 위치와 시간을 제보",
+    "개인 연락처와 집 주소 전체는 공개하지 않기",
+  ];
 }
 
 export function buildLostFoundPosterUrl(postId: string) {

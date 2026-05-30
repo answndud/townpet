@@ -86,7 +86,7 @@ describe("post create basic fields", () => {
     expect(html).toContain("/profile");
   });
 
-  it("renders compact first-post template buttons", () => {
+  it("renders compact writing template buttons", () => {
     const html = renderToStaticMarkup(
       <PostCreateBasicFields
         {...baseProps}
@@ -95,8 +95,8 @@ describe("post create basic fields", () => {
       />,
     );
 
-    expect(html).toContain("첫 글 템플릿");
-    expect(html).toContain("제목과 본문 뼈대를 불러온 뒤 필요한 부분만 고쳐 쓰세요.");
+    expect(html).toContain("작성 템플릿");
+    expect(html).toContain("제목, 본문 뼈대, 구조화 필드를 불러온 뒤 필요한 부분만 고쳐 쓰세요.");
     expect(html).toContain("py-2.5");
     expect(html).toContain("산책코스");
   });

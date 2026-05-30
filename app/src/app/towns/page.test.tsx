@@ -45,7 +45,8 @@ describe("town landing pages", () => {
     expect(mockGetTownLandingByNeighborhoodSlug).toHaveBeenCalledWith("서울특별시--강남구");
     expect(html).toContain("강남구 반려생활 허브");
     expect(html).toContain("등록된 글 2개");
-    expect(html).toContain("분실동물 등록하기");
+    expect(html).toContain("24시 동물병원");
+    expect(html).toContain("분실/목격 등록");
   });
 
   it("generates canonical metadata for a dynamic town section", async () => {
@@ -62,6 +63,7 @@ describe("town landing pages", () => {
       }),
     ).resolves.toMatchObject({
       title: "강남구 동물병원",
+      description: expect.stringContaining("24시 동물병원"),
       alternates: {
         canonical:
           "/towns/%EC%84%9C%EC%9A%B8%ED%8A%B9%EB%B3%84%EC%8B%9C--%EA%B0%95%EB%82%A8%EA%B5%AC/hospitals",
@@ -83,7 +85,8 @@ describe("town landing pages", () => {
       }),
     );
 
-    expect(html).toContain("템플릿으로 제보하기");
+    expect(html).toContain("산책코스 제보");
+    expect(html).toContain("대형견 산책");
     expect(html).toContain(
       "type=WALK_ROUTE&amp;template=walk_route_large_dog&amp;town=%EC%84%9C%EC%9A%B8%ED%8A%B9%EB%B3%84%EC%8B%9C+%EA%B0%95%EB%82%A8%EA%B5%AC",
     );
