@@ -9416,3 +9416,51 @@
   - 성능 관련 변경 후 다시 확인할 on-demand 명령과 회귀 판단선을 확보했다.
 - 결과:
   - 성능 개선 8단계 루프가 측정, 개선, budget, 공개 설명 자료까지 닫혔다.
+
+### 2026-05-30 | 성능 90점 이상 하드닝 public detail 초기 bundle 축소
+- 완료일: `2026-05-30`
+- 배경:
+  - Phase 8 완료 후에도 public detail mobile total transfer가 `306KB`, script transfer가 `257KB`로 남아 `/`, `/login`, `/feed/guest`보다 무거웠다.
+  - 목표는 Next.js/PostgreSQL/Vercel 구조와 상세 페이지 기능을 유지하면서 public detail total `<= 280KB`, script `<= 220KB`까지 줄이는 것이었다.
+- 변경내용:
+  - 공개/게스트 게시글 상세의 댓글 섹션을 `DeferredPostCommentSection`으로 분리해 hash 이동, 근접 scroll, 직접 클릭 전까지 댓글 클라이언트 코드를 초기 bundle에서 제외했다.
+  - 게스트 상세 좋아요/싫어요/북마크/공유를 `GuestPostEngagementBar`로 분리해 로그인 사용자용 mutation 컴포넌트 대신 작은 guest 전용 안내/공유 UI만 초기 로드한다.
+  - 비회원 수정/삭제 도구를 `GuestPostOverflowMenu`의 수동 `import()` 뒤로 이동해 `...` 메뉴 클릭 전에는 무거운 관리 액션을 로드하지 않는다.
+  - 분실/목격 공유 패널을 `DeferredLostFoundSharePanel`로 분리해 공유 도구 클릭 전에는 `next/image`, 공유 문구, poster 생성 helper를 가져오지 않는다.
+  - 공개 상세의 목록 이동을 client router 버튼에서 서버 렌더 `Link`로 바꿨다.
+  - `DismissibleDetails`와 게스트 action prompt의 외부 클릭 닫힘을 `pointerdown`, `mousedown`, `touchstart`, `focusin`, `Escape` 기준으로 보강했다.
+  - `blog/31-성능개선-8단계-전후-기록.md`에 추가 하드닝 방식과 production before/after를 정리했다.
+- 코드문서:
+  - [app/src/app/posts/[id]/guest/page.tsx](../app/src/app/posts/[id]/guest/page.tsx)
+  - [app/src/components/posts/deferred-post-comment-section.tsx](../app/src/components/posts/deferred-post-comment-section.tsx)
+  - [app/src/components/posts/deferred-lost-found-share-panel.tsx](../app/src/components/posts/deferred-lost-found-share-panel.tsx)
+  - [app/src/components/posts/guest-post-engagement-bar.tsx](../app/src/components/posts/guest-post-engagement-bar.tsx)
+  - [app/src/components/posts/guest-post-overflow-menu.tsx](../app/src/components/posts/guest-post-overflow-menu.tsx)
+  - [app/src/components/ui/dismissible-details.tsx](../app/src/components/ui/dismissible-details.tsx)
+  - [blog/31-성능개선-8단계-전후-기록.md](../blog/31-성능개선-8단계-전후-기록.md)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- 'src/app/posts/[id]/guest/page-layout.test.ts' src/components/posts/post-detail-action-accessibility.test.tsx src/components/posts/post-comment-section-client.test.ts`
+    - PASS, `3 files / 15 tests`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `corepack pnpm@9.12.3 -C app lint`
+    - PASS
+  - `corepack pnpm@9.12.3 -C app build`
+    - PASS
+  - 로컬 production route asset 측정
+    - `/posts/cmpqq6a0z00028igf2tc3xqag/guest`: total `233KB`, script `190KB`
+  - 로컬 production browser 측정
+    - public detail LCP p50 `380ms`, p95 `388ms`
+  - production route asset 측정
+    - `/posts/cmpnejuwa000411t0dazcem8h/guest`: total `226KB`, script `183KB`
+  - production browser 측정
+    - public detail LCP p50 `668ms`, p95 `1164ms`, total goto p50 `497ms`
+  - production interaction smoke
+    - PASS: 게시글 메뉴 외부 클릭 닫힘, 좋아요 로그인 안내, 북마크 로그인 안내, 공유 링크 복사, 댓글 지연 로딩 확인
+- 주요 결과:
+  - production public detail total transfer: `306KB -> 226KB` (`-80KB`, `26.1%` 감소)
+  - production public detail script transfer: `257KB -> 183KB` (`-74KB`, `28.8%` 감소)
+  - public detail asset budget total `<= 280KB`, script `<= 220KB` 통과
+  - `/`, `/login`, `/feed/guest`는 기존 hot path budget을 유지했다.
+- 결과:
+  - 프레임워크/DB 교체 없이 상세 페이지 초기 클라이언트 경계를 줄여 90점 이상 목표 수준의 asset budget을 달성했다.
