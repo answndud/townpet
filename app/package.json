@@ -82,6 +82,7 @@
     "ops:evidence:solo": "OPS_EVIDENCE_PROFILE=solo tsx scripts/run-ops-evidence.ts",
     "playwright:install:local": "PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers playwright install chromium",
     "perf:baseline": "tsx scripts/measure-production-performance.ts",
+    "perf:api-timings": "tsx scripts/measure-api-route-timings.ts",
     "perf:browser": "tsx scripts/measure-browser-performance.ts",
     "perf:browser:local": "PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers tsx scripts/measure-browser-performance.ts",
     "perf:assets": "tsx scripts/measure-route-assets.ts",

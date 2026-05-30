@@ -4,6 +4,7 @@ import { runtimeEnv, validateRuntimeEnv } from "@/lib/env";
 import { logger } from "@/server/logger";
 import { getHealthSnapshot } from "@/server/health-overview";
 import { canAccessInternalDiagnostics } from "@/server/internal-diagnostics-access";
+import { createRouteTimingTracker } from "@/server/route-timing";
 
 type PublicHealthResponse = {
   ok: boolean;
@@ -27,9 +28,16 @@ function toPublicHealthResponse(snapshot: Awaited<ReturnType<typeof getHealthSna
 }
 
 export async function GET(request: Request) {
-  const envValidation = validateRuntimeEnv();
-  const includeDetailedHealth = shouldIncludeDetailedHealth(request);
-  const snapshot = await getHealthSnapshot({ includeDetailedHealth });
+  const timing = createRouteTimingTracker();
+  const requestUrl = new URL(request.url);
+  const perfRequested = requestUrl.searchParams.get("perf") === "1";
+  const envValidation = await timing.measure("env_validation", async () => validateRuntimeEnv());
+  const includeDetailedHealth = await timing.measure("diagnostics_access", async () =>
+    shouldIncludeDetailedHealth(request),
+  );
+  const snapshot = await timing.measure("health_snapshot", () =>
+    getHealthSnapshot({ includeDetailedHealth }),
+  );
   const status = snapshot.status;
   const httpStatus = status === "ok" ? 200 : 503;
 
@@ -42,5 +50,6 @@ export async function GET(request: Request) {
 
   return NextResponse.json(includeDetailedHealth ? snapshot : toPublicHealthResponse(snapshot), {
     status: httpStatus,
+    headers: perfRequested ? { "server-timing": timing.serverTimingHeader() } : undefined,
   });
 }

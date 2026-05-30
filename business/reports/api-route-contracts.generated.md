@@ -8,7 +8,7 @@ Generated from `app/src/app/api/**/route.ts` with source-text heuristics.
 - missingMethodExports: 0
 - missingAdjacentTests: 3
 - accessHeuristics: admin=2, auth-aware=18, authenticated=10, moderator=6, provider-managed=1, public=15, public-internal-token=2
-- validationHeuristics: manual=11, no-input=5, provider-managed=1, schema=24, service-delegated=12, static-response=1
+- validationHeuristics: manual=13, no-input=3, provider-managed=1, schema=24, service-delegated=12, static-response=1
 - monitoringHeuristics: logger=1, monitorUnhandledError=49, none=2, provider-managed=1, static-response=1
 
 Heuristic labels are review aids, not a security proof. Source of truth remains route code and tests.
@@ -41,8 +41,8 @@ Heuristic labels are review aids, not a security proof. Source of truth remains 
 | `/api/feed/guest` | GET | public | schema | monitorUnhandledError | `src/app/api/feed/guest/route.ts` | yes |
 | `/api/feed/personalization` | POST | authenticated | schema | monitorUnhandledError | `src/app/api/feed/personalization/route.ts` | yes |
 | `/api/guest/step-up` | POST | public | schema | monitorUnhandledError | `src/app/api/guest/step-up/route.ts` | yes |
-| `/api/health` | GET | public-internal-token | no-input | logger | `src/app/api/health/route.ts` | yes |
-| `/api/home/feed` | GET | public | no-input | monitorUnhandledError | `src/app/api/home/feed/route.ts` | yes |
+| `/api/health` | GET | public-internal-token | manual | logger | `src/app/api/health/route.ts` | yes |
+| `/api/home/feed` | GET | public | manual | monitorUnhandledError | `src/app/api/home/feed/route.ts` | yes |
 | `/api/lounges/breeds/[breedCode]/groupbuys` | POST | auth-aware | schema | monitorUnhandledError | `src/app/api/lounges/breeds/[breedCode]/groupbuys/route.ts` | yes |
 | `/api/lounges/breeds/[breedCode]/posts` | GET | auth-aware | schema | monitorUnhandledError | `src/app/api/lounges/breeds/[breedCode]/posts/route.ts` | yes |
 | `/api/metrics/web-vitals` | POST | public | schema | monitorUnhandledError | `src/app/api/metrics/web-vitals/route.ts` | yes |

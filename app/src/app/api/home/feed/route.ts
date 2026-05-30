@@ -6,23 +6,41 @@ import { getHomeFeedPayload } from "@/server/queries/home-feed.queries";
 import { getClientIp } from "@/server/request-context";
 import { enforceRateLimit } from "@/server/rate-limit";
 import { jsonError, jsonOk } from "@/server/response";
+import { createRouteTimingTracker } from "@/server/route-timing";
 
 export async function GET(request: NextRequest) {
+  const timing = createRouteTimingTracker();
   try {
     const clientIp = getClientIp(request);
-    await enforceRateLimit({
+    const { searchParams } = new URL(request.url);
+    const perfRequested = searchParams.get("perf") === "1";
+
+    await timing.measure("rate_limit", () => enforceRateLimit({
       key: `home-feed:ip:${clientIp}`,
       limit: 60,
       windowMs: 60_000,
       cacheMs: 1_000,
-    });
+    }));
+
+    const payload = await timing.measure("home_feed_query", () => getHomeFeedPayload());
+    const summary = timing.summary();
 
     return jsonOk(
-      await getHomeFeedPayload(),
+      payload,
       {
         headers: {
           "cache-control": buildCacheControlHeader(60, 300),
+          ...(perfRequested
+            ? { "server-timing": timing.serverTimingHeader() }
+            : {}),
         },
+        ...(perfRequested
+          ? {
+              meta: {
+                timings: summary,
+              },
+            }
+          : {}),
       },
     );
   } catch (error) {
