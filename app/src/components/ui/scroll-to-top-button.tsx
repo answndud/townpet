@@ -56,7 +56,7 @@ export function ScrollToTopButton({
       }}
       className={
         className ??
-        "tp-btn-soft fixed right-4 bottom-20 z-30 inline-flex h-11 items-center justify-center px-4 text-xs font-semibold shadow-[0_12px_28px_rgba(16,40,74,0.16)] backdrop-blur-sm sm:right-6 sm:bottom-6"
+        "fixed right-3 bottom-5 z-30 inline-flex min-h-10 items-center justify-center rounded-md border border-[#d6e4f6] bg-[#fbfdff]/95 px-3 text-[11px] font-semibold text-[#315b9a] shadow-[0_10px_24px_rgba(16,40,74,0.12)] backdrop-blur-sm transition hover:border-[#b9cdeb] hover:text-[#244b86] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] sm:right-6 sm:bottom-6"
       }
     >
       {label}

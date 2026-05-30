@@ -16,7 +16,6 @@ import {
 import { FeedPostMetaBadges } from "@/components/posts/feed-post-meta-badges";
 import {
   buildOperatorContentMetaLabel,
-  OperatorContentBadge,
 } from "@/components/posts/operator-content-source-panel";
 import { PostListItemShell } from "@/components/posts/post-list-item-shell";
 import { PostSignalIcons } from "@/components/posts/post-signal-icons";
@@ -219,9 +218,9 @@ const careStatusLabel: Record<string, string> = {
 };
 
 const FEED_POST_ITEM_CLASS_NAME =
-  "group grid h-[64px] grid-cols-[minmax(0,1fr)_44px_44px] items-center gap-x-2 px-3 py-1 transition hover:bg-[#fbfdff] sm:h-[68px] sm:grid-cols-[minmax(0,1fr)_48px_48px] sm:px-4 md:h-[64px] md:grid-cols-[minmax(0,1fr)_52px_48px] md:gap-x-2.5";
-const FEED_POST_THUMBNAIL_PLACEHOLDER_CLASS_NAME =
-  "invisible aspect-square rounded-lg";
+  "group grid min-h-[60px] grid-cols-[minmax(0,1fr)] items-center gap-x-2 px-3 py-2 transition hover:bg-[#fbfdff] sm:min-h-[64px] sm:px-4 md:min-h-[62px] md:gap-x-2.5";
+const FEED_POST_ITEM_WITH_THUMBNAIL_CLASS_NAME =
+  `${FEED_POST_ITEM_CLASS_NAME} grid-cols-[minmax(0,1fr)_48px] sm:grid-cols-[minmax(0,1fr)_52px]`;
 const FEED_AD_CTA_CLASS_NAME =
   "mt-2 inline-flex min-h-10 items-center justify-center rounded-md bg-[#3567b5] px-3 text-xs font-semibold text-[#fbfdff] transition hover:bg-[#2f5da4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1";
 
@@ -289,21 +288,28 @@ type FeedStatsLabelProps = {
   createdAt: string;
   viewCount: number;
   likeCount: number;
+  commentCount: number;
 };
 
 const FeedStatsLabel = memo(function FeedStatsLabel({
   createdAt,
   viewCount,
   likeCount,
+  commentCount,
 }: FeedStatsLabelProps) {
   const statsLabel = buildFeedStatsLabel({
     createdAt,
     viewCount,
     likeCount,
+    commentCount,
   });
 
   return <span className="break-keep text-[#5a759c]">{statsLabel}</span>;
 });
+
+function isDefaultFreeBoardType(type: PostType) {
+  return type === "FREE_POST" || type === "FREE_BOARD" || type === "DAILY_SHARE";
+}
 
 function shouldRenderFeedThumbnail(post: FeedPostItem) {
   return typeof post.images[0]?.url === "string" && post.images[0].url.length > 0;
@@ -697,18 +703,19 @@ export function FeedInfiniteList({
                 testId="feed-post-item"
                 href={detailHref}
                 prefetch={preferGuestDetail ? true : false}
-                articleClassName={`${FEED_POST_ITEM_CLASS_NAME} ${
+                articleClassName={`${hasThumbnail ? FEED_POST_ITEM_WITH_THUMBNAIL_CLASS_NAME : FEED_POST_ITEM_CLASS_NAME} ${
                   post.status === "HIDDEN" ? "bg-[#fff7f7]" : ""
                 }`}
                 topContent={
                   <div className="flex min-w-0 items-center gap-1 overflow-hidden">
-                    <FeedPostMetaBadges
-                      label={meta.label}
-                      chipClass={meta.chipClass}
-                      status={post.status}
-                      className="mb-0 shrink-0 justify-start gap-1 text-[10px] [&_.tp-chip-base]:px-1.5 [&_.tp-chip-base]:py-[2px] [&_.tp-chip-base]:text-[10px]"
-                    />
-                    {post.isOperatorContent ? <OperatorContentBadge compact /> : null}
+                    {!isDefaultFreeBoardType(post.type) || post.status === "HIDDEN" ? (
+                      <FeedPostMetaBadges
+                        label={meta.label}
+                        chipClass={meta.chipClass}
+                        status={post.status}
+                        className="mb-0 shrink-0 justify-start gap-1 text-[10px] [&_.tp-chip-base]:px-1.5 [&_.tp-chip-base]:py-[2px] [&_.tp-chip-base]:text-[10px]"
+                      />
+                    ) : null}
                     {locationLabel || petTypeLabel ? (
                       <span className="min-w-0 truncate text-[11px] font-medium text-[#6280aa]">
                         {[locationLabel, petTypeLabel].filter(Boolean).join(" · ")}
@@ -734,48 +741,40 @@ export function FeedInfiniteList({
                   });
                 }}
                 bottomContent={
-                  <div className="mt-0.5 flex min-w-0 items-center gap-x-1.5 overflow-hidden text-[11px] leading-[1.35] text-[#5f789d]">
+                  <div className="mt-0.5 flex min-w-0 flex-col gap-0.5 overflow-hidden text-[11px] leading-[1.35] text-[#5f789d] sm:flex-row sm:items-center sm:gap-x-1.5">
                     {marketSummary || careSummary || adoptionSummary || volunteerSummary ? (
-                      <>
+                      <div className="flex min-w-0 items-center gap-x-1.5 overflow-hidden">
                         <span className="min-w-0 shrink truncate text-[#5d779e]">
                           {marketSummary ?? careSummary ?? adoptionSummary ?? volunteerSummary}
                         </span>
-                        <span className="shrink-0 text-[#bfd0e4]">·</span>
-                      </>
+                        <span className="hidden shrink-0 text-[#bfd0e4] sm:inline">·</span>
+                      </div>
                     ) : null}
-                    <span className="min-w-0 shrink truncate font-medium text-[#1f3f71]">
-                      {authorNode}
-                    </span>
-                    {post.isOperatorContent ? (
-                      <>
-                        <span className="shrink-0 text-[#bfd0e4]">·</span>
-                        <span className="min-w-0 truncate text-[#55749e]">
-                          {buildOperatorContentMetaLabel({
-                            sourceName: post.operatorSourceName,
-                            lastVerifiedAt: post.operatorLastVerifiedAt,
-                          })}
-                        </span>
-                      </>
-                    ) : null}
-                    <span className="shrink-0 text-[#c8d6e8]">·</span>
+                    <div className="flex min-w-0 items-center gap-x-1.5 overflow-hidden">
+                      <span className="min-w-0 shrink truncate font-medium text-[#1f3f71]">
+                        {authorNode}
+                      </span>
+                      {post.isOperatorContent ? (
+                        <>
+                          <span className="shrink-0 text-[#bfd0e4]">·</span>
+                          <span className="min-w-0 truncate text-[#55749e]">
+                            {buildOperatorContentMetaLabel({
+                              sourceName: post.operatorSourceName,
+                              lastVerifiedAt: post.operatorLastVerifiedAt,
+                            })}
+                          </span>
+                        </>
+                      ) : null}
+                    </div>
                     <span className="min-w-0 shrink-0 text-[#58739a]">
                       <FeedStatsLabel
                         createdAt={post.createdAt}
                         viewCount={post.viewCount}
                         likeCount={post.likeCount}
+                        commentCount={post.commentCount}
                       />
                     </span>
                   </div>
-                }
-                sideClassName="flex min-w-0 items-center justify-end self-center"
-                sideContent={
-                  post.commentCount > 0 ? (
-                    <span className="inline-flex h-[22px] max-w-full items-center rounded-full border border-[#dbe6f5] bg-[#f6f9ff] px-1.5 text-[10px] font-semibold leading-none text-[#315b9a]">
-                      댓글 {post.commentCount}
-                    </span>
-                  ) : (
-                    <span aria-hidden="true" className="invisible h-[22px] w-[40px]" />
-                  )
                 }
                 metaClassName="min-w-0 self-center"
                 meta={
@@ -791,12 +790,7 @@ export function FeedInfiniteList({
                         });
                       }}
                     />
-                  ) : (
-                    <div
-                      aria-hidden="true"
-                      className={FEED_POST_THUMBNAIL_PLACEHOLDER_CLASS_NAME}
-                    />
-                  )
+                  ) : undefined
                 }
               />
             </div>

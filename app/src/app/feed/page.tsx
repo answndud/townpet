@@ -99,9 +99,6 @@ export const metadata: Metadata = {
   },
 };
 
-const feedInlineTextActionClassName =
-  "tp-text-muted inline-flex min-h-10 w-fit items-center px-1.5 text-xs font-semibold transition hover:text-[#2f5da4] hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1";
-
 export default async function Home({ searchParams }: HomePageProps) {
   const resolvedParams = (await searchParams) ?? {};
   const perfRequested = resolvedParams.perf === "1";
@@ -770,13 +767,6 @@ export default async function Home({ searchParams }: HomePageProps) {
             </div>
           </header>
 
-          <a
-            href="#feed-list"
-            className={`${feedInlineTextActionClassName} hidden sm:inline-flex lg:hidden`}
-          >
-            목록
-          </a>
-
         {isGuestTypeBlocked && type ? (
           <div className="border border-[#d9c38b] bg-[#fff8e5] px-3 py-2.5 text-sm text-[#6c5319]">
             선택한 게시판({postTypeMeta[type].label})은 로그인 후 볼 수 있습니다.{" "}
@@ -811,7 +801,7 @@ export default async function Home({ searchParams }: HomePageProps) {
           }
         />
 
-        <section id="feed-list" className="animate-fade-up overflow-hidden rounded-xl border border-[#d9e5f7] bg-white">
+        <section id="feed-list" className="animate-fade-up overflow-hidden border-y border-[#d9e5f7] bg-white sm:rounded-xl sm:border">
           {items.length === 0 ? (
             <EmptyState
               title={mode === "BEST" ? "반응 많은 글이 없습니다" : "게시글이 없습니다"}

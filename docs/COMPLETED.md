@@ -9014,3 +9014,39 @@
     - PASS
   - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
     - PASS
+
+### 2026-05-30 | 모바일 피드 밀도와 반복 배지 정리
+- 완료일: `2026-05-30`
+- 배경:
+  - 모바일 캡처에서 피드 첫 화면이 hero, `목록` 보조 anchor, 큰 필터 박스 때문에 실제 글 목록에 늦게 도달했다.
+  - 목록 row는 빈 썸네일 칸과 댓글 pill이 공간을 차지했고, 작성자/발췌/날짜/조회/좋아요가 한 줄에 섞여 읽기 어려웠다.
+  - 대부분의 글에 `자유게시판`, `운영자 정리` badge가 반복되어 실제 제목보다 상태 라벨이 먼저 보였다.
+  - 하단 검색, footer, `맨 위로` 버튼이 모바일에서 너무 큰 박스처럼 보였다.
+- 변경내용:
+  - `/feed/guest` hero를 모바일에서 제목+글쓰기 중심의 compact header로 줄이고 설명 문구는 `sm` 이상에서만 노출한다.
+  - 회원/게스트 피드의 `목록` 보조 anchor를 제거했다.
+  - `FeedControlPanel` active state를 진한 primary button에서 soft selected chip으로 낮추고, 모바일에서는 필터 row를 가로 스캔형으로 만들었다.
+  - `FeedInfiniteList` row에서 빈 썸네일 placeholder와 별도 댓글 pill column을 제거했다. 썸네일이 있는 글만 thumbnail column을 쓰고, 댓글 수는 날짜/조회/좋아요 meta line에 합친다.
+  - 기본 자유게시판 계열(`FREE_POST`, `FREE_BOARD`, `DAILY_SHARE`) active 글은 board badge를 숨기고, hidden 상태나 특수 게시판만 badge를 유지한다.
+  - 운영자 콘텐츠는 별도 `운영자 정리` badge를 반복하지 않고 source/확인일 meta만 표시한다.
+  - 하단 검색 form을 모바일 3열(`검색 위치`, `검색어`, `검색`)로 줄이고, footer 설명 문구와 `맨 위로` 버튼의 시각 무게를 낮췄다.
+- 코드문서:
+  - [app/src/components/posts/feed-infinite-list.tsx](../app/src/components/posts/feed-infinite-list.tsx)
+  - [app/src/components/posts/feed-control-panel.tsx](../app/src/components/posts/feed-control-panel.tsx)
+  - [app/src/components/posts/feed-footer-search-form.tsx](../app/src/components/posts/feed-footer-search-form.tsx)
+  - [app/src/components/posts/guest-feed-page-client.tsx](../app/src/components/posts/guest-feed-page-client.tsx)
+  - [app/src/app/feed/page.tsx](../app/src/app/feed/page.tsx)
+  - [app/src/components/navigation/app-shell-footer.tsx](../app/src/components/navigation/app-shell-footer.tsx)
+  - [app/src/components/ui/scroll-to-top-button.tsx](../app/src/components/ui/scroll-to-top-button.tsx)
+  - [app/src/lib/feed-list-presenter.ts](../app/src/lib/feed-list-presenter.ts)
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/lib/feed-list-presenter.test.ts src/components/posts/feed-infinite-list.test.tsx src/components/posts/feed-control-panel.test.tsx src/components/posts/feed-footer-search-form.test.tsx src/components/navigation/app-shell-footer.test.tsx src/components/ui/scroll-to-top-button.test.ts`
+    - Vitest `6 files / 18 tests` PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app lint`
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - Playwright mobile `390x844` local smoke
+    - horizontal overflow 없음, 첫 글 목록 top `305px`, filter height `48px`, 첫 row height `68px`
+    - 하단 search form `grid`, footer height `95px`, `맨 위로` button `57x40px`
+    - `자유게시판`/`운영자 정리` 반복 badge 없음, footer search grid 정상 확인

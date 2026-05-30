@@ -3,6 +3,7 @@
 ## 현재 상태
 
 - 현재 active 구현 항목 없음.
+- `2026-05-30. 모바일 피드 밀도와 반복 배지 정리`를 완료했다. 모바일 `/feed/guest`에서 hero를 compact header로 줄이고 `목록` 보조 anchor를 제거했으며, 필터를 가로 스캔형으로 낮췄다. 피드 row는 빈 썸네일/댓글 전용 칸을 없애고 댓글 수를 메타 줄에 합쳤으며, 기본 자유게시판/운영자 정리 배지 반복 노출을 줄였다. 하단 검색과 footer, 맨 위로 버튼도 모바일에서 더 낮은 높이로 정리했다. targeted tests, lint, typecheck, 모바일 Playwright screenshot/overflow smoke를 확인했다.
 - `2026-05-30. user-facing action label suffix 정리`를 완료했다. 화면 action/내비게이션 라벨의 `보기`, `더보기`, `확대 보기` suffix를 제거해 `게시판`, `목록`, `피드`, `상세`, `확대`처럼 짧은 명사형 패턴으로 맞췄고, `app/src`에서 해당 suffix 패턴이 남지 않도록 검색했다. targeted tests, lint, typecheck를 확인했다.
 - `2026-05-29. 게시판 chip과 북마크 로그인 안내 정렬 polish`를 완료했다. 상세 상단 게시판 chip을 pill에서 낮은 radius의 compact link로 바꾸고, 비회원 북마크 로그인 안내 문구와 링크 baseline이 어긋나던 문제를 flex row로 정렬했다. targeted tests, lint, typecheck, 전체 `quality:check`를 확인했다.
 - `2026-05-29. 게시글 상세 feedback 후속 polish`를 완료했다. 상세 본문 이미지를 왼쪽 정렬로 고정하고, 좋아요/싫어요를 다시 중앙 정렬했으며, 반응/북마크/알림/검색어 floating prompt를 공용 outside-click/focus/Escape dismissible layer로 맞췄다. 제목 타이포그래피를 낮추고 빈 댓글 문구도 제거했다. targeted tests, lint, typecheck, 모바일 Playwright smoke, 전체 `quality:check`를 확인했다.
