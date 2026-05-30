@@ -9159,3 +9159,46 @@
     - PASS, route asset markdown/json 생성
 - 다음:
   - Phase 2는 Web Vitals 실사용 수집 MVP다.
+
+### 2026-05-30 | 성능 개선 Phase 2 Web Vitals 실사용 수집 MVP
+- 완료일: `2026-05-30`
+- 배경:
+  - production 응답 시간과 browser LCP 기준선은 고정했지만, 실제 사용자 환경의 route별 LCP/INP/CLS/FCP/TTFB p75/p95를 쌓는 경로가 없었다.
+  - 다음 성능 개선은 감각이 아니라 실사용 Web Vitals 표본을 기준으로 우선순위를 정해야 한다.
+- 변경내용:
+  - `WebVitalSample` Prisma model과 `WebVitalMetric`, `WebVitalRating` enum을 추가하고 migration을 생성했다.
+  - root layout에 `WebVitalsReporter` client component를 연결해 production 또는 명시 opt-in 환경에서 LCP, INP, CLS, FCP, TTFB를 `/api/metrics/web-vitals`로 전송한다.
+  - dynamic route, media path, notification redirect, sitemap path를 route aggregate key로 정규화해 개인/게시글 식별자가 metric table에 쌓이지 않게 했다.
+  - Web Vitals POST API는 IP rate limit, Zod payload validation, schema-sync fallback `202`, unexpected error monitoring을 갖춘 public telemetry endpoint로 구성했다.
+  - 최근 N일 샘플을 metric+route 단위로 묶어 p75/p95, rating count, latestAt을 계산하는 read-only query를 추가했다.
+  - `pnpm -C app perf:web-vitals` report script를 추가해 [web-vitals-summary-2026-05-30T06-32-25-631Z.md](./reports/web-vitals-summary-2026-05-30T06-32-25-631Z.md)를 생성했다.
+  - 새 API route를 `business/reports/api-route-contracts.generated.md`에 반영했다.
+- 코드문서:
+  - [app/prisma/schema.prisma](../app/prisma/schema.prisma)
+  - [app/prisma/migrations/20260530063000_add_web_vital_samples/migration.sql](../app/prisma/migrations/20260530063000_add_web_vital_samples/migration.sql)
+  - [app/src/components/analytics/web-vitals-reporter.tsx](../app/src/components/analytics/web-vitals-reporter.tsx)
+  - [app/src/app/api/metrics/web-vitals/route.ts](../app/src/app/api/metrics/web-vitals/route.ts)
+  - [app/src/lib/web-vitals.ts](../app/src/lib/web-vitals.ts)
+  - [app/src/lib/validations/web-vitals.ts](../app/src/lib/validations/web-vitals.ts)
+  - [app/src/server/services/web-vitals.service.ts](../app/src/server/services/web-vitals.service.ts)
+  - [app/src/server/queries/web-vitals.queries.ts](../app/src/server/queries/web-vitals.queries.ts)
+  - [app/scripts/report-web-vitals.ts](../app/scripts/report-web-vitals.ts)
+  - [business/reports/api-route-contracts.generated.md](../business/reports/api-route-contracts.generated.md)
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app exec prisma generate`
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/lib/web-vitals.test.ts src/server/services/web-vitals.service.test.ts src/server/queries/web-vitals.queries.test.ts src/app/api/metrics/web-vitals/route.test.ts`
+    - Vitest `4 files / 13 tests` PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app lint`
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app exec prisma migrate deploy`
+    - local `20260530063000_add_web_vital_samples` migration 적용 PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app perf:web-vitals`
+    - PASS, local sample `0` 상태의 summary report 생성
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app api:contracts`
+    - PASS
+- 결과:
+  - Web Vitals를 개인정보 없이 route 단위로 수집하고, p75/p95를 운영 리포트로 조회할 수 있는 최소 루프가 생겼다.
+  - 다음 Phase 3은 `/` 첫 화면 live board 로딩 체감 개선이다.

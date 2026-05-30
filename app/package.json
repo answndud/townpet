@@ -87,6 +87,7 @@
     "perf:assets": "tsx scripts/measure-route-assets.ts",
     "perf:assets:local": "PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers tsx scripts/measure-route-assets.ts",
     "perf:db-readiness": "tsx scripts/measure-db-readiness.ts",
+    "perf:web-vitals": "tsx scripts/report-web-vitals.ts",
     "ops:prewarm": "tsx scripts/prewarm-deployment.ts",
     "ops:perf:snapshot": "tsx scripts/collect-latency-snapshot.ts",
     "search:check:cases": "tsx scripts/check-search-cases.ts"
