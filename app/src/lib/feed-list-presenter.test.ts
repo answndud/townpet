@@ -32,4 +32,15 @@ describe("buildFeedStatsLabel", () => {
       }),
     ).toBe("조회 31 · 좋아요 4");
   });
+
+  it("includes comments only when a feed row has replies", () => {
+    expect(
+      buildFeedStatsLabel({
+        createdAt: "2026-03-07T12:00:00.000Z",
+        viewCount: 31,
+        likeCount: 4,
+        commentCount: 2,
+      }),
+    ).toBe("2026-03-07 · 조회 31 · 좋아요 4 · 댓글 2");
+  });
 });

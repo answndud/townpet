@@ -32,8 +32,6 @@ import { type ReviewCategory } from "@/lib/review-category";
 
 const feedInlinePrimaryActionClassName =
   "inline-flex min-h-10 items-center justify-center rounded-md bg-[#3567b5] px-3 text-xs font-semibold text-[#fbfdff] transition hover:bg-[#2f5da4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1";
-const feedInlineTextActionClassName =
-  "tp-text-muted inline-flex min-h-10 w-fit items-center px-1.5 text-xs font-semibold transition hover:text-[#2f5da4] hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1";
 
 function buildGuestFeedHref({
   basePath,
@@ -449,23 +447,23 @@ export function GuestFeedPageClient({
       >
         <div className={isUltraDense ? "space-y-2" : "space-y-3"}>
           <header
-            className={`animate-float-in rounded-xl border border-[#d9e5f7] bg-[#f8fbff] ${
-              isUltraDense ? "px-3 py-3 sm:px-4 sm:py-3" : "px-4 py-3 sm:px-5 sm:py-3"
+            className={`animate-float-in border-y border-[#e1e9f5] bg-[#fbfdff] sm:rounded-xl sm:border ${
+              isUltraDense ? "px-3 py-2 sm:px-4 sm:py-3" : "px-3 py-2.5 sm:px-5 sm:py-3"
             }`}
           >
-            <div className="flex flex-col gap-2.5 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex items-center justify-between gap-2 lg:items-center">
               <div className="min-w-0">
-                <p className="tp-eyebrow">공개 피드</p>
+                <p className="hidden text-[10px] font-semibold leading-none text-[#5a7398] sm:block">공개 피드</p>
                 <h1
                   className={
                     isUltraDense
-                      ? "mt-1 text-lg font-semibold text-[#1e3f74] sm:text-xl"
-                      : "mt-1 text-xl font-semibold text-[#1e3f74] sm:text-2xl"
+                      ? "text-base font-semibold text-[#1e3f74] sm:mt-1 sm:text-xl"
+                      : "text-lg font-semibold text-[#1e3f74] sm:mt-1 sm:text-2xl"
                   }
                 >
                   {feedTitle}
                 </h1>
-                <p className="mt-1.5 max-w-[640px] text-sm leading-6 text-[#4f678d]">
+                <p className="mt-1.5 hidden max-w-[640px] text-sm leading-6 text-[#4f678d] sm:block">
                   비회원에게 공개된 커뮤니티 글을 최신순, 반응순으로 확인할 수 있습니다.
                 </p>
               </div>
@@ -479,13 +477,6 @@ export function GuestFeedPageClient({
               </div>
             </div>
           </header>
-
-          <a
-            href="#feed-list"
-            className={`${feedInlineTextActionClassName} hidden sm:inline-flex lg:hidden`}
-          >
-            목록
-          </a>
 
           {isGuestTypeBlocked && type ? (
             <div className="border border-[#d9c38b] bg-[#fff8e5] px-3 py-2.5 text-sm text-[#6c5319]">
@@ -509,7 +500,7 @@ export function GuestFeedPageClient({
             makeHref={makeHref}
           />
 
-          <section id="feed-list" className="animate-fade-up overflow-hidden rounded-xl border border-[#d9e5f7] bg-white">
+          <section id="feed-list" className="animate-fade-up overflow-hidden border-y border-[#d9e5f7] bg-white sm:rounded-xl sm:border">
             {items.length === 0 ? (
               <EmptyState
                 title={mode === "BEST" ? "반응 많은 글이 없습니다" : "게시글이 없습니다"}

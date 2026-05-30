@@ -54,12 +54,12 @@ const REVIEW_FILTER_OPTIONS: Array<{ label: string; value?: ReviewCategory }> = 
 const PRIMARY_TAB_CLASS_NAME =
   "inline-flex min-h-10 items-center rounded-md border px-2.5 text-[11px] font-medium leading-none transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25";
 const ACTIVE_PRIMARY_TAB_CLASS_NAME =
-  "border-[#3567b5] bg-[#3567b5] text-white";
+  "border-[#a9c6ee] bg-[#eaf3ff] text-[#1f4f8f]";
 const INACTIVE_PRIMARY_TAB_CLASS_NAME =
   "border-[#d5e3f5] bg-white text-[#315b9a] hover:border-[#b8cceb] hover:bg-[#f5f9ff]";
 const FILTER_CHIP_CLASS_NAME =
   "inline-flex min-h-10 items-center rounded-md border px-2.5 text-[11px] font-medium leading-none transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25";
-const ACTIVE_FILTER_CHIP_CLASS_NAME = "border-[#3567b5] bg-[#3567b5] text-white";
+const ACTIVE_FILTER_CHIP_CLASS_NAME = "border-[#a9c6ee] bg-[#eaf3ff] text-[#1f4f8f]";
 const INACTIVE_FILTER_CHIP_CLASS_NAME =
   "border-[#d4e1f3] bg-white text-[#355f99] hover:border-[#bdd2ed] hover:bg-[#f6faff]";
 
@@ -82,14 +82,14 @@ export function FeedControlPanel({
   personalized,
 }: FeedControlPanelProps) {
   return (
-    <section className="overflow-hidden rounded-xl border border-[#dce7f7] bg-white">
-      <div className="border-b border-[#dde8f7] bg-[#f8fbff] px-3 py-1 sm:px-5">
-        <div className="flex flex-wrap items-center gap-1.5">
-          <div className="flex min-w-0 items-center gap-1.5">
+    <section className="overflow-hidden border-y border-[#e1e9f5] bg-white sm:rounded-xl sm:border">
+      <div className="border-b border-[#e8f0fa] bg-[#fbfdff] px-2 py-1 sm:px-5">
+        <div className="overflow-x-auto">
+          <div className="flex min-w-max items-center gap-1.5">
             <p className="text-[10px] font-semibold leading-none text-[#4f6e97]">
               피드
             </p>
-            <div className="flex flex-wrap items-center gap-1">
+            <div className="flex items-center gap-1">
               <Link
                 href={makeHref({ nextMode: "ALL", nextPage: 1 })}
                 className={`${PRIMARY_TAB_CLASS_NAME} ${
@@ -180,14 +180,14 @@ export function FeedControlPanel({
         ) : null}
       </div>
 
-      <div className="grid bg-white px-3 py-1 sm:px-5">
+      <div className="grid bg-white px-2 py-1 sm:px-5">
         <div
           data-testid="feed-sort-range-row"
-          className="flex flex-col gap-1 py-1 lg:flex-row lg:flex-wrap lg:items-center lg:gap-2"
+          className="flex gap-2 overflow-x-auto py-1 lg:flex-wrap lg:items-center"
         >
-          <div className="flex flex-wrap items-center gap-1">
+          <div className="flex shrink-0 items-center gap-1">
             <SectionLabel>정렬</SectionLabel>
-            <div className="flex flex-wrap items-center gap-1">
+            <div className="flex items-center gap-1">
               {([
                 { value: "LATEST", label: "최신" },
                 { value: "LIKE", label: "좋아요" },
@@ -215,9 +215,9 @@ export function FeedControlPanel({
 
           <div className="hidden h-4 w-px bg-[#dbe6f6] lg:block" aria-hidden="true" />
 
-          <div className="flex flex-wrap items-center gap-1">
+          <div className="flex shrink-0 items-center gap-1">
             <SectionLabel>{mode === "ALL" ? "기간" : "반응 기간"}</SectionLabel>
-            <div className="flex flex-wrap items-center gap-1">
+            <div className="flex items-center gap-1">
               {mode === "ALL" ? (
                 <>
                   <Link
@@ -276,9 +276,9 @@ export function FeedControlPanel({
         </div>
 
         {reviewBoard ? (
-          <div className="flex flex-wrap items-center gap-1 py-1">
+          <div className="flex items-center gap-1 overflow-x-auto py-1">
             <SectionLabel>리뷰</SectionLabel>
-            <div className="flex flex-wrap items-center gap-1">
+            <div className="flex shrink-0 items-center gap-1">
               {REVIEW_FILTER_OPTIONS.map((option) => {
                 const isActive = (option.value ?? null) === (reviewCategory ?? null);
                 return (
