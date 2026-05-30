@@ -9086,3 +9086,43 @@
   - Playwright mobile `390x844` local smoke
     - `/`: horizontal overflow 없음, H1 `우리 동네 반려생활 정보`, `지금 올라온 글` top `447px`
     - `/login`: horizontal overflow 없음, form top `263px`, submit height `40px`
+
+### 2026-05-30 | PROGRESS.md 완료 요약 이관
+- 완료일: `2026-05-30`
+- 배경:
+  - `docs/PROGRESS.md`에 완료된 과거 작업 요약이 active 상태와 함께 누적되어 있어, 완료 archive인 `docs/COMPLETED.md`로 이관했다.
+  - 이미 `COMPLETED.md`에 상세 기록이 있는 항목은 중복 이관하지 않고, `PROGRESS.md`에만 남아 있던 완료 요약만 보강했다.
+- 이관 항목:
+  - `2026-05-27. api_posts_suggestions p95 outlier 반복 관찰`을 완료했다. production health는 PASS였다. 첫 snapshot에서 `api_posts_suggestions`는 steady p95 `393.5ms`로 PASS했고, 재확인 snapshot에서는 p95 `196.0ms`로 PASS했다. 같은 첫 snapshot에서 `api_search_guest` p95 `1470.9ms`가 단발 FAIL했지만 즉시 recheck에서 p95 `286.3ms`로 정상화됐다. 이번 evidence로는 query/index/cache 변경을 열지 않고 관찰 기록으로 닫는다. 기록은 [docs/reports/api-posts-suggestions-outlier-observation-2026-05-27.md](./reports/api-posts-suggestions-outlier-observation-2026-05-27.md)에 남겼다.
+  - `2026-05-27. 운영 증거 기반 다음 개선 루프 Phase 4`를 완료했다. 다음 실제 사용자-facing 개발 항목은 `운영자 콘텐츠 정정/제보 acquisition loop MVP`로 선정했다. 근거는 production 운영자 글 9건과 feed/detail/search/home preview smoke PASS, 오늘 정리한 source/정정 CTA 이후 남은 미완성 고리가 correction submit/receipt/admin queue/acquisition tracking이기 때문이다.
+  - `P0-2. 전역 카피와 메타데이터 통일`을 완료했다.
+  - `P0-4a. 사용자 선택 동네 허브 진입 흐름 연결`을 완료했다. 홈은 정적 유지, 온보딩 동네 저장 성공 후 대표 동네 허브로 이동한다.
+  - `P0-7. 분실동물 전용 작성 플로우`를 완료했다. `/lost/new` 전용 진입, `LOST_FOUND` 사전 선택, 비회원 제보 허용, 분실/목격 구조화 필드, `LostFoundAlert` 저장, 검색 구조화 토큰, 정책/검증 테스트를 추가했다.
+  - `P0-8. 분실동물 공유 이미지/카카오톡 공유 MVP`를 완료했다. 상세 화면에 분실/목격 공유 패널, 카카오톡 복사용 문구, 링크 복사, SVG 공유 이미지 route, 공유 액션 로그 API, lost-found 전용 OG metadata를 추가했다.
+  - `P0-9. “목격했어요” 제보 흐름`을 완료했다. 댓글에 `LOST_FOUND_SIGHTING` subtype과 구조화 목격 위치/시간/사진 URL/보호자 공개 필드를 추가하고, 실종글 작성자/운영자가 상태를 `제보 접수 중/해결됨/종료`로 변경할 수 있게 했다.
+  - `P0-10. 병원 후기 템플릿 안전화`를 완료했다. 병원 후기 작성 폼을 비교 가능한 구조화 경험 데이터 중심으로 바꾸고, 위험 표현 검토 신호와 병원·장소 정보 정정 요청 경로를 연결했다.
+  - `P0-11. 산책코스 카드 필드 보강`을 완료했다. 산책코스 작성/상세/검색 구조를 대형견 적합, 혼잡 시간, 목줄 구간, 배변봉투함, 물 마실 곳, 주의 구간 중심으로 확장했다.
+  - `P0-12. 운영자 콘텐츠와 사용자 글 분리`를 완료했다. 운영자/모더레이터가 작성한 조사 콘텐츠는 출처, 원문 URL, 최종 확인일, 정보 정정 요청 CTA와 함께 사용자 글과 분리해 표시된다.
+  - `P1-1. 우리 동네 반려생활 지도 만들기 캠페인 페이지`를 완료했다. `/campaigns/neighborhood-map` public 캠페인 페이지, 홈 진입 링크, sitemap entry, 콘텐츠 현황 조회를 추가했다.
+  - `P1-2. Founding Member 배지`를 완료했다. 운영자 수동 부여 스크립트, User badge field, 캠페인/피드/프로필 노출, 캠페인 창립 멤버 현황 집계를 추가했다.
+  - `P1-3. 제보/추천 버튼과 첫 글 템플릿`을 완료했다. 캠페인/지역 허브/가이드 CTA가 글쓰기 템플릿으로 연결되고, `/posts/new`에서 제목/본문 초안과 템플릿 버튼을 제공한다.
+  - `P1-4. 획득 이벤트 정의`를 완료했다. public 랜딩/캠페인/가이드/지역 허브의 조회·CTA·템플릿 진입 이벤트를 `AcquisitionEventStat` 일별 집계로 연결하고, 첫 90일 이벤트 사전을 analytics 문서에 반영했다.
+  - `P1-7. 병원/업체 정정 요청 프로세스`를 완료했다. 공개 정정 요청 폼, 요청 저장 모델, 관리자 처리 큐, 처리 로그와 정책 문서를 추가했다.
+  - `P2-1. Public acquisition route 헤더 밀도 정리`를 완료했다. `/guides/*`, `/campaigns/neighborhood-map`, `/towns/*`에는 홈과 같은 간소 헤더를 적용하고, 피드/작성/관리자 등 앱 화면은 기존 헤더를 유지한다.
+  - `P2-2. 홈 preview seed/demo 글 노출 방어`를 완료했다. 홈 preview API가 샘플/demo/test/E2E 글을 더 넓게 제외하고, 내부 후보를 15개까지 가져온 뒤 최종 5개만 반환한다.
+  - `P2-3. 홈 Live board 빈 상태 콘텐츠 보강`을 완료했다. 홈 Live board가 비어도 병원 가이드, 병원 글, 분실동물 가이드, 첫 글 작성으로 이어지는 compact action row를 보여준다.
+  - `P2-4. production demo/E2E 데이터 정리 절차 문서화`를 완료했다. 운영 DB 변경 없이 read-only audit 명령과 정리 승인 절차를 추가했다.
+  - `P2-5. production DB demo/E2E read-only audit 실행`을 완료했다. production DB 변경 없이 후보 users 7, posts 17, comments 68을 확인했고, 마스킹된 report를 남겼다.
+  - `P2-6. production demo content cleanup 실행`을 완료했다. GitHub Actions cleanup workflow로 demo users 7, posts 17을 삭제했고 cleanup 후 후보 users/posts/comments가 모두 0임을 확인했다.
+  - `P2-7. GitHub Actions Node 20 deprecation 정리`를 완료했다. workflow Node 실행 버전을 24로 맞추고 `actions/upload-artifact`를 Node 24 runtime action으로 갱신했다.
+  - `P2-8. 실제 운영자 정리 콘텐츠 작성 큐 수립`을 완료했다. production DB 글 생성 없이 첫 14일 운영자 정리 콘텐츠 큐와 작성 기준을 문서화했다.
+  - `P2-9. production CSP hydration 차단 복구`를 완료했다. 사용자-facing HTML shell은 hydration-safe fallback CSP를 쓰고, API strict nonce CSP 경로는 유지한다.
+  - `P2-10. public feed 깨진 업로드 썸네일 방어`를 완료했다. `/media/uploads/*` 이미지가 blob asset 또는 실제 local public 파일로 확인되지 않으면 피드 목록 응답에서 제외한다.
+  - `P2-11. post detail 깨진 업로드 이미지 방어`를 완료했다. 상세 본문/갤러리도 renderable upload 기준으로 렌더링한다.
+  - `P2-12. upload URL canonicalization 보강`을 완료했다. 작성/수정 경로에서 legacy double-proxied URL이 다시 저장되지 않도록 canonicalize한다.
+  - `P2-13. legacy upload path read-only audit 준비`를 완료했다. production 직접 DB env는 현재 세션에 없어 local read-only report와 production 재실행 명령을 남겼다.
+  - `P2-14. 전국 공통 운영자 정리 콘텐츠 초안 팩`을 완료했다. production DB에 글을 넣지 않고, `/posts/new`에서 운영자가 직접 작성할 수 있는 첫 7개 초안을 문서화했다.
+  - `P2-15. 운영자 정리 글 public smoke 명령`을 완료했다. 게시 후 바로 확인할 수 있는 repo-local smoke를 추가했고, 현재 production은 운영자 정리 글 0건으로 `BLOCKED`임을 확인했다.
+  - `P2-16. 운영자 정리 글 production 자동 게시`를 완료했다. `townpet` production env를 `/tmp` 임시 link로 가져와 첫 7개 글을 `townpet-admin` author로 게시했고 public smoke가 `PASS`했다.
+- 정리 결과:
+  - `docs/PROGRESS.md`는 현재 active 작업 없음만 남긴다.
