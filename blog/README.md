@@ -69,6 +69,7 @@
 32. [28-면접-질문답변과-5분-데모-스크립트.md](./28-면접-질문답변과-5분-데모-스크립트.md)
 33. [29-성능개선-측정과-최적화-기록.md](./29-성능개선-측정과-최적화-기록.md)
 34. [30-운영-검증-문서화-루프.md](./30-운영-검증-문서화-루프.md)
+35. [31-성능개선-8단계-전후-기록.md](./31-성능개선-8단계-전후-기록.md)
 
 ## 이 시리즈가 다루는 범위
 
@@ -90,3 +91,4 @@
 - 면접 Q&A 카드와 5분 데모 스크립트
 - 실제 성능 피드백을 서버 응답, 브라우저 paint, route asset, DB readiness로 분리해 개선한 기록
 - production cleanup, detail visual smoke, docs-quality, active plan closure를 하나의 운영 검증/문서화 루프로 닫은 기록
+- 접속/로딩 속도를 production baseline, Web Vitals, ISR, prefetch, API timing, resource budget으로 나눠 8단계로 개선한 기록

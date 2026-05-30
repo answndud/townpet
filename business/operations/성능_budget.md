@@ -1,0 +1,93 @@
+# TownPet 성능 Budget
+
+마지막 갱신: `2026-05-30`
+
+이 문서는 1인 운영 기준의 on-demand 성능 점검선이다. 매 배포마다 강제하지 않고, 홈/피드/로그인/상세 성능을 건드렸을 때만 실행한다.
+
+## 측정 대상
+
+- `/`
+- `/login`
+- `/feed/guest`
+- 대표 public 게시글 상세
+- `/api/health`
+- `/api/home/feed`
+- `/api/feed/guest`
+
+## Budget
+
+모바일 기준:
+
+| route | LCP 목표 | total transfer | script transfer | fetch transfer |
+| --- | ---: | ---: | ---: | ---: |
+| `/` | `<= 500ms` local, `<= 1500ms` production | `<= 250KB` | `<= 180KB` | `<= 10KB` |
+| `/login` | `<= 700ms` local, `<= 1800ms` production | `<= 280KB` | `<= 180KB` | `<= 30KB` |
+| `/feed/guest` | `<= 700ms` local, `<= 1800ms` production | `<= 300KB` | `<= 190KB` | `<= 40KB` |
+
+API local production 기준:
+
+| endpoint | p50 | p95 | phase note |
+| --- | ---: | ---: | --- |
+| `/api/health?perf=1` | `<= 150ms` | `<= 700ms` | `health_snapshot`이 대부분을 차지해야 한다. |
+| `/api/home/feed?perf=1` | `<= 50ms` | `<= 250ms` | cold `home_feed_query` outlier는 허용하되 반복되면 query/cache 점검. |
+| `/api/feed/guest?perf=1` | `<= 50ms` | `<= 100ms` | 기본 요청은 `bootstrap.policy` + `page_query.all` 중심이어야 한다. |
+
+## 측정 명령
+
+production baseline:
+
+```bash
+PERF_POST_PATH=/posts/<public-post-id>/guest PERF_SAMPLES=5 PERF_PAUSE_MS=150 PERF_SLOW_THRESHOLD_MS=1000 pnpm -C app perf:baseline
+```
+
+browser paint:
+
+```bash
+PERF_POST_PATH=/posts/<public-post-id>/guest PERF_BROWSER_SAMPLES=2 PERF_BROWSER_SETTLE_MS=1500 PERF_BROWSER_PROFILES=desktop,mobile PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers pnpm -C app perf:browser:local
+```
+
+route asset:
+
+```bash
+PERF_BASE_URL=http://localhost:3000 PERF_ASSET_SETTLE_MS=1200 PERF_ASSET_PROFILES=mobile PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers pnpm -C app perf:assets:local
+```
+
+API phase timing:
+
+```bash
+PERF_BASE_URL=http://localhost:3000 PERF_API_TIMING_SAMPLES=5 PERF_API_TIMING_PAUSE_MS=150 pnpm -C app perf:api-timings
+```
+
+Web Vitals summary:
+
+```bash
+pnpm -C app perf:web-vitals
+```
+
+## 현재 기준선
+
+2026-05-30 local production after snapshot:
+
+| route | scripts | script transfer | CSS transfer | fetch transfer | total transfer |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `/` | `11` | `161KB` | `37KB` | `0KB` | `198KB` |
+| `/login` | `12` | `167KB` | `37KB` | `16KB` | `220KB` |
+| `/feed/guest` | `12` | `174KB` | `37KB` | `17KB` | `230KB` |
+
+관련 evidence:
+
+- [performance-route-assets-2026-05-30T06-44-10-663Z.md](../../docs/reports/performance-route-assets-2026-05-30T06-44-10-663Z.md)
+- [performance-route-assets-2026-05-30T06-51-31-430Z.md](../../docs/reports/performance-route-assets-2026-05-30T06-51-31-430Z.md)
+- [performance-route-assets-2026-05-30T07-06-48-043Z.md](../../docs/reports/performance-route-assets-2026-05-30T07-06-48-043Z.md)
+- [api-route-timings-2026-05-30T07-03-05-839Z.md](../../docs/reports/api-route-timings-2026-05-30T07-03-05-839Z.md)
+
+## 회귀 판단
+
+다음 중 하나라도 해당하면 성능 회귀로 본다.
+
+- `/` 또는 `/feed/guest` mobile total transfer가 budget을 `20%+` 초과한다.
+- `/` 첫 HTML에 live board skeleton만 있고 실제 글/empty action이 없다.
+- `/` 첫 진입에서 `/api/home/feed` client fetch가 다시 생긴다.
+- `/feed/guest` 첫 진입에서 클릭 전 post detail RSC prefetch가 다시 대량 발생한다.
+- `.next/static/media`에 의도하지 않은 webfont 파일이 다시 생긴다.
+- `/api/feed/guest?perf=1` 기본 요청에 `bootstrap.communities`가 항상 포함된다.
