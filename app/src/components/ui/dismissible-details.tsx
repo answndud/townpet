@@ -35,6 +35,14 @@ export function DismissibleDetails({ children, className }: DismissibleDetailsPr
       closeIfOutside(event.target);
     };
 
+    const handleMouseDown = (event: globalThis.MouseEvent) => {
+      closeIfOutside(event.target);
+    };
+
+    const handleTouchStart = (event: globalThis.TouchEvent) => {
+      closeIfOutside(event.target);
+    };
+
     const handleFocusIn = (event: globalThis.FocusEvent) => {
       closeIfOutside(event.target);
     };
@@ -46,10 +54,14 @@ export function DismissibleDetails({ children, className }: DismissibleDetailsPr
     };
 
     document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("mousedown", handleMouseDown);
+    document.addEventListener("touchstart", handleTouchStart);
     document.addEventListener("focusin", handleFocusIn);
     document.addEventListener("keydown", handleKeyDown);
     return () => {
       document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("mousedown", handleMouseDown);
+      document.removeEventListener("touchstart", handleTouchStart);
       document.removeEventListener("focusin", handleFocusIn);
       document.removeEventListener("keydown", handleKeyDown);
     };

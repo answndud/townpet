@@ -3,13 +3,11 @@ import type { Metadata } from "next";
 import { connection } from "next/server";
 import { notFound } from "next/navigation";
 
-import { BackToFeedButton } from "@/components/posts/back-to-feed-button";
 import { NeighborhoodGateNotice } from "@/components/neighborhood/neighborhood-gate-notice";
 import { OperatorContentSourcePanel } from "@/components/posts/operator-content-source-panel";
 import { PostBoardLinkChip } from "@/components/posts/post-board-link-chip";
-import { GuestPostDetailActions } from "@/components/posts/guest-post-detail-actions";
-import { LostFoundSharePanel } from "@/components/posts/lost-found-share-panel";
-import { PostBookmarkButton } from "@/components/posts/post-bookmark-button";
+import { GuestPostOverflowMenu } from "@/components/posts/guest-post-overflow-menu";
+import { DeferredLostFoundSharePanel } from "@/components/posts/deferred-lost-found-share-panel";
 import { PostCommentCountStat } from "@/components/posts/post-comment-count-stat";
 import {
   hospitalExplanationLabel,
@@ -17,12 +15,9 @@ import {
   routeDifficultyLabel,
 } from "@/components/posts/post-detail-presenter";
 import { PostDetailMediaGallery } from "@/components/posts/post-detail-media-gallery";
-import { PostReactionControls } from "@/components/posts/post-reaction-controls";
-import { PostReportForm } from "@/components/posts/post-report-form";
-import { PostShareControls } from "@/components/posts/post-share-controls";
-import { PostCommentSectionClient } from "@/components/posts/post-comment-section-client";
+import { GuestPostEngagementBar } from "@/components/posts/guest-post-engagement-bar";
+import { DeferredPostCommentSection } from "@/components/posts/deferred-post-comment-section";
 import { PostViewTracker } from "@/components/posts/post-view-tracker";
-import { DismissibleDetails } from "@/components/ui/dismissible-details";
 import { getCspNonce } from "@/lib/csp-nonce";
 import { serializeJsonForScriptTag } from "@/lib/json-script";
 import { formatKoreanDate } from "@/lib/date-format";
@@ -259,7 +254,12 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
         }}
       />
       <main className="mx-auto flex w-full max-w-[1100px] flex-col gap-4 px-4 py-5 sm:gap-5 sm:px-6 sm:py-6 lg:px-8">
-        <BackToFeedButton className="tp-text-link inline-flex min-h-10 w-fit items-center text-xs font-semibold underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2" />
+        <Link
+          href="/feed/guest"
+          className="tp-text-link inline-flex min-h-10 w-fit items-center text-xs font-semibold underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2"
+        >
+          ← 게시판으로 돌아가기
+        </Link>
         <div>
           <section className="tp-card p-4 sm:p-6">
             <div className="flex items-start justify-between gap-3">
@@ -271,27 +271,12 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
                   </span>
                 ) : null}
               </div>
-              {canReportPost || guestPostMeta.isGuestPost ? (
-                <DismissibleDetails className="relative shrink-0">
-                  <summary
-                    aria-label="게시글 메뉴"
-                    className="tp-text-muted inline-flex min-h-10 min-w-10 cursor-pointer list-none items-center justify-center text-[16px] leading-none transition hover:text-[#1f4f8f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2 [&::-webkit-details-marker]:hidden"
-                  >
-                    ···
-                  </summary>
-                  <div className="tp-border-muted absolute right-0 z-20 mt-1.5 min-w-[260px] rounded-md border bg-white p-2 shadow-[0_8px_18px_rgba(16,40,74,0.08)]">
-                    {canReportPost ? (
-                      <>
-                        <p className="px-1 pb-1 text-[12px] font-semibold text-rose-700">
-                          게시글 신고
-                        </p>
-                        <PostReportForm targetId={post.id} canReport={false} loginHref={loginHref} />
-                      </>
-                    ) : null}
-                    {guestPostMeta.isGuestPost ? <GuestPostDetailActions postId={post.id} /> : null}
-                  </div>
-                </DismissibleDetails>
-              ) : null}
+              <GuestPostOverflowMenu
+                postId={post.id}
+                canReportPost={canReportPost}
+                isGuestPost={guestPostMeta.isGuestPost}
+                loginHref={loginHref}
+              />
             </div>
 
             <div className="tp-border-soft mt-4 border-b pb-3 sm:pb-4">
@@ -354,39 +339,18 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
             </div>
 
             <div className="tp-border-soft mt-4 space-y-2.5 border-t pt-3 sm:mt-5 sm:pt-4">
-              <div className="grid gap-2 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
-                <div className="hidden sm:block" aria-hidden="true" />
-                <div className="flex justify-center">
-                  <PostReactionControls
-                    key={`${post.id}:guest`}
-                    postId={post.id}
-                    likeCount={safeLikeCount}
-                    dislikeCount={safeDislikeCount}
-                    currentReaction={null}
-                    canReact={false}
-                    loginHref={loginHref}
-                    align="center"
-                    compact
-                  />
-                </div>
-                <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
-                  <PostBookmarkButton
-                    key={`${post.id}:guest-bookmark`}
-                    postId={post.id}
-                    currentBookmarked={false}
-                    canBookmark={false}
-                    loginHref={loginHref}
-                    compact
-                  />
-                  <PostShareControls url={postUrl} compact />
-                </div>
-              </div>
+              <GuestPostEngagementBar
+                likeCount={safeLikeCount}
+                dislikeCount={safeDislikeCount}
+                loginHref={loginHref}
+                postUrl={postUrl}
+              />
             </div>
           </section>
         </div>
 
         {post.type === "LOST_FOUND" && post.lostFoundAlert ? (
-          <LostFoundSharePanel post={post} postUrl={postUrl} />
+          <DeferredLostFoundSharePanel post={post} postUrl={postUrl} />
         ) : null}
 
         {post.hospitalReview ? (
@@ -812,7 +776,7 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
           </section>
         ) : null}
 
-        <PostCommentSectionClient
+        <DeferredPostCommentSection
           postId={post.id}
           currentUserId={undefined}
           canInteract={false}

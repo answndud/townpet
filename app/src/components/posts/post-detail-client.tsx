@@ -22,7 +22,7 @@ import {
 import { PostDetailInfoPanels } from "@/components/posts/post-detail-info-panels";
 import { PostDetailPrimaryCard } from "@/components/posts/post-detail-primary-card";
 import { PostPersonalizationDwellTracker } from "@/components/posts/post-personalization-dwell-tracker";
-import { PostCommentSectionClient } from "@/components/posts/post-comment-section-client";
+import { DeferredPostCommentSection } from "@/components/posts/deferred-post-comment-section";
 import { PostViewTracker } from "@/components/posts/post-view-tracker";
 import { fetchJson } from "@/lib/client-json";
 import { fetchPostCommentPage } from "@/lib/comment-client";
@@ -739,7 +739,7 @@ export function PostDetailClient({ postId, cspNonce }: PostDetailClientProps) {
           </div>
         )}
 
-        <PostCommentSectionClient
+        <DeferredPostCommentSection
           postId={postId}
           currentUserId={viewerId ?? undefined}
           canInteract={hasLoadedPost ? canInteract : false}
