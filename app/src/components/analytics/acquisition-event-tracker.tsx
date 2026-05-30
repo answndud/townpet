@@ -26,11 +26,13 @@ export function AcquisitionEventTracker({ event }: AcquisitionEventTrackerProps)
 export function AcquisitionTrackedLink({
   event,
   onClick,
+  prefetch = false,
   ...props
 }: AcquisitionTrackedLinkProps) {
   return (
     <Link
       {...props}
+      prefetch={prefetch}
       onClick={(clickEvent) => {
         onClick?.(clickEvent);
         if (!clickEvent.defaultPrevented) {

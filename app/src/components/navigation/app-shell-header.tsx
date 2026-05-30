@@ -130,6 +130,10 @@ export function AppShellHeader({ communities: initialCommunities = [] }: Partial
   }, [initialCommunities.length, isAcquisitionHeaderPath]);
 
   useEffect(() => {
+    if (isAcquisitionHeaderPath) {
+      return;
+    }
+
     let cancelled = false;
     const controller = new AbortController();
 
@@ -186,13 +190,18 @@ export function AppShellHeader({ communities: initialCommunities = [] }: Partial
       }
       unsubscribe();
     };
-  }, [pathname, refreshOnFocus]);
+  }, [isAcquisitionHeaderPath, pathname, refreshOnFocus]);
 
   if (isAcquisitionHeaderPath) {
     return (
       <header className="border-b border-[#d8e4f6] bg-[#f4f8ffeb]">
         <div className="mx-auto flex w-full max-w-[1320px] items-center justify-between gap-3 px-4 py-2 sm:px-6 sm:py-2.5 lg:px-10">
-          <Link href="/" className="inline-flex items-center" aria-label="TownPet 홈으로 이동">
+          <Link
+            href="/"
+            prefetch={false}
+            className="inline-flex items-center"
+            aria-label="TownPet 홈으로 이동"
+          >
             <Image
               src="/townpet-logo.svg"
               alt="TownPet"
@@ -205,6 +214,7 @@ export function AppShellHeader({ communities: initialCommunities = [] }: Partial
           <nav className="flex items-center gap-1.5" aria-label="공개 안내 페이지 주요 이동">
             <Link
               href="/feed/guest"
+              prefetch={false}
               className="inline-flex min-h-9 items-center px-2 text-xs font-semibold text-[#315484] transition hover:text-[#1f4f8f] hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
             >
               게시판
@@ -212,6 +222,7 @@ export function AppShellHeader({ communities: initialCommunities = [] }: Partial
             {viewerShell.isAuthenticated ? (
               <Link
                 href="/profile"
+                prefetch={false}
                 className="inline-flex min-h-9 items-center px-2 text-xs font-semibold text-[#315484] transition hover:text-[#1f4f8f] hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
               >
                 내 프로필
@@ -219,6 +230,7 @@ export function AppShellHeader({ communities: initialCommunities = [] }: Partial
             ) : (
               <Link
                 href="/login"
+                prefetch={false}
                 data-testid="header-login-link-home"
                 className="inline-flex min-h-9 items-center px-2 text-xs font-semibold text-[#315484] transition hover:text-[#1f4f8f] hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25"
               >
@@ -235,7 +247,12 @@ export function AppShellHeader({ communities: initialCommunities = [] }: Partial
     <header className={APP_SHELL_HEADER_CLASS_NAME}>
       <div className="mx-auto flex w-full max-w-[1320px] flex-col gap-1.5 px-4 py-2 sm:gap-2 sm:px-6 sm:py-2.5 lg:px-10 lg:py-3 xl:flex-row xl:items-center xl:justify-between">
         <div className="flex items-center justify-between gap-3">
-          <Link href="/" className="inline-flex items-center" aria-label="TownPet 홈으로 이동">
+          <Link
+            href="/"
+            prefetch={false}
+            className="inline-flex items-center"
+            aria-label="TownPet 홈으로 이동"
+          >
             <Image
               src="/townpet-logo.svg"
               alt="TownPet"
@@ -249,6 +266,7 @@ export function AppShellHeader({ communities: initialCommunities = [] }: Partial
             {viewerShell.canModerate ? (
               <Link
                 href="/admin"
+                prefetch={false}
                 className={getAppShellMobileQuickLinkClassName(adminNavActive)}
                 aria-current={adminNavActive ? "page" : undefined}
               >
@@ -257,6 +275,7 @@ export function AppShellHeader({ communities: initialCommunities = [] }: Partial
             ) : null}
             <Link
               href="/profile"
+              prefetch={false}
               className={getAppShellMobileQuickLinkClassName(profileNavActive)}
               aria-current={profileNavActive ? "page" : undefined}
             >
@@ -265,6 +284,7 @@ export function AppShellHeader({ communities: initialCommunities = [] }: Partial
             {viewerShell.isAuthenticated ? (
               <Link
                 href="/notifications"
+                prefetch={false}
                 className={getAppShellMobileQuickLinkClassName(notificationNavActive)}
                 aria-current={notificationNavActive ? "page" : undefined}
               >
@@ -286,6 +306,7 @@ export function AppShellHeader({ communities: initialCommunities = [] }: Partial
             ) : (
               <Link
                 href="/login"
+                prefetch={false}
                 data-testid="header-login-link-mobile"
                 className={getAppShellMobileQuickLinkClassName(loginNavActive, "text-[#173963] hover:text-[#0f2f56]")}
                 aria-current={loginNavActive ? "page" : undefined}
@@ -308,6 +329,7 @@ export function AppShellHeader({ communities: initialCommunities = [] }: Partial
             <div className={`hidden md:flex ${APP_SHELL_DESKTOP_NAV_CLUSTER_CLASS_NAME}`}>
               <Link
                 href="/profile"
+                prefetch={false}
                 className={getAppShellNavLinkClassName(profileNavActive)}
                 aria-current={profileNavActive ? "page" : undefined}
               >
@@ -325,6 +347,7 @@ export function AppShellHeader({ communities: initialCommunities = [] }: Partial
               <div className={`hidden md:flex ${APP_SHELL_DESKTOP_NAV_CLUSTER_CLASS_NAME}`}>
                 <Link
                   href="/admin"
+                  prefetch={false}
                   className={getAppShellNavLinkClassName(adminNavActive)}
                   aria-current={adminNavActive ? "page" : undefined}
                 >
@@ -343,6 +366,7 @@ export function AppShellHeader({ communities: initialCommunities = [] }: Partial
             ) : (
               <Link
                 href="/login"
+                prefetch={false}
                 data-testid="header-login-link"
                 className={getAppShellNavLinkClassName(loginNavActive, "text-[#173963] hover:text-[#0f2f56]")}
                 aria-current={loginNavActive ? "page" : undefined}

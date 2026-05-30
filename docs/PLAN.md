@@ -45,13 +45,13 @@
   - 필요 시 `/api/home/feed` cache 또는 server-rendered preview 구조를 조정한다.
 
 #### Phase 4. 초기 JS/resource diet
-- 상태: `in_progress`
+- 상태: `completed`
 - 작업:
   - `/login`, `/`, `/feed/guest`의 route resource count와 JS transfer를 줄인다.
   - 불필요한 client boundary와 모든 페이지에 실리는 client code를 점검한다.
 
 #### Phase 5. API outlier 원인 분리
-- 상태: `pending`
+- 상태: `in_progress`
 - 작업:
   - `/api/health`, `/api/home/feed`, `/api/feed/guest`의 cold/warm outlier를 endpoint 내부 단계별 timing으로 분리한다.
   - Vercel cold start, DB/Prisma warm-up, cache miss, query 비용을 구분한다.

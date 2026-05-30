@@ -78,6 +78,7 @@ export function FeedFooterSearchForm({
         {query.trim().length > 0 ? (
           <Link
             href={resetHref}
+            prefetch={false}
             className={`${feedFooterSearchResetActionClassName} col-span-3 justify-self-end`}
           >
             초기화

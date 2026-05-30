@@ -9237,3 +9237,46 @@
 - 결과:
   - `/` 첫 화면 live board가 client fetch 대기 skeleton에서 server-rendered ISR 콘텐츠로 바뀌었다.
   - 다음 Phase 4는 `/`, `/login`, `/feed/guest` 초기 JS/resource diet다.
+
+### 2026-05-30 | 성능 개선 Phase 4 초기 JS/resource diet
+- 완료일: `2026-05-30`
+- 배경:
+  - Phase 3 이후에도 모바일 hot path에서 Next Link viewport prefetch가 화면에 보이는 글/필터/가이드 링크를 대량으로 RSC fetch하고 있었다.
+  - local mobile asset snapshot 기준 `/`는 fetch 34개, `/feed/guest`는 fetch transfer `84KB`, total transfer `433KB`까지 올라갔다.
+- 변경내용:
+  - acquisition tracked link의 기본 `prefetch`를 `false`로 바꿔 홈 hero/topic CTA가 첫 진입에서 RSC prefetch를 만들지 않게 했다.
+  - 홈 preview row, empty action, 더 읽기 링크의 `prefetch`를 껐다.
+  - feed control tab/sort/period/review chip, footer search reset, guest feed 글쓰기/login link의 `prefetch`를 껐다.
+  - feed list row, thumbnail, author link, ad CTA의 `prefetch`를 끄고, mount 직후 `router.prefetch()`로 상위 글 상세를 미리 당기던 효과를 제거했다.
+  - app shell header/footer와 feed hover menu의 nav link `prefetch`를 껐다.
+  - public acquisition header path에서는 viewer shell fetch를 건너뛰게 해 `/` 첫 진입의 `/api/viewer-shell` 호출을 제거했다.
+- 코드문서:
+  - [app/src/components/analytics/acquisition-event-tracker.tsx](../app/src/components/analytics/acquisition-event-tracker.tsx)
+  - [app/src/components/home/home-feed-preview.tsx](../app/src/components/home/home-feed-preview.tsx)
+  - [app/src/components/navigation/app-shell-header.tsx](../app/src/components/navigation/app-shell-header.tsx)
+  - [app/src/components/navigation/app-shell-footer.tsx](../app/src/components/navigation/app-shell-footer.tsx)
+  - [app/src/components/navigation/feed-hover-menu.tsx](../app/src/components/navigation/feed-hover-menu.tsx)
+  - [app/src/components/posts/feed-control-panel.tsx](../app/src/components/posts/feed-control-panel.tsx)
+  - [app/src/components/posts/feed-footer-search-form.tsx](../app/src/components/posts/feed-footer-search-form.tsx)
+  - [app/src/components/posts/feed-infinite-list.tsx](../app/src/components/posts/feed-infinite-list.tsx)
+  - [app/src/components/posts/guest-feed-page-client.tsx](../app/src/components/posts/guest-feed-page-client.tsx)
+  - [docs/reports/performance-route-assets-2026-05-30T06-44-10-663Z.md](./reports/performance-route-assets-2026-05-30T06-44-10-663Z.md)
+  - [docs/reports/performance-route-assets-2026-05-30T06-51-31-430Z.md](./reports/performance-route-assets-2026-05-30T06-51-31-430Z.md)
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/components/navigation/app-shell-footer.test.tsx src/components/posts/feed-control-panel.test.tsx src/components/posts/feed-footer-search-form.test.tsx src/components/posts/feed-infinite-list.test.tsx src/app/page.test.tsx src/components/home/home-feed-preview.test.tsx`
+    - Vitest `6 files / 16 tests` PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app lint`
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app build`
+    - PASS
+  - local production mobile asset snapshot before/after:
+    - before: `/` `13 scripts / 175KB script / 32KB fetch / 288KB total`, `/feed/guest` `17 scripts / 267KB script / 84KB fetch / 433KB total`
+    - after: `/` `11 scripts / 161KB script / 0KB fetch / 242KB total`, `/feed/guest` `12 scripts / 174KB script / 17KB fetch / 273KB total`
+  - local Playwright request inspection:
+    - `/`: fetch `34 -> 0`
+    - `/feed/guest`: fetch `51 -> 3` (`/api/communities`, `/api/viewer-shell`, `/api/feed/guest`만 유지)
+- 결과:
+  - 클릭 전 필요 없는 RSC prefetch를 hot path에서 제거해 모바일 초기 fetch/transfer를 크게 줄였다.
+  - 다음 Phase 5는 API cold/warm outlier 원인 분리다.

@@ -470,6 +470,7 @@ export function GuestFeedPageClient({
               <div className="flex flex-wrap items-center gap-2">
                 <Link
                   href="/posts/new"
+                  prefetch={false}
                   className={feedInlinePrimaryActionClassName}
                 >
                   글쓰기
@@ -483,6 +484,7 @@ export function GuestFeedPageClient({
               선택한 게시판({postTypeMeta[type].label})은 로그인 후 볼 수 있습니다.{" "}
               <Link
                 href={loginHref(`/feed?type=${type}`)}
+                prefetch={false}
                 className="font-semibold text-[#2f5da4] hover:text-[#244b86]"
               >
                 로그인하기
