@@ -9126,3 +9126,36 @@
   - `P2-16. 운영자 정리 글 production 자동 게시`를 완료했다. `townpet` production env를 `/tmp` 임시 link로 가져와 첫 7개 글을 `townpet-admin` author로 게시했고 public smoke가 `PASS`했다.
 - 정리 결과:
   - `docs/PROGRESS.md`는 현재 active 작업 없음만 남긴다.
+
+### 2026-05-30 | 성능 개선 Phase 1 기준선 고정
+- 완료일: `2026-05-30`
+- 배경:
+  - 접속/로딩 성능을 90점 이상으로 개선하기 전에 production 기준 server response, browser LCP, route asset weight의 기준선을 고정해야 했다.
+  - 기존 성능 스크립트는 `/login`, `/api/home/feed`, `/api/feed/guest` 같은 최근 hot path를 기본 target으로 포함하지 않았다.
+- 변경내용:
+  - `perf:baseline` 기본 target에 `/login`, `/api/home/feed`, `/api/feed/guest?limit=20`을 추가했다.
+  - `perf:browser` 기본 browser target을 `/`, `/login`, `/feed/guest` 중심으로 정리했다.
+  - `perf:assets` 기본 route asset target에 `/login`을 추가했다.
+  - 대표 public 상세 `/posts/cmpnejuwa000411t0dazcem8h/guest`를 포함해 production baseline 3종을 생성했다.
+  - Phase 1 요약 report [performance-phase1-baseline-2026-05-30.md](./reports/performance-phase1-baseline-2026-05-30.md)를 추가했다.
+- 주요 결과:
+  - warm server response: `/` `108ms`, `/feed/guest` `106ms`, `/api/home/feed` `105ms`, `/api/feed/guest?limit=20` `105ms`.
+  - cold/cache-miss outlier: `/` first `1145ms`, `/login` first `1121ms`, `/api/health` first `1087ms`, public detail first `1826ms`.
+  - mobile browser LCP: `/` `180ms`, `/login` `292ms`, `/feed/guest` `180ms`, public detail `680ms` p50.
+  - mobile transfer: `/feed/guest` `436 KB`, public detail `378 KB`, `/login` `290 KB`, `/` `303 KB`.
+- 코드문서:
+  - [app/scripts/measure-production-performance.ts](../app/scripts/measure-production-performance.ts)
+  - [app/scripts/measure-browser-performance.ts](../app/scripts/measure-browser-performance.ts)
+  - [app/scripts/measure-route-assets.ts](../app/scripts/measure-route-assets.ts)
+  - [docs/reports/performance-phase1-baseline-2026-05-30.md](./reports/performance-phase1-baseline-2026-05-30.md)
+  - [docs/PLAN.md](./PLAN.md)
+  - [docs/PROGRESS.md](./PROGRESS.md)
+- 검증:
+  - `PERF_POST_PATH=/posts/cmpnejuwa000411t0dazcem8h/guest PERF_SAMPLES=5 PERF_PAUSE_MS=150 PERF_SLOW_THRESHOLD_MS=1000 COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app perf:baseline`
+    - PASS, server baseline markdown/json 생성
+  - `PERF_POST_PATH=/posts/cmpnejuwa000411t0dazcem8h/guest PERF_BROWSER_SAMPLES=2 PERF_BROWSER_SETTLE_MS=1500 PERF_BROWSER_PROFILES=desktop,mobile PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app perf:browser`
+    - PASS, browser baseline markdown/json 생성
+  - `PERF_POST_PATH=/posts/cmpnejuwa000411t0dazcem8h/guest PERF_ASSET_SETTLE_MS=1500 PERF_ASSET_PROFILES=desktop,mobile PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app perf:assets`
+    - PASS, route asset markdown/json 생성
+- 다음:
+  - Phase 2는 Web Vitals 실사용 수집 MVP다.

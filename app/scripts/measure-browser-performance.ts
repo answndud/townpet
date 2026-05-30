@@ -131,7 +131,7 @@ function summarizeStatus(samples: BrowserSample[]) {
 function buildTargets(env: NodeJS.ProcessEnv): BrowserTarget[] {
   const targets: BrowserTarget[] = [
     { label: "home", path: "/" },
-    { label: "feed", path: "/feed" },
+    { label: "login", path: "/login" },
     { label: "guest_feed", path: "/feed/guest" },
   ];
 

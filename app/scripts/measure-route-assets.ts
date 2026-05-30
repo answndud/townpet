@@ -90,6 +90,7 @@ function parseProfiles(value: string | undefined): AssetProfile[] {
 function buildTargets(env: NodeJS.ProcessEnv): AssetTarget[] {
   const targets: AssetTarget[] = [
     { label: "home", path: "/" },
+    { label: "login", path: "/login" },
     { label: "guest_feed", path: "/feed/guest" },
   ];
 
