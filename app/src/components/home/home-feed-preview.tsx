@@ -3,10 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import {
-  buildOperatorContentMetaLabel,
-  OperatorContentBadge,
-} from "@/components/posts/operator-content-source-panel";
+import { buildOperatorContentMetaLabel } from "@/components/posts/operator-content-source-panel";
 import { fetchJson, isAbortError } from "@/lib/client-json";
 
 type HomeFeedItem = {
@@ -113,14 +110,15 @@ export function FeedPreviewList({
         <Link
           key={item.id}
           href={item.href}
-          className="group grid gap-1 border-b border-[#e5edf8] px-2.5 py-1 transition last:border-b-0 hover:bg-[#f6faff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#3567b5] sm:grid-cols-[minmax(0,1fr)_minmax(7.5rem,auto)] sm:items-center"
+          className="group grid gap-0.5 border-b border-[#e5edf8] px-2.5 py-1.5 transition last:border-b-0 hover:bg-[#f6faff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#3567b5] sm:grid-cols-[minmax(0,1fr)_minmax(7.5rem,auto)] sm:items-center"
         >
           <div className="min-w-0">
-            <div className="flex min-w-0 items-center gap-x-1 text-[10px] font-semibold leading-4 text-[#5d789f]">
-              <span className="shrink-0 rounded-md border border-[#dbe5f3] bg-[#f7fbff] px-1.5 py-0.5 text-[#315b9a]">
-                {item.typeLabel}
-              </span>
-              {item.isOperatorContent ? <OperatorContentBadge compact /> : null}
+            <div className="flex min-w-0 items-center gap-x-1.5 text-[10px] font-semibold leading-4 text-[#5d789f]">
+              {item.typeLabel !== "자유게시판" ? (
+                <span className="shrink-0 rounded-md border border-[#dbe5f3] bg-[#f7fbff] px-1.5 py-0.5 text-[#315b9a]">
+                  {item.typeLabel}
+                </span>
+              ) : null}
               {item.neighborhoodLabel ? (
                 <span className="truncate">{item.neighborhoodLabel}</span>
               ) : null}
@@ -197,12 +195,16 @@ export function HomeFeedPreview() {
   }, []);
 
   return (
-    <section className="mx-auto w-full max-w-[1180px] px-4 pb-12 sm:px-6 lg:px-10">
-      <div className="border-b border-[#dbe6f5] pb-3">
+    <section className="mx-auto w-full max-w-[1180px] px-4 pb-10 sm:px-6 sm:pb-12 lg:px-10">
+      <div className="border-b border-[#dbe6f5] pb-2.5 sm:pb-3">
         <div>
-          <p className="tp-eyebrow">Live board</p>
+          <p className="text-[11px] font-semibold leading-none tracking-[0.16em] text-[#486894]">
+            실시간 게시판
+          </p>
         </div>
-        <h2 className="mt-1.5 text-xl font-semibold text-[#173963]">지금 올라온 동네 반려 정보</h2>
+        <h2 className="mt-1.5 text-lg font-semibold text-[#173963] sm:text-xl">
+          지금 올라온 글
+        </h2>
       </div>
 
       {error ? (
@@ -211,7 +213,7 @@ export function HomeFeedPreview() {
         </div>
       ) : null}
 
-      <div className="mt-4 grid gap-5 lg:grid-cols-2">
+      <div className="mt-3 grid gap-4 lg:grid-cols-2">
         <div>
           <div className="mb-2 flex items-center justify-between gap-3">
             <h3 className="text-sm font-semibold text-[#173963]">먼저 확인할 글</h3>

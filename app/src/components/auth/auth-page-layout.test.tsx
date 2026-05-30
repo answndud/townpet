@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { AuthPageLayout } from "@/components/auth/auth-page-layout";
 
 describe("AuthPageLayout", () => {
-  it("uses shared hero and card surfaces for auth pages", () => {
+  it("uses compact mobile-safe surfaces for auth pages", () => {
     const html = renderToStaticMarkup(
       <AuthPageLayout
         eyebrow="로그인"
@@ -17,12 +17,13 @@ describe("AuthPageLayout", () => {
     );
 
     expect(html).toContain("tp-page-bg");
-    expect(html).toContain("tp-hero");
-    expect(html).toContain("tp-card");
+    expect(html).toContain("border-y border-[#dbe6f5] bg-[#fbfdff]");
+    expect(html).toContain("border-y border-[#dbe6f5] bg-white");
     expect(html).toContain("tp-text-link inline-flex min-h-10");
-    expect(html).toContain("tp-text-muted inline-flex min-h-10");
+    expect(html).toContain("tp-text-muted inline-flex min-h-9");
     expect(html).toContain("hover:underline hover:underline-offset-4");
     expect(html).not.toContain("tp-btn-soft");
-    expect(html).not.toContain("rounded-md px-2");
+    expect(html).not.toContain("tp-hero");
+    expect(html).not.toContain("tp-card");
   });
 });

@@ -9050,3 +9050,39 @@
     - horizontal overflow 없음, 첫 글 목록 top `305px`, filter height `48px`, 첫 row height `68px`
     - 하단 search form `grid`, footer height `95px`, `맨 위로` button `57x40px`
     - `자유게시판`/`운영자 정리` 반복 badge 없음, footer search grid 정상 확인
+
+### 2026-05-30 | 모바일 시작/로그인 페이지 밀도 개선
+- 완료일: `2026-05-30`
+- 배경:
+  - 모바일 시작페이지는 hero, CTA, 관심 주제, live board가 한 화면에서 모두 크게 보여 실제 게시글 preview 도달이 늦었다.
+  - 로그인페이지는 설명 hero와 form card가 모두 커서 이메일/비밀번호/소셜 로그인까지의 화면 밀도가 낮았다.
+  - 시작페이지의 `LIVE BOARD`와 긴 CTA 문구는 한국어 커뮤니티 제품 톤보다 템플릿 느낌이 강했다.
+- 변경내용:
+  - `/` 모바일 hero의 상하 여백과 H1 무게를 낮추고, 제목을 `우리 동네 반려생활 정보`로 줄였다.
+  - onboarding CTA는 `내 동네 설정`으로 더 직접적인 문구로 바꿨다.
+  - 관심 주제 영역의 설명은 모바일에서 숨기고, chip은 낮은 radius/약한 border의 horizontal scan control로 바꿨다.
+  - 홈 preview heading을 `Live board`에서 `실시간 게시판`, `지금 올라온 글`로 한국어화했다.
+  - 홈 preview row에서 기본 `자유게시판` badge와 반복 `운영자 정리` badge 노출을 줄이고 source meta만 남겼다.
+  - `/login` auth layout의 mobile hero/card를 `tp-hero`/`tp-card` 기반 큰 card에서 낮은 border-y surface로 줄였다.
+  - 로그인 form의 gap, input height, 비밀번호 표시 버튼, submit/social button 높이, footer 보조 링크를 compact하게 낮췄다.
+  - 로그인 footer의 `홈으로 돌아가기`는 `홈`으로 줄였다.
+- 코드문서:
+  - [app/src/app/page.tsx](../app/src/app/page.tsx)
+  - [app/src/components/home/home-feed-preview.tsx](../app/src/components/home/home-feed-preview.tsx)
+  - [app/src/app/login/page.tsx](../app/src/app/login/page.tsx)
+  - [app/src/components/auth/auth-page-layout.tsx](../app/src/components/auth/auth-page-layout.tsx)
+  - [app/src/components/auth/login-form.tsx](../app/src/components/auth/login-form.tsx)
+  - [app/src/components/auth/kakao-signin-button.tsx](../app/src/components/auth/kakao-signin-button.tsx)
+  - [app/src/components/auth/naver-signin-button.tsx](../app/src/components/auth/naver-signin-button.tsx)
+- 검증:
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app test -- src/app/page.test.tsx src/components/home/home-feed-preview.test.tsx src/components/auth/auth-page-layout.test.tsx src/components/auth/auth-form-accessibility.test.tsx`
+    - Vitest `4 files / 8 tests` PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app lint`
+    - PASS
+  - `COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `rm -rf app/.next && COREPACK_DEFAULT_TO_LATEST=0 corepack pnpm@9.12.3 -C app quality:check`
+    - ESLint, TypeScript, Vitest `299 files / 1434 tests`, Next production build PASS
+  - Playwright mobile `390x844` local smoke
+    - `/`: horizontal overflow 없음, H1 `우리 동네 반려생활 정보`, `지금 올라온 글` top `447px`
+    - `/login`: horizontal overflow 없음, form top `263px`, submit height `40px`
