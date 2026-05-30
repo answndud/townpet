@@ -9464,3 +9464,47 @@
   - `/`, `/login`, `/feed/guest`는 기존 hot path budget을 유지했다.
 - 결과:
   - 프레임워크/DB 교체 없이 상세 페이지 초기 클라이언트 경계를 줄여 90점 이상 목표 수준의 asset budget을 달성했다.
+
+### 2026-05-30 | 유저 획득 루프 1-2-3 개선
+- 완료일: `2026-05-30`
+- 배경:
+  - 성능 하드닝 이후 실제 유저 유입과 첫 작성 전환을 높이려면 분실/목격 공유, 지역별 SEO 허브, 작성 템플릿이 한 흐름으로 이어져야 했다.
+  - 목표는 “반려동물 커뮤니티”의 넓은 진입보다 “동네 반려생활 정보 DB”에 맞는 검색 의도와 제보 행동을 강화하는 것이었다.
+- 변경내용:
+  - 분실/목격 상세 공유 패널에 카카오톡/인스타/전단 공유 목적을 더 명확히 표시하고, 위치/시간/특징 중심의 공유 체크리스트를 추가했다.
+  - 분실/목격 공유 문구에 목격 위치와 시간 제보, 집 주소 전체/전화번호/오픈채팅 링크 공개 금지 안내를 포함했다.
+  - 지역 허브와 지역 섹션 페이지에 `24시 동물병원`, `대형견 산책`, `목격 위치 제보`, `직거래 체크리스트` 같은 검색 의도 칩을 노출했다.
+  - 지역 섹션 메타 description에 검색 의도와 지역명을 포함해 SEO 문맥을 강화했다.
+  - 지역 카드와 섹션 CTA를 `병원 경험 공유`, `산책코스 제보`, `분실/목격 등록`, `거래 글 작성`처럼 행동 중심 라벨로 바꿨다.
+  - 병원 후기, 산책코스, 분실/목격, 중고거래, 동네 질문 템플릿을 실제 작성자가 바로 고쳐 쓸 수 있는 질문형/체크리스트형 본문으로 개선했다.
+  - 템플릿 선택 시 제목/본문뿐 아니라 `animalTagsInput`, 병원 후기, 산책코스, 분실/목격, 중고거래 구조화 필드 기본값도 함께 채우도록 했다.
+  - `type=LOST_FOUND` 같은 게시판 진입만 있어도 해당 게시판의 기본 작성 템플릿을 자동 적용하게 했다.
+- 코드문서:
+  - [app/src/lib/lost-found-share.ts](../app/src/lib/lost-found-share.ts)
+  - [app/src/components/posts/lost-found-share-panel.tsx](../app/src/components/posts/lost-found-share-panel.tsx)
+  - [app/src/components/posts/deferred-lost-found-share-panel.tsx](../app/src/components/posts/deferred-lost-found-share-panel.tsx)
+  - [app/src/lib/town-landing.ts](../app/src/lib/town-landing.ts)
+  - [app/src/app/towns/[townSlug]/page.tsx](../app/src/app/towns/[townSlug]/page.tsx)
+  - [app/src/app/towns/[townSlug]/[sectionSlug]/page.tsx](../app/src/app/towns/[townSlug]/[sectionSlug]/page.tsx)
+  - [app/src/lib/post-create-templates.ts](../app/src/lib/post-create-templates.ts)
+  - [app/src/app/posts/new/page.tsx](../app/src/app/posts/new/page.tsx)
+  - [app/src/components/posts/post-create-form-state.ts](../app/src/components/posts/post-create-form-state.ts)
+  - [app/src/components/posts/post-create-form.tsx](../app/src/components/posts/post-create-form.tsx)
+  - [app/src/components/posts/post-create-basic-fields.tsx](../app/src/components/posts/post-create-basic-fields.tsx)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/app/posts/new/page.test.tsx src/components/posts/post-create-form-state.test.ts src/components/posts/post-create-basic-fields.test.tsx src/app/towns/page.test.tsx src/lib/lost-found-share.test.ts src/components/posts/post-detail-action-accessibility.test.tsx`
+    - PASS, `6 files / 26 tests`
+  - `corepack pnpm@9.12.3 -C app lint`
+    - PASS
+  - `corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `corepack pnpm@9.12.3 -C app test`
+    - PASS, `304 files / 1454 tests`
+  - `corepack pnpm@9.12.3 -C app build`
+    - PASS
+- 주요 결과:
+  - 분실/목격은 단순 게시글 작성이 아니라 “공개 가능한 정보만 공유하고 목격 댓글로 수렴”하는 루프가 더 명확해졌다.
+  - 지역 허브는 빈 카드 대신 검색 의도, 글 수, 제보 행동, 운영자/사용자 콘텐츠 구분을 보여준다.
+  - 글쓰기 진입은 게시판 타입과 템플릿이 연결되어 첫 작성자의 빈 화면 부담이 줄었다.
+- 결과:
+  - 요청한 1, 2, 3번 순서대로 분실/목격 강화, 지역 랜딩/SEO 개선, 글쓰기 템플릿 개선을 완료했다.

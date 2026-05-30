@@ -36,15 +36,16 @@ export async function generateMetadata({ params }: TownSectionPageProps): Promis
   }
 
   const { section } = resolved;
+  const description = `${section.description} ${section.searchIntents.join(", ")} 정보를 ${resolved.town.label} 기준으로 확인하고 제보할 수 있습니다.`;
   return {
     title: section.title,
-    description: section.description,
+    description,
     alternates: {
       canonical: section.href,
     },
     openGraph: {
       title: `TownPet ${section.title}`,
-      description: section.description,
+      description,
       url: section.href,
     },
   };
@@ -121,7 +122,7 @@ export default async function TownSectionPage({ params }: TownSectionPageProps) 
               targetId: `${town.slug}:${section.slug}`,
             }}
           >
-            템플릿으로 제보하기
+            {section.primaryActionLabel}
           </AcquisitionTrackedLink>
         </div>
 
@@ -136,6 +137,19 @@ export default async function TownSectionPage({ params }: TownSectionPageProps) 
               운영자 정리 콘텐츠와 사용자 제보를 분리해서 쌓을 예정입니다. 사용자는 공개
               피드에서 관련 글을 먼저 확인하고, 필요한 정보를 직접 제보할 수 있습니다.
             </p>
+            <div className="mt-4 border-t border-[#e3edf8] pt-4">
+              <h2 className="text-sm font-semibold text-[#173963]">자주 찾는 정보</h2>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {section.searchIntents.map((intent) => (
+                  <span
+                    key={intent}
+                    className="rounded-sm bg-white px-2.5 py-1 text-xs font-medium text-[#48688f] ring-1 ring-[#dce7f5]"
+                  >
+                    {intent}
+                  </span>
+                ))}
+              </div>
+            </div>
           </div>
           <aside className="tp-card p-5">
             <h2 className="text-sm font-semibold text-[#173963]">확인 기준</h2>
@@ -144,6 +158,10 @@ export default async function TownSectionPage({ params }: TownSectionPageProps) 
                 <li key={item}>• {item}</li>
               ))}
             </ul>
+            <p className="mt-4 border-t border-[#e3edf8] pt-4 text-xs leading-5 text-[#6b82a4]">
+              운영자 정리는 공개 출처와 확인 일자를 남기고, 사용자 제보는 경험과 목격
+              사실을 중심으로 받습니다.
+            </p>
           </aside>
         </section>
       </section>

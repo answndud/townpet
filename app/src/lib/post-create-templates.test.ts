@@ -15,9 +15,17 @@ describe("post create templates", () => {
     expect(templates).toHaveLength(1);
     expect(templates[0]).toMatchObject({
       id: "walk_route_large_dog",
-      title: "서울 강남구 대형견 산책하기 좋은 곳 있나요?",
+      title: "서울 강남구 산책코스 제보해요",
+      defaults: {
+        animalTagsInput: "강아지",
+        walkRoute: {
+          difficulty: "EASY",
+          largeDogFriendly: "true",
+        },
+      },
     });
     expect(templates[0].content).toContain("혼잡한 시간대");
+    expect(templates[0].content).toContain("주의할 위험 구간");
   });
 
   it("can preselect place review category from a template", () => {

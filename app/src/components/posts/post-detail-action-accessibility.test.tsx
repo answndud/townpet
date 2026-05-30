@@ -149,10 +149,10 @@ describe("post detail action accessibility", () => {
     );
 
     expect(html).toContain("카카오톡 문구 복사");
-    expect(html).toContain("공유 이미지 열기");
-    expect(html).toContain("목격 제보");
-    expect(html).toContain("목격했어요");
-    expect(html).toContain("확인된 시간·위치·특징만 전달합니다.");
+    expect(html).toContain("인스타/전단 이미지");
+    expect(html).toContain("목격자는 게시글 댓글로 위치와 시간을 제보");
+    expect(html).toContain("개인 연락처와 집 주소 전체는 공개하지 않기");
+    expect(html).toContain("공유 문구");
     expect(html).toContain("min-h-10");
     expect(html).toContain("rounded-md bg-[#3567b5]");
     expect(html).toContain("hover:underline-offset-4");

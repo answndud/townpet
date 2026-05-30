@@ -1,5 +1,6 @@
 import { PostScope, PostType } from "@prisma/client";
 
+import type { PostCreateTemplate } from "@/lib/post-create-templates";
 import { REVIEW_CATEGORY, type ReviewCategory } from "@/lib/review-category";
 
 export type PostCreateFormState = {
@@ -203,6 +204,37 @@ export function createInitialPostCreateFormState(
     imageUrls: [],
     guestDisplayName: "",
     guestPassword: "",
+  };
+}
+
+export function applyPostCreateTemplateToFormState(
+  state: PostCreateFormState,
+  template: PostCreateTemplate,
+): PostCreateFormState {
+  const defaults = template.defaults ?? {};
+  return {
+    ...state,
+    type: template.type,
+    title: template.title,
+    content: template.content,
+    reviewCategory: defaults.reviewCategory ?? template.reviewCategory ?? state.reviewCategory,
+    animalTagsInput: defaults.animalTagsInput ?? state.animalTagsInput,
+    hospitalReview: {
+      ...state.hospitalReview,
+      ...defaults.hospitalReview,
+    },
+    walkRoute: {
+      ...state.walkRoute,
+      ...defaults.walkRoute,
+    },
+    marketListing: {
+      ...state.marketListing,
+      ...defaults.marketListing,
+    },
+    lostFound: {
+      ...state.lostFound,
+      ...defaults.lostFound,
+    },
   };
 }
 

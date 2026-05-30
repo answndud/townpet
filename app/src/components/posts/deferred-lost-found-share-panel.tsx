@@ -42,7 +42,7 @@ export function DeferredLostFoundSharePanel({
         분실/목격 제보 공유
       </h2>
       <p className="mt-1 max-w-[68ch] text-xs leading-5 text-[#526d95]">
-        카카오톡 문구와 공유 이미지는 필요할 때 불러옵니다.
+        카카오톡 문구와 인스타/전단 이미지는 필요할 때 불러옵니다. 공개 문구에는 개인 연락처를 넣지 않습니다.
       </p>
       <button
         type="button"

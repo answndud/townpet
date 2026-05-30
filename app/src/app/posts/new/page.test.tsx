@@ -35,6 +35,9 @@ vi.mock("@/components/posts/post-create-form", () => ({
   PostCreateForm: vi.fn((props) => (
     <div
       data-initial-content={props.initialTemplate?.content ?? ""}
+      data-initial-default-alert={props.initialTemplate?.defaults?.lostFound?.alertType ?? ""}
+      data-initial-default-difficulty={props.initialTemplate?.defaults?.walkRoute?.difficulty ?? ""}
+      data-initial-default-large-dog={props.initialTemplate?.defaults?.walkRoute?.largeDogFriendly ?? ""}
       data-initial-template={props.initialTemplate?.id ?? ""}
       data-initial-title={props.initialTemplate?.title ?? ""}
       data-initial-type={props.initialType ?? ""}
@@ -58,8 +61,10 @@ describe("NewPostPage", () => {
 
     expect(html).toContain('data-initial-template="walk_route_large_dog"');
     expect(html).toContain('data-initial-type="WALK_ROUTE"');
-    expect(html).toContain("서울 강남구 대형견 산책하기 좋은 곳 있나요?");
+    expect(html).toContain("서울 강남구 산책코스 제보해요");
     expect(html).toContain("혼잡한 시간대");
+    expect(html).toContain('data-initial-default-difficulty="EASY"');
+    expect(html).toContain('data-initial-default-large-dog="true"');
     expect(html).toContain("글 작성");
     expect(html).toContain("p-3.5");
     expect(html).toContain("hover:underline hover:underline-offset-4");
@@ -80,5 +85,7 @@ describe("NewPostPage", () => {
     expect(html).toContain("보호자는 분실 글을 작성");
     expect(html).toContain("목격 제보는 상세 댓글");
     expect(html).toContain("공유는 링크/이미지");
+    expect(html).toContain("공개하지 말아야 할 정보");
+    expect(html).toContain('data-initial-default-alert="LOST"');
   });
 });
