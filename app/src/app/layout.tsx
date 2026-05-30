@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, Space_Grotesk } from "next/font/google";
 
+import { WebVitalsReporter } from "@/components/analytics/web-vitals-reporter";
 import { AppShellFooter } from "@/components/navigation/app-shell-footer";
 import { AppShellHeader } from "@/components/navigation/app-shell-header";
 import { ScrollToTopButton } from "@/components/ui/scroll-to-top-button";
@@ -64,6 +65,7 @@ export default function RootLayout({
         {children}
         <AppShellFooter />
         <ScrollToTopButton />
+        <WebVitalsReporter />
       </body>
     </html>
   );

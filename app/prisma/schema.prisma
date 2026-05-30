@@ -1232,6 +1232,36 @@ model AcquisitionEventStat {
   @@index([targetType, targetId, day(sort: Desc)])
 }
 
+enum WebVitalMetric {
+  LCP
+  INP
+  CLS
+  FCP
+  TTFB
+}
+
+enum WebVitalRating {
+  GOOD
+  NEEDS_IMPROVEMENT
+  POOR
+}
+
+model WebVitalSample {
+  id             String         @id @default(cuid())
+  metric         WebVitalMetric
+  value          Float
+  rating         WebVitalRating
+  route          String
+  navigationType String         @default("unknown")
+  deviceType     String         @default("unknown")
+  connectionType String         @default("unknown")
+  createdAt      DateTime       @default(now())
+
+  @@index([metric, route, createdAt(sort: Desc)])
+  @@index([route, createdAt(sort: Desc)])
+  @@index([createdAt(sort: Desc), metric])
+}
+
 model Notification {
   id         String                 @id @default(cuid())
   deliveryId String?                @unique

@@ -4,12 +4,12 @@ Generated from `app/src/app/api/**/route.ts` with source-text heuristics.
 
 ## Summary
 
-- routeHandlers: 48
+- routeHandlers: 54
 - missingMethodExports: 0
-- missingAdjacentTests: 1
-- accessHeuristics: admin=2, auth-aware=16, authenticated=10, moderator=6, provider-managed=1, public=11, public-internal-token=2
-- validationHeuristics: manual=10, no-input=4, provider-managed=1, schema=21, service-delegated=11, static-response=1
-- monitoringHeuristics: logger=1, monitorUnhandledError=45, provider-managed=1, static-response=1
+- missingAdjacentTests: 3
+- accessHeuristics: admin=2, auth-aware=18, authenticated=10, moderator=6, provider-managed=1, public=15, public-internal-token=2
+- validationHeuristics: manual=11, no-input=5, provider-managed=1, schema=24, service-delegated=12, static-response=1
+- monitoringHeuristics: logger=1, monitorUnhandledError=49, none=2, provider-managed=1, static-response=1
 
 Heuristic labels are review aids, not a security proof. Source of truth remains route code and tests.
 
@@ -17,6 +17,7 @@ Heuristic labels are review aids, not a security proof. Source of truth remains 
 
 | Route | Methods | Access | Validation | Monitoring | Route file | Adjacent test |
 |---|---:|---|---|---|---|---:|
+| `/api/acquisition/events` | POST | public | schema | monitorUnhandledError | `src/app/api/acquisition/events/route.ts` | yes |
 | `/api/admin/auth-audits` | GET | admin | schema | monitorUnhandledError | `src/app/api/admin/auth-audits/route.ts` | yes |
 | `/api/admin/auth-audits/export` | GET | admin | schema | monitorUnhandledError | `src/app/api/admin/auth-audits/export/route.ts` | yes |
 | `/api/admin/moderation/posts/[id]/visibility` | PATCH | moderator | service-delegated | monitorUnhandledError | `src/app/api/admin/moderation/posts/[id]/visibility/route.ts` | yes |
@@ -36,12 +37,15 @@ Heuristic labels are review aids, not a security proof. Source of truth remains 
 | `/api/boards/[board]/posts` | GET | auth-aware | schema | monitorUnhandledError | `src/app/api/boards/[board]/posts/route.ts` | yes |
 | `/api/comments/[id]` | PATCH, DELETE | auth-aware | service-delegated | monitorUnhandledError | `src/app/api/comments/[id]/route.ts` | yes |
 | `/api/communities` | GET | public | schema | monitorUnhandledError | `src/app/api/communities/route.ts` | yes |
+| `/api/corrections` | POST | auth-aware | service-delegated | monitorUnhandledError | `src/app/api/corrections/route.ts` | yes |
 | `/api/feed/guest` | GET | public | schema | monitorUnhandledError | `src/app/api/feed/guest/route.ts` | yes |
 | `/api/feed/personalization` | POST | authenticated | schema | monitorUnhandledError | `src/app/api/feed/personalization/route.ts` | yes |
 | `/api/guest/step-up` | POST | public | schema | monitorUnhandledError | `src/app/api/guest/step-up/route.ts` | yes |
 | `/api/health` | GET | public-internal-token | no-input | logger | `src/app/api/health/route.ts` | yes |
+| `/api/home/feed` | GET | public | no-input | monitorUnhandledError | `src/app/api/home/feed/route.ts` | yes |
 | `/api/lounges/breeds/[breedCode]/groupbuys` | POST | auth-aware | schema | monitorUnhandledError | `src/app/api/lounges/breeds/[breedCode]/groupbuys/route.ts` | yes |
 | `/api/lounges/breeds/[breedCode]/posts` | GET | auth-aware | schema | monitorUnhandledError | `src/app/api/lounges/breeds/[breedCode]/posts/route.ts` | yes |
+| `/api/metrics/web-vitals` | POST | public | schema | monitorUnhandledError | `src/app/api/metrics/web-vitals/route.ts` | yes |
 | `/api/neighborhoods` | GET | public | schema | monitorUnhandledError | `src/app/api/neighborhoods/route.ts` | yes |
 | `/api/notifications` | GET | authenticated | schema | monitorUnhandledError | `src/app/api/notifications/route.ts` | yes |
 | `/api/posts` | GET, POST | auth-aware | schema | monitorUnhandledError | `src/app/api/posts/route.ts` | yes |
@@ -49,7 +53,9 @@ Heuristic labels are review aids, not a security proof. Source of truth remains 
 | `/api/posts/[id]/comments` | GET, POST | auth-aware | service-delegated | monitorUnhandledError | `src/app/api/posts/[id]/comments/route.ts` | yes |
 | `/api/posts/[id]/content` | GET | auth-aware | manual | monitorUnhandledError | `src/app/api/posts/[id]/content/route.ts` | yes |
 | `/api/posts/[id]/detail` | GET | auth-aware | manual | monitorUnhandledError | `src/app/api/posts/[id]/detail/route.ts` | yes |
+| `/api/posts/[id]/lost-found-share.svg` | GET | public | manual | none | `src/app/api/posts/[id]/lost-found-share.svg/route.ts` | no |
 | `/api/posts/[id]/reaction` | GET | authenticated | manual | monitorUnhandledError | `src/app/api/posts/[id]/reaction/route.ts` | yes |
+| `/api/posts/[id]/share` | POST | auth-aware | schema | none | `src/app/api/posts/[id]/share/route.ts` | no |
 | `/api/posts/[id]/stats` | GET | auth-aware | manual | monitorUnhandledError | `src/app/api/posts/[id]/stats/route.ts` | yes |
 | `/api/posts/[id]/view` | POST | auth-aware | manual | monitorUnhandledError | `src/app/api/posts/[id]/view/route.ts` | yes |
 | `/api/posts/suggestions` | GET | auth-aware | schema | monitorUnhandledError | `src/app/api/posts/suggestions/route.ts` | yes |
@@ -69,3 +75,5 @@ Heuristic labels are review aids, not a security proof. Source of truth remains 
 ## Gaps
 
 - missing adjacent test: `src/app/api/auth/[...nextauth]/route.ts`
+- missing adjacent test: `src/app/api/posts/[id]/lost-found-share.svg/route.ts`
+- missing adjacent test: `src/app/api/posts/[id]/share/route.ts`

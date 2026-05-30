@@ -33,13 +33,13 @@
   - `/`, `/login`, `/feed/guest`, 대표 public 상세, `/api/home/feed`, `/api/feed/guest`, `/api/health`가 측정 대상에 포함된다.
 
 #### Phase 2. Web Vitals 실사용 수집 MVP
-- 상태: `in_progress`
+- 상태: `completed`
 - 작업:
   - 개인정보 없이 LCP, INP, CLS, FCP, TTFB를 route 단위로 수집한다.
   - production p75/p95를 볼 수 있는 read-only query 또는 report를 추가한다.
 
 #### Phase 3. 홈 첫 화면 데이터 표시 개선
-- 상태: `pending`
+- 상태: `in_progress`
 - 작업:
   - `/`의 live board client fetch/skeleton 체감을 줄인다.
   - 필요 시 `/api/home/feed` cache 또는 server-rendered preview 구조를 조정한다.
