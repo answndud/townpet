@@ -42,7 +42,6 @@ type GuestFeedListItem = GuestFeedListResult["items"][number];
 type GuestBestFeedItems = Awaited<ReturnType<typeof listBestPosts>>;
 type GuestBestFeedItem = GuestBestFeedItems[number];
 
-const BEST_DAY_OPTIONS = [3, 7, 30] as const;
 const PERF_QUERY_VALUE = "1";
 
 function buildServerTimingHeader(phases: Record<string, number>, totalMs: number) {
@@ -69,13 +68,6 @@ const guestFeedQuerySchema = z.object({
 
 function toFeedMode(value?: string): FeedMode {
   return value === "BEST" ? "BEST" : "ALL";
-}
-
-function toBestDay(value?: string) {
-  const numeric = Number(value);
-  return BEST_DAY_OPTIONS.includes(numeric as (typeof BEST_DAY_OPTIONS)[number])
-    ? (numeric as (typeof BEST_DAY_OPTIONS)[number])
-    : 7;
 }
 
 function toFeedSearchIn(value?: string): FeedSearchIn {
@@ -284,7 +276,6 @@ export async function GET(request: NextRequest) {
     const petTypeId = petTypeIds[0] ?? null;
     const effectiveScope = PostScope.GLOBAL;
     const mode = toFeedMode(parsed.data.mode);
-    const bestDays = toBestDay(parsed.data.days ? String(parsed.data.days) : undefined);
     const selectedSearchIn = toFeedSearchIn(parsed.data.searchIn);
     const density = toFeedDensity(searchParams.get("density") ?? undefined);
     const isGuestTypeBlocked = isLoginRequiredPostType(requestedType, loginRequiredTypes);
@@ -418,7 +409,6 @@ export async function GET(request: NextRequest) {
             limit: FEED_PAGE_SIZE,
             countItems: () =>
               countBestPosts({
-                days: bestDays,
                 type: type ?? undefined,
                 reviewBoard,
                 reviewCategory,
@@ -440,7 +430,6 @@ export async function GET(request: NextRequest) {
               const items: GuestBestFeedItems = await listBestPosts({
                 limit: FEED_PAGE_SIZE,
                 page,
-                days: bestDays,
                 type: type ?? undefined,
                 reviewBoard,
                 reviewCategory,
@@ -541,7 +530,7 @@ export async function GET(request: NextRequest) {
       petTypeIds.join(",") || "ALL_COMMUNITIES_MULTI",
       selectedSearchIn,
       density,
-      bestDays,
+      "ALL_TIME_POPULAR",
       query || "__EMPTY__",
       resolvedPage,
     ].join("|");
@@ -575,7 +564,7 @@ export async function GET(request: NextRequest) {
           selectedSort: "LATEST" as const,
           selectedSearchIn,
           density,
-          bestDays,
+          bestDays: null,
           periodDays: null,
           isGuestTypeBlocked,
           feedTitle,

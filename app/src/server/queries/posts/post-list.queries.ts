@@ -61,7 +61,7 @@ export type PostListOptions = {
 export type BestPostListOptions = {
   limit: number;
   page?: number;
-  days: number;
+  days?: number;
   type?: PostType;
   reviewBoard?: boolean;
   reviewCategory?: ReviewCategory;
@@ -93,7 +93,7 @@ export type PostCountOptions = {
 };
 
 export type BestPostCountOptions = {
-  days: number;
+  days?: number;
   type?: PostType;
   reviewBoard?: boolean;
   reviewCategory?: ReviewCategory;
