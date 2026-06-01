@@ -338,6 +338,56 @@ describe("post reaction toggle", () => {
     });
   });
 
+  it("keeps an already popular post promoted when likes fall below the current threshold", async () => {
+    const deleteReaction = vi.fn().mockResolvedValue(undefined);
+    const updateCounts = vi.fn().mockResolvedValue(undefined);
+    mockGetPopularPostPolicy.mockResolvedValue({ minLikes: 10 });
+
+    mockPrisma.post.findUnique.mockResolvedValue({
+      id: "post-popular-retained",
+      status: PostStatus.ACTIVE,
+      authorId: "owner-1",
+      title: "이미 승격된 글",
+      isPopular: true,
+      popularPromotedAt: new Date("2026-06-01T00:00:00.000Z"),
+    });
+    mockPrisma.$transaction.mockImplementation(async (callback) =>
+      callback({
+        postReaction: {
+          findUnique: vi.fn().mockResolvedValue({
+            id: "reaction-popular-retained",
+            type: PostReactionType.LIKE,
+          }),
+          create: vi.fn(),
+          update: vi.fn(),
+          delete: deleteReaction,
+          count: vi
+            .fn()
+            .mockImplementation(({ where }: { where: { type: PostReactionType } }) =>
+              where.type === PostReactionType.LIKE ? 2 : 0,
+            ),
+        },
+        post: { update: updateCounts },
+      } as never),
+    );
+
+    const result = await togglePostReaction({
+      postId: "post-popular-retained",
+      userId: "user-1",
+      type: null,
+    });
+
+    expect(deleteReaction).toHaveBeenCalledWith({
+      where: { id: "reaction-popular-retained" },
+    });
+    expect(updateCounts).toHaveBeenCalledWith({
+      where: { id: "post-popular-retained" },
+      data: { likeCount: 2, dislikeCount: 0 },
+    });
+    expect(mockPrisma.post.update).not.toHaveBeenCalled();
+    expect(result.likeCount).toBe(2);
+  });
+
   it("notifies post author when dislike is newly applied", async () => {
     const create = vi.fn().mockResolvedValue(undefined);
     const update = vi.fn().mockResolvedValue(undefined);

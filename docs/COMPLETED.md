@@ -9818,3 +9818,31 @@
     - PASS
   - `corepack pnpm@9.12.3 -C app lint`
     - PASS
+
+### 2026-06-01 | 인기글 승격/해제 운영 기준 고정
+- 완료일: `2026-06-01`
+- 배경:
+  - 인기글은 날짜 옵션 없이 좋아요 기준에 도달하면 승격되고 계속 볼 수 있는 모델로 정리했다.
+  - 다만 운영자가 임계값을 올리거나 사용자가 좋아요를 취소했을 때, 기존 인기글을 자동 해제할지 기준이 문구와 테스트에 충분히 고정되어 있지 않았다.
+  - 자동 해제는 운영자가 의도하지 않은 콘텐츠 churn을 만들 수 있으므로, 기본 운영 기준은 `한 번 승격된 글은 자동 해제하지 않음`으로 확정했다.
+- 변경내용:
+  - 관리자 인기글 정책 안내에 `기준을 올리거나 좋아요가 줄어도 이미 승격된 글은 인기글에 남습니다.` 문구를 추가했다.
+  - `togglePostReaction` 회귀 테스트를 추가해 이미 인기글인 게시글의 좋아요 수가 현재 임계값 아래로 떨어져도 `isPopular=false` 업데이트가 발생하지 않도록 고정했다.
+  - `listBestPosts` 회귀 테스트를 추가해 현재 임계값이 높아져도 인기글 피드는 `likeCount`로 재필터링하지 않고 `isPopular/popularPromotedAt` 승격 상태만 사용하도록 고정했다.
+  - 관리자 인기글 정책 e2e가 운영 기준 문구를 실제 화면에서 확인하도록 보강했다.
+- 코드문서:
+  - [app/src/components/admin/popular-post-policy-form.tsx](../app/src/components/admin/popular-post-policy-form.tsx)
+  - [app/src/components/admin/popular-post-policy-form.test.tsx](../app/src/components/admin/popular-post-policy-form.test.tsx)
+  - [app/e2e/admin-popular-post-policy.spec.ts](../app/e2e/admin-popular-post-policy.spec.ts)
+  - [app/src/server/services/post.service.test.ts](../app/src/server/services/post.service.test.ts)
+  - [app/src/server/queries/post.queries.test.ts](../app/src/server/queries/post.queries.test.ts)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/components/admin/popular-post-policy-form.test.tsx src/components/admin/admin-policy-form-accessibility.test.tsx src/server/services/post.service.test.ts src/server/queries/post.queries.test.ts`
+    - PASS, `4 files / 103 tests`
+  - `corepack pnpm@9.12.3 -C app exec playwright test e2e/admin-popular-post-policy.spec.ts --project=chromium --workers=1`
+    - PASS, `2 tests`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `corepack pnpm@9.12.3 -C app lint`
+    - PASS
+    - 참고: e2e와 병렬 실행한 첫 lint는 Playwright가 `app/test-results`를 정리하는 순간과 겹쳐 filesystem race로 실패했고, e2e 완료 후 단독 재실행은 PASS.
