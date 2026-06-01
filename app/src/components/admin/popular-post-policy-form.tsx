@@ -149,7 +149,8 @@ export function PopularPostPolicyForm({
 
       <p id={helperTextId} className="max-w-[680px] text-xs leading-5 text-[#5a7398]">
         {POPULAR_POST_MIN_LIKES_MIN}~{POPULAR_POST_MIN_LIKES_MAX} 사이 정수만 저장할 수 있습니다.
-        저장 후 새 좋아요 반응부터 승격 판정에 적용되며, 이미 승격된 글은 인기글에 남습니다.
+        저장 후 새 좋아요 반응부터 승격 판정에 적용됩니다. 기준을 올리거나 좋아요가 줄어도 이미
+        승격된 글은 인기글에 남습니다.
       </p>
 
       {message ? (

@@ -37,7 +37,8 @@ describe("PopularPostPolicyForm", () => {
 
     expect(html).toContain("현재 적용: 좋아요 3개 이상");
     expect(html).toContain("1~100 사이 정수만 저장할 수 있습니다.");
-    expect(html).toContain("이미 승격된 글은 인기글에 남습니다.");
+    expect(html).toContain("기준을 올리거나 좋아요가 줄어도 이미");
+    expect(html).toContain("승격된 글은 인기글에 남습니다.");
     expect(html).toContain("aria-describedby=\"popular-post-policy-min-likes-help\"");
     expect(html).toContain("min-h-10");
     expect(html).toContain("w-full");

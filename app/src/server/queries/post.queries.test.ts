@@ -1590,6 +1590,21 @@ describe("post queries", () => {
     ]);
   });
 
+  it("does not re-filter already promoted popular posts by the current threshold", async () => {
+    mockPrisma.post.findMany.mockResolvedValue([]);
+
+    await listBestPosts({
+      limit: 5,
+      scope: PostScope.GLOBAL,
+      minLikes: 100,
+    });
+
+    const args = mockPrisma.post.findMany.mock.calls[0][0];
+    expect(args.where.isPopular).toBe(true);
+    expect(args.where.popularPromotedAt).toEqual({ not: null });
+    expect(args.where.likeCount).toBeUndefined();
+  });
+
   it("skips reaction include for guest best feed query", async () => {
     mockPrisma.post.findMany.mockResolvedValue([{ id: "b1" }]);
 

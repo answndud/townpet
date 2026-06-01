@@ -65,6 +65,7 @@ test.describe("admin popular post policy form", () => {
 
     const minLikes = page.getByTestId("popular-post-policy-min-likes");
     await expect(page.getByText("현재 적용: 좋아요 3개 이상")).toBeVisible();
+    await expect(page.getByText("승격된 글은 인기글에 남습니다.")).toBeVisible();
     await expect(minLikes).toHaveValue("3");
 
     await minLikes.fill("5");
