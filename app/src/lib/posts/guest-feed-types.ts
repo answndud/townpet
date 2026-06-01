@@ -8,7 +8,6 @@ export type FeedSort = "LATEST" | "LIKE" | "COMMENT";
 export type FeedSearchIn = "ALL" | "TITLE_CONTENT" | "TITLE" | "CONTENT" | "AUTHOR";
 export type FeedDensity = "DEFAULT" | "ULTRA";
 export type FeedPeriod = 3 | 7 | 30;
-export type BestDay = 3 | 7 | 30;
 
 export type GuestFeedGate = {
   view: "gate";
@@ -35,7 +34,7 @@ export type GuestFeedView = {
     selectedSort: FeedSort;
     selectedSearchIn: FeedSearchIn;
     density: FeedDensity;
-    bestDays: BestDay;
+    bestDays: null;
     periodDays: FeedPeriod | null;
     isGuestTypeBlocked: boolean;
     feedTitle: string;

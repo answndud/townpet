@@ -69,7 +69,6 @@ import {
   getGuestFeedContext,
   isMissingAudienceSegmentQueryError,
   maybeDebugDelay,
-  toBestDay,
   toFeedDensity,
   toFeedMode,
   toFeedPersonalized,
@@ -292,7 +291,6 @@ export default async function Home({ searchParams }: HomePageProps) {
       ? PostScope.LOCAL
       : PostScope.GLOBAL;
   const mode = toFeedMode(resolvedParams.mode);
-  const bestDays = toBestDay(resolvedParams.days);
   const selectedSearchIn = toFeedSearchIn(resolvedParams.searchIn);
   const selectedPersonalized = toFeedPersonalized(resolvedParams.personalized);
   const density = toFeedDensity(resolvedParams.density);
@@ -362,7 +360,6 @@ export default async function Home({ searchParams }: HomePageProps) {
           limit,
           countItems: () =>
             countBestPosts({
-              days: bestDays,
               type,
               reviewBoard,
               reviewCategory,
@@ -384,7 +381,6 @@ export default async function Home({ searchParams }: HomePageProps) {
             const items: BestFeedItems = await listBestPosts({
               limit,
               page,
-              days: bestDays,
               type,
               reviewBoard,
               reviewCategory,

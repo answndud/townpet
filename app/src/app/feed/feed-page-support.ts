@@ -29,11 +29,9 @@ export type HomePageProps = {
   }>;
 };
 
-const BEST_DAY_OPTIONS = [3, 7, 30] as const;
 const FEED_PERIOD_OPTIONS = [3, 7, 30] as const;
 const MAX_DEBUG_DELAY_MS = 5_000;
 
-export type BestDay = (typeof BEST_DAY_OPTIONS)[number];
 export type FeedPeriod = (typeof FEED_PERIOD_OPTIONS)[number];
 
 export function extractPreferredPetTypeIds(user: unknown) {
@@ -71,13 +69,6 @@ export async function maybeDebugDelay(value?: string) {
 
 export function toFeedMode(value?: string): FeedMode {
   return value === "BEST" ? "BEST" : "ALL";
-}
-
-export function toBestDay(value?: string): BestDay {
-  const numeric = Number(value);
-  return BEST_DAY_OPTIONS.includes(numeric as BestDay)
-    ? (numeric as BestDay)
-    : 7;
 }
 
 export function toFeedPeriod(value?: string): FeedPeriod | null {

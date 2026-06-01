@@ -9695,3 +9695,31 @@
     - PASS
   - `corepack pnpm@9.12.3 -C app typecheck`
     - PASS
+
+### 2026-06-01 | 인기글 승격 로컬 smoke 추가
+- 완료일: `2026-06-01`
+- 배경:
+  - 인기글을 디시인사이드식 승격 모델에 가깝게 바꾼 뒤, 단위 테스트만으로는 실제 로컬 DB에서 `좋아요 -> 승격 상태 저장 -> 인기글 피드 조회`가 끝까지 연결되는지 확인하기 어려웠다.
+  - 운영자가 좋아요 임계값을 바꿀 수 있으므로, 임계값을 임시 적용한 상태에서 실제 사용자 반응 흐름을 검증하는 빠른 smoke가 필요했다.
+- 변경내용:
+  - `ops:check:popular-promotion` 명령을 추가했다.
+  - 피드 페이지와 게스트 feed API에서 인기글 조회에 전달하던 내부 `7일` 기본값을 제거해, 인기글이 승격 시각 기준의 전체 누적 목록으로 동작하게 정리했다.
+  - 로컬 DB 전용 guard를 걸어 원격 DB에 실수로 임시 smoke 데이터를 만들지 않도록 했다.
+  - smoke 실행 시 인기글 임계값을 임시로 `2`로 설정하고, 임시 작성자/좋아요 사용자 2명/45일 전 생성일의 게시글을 생성한다.
+  - 좋아요 1회 후에는 `isPopular=false`, 좋아요 2회 후에는 `isPopular=true`와 `popularPromotedAt` 저장을 확인한다.
+  - `listBestPosts`로 인기글 피드를 조회해 승격 게시글이 실제 결과에 포함되는지 확인한다. 이 검증은 인기글이 최근 7일 같은 날짜 창에 묶이지 않는지도 함께 확인한다.
+  - smoke 종료 후 임시 게시글, 알림, 알림 delivery, 임시 사용자, 임시 정책값을 정리하고 기존 인기글 정책을 복구한다.
+  - smoke 결과 assertion/format helper 테스트를 추가했다.
+- 코드문서:
+  - [app/package.json](../app/package.json)
+  - [app/scripts/check-popular-promotion-smoke.ts](../app/scripts/check-popular-promotion-smoke.ts)
+  - [app/scripts/check-popular-promotion-smoke.test.ts](../app/scripts/check-popular-promotion-smoke.test.ts)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app ops:check:popular-promotion`
+    - PASS, `threshold=2`, 첫 좋아요 `isPopular=false`, 두 번째 좋아요 후 `isPopular=true`, `bestFeedContainsPost=true`
+  - `corepack pnpm@9.12.3 -C app test -- scripts/check-popular-promotion-smoke.test.ts src/server/services/post.service.test.ts src/server/queries/post.queries.test.ts`
+    - PASS, `3 files / 97 tests`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `corepack pnpm@9.12.3 -C app lint`
+    - PASS

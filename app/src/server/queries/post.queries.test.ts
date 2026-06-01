@@ -1572,7 +1572,6 @@ describe("post queries", () => {
 
     await listBestPosts({
       limit: 5,
-      days: 7,
       scope: PostScope.GLOBAL,
       minLikes: 2,
     });
