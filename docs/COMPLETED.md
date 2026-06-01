@@ -9608,3 +9608,26 @@
     - PASS
   - 로컬 개발 서버 시각 확인:
     - DB 미연결로 `/feed/guest` 본문은 skeleton 상태였지만, 컴포넌트 구조와 정적 검증은 정상 확인했다.
+
+### 2026-06-01 | 피드 하단 검색바 시각 밀도 개선
+- 완료일: `2026-06-01`
+- 배경:
+  - 피드 하단 검색 영역의 select, input, submit button이 모두 큰 둥근 컨트롤로 보여 보조 검색 도구보다 주요 CTA처럼 무거웠다.
+  - 피드 하단 검색은 사용자가 필요할 때 쓰는 낮은 레벨의 도구이므로 피드 목록보다 시각적으로 튀면 안 된다.
+- 변경내용:
+  - 검색 범위 select와 query input을 하나의 얇은 검색 그룹으로 묶었다.
+  - select와 input 사이에는 작은 divider만 두어 독립 버튼처럼 보이지 않게 했다.
+  - 검색 그룹 높이를 `h-9`로 낮추고, border/radius를 더 가볍게 조정했다.
+  - select의 기본 appearance를 제거하되 작은 `v` 표시를 추가해 선택 가능성을 유지했다.
+  - 검색 버튼은 `h-9`, `rounded-[6px]`, 작은 최소 폭으로 줄여 primary CTA처럼 보이는 문제를 낮췄다.
+  - 초기화 링크의 grid span도 새 2열 구조에 맞게 조정했다.
+- 코드문서:
+  - [app/src/components/posts/feed-footer-search-form.tsx](../app/src/components/posts/feed-footer-search-form.tsx)
+  - [app/src/components/posts/feed-footer-search-form.test.tsx](../app/src/components/posts/feed-footer-search-form.test.tsx)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/components/posts/feed-footer-search-form.test.tsx`
+    - PASS, `1 file / 1 test`
+  - `corepack pnpm@9.12.3 -C app lint`
+    - PASS
+  - `corepack pnpm@9.12.3 -C app typecheck`
+    - PASS

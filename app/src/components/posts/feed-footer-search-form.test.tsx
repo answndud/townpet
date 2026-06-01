@@ -27,10 +27,11 @@ describe("FeedFooterSearchForm", () => {
     expect(html).toContain('name="type"');
     expect(html).toContain('name="petType"');
     expect(html).toContain('href="/feed/guest?type=FREE_POST"');
-    expect(html).toContain("min-h-10");
-    expect(html).toContain("py-1");
+    expect(html).toContain("h-9");
+    expect(html).toContain("py-1.5");
     expect(html).toContain("목록 검색");
-    expect(html).toContain("rounded-md bg-[#3567b5]");
+    expect(html).toContain("focus-within:border-[#8fb5e8]");
+    expect(html).toContain("rounded-[6px] bg-[#3567b5]");
     expect(html).toContain("hover:underline-offset-4");
     expect(html).not.toContain("tp-btn-primary");
     expect(html).not.toContain("tp-btn-soft");
