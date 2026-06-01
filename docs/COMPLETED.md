@@ -9723,3 +9723,38 @@
     - PASS
   - `corepack pnpm@9.12.3 -C app lint`
     - PASS
+
+### 2026-06-01 | 인기글 탭 브라우저 UI smoke와 빈 상태 정리
+- 완료일: `2026-06-01`
+- 배경:
+  - 인기글 탭을 실제 브라우저에서 확인해, 데스크톱/모바일 목록과 검색 0건 상태가 자연스럽게 보이는지 점검할 필요가 있었다.
+  - 모바일 검색 0건 상태에서 `현재 상태 / 인기글이 없습니다` 문구가 검색 결과 없음과 실제 인기글 없음 상태를 구분하지 못했다.
+  - 검색 범위 select에 브라우저 기본 화살표가 남아 있어 이전 “v 제거” 디자인 방향과 맞지 않았다.
+- 변경내용:
+  - `resolveFeedEmptyStateCopy`를 추가해 피드 빈 상태 문구를 `로그인 필요 / 검색 결과 / 인기글 / 게시글` 맥락으로 분리했다.
+  - `/feed` 서버 페이지와 `/feed/guest` 클라이언트 페이지가 같은 빈 상태 문구를 사용하도록 정리했다.
+  - 인기글 검색 0건 상태는 `검색 결과가 없습니다`, `검색 초기화`, 보조 `전체글` 액션으로 표시한다.
+  - 검색어가 없는 인기글 0건 상태는 `인기글이 없습니다`와 `전체글` 액션만 표시한다.
+  - 피드 상단 검색 범위 select에 `appearance-none`을 적용해 기본 화살표를 제거했다.
+- 코드문서:
+  - [app/src/lib/feed-empty-state-copy.ts](../app/src/lib/feed-empty-state-copy.ts)
+  - [app/src/lib/feed-empty-state-copy.test.ts](../app/src/lib/feed-empty-state-copy.test.ts)
+  - [app/src/app/feed/page.tsx](../app/src/app/feed/page.tsx)
+  - [app/src/components/posts/guest-feed-page-client.tsx](../app/src/components/posts/guest-feed-page-client.tsx)
+  - [app/src/components/posts/feed-inline-search-form.tsx](../app/src/components/posts/feed-inline-search-form.tsx)
+- 브라우저 확인:
+  - 로컬 DB에서 기존 게시글 5개를 임시 인기글로 표시한 뒤 `/feed/guest?mode=BEST`를 확인했다.
+  - 데스크톱 `1280x900`: 인기글 탭 active, 상단 검색 우측 배치, 목록 5건 표시 정상.
+  - 모바일 `390x844`: 헤더/탭/검색/목록이 겹치지 않고 첫 화면에 표시됨.
+  - 모바일 검색 0건: `검색 결과가 없습니다`, `검색 초기화`, `전체글` 액션 표시 정상.
+- 검증:
+  - `curl -sS -i http://localhost:3000/api/health`
+    - PASS, `200 OK`
+  - `curl -sS 'http://localhost:3000/api/feed/guest?mode=BEST'`
+    - PASS, `mode=BEST`, `itemCount=5`, `bestDays=null`
+  - `corepack pnpm@9.12.3 -C app test -- src/lib/feed-empty-state-copy.test.ts src/components/posts/feed-inline-search-form.test.tsx src/components/ui/empty-state.test.tsx`
+    - PASS, `3 files / 5 tests`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `corepack pnpm@9.12.3 -C app lint`
+    - PASS

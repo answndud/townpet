@@ -54,7 +54,7 @@ export function FeedInlineSearchForm({
           id="feed-inline-search-in"
           name="searchIn"
           defaultValue={searchIn}
-          className="h-full shrink-0 rounded-l-[7px] bg-transparent px-3 text-[12px] font-semibold text-[#274f82] outline-none"
+          className="h-full shrink-0 appearance-none rounded-l-[7px] bg-transparent px-3 pr-2 text-[12px] font-semibold text-[#274f82] outline-none"
         >
           <option value="TITLE_CONTENT">제목+내용</option>
           <option value="TITLE">제목</option>

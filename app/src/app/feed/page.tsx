@@ -18,6 +18,7 @@ import {
 } from "@/lib/feed-personalization";
 import { toFeedAudienceSourceValue } from "@/lib/feed-personalization-metrics";
 import { FEED_PAGE_SIZE, shouldStripFeedPageParam } from "@/lib/feed";
+import { resolveFeedEmptyStateCopy } from "@/lib/feed-empty-state-copy";
 import {
   getDedicatedBoardPathByPostType,
   isCommonBoardPostType,
@@ -694,6 +695,24 @@ export default async function Home({ searchParams }: HomePageProps) {
     selectedSearchIn === "TITLE" || selectedSearchIn === "CONTENT"
       ? selectedSearchIn
       : "TITLE_CONTENT";
+  const hasFeedSearchQuery = query.trim().length > 0;
+  const emptyStateCopy = resolveFeedEmptyStateCopy({
+    mode,
+    isGuestTypeBlocked,
+    hasQuery: hasFeedSearchQuery,
+  });
+  const emptyStateAllPostsHref = makeHref({ nextMode: "ALL", nextPage: 1 });
+  const emptyStateActionHref = isGuestTypeBlocked
+    ? loginHref(`/feed${type ? `?type=${type}` : ""}`)
+    : hasFeedSearchQuery
+      ? feedSearchResetHref
+      : mode === "BEST"
+        ? emptyStateAllPostsHref
+        : "/posts/new";
+  const emptyStateSecondaryActionHref =
+    !isGuestTypeBlocked && hasFeedSearchQuery && mode === "BEST"
+      ? emptyStateAllPostsHref
+      : undefined;
 
   feedPerf.flush({
     route: "/feed",
@@ -784,28 +803,13 @@ export default async function Home({ searchParams }: HomePageProps) {
         <section id="feed-list" className="animate-fade-up overflow-hidden border-y border-[#d9e5f7] bg-white sm:rounded-xl sm:border">
           {items.length === 0 ? (
             <EmptyState
-              title={mode === "BEST" ? "인기글이 없습니다" : "게시글이 없습니다"}
-              description={
-                isGuestTypeBlocked
-                  ? "해당 게시판은 로그인 후 확인할 수 있습니다."
-                  : mode === "BEST"
-                  ? "좋아요 기준을 넘어 인기글로 승격된 글이 아직 없습니다."
-                  : "글을 작성하거나 다른 게시판을 확인해 주세요."
-              }
-              actionHref={
-                isGuestTypeBlocked
-                  ? loginHref(`/feed${type ? `?type=${type}` : ""}`)
-                  : mode === "BEST"
-                    ? "/feed?mode=ALL"
-                    : "/posts/new"
-              }
-              actionLabel={
-                isGuestTypeBlocked
-                  ? "로그인"
-                  : mode === "BEST"
-                    ? "전체글"
-                    : "첫 글 작성하기"
-               }
+              eyebrow={emptyStateCopy.eyebrow}
+              title={emptyStateCopy.title}
+              description={emptyStateCopy.description}
+              actionHref={emptyStateActionHref}
+              actionLabel={emptyStateCopy.actionLabel}
+              secondaryActionHref={emptyStateSecondaryActionHref}
+              secondaryActionLabel={emptyStateCopy.secondaryActionLabel}
             />
           ) : (
             <FeedInfiniteList

@@ -34,6 +34,7 @@ describe("FeedInlineSearchForm", () => {
     expect(html).toContain('href="/feed/guest?type=FREE_POST"');
     expect(html).toContain("h-9");
     expect(html).toContain("검색어 입력");
+    expect(html).toContain("appearance-none");
     expect(html).toContain("focus-within:border-[#8fb5e8]");
     expect(html).toContain("border-[#c4d7f0] bg-[#fafdff]");
     expect(html).toContain("hover:underline-offset-4");
