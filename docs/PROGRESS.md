@@ -2,6 +2,6 @@
 
 ## 현재 상태
 
-- active: 현재 active 작업 없음.
-- 최근 완료: `피드 상단 검색 적용 후 로컬 검증과 polish`는 [COMPLETED.md](./COMPLETED.md)에 archive했다.
-- 다음 액션: 새 작업 요청 시 [PLAN.md](./PLAN.md)에 active phase를 먼저 추가한다.
+- active: `Production feed smoke 확인`.
+- 현재 작업: 원격 `/api/feed/guest`와 `/feed/guest`에서 인기글 migration/schema 오류 및 상단 검색 표시를 확인한다.
+- 다음 액션: curl/API 응답과 browser smoke 결과를 기록하고 필요한 조치를 분류한다.
