@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { connection } from "next/server";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 
 import { NeighborhoodGateNotice } from "@/components/neighborhood/neighborhood-gate-notice";
@@ -22,6 +23,10 @@ import { getCspNonce } from "@/lib/csp-nonce";
 import { serializeJsonForScriptTag } from "@/lib/json-script";
 import { formatKoreanDate } from "@/lib/date-format";
 import { buildPostDetailMediaRendering } from "@/lib/post-detail-rendering";
+import {
+  buildGuestBoardListingHref,
+  resolveFeedReturnHref,
+} from "@/lib/post-detail-return-href";
 import {
   buildExcerpt,
   buildPostDetailMetadata,
@@ -153,6 +158,7 @@ const careStatusLabel: Record<string, string> = {
 
 export default async function GuestPostDetailPage({ params }: PostDetailPageProps) {
   await connection();
+  const requestHeaders = await headers();
   const cspNonce = await getCspNonce();
   const resolvedParams = (await params) ?? {};
   const post = await getPostById(resolvedParams.id);
@@ -201,6 +207,8 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
     : authorDisplayLabel.slice(0, 1).toUpperCase();
   const postUrl = toAbsoluteUrl(`/posts/${post.id}`);
   const meta = postTypeMeta[post.type];
+  const backHref = resolveFeedReturnHref(requestHeaders.get("referer"));
+  const boardHref = buildGuestBoardListingHref(post.type);
   const createdAt = ensureDate(post.createdAt) ?? new Date();
   const updatedAt = ensureDate(post.updatedAt) ?? createdAt;
   const safeViewCount = Number.isFinite(post.viewCount) ? Number(post.viewCount) : 0;
@@ -255,7 +263,7 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
       />
       <main className="mx-auto flex w-full max-w-[1100px] flex-col gap-4 px-4 py-5 sm:gap-5 sm:px-6 sm:py-6 lg:px-8">
         <Link
-          href="/feed/guest"
+          href={backHref}
           className="tp-text-link inline-flex min-h-10 w-fit items-center text-xs font-semibold underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-2"
         >
           ← 게시판으로 돌아가기
@@ -264,7 +272,12 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
           <section className="tp-card p-4 sm:p-6">
             <div className="flex items-start justify-between gap-3">
               <div className="flex flex-wrap items-center gap-2 text-xs">
-                <PostBoardLinkChip type={post.type} label={meta.label} chipClass={meta.chipClass} />
+                <PostBoardLinkChip
+                  type={post.type}
+                  label={meta.label}
+                  chipClass={meta.chipClass}
+                  href={boardHref}
+                />
                 {post.neighborhood ? (
                   <span className="tp-chip-base tp-chip-muted">
                     {post.neighborhood.city} {post.neighborhood.name}

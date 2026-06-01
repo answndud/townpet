@@ -9758,3 +9758,34 @@
     - PASS
   - `corepack pnpm@9.12.3 -C app lint`
     - PASS
+
+### 2026-06-01 | 인기글 상세 진입/복귀 UI smoke
+- 완료일: `2026-06-01`
+- 배경:
+  - `/feed/guest?mode=BEST`에서 인기글 상세로 진입하면 상세 상단의 `← 게시판으로 돌아가기` 링크가 `/feed/guest`로 고정되어 있었다.
+  - 사용자가 인기글 목록에서 들어왔는데 상세에서 목록으로 돌아가면 전체글 맥락으로 흐를 수 있어, 인기글 탭의 연속성이 깨지는 결함이었다.
+  - 게스트 상세의 게시판 칩도 기본 `/feed?...` 링크를 사용해 게스트 피드 표면과 맞지 않았다.
+- 변경내용:
+  - 상세 페이지 referer가 `/feed` 또는 `/feed/guest`일 때 path/query를 보존하는 `resolveFeedReturnHref` helper를 추가했다.
+  - 게스트 상세의 복귀 링크가 `/feed/guest?mode=BEST` 같은 목록 맥락을 유지하도록 바꿨다.
+  - 게스트 상세의 게시판 칩이 일반 게시판이면 `/feed/guest?type=...&page=1`로 이동하도록 `buildGuestBoardListingHref` helper를 추가했다.
+  - `PostBoardLinkChip`이 호출자가 제공한 href를 받을 수 있게 확장했다. 회원 상세는 기존 기본 href를 유지한다.
+- 코드문서:
+  - [app/src/lib/post-detail-return-href.ts](../app/src/lib/post-detail-return-href.ts)
+  - [app/src/lib/post-detail-return-href.test.ts](../app/src/lib/post-detail-return-href.test.ts)
+  - [app/src/app/posts/[id]/guest/page.tsx](../app/src/app/posts/%5Bid%5D/guest/page.tsx)
+  - [app/src/components/posts/post-board-link-chip.tsx](../app/src/components/posts/post-board-link-chip.tsx)
+  - [app/src/components/posts/post-board-link-chip.test.tsx](../app/src/components/posts/post-board-link-chip.test.tsx)
+- 브라우저 확인:
+  - `/feed/guest?mode=BEST`에서 첫 인기글 `오늘은 코코가 잔디밭에서 완전히 신났어요` 상세로 진입했다.
+  - 상세의 `← 게시판으로 돌아가기` href가 `/feed/guest?mode=BEST`로 표시되는 것을 확인했다.
+  - 상세의 `반려동물 자랑 게시판` 칩 href가 `/feed/guest?type=PET_SHOWCASE&page=1`로 표시되는 것을 확인했다.
+  - 복귀 링크 클릭 후 URL이 `/feed/guest?mode=BEST`로 돌아오고 `인기글` 탭이 선택된 상태로 유지되는 것을 확인했다.
+  - 독립 Playwright smoke에서 공유 버튼 표시, 비회원 북마크 안내 표시/외부 클릭 dismiss, 복귀 href와 게시판 칩 href를 확인했다.
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/lib/post-detail-return-href.test.ts src/components/posts/post-board-link-chip.test.tsx`
+    - PASS, `2 files / 7 tests`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `corepack pnpm@9.12.3 -C app lint`
+    - PASS

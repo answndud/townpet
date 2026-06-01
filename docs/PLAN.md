@@ -18,4 +18,5 @@
 
 ## 다음 작업 후보
 
+- 인기글 관리자 정책 화면 UX smoke: 임계값 수정 입력/저장/검증 메시지 확인
 - authenticated admin queue smoke production credential 확보 후 재실행

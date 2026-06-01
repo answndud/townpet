@@ -34,4 +34,17 @@ describe("PostBoardLinkChip", () => {
     expect(html).not.toContain("rounded-full");
     expect(html).not.toContain("이동");
   });
+
+  it("accepts a caller-provided board href", () => {
+    const html = renderToStaticMarkup(
+      <PostBoardLinkChip
+        type={PostType.FREE_POST}
+        label="자유게시판"
+        chipClass="border-slate-200 bg-slate-50 text-slate-600"
+        href="/feed/guest?type=FREE_POST&page=1"
+      />,
+    );
+
+    expect(html).toContain('href="/feed/guest?type=FREE_POST&amp;page=1"');
+  });
 });
