@@ -35,7 +35,6 @@ import {
 } from "@/server/upload-asset.service";
 
 type FeedMode = "ALL" | "BEST";
-type FeedSort = "LATEST" | "LIKE" | "COMMENT";
 type FeedSearchIn = "ALL" | "TITLE" | "CONTENT" | "AUTHOR";
 type FeedDensity = "DEFAULT" | "ULTRA";
 type GuestFeedListResult = Awaited<ReturnType<typeof listPosts>>;
@@ -44,7 +43,6 @@ type GuestBestFeedItems = Awaited<ReturnType<typeof listBestPosts>>;
 type GuestBestFeedItem = GuestBestFeedItems[number];
 
 const BEST_DAY_OPTIONS = [3, 7, 30] as const;
-const FEED_PERIOD_OPTIONS = [3, 7, 30] as const;
 const PERF_QUERY_VALUE = "1";
 
 function buildServerTimingHeader(phases: Record<string, number>, totalMs: number) {
@@ -78,20 +76,6 @@ function toBestDay(value?: string) {
   return BEST_DAY_OPTIONS.includes(numeric as (typeof BEST_DAY_OPTIONS)[number])
     ? (numeric as (typeof BEST_DAY_OPTIONS)[number])
     : 7;
-}
-
-function toFeedPeriod(value?: string) {
-  const numeric = Number(value);
-  return FEED_PERIOD_OPTIONS.includes(numeric as (typeof FEED_PERIOD_OPTIONS)[number])
-    ? (numeric as (typeof FEED_PERIOD_OPTIONS)[number])
-    : null;
-}
-
-function toFeedSort(value?: string): FeedSort {
-  if (value === "LIKE" || value === "COMMENT") {
-    return value;
-  }
-  return "LATEST";
 }
 
 function toFeedSearchIn(value?: string): FeedSearchIn {
@@ -301,8 +285,6 @@ export async function GET(request: NextRequest) {
     const effectiveScope = PostScope.GLOBAL;
     const mode = toFeedMode(parsed.data.mode);
     const bestDays = toBestDay(parsed.data.days ? String(parsed.data.days) : undefined);
-    const periodDays = toFeedPeriod(parsed.data.period ? String(parsed.data.period) : undefined);
-    const selectedSort = toFeedSort(parsed.data.sort);
     const selectedSearchIn = toFeedSearchIn(parsed.data.searchIn);
     const density = toFeedDensity(searchParams.get("density") ?? undefined);
     const isGuestTypeBlocked = isLoginRequiredPostType(requestedType, loginRequiredTypes);
@@ -372,8 +354,7 @@ export async function GET(request: NextRequest) {
               petTypeIds: requestedPetTypeIds,
               q: query || undefined,
               searchIn: selectedSearchIn,
-              days: periodDays ?? undefined,
-              sort: selectedSort,
+              sort: "LATEST",
               excludeTypes: loginRequiredTypes,
               neighborhoodId: undefined,
               viewerId: undefined,
@@ -448,7 +429,6 @@ export async function GET(request: NextRequest) {
                 searchIn: selectedSearchIn,
                 excludeTypes: loginRequiredTypes,
                 neighborhoodId: undefined,
-                minLikes: 1,
                 viewerId: undefined,
               }).catch((error) => {
                 if (isPrismaDatabaseUnavailableError(error)) {
@@ -471,7 +451,6 @@ export async function GET(request: NextRequest) {
                 searchIn: selectedSearchIn,
                 excludeTypes: loginRequiredTypes,
                 neighborhoodId: undefined,
-                minLikes: 1,
                 viewerId: undefined,
               }).catch((error) => {
                 if (isPrismaDatabaseUnavailableError(error)) {
@@ -503,7 +482,6 @@ export async function GET(request: NextRequest) {
                 petTypeIds,
                 q: query || undefined,
                 searchIn: selectedSearchIn,
-                days: periodDays ?? undefined,
                 excludeTypes: loginRequiredTypes,
                 neighborhoodId: undefined,
                 viewerId: undefined,
@@ -525,8 +503,7 @@ export async function GET(request: NextRequest) {
                 petTypeIds,
                 q: query || undefined,
                 searchIn: selectedSearchIn,
-                days: periodDays ?? undefined,
-                sort: selectedSort,
+                sort: "LATEST",
                 excludeTypes: loginRequiredTypes,
                 neighborhoodId: undefined,
                 viewerId: undefined,
@@ -562,11 +539,9 @@ export async function GET(request: NextRequest) {
       reviewCategory ?? "ALL_REVIEW",
       petTypeId ?? "ALL_COMMUNITIES",
       petTypeIds.join(",") || "ALL_COMMUNITIES_MULTI",
-      selectedSort,
       selectedSearchIn,
       density,
       bestDays,
-      periodDays ?? "ALL_TIME",
       query || "__EMPTY__",
       resolvedPage,
     ].join("|");
@@ -597,11 +572,11 @@ export async function GET(request: NextRequest) {
           petTypeId,
           petTypeIds,
           query,
-          selectedSort,
+          selectedSort: "LATEST" as const,
           selectedSearchIn,
           density,
           bestDays,
-          periodDays,
+          periodDays: null,
           isGuestTypeBlocked,
           feedTitle,
           totalPages,

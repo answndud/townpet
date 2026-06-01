@@ -15,9 +15,6 @@ describe("FeedSearchForm", () => {
         type={PostType.FREE_POST}
         scope="GLOBAL"
         mode="ALL"
-        days={7}
-        period={null}
-        sort="LATEST"
         resetHref="/feed/guest"
       />,
     );

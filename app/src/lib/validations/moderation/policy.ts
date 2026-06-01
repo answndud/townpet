@@ -4,6 +4,10 @@ import { z } from "zod";
 import { feedPersonalizationPolicySchema } from "@/lib/feed-personalization-policy";
 import { GUEST_MAX_IMAGE_COUNT } from "@/lib/guest-post-policy";
 import { MAX_POLICY_HOURS } from "@/lib/new-user-safety-policy";
+import {
+  POPULAR_POST_MIN_LIKES_MAX,
+  POPULAR_POST_MIN_LIKES_MIN,
+} from "@/lib/popular-post-policy";
 
 export const guestReadPolicyUpdateSchema = z.object({
   loginRequiredTypes: z.array(z.nativeEnum(PostType)).max(13),
@@ -57,4 +61,16 @@ export const feedPersonalizationPolicyUpdateSchema = feedPersonalizationPolicySc
 
 export type FeedPersonalizationPolicyUpdateInput = z.infer<
   typeof feedPersonalizationPolicyUpdateSchema
+>;
+
+export const popularPostPolicyUpdateSchema = z.object({
+  minLikes: z.coerce
+    .number()
+    .int()
+    .min(POPULAR_POST_MIN_LIKES_MIN)
+    .max(POPULAR_POST_MIN_LIKES_MAX),
+});
+
+export type PopularPostPolicyUpdateInput = z.infer<
+  typeof popularPostPolicyUpdateSchema
 >;

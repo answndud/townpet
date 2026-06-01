@@ -5,27 +5,18 @@ import type { ReactNode } from "react";
 import type { ReviewCategory } from "@/lib/review-category";
 
 type FeedMode = "ALL" | "BEST";
-type FeedSort = "LATEST" | "LIKE" | "COMMENT";
 type FeedPersonalized = "0" | "1";
-type FeedPeriod = 3 | 7 | 30;
-type BestDay = 3 | 7 | 30;
 
 type FeedControlHrefOptions = {
   nextType?: PostType | null;
   nextReviewCategory?: ReviewCategory | null;
   nextPage?: number | null;
   nextMode?: FeedMode | null;
-  nextDays?: BestDay | null;
-  nextPeriod?: FeedPeriod | null;
-  nextSort?: FeedSort | null;
   nextPersonalized?: FeedPersonalized;
 };
 
 type FeedControlPanelProps = {
   mode: FeedMode;
-  selectedSort: FeedSort;
-  bestDays: BestDay;
-  periodDays: FeedPeriod | null;
   reviewBoard: boolean;
   reviewCategory: ReviewCategory | null;
   makeHref: (options: FeedControlHrefOptions) => string;
@@ -39,8 +30,6 @@ type FeedControlPanelProps = {
   } | null;
 };
 
-const BEST_DAY_OPTIONS = [3, 7, 30] as const;
-const FEED_PERIOD_OPTIONS = [3, 7, 30] as const;
 const REVIEW_FILTER_OPTIONS: Array<{ label: string; value?: ReviewCategory }> = [
   { label: "전체" },
   { label: "용품", value: "SUPPLIES" },
@@ -73,9 +62,6 @@ function SectionLabel({ children }: { children: ReactNode }) {
 
 export function FeedControlPanel({
   mode,
-  selectedSort,
-  bestDays,
-  periodDays,
   reviewBoard,
   reviewCategory,
   makeHref,
@@ -110,7 +96,7 @@ export function FeedControlPanel({
                     : INACTIVE_PRIMARY_TAB_CLASS_NAME
                   }`}
               >
-                반응 많은 글
+                인기글
               </Link>
             </div>
           </div>
@@ -186,104 +172,6 @@ export function FeedControlPanel({
       </div>
 
       <div className="grid bg-white px-2 py-1 sm:px-5">
-        <div
-          data-testid="feed-sort-range-row"
-          className="flex gap-2 overflow-x-auto py-1 lg:flex-wrap lg:items-center"
-        >
-          <div className="flex shrink-0 items-center gap-1">
-            <SectionLabel>정렬</SectionLabel>
-            <div className="flex items-center gap-1">
-              {([
-                { value: "LATEST", label: "최신" },
-                { value: "LIKE", label: "좋아요" },
-                { value: "COMMENT", label: "댓글" },
-              ] as const).map((option) => (
-                <Link
-                  key={`feed-sort-${option.value}`}
-                  href={makeHref({
-                    nextMode: "ALL",
-                    nextSort: option.value,
-                    nextPersonalized: "0",
-                    nextPage: 1,
-                  })}
-                  prefetch={false}
-                  className={`${FILTER_CHIP_CLASS_NAME} ${
-                    mode === "ALL" && selectedSort === option.value
-                      ? ACTIVE_FILTER_CHIP_CLASS_NAME
-                      : INACTIVE_FILTER_CHIP_CLASS_NAME
-                  }`}
-                >
-                  {option.label}
-                </Link>
-              ))}
-            </div>
-          </div>
-
-          <div className="hidden h-4 w-px bg-[#dbe6f6] lg:block" aria-hidden="true" />
-
-          <div className="flex shrink-0 items-center gap-1">
-            <SectionLabel>{mode === "ALL" ? "기간" : "반응 기간"}</SectionLabel>
-            <div className="flex items-center gap-1">
-              {mode === "ALL" ? (
-                <>
-                  <Link
-                    href={makeHref({
-                      nextMode: "ALL",
-                      nextPeriod: null,
-                      nextPersonalized: "0",
-                      nextPage: 1,
-                    })}
-                    prefetch={false}
-                    className={`${FILTER_CHIP_CLASS_NAME} ${
-                      !periodDays
-                        ? ACTIVE_FILTER_CHIP_CLASS_NAME
-                        : INACTIVE_FILTER_CHIP_CLASS_NAME
-                    }`}
-                  >
-                    전체
-                  </Link>
-                  {FEED_PERIOD_OPTIONS.map((day) => (
-                    <Link
-                      key={`feed-period-${day}`}
-                      href={makeHref({
-                        nextMode: "ALL",
-                        nextPeriod: day,
-                        nextPersonalized: "0",
-                        nextPage: 1,
-                      })}
-                      prefetch={false}
-                      className={`${FILTER_CHIP_CLASS_NAME} ${
-                        periodDays === day
-                          ? ACTIVE_FILTER_CHIP_CLASS_NAME
-                          : INACTIVE_FILTER_CHIP_CLASS_NAME
-                      }`}
-                    >
-                      {day}일
-                    </Link>
-                  ))}
-                </>
-              ) : (
-                <>
-                  {BEST_DAY_OPTIONS.map((day) => (
-                    <Link
-                      key={`feed-best-day-${day}`}
-                      href={makeHref({ nextDays: day, nextPage: 1 })}
-                      prefetch={false}
-                      className={`${FILTER_CHIP_CLASS_NAME} ${
-                        bestDays === day
-                          ? ACTIVE_FILTER_CHIP_CLASS_NAME
-                          : INACTIVE_FILTER_CHIP_CLASS_NAME
-                      }`}
-                    >
-                      최근 {day}일
-                    </Link>
-                  ))}
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-
         {reviewBoard ? (
           <div className="flex items-center gap-1 overflow-x-auto py-1">
             <SectionLabel>리뷰</SectionLabel>

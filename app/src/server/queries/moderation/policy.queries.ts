@@ -30,6 +30,12 @@ import {
   normalizeFeedPersonalizationPolicy,
   type FeedPersonalizationPolicy,
 } from "@/lib/feed-personalization-policy";
+import {
+  DEFAULT_POPULAR_POST_MIN_LIKES,
+  POPULAR_POST_POLICY_KEY,
+  normalizePopularPostPolicy,
+  type PopularPostPolicy,
+} from "@/lib/popular-post-policy";
 import { prisma } from "@/lib/prisma";
 import { bumpCacheVersion, createQueryCacheKey, withQueryCache } from "@/server/cache/query-cache";
 import { logger, serializeError } from "@/server/logger";
@@ -379,6 +385,64 @@ export async function setFeedPersonalizationPolicy(input: FeedPersonalizationPol
   }
 
   void bumpCacheVersion("policy").catch(() => undefined);
+
+  return { ok: true, setting } as const satisfies SetGuestReadPolicyResult;
+}
+
+export async function getPopularPostPolicy(): Promise<PopularPostPolicy> {
+  const delegate = requireSiteSettingDelegate();
+
+  const cacheKey = await createQueryCacheKey("policy", {
+    key: POPULAR_POST_POLICY_KEY,
+  });
+  return withQueryCache({
+    key: cacheKey,
+    ttlSeconds: 60,
+    fetcher: async () => {
+      let setting: { value: unknown } | null = null;
+      try {
+        setting = await delegate.findUnique({
+          where: { key: POPULAR_POST_POLICY_KEY },
+          select: { value: true },
+        });
+      } catch (error) {
+        throwPolicySchemaSyncRequired(error);
+      }
+
+      return normalizePopularPostPolicy(setting?.value, {
+        minLikes: DEFAULT_POPULAR_POST_MIN_LIKES,
+      });
+    },
+  });
+}
+
+export async function setPopularPostPolicy(input: PopularPostPolicy) {
+  const normalized = normalizePopularPostPolicy(input, {
+    minLikes: DEFAULT_POPULAR_POST_MIN_LIKES,
+  });
+
+  const delegate = getSiteSettingDelegate();
+  if (!delegate) {
+    return { ok: false, reason: "SCHEMA_SYNC_REQUIRED" } as const;
+  }
+
+  let setting: SiteSettingRecord;
+  try {
+    setting = await delegate.upsert({
+      where: { key: POPULAR_POST_POLICY_KEY },
+      update: { value: normalized },
+      create: { key: POPULAR_POST_POLICY_KEY, value: normalized },
+    });
+  } catch (error) {
+    if (!isSiteSettingTableMissingError(error)) {
+      throw error;
+    }
+    warnMissingSiteSettingTable(error);
+    return { ok: false, reason: "SCHEMA_SYNC_REQUIRED" } as const;
+  }
+
+  void bumpCacheVersion("policy").catch(() => undefined);
+  void bumpCacheVersion("feed").catch(() => undefined);
 
   return { ok: true, setting } as const satisfies SetGuestReadPolicyResult;
 }

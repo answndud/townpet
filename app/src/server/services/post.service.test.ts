@@ -16,6 +16,7 @@ import {
 
 import { prisma } from "@/lib/prisma";
 import { recordModerationAction } from "@/server/moderation-action-log";
+import { getPopularPostPolicy } from "@/server/queries/policy.queries";
 import {
   notifyCareApplicationCreated,
   notifyCareApplicationDecision,
@@ -113,6 +114,7 @@ vi.mock("@/server/queries/policy.queries", () => ({
     enabled: true,
     contactBlockWindowHours: 24,
   }),
+  getPopularPostPolicy: vi.fn().mockResolvedValue({ minLikes: 3 }),
 }));
 
 vi.mock("@/server/cache/query-cache", () => ({
@@ -173,6 +175,7 @@ const mockNotifyCareApplicationCreated = vi.mocked(notifyCareApplicationCreated)
 const mockNotifyCareApplicationDecision = vi.mocked(notifyCareApplicationDecision);
 const mockNotifyCareRequestStatusChanged = vi.mocked(notifyCareRequestStatusChanged);
 const mockRecordModerationAction = vi.mocked(recordModerationAction);
+const mockGetPopularPostPolicy = vi.mocked(getPopularPostPolicy);
 const mockBumpFeedCacheVersion = vi.mocked(bumpFeedCacheVersion);
 const mockBumpSearchCacheVersion = vi.mocked(bumpSearchCacheVersion);
 const mockBumpSuggestCacheVersion = vi.mocked(bumpSuggestCacheVersion);
@@ -215,6 +218,8 @@ describe("post reaction toggle", () => {
     mockNotifyCareRequestStatusChanged.mockResolvedValue(null);
     mockRecordModerationAction.mockReset();
     mockRecordModerationAction.mockResolvedValue(undefined);
+    mockGetPopularPostPolicy.mockReset();
+    mockGetPopularPostPolicy.mockResolvedValue({ minLikes: 3 });
     mockBumpFeedCacheVersion.mockReset();
     mockBumpFeedCacheVersion.mockResolvedValue(undefined);
     mockBumpSearchCacheVersion.mockReset();
@@ -281,6 +286,55 @@ describe("post reaction toggle", () => {
       postId: "post-1",
       postTitle: "강남 산책로 추천",
       reactionType: PostReactionType.LIKE,
+    });
+  });
+
+  it("promotes post to popular when like count reaches admin threshold", async () => {
+    const create = vi.fn().mockResolvedValue(undefined);
+    const updateCounts = vi.fn().mockResolvedValue(undefined);
+    mockGetPopularPostPolicy.mockResolvedValue({ minLikes: 3 });
+
+    mockPrisma.post.findUnique.mockResolvedValue({
+      id: "post-popular",
+      status: PostStatus.ACTIVE,
+      authorId: "owner-1",
+      title: "좋아요 기준 도달 글",
+      isPopular: false,
+    });
+    mockPrisma.post.update.mockResolvedValue({});
+    mockPrisma.$transaction.mockImplementation(async (callback) =>
+      callback({
+        postReaction: {
+          findUnique: vi.fn().mockResolvedValue(null),
+          create,
+          update: vi.fn(),
+          delete: vi.fn(),
+          count: vi
+            .fn()
+            .mockImplementation(({ where }: { where: { type: PostReactionType } }) =>
+              where.type === PostReactionType.LIKE ? 3 : 0,
+            ),
+        },
+        post: { update: updateCounts },
+      } as never),
+    );
+
+    await togglePostReaction({
+      postId: "post-popular",
+      userId: "user-1",
+      type: PostReactionType.LIKE,
+    });
+
+    expect(updateCounts).toHaveBeenCalledWith({
+      where: { id: "post-popular" },
+      data: { likeCount: 3, dislikeCount: 0 },
+    });
+    expect(mockPrisma.post.update).toHaveBeenCalledWith({
+      where: { id: "post-popular" },
+      data: {
+        isPopular: true,
+        popularPromotedAt: expect.any(Date),
+      },
     });
   });
 

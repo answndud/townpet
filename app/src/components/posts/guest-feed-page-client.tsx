@@ -15,12 +15,9 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { fetchJson, isAbortError } from "@/lib/client-json";
 import { isCommonBoardPostType } from "@/lib/community-board";
 import type {
-  BestDay,
   FeedDensity,
   FeedMode,
-  FeedPeriod,
   FeedSearchIn,
-  FeedSort,
   GuestFeedGate,
   GuestFeedPayload,
   GuestFeedResponse,
@@ -41,9 +38,6 @@ function buildGuestFeedHref({
   petTypeIds,
   query,
   mode,
-  bestDays,
-  periodDays,
-  selectedSort,
   selectedSearchIn,
   density,
   resolvedPage,
@@ -53,9 +47,6 @@ function buildGuestFeedHref({
   nextQuery,
   nextPage,
   nextMode,
-  nextDays,
-  nextPeriod,
-  nextSort,
   nextSearchIn,
   nextDensity,
   nextPersonalized,
@@ -67,9 +58,6 @@ function buildGuestFeedHref({
   petTypeIds: string[];
   query: string;
   mode: FeedMode;
-  bestDays: BestDay;
-  periodDays: FeedPeriod | null;
-  selectedSort: FeedSort;
   selectedSearchIn: FeedSearchIn;
   density: FeedDensity;
   resolvedPage: number;
@@ -79,9 +67,6 @@ function buildGuestFeedHref({
   nextQuery?: string | null;
   nextPage?: number | null;
   nextMode?: FeedMode | null;
-  nextDays?: BestDay | null;
-  nextPeriod?: FeedPeriod | null;
-  nextSort?: FeedSort | null;
   nextSearchIn?: FeedSearchIn | null;
   nextDensity?: FeedDensity | null;
   nextPersonalized?: "0" | "1" | null;
@@ -99,9 +84,6 @@ function buildGuestFeedHref({
     nextReviewCategory === undefined ? reviewCategory : nextReviewCategory;
   const resolvedQuery = nextQuery === undefined ? query : nextQuery;
   const resolvedMode = nextMode === undefined ? mode : nextMode;
-  const resolvedDays = nextDays === undefined ? bestDays : nextDays;
-  const resolvedPeriod = nextPeriod === undefined ? periodDays : nextPeriod;
-  const resolvedSort = nextSort == null ? selectedSort : nextSort;
   const resolvedSearchIn = nextSearchIn == null ? selectedSearchIn : nextSearchIn;
   const resolvedDensity = nextDensity == null ? density : nextDensity;
   const effectivePage = nextPage === undefined ? resolvedPage : nextPage;
@@ -134,14 +116,6 @@ function buildGuestFeedHref({
   }
   if (resolvedMode === "BEST") {
     params.set("mode", "BEST");
-    params.set("days", String(resolvedDays));
-  } else if (resolvedSort !== "LATEST") {
-    params.set("sort", resolvedSort);
-    if (resolvedPeriod) {
-      params.set("period", String(resolvedPeriod));
-    }
-  } else if (resolvedPeriod) {
-    params.set("period", String(resolvedPeriod));
   }
   if (effectivePage && effectivePage > 1) {
     params.set("page", String(effectivePage));
@@ -297,9 +271,6 @@ export function GuestFeedPageClient({
       petTypeIds: data.feed.petTypeIds,
       query: data.feed.query,
       mode: data.feed.mode,
-      bestDays: data.feed.bestDays,
-      periodDays: data.feed.periodDays,
-      selectedSort: data.feed.selectedSort,
       selectedSearchIn: data.feed.selectedSearchIn,
       density: data.feed.density,
       resolvedPage: data.feed.resolvedPage,
@@ -354,11 +325,8 @@ export function GuestFeedPageClient({
     petTypeId,
     petTypeIds,
     query,
-    selectedSort,
     selectedSearchIn,
     density,
-    bestDays,
-    periodDays,
     isGuestTypeBlocked,
     feedTitle,
     totalPages,
@@ -377,9 +345,6 @@ export function GuestFeedPageClient({
     petTypeIds,
     query: "",
     mode: "ALL",
-    bestDays,
-    periodDays: null,
-    selectedSort: "LATEST",
     selectedSearchIn: "ALL",
     density,
     resolvedPage: 1,
@@ -392,9 +357,6 @@ export function GuestFeedPageClient({
     nextQuery,
     nextPage,
     nextMode,
-    nextDays,
-    nextPeriod,
-    nextSort,
     nextSearchIn,
     nextDensity,
   }: {
@@ -404,9 +366,6 @@ export function GuestFeedPageClient({
     nextQuery?: string | null;
     nextPage?: number | null;
     nextMode?: FeedMode | null;
-    nextDays?: BestDay | null;
-    nextPeriod?: FeedPeriod | null;
-    nextSort?: FeedSort | null;
     nextSearchIn?: FeedSearchIn | null;
     nextDensity?: FeedDensity | null;
     nextPersonalized?: "0" | "1" | null;
@@ -419,9 +378,6 @@ export function GuestFeedPageClient({
       petTypeIds,
       query,
       mode,
-      bestDays,
-      periodDays,
-      selectedSort,
       selectedSearchIn,
       density,
       resolvedPage,
@@ -431,9 +387,6 @@ export function GuestFeedPageClient({
       nextQuery,
       nextPage,
       nextMode,
-      nextDays,
-      nextPeriod,
-      nextSort,
       nextSearchIn,
       nextDensity,
     });
@@ -464,7 +417,7 @@ export function GuestFeedPageClient({
                   {feedTitle}
                 </h1>
                 <p className="mt-1.5 hidden max-w-[640px] text-sm leading-6 text-[#4f678d] sm:block">
-                  비회원에게 공개된 커뮤니티 글을 최신순, 반응순으로 확인할 수 있습니다.
+                  비회원에게 공개된 커뮤니티 글과 인기글을 확인할 수 있습니다.
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
@@ -494,9 +447,6 @@ export function GuestFeedPageClient({
 
           <FeedControlPanel
             mode={mode}
-            selectedSort={selectedSort}
-            bestDays={bestDays}
-            periodDays={periodDays}
             reviewBoard={reviewBoard}
             reviewCategory={reviewCategory}
             makeHref={makeHref}
@@ -505,12 +455,12 @@ export function GuestFeedPageClient({
           <section id="feed-list" className="animate-fade-up overflow-hidden border-y border-[#d9e5f7] bg-white sm:rounded-xl sm:border">
             {items.length === 0 ? (
               <EmptyState
-                title={mode === "BEST" ? "반응 많은 글이 없습니다" : "게시글이 없습니다"}
+                title={mode === "BEST" ? "인기글이 없습니다" : "게시글이 없습니다"}
                 description={
                   isGuestTypeBlocked
                     ? "해당 게시판은 로그인 후 확인할 수 있습니다."
                     : mode === "BEST"
-                      ? "선택한 게시판과 기간에서 좋아요가 1개 이상인 글이 아직 없습니다."
+                      ? "좋아요 기준을 넘어 인기글로 승격된 글이 아직 없습니다."
                       : "글을 작성하거나 다른 게시판을 확인해 주세요."
                 }
                 actionHref={
@@ -544,8 +494,7 @@ export function GuestFeedPageClient({
                   reviewCategory: reviewCategory ?? undefined,
                   q: query || undefined,
                   searchIn: selectedSearchIn,
-                  sort: selectedSort,
-                  days: periodDays ?? undefined,
+                  sort: "LATEST",
                   personalized: false,
                 }}
                 queryKey={feedQueryKey}

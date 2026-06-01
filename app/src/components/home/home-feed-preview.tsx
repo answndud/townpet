@@ -125,10 +125,10 @@ export function HomeFeedPreview({ data }: { data: HomeFeedPayload }) {
           <div className="mb-2 flex items-center justify-between gap-3">
             <h3 className="text-sm font-semibold text-[#173963]">먼저 확인할 글</h3>
             <Link
-              href="/feed/guest?mode=BEST&days=7"
+              href="/feed/guest?mode=BEST"
               prefetch={false}
               className="text-xs font-semibold text-[#315b9a]"
-              aria-label="반응 많은 글"
+              aria-label="인기글"
             >
               더 읽기
             </Link>

@@ -194,8 +194,6 @@ export function GuestSearchPageClient() {
               personalized="0"
               type={type ?? undefined}
               mode="ALL"
-              days={7}
-              sort="LATEST"
               resetHref="/search"
               popularTerms={popularTerms}
             />

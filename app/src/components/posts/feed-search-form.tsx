@@ -14,7 +14,6 @@ import {
 import { isClientTelemetryEnabled } from "@/lib/client-telemetry";
 
 type FeedMode = "ALL" | "BEST";
-type FeedSort = "LATEST" | "LIKE" | "COMMENT";
 type FeedScope = "LOCAL" | "GLOBAL";
 type FeedSearchIn = "ALL" | "TITLE" | "CONTENT" | "AUTHOR";
 type FeedPersonalized = "0" | "1";
@@ -29,9 +28,6 @@ type FeedSearchFormProps = {
   scope?: FeedScope;
   petTypeId?: string;
   mode: FeedMode;
-  days: number;
-  period?: number | null;
-  sort: FeedSort;
   resetHref: string;
   popularTerms?: string[];
   density?: FeedDensity;
@@ -64,9 +60,6 @@ export function FeedSearchForm({
   scope,
   petTypeId,
   mode,
-  days,
-  period,
-  sort,
   resetHref,
   popularTerms = [],
   density = "DEFAULT",
@@ -181,14 +174,6 @@ export function FeedSearchForm({
 
     if (mode === "BEST") {
       params.set("mode", "BEST");
-      params.set("days", String(days));
-    } else if (sort !== "LATEST") {
-      params.set("sort", sort);
-      if (period) {
-        params.set("period", String(period));
-      }
-    } else if (period) {
-      params.set("period", String(period));
     }
 
     const serialized = params.toString();
@@ -272,9 +257,6 @@ export function FeedSearchForm({
           {scope ? <input type="hidden" name="scope" value={scope} /> : null}
           {petTypeId ? <input type="hidden" name="petType" value={petTypeId} /> : null}
           {mode === "BEST" ? <input type="hidden" name="mode" value="BEST" /> : null}
-          {mode === "BEST" ? <input type="hidden" name="days" value={String(days)} /> : null}
-          {mode === "ALL" && sort !== "LATEST" ? <input type="hidden" name="sort" value={sort} /> : null}
-          {mode === "ALL" && period ? <input type="hidden" name="period" value={String(period)} /> : null}
           {mode === "ALL" && personalized === "1" ? (
             <input type="hidden" name="personalized" value="1" />
           ) : null}

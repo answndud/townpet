@@ -9508,3 +9508,55 @@
   - 글쓰기 진입은 게시판 타입과 템플릿이 연결되어 첫 작성자의 빈 화면 부담이 줄었다.
 - 결과:
   - 요청한 1, 2, 3번 순서대로 분실/목격 강화, 지역 랜딩/SEO 개선, 글쓰기 템플릿 개선을 완료했다.
+
+### 2026-06-01 | 승격형 인기글과 관리자 임계값 설정
+- 완료일: `2026-06-01`
+- 배경:
+  - 피드에서 `전체글 / 반응 많은 글`, 정렬, 기간 필터가 중복되어 사용자가 무엇을 눌러야 하는지 불명확했다.
+  - 디시인사이드식 개념글에 가까운 구조로, 좋아요 기준을 넘은 글이 별도 날짜 옵션 없이 `인기글`에 남는 방식이 제품에 더 맞는다고 판단했다.
+  - 혼자 운영하는 프로젝트라 고정 임계값보다 관리자 정책 페이지에서 좋아요 수 기준을 조정할 수 있어야 했다.
+- 변경내용:
+  - `Post`에 `isPopular`, `popularPromotedAt` 필드를 추가하고 인기글 목록 정렬용 index migration을 추가했다.
+  - `popular_post_policy_v1` SiteSetting 정책을 추가하고 기본 인기글 승격 기준을 좋아요 `3`개로 정의했다.
+  - 관리자 정책 페이지에 `인기글 정책` 섹션과 좋아요 임계값 입력 폼을 추가했다.
+  - 게시글 좋아요 처리 후 현재 좋아요 수가 관리자 임계값 이상이면 해당 글을 `isPopular = true`로 승격하고 승격 시각을 저장한다.
+  - 피드 컨트롤에서 정렬/기간/반응 기간 UI를 제거하고 `전체글 / 인기글`만 남겼다.
+  - 전체글은 최신순 고정으로 유지하고, 인기글은 날짜 필터 없이 승격된 글을 승격 시각 기준으로 노출한다.
+  - `/best`와 홈 미리보기, 피드 메타 설명에서 이전 `반응 많은 글`/`반응순` 표현을 `인기글` 중심으로 정리했다.
+  - legacy `sort`, `period`, `days` query는 게스트 API에서 받아도 최신순/인기글 구조로 수렴하도록 유지했다.
+- 코드문서:
+  - [app/prisma/schema.prisma](../app/prisma/schema.prisma)
+  - [app/prisma/migrations/20260601110348_add_popular_posts/migration.sql](../app/prisma/migrations/20260601110348_add_popular_posts/migration.sql)
+  - [app/src/lib/popular-post-policy.ts](../app/src/lib/popular-post-policy.ts)
+  - [app/src/server/services/posts/post-engagement.service.ts](../app/src/server/services/posts/post-engagement.service.ts)
+  - [app/src/server/queries/posts/post-list-where-support.ts](../app/src/server/queries/posts/post-list-where-support.ts)
+  - [app/src/server/queries/posts/post-list-args.ts](../app/src/server/queries/posts/post-list-args.ts)
+  - [app/src/server/queries/moderation/policy.queries.ts](../app/src/server/queries/moderation/policy.queries.ts)
+  - [app/src/server/services/moderation/policy.service.ts](../app/src/server/services/moderation/policy.service.ts)
+  - [app/src/server/actions/policy.ts](../app/src/server/actions/policy.ts)
+  - [app/src/app/admin/policies/page.tsx](../app/src/app/admin/policies/page.tsx)
+  - [app/src/components/admin/popular-post-policy-form.tsx](../app/src/components/admin/popular-post-policy-form.tsx)
+  - [app/src/app/feed/page.tsx](../app/src/app/feed/page.tsx)
+  - [app/src/components/posts/feed-control-panel.tsx](../app/src/components/posts/feed-control-panel.tsx)
+  - [app/src/components/posts/guest-feed-page-client.tsx](../app/src/components/posts/guest-feed-page-client.tsx)
+  - [app/src/app/api/feed/guest/route.ts](../app/src/app/api/feed/guest/route.ts)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app exec prisma generate`
+    - PASS
+  - `corepack pnpm@9.12.3 -C app lint`
+    - PASS
+  - `corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `corepack pnpm@9.12.3 -C app test`
+    - PASS, `304 files / 1457 tests`
+  - `corepack pnpm@9.12.3 -C app build`
+    - PASS
+  - `corepack pnpm@9.12.3 -C app exec prisma migrate dev --name add_popular_posts --create-only`
+    - FAIL, local Prisma schema engine generic error. Migration SQL은 직접 작성했고 `prisma generate`, typecheck, test, build로 schema/client 정합성을 확인했다.
+- 주요 결과:
+  - 피드 선택은 `전체글 / 인기글`로 단순화되어 정렬과 기간 선택의 중복 UX가 사라졌다.
+  - 인기글은 “최근 N일 반응 많은 글”이 아니라 “좋아요 기준을 넘어 승격된 글”로 저장된다.
+  - 운영자는 관리자 정책 페이지에서 인기글 승격 기준을 조정할 수 있다.
+- 배포 주의:
+  - 배포 DB에는 `20260601110348_add_popular_posts` migration이 적용되어야 한다.
+  - 새 컬럼 적용 전에는 인기글 쿼리와 좋아요 승격 업데이트가 DB schema mismatch를 만날 수 있다.

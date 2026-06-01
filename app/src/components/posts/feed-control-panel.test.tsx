@@ -11,9 +11,6 @@ describe("FeedControlPanel", () => {
     const html = renderToStaticMarkup(
       <FeedControlPanel
         mode="ALL"
-        selectedSort="COMMENT"
-        bestDays={7}
-        periodDays={30}
         reviewBoard
         reviewCategory="TOY"
         makeHref={() => "/feed"}
@@ -35,18 +32,15 @@ describe("FeedControlPanel", () => {
     expect(html).toContain("현재 기준");
     expect(html).toContain("장난감 리뷰를 먼저 보여드려요");
     expect(html).toContain("리뷰");
-    expect(html).toContain("댓글");
-    expect(html).toContain("30일");
-    expect(html).toContain("data-testid=\"feed-sort-range-row\"");
+    expect(html).toContain("인기글");
+    expect(html).not.toContain("정렬");
+    expect(html).not.toContain("기간");
   });
 
   it("omits personalization summary when the section is not provided", () => {
     const html = renderToStaticMarkup(
       <FeedControlPanel
         mode="BEST"
-        selectedSort="LATEST"
-        bestDays={3}
-        periodDays={null}
         reviewBoard={false}
         reviewCategory={null}
         makeHref={() => "/feed?mode=BEST"}
@@ -54,13 +48,13 @@ describe("FeedControlPanel", () => {
     );
 
     expect(html).not.toContain("추천 방식");
-    expect(html).toContain("반응 많은 글");
+    expect(html).toContain("인기글");
     expect(html).not.toContain("베스트글");
-    expect(html).toContain("반응 기간");
-    expect(html).toContain("최근 3일");
+    expect(html).not.toContain("반응 기간");
+    expect(html).not.toContain("최근 3일");
   });
 
-  it("makes sort controls switch to non-personalized all feed", () => {
+  it("keeps only all and popular feed mode links", () => {
     const makeHref = (options: MakeHrefOptions) => {
       const params = new URLSearchParams();
       for (const [key, value] of Object.entries(options)) {
@@ -74,9 +68,6 @@ describe("FeedControlPanel", () => {
     const html = renderToStaticMarkup(
       <FeedControlPanel
         mode="BEST"
-        selectedSort="LIKE"
-        bestDays={7}
-        periodDays={30}
         reviewBoard={false}
         reviewCategory={null}
         makeHref={makeHref}
@@ -88,45 +79,12 @@ describe("FeedControlPanel", () => {
     );
 
     expect(html).toContain(
-      'href="/feed?nextMode=ALL&amp;nextSort=COMMENT&amp;nextPersonalized=0&amp;nextPage=1"',
+      'href="/feed?nextMode=ALL&amp;nextPage=1"',
     );
     expect(html).toContain(
-      'href="/feed?nextMode=ALL&amp;nextSort=LIKE&amp;nextPersonalized=0&amp;nextPage=1"',
+      'href="/feed?nextMode=BEST&amp;nextPage=1"',
     );
-  });
-
-  it("makes period controls use non-personalized all feed", () => {
-    const makeHref = (options: MakeHrefOptions) => {
-      const params = new URLSearchParams();
-      for (const [key, value] of Object.entries(options)) {
-        if (value !== undefined && value !== null) {
-          params.set(key, String(value));
-        }
-      }
-      return `/feed?${params.toString()}`;
-    };
-
-    const html = renderToStaticMarkup(
-      <FeedControlPanel
-        mode="ALL"
-        selectedSort="LIKE"
-        bestDays={7}
-        periodDays={30}
-        reviewBoard={false}
-        reviewCategory={null}
-        makeHref={makeHref}
-        personalized={{
-          active: true,
-          currentLabel: "강아지",
-        }}
-      />,
-    );
-
-    expect(html).toContain(
-      'href="/feed?nextMode=ALL&amp;nextPeriod=7&amp;nextPersonalized=0&amp;nextPage=1"',
-    );
-    expect(html).toContain(
-      'href="/feed?nextMode=ALL&amp;nextPersonalized=0&amp;nextPage=1"',
-    );
+    expect(html).not.toContain("nextSort");
+    expect(html).not.toContain("nextPeriod");
   });
 });

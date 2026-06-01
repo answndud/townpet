@@ -347,8 +347,6 @@ export function isPostTypeFullyExcluded(type: PostType | undefined, excludeTypes
 }
 
 export function buildBestPostWhere({
-  days,
-  minLikes,
   type,
   reviewBoard,
   reviewCategory,
@@ -361,8 +359,8 @@ export function buildBestPostWhere({
   neighborhoodId,
   hiddenAuthorIds,
 }: {
-  days: number;
-  minLikes: number;
+  days?: number;
+  minLikes?: number;
   type?: PostType;
   reviewBoard?: boolean;
   reviewCategory?: ReviewCategory;
@@ -375,8 +373,6 @@ export function buildBestPostWhere({
   neighborhoodId?: string;
   hiddenAuthorIds: string[];
 }): Prisma.PostWhereInput {
-  const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
-
   return {
     ...buildPostListWhere({
       type,
@@ -391,8 +387,8 @@ export function buildBestPostWhere({
       neighborhoodId,
       hiddenAuthorIds,
     }),
-    likeCount: { gte: minLikes },
-    createdAt: { gte: since },
+    isPopular: true,
+    popularPromotedAt: { not: null },
   };
 }
 
@@ -410,8 +406,8 @@ export function buildLegacyReviewBestPostWhere({
   neighborhoodId,
   hiddenAuthorIds,
 }: {
-  days: number;
-  minLikes: number;
+  days?: number;
+  minLikes?: number;
   type?: PostType;
   reviewCategory?: ReviewCategory;
   scope: PostScope;
@@ -456,8 +452,8 @@ export function buildBestPostCountWherePair({
   neighborhoodId,
   hiddenAuthorIds,
 }: {
-  days: number;
-  minLikes: number;
+  days?: number;
+  minLikes?: number;
   type?: PostType;
   reviewBoard?: boolean;
   reviewCategory?: ReviewCategory;
@@ -525,8 +521,8 @@ export function buildBestPostListWhereSet({
   neighborhoodId,
   hiddenAuthorIds,
 }: {
-  days: number;
-  minLikes: number;
+  days?: number;
+  minLikes?: number;
   type?: PostType;
   reviewBoard?: boolean;
   reviewCategory?: ReviewCategory;
