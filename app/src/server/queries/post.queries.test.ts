@@ -419,6 +419,30 @@ describe("post queries", () => {
     );
   });
 
+  it("applies title and content search without author when searchIn is TITLE_CONTENT", async () => {
+    mockPrisma.post.findMany.mockResolvedValue([]);
+
+    await listPosts({
+      limit: 20,
+      scope: PostScope.GLOBAL,
+      q: "산책",
+      searchIn: "TITLE_CONTENT",
+    });
+
+    const args = mockPrisma.post.findMany.mock.calls[0][0];
+    expect(args.where.OR).toEqual(
+      expect.arrayContaining([
+        { title: { contains: "산책", mode: "insensitive" } },
+        { content: { contains: "산책", mode: "insensitive" } },
+      ]),
+    );
+    expect(args.where.OR).not.toEqual(
+      expect.arrayContaining([
+        { author: { nickname: { contains: "산책", mode: "insensitive" } } },
+      ]),
+    );
+  });
+
   it("expands structured alias queries to canonical search variants", async () => {
     mockPrisma.post.findMany.mockResolvedValue([]);
 

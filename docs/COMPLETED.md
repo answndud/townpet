@@ -9498,6 +9498,38 @@
     - PASS
   - `corepack pnpm@9.12.3 -C app typecheck`
     - PASS
+
+### 2026-06-01 | 피드 검색 상단 조건 영역 이동
+- 완료일: `2026-06-01`
+- 배경:
+  - 피드 검색이 목록 하단에 있어 검색 조건이라기보다 footer 부속품처럼 보였고, 게시글이 많아질수록 접근성이 나빠지는 구조였다.
+  - 피드 모드 탭과 검색은 모두 목록 조건이므로 한 상단 영역에 있어야 사용자의 시선 흐름이 자연스럽다.
+  - 기존 `ALL` 검색은 작성자까지 포함하므로, UI 라벨을 `제목+내용`으로 바꾸려면 실제 검색 범위도 작성자를 제외해야 했다.
+- 변경내용:
+  - `FeedFooterSearchForm`을 `FeedInlineSearchForm`으로 rename했다.
+  - 검색 폼을 `FeedControlPanel`의 `searchSlot`으로 주입해 `피드 / 전체글 / 인기글` 탭 오른쪽 상단에 배치했다.
+  - 회원 피드와 게스트 피드에서 목록 하단 검색 폼을 제거했다.
+  - 검색 옵션을 `제목+내용`, `제목`, `내용`으로 정리했다.
+  - 기존 임시 문자 `v` 표시를 제거하고 브라우저 기본 select affordance를 사용한다.
+  - `TITLE_CONTENT` 검색 범위를 추가해 제목, 내용, 구조화 검색 텍스트는 포함하되 작성자 닉네임은 제외했다.
+  - 인기글 모드에서 검색해도 `mode=BEST`가 유지되도록 hidden input과 reset href를 조정했다.
+- 코드문서:
+  - [app/src/components/posts/feed-inline-search-form.tsx](../app/src/components/posts/feed-inline-search-form.tsx)
+  - [app/src/components/posts/feed-control-panel.tsx](../app/src/components/posts/feed-control-panel.tsx)
+  - [app/src/app/feed/page.tsx](../app/src/app/feed/page.tsx)
+  - [app/src/components/posts/guest-feed-page-client.tsx](../app/src/components/posts/guest-feed-page-client.tsx)
+  - [app/src/server/queries/posts/post-search-support.ts](../app/src/server/queries/posts/post-search-support.ts)
+  - [app/src/server/queries/posts/post-ranked-search-support.ts](../app/src/server/queries/posts/post-ranked-search-support.ts)
+  - [app/src/server/queries/posts/post-search-suggestions.queries.ts](../app/src/server/queries/posts/post-search-suggestions.queries.ts)
+  - [app/src/lib/validations/posts/post.ts](../app/src/lib/validations/posts/post.ts)
+  - [app/src/app/api/feed/guest/route.ts](../app/src/app/api/feed/guest/route.ts)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/server/queries/post.queries.test.ts src/app/api/feed/guest/route.test.ts src/components/posts/feed-inline-search-form.test.tsx src/components/posts/feed-control-panel.test.tsx src/components/posts/guest-feed-page-client.test.ts src/components/compact-control-final-sweep.test.ts`
+    - PASS, `6 files / 78 tests`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `corepack pnpm@9.12.3 -C app lint`
+    - PASS
   - `corepack pnpm@9.12.3 -C app test`
     - PASS, `304 files / 1454 tests`
   - `corepack pnpm@9.12.3 -C app build`

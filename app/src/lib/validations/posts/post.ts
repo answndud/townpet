@@ -469,7 +469,7 @@ export const postListSchema = z.object({
   petType: z.string().cuid().optional(),
   review: z.enum(REVIEW_CATEGORY_VALUES).optional(),
   q: z.string().min(1).max(100).optional(),
-  searchIn: z.enum(["ALL", "TITLE", "CONTENT", "AUTHOR"]).optional(),
+  searchIn: z.enum(["ALL", "TITLE_CONTENT", "TITLE", "CONTENT", "AUTHOR"]).optional(),
   sort: z.enum(["LATEST", "LIKE", "COMMENT"]).optional(),
   days: z
     .coerce

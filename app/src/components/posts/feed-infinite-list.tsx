@@ -41,7 +41,7 @@ import type { ReviewCategory } from "@/lib/review-category";
 
 type FeedMode = "ALL" | "BEST";
 type FeedSort = "LATEST" | "LIKE" | "COMMENT";
-type FeedSearchIn = "ALL" | "TITLE" | "CONTENT" | "AUTHOR";
+type FeedSearchIn = "ALL" | "TITLE_CONTENT" | "TITLE" | "CONTENT" | "AUTHOR";
 type FeedReactionType = "LIKE" | "DISLIKE";
 type FeedScope = "LOCAL" | "GLOBAL";
 type FeedStatus = "ACTIVE" | "HIDDEN" | "DELETED";

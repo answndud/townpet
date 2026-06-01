@@ -20,6 +20,7 @@ type FeedControlPanelProps = {
   reviewBoard: boolean;
   reviewCategory: ReviewCategory | null;
   makeHref: (options: FeedControlHrefOptions) => string;
+  searchSlot?: ReactNode;
   personalized?: {
     active: boolean;
     currentLabel: string | null;
@@ -65,49 +66,57 @@ export function FeedControlPanel({
   reviewBoard,
   reviewCategory,
   makeHref,
+  searchSlot,
   personalized,
 }: FeedControlPanelProps) {
   return (
     <section className="overflow-hidden border-y border-[#e3ebf6] bg-white sm:rounded-lg sm:border">
-      <div className="border-b border-[#edf3fb] bg-[#fcfdff] px-3 py-1 sm:px-4">
-        <div className="overflow-x-auto">
-          <div className="flex min-w-max items-center gap-4">
-            <p className="text-[12px] font-medium leading-none text-[#637da2]">
-              피드
-            </p>
-            <div
-              className="inline-flex items-center gap-5"
-              role="tablist"
-              aria-label="피드 보기"
-            >
-              <Link
-                href={makeHref({ nextMode: "ALL", nextPage: 1 })}
-                prefetch={false}
-                role="tab"
-                aria-selected={mode === "ALL"}
-                className={`${PRIMARY_TAB_CLASS_NAME} ${
-                  mode === "ALL"
-                    ? ACTIVE_PRIMARY_TAB_CLASS_NAME
-                    : INACTIVE_PRIMARY_TAB_CLASS_NAME
-                }`}
+      <div className="border-b border-[#edf3fb] bg-[#fcfdff] px-3 py-1.5 sm:px-4">
+        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+          <div className="overflow-x-auto">
+            <div className="flex min-w-max items-center gap-4">
+              <p className="text-[12px] font-medium leading-none text-[#637da2]">
+                피드
+              </p>
+              <div
+                className="inline-flex items-center gap-5"
+                role="tablist"
+                aria-label="피드 보기"
               >
-                전체글
-              </Link>
-              <Link
-                href={makeHref({ nextMode: "BEST", nextPage: 1 })}
-                prefetch={false}
-                role="tab"
-                aria-selected={mode === "BEST"}
-                className={`${PRIMARY_TAB_CLASS_NAME} ${
-                  mode === "BEST"
-                    ? ACTIVE_PRIMARY_TAB_CLASS_NAME
-                    : INACTIVE_PRIMARY_TAB_CLASS_NAME
+                <Link
+                  href={makeHref({ nextMode: "ALL", nextPage: 1 })}
+                  prefetch={false}
+                  role="tab"
+                  aria-selected={mode === "ALL"}
+                  className={`${PRIMARY_TAB_CLASS_NAME} ${
+                    mode === "ALL"
+                      ? ACTIVE_PRIMARY_TAB_CLASS_NAME
+                      : INACTIVE_PRIMARY_TAB_CLASS_NAME
                   }`}
-              >
-                인기글
-              </Link>
+                >
+                  전체글
+                </Link>
+                <Link
+                  href={makeHref({ nextMode: "BEST", nextPage: 1 })}
+                  prefetch={false}
+                  role="tab"
+                  aria-selected={mode === "BEST"}
+                  className={`${PRIMARY_TAB_CLASS_NAME} ${
+                    mode === "BEST"
+                      ? ACTIVE_PRIMARY_TAB_CLASS_NAME
+                      : INACTIVE_PRIMARY_TAB_CLASS_NAME
+                    }`}
+                >
+                  인기글
+                </Link>
+              </div>
             </div>
           </div>
+          {searchSlot ? (
+            <div className="min-w-0 md:ml-auto md:max-w-[460px]">
+              {searchSlot}
+            </div>
+          ) : null}
         </div>
 
         {personalized ? (

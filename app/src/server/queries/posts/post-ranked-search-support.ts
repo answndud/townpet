@@ -130,6 +130,11 @@ export function buildRankedSearchFallbackSource(
   if (searchIn === "CONTENT") {
     return row.content;
   }
+  if (searchIn === "TITLE_CONTENT") {
+    return [row.title, row.content, row.structuredSearchText]
+      .filter((value): value is string => typeof value === "string" && value.length > 0)
+      .join(" ");
+  }
   if (searchIn === "AUTHOR") {
     return row.author.nickname ?? "";
   }
@@ -260,6 +265,9 @@ export function buildRankedSearchMatchSql(
   }
   if (searchIn === "CONTENT") {
     return contentMatch;
+  }
+  if (searchIn === "TITLE_CONTENT") {
+    return Prisma.sql`(${titleMatch} OR ${contentMatch} OR ${structuredMatch})`;
   }
   if (searchIn === "AUTHOR") {
     return authorMatch;
