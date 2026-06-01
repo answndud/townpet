@@ -14,7 +14,16 @@
 
 ## Active
 
-현재 active 작업 없음.
+### Production feed smoke 확인
+
+- 상태: `in_progress`
+- 목표: 배포 환경에서 인기글 migration 반영 여부와 `/feed/guest` 상단 검색/인기글 기본 동작을 확인한다.
+- 범위:
+  - `https://townpet.vercel.app/api/feed/guest`가 schema 오류 없이 응답하는지 확인한다.
+  - `https://townpet.vercel.app/feed/guest`에서 상단 검색 폼과 `전체글 / 인기글` 탭이 표시되는지 확인한다.
+  - production DB migration이 막혀 있으면 원인과 필요한 조치를 기록한다.
+- 완료 기준:
+  - production smoke 결과를 [COMPLETED.md](./COMPLETED.md)에 기록하고 active 문서를 비운다.
 
 ## 다음 작업 후보
 
