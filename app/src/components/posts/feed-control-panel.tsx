@@ -41,11 +41,11 @@ const REVIEW_FILTER_OPTIONS: Array<{ label: string; value?: ReviewCategory }> = 
 ];
 
 const PRIMARY_TAB_CLASS_NAME =
-  "inline-flex h-8 items-center rounded-[6px] px-3 text-[12px] font-semibold leading-none transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25";
+  "relative inline-flex h-8 items-center px-1 text-[13px] leading-none transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25";
 const ACTIVE_PRIMARY_TAB_CLASS_NAME =
-  "bg-[#fafdff] text-[#1f4f8f] shadow-[inset_0_0_0_1px_#b8cfee]";
+  "font-semibold text-[#1f4f8f] after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:rounded-full after:bg-[#2f6fbd]";
 const INACTIVE_PRIMARY_TAB_CLASS_NAME =
-  "text-[#52709b] hover:bg-[#f6faff] hover:text-[#274f82]";
+  "font-medium text-[#647b9f] hover:text-[#274f82]";
 const FILTER_CHIP_CLASS_NAME =
   "inline-flex h-8 items-center rounded-[6px] border px-2.5 text-[11px] font-medium leading-none transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25";
 const ACTIVE_FILTER_CHIP_CLASS_NAME = "border-[#a9c6ee] bg-[#eaf3ff] text-[#1f4f8f]";
@@ -69,14 +69,14 @@ export function FeedControlPanel({
 }: FeedControlPanelProps) {
   return (
     <section className="overflow-hidden border-y border-[#e3ebf6] bg-white sm:rounded-lg sm:border">
-      <div className="border-b border-[#edf3fb] bg-[#fcfdff] px-2 py-1 sm:px-4">
+      <div className="border-b border-[#edf3fb] bg-[#fcfdff] px-3 py-1 sm:px-4">
         <div className="overflow-x-auto">
-          <div className="flex min-w-max items-center gap-2">
-            <p className="text-[11px] font-semibold leading-none text-[#637da2]">
+          <div className="flex min-w-max items-center gap-4">
+            <p className="text-[12px] font-medium leading-none text-[#637da2]">
               피드
             </p>
             <div
-              className="inline-flex items-center gap-0.5 rounded-[7px] border border-[#d7e3f3] bg-[#f3f7fc] p-0.5"
+              className="inline-flex items-center gap-5"
               role="tablist"
               aria-label="피드 보기"
             >
