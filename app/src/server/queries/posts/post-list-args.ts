@@ -73,9 +73,7 @@ export function buildBestPostListFindManyBaseArgs({
         }
       : {}),
     orderBy: [
-      { likeCount: "desc" },
-      { commentCount: "desc" },
-      { viewCount: "desc" },
+      { popularPromotedAt: "desc" },
       { createdAt: "desc" },
       { id: "desc" },
     ],

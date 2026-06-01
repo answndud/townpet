@@ -13,9 +13,9 @@ describe("shouldReplaceGuestFeedCanonicalHref", () => {
     expect(
       shouldReplaceGuestFeedCanonicalHref({
         canonicalHref: "/feed/guest",
-        currentHref: "/feed/guest?sort=LIKE",
+        currentHref: "/feed/guest?mode=BEST",
         loadedQueryString: "",
-        queryString: "sort=LIKE",
+        queryString: "mode=BEST",
       }),
     ).toBe(false);
   });
@@ -23,10 +23,10 @@ describe("shouldReplaceGuestFeedCanonicalHref", () => {
   it("canonicalizes only after the loaded data matches the current query", () => {
     expect(
       shouldReplaceGuestFeedCanonicalHref({
-        canonicalHref: "/feed/guest?sort=LIKE",
-        currentHref: "/feed/guest?sort=LIKE&page=1",
-        loadedQueryString: "sort=LIKE&page=1",
-        queryString: "sort=LIKE&page=1",
+        canonicalHref: "/feed/guest?mode=BEST",
+        currentHref: "/feed/guest?mode=BEST&page=1",
+        loadedQueryString: "mode=BEST&page=1",
+        queryString: "mode=BEST&page=1",
       }),
     ).toBe(true);
   });

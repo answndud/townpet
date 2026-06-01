@@ -6,6 +6,7 @@ import { ForbiddenKeywordPolicyForm } from "@/components/admin/forbidden-keyword
 import { GuestPostPolicyForm } from "@/components/admin/guest-post-policy-form";
 import { GuestReadPolicyForm } from "@/components/admin/guest-read-policy-form";
 import { NewUserSafetyPolicyForm } from "@/components/admin/new-user-safety-policy-form";
+import { PopularPostPolicyForm } from "@/components/admin/popular-post-policy-form";
 import { createNoIndexPageMetadata } from "@/lib/page-metadata";
 import { postTypeMeta } from "@/lib/post-presenter";
 import { requireAdminPageUser } from "@/server/admin-page-access";
@@ -15,6 +16,7 @@ import {
   getGuestPostPolicy,
   getGuestReadLoginRequiredPostTypes,
   getNewUserSafetyPolicy,
+  getPopularPostPolicy,
 } from "@/server/queries/policy.queries";
 
 export const metadata = createNoIndexPageMetadata({
@@ -32,12 +34,14 @@ export default async function AdminPoliciesPage() {
     newUserSafetyPolicy,
     guestPostPolicy,
     feedPersonalizationPolicy,
+    popularPostPolicy,
   ] = await Promise.all([
     getGuestReadLoginRequiredPostTypes(),
     getForbiddenKeywords(),
     getNewUserSafetyPolicy(),
     getGuestPostPolicy(),
     getFeedPersonalizationPolicy(),
+    getPopularPostPolicy(),
   ]);
 
   return (
@@ -55,7 +59,7 @@ export default async function AdminPoliciesPage() {
 
         <AdminSectionNav role={user.role} />
 
-        <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
           <article className="rounded-2xl border border-[#dbe6f6] bg-[#f8fbff] p-4 text-xs text-[#4f678d]">
             <p className="text-[11px] uppercase tracking-[0.22em] text-[#5b78a1]">로그인 필수</p>
             <p className="mt-2 text-2xl font-bold text-[#10284a]">{loginRequiredTypes.length}</p>
@@ -75,6 +79,11 @@ export default async function AdminPoliciesPage() {
             <p className="text-[11px] uppercase tracking-[0.22em] text-[#5b78a1]">신규 계정</p>
             <p className="mt-2 text-2xl font-bold text-[#10284a]">{newUserSafetyPolicy.minAccountAgeHours}h</p>
             <p className="mt-1">연락처 차단 {newUserSafetyPolicy.contactBlockWindowHours}h</p>
+          </article>
+          <article className="rounded-2xl border border-[#dbe6f6] bg-[#f8fbff] p-4 text-xs text-[#4f678d]">
+            <p className="text-[11px] uppercase tracking-[0.22em] text-[#5b78a1]">인기글</p>
+            <p className="mt-2 text-2xl font-bold text-[#10284a]">{popularPostPolicy.minLikes}</p>
+            <p className="mt-1">좋아요 승격 기준</p>
           </article>
         </section>
 
@@ -191,6 +200,24 @@ export default async function AdminPoliciesPage() {
             <NewUserSafetyPolicyForm
               initialPolicy={newUserSafetyPolicy}
             />
+          </div>
+        </section>
+
+        <section className="tp-card p-5 sm:p-6">
+          <h2 className="text-lg font-semibold text-[#153a6a]">인기글 정책</h2>
+          <p className="mt-2 text-xs text-[#5a7398]">
+            전체글에서 좋아요 기준을 넘은 글을 날짜 제한 없이 인기글로 승격합니다.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2 text-[11px]">
+            <span className="rounded-md border border-[#cbdcf5] bg-[#f6f9ff] px-2.5 py-1 text-[#315484]">
+              좋아요 {popularPostPolicy.minLikes}개 이상
+            </span>
+            <span className="rounded-md border border-[#cbdcf5] bg-[#f6f9ff] px-2.5 py-1 text-[#315484]">
+              날짜 필터 없음
+            </span>
+          </div>
+          <div className="mt-4">
+            <PopularPostPolicyForm initialPolicy={popularPostPolicy} />
           </div>
         </section>
 

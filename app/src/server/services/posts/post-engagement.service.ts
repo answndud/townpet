@@ -6,6 +6,7 @@ import {
   bumpFeedCacheVersion,
   bumpPostDetailCacheVersion,
 } from "@/server/cache/query-cache";
+import { getPopularPostPolicy } from "@/server/queries/policy.queries";
 import { logger, serializeError } from "@/server/logger";
 import { hasBlockingRelation } from "@/server/queries/user-relation.queries";
 import { notifyReactionOnPost } from "@/server/services/notification.service";
@@ -55,7 +56,12 @@ type TxLike = {
   post: {
     update: (args: {
       where: { id: string };
-      data: { likeCount: number; dislikeCount: number };
+      data: {
+        likeCount: number;
+        dislikeCount: number;
+        isPopular?: boolean;
+        popularPromotedAt?: Date;
+      };
     }) => Promise<unknown>;
   };
   postReaction?: ReactionDelegateLike;
@@ -155,7 +161,7 @@ export async function togglePostReaction({
 
   const existingPost = await prisma.post.findUnique({
     where: { id: postId },
-    select: { id: true, status: true, authorId: true, title: true },
+    select: { id: true, status: true, authorId: true, title: true, isPopular: true },
   });
 
   if (!existingPost || existingPost.status === PostStatus.DELETED) {
@@ -169,6 +175,8 @@ export async function togglePostReaction({
       403,
     );
   }
+
+  const popularPostPolicy = await getPopularPostPolicy();
 
   const result = await prisma.$transaction(async (tx) => {
     const txLike = tx as unknown as TxLike;
@@ -233,6 +241,16 @@ export async function togglePostReaction({
 
     return { likeCount, dislikeCount, reaction, previousReaction };
   });
+
+  if (!existingPost.isPopular && result.likeCount >= popularPostPolicy.minLikes) {
+    await prisma.post.update({
+      where: { id: postId },
+      data: {
+        isPopular: true,
+        popularPromotedAt: new Date(),
+      },
+    });
+  }
 
   if (
     result.reaction &&

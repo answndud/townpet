@@ -118,9 +118,7 @@ describe("GET /api/feed/guest", () => {
       nextCursor: null,
     } as never);
 
-    const response = await GET(
-      new Request("http://localhost/api/feed/guest?sort=LIKE") as NextRequest,
-    );
+    const response = await GET(new Request("http://localhost/api/feed/guest") as NextRequest);
     const payload = await response.json();
 
     expect(response.status).toBe(200);
@@ -130,7 +128,7 @@ describe("GET /api/feed/guest", () => {
     );
     expect(payload.ok).toBe(true);
     expect(payload.data.view).toBe("feed");
-    expect(payload.data.feed.selectedSort).toBe("LIKE");
+    expect(payload.data.feed.selectedSort).toBe("LATEST");
     expect(payload.data.feed.items).toHaveLength(1);
     expect(payload.data.feed.items[0]).toMatchObject({
       guestAuthorId: "guest-author-1",
@@ -247,7 +245,7 @@ describe("GET /api/feed/guest", () => {
     } as never);
 
     const response = await GET(
-      new Request("http://localhost/api/feed/guest?cursor=post-1&sort=LIKE") as NextRequest,
+      new Request("http://localhost/api/feed/guest?cursor=post-1") as NextRequest,
     );
     const payload = await response.json();
 
@@ -268,7 +266,7 @@ describe("GET /api/feed/guest", () => {
     expect(mockListPosts).toHaveBeenCalledWith(
       expect.objectContaining({
         cursor: "post-1",
-        sort: "LIKE",
+        sort: "LATEST",
       }),
     );
   });
@@ -336,9 +334,9 @@ describe("GET /api/feed/guest", () => {
     expect(mockCountPosts).not.toHaveBeenCalled();
     expect(mockListPosts).toHaveBeenCalledWith(
       expect.objectContaining({
-        days: 7,
         petTypeId: undefined,
         petTypeIds: [],
+        sort: "LATEST",
       }),
     );
   });

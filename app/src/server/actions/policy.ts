@@ -10,6 +10,7 @@ import {
   updateGuestPostPolicy,
   updateGuestReadPolicy,
   updateNewUserSafetyPolicy,
+  updatePopularPostPolicy,
 } from "@/server/services/policy.service";
 import { ServiceError } from "@/server/services/service-error";
 
@@ -119,6 +120,30 @@ export async function updateFeedPersonalizationPolicyAction(
     revalidatePath("/feed");
     revalidatePath("/admin/policies");
     revalidatePath("/admin/personalization");
+    return { ok: true };
+  } catch (error) {
+    if (error instanceof ServiceError) {
+      return { ok: false, code: error.code, message: error.message };
+    }
+
+    return {
+      ok: false,
+      code: "INTERNAL_SERVER_ERROR",
+      message: "서버 오류가 발생했습니다.",
+    };
+  }
+}
+
+export async function updatePopularPostPolicyAction(
+  input: unknown,
+): Promise<PolicyActionResult> {
+  try {
+    const user = await requireAdmin();
+    const audit = await updatePopularPostPolicy({ input });
+    await recordAdminPolicyUpdated({ actorId: user.id, ...audit });
+    revalidatePath("/feed");
+    revalidatePath("/feed/guest");
+    revalidatePath("/admin/policies");
     return { ok: true };
   } catch (error) {
     if (error instanceof ServiceError) {

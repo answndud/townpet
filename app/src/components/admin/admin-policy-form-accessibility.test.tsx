@@ -5,11 +5,13 @@ import { describe, expect, it, vi } from "vitest";
 import { FeedPersonalizationPolicyForm } from "@/components/admin/feed-personalization-policy-form";
 import { ForbiddenKeywordPolicyForm } from "@/components/admin/forbidden-keyword-policy-form";
 import { GuestReadPolicyForm } from "@/components/admin/guest-read-policy-form";
+import { PopularPostPolicyForm } from "@/components/admin/popular-post-policy-form";
 
 vi.mock("@/server/actions/policy", () => ({
   updateFeedPersonalizationPolicyAction: vi.fn(),
   updateForbiddenKeywordPolicyAction: vi.fn(),
   updateGuestReadPolicyAction: vi.fn(),
+  updatePopularPostPolicyAction: vi.fn(),
 }));
 
 const personalizationPolicy = {
@@ -53,6 +55,14 @@ describe("admin policy form accessibility", () => {
       <FeedPersonalizationPolicyForm initialPolicy={personalizationPolicy} />,
     );
 
+    expect(html).toContain("min-h-10");
+    expect(html).toContain("정책 저장");
+  });
+
+  it("keeps popular post policy submit mobile-safe", () => {
+    const html = renderToStaticMarkup(<PopularPostPolicyForm initialPolicy={{ minLikes: 3 }} />);
+
+    expect(html).toContain("인기글 승격 좋아요 수");
     expect(html).toContain("min-h-10");
     expect(html).toContain("정책 저장");
   });

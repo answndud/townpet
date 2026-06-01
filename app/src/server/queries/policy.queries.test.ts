@@ -2,11 +2,13 @@ import { Prisma } from "@prisma/client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { DEFAULT_FEED_PERSONALIZATION_POLICY } from "@/lib/feed-personalization-policy";
+import { DEFAULT_POPULAR_POST_MIN_LIKES } from "@/lib/popular-post-policy";
 import { DEFAULT_LOGIN_REQUIRED_POST_TYPES } from "@/lib/post-access";
 import { prisma } from "@/lib/prisma";
 import {
   getFeedPersonalizationPolicy,
   getGuestReadLoginRequiredPostTypes,
+  getPopularPostPolicy,
 } from "@/server/queries/policy.queries";
 
 vi.mock("@/server/cache/query-cache", async () => {
@@ -63,6 +65,14 @@ describe("policy queries", () => {
     );
   });
 
+  it("returns default popular post policy when setting is missing", async () => {
+    mockPrisma.siteSetting?.findUnique.mockResolvedValue(null);
+
+    await expect(getPopularPostPolicy()).resolves.toEqual({
+      minLikes: DEFAULT_POPULAR_POST_MIN_LIKES,
+    });
+  });
+
   it("returns fail-closed guest read defaults when the database is unavailable", async () => {
     mockPrisma.siteSetting?.findUnique.mockRejectedValue(
       new Prisma.PrismaClientInitializationError("db down", "5.22.0"),
@@ -85,6 +95,16 @@ describe("policy queries", () => {
     await expect(getFeedPersonalizationPolicy()).resolves.toMatchObject({
       recencyDecayStep: 0.09,
       bookmarkSignalMultiplier: 1.3,
+    });
+  });
+
+  it("normalizes persisted popular post policy values", async () => {
+    mockPrisma.siteSetting?.findUnique.mockResolvedValue({
+      value: { minLikes: "7" },
+    });
+
+    await expect(getPopularPostPolicy()).resolves.toEqual({
+      minLikes: 7,
     });
   });
 });

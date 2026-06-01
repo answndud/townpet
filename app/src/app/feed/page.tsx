@@ -60,13 +60,10 @@ import {
 import { buildInitialFeedItems } from "./feed-page-items";
 import { FeedPagination } from "./feed-pagination";
 import {
-  type BestDay,
   type FeedDensity,
   type FeedMode,
-  type FeedPeriod,
   type FeedPersonalized,
   type FeedSearchIn,
-  type FeedSort,
   type HomePageProps,
   extractPreferredPetTypeIds,
   getGuestFeedContext,
@@ -75,10 +72,8 @@ import {
   toBestDay,
   toFeedDensity,
   toFeedMode,
-  toFeedPeriod,
   toFeedPersonalized,
   toFeedSearchIn,
-  toFeedSort,
 } from "./feed-page-support";
 
 type FeedListResult = Awaited<ReturnType<typeof listPosts>>;
@@ -88,13 +83,13 @@ type BestFeedItem = BestFeedItems[number];
 
 export const metadata: Metadata = {
   title: "동네 반려생활 피드",
-  description: "병원 후기, 산책코스, 분실/목격 제보와 질문 글을 최신순과 반응순으로 확인하세요.",
+  description: "병원 후기, 산책코스, 분실/목격 제보와 질문 글과 인기글을 확인하세요.",
   alternates: {
     canonical: "/feed",
   },
   openGraph: {
     title: "TownPet 동네 반려생활 피드",
-    description: "병원 후기, 산책코스, 분실/목격 제보와 질문 글을 최신순과 반응순으로 확인하세요.",
+    description: "병원 후기, 산책코스, 분실/목격 제보와 질문 글과 인기글을 확인하세요.",
     url: "/feed",
   },
 };
@@ -298,8 +293,6 @@ export default async function Home({ searchParams }: HomePageProps) {
       : PostScope.GLOBAL;
   const mode = toFeedMode(resolvedParams.mode);
   const bestDays = toBestDay(resolvedParams.days);
-  const periodDays = toFeedPeriod(resolvedParams.period);
-  const selectedSort = toFeedSort(resolvedParams.sort);
   const selectedSearchIn = toFeedSearchIn(resolvedParams.searchIn);
   const selectedPersonalized = toFeedPersonalized(resolvedParams.personalized);
   const density = toFeedDensity(resolvedParams.density);
@@ -380,7 +373,6 @@ export default async function Home({ searchParams }: HomePageProps) {
               searchIn: selectedSearchIn,
               excludeTypes: isAuthenticated ? undefined : blockedTypesForGuest,
               neighborhoodId,
-              minLikes: 1,
               viewerId: user?.id,
             }).catch((error) => {
               if (isPrismaDatabaseUnavailableError(error)) {
@@ -403,7 +395,6 @@ export default async function Home({ searchParams }: HomePageProps) {
               searchIn: selectedSearchIn,
               excludeTypes: isAuthenticated ? undefined : blockedTypesForGuest,
               neighborhoodId,
-              minLikes: 1,
               viewerId: user?.id,
             }).catch((error) => {
               if (isPrismaDatabaseUnavailableError(error)) {
@@ -436,7 +427,6 @@ export default async function Home({ searchParams }: HomePageProps) {
               petTypeIds,
               q: query || undefined,
               searchIn: selectedSearchIn,
-              days: periodDays ?? undefined,
               excludeTypes: isAuthenticated ? undefined : blockedTypesForGuest,
               neighborhoodId,
               viewerId: user?.id,
@@ -458,8 +448,7 @@ export default async function Home({ searchParams }: HomePageProps) {
               petTypeIds,
               q: query || undefined,
               searchIn: selectedSearchIn,
-              days: periodDays ?? undefined,
-              sort: selectedSort,
+              sort: "LATEST",
               excludeTypes: isAuthenticated ? undefined : blockedTypesForGuest,
               neighborhoodId,
               viewerId: user?.id,
@@ -499,12 +488,9 @@ export default async function Home({ searchParams }: HomePageProps) {
     reviewCategory ?? "ALL_REVIEW",
     petTypeId ?? "ALL_COMMUNITIES",
     petTypeIds.join(",") || "ALL_COMMUNITIES_MULTI",
-    selectedSort,
     selectedSearchIn,
     selectedPersonalized,
     density,
-    bestDays,
-    periodDays ?? "ALL_TIME",
     query || "__EMPTY__",
     resolvedPage,
   ].join("|");
@@ -620,9 +606,6 @@ export default async function Home({ searchParams }: HomePageProps) {
     nextQuery,
     nextPage,
     nextMode,
-    nextDays,
-    nextPeriod,
-    nextSort,
     nextSearchIn,
     nextPersonalized,
     nextDensity,
@@ -633,9 +616,6 @@ export default async function Home({ searchParams }: HomePageProps) {
     nextQuery?: string | null;
     nextPage?: number | null;
     nextMode?: FeedMode | null;
-    nextDays?: BestDay | null;
-    nextPeriod?: FeedPeriod | null;
-    nextSort?: FeedSort | null;
     nextSearchIn?: FeedSearchIn | null;
     nextPersonalized?: FeedPersonalized | null;
     nextDensity?: FeedDensity | null;
@@ -652,9 +632,6 @@ export default async function Home({ searchParams }: HomePageProps) {
       nextReviewCategory === undefined ? reviewCategory : nextReviewCategory;
     const resolvedQuery = nextQuery === undefined ? query : nextQuery;
     const resolvedMode = nextMode === undefined ? mode : nextMode;
-    const resolvedDays = nextDays === undefined ? bestDays : nextDays;
-    const resolvedPeriod = nextPeriod === undefined ? periodDays : nextPeriod;
-    const resolvedSort = nextSort === undefined ? selectedSort : nextSort;
     const resolvedSearchIn =
       nextSearchIn === undefined ? selectedSearchIn : nextSearchIn;
     const resolvedPersonalized =
@@ -689,14 +666,6 @@ export default async function Home({ searchParams }: HomePageProps) {
     }
     if (resolvedMode === "BEST") {
       params.set("mode", "BEST");
-      params.set("days", String(resolvedDays));
-    } else if (resolvedSort && resolvedSort !== "LATEST") {
-      params.set("sort", resolvedSort);
-      if (resolvedPeriod) {
-        params.set("period", String(resolvedPeriod));
-      }
-    } else if (resolvedMode === "ALL" && resolvedPeriod) {
-      params.set("period", String(resolvedPeriod));
     }
     if (effectivePage && effectivePage > 1) {
       params.set("page", String(effectivePage));
@@ -781,9 +750,6 @@ export default async function Home({ searchParams }: HomePageProps) {
 
         <FeedControlPanel
           mode={mode}
-          selectedSort={selectedSort}
-          bestDays={bestDays}
-          periodDays={periodDays}
           reviewBoard={reviewBoard}
           reviewCategory={normalizedReviewCategory}
           makeHref={makeHref}
@@ -804,12 +770,12 @@ export default async function Home({ searchParams }: HomePageProps) {
         <section id="feed-list" className="animate-fade-up overflow-hidden border-y border-[#d9e5f7] bg-white sm:rounded-xl sm:border">
           {items.length === 0 ? (
             <EmptyState
-              title={mode === "BEST" ? "반응 많은 글이 없습니다" : "게시글이 없습니다"}
+              title={mode === "BEST" ? "인기글이 없습니다" : "게시글이 없습니다"}
               description={
                 isGuestTypeBlocked
                   ? "해당 게시판은 로그인 후 확인할 수 있습니다."
                   : mode === "BEST"
-                  ? "선택한 게시판과 기간에서 좋아요가 1개 이상인 글이 아직 없습니다."
+                  ? "좋아요 기준을 넘어 인기글로 승격된 글이 아직 없습니다."
                   : "글을 작성하거나 다른 게시판을 확인해 주세요."
               }
               actionHref={
@@ -842,8 +808,7 @@ export default async function Home({ searchParams }: HomePageProps) {
                 reviewCategory,
                 q: query || undefined,
                 searchIn: selectedSearchIn,
-                sort: selectedSort,
-                days: periodDays ?? undefined,
+                sort: "LATEST",
                 personalized: usePersonalizedFeed,
               }}
               queryKey={feedQueryKey}

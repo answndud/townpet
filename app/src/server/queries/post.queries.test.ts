@@ -1543,7 +1543,7 @@ describe("post queries", () => {
     expect(result).toEqual(["간식", "사료", "산책"]);
   });
 
-  it("builds best feed with likes and recency ordering", async () => {
+  it("builds popular feed from persisted promotion state", async () => {
     mockPrisma.post.findMany.mockResolvedValue([]);
 
     await listBestPosts({
@@ -1555,13 +1555,13 @@ describe("post queries", () => {
 
     const args = mockPrisma.post.findMany.mock.calls[0][0];
     expect(args.where.scope).toBe(PostScope.GLOBAL);
-    expect(args.where.likeCount).toEqual({ gte: 2 });
+    expect(args.where.isPopular).toBe(true);
+    expect(args.where.popularPromotedAt).toEqual({ not: null });
     expect(args.where.neighborhoodId).toBeUndefined();
-    expect(args.where.createdAt.gte).toBeInstanceOf(Date);
+    expect(args.where.createdAt).toBeUndefined();
+    expect(args.where.likeCount).toBeUndefined();
     expect(args.orderBy).toEqual([
-      { likeCount: "desc" },
-      { commentCount: "desc" },
-      { viewCount: "desc" },
+      { popularPromotedAt: "desc" },
       { createdAt: "desc" },
       { id: "desc" },
     ]);
@@ -1593,7 +1593,7 @@ describe("post queries", () => {
     const args = mockPrisma.post.findMany.mock.calls[0][0];
     expect(args.where.scope).toBe(PostScope.LOCAL);
     expect(args.where.neighborhoodId).toBe("__NO_NEIGHBORHOOD__");
-    expect(args.where.likeCount).toEqual({ gte: 1 });
+    expect(args.where.isPopular).toBe(true);
   });
 
   it("builds search suggestions with unique matching values", async () => {
