@@ -9584,3 +9584,27 @@
     - PASS
   - Playwright local visual check
     - PASS, `http://localhost:3000/feed/guest`에서 `전체글 / 인기글`이 낮은 segmented control로 표시됨을 확인했다.
+
+### 2026-06-01 | 피드 모드 텍스트 탭 전환
+- 완료일: `2026-06-01`
+- 배경:
+  - 낮은 segmented control로 줄인 뒤에도 `전체글 / 인기글`이 여전히 버튼처럼 보여 피드 보조 탐색 UI로는 무거웠다.
+  - 피드 모드 전환은 주요 CTA가 아니라 현재 보기 상태를 바꾸는 텍스트 탭에 가까워야 했다.
+- 변경내용:
+  - `전체글 / 인기글` 주변 segmented container의 배경, border, padding, radius를 제거했다.
+  - 개별 탭의 배경과 박스형 active border를 제거했다.
+  - active 상태는 텍스트 weight와 얇은 하단선만으로 표시한다.
+  - inactive 상태는 muted text와 hover text color 변화만 사용한다.
+  - 기존 `role="tablist"`, `role="tab"`, `aria-selected` 구조는 유지했다.
+- 코드문서:
+  - [app/src/components/posts/feed-control-panel.tsx](../app/src/components/posts/feed-control-panel.tsx)
+  - [app/src/components/posts/feed-control-panel.test.tsx](../app/src/components/posts/feed-control-panel.test.tsx)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/components/posts/feed-control-panel.test.tsx`
+    - PASS, `1 file / 3 tests`
+  - `corepack pnpm@9.12.3 -C app lint`
+    - PASS
+  - `corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - 로컬 개발 서버 시각 확인:
+    - DB 미연결로 `/feed/guest` 본문은 skeleton 상태였지만, 컴포넌트 구조와 정적 검증은 정상 확인했다.
