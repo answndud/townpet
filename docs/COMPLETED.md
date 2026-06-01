@@ -9445,6 +9445,38 @@
     - PASS
   - `corepack pnpm@9.12.3 -C app lint`
     - PASS
+
+### 2026-06-01 | 피드 상단 검색 적용 후 로컬 검증과 polish
+- 완료일: `2026-06-01`
+- 배경:
+  - 인기글 migration이 로컬 DB에 적용되지 않아 `/api/feed/guest`가 `Post.isPopular` 컬럼 없음 오류로 실패했다.
+  - 피드 검색을 상단 조건 영역으로 옮긴 뒤 실제 게시글 데이터가 있는 desktop/mobile 화면에서 UI 위계를 확인해야 했다.
+- 변경내용:
+  - 로컬 Docker Postgres에 `20260601110348_add_popular_posts` migration을 적용했다.
+  - `prisma migrate status`로 DB schema가 최신 상태임을 확인했다.
+  - `/api/feed/guest`가 로컬에서 `200 OK`로 응답하는 것을 확인했다.
+  - desktop/mobile `/feed/guest` 캡처로 `피드 / 전체글 / 인기글`과 검색 폼이 상단 조건 영역에 표시되는 것을 확인했다.
+  - 검색 버튼을 filled primary에서 soft secondary 버튼으로 낮춰 `글쓰기` 버튼과 시각 위계를 분리했다.
+- 코드문서:
+  - [app/src/components/posts/feed-inline-search-form.tsx](../app/src/components/posts/feed-inline-search-form.tsx)
+  - [app/src/components/posts/feed-inline-search-form.test.tsx](../app/src/components/posts/feed-inline-search-form.test.tsx)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app exec prisma migrate status`
+    - FAIL before fix, `20260601110348_add_popular_posts` 미적용 확인
+  - `corepack pnpm@9.12.3 -C app exec prisma migrate deploy`
+    - PASS, `20260601110348_add_popular_posts` 적용
+  - `corepack pnpm@9.12.3 -C app exec prisma migrate status`
+    - PASS, `Database schema is up to date!`
+  - `curl -sS -i http://localhost:3000/api/feed/guest`
+    - PASS, `HTTP/1.1 200 OK`
+  - Playwright local visual check
+    - PASS, desktop/mobile `/feed/guest`에서 상단 검색 배치와 secondary 검색 버튼 확인
+  - `corepack pnpm@9.12.3 -C app test -- src/server/queries/post.queries.test.ts src/app/api/feed/guest/route.test.ts src/components/posts/feed-inline-search-form.test.tsx src/components/posts/feed-control-panel.test.tsx src/components/posts/guest-feed-page-client.test.ts src/components/compact-control-final-sweep.test.ts`
+    - PASS, `6 files / 78 tests`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `corepack pnpm@9.12.3 -C app lint`
+    - PASS
   - `corepack pnpm@9.12.3 -C app build`
     - PASS
   - 로컬 production route asset 측정
