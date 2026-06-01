@@ -18,5 +18,5 @@
 
 ## 다음 작업 후보
 
-- 인기글 관리자 정책 화면 UX smoke: 임계값 수정 입력/저장/검증 메시지 확인
+- 인기글 승격/해제 운영 기준 점검: 임계값을 올렸을 때 기존 인기글을 어떻게 처리할지 정책 결정 및 구현 후보 정리
 - authenticated admin queue smoke production credential 확보 후 재실행

@@ -392,27 +392,18 @@ export async function setFeedPersonalizationPolicy(input: FeedPersonalizationPol
 export async function getPopularPostPolicy(): Promise<PopularPostPolicy> {
   const delegate = requireSiteSettingDelegate();
 
-  const cacheKey = await createQueryCacheKey("policy", {
-    key: POPULAR_POST_POLICY_KEY,
-  });
-  return withQueryCache({
-    key: cacheKey,
-    ttlSeconds: 60,
-    fetcher: async () => {
-      let setting: { value: unknown } | null = null;
-      try {
-        setting = await delegate.findUnique({
-          where: { key: POPULAR_POST_POLICY_KEY },
-          select: { value: true },
-        });
-      } catch (error) {
-        throwPolicySchemaSyncRequired(error);
-      }
+  let setting: { value: unknown } | null = null;
+  try {
+    setting = await delegate.findUnique({
+      where: { key: POPULAR_POST_POLICY_KEY },
+      select: { value: true },
+    });
+  } catch (error) {
+    throwPolicySchemaSyncRequired(error);
+  }
 
-      return normalizePopularPostPolicy(setting?.value, {
-        minLikes: DEFAULT_POPULAR_POST_MIN_LIKES,
-      });
-    },
+  return normalizePopularPostPolicy(setting?.value, {
+    minLikes: DEFAULT_POPULAR_POST_MIN_LIKES,
   });
 }
 
@@ -441,8 +432,10 @@ export async function setPopularPostPolicy(input: PopularPostPolicy) {
     return { ok: false, reason: "SCHEMA_SYNC_REQUIRED" } as const;
   }
 
-  void bumpCacheVersion("policy").catch(() => undefined);
-  void bumpCacheVersion("feed").catch(() => undefined);
+  await Promise.all([
+    bumpCacheVersion("policy"),
+    bumpCacheVersion("feed"),
+  ]);
 
   return { ok: true, setting } as const satisfies SetGuestReadPolicyResult;
 }

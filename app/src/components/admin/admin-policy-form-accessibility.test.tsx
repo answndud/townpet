@@ -62,7 +62,8 @@ describe("admin policy form accessibility", () => {
   it("keeps popular post policy submit mobile-safe", () => {
     const html = renderToStaticMarkup(<PopularPostPolicyForm initialPolicy={{ minLikes: 3 }} />);
 
-    expect(html).toContain("인기글 승격 좋아요 수");
+    expect(html).toContain("인기글 승격 기준");
+    expect(html).toContain("현재 적용: 좋아요 3개 이상");
     expect(html).toContain("min-h-10");
     expect(html).toContain("정책 저장");
   });

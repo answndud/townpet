@@ -9789,3 +9789,32 @@
     - PASS
   - `corepack pnpm@9.12.3 -C app lint`
     - PASS
+
+### 2026-06-01 | 인기글 관리자 정책 화면 UX smoke
+- 완료일: `2026-06-01`
+- 배경:
+  - 인기글 승격 기준을 운영자가 `/admin/policies`에서 직접 조정할 수 있게 되었지만, 숫자 입력 UX와 저장 즉시성 검증이 부족했다.
+  - 기존 폼은 숫자 입력을 `Number()`로 즉시 변환해 빈 입력을 자연스럽게 유지하지 못했고, 브라우저 native number validation이 커스텀 오류 문구를 막을 수 있었다.
+  - e2e 중 저장 성공 후 새로고침에서 이전 값이 보이는 문제가 발견됐다. 인기글 정책 조회가 query cache에 묶여 운영 정책 변경의 즉시성이 깨지는 결함이었다.
+- 변경내용:
+  - `PopularPostPolicyForm`의 입력 상태를 문자열로 분리해 빈 값, 소수, 범위 초과를 직접 검증하도록 바꿨다.
+  - 현재 적용 기준, 저장 후 변경될 기준, `1~100` 범위 안내, 저장 성공 문구를 명확히 표시한다.
+  - form에 `noValidate`를 적용해 native number validation 대신 서비스가 의도한 한국어 오류 메시지를 보여준다.
+  - 오류 문구에 `data-testid`와 `role=alert`를 부여해 회귀 검증을 안정화했다.
+  - 인기글 정책 조회는 캐시 없이 DB에서 직접 읽도록 변경했다. 운영 정책은 크기가 작고, 저장 직후 새로고침에서 즉시 반영되는 것이 더 중요하다.
+  - 인기글 정책 e2e를 추가해 관리자 로그인, 기준 변경, 성공 문구, 새로고침 후 persistence, 범위 초과 오류를 검증한다.
+- 코드문서:
+  - [app/src/components/admin/popular-post-policy-form.tsx](../app/src/components/admin/popular-post-policy-form.tsx)
+  - [app/src/components/admin/popular-post-policy-form.test.tsx](../app/src/components/admin/popular-post-policy-form.test.tsx)
+  - [app/src/components/admin/admin-policy-form-accessibility.test.tsx](../app/src/components/admin/admin-policy-form-accessibility.test.tsx)
+  - [app/src/server/queries/moderation/policy.queries.ts](../app/src/server/queries/moderation/policy.queries.ts)
+  - [app/e2e/admin-popular-post-policy.spec.ts](../app/e2e/admin-popular-post-policy.spec.ts)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/components/admin/popular-post-policy-form.test.tsx src/components/admin/admin-policy-form-accessibility.test.tsx src/server/queries/policy.queries.test.ts`
+    - PASS, `3 files / 13 tests`
+  - `corepack pnpm@9.12.3 -C app exec playwright test e2e/admin-popular-post-policy.spec.ts --project=chromium --workers=1`
+    - PASS, `2 tests`
+  - `corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - `corepack pnpm@9.12.3 -C app lint`
+    - PASS
