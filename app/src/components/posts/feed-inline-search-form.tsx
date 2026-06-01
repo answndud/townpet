@@ -18,7 +18,7 @@ type FeedInlineSearchFormProps = {
 };
 
 const feedInlineSearchPrimaryActionClassName =
-  "inline-flex h-9 min-w-[50px] items-center justify-center rounded-[6px] bg-[#3567b5] px-3 text-[11px] font-semibold leading-none text-[#fbfdff] transition hover:bg-[#2f5da4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1";
+  "inline-flex h-9 min-w-[50px] items-center justify-center rounded-[6px] border border-[#c4d7f0] bg-[#fafdff] px-3 text-[11px] font-semibold leading-none text-[#2f5da4] transition hover:border-[#a9c6ee] hover:bg-[#eef6ff] hover:text-[#244b86] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1";
 const feedInlineSearchResetActionClassName =
   "tp-text-muted inline-flex h-9 min-w-[46px] items-center justify-center px-1.5 text-[11px] font-semibold leading-none transition hover:text-[#2f5da4] hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1";
 
