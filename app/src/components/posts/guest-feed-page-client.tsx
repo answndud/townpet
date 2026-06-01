@@ -7,7 +7,7 @@ import { PostType } from "@prisma/client";
 
 import { NeighborhoodGateNotice } from "@/components/neighborhood/neighborhood-gate-notice";
 import { FeedControlPanel } from "@/components/posts/feed-control-panel";
-import { FeedFooterSearchForm } from "@/components/posts/feed-footer-search-form";
+import { FeedInlineSearchForm } from "@/components/posts/feed-inline-search-form";
 import { FeedInfiniteList } from "@/components/posts/feed-infinite-list";
 import { FeedLoadingSkeleton } from "@/components/posts/feed-loading-skeleton";
 import { FeedPagination } from "@/components/posts/feed-pagination";
@@ -336,15 +336,18 @@ export function GuestFeedPageClient({
   } = data.feed;
   const isUltraDense = density === "ULTRA";
   const loginHref = (nextPath: string) => `/login?next=${encodeURIComponent(nextPath)}`;
-  const footerSearchIn = selectedSearchIn === "CONTENT" ? "CONTENT" : "TITLE";
-  const footerSearchResetHref = buildGuestFeedHref({
+  const feedSearchIn =
+    selectedSearchIn === "TITLE" || selectedSearchIn === "CONTENT"
+      ? selectedSearchIn
+      : "TITLE_CONTENT";
+  const feedSearchResetHref = buildGuestFeedHref({
     basePath: feedBasePath,
     type,
     reviewBoard,
     reviewCategory,
     petTypeIds,
     query: "",
-    mode: "ALL",
+    mode,
     selectedSearchIn: "ALL",
     density,
     resolvedPage: 1,
@@ -450,6 +453,18 @@ export function GuestFeedPageClient({
             reviewBoard={reviewBoard}
             reviewCategory={reviewCategory}
             makeHref={makeHref}
+            searchSlot={
+              <FeedInlineSearchForm
+                actionPath={feedBasePath}
+                query={query}
+                searchIn={feedSearchIn}
+                resetHref={feedSearchResetHref}
+                mode={mode}
+                type={type}
+                petTypeIds={petTypeIds}
+                reviewCategory={reviewCategory}
+              />
+            }
           />
 
           <section id="feed-list" className="animate-fade-up overflow-hidden border-y border-[#d9e5f7] bg-white sm:rounded-xl sm:border">
@@ -507,15 +522,6 @@ export function GuestFeedPageClient({
                 makeHref={makeHref}
               />
             ) : null}
-            <FeedFooterSearchForm
-              actionPath={feedBasePath}
-              query={query}
-              searchIn={footerSearchIn}
-              resetHref={footerSearchResetHref}
-              type={type}
-              petTypeIds={petTypeIds}
-              reviewCategory={reviewCategory}
-            />
           </section>
 
         </div>

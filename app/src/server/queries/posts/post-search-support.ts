@@ -2,7 +2,7 @@ import { Prisma } from "@prisma/client";
 
 import { buildStructuredSearchVariants } from "@/lib/structured-field-normalization";
 
-export type PostSearchIn = "ALL" | "TITLE" | "CONTENT" | "AUTHOR";
+export type PostSearchIn = "ALL" | "TITLE_CONTENT" | "TITLE" | "CONTENT" | "AUTHOR";
 export const DEFAULT_POST_SEARCH_IN: PostSearchIn = "ALL";
 
 export function buildPostSearchWhere(
@@ -39,6 +39,9 @@ export function buildPostSearchWhere(
   }
   if (searchIn === "CONTENT") {
     return contentFilters.length === 1 ? contentFilters[0]! : { OR: contentFilters };
+  }
+  if (searchIn === "TITLE_CONTENT") {
+    return { OR: [...titleFilters, ...contentFilters, ...structuredFilters] };
   }
   if (searchIn === "AUTHOR") {
     return authorFilters.length === 1 ? authorFilters[0]! : { OR: authorFilters };

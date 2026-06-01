@@ -5,7 +5,7 @@ import { getGuestReadLoginRequiredPostTypes } from "@/server/queries/policy.quer
 
 export type FeedMode = "ALL" | "BEST";
 export type FeedSort = "LATEST" | "LIKE" | "COMMENT";
-export type FeedSearchIn = "ALL" | "TITLE" | "CONTENT" | "AUTHOR";
+export type FeedSearchIn = "ALL" | "TITLE_CONTENT" | "TITLE" | "CONTENT" | "AUTHOR";
 export type FeedPersonalized = "0" | "1";
 export type FeedDensity = "DEFAULT" | "ULTRA";
 export type HomePageProps = {
@@ -95,7 +95,7 @@ export function toFeedSort(value?: string): FeedSort {
 }
 
 export function toFeedSearchIn(value?: string): FeedSearchIn {
-  if (value === "TITLE" || value === "CONTENT" || value === "AUTHOR") {
+  if (value === "TITLE_CONTENT" || value === "TITLE" || value === "CONTENT" || value === "AUTHOR") {
     return value;
   }
   return "ALL";

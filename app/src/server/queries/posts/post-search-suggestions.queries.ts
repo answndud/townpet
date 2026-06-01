@@ -242,8 +242,10 @@ export async function listPostSearchSuggestions({
       addSuggestion(row.title, {
         sourceValue: resolvedSearchIn === "CONTENT" ? row.content : row.title,
       });
-      if (resolvedSearchIn === "ALL") {
-        addSuggestion(row.author.nickname);
+      if (resolvedSearchIn === "ALL" || resolvedSearchIn === "TITLE_CONTENT") {
+        if (resolvedSearchIn === "ALL") {
+          addSuggestion(row.author.nickname);
+        }
         for (const candidate of listStructuredSuggestionCandidates(row as PostSearchSuggestionRow)) {
           addSuggestion(candidate);
         }

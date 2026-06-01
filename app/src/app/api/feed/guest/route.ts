@@ -35,7 +35,7 @@ import {
 } from "@/server/upload-asset.service";
 
 type FeedMode = "ALL" | "BEST";
-type FeedSearchIn = "ALL" | "TITLE" | "CONTENT" | "AUTHOR";
+type FeedSearchIn = "ALL" | "TITLE_CONTENT" | "TITLE" | "CONTENT" | "AUTHOR";
 type FeedDensity = "DEFAULT" | "ULTRA";
 type GuestFeedListResult = Awaited<ReturnType<typeof listPosts>>;
 type GuestFeedListItem = GuestFeedListResult["items"][number];
@@ -60,7 +60,7 @@ const guestFeedQuerySchema = z.object({
   days: z.coerce.number().int().optional(),
   period: z.coerce.number().int().optional(),
   sort: z.enum(["LATEST", "LIKE", "COMMENT"]).optional(),
-  searchIn: z.enum(["ALL", "TITLE", "CONTENT", "AUTHOR"]).optional(),
+  searchIn: z.enum(["ALL", "TITLE_CONTENT", "TITLE", "CONTENT", "AUTHOR"]).optional(),
   review: z.enum(REVIEW_CATEGORY_VALUES).optional(),
   personalized: z.enum(["0", "1"]).optional(),
   page: z.coerce.number().int().positive().optional(),
@@ -79,7 +79,7 @@ function toBestDay(value?: string) {
 }
 
 function toFeedSearchIn(value?: string): FeedSearchIn {
-  if (value === "TITLE" || value === "CONTENT" || value === "AUTHOR") {
+  if (value === "TITLE_CONTENT" || value === "TITLE" || value === "CONTENT" || value === "AUTHOR") {
     return value;
   }
   return "ALL";

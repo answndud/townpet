@@ -20,7 +20,7 @@ describe("compact control final sweep", () => {
     "src/components/navigation/app-shell-footer.tsx",
     "src/components/posts/comment-reaction-controls.tsx",
     "src/components/posts/feed-control-panel.tsx",
-    "src/components/posts/feed-footer-search-form.tsx",
+    "src/components/posts/feed-inline-search-form.tsx",
     "src/components/posts/feed-search-form.tsx",
     "src/components/posts/post-detail-client.tsx",
     "src/components/posts/post-detail-media-gallery.tsx",

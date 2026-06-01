@@ -7,7 +7,7 @@ import { PostScope, PostType } from "@prisma/client";
 
 import { NeighborhoodGateNotice } from "@/components/neighborhood/neighborhood-gate-notice";
 import { FeedControlPanel } from "@/components/posts/feed-control-panel";
-import { FeedFooterSearchForm } from "@/components/posts/feed-footer-search-form";
+import { FeedInlineSearchForm } from "@/components/posts/feed-inline-search-form";
 import { FeedInfiniteList } from "@/components/posts/feed-infinite-list";
 import { EmptyState } from "@/components/ui/empty-state";
 import { auth } from "@/lib/auth";
@@ -674,7 +674,7 @@ export default async function Home({ searchParams }: HomePageProps) {
     const serialized = params.toString();
     return serialized ? `/feed?${serialized}` : "/feed";
   };
-  const footerSearchResetHref = (() => {
+  const feedSearchResetHref = (() => {
     const params = new URLSearchParams();
     if (type) {
       params.set("type", type);
@@ -688,10 +688,16 @@ export default async function Home({ searchParams }: HomePageProps) {
     if (density === "ULTRA") {
       params.set("density", "ULTRA");
     }
+    if (mode === "BEST") {
+      params.set("mode", "BEST");
+    }
     const serialized = params.toString();
     return serialized ? `/feed?${serialized}` : "/feed";
   })();
-  const footerSearchIn = selectedSearchIn === "CONTENT" ? "CONTENT" : "TITLE";
+  const feedSearchIn =
+    selectedSearchIn === "TITLE" || selectedSearchIn === "CONTENT"
+      ? selectedSearchIn
+      : "TITLE_CONTENT";
 
   feedPerf.flush({
     route: "/feed",
@@ -753,6 +759,18 @@ export default async function Home({ searchParams }: HomePageProps) {
           reviewBoard={reviewBoard}
           reviewCategory={normalizedReviewCategory}
           makeHref={makeHref}
+          searchSlot={
+            <FeedInlineSearchForm
+              actionPath="/feed"
+              query={query}
+              searchIn={feedSearchIn}
+              resetHref={feedSearchResetHref}
+              mode={mode}
+              type={type}
+              petTypeIds={petTypeIds}
+              reviewCategory={normalizedReviewCategory}
+            />
+          }
           personalized={
             showPersonalizedToggle
               ? {
@@ -834,15 +852,6 @@ export default async function Home({ searchParams }: HomePageProps) {
               makeHref={makeHref}
             />
           ) : null}
-          <FeedFooterSearchForm
-            actionPath="/feed"
-            query={query}
-            searchIn={footerSearchIn}
-            resetHref={footerSearchResetHref}
-            type={type}
-            petTypeIds={petTypeIds}
-            reviewCategory={normalizedReviewCategory}
-          />
         </section>
 
         </div>
