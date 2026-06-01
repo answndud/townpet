@@ -41,13 +41,13 @@ const REVIEW_FILTER_OPTIONS: Array<{ label: string; value?: ReviewCategory }> = 
 ];
 
 const PRIMARY_TAB_CLASS_NAME =
-  "inline-flex min-h-10 items-center rounded-md border px-2.5 text-[11px] font-medium leading-none transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25";
+  "inline-flex h-8 items-center rounded-[6px] px-3 text-[12px] font-semibold leading-none transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25";
 const ACTIVE_PRIMARY_TAB_CLASS_NAME =
-  "border-[#a9c6ee] bg-[#eaf3ff] text-[#1f4f8f]";
+  "bg-[#fafdff] text-[#1f4f8f] shadow-[inset_0_0_0_1px_#b8cfee]";
 const INACTIVE_PRIMARY_TAB_CLASS_NAME =
-  "border-[#d5e3f5] bg-white text-[#315b9a] hover:border-[#b8cceb] hover:bg-[#f5f9ff]";
+  "text-[#52709b] hover:bg-[#f6faff] hover:text-[#274f82]";
 const FILTER_CHIP_CLASS_NAME =
-  "inline-flex min-h-10 items-center rounded-md border px-2.5 text-[11px] font-medium leading-none transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25";
+  "inline-flex h-8 items-center rounded-[6px] border px-2.5 text-[11px] font-medium leading-none transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25";
 const ACTIVE_FILTER_CHIP_CLASS_NAME = "border-[#a9c6ee] bg-[#eaf3ff] text-[#1f4f8f]";
 const INACTIVE_FILTER_CHIP_CLASS_NAME =
   "border-[#d4e1f3] bg-white text-[#355f99] hover:border-[#bdd2ed] hover:bg-[#f6faff]";
@@ -68,17 +68,23 @@ export function FeedControlPanel({
   personalized,
 }: FeedControlPanelProps) {
   return (
-    <section className="overflow-hidden border-y border-[#e1e9f5] bg-white sm:rounded-xl sm:border">
-      <div className="border-b border-[#e8f0fa] bg-[#fbfdff] px-2 py-1 sm:px-5">
+    <section className="overflow-hidden border-y border-[#e3ebf6] bg-white sm:rounded-lg sm:border">
+      <div className="border-b border-[#edf3fb] bg-[#fcfdff] px-2 py-1 sm:px-4">
         <div className="overflow-x-auto">
-          <div className="flex min-w-max items-center gap-1.5">
-            <p className="text-[10px] font-semibold leading-none text-[#4f6e97]">
+          <div className="flex min-w-max items-center gap-2">
+            <p className="text-[11px] font-semibold leading-none text-[#637da2]">
               피드
             </p>
-            <div className="flex items-center gap-1">
+            <div
+              className="inline-flex items-center gap-0.5 rounded-[7px] border border-[#d7e3f3] bg-[#f3f7fc] p-0.5"
+              role="tablist"
+              aria-label="피드 보기"
+            >
               <Link
                 href={makeHref({ nextMode: "ALL", nextPage: 1 })}
                 prefetch={false}
+                role="tab"
+                aria-selected={mode === "ALL"}
                 className={`${PRIMARY_TAB_CLASS_NAME} ${
                   mode === "ALL"
                     ? ACTIVE_PRIMARY_TAB_CLASS_NAME
@@ -90,6 +96,8 @@ export function FeedControlPanel({
               <Link
                 href={makeHref({ nextMode: "BEST", nextPage: 1 })}
                 prefetch={false}
+                role="tab"
+                aria-selected={mode === "BEST"}
                 className={`${PRIMARY_TAB_CLASS_NAME} ${
                   mode === "BEST"
                     ? ACTIVE_PRIMARY_TAB_CLASS_NAME
@@ -171,7 +179,7 @@ export function FeedControlPanel({
         ) : null}
       </div>
 
-      <div className="grid bg-white px-2 py-1 sm:px-5">
+      <div className="grid bg-white px-2 py-1 sm:px-4">
         {reviewBoard ? (
           <div className="flex items-center gap-1 overflow-x-auto py-1">
             <SectionLabel>리뷰</SectionLabel>

@@ -26,7 +26,8 @@ describe("FeedControlPanel", () => {
     );
 
     expect(html).toContain("피드");
-    expect(html).toContain("min-h-10");
+    expect(html).toContain("role=\"tablist\"");
+    expect(html).toContain("h-8");
     expect(html).toContain("py-1");
     expect(html).toContain("추천 방식");
     expect(html).toContain("현재 기준");

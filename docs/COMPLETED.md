@@ -9560,3 +9560,27 @@
 - 배포 주의:
   - 배포 DB에는 `20260601110348_add_popular_posts` migration이 적용되어야 한다.
   - 새 컬럼 적용 전에는 인기글 쿼리와 좋아요 승격 업데이트가 DB schema mismatch를 만날 수 있다.
+
+### 2026-06-01 | 피드 모드 컨트롤 시각 밀도 개선
+- 완료일: `2026-06-01`
+- 배경:
+  - `전체글 / 인기글` 전환 UI가 큰 둥근 버튼처럼 보여 피드 보조 컨트롤보다 주요 CTA처럼 무거웠다.
+  - 피드 상단은 반복 사용되는 정보 탐색 컨트롤이므로 낮고 차분한 segmented control에 가까워야 했다.
+- 변경내용:
+  - 피드 모드 탭 높이를 `min-h-10`에서 `h-8`로 낮췄다.
+  - 버튼 radius와 테두리감을 줄이고, inactive 상태는 개별 border 없이 텍스트 중심으로 낮췄다.
+  - active 상태는 강한 배경 버튼 대신 얇은 inset border와 흰 surface로 표시했다.
+  - 탭 그룹에 `role="tablist"`, 각 링크에 `role="tab"`과 `aria-selected`를 추가해 선택 구조를 명확히 했다.
+  - 컨테이너 padding과 border tone을 낮춰 게시글 목록 위의 보조 컨트롤처럼 보이게 했다.
+- 코드문서:
+  - [app/src/components/posts/feed-control-panel.tsx](../app/src/components/posts/feed-control-panel.tsx)
+  - [app/src/components/posts/feed-control-panel.test.tsx](../app/src/components/posts/feed-control-panel.test.tsx)
+- 검증:
+  - `corepack pnpm@9.12.3 -C app test -- src/components/posts/feed-control-panel.test.tsx`
+    - PASS, `1 file / 3 tests`
+  - `corepack pnpm@9.12.3 -C app lint`
+    - PASS
+  - `corepack pnpm@9.12.3 -C app typecheck`
+    - PASS
+  - Playwright local visual check
+    - PASS, `http://localhost:3000/feed/guest`에서 `전체글 / 인기글`이 낮은 segmented control로 표시됨을 확인했다.
