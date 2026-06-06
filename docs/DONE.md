@@ -9964,3 +9964,10 @@
 - 변경: 모든 cleanup step을 시도한 뒤 실패 라벨을 묶어 보고하는 helper와 회귀 테스트를 추가했다.
 - 검증: targeted vitest 5 tests, 관련 eslint, `tsc --noEmit`, 실제 local DB smoke PASS 및 잔여 post/user 0건 확인.
 - 기록: [docs/errors/2026-06-06_popular-promotion-smoke-cleanup-restore-gap.md](./errors/2026-06-06_popular-promotion-smoke-cleanup-restore-gap.md)
+
+### 2026-06-06 - guest legacy cleanup readiness column gap 보강
+
+- 요약: guest legacy cleanup readiness가 `guestPasswordHash` 하나만 보고 legacy column 정리 완료로 오판할 수 있는 경로를 막았다.
+- 변경: 모든 알려진 legacy guest column을 탐지하고, 실제 남은 column 기준으로 count query를 구성하도록 바꿨다.
+- 검증: targeted vitest 3 tests, 관련 eslint, `tsc --noEmit`, 실제 local DB readiness PASS.
+- 기록: [docs/errors/2026-06-06_guest-legacy-cleanup-readiness-column-gap.md](./errors/2026-06-06_guest-legacy-cleanup-readiness-column-gap.md)
