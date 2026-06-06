@@ -31,7 +31,7 @@ import { type ReviewCategory } from "@/lib/review-category";
 const feedInlinePrimaryActionClassName =
   "inline-flex min-h-10 items-center justify-center rounded-md bg-[#3567b5] px-3 text-xs font-semibold text-[#fbfdff] transition hover:bg-[#2f5da4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1";
 
-function buildGuestFeedHref({
+export function buildGuestFeedHref({
   basePath,
   type,
   reviewBoard,
@@ -160,7 +160,7 @@ export function GuestFeedPageClient({
   );
 
   const queryString = searchParams.toString();
-  const feedBasePath = pathname?.startsWith("/feed/guest") ? "/feed/guest" : "/feed";
+  const feedBasePath = "/feed/guest";
   const legacyCommunityId = searchParams.get("communityId")?.trim() ?? "";
   const hasLegacyScope = Boolean(searchParams.get("scope")?.trim());
   const hasPetType = searchParams.getAll("petType").some((value) => value.trim().length > 0);
@@ -402,7 +402,7 @@ export function GuestFeedPageClient({
   });
   const emptyStateAllPostsHref = makeHref({ nextMode: "ALL", nextPage: 1 });
   const emptyStateActionHref = isGuestTypeBlocked
-    ? loginHref(`/feed${type ? `?type=${type}` : ""}`)
+    ? loginHref(`/feed/guest${type ? `?type=${type}` : ""}`)
     : hasFeedSearchQuery
       ? feedSearchResetHref
       : mode === "BEST"
@@ -458,7 +458,7 @@ export function GuestFeedPageClient({
             <div className="border border-[#d9c38b] bg-[#fff8e5] px-3 py-2.5 text-sm text-[#6c5319]">
               선택한 게시판({postTypeMeta[type].label})은 로그인 후 볼 수 있습니다.{" "}
               <Link
-                href={loginHref(`/feed?type=${type}`)}
+                href={loginHref(`/feed/guest?type=${type}`)}
                 prefetch={false}
                 className="font-semibold text-[#2f5da4] hover:text-[#244b86]"
               >

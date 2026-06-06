@@ -1,14 +1,52 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { PostType } from "@prisma/client";
 import { describe, expect, it } from "vitest";
 
-import { shouldReplaceGuestFeedCanonicalHref } from "@/components/posts/guest-feed-page-client";
+import {
+  buildGuestFeedHref,
+  shouldReplaceGuestFeedCanonicalHref,
+} from "@/components/posts/guest-feed-page-client";
 
 function readSource(path: string) {
   return readFileSync(join(process.cwd(), path), "utf8");
 }
 
 describe("shouldReplaceGuestFeedCanonicalHref", () => {
+  it("builds guest feed canonical hrefs with the guest base path", () => {
+    expect(
+      buildGuestFeedHref({
+        basePath: "/feed/guest",
+        type: null,
+        reviewBoard: false,
+        reviewCategory: null,
+        petTypeIds: [],
+        query: "",
+        mode: "ALL",
+        selectedSearchIn: "ALL",
+        density: "DEFAULT",
+        resolvedPage: 1,
+      }),
+    ).toBe("/feed/guest");
+
+    expect(
+      buildGuestFeedHref({
+        basePath: "/feed/guest",
+        type: PostType.FREE_BOARD,
+        reviewBoard: false,
+        reviewCategory: null,
+        petTypeIds: [],
+        query: "병원",
+        mode: "BEST",
+        selectedSearchIn: "TITLE_CONTENT",
+        density: "DEFAULT",
+        resolvedPage: 1,
+      }),
+    ).toBe(
+      "/feed/guest?type=FREE_BOARD&q=%EB%B3%91%EC%9B%90&searchIn=TITLE_CONTENT&mode=BEST",
+    );
+  });
+
   it("does not canonicalize a new URL before matching guest feed data has loaded", () => {
     expect(
       shouldReplaceGuestFeedCanonicalHref({

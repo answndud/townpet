@@ -9861,3 +9861,11 @@
 - 검증: `vitest` targeted 2 files/9 tests, `tsc --noEmit`, 관련 파일 `eslint`, 로컬 `/onboarding -> /login?next=%2Fonboarding` 확인.
 - 기록: [docs/errors/2026-06-06_onboarding-login-next-lost.md](./errors/2026-06-06_onboarding-login-next-lost.md)
 - 후속: guest/public feed 링크를 `/feed/guest?...` canonical URL로 직접 생성하도록 정리한다.
+
+### 2026-06-06 - 게스트 피드 canonical 링크 정리
+
+- 요약: 게스트 헤더/게시판 링크가 `/feed?...` redirect를 거치지 않고 `/feed/guest?...`를 직접 가리키도록 정리했다.
+- 변경: feed href helper에 guest basePath 옵션을 추가하고, guest feed client와 `/feed/guest` metadata canonical을 맞췄다.
+- 검증: `vitest` targeted 2 files/11 tests, `tsc --noEmit`, 관련 파일 `eslint`, 로컬 브라우저에서 `/feed?...` 링크 0개 확인.
+- 결정: 인증 사용자 기본 feed는 `/feed`, 비회원/public feed는 `/feed/guest`를 canonical로 유지한다.
+- 후속: 게시글 상세 모바일 운영자 정정 CTA 중복 여부를 정리한다.
