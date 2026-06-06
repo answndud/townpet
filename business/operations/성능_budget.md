@@ -114,12 +114,14 @@ public detail 참고:
 - 따라서 document 응답은 `private, no-cache, no-store`가 정상이고, 첫 요청 outlier가 단발로 튈 수 있다.
 - 반복 확인은 전체 baseline 대신 `PERF_TARGETS=post_detail`로 분리해서 본다.
 - 같은 public 상세에서 `slow >= 1000ms`가 `10회 중 2회 이상`이거나 warm p95가 `1800ms`를 넘으면 route cache 전환 가능성과 dynamic 의존 제거를 다시 연다.
-- 2026-06-06 10회 재측정은 첫 요청만 `1714ms`, warm 요청 범위 `238ms~361ms`, slow `1/10`이었다. 기준 미달이므로 route cache 변경은 보류한다.
+- 2026-06-06 1차 10회 재측정은 첫 요청만 `1714ms`, warm 요청 범위 `238ms~361ms`, slow `1/10`이었다. 기준 미달이므로 route cache 변경은 보류한다.
+- 2026-06-06 2차 10회 재측정은 첫 요청만 `6323ms`, warm 요청 범위 `290ms~587ms`, slow `1/10`이었다. 첫 요청 outlier는 더 컸지만 반복 slow 기준과 warm p95 기준에는 미달하므로 route cache 변경은 계속 보류한다.
 
 관련 evidence:
 
 - [performance-production-recheck-2026-06-06.md](../../docs/reports/performance-production-recheck-2026-06-06.md)
 - [performance-baseline-2026-06-06T08-50-41-051Z.md](../../docs/reports/performance-baseline-2026-06-06T08-50-41-051Z.md)
+- [performance-baseline-2026-06-06T12-00-59-941Z.md](../../docs/reports/performance-baseline-2026-06-06T12-00-59-941Z.md)
 - [performance-browser-baseline-2026-06-06T08-48-48-268Z.md](../../docs/reports/performance-browser-baseline-2026-06-06T08-48-48-268Z.md)
 - [performance-route-assets-2026-06-06T08-49-32-892Z.md](../../docs/reports/performance-route-assets-2026-06-06T08-49-32-892Z.md)
 

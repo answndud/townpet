@@ -18,5 +18,4 @@
 
 ## 다음 작업 후보
 
-- public detail route cache 재검토: `PERF_TARGETS=post_detail` 10회 측정에서 slow request가 2회 이상 반복되면 CSP nonce/referer 기반 dynamic 의존 제거 가능성을 검토
 - authenticated admin queue smoke production credential 확보 후 재실행
