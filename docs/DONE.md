@@ -9885,3 +9885,11 @@
 - 검증: `vitest` targeted 2 files/3 tests, `tsc --noEmit`, 관련 파일 `eslint`, 로컬 브라우저에서 FREE_BOARD 인기글 empty와 `/best` 수렴 확인.
 - 결정: 운영자 seed/임계값 조작보다 빈 상태 UX를 먼저 개선하고, 실제 인기글 승격 정책은 기존 운영 기준을 유지한다.
 - 후속: public feed/detail 체감 로딩을 재측정한다.
+
+### 2026-06-06 - production public 성능 재측정
+
+- 요약: `https://townpet.vercel.app` home/feed/detail 속도를 server fetch, browser LCP, route asset로 다시 측정했다.
+- 결과: 10초급 지연은 재현되지 않았고 mobile `/feed/guest` LCP p50 `188ms`, public detail LCP p50 `660ms`, 둘 다 budget 안쪽이었다.
+- 기록: [docs/reports/performance-production-recheck-2026-06-06.md](./reports/performance-production-recheck-2026-06-06.md), [business/operations/성능_budget.md](../business/operations/성능_budget.md)
+- 결정: 즉시 코드 수정 없이 성능 active를 닫고, public detail outlier는 반복될 때만 별도 작업으로 연다.
+- 후속: 인기글 수동 해제/관리 액션 필요성 검토.
