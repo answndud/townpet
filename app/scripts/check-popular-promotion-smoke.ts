@@ -32,6 +32,11 @@ type PopularPromotionSmokeResult = {
   bestFeedContainsPost: boolean;
 };
 
+type CleanupStep = {
+  label: string;
+  run: () => Promise<void>;
+};
+
 export function assertPopularPromotionSmokeResult(result: PopularPromotionSmokeResult) {
   if (result.afterFirstLike.likeCount !== 1) {
     throw new Error(`Expected first like count to be 1, got ${result.afterFirstLike.likeCount}.`);
@@ -53,6 +58,25 @@ export function assertPopularPromotionSmokeResult(result: PopularPromotionSmokeR
 
   if (!result.bestFeedContainsPost) {
     throw new Error("Promoted post was not returned by the popular feed query.");
+  }
+}
+
+export async function runPopularPromotionSmokeCleanup(steps: CleanupStep[]) {
+  const failures: Array<{ label: string; error: unknown }> = [];
+
+  for (const step of steps) {
+    try {
+      await step.run();
+    } catch (error) {
+      failures.push({ label: step.label, error });
+    }
+  }
+
+  if (failures.length > 0) {
+    throw new AggregateError(
+      failures.map((failure) => failure.error),
+      `Popular promotion smoke cleanup failed: ${failures.map((failure) => failure.label).join(", ")}`,
+    );
   }
 }
 
@@ -231,9 +255,20 @@ async function runPopularPromotionSmoke(): Promise<PopularPromotionSmokeResult> 
     assertPopularPromotionSmokeResult(result);
     return result;
   } finally {
-    await cleanupSmokeData({ postId, emails });
-    await restorePopularPolicy(previousPolicy);
-    await bumpFeedCacheVersion();
+    await runPopularPromotionSmokeCleanup([
+      {
+        label: "smoke data",
+        run: () => cleanupSmokeData({ postId, emails }),
+      },
+      {
+        label: "popular policy",
+        run: () => restorePopularPolicy(previousPolicy),
+      },
+      {
+        label: "feed cache",
+        run: () => bumpFeedCacheVersion(),
+      },
+    ]);
   }
 }
 

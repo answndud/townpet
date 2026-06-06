@@ -9957,3 +9957,10 @@
 - 변경: legacy search page는 shell convergence만 확인하고, 검색 API에 operator item이 없으면 BLOCKED 처리한다.
 - 검증: targeted vitest 4 tests, 관련 eslint, `tsc --noEmit`, production smoke PASS.
 - 기록: [docs/errors/2026-06-06_operator-content-smoke-search-html-gap.md](./errors/2026-06-06_operator-content-smoke-search-html-gap.md)
+
+### 2026-06-06 - popular promotion smoke cleanup/restore 보강
+
+- 요약: 인기글 승격 smoke에서 임시 데이터 cleanup 실패가 정책 복구/cache bump를 막지 않도록 후처리 단계를 독립 실행으로 바꿨다.
+- 변경: 모든 cleanup step을 시도한 뒤 실패 라벨을 묶어 보고하는 helper와 회귀 테스트를 추가했다.
+- 검증: targeted vitest 5 tests, 관련 eslint, `tsc --noEmit`, 실제 local DB smoke PASS 및 잔여 post/user 0건 확인.
+- 기록: [docs/errors/2026-06-06_popular-promotion-smoke-cleanup-restore-gap.md](./errors/2026-06-06_popular-promotion-smoke-cleanup-restore-gap.md)
