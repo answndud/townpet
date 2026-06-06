@@ -9922,3 +9922,10 @@
 - 변경: production credential smoke는 유지하고, localhost 전용 fixture guard/cleanup/문서/테스트를 추가했다.
 - 검증: targeted vitest 8 tests, 관련 eslint, `tsc --noEmit`, 실제 localhost smoke PASS(`/admin/reports`, `/admin/corrections`), fixture cleanup 0건 확인.
 - 후속: production credential 확보 시 authenticated admin queue smoke를 원격에서 재실행한다.
+
+### 2026-06-06 - 관리자 큐 smoke readiness 로컬 fallback 안내
+
+- 요약: `/admin/ops`의 관리자 큐 smoke 준비 카드에 원격 인증 smoke와 로컬 fixture smoke 명령을 분리해 표시했다.
+- 변경: readiness query에 `localFixtureCommand`/`localFixtureNote`를 추가하고 ops overview 테스트/mock을 갱신했다.
+- 검증: targeted vitest 3 files/6 tests, 관련 eslint, `tsc --noEmit`.
+- 후속: production credential 확보 시 원격 인증 smoke를 실행한다.
