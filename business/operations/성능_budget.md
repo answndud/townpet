@@ -40,6 +40,12 @@ production baseline:
 PERF_POST_PATH=/posts/<public-post-id>/guest PERF_SAMPLES=5 PERF_PAUSE_MS=150 PERF_SLOW_THRESHOLD_MS=1000 pnpm -C app perf:baseline
 ```
 
+public detail outlier만 분리 관찰:
+
+```bash
+PERF_TARGETS=post_detail PERF_POST_PATH=/posts/<public-post-id>/guest PERF_SAMPLES=10 PERF_PAUSE_MS=200 PERF_SLOW_THRESHOLD_MS=1000 pnpm -C app perf:baseline
+```
+
 browser paint:
 
 ```bash
@@ -102,6 +108,13 @@ Server fetch 8회 재확인:
 | `/api/feed/guest?limit=20` | `109ms` | `192ms` | `0` |
 | public detail | `233ms` | `414ms` | `0` |
 
+public detail 참고:
+
+- guest 상세는 현재 `force-dynamic`, `connection()`, request CSP nonce, referer 기반 back link를 사용한다.
+- 따라서 document 응답은 `private, no-cache, no-store`가 정상이고, 첫 요청 outlier가 단발로 튈 수 있다.
+- 반복 확인은 전체 baseline 대신 `PERF_TARGETS=post_detail`로 분리해서 본다.
+- 같은 public 상세에서 `slow >= 1000ms`가 `10회 중 2회 이상`이거나 warm p95가 `1800ms`를 넘으면 route cache 전환 가능성과 dynamic 의존 제거를 다시 연다.
+
 관련 evidence:
 
 - [performance-production-recheck-2026-06-06.md](../../docs/reports/performance-production-recheck-2026-06-06.md)
@@ -119,3 +132,4 @@ Server fetch 8회 재확인:
 - `/feed/guest` 첫 진입에서 클릭 전 post detail RSC prefetch가 다시 대량 발생한다.
 - `.next/static/media`에 의도하지 않은 webfont 파일이 다시 생긴다.
 - `/api/feed/guest?perf=1` 기본 요청에 `bootstrap.communities`가 항상 포함된다.
+- public detail의 `PERF_TARGETS=post_detail` 10회 측정에서 slow request가 2회 이상 반복된다.

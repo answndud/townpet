@@ -9901,3 +9901,10 @@
 - 검증: `vitest` targeted 2 files/40 tests, `tsc --noEmit`, 관련 파일 `eslint`, `prisma validate`, `prisma migrate deploy`, 실제 DB smoke/cleanup 확인.
 - 결정: 임계값 상향/좋아요 취소로 자동 해제하지 않고, 운영 부적합 글만 관리자 수동 해제로 처리한다.
 - 후속: public detail outlier 관찰 또는 authenticated admin queue smoke credential 확보.
+
+### 2026-06-06 - public detail 성능 outlier 분리 측정
+
+- 요약: production baseline 스크립트에 `PERF_TARGETS` 필터를 추가해 `post_detail`만 반복 측정할 수 있게 했다.
+- 변경: 스크립트를 import-safe로 바꾸고 target filter helper/test를 추가했다.
+- 검증: `vitest` targeted 1 file/4 tests, `PERF_TARGETS=post_detail` smoke에서 첫 요청 `3627ms`, 이후 warm 요청 `573ms/533ms` 확인.
+- 결정: guest 상세는 CSP nonce/referer 기반 dynamic/no-store 구조라 즉시 cache 전환은 보류하고, 반복 slow 기준을 성능 budget에 남겼다.

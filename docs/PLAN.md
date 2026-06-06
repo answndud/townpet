@@ -18,5 +18,5 @@
 
 ## 다음 작업 후보
 
-- public detail outlier 관찰: 실사용 Web Vitals나 다음 production 측정에서 상세 p95가 반복 상승하면 route cache 가능성과 query 경계를 재검토
+- public detail route cache 재검토: `PERF_TARGETS=post_detail` 10회 측정에서 slow request가 2회 이상 반복되면 CSP nonce/referer 기반 dynamic 의존 제거 가능성을 검토
 - authenticated admin queue smoke production credential 확보 후 재실행
