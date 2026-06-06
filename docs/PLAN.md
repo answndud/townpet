@@ -24,8 +24,8 @@
    - 대체 확인: credential 준비 전에는 `ADMIN_QUEUE_SMOKE_LOCAL_FIXTURES=1 OPS_BASE_URL=http://localhost:3000` 로컬 fixture smoke만 가능하다.
    - 완료 기준: production `production_credentials` mode report가 PASS.
 
-2. Web Vitals report 실제 수집 상태 확인
-   - 상태: conditional
-   - 조건: production에 `WebVitalSample` schema/client가 배포되어 있고 실제 브라우저 sample이 쌓여 있어야 한다.
-   - 다음 액션: `WEB_VITALS_REPORT_DAYS=7 WEB_VITALS_REPORT_LIMIT=5000 pnpm -C app perf:web-vitals` 실행 후 report 상태가 `NO_SAMPLES`인지 metric rows인지 분류한다.
-   - 완료 기준: sample rows가 있으면 p75/p95 해석, 없으면 수집 경로 또는 트래픽 조건을 별도 후보로 남긴다.
+2. production Web Vitals summary 실행 경로 확보
+   - 상태: ready
+   - 이유: production 브라우저 수집 endpoint는 `recorded:true`로 검증됐지만, 로컬 `perf:web-vitals`는 local DB만 집계하므로 production p75/p95를 안전하게 읽는 경로가 아직 없다.
+   - 다음 액션: production DB secret을 로컬로 내려받지 않고도 확인 가능한 admin-only summary route 또는 보호된 ops report 경로를 설계/구현한다.
+   - 완료 기준: production sample count와 metric별 p75/p95를 admin 인증 또는 internal token으로 안전하게 확인할 수 있다.

@@ -10083,3 +10083,10 @@
 - 검증: public health PASS, 반복 health p95 `425ms`, `/` warm p50 `117ms`, `/feed/guest` warm p50 `101ms`, `/api/feed/guest` steady p95 `259.9ms`.
 - 분류: 정상. 초기 MISS/cold outlier는 있었지만 slow `0`, non-200 `0`, focused budget 이탈 없음.
 - 후속: credential 없이는 authenticated admin queue production smoke가 계속 blocked이며, 다음 실행 가능 후보는 Web Vitals 실제 수집 상태 확인이다.
+
+### 2026-06-06 - Web Vitals 수집 상태 확인
+
+- 요약: Web Vitals report와 production 브라우저 수집 경로를 분리해 확인했다.
+- 검증: local `perf:web-vitals`는 `schemaSyncRequired=false`, `NO_SAMPLES`; production `/`, `/feed/guest` 방문은 `/api/metrics/web-vitals` 8회 모두 `200 recorded:true`.
+- 분류: 수집 endpoint/schema/write path는 정상, production p75/p95 요약은 현재 로컬 DB env로는 판독 불가.
+- 후속: production DB secret을 로컬로 내려받지 않는 admin-only summary route 또는 보호된 ops report 경로가 필요하다.
