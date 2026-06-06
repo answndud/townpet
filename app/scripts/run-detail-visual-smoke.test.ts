@@ -123,4 +123,51 @@ describe("detail visual smoke runner", () => {
 
     await rm(path.dirname(config.outputPath), { recursive: true, force: true });
   });
+
+  it("records thrown command errors and continues when configured to continue", async () => {
+    const config = createConfig();
+    const commandRunner = vi
+      .fn()
+      .mockResolvedValueOnce({ code: 0, output: "health ok" })
+      .mockRejectedValueOnce(new Error("spawn pnpm ENOENT"))
+      .mockResolvedValueOnce({ code: 0, output: "auth local ok" });
+    vi.stubEnv(AUTH_LOCAL_DETAIL_SMOKE_CONFIRM_ENV_KEY, AUTH_LOCAL_DETAIL_SMOKE_CONFIRM_VALUE);
+
+    await mkdir(path.dirname(config.outputPath), { recursive: true });
+    await expect(runDetailVisualSmoke(config, commandRunner)).rejects.toThrow(
+      "[detail-visual-smoke] required checks failed.",
+    );
+
+    const report = await readFile(config.outputPath, "utf8");
+    expect(report).toContain("- status: FAIL");
+    expect(report).toContain("- public-detail-visual: FAIL");
+    expect(report).toContain("Error: spawn pnpm ENOENT");
+    expect(report).toContain("- auth-local-detail-visual: PASS");
+    expect(commandRunner).toHaveBeenCalledTimes(3);
+
+    await rm(path.dirname(config.outputPath), { recursive: true, force: true });
+  });
+
+  it("records thrown command errors and stops when continue-on-failure is disabled", async () => {
+    const config = createConfig({ continueOnFailure: false });
+    const commandRunner = vi
+      .fn()
+      .mockResolvedValueOnce({ code: 0, output: "health ok" })
+      .mockRejectedValueOnce(new Error("public detail command failed to start"));
+    vi.stubEnv(AUTH_LOCAL_DETAIL_SMOKE_CONFIRM_ENV_KEY, AUTH_LOCAL_DETAIL_SMOKE_CONFIRM_VALUE);
+
+    await mkdir(path.dirname(config.outputPath), { recursive: true });
+    await expect(runDetailVisualSmoke(config, commandRunner)).rejects.toThrow(
+      "[detail-visual-smoke] required checks failed.",
+    );
+
+    const report = await readFile(config.outputPath, "utf8");
+    expect(report).toContain("- status: FAIL");
+    expect(report).toContain("- public-detail-visual: FAIL");
+    expect(report).toContain("Error: public detail command failed to start");
+    expect(report).not.toContain("- auth-local-detail-visual:");
+    expect(commandRunner).toHaveBeenCalledTimes(2);
+
+    await rm(path.dirname(config.outputPath), { recursive: true, force: true });
+  });
 });

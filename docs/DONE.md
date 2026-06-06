@@ -9985,3 +9985,10 @@
 - 변경: command throw를 `code=1` step result로 정규화하고, `continueOnFailure` 동작은 기존과 동일하게 유지했다.
 - 검증: targeted vitest 8 tests, 관련 eslint, `tsc --noEmit`, 실제 direct smoke에서 `spawn pnpm ENOENT` 실패 report 생성 확인.
 - 기록: [docs/errors/2026-06-06_ops-evidence-command-throw-gap.md](./errors/2026-06-06_ops-evidence-command-throw-gap.md)
+
+### 2026-06-06 - detail visual smoke command throw containment 보강
+
+- 요약: `run-detail-visual-smoke`가 command spawn/runner 예외도 failed step으로 report에 남기도록 보강했다.
+- 변경: command throw를 `code=1` step result로 정규화하고, `continueOnFailure` 동작은 기존과 동일하게 유지했다.
+- 검증: targeted vitest 7 tests, 관련 eslint, `tsc --noEmit`, 실제 public-only direct smoke에서 `spawn pnpm ENOENT` 실패 report 생성 확인.
+- 기록: [docs/errors/2026-06-06_detail-visual-smoke-command-throw-gap.md](./errors/2026-06-06_detail-visual-smoke-command-throw-gap.md)
