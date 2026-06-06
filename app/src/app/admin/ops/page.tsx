@@ -1044,9 +1044,17 @@ export default async function AdminOpsPage({ searchParams }: AdminOpsPageProps) 
                     </p>
                   </div>
                 </div>
-                <p className="mt-3 break-all border-t border-[#e4edf8] pt-2 text-[11px] text-[#5a7398]">
-                  {adminQueueSmoke.command}
-                </p>
+                <div className="mt-3 space-y-2 border-t border-[#e4edf8] pt-2 text-[11px] text-[#5a7398]">
+                  <div>
+                    <p className="font-semibold text-[#163462]">원격 인증 smoke</p>
+                    <p className="mt-1 break-all">{adminQueueSmoke.command}</p>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-[#163462]">로컬 fixture smoke</p>
+                    <p className="mt-1 leading-5">{adminQueueSmoke.localFixtureNote}</p>
+                    <p className="mt-1 break-all">{adminQueueSmoke.localFixtureCommand}</p>
+                  </div>
+                </div>
               </div>
 
               <div className="mt-4 overflow-x-auto">

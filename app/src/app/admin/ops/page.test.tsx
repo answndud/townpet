@@ -16,5 +16,8 @@ describe("AdminOpsPage source", () => {
     expect(source).toContain("관리자 큐 smoke 준비");
     expect(source).toContain("overview.adminQueueSmoke");
     expect(source).toContain("missingKeys");
+    expect(source).toContain("원격 인증 smoke");
+    expect(source).toContain("로컬 fixture smoke");
+    expect(source).toContain("localFixtureCommand");
   });
 });

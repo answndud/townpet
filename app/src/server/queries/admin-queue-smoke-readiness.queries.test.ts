@@ -37,4 +37,12 @@ describe("admin queue smoke readiness queries", () => {
     expect(readiness.command).toContain("ops:check:admin-queue-smoke");
     expect(readiness.docsPath).toContain("배포전_on-demand_체크.md");
   });
+
+  it("returns a localhost-only fixture smoke command for credential-free UI checks", () => {
+    const readiness = getAdminQueueSmokeReadiness({});
+
+    expect(readiness.localFixtureCommand).toContain("OPS_BASE_URL=http://localhost:3000");
+    expect(readiness.localFixtureCommand).toContain("ADMIN_QUEUE_SMOKE_LOCAL_FIXTURES=1");
+    expect(readiness.localFixtureNote).toContain("production credential이 없을 때");
+  });
 });
