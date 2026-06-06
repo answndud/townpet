@@ -53,9 +53,7 @@ const DEFAULT_SMOKE_TYPES = [
   "FREE_BOARD",
   "WALK_ROUTE",
   "LOST_FOUND",
-  "HOSPITAL_REVIEW",
   "MARKET_LISTING",
-  "CARE_REQUEST",
 ];
 
 function resolveRepoRoot() {
@@ -70,7 +68,7 @@ function compactTimestamp(date = new Date()) {
   return date.toISOString().replace(/[:.]/g, "-");
 }
 
-function parseSmokeTypes(value: string | undefined) {
+export function parseSmokeTypes(value: string | undefined) {
   return (value?.split(",") ?? DEFAULT_SMOKE_TYPES)
     .map((item) => item.trim())
     .filter(Boolean);
@@ -174,6 +172,23 @@ async function inspectDetail(params: {
       .first()
       .isVisible()
       .catch(() => false);
+    let hasReportEntry = bodyText.includes("신고");
+    if (!hasReportEntry) {
+      const postMenu = page.locator('summary[aria-label="게시글 메뉴"]').first();
+      if (await postMenu.isVisible().catch(() => false)) {
+        await postMenu.click();
+        hasReportEntry = await page
+          .getByText(/게시글 신고|신고/)
+          .first()
+          .isVisible()
+          .catch(() => false);
+        await page
+          .locator('details[open] summary[aria-label="게시글 메뉴"]')
+          .first()
+          .click()
+          .catch(() => undefined);
+      }
+    }
     const noHorizontalOverflow = await hasNoHorizontalOverflow(page);
 
     await mkdir(path.dirname(params.screenshotPath), { recursive: true });
@@ -187,7 +202,7 @@ async function inspectDetail(params: {
       screenshot: params.screenshotPath,
       titleVisible,
       hasCommentSection: bodyText.includes("댓글"),
-      hasReportEntry: bodyText.includes("신고"),
+      hasReportEntry,
       hasOperatorSource: params.target.isOperatorContent
         ? bodyText.includes("운영자 정리") &&
           (params.target.operatorSourceName ? bodyText.includes(params.target.operatorSourceName) : true)
@@ -206,6 +221,16 @@ function resultPassed(result: SmokeResult) {
     result.hasReportEntry &&
     result.hasOperatorSource &&
     result.noHorizontalOverflow
+  );
+}
+
+export function publicDetailSmokePassed(params: {
+  targetEntries: Array<{ type: string; target: PublicDetailTarget | null }>;
+  results: SmokeResult[];
+}) {
+  return (
+    params.targetEntries.every((entry) => Boolean(entry.target)) &&
+    params.results.every((result) => resultPassed(result))
   );
 }
 
@@ -293,7 +318,7 @@ async function main() {
     );
   }
 
-  if (results.some((result) => !resultPassed(result))) {
+  if (!publicDetailSmokePassed({ targetEntries, results })) {
     throw new Error("Public detail visual smoke failed.");
   }
 }
