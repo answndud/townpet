@@ -96,6 +96,12 @@ Web Vitals summary:
 WEB_VITALS_REPORT_DAYS=7 WEB_VITALS_REPORT_LIMIT=5000 pnpm -C app perf:web-vitals
 ```
 
+production Web Vitals summary:
+
+```bash
+OPS_BASE_URL=https://townpet.vercel.app OPS_HEALTH_INTERNAL_TOKEN=<HEALTH_INTERNAL_TOKEN> WEB_VITALS_REPORT_DAYS=7 WEB_VITALS_REPORT_LIMIT=5000 pnpm -C app perf:web-vitals:remote
+```
+
 ## Report 출력 경로
 
 기본 출력은 `docs/reports` 또는 `/tmp`에 생성한다. 비교용 evidence를 명시적으로 남길 때만 아래 env로 경로를 고정한다.
@@ -109,6 +115,7 @@ WEB_VITALS_REPORT_DAYS=7 WEB_VITALS_REPORT_LIMIT=5000 pnpm -C app perf:web-vital
 | `ops:perf:snapshot` | `OPS_PERF_OUT=../docs/reports/api-latency-snapshot-custom.tsv` | `OPS_PERF_SUMMARY_OUT=../docs/reports/api-latency-snapshot-custom.summary.md` |
 | `perf:db-readiness` | `PERF_DB_OUT=../docs/reports/performance-db-readiness-custom.md` | `PERF_DB_JSON_OUT=../docs/reports/performance-db-readiness-custom.json` |
 | `perf:web-vitals` | `WEB_VITALS_REPORT_OUT=../docs/reports/web-vitals-summary-custom.md` | - |
+| `perf:web-vitals:remote` | `WEB_VITALS_REPORT_OUT=../docs/reports/web-vitals-remote-summary-custom.md` | - |
 
 ## 현재 기준선
 

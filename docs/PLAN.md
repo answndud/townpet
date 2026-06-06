@@ -24,8 +24,8 @@
    - 대체 확인: credential 준비 전에는 `ADMIN_QUEUE_SMOKE_LOCAL_FIXTURES=1 OPS_BASE_URL=http://localhost:3000` 로컬 fixture smoke만 가능하다.
    - 완료 기준: production `production_credentials` mode report가 PASS.
 
-2. production Web Vitals summary 실행 경로 확보
-   - 상태: ready
-   - 이유: production 브라우저 수집 endpoint는 `recorded:true`로 검증됐지만, 로컬 `perf:web-vitals`는 local DB만 집계하므로 production p75/p95를 안전하게 읽는 경로가 아직 없다.
-   - 다음 액션: production DB secret을 로컬로 내려받지 않고도 확인 가능한 admin-only summary route 또는 보호된 ops report 경로를 설계/구현한다.
-   - 완료 기준: production sample count와 metric별 p75/p95를 admin 인증 또는 internal token으로 안전하게 확인할 수 있다.
+2. 배포 후 remote Web Vitals summary 실행
+   - 상태: pending
+   - 조건: `/api/ops/web-vitals/summary`가 production에 배포되어 있어야 한다.
+   - 다음 액션: `OPS_BASE_URL=https://townpet.vercel.app OPS_HEALTH_INTERNAL_TOKEN=<HEALTH_INTERNAL_TOKEN> WEB_VITALS_REPORT_DAYS=7 WEB_VITALS_REPORT_LIMIT=5000 pnpm -C app perf:web-vitals:remote`.
+   - 완료 기준: production sample count와 metric별 p75/p95가 report로 저장되고 `OK / NO_SAMPLES / SCHEMA_SYNC_REQUIRED` 중 하나로 분류된다.

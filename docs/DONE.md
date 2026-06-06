@@ -10090,3 +10090,10 @@
 - 검증: local `perf:web-vitals`는 `schemaSyncRequired=false`, `NO_SAMPLES`; production `/`, `/feed/guest` 방문은 `/api/metrics/web-vitals` 8회 모두 `200 recorded:true`.
 - 분류: 수집 endpoint/schema/write path는 정상, production p75/p95 요약은 현재 로컬 DB env로는 판독 불가.
 - 후속: production DB secret을 로컬로 내려받지 않는 admin-only summary route 또는 보호된 ops report 경로가 필요하다.
+
+### 2026-06-06 - production Web Vitals summary 경로 추가
+
+- 요약: production DB secret을 로컬로 내려받지 않고 Web Vitals p75/p95를 읽는 protected ops 경로를 추가했다.
+- 변경: internal diagnostics token 보호 `/api/ops/web-vitals/summary`, `perf:web-vitals:remote` 스크립트, query validation, route/script failure-path tests.
+- 검증: targeted vitest 15 tests PASS, 관련 eslint PASS, `tsc --noEmit` PASS, `next build` PASS.
+- 후속: 배포 반영 후 `OPS_HEALTH_INTERNAL_TOKEN`으로 remote summary를 실행해 `OK / NO_SAMPLES / SCHEMA_SYNC_REQUIRED`를 분류한다.
