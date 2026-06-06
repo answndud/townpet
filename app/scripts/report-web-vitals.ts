@@ -47,7 +47,7 @@ function formatDate(value: Date | null) {
   return value ? value.toISOString() : "-";
 }
 
-function renderMarkdown(summary: WebVitalSummary) {
+export function renderMarkdown(summary: WebVitalSummary) {
   const lines = [
     "# Web Vitals Summary",
     "",
@@ -61,18 +61,39 @@ function renderMarkdown(summary: WebVitalSummary) {
 
   if (summary.schemaSyncRequired) {
     lines.push(
+      "## Result",
+      "",
+      "- status: `SCHEMA_SYNC_REQUIRED`",
       "WebVitalSample table 또는 Prisma client가 아직 배포/동기화되지 않아 수집 요약을 만들 수 없습니다.",
+      "- next: migration과 Prisma client 배포 상태를 먼저 확인한 뒤 report를 다시 생성하세요.",
       "",
     );
     return lines.join("\n");
   }
 
   if (summary.rows.length === 0) {
-    lines.push("최근 기간에 수집된 Web Vitals sample이 없습니다.", "");
+    lines.push(
+      "## Result",
+      "",
+      "- status: `NO_SAMPLES`",
+      "최근 기간에 수집된 Web Vitals sample이 없습니다.",
+      "- next: production 페이지를 실제 브라우저로 방문해 sample 수집을 유도한 뒤 report를 다시 생성하세요.",
+      "",
+    );
     return lines.join("\n");
   }
 
   lines.push(
+    "## Interpretation",
+    "",
+    "- p75/p95는 metric별 raw value 기준입니다.",
+    "- route별 count가 작으면 trend 판정이 아니라 수집 정상 여부 확인으로만 봅니다.",
+    "",
+  );
+
+  lines.push(
+    "## Metric Rows",
+    "",
     "| metric | route | count | p75 | p95 | good | needs_improvement | poor | latestAt |",
     "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
   );

@@ -10048,3 +10048,10 @@
 - 변경: positive integer parser와 import-safe helper/test를 추가하고 성능 budget에 report window env 예시를 고정했다.
 - 검증: targeted vitest 8 tests, 관련 eslint, `tsc --noEmit`, invalid env CLI fast-fail 확인.
 - 기록: [docs/errors/2026-06-06_web-vitals-report-env-parsing-gap.md](./errors/2026-06-06_web-vitals-report-env-parsing-gap.md)
+
+### 2026-06-06 - Web Vitals report empty/schema 안내 보강
+
+- 요약: `perf:web-vitals` report가 schema-sync/empty 상태에서도 상태와 다음 조치를 명확히 보여주게 했다.
+- 변경: `SCHEMA_SYNC_REQUIRED`, `NO_SAMPLES`, populated report interpretation 문구와 renderer tests를 추가했다.
+- 검증: targeted vitest 7 tests, 관련 eslint, `tsc --noEmit` 통과.
+- 기록: [docs/errors/2026-06-06_web-vitals-report-empty-state-gap.md](./errors/2026-06-06_web-vitals-report-empty-state-gap.md)
