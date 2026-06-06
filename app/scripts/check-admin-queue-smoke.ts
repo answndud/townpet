@@ -127,6 +127,12 @@ type LocalAdminQueueSmokeFixtures = {
   cleanup: () => Promise<void>;
 };
 
+type AdminQueueSmokeCleanupResources = {
+  page?: Pick<Page, "close"> | null;
+  browser?: { close: () => Promise<void> } | null;
+  localFixtures?: Pick<LocalAdminQueueSmokeFixtures, "cleanup"> | null;
+};
+
 function createLocalSmokePassword() {
   return `AdminSmoke-${randomUUID()}-TownPet!9`;
 }
@@ -260,6 +266,29 @@ async function prepareLocalAdminQueueSmokeFixtures(
   } catch (error) {
     await cleanup();
     throw error;
+  }
+}
+
+export async function cleanupAdminQueueSmokeResources({
+  page,
+  browser,
+  localFixtures,
+}: AdminQueueSmokeCleanupResources) {
+  const cleanupErrors: unknown[] = [];
+  for (const cleanupTask of [
+    () => page?.close(),
+    () => browser?.close(),
+    () => localFixtures?.cleanup(),
+  ]) {
+    try {
+      await cleanupTask();
+    } catch (error) {
+      cleanupErrors.push(error);
+    }
+  }
+
+  if (cleanupErrors.length > 0) {
+    throw new AggregateError(cleanupErrors, "Admin queue smoke cleanup failed.");
   }
 }
 
@@ -407,25 +436,29 @@ async function main() {
   const repoRoot = resolveRepoRoot();
   const config = resolveAdminQueueSmokeConfig(process.env);
   const outputDir = path.join(repoRoot, "docs/reports", `admin-queue-smoke-${timestamp}`);
-  const localFixtures = config.useLocalFixtures
-    ? await prepareLocalAdminQueueSmokeFixtures(process.env)
-    : null;
-  const credentials = localFixtures ?? {
-    email: config.email,
-    password: config.password,
-  };
-  if (!credentials.email || !credentials.password) {
-    throw new AdminQueueSmokeBlockedError("Admin queue smoke credentials were not resolved.");
-  }
 
-  const browser = await chromium.launch();
-  const page = await browser.newPage({
-    viewport: { width: 1365, height: 900 },
-    deviceScaleFactor: 1,
-  });
-
+  let localFixtures: LocalAdminQueueSmokeFixtures | null = null;
+  let browser: Awaited<ReturnType<typeof chromium.launch>> | null = null;
+  let page: Page | null = null;
   let results: AdminQueuePageCheck[] = [];
   try {
+    localFixtures = config.useLocalFixtures
+      ? await prepareLocalAdminQueueSmokeFixtures(process.env)
+      : null;
+    const credentials = localFixtures ?? {
+      email: config.email,
+      password: config.password,
+    };
+    if (!credentials.email || !credentials.password) {
+      throw new AdminQueueSmokeBlockedError("Admin queue smoke credentials were not resolved.");
+    }
+
+    browser = await chromium.launch();
+    page = await browser.newPage({
+      viewport: { width: 1365, height: 900 },
+      deviceScaleFactor: 1,
+    });
+
     await loginWithCredentials({
       context: page.context(),
       page,
@@ -454,9 +487,7 @@ async function main() {
       }),
     ];
   } finally {
-    await page.close();
-    await browser.close();
-    await localFixtures?.cleanup();
+    await cleanupAdminQueueSmokeResources({ page, browser, localFixtures });
   }
 
   await writeFile(

@@ -9929,3 +9929,10 @@
 - 변경: readiness query에 `localFixtureCommand`/`localFixtureNote`를 추가하고 ops overview 테스트/mock을 갱신했다.
 - 검증: targeted vitest 3 files/6 tests, 관련 eslint, `tsc --noEmit`.
 - 후속: production credential 확보 시 원격 인증 smoke를 실행한다.
+
+### 2026-06-06 - 관리자 큐 fixture smoke cleanup 실패 경로 보강
+
+- 요약: local fixture smoke에서 브라우저 실행/페이지 생성 실패 시 임시 데이터 cleanup이 누락될 수 있는 경로를 닫았다.
+- 변경: page/browser/local fixture cleanup helper를 추가하고 모든 cleanup을 독립적으로 시도하도록 했다.
+- 검증: targeted vitest 1 file/6 tests, 관련 eslint, `tsc --noEmit`.
+- 기록: [docs/errors/2026-06-06_admin-queue-smoke-fixture-cleanup-gap.md](./errors/2026-06-06_admin-queue-smoke-fixture-cleanup-gap.md)
