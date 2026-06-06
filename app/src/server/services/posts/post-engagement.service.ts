@@ -1,4 +1,9 @@
-import { PostReactionType, PostStatus } from "@prisma/client";
+import {
+  ModerationActionType,
+  ModerationTargetType,
+  PostReactionType,
+  PostStatus,
+} from "@prisma/client";
 import { randomUUID } from "crypto";
 
 import { prisma } from "@/lib/prisma";
@@ -8,6 +13,7 @@ import {
 } from "@/server/cache/query-cache";
 import { getPopularPostPolicy } from "@/server/queries/policy.queries";
 import { logger, serializeError } from "@/server/logger";
+import { recordModerationAction } from "@/server/moderation-action-log";
 import { hasBlockingRelation } from "@/server/queries/user-relation.queries";
 import { notifyReactionOnPost } from "@/server/services/notification.service";
 import { assertUserInteractionAllowed } from "@/server/services/sanction.service";
@@ -34,6 +40,17 @@ type TogglePostBookmarkParams = {
 
 type TogglePostBookmarkResult = {
   bookmarked: boolean;
+};
+
+type UnpromotePopularPostParams = {
+  postId: string;
+  actorId: string;
+};
+
+type UnpromotePopularPostResult = {
+  changed: boolean;
+  postId: string;
+  title: string;
 };
 
 type ReactionDelegateLike = {
@@ -278,6 +295,70 @@ export async function togglePostReaction({
   void bumpPostDetailCacheVersion().catch(() => undefined);
 
   return result;
+}
+
+export async function unpromotePopularPost({
+  postId,
+  actorId,
+}: UnpromotePopularPostParams): Promise<UnpromotePopularPostResult> {
+  const post = await prisma.post.findUnique({
+    where: { id: postId },
+    select: {
+      id: true,
+      status: true,
+      authorId: true,
+      title: true,
+      likeCount: true,
+      commentCount: true,
+      viewCount: true,
+      isPopular: true,
+      popularPromotedAt: true,
+    },
+  });
+
+  if (!post || post.status === PostStatus.DELETED) {
+    throw new ServiceError("게시물을 찾을 수 없습니다.", "POST_NOT_FOUND", 404);
+  }
+
+  if (!post.isPopular || !post.popularPromotedAt) {
+    return {
+      changed: false,
+      postId: post.id,
+      title: post.title,
+    };
+  }
+
+  await prisma.post.update({
+    where: { id: post.id },
+    data: {
+      isPopular: false,
+      popularPromotedAt: null,
+    },
+  });
+
+  await recordModerationAction({
+    actorId,
+    action: ModerationActionType.POPULAR_POST_UNPROMOTED,
+    targetType: ModerationTargetType.POST,
+    targetId: post.id,
+    targetUserId: post.authorId,
+    metadata: {
+      title: post.title,
+      previousPopularPromotedAt: post.popularPromotedAt.toISOString(),
+      likeCount: post.likeCount,
+      commentCount: post.commentCount,
+      viewCount: post.viewCount,
+    },
+  });
+
+  void bumpFeedCacheVersion().catch(() => undefined);
+  void bumpPostDetailCacheVersion().catch(() => undefined);
+
+  return {
+    changed: true,
+    postId: post.id,
+    title: post.title,
+  };
 }
 
 export async function togglePostBookmark({

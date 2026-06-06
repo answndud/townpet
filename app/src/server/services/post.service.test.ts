@@ -31,6 +31,7 @@ import {
   registerPostView,
   togglePostBookmark,
   togglePostReaction,
+  unpromotePopularPost,
   updateMarketListingStatus,
   updateCareRequestStatus,
   updateCareFeedbackReview,
@@ -386,6 +387,83 @@ describe("post reaction toggle", () => {
     });
     expect(mockPrisma.post.update).not.toHaveBeenCalled();
     expect(result.likeCount).toBe(2);
+  });
+
+  it("lets an admin manually remove a post from popular feed with audit log", async () => {
+    const promotedAt = new Date("2026-06-01T00:00:00.000Z");
+    mockPrisma.post.findUnique.mockResolvedValue({
+      id: "popular-1",
+      status: PostStatus.ACTIVE,
+      authorId: "author-1",
+      title: "동물병원 후기",
+      likeCount: 12,
+      commentCount: 3,
+      viewCount: 44,
+      isPopular: true,
+      popularPromotedAt: promotedAt,
+    });
+    mockPrisma.post.update.mockResolvedValue({});
+
+    const result = await unpromotePopularPost({
+      postId: "popular-1",
+      actorId: "admin-1",
+    });
+
+    expect(result).toEqual({
+      changed: true,
+      postId: "popular-1",
+      title: "동물병원 후기",
+    });
+    expect(mockPrisma.post.update).toHaveBeenCalledWith({
+      where: { id: "popular-1" },
+      data: {
+        isPopular: false,
+        popularPromotedAt: null,
+      },
+    });
+    expect(mockRecordModerationAction).toHaveBeenCalledWith({
+      actorId: "admin-1",
+      action: ModerationActionType.POPULAR_POST_UNPROMOTED,
+      targetType: "POST",
+      targetId: "popular-1",
+      targetUserId: "author-1",
+      metadata: {
+        title: "동물병원 후기",
+        previousPopularPromotedAt: promotedAt.toISOString(),
+        likeCount: 12,
+        commentCount: 3,
+        viewCount: 44,
+      },
+    });
+    expect(mockBumpFeedCacheVersion).toHaveBeenCalled();
+    expect(mockBumpPostDetailCacheVersion).toHaveBeenCalled();
+  });
+
+  it("does not write audit log when a post is already not popular", async () => {
+    mockPrisma.post.findUnique.mockResolvedValue({
+      id: "post-1",
+      status: PostStatus.ACTIVE,
+      authorId: "author-1",
+      title: "일반 글",
+      likeCount: 1,
+      commentCount: 0,
+      viewCount: 5,
+      isPopular: false,
+      popularPromotedAt: null,
+    });
+
+    const result = await unpromotePopularPost({
+      postId: "post-1",
+      actorId: "admin-1",
+    });
+
+    expect(result).toEqual({
+      changed: false,
+      postId: "post-1",
+      title: "일반 글",
+    });
+    expect(mockPrisma.post.update).not.toHaveBeenCalled();
+    expect(mockRecordModerationAction).not.toHaveBeenCalled();
   });
 
   it("notifies post author when dislike is newly applied", async () => {

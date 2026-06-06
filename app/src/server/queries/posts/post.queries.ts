@@ -1,5 +1,6 @@
 import {
   PostScope,
+  PostStatus,
   PostType,
   Prisma,
 } from "@prisma/client";
@@ -314,6 +315,44 @@ export async function listPosts(options: PostListOptions) {
 
 export async function listBestPosts(options: BestPostListOptions) {
   return listBestPostsWithDependencies(options, getPostListQueryDependencies());
+}
+
+export async function listAdminPopularPosts({ limit = 10 }: { limit?: number } = {}) {
+  return prisma.post.findMany({
+    where: {
+      status: PostStatus.ACTIVE,
+      isPopular: true,
+      popularPromotedAt: { not: null },
+    },
+    orderBy: [
+      { popularPromotedAt: "desc" },
+      { createdAt: "desc" },
+      { id: "desc" },
+    ],
+    take: Math.min(Math.max(limit, 1), 20),
+    select: {
+      id: true,
+      title: true,
+      type: true,
+      scope: true,
+      likeCount: true,
+      commentCount: true,
+      viewCount: true,
+      popularPromotedAt: true,
+      createdAt: true,
+      author: {
+        select: {
+          email: true,
+          nickname: true,
+        },
+      },
+      guestAuthor: {
+        select: {
+          displayName: true,
+        },
+      },
+    },
+  });
 }
 
 export async function countPosts(options: PostCountOptions) {

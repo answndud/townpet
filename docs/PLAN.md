@@ -18,6 +18,5 @@
 
 ## 다음 작업 후보
 
-- 인기글 수동 해제/관리 액션 필요성 검토: 운영자가 특정 글을 인기글에서 내릴 수 있어야 하는지 UX/정책 후보 정리
 - public detail outlier 관찰: 실사용 Web Vitals나 다음 production 측정에서 상세 p95가 반복 상승하면 route cache 가능성과 query 경계를 재검토
 - authenticated admin queue smoke production credential 확보 후 재실행

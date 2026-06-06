@@ -74,3 +74,11 @@ export const popularPostPolicyUpdateSchema = z.object({
 export type PopularPostPolicyUpdateInput = z.infer<
   typeof popularPostPolicyUpdateSchema
 >;
+
+export const popularPostManualActionSchema = z.object({
+  postId: z.string().trim().min(1).max(120),
+});
+
+export type PopularPostManualActionInput = z.infer<
+  typeof popularPostManualActionSchema
+>;

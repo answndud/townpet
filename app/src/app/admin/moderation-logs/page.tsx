@@ -35,6 +35,7 @@ const actionLabels: Record<ModerationActionType, string> = {
   CARE_FEEDBACK_REVIEWED: "돌봄 이슈 검토",
   LOST_FOUND_STATUS_CHANGED: "분실동물 상태 변경",
   CORRECTION_REQUEST_REVIEWED: "정보 정정 요청 검토",
+  POPULAR_POST_UNPROMOTED: "인기글 수동 해제",
 };
 
 const targetLabels: Record<ModerationTargetType, string> = {

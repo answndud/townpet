@@ -9893,3 +9893,11 @@
 - 기록: [docs/reports/performance-production-recheck-2026-06-06.md](./reports/performance-production-recheck-2026-06-06.md), [business/operations/성능_budget.md](../business/operations/성능_budget.md)
 - 결정: 즉시 코드 수정 없이 성능 active를 닫고, public detail outlier는 반복될 때만 별도 작업으로 연다.
 - 후속: 인기글 수동 해제/관리 액션 필요성 검토.
+
+### 2026-06-06 - 인기글 수동 해제 관리 액션
+
+- 요약: 자동 해제 없는 인기글 정책을 유지하면서 운영자가 특정 인기글을 수동으로 내릴 수 있게 했다.
+- 변경: `POPULAR_POST_UNPROMOTED` 감사 로그 action, `unpromotePopularPost` service/action, `/admin/policies` 현재 인기글 관리 패널을 추가했다.
+- 검증: `vitest` targeted 2 files/40 tests, `tsc --noEmit`, 관련 파일 `eslint`, `prisma validate`, `prisma migrate deploy`, 실제 DB smoke/cleanup 확인.
+- 결정: 임계값 상향/좋아요 취소로 자동 해제하지 않고, 운영 부적합 글만 관리자 수동 해제로 처리한다.
+- 후속: public detail outlier 관찰 또는 authenticated admin queue smoke credential 확보.
