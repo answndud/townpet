@@ -1,64 +1,117 @@
 import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
 
-const prisma = new PrismaClient();
 const STRICT = process.env.GUEST_LEGACY_CLEANUP_STRICT === "1";
+const GUEST_LEGACY_COLUMNS = [
+  "guestDisplayName",
+  "guestIpDisplay",
+  "guestIpLabel",
+  "guestPasswordHash",
+  "guestIpHash",
+  "guestFingerprintHash",
+] as const;
+const GUEST_LEGACY_CREDENTIAL_COLUMNS = ["guestPasswordHash", "guestIpHash"] as const;
 
-const LOOKBACK_HOURS = (() => {
-  const raw = Number(process.env.GUEST_LEGACY_LOOKBACK_HOURS ?? "24");
+type GuestLegacyColumn = (typeof GUEST_LEGACY_COLUMNS)[number];
+type GuestLegacyCredentialColumn = (typeof GUEST_LEGACY_CREDENTIAL_COLUMNS)[number];
+type LegacyTable = "Post" | "Comment";
+type GuestLegacyPrisma = Pick<PrismaClient, "$queryRawUnsafe" | "$disconnect">;
+
+export function normalizeGuestLegacyLookbackHours(value: string | undefined) {
+  const raw = Number(value ?? "24");
   if (!Number.isFinite(raw) || raw <= 0) {
     return 24;
   }
   return Math.min(Math.floor(raw), 24 * 30);
-})();
-
-async function tableHasColumn(table: "Post" | "Comment", column: string) {
-  const rows = await prisma.$queryRaw<Array<{ exists: boolean }>>`
-    SELECT EXISTS(
-      SELECT 1
-      FROM information_schema.columns
-      WHERE table_schema = 'public'
-        AND table_name = ${table}
-        AND column_name = ${column}
-    ) AS exists
-  `;
-  return Boolean(rows[0]?.exists);
 }
 
-async function countLegacyOnly(table: "Post" | "Comment") {
+const LOOKBACK_HOURS = normalizeGuestLegacyLookbackHours(process.env.GUEST_LEGACY_LOOKBACK_HOURS);
+
+export function selectKnownGuestLegacyColumns(columns: string[]) {
+  const known = new Set<string>(GUEST_LEGACY_COLUMNS);
+  return columns.filter((column): column is GuestLegacyColumn => known.has(column));
+}
+
+export function hasAnyGuestLegacyColumn(columns: string[]) {
+  return selectKnownGuestLegacyColumns(columns).length > 0;
+}
+
+function quoteColumn(column: GuestLegacyColumn | GuestLegacyCredentialColumn) {
+  return `"${column}"`;
+}
+
+function buildAnyNotNullExpression(columns: readonly GuestLegacyColumn[]) {
+  return columns.map((column) => `${quoteColumn(column)} IS NOT NULL`).join(" OR ");
+}
+
+async function listExistingLegacyColumns(prisma: GuestLegacyPrisma, table: LegacyTable) {
+  const rows = await prisma.$queryRawUnsafe<Array<{ column_name: string }>>(
+    `
+      SELECT column_name
+      FROM information_schema.columns
+      WHERE table_schema = 'public'
+        AND table_name = $1
+        AND column_name = ANY($2::text[])
+    `,
+    table,
+    [...GUEST_LEGACY_COLUMNS],
+  );
+
+  return selectKnownGuestLegacyColumns(rows.map((row) => row.column_name));
+}
+
+async function countLegacyOnly(
+  prisma: GuestLegacyPrisma,
+  table: LegacyTable,
+  existingColumns: readonly GuestLegacyColumn[],
+) {
+  if (existingColumns.length === 0) {
+    return 0;
+  }
+
   const sql = `
     SELECT COUNT(*)::int AS count
     FROM "${table}"
     WHERE "guestAuthorId" IS NULL
-      AND (
-        "guestDisplayName" IS NOT NULL OR
-        "guestIpDisplay" IS NOT NULL OR
-        "guestIpLabel" IS NOT NULL OR
-        "guestPasswordHash" IS NOT NULL OR
-        "guestIpHash" IS NOT NULL OR
-        "guestFingerprintHash" IS NOT NULL
-      )
+      AND (${buildAnyNotNullExpression(existingColumns)})
   `;
   const rows = await prisma.$queryRawUnsafe<Array<{ count: number }>>(sql);
   return Number(rows[0]?.count ?? 0);
 }
 
-async function countRecentLegacyCredentialWrites(table: "Post" | "Comment", sinceIso: string) {
+async function countRecentLegacyCredentialWrites(
+  prisma: GuestLegacyPrisma,
+  table: LegacyTable,
+  sinceIso: string,
+  existingColumns: readonly GuestLegacyColumn[],
+) {
+  const credentialColumns = existingColumns.filter((column): column is GuestLegacyCredentialColumn =>
+    GUEST_LEGACY_CREDENTIAL_COLUMNS.includes(column as GuestLegacyCredentialColumn),
+  );
+  if (credentialColumns.length === 0) {
+    return 0;
+  }
+
   const sql = `
     SELECT COUNT(*)::int AS count
     FROM "${table}"
     WHERE "createdAt" >= $1::timestamptz
       AND "guestAuthorId" IS NULL
-      AND (
-        "guestPasswordHash" IS NOT NULL OR
-        "guestIpHash" IS NOT NULL
-      )
+      AND (${credentialColumns.map((column) => `${quoteColumn(column)} IS NOT NULL`).join(" OR ")})
   `;
   const rows = await prisma.$queryRawUnsafe<Array<{ count: number }>>(sql, sinceIso);
   return Number(rows[0]?.count ?? 0);
 }
 
-async function countPendingBackfill(table: "Post" | "Comment") {
+async function countPendingBackfill(
+  prisma: GuestLegacyPrisma,
+  table: LegacyTable,
+  existingColumns: readonly GuestLegacyColumn[],
+) {
+  if (!existingColumns.includes("guestPasswordHash")) {
+    return 0;
+  }
+
   const sql = `
     SELECT COUNT(*)::int AS count
     FROM "${table}"
@@ -69,13 +122,15 @@ async function countPendingBackfill(table: "Post" | "Comment") {
   return Number(rows[0]?.count ?? 0);
 }
 
-async function main() {
+async function main(prisma: GuestLegacyPrisma = new PrismaClient()) {
   const lookbackSince = new Date(Date.now() - LOOKBACK_HOURS * 60 * 60 * 1000).toISOString();
 
-  const [hasPostLegacy, hasCommentLegacy] = await Promise.all([
-    tableHasColumn("Post", "guestPasswordHash"),
-    tableHasColumn("Comment", "guestPasswordHash"),
+  const [postLegacyColumns, commentLegacyColumns] = await Promise.all([
+    listExistingLegacyColumns(prisma, "Post"),
+    listExistingLegacyColumns(prisma, "Comment"),
   ]);
+  const hasPostLegacy = hasAnyGuestLegacyColumn(postLegacyColumns);
+  const hasCommentLegacy = hasAnyGuestLegacyColumn(commentLegacyColumns);
 
   if (!hasPostLegacy && !hasCommentLegacy) {
     const payload = {
@@ -89,6 +144,8 @@ async function main() {
       pendingBackfillPosts: 0,
       pendingBackfillComments: 0,
       legacyColumnsPresent: false,
+      postLegacyColumns,
+      commentLegacyColumns,
       skipped: "LEGACY_COLUMNS_ALREADY_DROPPED",
     };
     console.log(JSON.stringify(payload));
@@ -103,12 +160,12 @@ async function main() {
     pendingBackfillPosts,
     pendingBackfillComments,
   ] = await Promise.all([
-    hasPostLegacy ? countLegacyOnly("Post") : 0,
-    hasCommentLegacy ? countLegacyOnly("Comment") : 0,
-    hasPostLegacy ? countRecentLegacyCredentialWrites("Post", lookbackSince) : 0,
-    hasCommentLegacy ? countRecentLegacyCredentialWrites("Comment", lookbackSince) : 0,
-    hasPostLegacy ? countPendingBackfill("Post") : 0,
-    hasCommentLegacy ? countPendingBackfill("Comment") : 0,
+    countLegacyOnly(prisma, "Post", postLegacyColumns),
+    countLegacyOnly(prisma, "Comment", commentLegacyColumns),
+    countRecentLegacyCredentialWrites(prisma, "Post", lookbackSince, postLegacyColumns),
+    countRecentLegacyCredentialWrites(prisma, "Comment", lookbackSince, commentLegacyColumns),
+    countPendingBackfill(prisma, "Post", postLegacyColumns),
+    countPendingBackfill(prisma, "Comment", commentLegacyColumns),
   ]);
 
   const ok =
@@ -130,6 +187,8 @@ async function main() {
     pendingBackfillPosts,
     pendingBackfillComments,
     legacyColumnsPresent: true,
+    postLegacyColumns,
+    commentLegacyColumns,
   };
 
   if (!ok && STRICT) {
@@ -145,11 +204,14 @@ async function main() {
   }
 }
 
-main()
-  .catch((error) => {
-    console.error("Guest legacy cleanup readiness check failed", error);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+if (require.main === module) {
+  const prisma = new PrismaClient();
+  main(prisma)
+    .catch((error) => {
+      console.error("Guest legacy cleanup readiness check failed", error);
+      process.exit(1);
+    })
+    .finally(async () => {
+      await prisma.$disconnect();
+    });
+}
