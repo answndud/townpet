@@ -1,9 +1,10 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import {
   AdminQueueSmokeBlockedError,
   adminQueuePagePassed,
   buildAdminQueueSmokeMarkdown,
+  cleanupAdminQueueSmokeResources,
   resolveAdminQueueSmokeConfig,
 } from "./check-admin-queue-smoke";
 
@@ -98,5 +99,23 @@ describe("admin queue smoke", () => {
     expect(markdown).toContain("/admin/reports");
     expect(markdown).toContain("report queue");
     expect(markdown).toContain("correction queue");
+  });
+
+  it("always attempts local fixture cleanup when another cleanup step fails", async () => {
+    const pageClose = vi.fn().mockRejectedValue(new Error("page close failed"));
+    const browserClose = vi.fn().mockResolvedValue(undefined);
+    const fixtureCleanup = vi.fn().mockResolvedValue(undefined);
+
+    await expect(
+      cleanupAdminQueueSmokeResources({
+        page: { close: pageClose },
+        browser: { close: browserClose },
+        localFixtures: { cleanup: fixtureCleanup },
+      }),
+    ).rejects.toThrow("Admin queue smoke cleanup failed");
+
+    expect(pageClose).toHaveBeenCalledOnce();
+    expect(browserClose).toHaveBeenCalledOnce();
+    expect(fixtureCleanup).toHaveBeenCalledOnce();
   });
 });
