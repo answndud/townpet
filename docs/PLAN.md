@@ -18,18 +18,13 @@
 
 ## 다음 작업 후보
 
-1. 배포 후 public health/performance spot check
-   - 이유: 최근 변경은 운영/성능 측정 표면을 넓혔고, main push 이후 production 반영 상태를 짧게 확인할 필요가 있다.
-   - 다음 액션: latest deploy 반영 후 `ops:check:health`, focused `perf:baseline`, 필요 시 `perf:api-timings`/`ops:perf:snapshot`을 target filter로 짧게 실행한다.
-   - 완료 기준: health PASS, focused performance가 `business/operations/성능_budget.md` 기준을 벗어나지 않음.
-
-2. authenticated admin queue smoke production credential 확보 후 재실행
+1. authenticated admin queue smoke production credential 확보 후 재실행
    - 상태: blocked
    - 필요값: `ADMIN_QUEUE_SMOKE_EMAIL`, `ADMIN_QUEUE_SMOKE_PASSWORD`, `OPS_BASE_URL=https://townpet.vercel.app`
    - 대체 확인: credential 준비 전에는 `ADMIN_QUEUE_SMOKE_LOCAL_FIXTURES=1 OPS_BASE_URL=http://localhost:3000` 로컬 fixture smoke만 가능하다.
    - 완료 기준: production `production_credentials` mode report가 PASS.
 
-3. Web Vitals report 실제 수집 상태 확인
+2. Web Vitals report 실제 수집 상태 확인
    - 상태: conditional
    - 조건: production에 `WebVitalSample` schema/client가 배포되어 있고 실제 브라우저 sample이 쌓여 있어야 한다.
    - 다음 액션: `WEB_VITALS_REPORT_DAYS=7 WEB_VITALS_REPORT_LIMIT=5000 pnpm -C app perf:web-vitals` 실행 후 report 상태가 `NO_SAMPLES`인지 metric rows인지 분류한다.
