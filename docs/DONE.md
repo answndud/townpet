@@ -1,11 +1,11 @@
-# COMPLETED.md
+# DONE.md
 
-이 문서는 `docs/PROGRESS.md`에서 옮긴 완료 이력 archive입니다.
+이 문서는 완료된 작업의 짧은 append-only archive입니다.
 
 - 세션 시작 필수 문서 아님
-- 현재 active SSOT: [PLAN.md](./PLAN.md), [PROGRESS.md](./PROGRESS.md)
-- 완료 상세와 긴 검증 기록만 시간 오름차순으로 기록하고, 새 완료 항목은 파일 맨 아래에 append합니다
-- 각 항목 형식: `완료일 -> 배경 -> 변경내용 -> 코드문서 -> 검증 -> 결과`
+- 현재 active SSOT: [PLAN.md](./PLAN.md)
+- 완료 요약만 시간 오름차순으로 기록하고, 새 완료 항목은 파일 맨 아래에 append합니다
+- 각 항목은 5줄 이하로 유지합니다
 
 ## Archived from PROGRESS.md
 
@@ -9846,3 +9846,18 @@
   - `corepack pnpm@9.12.3 -C app lint`
     - PASS
     - 참고: e2e와 병렬 실행한 첫 lint는 Playwright가 `app/test-results`를 정리하는 순간과 겹쳐 filesystem race로 실패했고, e2e 완료 후 단독 재실행은 PASS.
+### 2026-06-05 - PLAN/DONE 하네스 마이그레이션
+
+- 요약: `PLAN/PROGRESS/COMPLETED` 운영을 `PLAN/DONE` 2파일 운영으로 전환했다.
+- 변경: `COMPLETED.md`를 `DONE.md`로 옮기고 `PROGRESS.md`를 제거했다.
+- 변경: active 없음 상태와 다음 작업 후보는 `PLAN.md`에 유지했다.
+- 결정: 완료 상세는 기본 읽기 대상이 아니며 필요할 때만 `DONE.md`를 읽는다.
+- 후속: 새 작업 시작 시 `PLAN.md`에 active 항목을 올린다.
+
+### 2026-06-06 - 온보딩 로그인 next 보존
+
+- 요약: 비회원 `/onboarding` 접근이 `/login`만 가리켜 로그인 후 온보딩 복귀가 끊기던 문제를 수정했다.
+- 변경: 안전한 `buildLoginRedirectPath()`를 추가하고 온보딩 보호 redirect를 `/login?next=%2Fonboarding`으로 통일했다.
+- 검증: `vitest` targeted 2 files/9 tests, `tsc --noEmit`, 관련 파일 `eslint`, 로컬 `/onboarding -> /login?next=%2Fonboarding` 확인.
+- 기록: [docs/errors/2026-06-06_onboarding-login-next-lost.md](./errors/2026-06-06_onboarding-login-next-lost.md)
+- 후속: guest/public feed 링크를 `/feed/guest?...` canonical URL로 직접 생성하도록 정리한다.

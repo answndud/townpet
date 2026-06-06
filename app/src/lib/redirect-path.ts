@@ -6,6 +6,13 @@ export function resolveSafeRedirectPath(value: string | null | undefined, fallba
   return normalized ?? safeFallback;
 }
 
+export function buildLoginRedirectPath(nextPath: string | null | undefined) {
+  const safeNextPath = resolveSafeRedirectPath(nextPath, "/");
+  const params = new URLSearchParams({ next: safeNextPath });
+
+  return `/login?${params.toString()}`;
+}
+
 function normalizeSafeRedirectPath(value: string | null | undefined) {
   if (typeof value !== "string") {
     return null;

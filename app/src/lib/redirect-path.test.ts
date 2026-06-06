@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { resolveSafeRedirectPath } from "@/lib/redirect-path";
+import { buildLoginRedirectPath, resolveSafeRedirectPath } from "@/lib/redirect-path";
 
 describe("resolveSafeRedirectPath", () => {
   it("keeps single-slash relative paths with query and hash", () => {
@@ -24,5 +24,19 @@ describe("resolveSafeRedirectPath", () => {
   it("rejects control characters and normalizes surrounding whitespace", () => {
     expect(resolveSafeRedirectPath(" /feed?tab=latest ", "/login")).toBe("/feed?tab=latest");
     expect(resolveSafeRedirectPath("/feed\nx", "/login")).toBe("/login");
+  });
+});
+
+describe("buildLoginRedirectPath", () => {
+  it("builds login hrefs that preserve safe relative next paths", () => {
+    expect(buildLoginRedirectPath("/onboarding")).toBe("/login?next=%2Fonboarding");
+    expect(buildLoginRedirectPath("/feed?type=FREE_POST")).toBe(
+      "/login?next=%2Ffeed%3Ftype%3DFREE_POST",
+    );
+  });
+
+  it("falls back to root for unsafe next paths", () => {
+    expect(buildLoginRedirectPath("https://evil.example")).toBe("/login?next=%2F");
+    expect(buildLoginRedirectPath("//evil.example")).toBe("/login?next=%2F");
   });
 });
