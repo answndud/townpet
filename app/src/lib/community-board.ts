@@ -68,7 +68,19 @@ export function getDedicatedBoardPathByPostType(type?: PostType | null) {
   return DEDICATED_BOARD_PATH_BY_POST_TYPE[type] ?? null;
 }
 
-export function buildFeedHref(params: Record<string, string | null | undefined>) {
+type FeedHrefOptions = {
+  basePath?: "/feed" | "/feed/guest";
+};
+
+export function resolveViewerFeedBasePath(isAuthenticated: boolean) {
+  return isAuthenticated ? "/feed" : "/feed/guest";
+}
+
+export function buildFeedHref(
+  params: Record<string, string | null | undefined>,
+  options: FeedHrefOptions = {},
+) {
+  const basePath = options.basePath ?? "/feed";
   const search = new URLSearchParams();
 
   for (const [key, value] of Object.entries(params)) {
@@ -80,13 +92,17 @@ export function buildFeedHref(params: Record<string, string | null | undefined>)
   }
 
   const query = search.toString();
-  return query ? `/feed?${query}` : "/feed";
+  return query ? `${basePath}?${query}` : basePath;
 }
 
-export function buildBoardListingHref(type?: PostType | null) {
+export function buildBoardListingHref(
+  type?: PostType | null,
+  options: FeedHrefOptions = {},
+) {
+  const basePath = options.basePath ?? "/feed";
   if (!type) {
-    return "/feed";
+    return basePath;
   }
 
-  return getDedicatedBoardPathByPostType(type) ?? buildFeedHref({ type, page: "1" });
+  return getDedicatedBoardPathByPostType(type) ?? buildFeedHref({ type, page: "1" }, options);
 }
