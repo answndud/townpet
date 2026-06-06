@@ -24,8 +24,14 @@
    - 대체 확인: credential 준비 전에는 `ADMIN_QUEUE_SMOKE_LOCAL_FIXTURES=1 OPS_BASE_URL=http://localhost:3000` 로컬 fixture smoke만 가능하다.
    - 완료 기준: production `production_credentials` mode report가 PASS.
 
-2. production Web Vitals LCP/FCP 개선 후보 조사
+2. Web Vitals field sample 확대 후 재판정
+   - 상태: conditional
+   - 이유: 현재 production Web Vitals sample은 `/` LCP 4개, `/feed/guest` LCP 12개로 작아 lab 측정과 field p75/p95가 크게 갈린다.
+   - 다음 액션: 7일 sample이 route별 최소 30개 이상 쌓인 뒤 `perf:web-vitals:remote`를 재실행하고, 같은 날 browser/asset snapshot과 비교한다.
+   - 완료 기준: field p75/p95가 반복적으로 budget을 넘으면 구체 개선 작업으로 전환하고, 아니면 정상 변동으로 archive한다.
+
+3. `/` STALE 첫 응답 outlier 관찰
    - 상태: ready
-   - 이유: remote Web Vitals summary가 `OK`로 수집됐지만 `/` LCP p75 `2596ms`, FCP p95 `3148ms`, `/feed/guest` LCP p95 `2816ms`로 일부 field sample이 좋음 기준을 넘는다.
-   - 다음 액션: browser trace와 route asset snapshot을 같은 production route 기준으로 다시 수집해 LCP element, 이미지/스크립트/스타일 차단 요인을 분리한다.
-   - 완료 기준: sample 수가 작다는 전제를 기록하고도 개선 가능한 원인 후보를 `정상 / 버그 / 보류`로 분류한다.
+   - 이유: lab 재측정에서 `/` 첫 server fetch가 `845ms`로 한 번 튀었지만 warm p50은 `110ms`이고 slow는 `0`이었다.
+   - 다음 액션: `PERF_TARGETS=home PERF_SAMPLES=10`으로 deploy/revalidate 직후와 안정 상태를 분리 측정한다.
+   - 완료 기준: 첫 STALE outlier가 반복되면 prewarm/revalidate/cache 전략 조정을 검토한다.
