@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { logger, serializeError } from "@/server/logger";
 
 export {
+  unpromotePopularPost,
   togglePostBookmark,
   togglePostReaction,
 } from "./post-engagement.service";

@@ -6,7 +6,9 @@ import { ForbiddenKeywordPolicyForm } from "@/components/admin/forbidden-keyword
 import { GuestPostPolicyForm } from "@/components/admin/guest-post-policy-form";
 import { GuestReadPolicyForm } from "@/components/admin/guest-read-policy-form";
 import { NewUserSafetyPolicyForm } from "@/components/admin/new-user-safety-policy-form";
+import { PopularPostManagementPanel } from "@/components/admin/popular-post-management-panel";
 import { PopularPostPolicyForm } from "@/components/admin/popular-post-policy-form";
+import { formatKoreanDateTime } from "@/lib/date-format";
 import { createNoIndexPageMetadata } from "@/lib/page-metadata";
 import { postTypeMeta } from "@/lib/post-presenter";
 import { requireAdminPageUser } from "@/server/admin-page-access";
@@ -18,6 +20,7 @@ import {
   getNewUserSafetyPolicy,
   getPopularPostPolicy,
 } from "@/server/queries/policy.queries";
+import { listAdminPopularPosts } from "@/server/queries/post.queries";
 
 export const metadata = createNoIndexPageMetadata({
   title: "권한 정책",
@@ -35,6 +38,7 @@ export default async function AdminPoliciesPage() {
     guestPostPolicy,
     feedPersonalizationPolicy,
     popularPostPolicy,
+    popularPosts,
   ] = await Promise.all([
     getGuestReadLoginRequiredPostTypes(),
     getForbiddenKeywords(),
@@ -42,7 +46,24 @@ export default async function AdminPoliciesPage() {
     getGuestPostPolicy(),
     getFeedPersonalizationPolicy(),
     getPopularPostPolicy(),
+    listAdminPopularPosts({ limit: 10 }),
   ]);
+
+  const popularPostItems = popularPosts.map((post) => ({
+    id: post.id,
+    title: post.title,
+    typeLabel: postTypeMeta[post.type].label,
+    authorLabel:
+      post.guestAuthor?.displayName ??
+      post.author.nickname ??
+      post.author.email,
+    promotedAtLabel: post.popularPromotedAt
+      ? formatKoreanDateTime(post.popularPromotedAt)
+      : "-",
+    likeCount: post.likeCount,
+    commentCount: post.commentCount,
+    viewCount: post.viewCount,
+  }));
 
   return (
     <div className="tp-page-bg min-h-screen pb-16">
@@ -218,6 +239,15 @@ export default async function AdminPoliciesPage() {
           </div>
           <div className="mt-4">
             <PopularPostPolicyForm initialPolicy={popularPostPolicy} />
+          </div>
+          <div className="mt-6 border-t border-[#e5eef9] pt-4">
+            <h3 className="text-sm font-semibold text-[#173963]">현재 인기글 관리</h3>
+            <p className="mt-1 text-xs text-[#5a7398]">
+              자동 해제는 하지 않습니다. 운영상 부적합하거나 잘못 승격된 글만 수동으로 내립니다.
+            </p>
+            <div className="mt-3">
+              <PopularPostManagementPanel posts={popularPostItems} />
+            </div>
           </div>
         </section>
 

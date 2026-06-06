@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { popularPostManualActionSchema } from "@/lib/validations/moderation/policy";
 import { requireAdmin } from "@/server/auth";
 import { recordAdminPolicyUpdated } from "@/server/moderation-action-log";
 import {
@@ -12,10 +13,15 @@ import {
   updateNewUserSafetyPolicy,
   updatePopularPostPolicy,
 } from "@/server/services/policy.service";
+import { unpromotePopularPost } from "@/server/services/post.service";
 import { ServiceError } from "@/server/services/service-error";
 
 export type PolicyActionResult =
   | { ok: true }
+  | { ok: false; code: string; message: string };
+
+export type PopularPostManualActionResult =
+  | { ok: true; changed: boolean; title: string }
   | { ok: false; code: string; message: string };
 
 export async function updateGuestReadPolicyAction(
@@ -145,6 +151,49 @@ export async function updatePopularPostPolicyAction(
     revalidatePath("/feed/guest");
     revalidatePath("/admin/policies");
     return { ok: true };
+  } catch (error) {
+    if (error instanceof ServiceError) {
+      return { ok: false, code: error.code, message: error.message };
+    }
+
+    return {
+      ok: false,
+      code: "INTERNAL_SERVER_ERROR",
+      message: "서버 오류가 발생했습니다.",
+    };
+  }
+}
+
+export async function unpromotePopularPostAction(
+  input: unknown,
+): Promise<PopularPostManualActionResult> {
+  try {
+    const parsed = popularPostManualActionSchema.safeParse(input);
+    if (!parsed.success) {
+      return {
+        ok: false,
+        code: "INVALID_INPUT",
+        message: "인기글 해제 대상이 올바르지 않습니다.",
+      };
+    }
+
+    const user = await requireAdmin();
+    const result = await unpromotePopularPost({
+      postId: parsed.data.postId,
+      actorId: user.id,
+    });
+
+    revalidatePath("/feed");
+    revalidatePath("/feed/guest");
+    revalidatePath("/admin/policies");
+    revalidatePath(`/posts/${parsed.data.postId}`);
+    revalidatePath(`/posts/${parsed.data.postId}/guest`);
+
+    return {
+      ok: true,
+      changed: result.changed,
+      title: result.title,
+    };
   } catch (error) {
     if (error instanceof ServiceError) {
       return { ok: false, code: error.code, message: error.message };
