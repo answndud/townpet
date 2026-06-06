@@ -9943,3 +9943,10 @@
 - 변경: auth/local 보호형 타입을 public 기본 대상에서 제외하고, blocked type 실패 처리와 모바일 메뉴 내 신고 확인을 추가했다.
 - 검증: targeted vitest 1 file/5 tests, 관련 eslint, `tsc --noEmit`, production public detail smoke 기본 4개 타입 desktop/mobile PASS.
 - 기록: [docs/errors/2026-06-06_public-detail-smoke-false-positive.md](./errors/2026-06-06_public-detail-smoke-false-positive.md)
+
+### 2026-06-06 - public detail route cache 2차 재검토
+
+- 요약: `PERF_TARGETS=post_detail` production 10회 재측정으로 slow 반복 여부를 한 번 더 확인했다.
+- 결과: 첫 요청 `6323ms`, warm 요청 `290ms~587ms`, slow `1/10`, `x-vercel-cache: MISS`.
+- 결정: 첫 요청 outlier는 컸지만 slow 2회 이상/warm p95 1800ms 기준에는 미달하므로 route cache 전환은 계속 보류한다.
+- 기록: [docs/reports/performance-baseline-2026-06-06T12-00-59-941Z.md](./reports/performance-baseline-2026-06-06T12-00-59-941Z.md)
