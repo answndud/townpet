@@ -121,5 +121,7 @@ describe("operational documentation package scripts", () => {
     expect(performanceBudget).toContain(
       "WEB_VITALS_REPORT_OUT=../docs/reports/web-vitals-summary-custom.md",
     );
+    expect(performanceBudget).toContain("WEB_VITALS_REPORT_DAYS=7");
+    expect(performanceBudget).toContain("WEB_VITALS_REPORT_LIMIT=5000");
   });
 });

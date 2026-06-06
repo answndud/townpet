@@ -2,12 +2,37 @@ import "dotenv/config";
 
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { getWebVitalSummary, type WebVitalSummary } from "@/server/queries/web-vitals.queries";
 import { prisma } from "@/lib/prisma";
 
+type WebVitalsReportEnv = Partial<Record<string, string | undefined>>;
+
+const CURRENT_FILE_PATH = fileURLToPath(import.meta.url);
+
 function compactTimestamp(date = new Date()) {
   return date.toISOString().replace(/[:.]/g, "-");
+}
+
+export function parsePositiveIntegerEnv(name: string, value: string | undefined, fallback: number) {
+  if (!value) {
+    return fallback;
+  }
+
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed <= 0) {
+    throw new Error(`${name} must be a positive integer. received=${value}`);
+  }
+
+  return parsed;
+}
+
+export function resolveWebVitalsReportOptions(env: WebVitalsReportEnv) {
+  return {
+    days: parsePositiveIntegerEnv("WEB_VITALS_REPORT_DAYS", env.WEB_VITALS_REPORT_DAYS, 7),
+    limit: parsePositiveIntegerEnv("WEB_VITALS_REPORT_LIMIT", env.WEB_VITALS_REPORT_LIMIT, 5000),
+  };
 }
 
 function formatNumber(value: number) {
@@ -63,8 +88,7 @@ function renderMarkdown(summary: WebVitalSummary) {
 }
 
 async function main() {
-  const days = Number(process.env.WEB_VITALS_REPORT_DAYS ?? 7);
-  const limit = Number(process.env.WEB_VITALS_REPORT_LIMIT ?? 5000);
+  const { days, limit } = resolveWebVitalsReportOptions(process.env);
   const summary = await getWebVitalSummary({ days, limit });
   const outputPath = path.resolve(
     process.env.WEB_VITALS_REPORT_OUT ??
@@ -76,11 +100,13 @@ async function main() {
   console.log(`[web-vitals] wrote ${outputPath}`);
 }
 
-main()
-  .catch((error) => {
-    console.error(error);
-    process.exitCode = 1;
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+if (process.argv[1] && path.resolve(process.argv[1]) === CURRENT_FILE_PATH) {
+  main()
+    .catch((error) => {
+      console.error(error);
+      process.exitCode = 1;
+    })
+    .finally(async () => {
+      await prisma.$disconnect();
+    });
+}
