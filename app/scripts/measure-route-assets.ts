@@ -2,6 +2,7 @@ import "dotenv/config";
 
 import { mkdir, writeFile } from "node:fs/promises";
 import * as path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { chromium, devices, type Browser, type Page } from "@playwright/test";
 
@@ -46,6 +47,7 @@ type AssetSample = {
 
 const DEFAULT_BASE_URL = "https://townpet.vercel.app";
 const DEFAULT_SETTLE_MS = 1000;
+const CURRENT_FILE_PATH = fileURLToPath(import.meta.url);
 
 function resolveRepoRoot() {
   return path.basename(process.cwd()) === "app" ? path.resolve(process.cwd(), "..") : process.cwd();
@@ -87,7 +89,9 @@ function parseProfiles(value: string | undefined): AssetProfile[] {
   return profiles;
 }
 
-function buildTargets(env: NodeJS.ProcessEnv): AssetTarget[] {
+type RouteAssetEnv = Partial<Record<string, string | undefined>>;
+
+function buildDefaultTargets(env: RouteAssetEnv): AssetTarget[] {
   const targets: AssetTarget[] = [
     { label: "home", path: "/" },
     { label: "login", path: "/login" },
@@ -120,6 +124,38 @@ function buildTargets(env: NodeJS.ProcessEnv): AssetTarget[] {
   }
 
   return targets;
+}
+
+export function parseAssetTargetFilter(value: string | undefined) {
+  const labels = value?.split(",").map((item) => item.trim()).filter(Boolean) ?? [];
+  if (labels.length === 0) {
+    return null;
+  }
+  return Array.from(new Set(labels));
+}
+
+export function filterAssetTargets(
+  targets: AssetTarget[],
+  targetFilterValue: string | undefined,
+) {
+  const labels = parseAssetTargetFilter(targetFilterValue);
+  if (!labels) {
+    return targets;
+  }
+
+  const targetByLabel = new Map(targets.map((target) => [target.label, target]));
+  const unknownLabels = labels.filter((label) => !targetByLabel.has(label));
+  if (unknownLabels.length > 0) {
+    throw new Error(
+      `PERF_ASSET_TARGETS contains unknown target(s): ${unknownLabels.join(", ")}. available=${targets.map((target) => target.label).join(",")}`,
+    );
+  }
+
+  return labels.map((label) => targetByLabel.get(label)).filter((target): target is AssetTarget => Boolean(target));
+}
+
+export function buildAssetTargets(env: RouteAssetEnv) {
+  return filterAssetTargets(buildDefaultTargets(env), env.PERF_ASSET_TARGETS);
 }
 
 async function createPage(browser: Browser, profile: AssetProfile) {
@@ -341,7 +377,7 @@ async function main() {
   const baseUrl = normalizeBaseUrl(process.env.PERF_BASE_URL ?? DEFAULT_BASE_URL);
   const settleMs = parseNonNegativeInt("PERF_ASSET_SETTLE_MS", process.env.PERF_ASSET_SETTLE_MS, DEFAULT_SETTLE_MS);
   const profiles = parseProfiles(process.env.PERF_ASSET_PROFILES);
-  const targets = buildTargets(process.env);
+  const targets = buildAssetTargets(process.env);
   const generatedAt = new Date().toISOString();
   const timestamp = compactTimestamp(new Date(generatedAt));
   const repoRoot = resolveRepoRoot();
@@ -375,7 +411,9 @@ async function main() {
   }
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+if (process.argv[1] && path.resolve(process.argv[1]) === CURRENT_FILE_PATH) {
+  main().catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });
+}

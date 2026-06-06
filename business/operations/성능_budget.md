@@ -49,13 +49,13 @@ PERF_TARGETS=post_detail PERF_POST_PATH=/posts/<public-post-id>/guest PERF_SAMPL
 browser paint:
 
 ```bash
-PERF_POST_PATH=/posts/<public-post-id>/guest PERF_BROWSER_SAMPLES=2 PERF_BROWSER_SETTLE_MS=1500 PERF_BROWSER_PROFILES=desktop,mobile PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers pnpm -C app perf:browser:local
+PERF_BROWSER_TARGETS=post_detail PERF_POST_PATH=/posts/<public-post-id>/guest PERF_BROWSER_SAMPLES=2 PERF_BROWSER_SETTLE_MS=1500 PERF_BROWSER_PROFILES=desktop,mobile PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers pnpm -C app perf:browser:local
 ```
 
 route asset:
 
 ```bash
-PERF_BASE_URL=http://localhost:3000 PERF_ASSET_SETTLE_MS=1200 PERF_ASSET_PROFILES=mobile PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers pnpm -C app perf:assets:local
+PERF_ASSET_TARGETS=guest_feed PERF_BASE_URL=http://localhost:3000 PERF_ASSET_SETTLE_MS=1200 PERF_ASSET_PROFILES=mobile PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers pnpm -C app perf:assets:local
 ```
 
 API phase timing:
@@ -113,6 +113,8 @@ public detail 참고:
 - guest 상세는 현재 `force-dynamic`, `connection()`, request CSP nonce, referer 기반 back link를 사용한다.
 - 따라서 document 응답은 `private, no-cache, no-store`가 정상이고, 첫 요청 outlier가 단발로 튈 수 있다.
 - 반복 확인은 전체 baseline 대신 `PERF_TARGETS=post_detail`로 분리해서 본다.
+- 브라우저/LCP 반복 확인은 전체 browser baseline 대신 `PERF_BROWSER_TARGETS=post_detail`로 분리해서 본다.
+- route asset 반복 확인은 전체 asset snapshot 대신 `PERF_ASSET_TARGETS=guest_feed` 또는 `PERF_ASSET_TARGETS=post_detail`로 분리해서 본다.
 - 같은 public 상세에서 `slow >= 1000ms`가 `10회 중 2회 이상`이거나 warm p95가 `1800ms`를 넘으면 route cache 전환 가능성과 dynamic 의존 제거를 다시 연다.
 - 2026-06-06 1차 10회 재측정은 첫 요청만 `1714ms`, warm 요청 범위 `238ms~361ms`, slow `1/10`이었다. 기준 미달이므로 route cache 변경은 보류한다.
 - 2026-06-06 2차 10회 재측정은 첫 요청만 `6323ms`, warm 요청 범위 `290ms~587ms`, slow `1/10`이었다. 첫 요청 outlier는 더 컸지만 반복 slow 기준과 warm p95 기준에는 미달하므로 route cache 변경은 계속 보류한다.

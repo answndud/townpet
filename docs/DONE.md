@@ -9992,3 +9992,10 @@
 - 변경: command throw를 `code=1` step result로 정규화하고, `continueOnFailure` 동작은 기존과 동일하게 유지했다.
 - 검증: targeted vitest 7 tests, 관련 eslint, `tsc --noEmit`, 실제 public-only direct smoke에서 `spawn pnpm ENOENT` 실패 report 생성 확인.
 - 기록: [docs/errors/2026-06-06_detail-visual-smoke-command-throw-gap.md](./errors/2026-06-06_detail-visual-smoke-command-throw-gap.md)
+
+### 2026-06-06 - browser/asset performance target filter 추가
+
+- 요약: browser performance와 route asset 측정도 특정 target만 선택해 재측정할 수 있게 했다.
+- 변경: `PERF_BROWSER_TARGETS`, `PERF_ASSET_TARGETS` 필터와 import-safe helper/test를 추가하고 성능 budget 명령을 갱신했다.
+- 검증: targeted vitest 8 tests, 관련 eslint, `tsc --noEmit`, unknown target CLI fast-fail 확인.
+- 기록: [docs/errors/2026-06-06_browser-asset-performance-target-filter-gap.md](./errors/2026-06-06_browser-asset-performance-target-filter-gap.md)

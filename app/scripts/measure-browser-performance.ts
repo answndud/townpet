@@ -2,6 +2,7 @@ import "dotenv/config";
 
 import { mkdir, writeFile } from "node:fs/promises";
 import * as path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { chromium, devices, type Browser, type Page } from "@playwright/test";
 
@@ -49,6 +50,7 @@ type BrowserSummary = {
 const DEFAULT_BASE_URL = "https://townpet.vercel.app";
 const DEFAULT_SAMPLE_COUNT = 3;
 const DEFAULT_SETTLE_MS = 800;
+const CURRENT_FILE_PATH = fileURLToPath(import.meta.url);
 
 function resolveRepoRoot() {
   return path.basename(process.cwd()) === "app" ? path.resolve(process.cwd(), "..") : process.cwd();
@@ -128,7 +130,9 @@ function summarizeStatus(samples: BrowserSample[]) {
     .join(", ");
 }
 
-function buildTargets(env: NodeJS.ProcessEnv): BrowserTarget[] {
+type BrowserPerformanceEnv = Partial<Record<string, string | undefined>>;
+
+function buildDefaultTargets(env: BrowserPerformanceEnv): BrowserTarget[] {
   const targets: BrowserTarget[] = [
     { label: "home", path: "/" },
     { label: "login", path: "/login" },
@@ -161,6 +165,38 @@ function buildTargets(env: NodeJS.ProcessEnv): BrowserTarget[] {
   }
 
   return targets;
+}
+
+export function parseBrowserTargetFilter(value: string | undefined) {
+  const labels = value?.split(",").map((item) => item.trim()).filter(Boolean) ?? [];
+  if (labels.length === 0) {
+    return null;
+  }
+  return Array.from(new Set(labels));
+}
+
+export function filterBrowserTargets(
+  targets: BrowserTarget[],
+  targetFilterValue: string | undefined,
+) {
+  const labels = parseBrowserTargetFilter(targetFilterValue);
+  if (!labels) {
+    return targets;
+  }
+
+  const targetByLabel = new Map(targets.map((target) => [target.label, target]));
+  const unknownLabels = labels.filter((label) => !targetByLabel.has(label));
+  if (unknownLabels.length > 0) {
+    throw new Error(
+      `PERF_BROWSER_TARGETS contains unknown target(s): ${unknownLabels.join(", ")}. available=${targets.map((target) => target.label).join(",")}`,
+    );
+  }
+
+  return labels.map((label) => targetByLabel.get(label)).filter((target): target is BrowserTarget => Boolean(target));
+}
+
+export function buildBrowserTargets(env: BrowserPerformanceEnv) {
+  return filterBrowserTargets(buildDefaultTargets(env), env.PERF_BROWSER_TARGETS);
 }
 
 async function createPage(browser: Browser, profile: BrowserProfile) {
@@ -385,7 +421,7 @@ async function main() {
   const jsonOutputPath = path.resolve(
     process.env.PERF_BROWSER_JSON_OUT ?? outputPath.replace(/\.md$/, ".json"),
   );
-  const targets = buildTargets(process.env);
+  const targets = buildBrowserTargets(process.env);
   const browser = await chromium.launch();
   const samples: BrowserSample[] = [];
 
@@ -439,8 +475,10 @@ async function main() {
   console.log(`Raw JSON written: ${jsonOutputPath}`);
 }
 
-main().catch((error) => {
-  console.error("Browser performance baseline failed");
-  console.error(error);
-  process.exit(1);
-});
+if (process.argv[1] && path.resolve(process.argv[1]) === CURRENT_FILE_PATH) {
+  main().catch((error) => {
+    console.error("Browser performance baseline failed");
+    console.error(error);
+    process.exit(1);
+  });
+}
