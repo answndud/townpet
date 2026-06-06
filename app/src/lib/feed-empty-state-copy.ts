@@ -27,7 +27,7 @@ export function resolveFeedEmptyStateCopy({
       title: "검색 결과가 없습니다",
       description:
         mode === "BEST"
-          ? "조건에 맞는 인기글이 없습니다. 검색어를 바꾸거나 전체글에서 확인해 보세요."
+          ? "인기글 안에서 조건에 맞는 글이 아직 없습니다. 검색을 지우거나 전체글로 범위를 넓혀보세요."
           : "조건에 맞는 글이 없습니다. 검색어를 바꾸거나 필터를 줄여보세요.",
       actionLabel: "검색 초기화",
       secondaryActionLabel: mode === "BEST" ? "전체글" : undefined,
@@ -37,8 +37,9 @@ export function resolveFeedEmptyStateCopy({
   if (mode === "BEST") {
     return {
       eyebrow: "인기글",
-      title: "인기글이 없습니다",
-      description: "좋아요 기준을 넘어 인기글로 승격된 글이 아직 없습니다.",
+      title: "인기글을 준비 중입니다",
+      description:
+        "좋아요 기준을 통과한 글이 생기면 날짜 제한 없이 여기에 모입니다. 지금은 전체글에서 병원, 산책, 분실 정보를 먼저 확인하세요.",
       actionLabel: "전체글",
       secondaryActionLabel: undefined,
     };

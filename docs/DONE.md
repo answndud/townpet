@@ -9877,3 +9877,11 @@
 - 검증: `vitest` targeted 1 file/2 tests, `tsc --noEmit`, 관련 파일 `eslint`, 로컬 모바일 브라우저에서 CTA 1개와 overflow 없음 확인.
 - 결정: 시각적으로 숨긴 중복 링크도 텍스트 추출/보조기술에 혼선을 줄 수 있어 DOM 자체를 하나로 유지한다.
 - 후속: 인기글 빈 상태와 초기 운영 노출 정책을 개선한다.
+
+### 2026-06-06 - 인기글 빈 상태 UX와 /best alias 정리
+
+- 요약: 인기글 0건 화면을 죽은 상태처럼 보이지 않게 `준비 중` 안내와 전체글 CTA로 정리했다.
+- 변경: BEST empty copy를 갱신하고 `/best` alias를 `/feed/guest?mode=BEST` canonical로 맞췄다.
+- 검증: `vitest` targeted 2 files/3 tests, `tsc --noEmit`, 관련 파일 `eslint`, 로컬 브라우저에서 FREE_BOARD 인기글 empty와 `/best` 수렴 확인.
+- 결정: 운영자 seed/임계값 조작보다 빈 상태 UX를 먼저 개선하고, 실제 인기글 승격 정책은 기존 운영 기준을 유지한다.
+- 후속: public feed/detail 체감 로딩을 재측정한다.

@@ -9,5 +9,5 @@ export const metadata = createNoIndexPageMetadata({
 });
 
 export default function BestAliasPage() {
-  redirect("/feed?mode=BEST");
+  redirect("/feed/guest?mode=BEST");
 }
