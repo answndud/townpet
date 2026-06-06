@@ -22,6 +22,7 @@ const checkedDocs = [
   "AGENTS.md",
   "app/README.md",
   "business/operations/운영_문서_안내.md",
+  "business/operations/성능_budget.md",
   "business/operations/manual-checks/배포_보안_체크리스트.md",
   "business/operations/OAuth_외부로그인_운영_가이드.md",
   "business/operations/Vercel_OAuth_초기설정_가이드.md",
@@ -66,5 +67,15 @@ describe("operational documentation package scripts", () => {
     expect(operationsGuide).toContain("pnpm -C app ops:check:health");
     expect(operationsGuide).toContain("pnpm -C app db:restore:local");
     expect(operationsGuide).toContain("pnpm -C app test:e2e:smoke");
+  });
+
+  it("keeps focused performance target filters documented", () => {
+    const performanceBudget = readRepoFile("business/operations/성능_budget.md");
+
+    expect(performanceBudget).toContain("PERF_TARGETS=post_detail");
+    expect(performanceBudget).toContain("PERF_BROWSER_TARGETS=post_detail");
+    expect(performanceBudget).toContain("PERF_ASSET_TARGETS=guest_feed");
+    expect(performanceBudget).toContain("PERF_API_TIMING_TARGETS=guest_feed");
+    expect(performanceBudget).toContain("OPS_PERF_TARGETS=api_feed_guest");
   });
 });

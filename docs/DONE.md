@@ -10013,3 +10013,10 @@
 - 변경: `OPS_PERF_TARGETS` 필터와 helper/test를 추가하고 `run-ops-evidence` 전달 회귀 테스트와 성능 budget 명령을 갱신했다.
 - 검증: targeted vitest 13 tests, 관련 eslint, `tsc --noEmit`, unknown target CLI fast-fail 확인.
 - 기록: [docs/errors/2026-06-06_latency-snapshot-target-filter-gap.md](./errors/2026-06-06_latency-snapshot-target-filter-gap.md)
+
+### 2026-06-06 - performance docs consistency 보강
+
+- 요약: 성능 budget 문서의 측정 명령과 focused target env 예시가 테스트로 보호되도록 했다.
+- 변경: `ops-doc-scripts-consistency`가 `business/operations/성능_budget.md` script refs와 필수 target env 예시를 검증한다.
+- 검증: targeted vitest 3 tests, 관련 eslint, `tsc --noEmit` 통과.
+- 기록: [docs/errors/2026-06-06_performance-docs-consistency-gap.md](./errors/2026-06-06_performance-docs-consistency-gap.md)
