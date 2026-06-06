@@ -2,6 +2,7 @@ import "dotenv/config";
 
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 type ApiTimingTarget = {
   label: string;
@@ -16,15 +17,52 @@ type ApiTimingSample = {
   serverTimings: Record<string, number>;
 };
 
+type ApiTimingEnv = Partial<Record<string, string | undefined>>;
+
 const DEFAULT_BASE_URL = "https://townpet.vercel.app";
 const DEFAULT_SAMPLES = 5;
 const DEFAULT_PAUSE_MS = 150;
+const CURRENT_FILE_PATH = fileURLToPath(import.meta.url);
 
-const DEFAULT_TARGETS: ApiTimingTarget[] = [
-  { label: "health", path: "/api/health?perf=1" },
-  { label: "home_feed", path: "/api/home/feed?perf=1" },
-  { label: "guest_feed", path: "/api/feed/guest?perf=1" },
-];
+function buildDefaultTargets(): ApiTimingTarget[] {
+  return [
+    { label: "health", path: "/api/health?perf=1" },
+    { label: "home_feed", path: "/api/home/feed?perf=1" },
+    { label: "guest_feed", path: "/api/feed/guest?perf=1" },
+  ];
+}
+
+export function parseApiTimingTargetFilter(value: string | undefined) {
+  if (!value) {
+    return [];
+  }
+
+  return [...new Set(value.split(",").map((label) => label.trim()).filter(Boolean))];
+}
+
+export function filterApiTimingTargets(
+  targets: ApiTimingTarget[],
+  targetFilterValue: string | undefined,
+) {
+  const requestedLabels = parseApiTimingTargetFilter(targetFilterValue);
+  if (requestedLabels.length === 0) {
+    return targets;
+  }
+
+  const targetByLabel = new Map(targets.map((target) => [target.label, target]));
+  const unknownLabels = requestedLabels.filter((label) => !targetByLabel.has(label));
+  if (unknownLabels.length > 0) {
+    throw new Error(
+      `PERF_API_TIMING_TARGETS contains unknown target(s): ${unknownLabels.join(", ")}. available=${targets.map((target) => target.label).join(",")}`,
+    );
+  }
+
+  return requestedLabels.map((label) => targetByLabel.get(label)!);
+}
+
+export function buildApiTimingTargets(env: ApiTimingEnv) {
+  return filterApiTimingTargets(buildDefaultTargets(), env.PERF_API_TIMING_TARGETS);
+}
 
 function compactTimestamp(date = new Date()) {
   return date.toISOString().replace(/[:.]/g, "-");
@@ -189,6 +227,7 @@ async function main() {
   const baseUrl = normalizeBaseUrl(process.env.PERF_BASE_URL ?? DEFAULT_BASE_URL);
   const sampleCount = parsePositiveInt("PERF_API_TIMING_SAMPLES", process.env.PERF_API_TIMING_SAMPLES, DEFAULT_SAMPLES);
   const pauseMs = parseNonNegativeInt("PERF_API_TIMING_PAUSE_MS", process.env.PERF_API_TIMING_PAUSE_MS, DEFAULT_PAUSE_MS);
+  const targets = buildApiTimingTargets(process.env);
   const generatedAt = new Date().toISOString();
   const timestamp = compactTimestamp(new Date(generatedAt));
   const outputPath = path.resolve(
@@ -198,7 +237,7 @@ async function main() {
   const samples: ApiTimingSample[] = [];
 
   for (let index = 0; index < sampleCount; index += 1) {
-    for (const target of DEFAULT_TARGETS) {
+    for (const target of targets) {
       samples.push(await measureTarget(baseUrl, target));
       if (pauseMs > 0) {
         await sleep(pauseMs);
@@ -211,7 +250,9 @@ async function main() {
   console.log(`[api-timings] wrote ${outputPath}`);
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+if (process.argv[1] && path.resolve(process.argv[1]) === CURRENT_FILE_PATH) {
+  main().catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });
+}
