@@ -1,9 +1,25 @@
 import "dotenv/config";
 
+import { randomUUID } from "node:crypto";
 import { mkdir, writeFile } from "node:fs/promises";
 import * as path from "node:path";
 
 import { chromium, type BrowserContext, type Page } from "@playwright/test";
+import {
+  CorrectionRequesterRole,
+  CorrectionRequestTargetType,
+  PostScope,
+  PostStatus,
+  PostType,
+  PrismaClient,
+  ReportReason,
+  ReportStatus,
+  ReportTarget,
+  UserRole,
+} from "@prisma/client";
+
+import { assertLocalDevelopmentDatabase } from "../src/server/local-database-guard";
+import { hashPassword } from "../src/server/password";
 
 const DEFAULT_BASE_URL = "https://townpet.vercel.app";
 const SESSION_COOKIE_NAMES = [
@@ -17,8 +33,9 @@ const SESSION_COOKIE_NAMES = [
 
 type AdminQueueSmokeConfig = {
   baseUrl: string;
-  email: string;
-  password: string;
+  email?: string;
+  password?: string;
+  useLocalFixtures: boolean;
 };
 
 type AdminQueuePageCheck = {
@@ -64,14 +81,186 @@ function requireCredential(env: AdminQueueSmokeEnv, key: string) {
   return value;
 }
 
+function hasTruthyFlag(value: string | undefined) {
+  const normalized = value?.trim().toLowerCase();
+  return normalized === "1" || normalized === "true" || normalized === "yes";
+}
+
+function isLocalBaseUrl(value: string) {
+  try {
+    const parsed = new URL(value);
+    return ["localhost", "127.0.0.1", "::1"].includes(parsed.hostname);
+  } catch {
+    return false;
+  }
+}
+
 export function resolveAdminQueueSmokeConfig(
   env: AdminQueueSmokeEnv,
 ): AdminQueueSmokeConfig {
+  const baseUrl = normalizeBaseUrl(env.OPS_BASE_URL || DEFAULT_BASE_URL);
+  const useLocalFixtures = hasTruthyFlag(env.ADMIN_QUEUE_SMOKE_LOCAL_FIXTURES);
+  if (useLocalFixtures) {
+    if (!isLocalBaseUrl(baseUrl)) {
+      throw new AdminQueueSmokeBlockedError(
+        "ADMIN_QUEUE_SMOKE_LOCAL_FIXTURES=1 requires OPS_BASE_URL to point to localhost.",
+      );
+    }
+
+    return {
+      baseUrl,
+      useLocalFixtures: true,
+    };
+  }
+
   return {
-    baseUrl: normalizeBaseUrl(env.OPS_BASE_URL || DEFAULT_BASE_URL),
+    baseUrl,
     email: requireCredential(env, "ADMIN_QUEUE_SMOKE_EMAIL"),
     password: requireCredential(env, "ADMIN_QUEUE_SMOKE_PASSWORD"),
+    useLocalFixtures: false,
   };
+}
+
+type LocalAdminQueueSmokeFixtures = {
+  email: string;
+  password: string;
+  cleanup: () => Promise<void>;
+};
+
+function createLocalSmokePassword() {
+  return `AdminSmoke-${randomUUID()}-TownPet!9`;
+}
+
+async function prepareLocalAdminQueueSmokeFixtures(
+  env: AdminQueueSmokeEnv,
+): Promise<LocalAdminQueueSmokeFixtures> {
+  assertLocalDevelopmentDatabase(env as NodeJS.ProcessEnv, "local admin queue smoke fixtures");
+
+  const prisma = new PrismaClient();
+  const runId = `admin-queue-smoke-${Date.now()}-${randomUUID().slice(0, 8)}`;
+  const password = createLocalSmokePassword();
+  const passwordHash = await hashPassword(password);
+  const emails = {
+    admin: `${runId}-admin@townpet.dev`,
+    author: `${runId}-author@townpet.dev`,
+    reporter: `${runId}-reporter@townpet.dev`,
+  };
+  const createdIds: { postId?: string; correctionRequestId?: string } = {};
+
+  const cleanup = async () => {
+    const reportCleanupFilters: Array<{
+      targetId?: string;
+      postTargetId?: string;
+      description?: { contains: string };
+    }> = [{ description: { contains: runId } }];
+    if (createdIds.postId) {
+      reportCleanupFilters.push(
+        { targetId: createdIds.postId },
+        { postTargetId: createdIds.postId },
+      );
+    }
+
+    await prisma.report.deleteMany({
+      where: {
+        OR: reportCleanupFilters,
+      },
+    });
+    if (createdIds.correctionRequestId) {
+      await prisma.informationCorrectionRequest.deleteMany({
+        where: { id: createdIds.correctionRequestId },
+      });
+    }
+    if (createdIds.postId) {
+      await prisma.post.deleteMany({ where: { id: createdIds.postId } });
+    }
+    await prisma.user.deleteMany({
+      where: { email: { in: Object.values(emails) } },
+    });
+    await prisma.$disconnect();
+  };
+
+  try {
+    const [, author, reporter] = await prisma.$transaction([
+      prisma.user.create({
+        data: {
+          email: emails.admin,
+          nickname: `${runId}-admin`,
+          role: UserRole.ADMIN,
+          passwordHash,
+          emailVerified: new Date(),
+        },
+        select: { id: true },
+      }),
+      prisma.user.create({
+        data: {
+          email: emails.author,
+          nickname: `${runId}-author`,
+          emailVerified: new Date(),
+        },
+        select: { id: true },
+      }),
+      prisma.user.create({
+        data: {
+          email: emails.reporter,
+          nickname: `${runId}-reporter`,
+          emailVerified: new Date(),
+        },
+        select: { id: true },
+      }),
+    ]);
+
+    const post = await prisma.post.create({
+      data: {
+        authorId: author.id,
+        type: PostType.FREE_BOARD,
+        scope: PostScope.GLOBAL,
+        status: PostStatus.ACTIVE,
+        title: `[ADMIN QUEUE SMOKE] ${runId}`,
+        content: "관리자 신고 큐 smoke 검증용 임시 게시글입니다.",
+        structuredSearchText: `[ADMIN QUEUE SMOKE] ${runId} 관리자 신고 큐 smoke`,
+      },
+      select: { id: true },
+    });
+    createdIds.postId = post.id;
+
+    await prisma.report.create({
+      data: {
+        reporterId: reporter.id,
+        targetType: ReportTarget.POST,
+        targetId: post.id,
+        postTargetId: post.id,
+        targetUserId: author.id,
+        reason: ReportReason.SPAM,
+        description: `local fixture ${runId}`,
+        status: ReportStatus.PENDING,
+      },
+    });
+
+    const correctionRequest = await prisma.informationCorrectionRequest.create({
+      data: {
+        requesterUserId: reporter.id,
+        postId: post.id,
+        targetType: CorrectionRequestTargetType.POST,
+        targetName: `[ADMIN QUEUE SMOKE] ${runId}`,
+        requesterRole: CorrectionRequesterRole.CUSTOMER,
+        requesterName: "관리자 큐 smoke 요청자",
+        requesterEmail: emails.reporter,
+        requestedChange: "관리자 정정 큐 smoke 검증용 임시 요청입니다.",
+        clientIpHash: runId,
+      },
+      select: { id: true },
+    });
+    createdIds.correctionRequestId = correctionRequest.id;
+
+    return {
+      email: emails.admin,
+      password,
+      cleanup,
+    };
+  } catch (error) {
+    await cleanup();
+    throw error;
+  }
 }
 
 async function loginWithCredentials(params: {
@@ -218,6 +407,16 @@ async function main() {
   const repoRoot = resolveRepoRoot();
   const config = resolveAdminQueueSmokeConfig(process.env);
   const outputDir = path.join(repoRoot, "docs/reports", `admin-queue-smoke-${timestamp}`);
+  const localFixtures = config.useLocalFixtures
+    ? await prepareLocalAdminQueueSmokeFixtures(process.env)
+    : null;
+  const credentials = localFixtures ?? {
+    email: config.email,
+    password: config.password,
+  };
+  if (!credentials.email || !credentials.password) {
+    throw new AdminQueueSmokeBlockedError("Admin queue smoke credentials were not resolved.");
+  }
 
   const browser = await chromium.launch();
   const page = await browser.newPage({
@@ -231,8 +430,8 @@ async function main() {
       context: page.context(),
       page,
       baseUrl: config.baseUrl,
-      email: config.email,
-      password: config.password,
+      email: credentials.email,
+      password: credentials.password,
       nextPath: "/admin/reports",
     });
 
@@ -257,6 +456,7 @@ async function main() {
   } finally {
     await page.close();
     await browser.close();
+    await localFixtures?.cleanup();
   }
 
   await writeFile(

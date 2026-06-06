@@ -31,7 +31,27 @@ describe("admin queue smoke", () => {
       baseUrl: "https://townpet.vercel.app",
       email: "admin@example.com",
       password: "secret",
+      useLocalFixtures: false,
     });
+  });
+
+  it("allows explicit local fixture mode only against localhost", () => {
+    expect(
+      resolveAdminQueueSmokeConfig({
+        OPS_BASE_URL: "http://localhost:3000/",
+        ADMIN_QUEUE_SMOKE_LOCAL_FIXTURES: "1",
+      }),
+    ).toEqual({
+      baseUrl: "http://localhost:3000",
+      useLocalFixtures: true,
+    });
+
+    expect(() =>
+      resolveAdminQueueSmokeConfig({
+        OPS_BASE_URL: "https://townpet.vercel.app",
+        ADMIN_QUEUE_SMOKE_LOCAL_FIXTURES: "1",
+      }),
+    ).toThrow("requires OPS_BASE_URL to point to localhost");
   });
 
   it("requires both queue switch summaries and page-specific surface", () => {
