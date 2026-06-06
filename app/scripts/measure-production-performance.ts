@@ -2,6 +2,7 @@ import "dotenv/config";
 
 import { mkdir, writeFile } from "node:fs/promises";
 import * as path from "node:path";
+import { fileURLToPath } from "node:url";
 
 type MeasurementTarget = {
   label: string;
@@ -51,6 +52,7 @@ const DEFAULT_BASE_URL = "https://townpet.vercel.app";
 const DEFAULT_SAMPLE_COUNT = 7;
 const DEFAULT_PAUSE_MS = 150;
 const DEFAULT_SLOW_THRESHOLD_MS = 1_000;
+const CURRENT_FILE_PATH = fileURLToPath(import.meta.url);
 
 function resolveRepoRoot() {
   return path.basename(process.cwd()) === "app" ? path.resolve(process.cwd(), "..") : process.cwd();
@@ -183,7 +185,9 @@ function summarizeTargets(samples: MeasurementSample[], slowThresholdMs: number)
   return summaries.sort((left, right) => left.label.localeCompare(right.label));
 }
 
-function buildDefaultTargets(env: NodeJS.ProcessEnv): MeasurementTarget[] {
+type PerformanceEnv = Partial<Record<string, string | undefined>>;
+
+function buildDefaultTargets(env: PerformanceEnv): MeasurementTarget[] {
   const targets: MeasurementTarget[] = [
     { label: "home", path: "/", method: "GET" },
     { label: "login", path: "/login", method: "GET" },
@@ -224,6 +228,38 @@ function buildDefaultTargets(env: NodeJS.ProcessEnv): MeasurementTarget[] {
   }
 
   return targets;
+}
+
+export function parseTargetFilter(value: string | undefined) {
+  const labels = value?.split(",").map((item) => item.trim()).filter(Boolean) ?? [];
+  if (labels.length === 0) {
+    return null;
+  }
+  return Array.from(new Set(labels));
+}
+
+export function filterMeasurementTargets(
+  targets: MeasurementTarget[],
+  targetFilterValue: string | undefined,
+) {
+  const labels = parseTargetFilter(targetFilterValue);
+  if (!labels) {
+    return targets;
+  }
+
+  const targetByLabel = new Map(targets.map((target) => [target.label, target]));
+  const unknownLabels = labels.filter((label) => !targetByLabel.has(label));
+  if (unknownLabels.length > 0) {
+    throw new Error(
+      `PERF_TARGETS contains unknown target(s): ${unknownLabels.join(", ")}. available=${targets.map((target) => target.label).join(",")}`,
+    );
+  }
+
+  return labels.map((label) => targetByLabel.get(label)).filter((target): target is MeasurementTarget => Boolean(target));
+}
+
+export function buildMeasurementTargets(env: PerformanceEnv) {
+  return filterMeasurementTargets(buildDefaultTargets(env), env.PERF_TARGETS);
 }
 
 async function measureTarget(baseUrl: string, target: MeasurementTarget, index: number) {
@@ -353,7 +389,7 @@ async function main() {
   const jsonOutputPath = path.resolve(
     process.env.PERF_JSON_OUT ?? outputPath.replace(/\.md$/, ".json"),
   );
-  const targets = buildDefaultTargets(process.env);
+  const targets = buildMeasurementTargets(process.env);
   const samples: MeasurementSample[] = [];
 
   console.log(`Measuring ${baseUrl}`);
@@ -401,8 +437,10 @@ async function main() {
   }
 }
 
-main().catch((error) => {
-  console.error("Performance baseline failed");
-  console.error(error);
-  process.exit(1);
-});
+if (process.argv[1] && path.resolve(process.argv[1]) === CURRENT_FILE_PATH) {
+  main().catch((error) => {
+    console.error("Performance baseline failed");
+    console.error(error);
+    process.exit(1);
+  });
+}
