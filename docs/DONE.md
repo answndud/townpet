@@ -9869,3 +9869,11 @@
 - 검증: `vitest` targeted 2 files/11 tests, `tsc --noEmit`, 관련 파일 `eslint`, 로컬 브라우저에서 `/feed?...` 링크 0개 확인.
 - 결정: 인증 사용자 기본 feed는 `/feed`, 비회원/public feed는 `/feed/guest`를 canonical로 유지한다.
 - 후속: 게시글 상세 모바일 운영자 정정 CTA 중복 여부를 정리한다.
+
+### 2026-06-06 - 운영자 정정 CTA 단일 렌더링
+
+- 요약: 운영자 정보 박스의 `이 정보 정정 요청` CTA를 desktop/mobile 이중 렌더링에서 단일 링크 렌더링으로 바꿨다.
+- 변경: CSS grid로 단일 링크 위치만 반응형 전환해 desktop은 우측 상단, mobile은 정보 목록 아래에 배치한다.
+- 검증: `vitest` targeted 1 file/2 tests, `tsc --noEmit`, 관련 파일 `eslint`, 로컬 모바일 브라우저에서 CTA 1개와 overflow 없음 확인.
+- 결정: 시각적으로 숨긴 중복 링크도 텍스트 추출/보조기술에 혼선을 줄 수 있어 DOM 자체를 하나로 유지한다.
+- 후속: 인기글 빈 상태와 초기 운영 노출 정책을 개선한다.
