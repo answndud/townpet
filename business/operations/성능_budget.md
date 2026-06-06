@@ -64,6 +64,12 @@ API phase timing:
 PERF_API_TIMING_TARGETS=guest_feed PERF_BASE_URL=http://localhost:3000 PERF_API_TIMING_SAMPLES=5 PERF_API_TIMING_PAUSE_MS=150 pnpm -C app perf:api-timings
 ```
 
+Ops latency snapshot:
+
+```bash
+OPS_PERF_TARGETS=api_feed_guest OPS_BASE_URL=https://townpet.vercel.app OPS_PERF_GET_SAMPLES=8 OPS_PERF_POST_SAMPLES=4 OPS_PERF_PAUSE_MS=150 pnpm -C app ops:perf:snapshot
+```
+
 Web Vitals summary:
 
 ```bash
@@ -116,6 +122,7 @@ public detail 참고:
 - 브라우저/LCP 반복 확인은 전체 browser baseline 대신 `PERF_BROWSER_TARGETS=post_detail`로 분리해서 본다.
 - route asset 반복 확인은 전체 asset snapshot 대신 `PERF_ASSET_TARGETS=guest_feed` 또는 `PERF_ASSET_TARGETS=post_detail`로 분리해서 본다.
 - API phase timing 반복 확인은 전체 API snapshot 대신 `PERF_API_TIMING_TARGETS=guest_feed` 또는 `PERF_API_TIMING_TARGETS=home_feed`로 분리해서 본다.
+- Ops latency snapshot 반복 확인은 전체 endpoint 묶음 대신 `OPS_PERF_TARGETS=api_feed_guest` 또는 `OPS_PERF_TARGETS=api_search_guest`로 분리해서 본다.
 - 같은 public 상세에서 `slow >= 1000ms`가 `10회 중 2회 이상`이거나 warm p95가 `1800ms`를 넘으면 route cache 전환 가능성과 dynamic 의존 제거를 다시 연다.
 - 2026-06-06 1차 10회 재측정은 첫 요청만 `1714ms`, warm 요청 범위 `238ms~361ms`, slow `1/10`이었다. 기준 미달이므로 route cache 변경은 보류한다.
 - 2026-06-06 2차 10회 재측정은 첫 요청만 `6323ms`, warm 요청 범위 `290ms~587ms`, slow `1/10`이었다. 첫 요청 outlier는 더 컸지만 반복 slow 기준과 warm p95 기준에는 미달하므로 route cache 변경은 계속 보류한다.

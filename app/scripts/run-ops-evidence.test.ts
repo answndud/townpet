@@ -1,7 +1,7 @@
 import { mkdir, readFile, rm } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   buildOpsEvidenceSteps,
@@ -32,6 +32,10 @@ function scriptNameFromArgs(args: string[]) {
 describe("ops evidence runner", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
   });
 
   it("defaults to local base URL and non-strict security checks", () => {
@@ -97,6 +101,18 @@ describe("ops evidence runner", () => {
     expect(config.securityStrict).toBe(true);
     expect(config.continueOnFailure).toBe(false);
     expect(scriptNameFromArgs(steps[1].args)).toBe("ops:check:security-env:strict");
+  });
+
+  it("passes latency snapshot target filters through to the perf step", () => {
+    vi.stubEnv("OPS_PERF_TARGETS", "api_feed_guest");
+    const config = resolveOpsEvidenceConfig({
+      OPS_BASE_URL: "https://townpet.vercel.app",
+    });
+    const steps = buildOpsEvidenceSteps(config);
+
+    expect(steps.find((step) => step.id === "perf-snapshot")?.env.OPS_PERF_TARGETS).toBe(
+      "api_feed_guest",
+    );
   });
 
   it("writes a passing markdown evidence report", async () => {

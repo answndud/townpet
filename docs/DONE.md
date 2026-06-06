@@ -10006,3 +10006,10 @@
 - 변경: `PERF_API_TIMING_TARGETS` 필터와 import-safe helper/test를 추가하고 성능 budget 명령을 갱신했다.
 - 검증: targeted vitest 4 tests, 관련 eslint, `tsc --noEmit`, unknown target CLI fast-fail 확인.
 - 기록: [docs/errors/2026-06-06_api-route-timing-target-filter-gap.md](./errors/2026-06-06_api-route-timing-target-filter-gap.md)
+
+### 2026-06-06 - latency snapshot target filter 추가
+
+- 요약: `ops:perf:snapshot`도 특정 endpoint만 선택해 재측정할 수 있게 했다.
+- 변경: `OPS_PERF_TARGETS` 필터와 helper/test를 추가하고 `run-ops-evidence` 전달 회귀 테스트와 성능 budget 명령을 갱신했다.
+- 검증: targeted vitest 13 tests, 관련 eslint, `tsc --noEmit`, unknown target CLI fast-fail 확인.
+- 기록: [docs/errors/2026-06-06_latency-snapshot-target-filter-gap.md](./errors/2026-06-06_latency-snapshot-target-filter-gap.md)
