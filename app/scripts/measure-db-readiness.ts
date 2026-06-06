@@ -31,6 +31,13 @@ type QuerySurface = {
   nextExplain: string;
 };
 
+type DbReadinessTarget = {
+  label: string;
+  path: string;
+};
+
+type DbReadinessEnv = Partial<Record<string, string | undefined>>;
+
 const DEFAULT_BASE_URL = "https://townpet.vercel.app";
 const CURRENT_FILE_PATH = fileURLToPath(import.meta.url);
 
@@ -161,6 +168,50 @@ export function parseVercelIdRegions(xVercelId: string) {
     .filter(Boolean);
 }
 
+function buildDefaultHeaderTargets(): DbReadinessTarget[] {
+  return [
+    { label: "home", path: "/" },
+    { label: "guest_feed_page", path: "/feed/guest" },
+    {
+      label: "guest_feed_api",
+      path: "/api/feed/guest?mode=ALL&sort=LATEST&page=1",
+    },
+    { label: "health", path: "/api/health" },
+  ];
+}
+
+export function parseDbReadinessTargetFilter(value: string | undefined) {
+  if (!value) {
+    return [];
+  }
+
+  return [...new Set(value.split(",").map((label) => label.trim()).filter(Boolean))];
+}
+
+export function filterDbReadinessHeaderTargets(
+  targets: DbReadinessTarget[],
+  targetFilterValue: string | undefined,
+) {
+  const requestedLabels = parseDbReadinessTargetFilter(targetFilterValue);
+  if (requestedLabels.length === 0) {
+    return targets;
+  }
+
+  const targetByLabel = new Map(targets.map((target) => [target.label, target]));
+  const unknownLabels = requestedLabels.filter((label) => !targetByLabel.has(label));
+  if (unknownLabels.length > 0) {
+    throw new Error(
+      `PERF_DB_TARGETS contains unknown target(s): ${unknownLabels.join(", ")}. available=${targets.map((target) => target.label).join(",")}`,
+    );
+  }
+
+  return requestedLabels.map((label) => targetByLabel.get(label)!);
+}
+
+export function buildDbReadinessHeaderTargets(env: DbReadinessEnv) {
+  return filterDbReadinessHeaderTargets(buildDefaultHeaderTargets(), env.PERF_DB_TARGETS);
+}
+
 async function collectHeaderSnapshot(baseUrl: string, target: { label: string; path: string }) {
   const response = await fetch(`${baseUrl}${target.path}`, {
     method: "GET",
@@ -283,15 +334,10 @@ async function main() {
     return `${searchIndexes}\n${structuredSearch}`;
   });
   const schemaAndMigrations = `${schema}\n${migrationFiles}`;
-  const headers = await Promise.all([
-    collectHeaderSnapshot(baseUrl, { label: "home", path: "/" }),
-    collectHeaderSnapshot(baseUrl, { label: "guest_feed_page", path: "/feed/guest" }),
-    collectHeaderSnapshot(baseUrl, {
-      label: "guest_feed_api",
-      path: "/api/feed/guest?mode=ALL&sort=LATEST&page=1",
-    }),
-    collectHeaderSnapshot(baseUrl, { label: "health", path: "/api/health" }),
-  ]);
+  const headerTargets = buildDbReadinessHeaderTargets(process.env);
+  const headers = await Promise.all(
+    headerTargets.map((target) => collectHeaderSnapshot(baseUrl, target)),
+  );
   const databaseUrl = summarizeDatabaseUrl(process.env.DATABASE_URL);
   const payload = {
     generatedAt,

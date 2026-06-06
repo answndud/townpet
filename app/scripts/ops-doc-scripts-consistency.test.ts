@@ -77,5 +77,6 @@ describe("operational documentation package scripts", () => {
     expect(performanceBudget).toContain("PERF_ASSET_TARGETS=guest_feed");
     expect(performanceBudget).toContain("PERF_API_TIMING_TARGETS=guest_feed");
     expect(performanceBudget).toContain("OPS_PERF_TARGETS=api_feed_guest");
+    expect(performanceBudget).toContain("PERF_DB_TARGETS=guest_feed_api");
   });
 });

@@ -10020,3 +10020,10 @@
 - 변경: `ops-doc-scripts-consistency`가 `business/operations/성능_budget.md` script refs와 필수 target env 예시를 검증한다.
 - 검증: targeted vitest 3 tests, 관련 eslint, `tsc --noEmit` 통과.
 - 기록: [docs/errors/2026-06-06_performance-docs-consistency-gap.md](./errors/2026-06-06_performance-docs-consistency-gap.md)
+
+### 2026-06-06 - DB readiness target filter 추가
+
+- 요약: `perf:db-readiness`도 특정 header target만 선택해 재측정할 수 있게 했다.
+- 변경: `PERF_DB_TARGETS` 필터와 helper/test를 추가하고 성능 budget 및 consistency test를 갱신했다.
+- 검증: targeted vitest 11 tests, 관련 eslint, `tsc --noEmit`, unknown target CLI fast-fail 확인.
+- 기록: [docs/errors/2026-06-06_db-readiness-target-filter-gap.md](./errors/2026-06-06_db-readiness-target-filter-gap.md)
