@@ -121,6 +121,11 @@ describe("operational documentation package scripts", () => {
     expect(performanceBudget).toContain(
       "WEB_VITALS_REPORT_OUT=../docs/reports/web-vitals-summary-custom.md",
     );
+    expect(performanceBudget).toContain(
+      "WEB_VITALS_REPORT_OUT=../docs/reports/web-vitals-remote-summary-custom.md",
+    );
+    expect(performanceBudget).toContain("pnpm -C app perf:web-vitals:remote");
+    expect(performanceBudget).toContain("OPS_HEALTH_INTERNAL_TOKEN=<HEALTH_INTERNAL_TOKEN>");
     expect(performanceBudget).toContain("WEB_VITALS_REPORT_DAYS=7");
     expect(performanceBudget).toContain("WEB_VITALS_REPORT_LIMIT=5000");
   });
