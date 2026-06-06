@@ -46,6 +46,12 @@ public detail outlier만 분리 관찰:
 PERF_TARGETS=post_detail PERF_POST_PATH=/posts/<public-post-id>/guest PERF_SAMPLES=10 PERF_PAUSE_MS=200 PERF_SLOW_THRESHOLD_MS=1000 pnpm -C app perf:baseline
 ```
 
+public detail ID 기준 분리 관찰:
+
+```bash
+PERF_TARGETS=post_detail PERF_POST_ID=<public-post-id> PERF_SAMPLES=10 PERF_PAUSE_MS=200 PERF_SLOW_THRESHOLD_MS=1000 pnpm -C app perf:baseline
+```
+
 browser paint:
 
 ```bash
@@ -74,6 +80,14 @@ DB readiness:
 
 ```bash
 PERF_DB_TARGETS=guest_feed_api PERF_BASE_URL=https://townpet.vercel.app pnpm -C app perf:db-readiness
+```
+
+ad-hoc route 추가 측정:
+
+```bash
+PERF_TARGETS=extra_1 PERF_EXTRA_PATHS=/api/health PERF_SAMPLES=5 pnpm -C app perf:baseline
+PERF_BROWSER_TARGETS=extra_1 PERF_BROWSER_EXTRA_PATHS=/feed/guest PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers pnpm -C app perf:browser:local
+PERF_ASSET_TARGETS=extra_1 PERF_ASSET_EXTRA_PATHS=/feed/guest PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers pnpm -C app perf:assets:local
 ```
 
 Web Vitals summary:
@@ -125,6 +139,7 @@ public detail 참고:
 - guest 상세는 현재 `force-dynamic`, `connection()`, request CSP nonce, referer 기반 back link를 사용한다.
 - 따라서 document 응답은 `private, no-cache, no-store`가 정상이고, 첫 요청 outlier가 단발로 튈 수 있다.
 - 반복 확인은 전체 baseline 대신 `PERF_TARGETS=post_detail`로 분리해서 본다.
+- public 상세를 ID로 지정할 때는 redirect가 섞이지 않도록 `PERF_POST_ID=<id>`가 `/posts/<id>/guest`를 측정한다.
 - 브라우저/LCP 반복 확인은 전체 browser baseline 대신 `PERF_BROWSER_TARGETS=post_detail`로 분리해서 본다.
 - route asset 반복 확인은 전체 asset snapshot 대신 `PERF_ASSET_TARGETS=guest_feed` 또는 `PERF_ASSET_TARGETS=post_detail`로 분리해서 본다.
 - API phase timing 반복 확인은 전체 API snapshot 대신 `PERF_API_TIMING_TARGETS=guest_feed` 또는 `PERF_API_TIMING_TARGETS=home_feed`로 분리해서 본다.

@@ -73,8 +73,12 @@ describe("operational documentation package scripts", () => {
     const performanceBudget = readRepoFile("business/operations/성능_budget.md");
 
     expect(performanceBudget).toContain("PERF_TARGETS=post_detail");
+    expect(performanceBudget).toContain("PERF_POST_ID=<public-post-id>");
+    expect(performanceBudget).toContain("PERF_EXTRA_PATHS=/api/health");
     expect(performanceBudget).toContain("PERF_BROWSER_TARGETS=post_detail");
+    expect(performanceBudget).toContain("PERF_BROWSER_EXTRA_PATHS=/feed/guest");
     expect(performanceBudget).toContain("PERF_ASSET_TARGETS=guest_feed");
+    expect(performanceBudget).toContain("PERF_ASSET_EXTRA_PATHS=/feed/guest");
     expect(performanceBudget).toContain("PERF_API_TIMING_TARGETS=guest_feed");
     expect(performanceBudget).toContain("OPS_PERF_TARGETS=api_feed_guest");
     expect(performanceBudget).toContain("PERF_DB_TARGETS=guest_feed_api");

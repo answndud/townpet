@@ -30,6 +30,41 @@ describe("production performance target selection", () => {
     ]);
   });
 
+  it("builds public guest post detail path from PERF_POST_ID", () => {
+    const targets = buildMeasurementTargets({
+      PERF_POST_ID: "post 1",
+      PERF_TARGETS: "post_detail",
+    });
+
+    expect(targets).toEqual([
+      {
+        label: "post_detail",
+        path: "/posts/post%201/guest",
+        method: "GET",
+      },
+    ]);
+  });
+
+  it("adds normalized extra paths that can be selected by label", () => {
+    const targets = buildMeasurementTargets({
+      PERF_EXTRA_PATHS: "feed/guest, /api/health",
+      PERF_TARGETS: "extra_1,extra_2",
+    });
+
+    expect(targets).toEqual([
+      {
+        label: "extra_1",
+        path: "/feed/guest",
+        method: "GET",
+      },
+      {
+        label: "extra_2",
+        path: "/api/health",
+        method: "GET",
+      },
+    ]);
+  });
+
   it("deduplicates comma-separated target labels while preserving order", () => {
     expect(parseTargetFilter("guest_feed, post_detail,guest_feed")).toEqual([
       "guest_feed",
