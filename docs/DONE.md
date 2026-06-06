@@ -9915,3 +9915,10 @@
 - 결과: 첫 요청 `1714ms`, warm 요청 `238ms~361ms`, slow `1/10`, `cache-control: private, no-store`, `x-vercel-cache: MISS`.
 - 결정: slow 2회 이상 기준에 미달하므로 CSP nonce/referer 기반 dynamic 구조는 유지하고 route cache 전환은 보류한다.
 - 후속: authenticated admin queue smoke credential 확보 후 재실행.
+
+### 2026-06-06 - 로컬 관리자 큐 smoke fixture 모드
+
+- 요약: `ADMIN_QUEUE_SMOKE_LOCAL_FIXTURES=1` 모드를 추가해 local DB 임시 관리자/신고/정정 데이터로 관리자 큐 렌더링을 검증할 수 있게 했다.
+- 변경: production credential smoke는 유지하고, localhost 전용 fixture guard/cleanup/문서/테스트를 추가했다.
+- 검증: targeted vitest 8 tests, 관련 eslint, `tsc --noEmit`, 실제 localhost smoke PASS(`/admin/reports`, `/admin/corrections`), fixture cleanup 0건 확인.
+- 후속: production credential 확보 시 authenticated admin queue smoke를 원격에서 재실행한다.

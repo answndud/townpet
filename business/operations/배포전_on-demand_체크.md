@@ -186,6 +186,16 @@ ADMIN_QUEUE_SMOKE_PASSWORD=<ADMIN_PASSWORD> \
 corepack pnpm@9.12.3 -C app ops:check:admin-queue-smoke
 ```
 
+production credential이 없고 로컬 관리자 큐 렌더링만 확인할 때:
+
+```bash
+OPS_BASE_URL=http://localhost:3000 \
+ADMIN_QUEUE_SMOKE_LOCAL_FIXTURES=1 \
+corepack pnpm@9.12.3 -C app ops:check:admin-queue-smoke
+```
+
+이 로컬 모드는 local DB에서만 임시 관리자/신고/정정 데이터를 만들고, 실행 후 정리한다. production smoke credential 대체가 아니라 배포 전 UI/큐 렌더링 회귀 확인용이다.
+
 판정 기준:
 
 - `PASS`: `/admin/reports`, `/admin/corrections` 모두 렌더링되고 `신고 큐`/`정정 큐` summary와 page-specific surface가 보임
