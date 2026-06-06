@@ -38,6 +38,8 @@ type AdminQueueSmokeConfig = {
   useLocalFixtures: boolean;
 };
 
+type AdminQueueSmokeMode = "production_credentials" | "local_fixtures";
+
 type AdminQueuePageCheck = {
   id: "reports" | "corrections";
   path: string;
@@ -405,25 +407,52 @@ export function adminQueuePagePassed(
 export function buildAdminQueueSmokeMarkdown(params: {
   generatedAt: string;
   baseUrl: string;
+  mode: AdminQueueSmokeMode;
   results: AdminQueuePageCheck[];
 }) {
+  const allPassed = params.results.every((result) => result.status === "PASS");
   const lines = [
     "# Admin Queue Smoke",
     "",
     `- generatedAt: \`${params.generatedAt}\``,
     `- baseUrl: \`${params.baseUrl}\``,
-    "- auth: credential login",
+    `- status: \`${allPassed ? "PASS" : "NO-GO"}\``,
+    `- mode: \`${params.mode}\``,
+    `- auth: ${params.mode === "local_fixtures" ? "generated local admin credential login" : "configured admin credential login"}`,
     "- scope: read-only admin page rendering",
     "",
+  ];
+
+  if (params.mode === "local_fixtures") {
+    lines.push(
+      "## Mode Note",
+      "",
+      "- local fixture mode validates local UI/queue rendering only.",
+      "- next: production credential이 준비되면 `production_credentials` mode로 원격 authenticated smoke를 다시 실행하세요.",
+      "",
+    );
+  }
+
+  lines.push(
     "## Summary",
     "",
     "| page | status | report queue | correction queue | expected surface | no overflow | screenshot |",
     "| --- | ---: | ---: | ---: | ---: | ---: | --- |",
-  ];
+  );
 
   for (const result of params.results) {
     lines.push(
       `| ${result.path} | ${result.status} | ${result.hasReportQueue ? "PASS" : "FAIL"} | ${result.hasCorrectionQueue ? "PASS" : "FAIL"} | ${result.hasExpectedSurface ? "PASS" : "FAIL"} | ${result.noHorizontalOverflow ? "PASS" : "FAIL"} | \`${path.relative(resolveRepoRoot(), result.screenshot)}\` |`,
+    );
+  }
+
+  if (!allPassed) {
+    lines.push(
+      "",
+      "## NO-GO Next Action",
+      "",
+      "- 로그인/권한 gate, queue summary text, page-specific surface, horizontal overflow 중 실패 항목을 먼저 수정하세요.",
+      "- 실패 screenshot을 확인한 뒤 같은 mode로 smoke를 재실행하세요.",
     );
   }
 
@@ -495,6 +524,7 @@ async function main() {
     buildAdminQueueSmokeMarkdown({
       generatedAt,
       baseUrl: config.baseUrl,
+      mode: config.useLocalFixtures ? "local_fixtures" : "production_credentials",
       results,
     }),
     "utf8",

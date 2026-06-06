@@ -10055,3 +10055,10 @@
 - 변경: `SCHEMA_SYNC_REQUIRED`, `NO_SAMPLES`, populated report interpretation 문구와 renderer tests를 추가했다.
 - 검증: targeted vitest 7 tests, 관련 eslint, `tsc --noEmit` 통과.
 - 기록: [docs/errors/2026-06-06_web-vitals-report-empty-state-gap.md](./errors/2026-06-06_web-vitals-report-empty-state-gap.md)
+
+### 2026-06-06 - admin queue smoke report mode 보강
+
+- 요약: 관리자 큐 smoke report가 production credential 실행과 local fixture fallback을 명확히 구분하게 했다.
+- 변경: report-level status/mode, local fixture follow-up, NO-GO next action 문구와 tests를 추가했다.
+- 검증: targeted vitest 8 tests, 관련 eslint, `tsc --noEmit` 통과.
+- 기록: [docs/errors/2026-06-06_admin-queue-smoke-report-mode-gap.md](./errors/2026-06-06_admin-queue-smoke-report-mode-gap.md)
