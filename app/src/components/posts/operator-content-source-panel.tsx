@@ -68,7 +68,7 @@ export function OperatorContentSourcePanel({
 
   return (
     <section className="mt-4 border-y border-[#d8e6f7] bg-[#f8fbff] px-3 py-3 text-xs text-[#4f678d] sm:px-4">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+      <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <OperatorContentBadge />
@@ -81,50 +81,44 @@ export function OperatorContentSourcePanel({
             최신 상태를 한 번 더 확인해 주세요.
           </p>
         </div>
+        {sourceName || sourceUrl || verifiedLabel ? (
+          <dl className="grid gap-2 sm:col-span-2 sm:row-start-2 sm:grid-cols-3">
+            {sourceName ? (
+              <div>
+                <dt className="font-semibold text-[#355988]">출처</dt>
+                <dd className="mt-0.5 truncate text-[#17345f]">{sourceName}</dd>
+              </div>
+            ) : null}
+            {sourceUrl ? (
+              <div>
+                <dt className="font-semibold text-[#355988]">원문</dt>
+                <dd className="mt-0.5 min-w-0">
+                  <a
+                    href={sourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block truncate rounded-sm text-[#2f5da4] underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0]"
+                  >
+                    출처 열기
+                  </a>
+                </dd>
+              </div>
+            ) : null}
+            {verifiedLabel ? (
+              <div>
+                <dt className="font-semibold text-[#355988]">최종 확인</dt>
+                <dd className="mt-0.5 text-[#17345f]">{verifiedLabel}</dd>
+              </div>
+            ) : null}
+          </dl>
+        ) : null}
         <Link
           href={correctionHref}
-          className={`${correctionLinkClassName} hidden sm:inline-flex`}
+          className={`${correctionLinkClassName} justify-self-start sm:col-start-2 sm:row-start-1 sm:justify-self-end`}
         >
           이 정보 정정 요청
         </Link>
       </div>
-      {sourceName || sourceUrl || verifiedLabel ? (
-        <dl className="mt-3 grid gap-2 sm:grid-cols-3">
-          {sourceName ? (
-            <div>
-              <dt className="font-semibold text-[#355988]">출처</dt>
-              <dd className="mt-0.5 truncate text-[#17345f]">{sourceName}</dd>
-            </div>
-          ) : null}
-          {sourceUrl ? (
-            <div>
-              <dt className="font-semibold text-[#355988]">원문</dt>
-              <dd className="mt-0.5 min-w-0">
-                <a
-                  href={sourceUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block truncate rounded-sm text-[#2f5da4] underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0]"
-                >
-                  출처 열기
-                </a>
-              </dd>
-            </div>
-          ) : null}
-          {verifiedLabel ? (
-            <div>
-              <dt className="font-semibold text-[#355988]">최종 확인</dt>
-              <dd className="mt-0.5 text-[#17345f]">{verifiedLabel}</dd>
-            </div>
-          ) : null}
-        </dl>
-      ) : null}
-      <Link
-        href={correctionHref}
-        className={`${correctionLinkClassName} mt-3 sm:hidden`}
-      >
-        이 정보 정정 요청
-      </Link>
     </section>
   );
 }
