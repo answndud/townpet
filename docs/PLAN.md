@@ -24,8 +24,8 @@
    - 대체 확인: credential 준비 전에는 `ADMIN_QUEUE_SMOKE_LOCAL_FIXTURES=1 OPS_BASE_URL=http://localhost:3000` 로컬 fixture smoke만 가능하다.
    - 완료 기준: production `production_credentials` mode report가 PASS.
 
-2. 배포 후 remote Web Vitals summary 실행
-   - 상태: pending
-   - 조건: `/api/ops/web-vitals/summary`가 production에 배포되어 있어야 한다.
-   - 다음 액션: `OPS_BASE_URL=https://townpet.vercel.app OPS_HEALTH_INTERNAL_TOKEN=<HEALTH_INTERNAL_TOKEN> WEB_VITALS_REPORT_DAYS=7 WEB_VITALS_REPORT_LIMIT=5000 pnpm -C app perf:web-vitals:remote`.
-   - 완료 기준: production sample count와 metric별 p75/p95가 report로 저장되고 `OK / NO_SAMPLES / SCHEMA_SYNC_REQUIRED` 중 하나로 분류된다.
+2. production Web Vitals LCP/FCP 개선 후보 조사
+   - 상태: ready
+   - 이유: remote Web Vitals summary가 `OK`로 수집됐지만 `/` LCP p75 `2596ms`, FCP p95 `3148ms`, `/feed/guest` LCP p95 `2816ms`로 일부 field sample이 좋음 기준을 넘는다.
+   - 다음 액션: browser trace와 route asset snapshot을 같은 production route 기준으로 다시 수집해 LCP element, 이미지/스크립트/스타일 차단 요인을 분리한다.
+   - 완료 기준: sample 수가 작다는 전제를 기록하고도 개선 가능한 원인 후보를 `정상 / 버그 / 보류`로 분류한다.
