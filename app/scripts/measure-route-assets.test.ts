@@ -27,6 +27,38 @@ describe("route asset target selection", () => {
     ]);
   });
 
+  it("builds public guest post detail path from PERF_POST_ID", () => {
+    const targets = buildAssetTargets({
+      PERF_POST_ID: "post 1",
+      PERF_ASSET_TARGETS: "post_detail",
+    });
+
+    expect(targets).toEqual([
+      {
+        label: "post_detail",
+        path: "/posts/post%201/guest",
+      },
+    ]);
+  });
+
+  it("adds normalized asset extra paths that can be selected by label", () => {
+    const targets = buildAssetTargets({
+      PERF_ASSET_EXTRA_PATHS: "login, /feed/guest",
+      PERF_ASSET_TARGETS: "extra_1,extra_2",
+    });
+
+    expect(targets).toEqual([
+      {
+        label: "extra_1",
+        path: "/login",
+      },
+      {
+        label: "extra_2",
+        path: "/feed/guest",
+      },
+    ]);
+  });
+
   it("deduplicates comma-separated asset target labels while preserving order", () => {
     expect(parseAssetTargetFilter("guest_feed, post_detail,guest_feed")).toEqual([
       "guest_feed",

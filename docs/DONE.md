@@ -10027,3 +10027,10 @@
 - 변경: `PERF_DB_TARGETS` 필터와 helper/test를 추가하고 성능 budget 및 consistency test를 갱신했다.
 - 검증: targeted vitest 11 tests, 관련 eslint, `tsc --noEmit`, unknown target CLI fast-fail 확인.
 - 기록: [docs/errors/2026-06-06_db-readiness-target-filter-gap.md](./errors/2026-06-06_db-readiness-target-filter-gap.md)
+
+### 2026-06-06 - performance post/extra path input 보강
+
+- 요약: 성능 측정의 `PERF_POST_ID`와 extra path 입력 경로를 canonical public route 기준으로 보호했다.
+- 변경: `PERF_POST_ID`는 `/posts/<id>/guest`를 만들고, `PERF_EXTRA_PATHS`/browser/asset extra path 테스트와 문서 예시를 추가했다.
+- 검증: targeted vitest 21 tests, 관련 eslint, `tsc --noEmit` 통과.
+- 기록: [docs/errors/2026-06-06_performance-post-extra-path-input-gap.md](./errors/2026-06-06_performance-post-extra-path-input-gap.md)

@@ -149,7 +149,7 @@ function buildDefaultTargets(env: BrowserPerformanceEnv): BrowserTarget[] {
   } else if (postId) {
     targets.push({
       label: "post_detail",
-      path: `/posts/${encodeURIComponent(postId)}`,
+      path: `/posts/${encodeURIComponent(postId)}/guest`,
     });
   }
 

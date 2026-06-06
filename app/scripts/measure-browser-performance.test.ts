@@ -27,6 +27,38 @@ describe("browser performance target selection", () => {
     ]);
   });
 
+  it("builds public guest post detail path from PERF_POST_ID", () => {
+    const targets = buildBrowserTargets({
+      PERF_POST_ID: "post 1",
+      PERF_BROWSER_TARGETS: "post_detail",
+    });
+
+    expect(targets).toEqual([
+      {
+        label: "post_detail",
+        path: "/posts/post%201/guest",
+      },
+    ]);
+  });
+
+  it("adds normalized browser extra paths that can be selected by label", () => {
+    const targets = buildBrowserTargets({
+      PERF_BROWSER_EXTRA_PATHS: "login, /feed/guest",
+      PERF_BROWSER_TARGETS: "extra_1,extra_2",
+    });
+
+    expect(targets).toEqual([
+      {
+        label: "extra_1",
+        path: "/login",
+      },
+      {
+        label: "extra_2",
+        path: "/feed/guest",
+      },
+    ]);
+  });
+
   it("deduplicates comma-separated browser target labels while preserving order", () => {
     expect(parseBrowserTargetFilter("guest_feed, post_detail,guest_feed")).toEqual([
       "guest_feed",

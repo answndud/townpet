@@ -108,7 +108,7 @@ function buildDefaultTargets(env: RouteAssetEnv): AssetTarget[] {
   } else if (postId) {
     targets.push({
       label: "post_detail",
-      path: `/posts/${encodeURIComponent(postId)}`,
+      path: `/posts/${encodeURIComponent(postId)}/guest`,
     });
   }
 

@@ -210,7 +210,7 @@ function buildDefaultTargets(env: PerformanceEnv): MeasurementTarget[] {
   } else if (postId) {
     targets.push({
       label: "post_detail",
-      path: `/posts/${encodeURIComponent(postId)}`,
+      path: `/posts/${encodeURIComponent(postId)}/guest`,
       method: "GET",
     });
   }
