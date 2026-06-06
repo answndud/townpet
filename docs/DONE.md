@@ -9999,3 +9999,10 @@
 - 변경: `PERF_BROWSER_TARGETS`, `PERF_ASSET_TARGETS` 필터와 import-safe helper/test를 추가하고 성능 budget 명령을 갱신했다.
 - 검증: targeted vitest 8 tests, 관련 eslint, `tsc --noEmit`, unknown target CLI fast-fail 확인.
 - 기록: [docs/errors/2026-06-06_browser-asset-performance-target-filter-gap.md](./errors/2026-06-06_browser-asset-performance-target-filter-gap.md)
+
+### 2026-06-06 - API route timing target filter 추가
+
+- 요약: `perf:api-timings`도 특정 API endpoint만 선택해 재측정할 수 있게 했다.
+- 변경: `PERF_API_TIMING_TARGETS` 필터와 import-safe helper/test를 추가하고 성능 budget 명령을 갱신했다.
+- 검증: targeted vitest 4 tests, 관련 eslint, `tsc --noEmit`, unknown target CLI fast-fail 확인.
+- 기록: [docs/errors/2026-06-06_api-route-timing-target-filter-gap.md](./errors/2026-06-06_api-route-timing-target-filter-gap.md)
