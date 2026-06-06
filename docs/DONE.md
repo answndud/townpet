@@ -10076,3 +10076,10 @@
 - 검증: `eslint` PASS, `tsc --noEmit` PASS, 전체 `vitest run` 318 files / 1550 tests PASS, `next build` PASS.
 - 분류: 실제 버그 0건, 환경 문제 0건, test warning log는 의도된 fallback failure-path 검증.
 - 후속: 배포 반영 후 public health/performance spot check를 진행한다.
+
+### 2026-06-06 - production public health/performance spot check
+
+- 요약: latest production public health와 focused 성능 budget을 직접 재측정했다.
+- 검증: public health PASS, 반복 health p95 `425ms`, `/` warm p50 `117ms`, `/feed/guest` warm p50 `101ms`, `/api/feed/guest` steady p95 `259.9ms`.
+- 분류: 정상. 초기 MISS/cold outlier는 있었지만 slow `0`, non-200 `0`, focused budget 이탈 없음.
+- 후속: credential 없이는 authenticated admin queue production smoke가 계속 blocked이며, 다음 실행 가능 후보는 Web Vitals 실제 수집 상태 확인이다.
