@@ -1,6 +1,6 @@
 # TownPet 성능 Budget
 
-마지막 갱신: `2026-05-30`
+마지막 갱신: `2026-06-06`
 
 이 문서는 1인 운영 기준의 on-demand 성능 점검선이다. 매 배포마다 강제하지 않고, 홈/피드/로그인/상세 성능을 건드렸을 때만 실행한다.
 
@@ -80,6 +80,34 @@ pnpm -C app perf:web-vitals
 - [performance-route-assets-2026-05-30T06-51-31-430Z.md](../../docs/reports/performance-route-assets-2026-05-30T06-51-31-430Z.md)
 - [performance-route-assets-2026-05-30T07-06-48-043Z.md](../../docs/reports/performance-route-assets-2026-05-30T07-06-48-043Z.md)
 - [api-route-timings-2026-05-30T07-03-05-839Z.md](../../docs/reports/api-route-timings-2026-05-30T07-03-05-839Z.md)
+
+## 최신 production 재측정
+
+2026-06-06 production recheck:
+
+| route | mobile LCP p50 | mobile LCP p95 | mobile total transfer | 판단 |
+| --- | ---: | ---: | ---: | --- |
+| `/` | `244ms` | `856ms` | `204KB` | OK |
+| `/login` | `292ms` | `472ms` | `225KB` | OK |
+| `/feed/guest` | `188ms` | `196ms` | `244KB` | OK |
+| public detail | `660ms` | `660ms` | `241KB` | OK |
+
+Server fetch 8회 재확인:
+
+| target | p50 total | p95 total | slow >= 1000ms |
+| --- | ---: | ---: | ---: |
+| `/` | `108ms` | `610ms` | `0` |
+| `/feed/guest` | `110ms` | `245ms` | `0` |
+| `/api/home/feed` | `106ms` | `136ms` | `0` |
+| `/api/feed/guest?limit=20` | `109ms` | `192ms` | `0` |
+| public detail | `233ms` | `414ms` | `0` |
+
+관련 evidence:
+
+- [performance-production-recheck-2026-06-06.md](../../docs/reports/performance-production-recheck-2026-06-06.md)
+- [performance-baseline-2026-06-06T08-50-41-051Z.md](../../docs/reports/performance-baseline-2026-06-06T08-50-41-051Z.md)
+- [performance-browser-baseline-2026-06-06T08-48-48-268Z.md](../../docs/reports/performance-browser-baseline-2026-06-06T08-48-48-268Z.md)
+- [performance-route-assets-2026-06-06T08-49-32-892Z.md](../../docs/reports/performance-route-assets-2026-06-06T08-49-32-892Z.md)
 
 ## 회귀 판단
 
