@@ -10104,3 +10104,10 @@
 - 검증: public request는 `403`, token request는 `OK`, sampleCount `86`; `/feed/guest` LCP p75/p95 `1636/2816ms`, `/` LCP p75/p95 `2596/3148ms`.
 - 분류: summary 경로는 정상. field sample상 `/` LCP/FCP와 `/feed/guest` LCP p95는 개선 후보로 분류.
 - 후속: production browser trace/asset snapshot으로 LCP element와 차단 리소스 원인을 분리한다.
+
+### 2026-06-06 - production Web Vitals LCP/FCP 조사
+
+- 요약: field Web Vitals outlier를 browser/asset/server 측정으로 분리했다.
+- 검증: mobile lab `/` LCP p95 `260ms`, `/feed/guest` LCP p95 `256ms`; transfer `/` `204KB`, `/feed/guest` `244KB`; page feed latency steady p95 `180.8ms`.
+- 분류: 즉시 수정할 코드 버그는 없음. field sample은 `/` LCP 4개, `/feed/guest` LCP 12개라 표본이 작고 lab과 괴리가 큼.
+- 후속: route별 field sample 30개 이상 확보 후 재판정하고, `/` 첫 STALE 응답 outlier는 별도 관찰한다.
