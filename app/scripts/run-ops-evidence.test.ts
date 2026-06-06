@@ -146,4 +146,54 @@ describe("ops evidence runner", () => {
 
     await rm(path.dirname(config.outputPath), { recursive: true, force: true });
   });
+
+  it("records thrown command errors and continues when configured to continue", async () => {
+    const config = createConfig();
+    await mkdir(path.dirname(config.outputPath), { recursive: true });
+
+    const commandRunner = vi
+      .fn()
+      .mockResolvedValueOnce({ code: 0, output: "health ok" })
+      .mockRejectedValueOnce(new Error("spawn pnpm ENOENT"))
+      .mockResolvedValueOnce({ code: 0, output: "prewarm ok" })
+      .mockResolvedValueOnce({ code: 0, output: "perf ok" });
+
+    await expect(runOpsEvidence(config, commandRunner)).rejects.toThrow(
+      "[ops:evidence] required checks failed.",
+    );
+    const report = await readFile(config.outputPath, "utf8");
+
+    expect(commandRunner).toHaveBeenCalledTimes(4);
+    expect(report).toContain("- status: FAIL");
+    expect(report).toContain("- security-env: FAIL");
+    expect(report).toContain("Error: spawn pnpm ENOENT");
+    expect(report).toContain("- prewarm: PASS");
+    expect(report).toContain("- perf-snapshot: PASS");
+
+    await rm(path.dirname(config.outputPath), { recursive: true, force: true });
+  });
+
+  it("records thrown command errors and stops when continue-on-failure is disabled", async () => {
+    const config = createConfig({ continueOnFailure: false });
+    await mkdir(path.dirname(config.outputPath), { recursive: true });
+
+    const commandRunner = vi
+      .fn()
+      .mockResolvedValueOnce({ code: 0, output: "health ok" })
+      .mockRejectedValueOnce(new Error("security command failed to start"));
+
+    await expect(runOpsEvidence(config, commandRunner)).rejects.toThrow(
+      "[ops:evidence] required checks failed.",
+    );
+    const report = await readFile(config.outputPath, "utf8");
+
+    expect(commandRunner).toHaveBeenCalledTimes(2);
+    expect(report).toContain("- status: FAIL");
+    expect(report).toContain("- security-env: FAIL");
+    expect(report).toContain("Error: security command failed to start");
+    expect(report).not.toContain("- prewarm:");
+    expect(report).not.toContain("- perf-snapshot:");
+
+    await rm(path.dirname(config.outputPath), { recursive: true, force: true });
+  });
 });
