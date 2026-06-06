@@ -199,9 +199,22 @@ function runCommand(command: string, args: string[], options: { env: NodeJS.Proc
   });
 }
 
+function formatCommandError(error: unknown) {
+  if (error instanceof Error) {
+    return `${error.name}: ${error.message}${error.stack ? `\n${error.stack}` : ""}`;
+  }
+
+  return String(error);
+}
+
 async function runStep(step: EvidenceStep, commandRunner: CommandRunner) {
   const startedAtDate = new Date();
-  const result = await commandRunner(step.command, step.args, { env: step.env });
+  const result = await commandRunner(step.command, step.args, { env: step.env }).catch(
+    (error): CommandResult => ({
+      code: 1,
+      output: formatCommandError(error),
+    }),
+  );
   const finishedAtDate = new Date();
 
   return {

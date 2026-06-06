@@ -9978,3 +9978,10 @@
 - 변경: validation none/mutating monitoring none을 strict 실패로 판정하고, `/api/posts/[id]/share`에 error monitor와 adjacent test를 추가했다.
 - 검증: targeted vitest 11 tests, 관련 eslint, `tsc --noEmit`, `api:contracts --check`, `api:contracts --check --strict` 통과.
 - 기록: [docs/errors/2026-06-06_api-route-contract-strict-gap.md](./errors/2026-06-06_api-route-contract-strict-gap.md)
+
+### 2026-06-06 - ops evidence command throw containment 보강
+
+- 요약: `run-ops-evidence`가 command spawn/runner 예외도 failed step으로 evidence report에 남기도록 보강했다.
+- 변경: command throw를 `code=1` step result로 정규화하고, `continueOnFailure` 동작은 기존과 동일하게 유지했다.
+- 검증: targeted vitest 8 tests, 관련 eslint, `tsc --noEmit`, 실제 direct smoke에서 `spawn pnpm ENOENT` 실패 report 생성 확인.
+- 기록: [docs/errors/2026-06-06_ops-evidence-command-throw-gap.md](./errors/2026-06-06_ops-evidence-command-throw-gap.md)
