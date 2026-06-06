@@ -10118,3 +10118,10 @@
 - 검증: 10회 측정 3 pass에서 slow `0`, warm p50 `108~116ms`, 첫 total `289~471ms`; prewarm 직후에도 첫 total `877ms`가 재현됨.
 - 변경: `ops:prewarm` 대상에 `/` `home_page` 추가, `/` revalidate `60s -> 300s`, 회귀 테스트와 cache 운영 기록 갱신.
 - 검증 명령: targeted vitest 5 tests PASS, 관련 eslint PASS, `tsc --noEmit` PASS, `next build` PASS(`/` Revalidate `5m`).
+
+### 2026-06-06 - 배포 후 `/` revalidate/prewarm 효과 재측정
+
+- 요약: `/` revalidate `300s`와 `home_page` prewarm 반영 후 production baseline을 재측정했다.
+- 검증: prewarm `home_page` 200 STALE, `/` 10회 baseline first total/p95 `418ms`, warm p50 `106ms`, slow `0`.
+- 분류: 정상 개선. 이전 prewarm 직후 first total/p95 `877ms` 대비 절반 이하로 낮아졌고 반복 slow는 없음.
+- 후속: Web Vitals field sample은 route별 LCP 30개 이상 쌓인 뒤 다시 판정한다.

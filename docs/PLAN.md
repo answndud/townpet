@@ -29,9 +29,3 @@
    - 이유: 현재 production Web Vitals sample은 `/` LCP 4개, `/feed/guest` LCP 12개로 작아 lab 측정과 field p75/p95가 크게 갈린다.
    - 다음 액션: 7일 sample이 route별 최소 30개 이상 쌓인 뒤 `perf:web-vitals:remote`를 재실행하고, 같은 날 browser/asset snapshot과 비교한다.
    - 완료 기준: field p75/p95가 반복적으로 budget을 넘으면 구체 개선 작업으로 전환하고, 아니면 정상 변동으로 archive한다.
-
-3. 배포 후 `/` revalidate/prewarm 효과 재측정
-   - 상태: pending
-   - 조건: `/` revalidate `300s`와 `ops:prewarm` `home_page` 대상 추가가 production에 배포되어 있어야 한다.
-   - 다음 액션: `OPS_PREWARM_PASSES=1 pnpm -C app ops:prewarm` 후 `PERF_TARGETS=home PERF_SAMPLES=10 pnpm -C app perf:baseline` 재실행.
-   - 완료 기준: `/` first total과 p95가 이전 관찰값(`877ms`)보다 낮아졌는지 기록하고, 여전히 반복되면 static shell/API 분리 후보로 전환한다.
