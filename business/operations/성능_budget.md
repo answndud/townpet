@@ -93,7 +93,7 @@ PERF_ASSET_TARGETS=extra_1 PERF_ASSET_EXTRA_PATHS=/feed/guest PLAYWRIGHT_BROWSER
 Web Vitals summary:
 
 ```bash
-pnpm -C app perf:web-vitals
+WEB_VITALS_REPORT_DAYS=7 WEB_VITALS_REPORT_LIMIT=5000 pnpm -C app perf:web-vitals
 ```
 
 ## Report 출력 경로

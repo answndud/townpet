@@ -10041,3 +10041,10 @@
 - 변경: baseline/browser/asset/API timing/ops latency/DB readiness/Web Vitals output env 예시와 consistency test를 추가했다.
 - 검증: targeted vitest 4 tests, 관련 eslint, `tsc --noEmit` 통과.
 - 기록: [docs/errors/2026-06-06_performance-report-output-env-doc-gap.md](./errors/2026-06-06_performance-report-output-env-doc-gap.md)
+
+### 2026-06-06 - Web Vitals report env parsing 보강
+
+- 요약: `perf:web-vitals`의 days/limit env가 잘못된 값에서 query로 넘어가지 않도록 했다.
+- 변경: positive integer parser와 import-safe helper/test를 추가하고 성능 budget에 report window env 예시를 고정했다.
+- 검증: targeted vitest 8 tests, 관련 eslint, `tsc --noEmit`, invalid env CLI fast-fail 확인.
+- 기록: [docs/errors/2026-06-06_web-vitals-report-env-parsing-gap.md](./errors/2026-06-06_web-vitals-report-env-parsing-gap.md)
