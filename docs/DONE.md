@@ -10069,3 +10069,10 @@
 - 변경: `docs/PLAN.md` 후보를 로컬 품질 체크, 배포 후 public spot check, blocked admin queue smoke, conditional Web Vitals 확인으로 재분류했다.
 - 검증: `node scripts/refresh-docs-index.mjs --check` 통과.
 - 결정: credential 없는 production admin smoke는 계속 blocked로 두고, 로컬에서 가능한 검증을 먼저 둔다.
+
+### 2026-06-06 - 로컬 전체 품질 체크포인트
+
+- 요약: 최근 성능/운영 smoke 스크립트 보강 누적분이 전체 로컬 품질 게이트에서 drift를 만들지 않는지 확인했다.
+- 검증: `eslint` PASS, `tsc --noEmit` PASS, 전체 `vitest run` 318 files / 1550 tests PASS, `next build` PASS.
+- 분류: 실제 버그 0건, 환경 문제 0건, test warning log는 의도된 fallback failure-path 검증.
+- 후속: 배포 반영 후 public health/performance spot check를 진행한다.
