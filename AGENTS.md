@@ -6,7 +6,7 @@ Codex가 저장소에 처음 들어왔을 때 이 파일 하나만 읽어도 현
 ## 1. 저장소 개요
 
 - 실제 앱 코드는 `app/` 아래에 있습니다.
-- 계획과 실행 로그는 `docs/PLAN.md`, `docs/PROGRESS.md`에 있고, 완료 이력 archive는 `docs/COMPLETED.md`에 있습니다.
+- 계획과 현재 작업 상태는 `docs/PLAN.md`에 있고, 완료 이력 archive는 `docs/DONE.md`에 있습니다.
 - 운영/제품/보안 기준 문서는 `business/`에 있습니다.
 - `blog/`는 코드 해설용 시리즈이며, 현재 동작의 소스 오브 트루스는 아닙니다.
 
@@ -28,9 +28,8 @@ Codex가 저장소에 처음 들어왔을 때 이 파일 하나만 읽어도 현
 ### 현재 진행 중인 작업을 이어받을 때
 
 - `docs/PLAN.md`
-- `docs/PROGRESS.md`
 - 현재 맡은 사이클에 직접 연결된 파일만 추가로 읽습니다.
-- 완료된 과거 사이클 전체는 기본값으로 읽지 않고, 필요할 때만 `docs/COMPLETED.md`를 엽니다.
+- 완료된 과거 사이클 전체는 기본값으로 읽지 않고, 필요할 때만 `docs/DONE.md`를 엽니다.
 
 ### 보안/정책 변경 시
 
@@ -86,10 +85,10 @@ Codex가 저장소에 처음 들어왔을 때 이 파일 하나만 읽어도 현
 
 ### `docs/`
 
-- `PLAN.md`, `PROGRESS.md`
-  - active 작업 계획과 실행 로그
-- `COMPLETED.md`
-  - 완료된 app 작업 상세와 과거 검증 archive
+- `PLAN.md`
+  - active 작업 계획, 상태, blocker, 다음 액션
+- `DONE.md`
+  - 완료된 app 작업 요약 archive
 
 ### `business/`
 
@@ -110,10 +109,10 @@ Codex가 저장소에 처음 들어왔을 때 이 파일 하나만 읽어도 현
   - 저장소 작업 하네스, 읽기 순서, 계층 경계, 공용 개발 루틴
 - `app/README.md`
   - `app/` 워크스페이스 로컬 실행/검증용 빠른 참조
-- `docs/PLAN.md`, `docs/PROGRESS.md`
+- `docs/PLAN.md`
   - 현재 작업 상태 기록
-- `docs/COMPLETED.md`
-  - 완료된 app 작업 상세 archive
+- `docs/DONE.md`
+  - 완료된 app 작업 요약 archive
 - `blog/00_시리즈_계획.md`, `blog/README.md`
   - 블로그 시리즈 개요와 읽기 순서
 
@@ -398,8 +397,8 @@ pnpm -C app dev
 ## 15. 자주 헷갈리는 포인트
 
 - 앱 명령은 `app/` 기준이고, 앱 상태 문서는 `docs/` 기준입니다.
-- `docs/PLAN.md`, `docs/PROGRESS.md`는 구조 설명 문서가 아니라 현재 작업 상태만 남기는 active 문서입니다.
-- 완료된 작업 상세는 `docs/COMPLETED.md`에서 확인합니다.
+- `docs/PLAN.md`는 구조 설명 문서가 아니라 현재 작업 상태만 남기는 active 문서입니다.
+- 완료된 작업 요약은 `docs/DONE.md`에서 확인합니다.
 - `app/README.md`는 워크스페이스 quick reference이고, 저장소 규칙/읽기 순서는 `AGENTS.md`를 우선합니다.
 - `blog/` 문서는 설명 자료이지 구현 기준 문서가 아닙니다.
 - OpenCode 관련 문서 `business/operations/에이전트_*`는 Codex 전용 하네스가 아닙니다.
@@ -472,12 +471,12 @@ pnpm -C app ops:check:security-env:strict
 
 ## 18. 작업 상태 문서
 
-- 새 세션은 작업 전 `docs/PLAN.md`와 `docs/PROGRESS.md`를 읽습니다.
-- `docs/COMPLETED.md`는 완료 archive이며, 과거 맥락이 필요할 때만 읽습니다.
-- 범위, 우선순위, 신규 작업은 `docs/PLAN.md`에 기록합니다.
-- 진행 상태, 변경 파일, 검증 결과, blocker, 다음 액션은 `docs/PROGRESS.md`에 기록합니다.
-- 완료된 작업은 `docs/COMPLETED.md`에 append한 뒤 active 문서에서 제거합니다.
-- active 작업이 없으면 `PLAN.md`와 `PROGRESS.md`는 `현재 active 작업 없음`만 명확히 표시합니다.
+- 새 세션은 작업 전 `docs/PLAN.md`만 먼저 읽습니다.
+- 과거 완료 맥락이 필요할 때만 `docs/DONE.md`를 읽습니다.
+- 신규/진행/blocked 작업은 `docs/PLAN.md`에 기록합니다.
+- 완료된 작업은 `docs/DONE.md`에 5줄 이하로 append한 뒤 `docs/PLAN.md`의 Active에서 제거합니다.
+- `docs/PLAN.md`는 현재와 미래만 담고, 완료 이력은 남기지 않습니다.
+- `docs/PROGRESS.md`는 상시 상태 문서로 사용하지 않습니다.
 - 코드와 문서 변경은 같은 작업 단위 안에서 정렬합니다.
 - 하위 디렉터리에 중복 계획 문서를 만들지 않습니다.
 
@@ -488,8 +487,8 @@ pnpm -C app ops:check:security-env:strict
 - lint/typecheck/tests가 통과
 - 변경한 동작에 failure-path test가 최소 1개 존재
 - 관련 문서가 동기화됨
-  - 최소: `docs/PLAN.md`, `docs/PROGRESS.md`
-  - 필요 시: `docs/COMPLETED.md`, `business/security/*`, `business/policies/*`, 운영 문서
+  - 최소: `docs/PLAN.md`
+  - 필요 시: `docs/DONE.md`, `business/security/*`, `business/policies/*`, 운영 문서
 - 새 문서/스크립트/API/migration 추가 후에는 stage 이후 `node scripts/refresh-docs-index.mjs --check`
 
 ## 20. 파일 우선순위 규칙
@@ -501,6 +500,6 @@ pnpm -C app ops:check:security-env:strict
 - 제품/정책 기준:
   - `business/제품_기술_개요.md`, `business/policies/*`, `business/security/*`
 - 작업 계획:
-  - `docs/PLAN.md`, `docs/PROGRESS.md`
+  - `docs/PLAN.md`
 - 설명/홍보/해설:
   - `README.md`, `blog/*`

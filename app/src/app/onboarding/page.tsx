@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { OnboardingForm } from "@/components/onboarding/onboarding-form";
 import { auth } from "@/lib/auth";
 import { createNoIndexPageMetadata } from "@/lib/page-metadata";
+import { buildLoginRedirectPath } from "@/lib/redirect-path";
 import { getUserWithNeighborhoods } from "@/server/queries/user.queries";
 
 export const metadata = createNoIndexPageMetadata({
@@ -14,15 +15,16 @@ export const metadata = createNoIndexPageMetadata({
 export default async function OnboardingPage() {
   const session = await auth();
   const userId = session?.user?.id;
+  const loginHref = buildLoginRedirectPath("/onboarding");
 
   if (!userId || !session?.user?.email) {
-    redirect("/login");
+    redirect(loginHref);
   }
 
   const user = await getUserWithNeighborhoods(userId);
 
   if (!user) {
-    redirect("/login");
+    redirect(loginHref);
   }
 
   const primaryNeighborhood = user.neighborhoods.find(
