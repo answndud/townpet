@@ -10062,3 +10062,10 @@
 - 변경: report-level status/mode, local fixture follow-up, NO-GO next action 문구와 tests를 추가했다.
 - 검증: targeted vitest 8 tests, 관련 eslint, `tsc --noEmit` 통과.
 - 기록: [docs/errors/2026-06-06_admin-queue-smoke-report-mode-gap.md](./errors/2026-06-06_admin-queue-smoke-report-mode-gap.md)
+
+### 2026-06-06 - PLAN 다음 작업 우선순위 재정렬
+
+- 요약: 최근 운영/성능/script 보강 이후 남은 작업 후보를 실행 가능 순서로 다시 정리했다.
+- 변경: `docs/PLAN.md` 후보를 로컬 품질 체크, 배포 후 public spot check, blocked admin queue smoke, conditional Web Vitals 확인으로 재분류했다.
+- 검증: `node scripts/refresh-docs-index.mjs --check` 통과.
+- 결정: credential 없는 production admin smoke는 계속 blocked로 두고, 로컬에서 가능한 검증을 먼저 둔다.
