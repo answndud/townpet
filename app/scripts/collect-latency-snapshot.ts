@@ -64,6 +64,8 @@ type EndpointThreshold = {
   maxNon200Count: number
 }
 
+type LatencySnapshotEnv = Partial<Record<string, string | undefined>>
+
 type ThresholdEvaluation = {
   label: string
   passed: boolean
@@ -441,63 +443,105 @@ export function buildLatencySnapshotEndpoints({
   getSamples,
   postSamples,
   pauseMs,
+  targetFilterValue,
 }: {
   getSamples: number
   postSamples: number
   pauseMs: number
+  targetFilterValue?: string
 }) {
-  return [
-    {
-      label: "page_feed",
-      method: "GET",
-      path: "/feed/guest",
-      samples: getSamples,
-      pauseMs,
-    },
-    {
-      label: "api_posts_global",
-      method: "GET",
-      path: "/api/posts?scope=GLOBAL",
-      samples: getSamples,
-      pauseMs,
-    },
-    {
-      label: "api_posts_suggestions",
-      method: "GET",
-      path: `/api/posts/suggestions?q=${encodeURIComponent("산책코스")}`,
-      samples: getSamples,
-      pauseMs,
-    },
-    {
-      label: "api_feed_guest",
-      method: "GET",
-      path: "/api/feed/guest",
-      samples: getSamples,
-      pauseMs,
-    },
-    {
-      label: "api_search_guest",
-      method: "GET",
-      path: `/api/search/guest?q=${encodeURIComponent("강아지")}`,
-      samples: getSamples,
-      pauseMs,
-    },
-    {
-      label: "api_breed_posts",
-      method: "GET",
-      path: `/api/lounges/breeds/golden/posts?q=${encodeURIComponent("산책")}`,
-      samples: getSamples,
-      pauseMs,
-    },
-    {
-      label: "api_search_log",
-      method: "POST",
-      path: "/api/search/log",
-      body: JSON.stringify({ q: "강아지 산책" }),
-      samples: postSamples,
-      pauseMs,
-    },
-  ] satisfies EndpointConfig[]
+  return filterLatencySnapshotEndpoints(
+    [
+      {
+        label: "page_feed",
+        method: "GET",
+        path: "/feed/guest",
+        samples: getSamples,
+        pauseMs,
+      },
+      {
+        label: "api_posts_global",
+        method: "GET",
+        path: "/api/posts?scope=GLOBAL",
+        samples: getSamples,
+        pauseMs,
+      },
+      {
+        label: "api_posts_suggestions",
+        method: "GET",
+        path: `/api/posts/suggestions?q=${encodeURIComponent("산책코스")}`,
+        samples: getSamples,
+        pauseMs,
+      },
+      {
+        label: "api_feed_guest",
+        method: "GET",
+        path: "/api/feed/guest",
+        samples: getSamples,
+        pauseMs,
+      },
+      {
+        label: "api_search_guest",
+        method: "GET",
+        path: `/api/search/guest?q=${encodeURIComponent("강아지")}`,
+        samples: getSamples,
+        pauseMs,
+      },
+      {
+        label: "api_breed_posts",
+        method: "GET",
+        path: `/api/lounges/breeds/golden/posts?q=${encodeURIComponent("산책")}`,
+        samples: getSamples,
+        pauseMs,
+      },
+      {
+        label: "api_search_log",
+        method: "POST",
+        path: "/api/search/log",
+        body: JSON.stringify({ q: "강아지 산책" }),
+        samples: postSamples,
+        pauseMs,
+      },
+    ] satisfies EndpointConfig[],
+    targetFilterValue,
+  )
+}
+
+export function parseLatencySnapshotTargetFilter(value: string | undefined) {
+  if (!value) {
+    return []
+  }
+
+  return [...new Set(value.split(",").map((label) => label.trim()).filter(Boolean))]
+}
+
+export function filterLatencySnapshotEndpoints(
+  endpoints: EndpointConfig[],
+  targetFilterValue: string | undefined,
+) {
+  const requestedLabels = parseLatencySnapshotTargetFilter(targetFilterValue)
+  if (requestedLabels.length === 0) {
+    return endpoints
+  }
+
+  const endpointByLabel = new Map(endpoints.map((endpoint) => [endpoint.label, endpoint]))
+  const unknownLabels = requestedLabels.filter((label) => !endpointByLabel.has(label))
+  if (unknownLabels.length > 0) {
+    throw new Error(
+      `OPS_PERF_TARGETS contains unknown target(s): ${unknownLabels.join(", ")}. available=${endpoints.map((endpoint) => endpoint.label).join(",")}`,
+    )
+  }
+
+  return requestedLabels.map((label) => endpointByLabel.get(label)!)
+}
+
+export function buildLatencySnapshotEndpointsFromEnv(env: LatencySnapshotEnv) {
+  return buildLatencySnapshotEndpoints({
+    getSamples: toPositiveInt("OPS_PERF_GET_SAMPLES", env.OPS_PERF_GET_SAMPLES, 30),
+    postSamples: toPositiveInt("OPS_PERF_POST_SAMPLES", env.OPS_PERF_POST_SAMPLES, 20),
+    pauseMs: toNonNegativeInt("OPS_PERF_PAUSE_MS", env.OPS_PERF_PAUSE_MS, 200),
+    targetFilterValue: env.OPS_PERF_TARGETS,
+  })
 }
 
 async function main() {
@@ -525,7 +569,12 @@ async function main() {
     `/tmp/townpet_latency_snapshot_${new Date().toISOString().replace(/[:.]/g, "-")}.tsv`
   const summaryPath = process.env.OPS_PERF_SUMMARY_OUT ?? `${outputPath}.summary.md`
 
-  const endpoints = buildLatencySnapshotEndpoints({ getSamples, postSamples, pauseMs })
+  const endpoints = buildLatencySnapshotEndpoints({
+    getSamples,
+    postSamples,
+    pauseMs,
+    targetFilterValue: process.env.OPS_PERF_TARGETS,
+  })
 
   const records: SampleRecord[] = []
 
