@@ -79,6 +79,7 @@ describe("admin queue smoke", () => {
     const markdown = buildAdminQueueSmokeMarkdown({
       generatedAt: "2026-05-27T00:00:00.000Z",
       baseUrl: "https://townpet.vercel.app",
+      mode: "production_credentials",
       results: [
         {
           id: "reports",
@@ -95,10 +96,62 @@ describe("admin queue smoke", () => {
     });
 
     expect(markdown).toContain("# Admin Queue Smoke");
+    expect(markdown).toContain("- status: `PASS`");
+    expect(markdown).toContain("- mode: `production_credentials`");
     expect(markdown).toContain("read-only admin page rendering");
     expect(markdown).toContain("/admin/reports");
     expect(markdown).toContain("report queue");
     expect(markdown).toContain("correction queue");
+  });
+
+  it("documents local fixture mode as a production smoke follow-up", () => {
+    const markdown = buildAdminQueueSmokeMarkdown({
+      generatedAt: "2026-05-27T00:00:00.000Z",
+      baseUrl: "http://localhost:3000",
+      mode: "local_fixtures",
+      results: [
+        {
+          id: "corrections",
+          path: "/admin/corrections",
+          status: "PASS",
+          url: "http://localhost:3000/admin/corrections",
+          screenshot: "/tmp/admin-corrections.png",
+          hasReportQueue: true,
+          hasCorrectionQueue: true,
+          hasExpectedSurface: true,
+          noHorizontalOverflow: true,
+        },
+      ],
+    });
+
+    expect(markdown).toContain("- mode: `local_fixtures`");
+    expect(markdown).toContain("local fixture mode validates local UI/queue rendering only");
+    expect(markdown).toContain("production credential이 준비되면");
+  });
+
+  it("documents NO-GO next action when a queue page check fails", () => {
+    const markdown = buildAdminQueueSmokeMarkdown({
+      generatedAt: "2026-05-27T00:00:00.000Z",
+      baseUrl: "https://townpet.vercel.app",
+      mode: "production_credentials",
+      results: [
+        {
+          id: "reports",
+          path: "/admin/reports",
+          status: "FAIL",
+          url: "https://townpet.vercel.app/admin/reports",
+          screenshot: "/tmp/admin-reports.png",
+          hasReportQueue: true,
+          hasCorrectionQueue: false,
+          hasExpectedSurface: true,
+          noHorizontalOverflow: true,
+        },
+      ],
+    });
+
+    expect(markdown).toContain("- status: `NO-GO`");
+    expect(markdown).toContain("## NO-GO Next Action");
+    expect(markdown).toContain("실패 screenshot을 확인");
   });
 
   it("always attempts local fixture cleanup when another cleanup step fails", async () => {
