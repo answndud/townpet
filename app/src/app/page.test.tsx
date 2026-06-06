@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import HomePage from "@/app/page";
+import HomePage, { revalidate } from "@/app/page";
 import { getHomeFeedPayload } from "@/server/queries/home-feed.queries";
 
 vi.mock("@/server/queries/home-feed.queries", () => ({
@@ -11,6 +11,10 @@ vi.mock("@/server/queries/home-feed.queries", () => ({
 const mockGetHomeFeedPayload = vi.mocked(getHomeFeedPayload);
 
 describe("HomePage", () => {
+  it("keeps the landing page revalidation window long enough to avoid frequent regeneration outliers", () => {
+    expect(revalidate).toBe(300);
+  });
+
   beforeEach(() => {
     mockGetHomeFeedPayload.mockResolvedValue({
       featured: [],

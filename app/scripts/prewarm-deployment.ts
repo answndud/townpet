@@ -1,5 +1,8 @@
 import "dotenv/config"
 
+import path from "node:path"
+import { fileURLToPath } from "node:url"
+
 type PrewarmTarget = {
   label: string
   path: string
@@ -14,6 +17,8 @@ type PrewarmResult = {
   vercelCache: string
   contentType: string
 }
+
+const CURRENT_FILE_PATH = fileURLToPath(import.meta.url)
 
 function normalizeBaseUrl(baseUrl: string) {
   return baseUrl.replace(/\/+$/, "")
@@ -83,16 +88,13 @@ async function prewarmTarget(baseUrl: string, target: PrewarmTarget, pass: numbe
   return result
 }
 
-async function main() {
-  const baseUrl = process.env.OPS_BASE_URL
-  if (!baseUrl) {
-    throw new Error("OPS_BASE_URL is required (example: https://townpet.example.com)")
-  }
-
-  const normalizedBaseUrl = normalizeBaseUrl(baseUrl)
-  const passes = toPositiveInt("OPS_PREWARM_PASSES", process.env.OPS_PREWARM_PASSES, 2)
-  const pauseMs = toNonNegativeInt("OPS_PREWARM_PAUSE_MS", process.env.OPS_PREWARM_PAUSE_MS, 250)
-  const targets: PrewarmTarget[] = [
+export function buildPrewarmTargets(): PrewarmTarget[] {
+  return [
+    {
+      label: "home_page",
+      path: "/",
+      accept: "text/html",
+    },
     {
       label: "feed_page_guest",
       path: "/feed",
@@ -129,6 +131,18 @@ async function main() {
       accept: "application/json",
     },
   ]
+}
+
+async function main() {
+  const baseUrl = process.env.OPS_BASE_URL
+  if (!baseUrl) {
+    throw new Error("OPS_BASE_URL is required (example: https://townpet.example.com)")
+  }
+
+  const normalizedBaseUrl = normalizeBaseUrl(baseUrl)
+  const passes = toPositiveInt("OPS_PREWARM_PASSES", process.env.OPS_PREWARM_PASSES, 2)
+  const pauseMs = toNonNegativeInt("OPS_PREWARM_PAUSE_MS", process.env.OPS_PREWARM_PAUSE_MS, 250)
+  const targets = buildPrewarmTargets()
 
   console.log("Deployment prewarm started")
   console.log(`- baseUrl: ${normalizedBaseUrl}`)
@@ -157,8 +171,10 @@ async function main() {
   console.log(`- cacheHitLike: ${hitLikeCount}`)
 }
 
-main().catch((error) => {
-  console.error("Deployment prewarm failed")
-  console.error(error)
-  process.exit(1)
-})
+if (process.argv[1] && path.resolve(process.argv[1]) === CURRENT_FILE_PATH) {
+  main().catch((error) => {
+    console.error("Deployment prewarm failed")
+    console.error(error)
+    process.exit(1)
+  })
+}

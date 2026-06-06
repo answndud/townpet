@@ -10111,3 +10111,10 @@
 - 검증: mobile lab `/` LCP p95 `260ms`, `/feed/guest` LCP p95 `256ms`; transfer `/` `204KB`, `/feed/guest` `244KB`; page feed latency steady p95 `180.8ms`.
 - 분류: 즉시 수정할 코드 버그는 없음. field sample은 `/` LCP 4개, `/feed/guest` LCP 12개라 표본이 작고 lab과 괴리가 큼.
 - 후속: route별 field sample 30개 이상 확보 후 재판정하고, `/` 첫 STALE 응답 outlier는 별도 관찰한다.
+
+### 2026-06-06 - `/` STALE outlier 완화
+
+- 요약: production `/` 첫 응답 outlier를 반복 관찰하고 landing page 재생성 빈도를 낮췄다.
+- 검증: 10회 측정 3 pass에서 slow `0`, warm p50 `108~116ms`, 첫 total `289~471ms`; prewarm 직후에도 첫 total `877ms`가 재현됨.
+- 변경: `ops:prewarm` 대상에 `/` `home_page` 추가, `/` revalidate `60s -> 300s`, 회귀 테스트와 cache 운영 기록 갱신.
+- 검증 명령: targeted vitest 5 tests PASS, 관련 eslint PASS, `tsc --noEmit` PASS, `next build` PASS(`/` Revalidate `5m`).

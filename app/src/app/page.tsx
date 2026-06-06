@@ -8,7 +8,7 @@ import { HomeFeedPreview } from "@/components/home/home-feed-preview";
 import { NEIGHBORHOOD_MAP_CAMPAIGN_PATH } from "@/lib/campaign-pages";
 import { getHomeFeedPayload } from "@/server/queries/home-feed.queries";
 
-export const revalidate = 60;
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "우리 동네 반려생활 정보",
