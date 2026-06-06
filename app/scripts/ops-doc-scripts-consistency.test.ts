@@ -83,4 +83,43 @@ describe("operational documentation package scripts", () => {
     expect(performanceBudget).toContain("OPS_PERF_TARGETS=api_feed_guest");
     expect(performanceBudget).toContain("PERF_DB_TARGETS=guest_feed_api");
   });
+
+  it("keeps performance report output envs documented", () => {
+    const performanceBudget = readRepoFile("business/operations/성능_budget.md");
+
+    expect(performanceBudget).toContain("PERF_OUT=../docs/reports/performance-baseline-custom.md");
+    expect(performanceBudget).toContain(
+      "PERF_JSON_OUT=../docs/reports/performance-baseline-custom.json",
+    );
+    expect(performanceBudget).toContain(
+      "PERF_BROWSER_OUT=../docs/reports/performance-browser-custom.md",
+    );
+    expect(performanceBudget).toContain(
+      "PERF_BROWSER_JSON_OUT=../docs/reports/performance-browser-custom.json",
+    );
+    expect(performanceBudget).toContain(
+      "PERF_ASSET_OUT=../docs/reports/performance-route-assets-custom.md",
+    );
+    expect(performanceBudget).toContain(
+      "PERF_ASSET_JSON_OUT=../docs/reports/performance-route-assets-custom.json",
+    );
+    expect(performanceBudget).toContain(
+      "PERF_API_TIMING_OUT=../docs/reports/api-route-timings-custom.md",
+    );
+    expect(performanceBudget).toContain(
+      "OPS_PERF_OUT=../docs/reports/api-latency-snapshot-custom.tsv",
+    );
+    expect(performanceBudget).toContain(
+      "OPS_PERF_SUMMARY_OUT=../docs/reports/api-latency-snapshot-custom.summary.md",
+    );
+    expect(performanceBudget).toContain(
+      "PERF_DB_OUT=../docs/reports/performance-db-readiness-custom.md",
+    );
+    expect(performanceBudget).toContain(
+      "PERF_DB_JSON_OUT=../docs/reports/performance-db-readiness-custom.json",
+    );
+    expect(performanceBudget).toContain(
+      "WEB_VITALS_REPORT_OUT=../docs/reports/web-vitals-summary-custom.md",
+    );
+  });
 });

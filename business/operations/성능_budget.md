@@ -96,6 +96,20 @@ Web Vitals summary:
 pnpm -C app perf:web-vitals
 ```
 
+## Report 출력 경로
+
+기본 출력은 `docs/reports` 또는 `/tmp`에 생성한다. 비교용 evidence를 명시적으로 남길 때만 아래 env로 경로를 고정한다.
+
+| script | markdown/tsv output | json/summary output |
+| --- | --- | --- |
+| `perf:baseline` | `PERF_OUT=../docs/reports/performance-baseline-custom.md` | `PERF_JSON_OUT=../docs/reports/performance-baseline-custom.json` |
+| `perf:browser:local` | `PERF_BROWSER_OUT=../docs/reports/performance-browser-custom.md` | `PERF_BROWSER_JSON_OUT=../docs/reports/performance-browser-custom.json` |
+| `perf:assets:local` | `PERF_ASSET_OUT=../docs/reports/performance-route-assets-custom.md` | `PERF_ASSET_JSON_OUT=../docs/reports/performance-route-assets-custom.json` |
+| `perf:api-timings` | `PERF_API_TIMING_OUT=../docs/reports/api-route-timings-custom.md` | - |
+| `ops:perf:snapshot` | `OPS_PERF_OUT=../docs/reports/api-latency-snapshot-custom.tsv` | `OPS_PERF_SUMMARY_OUT=../docs/reports/api-latency-snapshot-custom.summary.md` |
+| `perf:db-readiness` | `PERF_DB_OUT=../docs/reports/performance-db-readiness-custom.md` | `PERF_DB_JSON_OUT=../docs/reports/performance-db-readiness-custom.json` |
+| `perf:web-vitals` | `WEB_VITALS_REPORT_OUT=../docs/reports/web-vitals-summary-custom.md` | - |
+
 ## 현재 기준선
 
 2026-05-30 local production after snapshot:

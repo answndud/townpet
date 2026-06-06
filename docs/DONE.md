@@ -10034,3 +10034,10 @@
 - 변경: `PERF_POST_ID`는 `/posts/<id>/guest`를 만들고, `PERF_EXTRA_PATHS`/browser/asset extra path 테스트와 문서 예시를 추가했다.
 - 검증: targeted vitest 21 tests, 관련 eslint, `tsc --noEmit` 통과.
 - 기록: [docs/errors/2026-06-06_performance-post-extra-path-input-gap.md](./errors/2026-06-06_performance-post-extra-path-input-gap.md)
+
+### 2026-06-06 - performance report output env 문서 보호
+
+- 요약: 성능 측정 report 출력 경로 env를 성능 budget 문서에 한곳으로 정리했다.
+- 변경: baseline/browser/asset/API timing/ops latency/DB readiness/Web Vitals output env 예시와 consistency test를 추가했다.
+- 검증: targeted vitest 4 tests, 관련 eslint, `tsc --noEmit` 통과.
+- 기록: [docs/errors/2026-06-06_performance-report-output-env-doc-gap.md](./errors/2026-06-06_performance-report-output-env-doc-gap.md)
