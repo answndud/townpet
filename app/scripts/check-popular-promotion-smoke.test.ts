@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   assertPopularPromotionSmokeResult,
   formatPopularPromotionSmokeResult,
+  runPopularPromotionSmokeCleanup,
 } from "@/../scripts/check-popular-promotion-smoke";
 
 const baseResult = {
@@ -43,5 +44,66 @@ describe("popular promotion smoke helpers", () => {
     expect(formatPopularPromotionSmokeResult(baseResult)).toContain(
       "bestFeedContainsPost: true",
     );
+  });
+
+  it("attempts every cleanup step even when an earlier step fails", async () => {
+    const calls: string[] = [];
+
+    await expect(
+      runPopularPromotionSmokeCleanup([
+        {
+          label: "smoke data",
+          run: async () => {
+            calls.push("smoke data");
+            throw new Error("delete failed");
+          },
+        },
+        {
+          label: "popular policy",
+          run: async () => {
+            calls.push("popular policy");
+          },
+        },
+        {
+          label: "feed cache",
+          run: async () => {
+            calls.push("feed cache");
+          },
+        },
+      ]),
+    ).rejects.toThrow("Popular promotion smoke cleanup failed: smoke data");
+
+    expect(calls).toEqual(["smoke data", "popular policy", "feed cache"]);
+  });
+
+  it("reports all failed cleanup step labels after attempting every step", async () => {
+    const calls: string[] = [];
+
+    await expect(
+      runPopularPromotionSmokeCleanup([
+        {
+          label: "smoke data",
+          run: async () => {
+            calls.push("smoke data");
+            throw new Error("delete failed");
+          },
+        },
+        {
+          label: "popular policy",
+          run: async () => {
+            calls.push("popular policy");
+            throw new Error("restore failed");
+          },
+        },
+        {
+          label: "feed cache",
+          run: async () => {
+            calls.push("feed cache");
+          },
+        },
+      ]),
+    ).rejects.toThrow("Popular promotion smoke cleanup failed: smoke data, popular policy");
+
+    expect(calls).toEqual(["smoke data", "popular policy", "feed cache"]);
   });
 });
