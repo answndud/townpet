@@ -6,6 +6,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const HTTP_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"] as const;
+const MUTATING_HTTP_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 const CURRENT_FILE_PATH = fileURLToPath(import.meta.url);
 
 type ApiRouteAccess =
@@ -41,6 +42,13 @@ export type ApiRouteContract = {
   access: ApiRouteAccess;
   validation: ApiRouteValidation;
   monitoring: ApiRouteMonitoring;
+};
+
+export type ApiRouteContractStrictGap = {
+  route: string;
+  file: string;
+  kind: "validation-none" | "mutating-monitoring-none";
+  detail: string;
 };
 
 async function listRouteFiles(dir: string): Promise<string[]> {
@@ -279,6 +287,33 @@ export function renderApiRouteContractsMarkdown(contracts: ApiRouteContract[]) {
   return `${lines.join("\n")}\n`;
 }
 
+export function findApiRouteContractStrictGaps(contracts: ApiRouteContract[]) {
+  const gaps: ApiRouteContractStrictGap[] = [];
+
+  for (const contract of contracts) {
+    if (contract.validation === "none") {
+      gaps.push({
+        route: contract.route,
+        file: contract.file,
+        kind: "validation-none",
+        detail: "route has detectable input but no schema/manual/service-delegated validation heuristic",
+      });
+    }
+
+    const hasMutatingMethod = contract.methods.some((method) => MUTATING_HTTP_METHODS.has(method));
+    if (hasMutatingMethod && contract.monitoring === "none") {
+      gaps.push({
+        route: contract.route,
+        file: contract.file,
+        kind: "mutating-monitoring-none",
+        detail: "mutating route has no monitorUnhandledError/logger/static/provider monitoring heuristic",
+      });
+    }
+  }
+
+  return gaps;
+}
+
 function countBy<T>(values: T[], getKey: (value: T) => string) {
   return values.reduce<Record<string, number>>((counts, value) => {
     const key = getKey(value);
@@ -299,15 +334,18 @@ export async function runApiRouteContractCheck(params?: {
   apiRoot?: string;
   outputPath?: string;
   mode?: "check" | "write" | "print";
+  strict?: boolean;
 }) {
   const appRoot = params?.appRoot ?? process.cwd();
   const outputPath =
     params?.outputPath ??
     path.resolve(appRoot, "../business/reports/api-route-contracts.generated.md");
   const mode = params?.mode ?? "print";
+  const strict = params?.strict ?? false;
   const contracts = await collectApiRouteContracts({ apiRoot: params?.apiRoot, appRoot });
   const generated = renderApiRouteContractsMarkdown(contracts);
   const missingMethods = contracts.filter((contract) => contract.methods.length === 0);
+  const strictGaps = strict ? findApiRouteContractStrictGaps(contracts) : [];
 
   if (mode === "write") {
     await mkdir(path.dirname(outputPath), { recursive: true });
@@ -333,6 +371,14 @@ export async function runApiRouteContractCheck(params?: {
     );
   }
 
+  if (strictGaps.length > 0) {
+    throw new Error(
+      `API route contract strict check found gaps: ${strictGaps
+        .map((gap) => `${gap.kind}:${gap.file}`)
+        .join(", ")}`,
+    );
+  }
+
   return { contracts, outputPath };
 }
 
@@ -347,7 +393,11 @@ function resolveMode(argv: string[]) {
 }
 
 export async function main() {
-  await runApiRouteContractCheck({ mode: resolveMode(process.argv.slice(2)) });
+  const argv = process.argv.slice(2);
+  await runApiRouteContractCheck({
+    mode: resolveMode(argv),
+    strict: argv.includes("--strict"),
+  });
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === CURRENT_FILE_PATH) {
