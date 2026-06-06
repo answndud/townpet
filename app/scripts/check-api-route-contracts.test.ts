@@ -4,8 +4,10 @@ import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import {
+  type ApiRouteContract,
   collectApiRouteContracts,
   extractRouteMethods,
+  findApiRouteContractStrictGaps,
   inferRouteAccess,
   inferRouteMonitoring,
   inferRouteValidation,
@@ -158,6 +160,68 @@ describe("api route contract check", () => {
         mode: "check",
       }),
     ).resolves.toBeTruthy();
+  });
+
+  it("reports strict gaps for unvalidated input and unmonitored mutating routes", () => {
+    const contracts: ApiRouteContract[] = [
+      {
+        route: "/api/posts",
+        methods: ["POST"],
+        file: "src/app/api/posts/route.ts",
+        adjacentTest: true,
+        access: "authenticated",
+        validation: "none",
+        monitoring: "none",
+      },
+      {
+        route: "/api/feed/guest",
+        methods: ["GET"],
+        file: "src/app/api/feed/guest/route.ts",
+        adjacentTest: true,
+        access: "public",
+        validation: "manual",
+        monitoring: "none",
+      },
+    ];
+
+    expect(findApiRouteContractStrictGaps(contracts)).toEqual([
+      {
+        route: "/api/posts",
+        file: "src/app/api/posts/route.ts",
+        kind: "validation-none",
+        detail: "route has detectable input but no schema/manual/service-delegated validation heuristic",
+      },
+      {
+        route: "/api/posts",
+        file: "src/app/api/posts/route.ts",
+        kind: "mutating-monitoring-none",
+        detail: "mutating route has no monitorUnhandledError/logger/static/provider monitoring heuristic",
+      },
+    ]);
+  });
+
+  it("fails strict mode when contract gaps are present", async () => {
+    await writeRoute(
+      "unsafe",
+      "export async function POST(request) { const body = await request.json(); return Response.json(body); }",
+      true,
+    );
+    const outputPath = path.join(tempDir, "api-route-contracts.generated.md");
+
+    await runApiRouteContractCheck({
+      appRoot: tempDir,
+      outputPath,
+      mode: "write",
+    });
+
+    await expect(
+      runApiRouteContractCheck({
+        appRoot: tempDir,
+        outputPath,
+        mode: "check",
+        strict: true,
+      }),
+    ).rejects.toThrow("API route contract strict check found gaps");
   });
 
   it("fails check mode when the report is stale", async () => {

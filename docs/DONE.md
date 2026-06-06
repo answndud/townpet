@@ -9971,3 +9971,10 @@
 - 변경: 모든 알려진 legacy guest column을 탐지하고, 실제 남은 column 기준으로 count query를 구성하도록 바꿨다.
 - 검증: targeted vitest 3 tests, 관련 eslint, `tsc --noEmit`, 실제 local DB readiness PASS.
 - 기록: [docs/errors/2026-06-06_guest-legacy-cleanup-readiness-column-gap.md](./errors/2026-06-06_guest-legacy-cleanup-readiness-column-gap.md)
+
+### 2026-06-06 - API route contract strict gap 보강
+
+- 요약: API route contract check에 선택적 `--strict` gap 판정을 추가하고, 발견된 share route 모니터링 누락을 고쳤다.
+- 변경: validation none/mutating monitoring none을 strict 실패로 판정하고, `/api/posts/[id]/share`에 error monitor와 adjacent test를 추가했다.
+- 검증: targeted vitest 11 tests, 관련 eslint, `tsc --noEmit`, `api:contracts --check`, `api:contracts --check --strict` 통과.
+- 기록: [docs/errors/2026-06-06_api-route-contract-strict-gap.md](./errors/2026-06-06_api-route-contract-strict-gap.md)

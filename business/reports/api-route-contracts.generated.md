@@ -6,10 +6,10 @@ Generated from `app/src/app/api/**/route.ts` with source-text heuristics.
 
 - routeHandlers: 54
 - missingMethodExports: 0
-- missingAdjacentTests: 3
+- missingAdjacentTests: 2
 - accessHeuristics: admin=2, auth-aware=18, authenticated=10, moderator=6, provider-managed=1, public=15, public-internal-token=2
 - validationHeuristics: manual=13, no-input=3, provider-managed=1, schema=24, service-delegated=12, static-response=1
-- monitoringHeuristics: logger=1, monitorUnhandledError=49, none=2, provider-managed=1, static-response=1
+- monitoringHeuristics: logger=1, monitorUnhandledError=50, none=1, provider-managed=1, static-response=1
 
 Heuristic labels are review aids, not a security proof. Source of truth remains route code and tests.
 
@@ -55,7 +55,7 @@ Heuristic labels are review aids, not a security proof. Source of truth remains 
 | `/api/posts/[id]/detail` | GET | auth-aware | manual | monitorUnhandledError | `src/app/api/posts/[id]/detail/route.ts` | yes |
 | `/api/posts/[id]/lost-found-share.svg` | GET | public | manual | none | `src/app/api/posts/[id]/lost-found-share.svg/route.ts` | no |
 | `/api/posts/[id]/reaction` | GET | authenticated | manual | monitorUnhandledError | `src/app/api/posts/[id]/reaction/route.ts` | yes |
-| `/api/posts/[id]/share` | POST | auth-aware | schema | none | `src/app/api/posts/[id]/share/route.ts` | no |
+| `/api/posts/[id]/share` | POST | auth-aware | schema | monitorUnhandledError | `src/app/api/posts/[id]/share/route.ts` | yes |
 | `/api/posts/[id]/stats` | GET | auth-aware | manual | monitorUnhandledError | `src/app/api/posts/[id]/stats/route.ts` | yes |
 | `/api/posts/[id]/view` | POST | auth-aware | manual | monitorUnhandledError | `src/app/api/posts/[id]/view/route.ts` | yes |
 | `/api/posts/suggestions` | GET | auth-aware | schema | monitorUnhandledError | `src/app/api/posts/suggestions/route.ts` | yes |
@@ -76,4 +76,3 @@ Heuristic labels are review aids, not a security proof. Source of truth remains 
 
 - missing adjacent test: `src/app/api/auth/[...nextauth]/route.ts`
 - missing adjacent test: `src/app/api/posts/[id]/lost-found-share.svg/route.ts`
-- missing adjacent test: `src/app/api/posts/[id]/share/route.ts`
