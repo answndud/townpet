@@ -10097,3 +10097,10 @@
 - 변경: internal diagnostics token 보호 `/api/ops/web-vitals/summary`, `perf:web-vitals:remote` 스크립트, query validation, route/script failure-path tests.
 - 검증: targeted vitest 15 tests PASS, 관련 eslint PASS, `tsc --noEmit` PASS, `next build` PASS.
 - 후속: 배포 반영 후 `OPS_HEALTH_INTERNAL_TOKEN`으로 remote summary를 실행해 `OK / NO_SAMPLES / SCHEMA_SYNC_REQUIRED`를 분류한다.
+
+### 2026-06-06 - remote Web Vitals summary production 실행
+
+- 요약: 배포 반영 후 protected production Web Vitals summary를 실제 실행했다.
+- 검증: public request는 `403`, token request는 `OK`, sampleCount `86`; `/feed/guest` LCP p75/p95 `1636/2816ms`, `/` LCP p75/p95 `2596/3148ms`.
+- 분류: summary 경로는 정상. field sample상 `/` LCP/FCP와 `/feed/guest` LCP p95는 개선 후보로 분류.
+- 후속: production browser trace/asset snapshot으로 LCP element와 차단 리소스 원인을 분리한다.
