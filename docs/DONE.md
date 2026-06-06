@@ -9936,3 +9936,10 @@
 - 변경: page/browser/local fixture cleanup helper를 추가하고 모든 cleanup을 독립적으로 시도하도록 했다.
 - 검증: targeted vitest 1 file/6 tests, 관련 eslint, `tsc --noEmit`.
 - 기록: [docs/errors/2026-06-06_admin-queue-smoke-fixture-cleanup-gap.md](./errors/2026-06-06_admin-queue-smoke-fixture-cleanup-gap.md)
+
+### 2026-06-06 - public detail visual smoke false positive 방지
+
+- 요약: public detail smoke가 blocked type을 성공으로 통과시키지 않도록 기본 타입과 실패 조건을 정리했다.
+- 변경: auth/local 보호형 타입을 public 기본 대상에서 제외하고, blocked type 실패 처리와 모바일 메뉴 내 신고 확인을 추가했다.
+- 검증: targeted vitest 1 file/5 tests, 관련 eslint, `tsc --noEmit`, production public detail smoke 기본 4개 타입 desktop/mobile PASS.
+- 기록: [docs/errors/2026-06-06_public-detail-smoke-false-positive.md](./errors/2026-06-06_public-detail-smoke-false-positive.md)

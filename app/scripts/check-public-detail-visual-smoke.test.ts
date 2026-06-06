@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import {
   extractPublicFeedItems,
+  parseSmokeTypes,
+  publicDetailSmokePassed,
   selectSmokeTargetsByType,
 } from "./check-public-detail-visual-smoke";
 
@@ -113,5 +115,48 @@ describe("public detail visual smoke", () => {
         target: null,
       },
     ]);
+  });
+
+  it("keeps protected auth/local detail types out of the public default smoke set", () => {
+    expect(parseSmokeTypes(undefined)).toEqual([
+      "FREE_BOARD",
+      "WALK_ROUTE",
+      "LOST_FOUND",
+      "MARKET_LISTING",
+    ]);
+  });
+
+  it("fails the smoke result when any requested type has no public target", () => {
+    expect(
+      publicDetailSmokePassed({
+        targetEntries: [
+          {
+            type: "FREE_BOARD",
+            target: {
+              id: "post-free",
+              title: "자유 게시글",
+              type: "FREE_BOARD",
+              isOperatorContent: false,
+              operatorSourceName: null,
+            },
+          },
+          { type: "HOSPITAL_REVIEW", target: null },
+        ],
+        results: [
+          {
+            targetType: "FREE_BOARD",
+            targetTitle: "자유 게시글",
+            profile: "desktop",
+            url: "https://townpet.vercel.app/posts/post-free/guest",
+            screenshot: "/tmp/free.png",
+            titleVisible: true,
+            hasCommentSection: true,
+            hasReportEntry: true,
+            hasOperatorSource: true,
+            noHorizontalOverflow: true,
+          },
+        ],
+      }),
+    ).toBe(false);
   });
 });
