@@ -47,8 +47,16 @@ describe("operator content public smoke", () => {
       if (url.includes("/feed/guest")) {
         return htmlResponse("TownPet");
       }
+      if (url.includes("/api/search/guest")) {
+        return jsonResponse({
+          ok: true,
+          data: {
+            items: [{ id: "post-1", title: "반려생활 정보는 이렇게 모읍니다" }],
+          },
+        });
+      }
       if (url.includes("/search/guest")) {
-        return htmlResponse("반려생활 정보는 이렇게 모읍니다");
+        return htmlResponse("TownPet 반려생활 정보는 이렇게 모읍니다");
       }
       if (url.includes("/api/home/feed")) {
         return jsonResponse({
@@ -69,6 +77,7 @@ describe("operator content public smoke", () => {
     expect(result.status).toBe("PASS");
     expect(result.operatorItems).toHaveLength(1);
     expect(result.checks.map((check) => check.status)).toEqual([
+      "PASS",
       "PASS",
       "PASS",
       "PASS",
@@ -131,8 +140,16 @@ describe("operator content public smoke", () => {
       if (url.includes("/feed/guest")) {
         return htmlResponse("TownPet");
       }
+      if (url.includes("/api/search/guest")) {
+        return jsonResponse({
+          ok: true,
+          data: {
+            items: [{ id: "post-1", title: "야간 산책 전 확인할 것" }],
+          },
+        });
+      }
       if (url.includes("/search/guest")) {
-        return htmlResponse("야간 산책 전 확인할 것");
+        return htmlResponse("TownPet 야간 산책 전 확인할 것");
       }
       if (url.includes("/api/home/feed")) {
         return jsonResponse({
@@ -154,5 +171,71 @@ describe("operator content public smoke", () => {
 
     expect(result.status).toBe("PASS");
     expect(result.operatorItems[0].title).toBe("야간 산책 전 확인할 것");
+  });
+
+  it("blocks when the legacy search shell is reachable but the search API misses the operator item", async () => {
+    const fetcher = async (input: string | URL | Request) => {
+      const url = String(input);
+      if (url.includes("/api/feed/guest")) {
+        return jsonResponse({
+          ok: true,
+          feed: {
+            items: [
+              {
+                id: "post-1",
+                title: "분실동물 공개 제보 예시와 위치 기준",
+                isOperatorContent: true,
+                operatorSourceName: "TownPet 분실동물 작성 기준",
+                operatorSourceUrl: "https://townpet.vercel.app/posts/new?type=LOST_FOUND",
+                operatorLastVerifiedAt: "2026-05-24T00:00:00.000Z",
+              },
+            ],
+          },
+        });
+      }
+      if (url.includes("/posts/post-1/guest")) {
+        return htmlResponse("운영자 정리 TownPet 분실동물 작성 기준 분실동물 공개 제보 예시와 위치 기준");
+      }
+      if (url.includes("/feed/guest")) {
+        return htmlResponse("TownPet");
+      }
+      if (url.includes("/api/search/guest")) {
+        return jsonResponse({
+          ok: true,
+          data: {
+            items: [],
+          },
+        });
+      }
+      if (url.includes("/search/guest")) {
+        return htmlResponse("TownPet 분실동물 공개 제보 예시와 위치 기준");
+      }
+      if (url.includes("/api/home/feed")) {
+        return jsonResponse({
+          ok: true,
+          latest: [{ id: "post-1", title: "분실동물 공개 제보 예시와 위치 기준" }],
+          featured: [],
+        });
+      }
+
+      return new Response("not found", { status: 404 });
+    };
+
+    const result = await runOperatorContentPublicSmoke({
+      baseUrl: "https://townpet.example",
+      fetcher: fetcher as typeof fetch,
+    });
+
+    expect(result.status).toBe("BLOCKED");
+    expect(result.checks).toContainEqual({
+      key: "search_guest_result",
+      status: "BLOCKED",
+      detail: "query=분실동물 공개 제보 예시와 위치 기준",
+    });
+    expect(result.checks).toContainEqual({
+      key: "search_guest_legacy_redirect",
+      status: "PASS",
+      detail: "legacy search page converges to feed shell",
+    });
   });
 });

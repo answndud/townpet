@@ -43,6 +43,14 @@ type HomeFeedResponse = {
   };
 };
 
+type GuestSearchResponse = {
+  ok?: boolean;
+  items?: GuestFeedItem[];
+  data?: {
+    items?: GuestFeedItem[];
+  };
+};
+
 export type OperatorContentPublicSmokeResult = {
   status: "PASS" | "BLOCKED";
   baseUrl: string;
@@ -132,6 +140,11 @@ function homeFeedContainsTitle(payload: HomeFeedResponse, title: string) {
   return [...latest, ...featured].some((item) => item.title === title);
 }
 
+function searchResultsContainItem(payload: GuestSearchResponse, item: { id: string; title: string }) {
+  const items = payload.items ?? payload.data?.items ?? [];
+  return items.some((result) => result.id === item.id || result.title === item.title);
+}
+
 export async function runOperatorContentPublicSmoke(params: {
   baseUrl?: string;
   minCount?: number;
@@ -183,14 +196,24 @@ export async function runOperatorContentPublicSmoke(params: {
     detail: "feed page shell reachable; operator metadata is verified via api_feed_guest_operator_items",
   });
 
-  const searchHtml = await readText(
+  const searchResult = await readJson<GuestSearchResponse>(
     fetcher,
-    `${baseUrl}/search/guest?q=${encodeURIComponent(firstItem.title)}`,
+    `${baseUrl}/api/search/guest?q=${encodeURIComponent(firstItem.title)}&searchIn=TITLE&limit=10`,
   );
   checks.push({
     key: "search_guest_result",
-    status: searchHtml.includes(firstItem.title) ? "PASS" : "BLOCKED",
+    status: searchResultsContainItem(searchResult, firstItem) ? "PASS" : "BLOCKED",
     detail: `query=${firstItem.title}`,
+  });
+
+  const legacySearchHtml = await readText(
+    fetcher,
+    `${baseUrl}/search/guest?q=${encodeURIComponent(firstItem.title)}&searchIn=TITLE`,
+  );
+  checks.push({
+    key: "search_guest_legacy_redirect",
+    status: containsAll(legacySearchHtml, ["TownPet"]) ? "PASS" : "BLOCKED",
+    detail: "legacy search page converges to feed shell",
   });
 
   const homeFeed = await readJson<HomeFeedResponse>(fetcher, `${baseUrl}/api/home/feed`);

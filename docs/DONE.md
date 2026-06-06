@@ -9950,3 +9950,10 @@
 - 결과: 첫 요청 `6323ms`, warm 요청 `290ms~587ms`, slow `1/10`, `x-vercel-cache: MISS`.
 - 결정: 첫 요청 outlier는 컸지만 slow 2회 이상/warm p95 1800ms 기준에는 미달하므로 route cache 전환은 계속 보류한다.
 - 기록: [docs/reports/performance-baseline-2026-06-06T12-00-59-941Z.md](./reports/performance-baseline-2026-06-06T12-00-59-941Z.md)
+
+### 2026-06-06 - operator content smoke 검색 검증 보강
+
+- 요약: 운영자 콘텐츠 public smoke의 검색 검증을 `/search/guest` HTML 문자열 확인에서 `/api/search/guest` 결과 확인으로 바꿨다.
+- 변경: legacy search page는 shell convergence만 확인하고, 검색 API에 operator item이 없으면 BLOCKED 처리한다.
+- 검증: targeted vitest 4 tests, 관련 eslint, `tsc --noEmit`, production smoke PASS.
+- 기록: [docs/errors/2026-06-06_operator-content-smoke-search-html-gap.md](./errors/2026-06-06_operator-content-smoke-search-html-gap.md)
