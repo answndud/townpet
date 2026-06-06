@@ -9908,3 +9908,10 @@
 - 변경: 스크립트를 import-safe로 바꾸고 target filter helper/test를 추가했다.
 - 검증: `vitest` targeted 1 file/4 tests, `PERF_TARGETS=post_detail` smoke에서 첫 요청 `3627ms`, 이후 warm 요청 `573ms/533ms` 확인.
 - 결정: guest 상세는 CSP nonce/referer 기반 dynamic/no-store 구조라 즉시 cache 전환은 보류하고, 반복 slow 기준을 성능 budget에 남겼다.
+
+### 2026-06-06 - public detail route cache 재검토
+
+- 요약: `PERF_TARGETS=post_detail` production 10회 재측정으로 slow 반복 여부를 확인했다.
+- 결과: 첫 요청 `1714ms`, warm 요청 `238ms~361ms`, slow `1/10`, `cache-control: private, no-store`, `x-vercel-cache: MISS`.
+- 결정: slow 2회 이상 기준에 미달하므로 CSP nonce/referer 기반 dynamic 구조는 유지하고 route cache 전환은 보류한다.
+- 후속: authenticated admin queue smoke credential 확보 후 재실행.
