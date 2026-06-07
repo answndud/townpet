@@ -10209,3 +10209,10 @@
 - 변경: `ops-doc-scripts-consistency.test.ts` checked docs에 현재 운영자가 참조하는 추가 operations 문서를 등록했다.
 - 검증: `ops-doc-scripts-consistency.test.ts` PASS, file eslint PASS.
 - 후속: 운영 문서에 새 `pnpm -C app` 명령을 추가하면 package script 존재 여부가 더 넓은 범위에서 자동 검증된다.
+
+### 2026-06-07 - Day1 growth handoff helper import guard
+
+- 요약: `generate-day1-growth-handoff.ts`를 import해도 즉시 실행되지 않게 하고 markdown/UTM URL 계약 테스트를 추가했다.
+- 변경: renderer/helper export, CLI guard, trailing slash base URL 정규화를 반영했다.
+- 검증: `generate-day1-growth-handoff.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
+- 후속: 성장 실행팩 URL이 바뀌면 handoff markdown 테스트가 함께 갱신되어야 한다.
