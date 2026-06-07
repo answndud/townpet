@@ -90,5 +90,5 @@
 - 백엔드 포트폴리오 완성도를 높이기 위한 API contract, 테스트 공백, 운영 증거 하드닝
 - 면접 Q&A 카드와 5분 데모 스크립트
 - 실제 성능 피드백을 서버 응답, 브라우저 paint, route asset, DB readiness로 분리해 개선한 기록
-- production cleanup, detail visual smoke, docs-quality, active plan closure를 하나의 운영 검증/문서화 루프로 닫은 기록
+- production cleanup, detail visual smoke, 관리자 큐 인증 smoke, credential 보정, docs-quality, active plan closure를 하나의 운영 검증/문서화 루프로 닫은 기록
 - 접속/로딩 속도를 production baseline, Web Vitals, ISR, prefetch, API timing, resource budget으로 나눠 8단계로 개선한 기록
