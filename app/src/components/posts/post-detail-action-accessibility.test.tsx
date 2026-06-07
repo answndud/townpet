@@ -152,7 +152,11 @@ describe("post detail action accessibility", () => {
     expect(html).toContain("공유 준비");
     expect(html).toContain("주변 공유 도구");
     expect(html).toContain('id="lost-found-share-tools"');
-    expect(html).toContain("개인정보 보호 문구 포함");
+    expect(html).toContain("복사 문구와 전단 이미지에 같은 핵심 정보를 넣습니다.");
+    expect(html).toContain('aria-label="공유 문구에 포함되는 정보"');
+    expect(html).toContain("제보 접수 중");
+    expect(html).toContain("서초구 반포동");
+    expect(html).toContain("공개 연락처, 오픈채팅, 집 주소 전체 제외");
     expect(html).toContain("카카오톡 문구 복사");
     expect(html).toContain("인스타/전단 이미지");
     expect(html).toContain('aria-label="분실/목격 카카오톡 공유 문구 복사"');
@@ -164,8 +168,9 @@ describe("post detail action accessibility", () => {
     expect(html).toContain("min-h-9");
     expect(html).toContain("rounded-md bg-[#3567b5]");
     expect(html).toContain("hover:underline-offset-4");
+    expect(html).not.toContain("rounded-lg border border-[#dbe6f5] bg-white");
     expect(html).toContain('role="status"');
-    expect(html).toContain("min-h-28 overflow-auto whitespace-pre-wrap border-t border-[#dbe6f5] pt-2");
+    expect(html).toContain("min-h-28 max-w-full overflow-auto whitespace-pre-wrap break-words border-t border-[#dbe6f5] pt-2");
     expect(html).not.toContain("tp-btn-soft");
     expect(html).not.toContain("tp-btn-primary");
     expect(html).not.toContain("min-h-32 overflow-auto whitespace-pre-wrap rounded-lg border border-[#dbe6f5] bg-[#f8fbff] p-3");

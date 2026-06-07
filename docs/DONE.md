@@ -10578,3 +10578,9 @@
 - 요약: 피드 목록에서도 분실/목격 글의 상태, 동물, 마지막 위치와 다음 행동을 바로 확인할 수 있게 했다.
 - 변경: feed read model/API 직렬화에 `lostFoundAlert`를 포함하고 카드 하단에 `공유 도구`, `목격 제보` 앵커를 추가했다.
 - 검증: targeted feed/API tests, 모바일 393px `/feed/guest?type=LOST_FOUND` CTA/overflow 확인, `quality:check` PASS.
+
+### 2026-06-07 - 분실/목격 공유 도구 품질 보강
+
+- 요약: 카카오톡 복사 문구, 전단 SVG, OG 설명이 상태/위치/시간/개인정보 주의 기준을 일관되게 담도록 정리했다.
+- 변경: lost-found share helper에 상태/요약/guest URL helper를 추가하고 공유 패널 요약 칩과 SVG 제보 링크/주의 문구를 보강했다.
+- 검증: targeted share/SVG/metadata tests, 모바일 393px 상세 공유 패널/SVG/overflow 확인, `quality:check` PASS.

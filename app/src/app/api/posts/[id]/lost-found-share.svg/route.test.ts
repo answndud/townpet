@@ -63,7 +63,9 @@ describe("GET /api/posts/[id]/lost-found-share.svg", () => {
     expect(svg).toContain("고양이 제보 요청");
     expect(svg).toContain("반포동에서 &lt;고양이&gt; 목격");
     expect(svg).toContain("치즈태비 &amp; 노란 목줄");
-    expect(svg).toContain("townpet.vercel.app/posts/post-1/guest");
+    expect(svg).toContain("제보 링크");
+    expect(svg).toContain("연락처, 오픈채팅, 집 주소 전체는 공개하지 마세요.");
+    expect(svg).toContain("/posts/post-1/guest");
     expect(mockGetPostById).toHaveBeenCalledWith("post-1");
     expect(mockAssertPostReadable).toHaveBeenCalledWith(expect.objectContaining({ id: "post-1" }));
   });

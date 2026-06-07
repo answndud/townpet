@@ -2,9 +2,11 @@ import { NextRequest } from "next/server";
 import { PostStatus, PostType } from "@prisma/client";
 
 import {
+  buildLostFoundGuestPostUrl,
   buildLostFoundShareTitle,
   formatLostFoundShareDate,
   getLostFoundAlertTypeLabel,
+  getLostFoundStatusLabel,
 } from "@/lib/lost-found-share";
 import { monitorUnhandledError } from "@/server/error-monitor";
 import { getPostById } from "@/server/queries/post.queries";
@@ -52,13 +54,13 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const alert = post.lostFoundAlert;
     const alertLabel = getLostFoundAlertTypeLabel(alert.alertType);
     const title = buildLostFoundShareTitle(post);
-    const statusLabel =
-      alert.status === "RESOLVED" ? "해결됨" : alert.status === "CLOSED" ? "종료" : "제보 접수 중";
+    const statusLabel = getLostFoundStatusLabel(alert.status);
     const location = clipText(alert.lastSeenLocation || "위치 미확인", 30);
     const breed = clipText(alert.breed || "특징 미입력", 30);
     const petType = clipText(alert.petType || "반려동물", 18);
     const seenAt = formatLostFoundShareDate(alert.lastSeenAt);
     const postTitle = clipText(post.title, 36);
+    const guestPostUrl = buildLostFoundGuestPostUrl(post.id);
 
     const svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920" role="img" aria-label="${escapeXml(title)}">
@@ -78,13 +80,14 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   ${renderLine(location, 158, 854, 46, 800)}
   ${renderLine("품종/특징", 158, 954, 30, 700)}
   ${renderLine(breed, 158, 1018, 42, 750)}
-  <rect x="112" y="1060" width="856" height="330" rx="24" fill="#ffffff" stroke="#dbe6f5" stroke-width="2"/>
+  <rect x="112" y="1060" width="856" height="374" rx="24" fill="#ffffff" stroke="#dbe6f5" stroke-width="2"/>
   <text x="158" y="1144" font-size="34" font-weight="800" fill="#10284a">제보할 때 함께 남겨주세요</text>
   <text x="158" y="1220" font-size="32" font-weight="600" fill="#4f678d">1. 발견 위치와 시간</text>
   <text x="158" y="1282" font-size="32" font-weight="600" fill="#4f678d">2. 사진 또는 이동 방향</text>
   <text x="158" y="1344" font-size="32" font-weight="600" fill="#4f678d">3. 동물 상태와 안전 여부</text>
-  <text x="112" y="1514" font-size="28" font-weight="600" fill="#5a7398">개인 연락처와 집 주소 전체는 공개 댓글에 남기지 마세요.</text>
-  <text x="112" y="1580" font-size="28" font-weight="700" fill="#3567b5">townpet.vercel.app/posts/${escapeXml(post.id)}/guest</text>
+  <text x="158" y="1406" font-size="28" font-weight="650" fill="#8a5a65">연락처, 오픈채팅, 집 주소 전체는 공개하지 마세요.</text>
+  <text x="112" y="1530" font-size="28" font-weight="700" fill="#3567b5">제보 링크</text>
+  <text x="112" y="1588" font-size="22" font-weight="700" fill="#244a7f">${escapeXml(guestPostUrl)}</text>
   <text x="112" y="1748" font-size="26" font-weight="600" fill="#7b8fac">지역 반려생활 정보, TownPet</text>
 </svg>`;
 
