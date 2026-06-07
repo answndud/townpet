@@ -1,11 +1,12 @@
 import { PostStatus, PostType, UserRole } from "@prisma/client";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   OPERATOR_CONTENT_DRAFTS,
   OPERATOR_CONTENT_PUBLISH_CONFIRM_ENV_KEY,
   OPERATOR_CONTENT_PUBLISH_CONFIRM_VALUE,
   formatPublishOperatorContentResult,
+  main,
   publishOperatorContentDrafts,
 } from "./publish-operator-content-drafts";
 
@@ -14,6 +15,7 @@ function createMockPrisma(params: {
   createdIds?: string[];
 }) {
   const created: Array<{ data: Record<string, unknown> & { title: string; type: PostType }; select: unknown }> = [];
+  const disconnect = vi.fn().mockResolvedValue(undefined);
 
   return {
     user: {
@@ -39,7 +41,9 @@ function createMockPrisma(params: {
     },
     $transaction: async (operations: Array<() => Promise<{ id: string; title: string; type: PostType }>>) =>
       Promise.all(operations.map((operation) => operation())),
+    $disconnect: disconnect,
     __created: created,
+    __disconnect: disconnect,
   };
 }
 
@@ -49,6 +53,10 @@ describe("publish operator content drafts", () => {
     DATABASE_URL: "postgresql://user:pass@localhost:5432/townpet",
     [OPERATOR_CONTENT_PUBLISH_CONFIRM_ENV_KEY]: OPERATOR_CONTENT_PUBLISH_CONFIRM_VALUE,
   };
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
 
   it("dry-runs all drafts without creating posts by default", async () => {
     const prisma = createMockPrisma({});
@@ -107,5 +115,17 @@ describe("publish operator content drafts", () => {
         },
       },
     });
+  });
+
+  it("prints the formatted result and disconnects through main", async () => {
+    const prisma = createMockPrisma({});
+    const log = vi.spyOn(console, "log").mockImplementation(() => undefined);
+
+    const output = await main(prisma as never, env);
+
+    expect(output).toContain("Operator content publishing");
+    expect(output).toContain("status: DRY_RUN");
+    expect(log).toHaveBeenCalledWith(output);
+    expect(prisma.__disconnect).toHaveBeenCalledOnce();
   });
 });
