@@ -10139,3 +10139,10 @@
 - 검증: `ADMIN_QUEUE_SMOKE_LOCAL_FIXTURES=1 OPS_BASE_URL=http://localhost:3000` smoke PASS; `/admin/reports`, `/admin/corrections` 모두 queue/surface/no-overflow PASS.
 - 산출물: ignored local report `docs/reports/admin-queue-smoke-2026-06-07T00-25-11-856Z/README.md`.
 - 후속: production credential 확보 전까지 추가 로컬 fixture 재실행은 필요 없고, credential 확보 후 production mode만 재실행한다.
+
+### 2026-06-07 - API route contract generated report 갱신
+
+- 요약: `/api/ops/web-vitals/summary` 추가 후 stale 상태였던 generated API route contract report를 최신화했다.
+- 변경: routeHandlers `54 -> 55`, 새 route는 `public-internal-token` access, `schema` validation, `monitorUnhandledError` monitoring으로 기록됐다.
+- 검증: `check-api-route-contracts.ts --check` PASS, `--check --strict` PASS, UI copy audit PASS.
+- 후속: 새 API route 추가 후에는 `api:contracts --check`를 즉시 실행해 report drift를 조기에 잡는다.
