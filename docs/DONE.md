@@ -10447,3 +10447,10 @@
 - 변경: top-level `new PrismaClient()`를 제거하고 CLI guard 내부에서만 Prisma를 생성하게 했으며, `seed-entrypoints.test.ts`로 import 회귀를 막았다.
 - 검증: `seed-entrypoints.test.ts`, 기존 seed helper tests, file eslint, `tsc --noEmit` PASS.
 - 후속: 새 seed/provision script를 추가하면 entry guard와 import-side-effect test 목록을 함께 갱신한다.
+
+### 2026-06-07 - e2e script immediate execution guard 보강
+
+- 요약: 감사에서 남은 `e2e-*flow.ts` 즉시 실행부 2개를 CLI guard 안으로 옮겨 import 시 DB flow가 실행되지 않게 했다.
+- 변경: notification/comment flow와 new-user safety policy flow를 `process.argv[1]` guard로 보호하고 import 회귀 테스트 목록에 추가했다.
+- 검증: `seed-entrypoints.test.ts`, file eslint, `tsc --noEmit`, 즉시 `main()`/top-level Prisma scan PASS.
+- 후속: 새 script entrypoint를 추가할 때 import-side-effect test 목록을 함께 갱신한다.

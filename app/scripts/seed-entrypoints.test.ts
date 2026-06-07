@@ -17,6 +17,8 @@ const seedEntrypoints = [
   "seed-search-cases.ts",
   "seed-users.ts",
   "provision-test-users.ts",
+  "e2e-new-user-safety-policy-flow.ts",
+  "e2e-notification-comment-flow.ts",
 ] as const;
 
 const entrypointImporters: Record<(typeof seedEntrypoints)[number], () => Promise<unknown>> = {
@@ -33,6 +35,8 @@ const entrypointImporters: Record<(typeof seedEntrypoints)[number], () => Promis
   "seed-search-cases.ts": () => import("./seed-search-cases"),
   "seed-users.ts": () => import("./seed-users"),
   "provision-test-users.ts": () => import("./provision-test-users"),
+  "e2e-new-user-safety-policy-flow.ts": () => import("./e2e-new-user-safety-policy-flow"),
+  "e2e-notification-comment-flow.ts": () => import("./e2e-notification-comment-flow"),
 };
 
 describe("seed and provision entrypoints", () => {
@@ -47,6 +51,7 @@ describe("seed and provision entrypoints", () => {
       const source = await fs.readFile(path.join(import.meta.dirname, entrypoint), "utf8");
 
       expect(source).not.toContain("const prisma = new PrismaClient();");
+      expect(source).not.toContain("\nmain()\n  .catch");
     }
   });
 });
