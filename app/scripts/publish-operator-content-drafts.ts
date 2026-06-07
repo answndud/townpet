@@ -333,18 +333,23 @@ export function formatPublishOperatorContentResult(result: PublishResult) {
   return lines.join("\n");
 }
 
-async function main() {
-  const prisma = new PrismaClient();
+export async function main(prisma: PrismaClient = new PrismaClient(), env: NodeJS.ProcessEnv = process.env) {
   try {
-    const result = await publishOperatorContentDrafts({ prisma });
-    console.log(formatPublishOperatorContentResult(result));
+    const result = await publishOperatorContentDrafts({ prisma, env });
+    const output = formatPublishOperatorContentResult(result);
+    console.log(output);
+    return output;
   } finally {
     await prisma.$disconnect();
   }
 }
 
-if (process.env.NODE_ENV !== "test" && require.main === module) {
-  main().catch((error) => {
+if (
+  process.env.NODE_ENV !== "test" &&
+  process.argv[1]?.endsWith("publish-operator-content-drafts.ts")
+) {
+  const prisma = new PrismaClient();
+  main(prisma).catch((error) => {
     console.error("Operator content publishing failed");
     console.error(error);
     process.exit(1);

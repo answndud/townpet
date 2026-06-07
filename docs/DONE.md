@@ -10370,3 +10370,10 @@
 - 변경: `main(prisma, env)`를 export해 Prisma/env 주입형으로 분리하고 `process.argv[1]` 기반 CLI guard로 바꿨다.
 - 검증: `publish-public-smoke-fixtures.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
 - 후속: public smoke fixture output이나 apply env 정책이 바뀌면 wrapper test를 함께 갱신한다.
+
+### 2026-06-07 - operator content publish CLI wrapper 보강
+
+- 요약: `ops:operator-content:publish` wrapper가 import 시 실행되지 않게 하고 main 출력/disconnect 경계를 테스트했다.
+- 변경: `main(prisma, env)`를 export해 Prisma/env 주입형으로 분리하고 `process.argv[1]` 기반 CLI guard로 바꿨다.
+- 검증: `publish-operator-content-drafts.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
+- 후속: 운영자 콘텐츠 draft output이나 apply env 정책이 바뀌면 wrapper test를 함께 갱신한다.
