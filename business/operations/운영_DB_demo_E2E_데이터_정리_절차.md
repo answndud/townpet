@@ -119,13 +119,12 @@ curl -sS https://townpet.vercel.app/api/home/feed
 - `/api/health` 200
 - `/api/home/feed`에 demo/E2E 신호가 없음
 - `/` desktop/mobile에서 테스트 제목이나 특정 실험 지역명이 노출되지 않음
-- 삭제 count와 남은 후보 count를 `docs/PROGRESS.md` 또는 별도 report에 기록
+- 삭제 count와 남은 후보 count를 `docs/DONE.md` 또는 별도 report에 기록
 
 ## 기록 위치
 
-- 실행 전 계획: `docs/PLAN.md`
-- 실행 중 결과: `docs/PROGRESS.md`
-- 완료 archive: `docs/COMPLETED.md`
+- 실행 전 계획과 blocker: `docs/PLAN.md`
+- 완료 요약: `docs/DONE.md`
 - 긴 후보 목록이나 운영 증적: `docs/reports/`
 
 후보 목록에는 개인정보가 섞일 수 있으므로, email 전체를 공개 문서에 남길지 여부는 운영자가 판단한다. 외부 공유 문서에는 email local-part를 마스킹한다.

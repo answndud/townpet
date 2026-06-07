@@ -10181,3 +10181,10 @@
 - 변경: AI agent 개발 방식, 데모/문서 패키지, 운영 검증 루프 글의 문서 목록/다이어그램/면접 설명을 `PLAN/DONE` 기준으로 정리했다.
 - 검증: `blog/` 내 구 상태문서 링크 검색 0건, 문서 인덱스 check, `git diff --check`.
 - 후속: 운영/사업 문서에 남은 legacy `PROGRESS/COMPLETED` 참조는 현재 운영 기준 문서인지 archive 성격인지 구분해 별도 정리한다.
+
+### 2026-06-07 - 운영/사업 문서 구 상태문서 참조 정리
+
+- 요약: current non-archive business/operations 문서의 구 상태문서 참조를 현재 `PLAN.md`/`DONE.md`/`docs/reports` 기준으로 정리했다.
+- 변경: 문서 안내, 제품/보안/운영 개요, 운영 체크리스트/런북, 에이전트 운영 문서의 기록 위치 문구를 갱신했다.
+- 제외: 도메인 상태값 `COMPLETED`와 archive 문서는 변경하지 않았다.
+- 검증: non-archive stale 상태문서 검색, 문서 인덱스 check, `git diff --check`.
