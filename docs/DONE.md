@@ -10328,3 +10328,10 @@
 - 변경: `runGuestAuthorBackfill(prisma)`, `resolveGuestAuthorBackfillBatchSize(...)`, `formatGuestAuthorBackfillOutput(...)`를 추가해 wrapper 출력 계약을 분리했다.
 - 검증: `backfill-guest-authors.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
 - 후속: guest author backfill batch/run mode/output이 바뀌면 wrapper test를 함께 갱신한다.
+
+### 2026-06-07 - post integrity repair CLI wrapper 보강
+
+- 요약: `db:repair:post-integrity` wrapper가 import 시 shared Prisma/service/cache를 실행하지 않게 하고 limit/scope 검증과 출력 메시지를 테스트했다.
+- 변경: `runPostIntegrityRepair(deps)`, `resolvePostIntegrityRepairConfig(...)`, `formatPostIntegrityRepairOutput(...)`를 추가하고 service/cache/prisma는 CLI 실행 시 동적 import하도록 분리했다.
+- 검증: `repair-post-integrity.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
+- 후속: post integrity repair 출력 키나 cache bump 대상이 바뀌면 wrapper test를 함께 갱신한다.
