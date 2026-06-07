@@ -8,6 +8,7 @@ import {
   buildLostFoundPosterAlt,
   buildLostFoundPosterUrl,
   buildLostFoundShareChecklist,
+  buildLostFoundShareSummary,
   buildLostFoundShareText,
 } from "@/lib/lost-found-share";
 import { buildLostFoundShareActionEvent } from "@/lib/lost-found-acquisition-events";
@@ -45,6 +46,7 @@ export function LostFoundSharePanel({ post, postUrl }: LostFoundSharePanelProps)
   const [message, setMessage] = useState<string | null>(null);
   const shareText = useMemo(() => buildLostFoundShareText(post), [post]);
   const checklist = useMemo(() => buildLostFoundShareChecklist(post), [post]);
+  const shareSummary = useMemo(() => buildLostFoundShareSummary(post), [post]);
   const posterUrl = buildLostFoundPosterUrl(post.id);
   const posterPath = `/api/posts/${post.id}/lost-found-share.svg`;
   const posterAlt = buildLostFoundPosterAlt(post);
@@ -86,10 +88,20 @@ export function LostFoundSharePanel({ post, postUrl }: LostFoundSharePanelProps)
             주변 공유 도구
           </h2>
           <p className="mt-1 max-w-[68ch] text-xs leading-5 text-[#526d95]">
-            목격 제보를 받기 위한 공개 문구입니다. 위치, 시간, 특징만 남기고 개인 연락처와 상세 주소는 제외합니다.
+            복사 문구와 전단 이미지에 같은 핵심 정보를 넣습니다. 위치, 시간, 특징만 남기고 개인 연락처와 상세 주소는 제외합니다.
           </p>
-          <p className="mt-2 inline-flex text-[11px] font-medium text-[#6a83a9]">
-            개인정보 보호 문구 포함
+          <div className="mt-2 flex flex-wrap gap-1.5" aria-label="공유 문구에 포함되는 정보">
+            {shareSummary.map((item) => (
+              <span
+                key={item}
+                className="inline-flex min-h-6 items-center rounded-md border border-[#dbe6f5] bg-[#f8fbff] px-2 text-[11px] font-medium text-[#526d95]"
+              >
+                {item}
+              </span>
+            ))}
+          </div>
+          <p className="mt-2 text-[11px] font-medium text-[#6a83a9]">
+            공개 연락처, 오픈채팅, 집 주소 전체 제외
           </p>
         </div>
         <div className="flex flex-col gap-1.5 sm:flex-row sm:flex-wrap sm:justify-end">
@@ -133,12 +145,12 @@ export function LostFoundSharePanel({ post, postUrl }: LostFoundSharePanelProps)
         ))}
       </ol>
 
-      <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1fr)_180px]">
-        <div>
+      <div className="mt-3 grid min-w-0 gap-3 lg:grid-cols-[minmax(0,1fr)_180px]">
+        <div className="min-w-0">
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#6c84ab]">
             공유 문구
           </p>
-          <pre className="mt-2 min-h-28 overflow-auto whitespace-pre-wrap border-t border-[#dbe6f5] pt-2 text-xs leading-5 text-[#244a7f]">
+          <pre className="mt-2 min-h-28 max-w-full overflow-auto whitespace-pre-wrap break-words border-t border-[#dbe6f5] pt-2 text-xs leading-5 text-[#244a7f]">
             {shareText}
           </pre>
         </div>
@@ -146,7 +158,7 @@ export function LostFoundSharePanel({ post, postUrl }: LostFoundSharePanelProps)
           href={posterUrl}
           target="_blank"
           rel="noreferrer"
-          className="block overflow-hidden rounded-lg border border-[#dbe6f5] bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/35"
+          className="block w-full max-w-full overflow-hidden rounded-md border border-[#dbe6f5] bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/35"
           onClick={handlePosterOpen}
         >
           <Image
