@@ -10307,3 +10307,10 @@
 - 변경: `runUploadAssetCleanup(deps)`, `resolveUploadTempCleanupLimit(...)`, `formatUploadAssetCleanupOutput(...)`를 추가하고 service/prisma는 CLI 실행 시 동적 import하도록 분리했다.
 - 검증: `cleanup-upload-assets.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
 - 후속: upload asset cleanup limit/env/output이 바뀌면 wrapper test를 함께 갱신한다.
+
+### 2026-06-07 - notification delivery retry CLI wrapper 보강
+
+- 요약: `ops:notifications:retry` wrapper가 import 시 shared Prisma/query를 실행하지 않게 하고 limit 검증과 dry-run/apply JSON 출력 메시지를 테스트했다.
+- 변경: `runNotificationDeliveryRetry(deps)`, `readPositiveInt(...)`, `formatNotificationDeliveryRetryOutput(...)`를 추가하고 query/prisma는 CLI 실행 시 동적 import하도록 분리했다.
+- 검증: `retry-notification-deliveries.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
+- 후속: notification outbox retry JSON payload가 바뀌면 wrapper test와 운영 문서를 함께 갱신한다.
