@@ -10216,3 +10216,10 @@
 - 변경: renderer/helper export, CLI guard, trailing slash base URL 정규화를 반영했다.
 - 검증: `generate-day1-growth-handoff.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
 - 후속: 성장 실행팩 URL이 바뀌면 handoff markdown 테스트가 함께 갱신되어야 한다.
+
+### 2026-06-07 - health check helper import guard/test 보강
+
+- 요약: `ops:check:health` helper를 import해도 즉시 실행되지 않게 하고 health URL/header 생성 계약을 테스트로 고정했다.
+- 변경: base URL 정규화, `/api/health` URL 생성, internal token header 생성을 export helper로 분리했다.
+- 검증: `check-health-endpoint.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
+- 후속: health endpoint 호출 정책이 바뀌면 helper test와 운영 문서를 함께 갱신한다.
