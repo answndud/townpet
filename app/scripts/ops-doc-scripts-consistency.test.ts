@@ -26,6 +26,10 @@ const checkedDocs = [
   "business/operations/manual-checks/배포_보안_체크리스트.md",
   "business/operations/OAuth_외부로그인_운영_가이드.md",
   "business/operations/Vercel_OAuth_초기설정_가이드.md",
+  "business/operations/에이전트_운영_가이드.md",
+  "business/operations/에이전트_프롬프트_템플릿.md",
+  "business/operations/차단 해소 체크리스트.md",
+  "business/operations/돌봄_운영_런북.md",
 ];
 
 function readRepoFile(path: string) {

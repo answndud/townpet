@@ -10202,3 +10202,10 @@
 - 변경: update helper import guard와 테스트 가능한 row/snippet update helper export를 추가하고, agent prompt 템플릿의 `docs/operations` 문구를 정정했다.
 - 검증: `state-harness-copy.test.ts` PASS, scripts eslint PASS, `tsc --noEmit` PASS.
 - 후속: production OAuth 수동점검 때 helper 기본 경로를 그대로 사용해도 존재하는 business 운영 문서 트리에 기록된다.
+
+### 2026-06-07 - 운영 문서 command drift 테스트 범위 확장
+
+- 요약: agent/OAuth/차단 해소/돌봄 운영 문서도 package script drift 테스트 범위에 포함했다.
+- 변경: `ops-doc-scripts-consistency.test.ts` checked docs에 현재 운영자가 참조하는 추가 operations 문서를 등록했다.
+- 검증: `ops-doc-scripts-consistency.test.ts` PASS, file eslint PASS.
+- 후속: 운영 문서에 새 `pnpm -C app` 명령을 추가하면 package script 존재 여부가 더 넓은 범위에서 자동 검증된다.
