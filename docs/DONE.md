@@ -10496,3 +10496,9 @@
 - 증거: `https://github.com/answndud/townpet/actions/runs/27090982597`, mode `production_credentials`, report `docs/reports/admin-queue-smoke-2026-06-07T11-17-33-478Z`.
 - 결과: `/admin/reports`, `/admin/corrections` 모두 report queue/correction queue/expected surface/no overflow PASS.
 - 후속: 평상시에는 `verify_admin_queue=true`만 사용하고, credential이 깨진 경우에만 `provision_admin_queue_smoke=true`를 켠다.
+
+### 2026-06-07 - 운영 검증 블로그 최신화
+
+- 요약: `blog/30`에 admin queue authenticated smoke, system Chrome 전환, `CredentialsSignin` 진단, smoke 계정 provision, 최종 PASS run을 추가했다.
+- 변경: `blog/README.md`, `blog/00_시리즈_계획.md`의 `30`번 글 범위도 관리자 큐 smoke와 credential 보정까지 포함하도록 갱신했다.
+- 검증: `node scripts/refresh-docs-index.mjs --check`, `git diff --check` PASS.
