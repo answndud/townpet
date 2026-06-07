@@ -10426,3 +10426,10 @@
 - 변경: `formatGuestLegacyCleanupReadinessOutput(...)`, `runGuestLegacyCleanupReadinessCli(...)`, `main(prisma, config)`를 추가하고 `require.main` guard를 교체했다.
 - 검증: `check-guest-legacy-cleanup-readiness.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
 - 후속: guest legacy cleanup readiness JSON key나 strict/warn 정책이 바뀌면 CLI runner test를 함께 갱신한다.
+
+### 2026-06-07 - remote Web Vitals summary CLI wrapper 보강
+
+- 요약: `fetch-web-vitals-summary.ts` wrapper가 import 시 실행되지 않고 fetch/write/output 경계를 실원격 없이 검증 가능하게 됐다.
+- 변경: `runRemoteWebVitalsSummaryCli(options, deps)`, `main(options, deps)`를 추가하고 `require.main` guard를 교체했다.
+- 검증: `fetch-web-vitals-summary.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
+- 후속: Web Vitals report markdown이나 protected summary API contract가 바뀌면 CLI runner test를 함께 갱신한다.

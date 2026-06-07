@@ -3,8 +3,10 @@ import { describe, expect, it, vi } from "vitest";
 import {
   buildRemoteWebVitalsSummaryUrl,
   fetchRemoteWebVitalsSummary,
+  main,
   renderRemoteWebVitalsSummaryMarkdown,
   resolveRemoteWebVitalsOptions,
+  runRemoteWebVitalsSummaryCli,
 } from "./fetch-web-vitals-summary";
 
 describe("remote Web Vitals summary script", () => {
@@ -116,5 +118,102 @@ describe("remote Web Vitals summary script", () => {
 
     expect(markdown).toContain("- status: `OK`");
     expect(markdown).toContain("| LCP | `/` | 1 | 250 | 250 | 1 | 0 | 0 |");
+  });
+
+  it("runs the CLI summary with injected fetcher and report writer", async () => {
+    const fetchFn = vi.fn(async () =>
+      new Response(
+        JSON.stringify({
+          ok: true,
+          data: {
+            status: "OK",
+            days: 7,
+            limit: 5000,
+            schemaSyncRequired: false,
+            sampleCount: 1,
+            rows: [
+              {
+                metric: "LCP",
+                route: "/feed/guest",
+                count: 1,
+                p75: 1200,
+                p95: 1200,
+                goodCount: 1,
+                needsImprovementCount: 0,
+                poorCount: 0,
+                latestAt: "2026-06-06T00:00:00.000Z",
+              },
+            ],
+          },
+        }),
+        { status: 200, headers: { "content-type": "application/json" } },
+      ),
+    );
+    const mkdir = vi.fn().mockResolvedValue(undefined);
+    const writeFile = vi.fn().mockResolvedValue(undefined);
+
+    const result = await runRemoteWebVitalsSummaryCli(
+      {
+        baseUrl: "https://townpet.dev",
+        token: "token",
+        days: 7,
+        limit: 5000,
+        outputPath: "/tmp/web-vitals.md",
+      },
+      {
+        fetchFn: fetchFn as typeof fetch,
+        mkdir: mkdir as never,
+        writeFile: writeFile as never,
+        generatedAt: new Date("2026-06-06T00:00:00.000Z"),
+      },
+    );
+
+    expect(result.exitCode).toBe(0);
+    expect(result.output).toContain("Remote Web Vitals summary fetched");
+    expect(result.output).toContain("sampleCount: 1");
+    expect(mkdir).toHaveBeenCalledWith("/tmp", { recursive: true });
+    expect(writeFile).toHaveBeenCalledWith(
+      "/tmp/web-vitals.md",
+      expect.stringContaining("- generatedAt: `2026-06-06T00:00:00.000Z`"),
+      "utf8",
+    );
+  });
+
+  it("prints CLI output through main on pass", async () => {
+    const log = vi.spyOn(console, "log").mockImplementation(() => undefined);
+    const fetchFn = vi.fn(async () =>
+      new Response(
+        JSON.stringify({
+          ok: true,
+          data: {
+            status: "NO_SAMPLES",
+            days: 7,
+            limit: 5000,
+            schemaSyncRequired: false,
+            sampleCount: 0,
+            rows: [],
+          },
+        }),
+        { status: 200, headers: { "content-type": "application/json" } },
+      ),
+    );
+
+    const output = await main(
+      {
+        baseUrl: "https://townpet.dev",
+        token: "token",
+        days: 7,
+        limit: 5000,
+        outputPath: "/tmp/web-vitals.md",
+      },
+      {
+        fetchFn: fetchFn as typeof fetch,
+        mkdir: vi.fn().mockResolvedValue(undefined) as never,
+        writeFile: vi.fn().mockResolvedValue(undefined) as never,
+      },
+    );
+
+    expect(output).toContain("status: NO_SAMPLES");
+    expect(log).toHaveBeenCalledWith(output);
   });
 });

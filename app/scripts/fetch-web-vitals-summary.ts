@@ -1,6 +1,6 @@
 import "dotenv/config";
 
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir as mkdirDefault, writeFile as writeFileDefault } from "node:fs/promises";
 import path from "node:path";
 
 type WebVitalsRemoteSummaryRow = {
@@ -42,6 +42,20 @@ type WebVitalsRemoteOptions = {
 };
 
 type WebVitalsRemoteEnv = Partial<Record<string, string | undefined>>;
+
+type WebVitalsRemoteSummaryCliResult = {
+  summary: WebVitalsRemoteSummary;
+  markdown: string;
+  output: string;
+  exitCode: 0;
+};
+
+type WebVitalsRemoteSummaryDeps = {
+  fetchFn?: typeof fetch;
+  mkdir?: typeof mkdirDefault;
+  writeFile?: typeof writeFileDefault;
+  generatedAt?: Date;
+};
 
 function compactTimestamp(date = new Date()) {
   return date.toISOString().replace(/[:.]/g, "-");
@@ -195,25 +209,49 @@ export async function fetchRemoteWebVitalsSummary(
   return payload.data;
 }
 
-async function main() {
-  const options = resolveRemoteWebVitalsOptions(process.env);
-  const summary = await fetchRemoteWebVitalsSummary(options);
+export async function runRemoteWebVitalsSummaryCli(
+  options: WebVitalsRemoteOptions = resolveRemoteWebVitalsOptions(process.env),
+  deps: WebVitalsRemoteSummaryDeps = {},
+): Promise<WebVitalsRemoteSummaryCliResult> {
+  const summary = await fetchRemoteWebVitalsSummary(options, deps.fetchFn);
   const markdown = renderRemoteWebVitalsSummaryMarkdown({
+    generatedAt: deps.generatedAt,
     baseUrl: options.baseUrl,
     summary,
   });
 
+  const mkdir = deps.mkdir ?? mkdirDefault;
+  const writeFile = deps.writeFile ?? writeFileDefault;
   await mkdir(path.dirname(options.outputPath), { recursive: true });
   await writeFile(options.outputPath, markdown, "utf8");
 
-  console.log("Remote Web Vitals summary fetched");
-  console.log(`- url: ${buildRemoteWebVitalsSummaryUrl(options)}`);
-  console.log(`- status: ${summary.status}`);
-  console.log(`- sampleCount: ${summary.sampleCount}`);
-  console.log(`- output: ${options.outputPath}`);
+  return {
+    summary,
+    markdown,
+    output: [
+      "Remote Web Vitals summary fetched",
+      `- url: ${buildRemoteWebVitalsSummaryUrl(options)}`,
+      `- status: ${summary.status}`,
+      `- sampleCount: ${summary.sampleCount}`,
+      `- output: ${options.outputPath}`,
+    ].join("\n"),
+    exitCode: 0,
+  };
 }
 
-if (require.main === module) {
+export async function main(
+  options: WebVitalsRemoteOptions = resolveRemoteWebVitalsOptions(process.env),
+  deps: WebVitalsRemoteSummaryDeps = {},
+) {
+  const result = await runRemoteWebVitalsSummaryCli(options, deps);
+  console.log(result.output);
+  return result.output;
+}
+
+if (
+  process.env.NODE_ENV !== "test" &&
+  process.argv[1]?.endsWith("fetch-web-vitals-summary.ts")
+) {
   main().catch((error) => {
     console.error(error);
     process.exit(1);
