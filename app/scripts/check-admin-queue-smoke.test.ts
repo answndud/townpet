@@ -6,6 +6,7 @@ import {
   buildAdminQueueSmokeMarkdown,
   cleanupAdminQueueSmokeResources,
   main,
+  resolveAdminQueueSmokeBrowserLaunchOptions,
   resolveAdminQueueSmokeConfig,
   resolveAdminQueueSmokeRunConfig,
   runAdminQueueSmoke,
@@ -72,6 +73,27 @@ describe("admin queue smoke", () => {
         ADMIN_QUEUE_SMOKE_LOCAL_FIXTURES: "1",
       }),
     ).toThrow("requires OPS_BASE_URL to point to localhost");
+  });
+
+  it("resolves optional browser launch override for CI system Chrome", () => {
+    expect(
+      resolveAdminQueueSmokeBrowserLaunchOptions({
+        ADMIN_QUEUE_SMOKE_BROWSER_CHANNEL: " chrome ",
+      }),
+    ).toEqual({ channel: "chrome" });
+
+    expect(
+      resolveAdminQueueSmokeBrowserLaunchOptions({
+        ADMIN_QUEUE_SMOKE_CHROMIUM_EXECUTABLE_PATH: " /usr/bin/google-chrome ",
+      }),
+    ).toEqual({ executablePath: "/usr/bin/google-chrome" });
+
+    expect(() =>
+      resolveAdminQueueSmokeBrowserLaunchOptions({
+        ADMIN_QUEUE_SMOKE_BROWSER_CHANNEL: "chrome",
+        ADMIN_QUEUE_SMOKE_CHROMIUM_EXECUTABLE_PATH: "/usr/bin/google-chrome",
+      }),
+    ).toThrow("Use either ADMIN_QUEUE_SMOKE_BROWSER_CHANNEL");
   });
 
   it("resolves deterministic run config for production credential mode", () => {

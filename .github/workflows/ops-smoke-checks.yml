@@ -29,7 +29,7 @@ on:
 jobs:
   smoke-check:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: app
@@ -39,7 +39,6 @@ jobs:
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
       SENTRY_ORG_SLUG: ${{ secrets.SENTRY_ORG_SLUG }}
       SENTRY_PROJECT_SLUG: ${{ secrets.SENTRY_PROJECT_SLUG }}
-      PLAYWRIGHT_BROWSERS_PATH: .playwright-browsers
 
     steps:
       - uses: actions/checkout@v6
@@ -120,22 +119,18 @@ jobs:
             exit 1
           fi
 
-      - name: Cache Playwright Chromium
+      - name: Check system Chrome
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.verify_admin_queue }}
-        uses: actions/cache@v4
-        with:
-          path: app/.playwright-browsers
-          key: ${{ runner.os }}-playwright-chromium-${{ hashFiles('app/pnpm-lock.yaml') }}
-
-      - name: Install Playwright Chromium
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.verify_admin_queue }}
-        run: pnpm exec playwright install chromium
+        run: |
+          command -v google-chrome
+          google-chrome --version
 
       - name: Check authenticated admin queue
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.verify_admin_queue }}
         env:
           ADMIN_QUEUE_SMOKE_EMAIL: ${{ secrets.ADMIN_QUEUE_SMOKE_EMAIL }}
           ADMIN_QUEUE_SMOKE_PASSWORD: ${{ secrets.ADMIN_QUEUE_SMOKE_PASSWORD }}
+          ADMIN_QUEUE_SMOKE_BROWSER_CHANNEL: chrome
         run: pnpm ops:check:admin-queue-smoke
 
       - name: Print admin queue smoke report
