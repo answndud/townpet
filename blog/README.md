@@ -15,7 +15,7 @@
 - [00_품질_체크리스트.md](./00_품질_체크리스트.md)
 - [00_백엔드_개발자를_위한_자바스크립트.md](./00_백엔드_개발자를_위한_자바스크립트.md)
 
-기존 [PLAN.md](../docs/PLAN.md), [PROGRESS.md](../docs/PROGRESS.md)는 계속 **앱 개발용 active SSOT**로 유지하고, 완료 이력은 [COMPLETED.md](../docs/COMPLETED.md)에 둡니다.
+기존 [PLAN.md](../docs/PLAN.md)는 계속 **앱 개발용 active SSOT**로 유지하고, 완료 이력은 [DONE.md](../docs/DONE.md)에 둡니다.
 
 ## active / archive 규칙
 

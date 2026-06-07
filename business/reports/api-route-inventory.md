@@ -1,6 +1,6 @@
 # TownPet API Route Inventory
 
-Last updated: 2026-05-18
+Last updated: 2026-06-07
 
 ## Purpose
 
@@ -17,15 +17,15 @@ Generated output: `business/reports/api-route-contracts.generated.md`
 
 ## Summary
 
-- API route handlers: 48
+- API route handlers: 55
 - Primary auth modes: public/guest, auth-aware, moderator/admin
 - Standard backend concerns: Zod validation, service/query delegation, structured JSON response, `monitorUnhandledError`
-- Immediate test-gap candidates: 1 route does not have adjacent `route.test.ts`
-- Generated contract report: `api-route-contracts.generated.md`, currently 48 route handlers, 0 missing method exports, 1 adjacent test gap
+- Immediate test-gap candidates: 0 direct implementation routes without adjacent `route.test.ts`
+- Generated contract report: `api-route-contracts.generated.md`, currently 55 route handlers, 0 missing method exports, 0 adjacent test gaps
 - Generated heuristic snapshot:
-  - access: admin=2, auth-aware=16, authenticated=10, moderator=6, provider-managed=1, public=11, public-internal-token=2
-  - validation: manual=10, no-input=4, provider-managed=1, schema=21, service-delegated=11, static-response=1
-  - monitoring: logger=1, monitorUnhandledError=45, provider-managed=1, static-response=1
+  - access: admin=2, auth-aware=18, authenticated=10, moderator=6, provider-managed=1, public=15, public-internal-token=3
+  - validation: manual=13, no-input=3, provider-managed=1, schema=25, service-delegated=12, static-response=1
+  - monitoring: logger=1, monitorUnhandledError=52, provider-managed=1, static-response=1
   - review result: `validation=none` 0 routes, `monitoring=none` 0 routes
 
 ## Route Table
@@ -38,6 +38,7 @@ Generated output: `business/reports/api-route-contracts.generated.md`
 | `/api/admin/moderation/users/hide-content` | POST | moderator/admin, monitored |
 | `/api/admin/moderation/users/restore-content` | POST | moderator/admin, monitored |
 | `/api/admin/moderation/users/sanction` | POST | moderator/admin, monitored |
+| `/api/acquisition/events` | POST | public, validated, monitored |
 | `/api/auth/[...nextauth]` | NextAuth handlers | public entry, provider-managed |
 | `/api/auth/logout` | POST | public/session-aware, monitored |
 | `/api/auth/password/reset/confirm` | POST | public, validated, monitored |
@@ -51,17 +52,22 @@ Generated output: `business/reports/api-route-contracts.generated.md`
 | `/api/boards/[board]/posts` | GET | auth-aware, validated, monitored |
 | `/api/comments/[id]` | PATCH, DELETE | auth-aware, monitored |
 | `/api/communities` | GET | public, validated, monitored |
+| `/api/corrections` | POST | auth-aware, service-delegated, monitored |
 | `/api/feed/guest` | GET | public guest, validated, monitored |
 | `/api/feed/personalization` | POST | auth-aware, validated, monitored |
 | `/api/guest/step-up` | POST | public guest, validated, monitored |
-| `/api/health` | GET | public minimized response, optional internal token |
+| `/api/health` | GET | public minimized response, internal diagnostics token |
+| `/api/home/feed` | GET | public, monitored |
 | `/api/lounges/breeds/[breedCode]/groupbuys` | POST | auth-aware, validated, monitored |
 | `/api/lounges/breeds/[breedCode]/posts` | GET | auth-aware, validated, monitored |
+| `/api/metrics/web-vitals` | POST | public, validated, monitored |
 | `/api/neighborhoods` | GET | public, validated, monitored |
 | `/api/notifications` | GET | auth-aware, validated, monitored |
+| `/api/ops/web-vitals/summary` | GET | internal token, validated, monitored |
 | `/api/posts/[id]/comments` | GET, POST | auth-aware, monitored |
 | `/api/posts/[id]/content` | GET | auth-aware, read-access checked, monitored |
 | `/api/posts/[id]/detail` | GET | auth-aware, monitored |
+| `/api/posts/[id]/lost-found-share.svg` | GET | public, read-access checked, monitored |
 | `/api/posts/[id]/reaction` | GET | auth-aware, monitored |
 | `/api/posts/[id]` | GET, PATCH, DELETE | auth-aware, monitored |
 | `/api/posts/[id]/stats` | GET | auth-aware, read-access checked, monitored |
@@ -83,11 +89,7 @@ Generated output: `business/reports/api-route-contracts.generated.md`
 
 ## Adjacent Route Test Gaps
 
-These files currently do not have a sibling `route.test.ts` and should be reviewed first:
-
-| Priority | Route file | Suggested coverage |
-|---|---|---|
-| P3 | `app/src/app/api/auth/[...nextauth]/route.ts` | usually covered indirectly by auth/e2e; keep as integration/e2e target |
+None. Provider-managed routes are excluded from adjacent unit-test gap accounting and remain covered through auth integration/e2e checks.
 
 ## Closed Route Test Gaps
 
@@ -102,10 +104,11 @@ The following adjacent tests were added after this inventory was created:
 | `app/src/app/api/auth/password/reset/confirm/route.ts` | `app/src/app/api/auth/password/reset/confirm/route.test.ts` | invalid payload, rate limit key, metadata forwarding, service error mapping, internal error monitoring |
 | `app/src/app/api/auth/password/setup/route.ts` | `app/src/app/api/auth/password/setup/route.test.ts` | auth required, invalid password, rate limit key, metadata forwarding, service error mapping, internal error monitoring |
 | `app/src/app/api/auth/verify/confirm/route.ts` | `app/src/app/api/auth/verify/confirm/route.test.ts` | invalid token, rate limit key, welcome email side effect, service error mapping, internal error monitoring |
+| `app/src/app/api/posts/[id]/lost-found-share.svg/route.ts` | `app/src/app/api/posts/[id]/lost-found-share.svg/route.test.ts` | public SVG response, not-found/read-access/inactive 404, unexpected error monitoring |
 
 ## Recommended Next Slice
 
-The remaining adjacent test gap is the NextAuth catch-all route. Keep it covered indirectly unless a provider-specific regression needs a route-level harness:
+Keep provider-managed auth behavior covered indirectly unless a provider-specific regression needs a route-level harness:
 
 1. `app/e2e/kakao-login-entry.spec.ts`
 2. `app/e2e/naver-login-entry.spec.ts`

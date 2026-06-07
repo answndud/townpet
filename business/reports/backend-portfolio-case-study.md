@@ -1,6 +1,6 @@
 # TownPet Backend Portfolio Case Study
 
-Last updated: 2026-05-18
+Last updated: 2026-06-07
 
 ## Purpose
 
@@ -13,7 +13,7 @@ TownPet is a service-style backend portfolio project for a pet community product
 - Validation: Zod schemas under `app/src/lib/validations`
 - Write orchestration: services under `app/src/server/services`
 - Read models: queries under `app/src/server/queries`
-- API routes: 48 App Router route handlers
+- API routes: 55 App Router route handlers
 - Tests: 248 Vitest test files / 1198 tests plus 25 Playwright specs
 - Operations: health, security env preflight, latency snapshot, cleanup and repair scripts
 
@@ -130,7 +130,7 @@ See `business/reports/api-route-inventory.md` for the route map. The most backen
 - `/api/upload`
 - `/api/health`
 
-The generated contract report currently covers all 48 route handlers with 0 missing method exports, 1 adjacent test gap for the provider-managed NextAuth catch-all route, and 0 `validation=none` / 0 `monitoring=none` review labels.
+The generated contract report currently covers all 55 route handlers with 0 missing method exports, 0 adjacent test gaps, and 0 `validation=none` / 0 `monitoring=none` review labels.
 
 ## Test Strategy
 
