@@ -24,5 +24,6 @@
    - 실행 base URL: `OPS_BASE_URL=https://townpet.vercel.app`를 명령에 inline 지정하면 됨
    - 최신 확인: 2026-06-07 `OPS_BASE_URL=https://townpet.vercel.app ./node_modules/.bin/tsx scripts/check-admin-queue-smoke.ts` 실행 시 `ADMIN_QUEUE_SMOKE_EMAIL is required for authenticated admin queue smoke.`로 BLOCKED.
    - 대체 시도: 2026-06-07 `care.smoke.admin@townpet.dev`와 문서상 기본 비밀번호 조합은 production credential login에서 `CredentialsSignin`으로 거절됨.
+   - GitHub 확인: 2026-06-07 repo secrets/variables와 workflow 목록에는 `ADMIN_QUEUE_SMOKE_EMAIL`, `ADMIN_QUEUE_SMOKE_PASSWORD`가 없고, `ops-smoke-checks`도 admin queue authenticated smoke를 실행하지 않음.
    - 대체 확인: 2026-06-07 로컬 fixture smoke는 PASS했으므로 production credential 준비 전까지는 추가 실행 필요 없음.
    - 완료 기준: production `production_credentials` mode report가 PASS.
