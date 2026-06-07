@@ -9,6 +9,12 @@ export const CARE_SMOKE_DEFAULTS = {
 
 type CareSmokeReadinessEnv = Record<string, string | undefined>;
 
+type CareSmokeReadinessCliResult = {
+  result: CareSmokeReadinessResult;
+  output: string;
+  exitCode: 0 | 1;
+};
+
 export type CareSmokeReadinessResult = {
   status: "PASS" | "BLOCKED";
   baseUrl: string;
@@ -107,10 +113,30 @@ export function formatCareSmokeReadiness(result: CareSmokeReadinessResult) {
   return lines.join("\n");
 }
 
-if (require.main === module) {
-  const result = buildCareSmokeReadiness(process.env);
-  console.log(formatCareSmokeReadiness(result));
-  if (result.status !== "PASS") {
-    process.exit(1);
+export function runCareSmokeReadinessCli(
+  env: CareSmokeReadinessEnv = process.env,
+): CareSmokeReadinessCliResult {
+  const result = buildCareSmokeReadiness(env);
+  return {
+    result,
+    output: formatCareSmokeReadiness(result),
+    exitCode: result.status === "PASS" ? 0 : 1,
+  };
+}
+
+export function main(env: CareSmokeReadinessEnv = process.env) {
+  const cliResult = runCareSmokeReadinessCli(env);
+  console.log(cliResult.output);
+  if (cliResult.exitCode !== 0) {
+    process.exit(cliResult.exitCode);
   }
+
+  return cliResult.output;
+}
+
+if (
+  process.env.NODE_ENV !== "test" &&
+  process.argv[1]?.endsWith("check-care-smoke-readiness.ts")
+) {
+  main();
 }

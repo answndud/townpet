@@ -1,12 +1,18 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   buildCareSmokeReadiness,
   CARE_SMOKE_DEFAULTS,
   formatCareSmokeReadiness,
+  main,
+  runCareSmokeReadinessCli,
 } from "./check-care-smoke-readiness";
 
 describe("care smoke readiness", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it("blocks production smoke when the internal health token is missing", () => {
     const result = buildCareSmokeReadiness({});
 
@@ -52,5 +58,39 @@ describe("care smoke readiness", () => {
 
     expect(output).toContain("INTERNAL_HEALTH_TOKEN: PASS (설정됨)");
     expect(output).not.toContain("secret-token-value");
+  });
+
+  it("returns blocked exit code from the testable CLI runner", () => {
+    const cliResult = runCareSmokeReadinessCli({});
+
+    expect(cliResult.exitCode).toBe(1);
+    expect(cliResult.result.status).toBe("BLOCKED");
+    expect(cliResult.output).toContain("status: BLOCKED");
+  });
+
+  it("returns pass exit code from the testable CLI runner", () => {
+    const cliResult = runCareSmokeReadinessCli({
+      OPS_HEALTH_INTERNAL_TOKEN: "token",
+      CARE_SMOKE_ADMIN_EMAIL: "admin@example.test",
+      CARE_SMOKE_REQUESTER_EMAIL: "requester@example.test",
+      CARE_SMOKE_CAREGIVER_EMAIL: "caregiver@example.test",
+    });
+
+    expect(cliResult.exitCode).toBe(0);
+    expect(cliResult.output).toContain("status: PASS");
+  });
+
+  it("prints CLI output through main on pass", () => {
+    const log = vi.spyOn(console, "log").mockImplementation(() => undefined);
+
+    const output = main({
+      OPS_HEALTH_INTERNAL_TOKEN: "token",
+      CARE_SMOKE_ADMIN_EMAIL: "admin@example.test",
+      CARE_SMOKE_REQUESTER_EMAIL: "requester@example.test",
+      CARE_SMOKE_CAREGIVER_EMAIL: "caregiver@example.test",
+    });
+
+    expect(output).toContain("Care smoke readiness");
+    expect(log).toHaveBeenCalledWith(output);
   });
 });

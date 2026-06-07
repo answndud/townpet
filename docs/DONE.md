@@ -10412,3 +10412,10 @@
 - 변경: `resolveAdminQueueSmokeRunConfig(...)`, `runAdminQueueSmoke(...)`, `main(params)`를 추가해 output/exit code와 local fixture cleanup 경계를 테스트 가능하게 분리했다.
 - 검증: `check-admin-queue-smoke.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
 - 후속: admin queue smoke page 목록이나 mode별 credential 정책이 바뀌면 runner test를 함께 갱신한다.
+
+### 2026-06-07 - care smoke readiness CLI wrapper 보강
+
+- 요약: `check-care-smoke-readiness.ts` wrapper가 import 시 실행되지 않고 output/exit code를 실환경 없이 검증 가능하게 됐다.
+- 변경: `runCareSmokeReadinessCli(env)`, `main(env)`를 추가하고 `require.main` entrypoint를 `process.argv[1]` 기반 guard로 바꿨다.
+- 검증: `check-care-smoke-readiness.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
+- 후속: care smoke readiness 필수 env나 warning 정책이 바뀌면 CLI runner test를 함께 갱신한다.
