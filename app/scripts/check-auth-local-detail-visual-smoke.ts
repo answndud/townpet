@@ -1,7 +1,7 @@
 import "dotenv/config";
 
 import { randomUUID } from "node:crypto";
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir as mkdirDefault, writeFile as writeFileDefault } from "node:fs/promises";
 import * as path from "node:path";
 
 import { chromium, devices, type Browser, type BrowserContext, type Page } from "@playwright/test";
@@ -39,14 +39,14 @@ const VIEWER_EMAIL = "auth-local-detail-smoke-viewer@townpet.dev";
 type AuthLocalSmokePostType = typeof PostType.HOSPITAL_REVIEW | typeof PostType.CARE_REQUEST;
 type SmokeProfile = "desktop" | "mobile";
 
-type AuthLocalDetailTarget = {
+export type AuthLocalDetailTarget = {
   id: string;
   title: string;
   type: AuthLocalSmokePostType;
   expectedText: string;
 };
 
-type SmokeResult = {
+export type SmokeResult = {
   targetType: PostType;
   targetTitle: string;
   profile: SmokeProfile;
@@ -60,7 +60,7 @@ type SmokeResult = {
   noHorizontalOverflow: boolean;
 };
 
-type GuestGateResult = {
+export type GuestGateResult = {
   targetType: PostType;
   targetTitle: string;
   url: string;
@@ -69,6 +69,33 @@ type GuestGateResult = {
   hidesProtectedTitle: boolean;
   noHorizontalOverflow: boolean;
 };
+
+type AuthLocalDetailSmokeConfig = {
+  generatedAt: string;
+  repoRoot: string;
+  baseUrl: string;
+  requestedTypes: AuthLocalSmokePostType[];
+  password: string;
+  outputDir: string;
+};
+
+type AuthLocalSmokeTargets = {
+  viewerEmail: string;
+  targets: AuthLocalDetailTarget[];
+};
+
+type AuthLocalDetailVisualSmokeResult = {
+  outputDir: string;
+  reportPath: string;
+  requestedTypes: AuthLocalSmokePostType[];
+  targets: AuthLocalDetailTarget[];
+  results: SmokeResult[];
+  guestGateResults: GuestGateResult[];
+  output: string;
+  exitCode: 0 | 1;
+};
+
+type WriteFileLike = typeof writeFileDefault;
 
 function resolveRepoRoot() {
   return path.basename(process.cwd()) === "app" ? path.resolve(process.cwd(), "..") : process.cwd();
@@ -80,6 +107,30 @@ function normalizeBaseUrl(value: string) {
 
 function compactTimestamp(date = new Date()) {
   return date.toISOString().replace(/[:.]/g, "-");
+}
+
+export function resolveAuthLocalDetailSmokeConfig(params: {
+  env?: NodeJS.ProcessEnv;
+  now?: Date;
+  repoRoot?: string;
+  password?: string;
+} = {}): AuthLocalDetailSmokeConfig {
+  const env = params.env ?? process.env;
+  const generatedAt = (params.now ?? new Date()).toISOString();
+  const timestamp = compactTimestamp(new Date(generatedAt));
+  const repoRoot = params.repoRoot ?? resolveRepoRoot();
+  const baseUrl = normalizeBaseUrl(env.OPS_BASE_URL || DEFAULT_BASE_URL);
+  const requestedTypes = parseAuthLocalSmokeTypes(env.AUTH_LOCAL_DETAIL_SMOKE_TYPES);
+  const password = params.password ?? env.AUTH_LOCAL_DETAIL_SMOKE_PASSWORD ?? generateSmokePassword();
+
+  return {
+    generatedAt,
+    repoRoot,
+    baseUrl,
+    requestedTypes,
+    password,
+    outputDir: path.join(repoRoot, "docs/reports", `auth-local-detail-visual-smoke-${timestamp}`),
+  };
 }
 
 export function parseAuthLocalSmokeTypes(value: string | undefined) {
@@ -435,7 +486,7 @@ async function inspectDetail(params: {
       .catch(() => false);
     const noHorizontalOverflow = await hasNoHorizontalOverflow(page);
 
-    await mkdir(path.dirname(params.screenshotPath), { recursive: true });
+    await mkdirDefault(path.dirname(params.screenshotPath), { recursive: true });
     await page.screenshot({ path: params.screenshotPath, fullPage: true });
 
     return {
@@ -480,7 +531,7 @@ async function inspectGuestGate(params: {
       bodyText.includes("로그인하기");
     const noHorizontalOverflow = await hasNoHorizontalOverflow(page);
 
-    await mkdir(path.dirname(params.screenshotPath), { recursive: true });
+    await mkdirDefault(path.dirname(params.screenshotPath), { recursive: true });
     await page.screenshot({ path: params.screenshotPath, fullPage: true });
 
     return {
@@ -555,53 +606,78 @@ export function buildAuthLocalDetailSmokeMarkdown(params: {
   return `${lines.join("\n")}\n`;
 }
 
-async function main() {
-  const generatedAt = new Date().toISOString();
-  const timestamp = compactTimestamp(new Date(generatedAt));
-  const repoRoot = resolveRepoRoot();
-  const baseUrl = normalizeBaseUrl(process.env.OPS_BASE_URL || DEFAULT_BASE_URL);
-  const requestedTypes = parseAuthLocalSmokeTypes(process.env.AUTH_LOCAL_DETAIL_SMOKE_TYPES);
-  const password = process.env.AUTH_LOCAL_DETAIL_SMOKE_PASSWORD || generateSmokePassword();
-  const prisma = new PrismaClient();
+export async function runAuthLocalDetailVisualSmoke(params: {
+  env?: NodeJS.ProcessEnv;
+  now?: Date;
+  repoRoot?: string;
+  password?: string;
+  prisma?: PrismaClient;
+  ensureTargets?: (params: {
+    prisma: PrismaClient;
+    env: NodeJS.ProcessEnv;
+    password: string;
+  }) => Promise<AuthLocalSmokeTargets>;
+  launchBrowser?: () => Promise<Browser>;
+  inspectDetail?: typeof inspectDetail;
+  inspectGuestGate?: typeof inspectGuestGate;
+  mkdir?: typeof mkdirDefault;
+  writeFile?: WriteFileLike;
+} = {}): Promise<AuthLocalDetailVisualSmokeResult> {
+  const env = params.env ?? process.env;
+  const config = resolveAuthLocalDetailSmokeConfig({
+    env,
+    now: params.now,
+    repoRoot: params.repoRoot,
+    password: params.password,
+  });
+  const prisma = params.prisma ?? new PrismaClient();
+  const shouldDisconnect = !params.prisma;
+  const ensureTargets = params.ensureTargets ?? ensureAuthLocalSmokeTargets;
 
   let viewerEmail: string;
   let targets: AuthLocalDetailTarget[];
   try {
-    const fixtures = await ensureAuthLocalSmokeTargets({ prisma, env: process.env, password });
+    const fixtures = await ensureTargets({ prisma, env, password: config.password });
     viewerEmail = fixtures.viewerEmail;
-    targets = fixtures.targets.filter((target) => requestedTypes.includes(target.type));
+    targets = fixtures.targets.filter((target) => config.requestedTypes.includes(target.type));
   } finally {
-    await prisma.$disconnect();
+    if (shouldDisconnect) {
+      await prisma.$disconnect();
+    }
   }
 
   if (targets.length === 0) {
     throw new Error("No auth/local detail smoke target selected.");
   }
 
-  const outputDir = path.join(repoRoot, "docs/reports", `auth-local-detail-visual-smoke-${timestamp}`);
-  const browser = await chromium.launch();
+  const launchBrowser = params.launchBrowser ?? (() => chromium.launch());
+  const inspectDetailRunner = params.inspectDetail ?? inspectDetail;
+  const inspectGuestGateRunner = params.inspectGuestGate ?? inspectGuestGate;
+  const mkdir = params.mkdir ?? mkdirDefault;
+  const writeFile = params.writeFile ?? writeFileDefault;
+  const browser = await launchBrowser();
   const results: SmokeResult[] = [];
   const guestGateResults: GuestGateResult[] = [];
   try {
     for (const target of targets) {
       guestGateResults.push(
-        await inspectGuestGate({
+        await inspectGuestGateRunner({
           browser,
-          baseUrl,
+          baseUrl: config.baseUrl,
           target,
-          screenshotPath: path.join(outputDir, `${target.type}-guest-gate-mobile.png`),
+          screenshotPath: path.join(config.outputDir, `${target.type}-guest-gate-mobile.png`),
         }),
       );
       for (const profile of ["desktop", "mobile"] as const) {
         results.push(
-          await inspectDetail({
+          await inspectDetailRunner({
             browser,
-            baseUrl,
+            baseUrl: config.baseUrl,
             viewerEmail,
-            password,
+            password: config.password,
             target,
             profile,
-            screenshotPath: path.join(outputDir, `${target.type}-${profile}.png`),
+            screenshotPath: path.join(config.outputDir, `${target.type}-${profile}.png`),
           }),
         );
       }
@@ -610,39 +686,62 @@ async function main() {
     await browser.close();
   }
 
+  const reportPath = path.join(config.outputDir, "README.md");
+  await mkdir(config.outputDir, { recursive: true });
   await writeFile(
-    path.join(outputDir, "README.md"),
+    reportPath,
     buildAuthLocalDetailSmokeMarkdown({
-      generatedAt,
-      baseUrl,
-      requestedTypes,
+      generatedAt: config.generatedAt,
+      baseUrl: config.baseUrl,
+      requestedTypes: config.requestedTypes,
       results,
       guestGateResults,
     }),
     "utf8",
   );
 
-  console.log(`Auth/local detail visual smoke written: ${path.relative(repoRoot, outputDir)}`);
+  const outputLines = [`Auth/local detail visual smoke written: ${path.relative(config.repoRoot, config.outputDir)}`];
   for (const result of guestGateResults) {
-    console.log(
+    outputLines.push(
       `${result.targetType}/guest-gate: loginGate=${result.hasLoginGate} hiddenTitle=${result.hidesProtectedTitle} overflow=${result.noHorizontalOverflow}`,
     );
   }
   for (const result of results) {
-    console.log(
+    outputLines.push(
       `${result.targetType}/${result.profile}: title=${result.titleVisible} comments=${result.hasCommentSection} report=${result.hasReportEntry} expected=${result.hasExpectedDetailText} localGate=${result.noLocalGate} overflow=${result.noHorizontalOverflow}`,
     );
   }
 
-  if (
+  const failed =
     guestGateResults.some((result) => !authLocalGuestGateResultPassed(result)) ||
-    results.some((result) => !authLocalDetailResultPassed(result))
-  ) {
-    throw new Error("Auth/local detail visual smoke failed.");
-  }
+    results.some((result) => !authLocalDetailResultPassed(result));
+
+  return {
+    outputDir: config.outputDir,
+    reportPath,
+    requestedTypes: config.requestedTypes,
+    targets,
+    results,
+    guestGateResults,
+    output: outputLines.join("\n"),
+    exitCode: failed ? 1 : 0,
+  };
 }
 
-if (process.env.NODE_ENV !== "test" && require.main === module) {
+export async function main(params: Parameters<typeof runAuthLocalDetailVisualSmoke>[0] = {}) {
+  const result = await runAuthLocalDetailVisualSmoke(params);
+  console.log(result.output);
+  if (result.exitCode !== 0) {
+    throw new Error("Auth/local detail visual smoke failed.");
+  }
+
+  return result.output;
+}
+
+if (
+  process.env.NODE_ENV !== "test" &&
+  process.argv[1]?.endsWith("check-auth-local-detail-visual-smoke.ts")
+) {
   main().catch((error) => {
     console.error("Auth/local detail visual smoke failed");
     console.error(error);
