@@ -10356,3 +10356,10 @@
 - 변경: `runSearchCasesCheck(deps)`, `parseExistingResults(...)`, `renderSearchCasesReport(...)`, `SEARCH_CASES`를 export해 DB 없이 wrapper 계약을 검증 가능하게 분리했다.
 - 검증: `check-search-cases.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
 - 후속: 검색 수동점검 report table 구조나 case list가 바뀌면 wrapper test를 함께 갱신한다.
+
+### 2026-06-07 - founding member grant CLI wrapper 보강
+
+- 요약: `ops:founding-member:grant` wrapper가 import 시 DB 작업을 실행하지 않게 하고 dry-run/apply/revoke JSON 출력과 update 경계를 테스트했다.
+- 변경: `runFoundingMemberGrant(prisma, options)`, `buildFoundingMemberNextData(...)`, `formatFoundingMemberGrantOutput(...)`를 추가해 DB 없이 wrapper 계약을 검증 가능하게 분리했다.
+- 검증: `grant-founding-member.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
+- 후속: Founding Member badge 필드나 JSON output이 바뀌면 wrapper test를 함께 갱신한다.

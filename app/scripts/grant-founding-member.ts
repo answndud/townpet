@@ -13,7 +13,22 @@ type GrantOptions = {
   dryRun: boolean;
 };
 
-function usage() {
+type FoundingMemberUser = {
+  id: string;
+  email: string | null;
+  nickname: string | null;
+  isFoundingMember: boolean;
+  foundingMemberSince: Date | null;
+};
+
+type FoundingMemberNextData = {
+  isFoundingMember: boolean;
+  foundingMemberSince: Date | null;
+};
+
+type FoundingMemberGrantPrisma = Pick<PrismaClient, "user" | "$disconnect">;
+
+export function usage() {
   return [
     "Usage:",
     "  pnpm ops:founding-member:grant -- --email user@example.com",
@@ -68,7 +83,75 @@ export function parseGrantOptions(argv: string[]): GrantOptions {
   return options;
 }
 
-async function main() {
+export function buildFoundingMemberNextData(
+  user: FoundingMemberUser,
+  options: Pick<GrantOptions, "revoke">,
+  now = new Date(),
+): FoundingMemberNextData {
+  if (options.revoke) {
+    return { isFoundingMember: false, foundingMemberSince: null };
+  }
+
+  return {
+    isFoundingMember: true,
+    foundingMemberSince: user.foundingMemberSince ?? now,
+  };
+}
+
+export function formatFoundingMemberGrantOutput(payload: unknown) {
+  return JSON.stringify(payload, null, 2);
+}
+
+export async function runFoundingMemberGrant(
+  prisma: FoundingMemberGrantPrisma,
+  options: GrantOptions,
+  now = new Date(),
+) {
+  const where = options.email
+    ? { email: options.email }
+    : { id: options.userId as string };
+
+  const user = await prisma.user.findUnique({
+    where,
+    select: {
+      id: true,
+      email: true,
+      nickname: true,
+      isFoundingMember: true,
+      foundingMemberSince: true,
+    },
+  });
+
+  if (!user) {
+    throw new Error("User not found.");
+  }
+
+  const nextData = buildFoundingMemberNextData(user, options, now);
+
+  if (options.dryRun) {
+    return formatFoundingMemberGrantOutput({
+      dryRun: true,
+      user,
+      nextData,
+    });
+  }
+
+  const updated = await prisma.user.update({
+    where: { id: user.id },
+    data: nextData,
+    select: {
+      id: true,
+      email: true,
+      nickname: true,
+      isFoundingMember: true,
+      foundingMemberSince: true,
+    },
+  });
+
+  return formatFoundingMemberGrantOutput(updated);
+}
+
+async function main(prisma: FoundingMemberGrantPrisma = new PrismaClient()) {
   const args = process.argv.slice(2);
   if (args.includes("--help") || args.includes("-h")) {
     console.log(usage());
@@ -83,71 +166,20 @@ async function main() {
     operationLabel: "Founding Member badge grant",
   });
 
-  const prisma = new PrismaClient();
-  const where = options.email
-    ? { email: options.email }
-    : { id: options.userId as string };
-
-  try {
-    const user = await prisma.user.findUnique({
-      where,
-      select: {
-        id: true,
-        email: true,
-        nickname: true,
-        isFoundingMember: true,
-        foundingMemberSince: true,
-      },
-    });
-
-    if (!user) {
-      throw new Error("User not found.");
-    }
-
-    const nextData = options.revoke
-      ? { isFoundingMember: false, foundingMemberSince: null }
-      : {
-          isFoundingMember: true,
-          foundingMemberSince: user.foundingMemberSince ?? new Date(),
-        };
-
-    if (options.dryRun) {
-      console.log(
-        JSON.stringify(
-          {
-            dryRun: true,
-            user,
-            nextData,
-          },
-          null,
-          2,
-        ),
-      );
-      return;
-    }
-
-    const updated = await prisma.user.update({
-      where: { id: user.id },
-      data: nextData,
-      select: {
-        id: true,
-        email: true,
-        nickname: true,
-        isFoundingMember: true,
-        foundingMemberSince: true,
-      },
-    });
-
-    console.log(JSON.stringify(updated, null, 2));
-  } finally {
-    await prisma.$disconnect();
-  }
+  console.log(await runFoundingMemberGrant(prisma, options));
 }
 
-if (require.main === module) {
-  main()
+if (
+  process.env.NODE_ENV !== "test" &&
+  process.argv[1]?.endsWith("grant-founding-member.ts")
+) {
+  const prisma = new PrismaClient();
+  main(prisma)
     .catch((error) => {
       console.error(error instanceof Error ? error.message : error);
       process.exit(1);
+    })
+    .finally(async () => {
+      await prisma.$disconnect();
     });
 }
