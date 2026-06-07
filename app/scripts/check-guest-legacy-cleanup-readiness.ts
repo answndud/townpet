@@ -47,6 +47,13 @@ type GuestLegacyCleanupReadinessResult = {
   warning?: "READINESS_NOT_FULLY_GREEN";
 };
 
+type GuestLegacyCleanupReadinessCliResult = {
+  result: GuestLegacyCleanupReadinessResult;
+  output: string;
+  stream: "stdout" | "stderr";
+  exitCode: 0 | 1;
+};
+
 export function normalizeGuestLegacyLookbackHours(value: string | undefined) {
   const raw = Number(value ?? "24");
   if (!Number.isFinite(raw) || raw <= 0) {
@@ -247,25 +254,43 @@ export async function runGuestLegacyCleanupReadiness(
   };
 }
 
-async function main(
+export function formatGuestLegacyCleanupReadinessOutput(result: GuestLegacyCleanupReadinessResult) {
+  const output = result.warning ? { ...result.payload, warning: result.warning } : result.payload;
+  return JSON.stringify(output);
+}
+
+export async function runGuestLegacyCleanupReadinessCli(
+  prisma: GuestLegacyPrisma,
+  config: GuestLegacyCleanupConfig = resolveGuestLegacyCleanupConfig(process.env),
+): Promise<GuestLegacyCleanupReadinessCliResult> {
+  const result = await runGuestLegacyCleanupReadiness(prisma, config);
+  return {
+    result,
+    output: formatGuestLegacyCleanupReadinessOutput(result),
+    stream: result.shouldExitFailure ? "stderr" : result.payload.ok ? "stdout" : "stderr",
+    exitCode: result.shouldExitFailure ? 1 : 0,
+  };
+}
+
+export async function main(
   prisma: GuestLegacyPrisma = new PrismaClient(),
   config: GuestLegacyCleanupConfig = resolveGuestLegacyCleanupConfig(process.env),
 ) {
-  const result = await runGuestLegacyCleanupReadiness(prisma, config);
-  const output = result.warning ? { ...result.payload, warning: result.warning } : result.payload;
-  if (result.shouldExitFailure) {
-    console.error(JSON.stringify(output));
-    process.exit(1);
+  const cliResult = await runGuestLegacyCleanupReadinessCli(prisma, config);
+  const writer = cliResult.stream === "stdout" ? console.log : console.error;
+  writer(cliResult.output);
+
+  if (cliResult.exitCode !== 0) {
+    process.exit(cliResult.exitCode);
   }
 
-  if (result.payload.ok) {
-    console.log(JSON.stringify(output));
-  } else {
-    console.warn(JSON.stringify(output));
-  }
+  return cliResult.output;
 }
 
-if (require.main === module) {
+if (
+  process.env.NODE_ENV !== "test" &&
+  process.argv[1]?.endsWith("check-guest-legacy-cleanup-readiness.ts")
+) {
   const prisma = new PrismaClient();
   main(prisma)
     .catch((error) => {
