@@ -6,6 +6,7 @@ import {
   formatLostFoundShareDate,
   getLostFoundAlertTypeLabel,
 } from "@/lib/lost-found-share";
+import { monitorUnhandledError } from "@/server/error-monitor";
 import { getPostById } from "@/server/queries/post.queries";
 import { assertPostReadable } from "@/server/services/post-read-access.service";
 
@@ -30,34 +31,36 @@ function renderLine(text: string, x: number, y: number, size = 42, weight = 600)
   return `<text x="${x}" y="${y}" font-size="${size}" font-weight="${weight}" fill="#10284a">${escapeXml(text)}</text>`;
 }
 
-export async function GET(_request: NextRequest, { params }: RouteParams) {
-  const { id } = await params;
-  const post = await getPostById(id);
-  if (!post || post.type !== PostType.LOST_FOUND || !post.lostFoundAlert) {
-    return new Response("Not found", { status: 404 });
-  }
-
+export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
-    await assertPostReadable(post);
-  } catch {
-    return new Response("Not found", { status: 404 });
-  }
+    const { id } = await params;
+    const post = await getPostById(id);
+    if (!post || post.type !== PostType.LOST_FOUND || !post.lostFoundAlert) {
+      return new Response("Not found", { status: 404 });
+    }
 
-  if (post.status !== PostStatus.ACTIVE) {
-    return new Response("Not found", { status: 404 });
-  }
+    try {
+      await assertPostReadable(post);
+    } catch {
+      return new Response("Not found", { status: 404 });
+    }
 
-  const alert = post.lostFoundAlert;
-  const alertLabel = getLostFoundAlertTypeLabel(alert.alertType);
-  const title = buildLostFoundShareTitle(post);
-  const statusLabel = alert.status === "RESOLVED" ? "해결됨" : alert.status === "CLOSED" ? "종료" : "제보 접수 중";
-  const location = clipText(alert.lastSeenLocation || "위치 미확인", 30);
-  const breed = clipText(alert.breed || "특징 미입력", 30);
-  const petType = clipText(alert.petType || "반려동물", 18);
-  const seenAt = formatLostFoundShareDate(alert.lastSeenAt);
-  const postTitle = clipText(post.title, 36);
+    if (post.status !== PostStatus.ACTIVE) {
+      return new Response("Not found", { status: 404 });
+    }
 
-  const svg = `<?xml version="1.0" encoding="UTF-8"?>
+    const alert = post.lostFoundAlert;
+    const alertLabel = getLostFoundAlertTypeLabel(alert.alertType);
+    const title = buildLostFoundShareTitle(post);
+    const statusLabel =
+      alert.status === "RESOLVED" ? "해결됨" : alert.status === "CLOSED" ? "종료" : "제보 접수 중";
+    const location = clipText(alert.lastSeenLocation || "위치 미확인", 30);
+    const breed = clipText(alert.breed || "특징 미입력", 30);
+    const petType = clipText(alert.petType || "반려동물", 18);
+    const seenAt = formatLostFoundShareDate(alert.lastSeenAt);
+    const postTitle = clipText(post.title, 36);
+
+    const svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920" role="img" aria-label="${escapeXml(title)}">
   <rect width="1080" height="1920" fill="#f8fafd"/>
   <rect x="72" y="84" width="936" height="1752" rx="32" fill="#ffffff" stroke="#dbe6f5" stroke-width="3"/>
@@ -85,10 +88,14 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
   <text x="112" y="1748" font-size="26" font-weight="600" fill="#7b8fac">지역 반려생활 정보, TownPet</text>
 </svg>`;
 
-  return new Response(svg, {
-    headers: {
-      "content-type": "image/svg+xml; charset=utf-8",
-      "cache-control": "public, max-age=60, stale-while-revalidate=300",
-    },
-  });
+    return new Response(svg, {
+      headers: {
+        "content-type": "image/svg+xml; charset=utf-8",
+        "cache-control": "public, max-age=60, stale-while-revalidate=300",
+      },
+    });
+  } catch (error) {
+    await monitorUnhandledError(error, { route: "GET /api/posts/[id]/lost-found-share.svg", request });
+    return new Response("Internal server error", { status: 500 });
+  }
 }
