@@ -17,6 +17,11 @@ on:
         required: true
         default: false
         type: boolean
+      verify_admin_queue:
+        description: "Run authenticated admin queue browser smoke"
+        required: true
+        default: false
+        type: boolean
   schedule:
     # Every Monday 00:15 UTC (KST 09:15)
     - cron: "15 0 * * 1"
@@ -24,7 +29,7 @@ on:
 jobs:
   smoke-check:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 12
     defaults:
       run:
         working-directory: app
@@ -93,3 +98,43 @@ jobs:
       - name: Check Sentry ingestion
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.verify_sentry }}
         run: pnpm ops:check:sentry
+
+      - name: Validate admin queue smoke secrets
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.verify_admin_queue }}
+        env:
+          ADMIN_QUEUE_SMOKE_EMAIL: ${{ secrets.ADMIN_QUEUE_SMOKE_EMAIL }}
+          ADMIN_QUEUE_SMOKE_PASSWORD: ${{ secrets.ADMIN_QUEUE_SMOKE_PASSWORD }}
+        run: |
+          missing=()
+          required=(ADMIN_QUEUE_SMOKE_EMAIL ADMIN_QUEUE_SMOKE_PASSWORD)
+          for key in "${required[@]}"; do
+            if [ -z "${!key}" ]; then
+              missing+=("$key")
+            fi
+          done
+          if [ "${#missing[@]}" -gt 0 ]; then
+            for key in "${missing[@]}"; do
+              echo "::error::Missing required secret: $key"
+            done
+            exit 1
+          fi
+
+      - name: Install Playwright Chromium
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.verify_admin_queue }}
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Check authenticated admin queue
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.verify_admin_queue }}
+        env:
+          ADMIN_QUEUE_SMOKE_EMAIL: ${{ secrets.ADMIN_QUEUE_SMOKE_EMAIL }}
+          ADMIN_QUEUE_SMOKE_PASSWORD: ${{ secrets.ADMIN_QUEUE_SMOKE_PASSWORD }}
+          PLAYWRIGHT_BROWSERS_PATH: .playwright-browsers
+        run: pnpm ops:check:admin-queue-smoke
+
+      - name: Print admin queue smoke report
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.verify_admin_queue }}
+        run: |
+          latest_report="$(find ../docs/reports -maxdepth 2 -path '../docs/reports/admin-queue-smoke-*/README.md' -print | sort | tail -n 1)"
+          if [ -n "${latest_report}" ]; then
+            cat "${latest_report}"
+          fi

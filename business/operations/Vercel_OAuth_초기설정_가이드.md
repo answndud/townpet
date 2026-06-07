@@ -226,9 +226,10 @@ GitHub 저장소 -> `Settings` -> `Secrets and variables` -> `Actions` -> `New r
    - 입력값:
      - `target_base_url=https://<최종운영URL>`
      - `verify_sentry=true` (Sentry도 함께 검증할 때)
+     - `verify_admin_queue=true` (관리자 신고/정정 큐까지 authenticated smoke로 검증할 때. GitHub Secrets `ADMIN_QUEUE_SMOKE_EMAIL`, `ADMIN_QUEUE_SMOKE_PASSWORD` 필요)
    - 기대 결과:
      - health 체크 PASS
-     - guest 공개 경로 prewarm 완료
+     - 선택한 Sentry 또는 관리자 큐 smoke PASS
      - Sentry 이벤트 전송/조회 PASS
 
 ---
