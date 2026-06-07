@@ -1,7 +1,6 @@
 import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
 
-const STRICT = process.env.GUEST_LEGACY_CLEANUP_STRICT === "1";
 const GUEST_LEGACY_COLUMNS = [
   "guestDisplayName",
   "guestIpDisplay",
@@ -16,6 +15,12 @@ type GuestLegacyColumn = (typeof GUEST_LEGACY_COLUMNS)[number];
 type GuestLegacyCredentialColumn = (typeof GUEST_LEGACY_CREDENTIAL_COLUMNS)[number];
 type LegacyTable = "Post" | "Comment";
 type GuestLegacyPrisma = Pick<PrismaClient, "$queryRawUnsafe" | "$disconnect">;
+type GuestLegacyCleanupEnv = Record<string, string | undefined>;
+
+type GuestLegacyCleanupConfig = {
+  strict: boolean;
+  lookbackHours: number;
+};
 
 export function normalizeGuestLegacyLookbackHours(value: string | undefined) {
   const raw = Number(value ?? "24");
@@ -25,7 +30,14 @@ export function normalizeGuestLegacyLookbackHours(value: string | undefined) {
   return Math.min(Math.floor(raw), 24 * 30);
 }
 
-const LOOKBACK_HOURS = normalizeGuestLegacyLookbackHours(process.env.GUEST_LEGACY_LOOKBACK_HOURS);
+export function resolveGuestLegacyCleanupConfig(
+  env: GuestLegacyCleanupEnv,
+): GuestLegacyCleanupConfig {
+  return {
+    strict: env.GUEST_LEGACY_CLEANUP_STRICT === "1",
+    lookbackHours: normalizeGuestLegacyLookbackHours(env.GUEST_LEGACY_LOOKBACK_HOURS),
+  };
+}
 
 export function selectKnownGuestLegacyColumns(columns: string[]) {
   const known = new Set<string>(GUEST_LEGACY_COLUMNS);
@@ -122,8 +134,11 @@ async function countPendingBackfill(
   return Number(rows[0]?.count ?? 0);
 }
 
-async function main(prisma: GuestLegacyPrisma = new PrismaClient()) {
-  const lookbackSince = new Date(Date.now() - LOOKBACK_HOURS * 60 * 60 * 1000).toISOString();
+async function main(
+  prisma: GuestLegacyPrisma = new PrismaClient(),
+  config: GuestLegacyCleanupConfig = resolveGuestLegacyCleanupConfig(process.env),
+) {
+  const lookbackSince = new Date(Date.now() - config.lookbackHours * 60 * 60 * 1000).toISOString();
 
   const [postLegacyColumns, commentLegacyColumns] = await Promise.all([
     listExistingLegacyColumns(prisma, "Post"),
@@ -135,8 +150,8 @@ async function main(prisma: GuestLegacyPrisma = new PrismaClient()) {
   if (!hasPostLegacy && !hasCommentLegacy) {
     const payload = {
       ok: true,
-      strict: STRICT,
-      lookbackHours: LOOKBACK_HOURS,
+      strict: config.strict,
+      lookbackHours: config.lookbackHours,
       postLegacyOnly: 0,
       commentLegacyOnly: 0,
       recentPostLegacyCredentialWrites: 0,
@@ -178,8 +193,8 @@ async function main(prisma: GuestLegacyPrisma = new PrismaClient()) {
 
   const payload = {
     ok,
-    strict: STRICT,
-    lookbackHours: LOOKBACK_HOURS,
+    strict: config.strict,
+    lookbackHours: config.lookbackHours,
     postLegacyOnly,
     commentLegacyOnly,
     recentPostLegacyCredentialWrites,
@@ -191,7 +206,7 @@ async function main(prisma: GuestLegacyPrisma = new PrismaClient()) {
     commentLegacyColumns,
   };
 
-  if (!ok && STRICT) {
+  if (!ok && config.strict) {
     console.error(JSON.stringify(payload));
     process.exit(1);
   }

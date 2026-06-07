@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   hasAnyGuestLegacyColumn,
   normalizeGuestLegacyLookbackHours,
+  resolveGuestLegacyCleanupConfig,
   selectKnownGuestLegacyColumns,
 } from "./check-guest-legacy-cleanup-readiness";
 
@@ -24,5 +25,27 @@ describe("guest legacy cleanup readiness helpers", () => {
     expect(normalizeGuestLegacyLookbackHours("0")).toBe(24);
     expect(normalizeGuestLegacyLookbackHours("12.8")).toBe(12);
     expect(normalizeGuestLegacyLookbackHours("9999")).toBe(24 * 30);
+  });
+
+  it("resolves strict and lookback settings from an explicit env map", () => {
+    expect(
+      resolveGuestLegacyCleanupConfig({
+        GUEST_LEGACY_CLEANUP_STRICT: "1",
+        GUEST_LEGACY_LOOKBACK_HOURS: "48",
+      }),
+    ).toEqual({
+      strict: true,
+      lookbackHours: 48,
+    });
+
+    expect(
+      resolveGuestLegacyCleanupConfig({
+        GUEST_LEGACY_CLEANUP_STRICT: "true",
+        GUEST_LEGACY_LOOKBACK_HOURS: "bad",
+      }),
+    ).toEqual({
+      strict: false,
+      lookbackHours: 24,
+    });
   });
 });

@@ -10237,3 +10237,10 @@
 - 변경: `OPS_WEB_VITALS_INTERNAL_TOKEN` 우선 사용, invalid `WEB_VITALS_REPORT_DAYS`/`WEB_VITALS_REPORT_LIMIT` rejection 테스트를 추가했다.
 - 검증: `fetch-web-vitals-summary.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
 - 후속: field sample 재판정 시 remote summary 입력값 오류를 테스트에서 먼저 잡을 수 있다.
+
+### 2026-06-07 - guest legacy cleanup readiness config 분리
+
+- 요약: guest legacy cleanup readiness helper의 strict/lookback 설정을 import 시점 env 상수에서 순수 config resolver로 분리했다.
+- 변경: `resolveGuestLegacyCleanupConfig(env)`를 추가하고 CLI main은 현재 env로 config를 해석하도록 유지했다.
+- 검증: `check-guest-legacy-cleanup-readiness.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
+- 후속: cleanup readiness 조건이 늘어나면 config resolver 테스트에 먼저 반영한다.
