@@ -10529,3 +10529,10 @@
 - 변경: `getLostFoundAcquisitionOpsOverview`를 추가하고 admin ops overview/page에서 카운트, 전환율, source, 이벤트 구성을 표시한다.
 - 검증: targeted test, `lint`, `typecheck`, `quality:check`, 브라우저 `/admin/ops` auth-gated 렌더/콘솔 오류 없음 PASS.
 - 후속: production 배포 후 실제 acquisition event가 쌓이는지 확인하고 빈 상태/도움말 문구를 필요 시 보강한다.
+
+### 2026-06-07 - 분실/목격 production acquisition 확인
+
+- 요약: production `/lost-found` 배포 반영과 `/api/acquisition/events` write smoke를 확인해 분실/목격 이벤트 기록 가능 상태를 PASS로 판정했다.
+- 변경: `/admin/ops` 분실/목격 funnel에 telemetry/env/CTA/source 확인 안내를 추가하고 production 확인 리포트를 남겼다.
+- 증거: `docs/reports/lost-found-acquisition-production-check-2026-06-07.md`, health 200, event POST 200 `{ recorded: true }`.
+- 검증: targeted test, `lint`, `typecheck`, `quality:check` PASS.

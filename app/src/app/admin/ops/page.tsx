@@ -348,6 +348,17 @@ export default async function AdminOpsPage({ searchParams }: AdminOpsPageProps) 
               <p className="text-xs text-[#5a7398]">
                 공개 제보 랜딩, 상세 공유 도구, 목격 댓글 작성까지 이어지는 획득 루프를 봅니다.
               </p>
+              <p className="mt-1 text-[11px] leading-5 text-[#6a7f9f]">
+                0건이면 production{" "}
+                <code className="rounded bg-[#eef4fd] px-1 py-0.5 text-[#315b9a]">
+                  NEXT_PUBLIC_ENABLE_CLIENT_TELEMETRY=1
+                </code>
+                ,{" "}
+                <code className="rounded bg-[#eef4fd] px-1 py-0.5 text-[#315b9a]">
+                  /lost-found
+                </code>{" "}
+                조회, CTA 클릭, 상세 공유 도구 진입 순서로 확인합니다.
+              </p>
             </div>
             <p className="text-xs font-semibold text-[#315b9a]">
               최근 {lostFoundAcquisition.days}일
@@ -435,7 +446,13 @@ export default async function AdminOpsPage({ searchParams }: AdminOpsPageProps) 
                       </div>
                     ))
                   ) : (
-                    <p>분실/목격 source가 아직 없습니다.</p>
+                    <p>
+                      분실/목격 source가 아직 없습니다.{" "}
+                      <code className="rounded bg-[#eef4fd] px-1 py-0.5 text-[#315b9a]">
+                        /lost-found
+                      </code>{" "}
+                      랜딩 조회만 있고 CTA나 공유 도구 클릭이 없으면 source는 표시되지 않습니다.
+                    </p>
                   )}
                 </div>
               </div>
@@ -453,7 +470,14 @@ export default async function AdminOpsPage({ searchParams }: AdminOpsPageProps) 
                       </div>
                     ))
                   ) : (
-                    <p>분실/목격 획득 이벤트가 아직 없습니다.</p>
+                    <p>
+                      분실/목격 획득 이벤트가 아직 없습니다. public telemetry가 켜져 있는지
+                      확인한 뒤{" "}
+                      <code className="rounded bg-[#eef4fd] px-1 py-0.5 text-[#315b9a]">
+                        /lost-found
+                      </code>
+                      를 열어 이벤트 route 응답을 확인하세요.
+                    </p>
                   )}
                 </div>
               </div>
