@@ -10391,3 +10391,10 @@
 - 변경: `resolvePublicDetailVisualSmokeConfig(...)`, `runPublicDetailVisualSmoke(...)`, `main(params)`를 추가해 report output/exit code를 실브라우저 없이 검증 가능하게 분리했다.
 - 검증: `check-public-detail-visual-smoke.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
 - 후속: public detail smoke assertion이나 report markdown 구조가 바뀌면 wrapper test를 함께 갱신한다.
+
+### 2026-06-07 - detail visual smoke runner CLI wrapper 보강
+
+- 요약: `run-detail-visual-smoke.ts` runner가 writer/logger/CLI exit code 경계를 실명령 없이 검증 가능하게 됐다.
+- 변경: `buildDetailVisualSmokeMarkdown(...)`, `runDetailVisualSmokeCli(...)`, writer/logger deps를 추가하고 기존 실패 throw 동작은 기본값으로 유지했다.
+- 검증: `run-detail-visual-smoke.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
+- 후속: detail visual smoke step 목록이나 report markdown 구조가 바뀌면 runner test를 함께 갱신한다.
