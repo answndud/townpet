@@ -10293,3 +10293,10 @@
 - 변경: `runAuthAuditCleanup(prisma)`와 `formatAuthAuditCleanupOutput(...)`를 추가해 wrapper 출력 계약을 분리했다.
 - 검증: `cleanup-auth-audits.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
 - 후속: auth audit cleanup 메시지나 run mode가 바뀌면 wrapper test를 함께 갱신한다.
+
+### 2026-06-07 - legacy SiteSetting cleanup CLI wrapper 보강
+
+- 요약: `db:cleanup:legacy-search-setting` wrapper가 import 시 PrismaClient/main을 실행하지 않게 하고 no rows/dry-run/apply 출력 메시지를 테스트했다.
+- 변경: `runLegacySiteSettingCleanup(prisma)`와 `formatLegacySiteSettingCleanupOutput(...)`를 추가해 wrapper 출력 계약을 분리했다.
+- 검증: `cleanup-legacy-site-setting.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
+- 후속: legacy SiteSetting cleanup 키나 메시지가 바뀌면 wrapper test를 함께 갱신한다.
