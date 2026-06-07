@@ -1,14 +1,32 @@
 import "dotenv/config";
 
-import { prisma } from "@/lib/prisma";
-import {
-  flushNotificationDeliveries,
-  getNotificationDeliveryOutboxStats,
-} from "@/server/queries/notification.queries";
 import { isDryRunMode, resolveMaintenanceRunMode } from "./maintenance-run-mode";
 
-function readPositiveInt(name: string, fallback: number) {
-  const raw = process.env[name];
+type NotificationDeliveryRetryStats = {
+  pending: number;
+  failed: number;
+  due: number;
+  checkedAt: Date;
+};
+
+type NotificationDeliveryRetryResult = {
+  scanned: number;
+  delivered: number;
+  failed: number;
+  skipped: number;
+  deliveryIds: {
+    delivered: string[];
+    failed: string[];
+    skipped: string[];
+  };
+};
+
+type NotificationDeliveryRetryDeps = {
+  flushNotificationDeliveries(params: { limit: number }): Promise<NotificationDeliveryRetryResult>;
+  getNotificationDeliveryOutboxStats(): Promise<NotificationDeliveryRetryStats>;
+};
+
+export function readPositiveInt(name: string, fallback: number, raw = process.env[name]) {
   if (!raw) {
     return fallback;
   }
@@ -21,7 +39,23 @@ function readPositiveInt(name: string, fallback: number) {
   return value;
 }
 
-async function main() {
+export function formatNotificationDeliveryRetryOutput(params:
+  | {
+      mode: "dry-run";
+      limit: number;
+      before: NotificationDeliveryRetryStats;
+    }
+  | {
+      mode: "retry";
+      limit: number;
+      before: NotificationDeliveryRetryStats;
+      result: NotificationDeliveryRetryResult;
+      after: NotificationDeliveryRetryStats;
+    }) {
+  return JSON.stringify(params, null, 2);
+}
+
+export async function runNotificationDeliveryRetry(deps: NotificationDeliveryRetryDeps) {
   const limit = readPositiveInt("NOTIFICATION_OUTBOX_RETRY_LIMIT", 50);
   const dryRun = isDryRunMode(
     resolveMaintenanceRunMode({
@@ -30,46 +64,53 @@ async function main() {
     }),
   );
 
-  const before = await getNotificationDeliveryOutboxStats();
+  const before = await deps.getNotificationDeliveryOutboxStats();
 
   if (dryRun) {
-    console.log(
-      JSON.stringify(
-        {
-          mode: "dry-run",
-          limit,
-          before,
-        },
-        null,
-        2,
-      ),
-    );
-    return;
+    return formatNotificationDeliveryRetryOutput({
+      mode: "dry-run",
+      limit,
+      before,
+    });
   }
 
-  const result = await flushNotificationDeliveries({ limit });
-  const after = await getNotificationDeliveryOutboxStats();
+  const result = await deps.flushNotificationDeliveries({ limit });
+  const after = await deps.getNotificationDeliveryOutboxStats();
 
-  console.log(
-    JSON.stringify(
-      {
-        mode: "retry",
-        limit,
-        before,
-        result,
-        after,
-      },
-      null,
-      2,
-    ),
-  );
+  return formatNotificationDeliveryRetryOutput({
+    mode: "retry",
+    limit,
+    before,
+    result,
+    after,
+  });
 }
 
-main()
-  .catch((error) => {
+async function main() {
+  const [{ flushNotificationDeliveries, getNotificationDeliveryOutboxStats }, { prisma }] =
+    await Promise.all([
+      import("@/server/queries/notification.queries"),
+      import("@/lib/prisma"),
+    ]);
+
+  try {
+    console.log(
+      await runNotificationDeliveryRetry({
+        flushNotificationDeliveries,
+        getNotificationDeliveryOutboxStats,
+      }),
+    );
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+if (
+  process.env.NODE_ENV !== "test" &&
+  process.argv[1]?.endsWith("retry-notification-deliveries.ts")
+) {
+  main().catch((error) => {
     console.error("Notification delivery outbox retry failed", error);
     process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
   });
+}
