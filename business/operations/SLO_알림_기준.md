@@ -76,7 +76,7 @@
 1. 주 1회 SLO 리뷰
 2. 에러 버짓 소진율 점검
 3. 상위 에러 코드 Top N 개선 항목 선정
-4. `PLAN.md`/`PROGRESS.md`에 반영
+4. active 개선 항목은 `PLAN.md`, 완료 요약은 `DONE.md`에 반영
 
 ## 6-1. 알림 보존 기준
 - inbox 기준:

@@ -125,7 +125,7 @@
    - 실행 시각
    - 계정 종류(카카오/네이버)
    - 캡처/짧은 녹화
-4. `PROGRESS.md`에 결과 append
+4. `docs/DONE.md`에 결과 append
 
 ---
 
@@ -222,16 +222,16 @@
 - 1인 운영 기본값은 체크리스트에 결과를 직접 기록한다.
 - helper가 필요할 때만 `cd app && pnpm exec tsx scripts/generate-oauth-manual-check-report.ts --strict-base-url 1 --out /tmp/oauth-manual-check.md`로 Base URL sanity(ERROR/WARN)를 확인한다.
 - 기록 템플릿이 필요할 때만 `cd app && pnpm exec tsx scripts/generate-oauth-manual-check-report.ts --date <YYYY-MM-DD> --run-url <RUN_URL> --out ../business/operations/manual-checks/oauth-manual-check-<YYYY-MM-DD>.md`를 실행한다.
-- 생성된 markdown을 기준으로 `PROGRESS.md`에 결과 append
-- `PLAN.md`의 `blocked` 상태 갱신(조건 충족 시 `done`)
+- 생성된 markdown을 기준으로 `docs/DONE.md`에 결과 append
+- `PLAN.md`의 `blocked` 상태 갱신(조건 충족 시 active에서 제거)
 - `business/operations/manual-checks/수동점검_안내.md` 기준으로 PII 없이 증적 링크만 기록
 
 ---
 
 ## 11) 문서/계획 동기화 규칙
 
-- 운영 실행 결과는 항상 `PROGRESS.md` 먼저 기록
-- 상태 변화(`blocked -> done`)는 `PLAN.md` 즉시 동기화
+- 운영 실행 결과는 `docs/DONE.md`에 요약 기록하고, 진행 중 blocker만 `docs/PLAN.md`에 유지
+- 상태 변화(`blocked -> done`)는 `PLAN.md`에서 active 항목 제거 후 `DONE.md`에 archive
 - 본 가이드 수정 시 관련 문서도 함께 점검:
   - `business/operations/차단 해소 체크리스트.md`
   - `business/operations/Vercel_OAuth_초기설정_가이드.md`

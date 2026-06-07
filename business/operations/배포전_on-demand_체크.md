@@ -217,5 +217,5 @@ report 위치:
 - 배포 후 health 결과
 - 실행한 post-deploy visual smoke와 report path 또는 생략 사유
 
-세부 로그 전체를 `docs/PLAN.md`나 `docs/PROGRESS.md`에 붙이지 않는다.
-현재 작업 완료 상세는 `docs/COMPLETED.md`에만 남긴다.
+세부 로그 전체를 `docs/PLAN.md`에 붙이지 않는다.
+현재 작업 완료 요약은 `docs/DONE.md`에 남기고, 긴 증적은 `docs/reports/` 또는 외부 실행 로그로 분리한다.
