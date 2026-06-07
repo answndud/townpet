@@ -10300,3 +10300,10 @@
 - 변경: `runLegacySiteSettingCleanup(prisma)`와 `formatLegacySiteSettingCleanupOutput(...)`를 추가해 wrapper 출력 계약을 분리했다.
 - 검증: `cleanup-legacy-site-setting.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
 - 후속: legacy SiteSetting cleanup 키나 메시지가 바뀌면 wrapper test를 함께 갱신한다.
+
+### 2026-06-07 - upload asset cleanup CLI wrapper 보강
+
+- 요약: `db:cleanup:upload-assets` wrapper가 import 시 shared Prisma/main을 실행하지 않게 하고 limit 검증과 dry-run/apply 출력 메시지를 테스트했다.
+- 변경: `runUploadAssetCleanup(deps)`, `resolveUploadTempCleanupLimit(...)`, `formatUploadAssetCleanupOutput(...)`를 추가하고 service/prisma는 CLI 실행 시 동적 import하도록 분리했다.
+- 검증: `cleanup-upload-assets.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
+- 후속: upload asset cleanup limit/env/output이 바뀌면 wrapper test를 함께 갱신한다.
