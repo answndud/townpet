@@ -1,7 +1,7 @@
 import "dotenv/config";
 
 import { spawn } from "node:child_process";
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir as mkdirDefault, writeFile as writeFileDefault } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -37,6 +37,27 @@ type DetailVisualSmokeStepResult = DetailVisualSmokeStep & {
   startedAt: string;
   finishedAt: string;
   durationMs: number;
+};
+
+type DetailVisualSmokeRunResult = {
+  outputPath: string;
+  results: DetailVisualSmokeStepResult[];
+  status: "PASS" | "FAIL";
+  markdown: string;
+};
+
+type DetailVisualSmokeCliResult = DetailVisualSmokeRunResult & {
+  exitCode: 0 | 1;
+  output: string;
+};
+
+type DetailVisualSmokeDeps = {
+  env?: EnvMap;
+  mkdir?: typeof mkdirDefault;
+  writeFile?: typeof writeFileDefault;
+  logger?: Pick<Console, "log">;
+  generatedAt?: string;
+  throwOnFailure?: boolean;
 };
 
 export type DetailVisualSmokeConfig = {
@@ -212,13 +233,18 @@ async function runStep(step: DetailVisualSmokeStep, commandRunner: CommandRunner
   } satisfies DetailVisualSmokeStepResult;
 }
 
-function buildMarkdown(config: DetailVisualSmokeConfig, results: DetailVisualSmokeStepResult[]) {
+export function buildDetailVisualSmokeMarkdown(params: {
+  config: DetailVisualSmokeConfig;
+  results: DetailVisualSmokeStepResult[];
+  generatedAt?: string;
+}) {
+  const { config, results } = params;
   const failedRequired = results.filter((result) => result.required && result.status === "FAIL");
   const lines: string[] = [];
 
   lines.push("# Detail Visual Smoke Run");
   lines.push("");
-  lines.push(`- generatedAt: ${new Date().toISOString()}`);
+  lines.push(`- generatedAt: ${params.generatedAt ?? new Date().toISOString()}`);
   lines.push(`- baseUrl: ${config.baseUrl}`);
   lines.push(`- status: ${failedRequired.length === 0 ? "PASS" : "FAIL"}`);
   lines.push(`- includeAuthLocal: ${String(config.includeAuthLocal)}`);
@@ -252,13 +278,15 @@ function buildMarkdown(config: DetailVisualSmokeConfig, results: DetailVisualSmo
 export async function runDetailVisualSmoke(
   config = resolveDetailVisualSmokeConfig(),
   commandRunner: CommandRunner = runCommand,
+  deps: DetailVisualSmokeDeps = {},
 ) {
-  validateDetailVisualSmokeConfig(config);
+  validateDetailVisualSmokeConfig(config, deps.env ?? process.env);
   const steps = buildDetailVisualSmokeSteps(config);
   const results: DetailVisualSmokeStepResult[] = [];
+  const logger = deps.logger ?? console;
 
   for (const step of steps) {
-    console.log(`[detail-visual-smoke] running ${step.id}: ${step.command} ${step.args.join(" ")}`);
+    logger.log(`[detail-visual-smoke] running ${step.id}: ${step.command} ${step.args.join(" ")}`);
     const result = await runStep(step, commandRunner);
     results.push(result);
     if (result.status === "FAIL" && !config.continueOnFailure) {
@@ -266,23 +294,72 @@ export async function runDetailVisualSmoke(
     }
   }
 
+  const mkdir = deps.mkdir ?? mkdirDefault;
+  const writeFile = deps.writeFile ?? writeFileDefault;
+  const markdown = buildDetailVisualSmokeMarkdown({
+    config,
+    results,
+    generatedAt: deps.generatedAt,
+  });
   await mkdir(path.dirname(config.outputPath), { recursive: true });
-  await writeFile(config.outputPath, buildMarkdown(config, results), "utf8");
+  await writeFile(config.outputPath, markdown, "utf8");
 
   const hasFailedRequired = results.some((result) => result.required && result.status === "FAIL");
-  console.log("[detail-visual-smoke] completed");
-  console.log(`- output: ${config.outputPath}`);
-  console.log(`- status: ${hasFailedRequired ? "FAIL" : "PASS"}`);
+  const status = hasFailedRequired ? "FAIL" : "PASS";
+  logger.log("[detail-visual-smoke] completed");
+  logger.log(`- output: ${config.outputPath}`);
+  logger.log(`- status: ${status}`);
 
-  if (hasFailedRequired) {
+  if (hasFailedRequired && deps.throwOnFailure !== false) {
     throw new Error(`[detail-visual-smoke] required checks failed. output=${config.outputPath}`);
   }
 
-  return { outputPath: config.outputPath, results };
+  return { outputPath: config.outputPath, results, status, markdown } satisfies DetailVisualSmokeRunResult;
+}
+
+export async function runDetailVisualSmokeCli(
+  config = resolveDetailVisualSmokeConfig(),
+  commandRunner: CommandRunner = runCommand,
+  deps: DetailVisualSmokeDeps = {},
+): Promise<DetailVisualSmokeCliResult> {
+  const outputLines: string[] = [];
+  const logger = deps.logger ?? {
+    log: (message: string) => {
+      outputLines.push(message);
+    },
+  };
+
+  try {
+    const result = await runDetailVisualSmoke(config, commandRunner, {
+      ...deps,
+      logger,
+      throwOnFailure: false,
+    });
+
+    return {
+      ...result,
+      exitCode: result.status === "PASS" ? 0 : 1,
+      output: outputLines.join("\n"),
+    };
+  } catch (error) {
+    return {
+      outputPath: config.outputPath,
+      results: [],
+      status: "FAIL",
+      markdown: "",
+      exitCode: 1,
+      output: [...outputLines, formatCommandError(error)].filter(Boolean).join("\n"),
+    };
+  }
 }
 
 export async function main() {
-  await runDetailVisualSmoke();
+  const result = await runDetailVisualSmokeCli(resolveDetailVisualSmokeConfig(), runCommand, {
+    logger: console,
+  });
+  if (result.exitCode !== 0) {
+    process.exit(result.exitCode);
+  }
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === CURRENT_FILE_PATH) {

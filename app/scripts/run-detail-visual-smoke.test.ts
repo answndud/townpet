@@ -8,9 +8,11 @@ import {
   AUTH_LOCAL_DETAIL_SMOKE_CONFIRM_VALUE,
 } from "./check-auth-local-detail-visual-smoke";
 import {
+  buildDetailVisualSmokeMarkdown,
   buildDetailVisualSmokeSteps,
   resolveDetailVisualSmokeConfig,
   runDetailVisualSmoke,
+  runDetailVisualSmokeCli,
   validateDetailVisualSmokeConfig,
   type DetailVisualSmokeConfig,
 } from "./run-detail-visual-smoke";
@@ -99,6 +101,101 @@ describe("detail visual smoke runner", () => {
     expect(report).toContain("- auth-local-detail-visual: PASS");
 
     await rm(path.dirname(config.outputPath), { recursive: true, force: true });
+  });
+
+  it("supports injected report writer and logger without touching the filesystem", async () => {
+    const config = createConfig({ outputPath: "/tmp/townpet-detail-visual-smoke.md" });
+    const commandRunner = vi.fn().mockResolvedValue({ code: 0, output: "ok" });
+    const mkdirMock = vi.fn().mockResolvedValue(undefined);
+    const writeFileMock = vi.fn().mockResolvedValue(undefined);
+    const logMock = vi.fn();
+
+    const result = await runDetailVisualSmoke(config, commandRunner, {
+      env: {
+        [AUTH_LOCAL_DETAIL_SMOKE_CONFIRM_ENV_KEY]: AUTH_LOCAL_DETAIL_SMOKE_CONFIRM_VALUE,
+      },
+      generatedAt: "2026-01-02T03:04:05.000Z",
+      mkdir: mkdirMock as never,
+      writeFile: writeFileMock as never,
+      logger: { log: logMock },
+    });
+
+    expect(result.status).toBe("PASS");
+    expect(result.markdown).toContain("- generatedAt: 2026-01-02T03:04:05.000Z");
+    expect(mkdirMock).toHaveBeenCalledWith("/tmp", { recursive: true });
+    expect(writeFileMock).toHaveBeenCalledWith(
+      "/tmp/townpet-detail-visual-smoke.md",
+      expect.stringContaining("# Detail Visual Smoke Run"),
+      "utf8",
+    );
+    expect(logMock).toHaveBeenCalledWith("[detail-visual-smoke] completed");
+  });
+
+  it("returns CLI exit code and captured output instead of exiting directly", async () => {
+    const config = createConfig({ outputPath: "/tmp/townpet-detail-visual-smoke.md" });
+    const commandRunner = vi.fn().mockResolvedValue({ code: 0, output: "ok" });
+
+    const result = await runDetailVisualSmokeCli(config, commandRunner, {
+      env: {
+        [AUTH_LOCAL_DETAIL_SMOKE_CONFIRM_ENV_KEY]: AUTH_LOCAL_DETAIL_SMOKE_CONFIRM_VALUE,
+      },
+      mkdir: vi.fn().mockResolvedValue(undefined) as never,
+      writeFile: vi.fn().mockResolvedValue(undefined) as never,
+    });
+
+    expect(result.exitCode).toBe(0);
+    expect(result.output).toContain("[detail-visual-smoke] running health");
+    expect(result.output).toContain("- status: PASS");
+  });
+
+  it("returns CLI failure output when a required command fails", async () => {
+    const config = createConfig({ outputPath: "/tmp/townpet-detail-visual-smoke.md" });
+    const commandRunner = vi
+      .fn()
+      .mockResolvedValueOnce({ code: 0, output: "health ok" })
+      .mockResolvedValueOnce({ code: 1, output: "public smoke failed" })
+      .mockResolvedValueOnce({ code: 0, output: "auth ok" });
+
+    const result = await runDetailVisualSmokeCli(config, commandRunner, {
+      env: {
+        [AUTH_LOCAL_DETAIL_SMOKE_CONFIRM_ENV_KEY]: AUTH_LOCAL_DETAIL_SMOKE_CONFIRM_VALUE,
+      },
+      mkdir: vi.fn().mockResolvedValue(undefined) as never,
+      writeFile: vi.fn().mockResolvedValue(undefined) as never,
+    });
+
+    expect(result.exitCode).toBe(1);
+    expect(result.status).toBe("FAIL");
+    expect(result.results).toHaveLength(3);
+    expect(result.output).toContain("- status: FAIL");
+    expect(commandRunner).toHaveBeenCalledTimes(3);
+  });
+
+  it("builds deterministic markdown when generatedAt is supplied", () => {
+    const config = createConfig({ includeAuthLocal: false });
+    const markdown = buildDetailVisualSmokeMarkdown({
+      config,
+      generatedAt: "2026-01-02T03:04:05.000Z",
+      results: [
+        {
+          id: "health",
+          title: "Production health endpoint",
+          command: "pnpm",
+          args: ["ops:check:health"],
+          env: { NODE_ENV: "test" },
+          required: true,
+          code: 0,
+          status: "PASS",
+          output: "ok",
+          startedAt: "2026-01-02T03:04:05.000Z",
+          finishedAt: "2026-01-02T03:04:06.000Z",
+          durationMs: 1000,
+        },
+      ],
+    });
+
+    expect(markdown).toContain("- generatedAt: 2026-01-02T03:04:05.000Z");
+    expect(markdown).toContain("- status: PASS");
   });
 
   it("records failures and exits non-zero after completing the sequence", async () => {
