@@ -79,6 +79,12 @@ import { formatKoreanIsoDateTime } from "@/lib/date-format";
 import { resolvePublicGuestDisplayName } from "@/lib/public-guest-identity";
 import { resolveUserDisplayName } from "@/lib/user-display";
 import {
+  buildLostFoundSightingCreatedEvent,
+  buildLostFoundSightingModeSelectedEvent,
+  buildLostFoundSightingSubmitAttemptedEvent,
+} from "@/lib/lost-found-acquisition-events";
+import { sendAcquisitionEvent } from "@/lib/acquisition-tracking";
+import {
   createCommentAction,
   deleteCommentAction,
   updateCommentAction,
@@ -263,6 +269,23 @@ export function PostCommentThread({
     }
   };
 
+  const trackLostFoundSightingEvent = (
+    builder: (trackedPostId: string) => Parameters<typeof sendAcquisitionEvent>[0],
+  ) => {
+    if (!lostFoundSightingEnabled) {
+      return;
+    }
+
+    void sendAcquisitionEvent(builder(postId));
+  };
+
+  const handleRootCommentModeChange = (mode: "GENERAL" | "LOST_FOUND_SIGHTING") => {
+    setRootCommentMode(mode);
+    if (mode === "LOST_FOUND_SIGHTING") {
+      trackLostFoundSightingEvent(buildLostFoundSightingModeSelectedEvent);
+    }
+  };
+
   const handleUnmute = (commentId: string, userId: string) => {
     startTransition(async () => {
       const result = await unmuteUserAction(
@@ -293,6 +316,9 @@ export function PostCommentThread({
     const isSightingComment =
       !parentId && lostFoundSightingEnabled && rootCommentMode === "LOST_FOUND_SIGHTING";
     if (!content) return;
+    if (isSightingComment) {
+      trackLostFoundSightingEvent(buildLostFoundSightingSubmitAttemptedEvent);
+    }
     if (isSightingComment && !sightingLocation.trim()) {
       const nextMessage = "목격 위치를 입력해 주세요.";
       setMessage(nextMessage);
@@ -401,6 +427,7 @@ export function PostCommentThread({
 
         setReplyContent((prev) => ({ ...prev, [parentId ?? "root"]: "" }));
         if (isSightingComment) {
+          trackLostFoundSightingEvent(buildLostFoundSightingCreatedEvent);
           setSightingLocation("");
           setSightingSeenAt("");
           setSightingImageUrl("");
@@ -1111,7 +1138,7 @@ export function PostCommentThread({
           isPending={isPending}
           loginHref={loginHref}
           interactionDisabledMessage={interactionDisabledMessage}
-          onCommentModeChange={setRootCommentMode}
+          onCommentModeChange={handleRootCommentModeChange}
           onGuestDisplayNameChange={setGuestDisplayName}
           onGuestPasswordChange={setGuestPassword}
           onRootContentChange={(value) =>
