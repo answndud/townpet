@@ -18,8 +18,8 @@ type ProviderVerification = ProviderRow & {
   ready: boolean;
 };
 
-const DEFAULT_REPORT_PATH =
-  "../docs/operations/manual-checks/OAuth_수동점검_기록_2026-03-05.md";
+export const DEFAULT_REPORT_PATH =
+  "../business/operations/manual-checks/OAuth_수동점검_기록_2026-03-05.md";
 
 function usage() {
   console.log(`Usage:
