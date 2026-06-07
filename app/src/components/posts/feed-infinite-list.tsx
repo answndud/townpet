@@ -35,6 +35,9 @@ import {
 import {
   buildFeedStatsLabel,
 } from "@/lib/feed-list-presenter";
+import {
+  getLostFoundAlertTypeLabel,
+} from "@/lib/lost-found-share";
 import { resolvePublicGuestDisplayName } from "@/lib/public-guest-identity";
 import { resolveUserDisplayName } from "@/lib/user-display";
 import type { ReviewCategory } from "@/lib/review-category";
@@ -103,6 +106,14 @@ export type FeedPostItem = {
     condition?: string | null;
     depositAmount?: number | null;
     rentalPeriod?: string | null;
+    status?: string | null;
+  } | null;
+  lostFoundAlert?: {
+    alertType?: string | null;
+    petType?: string | null;
+    breed?: string | null;
+    lastSeenAt?: string | Date | null;
+    lastSeenLocation?: string | null;
     status?: string | null;
   } | null;
   careRequest?: {
@@ -216,6 +227,12 @@ const careStatusLabel: Record<string, string> = {
   CANCELLED: "취소",
 };
 
+const lostFoundStatusLabel: Record<string, string> = {
+  ACTIVE: "제보 접수 중",
+  RESOLVED: "해결됨",
+  CLOSED: "종료",
+};
+
 const FEED_POST_ITEM_CLASS_NAME =
   "group grid min-h-[60px] grid-cols-[minmax(0,1fr)] items-center gap-x-2 px-3 py-2 transition hover:bg-[#fbfdff] sm:min-h-[64px] sm:px-4 md:min-h-[62px] md:gap-x-2.5";
 const FEED_POST_ITEM_WITH_THUMBNAIL_CLASS_NAME =
@@ -312,6 +329,22 @@ function isDefaultFreeBoardType(type: PostType) {
 
 function shouldRenderFeedThumbnail(post: FeedPostItem) {
   return typeof post.images[0]?.url === "string" && post.images[0].url.length > 0;
+}
+
+function buildLostFoundFeedSummary(post: FeedPostItem) {
+  const alert = post.lostFoundAlert;
+  if (post.type !== "LOST_FOUND" || !alert) {
+    return null;
+  }
+
+  return [
+    getLostFoundAlertTypeLabel(alert.alertType),
+    alert.status ? (lostFoundStatusLabel[alert.status] ?? alert.status) : null,
+    alert.petType?.trim() || null,
+    alert.lastSeenLocation?.trim() || null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
 }
 
 const FeedPostThumbnail = memo(function FeedPostThumbnail({
@@ -638,6 +671,7 @@ export function FeedInfiniteList({
                 .filter(Boolean)
                 .join(" · ")
             : null;
+          const lostFoundSummary = buildLostFoundFeedSummary(post);
           const isGuestPost = Boolean(post.guestAuthorId || post.guestDisplayName?.trim());
           const authorLabel = isGuestPost
             ? resolvePublicGuestDisplayName(post.guestDisplayName)
@@ -657,6 +691,12 @@ export function FeedInfiniteList({
             </span>
           );
           const detailHref = preferGuestDetail ? `/posts/${post.id}/guest` : `/posts/${post.id}`;
+          const handlePostClick = () => {
+            markPostAsRead(post.id);
+            trackPersonalizationEvent("POST_CLICK", {
+              postId: post.id,
+            });
+          };
           const hasThumbnail = shouldRenderFeedThumbnail(post);
           const thumbnailUrl = hasThumbnail ? post.images[0]?.url ?? "" : "";
           const nonThumbnailSignals = hasThumbnail
@@ -721,14 +761,35 @@ export function FeedInfiniteList({
                     : "text-[#163764] hover:text-[#2f5da4]"
                 } visited:text-[#8c9db8]`}
                 onTitleClick={() => {
-                  markPostAsRead(post.id);
-                  trackPersonalizationEvent("POST_CLICK", {
-                    postId: post.id,
-                  });
+                  handlePostClick();
                 }}
                 bottomContent={
                   <div className="mt-0.5 flex min-w-0 flex-col gap-0.5 overflow-hidden text-[11px] leading-[1.35] text-[#5f789d] sm:flex-row sm:items-center sm:gap-x-1.5">
-                    {marketSummary || careSummary || adoptionSummary || volunteerSummary ? (
+                    {lostFoundSummary ? (
+                      <div className="flex min-w-0 items-center gap-x-1.5 overflow-hidden">
+                        <span className="min-w-0 truncate text-[#5d779e]">
+                          {lostFoundSummary}
+                        </span>
+                        <span className="hidden shrink-0 text-[#bfd0e4] sm:inline">·</span>
+                        <Link
+                          href={`${detailHref}#lost-found-share-tools`}
+                          prefetch={false}
+                          className="shrink-0 font-semibold text-[#2f5da4] hover:text-[#1f4f8f] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1"
+                          onClick={handlePostClick}
+                        >
+                          공유 도구
+                        </Link>
+                        <Link
+                          href={`${detailHref}#comments`}
+                          prefetch={false}
+                          className="shrink-0 font-semibold text-[#2f5da4] hover:text-[#1f4f8f] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1"
+                          onClick={handlePostClick}
+                        >
+                          목격 제보
+                        </Link>
+                        <span className="hidden shrink-0 text-[#bfd0e4] sm:inline">·</span>
+                      </div>
+                    ) : marketSummary || careSummary || adoptionSummary || volunteerSummary ? (
                       <div className="flex min-w-0 items-center gap-x-1.5 overflow-hidden">
                         <span className="min-w-0 shrink truncate text-[#5d779e]">
                           {marketSummary ?? careSummary ?? adoptionSummary ?? volunteerSummary}
@@ -770,10 +831,7 @@ export function FeedInfiniteList({
                       title={post.title}
                       imageUrl={thumbnailUrl}
                       onClick={() => {
-                        markPostAsRead(post.id);
-                        trackPersonalizationEvent("POST_CLICK", {
-                          postId: post.id,
-                        });
+                        handlePostClick();
                       }}
                     />
                   ) : undefined

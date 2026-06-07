@@ -41,6 +41,14 @@ type GuestFeedListResult = Awaited<ReturnType<typeof listPosts>>;
 type GuestFeedListItem = GuestFeedListResult["items"][number];
 type GuestBestFeedItems = Awaited<ReturnType<typeof listBestPosts>>;
 type GuestBestFeedItem = GuestBestFeedItems[number];
+type SerializedLostFoundAlert = {
+  alertType: string | null;
+  petType: string | null;
+  breed: string | null;
+  lastSeenAt: string | null;
+  lastSeenLocation: string | null;
+  status: string | null;
+};
 
 const PERF_QUERY_VALUE = "1";
 
@@ -81,6 +89,33 @@ function toFeedDensity(value?: string): FeedDensity {
   return value === "ULTRA" ? "ULTRA" : "DEFAULT";
 }
 
+function serializeLostFoundAlert(value: unknown): SerializedLostFoundAlert | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const alert = value as {
+    alertType?: string | null;
+    petType?: string | null;
+    breed?: string | null;
+    lastSeenAt?: Date | string | null;
+    lastSeenLocation?: string | null;
+    status?: string | null;
+  };
+
+  return {
+    alertType: alert.alertType ?? null,
+    petType: alert.petType ?? null,
+    breed: alert.breed ?? null,
+    lastSeenAt:
+      alert.lastSeenAt instanceof Date
+        ? alert.lastSeenAt.toISOString()
+        : alert.lastSeenAt ?? null,
+    lastSeenLocation: alert.lastSeenLocation ?? null,
+    status: alert.status ?? null,
+  };
+}
+
 async function serializeFeedItems(items: Array<Record<string, unknown>>) {
   const imageUrls = items.flatMap((item) =>
     (((item.images as Array<{ url?: string | null }> | undefined) ?? [])
@@ -97,82 +132,83 @@ async function serializeFeedItems(items: Array<Record<string, unknown>>) {
     );
 
     return {
-    id: post.id,
-    type: post.type,
-    scope: post.scope,
-    status: post.status,
-    title: post.title,
-    content: post.content,
-    commentCount: post.commentCount,
-    likeCount: post.likeCount,
-    dislikeCount: post.dislikeCount,
-    viewCount: post.viewCount,
-    createdAt:
-      post.createdAt instanceof Date
-        ? post.createdAt.toISOString()
-        : String(post.createdAt),
-    isOperatorContent: ((post as { isOperatorContent?: boolean | null }).isOperatorContent ??
-      false) as boolean,
-    operatorSourceName: ((post as { operatorSourceName?: string | null }).operatorSourceName ??
-      null) as string | null,
-    operatorSourceUrl: ((post as { operatorSourceUrl?: string | null }).operatorSourceUrl ??
-      null) as string | null,
-    operatorLastVerifiedAt:
-      (post as { operatorLastVerifiedAt?: Date | string | null }).operatorLastVerifiedAt instanceof Date
-        ? (post as { operatorLastVerifiedAt: Date }).operatorLastVerifiedAt.toISOString()
-        : (((post as { operatorLastVerifiedAt?: string | null }).operatorLastVerifiedAt ??
-            null) as string | null),
-    author: {
-      id: (post.author as { id: string }).id,
-      nickname: ((post.author as { nickname?: string | null }).nickname ?? null) as string | null,
-      image: ((post.author as { image?: string | null }).image ?? null) as string | null,
-      isFoundingMember:
-        ((post.author as { isFoundingMember?: boolean | null }).isFoundingMember ?? false) as boolean,
-    },
-    guestAuthorId: ((post as { guestAuthorId?: string | null }).guestAuthorId ?? null) as string | null,
-    guestDisplayName: ((post as { guestDisplayName?: string | null }).guestDisplayName ?? null) as string | null,
-    neighborhood: post.neighborhood
-      ? {
-          id: (post.neighborhood as { id: string }).id,
-          name: (post.neighborhood as { name: string }).name,
-          city: (post.neighborhood as { city: string }).city,
-          district: (post.neighborhood as { district: string }).district,
-        }
-      : null,
-    petType:
-      (post as {
-        petType?: {
-          id: string;
-          labelKo: string;
-          category: { labelKo: string };
-        } | null;
-      }).petType
+      id: post.id,
+      type: post.type,
+      scope: post.scope,
+      status: post.status,
+      title: post.title,
+      content: post.content,
+      commentCount: post.commentCount,
+      likeCount: post.likeCount,
+      dislikeCount: post.dislikeCount,
+      viewCount: post.viewCount,
+      createdAt:
+        post.createdAt instanceof Date
+          ? post.createdAt.toISOString()
+          : String(post.createdAt),
+      isOperatorContent: ((post as { isOperatorContent?: boolean | null }).isOperatorContent ??
+        false) as boolean,
+      operatorSourceName: ((post as { operatorSourceName?: string | null }).operatorSourceName ??
+        null) as string | null,
+      operatorSourceUrl: ((post as { operatorSourceUrl?: string | null }).operatorSourceUrl ??
+        null) as string | null,
+      operatorLastVerifiedAt:
+        (post as { operatorLastVerifiedAt?: Date | string | null }).operatorLastVerifiedAt instanceof Date
+          ? (post as { operatorLastVerifiedAt: Date }).operatorLastVerifiedAt.toISOString()
+          : (((post as { operatorLastVerifiedAt?: string | null }).operatorLastVerifiedAt ??
+              null) as string | null),
+      author: {
+        id: (post.author as { id: string }).id,
+        nickname: ((post.author as { nickname?: string | null }).nickname ?? null) as string | null,
+        image: ((post.author as { image?: string | null }).image ?? null) as string | null,
+        isFoundingMember:
+          ((post.author as { isFoundingMember?: boolean | null }).isFoundingMember ?? false) as boolean,
+      },
+      guestAuthorId: ((post as { guestAuthorId?: string | null }).guestAuthorId ?? null) as string | null,
+      guestDisplayName: ((post as { guestDisplayName?: string | null }).guestDisplayName ?? null) as string | null,
+      neighborhood: post.neighborhood
         ? {
-            id: (post as { petType: { id: string } }).petType.id,
-            labelKo: (post as { petType: { labelKo: string } }).petType.labelKo,
-            categoryLabelKo: (post as { petType: { category: { labelKo: string } } }).petType
-              .category.labelKo,
+            id: (post.neighborhood as { id: string }).id,
+            name: (post.neighborhood as { name: string }).name,
+            city: (post.neighborhood as { city: string }).city,
+            district: (post.neighborhood as { district: string }).district,
           }
         : null,
-    images: renderableImages.map((image) => ({
-      id: image.id,
-      url: image.url ?? null,
-    })),
-    marketListing: (post as {
-      marketListing?: {
-        listingType?: string | null;
-        price?: number | null;
-        condition?: string | null;
-        depositAmount?: number | null;
-        rentalPeriod?: string | null;
-        status?: string | null;
-      } | null;
-    }).marketListing ?? null,
-    isBookmarked: false,
-    reactions:
-      ((post.reactions as Array<{ type: "LIKE" | "DISLIKE" }> | undefined) ?? []).map(
-        (reaction) => ({ type: reaction.type }),
-      ),
+      petType:
+        (post as {
+          petType?: {
+            id: string;
+            labelKo: string;
+            category: { labelKo: string };
+          } | null;
+        }).petType
+          ? {
+              id: (post as { petType: { id: string } }).petType.id,
+              labelKo: (post as { petType: { labelKo: string } }).petType.labelKo,
+              categoryLabelKo: (post as { petType: { category: { labelKo: string } } }).petType
+                .category.labelKo,
+            }
+          : null,
+      images: renderableImages.map((image) => ({
+        id: image.id,
+        url: image.url ?? null,
+      })),
+      marketListing: (post as {
+        marketListing?: {
+          listingType?: string | null;
+          price?: number | null;
+          condition?: string | null;
+          depositAmount?: number | null;
+          rentalPeriod?: string | null;
+          status?: string | null;
+        } | null;
+      }).marketListing ?? null,
+      lostFoundAlert: serializeLostFoundAlert((post as { lostFoundAlert?: unknown }).lostFoundAlert),
+      isBookmarked: false,
+      reactions:
+        ((post.reactions as Array<{ type: "LIKE" | "DISLIKE" }> | undefined) ?? []).map(
+          (reaction) => ({ type: reaction.type }),
+        ),
     };
   });
 }
