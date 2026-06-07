@@ -3,10 +3,7 @@ import { PostScope } from "@prisma/client";
 import { readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
-import {
-  listRankedSearchPosts,
-  type PostSearchIn,
-} from "../src/server/queries/post.queries";
+import type { PostSearchIn } from "../src/server/queries/post.queries";
 
 type SearchCase = {
   id: string;
@@ -15,7 +12,7 @@ type SearchCase = {
   expected: string;
 };
 
-const SEARCH_CASES: SearchCase[] = [
+export const SEARCH_CASES: SearchCase[] = [
   { id: "01", query: "강남 산책", searchIn: "ALL", expected: "강남 산책로 추천" },
   { id: "02", query: "동물병원 후기", searchIn: "ALL", expected: "병원 리뷰 글 우선" },
   { id: "03", query: "예방접종 비용", searchIn: "CONTENT", expected: "비용/진료비 글" },
@@ -40,7 +37,7 @@ const SEARCH_CASES: SearchCase[] = [
   { id: "22", query: "펫프렌들리", searchIn: "ALL", expected: "영문/한글 혼합" },
 ];
 
-function escapePipe(value: string) {
+export function escapePipe(value: string) {
   return value.replaceAll("|", "\\|");
 }
 
@@ -49,7 +46,7 @@ type ExistingResult = {
   memo: string;
 };
 
-function parseExistingResults(markdown: string) {
+export function parseExistingResults(markdown: string) {
   const map = new Map<string, ExistingResult>();
   const lines = markdown.split("\n");
 
@@ -75,47 +72,48 @@ function parseExistingResults(markdown: string) {
   return map;
 }
 
-async function main() {
-  const rows: string[] = [];
-  const statuses: string[] = [];
-  const startedAt = new Date();
-  const outputPath = resolve(process.cwd(), "../docs/reports/검색_수동점검_결과.md");
-  let existingResults = new Map<string, ExistingResult>();
+type SearchCaseCheckDeps = {
+  listRankedSearchPosts(params: {
+    limit: number;
+    scope: PostScope;
+    q: string;
+    searchIn: PostSearchIn;
+  }): Promise<Array<{ title: string }>>;
+  readFile(path: string, encoding: "utf8"): Promise<string>;
+  writeFile(path: string, content: string, encoding: "utf8"): Promise<void>;
+};
 
-  try {
-    const existing = await readFile(outputPath, "utf8");
-    existingResults = parseExistingResults(existing);
-  } catch {
-    existingResults = new Map<string, ExistingResult>();
-  }
+type SearchCaseRunOptions = {
+  outputPath?: string;
+  startedAt?: Date;
+};
 
-  for (const entry of SEARCH_CASES) {
-    const result = await listRankedSearchPosts({
-      limit: 5,
-      scope: PostScope.GLOBAL,
-      q: entry.query,
-      searchIn: entry.searchIn,
-    });
+type SearchCaseResultRow = {
+  id: string;
+  query: string;
+  searchIn: PostSearchIn;
+  expected: string;
+  topTitles: string[];
+  status: string;
+  memo: string;
+};
 
-    const topTitles = result.map((item, index) => `${index + 1}. ${item.title}`);
-    const existing = existingResults.get(entry.id);
-    const status = existing?.status || "[ ]";
-    const memo = existing?.memo || "";
-    statuses.push(status);
+export function renderSearchCasesReport(params: {
+  rows: SearchCaseResultRow[];
+  startedAt: Date;
+}) {
+  const passCount = params.rows.filter((row) => row.status === "PASS").length;
+  const warnCount = params.rows.filter((row) => row.status === "WARN").length;
+  const failCount = params.rows.filter((row) => row.status === "FAIL").length;
+  const rows = params.rows.map(
+    (row) =>
+      `| ${row.id} | ${escapePipe(row.query)} | ${row.searchIn} | ${escapePipe(row.expected)} | ${escapePipe(row.topTitles.join(" / ")) || "(결과 없음)"} | ${row.status} | ${escapePipe(row.memo)} |`,
+  );
 
-    rows.push(
-      `| ${entry.id} | ${escapePipe(entry.query)} | ${entry.searchIn} | ${escapePipe(entry.expected)} | ${escapePipe(topTitles.join(" / ")) || "(결과 없음)"} | ${status} | ${escapePipe(memo)} |`,
-    );
-  }
-
-  const passCount = statuses.filter((status) => status === "PASS").length;
-  const warnCount = statuses.filter((status) => status === "WARN").length;
-  const failCount = statuses.filter((status) => status === "FAIL").length;
-
-  const report = [
+  return [
     "# 검색 수동점검 결과",
     "",
-    `- 생성 시각: ${startedAt.toISOString()}`,
+    `- 생성 시각: ${params.startedAt.toISOString()}`,
     "- 실행 범위: GLOBAL / top5",
     "- 판정 규칙: 체크리스트 기준으로 PASS/WARN/FAIL 수동 기입",
     "",
@@ -129,13 +127,73 @@ async function main() {
     `- FAIL: ${failCount}`,
     "",
   ].join("\n");
-
-  await writeFile(outputPath, report, "utf8");
-
-  console.log(`Saved: ${outputPath}`);
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+export async function runSearchCasesCheck(
+  deps: SearchCaseCheckDeps,
+  options: SearchCaseRunOptions = {},
+) {
+  const resultRows: SearchCaseResultRow[] = [];
+  const startedAt = options.startedAt ?? new Date();
+  const outputPath =
+    options.outputPath ?? resolve(process.cwd(), "../docs/reports/검색_수동점검_결과.md");
+  let existingResults = new Map<string, ExistingResult>();
+
+  try {
+    const existing = await deps.readFile(outputPath, "utf8");
+    existingResults = parseExistingResults(existing);
+  } catch {
+    existingResults = new Map<string, ExistingResult>();
+  }
+
+  for (const entry of SEARCH_CASES) {
+    const result = await deps.listRankedSearchPosts({
+      limit: 5,
+      scope: PostScope.GLOBAL,
+      q: entry.query,
+      searchIn: entry.searchIn,
+    });
+
+    const topTitles = result.map((item, index) => `${index + 1}. ${item.title}`);
+    const existing = existingResults.get(entry.id);
+    const status = existing?.status || "[ ]";
+    const memo = existing?.memo || "";
+    resultRows.push({
+      ...entry,
+      topTitles,
+      status,
+      memo,
+    });
+  }
+
+  const report = renderSearchCasesReport({
+    rows: resultRows,
+    startedAt,
+  });
+
+  await deps.writeFile(outputPath, report, "utf8");
+
+  return {
+    outputPath,
+    report,
+    message: `Saved: ${outputPath}`,
+  };
+}
+
+async function main() {
+  const { listRankedSearchPosts } = await import("../src/server/queries/post.queries");
+  const result = await runSearchCasesCheck({
+    listRankedSearchPosts,
+    readFile,
+    writeFile,
+  });
+
+  console.log(result.message);
+}
+
+if (process.env.NODE_ENV !== "test" && process.argv[1]?.endsWith("check-search-cases.ts")) {
+  main().catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
+}

@@ -10349,3 +10349,10 @@
 - 변경: `runAuthEmailReadinessPreflight(prisma)`, `resolveAuthEmailReadinessSampleLimit(...)`, `formatAuthEmailReadinessReport(...)`를 추가해 DB 없이 wrapper 출력 계약을 검증 가능하게 분리했다.
 - 검증: `check-auth-email-readiness.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
 - 후속: auth email readiness 출력 키나 sample 정책이 바뀌면 wrapper test를 함께 갱신한다.
+
+### 2026-06-07 - search cases check CLI wrapper 보강
+
+- 요약: `search:check:cases` wrapper가 import 시 search query를 실행하지 않게 하고 기존 수동 판정 보존, report 렌더링, 저장 메시지를 테스트했다.
+- 변경: `runSearchCasesCheck(deps)`, `parseExistingResults(...)`, `renderSearchCasesReport(...)`, `SEARCH_CASES`를 export해 DB 없이 wrapper 계약을 검증 가능하게 분리했다.
+- 검증: `check-search-cases.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
+- 후속: 검색 수동점검 report table 구조나 case list가 바뀌면 wrapper test를 함께 갱신한다.
