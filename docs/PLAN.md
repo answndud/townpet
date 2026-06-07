@@ -19,11 +19,12 @@
 ## 다음 작업 후보
 
 1. authenticated admin queue smoke production credential 확보 후 재실행
-   - 상태: blocked
+   - 상태: in_progress
    - 필요값: production 관리자 smoke 계정 `ADMIN_QUEUE_SMOKE_EMAIL`, `ADMIN_QUEUE_SMOKE_PASSWORD`
    - 실행 base URL: `OPS_BASE_URL=https://townpet.vercel.app`를 명령에 inline 지정하면 됨
    - 최신 확인: 2026-06-07 `OPS_BASE_URL=https://townpet.vercel.app ./node_modules/.bin/tsx scripts/check-admin-queue-smoke.ts` 실행 시 `ADMIN_QUEUE_SMOKE_EMAIL is required for authenticated admin queue smoke.`로 BLOCKED.
    - 대체 시도: 2026-06-07 `care.smoke.admin@townpet.dev`와 문서상 기본 비밀번호 조합은 production credential login에서 `CredentialsSignin`으로 거절됨.
    - GitHub 실행 경로: `ops-smoke-checks`를 `verify_admin_queue=true`로 수동 실행하면 GitHub Secrets `ADMIN_QUEUE_SMOKE_EMAIL`, `ADMIN_QUEUE_SMOKE_PASSWORD`로 authenticated admin queue smoke를 실행함.
+   - 2026-06-07 GitHub Actions run `27090154907`은 secret 검증과 health는 통과했지만 `Install Playwright Chromium` 단계가 12분 job timeout을 초과해 smoke 본문까지 도달하지 못함. workflow에 browser cache, 설치/실행 경로 통일, 현실적인 timeout을 적용한 뒤 재실행한다.
    - 대체 확인: 2026-06-07 로컬 fixture smoke는 PASS했으므로 production credential 준비 전까지는 추가 실행 필요 없음.
    - 완료 기준: production `production_credentials` mode report가 PASS.
