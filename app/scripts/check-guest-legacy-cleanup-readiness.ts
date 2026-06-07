@@ -14,12 +14,37 @@ const GUEST_LEGACY_CREDENTIAL_COLUMNS = ["guestPasswordHash", "guestIpHash"] as 
 type GuestLegacyColumn = (typeof GUEST_LEGACY_COLUMNS)[number];
 type GuestLegacyCredentialColumn = (typeof GUEST_LEGACY_CREDENTIAL_COLUMNS)[number];
 type LegacyTable = "Post" | "Comment";
-type GuestLegacyPrisma = Pick<PrismaClient, "$queryRawUnsafe" | "$disconnect">;
+type GuestLegacyPrisma = {
+  $queryRawUnsafe<T = unknown>(query: string, ...values: unknown[]): Promise<T>;
+  $disconnect(): Promise<void>;
+};
 type GuestLegacyCleanupEnv = Record<string, string | undefined>;
 
 type GuestLegacyCleanupConfig = {
   strict: boolean;
   lookbackHours: number;
+};
+
+type GuestLegacyCleanupReadinessPayload = {
+  ok: boolean;
+  strict: boolean;
+  lookbackHours: number;
+  postLegacyOnly: number;
+  commentLegacyOnly: number;
+  recentPostLegacyCredentialWrites: number;
+  recentCommentLegacyCredentialWrites: number;
+  pendingBackfillPosts: number;
+  pendingBackfillComments: number;
+  legacyColumnsPresent: boolean;
+  postLegacyColumns: GuestLegacyColumn[];
+  commentLegacyColumns: GuestLegacyColumn[];
+  skipped?: "LEGACY_COLUMNS_ALREADY_DROPPED";
+};
+
+type GuestLegacyCleanupReadinessResult = {
+  payload: GuestLegacyCleanupReadinessPayload;
+  shouldExitFailure: boolean;
+  warning?: "READINESS_NOT_FULLY_GREEN";
 };
 
 export function normalizeGuestLegacyLookbackHours(value: string | undefined) {
@@ -134,10 +159,10 @@ async function countPendingBackfill(
   return Number(rows[0]?.count ?? 0);
 }
 
-async function main(
-  prisma: GuestLegacyPrisma = new PrismaClient(),
-  config: GuestLegacyCleanupConfig = resolveGuestLegacyCleanupConfig(process.env),
-) {
+export async function runGuestLegacyCleanupReadiness(
+  prisma: GuestLegacyPrisma,
+  config: GuestLegacyCleanupConfig,
+): Promise<GuestLegacyCleanupReadinessResult> {
   const lookbackSince = new Date(Date.now() - config.lookbackHours * 60 * 60 * 1000).toISOString();
 
   const [postLegacyColumns, commentLegacyColumns] = await Promise.all([
@@ -161,10 +186,12 @@ async function main(
       legacyColumnsPresent: false,
       postLegacyColumns,
       commentLegacyColumns,
-      skipped: "LEGACY_COLUMNS_ALREADY_DROPPED",
+      skipped: "LEGACY_COLUMNS_ALREADY_DROPPED" as const,
     };
-    console.log(JSON.stringify(payload));
-    return;
+    return {
+      payload,
+      shouldExitFailure: false,
+    };
   }
 
   const [
@@ -207,12 +234,31 @@ async function main(
   };
 
   if (!ok && config.strict) {
-    console.error(JSON.stringify(payload));
+    return {
+      payload,
+      shouldExitFailure: true,
+    };
+  }
+
+  return {
+    payload,
+    shouldExitFailure: false,
+    warning: ok ? undefined : "READINESS_NOT_FULLY_GREEN",
+  };
+}
+
+async function main(
+  prisma: GuestLegacyPrisma = new PrismaClient(),
+  config: GuestLegacyCleanupConfig = resolveGuestLegacyCleanupConfig(process.env),
+) {
+  const result = await runGuestLegacyCleanupReadiness(prisma, config);
+  const output = result.warning ? { ...result.payload, warning: result.warning } : result.payload;
+  if (result.shouldExitFailure) {
+    console.error(JSON.stringify(output));
     process.exit(1);
   }
 
-  const output = ok ? payload : { ...payload, warning: "READINESS_NOT_FULLY_GREEN" };
-  if (ok) {
+  if (result.payload.ok) {
     console.log(JSON.stringify(output));
   } else {
     console.warn(JSON.stringify(output));

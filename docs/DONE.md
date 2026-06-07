@@ -10244,3 +10244,10 @@
 - 변경: `resolveGuestLegacyCleanupConfig(env)`를 추가하고 CLI main은 현재 env로 config를 해석하도록 유지했다.
 - 검증: `check-guest-legacy-cleanup-readiness.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
 - 후속: cleanup readiness 조건이 늘어나면 config resolver 테스트에 먼저 반영한다.
+
+### 2026-06-07 - guest legacy cleanup readiness 실행 결과 테스트
+
+- 요약: guest legacy cleanup readiness의 DB 조회 결과 payload를 fake Prisma로 테스트할 수 있게 실행 함수를 분리했다.
+- 변경: `runGuestLegacyCleanupReadiness(prisma, config)`를 추가하고 CLI 출력/exit 처리는 main에 남겼다.
+- 검증: legacy column 없음 skip payload와 strict dirty payload 테스트 PASS, file eslint PASS, `tsc --noEmit` PASS.
+- 후속: cleanup readiness SQL 조건이 바뀌면 fake Prisma payload 테스트를 먼저 갱신한다.
