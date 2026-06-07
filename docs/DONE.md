@@ -10475,3 +10475,10 @@
 - 변경: smoke runner에 `ADMIN_QUEUE_SMOKE_BROWSER_CHANNEL`/`ADMIN_QUEUE_SMOKE_CHROMIUM_EXECUTABLE_PATH` override를 추가하고, Actions에서는 GitHub hosted runner의 `google-chrome`을 사용하게 했다.
 - 검증: workflow YAML parse, runner unit test, docs index, diff check 후 GitHub Actions에서 `verify_admin_queue=true`로 재실행한다.
 - 후속: production `production_credentials` mode PASS report 확보 후 PLAN에서 blocker를 제거한다.
+
+### 2026-06-07 - admin queue smoke production credential 재검증
+
+- 요약: GitHub Actions run `27090692211`에서 health, secret 존재, system Chrome 확인은 통과했고 production credential 로그인에서 `CredentialsSignin`으로 실패했다.
+- 판정: workflow 경로는 정상이며, 남은 blocker는 production DB smoke 계정과 GitHub Secret 비밀번호의 불일치 또는 계정 상태 문제다.
+- 문서: 배포 전 on-demand 체크와 Vercel/OAuth 가이드에 `CredentialsSignin` 진단 기준을 추가했다.
+- 후속: production DB 계정을 `role=ADMIN`, `emailVerified`, matching `passwordHash` 상태로 보정한 뒤 `verify_admin_queue=true`를 재실행한다.

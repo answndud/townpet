@@ -179,6 +179,13 @@ report 위치:
 
 이 smoke는 read-only 화면 렌더링만 확인하고 처리 action은 실행하지 않는다.
 
+credential 조건:
+
+- production DB에 `ADMIN_QUEUE_SMOKE_EMAIL`과 같은 이메일의 계정이 있어야 한다.
+- 계정은 `role=ADMIN`, `emailVerified` 설정, `passwordHash` 존재 상태여야 한다.
+- `ADMIN_QUEUE_SMOKE_PASSWORD`는 해당 `passwordHash`와 일치해야 한다.
+- GitHub Actions에서 실행할 때는 위 두 값을 GitHub repository secrets에도 같은 값으로 등록한다.
+
 ```bash
 OPS_BASE_URL=https://townpet.vercel.app \
 ADMIN_QUEUE_SMOKE_EMAIL=<ADMIN_EMAIL> \
@@ -201,6 +208,7 @@ corepack pnpm@9.12.3 -C app ops:check:admin-queue-smoke
 - `PASS`: `/admin/reports`, `/admin/corrections` 모두 렌더링되고 `신고 큐`/`정정 큐` summary와 page-specific surface가 보임
 - `BLOCKED`: admin smoke credential 또는 브라우저 바이너리가 없어 실행하지 못함. 이 경우 PR/배포 기록에 blocker를 명시한다.
 - `NO-GO`: 로그인 실패, 관리자 권한 없음, queue summary 누락, 화면 overflow 실패
+  - `CredentialsSignin`: secret은 전달됐지만 production 로그인에서 거절됨. 계정 없음, 비밀번호 불일치, `passwordHash` 없음, `emailVerified` 미설정, active sanction 중 하나를 확인한다.
 
 report 위치:
 
