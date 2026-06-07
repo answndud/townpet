@@ -4,12 +4,12 @@ Generated from `app/src/app/api/**/route.ts` with source-text heuristics.
 
 ## Summary
 
-- routeHandlers: 54
+- routeHandlers: 55
 - missingMethodExports: 0
 - missingAdjacentTests: 2
-- accessHeuristics: admin=2, auth-aware=18, authenticated=10, moderator=6, provider-managed=1, public=15, public-internal-token=2
-- validationHeuristics: manual=13, no-input=3, provider-managed=1, schema=24, service-delegated=12, static-response=1
-- monitoringHeuristics: logger=1, monitorUnhandledError=50, none=1, provider-managed=1, static-response=1
+- accessHeuristics: admin=2, auth-aware=18, authenticated=10, moderator=6, provider-managed=1, public=15, public-internal-token=3
+- validationHeuristics: manual=13, no-input=3, provider-managed=1, schema=25, service-delegated=12, static-response=1
+- monitoringHeuristics: logger=1, monitorUnhandledError=51, none=1, provider-managed=1, static-response=1
 
 Heuristic labels are review aids, not a security proof. Source of truth remains route code and tests.
 
@@ -48,6 +48,7 @@ Heuristic labels are review aids, not a security proof. Source of truth remains 
 | `/api/metrics/web-vitals` | POST | public | schema | monitorUnhandledError | `src/app/api/metrics/web-vitals/route.ts` | yes |
 | `/api/neighborhoods` | GET | public | schema | monitorUnhandledError | `src/app/api/neighborhoods/route.ts` | yes |
 | `/api/notifications` | GET | authenticated | schema | monitorUnhandledError | `src/app/api/notifications/route.ts` | yes |
+| `/api/ops/web-vitals/summary` | GET | public-internal-token | schema | monitorUnhandledError | `src/app/api/ops/web-vitals/summary/route.ts` | yes |
 | `/api/posts` | GET, POST | auth-aware | schema | monitorUnhandledError | `src/app/api/posts/route.ts` | yes |
 | `/api/posts/[id]` | GET, PATCH, DELETE | auth-aware | service-delegated | monitorUnhandledError | `src/app/api/posts/[id]/route.ts` | yes |
 | `/api/posts/[id]/comments` | GET, POST | auth-aware | service-delegated | monitorUnhandledError | `src/app/api/posts/[id]/comments/route.ts` | yes |
