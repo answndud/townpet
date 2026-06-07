@@ -10522,3 +10522,10 @@
 - 변경: 분실/목격 전용 이벤트 빌더와 스키마 테스트를 추가하고 랜딩, 공유 패널, 댓글 스레드에서 실패 무시 방식으로 이벤트를 전송한다.
 - 검증: targeted test, `lint`, `typecheck`, `quality:check`, 브라우저 `/lost-found` 렌더/콘솔 오류 없음 PASS.
 - 후속: 새 이벤트를 관리자/운영 리포트에서 funnel summary로 확인할 수 있게 연결한다.
+
+### 2026-06-07 - 분실/목격 획득 funnel 운영 리포트 연결
+
+- 요약: `/admin/ops`에 분실/목격 랜딩, CTA, 공유 도구, 공유 액션, 목격 댓글 단계별 funnel summary를 추가했다.
+- 변경: `getLostFoundAcquisitionOpsOverview`를 추가하고 admin ops overview/page에서 카운트, 전환율, source, 이벤트 구성을 표시한다.
+- 검증: targeted test, `lint`, `typecheck`, `quality:check`, 브라우저 `/admin/ops` auth-gated 렌더/콘솔 오류 없음 PASS.
+- 후속: production 배포 후 실제 acquisition event가 쌓이는지 확인하고 빈 상태/도움말 문구를 필요 시 보강한다.

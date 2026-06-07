@@ -281,6 +281,7 @@ export default async function AdminOpsPage({ searchParams }: AdminOpsPageProps) 
   const careThresholdClass = formatCareFeedbackThresholdClass(careThreshold.severity);
   const initialRegion = overview.initialRegion;
   const correctionFlow = overview.correctionFlow;
+  const lostFoundAcquisition = overview.lostFoundAcquisition;
   const adminQueueSmoke = overview.adminQueueSmoke;
   const searchContextLabel = describeSearchContext({
     searchScope: selectedSearchScope,
@@ -337,6 +338,126 @@ export default async function AdminOpsPage({ searchParams }: AdminOpsPageProps) 
               detail={`cache ${cacheState} · pg_trgm ${pgTrgmState}`}
               state={cacheState}
             />
+          </div>
+        </section>
+
+        <section className="tp-card flex flex-col gap-4 p-4 sm:p-5">
+          <div className="flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-[#10284a]">분실/목격 획득 전환</h2>
+              <p className="text-xs text-[#5a7398]">
+                공개 제보 랜딩, 상세 공유 도구, 목격 댓글 작성까지 이어지는 획득 루프를 봅니다.
+              </p>
+            </div>
+            <p className="text-xs font-semibold text-[#315b9a]">
+              최근 {lostFoundAcquisition.days}일
+              {lostFoundAcquisition.schemaSyncRequired ? " · schema sync 필요" : ""}
+            </p>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="rounded-xl border border-[#dbe6f6] bg-[#f8fbff] p-3">
+              <p className="text-xs text-[#5a7398]">랜딩 조회</p>
+              <p className="mt-2 text-2xl font-bold text-[#10284a]">
+                {formatCount(lostFoundAcquisition.landingViewCount)}
+              </p>
+              <p className="mt-1 text-[11px] text-[#6a7f9f]">LOST_FLOW_VIEWED</p>
+            </div>
+            <div className="rounded-xl border border-[#dbe6f6] bg-[#f8fbff] p-3">
+              <p className="text-xs text-[#5a7398]">CTA 클릭</p>
+              <p className="mt-2 text-2xl font-bold text-[#10284a]">
+                {formatCount(lostFoundAcquisition.ctaClickCount)}
+              </p>
+              <p className="mt-1 text-[11px] text-[#6a7f9f]">
+                랜딩 대비 {formatPercent(lostFoundAcquisition.ctaRate)}
+              </p>
+            </div>
+            <div className="rounded-xl border border-[#dbe6f6] bg-[#f8fbff] p-3">
+              <p className="text-xs text-[#5a7398]">공유 액션</p>
+              <p className="mt-2 text-2xl font-bold text-[#10284a]">
+                {formatCount(lostFoundAcquisition.shareActionClickCount)}
+              </p>
+              <p className="mt-1 text-[11px] text-[#6a7f9f]">
+                패널 대비 {formatPercent(lostFoundAcquisition.shareActionRate)}
+              </p>
+            </div>
+            <div className="rounded-xl border border-[#dbe6f6] bg-[#f8fbff] p-3">
+              <p className="text-xs text-[#5a7398]">목격 댓글 생성</p>
+              <p className="mt-2 text-2xl font-bold text-[#10284a]">
+                {formatCount(lostFoundAcquisition.sightingCreatedCount)}
+              </p>
+              <p className="mt-1 text-[11px] text-[#6a7f9f]">
+                제출 대비 {formatPercent(lostFoundAcquisition.sightingCreatedRate)}
+              </p>
+            </div>
+          </div>
+
+          <div className="grid gap-3 xl:grid-cols-[1.25fr_0.75fr]">
+            <div className="rounded-xl border border-[#dbe6f6] bg-white p-3">
+              <h3 className="text-sm font-semibold text-[#1f3f71]">단계별 funnel</h3>
+              <div className="mt-3 divide-y divide-[#e4edf8] text-xs">
+                {lostFoundAcquisition.stageSummaries.map((stage, index) => (
+                  <div
+                    key={stage.event}
+                    className="grid gap-2 py-2 text-[#4f678d] sm:grid-cols-[48px_1fr_auto_auto]"
+                  >
+                    <span className="font-semibold text-[#6a7f9f]">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <span>
+                      <span className="font-semibold text-[#163462]">{stage.label}</span>
+                      <span className="mt-0.5 block text-[11px] text-[#6a7f9f]">
+                        {stage.description}
+                      </span>
+                    </span>
+                    <span className="font-semibold text-[#163462]">
+                      {formatCount(stage.count)}건
+                    </span>
+                    <span className="text-[#5a7398]">
+                      {index === 0 ? "기준" : formatPercent(stage.conversionRate)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid gap-3">
+              <div className="rounded-xl border border-[#dbe6f6] bg-white p-3">
+                <h3 className="text-sm font-semibold text-[#1f3f71]">유입 source</h3>
+                <div className="mt-3 space-y-2 text-xs text-[#4f678d]">
+                  {lostFoundAcquisition.sourceSummaries.length > 0 ? (
+                    lostFoundAcquisition.sourceSummaries.map((source) => (
+                      <div key={source.source} className="flex items-center justify-between gap-3">
+                        <span>{source.source}</span>
+                        <span className="font-semibold text-[#163462]">
+                          {formatCount(source.count)}
+                        </span>
+                      </div>
+                    ))
+                  ) : (
+                    <p>분실/목격 source가 아직 없습니다.</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-[#dbe6f6] bg-white p-3">
+                <h3 className="text-sm font-semibold text-[#1f3f71]">이벤트 구성</h3>
+                <div className="mt-3 space-y-2 text-xs text-[#4f678d]">
+                  {lostFoundAcquisition.eventCounts.length > 0 ? (
+                    lostFoundAcquisition.eventCounts.map((event) => (
+                      <div key={event.event} className="flex items-center justify-between gap-3">
+                        <span>{event.label}</span>
+                        <span className="font-semibold text-[#163462]">
+                          {formatCount(event.count)}
+                        </span>
+                      </div>
+                    ))
+                  ) : (
+                    <p>분실/목격 획득 이벤트가 아직 없습니다.</p>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 

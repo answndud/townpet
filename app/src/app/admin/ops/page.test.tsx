@@ -7,6 +7,11 @@ describe("AdminOpsPage source", () => {
 
     expect(source).toContain("정정 요청 전환");
     expect(source).toContain("overview.correctionFlow");
+    expect(source).toContain("분실/목격 획득 전환");
+    expect(source).toContain("overview.lostFoundAcquisition");
+    expect(source).toContain("단계별 funnel");
+    expect(source).toContain("LOST_FLOW_VIEWED");
+    expect(source).toContain("sightingCreatedRate");
     expect(source).toContain("정정 화면 조회");
     expect(source).toContain("정정 요청 접수");
     expect(source).toContain("접수 후 CTA");
