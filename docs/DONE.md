@@ -10377,3 +10377,10 @@
 - 변경: `main(prisma, env)`를 export해 Prisma/env 주입형으로 분리하고 `process.argv[1]` 기반 CLI guard로 바꿨다.
 - 검증: `publish-operator-content-drafts.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
 - 후속: 운영자 콘텐츠 draft output이나 apply env 정책이 바뀌면 wrapper test를 함께 갱신한다.
+
+### 2026-06-07 - operator content public smoke CLI wrapper 보강
+
+- 요약: `ops:check:operator-content-public` wrapper가 import 시 실행되지 않게 하고 env/fetcher 주입형 CLI runner를 테스트했다.
+- 변경: `resolveOperatorContentPublicSmokeConfig(...)`, `runOperatorContentPublicSmokeCli(...)`, `main(params)`를 추가해 output/exit code를 실네트워크 없이 검증 가능하게 분리했다.
+- 검증: `check-operator-content-public-smoke.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
+- 후속: operator public smoke check 목록이나 env 이름이 바뀌면 wrapper test를 함께 갱신한다.
