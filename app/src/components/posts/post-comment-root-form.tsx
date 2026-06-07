@@ -145,45 +145,64 @@ export function PostCommentRootForm({
             </div>
           ) : null}
           {lostFoundSightingEnabled && commentMode === "LOST_FOUND_SIGHTING" ? (
-            <div className={POST_COMMENT_ROOT_FORM_ROW_CLASS_NAME}>
-              <input
-                data-testid="lost-found-sighting-location"
-                className={POST_COMMENT_ROOT_FORM_INPUT_CLASS_NAME}
-                value={sightingLocation}
-                onChange={(event) => onSightingLocationChange?.(event.target.value)}
-                placeholder="목격 위치(공개 시 상세주소 제외)"
-                maxLength={160}
-              />
-              <input
-                data-testid="lost-found-sighting-seen-at"
-                className={POST_COMMENT_ROOT_FORM_INPUT_CLASS_NAME}
-                type="datetime-local"
-                value={sightingSeenAt}
-                onChange={(event) => onSightingSeenAtChange?.(event.target.value)}
-              />
-              <input
-                data-testid="lost-found-sighting-image-url"
-                className={`${POST_COMMENT_ROOT_FORM_INPUT_CLASS_NAME} sm:col-span-2`}
-                value={sightingImageUrl}
-                onChange={(event) => onSightingImageUrlChange?.(event.target.value)}
-                placeholder="사진 URL 선택 입력"
-                maxLength={500}
-              />
-              <label className="tp-text-subtle flex min-h-10 items-center gap-2 text-[12px] sm:col-span-2">
-                <input
-                  type="checkbox"
-                  checked={isPrivateSighting}
-                  onChange={(event) => onPrivateSightingChange?.(event.target.checked)}
-                  className="h-4 w-4 rounded border-[#cbdcf5] text-[#3567b5] focus:ring-[#bfd3f0]"
-                />
-                위치/사진은 보호자에게만 공개
-              </label>
-              {!isPrivateSighting ? (
-                <p className="tp-text-subtle -mt-1 text-[11px] leading-4 sm:col-span-2">
-                  공개 제보에는 전화번호, 오픈채팅, 이메일, 도로명·번지 주소를 적지 마세요.
+            <>
+              <div className="mb-1.5 grid gap-1 border-y border-[#e5eef9] py-2 text-[12px] leading-5 text-[#4f678d] sm:grid-cols-2">
+                <p>
+                  목격 위치와 시간을 먼저 남기면 보호자가 주변 확인 범위를 빠르게 좁힐 수 있습니다.
                 </p>
-              ) : null}
-            </div>
+                <p>
+                  공개 제보에는 연락처와 상세 주소를 넣지 말고, 민감한 단서는 보호자 공개로 남겨 주세요.
+                </p>
+              </div>
+              <div className={POST_COMMENT_ROOT_FORM_ROW_CLASS_NAME}>
+                <label className="grid gap-1">
+                  <span className="tp-text-subtle text-[11px] font-semibold">목격 위치</span>
+                  <input
+                    data-testid="lost-found-sighting-location"
+                    className={POST_COMMENT_ROOT_FORM_INPUT_CLASS_NAME}
+                    value={sightingLocation}
+                    onChange={(event) => onSightingLocationChange?.(event.target.value)}
+                    placeholder="예: 공원 북문, 편의점 앞"
+                    maxLength={160}
+                  />
+                </label>
+                <label className="grid gap-1">
+                  <span className="tp-text-subtle text-[11px] font-semibold">목격 시간</span>
+                  <input
+                    data-testid="lost-found-sighting-seen-at"
+                    className={POST_COMMENT_ROOT_FORM_INPUT_CLASS_NAME}
+                    type="datetime-local"
+                    value={sightingSeenAt}
+                    onChange={(event) => onSightingSeenAtChange?.(event.target.value)}
+                  />
+                </label>
+                <label className="grid gap-1 sm:col-span-2">
+                  <span className="tp-text-subtle text-[11px] font-semibold">사진 URL(선택)</span>
+                  <input
+                    data-testid="lost-found-sighting-image-url"
+                    className={POST_COMMENT_ROOT_FORM_INPUT_CLASS_NAME}
+                    value={sightingImageUrl}
+                    onChange={(event) => onSightingImageUrlChange?.(event.target.value)}
+                    placeholder="확인 가능한 이미지 링크"
+                    maxLength={500}
+                  />
+                </label>
+                <label className="tp-text-subtle flex min-h-10 items-center gap-2 text-[12px] sm:col-span-2">
+                  <input
+                    type="checkbox"
+                    checked={isPrivateSighting}
+                    onChange={(event) => onPrivateSightingChange?.(event.target.checked)}
+                    className="h-4 w-4 rounded border-[#cbdcf5] text-[#3567b5] focus:ring-[#bfd3f0]"
+                  />
+                  위치/사진은 보호자에게만 공개
+                </label>
+                {!isPrivateSighting ? (
+                  <p className="tp-text-subtle -mt-1 text-[11px] leading-4 sm:col-span-2">
+                    공개 제보에는 전화번호, 오픈채팅, 이메일, 도로명·번지 주소를 적지 마세요.
+                  </p>
+                ) : null}
+              </div>
+            </>
           ) : null}
           <textarea
             aria-label={

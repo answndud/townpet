@@ -1,4 +1,6 @@
 import type { AnchorHTMLAttributes, ReactNode } from "react";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { PostStatus } from "@prisma/client";
@@ -323,6 +325,18 @@ describe("PostCommentThread", () => {
     expect(html).toContain("목격했어요");
     expect(html).toContain(POST_COMMENT_THREAD_SIGHTING_META_CLASS_NAME);
     expect(html).not.toContain("rounded-lg border border-[#dbe6f5] bg-[#f8fbff] px-3 py-2");
+  });
+
+  it("keeps sighting comment success messages specific to visibility", () => {
+    const source = readFileSync(
+      join(process.cwd(), "src/components/posts/post-comment-thread.tsx"),
+      "utf8",
+    );
+
+    expect(source).toContain("목격 제보가 등록되었습니다. 위치와 사진은 보호자에게만 공개됩니다.");
+    expect(source).toContain("목격 제보가 등록되었습니다. 공개 댓글에서 위치와 시간을 확인할 수 있습니다.");
+    expect(source).toContain("댓글이 등록되었습니다.");
+    expect(source).toContain("답글이 등록되었습니다.");
   });
 
   it("opens the author menu only for signed-in viewers", () => {

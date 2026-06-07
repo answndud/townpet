@@ -145,6 +145,45 @@ describe("post form accessibility", () => {
     expect(html).toContain("disabled");
   });
 
+  it("explains lost-found sighting comment fields before submission", () => {
+    const html = renderToStaticMarkup(
+      <PostCommentRootForm
+        canComment
+        lostFoundSightingEnabled
+        commentMode="LOST_FOUND_SIGHTING"
+        guestDisplayName=""
+        guestPassword=""
+        rootContent=""
+        sightingLocation=""
+        sightingSeenAt=""
+        sightingImageUrl=""
+        isPrivateSighting={false}
+        isPending={false}
+        loginHref="/login"
+        onCommentModeChange={vi.fn()}
+        onGuestDisplayNameChange={vi.fn()}
+        onGuestPasswordChange={vi.fn()}
+        onRootContentChange={vi.fn()}
+        onSightingLocationChange={vi.fn()}
+        onSightingSeenAtChange={vi.fn()}
+        onSightingImageUrlChange={vi.fn()}
+        onPrivateSightingChange={vi.fn()}
+        onSubmit={vi.fn()}
+      />,
+    );
+
+    expect(html).toContain("목격 위치와 시간을 먼저 남기면");
+    expect(html).toContain("민감한 단서는 보호자 공개로 남겨 주세요.");
+    expect(html).toContain("목격 위치");
+    expect(html).toContain("목격 시간");
+    expect(html).toContain("사진 URL(선택)");
+    expect(html).toContain("예: 공원 북문, 편의점 앞");
+    expect(html).toContain("확인 가능한 이미지 링크");
+    expect(html).toContain("공개 제보에는 전화번호, 오픈채팅, 이메일, 도로명·번지 주소를 적지 마세요.");
+    expect(html).toContain('aria-label="목격 제보 내용"');
+    expect(html).toContain("제보 등록");
+  });
+
   it("keeps post edit controls mobile-safe", () => {
     const html = renderToStaticMarkup(
       <PostDetailEditForm
