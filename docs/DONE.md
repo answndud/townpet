@@ -10482,3 +10482,10 @@
 - 판정: workflow 경로는 정상이며, 남은 blocker는 production DB smoke 계정과 GitHub Secret 비밀번호의 불일치 또는 계정 상태 문제다.
 - 문서: 배포 전 on-demand 체크와 Vercel/OAuth 가이드에 `CredentialsSignin` 진단 기준을 추가했다.
 - 후속: production DB 계정을 `role=ADMIN`, `emailVerified`, matching `passwordHash` 상태로 보정한 뒤 `verify_admin_queue=true`를 재실행한다.
+
+### 2026-06-07 - admin queue smoke 계정 보정 workflow 추가
+
+- 요약: production admin queue smoke가 `CredentialsSignin`으로 막힐 때 GitHub Actions에서 smoke admin 계정을 보정하고 바로 smoke를 재실행할 수 있게 했다.
+- 변경: `ops:provision:admin-queue-smoke-user` script와 `provision_admin_queue_smoke` workflow input을 추가했다. non-local DB write는 `ADMIN_QUEUE_SMOKE_PROVISION_CONFIRM=PRODUCTION` 없이는 차단한다.
+- 검증: provision/admin smoke targeted tests, seed entrypoint import test, targeted lint, `tsc --noEmit`, docs index, workflow YAML parse, diff check PASS.
+- 후속: `verify_admin_queue=true`, `provision_admin_queue_smoke=true`로 Actions를 실행해 production `production_credentials` PASS report를 확보한다.
