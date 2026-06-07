@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { PostScope, PostType } from "@prisma/client";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
@@ -20,13 +21,18 @@ vi.mock("@/lib/guest-step-up.client", () => ({
 }));
 
 import {
+  buildPostCreateSuccessHref,
   toGuestPostCreateActionResult,
   toPostCreateNetworkErrorResult,
 } from "@/components/posts/use-post-create-submit";
+import type { PostCreateSubmitPayload } from "@/components/posts/post-create-submit";
 
 describe("post create submit transport helpers", () => {
   it("maps a successful guest post response to success", () => {
-    expect(toGuestPostCreateActionResult(true, { ok: true })).toEqual({ ok: true });
+    expect(toGuestPostCreateActionResult(true, { ok: true, data: { id: "post-1" } })).toEqual({
+      ok: true,
+      postId: "post-1",
+    });
   });
 
   it("uses the guest API error message when present", () => {
@@ -57,5 +63,54 @@ describe("post create submit transport helpers", () => {
       ok: false,
       message: "네트워크 오류가 발생했습니다.",
     });
+  });
+
+  it("keeps ordinary post success on the feed", () => {
+    const payload = {
+      title: "일반 글",
+      content: "내용",
+      type: PostType.FREE_BOARD,
+      scope: PostScope.GLOBAL,
+      imageUrls: [],
+    } satisfies PostCreateSubmitPayload;
+
+    expect(
+      buildPostCreateSuccessHref({
+        isAuthenticated: true,
+        payload,
+        result: { ok: true, postId: "post-1" },
+      }),
+    ).toBe("/feed");
+  });
+
+  it("sends lost-found authors to detail so sharing is the next visible action", () => {
+    const payload = {
+      title: "분실 글",
+      content: "내용",
+      type: PostType.LOST_FOUND,
+      scope: PostScope.GLOBAL,
+      imageUrls: [],
+      lostFound: {
+        alertType: "LOST",
+        petType: "강아지",
+        lastSeenAt: "2026-06-07T10:00",
+        lastSeenLocation: "공원 입구",
+      },
+    } satisfies PostCreateSubmitPayload;
+
+    expect(
+      buildPostCreateSuccessHref({
+        isAuthenticated: true,
+        payload,
+        result: { ok: true, postId: "post-1" },
+      }),
+    ).toBe("/posts/post-1");
+    expect(
+      buildPostCreateSuccessHref({
+        isAuthenticated: false,
+        payload,
+        result: { ok: true, postId: "post-1" },
+      }),
+    ).toBe("/posts/post-1/guest");
   });
 });
