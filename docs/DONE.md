@@ -10502,3 +10502,9 @@
 - 요약: `blog/30`에 admin queue authenticated smoke, system Chrome 전환, `CredentialsSignin` 진단, smoke 계정 provision, 최종 PASS run을 추가했다.
 - 변경: `blog/README.md`, `blog/00_시리즈_계획.md`의 `30`번 글 범위도 관리자 큐 smoke와 credential 보정까지 포함하도록 갱신했다.
 - 검증: `node scripts/refresh-docs-index.mjs --check`, `git diff --check` PASS.
+
+### 2026-06-07 - production smoke 재확인
+
+- 요약: production `https://townpet.vercel.app`에서 health, public operator content, admin queue authenticated smoke, landing/feed 브라우저 렌더링을 재확인했다.
+- 결과: health PASS(200, 2750ms), operator public smoke PASS(운영자 글 9개), admin queue PASS(`/admin/reports`, `/admin/corrections`), 브라우저 `/`·`/feed/guest` no overflow/error.
+- 보조 검증: curl 기준 `/` 200 total 0.242s, `/feed/guest` 200 total 0.138s, local popular promotion smoke PASS.
