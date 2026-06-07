@@ -10167,3 +10167,10 @@
 - 검증: 정상/404 흐름은 유지하고, `getPostById` unexpected error는 `monitorUnhandledError` 호출 후 500 반환으로 고정했다.
 - 결과: API contract report monitoring `none=1`이 사라지고 `monitorUnhandledError=52`로 갱신됐다.
 - 검증 명령: targeted vitest PASS, route eslint PASS, `tsc --noEmit` PASS, `api:contracts --check --strict` PASS.
+
+### 2026-06-07 - API contract 문서 drift 최신화
+
+- 요약: README, API inventory, backend case study, 최신 블로그 원고의 오래된 `48 routes / adjacent gap 1` 기준을 generated contract 기준으로 갱신했다.
+- 변경: 현재 기준을 `55 route handlers`, missing method `0`, adjacent test gap `0`, `validation=none`/`monitoring=none` `0`으로 통일했다.
+- 추가: README와 최신 블로그 안내의 구 `PROGRESS/COMPLETED` 링크를 현재 `PLAN/DONE` 하네스 기준으로 정리했다.
+- 검증: stale API 수치 검색, 문서 인덱스 check, `git diff --check`.

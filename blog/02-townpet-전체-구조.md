@@ -119,7 +119,7 @@ TownPet는 기능이 커질수록 `schema.prisma`를 먼저 읽는 편이 이해
 셋의 역할은 다릅니다.
 
 - `docs/`
-  - `PLAN.md`, `PROGRESS.md`, `COMPLETED.md` 같은 상태 문서
+  - `PLAN.md`, `DONE.md` 같은 상태 문서
 - `business/`
   - 제품, 운영, 보안, 정책, 배포 문서
   - 실제 기준 문서 SSOT
