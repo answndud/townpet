@@ -438,6 +438,15 @@ export function PostCommentThread({
           setCollapsedReplies((prev) => ({ ...prev, [parentId]: false }));
         }
         await refreshCommentsAfterMutation(parentId ? currentPage : 1);
+        setMessage(
+          isSightingComment
+            ? isPrivateSighting
+              ? "목격 제보가 등록되었습니다. 위치와 사진은 보호자에게만 공개됩니다."
+              : "목격 제보가 등록되었습니다. 공개 댓글에서 위치와 시간을 확인할 수 있습니다."
+            : parentId
+              ? "답글이 등록되었습니다."
+              : "댓글이 등록되었습니다.",
+        );
       } catch (error) {
         const nextMessage =
           error instanceof Error && error.message.trim().length > 0

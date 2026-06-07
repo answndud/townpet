@@ -10554,3 +10554,9 @@
 - 요약: 분실/목격 글 작성 성공 시 피드가 아니라 상세 화면으로 이동해 공유 도구를 바로 발견하도록 했다.
 - 변경: 생성 성공 결과에 `postId`를 유지하고, 일반 글은 `/feed`, 분실/목격은 회원 `/posts/:id`, 비회원 `/posts/:id/guest`로 분기한다.
 - 검증: targeted submit/action/API tests, 모바일 작성 화면 브라우저 확인, `quality:check` PASS.
+
+### 2026-06-07 - 분실/목격 목격 댓글 안내와 성공 상태 개선
+
+- 요약: 목격 댓글 폼에 위치/시간 우선 입력 안내와 공개/보호자 공개 기준을 추가했다.
+- 변경: 목격 위치/시간/사진 URL에 visible label을 붙이고, 목격 제보 등록 성공 메시지를 공개 범위별로 구체화했다.
+- 검증: targeted comment form/thread tests, 모바일 393px 상세 화면 확인, `quality:check` PASS.
