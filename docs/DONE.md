@@ -10314,3 +10314,10 @@
 - 변경: `runNotificationDeliveryRetry(deps)`, `readPositiveInt(...)`, `formatNotificationDeliveryRetryOutput(...)`를 추가하고 query/prisma는 CLI 실행 시 동적 import하도록 분리했다.
 - 검증: `retry-notification-deliveries.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
 - 후속: notification outbox retry JSON payload가 바뀌면 wrapper test와 운영 문서를 함께 갱신한다.
+
+### 2026-06-07 - upload media proxy backfill CLI wrapper 보강
+
+- 요약: `db:backfill:upload-media-proxy` wrapper가 import 시 shared Prisma/main을 실행하지 않게 하고 URL 수집/매핑과 dry-run/apply 출력 메시지를 테스트했다.
+- 변경: `runUploadMediaProxyBackfill(prisma)`, `formatUploadMediaProxyBackfillOutput(...)`를 추가하고 blob URL 내부 `/uploads/*` 중복 수집을 막았다.
+- 검증: `backfill-upload-media-proxy.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
+- 후속: upload media proxy backfill 대상 URL 패턴이나 출력이 바뀌면 wrapper test를 함께 갱신한다.

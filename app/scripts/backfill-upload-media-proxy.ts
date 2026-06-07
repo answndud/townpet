@@ -1,8 +1,7 @@
 import "dotenv/config";
 
-import { UploadAssetStatus } from "@prisma/client";
+import { PrismaClient, UploadAssetStatus } from "@prisma/client";
 
-import { prisma } from "../src/lib/prisma";
 import {
   getTrustedUploadPathname,
   getTrustedUploadStorageProvider,
@@ -10,11 +9,26 @@ import {
 } from "../src/lib/upload-url";
 import { isDryRunMode, resolveMaintenanceRunMode } from "./maintenance-run-mode";
 
-const BLOB_UPLOAD_URL_PATTERN =
+export const BLOB_UPLOAD_URL_PATTERN =
   /https:\/\/[A-Za-z0-9.-]+\.public\.blob\.vercel-storage\.com\/uploads\/[^\s"'<>)]*/g;
-const LOCAL_UPLOAD_URL_PATTERN = /(?<!\/media)\/uploads\/[^\s"'<>)]*/g;
+export const LOCAL_UPLOAD_URL_PATTERN = /(?<![\w.-])(?<!\/media)\/uploads\/[^\s"'<>)]*/g;
 
-function inferMimeTypeFromStorageKey(storageKey: string) {
+type UploadMediaProxyBackfillPrisma = Pick<
+  PrismaClient,
+  "pet" | "post" | "postImage" | "uploadAsset" | "user" | "$disconnect"
+>;
+
+type UploadMediaProxyBackfillSummary = {
+  dryRun: boolean;
+  registeredAssetCount: number;
+  updatedPostImageCount: number;
+  updatedUserImageCount: number;
+  updatedPetImageCount: number;
+  updatedPostContentCount: number;
+  legacyUrlsSeen: number;
+};
+
+export function inferMimeTypeFromStorageKey(storageKey: string) {
   const extension = storageKey.split(".").pop()?.toLowerCase() ?? "";
   if (extension === "jpg" || extension === "jpeg") {
     return "image/jpeg";
@@ -41,7 +55,7 @@ function inferMimeTypeFromStorageKey(storageKey: string) {
   return "application/octet-stream";
 }
 
-function collectLegacyUploadUrls(content: string) {
+export function collectLegacyUploadUrls(content: string) {
   return Array.from(
     new Set([
       ...(content.match(BLOB_UPLOAD_URL_PATTERN) ?? []),
@@ -50,7 +64,7 @@ function collectLegacyUploadUrls(content: string) {
   );
 }
 
-function buildProxyMappings(urls: string[]) {
+export function buildProxyMappings(urls: string[]) {
   const mappings = new Map<string, string>();
 
   for (const url of urls) {
@@ -66,7 +80,7 @@ function buildProxyMappings(urls: string[]) {
   return mappings;
 }
 
-function applyProxyMappings(content: string, mappings: Map<string, string>) {
+export function applyProxyMappings(content: string, mappings: Map<string, string>) {
   let nextContent = content;
 
   for (const [from, to] of mappings.entries()) {
@@ -76,7 +90,11 @@ function applyProxyMappings(content: string, mappings: Map<string, string>) {
   return nextContent;
 }
 
-async function ensureUploadAssetsFromUrls(urls: string[], dryRun: boolean) {
+async function ensureUploadAssetsFromUrls(
+  prisma: UploadMediaProxyBackfillPrisma,
+  urls: string[],
+  dryRun: boolean,
+) {
   const uniqueUrls = Array.from(new Set(urls));
   let registeredCount = 0;
 
@@ -118,7 +136,30 @@ async function ensureUploadAssetsFromUrls(urls: string[], dryRun: boolean) {
   return registeredCount;
 }
 
-async function main() {
+export function formatUploadMediaProxyBackfillOutput(
+  summary: UploadMediaProxyBackfillSummary,
+) {
+  const lines = [
+    "Upload media proxy backfill",
+    `- dryRun: ${summary.dryRun ? "yes" : "no"}`,
+    `- registeredAssets: ${summary.registeredAssetCount}`,
+    `- updatedPostImages: ${summary.updatedPostImageCount}`,
+    `- updatedUserImages: ${summary.updatedUserImageCount}`,
+    `- updatedPetImages: ${summary.updatedPetImageCount}`,
+    `- updatedPostContent: ${summary.updatedPostContentCount}`,
+    `- legacyUrlsSeen: ${summary.legacyUrlsSeen}`,
+  ];
+
+  if (summary.dryRun) {
+    lines.push("Dry-run mode. Re-run with --apply to rewrite media URLs.");
+  }
+
+  return lines.join("\n");
+}
+
+export async function runUploadMediaProxyBackfill(
+  prisma: UploadMediaProxyBackfillPrisma,
+) {
   const dryRun = isDryRunMode(
     resolveMaintenanceRunMode({
       dryRunEnvName: "UPLOAD_MEDIA_PROXY_BACKFILL_DRY_RUN",
@@ -152,6 +193,7 @@ async function main() {
   const allLegacyUrls = Array.from(new Set([...fieldUrls, ...contentUrls]));
   const proxyMappings = buildProxyMappings(allLegacyUrls);
   const registeredAssetCount = await ensureUploadAssetsFromUrls(
+    prisma,
     Array.from(proxyMappings.keys()),
     dryRun,
   );
@@ -231,25 +273,34 @@ async function main() {
     }
   }
 
-  console.log("Upload media proxy backfill");
-  console.log(`- dryRun: ${dryRun ? "yes" : "no"}`);
-  console.log(`- registeredAssets: ${registeredAssetCount}`);
-  console.log(`- updatedPostImages: ${updatedPostImageCount}`);
-  console.log(`- updatedUserImages: ${updatedUserImageCount}`);
-  console.log(`- updatedPetImages: ${updatedPetImageCount}`);
-  console.log(`- updatedPostContent: ${updatedPostContentCount}`);
-  console.log(`- legacyUrlsSeen: ${allLegacyUrls.length}`);
-  if (dryRun) {
-    console.log("Dry-run mode. Re-run with --apply to rewrite media URLs.");
+  return formatUploadMediaProxyBackfillOutput({
+    dryRun,
+    registeredAssetCount,
+    updatedPostImageCount,
+    updatedUserImageCount,
+    updatedPetImageCount,
+    updatedPostContentCount,
+    legacyUrlsSeen: allLegacyUrls.length,
+  });
+}
+
+async function main() {
+  const { prisma } = await import("../src/lib/prisma");
+
+  try {
+    console.log(await runUploadMediaProxyBackfill(prisma));
+  } finally {
+    await prisma.$disconnect();
   }
 }
 
-main()
-  .catch((error) => {
+if (
+  process.env.NODE_ENV !== "test" &&
+  process.argv[1]?.endsWith("backfill-upload-media-proxy.ts")
+) {
+  main().catch((error) => {
     console.error("Upload media proxy backfill failed");
     console.error(error);
     process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
   });
+}
