@@ -5,6 +5,12 @@ const DEFAULT_MIN_COUNT = 1;
 
 type FetchLike = typeof fetch;
 
+type OperatorContentPublicSmokeCliResult = {
+  result: OperatorContentPublicSmokeResult;
+  output: string;
+  exitCode: 0 | 1;
+};
+
 type GuestFeedItem = {
   id?: string;
   title?: string;
@@ -84,6 +90,13 @@ function normalizeMinCount(value: string | undefined) {
   }
 
   return parsed;
+}
+
+export function resolveOperatorContentPublicSmokeConfig(env: NodeJS.ProcessEnv = process.env) {
+  return {
+    baseUrl: env.OPS_BASE_URL?.trim() || DEFAULT_BASE_URL,
+    minCount: normalizeMinCount(env.OPERATOR_CONTENT_SMOKE_MIN_COUNT),
+  };
 }
 
 async function readJson<T>(fetcher: FetchLike, url: string): Promise<T> {
@@ -253,18 +266,38 @@ export function formatOperatorContentPublicSmoke(result: OperatorContentPublicSm
   return lines.join("\n");
 }
 
-async function main() {
+export async function runOperatorContentPublicSmokeCli(params: {
+  env?: NodeJS.ProcessEnv;
+  fetcher?: FetchLike;
+} = {}): Promise<OperatorContentPublicSmokeCliResult> {
+  const config = resolveOperatorContentPublicSmokeConfig(params.env);
   const result = await runOperatorContentPublicSmoke({
-    baseUrl: process.env.OPS_BASE_URL?.trim() || DEFAULT_BASE_URL,
-    minCount: normalizeMinCount(process.env.OPERATOR_CONTENT_SMOKE_MIN_COUNT),
+    ...config,
+    fetcher: params.fetcher,
   });
-  console.log(formatOperatorContentPublicSmoke(result));
-  if (result.status !== "PASS") {
-    process.exit(1);
-  }
+  const output = formatOperatorContentPublicSmoke(result);
+
+  return {
+    result,
+    output,
+    exitCode: result.status === "PASS" ? 0 : 1,
+  };
 }
 
-if (require.main === module) {
+export async function main(params: { env?: NodeJS.ProcessEnv; fetcher?: FetchLike } = {}) {
+  const cliResult = await runOperatorContentPublicSmokeCli(params);
+  console.log(cliResult.output);
+  if (cliResult.exitCode !== 0) {
+    process.exit(cliResult.exitCode);
+  }
+
+  return cliResult.output;
+}
+
+if (
+  process.env.NODE_ENV !== "test" &&
+  process.argv[1]?.endsWith("check-operator-content-public-smoke.ts")
+) {
   main().catch((error) => {
     console.error("Operator content public smoke failed");
     console.error(error);

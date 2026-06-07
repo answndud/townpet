@@ -1,8 +1,11 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   formatOperatorContentPublicSmoke,
+  main,
+  resolveOperatorContentPublicSmokeConfig,
   runOperatorContentPublicSmoke,
+  runOperatorContentPublicSmokeCli,
 } from "./check-operator-content-public-smoke";
 
 function jsonResponse(payload: unknown) {
@@ -19,55 +22,62 @@ function htmlResponse(html: string) {
   });
 }
 
-describe("operator content public smoke", () => {
-  it("passes when operator content appears in feed, detail, search, and home preview", async () => {
-    const fetcher = async (input: string | URL | Request) => {
-      const url = String(input);
-      if (url.includes("/api/feed/guest")) {
-        return jsonResponse({
-          ok: true,
-          view: "feed",
-          feed: {
-            items: [
-              {
-                id: "post-1",
-                title: "반려생활 정보는 이렇게 모읍니다",
-                isOperatorContent: true,
-                operatorSourceName: "TownPet 운영 기준",
-                operatorSourceUrl: "https://townpet.vercel.app/campaigns/neighborhood-map",
-                operatorLastVerifiedAt: "2026-05-24T00:00:00.000Z",
-              },
-            ],
-          },
-        });
-      }
-      if (url.includes("/posts/post-1/guest")) {
-        return htmlResponse("운영자 정리 TownPet 운영 기준 반려생활 정보는 이렇게 모읍니다");
-      }
-      if (url.includes("/feed/guest")) {
-        return htmlResponse("TownPet");
-      }
-      if (url.includes("/api/search/guest")) {
-        return jsonResponse({
-          ok: true,
-          data: {
-            items: [{ id: "post-1", title: "반려생활 정보는 이렇게 모읍니다" }],
-          },
-        });
-      }
-      if (url.includes("/search/guest")) {
-        return htmlResponse("TownPet 반려생활 정보는 이렇게 모읍니다");
-      }
-      if (url.includes("/api/home/feed")) {
-        return jsonResponse({
-          ok: true,
-          latest: [{ id: "post-1", title: "반려생활 정보는 이렇게 모읍니다" }],
-          featured: [],
-        });
-      }
+function createPassingFetcher() {
+  return async (input: string | URL | Request) => {
+    const url = String(input);
+    if (url.includes("/api/feed/guest")) {
+      return jsonResponse({
+        ok: true,
+        feed: {
+          items: [
+            {
+              id: "post-1",
+              title: "반려생활 정보는 이렇게 모읍니다",
+              isOperatorContent: true,
+              operatorSourceName: "TownPet 운영 기준",
+              operatorSourceUrl: "https://townpet.vercel.app/campaigns/neighborhood-map",
+              operatorLastVerifiedAt: "2026-05-24T00:00:00.000Z",
+            },
+          ],
+        },
+      });
+    }
+    if (url.includes("/posts/post-1/guest")) {
+      return htmlResponse("운영자 정리 TownPet 운영 기준 반려생활 정보는 이렇게 모읍니다");
+    }
+    if (url.includes("/feed/guest")) {
+      return htmlResponse("TownPet");
+    }
+    if (url.includes("/api/search/guest")) {
+      return jsonResponse({
+        ok: true,
+        data: {
+          items: [{ id: "post-1", title: "반려생활 정보는 이렇게 모읍니다" }],
+        },
+      });
+    }
+    if (url.includes("/search/guest")) {
+      return htmlResponse("TownPet 반려생활 정보는 이렇게 모읍니다");
+    }
+    if (url.includes("/api/home/feed")) {
+      return jsonResponse({
+        ok: true,
+        latest: [{ id: "post-1", title: "반려생활 정보는 이렇게 모읍니다" }],
+        featured: [],
+      });
+    }
 
-      return new Response("not found", { status: 404 });
-    };
+    return new Response("not found", { status: 404 });
+  };
+}
+
+describe("operator content public smoke", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("passes when operator content appears in feed, detail, search, and home preview", async () => {
+    const fetcher = createPassingFetcher();
 
     const result = await runOperatorContentPublicSmoke({
       baseUrl: "https://townpet.example",
@@ -85,6 +95,55 @@ describe("operator content public smoke", () => {
       "PASS",
     ]);
     expect(formatOperatorContentPublicSmoke(result)).toContain("status: PASS");
+  });
+
+  it("resolves CLI env, output, and pass exit code without using the network", async () => {
+    const config = resolveOperatorContentPublicSmokeConfig({
+      NODE_ENV: "test",
+      OPS_BASE_URL: "https://townpet.example///",
+      OPERATOR_CONTENT_SMOKE_MIN_COUNT: "1",
+    });
+    const cliResult = await runOperatorContentPublicSmokeCli({
+      env: {
+        NODE_ENV: "test",
+        OPS_BASE_URL: "https://townpet.example///",
+        OPERATOR_CONTENT_SMOKE_MIN_COUNT: "1",
+      },
+      fetcher: createPassingFetcher() as typeof fetch,
+    });
+
+    expect(config).toEqual({ baseUrl: "https://townpet.example///", minCount: 1 });
+    expect(cliResult.exitCode).toBe(0);
+    expect(cliResult.output).toContain("status: PASS");
+    expect(cliResult.output).toContain("baseUrl: https://townpet.example");
+  });
+
+  it("returns a blocked exit code instead of exiting inside the testable CLI runner", async () => {
+    const fetcher = async () =>
+      jsonResponse({
+        ok: true,
+        feed: { items: [] },
+      });
+
+    const cliResult = await runOperatorContentPublicSmokeCli({
+      env: { NODE_ENV: "test" },
+      fetcher: fetcher as typeof fetch,
+    });
+
+    expect(cliResult.exitCode).toBe(1);
+    expect(cliResult.output).toContain("status: BLOCKED");
+  });
+
+  it("prints CLI output through main on pass", async () => {
+    const log = vi.spyOn(console, "log").mockImplementation(() => undefined);
+
+    const output = await main({
+      env: { NODE_ENV: "test", OPS_BASE_URL: "https://townpet.example" },
+      fetcher: createPassingFetcher() as typeof fetch,
+    });
+
+    expect(output).toContain("Operator content public smoke");
+    expect(log).toHaveBeenCalledWith(output);
   });
 
   it("blocks when no operator content has been posted yet", async () => {
