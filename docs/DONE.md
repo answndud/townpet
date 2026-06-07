@@ -10251,3 +10251,10 @@
 - 변경: `runGuestLegacyCleanupReadiness(prisma, config)`를 추가하고 CLI 출력/exit 처리는 main에 남겼다.
 - 검증: legacy column 없음 skip payload와 strict dirty payload 테스트 PASS, file eslint PASS, `tsc --noEmit` PASS.
 - 후속: cleanup readiness SQL 조건이 바뀌면 fake Prisma payload 테스트를 먼저 갱신한다.
+
+### 2026-06-07 - guest author backfill verifier import guard/test 보강
+
+- 요약: `db:verify:guest-authors` helper가 import 시 PrismaClient/main을 실행하지 않게 하고 결과 payload를 fake Prisma로 테스트했다.
+- 변경: `verifyGuestAuthorBackfill(prisma)`를 추가하고 CLI main은 결과 출력만 담당하도록 분리했다.
+- 검증: legacy column dropped complete payload와 remaining backfill incomplete payload 테스트 PASS, file eslint PASS, `tsc --noEmit` PASS.
+- 후속: guest author backfill 완료 판정 기준이 바뀌면 verifier payload 테스트를 먼저 갱신한다.
