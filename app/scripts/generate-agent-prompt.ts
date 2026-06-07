@@ -20,7 +20,7 @@ const MODE_HINTS: Record<Mode, string> = {
   general: "",
   policy: "- Prioritize policy invariants and explicit failure handling.",
   performance: "- Define baseline and post-change metrics (p50/p95).",
-  docs: "- Keep PLAN/PROGRESS synchronization explicit.",
+  docs: "- Keep PLAN/DONE synchronization explicit.",
 };
 
 function printUsage(): void {
@@ -95,7 +95,7 @@ function parseArgs(argv: string[]): Options | null {
   };
 }
 
-function renderPrompt(options: Options): string {
+export function renderPrompt(options: Options): string {
   const lines = [
     "[Context]",
     "- Keep existing stack by default.",
@@ -156,4 +156,9 @@ function main(): void {
   }
 }
 
-main();
+if (
+  process.env.NODE_ENV !== "test" &&
+  process.argv[1]?.endsWith("generate-agent-prompt.ts")
+) {
+  main();
+}

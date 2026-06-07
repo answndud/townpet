@@ -12,6 +12,12 @@ type ProviderRow = {
   evidence: string;
 };
 
+type ProviderVerification = ProviderRow & {
+  statusPass: boolean;
+  evidenceReady: boolean;
+  ready: boolean;
+};
+
 const DEFAULT_REPORT_PATH =
   "../docs/operations/manual-checks/OAuth_수동점검_기록_2026-03-05.md";
 
@@ -67,7 +73,7 @@ function parseArgs(argv: string[]) {
   } satisfies CliOptions;
 }
 
-function parseProviderRows(markdown: string) {
+export function parseProviderRows(markdown: string) {
   const rows = markdown
     .split("\n")
     .filter(
@@ -103,7 +109,7 @@ function parseProviderRows(markdown: string) {
   return [kakao, naver] as const;
 }
 
-function hasRealEvidence(value: string) {
+export function hasRealEvidence(value: string) {
   const trimmed = value.trim();
   if (!trimmed) {
     return false;
@@ -115,6 +121,26 @@ function hasRealEvidence(value: string) {
     return false;
   }
   return true;
+}
+
+export function buildOAuthManualCheckVerification(markdown: string) {
+  const [kakao, naver] = parseProviderRows(markdown);
+
+  const providers: ProviderVerification[] = [kakao, naver].map((row) => {
+    const statusPass = row.status === "pass";
+    const evidenceReady = hasRealEvidence(row.evidence);
+    return {
+      ...row,
+      statusPass,
+      evidenceReady,
+      ready: statusPass && evidenceReady,
+    };
+  });
+
+  return {
+    providers,
+    readyToArchive: providers.every((row) => row.ready),
+  };
 }
 
 function main() {
@@ -130,20 +156,7 @@ function main() {
     }
 
     const markdown = fs.readFileSync(resolvedReportPath, "utf8");
-    const [kakao, naver] = parseProviderRows(markdown);
-
-    const providers = [kakao, naver].map((row) => {
-      const statusPass = row.status === "pass";
-      const evidenceReady = hasRealEvidence(row.evidence);
-      return {
-        ...row,
-        statusPass,
-        evidenceReady,
-        ready: statusPass && evidenceReady,
-      };
-    });
-
-    const readyToClose = providers.every((row) => row.ready);
+    const { providers, readyToArchive } = buildOAuthManualCheckVerification(markdown);
 
     console.log(`OAuth manual check verification`);
     console.log(`- report: ${resolvedReportPath}`);
@@ -152,12 +165,12 @@ function main() {
         `- ${row.provider}: status=${row.status} evidence=${row.evidenceReady ? "ok" : "missing"} ready=${row.ready ? "yes" : "no"}`,
       );
     }
-    console.log(`- readyToCloseCycle23: ${readyToClose ? "yes" : "no"}`);
+    console.log(`- readyToArchiveOAuthCheck: ${readyToArchive ? "yes" : "no"}`);
 
-    if (options.strict && !readyToClose) {
+    if (options.strict && !readyToArchive) {
       process.exitCode = 1;
       console.error(
-        "Cycle 23 closure criteria not met. Both providers must be pass with evidence links.",
+        "OAuth manual check archive criteria not met. Both providers must be pass with evidence links before updating docs/DONE.md and clearing the matching docs/PLAN.md blocked item.",
       );
     }
   } catch (error) {
@@ -168,4 +181,9 @@ function main() {
   }
 }
 
-main();
+if (
+  process.env.NODE_ENV !== "test" &&
+  process.argv[1]?.endsWith("verify-oauth-manual-check.ts")
+) {
+  main();
+}

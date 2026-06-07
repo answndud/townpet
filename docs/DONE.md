@@ -10188,3 +10188,10 @@
 - 변경: 문서 안내, 제품/보안/운영 개요, 운영 체크리스트/런북, 에이전트 운영 문서의 기록 위치 문구를 갱신했다.
 - 제외: 도메인 상태값 `COMPLETED`와 archive 문서는 변경하지 않았다.
 - 검증: non-archive stale 상태문서 검색, 문서 인덱스 check, `git diff --check`.
+
+### 2026-06-07 - OAuth/agent helper 구 계획 문구 정리
+
+- 요약: OAuth 수동점검 리포트/검증 스크립트와 agent prompt helper가 현재 `PLAN.md`/`DONE.md` 하네스 문구를 출력하도록 정리했다.
+- 변경: 과거 `Cycle 23` closure copy, `PROGRESS.md` snippet, `PLAN/PROGRESS` docs-mode hint를 제거하고 회귀 테스트를 추가했다.
+- 검증: `state-harness-copy.test.ts` PASS, scripts eslint PASS, `tsc --noEmit` PASS.
+- 후속: production OAuth credential이 준비되면 helper 출력 기준으로 수동점검 결과만 `DONE.md`에 archive한다.
