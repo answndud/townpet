@@ -10363,3 +10363,10 @@
 - 변경: `runFoundingMemberGrant(prisma, options)`, `buildFoundingMemberNextData(...)`, `formatFoundingMemberGrantOutput(...)`를 추가해 DB 없이 wrapper 계약을 검증 가능하게 분리했다.
 - 검증: `grant-founding-member.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
 - 후속: Founding Member badge 필드나 JSON output이 바뀌면 wrapper test를 함께 갱신한다.
+
+### 2026-06-07 - public smoke fixture publish CLI wrapper 보강
+
+- 요약: `ops:public-smoke-fixtures:publish` wrapper가 import 시 실행되지 않게 하고 main 출력/disconnect 경계를 테스트했다.
+- 변경: `main(prisma, env)`를 export해 Prisma/env 주입형으로 분리하고 `process.argv[1]` 기반 CLI guard로 바꿨다.
+- 검증: `publish-public-smoke-fixtures.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
+- 후속: public smoke fixture output이나 apply env 정책이 바뀌면 wrapper test를 함께 갱신한다.
