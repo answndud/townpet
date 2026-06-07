@@ -1,17 +1,53 @@
 import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
 
-import { isDryRunMode, resolveMaintenanceRunMode } from "./maintenance-run-mode";
+import {
+  isDryRunMode,
+  type MaintenanceRunMode,
+  resolveMaintenanceRunMode,
+} from "./maintenance-run-mode";
 
-const prisma = new PrismaClient();
-const LEGACY_SITE_SETTING_KEYS = ["popular_search_terms_v1"] as const;
+export const LEGACY_SITE_SETTING_KEYS = ["popular_search_terms_v1"] as const;
 
-async function main() {
-  const apply = !isDryRunMode(
-    resolveMaintenanceRunMode({
-      applyEnvName: "LEGACY_SITE_SETTING_CLEANUP_APPLY",
-    }),
-  );
+type LegacySiteSettingCleanupPrisma = Pick<
+  PrismaClient,
+  "siteSetting" | "$disconnect"
+>;
+
+type LegacySiteSettingRow = {
+  key: string;
+  updatedAt: Date;
+};
+
+export function formatLegacySiteSettingCleanupOutput(params: {
+  mode: MaintenanceRunMode;
+  legacyRows: LegacySiteSettingRow[];
+  deletedCount?: number;
+}) {
+  if (params.legacyRows.length === 0) {
+    return "No legacy SiteSetting keys found.";
+  }
+
+  const lines = [`Found ${params.legacyRows.length} legacy SiteSetting key(s):`];
+  for (const row of params.legacyRows) {
+    lines.push(`- ${row.key} (updatedAt=${row.updatedAt.toISOString()})`);
+  }
+
+  if (isDryRunMode(params.mode)) {
+    lines.push("Dry-run mode. Re-run with --apply to delete keys.");
+  } else {
+    lines.push(`Deleted ${params.deletedCount ?? 0} legacy SiteSetting key(s).`);
+  }
+
+  return lines.join("\n");
+}
+
+export async function runLegacySiteSettingCleanup(
+  prisma: LegacySiteSettingCleanupPrisma,
+) {
+  const mode = resolveMaintenanceRunMode({
+    applyEnvName: "LEGACY_SITE_SETTING_CLEANUP_APPLY",
+  });
   const keys = [...LEGACY_SITE_SETTING_KEYS];
 
   const legacyRows = await prisma.siteSetting.findMany({
@@ -20,33 +56,39 @@ async function main() {
     orderBy: { key: "asc" },
   });
 
-  if (legacyRows.length === 0) {
-    console.log("No legacy SiteSetting keys found.");
-    return;
-  }
-
-  console.log(`Found ${legacyRows.length} legacy SiteSetting key(s):`);
-  for (const row of legacyRows) {
-    console.log(`- ${row.key} (updatedAt=${row.updatedAt.toISOString()})`);
-  }
-
-  if (!apply) {
-    console.log("Dry-run mode. Re-run with --apply to delete keys.");
-    return;
+  if (legacyRows.length === 0 || isDryRunMode(mode)) {
+    return formatLegacySiteSettingCleanupOutput({
+      mode,
+      legacyRows,
+    });
   }
 
   const deleted = await prisma.siteSetting.deleteMany({
     where: { key: { in: keys } },
   });
 
-  console.log(`Deleted ${deleted.count} legacy SiteSetting key(s).`);
+  return formatLegacySiteSettingCleanupOutput({
+    mode,
+    legacyRows,
+    deletedCount: deleted.count,
+  });
 }
 
-main()
-  .catch((error) => {
-    console.error("Legacy SiteSetting cleanup failed", error);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+async function main(prisma: LegacySiteSettingCleanupPrisma = new PrismaClient()) {
+  console.log(await runLegacySiteSettingCleanup(prisma));
+}
+
+if (
+  process.env.NODE_ENV !== "test" &&
+  process.argv[1]?.endsWith("cleanup-legacy-site-setting.ts")
+) {
+  const prisma = new PrismaClient();
+  main(prisma)
+    .catch((error) => {
+      console.error("Legacy SiteSetting cleanup failed", error);
+      process.exit(1);
+    })
+    .finally(async () => {
+      await prisma.$disconnect();
+    });
+}
