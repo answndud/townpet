@@ -10174,3 +10174,10 @@
 - 변경: 현재 기준을 `55 route handlers`, missing method `0`, adjacent test gap `0`, `validation=none`/`monitoring=none` `0`으로 통일했다.
 - 추가: README와 최신 블로그 안내의 구 `PROGRESS/COMPLETED` 링크를 현재 `PLAN/DONE` 하네스 기준으로 정리했다.
 - 검증: stale API 수치 검색, 문서 인덱스 check, `git diff --check`.
+
+### 2026-06-07 - 블로그 구 상태문서 링크 정리
+
+- 요약: 블로그 23/24/30번 글에 남은 구 `PROGRESS.md`/`COMPLETED.md` 링크와 설명을 현재 `PLAN.md`/`DONE.md` 구조로 갱신했다.
+- 변경: AI agent 개발 방식, 데모/문서 패키지, 운영 검증 루프 글의 문서 목록/다이어그램/면접 설명을 `PLAN/DONE` 기준으로 정리했다.
+- 검증: `blog/` 내 구 상태문서 링크 검색 0건, 문서 인덱스 check, `git diff --check`.
+- 후속: 운영/사업 문서에 남은 legacy `PROGRESS/COMPLETED` 참조는 현재 운영 기준 문서인지 archive 성격인지 구분해 별도 정리한다.
