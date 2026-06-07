@@ -47,6 +47,11 @@ describe("LostFoundLandingPage", () => {
     expect(html).toContain('href="/guides/lost-pet-first-24-hours"');
     expect(html).toContain("망원동에서 흰색 강아지를 찾고 있어요");
     expect(html).toContain("마지막 확인 위치: 망원시장 근처");
+    expect(html).toContain('href="/posts/post-1/guest#lost-found-share-tools"');
+    expect(html).toContain('href="/posts/post-1/guest#comments"');
+    expect(html).toContain("공유 도구");
+    expect(html).toContain("목격 제보");
+    expect(html).toContain("상세에서 공개 범위를 확인하세요.");
     expect(html).toContain("전화번호, 오픈채팅, 이메일은 공개 본문에 적지 않습니다.");
     expect(html).toContain("링크 복사, 카카오톡 문구, 인스타/전단 이미지");
   });

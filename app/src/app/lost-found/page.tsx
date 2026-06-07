@@ -56,13 +56,11 @@ function LostFoundRecentPostCard({ post }: { post: PublicLostFoundLandingPost })
     .map((value) => value?.trim())
     .filter(Boolean)
     .join(" · ");
+  const shareHref = `${post.href}#lost-found-share-tools`;
+  const sightingHref = `${post.href}#comments`;
 
   return (
-    <Link
-      href={post.href}
-      prefetch={false}
-      className="group grid gap-2 border-b border-[#e4edf8] px-3 py-3 transition last:border-b-0 hover:bg-[#f8fbff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#3567b5]"
-    >
+    <article className="group grid gap-2 border-b border-[#e4edf8] px-3 py-3 transition last:border-b-0 hover:bg-[#f8fbff]">
       <div className="flex min-w-0 flex-wrap items-center gap-1.5 text-[11px] font-semibold text-[#5a7397]">
         <span className="rounded-md border border-rose-200 bg-rose-50 px-2 py-0.5 text-rose-700">
           {alertLabel}
@@ -71,9 +69,13 @@ function LostFoundRecentPostCard({ post }: { post: PublicLostFoundLandingPost })
         <span className="text-[#7b8faa]">{formatKoreanDateTime(post.alert.lastSeenAt)}</span>
       </div>
       <div className="min-w-0">
-        <h2 className="truncate text-sm font-semibold leading-5 text-[#173963] group-hover:text-[#214d8d]">
+        <Link
+          href={post.href}
+          prefetch={false}
+          className="block truncate text-sm font-semibold leading-5 text-[#173963] transition group-hover:text-[#214d8d] hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0]"
+        >
           {post.title}
-        </h2>
+        </Link>
         <p className="mt-1 truncate text-xs leading-5 text-[#5a7397]">
           마지막 확인 위치: {post.alert.lastSeenLocation}
         </p>
@@ -84,7 +86,24 @@ function LostFoundRecentPostCard({ post }: { post: PublicLostFoundLandingPost })
         <span>조회 {post.viewCount}</span>
         <span>좋아요 {post.likeCount}</span>
       </div>
-    </Link>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-[#edf3fb] pt-2 text-[11px] leading-4">
+        <Link
+          href={shareHref}
+          prefetch={false}
+          className="font-semibold text-[#315b9a] hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0]"
+        >
+          공유 도구
+        </Link>
+        <Link
+          href={sightingHref}
+          prefetch={false}
+          className="font-semibold text-[#315b9a] hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0]"
+        >
+          목격 제보
+        </Link>
+        <span className="text-[#6b84a8]">상세에서 공개 범위를 확인하세요.</span>
+      </div>
+    </article>
   );
 }
 
