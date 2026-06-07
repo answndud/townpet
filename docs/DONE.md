@@ -10279,3 +10279,10 @@
 - 변경: `runSearchTermCleanup(prisma)`와 `formatSearchTermCleanupOutput(...)`를 추가해 wrapper 출력 계약을 분리했다.
 - 검증: `cleanup-search-terms.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
 - 후속: search term cleanup 메시지나 run mode가 바뀌면 wrapper test를 함께 갱신한다.
+
+### 2026-06-07 - search term daily metric cleanup CLI wrapper 보강
+
+- 요약: `db:cleanup:search-term-daily-metrics` wrapper가 import 시 PrismaClient/main을 실행하지 않게 하고 dry-run/apply 출력 메시지를 테스트했다.
+- 변경: `runSearchTermDailyMetricCleanup(prisma)`와 `formatSearchTermDailyMetricCleanupOutput(...)`를 추가해 wrapper 출력 계약을 분리했다.
+- 검증: `cleanup-search-term-daily-metrics.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
+- 후속: search term daily metric cleanup 메시지나 run mode가 바뀌면 wrapper test를 함께 갱신한다.
