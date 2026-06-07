@@ -24,8 +24,23 @@ type HealthResponse = {
   }
 }
 
-function normalizeBaseUrl(baseUrl: string) {
-  return baseUrl.replace(/\/$/, "")
+export function normalizeBaseUrl(baseUrl: string) {
+  return baseUrl.replace(/\/+$/, "")
+}
+
+export function buildHealthEndpointUrl(baseUrl: string) {
+  return `${normalizeBaseUrl(baseUrl)}/api/health`
+}
+
+export function buildHealthHeaders(healthInternalToken: string) {
+  const headers: Record<string, string> = {
+    accept: "application/json",
+    "cache-control": "no-cache",
+  }
+  if (healthInternalToken) {
+    headers["x-health-token"] = healthInternalToken
+  }
+  return headers
 }
 
 async function main() {
@@ -37,15 +52,9 @@ async function main() {
     throw new Error("OPS_BASE_URL is required (example: https://townpet.example.com)")
   }
 
-  const headers: Record<string, string> = {
-    accept: "application/json",
-    "cache-control": "no-cache",
-  }
-  if (healthInternalToken) {
-    headers["x-health-token"] = healthInternalToken
-  }
+  const headers = buildHealthHeaders(healthInternalToken)
 
-  const url = `${normalizeBaseUrl(baseUrl)}/api/health`
+  const url = buildHealthEndpointUrl(baseUrl)
   const startedAt = Date.now()
   const response = await fetch(url, {
     method: "GET",
@@ -109,8 +118,13 @@ async function main() {
   }
 }
 
-main().catch((error) => {
-  console.error("Health check failed")
-  console.error(error)
-  process.exit(1)
-})
+if (
+  process.env.NODE_ENV !== "test" &&
+  process.argv[1]?.endsWith("check-health-endpoint.ts")
+) {
+  main().catch((error) => {
+    console.error("Health check failed")
+    console.error(error)
+    process.exit(1)
+  })
+}
