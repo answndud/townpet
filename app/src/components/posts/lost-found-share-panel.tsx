@@ -10,7 +10,9 @@ import {
   buildLostFoundShareChecklist,
   buildLostFoundShareText,
 } from "@/lib/lost-found-share";
+import { buildLostFoundShareActionEvent } from "@/lib/lost-found-acquisition-events";
 import { copyTextToClipboard } from "@/lib/post-share";
+import { sendAcquisitionEvent } from "@/lib/acquisition-tracking";
 
 type LostFoundSharePanelProps = {
   post: PostDetailItem;
@@ -25,6 +27,8 @@ const lostFoundSharePrimaryActionClassName =
   "inline-flex min-h-10 items-center justify-center rounded-md bg-[#3567b5] px-3 text-xs font-semibold text-[#fbfdff] transition hover:bg-[#2f5da4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1";
 
 async function recordLostFoundShareAction(postId: string, action: ShareAction) {
+  void sendAcquisitionEvent(buildLostFoundShareActionEvent(postId, action));
+
   await fetch(`/api/posts/${postId}/share`, {
     method: "POST",
     credentials: "same-origin",

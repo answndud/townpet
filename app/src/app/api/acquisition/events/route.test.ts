@@ -89,6 +89,34 @@ describe("POST /api/acquisition/events contract", () => {
     });
   });
 
+  it("records lost-found share funnel events", async () => {
+    mockEnforceRateLimit.mockResolvedValue();
+    mockRecordAcquisitionEvent.mockResolvedValue({ ok: true, recorded: true });
+
+    const request = new Request("http://localhost/api/acquisition/events", {
+      method: "POST",
+      body: JSON.stringify({
+        surface: "SHARE_PANEL",
+        event: "LOST_SHARE_ACTION_CLICKED",
+        targetType: "POST",
+        targetId: "post-1",
+        source: "KAKAO_TEXT_COPY",
+      }),
+      headers: { "content-type": "application/json" },
+    }) as NextRequest;
+
+    const response = await POST(request);
+
+    expect(response.status).toBe(200);
+    expect(mockRecordAcquisitionEvent).toHaveBeenCalledWith({
+      surface: "SHARE_PANEL",
+      event: "LOST_SHARE_ACTION_CLICKED",
+      targetType: "POST",
+      targetId: "post-1",
+      source: "KAKAO_TEXT_COPY",
+    });
+  });
+
   it("returns 202 when metric storage is not ready", async () => {
     mockEnforceRateLimit.mockResolvedValue();
     mockRecordAcquisitionEvent.mockResolvedValue({

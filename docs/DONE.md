@@ -10515,3 +10515,10 @@
 - 변경: `lost-found.queries.ts` read-only landing query, `/lost-found` page/test, 홈 관심 주제 링크를 전용 랜딩으로 변경했다.
 - 검증: targeted lint/test/typecheck, 브라우저 `/lost-found`·`/` no overflow/error, `quality:check` PASS.
 - 보정: `restore-local-dev.test.ts`의 pnpm fallback 테스트가 현재 `npm_execpath` 환경에 의존하지 않도록 빈 문자열 케이스로 수정했다.
+
+### 2026-06-07 - 분실/목격 제보 획득 루프 이벤트 측정
+
+- 요약: `/lost-found` 랜딩 CTA, 상세 공유 도구 열기/복사/이미지 진입, 목격 댓글 모드/제출/성공 이벤트를 acquisition event 구조에 연결했다.
+- 변경: 분실/목격 전용 이벤트 빌더와 스키마 테스트를 추가하고 랜딩, 공유 패널, 댓글 스레드에서 실패 무시 방식으로 이벤트를 전송한다.
+- 검증: targeted test, `lint`, `typecheck`, `quality:check`, 브라우저 `/lost-found` 렌더/콘솔 오류 없음 PASS.
+- 후속: 새 이벤트를 관리자/운영 리포트에서 funnel summary로 확인할 수 있게 연결한다.

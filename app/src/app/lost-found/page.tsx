@@ -1,8 +1,16 @@
 import Link from "next/link";
 
+import {
+  AcquisitionEventTracker,
+  AcquisitionTrackedLink,
+} from "@/components/analytics/acquisition-event-tracker";
 import { createPublicPageMetadata } from "@/lib/page-metadata";
 import { formatKoreanDateTime } from "@/lib/date-format";
 import { getLostFoundAlertTypeLabel } from "@/lib/lost-found-share";
+import {
+  buildLostFoundCtaClickEvent,
+  buildLostFoundLandingViewEvent,
+} from "@/lib/lost-found-acquisition-events";
 import {
   getPublicLostFoundLandingPayload,
   type PublicLostFoundLandingPost,
@@ -85,6 +93,7 @@ export default async function LostFoundLandingPage() {
 
   return (
     <main className="tp-page-bg min-h-screen">
+      <AcquisitionEventTracker event={buildLostFoundLandingViewEvent()} />
       <section className="mx-auto w-full max-w-[1180px] px-4 py-6 sm:px-6 sm:py-12 lg:px-10">
         <div className="max-w-[780px]">
           <p className="text-[11px] font-semibold uppercase leading-none tracking-[0.16em] text-[#486894] sm:tracking-[0.22em]">
@@ -98,18 +107,27 @@ export default async function LostFoundLandingPage() {
             주변 사람이 더 빨리 확인하고 댓글로 목격 정보를 남길 수 있습니다.
           </p>
           <div className="mt-5 flex flex-col gap-2 sm:mt-7 sm:flex-row sm:flex-wrap">
-            <Link
+            <AcquisitionTrackedLink
               href="/posts/new?type=LOST_FOUND&template=lost_pet"
               className={primaryActionClassName}
+              event={buildLostFoundCtaClickEvent("lost_found_create", "hero")}
             >
               분실/목격 등록
-            </Link>
-            <Link href="/feed/guest?type=LOST_FOUND" className={secondaryActionClassName}>
+            </AcquisitionTrackedLink>
+            <AcquisitionTrackedLink
+              href="/feed/guest?type=LOST_FOUND"
+              className={secondaryActionClassName}
+              event={buildLostFoundCtaClickEvent("lost_found_feed", "hero")}
+            >
               전체 제보
-            </Link>
-            <Link href="/guides/lost-pet-first-24-hours" className={secondaryActionClassName}>
+            </AcquisitionTrackedLink>
+            <AcquisitionTrackedLink
+              href="/guides/lost-pet-first-24-hours"
+              className={secondaryActionClassName}
+              event={buildLostFoundCtaClickEvent("lost_found_first_24h_guide", "hero")}
+            >
               첫 24시간 가이드
-            </Link>
+            </AcquisitionTrackedLink>
           </div>
         </div>
       </section>
@@ -137,12 +155,13 @@ export default async function LostFoundLandingPage() {
                 <p className="text-xs leading-5 text-[#5a7397]">
                   제보가 필요한 상황이라면 먼저 위치와 시간을 정리한 뒤 공개 가능한 범위만 남겨 주세요.
                 </p>
-                <Link
+                <AcquisitionTrackedLink
                   href="/posts/new?type=LOST_FOUND&template=lost_pet"
                   className="text-xs font-semibold text-[#315b9a] hover:underline hover:underline-offset-4"
+                  event={buildLostFoundCtaClickEvent("lost_found_create", "empty_state")}
                 >
                   첫 제보 등록
-                </Link>
+                </AcquisitionTrackedLink>
               </div>
             )}
           </div>
@@ -171,18 +190,20 @@ export default async function LostFoundLandingPage() {
               분실/목격 글 상세에는 링크 복사, 카카오톡 문구, 인스타/전단 이미지 진입이 제공됩니다.
             </p>
             <div className="mt-2 flex flex-wrap gap-2">
-              <Link
+              <AcquisitionTrackedLink
                 href="/guides/lost-dog-poster"
                 className="text-xs font-semibold text-[#315b9a] hover:underline hover:underline-offset-4"
+                event={buildLostFoundCtaClickEvent("lost_found_poster_guide", "share_tools")}
               >
                 전단 작성 기준
-              </Link>
-              <Link
+              </AcquisitionTrackedLink>
+              <AcquisitionTrackedLink
                 href="/feed/guest?type=LOST_FOUND"
                 className="text-xs font-semibold text-[#315b9a] hover:underline hover:underline-offset-4"
+                event={buildLostFoundCtaClickEvent("lost_found_feed", "share_tools")}
               >
                 제보 목록
-              </Link>
+              </AcquisitionTrackedLink>
             </div>
           </section>
         </aside>

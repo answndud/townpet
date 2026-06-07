@@ -3,6 +3,8 @@
 import { type ComponentType, useState } from "react";
 
 import type { PostDetailItem } from "@/components/posts/post-detail-types";
+import { buildLostFoundSharePanelOpenedEvent } from "@/lib/lost-found-acquisition-events";
+import { sendAcquisitionEvent } from "@/lib/acquisition-tracking";
 
 type DeferredLostFoundSharePanelProps = {
   post: PostDetailItem;
@@ -22,6 +24,7 @@ export function DeferredLostFoundSharePanel({
     if (SharePanel || isLoading) {
       return;
     }
+    void sendAcquisitionEvent(buildLostFoundSharePanelOpenedEvent(post.id));
     setIsLoading(true);
     void import("@/components/posts/lost-found-share-panel").then((module) => {
       setSharePanel(() => module.LostFoundSharePanel);
