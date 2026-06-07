@@ -10146,3 +10146,10 @@
 - 변경: routeHandlers `54 -> 55`, 새 route는 `public-internal-token` access, `schema` validation, `monitorUnhandledError` monitoring으로 기록됐다.
 - 검증: `check-api-route-contracts.ts --check` PASS, `--check --strict` PASS, UI copy audit PASS.
 - 후속: 새 API route 추가 후에는 `api:contracts --check`를 즉시 실행해 report drift를 조기에 잡는다.
+
+### 2026-06-07 - lost-found share SVG route adjacent test 보강
+
+- 요약: `/api/posts/[id]/lost-found-share.svg` route의 adjacent test를 추가해 직접 구현 API route test gap을 줄였다.
+- 검증: 정상 LOST_FOUND SVG/header/cache, 비 LOST_FOUND, read-access 차단, inactive 404를 고정했다.
+- 결과: API contract report `missingAdjacentTests`가 `2 -> 1`로 감소했고, 남은 gap은 provider-managed NextAuth route뿐이다.
+- 검증 명령: targeted vitest PASS, file eslint PASS, `tsc --noEmit` PASS, `api:contracts --check --strict` PASS.
