@@ -10454,3 +10454,10 @@
 - 변경: notification/comment flow와 new-user safety policy flow를 `process.argv[1]` guard로 보호하고 import 회귀 테스트 목록에 추가했다.
 - 검증: `seed-entrypoints.test.ts`, file eslint, `tsc --noEmit`, 즉시 `main()`/top-level Prisma scan PASS.
 - 후속: 새 script entrypoint를 추가할 때 import-side-effect test 목록을 함께 갱신한다.
+
+### 2026-06-07 - production Web Vitals field sample 재판정
+
+- 요약: production Web Vitals sample을 재수집해 `/` LCP 34개, `/feed/guest` LCP 42개로 route별 최소 30개 조건을 충족했고 p75는 각각 236ms/276ms로 정상 범위였다.
+- 변경: remote summary, browser baseline, route asset snapshot report를 `docs/reports/`에 추가하고 `PLAN.md`의 Web Vitals conditional 후보를 archive했다.
+- 검증: metric POST 237건 성공/0건 실패, remote sampleCount 326, browser baseline 200x3 per profile/route, asset snapshot PASS.
+- 후속: 실제 사용자 field p75/p95가 반복적으로 budget을 넘는 새 증거가 생기면 별도 성능 개선 작업으로 전환한다.
