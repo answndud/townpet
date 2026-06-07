@@ -7,7 +7,7 @@ import {
 } from "@prisma/client";
 import { assertLocalDevelopmentDatabase } from "../src/server/local-database-guard";
 
-const prisma = new PrismaClient();
+let prisma: PrismaClient;
 
 const DEMO_USER_EMAIL = "adoption-demo@townpet.dev";
 const DEMO_USER_NICKNAME = "입양데모";
@@ -149,11 +149,17 @@ async function main() {
   console.log(`adoption demo seed complete: ${createdCount} created`);
 }
 
-main()
-  .catch((error) => {
-    console.error(error);
-    process.exitCode = 1;
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+if (
+  process.env.NODE_ENV !== "test" &&
+  process.argv[1]?.endsWith("seed-adoption-demo.ts")
+) {
+  prisma = new PrismaClient();
+  main()
+    .catch((error) => {
+      console.error(error);
+      process.exitCode = 1;
+    })
+    .finally(async () => {
+      await prisma.$disconnect();
+    });
+}

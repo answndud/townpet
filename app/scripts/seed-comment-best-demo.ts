@@ -4,7 +4,7 @@ import { PostScope, PostStatus, PostType, PrismaClient, UserRole } from "@prisma
 import { resolveBoardByPostType } from "../src/lib/community-board";
 import { assertLocalDevelopmentDatabase } from "../src/server/local-database-guard";
 
-const prisma = new PrismaClient();
+let prisma: PrismaClient;
 
 const DEMO_POST_TITLE = "[댓글 데모] 베스트 댓글/원댓글 이동 확인용";
 const DEMO_POST_CONTENT = [
@@ -279,11 +279,17 @@ async function main() {
   );
 }
 
-main()
-  .catch((error) => {
-    console.error("seed comment best demo failed", error);
-    process.exitCode = 1;
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+if (
+  process.env.NODE_ENV !== "test" &&
+  process.argv[1]?.endsWith("seed-comment-best-demo.ts")
+) {
+  prisma = new PrismaClient();
+  main()
+    .catch((error) => {
+      console.error("seed comment best demo failed", error);
+      process.exitCode = 1;
+    })
+    .finally(async () => {
+      await prisma.$disconnect();
+    });
+}

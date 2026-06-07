@@ -10,7 +10,7 @@ import {
 } from "../src/server/test-user-provisioning";
 import { hashPassword } from "../src/server/password";
 
-const prisma = new PrismaClient();
+let prisma: PrismaClient;
 const MAX_CREATE_ATTEMPTS_PER_USER = 20;
 
 type ProvisionedUserCredential = GeneratedTestUserCredential & {
@@ -148,12 +148,18 @@ async function main() {
   }
 }
 
-main()
-  .catch((error) => {
-    console.error("Test-user provisioning failed");
-    console.error(error);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+if (
+  process.env.NODE_ENV !== "test" &&
+  process.argv[1]?.endsWith("provision-test-users.ts")
+) {
+  prisma = new PrismaClient();
+  main()
+    .catch((error) => {
+      console.error("Test-user provisioning failed");
+      console.error(error);
+      process.exit(1);
+    })
+    .finally(async () => {
+      await prisma.$disconnect();
+    });
+}

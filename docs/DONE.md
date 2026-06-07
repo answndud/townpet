@@ -10440,3 +10440,10 @@
 - 변경: `runSyncNeighborhoods(prisma, deps)`, `formatSyncNeighborhoodsOutput(...)`, `main(prisma, deps)`를 추가하고 top-level Prisma/main 실행을 guard 내부로 옮겼다.
 - 검증: `sync-neighborhoods.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
 - 후속: neighborhood seed schema나 chunk/retry 정책이 바뀌면 runner test를 함께 갱신한다.
+
+### 2026-06-07 - seed/provision CLI entrypoint 최종 보강
+
+- 요약: package/workflow로 노출된 seed/provision entrypoint 13개가 import 시 Prisma client 생성이나 DB 작업을 실행하지 않도록 정리했다.
+- 변경: top-level `new PrismaClient()`를 제거하고 CLI guard 내부에서만 Prisma를 생성하게 했으며, `seed-entrypoints.test.ts`로 import 회귀를 막았다.
+- 검증: `seed-entrypoints.test.ts`, 기존 seed helper tests, file eslint, `tsc --noEmit` PASS.
+- 후속: 새 seed/provision script를 추가하면 entry guard와 import-side-effect test 목록을 함께 갱신한다.

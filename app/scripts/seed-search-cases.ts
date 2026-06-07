@@ -2,7 +2,7 @@ import "dotenv/config";
 import { PostScope, PostType, PrismaClient } from "@prisma/client";
 import { assertLocalDevelopmentDatabase } from "../src/server/local-database-guard";
 
-const prisma = new PrismaClient();
+let prisma: PrismaClient;
 
 const SEARCH_CASE_AUTHOR = {
   email: "search.case@townpet.dev",
@@ -211,11 +211,17 @@ async function main() {
   );
 }
 
-main()
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+if (
+  process.env.NODE_ENV !== "test" &&
+  process.argv[1]?.endsWith("seed-search-cases.ts")
+) {
+  prisma = new PrismaClient();
+  main()
+    .catch((error) => {
+      console.error(error);
+      process.exit(1);
+    })
+    .finally(async () => {
+      await prisma.$disconnect();
+    });
+}

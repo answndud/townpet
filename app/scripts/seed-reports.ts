@@ -8,7 +8,7 @@ import {
 } from "@prisma/client";
 import { assertLocalDevelopmentDatabase } from "../src/server/local-database-guard";
 
-const prisma = new PrismaClient();
+let prisma: PrismaClient;
 const seedTag = "seed:report";
 
 type SeedReportInput = {
@@ -172,11 +172,17 @@ async function main() {
   console.log("Seed reports created.");
 }
 
-main()
-  .catch((error) => {
-    console.error("Seed reports failed", error);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+if (
+  process.env.NODE_ENV !== "test" &&
+  process.argv[1]?.endsWith("seed-reports.ts")
+) {
+  prisma = new PrismaClient();
+  main()
+    .catch((error) => {
+      console.error("Seed reports failed", error);
+      process.exit(1);
+    })
+    .finally(async () => {
+      await prisma.$disconnect();
+    });
+}

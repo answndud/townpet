@@ -26,7 +26,7 @@ import {
   type DemoContentSeedMode,
 } from "../src/server/demo-content-seeding";
 
-const prisma = new PrismaClient();
+let prisma: PrismaClient;
 
 const DEMO_AUTHOR_SPECS = [
   {
@@ -1132,12 +1132,18 @@ async function main() {
   printSummary(config.mode, result);
 }
 
-main()
-  .catch((error) => {
-    console.error("Production demo content seed failed");
-    console.error(error);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+if (
+  process.env.NODE_ENV !== "test" &&
+  process.argv[1]?.endsWith("seed-production-demo-content.ts")
+) {
+  prisma = new PrismaClient();
+  main()
+    .catch((error) => {
+      console.error("Production demo content seed failed");
+      console.error(error);
+      process.exit(1);
+    })
+    .finally(async () => {
+      await prisma.$disconnect();
+    });
+}
