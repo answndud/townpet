@@ -268,8 +268,10 @@ describe("POST /api/posts contract", () => {
     }) as NextRequest;
 
     const response = await POST(request);
+    const payload = await response.json();
 
     expect(response.status).toBe(201);
+    expect(payload).toMatchObject({ ok: true, data: { id: "post-1" } });
     expect(mockAssertGuestStepUp).toHaveBeenCalledWith({
       scope: "post:create",
       ip: "127.0.0.1",
@@ -300,8 +302,10 @@ describe("POST /api/posts contract", () => {
     }) as NextRequest;
 
     const response = await POST(request);
+    const payload = await response.json();
 
     expect(response.status).toBe(201);
+    expect(payload).toMatchObject({ ok: true, data: { id: "post-1" } });
     expect(mockAssertGuestStepUp).not.toHaveBeenCalled();
     expect(mockEnforceAuthenticatedWriteRateLimit).toHaveBeenCalledWith({
       scope: "post:create",

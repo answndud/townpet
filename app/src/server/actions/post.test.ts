@@ -107,13 +107,14 @@ describe("post actions", () => {
 
   it("creates a post and only revalidates the feed page", async () => {
     mockRequireCurrentUser.mockResolvedValue({ id: "user-1" } as never);
+    mockCreatePost.mockResolvedValue({ id: "post-1" } as never);
 
     const result = await createPostAction(
       { title: "새 글" },
       { clientFingerprint: "device-fp-1" },
     );
 
-    expect(result).toEqual({ ok: true });
+    expect(result).toEqual({ ok: true, postId: "post-1" });
     expect(mockCreatePost).toHaveBeenCalledWith({
       authorId: "user-1",
       input: { title: "새 글" },

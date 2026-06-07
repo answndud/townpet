@@ -8,7 +8,7 @@ import {
   useState,
   useTransition,
 } from "react";
-import { PostScope } from "@prisma/client";
+import { PostScope, PostType } from "@prisma/client";
 import { useRouter } from "next/navigation";
 
 import type { PostBodyRichEditorHandle } from "@/components/posts/post-body-rich-editor";
@@ -23,11 +23,14 @@ import { getGuestWriteHeaders } from "@/lib/guest-step-up.client";
 import { createPostAction } from "@/server/actions/post";
 
 type PostCreateActionResult =
-  | { ok: true }
+  | { ok: true; postId?: string }
   | { ok: false; message?: string };
 
 type GuestPostCreateResponsePayload = {
   ok: boolean;
+  data?: {
+    id?: string | null;
+  };
   error?: { message?: string };
 };
 
@@ -57,13 +60,29 @@ export function toGuestPostCreateActionResult(
   payload: GuestPostCreateResponsePayload,
 ): PostCreateActionResult {
   if (responseOk && payload.ok) {
-    return { ok: true };
+    return { ok: true, postId: payload.data?.id ?? undefined };
   }
 
   return {
     ok: false,
     message: payload.error?.message ?? "비회원 글 등록에 실패했습니다.",
   };
+}
+
+export function buildPostCreateSuccessHref({
+  isAuthenticated,
+  payload,
+  result,
+}: {
+  isAuthenticated: boolean;
+  payload: PostCreateSubmitPayload;
+  result: Extract<PostCreateActionResult, { ok: true }>;
+}) {
+  if (payload.type !== PostType.LOST_FOUND || !result.postId) {
+    return "/feed";
+  }
+
+  return isAuthenticated ? `/posts/${result.postId}` : `/posts/${result.postId}/guest`;
 }
 
 export function toPostCreateNetworkErrorResult(error: unknown): PostCreateActionResult {
@@ -177,7 +196,13 @@ export function usePostCreateSubmit({
       }
 
       markDraftSubmitted();
-      router.push("/feed");
+      router.push(
+        buildPostCreateSuccessHref({
+          isAuthenticated,
+          payload: payloadResult.payload,
+          result,
+        }),
+      );
       router.refresh();
       setFormState(createPostCreateSuccessState);
       latestTitleRef.current = "";

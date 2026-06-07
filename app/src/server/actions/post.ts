@@ -32,7 +32,7 @@ import { ServiceError } from "@/server/services/service-error";
 import { requireCurrentUser } from "@/server/auth";
 
 type PostActionResult =
-  | { ok: true }
+  | { ok: true; postId?: string }
   | { ok: false; code: string; message: string };
 type PostReactionInput = "LIKE" | "DISLIKE" | null;
 
@@ -116,9 +116,9 @@ export async function createPostAction(
       clientFingerprint: options?.clientFingerprint ?? null,
     });
 
-    await createPost({ authorId: user.id, input });
+    const post = await createPost({ authorId: user.id, input });
     revalidateFeedPage();
-    return { ok: true };
+    return { ok: true, postId: post.id };
   } catch (error) {
     if (error instanceof ServiceError) {
       return { ok: false, code: error.code, message: error.message };
