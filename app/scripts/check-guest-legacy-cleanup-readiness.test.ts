@@ -1,9 +1,12 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
+  formatGuestLegacyCleanupReadinessOutput,
   hasAnyGuestLegacyColumn,
+  main,
   normalizeGuestLegacyLookbackHours,
   resolveGuestLegacyCleanupConfig,
+  runGuestLegacyCleanupReadinessCli,
   runGuestLegacyCleanupReadiness,
   selectKnownGuestLegacyColumns,
 } from "./check-guest-legacy-cleanup-readiness";
@@ -17,6 +20,10 @@ function createFakePrisma(queryResults: unknown[][]) {
 }
 
 describe("guest legacy cleanup readiness helpers", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it("detects legacy guest columns even when guestPasswordHash has already been dropped", () => {
     expect(hasAnyGuestLegacyColumn(["guestDisplayName", "guestIpLabel"])).toBe(true);
     expect(selectKnownGuestLegacyColumns(["id", "guestDisplayName", "createdAt"])).toEqual([
@@ -108,5 +115,91 @@ describe("guest legacy cleanup readiness helpers", () => {
       recentPostLegacyCredentialWrites: 1,
       pendingBackfillPosts: 2,
     });
+  });
+
+  it("formats warning payloads as compact JSON", async () => {
+    const result = await runGuestLegacyCleanupReadiness(
+      createFakePrisma([
+        [{ column_name: "guestPasswordHash" }],
+        [],
+        [{ count: 1 }],
+        [{ count: 0 }],
+        [{ count: 0 }],
+        [{ count: 0 }],
+        [{ count: 1 }],
+        [{ count: 0 }],
+      ]),
+      { strict: false, lookbackHours: 24 },
+    );
+
+    expect(formatGuestLegacyCleanupReadinessOutput(result)).toContain(
+      '"warning":"READINESS_NOT_FULLY_GREEN"',
+    );
+  });
+
+  it("returns stdout/pass CLI result when legacy columns are already dropped", async () => {
+    const cliResult = await runGuestLegacyCleanupReadinessCli(createFakePrisma([[], []]), {
+      strict: true,
+      lookbackHours: 72,
+    });
+
+    expect(cliResult.exitCode).toBe(0);
+    expect(cliResult.stream).toBe("stdout");
+    expect(JSON.parse(cliResult.output)).toMatchObject({
+      ok: true,
+      skipped: "LEGACY_COLUMNS_ALREADY_DROPPED",
+    });
+  });
+
+  it("returns stderr/pass CLI result for non-strict warnings", async () => {
+    const cliResult = await runGuestLegacyCleanupReadinessCli(
+      createFakePrisma([
+        [{ column_name: "guestPasswordHash" }],
+        [],
+        [{ count: 1 }],
+        [{ count: 0 }],
+        [{ count: 0 }],
+        [{ count: 0 }],
+        [{ count: 1 }],
+        [{ count: 0 }],
+      ]),
+      { strict: false, lookbackHours: 24 },
+    );
+
+    expect(cliResult.exitCode).toBe(0);
+    expect(cliResult.stream).toBe("stderr");
+    expect(JSON.parse(cliResult.output)).toMatchObject({
+      ok: false,
+      warning: "READINESS_NOT_FULLY_GREEN",
+    });
+  });
+
+  it("returns stderr/fail CLI result for strict blockers", async () => {
+    const cliResult = await runGuestLegacyCleanupReadinessCli(
+      createFakePrisma([
+        [{ column_name: "guestPasswordHash" }],
+        [],
+        [{ count: 1 }],
+        [{ count: 0 }],
+        [{ count: 0 }],
+        [{ count: 0 }],
+        [{ count: 1 }],
+        [{ count: 0 }],
+      ]),
+      { strict: true, lookbackHours: 24 },
+    );
+
+    expect(cliResult.exitCode).toBe(1);
+    expect(cliResult.stream).toBe("stderr");
+    expect(JSON.parse(cliResult.output)).toMatchObject({ ok: false, strict: true });
+  });
+
+  it("prints CLI output through main on pass", async () => {
+    const log = vi.spyOn(console, "log").mockImplementation(() => undefined);
+
+    const output = await main(createFakePrisma([[], []]), { strict: true, lookbackHours: 72 });
+
+    expect(output).toContain('"ok":true');
+    expect(log).toHaveBeenCalledWith(output);
   });
 });

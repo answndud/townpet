@@ -10419,3 +10419,10 @@
 - 변경: `runCareSmokeReadinessCli(env)`, `main(env)`를 추가하고 `require.main` entrypoint를 `process.argv[1]` 기반 guard로 바꿨다.
 - 검증: `check-care-smoke-readiness.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
 - 후속: care smoke readiness 필수 env나 warning 정책이 바뀌면 CLI runner test를 함께 갱신한다.
+
+### 2026-06-07 - guest legacy cleanup readiness CLI wrapper 보강
+
+- 요약: `check-guest-legacy-cleanup-readiness.ts` wrapper가 import 시 실행되지 않고 JSON output/exit stream을 실DB 없이 검증 가능하게 됐다.
+- 변경: `formatGuestLegacyCleanupReadinessOutput(...)`, `runGuestLegacyCleanupReadinessCli(...)`, `main(prisma, config)`를 추가하고 `require.main` guard를 교체했다.
+- 검증: `check-guest-legacy-cleanup-readiness.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
+- 후속: guest legacy cleanup readiness JSON key나 strict/warn 정책이 바뀌면 CLI runner test를 함께 갱신한다.
