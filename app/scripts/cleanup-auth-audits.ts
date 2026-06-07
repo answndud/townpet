@@ -8,12 +8,30 @@ import {
 import {
   formatMaintenanceMode,
   isDryRunMode,
+  type MaintenanceRunMode,
   resolveMaintenanceRunMode,
 } from "./maintenance-run-mode";
 
-const prisma = new PrismaClient();
+type AuthAuditCleanupPrisma = Pick<PrismaClient, "authAuditLog" | "$disconnect">;
 
-async function main() {
+export function formatAuthAuditCleanupOutput(params: {
+  mode: MaintenanceRunMode;
+  count: number;
+  cutoff: Date;
+  retentionDays: number;
+}) {
+  const lines = [
+    `${isDryRunMode(params.mode) ? "Would delete" : "Deleted"} ${params.count} auth audit logs older than ${params.retentionDays} days (cutoff: ${params.cutoff.toISOString()}, mode: ${formatMaintenanceMode(params.mode)}).`,
+  ];
+
+  if (isDryRunMode(params.mode)) {
+    lines.push("Dry-run mode. Re-run with --apply to delete rows.");
+  }
+
+  return lines.join("\n");
+}
+
+export async function runAuthAuditCleanup(prisma: AuthAuditCleanupPrisma) {
   const mode = resolveMaintenanceRunMode({
     applyEnvName: "AUTH_AUDIT_CLEANUP_APPLY",
   });
@@ -24,19 +42,29 @@ async function main() {
     dryRun: isDryRunMode(mode),
   });
 
-  console.log(
-    `${isDryRunMode(mode) ? "Would delete" : "Deleted"} ${result.count} auth audit logs older than ${retentionDays} days (cutoff: ${result.cutoff.toISOString()}, mode: ${formatMaintenanceMode(mode)}).`,
-  );
-  if (isDryRunMode(mode)) {
-    console.log("Dry-run mode. Re-run with --apply to delete rows.");
-  }
+  return formatAuthAuditCleanupOutput({
+    mode,
+    count: result.count,
+    cutoff: result.cutoff,
+    retentionDays,
+  });
 }
 
-main()
-  .catch((error) => {
-    console.error("Auth audit cleanup failed", error);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+async function main(prisma: AuthAuditCleanupPrisma = new PrismaClient()) {
+  console.log(await runAuthAuditCleanup(prisma));
+}
+
+if (
+  process.env.NODE_ENV !== "test" &&
+  process.argv[1]?.endsWith("cleanup-auth-audits.ts")
+) {
+  const prisma = new PrismaClient();
+  main(prisma)
+    .catch((error) => {
+      console.error("Auth audit cleanup failed", error);
+      process.exit(1);
+    })
+    .finally(async () => {
+      await prisma.$disconnect();
+    });
+}
