@@ -61,6 +61,16 @@ const postListBaseInclude = (includeGuestAuthor: boolean) =>
         status: true,
       },
     },
+    lostFoundAlert: {
+      select: {
+        alertType: true,
+        petType: true,
+        breed: true,
+        lastSeenAt: true,
+        lastSeenLocation: true,
+        status: true,
+      },
+    },
   }) as const;
 
 export const buildPostListInclude = (

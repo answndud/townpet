@@ -119,6 +119,41 @@ describe("FeedInfiniteList", () => {
     expect(html).toContain("min-h-[60px] grid-cols-[minmax(0,1fr)]");
   });
 
+  it("shows compact lost-found status and role actions in feed rows", () => {
+    const html = renderToStaticMarkup(
+      <FeedInfiniteList
+        initialItems={[
+          {
+            ...basePost,
+            id: "lost-found-1",
+            type: "LOST_FOUND",
+            title: "망원동 강아지 목격 제보",
+            lostFoundAlert: {
+              alertType: "FOUND",
+              petType: "강아지",
+              breed: "말티즈",
+              lastSeenAt: "2026-05-24T11:30:00.000Z",
+              lastSeenLocation: "망원동 공원 북문",
+              status: "ACTIVE",
+            },
+          },
+        ]}
+        initialNextCursor={null}
+        mode="ALL"
+        query={{ scope: "GLOBAL" }}
+        queryKey="feed-test"
+        preferGuestDetail
+      />,
+    );
+
+    expect(html).toContain("목격/보호 · 제보 접수 중 · 강아지 · 망원동 공원 북문");
+    expect(html).toContain('href="/posts/lost-found-1/guest#lost-found-share-tools"');
+    expect(html).toContain('href="/posts/lost-found-1/guest#comments"');
+    expect(html).toContain("공유 도구");
+    expect(html).toContain("목격 제보");
+    expect(html).not.toContain("tp-btn");
+  });
+
   it("keeps personalized ad CTA in the compact primary action hierarchy", () => {
     const posts = Array.from({ length: 5 }, (_, index) => ({
       ...basePost,

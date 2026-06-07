@@ -55,6 +55,14 @@ type RawFeedPost = {
     rentalPeriod?: string | null;
     status?: string | null;
   } | null;
+  lostFoundAlert?: {
+    alertType?: string | null;
+    petType?: string | null;
+    breed?: string | null;
+    lastSeenAt?: Date | string | null;
+    lastSeenLocation?: string | null;
+    status?: string | null;
+  } | null;
   isBookmarked?: boolean | null;
   reactions?: Array<{ type: "LIKE" | "DISLIKE" }>;
 };
@@ -111,6 +119,19 @@ export function buildInitialFeedItems(items: RawFeedPost[]): FeedPostItem[] {
         url: image.url ?? null,
       })),
       marketListing: post.marketListing ?? null,
+      lostFoundAlert: post.lostFoundAlert
+        ? {
+            alertType: post.lostFoundAlert.alertType ?? null,
+            petType: post.lostFoundAlert.petType ?? null,
+            breed: post.lostFoundAlert.breed ?? null,
+            lastSeenAt:
+              post.lostFoundAlert.lastSeenAt instanceof Date
+                ? post.lostFoundAlert.lastSeenAt.toISOString()
+                : post.lostFoundAlert.lastSeenAt ?? null,
+            lastSeenLocation: post.lostFoundAlert.lastSeenLocation ?? null,
+            status: post.lostFoundAlert.status ?? null,
+          }
+        : null,
       isBookmarked: Boolean(post.isBookmarked),
       reactions: post.reactions?.map((reaction) => ({ type: reaction.type })) ?? [],
     };

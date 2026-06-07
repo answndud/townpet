@@ -271,6 +271,62 @@ describe("GET /api/feed/guest", () => {
     );
   });
 
+  it("serializes lost-found alert data for guest feed rows", async () => {
+    mockListPosts.mockResolvedValue({
+      items: [
+        {
+          id: "lost-found-1",
+          type: PostType.LOST_FOUND,
+          scope: PostScope.GLOBAL,
+          status: PostStatus.ACTIVE,
+          title: "망원동 강아지 목격 제보",
+          content: "공원 북문 근처에서 목격했어요.",
+          commentCount: 0,
+          likeCount: 2,
+          dislikeCount: 0,
+          viewCount: 8,
+          createdAt: new Date("2026-05-24T11:00:00.000Z"),
+          author: {
+            id: "user-lost",
+            name: "lost",
+            nickname: "제보자",
+            image: null,
+          },
+          guestAuthorId: null,
+          guestDisplayName: null,
+          neighborhood: null,
+          petType: null,
+          images: [],
+          lostFoundAlert: {
+            alertType: "FOUND",
+            petType: "강아지",
+            breed: "말티즈",
+            lastSeenAt: new Date("2026-05-24T10:30:00.000Z"),
+            lastSeenLocation: "망원동 공원 북문",
+            status: "ACTIVE",
+          },
+          reactions: [],
+        },
+      ],
+      nextCursor: null,
+    } as never);
+
+    const response = await GET(
+      new Request("http://localhost/api/feed/guest?type=LOST_FOUND") as NextRequest,
+    );
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(payload.data.feed.items[0].lostFoundAlert).toEqual({
+      alertType: "FOUND",
+      petType: "강아지",
+      breed: "말티즈",
+      lastSeenAt: "2026-05-24T10:30:00.000Z",
+      lastSeenLocation: "망원동 공원 북문",
+      status: "ACTIVE",
+    });
+  });
+
   it("removes missing upload thumbnails from guest feed payloads", async () => {
     mockResolveRenderableUploadPathnames.mockResolvedValue(new Set(["uploads/renderable.webp"]));
     mockListPosts.mockResolvedValue({

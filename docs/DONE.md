@@ -10572,3 +10572,9 @@
 - 요약: `/lost-found` 최근 공개 제보 카드에서 상세 진입 전부터 공유와 목격 제보 목적을 분리했다.
 - 변경: 카드 전체 링크를 제목 링크 중심 구조로 바꾸고 `공유 도구`, `목격 제보` 앵커 CTA를 추가했다.
 - 검증: lost-found page test, 모바일 393px 랜딩 카드 CTA/overflow 확인, `quality:check` PASS.
+
+### 2026-06-07 - 분실/목격 피드 카드 역할별 CTA 개선
+
+- 요약: 피드 목록에서도 분실/목격 글의 상태, 동물, 마지막 위치와 다음 행동을 바로 확인할 수 있게 했다.
+- 변경: feed read model/API 직렬화에 `lostFoundAlert`를 포함하고 카드 하단에 `공유 도구`, `목격 제보` 앵커를 추가했다.
+- 검증: targeted feed/API tests, 모바일 393px `/feed/guest?type=LOST_FOUND` CTA/overflow 확인, `quality:check` PASS.
