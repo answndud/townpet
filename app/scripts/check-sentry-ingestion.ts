@@ -8,7 +8,7 @@ type SentryConfig = {
   publicKey: string
 }
 
-function resolveApiHostFromIngestHost(ingestHost: string) {
+export function resolveApiHostFromIngestHost(ingestHost: string) {
   const hostname = new URL(ingestHost).hostname.toLowerCase()
 
   // Sentry SaaS DSN hosts look like `o123456.ingest.sentry.io`.
@@ -20,7 +20,7 @@ function resolveApiHostFromIngestHost(ingestHost: string) {
   return ingestHost
 }
 
-function parseDsn(dsn: string): SentryConfig {
+export function parseDsn(dsn: string): SentryConfig {
   const parsed = new URL(dsn)
   const projectId = parsed.pathname.split("/").filter(Boolean).pop()
   const publicKey = parsed.username
@@ -37,7 +37,7 @@ function parseDsn(dsn: string): SentryConfig {
   }
 }
 
-function requiredEnv(name: string) {
+export function requiredEnv(name: string) {
   const value = process.env[name]
   if (!value) {
     throw new Error(`${name} is required`)
@@ -47,6 +47,14 @@ function requiredEnv(name: string) {
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+export function parseSentrySmokeTimeout(value: string | undefined) {
+  const timeoutMs = Number(value ?? "90000")
+  if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) {
+    throw new Error("SENTRY_SMOKE_TIMEOUT_MS must be a positive number")
+  }
+  return timeoutMs
 }
 
 async function sendEvent(config: SentryConfig, marker: string, environment: string) {
@@ -124,11 +132,7 @@ async function main() {
   const orgSlug = requiredEnv("SENTRY_ORG_SLUG")
   const projectSlug = requiredEnv("SENTRY_PROJECT_SLUG")
   const environment = process.env.SENTRY_SMOKE_ENVIRONMENT ?? "ops-smoke"
-  const timeoutMs = Number(process.env.SENTRY_SMOKE_TIMEOUT_MS ?? "90000")
-
-  if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) {
-    throw new Error("SENTRY_SMOKE_TIMEOUT_MS must be a positive number")
-  }
+  const timeoutMs = parseSentrySmokeTimeout(process.env.SENTRY_SMOKE_TIMEOUT_MS)
 
   const config = parseDsn(dsn)
   const marker = `townpet-ops-sentry-smoke-${Date.now()}`
@@ -149,8 +153,13 @@ async function main() {
   console.log(`- marker: ${marker}`)
 }
 
-main().catch((error) => {
-  console.error("Sentry ingestion check failed")
-  console.error(error)
-  process.exit(1)
-})
+if (
+  process.env.NODE_ENV !== "test" &&
+  process.argv[1]?.endsWith("check-sentry-ingestion.ts")
+) {
+  main().catch((error) => {
+    console.error("Sentry ingestion check failed")
+    console.error(error)
+    process.exit(1)
+  })
+}

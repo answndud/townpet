@@ -10223,3 +10223,10 @@
 - 변경: base URL 정규화, `/api/health` URL 생성, internal token header 생성을 export helper로 분리했다.
 - 검증: `check-health-endpoint.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
 - 후속: health endpoint 호출 정책이 바뀌면 helper test와 운영 문서를 함께 갱신한다.
+
+### 2026-06-07 - Sentry ingestion helper import guard/test 보강
+
+- 요약: `ops:check:sentry` helper를 import해도 즉시 실행되지 않게 하고 DSN/API host/timeout 계약을 테스트로 고정했다.
+- 변경: Sentry SaaS ingest host -> API host 수렴, DSN project/public key parsing, timeout validation, required env failure path를 export helper로 분리했다.
+- 검증: `check-sentry-ingestion.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
+- 후속: Sentry smoke API 호출 흐름이 바뀌면 네트워크 없는 입력 계약 테스트를 먼저 갱신한다.
