@@ -10489,3 +10489,10 @@
 - 변경: `ops:provision:admin-queue-smoke-user` script와 `provision_admin_queue_smoke` workflow input을 추가했다. non-local DB write는 `ADMIN_QUEUE_SMOKE_PROVISION_CONFIRM=PRODUCTION` 없이는 차단한다.
 - 검증: provision/admin smoke targeted tests, seed entrypoint import test, targeted lint, `tsc --noEmit`, docs index, workflow YAML parse, diff check PASS.
 - 후속: `verify_admin_queue=true`, `provision_admin_queue_smoke=true`로 Actions를 실행해 production `production_credentials` PASS report를 확보한다.
+
+### 2026-06-07 - admin queue smoke production credential PASS
+
+- 요약: GitHub Actions run `27090982597`에서 `provision_admin_queue_smoke=true`로 smoke admin 계정을 생성한 뒤 authenticated admin queue smoke가 PASS했다.
+- 증거: `https://github.com/answndud/townpet/actions/runs/27090982597`, mode `production_credentials`, report `docs/reports/admin-queue-smoke-2026-06-07T11-17-33-478Z`.
+- 결과: `/admin/reports`, `/admin/corrections` 모두 report queue/correction queue/expected surface/no overflow PASS.
+- 후속: 평상시에는 `verify_admin_queue=true`만 사용하고, credential이 깨진 경우에만 `provision_admin_queue_smoke=true`를 켠다.
