@@ -231,7 +231,7 @@
 ## 11) 문서/계획 동기화 규칙
 
 - 운영 실행 결과는 `docs/DONE.md`에 요약 기록하고, 진행 중 blocker만 `docs/PLAN.md`에 유지
-- 상태 변화(`blocked -> done`)는 `PLAN.md`에서 active 항목 제거 후 `DONE.md`에 archive
+- blocked 상태가 해소되면 `PLAN.md`에서 active 항목을 제거하고 `DONE.md`에 archive
 - 본 가이드 수정 시 관련 문서도 함께 점검:
   - `business/operations/차단 해소 체크리스트.md`
   - `business/operations/Vercel_OAuth_초기설정_가이드.md`
