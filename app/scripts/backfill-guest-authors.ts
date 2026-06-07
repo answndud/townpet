@@ -1,23 +1,18 @@
 import "dotenv/config";
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 
 import { isDryRunMode, resolveMaintenanceRunMode } from "./maintenance-run-mode";
 
-const prisma = new PrismaClient();
-
-const BATCH_SIZE = (() => {
-  const raw = Number(process.env.GUEST_AUTHOR_BACKFILL_BATCH_SIZE ?? "200");
+export function resolveGuestAuthorBackfillBatchSize(
+  rawValue = process.env.GUEST_AUTHOR_BACKFILL_BATCH_SIZE,
+) {
+  const raw = Number(rawValue ?? "200");
   if (!Number.isFinite(raw) || raw <= 0) {
     return 200;
   }
-  return Math.min(Math.floor(raw), 1000);
-})();
 
-const RUN_MODE = resolveMaintenanceRunMode({
-  dryRunEnvName: "GUEST_AUTHOR_BACKFILL_DRY_RUN",
-  applyEnvName: "GUEST_AUTHOR_BACKFILL_APPLY",
-});
-const DRY_RUN = isDryRunMode(RUN_MODE);
+  return Math.min(Math.floor(raw), 1000);
+}
 
 type GuestMetaRecord = {
   id: string;
@@ -29,7 +24,30 @@ type GuestMetaRecord = {
   guestIpLabel: string | null;
 };
 
-async function tableHasColumn(table: "Post" | "Comment", column: string) {
+type GuestAuthorBackfillPrisma = Pick<
+  PrismaClient,
+  "$disconnect" | "$queryRaw" | "$queryRawUnsafe" | "$transaction"
+>;
+
+type GuestAuthorBackfillConfig = {
+  batchSize: number;
+  dryRun: boolean;
+};
+
+type GuestAuthorBackfillResult = {
+  batchSize: number;
+  dryRun: boolean;
+  hasLegacyPostColumns: boolean;
+  hasLegacyCommentColumns: boolean;
+  posts: number;
+  comments: number;
+};
+
+async function tableHasColumn(
+  prisma: GuestAuthorBackfillPrisma,
+  table: "Post" | "Comment",
+  column: string,
+) {
   const rows = await prisma.$queryRaw<Array<{ exists: boolean }>>`
     SELECT EXISTS(
       SELECT 1
@@ -42,7 +60,7 @@ async function tableHasColumn(table: "Post" | "Comment", column: string) {
   return Boolean(rows[0]?.exists);
 }
 
-function toGuestAuthorData(record: GuestMetaRecord) {
+export function toGuestAuthorData(record: GuestMetaRecord) {
   if (!record.guestPasswordHash || !record.guestIpHash) {
     return null;
   }
@@ -57,7 +75,12 @@ function toGuestAuthorData(record: GuestMetaRecord) {
   };
 }
 
-async function fetchLegacyBatch(table: "Post" | "Comment", cursor: string | null) {
+async function fetchLegacyBatch(
+  prisma: GuestAuthorBackfillPrisma,
+  table: "Post" | "Comment",
+  cursor: string | null,
+  batchSize: number,
+) {
   const sql = `
     SELECT
       id,
@@ -73,19 +96,22 @@ async function fetchLegacyBatch(table: "Post" | "Comment", cursor: string | null
       AND "guestIpHash" IS NOT NULL
       ${cursor ? `AND id > $1` : ""}
     ORDER BY id ASC
-    LIMIT ${BATCH_SIZE}
+    LIMIT ${batchSize}
   `;
 
   const params = cursor ? [cursor] : [];
   return prisma.$queryRawUnsafe<GuestMetaRecord[]>(sql, ...params);
 }
 
-async function backfillPosts() {
+async function backfillPosts(
+  prisma: GuestAuthorBackfillPrisma,
+  config: GuestAuthorBackfillConfig,
+) {
   let cursor: string | null = null;
   let updated = 0;
 
   while (true) {
-    const items = await fetchLegacyBatch("Post", cursor);
+    const items = await fetchLegacyBatch(prisma, "Post", cursor, config.batchSize);
     if (items.length === 0) {
       break;
     }
@@ -96,12 +122,12 @@ async function backfillPosts() {
         continue;
       }
 
-      if (DRY_RUN) {
+      if (config.dryRun) {
         updated += 1;
         continue;
       }
 
-      await prisma.$transaction(async (tx) => {
+      await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         const guestAuthor = await tx.guestAuthor.create({ data: guestAuthorData, select: { id: true } });
         await tx.post.update({ where: { id: item.id }, data: { guestAuthorId: guestAuthor.id } });
       });
@@ -114,12 +140,15 @@ async function backfillPosts() {
   return updated;
 }
 
-async function backfillComments() {
+async function backfillComments(
+  prisma: GuestAuthorBackfillPrisma,
+  config: GuestAuthorBackfillConfig,
+) {
   let cursor: string | null = null;
   let updated = 0;
 
   while (true) {
-    const items = await fetchLegacyBatch("Comment", cursor);
+    const items = await fetchLegacyBatch(prisma, "Comment", cursor, config.batchSize);
     if (items.length === 0) {
       break;
     }
@@ -130,12 +159,12 @@ async function backfillComments() {
         continue;
       }
 
-      if (DRY_RUN) {
+      if (config.dryRun) {
         updated += 1;
         continue;
       }
 
-      await prisma.$transaction(async (tx) => {
+      await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         const guestAuthor = await tx.guestAuthor.create({ data: guestAuthorData, select: { id: true } });
         await tx.comment.update({ where: { id: item.id }, data: { guestAuthorId: guestAuthor.id } });
       });
@@ -148,36 +177,87 @@ async function backfillComments() {
   return updated;
 }
 
-async function main() {
-  console.log(
-    `Guest author backfill started (dryRun=${DRY_RUN ? "yes" : "no"}, batchSize=${BATCH_SIZE})`,
+export function formatGuestAuthorBackfillOutput(result: GuestAuthorBackfillResult) {
+  const lines = [
+    `Guest author backfill started (dryRun=${result.dryRun ? "yes" : "no"}, batchSize=${result.batchSize})`,
+  ];
+
+  if (!result.hasLegacyPostColumns && !result.hasLegacyCommentColumns) {
+    lines.push("Legacy guest columns already dropped. Backfill skipped.");
+    return lines.join("\n");
+  }
+
+  if (result.dryRun) {
+    lines.push(
+      `Dry-run matched ${result.posts} posts and ${result.comments} comments for backfill.`,
+    );
+    lines.push("Re-run with --apply to write guestAuthorId backfill rows.");
+    return lines.join("\n");
+  }
+
+  lines.push(
+    `Backfilled guestAuthorId for ${result.posts} posts and ${result.comments} comments.`,
   );
 
-  const hasLegacyPostColumns = await tableHasColumn("Post", "guestPasswordHash");
-  const hasLegacyCommentColumns = await tableHasColumn("Comment", "guestPasswordHash");
-
-  if (!hasLegacyPostColumns && !hasLegacyCommentColumns) {
-    console.log("Legacy guest columns already dropped. Backfill skipped.");
-    return;
-  }
-
-  const posts = hasLegacyPostColumns ? await backfillPosts() : 0;
-  const comments = hasLegacyCommentColumns ? await backfillComments() : 0;
-
-  if (DRY_RUN) {
-    console.log(`Dry-run matched ${posts} posts and ${comments} comments for backfill.`);
-    console.log("Re-run with --apply to write guestAuthorId backfill rows.");
-    return;
-  }
-
-  console.log(`Backfilled guestAuthorId for ${posts} posts and ${comments} comments.`);
+  return lines.join("\n");
 }
 
-main()
-  .catch((error) => {
-    console.error("Guest author backfill failed", error);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
+export async function runGuestAuthorBackfill(
+  prisma: GuestAuthorBackfillPrisma,
+  config: GuestAuthorBackfillConfig = {
+    batchSize: resolveGuestAuthorBackfillBatchSize(),
+    dryRun: isDryRunMode(
+      resolveMaintenanceRunMode({
+        dryRunEnvName: "GUEST_AUTHOR_BACKFILL_DRY_RUN",
+        applyEnvName: "GUEST_AUTHOR_BACKFILL_APPLY",
+      }),
+    ),
+  },
+) {
+  const hasLegacyPostColumns = await tableHasColumn(prisma, "Post", "guestPasswordHash");
+  const hasLegacyCommentColumns = await tableHasColumn(
+    prisma,
+    "Comment",
+    "guestPasswordHash",
+  );
+
+  if (!hasLegacyPostColumns && !hasLegacyCommentColumns) {
+    return formatGuestAuthorBackfillOutput({
+      ...config,
+      hasLegacyPostColumns,
+      hasLegacyCommentColumns,
+      posts: 0,
+      comments: 0,
+    });
+  }
+
+  const posts = hasLegacyPostColumns ? await backfillPosts(prisma, config) : 0;
+  const comments = hasLegacyCommentColumns ? await backfillComments(prisma, config) : 0;
+
+  return formatGuestAuthorBackfillOutput({
+    ...config,
+    hasLegacyPostColumns,
+    hasLegacyCommentColumns,
+    posts,
+    comments,
   });
+}
+
+async function main(prisma: GuestAuthorBackfillPrisma = new PrismaClient()) {
+  console.log(await runGuestAuthorBackfill(prisma));
+}
+
+if (
+  process.env.NODE_ENV !== "test" &&
+  process.argv[1]?.endsWith("backfill-guest-authors.ts")
+) {
+  const prisma = new PrismaClient();
+  main(prisma)
+    .catch((error) => {
+      console.error("Guest author backfill failed", error);
+      process.exit(1);
+    })
+    .finally(async () => {
+      await prisma.$disconnect();
+    });
+}
