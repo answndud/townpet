@@ -238,7 +238,9 @@ export async function collectApiRouteContracts(params?: {
 
 export function renderApiRouteContractsMarkdown(contracts: ApiRouteContract[]) {
   const missingMethods = contracts.filter((contract) => contract.methods.length === 0);
-  const missingAdjacentTests = contracts.filter((contract) => !contract.adjacentTest);
+  const missingAdjacentTests = contracts.filter(
+    (contract) => requiresAdjacentTest(contract) && !contract.adjacentTest,
+  );
   const accessCounts = countBy(contracts, (contract) => contract.access);
   const validationCounts = countBy(contracts, (contract) => contract.validation);
   const monitoringCounts = countBy(contracts, (contract) => contract.monitoring);
@@ -285,6 +287,10 @@ export function renderApiRouteContractsMarkdown(contracts: ApiRouteContract[]) {
   }
 
   return `${lines.join("\n")}\n`;
+}
+
+export function requiresAdjacentTest(contract: Pick<ApiRouteContract, "access">) {
+  return contract.access !== "provider-managed";
 }
 
 export function findApiRouteContractStrictGaps(contracts: ApiRouteContract[]) {
