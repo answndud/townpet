@@ -173,11 +173,16 @@ async function main() {
   }
 }
 
-main()
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+if (
+  process.env.NODE_ENV !== "test" &&
+  process.argv[1]?.endsWith("e2e-new-user-safety-policy-flow.ts")
+) {
+  main()
+    .catch((error) => {
+      console.error(error);
+      process.exit(1);
+    })
+    .finally(async () => {
+      await prisma.$disconnect();
+    });
+}
