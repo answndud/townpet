@@ -10461,3 +10461,10 @@
 - 변경: remote summary, browser baseline, route asset snapshot report를 `docs/reports/`에 추가하고 `PLAN.md`의 Web Vitals conditional 후보를 archive했다.
 - 검증: metric POST 237건 성공/0건 실패, remote sampleCount 326, browser baseline 200x3 per profile/route, asset snapshot PASS.
 - 후속: 실제 사용자 field p75/p95가 반복적으로 budget을 넘는 새 증거가 생기면 별도 성능 개선 작업으로 전환한다.
+
+### 2026-06-07 - admin queue smoke GitHub Actions 실행 경로 추가
+
+- 요약: GitHub Secrets에 등록한 admin queue smoke credential을 실제로 사용할 수 있도록 `ops-smoke-checks` manual input에 `verify_admin_queue`를 추가했다.
+- 변경: `verify_admin_queue=true`일 때 secret 검증, Chromium 설치, `ops:check:admin-queue-smoke`, report 출력 step을 조건부 실행하게 했다.
+- 검증: workflow YAML parse, 문서 인덱스, diff check PASS.
+- 후속: GitHub Actions에서 `verify_admin_queue=true`로 수동 실행해 production `production_credentials` mode PASS report를 확보한다.
