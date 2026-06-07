@@ -13,8 +13,8 @@ type CliOptions = {
   notes?: string;
 };
 
-const DEFAULT_REPORT_PATH =
-  "../docs/operations/manual-checks/OAuth_수동점검_기록_2026-03-05.md";
+export const DEFAULT_REPORT_PATH =
+  "../business/operations/manual-checks/OAuth_수동점검_기록_2026-03-05.md";
 
 function usage() {
   console.log(`Usage:
@@ -91,7 +91,7 @@ function parseArgs(argv: string[]) {
   } satisfies CliOptions;
 }
 
-function updateProviderRow(
+export function updateProviderRow(
   line: string,
   options: CliOptions,
 ) {
@@ -109,7 +109,7 @@ function updateProviderRow(
   return `| ${options.provider} | ${options.status} | ${account} | ${startUrl} | ${options.evidence} | ${notes} |`;
 }
 
-function updateProgressSnippetLine(line: string, options: CliOptions) {
+export function updateDoneSnippetLine(line: string, options: CliOptions) {
   const prefix = `- ${options.provider}: `;
   if (!line.startsWith(prefix) || !line.includes("(증적:")) {
     return line;
@@ -134,7 +134,7 @@ function main() {
     const updated = source
       .split("\n")
       .map((line) => updateProviderRow(line, options))
-      .map((line) => updateProgressSnippetLine(line, options))
+      .map((line) => updateDoneSnippetLine(line, options))
       .join("\n");
 
     fs.writeFileSync(resolvedPath, updated, "utf8");
@@ -147,4 +147,9 @@ function main() {
   }
 }
 
-main();
+if (
+  process.env.NODE_ENV !== "test" &&
+  process.argv[1]?.endsWith("update-oauth-manual-check.ts")
+) {
+  main();
+}

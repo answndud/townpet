@@ -10195,3 +10195,10 @@
 - 변경: 과거 `Cycle 23` closure copy, `PROGRESS.md` snippet, `PLAN/PROGRESS` docs-mode hint를 제거하고 회귀 테스트를 추가했다.
 - 검증: `state-harness-copy.test.ts` PASS, scripts eslint PASS, `tsc --noEmit` PASS.
 - 후속: production OAuth credential이 준비되면 helper 출력 기준으로 수동점검 결과만 `DONE.md`에 archive한다.
+
+### 2026-06-07 - OAuth 수동점검 helper 기본 경로 정정
+
+- 요약: OAuth 수동점검 update/verify helper의 기본 report path를 실제 운영 문서 위치인 `business/operations/manual-checks`로 정정했다.
+- 변경: update helper import guard와 테스트 가능한 row/snippet update helper export를 추가하고, agent prompt 템플릿의 `docs/operations` 문구를 정정했다.
+- 검증: `state-harness-copy.test.ts` PASS, scripts eslint PASS, `tsc --noEmit` PASS.
+- 후속: production OAuth 수동점검 때 helper 기본 경로를 그대로 사용해도 존재하는 business 운영 문서 트리에 기록된다.

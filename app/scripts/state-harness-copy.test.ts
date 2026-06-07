@@ -2,7 +2,15 @@ import { describe, expect, it } from "vitest";
 
 import { renderPrompt } from "./generate-agent-prompt";
 import { evaluateBaseUrl, renderMarkdown } from "./generate-oauth-manual-check-report";
-import { buildOAuthManualCheckVerification } from "./verify-oauth-manual-check";
+import {
+  DEFAULT_REPORT_PATH as DEFAULT_UPDATE_REPORT_PATH,
+  updateDoneSnippetLine,
+  updateProviderRow,
+} from "./update-oauth-manual-check";
+import {
+  DEFAULT_REPORT_PATH as DEFAULT_VERIFY_REPORT_PATH,
+  buildOAuthManualCheckVerification,
+} from "./verify-oauth-manual-check";
 
 const staleHarnessCopy = new RegExp(
   [
@@ -47,6 +55,44 @@ describe("state harness helper copy", () => {
       evidenceReady: false,
       ready: false,
     });
+  });
+
+  it("keeps OAuth manual check helper default paths under business operations", () => {
+    expect(DEFAULT_UPDATE_REPORT_PATH).toBe(
+      "../business/operations/manual-checks/OAuth_수동점검_기록_2026-03-05.md",
+    );
+    expect(DEFAULT_VERIFY_REPORT_PATH).toBe(DEFAULT_UPDATE_REPORT_PATH);
+  });
+
+  it("updates provider rows and DONE snippets without changing unrelated providers", () => {
+    const options = {
+      reportPath: DEFAULT_UPDATE_REPORT_PATH,
+      provider: "Kakao" as const,
+      status: "pass" as const,
+      evidence: "https://evidence.example/kakao.mp4",
+      account: "kakao-prod",
+      notes: "ok",
+    };
+
+    expect(
+      updateProviderRow(
+        "| Kakao | pending |  | https://townpet.vercel.app/login?next=%2Fonboarding | screenshot/video link |  |",
+        options,
+      ),
+    ).toBe(
+      "| Kakao | pass | kakao-prod | https://townpet.vercel.app/login?next=%2Fonboarding | https://evidence.example/kakao.mp4 | ok |",
+    );
+    expect(
+      updateProviderRow(
+        "| Naver | pending |  | https://townpet.vercel.app/login?next=%2Fonboarding | screenshot/video link |  |",
+        options,
+      ),
+    ).toBe(
+      "| Naver | pending |  | https://townpet.vercel.app/login?next=%2Fonboarding | screenshot/video link |  |",
+    );
+    expect(updateDoneSnippetLine("- Kakao: `pending` (증적: <screenshot-or-video-link>)", options)).toBe(
+      "- Kakao: `pass` (증적: https://evidence.example/kakao.mp4)",
+    );
   });
 
   it("renders docs agent prompts with PLAN/DONE synchronization guidance", () => {
