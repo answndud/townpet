@@ -10125,3 +10125,10 @@
 - 검증: prewarm `home_page` 200 STALE, `/` 10회 baseline first total/p95 `418ms`, warm p50 `106ms`, slow `0`.
 - 분류: 정상 개선. 이전 prewarm 직후 first total/p95 `877ms` 대비 절반 이하로 낮아졌고 반복 slow는 없음.
 - 후속: Web Vitals field sample은 route별 LCP 30개 이상 쌓인 뒤 다시 판정한다.
+
+### 2026-06-07 - Web Vitals field sample 재판정 보류
+
+- 요약: production Web Vitals field sample이 재판정 가능한 수준까지 쌓였는지 확인했다.
+- 검증: remote summary `OK`, sampleCount `86`; LCP count는 `/` `4`, `/feed/guest` `12`로 최소 기준 `30`에 미달.
+- 분류: 보류. 인위적인 브라우저 반복 방문으로 field sample을 오염시키지 않고 자연 유입 또는 운영 smoke 누적을 기다린다.
+- 후속: route별 LCP 30개 이상 확보 후 `perf:web-vitals:remote`와 browser/asset snapshot을 같은 날 다시 비교한다.
