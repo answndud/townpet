@@ -10405,3 +10405,10 @@
 - 변경: `resolveAuthLocalDetailSmokeConfig(...)`, `runAuthLocalDetailVisualSmoke(...)`, `main(params)`를 추가해 output/exit code와 fixture filtering을 테스트 가능하게 분리했다.
 - 검증: `check-auth-local-detail-visual-smoke.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
 - 후속: auth/local smoke fixture 종류나 gate assertion이 바뀌면 runner test를 함께 갱신한다.
+
+### 2026-06-07 - admin queue smoke CLI wrapper 보강
+
+- 요약: `check-admin-queue-smoke.ts` wrapper가 production/local fixture mode의 browser/login/inspect/report/write 경계를 실브라우저 없이 검증 가능하게 됐다.
+- 변경: `resolveAdminQueueSmokeRunConfig(...)`, `runAdminQueueSmoke(...)`, `main(params)`를 추가해 output/exit code와 local fixture cleanup 경계를 테스트 가능하게 분리했다.
+- 검증: `check-admin-queue-smoke.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
+- 후속: admin queue smoke page 목록이나 mode별 credential 정책이 바뀌면 runner test를 함께 갱신한다.

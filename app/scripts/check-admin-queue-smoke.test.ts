@@ -5,8 +5,27 @@ import {
   adminQueuePagePassed,
   buildAdminQueueSmokeMarkdown,
   cleanupAdminQueueSmokeResources,
+  main,
   resolveAdminQueueSmokeConfig,
+  resolveAdminQueueSmokeRunConfig,
+  runAdminQueueSmoke,
+  type AdminQueuePageCheck,
 } from "./check-admin-queue-smoke";
+
+function createPageCheck(overrides: Partial<AdminQueuePageCheck> = {}): AdminQueuePageCheck {
+  return {
+    id: "reports",
+    path: "/admin/reports",
+    status: "PASS",
+    url: "http://localhost:3000/admin/reports",
+    screenshot: "/tmp/admin-reports.png",
+    hasReportQueue: true,
+    hasCorrectionQueue: true,
+    hasExpectedSurface: true,
+    noHorizontalOverflow: true,
+    ...overrides,
+  };
+}
 
 describe("admin queue smoke", () => {
   it("requires explicit admin smoke credentials", () => {
@@ -53,6 +72,176 @@ describe("admin queue smoke", () => {
         ADMIN_QUEUE_SMOKE_LOCAL_FIXTURES: "1",
       }),
     ).toThrow("requires OPS_BASE_URL to point to localhost");
+  });
+
+  it("resolves deterministic run config for production credential mode", () => {
+    expect(
+      resolveAdminQueueSmokeRunConfig({
+        env: {
+          OPS_BASE_URL: "https://townpet.example/",
+          ADMIN_QUEUE_SMOKE_EMAIL: "admin@example.com",
+          ADMIN_QUEUE_SMOKE_PASSWORD: "secret",
+        },
+        now: new Date("2026-01-02T03:04:05.000Z"),
+        repoRoot: "/repo",
+      }),
+    ).toEqual({
+      generatedAt: "2026-01-02T03:04:05.000Z",
+      repoRoot: "/repo",
+      outputDir: "/repo/docs/reports/admin-queue-smoke-2026-01-02T03-04-05-000Z",
+      mode: "production_credentials",
+      smokeConfig: {
+        baseUrl: "https://townpet.example",
+        email: "admin@example.com",
+        password: "secret",
+        useLocalFixtures: false,
+      },
+    });
+  });
+
+  it("runs production credential mode with injected browser, login, inspector, and writer", async () => {
+    const closePage = vi.fn().mockResolvedValue(undefined);
+    const closeBrowser = vi.fn().mockResolvedValue(undefined);
+    const login = vi.fn().mockResolvedValue(undefined);
+    const inspectPage = vi
+      .fn()
+      .mockResolvedValueOnce(createPageCheck({ id: "reports", path: "/admin/reports" }))
+      .mockResolvedValueOnce(
+        createPageCheck({ id: "corrections", path: "/admin/corrections", screenshot: "/tmp/admin-corrections.png" }),
+      );
+    const writeFile = vi.fn().mockResolvedValue(undefined);
+    const mkdir = vi.fn().mockResolvedValue(undefined);
+
+    const result = await runAdminQueueSmoke({
+      env: {
+        OPS_BASE_URL: "https://townpet.example",
+        ADMIN_QUEUE_SMOKE_EMAIL: "admin@example.com",
+        ADMIN_QUEUE_SMOKE_PASSWORD: "secret",
+      },
+      now: new Date("2026-01-02T03:04:05.000Z"),
+      repoRoot: "/repo",
+      launchBrowser: async () =>
+        ({
+          close: closeBrowser,
+          newPage: async () => ({
+            close: closePage,
+            context: () => ({}),
+          }),
+        }) as never,
+      login: login as never,
+      inspectPage: inspectPage as never,
+      mkdir: mkdir as never,
+      writeFile: writeFile as never,
+    });
+
+    expect(result.exitCode).toBe(0);
+    expect(result.mode).toBe("production_credentials");
+    expect(result.output).toContain("/admin/reports: status=PASS");
+    expect(login).toHaveBeenCalledWith(
+      expect.objectContaining({
+        baseUrl: "https://townpet.example",
+        email: "admin@example.com",
+        password: "secret",
+        nextPath: "/admin/reports",
+      }),
+    );
+    expect(inspectPage).toHaveBeenCalledTimes(2);
+    expect(closePage).toHaveBeenCalledOnce();
+    expect(closeBrowser).toHaveBeenCalledOnce();
+    expect(mkdir).toHaveBeenCalledWith(
+      "/repo/docs/reports/admin-queue-smoke-2026-01-02T03-04-05-000Z",
+      { recursive: true },
+    );
+    expect(writeFile).toHaveBeenCalledWith(
+      "/repo/docs/reports/admin-queue-smoke-2026-01-02T03-04-05-000Z/README.md",
+      expect.stringContaining("# Admin Queue Smoke"),
+      "utf8",
+    );
+  });
+
+  it("runs local fixture mode and cleans up generated fixture data", async () => {
+    const fixtureCleanup = vi.fn().mockResolvedValue(undefined);
+    const prepareLocalFixtures = vi.fn().mockResolvedValue({
+      email: "fixture-admin@townpet.dev",
+      password: "fixture-secret",
+      cleanup: fixtureCleanup,
+    });
+
+    const result = await runAdminQueueSmoke({
+      env: {
+        OPS_BASE_URL: "http://localhost:3000",
+        ADMIN_QUEUE_SMOKE_LOCAL_FIXTURES: "1",
+      },
+      repoRoot: "/repo",
+      prepareLocalFixtures,
+      launchBrowser: async () =>
+        ({
+          close: vi.fn().mockResolvedValue(undefined),
+          newPage: async () => ({ close: vi.fn().mockResolvedValue(undefined), context: () => ({}) }),
+        }) as never,
+      login: vi.fn().mockResolvedValue(undefined) as never,
+      inspectPage: vi.fn().mockResolvedValue(createPageCheck()) as never,
+      mkdir: vi.fn().mockResolvedValue(undefined) as never,
+      writeFile: vi.fn().mockResolvedValue(undefined) as never,
+    });
+
+    expect(result.mode).toBe("local_fixtures");
+    expect(result.exitCode).toBe(0);
+    expect(prepareLocalFixtures).toHaveBeenCalledWith(
+      expect.objectContaining({ ADMIN_QUEUE_SMOKE_LOCAL_FIXTURES: "1" }),
+    );
+    expect(fixtureCleanup).toHaveBeenCalledOnce();
+  });
+
+  it("returns failed exit code when an admin page check fails", async () => {
+    const result = await runAdminQueueSmoke({
+      env: {
+        OPS_BASE_URL: "https://townpet.example",
+        ADMIN_QUEUE_SMOKE_EMAIL: "admin@example.com",
+        ADMIN_QUEUE_SMOKE_PASSWORD: "secret",
+      },
+      repoRoot: "/repo",
+      launchBrowser: async () =>
+        ({
+          close: vi.fn().mockResolvedValue(undefined),
+          newPage: async () => ({ close: vi.fn().mockResolvedValue(undefined), context: () => ({}) }),
+        }) as never,
+      login: vi.fn().mockResolvedValue(undefined) as never,
+      inspectPage: vi
+        .fn()
+        .mockResolvedValueOnce(createPageCheck({ status: "FAIL", hasCorrectionQueue: false }))
+        .mockResolvedValueOnce(createPageCheck({ id: "corrections", path: "/admin/corrections" })) as never,
+      mkdir: vi.fn().mockResolvedValue(undefined) as never,
+      writeFile: vi.fn().mockResolvedValue(undefined) as never,
+    });
+
+    expect(result.exitCode).toBe(1);
+    expect(result.output).toContain("status=FAIL");
+  });
+
+  it("prints CLI output through main on pass", async () => {
+    const log = vi.spyOn(console, "log").mockImplementation(() => undefined);
+
+    const output = await main({
+      env: {
+        OPS_BASE_URL: "https://townpet.example",
+        ADMIN_QUEUE_SMOKE_EMAIL: "admin@example.com",
+        ADMIN_QUEUE_SMOKE_PASSWORD: "secret",
+      },
+      repoRoot: "/repo",
+      launchBrowser: async () =>
+        ({
+          close: vi.fn().mockResolvedValue(undefined),
+          newPage: async () => ({ close: vi.fn().mockResolvedValue(undefined), context: () => ({}) }),
+        }) as never,
+      login: vi.fn().mockResolvedValue(undefined) as never,
+      inspectPage: vi.fn().mockResolvedValue(createPageCheck()) as never,
+      mkdir: vi.fn().mockResolvedValue(undefined) as never,
+      writeFile: vi.fn().mockResolvedValue(undefined) as never,
+    });
+
+    expect(output).toContain("Admin queue smoke written");
+    expect(log).toHaveBeenCalledWith(output);
   });
 
   it("requires both queue switch summaries and page-specific surface", () => {

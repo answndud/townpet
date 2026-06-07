@@ -1,7 +1,7 @@
 import "dotenv/config";
 
 import { randomUUID } from "node:crypto";
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir as mkdirDefault, writeFile as writeFileDefault } from "node:fs/promises";
 import * as path from "node:path";
 
 import { chromium, type BrowserContext, type Page } from "@playwright/test";
@@ -31,7 +31,7 @@ const SESSION_COOKIE_NAMES = [
   "__Secure-next-auth.session-token",
 ];
 
-type AdminQueueSmokeConfig = {
+export type AdminQueueSmokeConfig = {
   baseUrl: string;
   email?: string;
   password?: string;
@@ -40,7 +40,7 @@ type AdminQueueSmokeConfig = {
 
 type AdminQueueSmokeMode = "production_credentials" | "local_fixtures";
 
-type AdminQueuePageCheck = {
+export type AdminQueuePageCheck = {
   id: "reports" | "corrections";
   path: string;
   status: "PASS" | "FAIL";
@@ -51,6 +51,25 @@ type AdminQueuePageCheck = {
   hasExpectedSurface: boolean;
   noHorizontalOverflow: boolean;
 };
+
+type AdminQueueSmokeRunConfig = {
+  generatedAt: string;
+  repoRoot: string;
+  outputDir: string;
+  smokeConfig: AdminQueueSmokeConfig;
+  mode: AdminQueueSmokeMode;
+};
+
+type AdminQueueSmokeResult = {
+  outputDir: string;
+  reportPath: string;
+  mode: AdminQueueSmokeMode;
+  results: AdminQueuePageCheck[];
+  output: string;
+  exitCode: 0 | 1;
+};
+
+type WriteFileLike = typeof writeFileDefault;
 
 function resolveRepoRoot() {
   return path.basename(process.cwd()) === "app" ? path.resolve(process.cwd(), "..") : process.cwd();
@@ -120,6 +139,27 @@ export function resolveAdminQueueSmokeConfig(
     email: requireCredential(env, "ADMIN_QUEUE_SMOKE_EMAIL"),
     password: requireCredential(env, "ADMIN_QUEUE_SMOKE_PASSWORD"),
     useLocalFixtures: false,
+  };
+}
+
+export function resolveAdminQueueSmokeRunConfig(params: {
+  env?: AdminQueueSmokeEnv;
+  now?: Date;
+  repoRoot?: string;
+} = {}): AdminQueueSmokeRunConfig {
+  const env = params.env ?? process.env;
+  const generatedAt = (params.now ?? new Date()).toISOString();
+  const timestamp = compactTimestamp(new Date(generatedAt));
+  const repoRoot = params.repoRoot ?? resolveRepoRoot();
+  const smokeConfig = resolveAdminQueueSmokeConfig(env);
+  const mode = smokeConfig.useLocalFixtures ? "local_fixtures" : "production_credentials";
+
+  return {
+    generatedAt,
+    repoRoot,
+    outputDir: path.join(repoRoot, "docs/reports", `admin-queue-smoke-${timestamp}`),
+    smokeConfig,
+    mode,
   };
 }
 
@@ -370,7 +410,7 @@ async function inspectAdminQueuePage(params: {
   const bodyText = await params.page.locator("body").innerText({ timeout: 10_000 });
   const noHorizontalOverflow = await hasNoHorizontalOverflow(params.page);
 
-  await mkdir(path.dirname(params.screenshotPath), { recursive: true });
+  await mkdirDefault(path.dirname(params.screenshotPath), { recursive: true });
   await params.page.screenshot({ path: params.screenshotPath, fullPage: true });
 
   const result = {
@@ -459,12 +499,30 @@ export function buildAdminQueueSmokeMarkdown(params: {
   return `${lines.join("\n")}\n`;
 }
 
-async function main() {
-  const generatedAt = new Date().toISOString();
-  const timestamp = compactTimestamp(new Date(generatedAt));
-  const repoRoot = resolveRepoRoot();
-  const config = resolveAdminQueueSmokeConfig(process.env);
-  const outputDir = path.join(repoRoot, "docs/reports", `admin-queue-smoke-${timestamp}`);
+export async function runAdminQueueSmoke(params: {
+  env?: AdminQueueSmokeEnv;
+  now?: Date;
+  repoRoot?: string;
+  prepareLocalFixtures?: (env: AdminQueueSmokeEnv) => Promise<LocalAdminQueueSmokeFixtures>;
+  launchBrowser?: () => Promise<Awaited<ReturnType<typeof chromium.launch>>>;
+  login?: typeof loginWithCredentials;
+  inspectPage?: typeof inspectAdminQueuePage;
+  mkdir?: typeof mkdirDefault;
+  writeFile?: WriteFileLike;
+} = {}): Promise<AdminQueueSmokeResult> {
+  const env = params.env ?? process.env;
+  const runConfig = resolveAdminQueueSmokeRunConfig({
+    env,
+    now: params.now,
+    repoRoot: params.repoRoot,
+  });
+  const config = runConfig.smokeConfig;
+  const prepareLocalFixtures = params.prepareLocalFixtures ?? prepareLocalAdminQueueSmokeFixtures;
+  const launchBrowser = params.launchBrowser ?? (() => chromium.launch());
+  const login = params.login ?? loginWithCredentials;
+  const inspectPage = params.inspectPage ?? inspectAdminQueuePage;
+  const mkdir = params.mkdir ?? mkdirDefault;
+  const writeFile = params.writeFile ?? writeFileDefault;
 
   let localFixtures: LocalAdminQueueSmokeFixtures | null = null;
   let browser: Awaited<ReturnType<typeof chromium.launch>> | null = null;
@@ -472,7 +530,7 @@ async function main() {
   let results: AdminQueuePageCheck[] = [];
   try {
     localFixtures = config.useLocalFixtures
-      ? await prepareLocalAdminQueueSmokeFixtures(process.env)
+      ? await prepareLocalFixtures(env)
       : null;
     const credentials = localFixtures ?? {
       email: config.email,
@@ -482,13 +540,13 @@ async function main() {
       throw new AdminQueueSmokeBlockedError("Admin queue smoke credentials were not resolved.");
     }
 
-    browser = await chromium.launch();
+    browser = await launchBrowser();
     page = await browser.newPage({
       viewport: { width: 1365, height: 900 },
       deviceScaleFactor: 1,
     });
 
-    await loginWithCredentials({
+    await login({
       context: page.context(),
       page,
       baseUrl: config.baseUrl,
@@ -498,51 +556,72 @@ async function main() {
     });
 
     results = [
-      await inspectAdminQueuePage({
+      await inspectPage({
         page,
         baseUrl: config.baseUrl,
         id: "reports",
         path: "/admin/reports",
         expectedSurfaceText: "신고 우선순위 검토",
-        screenshotPath: path.join(outputDir, "admin-reports.png"),
+        screenshotPath: path.join(runConfig.outputDir, "admin-reports.png"),
       }),
-      await inspectAdminQueuePage({
+      await inspectPage({
         page,
         baseUrl: config.baseUrl,
         id: "corrections",
         path: "/admin/corrections",
         expectedSurfaceText: "정보 정정 요청 검토",
-        screenshotPath: path.join(outputDir, "admin-corrections.png"),
+        screenshotPath: path.join(runConfig.outputDir, "admin-corrections.png"),
       }),
     ];
   } finally {
     await cleanupAdminQueueSmokeResources({ page, browser, localFixtures });
   }
 
+  const reportPath = path.join(runConfig.outputDir, "README.md");
+  await mkdir(runConfig.outputDir, { recursive: true });
   await writeFile(
-    path.join(outputDir, "README.md"),
+    reportPath,
     buildAdminQueueSmokeMarkdown({
-      generatedAt,
+      generatedAt: runConfig.generatedAt,
       baseUrl: config.baseUrl,
-      mode: config.useLocalFixtures ? "local_fixtures" : "production_credentials",
+      mode: runConfig.mode,
       results,
     }),
     "utf8",
   );
 
-  console.log(`Admin queue smoke written: ${path.relative(repoRoot, outputDir)}`);
+  const outputLines = [`Admin queue smoke written: ${path.relative(runConfig.repoRoot, runConfig.outputDir)}`];
   for (const result of results) {
-    console.log(
+    outputLines.push(
       `${result.path}: status=${result.status} reportQueue=${result.hasReportQueue} correctionQueue=${result.hasCorrectionQueue} expected=${result.hasExpectedSurface} overflow=${result.noHorizontalOverflow}`,
     );
   }
 
-  if (results.some((result) => result.status !== "PASS")) {
-    throw new Error("Admin queue smoke failed.");
-  }
+  return {
+    outputDir: runConfig.outputDir,
+    reportPath,
+    mode: runConfig.mode,
+    results,
+    output: outputLines.join("\n"),
+    exitCode: results.some((result) => result.status !== "PASS") ? 1 : 0,
+  };
 }
 
-if (process.env.NODE_ENV !== "test" && require.main === module) {
+export async function main(params: Parameters<typeof runAdminQueueSmoke>[0] = {}) {
+  const result = await runAdminQueueSmoke(params);
+  console.log(result.output);
+
+  if (result.exitCode !== 0) {
+    throw new Error("Admin queue smoke failed.");
+  }
+
+  return result.output;
+}
+
+if (
+  process.env.NODE_ENV !== "test" &&
+  process.argv[1]?.endsWith("check-admin-queue-smoke.ts")
+) {
   main().catch((error) => {
     if (error instanceof AdminQueueSmokeBlockedError) {
       console.error("Admin queue smoke BLOCKED");
