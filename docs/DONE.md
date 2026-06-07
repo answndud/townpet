@@ -10335,3 +10335,10 @@
 - 변경: `runPostIntegrityRepair(deps)`, `resolvePostIntegrityRepairConfig(...)`, `formatPostIntegrityRepairOutput(...)`를 추가하고 service/cache/prisma는 CLI 실행 시 동적 import하도록 분리했다.
 - 검증: `repair-post-integrity.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
 - 후속: post integrity repair 출력 키나 cache bump 대상이 바뀌면 wrapper test를 함께 갱신한다.
+
+### 2026-06-07 - local restore CLI wrapper 보강
+
+- 요약: `db:restore:local` wrapper가 import 시 PrismaClient를 생성하지 않게 하고 seed step, pnpm command 선택, summary 출력 메시지를 테스트했다.
+- 변경: `runLocalRestore(deps)`, `LOCAL_RESTORE_SEED_STEPS`, `buildPnpmCommand(...)`, `formatLocalRestoreSummary(...)`를 추가해 도커/DB 없이 wrapper 계약을 검증 가능하게 분리했다.
+- 검증: `restore-local-dev.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
+- 후속: local restore seed 순서나 summary key가 바뀌면 wrapper test를 함께 갱신한다.
