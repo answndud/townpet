@@ -10508,3 +10508,10 @@
 - 요약: production `https://townpet.vercel.app`에서 health, public operator content, admin queue authenticated smoke, landing/feed 브라우저 렌더링을 재확인했다.
 - 결과: health PASS(200, 2750ms), operator public smoke PASS(운영자 글 9개), admin queue PASS(`/admin/reports`, `/admin/corrections`), 브라우저 `/`·`/feed/guest` no overflow/error.
 - 보조 검증: curl 기준 `/` 200 total 0.242s, `/feed/guest` 200 total 0.138s, local popular promotion smoke PASS.
+
+### 2026-06-07 - 분실/목격 제보 획득 랜딩 1차 구현
+
+- 요약: `/lost-found` 공개 랜딩을 추가해 분실/목격 등록, 전체 제보, 첫 24시간 가이드, 최근 공개 제보, 개인정보 공개 주의 안내를 한 화면에 연결했다.
+- 변경: `lost-found.queries.ts` read-only landing query, `/lost-found` page/test, 홈 관심 주제 링크를 전용 랜딩으로 변경했다.
+- 검증: targeted lint/test/typecheck, 브라우저 `/lost-found`·`/` no overflow/error, `quality:check` PASS.
+- 보정: `restore-local-dev.test.ts`의 pnpm fallback 테스트가 현재 `npm_execpath` 환경에 의존하지 않도록 빈 문자열 케이스로 수정했다.

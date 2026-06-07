@@ -27,7 +27,7 @@ export const metadata: Metadata = {
 
 const TOPIC_LINKS = [
   { label: "지도 만들기", href: NEIGHBORHOOD_MAP_CAMPAIGN_PATH },
-  { label: "분실/목격", href: "/feed/guest?type=LOST_FOUND" },
+  { label: "분실/목격", href: "/lost-found" },
   { label: "동물병원", href: "/feed/guest?type=HOSPITAL_REVIEW" },
   { label: "산책코스", href: "/feed/guest?type=WALK_ROUTE" },
   { label: "질문/답변", href: "/feed/guest?type=QA_QUESTION" },
