@@ -8,12 +8,29 @@ import {
 import {
   formatMaintenanceMode,
   isDryRunMode,
+  type MaintenanceRunMode,
   resolveMaintenanceRunMode,
 } from "./maintenance-run-mode";
 
-const prisma = new PrismaClient();
+type SearchTermCleanupPrisma = Pick<PrismaClient, "searchTermStat" | "$disconnect">;
 
-async function main() {
+export function formatSearchTermCleanupOutput(params: {
+  mode: MaintenanceRunMode;
+  count: number;
+  cutoff: Date;
+}) {
+  const lines = [
+    `${isDryRunMode(params.mode) ? "Would delete" : "Deleted"} ${params.count} SearchTermStat rows last updated before ${params.cutoff.toISOString()} (mode: ${formatMaintenanceMode(params.mode)}).`,
+  ];
+
+  if (isDryRunMode(params.mode)) {
+    lines.push("Dry-run mode. Re-run with --apply to delete rows.");
+  }
+
+  return lines.join("\n");
+}
+
+export async function runSearchTermCleanup(prisma: SearchTermCleanupPrisma) {
   const mode = resolveMaintenanceRunMode({
     applyEnvName: "SEARCH_TERM_CLEANUP_APPLY",
   });
@@ -24,19 +41,28 @@ async function main() {
     dryRun: isDryRunMode(mode),
   });
 
-  console.log(
-    `${isDryRunMode(mode) ? "Would delete" : "Deleted"} ${result.count} SearchTermStat rows last updated before ${result.cutoff.toISOString()} (mode: ${formatMaintenanceMode(mode)}).`,
-  );
-  if (isDryRunMode(mode)) {
-    console.log("Dry-run mode. Re-run with --apply to delete rows.");
-  }
+  return formatSearchTermCleanupOutput({
+    mode,
+    count: result.count,
+    cutoff: result.cutoff,
+  });
 }
 
-main()
-  .catch((error) => {
-    console.error("Search term cleanup failed", error);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+async function main(prisma: SearchTermCleanupPrisma = new PrismaClient()) {
+  console.log(await runSearchTermCleanup(prisma));
+}
+
+if (
+  process.env.NODE_ENV !== "test" &&
+  process.argv[1]?.endsWith("cleanup-search-terms.ts")
+) {
+  const prisma = new PrismaClient();
+  main(prisma)
+    .catch((error) => {
+      console.error("Search term cleanup failed", error);
+      process.exit(1);
+    })
+    .finally(async () => {
+      await prisma.$disconnect();
+    });
+}
