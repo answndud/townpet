@@ -10342,3 +10342,10 @@
 - 변경: `runLocalRestore(deps)`, `LOCAL_RESTORE_SEED_STEPS`, `buildPnpmCommand(...)`, `formatLocalRestoreSummary(...)`를 추가해 도커/DB 없이 wrapper 계약을 검증 가능하게 분리했다.
 - 검증: `restore-local-dev.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
 - 후속: local restore seed 순서나 summary key가 바뀌면 wrapper test를 함께 갱신한다.
+
+### 2026-06-07 - auth email readiness CLI wrapper 보강
+
+- 요약: `ops:check:auth-email-readiness` wrapper가 import 시 shared Prisma를 실행하지 않게 하고 sample limit, PASS/WARN/FAIL 출력 메시지를 테스트했다.
+- 변경: `runAuthEmailReadinessPreflight(prisma)`, `resolveAuthEmailReadinessSampleLimit(...)`, `formatAuthEmailReadinessReport(...)`를 추가해 DB 없이 wrapper 출력 계약을 검증 가능하게 분리했다.
+- 검증: `check-auth-email-readiness.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
+- 후속: auth email readiness 출력 키나 sample 정책이 바뀌면 wrapper test를 함께 갱신한다.
