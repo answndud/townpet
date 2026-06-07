@@ -10321,3 +10321,10 @@
 - 변경: `runUploadMediaProxyBackfill(prisma)`, `formatUploadMediaProxyBackfillOutput(...)`를 추가하고 blob URL 내부 `/uploads/*` 중복 수집을 막았다.
 - 검증: `backfill-upload-media-proxy.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
 - 후속: upload media proxy backfill 대상 URL 패턴이나 출력이 바뀌면 wrapper test를 함께 갱신한다.
+
+### 2026-06-07 - guest author backfill CLI wrapper 보강
+
+- 요약: `db:backfill:guest-authors` wrapper가 import 시 PrismaClient/main/config를 실행하지 않게 하고 batch size, guest meta 변환, dry-run/apply 출력 메시지를 테스트했다.
+- 변경: `runGuestAuthorBackfill(prisma)`, `resolveGuestAuthorBackfillBatchSize(...)`, `formatGuestAuthorBackfillOutput(...)`를 추가해 wrapper 출력 계약을 분리했다.
+- 검증: `backfill-guest-authors.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
+- 후속: guest author backfill batch/run mode/output이 바뀌면 wrapper test를 함께 갱신한다.
