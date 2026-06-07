@@ -151,6 +151,7 @@ describe("post detail action accessibility", () => {
 
     expect(html).toContain("공유 준비");
     expect(html).toContain("주변 공유 도구");
+    expect(html).toContain('id="lost-found-share-tools"');
     expect(html).toContain("개인정보 보호 문구 포함");
     expect(html).toContain("카카오톡 문구 복사");
     expect(html).toContain("인스타/전단 이미지");
@@ -200,6 +201,7 @@ describe("post detail action accessibility", () => {
 
     expect(html).toContain("공유 준비");
     expect(html).toContain("주변에 바로 공유하세요");
+    expect(html).toContain('id="lost-found-share-tools"');
     expect(html).toContain("링크, 카카오톡 문구, 전단 이미지를 한 번에 준비합니다.");
     expect(html).toContain("제공: 링크 복사 · 카카오톡 문구 · 인스타/전단 이미지");
     expect(html).toContain("공유 문구 열기");

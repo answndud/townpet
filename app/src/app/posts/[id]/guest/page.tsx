@@ -13,6 +13,8 @@ import { PostCommentCountStat } from "@/components/posts/post-comment-count-stat
 import {
   hospitalExplanationLabel,
   hospitalPriceLevelLabel,
+  lostFoundAlertTypeLabel,
+  lostFoundStatusLabel,
   routeDifficultyLabel,
 } from "@/components/posts/post-detail-presenter";
 import { PostDetailMediaGallery } from "@/components/posts/post-detail-media-gallery";
@@ -361,6 +363,98 @@ export default async function GuestPostDetailPage({ params }: PostDetailPageProp
             </div>
           </section>
         </div>
+
+        {post.type === "LOST_FOUND" && post.lostFoundAlert ? (
+          <section className="tp-card p-4 sm:p-5">
+            <h2 className="tp-text-section-title text-[#163462]">분실/목격 제보 정보</h2>
+            <div className="mt-3 grid gap-x-3 gap-y-2 text-sm text-[#355988] md:grid-cols-3">
+              <div className="tp-border-soft border-t py-2.5">
+                <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">제보 유형</p>
+                <p className="mt-1 font-medium text-[#1f3f71]">
+                  {renderTextValue(
+                    post.lostFoundAlert.alertType
+                      ? (lostFoundAlertTypeLabel[post.lostFoundAlert.alertType] ??
+                        post.lostFoundAlert.alertType)
+                      : null,
+                  )}
+                </p>
+              </div>
+              <div className="tp-border-soft border-t py-2.5">
+                <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">상태</p>
+                <p className="mt-1 font-medium text-[#1f3f71]">
+                  {renderTextValue(
+                    post.lostFoundAlert.status
+                      ? (lostFoundStatusLabel[post.lostFoundAlert.status] ??
+                        post.lostFoundAlert.status)
+                      : null,
+                  )}
+                </p>
+              </div>
+              <div className="tp-border-soft border-t py-2.5">
+                <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">마지막 확인</p>
+                <p className="mt-1 font-medium text-[#1f3f71]">
+                  {renderTextValue(formatDetailDateTime(post.lostFoundAlert.lastSeenAt))}
+                </p>
+              </div>
+              <div className="tp-border-soft border-t py-2.5">
+                <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">동물 종류</p>
+                <p className="mt-1 font-medium text-[#1f3f71]">
+                  {renderTextValue(post.lostFoundAlert.petType)}
+                </p>
+              </div>
+              <div className="tp-border-soft border-t py-2.5">
+                <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">품종/특징</p>
+                <p className="mt-1 font-medium text-[#1f3f71]">
+                  {renderTextValue(post.lostFoundAlert.breed)}
+                </p>
+              </div>
+              <div className="tp-border-soft border-t py-2.5 md:col-span-2">
+                <p className="text-[11px] uppercase tracking-[0.2em] text-[#6c84ab]">확인 위치</p>
+                <p className="mt-1 font-medium text-[#1f3f71]">
+                  {renderTextValue(post.lostFoundAlert.lastSeenLocation)}
+                </p>
+              </div>
+              <div className="col-span-full grid gap-2 border-t border-[#ead5a5] pt-2">
+                <p className="text-[12px] font-semibold text-[#163462]">다음 행동</p>
+                <div className="grid gap-2 text-[12px] leading-5 text-[#526d95] sm:grid-cols-2">
+                  <div className="grid gap-1">
+                    <p className="font-semibold text-[#10284a]">보호자 또는 공유자</p>
+                    <p>공개 문구로 주변에 공유하고, 개인 연락처와 상세 주소는 제외합니다.</p>
+                    <a
+                      href="#lost-found-share-tools"
+                      className="w-fit font-semibold text-[#3567b5] hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0]"
+                    >
+                      공유 도구
+                    </a>
+                  </div>
+                  <div className="grid gap-1">
+                    <p className="font-semibold text-[#10284a]">목격자</p>
+                    <p>위치, 시간, 이동 방향을 댓글의 목격 제보로 남깁니다.</p>
+                    <a
+                      href="#comments"
+                      className="w-fit font-semibold text-[#3567b5] hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0]"
+                    >
+                      목격 제보
+                    </a>
+                  </div>
+                </div>
+              </div>
+              <div className="col-span-full grid gap-1.5 border-t border-[#ead5a5] pt-2">
+                <p className="text-[12px] font-semibold text-[#163462]">제보 확인 기준</p>
+                <ul className="grid gap-1 text-[12px] leading-5 text-[#526d95] sm:grid-cols-2">
+                  <li className="flex gap-1.5">
+                    <span className="mt-[0.55em] h-1 w-1 shrink-0 rounded-full bg-[#c9a95a]" aria-hidden="true" />
+                    <span>허위 제보, 장난 제보, 개인정보 노출은 신고 사유로 선택해 주세요.</span>
+                  </li>
+                  <li className="flex gap-1.5">
+                    <span className="mt-[0.55em] h-1 w-1 shrink-0 rounded-full bg-[#c9a95a]" aria-hidden="true" />
+                    <span>민감한 목격 위치와 사진은 댓글의 보호자 공개 제보로 남깁니다.</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </section>
+        ) : null}
 
         {post.type === "LOST_FOUND" && post.lostFoundAlert ? (
           <DeferredLostFoundSharePanel post={post} postUrl={postUrl} />

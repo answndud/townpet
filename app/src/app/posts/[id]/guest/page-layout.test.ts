@@ -42,4 +42,24 @@ describe("guest post detail layout", () => {
     expect(code).not.toContain("border border-[#f0dfb8] bg-[#fffaf0] px-3 py-3");
     expect(code).not.toContain("border border-[#d6e7b3] bg-[#f8fff0] px-3 py-3");
   });
+
+  it("keeps lost-found guest detail actions visible before share and comments", () => {
+    const code = source();
+    const lostFoundInfoIndex = code.indexOf("분실/목격 제보 정보");
+    const sharePanelIndex = code.indexOf("<DeferredLostFoundSharePanel");
+    const commentSectionIndex = code.indexOf("<DeferredPostCommentSection");
+
+    expect(lostFoundInfoIndex).toBeGreaterThan(0);
+    expect(lostFoundInfoIndex).toBeLessThan(sharePanelIndex);
+    expect(sharePanelIndex).toBeLessThan(commentSectionIndex);
+    expect(code).toContain("다음 행동");
+    expect(code).toContain("보호자 또는 공유자");
+    expect(code).toContain("공개 문구로 주변에 공유");
+    expect(code).toContain('href="#lost-found-share-tools"');
+    expect(code).toContain("목격자");
+    expect(code).toContain("위치, 시간, 이동 방향을 댓글의 목격 제보로 남깁니다.");
+    expect(code).toContain('href="#comments"');
+    expect(code).toContain("제보 확인 기준");
+    expect(code).toContain("민감한 목격 위치와 사진은 댓글의 보호자 공개 제보로 남깁니다.");
+  });
 });

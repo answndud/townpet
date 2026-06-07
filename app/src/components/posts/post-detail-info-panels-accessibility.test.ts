@@ -73,6 +73,13 @@ describe("post detail info panels accessibility", () => {
     );
 
     expect(lostFoundSection).toContain("제보 확인 기준");
+    expect(lostFoundSection).toContain("다음 행동");
+    expect(lostFoundSection).toContain("보호자 또는 공유자");
+    expect(lostFoundSection).toContain("공유 도구");
+    expect(lostFoundSection).toContain("목격자");
+    expect(lostFoundSection).toContain("목격 제보");
+    expect(lostFoundSection).toContain('href="#lost-found-share-tools"');
+    expect(lostFoundSection).toContain('href="#comments"');
     expect(lostFoundSection).toContain("허위 제보, 장난 제보, 개인정보 노출은 신고 사유로 선택해 주세요.");
     expect(lostFoundSection).toContain("민감한 목격 위치와 사진은 댓글의 보호자 공개 제보로 남깁니다.");
     expect(lostFoundSection).toContain("col-span-full grid gap-1.5 border-t border-[#ead5a5] pt-2");

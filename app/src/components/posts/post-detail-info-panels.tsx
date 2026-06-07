@@ -721,6 +721,31 @@ export function PostDetailInfoPanels({
             span="wide"
             value={renderTextValue(post.lostFoundAlert.lastSeenLocation)}
           />
+          <div className="col-span-full grid gap-2 border-t border-[#ead5a5] pt-2">
+            <p className="tp-text-heading text-[12px] font-semibold">다음 행동</p>
+            <div className="grid gap-2 text-[12px] leading-5 text-[#526d95] sm:grid-cols-2">
+              <div className="grid gap-1">
+                <p className="font-semibold text-[#10284a]">보호자 또는 공유자</p>
+                <p>공개 문구로 주변에 공유하고, 개인 연락처와 상세 주소는 제외합니다.</p>
+                <a
+                  href="#lost-found-share-tools"
+                  className="w-fit font-semibold text-[#3567b5] hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0]"
+                >
+                  공유 도구
+                </a>
+              </div>
+              <div className="grid gap-1">
+                <p className="font-semibold text-[#10284a]">목격자</p>
+                <p>위치, 시간, 이동 방향을 댓글의 목격 제보로 남깁니다.</p>
+                <a
+                  href="#comments"
+                  className="w-fit font-semibold text-[#3567b5] hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0]"
+                >
+                  목격 제보
+                </a>
+              </div>
+            </div>
+          </div>
           <div className="col-span-full grid gap-1.5 border-t border-[#ead5a5] pt-2">
             <p className="tp-text-heading text-[12px] font-semibold">제보 확인 기준</p>
             <ul className="tp-text-subtle grid gap-1 text-[12px] leading-5 sm:grid-cols-2">
