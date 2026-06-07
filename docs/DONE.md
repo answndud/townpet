@@ -10132,3 +10132,10 @@
 - 검증: remote summary `OK`, sampleCount `86`; LCP count는 `/` `4`, `/feed/guest` `12`로 최소 기준 `30`에 미달.
 - 분류: 보류. 인위적인 브라우저 반복 방문으로 field sample을 오염시키지 않고 자연 유입 또는 운영 smoke 누적을 기다린다.
 - 후속: route별 LCP 30개 이상 확보 후 `perf:web-vitals:remote`와 browser/asset snapshot을 같은 날 다시 비교한다.
+
+### 2026-06-07 - 관리자 큐 로컬 fixture smoke PASS
+
+- 요약: production credential 없이 local fixture mode로 관리자 신고/정정 큐 렌더링 계약을 검증했다.
+- 검증: `ADMIN_QUEUE_SMOKE_LOCAL_FIXTURES=1 OPS_BASE_URL=http://localhost:3000` smoke PASS; `/admin/reports`, `/admin/corrections` 모두 queue/surface/no-overflow PASS.
+- 산출물: ignored local report `docs/reports/admin-queue-smoke-2026-06-07T00-25-11-856Z/README.md`.
+- 후속: production credential 확보 전까지 추가 로컬 fixture 재실행은 필요 없고, credential 확보 후 production mode만 재실행한다.
