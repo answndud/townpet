@@ -10258,3 +10258,10 @@
 - 변경: `verifyGuestAuthorBackfill(prisma)`를 추가하고 CLI main은 결과 출력만 담당하도록 분리했다.
 - 검증: legacy column dropped complete payload와 remaining backfill incomplete payload 테스트 PASS, file eslint PASS, `tsc --noEmit` PASS.
 - 후속: guest author backfill 완료 판정 기준이 바뀌면 verifier payload 테스트를 먼저 갱신한다.
+
+### 2026-06-07 - guest legacy cleanup rehearsal import guard/test 보강
+
+- 요약: `db:rehearse:guest-legacy-cleanup` helper가 import 시 PrismaClient/main을 실행하지 않게 하고 rehearsal 판정을 fake Prisma로 테스트했다.
+- 변경: `runGuestLegacyCleanupRehearsal(prisma)`를 추가하고 pending backfill, legacy columns dropped, rollback sentinel success/failure 결과를 고정했다.
+- 검증: `rehearse-guest-legacy-cleanup.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
+- 후속: legacy guest column drop rehearsal SQL이 바뀌면 fake Prisma 결과 테스트를 먼저 갱신한다.

@@ -1,26 +1,85 @@
 import "dotenv/config";
-import { Prisma, PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 
-const prisma = new PrismaClient();
-const EXPECTED_ROLLBACK_ERROR = "GUEST_LEGACY_CLEANUP_REHEARSAL_ROLLBACK";
+export const EXPECTED_ROLLBACK_ERROR = "GUEST_LEGACY_CLEANUP_REHEARSAL_ROLLBACK";
+const LEGACY_COLUMNS = [
+  "guestDisplayName",
+  "guestIpDisplay",
+  "guestIpLabel",
+  "guestPasswordHash",
+  "guestIpHash",
+  "guestFingerprintHash",
+] as const;
 
-async function tableHasColumn(table: "Post" | "Comment", column: string) {
-  const rows = await prisma.$queryRaw<Array<{ exists: boolean }>>`
+type LegacyTable = "Post" | "Comment";
+type RehearsalTx = {
+  $executeRawUnsafe(query: string): Promise<unknown>;
+};
+type GuestLegacyCleanupRehearsalPrisma = {
+  $queryRawUnsafe<T = unknown>(query: string, ...values: unknown[]): Promise<T>;
+  $transaction(callback: (tx: RehearsalTx) => Promise<unknown>): Promise<unknown>;
+  $disconnect(): Promise<void>;
+};
+
+type PendingBackfill = {
+  postRemaining: number;
+  commentRemaining: number;
+};
+
+type RehearsalResult =
+  | {
+      ok: false;
+      reason: "BACKFILL_INCOMPLETE";
+      postRemaining: number;
+      commentRemaining: number;
+      shouldExitFailure: true;
+    }
+  | {
+      ok: true;
+      rehearsal: "drop-legacy-guest-columns";
+      rollback: true;
+      skipped: "LEGACY_COLUMNS_ALREADY_DROPPED";
+      shouldExitFailure: false;
+    }
+  | {
+      ok: false;
+      reason: "REHEARSAL_DID_NOT_ROLLBACK";
+      shouldExitFailure: true;
+    }
+  | {
+      ok: true;
+      rehearsal: "drop-legacy-guest-columns";
+      rollback: true;
+      shouldExitFailure: false;
+    };
+
+async function tableHasColumn(
+  prisma: Pick<GuestLegacyCleanupRehearsalPrisma, "$queryRawUnsafe">,
+  table: LegacyTable,
+  column: string,
+) {
+  const rows = await prisma.$queryRawUnsafe<Array<{ exists: boolean }>>(
+    `
     SELECT EXISTS(
       SELECT 1
       FROM information_schema.columns
       WHERE table_schema = 'public'
-        AND table_name = ${table}
-        AND column_name = ${column}
+        AND table_name = $1
+        AND column_name = $2
     ) AS exists
-  `;
+  `,
+    table,
+    column,
+  );
   return Boolean(rows[0]?.exists);
 }
 
-async function countPendingBackfill() {
+async function countPendingBackfill(
+  prisma: Pick<GuestLegacyCleanupRehearsalPrisma, "$queryRawUnsafe">,
+): Promise<PendingBackfill> {
   const [hasPostLegacy, hasCommentLegacy] = await Promise.all([
-    tableHasColumn("Post", "guestPasswordHash"),
-    tableHasColumn("Comment", "guestPasswordHash"),
+    tableHasColumn(prisma, "Post", "guestPasswordHash"),
+    tableHasColumn(prisma, "Comment", "guestPasswordHash"),
   ]);
 
   if (!hasPostLegacy && !hasCommentLegacy) {
@@ -29,20 +88,24 @@ async function countPendingBackfill() {
 
   const [postRemainingRows, commentRemainingRows] = await Promise.all([
     hasPostLegacy
-      ? prisma.$queryRaw<Array<{ count: number }>>`
+      ? prisma.$queryRawUnsafe<Array<{ count: number }>>(
+          `
           SELECT COUNT(*)::int AS count
           FROM "Post"
           WHERE "guestAuthorId" IS NULL
             AND "guestPasswordHash" IS NOT NULL
-        `
+        `,
+        )
       : Promise.resolve([{ count: 0 }]),
     hasCommentLegacy
-      ? prisma.$queryRaw<Array<{ count: number }>>`
+      ? prisma.$queryRawUnsafe<Array<{ count: number }>>(
+          `
           SELECT COUNT(*)::int AS count
           FROM "Comment"
           WHERE "guestAuthorId" IS NULL
             AND "guestPasswordHash" IS NOT NULL
-        `
+        `,
+        )
       : Promise.resolve([{ count: 0 }]),
   ]);
 
@@ -52,21 +115,29 @@ async function countPendingBackfill() {
   return { postRemaining, commentRemaining };
 }
 
-async function assertLegacyColumnsExist(table: "Post" | "Comment", columns: string[]) {
-  const rows = await prisma.$queryRaw<Array<{ column_name: string }>>`
+async function findMissingLegacyColumns(
+  prisma: Pick<GuestLegacyCleanupRehearsalPrisma, "$queryRawUnsafe">,
+  table: LegacyTable,
+  columns: readonly string[],
+) {
+  const rows = await prisma.$queryRawUnsafe<Array<{ column_name: string }>>(
+    `
     SELECT column_name
     FROM information_schema.columns
     WHERE table_schema = 'public'
-      AND table_name = ${table}
-      AND column_name IN (${Prisma.join(columns)})
-  `;
+      AND table_name = $1
+      AND column_name = ANY($2::text[])
+  `,
+    table,
+    [...columns],
+  );
 
   const existing = new Set(rows.map((row) => row.column_name));
   const missing = columns.filter((column) => !existing.has(column));
   return missing;
 }
 
-async function rehearsalDropInRollbackTransaction() {
+async function rehearsalDropInRollbackTransaction(prisma: GuestLegacyCleanupRehearsalPrisma) {
   await prisma.$transaction(async (tx) => {
     await tx.$executeRawUnsafe('ALTER TABLE "Post" DROP COLUMN "guestDisplayName"');
     await tx.$executeRawUnsafe('ALTER TABLE "Post" DROP COLUMN "guestIpDisplay"');
@@ -86,69 +157,77 @@ async function rehearsalDropInRollbackTransaction() {
   });
 }
 
-async function main() {
-  const pending = await countPendingBackfill();
+export async function runGuestLegacyCleanupRehearsal(
+  prisma: GuestLegacyCleanupRehearsalPrisma,
+): Promise<RehearsalResult> {
+  const pending = await countPendingBackfill(prisma);
   if (pending.postRemaining > 0 || pending.commentRemaining > 0) {
-    console.error(
-      JSON.stringify({
-        ok: false,
-        reason: "BACKFILL_INCOMPLETE",
-        ...pending,
-      }),
-    );
-    process.exit(1);
+    return {
+      ok: false,
+      reason: "BACKFILL_INCOMPLETE",
+      ...pending,
+      shouldExitFailure: true,
+    };
   }
 
-  const legacyColumns = [
-    "guestDisplayName",
-    "guestIpDisplay",
-    "guestIpLabel",
-    "guestPasswordHash",
-    "guestIpHash",
-    "guestFingerprintHash",
-  ];
-
   const [missingPostColumns, missingCommentColumns] = await Promise.all([
-    assertLegacyColumnsExist("Post", legacyColumns),
-    assertLegacyColumnsExist("Comment", legacyColumns),
+    findMissingLegacyColumns(prisma, "Post", LEGACY_COLUMNS),
+    findMissingLegacyColumns(prisma, "Comment", LEGACY_COLUMNS),
   ]);
 
   if (missingPostColumns.length > 0 || missingCommentColumns.length > 0) {
-    console.log(
-      JSON.stringify({
-        ok: true,
-        rehearsal: "drop-legacy-guest-columns",
-        rollback: true,
-        skipped: "LEGACY_COLUMNS_ALREADY_DROPPED",
-      }),
-    );
-    return;
+    return {
+      ok: true,
+      rehearsal: "drop-legacy-guest-columns",
+      rollback: true,
+      skipped: "LEGACY_COLUMNS_ALREADY_DROPPED",
+      shouldExitFailure: false,
+    };
   }
 
   try {
-    await rehearsalDropInRollbackTransaction();
-    console.error(JSON.stringify({ ok: false, reason: "REHEARSAL_DID_NOT_ROLLBACK" }));
-    process.exit(1);
+    await rehearsalDropInRollbackTransaction(prisma);
+    return {
+      ok: false,
+      reason: "REHEARSAL_DID_NOT_ROLLBACK",
+      shouldExitFailure: true,
+    };
   } catch (error) {
     if (!(error instanceof Error) || error.message !== EXPECTED_ROLLBACK_ERROR) {
       throw error;
     }
   }
 
-  console.log(
-    JSON.stringify({
-      ok: true,
-      rehearsal: "drop-legacy-guest-columns",
-      rollback: true,
-    }),
-  );
+  return {
+    ok: true,
+    rehearsal: "drop-legacy-guest-columns",
+    rollback: true,
+    shouldExitFailure: false,
+  };
 }
 
-main()
-  .catch((error) => {
-    console.error("Guest legacy cleanup rehearsal failed", error);
+async function main(prisma: GuestLegacyCleanupRehearsalPrisma = new PrismaClient()) {
+  const result = await runGuestLegacyCleanupRehearsal(prisma);
+  const { shouldExitFailure, ...payload } = result;
+  const serialized = JSON.stringify(payload);
+  if (shouldExitFailure) {
+    console.error(serialized);
     process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+  }
+  console.log(serialized);
+}
+
+if (
+  process.env.NODE_ENV !== "test" &&
+  process.argv[1]?.endsWith("rehearse-guest-legacy-cleanup.ts")
+) {
+  const prisma = new PrismaClient();
+  main(prisma)
+    .catch((error) => {
+      console.error("Guest legacy cleanup rehearsal failed", error);
+      process.exit(1);
+    })
+    .finally(async () => {
+      await prisma.$disconnect();
+    });
+}
