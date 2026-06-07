@@ -40,7 +40,11 @@ export function DeferredLostFoundSharePanel({
   }
 
   return (
-    <section className="tp-card border-[#d8e4f6] p-4 sm:p-5" aria-labelledby="lost-found-share-title">
+    <section
+      id="lost-found-share-tools"
+      className="tp-card scroll-mt-20 border-[#d8e4f6] p-4 sm:p-5"
+      aria-labelledby="lost-found-share-title"
+    >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#4e6f9f]">

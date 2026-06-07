@@ -10560,3 +10560,9 @@
 - 요약: 목격 댓글 폼에 위치/시간 우선 입력 안내와 공개/보호자 공개 기준을 추가했다.
 - 변경: 목격 위치/시간/사진 URL에 visible label을 붙이고, 목격 제보 등록 성공 메시지를 공개 범위별로 구체화했다.
 - 검증: targeted comment form/thread tests, 모바일 393px 상세 화면 확인, `quality:check` PASS.
+
+### 2026-06-07 - 분실/목격 상세 역할별 첫 행동 개선
+
+- 요약: 분실/목격 상세에서 보호자/공유자와 목격자의 다음 행동을 정보 패널 안에서 분리해 안내했다.
+- 변경: 회원 상세 정보 패널과 비회원 SSR 상세에 역할별 “공유 도구”/“목격 제보” 앵커를 추가하고 공유 패널 앵커를 고정했다.
+- 검증: targeted detail/layout tests, 모바일 393px guest 상세 앵커/overflow 확인, `quality:check` PASS.
