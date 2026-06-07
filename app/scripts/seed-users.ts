@@ -3,7 +3,7 @@ import { PrismaClient, UserRole } from "@prisma/client";
 import { assertLocalDevelopmentDatabase } from "../src/server/local-database-guard";
 import { hashPassword } from "../src/server/password";
 
-const prisma = new PrismaClient();
+let prisma: PrismaClient;
 
 const neighborhoodSeeds = [
   { name: "서초동", city: "서울", district: "서초구" },
@@ -352,11 +352,17 @@ async function main() {
   }
 }
 
-main()
-  .catch((error) => {
-    console.error("Seed users failed", error);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+if (
+  process.env.NODE_ENV !== "test" &&
+  process.argv[1]?.endsWith("seed-users.ts")
+) {
+  prisma = new PrismaClient();
+  main()
+    .catch((error) => {
+      console.error("Seed users failed", error);
+      process.exit(1);
+    })
+    .finally(async () => {
+      await prisma.$disconnect();
+    });
+}

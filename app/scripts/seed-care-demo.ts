@@ -19,7 +19,7 @@ import {
 import { assertLocalDevelopmentDatabase } from "../src/server/local-database-guard";
 import { hashPassword } from "../src/server/password";
 
-const prisma = new PrismaClient();
+let prisma: PrismaClient;
 
 const DEMO_PREFIX = "[CARE DEMO]";
 const DEMO_PASSWORD = process.env.SEED_DEFAULT_PASSWORD ?? "townpet123";
@@ -328,6 +328,7 @@ export async function seedCareDemo() {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  prisma = new PrismaClient();
   seedCareDemo()
     .then((result) => {
       console.log(JSON.stringify(result, null, 2));

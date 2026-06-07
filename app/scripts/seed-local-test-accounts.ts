@@ -6,7 +6,7 @@ import { PrismaClient, UserRole } from "@prisma/client";
 import { assertLocalDevelopmentDatabase } from "../src/server/local-database-guard";
 import { hashPassword } from "../src/server/password";
 
-const prisma = new PrismaClient();
+let prisma: PrismaClient;
 
 type SeedAccount = {
   email: string;
@@ -315,6 +315,7 @@ async function main() {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  prisma = new PrismaClient();
   main()
     .catch((error) => {
       console.error("Seed local test accounts failed", error);

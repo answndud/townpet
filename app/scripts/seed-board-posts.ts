@@ -19,7 +19,7 @@ import {
 import { resolveBoardByPostType } from "../src/lib/community-board";
 import { assertLocalDevelopmentDatabase } from "../src/server/local-database-guard";
 
-const prisma = new PrismaClient();
+let prisma: PrismaClient;
 
 const neighborhoods = [
   { name: "서초동", city: "서울", district: "서초구" },
@@ -1259,11 +1259,17 @@ async function main() {
   );
 }
 
-main()
-  .catch((error) => {
-    console.error("seed board posts failed", error);
-    process.exitCode = 1;
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+if (
+  process.env.NODE_ENV !== "test" &&
+  process.argv[1]?.endsWith("seed-board-posts.ts")
+) {
+  prisma = new PrismaClient();
+  main()
+    .catch((error) => {
+      console.error("seed board posts failed", error);
+      process.exitCode = 1;
+    })
+    .finally(async () => {
+      await prisma.$disconnect();
+    });
+}

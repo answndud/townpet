@@ -4,7 +4,7 @@ import { PrismaClient } from "@prisma/client";
 import { assertLocalDevelopmentDatabase } from "../src/server/local-database-guard";
 import { hashPassword } from "../src/server/password";
 
-const prisma = new PrismaClient();
+let prisma: PrismaClient;
 
 async function main() {
   assertLocalDevelopmentDatabase(process.env, "dummy password seeding");
@@ -22,11 +22,17 @@ async function main() {
   console.log(`Updated ${result.count} users with dummy password.`);
 }
 
-main()
-  .catch((error) => {
-    console.error("Seed passwords failed", error);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+if (
+  process.env.NODE_ENV !== "test" &&
+  process.argv[1]?.endsWith("seed-passwords.ts")
+) {
+  prisma = new PrismaClient();
+  main()
+    .catch((error) => {
+      console.error("Seed passwords failed", error);
+      process.exit(1);
+    })
+    .finally(async () => {
+      await prisma.$disconnect();
+    });
+}

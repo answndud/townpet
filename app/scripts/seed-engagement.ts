@@ -7,7 +7,7 @@ import {
 } from "@prisma/client";
 import { assertLocalDevelopmentDatabase } from "../src/server/local-database-guard";
 
-const prisma = new PrismaClient();
+let prisma: PrismaClient;
 
 const COMMENT_TAG = "[seed-engagement]";
 const COMMENT_POST_LIMIT = 24;
@@ -438,11 +438,17 @@ async function main() {
   );
 }
 
-main()
-  .catch((error) => {
-    console.error("seed engagement failed", error);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+if (
+  process.env.NODE_ENV !== "test" &&
+  process.argv[1]?.endsWith("seed-engagement.ts")
+) {
+  prisma = new PrismaClient();
+  main()
+    .catch((error) => {
+      console.error("seed engagement failed", error);
+      process.exit(1);
+    })
+    .finally(async () => {
+      await prisma.$disconnect();
+    });
+}
