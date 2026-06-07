@@ -6,7 +6,7 @@ Generated from `app/src/app/api/**/route.ts` with source-text heuristics.
 
 - routeHandlers: 55
 - missingMethodExports: 0
-- missingAdjacentTests: 1
+- missingAdjacentTests: 0
 - accessHeuristics: admin=2, auth-aware=18, authenticated=10, moderator=6, provider-managed=1, public=15, public-internal-token=3
 - validationHeuristics: manual=13, no-input=3, provider-managed=1, schema=25, service-delegated=12, static-response=1
 - monitoringHeuristics: logger=1, monitorUnhandledError=51, none=1, provider-managed=1, static-response=1
@@ -75,4 +75,4 @@ Heuristic labels are review aids, not a security proof. Source of truth remains 
 
 ## Gaps
 
-- missing adjacent test: `src/app/api/auth/[...nextauth]/route.ts`
+- None

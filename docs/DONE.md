@@ -10153,3 +10153,10 @@
 - 검증: 정상 LOST_FOUND SVG/header/cache, 비 LOST_FOUND, read-access 차단, inactive 404를 고정했다.
 - 결과: API contract report `missingAdjacentTests`가 `2 -> 1`로 감소했고, 남은 gap은 provider-managed NextAuth route뿐이다.
 - 검증 명령: targeted vitest PASS, file eslint PASS, `tsc --noEmit` PASS, `api:contracts --check --strict` PASS.
+
+### 2026-06-07 - provider-managed API route test gap 예외 처리
+
+- 요약: NextAuth provider-managed route를 API contract adjacent test gap 집계에서 제외해 report 노이즈를 제거했다.
+- 변경: 직접 구현 route는 계속 missing test로 잡고, `provider-managed` route만 Gaps에서 제외하는 helper와 회귀 테스트를 추가했다.
+- 결과: generated API contract report `missingAdjacentTests`가 `1 -> 0`, `Gaps: None`으로 정리됐다.
+- 검증 명령: `check-api-route-contracts.test.ts` PASS, scripts eslint PASS, `tsc --noEmit` PASS, `api:contracts --check --strict` PASS.

@@ -12,6 +12,7 @@ import {
   inferRouteMonitoring,
   inferRouteValidation,
   renderApiRouteContractsMarkdown,
+  requiresAdjacentTest,
   runApiRouteContractCheck,
 } from "@/../scripts/check-api-route-contracts";
 
@@ -127,6 +128,36 @@ describe("api route contract check", () => {
         monitoring: "none",
       },
     ]);
+  });
+
+  it("excludes provider-managed routes from adjacent test gaps", () => {
+    expect(requiresAdjacentTest({ access: "provider-managed" })).toBe(false);
+    expect(requiresAdjacentTest({ access: "public" })).toBe(true);
+
+    const report = renderApiRouteContractsMarkdown([
+      {
+        route: "/api/auth/[...nextauth]",
+        methods: ["GET", "POST"],
+        file: "src/app/api/auth/[...nextauth]/route.ts",
+        adjacentTest: false,
+        access: "provider-managed",
+        validation: "provider-managed",
+        monitoring: "provider-managed",
+      },
+      {
+        route: "/api/posts/[id]",
+        methods: ["GET"],
+        file: "src/app/api/posts/[id]/route.ts",
+        adjacentTest: false,
+        access: "public",
+        validation: "manual",
+        monitoring: "none",
+      },
+    ]);
+
+    expect(report).toContain("- missingAdjacentTests: 1");
+    expect(report).not.toContain("missing adjacent test: `src/app/api/auth/[...nextauth]/route.ts`");
+    expect(report).toContain("missing adjacent test: `src/app/api/posts/[id]/route.ts`");
   });
 
   it("writes and checks a deterministic contract report", async () => {
