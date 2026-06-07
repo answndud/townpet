@@ -10384,3 +10384,10 @@
 - 변경: `resolveOperatorContentPublicSmokeConfig(...)`, `runOperatorContentPublicSmokeCli(...)`, `main(params)`를 추가해 output/exit code를 실네트워크 없이 검증 가능하게 분리했다.
 - 검증: `check-operator-content-public-smoke.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
 - 후속: operator public smoke check 목록이나 env 이름이 바뀌면 wrapper test를 함께 갱신한다.
+
+### 2026-06-07 - public detail visual smoke CLI wrapper 보강
+
+- 요약: `check-public-detail-visual-smoke.ts` wrapper가 import 시 실행되지 않게 하고 feed/browser/inspect/write 경계를 테스트했다.
+- 변경: `resolvePublicDetailVisualSmokeConfig(...)`, `runPublicDetailVisualSmoke(...)`, `main(params)`를 추가해 report output/exit code를 실브라우저 없이 검증 가능하게 분리했다.
+- 검증: `check-public-detail-visual-smoke.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
+- 후속: public detail smoke assertion이나 report markdown 구조가 바뀌면 wrapper test를 함께 갱신한다.

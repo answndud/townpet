@@ -1,6 +1,6 @@
 import "dotenv/config";
 
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, writeFile as writeFileDefault } from "node:fs/promises";
 import * as path from "node:path";
 
 import { chromium, devices, type Browser, type Page } from "@playwright/test";
@@ -25,7 +25,7 @@ type FeedPayload = {
   };
 };
 
-type PublicDetailTarget = {
+export type PublicDetailTarget = {
   id: string;
   title: string;
   type: string;
@@ -35,7 +35,7 @@ type PublicDetailTarget = {
 
 type SmokeProfile = "desktop" | "mobile";
 
-type SmokeResult = {
+export type SmokeResult = {
   targetType: string;
   targetTitle: string;
   profile: SmokeProfile;
@@ -47,6 +47,21 @@ type SmokeResult = {
   hasOperatorSource: boolean;
   noHorizontalOverflow: boolean;
 };
+
+type TargetEntry = { type: string; target: PublicDetailTarget | null };
+
+type RunnableTargetEntry = { type: string; target: PublicDetailTarget };
+
+type PublicDetailVisualSmokeCliResult = {
+  outputDir: string;
+  reportPath: string;
+  targetEntries: TargetEntry[];
+  results: SmokeResult[];
+  output: string;
+  exitCode: 0 | 1;
+};
+
+type WriteFileLike = typeof writeFileDefault;
 
 const DEFAULT_BASE_URL = "https://townpet.vercel.app";
 const DEFAULT_SMOKE_TYPES = [
@@ -72,6 +87,25 @@ export function parseSmokeTypes(value: string | undefined) {
   return (value?.split(",") ?? DEFAULT_SMOKE_TYPES)
     .map((item) => item.trim())
     .filter(Boolean);
+}
+
+export function resolvePublicDetailVisualSmokeConfig(params: {
+  env?: NodeJS.ProcessEnv;
+  now?: Date;
+  repoRoot?: string;
+} = {}) {
+  const env = params.env ?? process.env;
+  const generatedAt = (params.now ?? new Date()).toISOString();
+  const timestamp = compactTimestamp(new Date(generatedAt));
+  const repoRoot = params.repoRoot ?? resolveRepoRoot();
+
+  return {
+    generatedAt,
+    repoRoot,
+    baseUrl: normalizeBaseUrl(env.OPS_BASE_URL || DEFAULT_BASE_URL),
+    types: parseSmokeTypes(env.PUBLIC_DETAIL_SMOKE_TYPES),
+    outputDir: path.join(repoRoot, "docs/reports", `public-detail-visual-smoke-${timestamp}`),
+  };
 }
 
 export function extractPublicFeedItems(payload: FeedPayload): PublicDetailTarget[] {
@@ -103,8 +137,13 @@ function selectFallbackSmokeTarget(items: PublicDetailTarget[]) {
   return items.find((item) => item.isOperatorContent) ?? items[0] ?? null;
 }
 
-async function readFeedTargets(baseUrl: string, types: string[]) {
-  const response = await fetch(`${baseUrl}/api/feed/guest?sort=LATEST&density=ULTRA`, {
+export async function readPublicDetailFeedTargets(params: {
+  baseUrl: string;
+  types: string[];
+  fetcher?: typeof fetch;
+}) {
+  const fetcher = params.fetcher ?? fetch;
+  const response = await fetcher(`${params.baseUrl}/api/feed/guest?sort=LATEST&density=ULTRA`, {
     method: "GET",
     headers: {
       accept: "application/json",
@@ -118,7 +157,7 @@ async function readFeedTargets(baseUrl: string, types: string[]) {
 
   const payload = (await response.json()) as FeedPayload;
   const items = extractPublicFeedItems(payload);
-  const targetsByType = selectSmokeTargetsByType(items, types);
+  const targetsByType = selectSmokeTargetsByType(items, params.types);
   if (targetsByType.some((item) => item.target)) {
     return targetsByType;
   }
@@ -150,7 +189,7 @@ async function hasNoHorizontalOverflow(page: Page) {
   });
 }
 
-async function inspectDetail(params: {
+export async function inspectPublicDetail(params: {
   browser: Browser;
   baseUrl: string;
   target: PublicDetailTarget;
@@ -234,10 +273,10 @@ export function publicDetailSmokePassed(params: {
   );
 }
 
-function buildMarkdown(params: {
+export function buildPublicDetailVisualSmokeMarkdown(params: {
   generatedAt: string;
   baseUrl: string;
-  targetEntries: Array<{ type: string; target: PublicDetailTarget | null }>;
+  targetEntries: TargetEntry[];
   results: SmokeResult[];
 }) {
   const blockedEntries = params.targetEntries.filter((entry) => !entry.target);
@@ -267,22 +306,32 @@ function buildMarkdown(params: {
   return `${lines.join("\n")}\n`;
 }
 
-async function main() {
-  const generatedAt = new Date().toISOString();
-  const timestamp = compactTimestamp(new Date(generatedAt));
-  const repoRoot = resolveRepoRoot();
-  const baseUrl = normalizeBaseUrl(process.env.OPS_BASE_URL || DEFAULT_BASE_URL);
-  const types = parseSmokeTypes(process.env.PUBLIC_DETAIL_SMOKE_TYPES);
-  const targetEntries = await readFeedTargets(baseUrl, types);
+export async function runPublicDetailVisualSmoke(params: {
+  env?: NodeJS.ProcessEnv;
+  now?: Date;
+  repoRoot?: string;
+  fetcher?: typeof fetch;
+  launchBrowser?: () => Promise<Browser>;
+  inspectDetail?: typeof inspectPublicDetail;
+  writeFile?: WriteFileLike;
+} = {}): Promise<PublicDetailVisualSmokeCliResult> {
+  const config = resolvePublicDetailVisualSmokeConfig(params);
+  const targetEntries = await readPublicDetailFeedTargets({
+    baseUrl: config.baseUrl,
+    types: config.types,
+    fetcher: params.fetcher,
+  });
   const runnableTargets = targetEntries.filter(
-    (entry): entry is { type: string; target: PublicDetailTarget } => Boolean(entry.target),
+    (entry): entry is RunnableTargetEntry => Boolean(entry.target),
   );
   if (runnableTargets.length === 0) {
     throw new Error("No public guest feed item found for detail visual smoke.");
   }
 
-  const outputDir = path.join(repoRoot, "docs/reports", `public-detail-visual-smoke-${timestamp}`);
-  const browser = await chromium.launch();
+  const launchBrowser = params.launchBrowser ?? (() => chromium.launch());
+  const inspectDetail = params.inspectDetail ?? inspectPublicDetail;
+  const writeFile = params.writeFile ?? writeFileDefault;
+  const browser = await launchBrowser();
   const results: SmokeResult[] = [];
   try {
     for (const entry of runnableTargets) {
@@ -290,10 +339,10 @@ async function main() {
         results.push(
           await inspectDetail({
             browser,
-            baseUrl,
+            baseUrl: config.baseUrl,
             target: entry.target,
             profile,
-            screenshotPath: path.join(outputDir, `${entry.type}-${profile}.png`),
+            screenshotPath: path.join(config.outputDir, `${entry.type}-${profile}.png`),
           }),
         );
       }
@@ -302,28 +351,52 @@ async function main() {
     await browser.close();
   }
 
+  const reportPath = path.join(config.outputDir, "README.md");
   await writeFile(
-    path.join(outputDir, "README.md"),
-    buildMarkdown({ generatedAt, baseUrl, targetEntries, results }),
+    reportPath,
+    buildPublicDetailVisualSmokeMarkdown({
+      generatedAt: config.generatedAt,
+      baseUrl: config.baseUrl,
+      targetEntries,
+      results,
+    }),
     "utf8",
   );
 
-  console.log(`Public detail visual smoke written: ${path.relative(repoRoot, outputDir)}`);
+  const outputLines = [`Public detail visual smoke written: ${path.relative(config.repoRoot, config.outputDir)}`];
   for (const entry of targetEntries.filter((item) => !item.target)) {
-    console.log(`${entry.type}: blocked=no-public-feed-item`);
+    outputLines.push(`${entry.type}: blocked=no-public-feed-item`);
   }
   for (const result of results) {
-    console.log(
+    outputLines.push(
       `${result.targetType}/${result.profile}: title=${result.titleVisible} comments=${result.hasCommentSection} report=${result.hasReportEntry} operator=${result.hasOperatorSource} overflow=${result.noHorizontalOverflow}`,
     );
   }
 
-  if (!publicDetailSmokePassed({ targetEntries, results })) {
-    throw new Error("Public detail visual smoke failed.");
-  }
+  return {
+    outputDir: config.outputDir,
+    reportPath,
+    targetEntries,
+    results,
+    output: outputLines.join("\n"),
+    exitCode: publicDetailSmokePassed({ targetEntries, results }) ? 0 : 1,
+  };
 }
 
-if (require.main === module) {
+export async function main(params: Parameters<typeof runPublicDetailVisualSmoke>[0] = {}) {
+  const result = await runPublicDetailVisualSmoke(params);
+  console.log(result.output);
+  if (result.exitCode !== 0) {
+    throw new Error("Public detail visual smoke failed.");
+  }
+
+  return result.output;
+}
+
+if (
+  process.env.NODE_ENV !== "test" &&
+  process.argv[1]?.endsWith("check-public-detail-visual-smoke.ts")
+) {
   main().catch((error) => {
     console.error("Public detail visual smoke failed");
     console.error(error);
