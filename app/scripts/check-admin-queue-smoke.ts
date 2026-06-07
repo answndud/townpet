@@ -38,6 +38,8 @@ export type AdminQueueSmokeConfig = {
   useLocalFixtures: boolean;
 };
 
+type ChromiumLaunchOptions = Parameters<typeof chromium.launch>[0];
+
 type AdminQueueSmokeMode = "production_credentials" | "local_fixtures";
 
 export type AdminQueuePageCheck = {
@@ -114,6 +116,26 @@ function isLocalBaseUrl(value: string) {
   } catch {
     return false;
   }
+}
+
+export function resolveAdminQueueSmokeBrowserLaunchOptions(
+  env: AdminQueueSmokeEnv,
+): ChromiumLaunchOptions {
+  const channel = env.ADMIN_QUEUE_SMOKE_BROWSER_CHANNEL?.trim();
+  const executablePath = env.ADMIN_QUEUE_SMOKE_CHROMIUM_EXECUTABLE_PATH?.trim();
+  if (channel && executablePath) {
+    throw new AdminQueueSmokeBlockedError(
+      "Use either ADMIN_QUEUE_SMOKE_BROWSER_CHANNEL or ADMIN_QUEUE_SMOKE_CHROMIUM_EXECUTABLE_PATH, not both.",
+    );
+  }
+
+  if (channel) {
+    return { channel };
+  }
+  if (executablePath) {
+    return { executablePath };
+  }
+  return {};
 }
 
 export function resolveAdminQueueSmokeConfig(
@@ -518,7 +540,9 @@ export async function runAdminQueueSmoke(params: {
   });
   const config = runConfig.smokeConfig;
   const prepareLocalFixtures = params.prepareLocalFixtures ?? prepareLocalAdminQueueSmokeFixtures;
-  const launchBrowser = params.launchBrowser ?? (() => chromium.launch());
+  const launchBrowser =
+    params.launchBrowser ??
+    (() => chromium.launch(resolveAdminQueueSmokeBrowserLaunchOptions(env)));
   const login = params.login ?? loginWithCredentials;
   const inspectPage = params.inspectPage ?? inspectAdminQueuePage;
   const mkdir = params.mkdir ?? mkdirDefault;

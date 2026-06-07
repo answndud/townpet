@@ -10469,9 +10469,9 @@
 - 검증: workflow YAML parse, 문서 인덱스, diff check PASS.
 - 후속: GitHub Actions에서 `verify_admin_queue=true`로 수동 실행해 production `production_credentials` mode PASS report를 확보한다.
 
-### 2026-06-07 - admin queue smoke Actions browser install 안정화
+### 2026-06-07 - admin queue smoke Actions browser 실행 안정화
 
-- 요약: `ops-smoke-checks`의 admin queue smoke가 Chromium 설치 단계에서 job timeout으로 끝나는 문제를 workflow 설정으로 줄였다.
-- 변경: Playwright browser 경로를 `app/.playwright-browsers`로 통일하고 cache를 추가했으며, admin queue smoke 포함 run의 job timeout을 25분으로 늘리고 Chromium 설치를 가볍게 했다.
-- 검증: workflow YAML parse와 diff check 후 GitHub Actions에서 `verify_admin_queue=true`로 재실행한다.
+- 요약: `ops-smoke-checks`의 admin queue smoke가 Playwright Chromium 설치 단계에서 job timeout으로 끝나는 문제를 system Chrome 실행 방식으로 줄였다.
+- 변경: smoke runner에 `ADMIN_QUEUE_SMOKE_BROWSER_CHANNEL`/`ADMIN_QUEUE_SMOKE_CHROMIUM_EXECUTABLE_PATH` override를 추가하고, Actions에서는 GitHub hosted runner의 `google-chrome`을 사용하게 했다.
+- 검증: workflow YAML parse, runner unit test, docs index, diff check 후 GitHub Actions에서 `verify_admin_queue=true`로 재실행한다.
 - 후속: production `production_credentials` mode PASS report 확보 후 PLAN에서 blocker를 제거한다.
