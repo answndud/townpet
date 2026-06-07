@@ -184,7 +184,8 @@ credential 조건:
 - production DB에 `ADMIN_QUEUE_SMOKE_EMAIL`과 같은 이메일의 계정이 있어야 한다.
 - 계정은 `role=ADMIN`, `emailVerified` 설정, `passwordHash` 존재 상태여야 한다.
 - `ADMIN_QUEUE_SMOKE_PASSWORD`는 해당 `passwordHash`와 일치해야 한다.
-- GitHub Actions에서 실행할 때는 위 두 값을 GitHub repository secrets에도 같은 값으로 등록한다.
+- GitHub Actions에서 실행할 때는 위 두 값과 `DATABASE_URL`을 GitHub repository secrets에도 등록한다.
+- `ops-smoke-checks`를 수동 실행할 때 `provision_admin_queue_smoke=true`를 켜면 `DATABASE_URL` secret 기준 production DB에 smoke admin 계정을 생성/보정한 뒤 smoke를 실행한다. 이 옵션은 DB write를 수행하므로 `CredentialsSignin`처럼 credential 상태가 깨졌을 때만 켠다.
 
 ```bash
 OPS_BASE_URL=https://townpet.vercel.app \
@@ -209,6 +210,7 @@ corepack pnpm@9.12.3 -C app ops:check:admin-queue-smoke
 - `BLOCKED`: admin smoke credential 또는 브라우저 바이너리가 없어 실행하지 못함. 이 경우 PR/배포 기록에 blocker를 명시한다.
 - `NO-GO`: 로그인 실패, 관리자 권한 없음, queue summary 누락, 화면 overflow 실패
   - `CredentialsSignin`: secret은 전달됐지만 production 로그인에서 거절됨. 계정 없음, 비밀번호 불일치, `passwordHash` 없음, `emailVerified` 미설정, active sanction 중 하나를 확인한다.
+  - GitHub Actions에서 계정 보정까지 같이 실행할 때는 `verify_admin_queue=true`, `provision_admin_queue_smoke=true`를 함께 사용한다.
 
 report 위치:
 

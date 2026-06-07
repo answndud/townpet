@@ -227,10 +227,12 @@ GitHub 저장소 -> `Settings` -> `Secrets and variables` -> `Actions` -> `New r
      - `target_base_url=https://<최종운영URL>`
      - `verify_sentry=true` (Sentry도 함께 검증할 때)
      - `verify_admin_queue=true` (관리자 신고/정정 큐까지 authenticated smoke로 검증할 때. GitHub Secrets `ADMIN_QUEUE_SMOKE_EMAIL`, `ADMIN_QUEUE_SMOKE_PASSWORD` 필요)
+     - `provision_admin_queue_smoke=true` (`CredentialsSignin`처럼 smoke 계정 상태가 깨졌을 때만 사용. GitHub Secret `DATABASE_URL` 기준으로 production DB에 smoke admin 계정을 생성/보정한 뒤 smoke 실행)
    - 관리자 큐 smoke credential 전제:
      - production DB에 같은 이메일의 계정이 있어야 한다.
      - 계정은 `role=ADMIN`, `emailVerified` 설정, `passwordHash` 존재 상태여야 한다.
      - GitHub Secret 비밀번호는 production DB의 `passwordHash`와 일치해야 한다.
+     - `provision_admin_queue_smoke=true`를 사용하려면 GitHub Secret `DATABASE_URL`도 필요하다.
    - 기대 결과:
      - health 체크 PASS
      - 선택한 Sentry 또는 관리자 큐 smoke PASS
@@ -246,6 +248,7 @@ GitHub 저장소 -> `Settings` -> `Secrets and variables` -> `Actions` -> `New r
 `ops-smoke-checks`의 `Check authenticated admin queue`가 `CredentialsSignin`으로 실패
 - 원인: GitHub Secrets는 전달됐지만 production 계정 인증이 거절됨
 - 확인: production DB에서 smoke email 계정 존재, `role=ADMIN`, `emailVerified`, `passwordHash` 존재, secret password 일치 여부
+- 조치: GitHub Secret `DATABASE_URL`이 production DB를 가리키는지 확인한 뒤 `verify_admin_queue=true`, `provision_admin_queue_smoke=true`로 재실행
 - 조치: 누락된 키 추가 후 재실행
 
 `oauth-real-e2e`가 리다이렉트 단계에서 실패

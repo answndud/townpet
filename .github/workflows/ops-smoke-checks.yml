@@ -22,6 +22,11 @@ on:
         required: true
         default: false
         type: boolean
+      provision_admin_queue_smoke:
+        description: "Provision or repair the admin queue smoke user before browser smoke"
+        required: true
+        default: false
+        type: boolean
   schedule:
     # Every Monday 00:15 UTC (KST 09:15)
     - cron: "15 0 * * 1"
@@ -104,9 +109,13 @@ jobs:
         env:
           ADMIN_QUEUE_SMOKE_EMAIL: ${{ secrets.ADMIN_QUEUE_SMOKE_EMAIL }}
           ADMIN_QUEUE_SMOKE_PASSWORD: ${{ secrets.ADMIN_QUEUE_SMOKE_PASSWORD }}
+          DATABASE_URL: ${{ inputs.provision_admin_queue_smoke && secrets.DATABASE_URL || '' }}
         run: |
           missing=()
           required=(ADMIN_QUEUE_SMOKE_EMAIL ADMIN_QUEUE_SMOKE_PASSWORD)
+          if [ "${{ inputs.provision_admin_queue_smoke }}" = "true" ]; then
+            required+=(DATABASE_URL)
+          fi
           for key in "${required[@]}"; do
             if [ -z "${!key}" ]; then
               missing+=("$key")
@@ -118,6 +127,15 @@ jobs:
             done
             exit 1
           fi
+
+      - name: Provision admin queue smoke user
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.verify_admin_queue && inputs.provision_admin_queue_smoke }}
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          ADMIN_QUEUE_SMOKE_EMAIL: ${{ secrets.ADMIN_QUEUE_SMOKE_EMAIL }}
+          ADMIN_QUEUE_SMOKE_PASSWORD: ${{ secrets.ADMIN_QUEUE_SMOKE_PASSWORD }}
+          ADMIN_QUEUE_SMOKE_PROVISION_CONFIRM: PRODUCTION
+        run: pnpm ops:provision:admin-queue-smoke-user
 
       - name: Check system Chrome
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.verify_admin_queue }}

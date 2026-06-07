@@ -68,6 +68,7 @@
     "api:contracts:write": "tsx scripts/check-api-route-contracts.ts --write",
     "ops:check:auth-email-readiness": "tsx scripts/check-auth-email-readiness.ts",
     "ops:check:admin-queue-smoke": "PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers tsx scripts/check-admin-queue-smoke.ts",
+    "ops:provision:admin-queue-smoke-user": "tsx scripts/provision-admin-queue-smoke-user.ts",
     "ops:check:care-smoke-readiness": "tsx scripts/check-care-smoke-readiness.ts",
     "ops:check:health": "tsx scripts/check-health-endpoint.ts",
     "ops:check:operator-content-public": "tsx scripts/check-operator-content-public-smoke.ts",
