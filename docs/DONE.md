@@ -10160,3 +10160,10 @@
 - 변경: 직접 구현 route는 계속 missing test로 잡고, `provider-managed` route만 Gaps에서 제외하는 helper와 회귀 테스트를 추가했다.
 - 결과: generated API contract report `missingAdjacentTests`가 `1 -> 0`, `Gaps: None`으로 정리됐다.
 - 검증 명령: `check-api-route-contracts.test.ts` PASS, scripts eslint PASS, `tsc --noEmit` PASS, `api:contracts --check --strict` PASS.
+
+### 2026-06-07 - lost-found share SVG route monitoring 보강
+
+- 요약: 마지막 `monitoring=none` 직접 구현 API route였던 `/api/posts/[id]/lost-found-share.svg`에 unexpected error monitoring을 추가했다.
+- 검증: 정상/404 흐름은 유지하고, `getPostById` unexpected error는 `monitorUnhandledError` 호출 후 500 반환으로 고정했다.
+- 결과: API contract report monitoring `none=1`이 사라지고 `monitorUnhandledError=52`로 갱신됐다.
+- 검증 명령: targeted vitest PASS, route eslint PASS, `tsc --noEmit` PASS, `api:contracts --check --strict` PASS.

@@ -3,12 +3,15 @@ import type { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { GET } from "@/app/api/posts/[id]/lost-found-share.svg/route";
+import { monitorUnhandledError } from "@/server/error-monitor";
 import { getPostById } from "@/server/queries/post.queries";
 import { assertPostReadable } from "@/server/services/post-read-access.service";
 
+vi.mock("@/server/error-monitor", () => ({ monitorUnhandledError: vi.fn() }));
 vi.mock("@/server/queries/post.queries", () => ({ getPostById: vi.fn() }));
 vi.mock("@/server/services/post-read-access.service", () => ({ assertPostReadable: vi.fn() }));
 
+const mockMonitorUnhandledError = vi.mocked(monitorUnhandledError);
 const mockGetPostById = vi.mocked(getPostById);
 const mockAssertPostReadable = vi.mocked(assertPostReadable);
 
@@ -40,6 +43,7 @@ function createLostFoundPost(overrides: Record<string, unknown> = {}) {
 
 describe("GET /api/posts/[id]/lost-found-share.svg", () => {
   beforeEach(() => {
+    mockMonitorUnhandledError.mockReset();
     mockGetPostById.mockReset();
     mockAssertPostReadable.mockReset();
     mockGetPostById.mockResolvedValue(createLostFoundPost() as never);
@@ -72,6 +76,7 @@ describe("GET /api/posts/[id]/lost-found-share.svg", () => {
     expect(response.status).toBe(404);
     expect(await response.text()).toBe("Not found");
     expect(mockAssertPostReadable).not.toHaveBeenCalled();
+    expect(mockMonitorUnhandledError).not.toHaveBeenCalled();
   });
 
   it("returns 404 when read access policy rejects the post", async () => {
@@ -81,6 +86,7 @@ describe("GET /api/posts/[id]/lost-found-share.svg", () => {
 
     expect(response.status).toBe(404);
     expect(await response.text()).toBe("Not found");
+    expect(mockMonitorUnhandledError).not.toHaveBeenCalled();
   });
 
   it("returns 404 for inactive posts", async () => {
@@ -90,5 +96,20 @@ describe("GET /api/posts/[id]/lost-found-share.svg", () => {
 
     expect(response.status).toBe(404);
     expect(await response.text()).toBe("Not found");
+    expect(mockMonitorUnhandledError).not.toHaveBeenCalled();
+  });
+
+  it("returns 500 and monitors unexpected errors", async () => {
+    const error = new Error("db down");
+    mockGetPostById.mockRejectedValue(error);
+
+    const response = await GET(createRequest(), createParams());
+
+    expect(response.status).toBe(500);
+    expect(await response.text()).toBe("Internal server error");
+    expect(mockMonitorUnhandledError).toHaveBeenCalledWith(error, {
+      route: "GET /api/posts/[id]/lost-found-share.svg",
+      request: expect.any(Request),
+    });
   });
 });
