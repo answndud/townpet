@@ -228,18 +228,23 @@ export function formatPublishPublicSmokeFixtureResult(result: PublishResult) {
   return lines.join("\n");
 }
 
-async function main() {
-  const prisma = new PrismaClient();
+export async function main(prisma: PrismaClient = new PrismaClient(), env: NodeJS.ProcessEnv = process.env) {
   try {
-    const result = await publishPublicSmokeFixtures({ prisma });
-    console.log(formatPublishPublicSmokeFixtureResult(result));
+    const result = await publishPublicSmokeFixtures({ prisma, env });
+    const output = formatPublishPublicSmokeFixtureResult(result);
+    console.log(output);
+    return output;
   } finally {
     await prisma.$disconnect();
   }
 }
 
-if (process.env.NODE_ENV !== "test" && require.main === module) {
-  main().catch((error) => {
+if (
+  process.env.NODE_ENV !== "test" &&
+  process.argv[1]?.endsWith("publish-public-smoke-fixtures.ts")
+) {
+  const prisma = new PrismaClient();
+  main(prisma).catch((error) => {
     console.error("Public smoke fixture publishing failed");
     console.error(error);
     process.exit(1);
