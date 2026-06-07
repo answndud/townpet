@@ -11,7 +11,7 @@ type Channel = {
   evidenceHint: string;
 };
 
-const DEFAULT_BASE_URL = "https://townpet.vercel.app";
+export const DEFAULT_BASE_URL = "https://townpet.vercel.app";
 
 const CHANNELS: Channel[] = [
   {
@@ -83,8 +83,9 @@ function parseArgs(argv: string[]): CliOptions | null {
   return { baseUrl, date, out };
 }
 
-function buildTrackedUrl(baseUrl: string, channel: Channel) {
-  const url = new URL(`${baseUrl}/feed`);
+export function buildTrackedUrl(baseUrl: string, channel: Channel) {
+  const normalizedBaseUrl = new URL(baseUrl).toString().replace(/\/$/, "");
+  const url = new URL(`${normalizedBaseUrl}/feed`);
   url.searchParams.set("utm_source", channel.source);
   url.searchParams.set("utm_medium", channel.medium);
   url.searchParams.set("utm_campaign", channel.campaign);
@@ -92,7 +93,7 @@ function buildTrackedUrl(baseUrl: string, channel: Channel) {
   return url.toString();
 }
 
-function renderMarkdown(options: CliOptions) {
+export function renderMarkdown(options: CliOptions) {
   const lines: string[] = [];
   lines.push(`# Day1 Growth Handoff - ${options.date}`);
   lines.push("");
@@ -155,4 +156,9 @@ function main() {
   }
 }
 
-main();
+if (
+  process.env.NODE_ENV !== "test" &&
+  process.argv[1]?.endsWith("generate-day1-growth-handoff.ts")
+) {
+  main();
+}
