@@ -23,9 +23,3 @@
    - 필요값: `ADMIN_QUEUE_SMOKE_EMAIL`, `ADMIN_QUEUE_SMOKE_PASSWORD`, `OPS_BASE_URL=https://townpet.vercel.app`
    - 대체 확인: 2026-06-07 로컬 fixture smoke는 PASS했으므로 production credential 준비 전까지는 추가 실행 필요 없음.
    - 완료 기준: production `production_credentials` mode report가 PASS.
-
-2. Web Vitals field sample 확대 후 재판정
-   - 상태: conditional
-   - 이유: 2026-06-07 재확인 기준 production Web Vitals sample은 `/` LCP 4개, `/feed/guest` LCP 12개로 여전히 작아 lab 측정과 field p75/p95가 크게 갈린다.
-   - 다음 액션: 7일 sample이 route별 최소 30개 이상 쌓인 뒤 `perf:web-vitals:remote`를 재실행하고, 같은 날 browser/asset snapshot과 비교한다.
-   - 완료 기준: field p75/p95가 반복적으로 budget을 넘으면 구체 개선 작업으로 전환하고, 아니면 정상 변동으로 archive한다.
