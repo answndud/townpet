@@ -11,6 +11,8 @@ describe("AdminOpsPage source", () => {
     expect(source).toContain("overview.lostFoundAcquisition");
     expect(source).toContain("단계별 funnel");
     expect(source).toContain("LOST_FLOW_VIEWED");
+    expect(source).toContain("NEXT_PUBLIC_ENABLE_CLIENT_TELEMETRY=1");
+    expect(source).toContain("분실/목격 source가 아직 없습니다.");
     expect(source).toContain("sightingCreatedRate");
     expect(source).toContain("정정 화면 조회");
     expect(source).toContain("정정 요청 접수");
