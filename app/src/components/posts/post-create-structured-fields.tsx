@@ -981,12 +981,24 @@ export function LostFoundFields({
 }: StructuredFieldsProps) {
   return (
     <StructuredFieldSection title="분실/목격 핵심 정보">
-      <div className="grid gap-2 border-b border-[#e3ecf8] pb-2 md:col-span-2">
-        <p className="tp-text-heading text-[12px] font-semibold">처음 행동 구분</p>
-        <div className="tp-text-subtle grid gap-1 text-[12px] leading-5 sm:grid-cols-3">
-          <p>보호자는 여기서 분실 글을 작성합니다.</p>
-          <p>목격자는 기존 분실 글의 목격했어요 댓글을 우선 사용합니다.</p>
-          <p>주변 공유는 상세 화면의 링크/이미지 공유 도구를 사용합니다.</p>
+      <div className="grid gap-3 border-b border-[#e3ecf8] pb-3 md:col-span-2">
+        <div className="min-w-0">
+          <p className="tp-text-heading text-[12px] font-semibold">작성 전에 확인</p>
+          <p className="tp-text-subtle mt-1 text-[12px] leading-5">
+            보호자는 분실 글을 작성하고, 목격자는 기존 글의 목격했어요 댓글을 우선 사용합니다.
+          </p>
+        </div>
+        <div className="grid gap-1.5 text-[12px] leading-5 sm:grid-cols-3">
+          {[
+            ["분실", "보호자가 찾는 글을 작성"],
+            ["목격", "기존 글에 목격 댓글 우선"],
+            ["공유", "작성 후 상세에서 링크/전단 사용"],
+          ].map(([label, description]) => (
+            <div key={label} className="border-t border-[#e6eef9] pt-1.5">
+              <p className="font-semibold text-[#244a7f]">{label}</p>
+              <p className="tp-text-subtle mt-0.5">{description}</p>
+            </div>
+          ))}
         </div>
       </div>
       <label className="tp-form-label">
@@ -1015,6 +1027,9 @@ export function LostFoundFields({
 
       <label className="tp-form-label">
         동물 종류
+        <span className="tp-text-subtle text-[11px] font-normal leading-4">
+          공유 문구와 전단에 그대로 표시됩니다.
+        </span>
         <input
           className="tp-input-soft px-3 py-2 text-sm"
           value={formState.lostFound.petType}
@@ -1034,6 +1049,9 @@ export function LostFoundFields({
 
       <label className="tp-form-label">
         품종/색상/특징
+        <span className="tp-text-subtle text-[11px] font-normal leading-4">
+          목줄, 옷, 크기처럼 멀리서 확인 가능한 단서를 적어 주세요.
+        </span>
         <input
           className="tp-input-soft px-3 py-2 text-sm"
           value={formState.lostFound.breed}
@@ -1052,6 +1070,9 @@ export function LostFoundFields({
 
       <label className="tp-form-label">
         마지막 확인 시간
+        <span className="tp-text-subtle text-[11px] font-normal leading-4">
+          기억이 정확하지 않으면 가장 가까운 시간을 선택해 주세요.
+        </span>
         <input
           type="datetime-local"
           className="tp-input-soft px-3 py-2 text-sm"
@@ -1069,8 +1090,25 @@ export function LostFoundFields({
         />
       </label>
 
+      <div className="grid gap-1.5 border-t border-[#e3ecf8] pt-2 md:col-span-2">
+        <p className="tp-text-heading text-[12px] font-semibold">공개 위치 기준</p>
+        <div className="tp-text-subtle grid gap-1 text-[12px] leading-5 sm:grid-cols-2">
+          <p className="flex gap-1.5">
+            <span className="mt-[0.55em] h-1 w-1 shrink-0 rounded-full bg-[#9fb7d9]" aria-hidden="true" />
+            <span>동·공원·건물명처럼 주변 사람이 찾을 수 있는 범위까지만 적습니다.</span>
+          </p>
+          <p className="flex gap-1.5">
+            <span className="mt-[0.55em] h-1 w-1 shrink-0 rounded-full bg-[#9fb7d9]" aria-hidden="true" />
+            <span>전화번호, 오픈채팅, 이메일, 도로명·번지 주소는 공개 위치에 넣지 마세요.</span>
+          </p>
+        </div>
+      </div>
+
       <label className="tp-form-label md:col-span-2">
         마지막 확인 위치
+        <span className="tp-text-subtle text-[11px] font-normal leading-4">
+          상세 주소 대신 교차로, 공원 입구, 편의점 근처처럼 공개 가능한 기준으로 남깁니다.
+        </span>
         <input
           className="tp-input-soft px-3 py-2 text-sm"
           value={formState.lostFound.lastSeenLocation}
@@ -1087,19 +1125,6 @@ export function LostFoundFields({
           required
         />
       </label>
-      <div className="grid gap-1.5 border-t border-[#e3ecf8] pt-2 md:col-span-2">
-        <p className="tp-text-heading text-[12px] font-semibold">위치 공개 기준</p>
-        <div className="tp-text-subtle grid gap-1 text-[12px] leading-5 sm:grid-cols-2">
-          <p className="flex gap-1.5">
-            <span className="mt-[0.55em] h-1 w-1 shrink-0 rounded-full bg-[#9fb7d9]" aria-hidden="true" />
-            <span>공개 글에는 전화번호, 오픈채팅, 이메일, 도로명·번지 주소를 적지 마세요.</span>
-          </p>
-          <p className="flex gap-1.5">
-            <span className="mt-[0.55em] h-1 w-1 shrink-0 rounded-full bg-[#9fb7d9]" aria-hidden="true" />
-            <span>연락이 필요한 단서는 댓글의 보호자 공개 제보로 남깁니다.</span>
-          </p>
-        </div>
-      </div>
     </StructuredFieldSection>
   );
 }

@@ -130,15 +130,20 @@ describe("post create structured fields", () => {
     );
 
     expect(html).toContain("분실/목격 핵심 정보");
-    expect(html).toContain("처음 행동 구분");
-    expect(html).toContain("보호자는 여기서 분실 글을 작성합니다.");
-    expect(html).toContain("목격자는 기존 분실 글의 목격했어요 댓글을 우선 사용합니다.");
+    expect(html).toContain("작성 전에 확인");
+    expect(html).toContain("보호자는 분실 글을 작성하고");
+    expect(html).toContain("목격자는 기존 글의 목격했어요 댓글을 우선 사용합니다.");
+    expect(html).toContain("작성 후 상세에서 링크/전단 사용");
     expect(html).toContain("제보 유형");
+    expect(html).toContain("공유 문구와 전단에 그대로 표시됩니다.");
+    expect(html).toContain("목줄, 옷, 크기처럼 멀리서 확인 가능한 단서");
     expect(html).toContain("마지막 확인 시간");
+    expect(html).toContain("기억이 정확하지 않으면 가장 가까운 시간을 선택해 주세요.");
+    expect(html).toContain("공개 위치 기준");
+    expect(html).toContain("동·공원·건물명처럼 주변 사람이 찾을 수 있는 범위까지만 적습니다.");
+    expect(html).toContain("전화번호, 오픈채팅, 이메일, 도로명·번지 주소는 공개 위치에 넣지 마세요.");
     expect(html).toContain("마지막 확인 위치");
-    expect(html).toContain("위치 공개 기준");
-    expect(html).toContain("도로명·번지 주소를 적지 마세요");
-    expect(html).toContain("연락이 필요한 단서는 댓글의 보호자 공개 제보로 남깁니다.");
+    expect(html).toContain("상세 주소 대신 교차로, 공원 입구, 편의점 근처");
     expect(html).toContain('value="LOST"');
   });
 });
