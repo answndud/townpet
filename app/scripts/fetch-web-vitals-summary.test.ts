@@ -31,6 +31,35 @@ describe("remote Web Vitals summary script", () => {
     );
   });
 
+  it("prefers the dedicated Web Vitals token over the shared health token", () => {
+    const options = resolveRemoteWebVitalsOptions({
+      OPS_BASE_URL: "https://townpet.dev",
+      OPS_WEB_VITALS_INTERNAL_TOKEN: "web-vitals-token",
+      OPS_HEALTH_INTERNAL_TOKEN: "health-token",
+      WEB_VITALS_REPORT_OUT: "/tmp/web-vitals.md",
+    });
+
+    expect(options.token).toBe("web-vitals-token");
+  });
+
+  it("rejects invalid days and limit values before remote fetch", () => {
+    expect(() =>
+      resolveRemoteWebVitalsOptions({
+        OPS_BASE_URL: "https://townpet.dev",
+        OPS_HEALTH_INTERNAL_TOKEN: "token",
+        WEB_VITALS_REPORT_DAYS: "0",
+      }),
+    ).toThrow("WEB_VITALS_REPORT_DAYS must be a positive integer");
+
+    expect(() =>
+      resolveRemoteWebVitalsOptions({
+        OPS_BASE_URL: "https://townpet.dev",
+        OPS_HEALTH_INTERNAL_TOKEN: "token",
+        WEB_VITALS_REPORT_LIMIT: "1.5",
+      }),
+    ).toThrow("WEB_VITALS_REPORT_LIMIT must be a positive integer");
+  });
+
   it("throws a clear error when the remote API rejects the token", async () => {
     const fetchFn = vi.fn(async () =>
       new Response(

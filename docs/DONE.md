@@ -10230,3 +10230,10 @@
 - 변경: Sentry SaaS ingest host -> API host 수렴, DSN project/public key parsing, timeout validation, required env failure path를 export helper로 분리했다.
 - 검증: `check-sentry-ingestion.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
 - 후속: Sentry smoke API 호출 흐름이 바뀌면 네트워크 없는 입력 계약 테스트를 먼저 갱신한다.
+
+### 2026-06-07 - Web Vitals remote summary option failure-path 보강
+
+- 요약: remote Web Vitals summary helper의 token 우선순위와 days/limit failure-path를 테스트로 고정했다.
+- 변경: `OPS_WEB_VITALS_INTERNAL_TOKEN` 우선 사용, invalid `WEB_VITALS_REPORT_DAYS`/`WEB_VITALS_REPORT_LIMIT` rejection 테스트를 추가했다.
+- 검증: `fetch-web-vitals-summary.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
+- 후속: field sample 재판정 시 remote summary 입력값 오류를 테스트에서 먼저 잡을 수 있다.
