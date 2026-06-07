@@ -11,10 +11,36 @@ type NeighborhoodSeed = {
   district: string;
 };
 
-const prisma = new PrismaClient();
 const CHUNK_SIZE = 500;
 const CHUNK_RETRY_MAX = 3;
 const CHUNK_RETRY_DELAY_MS = 1500;
+
+type SyncNeighborhoodsPrisma = {
+  neighborhood: {
+    count(): Promise<number>;
+    createMany(params: {
+      data: NeighborhoodSeed[];
+      skipDuplicates: true;
+    }): Promise<{ count: number }>;
+  };
+  $disconnect(): Promise<void>;
+};
+
+type SyncNeighborhoodsResult = {
+  processed: number;
+  existing: number;
+  inserted: number;
+  total: number;
+};
+
+type SyncNeighborhoodsDeps = {
+  loadSeeds?: () => Promise<NeighborhoodSeed[]>;
+  sleep?: (ms: number) => Promise<void>;
+  logger?: Pick<Console, "log" | "warn">;
+  chunkSize?: number;
+  retryMax?: number;
+  retryDelayMs?: number;
+};
 
 function isTransientDbError(error: unknown) {
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -33,7 +59,7 @@ async function sleep(ms: number) {
   await new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function loadNeighborhoodSeeds() {
+export async function loadNeighborhoodSeeds() {
   const filePath = path.join(process.cwd(), "scripts", "data", "korean-neighborhoods.json");
   const raw = await fs.readFile(filePath, "utf8");
   const parsed = JSON.parse(raw) as NeighborhoodSeed[];
@@ -52,19 +78,32 @@ async function loadNeighborhoodSeeds() {
     );
 }
 
-async function main() {
+export function formatSyncNeighborhoodsOutput(result: SyncNeighborhoodsResult) {
+  return `[sync-neighborhoods] processed=${result.processed} existing=${result.existing} inserted=${result.inserted} total=${result.total}`;
+}
+
+export async function runSyncNeighborhoods(
+  prisma: SyncNeighborhoodsPrisma,
+  deps: SyncNeighborhoodsDeps = {},
+): Promise<SyncNeighborhoodsResult> {
+  const loadSeeds = deps.loadSeeds ?? loadNeighborhoodSeeds;
+  const sleepFn = deps.sleep ?? sleep;
+  const logger = deps.logger ?? console;
+  const chunkSize = deps.chunkSize ?? CHUNK_SIZE;
+  const retryMax = deps.retryMax ?? CHUNK_RETRY_MAX;
+  const retryDelayMs = deps.retryDelayMs ?? CHUNK_RETRY_DELAY_MS;
   const existingCount = await prisma.neighborhood.count().catch(() => 0);
 
-  const seeds = await loadNeighborhoodSeeds();
+  const seeds = await loadSeeds();
   if (seeds.length === 0) {
     throw new Error("Neighborhood seed data is empty.");
   }
 
   let insertedCount = 0;
 
-  for (let index = 0; index < seeds.length; index += CHUNK_SIZE) {
-    const chunk = seeds.slice(index, index + CHUNK_SIZE);
-    for (let attempt = 1; attempt <= CHUNK_RETRY_MAX; attempt += 1) {
+  for (let index = 0; index < seeds.length; index += chunkSize) {
+    const chunk = seeds.slice(index, index + chunkSize);
+    for (let attempt = 1; attempt <= retryMax; attempt += 1) {
       try {
         const result = await prisma.neighborhood.createMany({
           data: chunk,
@@ -73,11 +112,11 @@ async function main() {
         insertedCount += result.count;
         break;
       } catch (error) {
-        if (isTransientDbError(error) && attempt < CHUNK_RETRY_MAX) {
-          console.warn(
-            `[sync-neighborhoods] transient error on chunk ${index}-${index + chunk.length}. Retry ${attempt}/${CHUNK_RETRY_MAX}`,
+        if (isTransientDbError(error) && attempt < retryMax) {
+          logger.warn(
+            `[sync-neighborhoods] transient error on chunk ${index}-${index + chunk.length}. Retry ${attempt}/${retryMax}`,
           );
-          await sleep(CHUNK_RETRY_DELAY_MS * attempt);
+          await sleepFn(retryDelayMs * attempt);
           continue;
         }
         throw error;
@@ -86,16 +125,37 @@ async function main() {
   }
 
   const finalCount = await prisma.neighborhood.count();
-  console.log(
-    `[sync-neighborhoods] processed=${seeds.length} existing=${existingCount} inserted=${insertedCount} total=${finalCount}`,
-  );
+
+  return {
+    processed: seeds.length,
+    existing: existingCount,
+    inserted: insertedCount,
+    total: finalCount,
+  };
 }
 
-main()
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  })
-  .finally(async () => {
+export async function main(
+  prisma: SyncNeighborhoodsPrisma = new PrismaClient(),
+  deps: SyncNeighborhoodsDeps = {},
+) {
+  try {
+    const result = await runSyncNeighborhoods(prisma, deps);
+    const output = formatSyncNeighborhoodsOutput(result);
+    (deps.logger ?? console).log(output);
+    return output;
+  } finally {
     await prisma.$disconnect();
-  });
+  }
+}
+
+if (
+  process.env.NODE_ENV !== "test" &&
+  process.argv[1]?.endsWith("sync-neighborhoods.ts")
+) {
+  const prisma = new PrismaClient();
+  main(prisma)
+    .catch((error) => {
+      console.error(error);
+      process.exit(1);
+    });
+}

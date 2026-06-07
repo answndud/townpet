@@ -10433,3 +10433,10 @@
 - 변경: `runRemoteWebVitalsSummaryCli(options, deps)`, `main(options, deps)`를 추가하고 `require.main` guard를 교체했다.
 - 검증: `fetch-web-vitals-summary.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
 - 후속: Web Vitals report markdown이나 protected summary API contract가 바뀌면 CLI runner test를 함께 갱신한다.
+
+### 2026-06-07 - neighborhood sync CLI wrapper 보강
+
+- 요약: `db:sync:neighborhoods`가 import 시 Prisma/DB 작업을 실행하지 않게 하고 seed loading/createMany/output/disconnect 경계를 실DB 없이 테스트했다.
+- 변경: `runSyncNeighborhoods(prisma, deps)`, `formatSyncNeighborhoodsOutput(...)`, `main(prisma, deps)`를 추가하고 top-level Prisma/main 실행을 guard 내부로 옮겼다.
+- 검증: `sync-neighborhoods.test.ts` PASS, file eslint PASS, `tsc --noEmit` PASS.
+- 후속: neighborhood seed schema나 chunk/retry 정책이 바뀌면 runner test를 함께 갱신한다.
