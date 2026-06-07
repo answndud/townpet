@@ -22,9 +22,9 @@ type LostFoundSharePanelProps = {
 type ShareAction = "LINK_COPY" | "KAKAO_TEXT_COPY" | "POSTER_OPEN";
 
 const lostFoundShareTextActionClassName =
-  "tp-text-muted inline-flex min-h-10 items-center justify-center px-1.5 text-xs font-semibold transition hover:text-[#2f5da4] hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1";
+  "tp-text-muted inline-flex min-h-9 items-center justify-center px-1.5 text-xs font-semibold transition hover:text-[#2f5da4] hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1";
 const lostFoundSharePrimaryActionClassName =
-  "inline-flex min-h-10 items-center justify-center rounded-md bg-[#3567b5] px-3 text-xs font-semibold text-[#fbfdff] transition hover:bg-[#2f5da4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1";
+  "inline-flex min-h-9 items-center justify-center rounded-md bg-[#3567b5] px-3 text-xs font-semibold text-[#fbfdff] transition hover:bg-[#2f5da4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1";
 
 async function recordLostFoundShareAction(postId: string, action: ShareAction) {
   void sendAcquisitionEvent(buildLostFoundShareActionEvent(postId, action));
@@ -73,54 +73,61 @@ export function LostFoundSharePanel({ post, postUrl }: LostFoundSharePanelProps)
 
   return (
     <section className="tp-card border-[#d8e4f6] p-4 sm:p-5" aria-labelledby="lost-found-share-title">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+      <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
         <div className="min-w-0">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#4e6f9f]">
-            공유 도구
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#4e6f9f]">
+            공유 준비
           </p>
-          <h2 id="lost-found-share-title" className="mt-1 text-base font-bold text-[#10284a]">
-            분실/목격 제보를 빠르게 공유하기
+          <h2 id="lost-found-share-title" className="mt-1 text-base font-semibold text-[#10284a]">
+            주변 공유 도구
           </h2>
           <p className="mt-1 max-w-[68ch] text-xs leading-5 text-[#526d95]">
-            위치, 시간, 특징 중심으로 공유합니다. 개인 연락처나 집 주소 전체는 공개 문구에 넣지 않습니다.
+            목격 제보를 받기 위한 공개 문구입니다. 위치, 시간, 특징만 남기고 개인 연락처와 상세 주소는 제외합니다.
           </p>
-          <ol className="mt-2 grid gap-1.5 border-t border-[#dbe6f5] pt-2 text-xs leading-5 text-[#526d95] sm:grid-cols-2">
-            {checklist.map((item, index) => (
-              <li key={item} className="flex gap-2">
-                <span className="mt-0.5 inline-flex size-5 shrink-0 items-center justify-center rounded-md bg-[#eef4fd] text-[11px] font-semibold text-[#315b9a]">
-                  {index + 1}
-                </span>
-                <span>{item}</span>
-              </li>
-            ))}
-          </ol>
+          <p className="mt-2 inline-flex text-[11px] font-medium text-[#6a83a9]">
+            개인정보 보호 문구 포함
+          </p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-col gap-1.5 sm:flex-row sm:flex-wrap sm:justify-end">
           <button
             type="button"
-            className={lostFoundShareTextActionClassName}
-            onClick={handleCopyLink}
-          >
-            링크 복사
-          </button>
-          <button
-            type="button"
-            className={lostFoundSharePrimaryActionClassName}
+            className={`${lostFoundSharePrimaryActionClassName} w-full sm:w-auto`}
+            aria-label="분실/목격 카카오톡 공유 문구 복사"
             onClick={handleCopyKakaoText}
           >
             카카오톡 문구 복사
+          </button>
+          <button
+            type="button"
+            className={`${lostFoundShareTextActionClassName} w-full sm:w-auto`}
+            aria-label="분실/목격 게시글 링크 복사"
+            onClick={handleCopyLink}
+          >
+            링크 복사
           </button>
           <a
             href={posterUrl}
             target="_blank"
             rel="noreferrer"
-            className={lostFoundShareTextActionClassName}
+            className={`${lostFoundShareTextActionClassName} w-full sm:w-auto`}
+            aria-label="분실/목격 인스타 또는 전단 이미지 새 창에서 열기"
             onClick={handlePosterOpen}
           >
             인스타/전단 이미지
           </a>
         </div>
       </div>
+
+      <ol className="mt-3 grid gap-1.5 border-t border-[#dbe6f5] pt-2 text-xs leading-5 text-[#526d95] sm:grid-cols-2">
+        {checklist.map((item, index) => (
+          <li key={item} className="flex gap-2">
+            <span className="mt-0.5 inline-flex size-5 shrink-0 items-center justify-center rounded-md bg-[#eef4fd] text-[11px] font-semibold text-[#315b9a]">
+              {index + 1}
+            </span>
+            <span>{item}</span>
+          </li>
+        ))}
+      </ol>
 
       <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1fr)_180px]">
         <div>

@@ -10536,3 +10536,9 @@
 - 변경: `/admin/ops` 분실/목격 funnel에 telemetry/env/CTA/source 확인 안내를 추가하고 production 확인 리포트를 남겼다.
 - 증거: `docs/reports/lost-found-acquisition-production-check-2026-06-07.md`, health 200, event POST 200 `{ recorded: true }`.
 - 검증: targeted test, `lint`, `typecheck`, `quality:check` PASS.
+
+### 2026-06-07 - 분실/목격 상세 공유 CTA 발견성 개선
+
+- 요약: 분실/목격 상세 공유 도구의 접힘 CTA를 “주변 공유” 행동 중심으로 바꾸고 링크/카카오톡/전단 제공 범위를 바로 보이게 했다.
+- 변경: 펼친 공유 패널에서 카카오톡 문구 복사를 primary로 올리고, 링크/전단 액션과 접근성 라벨을 정리했다.
+- 검증: targeted component test, 로컬 브라우저 상세 CTA 표시/펼침, `quality:check` PASS.
