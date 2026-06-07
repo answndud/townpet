@@ -3,7 +3,10 @@ import { PostScope, PostType, SearchTermSearchIn } from "@prisma/client";
 
 import { getHealthSnapshot } from "@/server/health-overview";
 import { getAdminQueueSmokeReadiness } from "@/server/queries/admin-queue-smoke-readiness.queries";
-import { getCorrectionFlowOpsOverview } from "@/server/queries/acquisition-ops.queries";
+import {
+  getCorrectionFlowOpsOverview,
+  getLostFoundAcquisitionOpsOverview,
+} from "@/server/queries/acquisition-ops.queries";
 import { getAuthAuditOverview } from "@/server/queries/auth-audit.queries";
 import { getCareFeedbackIssueStats } from "@/server/queries/care-feedback.queries";
 import { getFeedPersonalizationOverview } from "@/server/queries/feed-personalization-metrics.queries";
@@ -18,6 +21,7 @@ vi.mock("@/server/health-overview", () => ({
 
 vi.mock("@/server/queries/acquisition-ops.queries", () => ({
   getCorrectionFlowOpsOverview: vi.fn(),
+  getLostFoundAcquisitionOpsOverview: vi.fn(),
 }));
 
 vi.mock("@/server/queries/admin-queue-smoke-readiness.queries", () => ({
@@ -51,6 +55,9 @@ vi.mock("@/server/queries/search.queries", () => ({
 const mockGetHealthSnapshot = vi.mocked(getHealthSnapshot);
 const mockGetAdminQueueSmokeReadiness = vi.mocked(getAdminQueueSmokeReadiness);
 const mockGetCorrectionFlowOpsOverview = vi.mocked(getCorrectionFlowOpsOverview);
+const mockGetLostFoundAcquisitionOpsOverview = vi.mocked(
+  getLostFoundAcquisitionOpsOverview,
+);
 const mockGetAuthAuditOverview = vi.mocked(getAuthAuditOverview);
 const mockGetCareFeedbackIssueStats = vi.mocked(getCareFeedbackIssueStats);
 const mockGetFeedPersonalizationOverview = vi.mocked(getFeedPersonalizationOverview);
@@ -63,6 +70,7 @@ describe("ops overview queries", () => {
     mockGetHealthSnapshot.mockReset();
     mockGetAdminQueueSmokeReadiness.mockReset();
     mockGetCorrectionFlowOpsOverview.mockReset();
+    mockGetLostFoundAcquisitionOpsOverview.mockReset();
     mockGetAuthAuditOverview.mockReset();
     mockGetCareFeedbackIssueStats.mockReset();
     mockGetFeedPersonalizationOverview.mockReset();
@@ -262,6 +270,33 @@ describe("ops overview queries", () => {
       ],
       sourceSummaries: [{ source: "operator_content", count: 10 }],
     });
+    mockGetLostFoundAcquisitionOpsOverview.mockResolvedValue({
+      days: 7,
+      schemaSyncRequired: false,
+      landingViewCount: 20,
+      ctaClickCount: 8,
+      sharePanelOpenCount: 5,
+      shareActionClickCount: 3,
+      sightingModeSelectedCount: 4,
+      sightingSubmitAttemptedCount: 2,
+      sightingCreatedCount: 1,
+      ctaRate: 0.4,
+      sharePanelOpenRate: 0.625,
+      shareActionRate: 0.6,
+      sightingSubmitRate: 0.5,
+      sightingCreatedRate: 0.5,
+      stageSummaries: [
+        {
+          event: "LOST_FLOW_VIEWED",
+          label: "랜딩 조회",
+          description: "/lost-found 공개 제보 페이지 조회",
+          count: 20,
+          conversionRate: 1,
+        },
+      ],
+      sourceSummaries: [{ source: "hero", count: 8 }],
+      eventCounts: [{ event: "LOST_FLOW_VIEWED", label: "분실/목격 랜딩 조회", count: 20 }],
+    });
     mockGetAdminQueueSmokeReadiness.mockReturnValue({
       status: "BLOCKED",
       requiredKeys: ["ADMIN_QUEUE_SMOKE_EMAIL", "ADMIN_QUEUE_SMOKE_PASSWORD"],
@@ -292,6 +327,7 @@ describe("ops overview queries", () => {
     });
     expect(mockGetInitialRegionOpsOverview).toHaveBeenCalledWith(7);
     expect(mockGetCorrectionFlowOpsOverview).toHaveBeenCalledWith(7);
+    expect(mockGetLostFoundAcquisitionOpsOverview).toHaveBeenCalledWith(7);
     expect(mockGetAdminQueueSmokeReadiness).toHaveBeenCalledWith();
     expect(overview.health.status).toBe("ok");
     expect(overview.authAudit.totalEvents).toBe(5);
@@ -301,6 +337,7 @@ describe("ops overview queries", () => {
     expect(overview.search.zeroResultTerms).toEqual([]);
     expect(overview.initialRegion.contentTotals.hospitals).toBe(3);
     expect(overview.correctionFlow.submitRate).toBe(0.4);
+    expect(overview.lostFoundAcquisition.shareActionRate).toBe(0.6);
     expect(overview.adminQueueSmoke.status).toBe("BLOCKED");
     expect(overview.adminQueueSmoke.localFixtureCommand).toContain("ADMIN_QUEUE_SMOKE_LOCAL_FIXTURES=1");
   });

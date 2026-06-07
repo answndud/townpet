@@ -1,9 +1,58 @@
 import { Prisma, type AcquisitionEventStat } from "@prisma/client";
 
+import { ACQUISITION_EVENT_LABELS } from "@/lib/acquisition-events";
 import { prisma } from "@/lib/prisma";
 
 const DEFAULT_DAYS = 7;
 const CORRECTION_FLOW_SURFACE = "CORRECTION_FLOW";
+const LOST_FOUND_ACQUISITION_SURFACES = ["LOST_FLOW", "SHARE_PANEL"] as const;
+const LOST_FOUND_ACQUISITION_EVENTS = [
+  "LOST_FLOW_VIEWED",
+  "LOST_FLOW_CTA_CLICKED",
+  "LOST_SHARE_PANEL_OPENED",
+  "LOST_SHARE_ACTION_CLICKED",
+  "LOST_SIGHTING_MODE_SELECTED",
+  "LOST_SIGHTING_SUBMIT_ATTEMPTED",
+  "LOST_SIGHTING_CREATED",
+] as const;
+
+const LOST_FOUND_FUNNEL_STAGES = [
+  {
+    event: "LOST_FLOW_VIEWED",
+    label: "랜딩 조회",
+    description: "/lost-found 공개 제보 페이지 조회",
+  },
+  {
+    event: "LOST_FLOW_CTA_CLICKED",
+    label: "CTA 클릭",
+    description: "등록, 전체 제보, 가이드 진입 클릭",
+  },
+  {
+    event: "LOST_SHARE_PANEL_OPENED",
+    label: "공유 도구 열기",
+    description: "상세의 공유 도구 lazy panel 진입",
+  },
+  {
+    event: "LOST_SHARE_ACTION_CLICKED",
+    label: "공유 액션",
+    description: "링크, 카카오 문구, 전단 이미지 진입",
+  },
+  {
+    event: "LOST_SIGHTING_MODE_SELECTED",
+    label: "목격 모드 선택",
+    description: "댓글 폼에서 목격 제보 모드 선택",
+  },
+  {
+    event: "LOST_SIGHTING_SUBMIT_ATTEMPTED",
+    label: "목격 제출 시도",
+    description: "목격 댓글 제출 버튼 실행",
+  },
+  {
+    event: "LOST_SIGHTING_CREATED",
+    label: "목격 댓글 생성",
+    description: "목격 제보 댓글 작성 성공",
+  },
+] as const;
 
 export type CorrectionFlowOpsOverview = {
   days: number;
@@ -27,6 +76,39 @@ export type CorrectionFlowOpsOverview = {
   }>;
   sourceSummaries: Array<{
     source: string;
+    count: number;
+  }>;
+};
+
+export type LostFoundAcquisitionOpsOverview = {
+  days: number;
+  schemaSyncRequired: boolean;
+  landingViewCount: number;
+  ctaClickCount: number;
+  sharePanelOpenCount: number;
+  shareActionClickCount: number;
+  sightingModeSelectedCount: number;
+  sightingSubmitAttemptedCount: number;
+  sightingCreatedCount: number;
+  ctaRate: number;
+  sharePanelOpenRate: number;
+  shareActionRate: number;
+  sightingSubmitRate: number;
+  sightingCreatedRate: number;
+  stageSummaries: Array<{
+    event: string;
+    label: string;
+    description: string;
+    count: number;
+    conversionRate: number;
+  }>;
+  sourceSummaries: Array<{
+    source: string;
+    count: number;
+  }>;
+  eventCounts: Array<{
+    event: string;
+    label: string;
     count: number;
   }>;
 };
@@ -90,6 +172,35 @@ function emptyCorrectionFlowOpsOverview(
     dailySummaries: [],
     eventCounts: [],
     sourceSummaries: [],
+  };
+}
+
+function emptyLostFoundAcquisitionOpsOverview(
+  days: number,
+  schemaSyncRequired = false,
+): LostFoundAcquisitionOpsOverview {
+  return {
+    days,
+    schemaSyncRequired,
+    landingViewCount: 0,
+    ctaClickCount: 0,
+    sharePanelOpenCount: 0,
+    shareActionClickCount: 0,
+    sightingModeSelectedCount: 0,
+    sightingSubmitAttemptedCount: 0,
+    sightingCreatedCount: 0,
+    ctaRate: 0,
+    sharePanelOpenRate: 0,
+    shareActionRate: 0,
+    sightingSubmitRate: 0,
+    sightingCreatedRate: 0,
+    stageSummaries: LOST_FOUND_FUNNEL_STAGES.map((stage) => ({
+      ...stage,
+      count: 0,
+      conversionRate: 0,
+    })),
+    sourceSummaries: [],
+    eventCounts: [],
   };
 }
 
@@ -164,6 +275,74 @@ function summarizeCorrectionFlowRows(
   };
 }
 
+function summarizeLostFoundAcquisitionRows(
+  rows: AcquisitionEventStat[],
+  days: number,
+): LostFoundAcquisitionOpsOverview {
+  const eventMap = new Map<string, number>();
+  const sourceMap = new Map<string, number>();
+
+  for (const row of rows) {
+    eventMap.set(row.event, (eventMap.get(row.event) ?? 0) + row.count);
+    sourceMap.set(row.source, (sourceMap.get(row.source) ?? 0) + row.count);
+  }
+
+  const landingViewCount = eventMap.get("LOST_FLOW_VIEWED") ?? 0;
+  const ctaClickCount = eventMap.get("LOST_FLOW_CTA_CLICKED") ?? 0;
+  const sharePanelOpenCount = eventMap.get("LOST_SHARE_PANEL_OPENED") ?? 0;
+  const shareActionClickCount = eventMap.get("LOST_SHARE_ACTION_CLICKED") ?? 0;
+  const sightingModeSelectedCount = eventMap.get("LOST_SIGHTING_MODE_SELECTED") ?? 0;
+  const sightingSubmitAttemptedCount =
+    eventMap.get("LOST_SIGHTING_SUBMIT_ATTEMPTED") ?? 0;
+  const sightingCreatedCount = eventMap.get("LOST_SIGHTING_CREATED") ?? 0;
+  const stageCounts = LOST_FOUND_FUNNEL_STAGES.map((stage) => ({
+    ...stage,
+    count: eventMap.get(stage.event) ?? 0,
+  }));
+  const stageSummaries = stageCounts.map((stage, index) => {
+    const previousCount = index === 0 ? stage.count : stageCounts[index - 1]?.count ?? 0;
+    return {
+      ...stage,
+      conversionRate: index === 0 ? 1 : calculateRate(stage.count, previousCount),
+    };
+  });
+
+  return {
+    days,
+    schemaSyncRequired: false,
+    landingViewCount,
+    ctaClickCount,
+    sharePanelOpenCount,
+    shareActionClickCount,
+    sightingModeSelectedCount,
+    sightingSubmitAttemptedCount,
+    sightingCreatedCount,
+    ctaRate: calculateRate(ctaClickCount, landingViewCount),
+    sharePanelOpenRate: calculateRate(sharePanelOpenCount, ctaClickCount),
+    shareActionRate: calculateRate(shareActionClickCount, sharePanelOpenCount),
+    sightingSubmitRate: calculateRate(
+      sightingSubmitAttemptedCount,
+      sightingModeSelectedCount,
+    ),
+    sightingCreatedRate: calculateRate(sightingCreatedCount, sightingSubmitAttemptedCount),
+    stageSummaries,
+    sourceSummaries: Array.from(sourceMap.entries())
+      .filter(([source]) => source !== "NONE")
+      .map(([source, count]) => ({ source, count }))
+      .sort((left, right) => right.count - left.count)
+      .slice(0, 6),
+    eventCounts: Array.from(eventMap.entries())
+      .map(([event, count]) => ({
+        event,
+        label:
+          ACQUISITION_EVENT_LABELS[event as keyof typeof ACQUISITION_EVENT_LABELS] ??
+          event,
+        count,
+      }))
+      .sort((left, right) => right.count - left.count),
+  };
+}
+
 export async function getCorrectionFlowOpsOverview(
   days = DEFAULT_DAYS,
 ): Promise<CorrectionFlowOpsOverview> {
@@ -192,6 +371,33 @@ export async function getCorrectionFlowOpsOverview(
   } catch (error) {
     if (isMissingAcquisitionEventSchemaError(error)) {
       return emptyCorrectionFlowOpsOverview(days, true);
+    }
+    throw error;
+  }
+}
+
+export async function getLostFoundAcquisitionOpsOverview(
+  days = DEFAULT_DAYS,
+): Promise<LostFoundAcquisitionOpsOverview> {
+  const delegate = getAcquisitionEventStatDelegate();
+  if (!delegate) {
+    return emptyLostFoundAcquisitionOpsOverview(days, true);
+  }
+
+  try {
+    const rows = await delegate.findMany({
+      where: {
+        day: { gte: getStartDay(days) },
+        surface: { in: [...LOST_FOUND_ACQUISITION_SURFACES] },
+        event: { in: [...LOST_FOUND_ACQUISITION_EVENTS] },
+      },
+      orderBy: [{ event: "asc" }, { count: "desc" }],
+    });
+
+    return summarizeLostFoundAcquisitionRows(rows, days);
+  } catch (error) {
+    if (isMissingAcquisitionEventSchemaError(error)) {
+      return emptyLostFoundAcquisitionOpsOverview(days, true);
     }
     throw error;
   }
