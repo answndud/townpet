@@ -30,7 +30,7 @@ describe("local restore CLI wrapper", () => {
   });
 
   it("falls back to corepack pnpm when npm_execpath is absent", () => {
-    expect(buildPnpmCommand(["db:push"], undefined)).toEqual({
+    expect(buildPnpmCommand(["db:push"], "")).toEqual({
       command: "corepack",
       args: ["pnpm", "-C", expect.stringContaining("/app"), "db:push"],
     });
