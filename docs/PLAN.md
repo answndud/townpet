@@ -18,6 +18,6 @@
 
 ## 다음 작업 후보
 
-- 로컬 production 서버에서 `perf:traffic` stress profile을 실행해 baseline에서 드러나지 않은 병목 route를 찾는다.
+- 로컬 production 서버에서 `perf:traffic` spike profile을 실행해 순간 concurrency 100의 queueing/tail latency를 확인한다.
 - traffic 리포트에서 tail latency가 가장 큰 `home`/`lost_found_page` cache 상태와 page payload를 좁혀 본다.
 - 분실/목격 다음 확장 후보를 전단 이미지 품질, 카카오 공유 SDK, 보호자 전용 제보 관리 화면 중 하나로 좁혀 설계한다.

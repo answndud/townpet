@@ -10681,3 +10681,10 @@
 - 변경: `business/reports/traffic-baseline-local-2026-06-08.md`에 run별 수치와 cross-run 해석을 정리했다.
 - 검증: `db:restore:local`, `next build`, `next start`, baseline 3회 PASS. health는 로컬 운영 secret 누락으로 제외했다.
 - 후속: baseline은 한계를 드러내지 못했으므로 local `stress` profile로 올려 병목 route를 찾는다.
+
+### 2026-06-08 - 로컬 stress 트래픽 측정
+
+- 요약: 로컬 production 서버에서 `perf:traffic` stress profile을 실행해 10,000 load 요청 기준 hot path 한계 후보를 확인했다.
+- 변경: `business/reports/traffic-stress-local-2026-06-08.md`에 p50/p95/p99/max와 병목 후보를 정리했다.
+- 검증: stress profile 10,000 load requests, 0% error, 모든 route PASS.
+- 후속: stress도 실패를 만들지 못했으므로 local `spike` profile로 순간 concurrency 100 queueing/tail을 확인한다.
