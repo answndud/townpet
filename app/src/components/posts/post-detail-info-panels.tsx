@@ -733,6 +733,14 @@ export function PostDetailInfoPanels({
                 >
                   공유 도구
                 </a>
+                {canManageLostFoundStatus ? (
+                  <a
+                    href={`/posts/${post.id}/sightings`}
+                    className="w-fit font-semibold text-[#3567b5] hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0]"
+                  >
+                    제보 관리
+                  </a>
+                ) : null}
               </div>
               <div className="grid gap-1">
                 <p className="font-semibold text-[#10284a]">목격자</p>
