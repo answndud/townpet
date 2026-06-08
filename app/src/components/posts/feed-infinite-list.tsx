@@ -37,7 +37,7 @@ import {
 } from "@/lib/feed-list-presenter";
 import {
   getLostFoundAlertTypeLabel,
-} from "@/lib/lost-found-share";
+} from "@/lib/lost-found-labels";
 import { resolvePublicGuestDisplayName } from "@/lib/public-guest-identity";
 import { resolveUserDisplayName } from "@/lib/user-display";
 import type { ReviewCategory } from "@/lib/review-category";

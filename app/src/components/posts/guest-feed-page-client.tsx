@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { PostType } from "@prisma/client";
+import type { PostType } from "@prisma/client";
 
 import { NeighborhoodGateNotice } from "@/components/neighborhood/neighborhood-gate-notice";
 import { FeedControlPanel } from "@/components/posts/feed-control-panel";
@@ -90,7 +90,7 @@ export function buildGuestFeedHref({
   const effectivePage = nextPage === undefined ? resolvedPage : nextPage;
   const shouldKeepReviewBoard =
     reviewBoard && resolvedType === null && !resolvedReviewCategory;
-  const normalizedType = shouldKeepReviewBoard ? PostType.PRODUCT_REVIEW : resolvedType;
+  const normalizedType = shouldKeepReviewBoard ? "PRODUCT_REVIEW" : resolvedType;
 
   if (normalizedType) {
     params.set("type", normalizedType);

@@ -1,22 +1,22 @@
-import { PostType } from "@prisma/client";
+import type { PostType } from "@prisma/client";
 
 export const PRIMARY_POST_TYPES: PostType[] = [
-  PostType.FREE_BOARD,
-  PostType.QA_QUESTION,
-  PostType.HOSPITAL_REVIEW,
-  PostType.PLACE_REVIEW,
-  PostType.WALK_ROUTE,
-  PostType.LOST_FOUND,
-  PostType.MEETUP,
-  PostType.MARKET_LISTING,
-  PostType.CARE_REQUEST,
-  PostType.ADOPTION_LISTING,
-  PostType.SHELTER_VOLUNTEER,
+  "FREE_BOARD",
+  "QA_QUESTION",
+  "HOSPITAL_REVIEW",
+  "PLACE_REVIEW",
+  "WALK_ROUTE",
+  "LOST_FOUND",
+  "MEETUP",
+  "MARKET_LISTING",
+  "CARE_REQUEST",
+  "ADOPTION_LISTING",
+  "SHELTER_VOLUNTEER",
 ];
 
 export const SECONDARY_POST_TYPES: PostType[] = [
-  PostType.PRODUCT_REVIEW,
-  PostType.PET_SHOWCASE,
+  "PRODUCT_REVIEW",
+  "PET_SHOWCASE",
 ];
 
 export const FILTERABLE_POST_TYPES: PostType[] = [
@@ -25,32 +25,32 @@ export const FILTERABLE_POST_TYPES: PostType[] = [
 ];
 
 export const FREE_BOARD_POST_TYPES: ReadonlyArray<PostType> = [
-  PostType.FREE_BOARD,
-  PostType.FREE_POST,
-  PostType.DAILY_SHARE,
+  "FREE_BOARD",
+  "FREE_POST",
+  "DAILY_SHARE",
 ];
 
 export const ADMIN_ONLY_POST_TYPES: ReadonlyArray<PostType> = [
-  PostType.ADOPTION_LISTING,
+  "ADOPTION_LISTING",
 ];
 
 export const NON_REPORTABLE_POST_TYPES: ReadonlyArray<PostType> = [
-  PostType.ADOPTION_LISTING,
+  "ADOPTION_LISTING",
 ];
 
 const POST_TYPE_GROUPS: ReadonlyArray<ReadonlyArray<PostType>> = [
-  [PostType.FREE_BOARD, PostType.FREE_POST, PostType.DAILY_SHARE],
-  [PostType.QA_QUESTION, PostType.QA_ANSWER],
-  [PostType.HOSPITAL_REVIEW],
-  [PostType.PLACE_REVIEW, PostType.PRODUCT_REVIEW],
-  [PostType.WALK_ROUTE],
-  [PostType.MEETUP],
-  [PostType.MARKET_LISTING],
-  [PostType.CARE_REQUEST],
-  [PostType.ADOPTION_LISTING],
-  [PostType.SHELTER_VOLUNTEER],
-  [PostType.LOST_FOUND],
-  [PostType.PET_SHOWCASE],
+  ["FREE_BOARD", "FREE_POST", "DAILY_SHARE"],
+  ["QA_QUESTION", "QA_ANSWER"],
+  ["HOSPITAL_REVIEW"],
+  ["PLACE_REVIEW", "PRODUCT_REVIEW"],
+  ["WALK_ROUTE"],
+  ["MEETUP"],
+  ["MARKET_LISTING"],
+  ["CARE_REQUEST"],
+  ["ADOPTION_LISTING"],
+  ["SHELTER_VOLUNTEER"],
+  ["LOST_FOUND"],
+  ["PET_SHOWCASE"],
 ];
 
 export function getEquivalentPostTypes(type: PostType): PostType[] {

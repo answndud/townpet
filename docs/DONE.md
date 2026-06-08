@@ -10722,3 +10722,10 @@
 - 변경: static probe, route asset document bytes 측정, traffic static target, `traffic-page-static-payload-comparison-2026-06-08.md` 리포트를 추가했다.
 - 검증: targeted Vitest 17 tests, 관련 ESLint, `typecheck`, `next build`, local asset/spike 측정 PASS.
 - 후속: `/feed/guest` client bundle과 `/` 초기 HTML payload 축소 후보를 찾는다.
+
+### 2026-06-08 - `/feed/guest` client bundle 경계 축소
+
+- 요약: 피드 목록 라벨 import가 `lost-found-share -> site-url -> env -> zod`를 끌어오던 경로를 분리해 초기 script 전송량을 줄였다.
+- 변경: `lost-found-labels`, Prisma runtime import 제거, `feed-guest-client-boundary-reduction-2026-06-08.md` 리포트를 추가했다.
+- 검증: targeted Vitest 12 tests, 관련 ESLint, `typecheck`, `next build`, local asset 측정 PASS.
+- 결과: `/feed/guest` script transfer 256,112B -> 186,707B, total transfer 305,592B -> 235,887B.
