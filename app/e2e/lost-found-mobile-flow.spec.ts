@@ -214,4 +214,57 @@ test.describe("lost-found mobile flow", () => {
     const viewportWidth = await page.evaluate(() => window.innerWidth);
     expect(bodyWidth).toBeLessThanOrEqual(viewportWidth + 2);
   });
+
+  test("hides private sighting location and photo from public guest detail", async ({ page }) => {
+    const runId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const post = await createLostFoundPost(runId);
+    const privateLocation = `비공개 위치 ${runId}`;
+    const privateImageUrl = `https://example.com/private-sighting-${runId}.jpg`;
+    const sightingSeenAt = "2026-06-08T19:15";
+    const sightingContent = `보호자에게만 전달할 목격 단서 ${runId}`;
+
+    await page.setViewportSize({ width: 393, height: 852 });
+    await page.goto(`/posts/${post.id}/guest#comments`);
+    await openCommentComposer(page);
+
+    await page.getByTestId("post-comment-guest-name").fill("목격자");
+    await page.getByTestId("post-comment-guest-password").fill(`pw-${runId}`);
+    await page.getByTestId("lost-found-sighting-location").fill(privateLocation);
+    await page.getByTestId("lost-found-sighting-seen-at").fill(sightingSeenAt);
+    await page.getByTestId("lost-found-sighting-image-url").fill(privateImageUrl);
+    await page.getByLabel("위치/사진은 보호자에게만 공개").check();
+    await page.getByTestId("post-comment-root-input").fill(sightingContent);
+    await page.getByTestId("post-comment-root-submit").click();
+
+    await expect(page.getByText("목격 제보가 등록되었습니다. 위치와 사진은 보호자에게만 공개됩니다.")).toBeVisible({
+      timeout: 15_000,
+    });
+    const privateSighting = page
+      .locator("[data-testid^='post-comment-item-']")
+      .filter({ hasText: "보호자에게만 공개된 목격 제보입니다." })
+      .first();
+    await expect(privateSighting).toBeVisible();
+    await expect(privateSighting.getByText("보호자 공개")).toBeVisible();
+    await expect(privateSighting.getByText(privateLocation)).toHaveCount(0);
+    await expect(privateSighting.getByText("사진 열기")).toHaveCount(0);
+    await expect(page.getByText(privateImageUrl)).toHaveCount(0);
+
+    const storedComment = await prisma.comment.findFirst({
+      where: {
+        postId: post.id,
+        content: sightingContent,
+      },
+      select: {
+        kind: true,
+        sightingLocation: true,
+        sightingImageUrl: true,
+        isPrivateSighting: true,
+      },
+    });
+    expect(storedComment).not.toBeNull();
+    expect(storedComment?.kind).toBe(CommentKind.LOST_FOUND_SIGHTING);
+    expect(storedComment?.sightingLocation).toBe(privateLocation);
+    expect(storedComment?.sightingImageUrl).toBe(privateImageUrl);
+    expect(storedComment?.isPrivateSighting).toBe(true);
+  });
 });
