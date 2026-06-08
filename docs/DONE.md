@@ -10757,3 +10757,10 @@
 - 변경: `guest_feed` target에 `#feed-list` 표시 시점을 붙이고 Markdown 표의 `resource 총전송`/`문서 포함 총전송`을 분리했다.
 - 검증: targeted Vitest 7 tests, script ESLint, `typecheck`, local asset 측정 PASS.
 - 결과: `/feed/guest` 문서 포함 총전송 약 264KB, 목록 표시 desktop 614ms/mobile 125ms로 다음 payload 축소 기준선을 확보했다.
+
+### 2026-06-08 - `/feed/guest` 목록 payload 축소
+
+- 요약: guest/member feed item에서 목록 렌더에 필요 없는 본문/필드/null payload를 줄였다.
+- 변경: `buildFeedSignalContent`를 추가하고 `scope`, `dislikeCount`, `author.image`, reaction/bookmark 기본값 등 미사용 필드를 내려보내지 않게 했다.
+- 검증: targeted Vitest 25 tests, 관련 ESLint, `typecheck`, `next build`, local asset 측정 PASS.
+- 결과: `/feed/guest` 문서 크기 76,542B -> 71,065B(-7.2%), 문서 포함 총전송 269,944B -> 264,467B(-2.0%).

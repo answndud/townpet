@@ -134,6 +134,11 @@ describe("GET /api/feed/guest", () => {
       guestAuthorId: "guest-author-1",
       guestDisplayName: "비회원",
     });
+    expect(payload.data.feed.items[0]).not.toHaveProperty("scope");
+    expect(payload.data.feed.items[0]).not.toHaveProperty("dislikeCount");
+    expect(payload.data.feed.items[0]).not.toHaveProperty("isBookmarked");
+    expect(payload.data.feed.items[0]).not.toHaveProperty("reactions");
+    expect(payload.data.feed.items[0].author).not.toHaveProperty("image");
     expect(payload.data.feed.items[0]).not.toHaveProperty("guestIpDisplay");
     expect(payload.data.feed.items[0]).not.toHaveProperty("guestIpLabel");
     expect(mockCountPosts).not.toHaveBeenCalled();
