@@ -10632,3 +10632,10 @@
 - 변경: private placeholder 댓글은 빈 목격 메타 영역을 렌더하지 않게 정리하고, 저장 원본은 DB에 유지되는지 함께 확인했다.
 - 검증: post-comment-thread unit test, lost-found mobile Playwright e2e, `lint`, `typecheck` PASS.
 - 후속: 분실/목격 모바일 e2e를 on-demand hotpath 명령에 편입할지 결정한다.
+
+### 2026-06-08 - 분실/목격 모바일 e2e on-demand 스크립트 정리
+
+- 요약: 분실/목격 모바일 e2e는 기본 hotpath에 합치지 않고 `test:e2e:lost-found` 별도 on-demand 명령으로 분리했다.
+- 변경: `app/package.json`, app README, 배포 전 on-demand 체크, hotpath e2e 범위 문서를 갱신하고 문서 색인을 새로고침했다.
+- 검증: `test:e2e:lost-found` PASS, `docs:refresh:check` PASS.
+- 후속: 분실/목격 hot path 안정화 내용을 README/blog에 포트폴리오용으로 요약한다.
