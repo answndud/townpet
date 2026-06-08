@@ -111,12 +111,20 @@ describe("GET /api/home/feed", () => {
     expect(response.status).toBe(200);
     expect(response.headers.get("server-timing")).toContain("rate_limit");
     expect(response.headers.get("server-timing")).toContain("home_feed_query");
+    expect(response.headers.get("server-timing")).toContain("home_policy_query");
+    expect(response.headers.get("server-timing")).toContain("home_list_posts");
+    expect(response.headers.get("server-timing")).toContain("home_serialize_featured");
+    expect(response.headers.get("server-timing")).toContain("home_serialize_latest");
     expect(payload.meta).toEqual({
       timings: {
         totalMs: expect.any(Number),
         phases: expect.objectContaining({
           rate_limit: expect.any(Number),
           home_feed_query: expect.any(Number),
+          home_policy_query: expect.any(Number),
+          home_list_posts: expect.any(Number),
+          home_serialize_featured: expect.any(Number),
+          home_serialize_latest: expect.any(Number),
         }),
       },
     });

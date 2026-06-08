@@ -10708,3 +10708,10 @@
 - 변경: `perf:traffic`, `api:contracts` Markdown 출력과 기존 traffic/API/backend/production report를 한국어화하고 first-byte route audit report를 추가했다.
 - 검증: targeted Vitest 23 tests, 관련 ESLint, `typecheck`, `api:contracts`, `docs:refresh:check`, `diff --check` PASS.
 - 후속: `/`의 `getHomeFeedPayload()` timing을 분리하고, targeted phase-aware spike로 queueing noise를 줄여 재측정한다.
+
+### 2026-06-08 - 홈 피드 내부 timing과 targeted spike 재측정
+
+- 요약: `getHomeFeedPayload()` 내부 phase를 `Server-Timing`에 노출하고 targeted spike로 홈/게스트 피드의 queueing 후보를 재측정했다.
+- 변경: home feed API timing phase, traffic load Server-Timing 수집/요약, `traffic-targeted-spike-home-timing-2026-06-08.md` 리포트를 추가했다.
+- 검증: targeted Vitest 17 tests, 관련 ESLint, `typecheck`, `next build`, local targeted spike PASS.
+- 후속: page route HTML/RSC payload와 middleware/security header overhead를 분리한다.

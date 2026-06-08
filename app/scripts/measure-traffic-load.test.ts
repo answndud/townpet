@@ -28,6 +28,7 @@ function sample(
     error: overrides.error ?? "",
     vercelCache: overrides.vercelCache ?? "",
     vercelId: overrides.vercelId ?? "",
+    serverTimings: overrides.serverTimings ?? {},
   };
 }
 
@@ -46,6 +47,17 @@ describe("measure-traffic-load helpers", () => {
       "health",
     ]);
     expect(() => filterTrafficTargets(targets, "missing")).toThrow(/unknown target/);
+  });
+
+  it("requests API targets with perf timings enabled", () => {
+    const targets = buildDefaultTrafficTargets();
+
+    expect(targets.find((target) => target.label === "guest_feed_api")?.path).toBe(
+      "/api/feed/guest?limit=20&perf=1",
+    );
+    expect(targets.find((target) => target.label === "home_feed_api")?.path).toBe(
+      "/api/home/feed?perf=1",
+    );
   });
 
   it("parses traffic profiles and rejects unknown profile names", () => {
@@ -150,6 +162,41 @@ describe("measure-traffic-load helpers", () => {
       bodyP95Ms: 80,
       bodyP99Ms: 80,
     });
+  });
+
+  it("summarizes server timing p95 by phase", () => {
+    const targets = [
+      {
+        label: "home_feed_api",
+        path: "/api/home/feed?perf=1",
+        method: "GET" as const,
+        weight: 1,
+        maxP95Ms: 500,
+        maxP99Ms: 500,
+        maxErrorRate: 0,
+      },
+    ];
+
+    const [summary] = summarizeTraffic(
+      [
+        sample({
+          targetLabel: "home_feed_api",
+          status: 200,
+          durationMs: 100,
+          serverTimings: { home_list_posts: 20, total: 30 },
+        }),
+        sample({
+          targetLabel: "home_feed_api",
+          status: 200,
+          durationMs: 200,
+          serverTimings: { home_list_posts: 40, total: 55 },
+        }),
+      ],
+      targets,
+      1_000,
+    );
+
+    expect(summary?.serverTimingP95).toBe("home_list_posts=40ms; total=55ms");
   });
 
   it("guards heavy remote runs unless explicitly acknowledged", () => {

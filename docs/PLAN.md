@@ -18,6 +18,6 @@
 
 ## 다음 작업 후보
 
-- `/`의 `getHomeFeedPayload()`에 server timing 또는 debug timing을 추가해 ISR 재생성/DB read/직렬화 시간을 분리한다.
-- `PERF_TRAFFIC_TARGETS=home,guest_feed_page,guest_feed_api`로 phase-aware spike를 재실행해 local queueing noise를 줄인다.
+- `/`와 `/feed/guest`의 HTML/RSC payload 크기와 body p99 관계를 확인한다.
+- middleware가 적용되지 않거나 최소화된 정적 비교 route로 local queueing과 middleware/security header overhead를 분리한다.
 - 분실/목격 다음 확장 후보를 전단 이미지 품질, 카카오 공유 SDK, 보호자 전용 제보 관리 화면 중 하나로 좁혀 설계한다.
