@@ -1,4 +1,10 @@
-import { PostReactionType, PostStatus } from "@prisma/client";
+import {
+  LostFoundStatus,
+  LostFoundType,
+  PostReactionType,
+  PostStatus,
+  PostType,
+} from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 
@@ -16,6 +22,11 @@ type RecountPostEngagementCountsParams = {
   dryRun?: boolean;
   limit?: number;
   scope?: PostStatus | "ALL";
+};
+
+type RepairLostFoundAlertIntegrityParams = {
+  dryRun?: boolean;
+  limit?: number;
 };
 
 export type RepairDeletedPostIntegrityResult = {
@@ -42,6 +53,11 @@ export type RecountPostEngagementCountsResult = {
   updatedCommentCounts: number;
   updatedLikeCounts: number;
   updatedDislikeCounts: number;
+};
+
+export type RepairLostFoundAlertIntegrityResult = {
+  scannedPosts: number;
+  repairedAlerts: number;
 };
 
 function resolveLimit(limit: number | undefined) {
@@ -369,4 +385,60 @@ export async function recountPostEngagementCounts({
   }
 
   return result;
+}
+
+function resolveLostFoundRepairPetType(animalTags: string[] | null | undefined) {
+  const primaryTag = animalTags?.find((tag) => tag.trim().length > 0)?.trim();
+  return primaryTag || "반려동물";
+}
+
+function resolveLostFoundRepairBreed(title: string) {
+  const normalized = title.replace(/\s+/g, " ").trim();
+  if (!normalized) {
+    return null;
+  }
+
+  return normalized.slice(0, 40);
+}
+
+export async function repairLostFoundAlertIntegrity({
+  dryRun = false,
+  limit,
+}: RepairLostFoundAlertIntegrityParams = {}): Promise<RepairLostFoundAlertIntegrityResult> {
+  const safeLimit = resolveLimit(limit);
+  const posts = await prisma.post.findMany({
+    where: {
+      type: PostType.LOST_FOUND,
+      lostFoundAlert: null,
+    },
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    ...(safeLimit ? { take: safeLimit } : {}),
+    select: {
+      id: true,
+      title: true,
+      createdAt: true,
+      animalTags: true,
+    },
+  });
+
+  if (!dryRun) {
+    for (const post of posts) {
+      await prisma.lostFoundAlert.create({
+        data: {
+          postId: post.id,
+          alertType: LostFoundType.LOST,
+          petType: resolveLostFoundRepairPetType(post.animalTags),
+          breed: resolveLostFoundRepairBreed(post.title),
+          lastSeenAt: post.createdAt,
+          lastSeenLocation: "위치 미확인",
+          status: LostFoundStatus.ACTIVE,
+        },
+      });
+    }
+  }
+
+  return {
+    scannedPosts: posts.length,
+    repairedAlerts: posts.length,
+  };
 }

@@ -6,6 +6,7 @@ import type {
   ArchiveInvalidNotificationTargetsResult,
   RecountPostEngagementCountsResult,
   RepairDeletedPostIntegrityResult,
+  RepairLostFoundAlertIntegrityResult,
 } from "../src/server/post-integrity.service";
 import { isDryRunMode, resolveMaintenanceRunMode } from "./maintenance-run-mode";
 
@@ -23,6 +24,10 @@ type PostIntegrityRepairDeps = {
     limit?: number;
     scope: PostStatus | "ALL";
   }): Promise<RecountPostEngagementCountsResult>;
+  repairLostFoundAlertIntegrity(params: {
+    dryRun: boolean;
+    limit?: number;
+  }): Promise<RepairLostFoundAlertIntegrityResult>;
   bumpPresentationCaches(): Promise<void>;
   bumpNotificationCaches(userIds: string[]): Promise<void>;
 };
@@ -32,6 +37,7 @@ type PostIntegrityRepairConfig = {
   deletedPostLimit?: number;
   notificationLimit?: number;
   recountLimit?: number;
+  lostFoundAlertLimit?: number;
   recountScope: PostStatus | "ALL";
 };
 
@@ -41,6 +47,7 @@ type PostIntegrityRepairResult = {
   deletedPostRepair: RepairDeletedPostIntegrityResult;
   invalidNotificationRepair: ArchiveInvalidNotificationTargetsResult;
   countRecount: RecountPostEngagementCountsResult;
+  lostFoundAlertRepair: RepairLostFoundAlertIntegrityResult;
 };
 
 export function parseOptionalPositiveInteger(
@@ -114,13 +121,23 @@ export function resolvePostIntegrityRepairConfig(
       env.POST_COUNT_REPAIR_LIMIT,
       "POST_COUNT_REPAIR_LIMIT",
     ),
+    lostFoundAlertLimit: parseOptionalPositiveInteger(
+      env.LOST_FOUND_ALERT_REPAIR_LIMIT,
+      "LOST_FOUND_ALERT_REPAIR_LIMIT",
+    ),
     recountScope: parseRepairScope(env.POST_COUNT_REPAIR_SCOPE),
   };
 }
 
 export function formatPostIntegrityRepairOutput(result: PostIntegrityRepairResult) {
-  const { dryRun, recountScope, deletedPostRepair, invalidNotificationRepair, countRecount } =
-    result;
+  const {
+    dryRun,
+    recountScope,
+    deletedPostRepair,
+    invalidNotificationRepair,
+    countRecount,
+    lostFoundAlertRepair,
+  } = result;
 
   return [
     "Post integrity repair",
@@ -141,6 +158,8 @@ export function formatPostIntegrityRepairOutput(result: PostIntegrityRepairResul
     `- recount.updatedCommentCounts: ${countRecount.updatedCommentCounts}`,
     `- recount.updatedLikeCounts: ${countRecount.updatedLikeCounts}`,
     `- recount.updatedDislikeCounts: ${countRecount.updatedDislikeCounts}`,
+    `- lostFoundAlerts.scannedPosts: ${lostFoundAlertRepair.scannedPosts}`,
+    `- lostFoundAlerts.repaired: ${lostFoundAlertRepair.repairedAlerts}`,
   ].join("\n");
 }
 
@@ -161,6 +180,10 @@ export async function runPostIntegrityRepair(
     limit: config.recountLimit,
     scope: config.recountScope,
   });
+  const lostFoundAlertRepair = await deps.repairLostFoundAlertIntegrity({
+    dryRun: config.dryRun,
+    limit: config.lostFoundAlertLimit,
+  });
 
   if (!config.dryRun) {
     await deps.bumpPresentationCaches();
@@ -176,6 +199,7 @@ export async function runPostIntegrityRepair(
     deletedPostRepair,
     invalidNotificationRepair,
     countRecount,
+    lostFoundAlertRepair,
   });
 }
 
@@ -187,6 +211,7 @@ async function main() {
       archiveInvalidNotificationTargets,
       recountPostEngagementCounts,
       repairDeletedPostIntegrity,
+      repairLostFoundAlertIntegrity,
     },
   ] = await Promise.all([
     import("../src/lib/prisma"),
@@ -200,6 +225,7 @@ async function main() {
         archiveInvalidNotificationTargets,
         repairDeletedPostIntegrity,
         recountPostEngagementCounts,
+        repairLostFoundAlertIntegrity,
         bumpPresentationCaches: async () => {
           await Promise.all([
             queryCache.bumpFeedCacheVersion(),

@@ -10597,3 +10597,10 @@
 - 변경: `/lost/new` redirect에 `template=lost_pet`을 포함하고 회귀 테스트를 추가했다.
 - 검증: targeted route/landing tests, 모바일 393px `/lost-found` → `/lost/new` → 구조화 상세 공유/목격 댓글 smoke, `quality:check` PASS.
 - 후속: 로컬 seed에 남은 `LostFoundAlert` 없는 레거시 `LOST_FOUND` 글의 backfill/CTA 분리 기준을 정리한다.
+
+### 2026-06-08 - 레거시 분실/목격 alert 정합성 보정
+
+- 요약: `LOST_FOUND` 타입인데 `LostFoundAlert`가 없는 seed/레거시 글 때문에 상세 공유/목격 기능 기대가 어긋나는 문제를 보정했다.
+- 변경: board/search seed에 구조화 alert를 추가하고, seed 재실행 및 `db:repair:post-integrity`에서 누락 alert를 upsert/create하도록 했다.
+- 검증: targeted seed/repair/service tests, 로컬 repair apply 후 active `LOST_FOUND` 누락 alert 0건 확인, `quality:check` PASS.
+- 기록: `docs/errors/2026-06-08_lost-found-alert-seed-mismatch.md`

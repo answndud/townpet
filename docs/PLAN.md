@@ -18,4 +18,4 @@
 
 ## 다음 작업 후보
 
-- 레거시 `LOST_FOUND` 글 중 `LostFoundAlert`가 없는 데이터를 backfill하거나, 피드/상세에서 구조화 도구가 없는 글과 있는 글의 행동 CTA를 명확히 분리한다.
+- 분실/목격 전용 모바일 smoke를 Playwright hotpath 테스트로 자동화해 `/lost-found`, `/lost/new`, 상세 공유 패널, 목격 댓글 열기 흐름을 회귀 테스트로 고정한다.

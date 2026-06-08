@@ -3,6 +3,8 @@ import {
   AdoptionStatus,
   AnimalSex,
   ItemCondition,
+  LostFoundStatus,
+  LostFoundType,
   MarketStatus,
   MarketType,
   MeetupStatus,
@@ -169,6 +171,7 @@ type SeedPost = {
   volunteerRecruitment?: Prisma.VolunteerRecruitmentCreateWithoutPostInput;
   meetup?: Prisma.MeetupCreateWithoutPostInput;
   qaQuestion?: Prisma.QaQuestionCreateWithoutPostInput;
+  lostFoundAlert?: Prisma.LostFoundAlertCreateWithoutPostInput;
 };
 
 type LookupMaps = {
@@ -185,7 +188,7 @@ function nowMinusHours(hours: number) {
   return new Date(Date.now() - hours * 60 * 60 * 1000);
 }
 
-const seedPosts: SeedPost[] = [
+export const seedPosts: SeedPost[] = [
   {
     authorEmail: "dog.parent@townpet.dev",
     title: "정자동 아침 산책 인원 모아봐요",
@@ -786,6 +789,14 @@ const seedPosts: SeedPost[] = [
     animalTags: ["강아지"],
     viewCount: 44,
     likeCount: 2,
+    lostFoundAlert: {
+      alertType: LostFoundType.FOUND,
+      petType: "강아지",
+      breed: "검정 하네스 착용 소형견",
+      lastSeenAt: nowMinusHours(13),
+      lastSeenLocation: "부산 수영구 수영초등학교 근처",
+      status: LostFoundStatus.ACTIVE,
+    },
   },
   {
     authorEmail: "cat.parent@townpet.dev",
@@ -796,6 +807,14 @@ const seedPosts: SeedPost[] = [
     animalTags: ["고양이"],
     viewCount: 37,
     likeCount: 3,
+    lostFoundAlert: {
+      alertType: LostFoundType.LOST,
+      petType: "고양이",
+      breed: "회색 줄무늬",
+      lastSeenAt: nowMinusHours(24),
+      lastSeenLocation: "서울 서초구 잠원동 전단 게시 위치 주변",
+      status: LostFoundStatus.ACTIVE,
+    },
   },
   {
     authorEmail: "dog.parent@townpet.dev",
@@ -806,6 +825,14 @@ const seedPosts: SeedPost[] = [
     animalTags: ["강아지"],
     viewCount: 28,
     likeCount: 1,
+    lostFoundAlert: {
+      alertType: LostFoundType.FOUND,
+      petType: "강아지",
+      breed: "보호 중 안내 확인",
+      lastSeenAt: nowMinusHours(30),
+      lastSeenLocation: "성남 분당구 정자동 탄천 유실물함 앞",
+      status: LostFoundStatus.ACTIVE,
+    },
   },
   {
     authorEmail: "qa.helper@townpet.dev",
@@ -816,6 +843,14 @@ const seedPosts: SeedPost[] = [
     animalTags: ["토끼"],
     viewCount: 26,
     likeCount: 1,
+    lostFoundAlert: {
+      alertType: LostFoundType.FOUND,
+      petType: "토끼",
+      breed: "갈색 토끼",
+      lastSeenAt: nowMinusHours(36),
+      lastSeenLocation: "대전 서구 탄방동 공원 풀숲",
+      status: LostFoundStatus.ACTIVE,
+    },
   },
   {
     authorEmail: "mod.local@townpet.dev",
@@ -1103,28 +1138,48 @@ async function createSeedPost(seedPost: SeedPost, lookupMaps: LookupMaps, index:
     throw new Error(`author not found for seed post: ${seedPost.authorEmail}`);
   }
 
+  const board = resolveBoardByPostType(seedPost.type);
+  const commonBoardType =
+    board.commonBoardType === null ? undefined : board.commonBoardType;
   const existing = await prisma.post.findFirst({
     where: {
       authorId,
       type: seedPost.type,
       title: seedPost.title,
     },
-    select: { id: true },
+    select: {
+      id: true,
+      lostFoundAlert: {
+        select: { id: true },
+      },
+    },
   });
 
   if (existing) {
+    if (seedPost.lostFoundAlert) {
+      await prisma.post.update({
+        where: { id: existing.id },
+        data: {
+          boardScope: board.boardScope,
+          commonBoardType,
+          lostFoundAlert: {
+            upsert: {
+              create: seedPost.lostFoundAlert,
+              update: seedPost.lostFoundAlert,
+            },
+          },
+        },
+      });
+    }
     return false;
   }
 
-  const board = resolveBoardByPostType(seedPost.type);
   const createdAt = nowMinusHours(4 + index * 3);
   const petTypeId =
     board.boardScope === "COMMUNITY"
       ? resolveCommunityId(seedPost, lookupMaps.communityIdBySlug)
       : null;
   const neighborhoodId = resolveNeighborhoodId(seedPost, lookupMaps.neighborhoodIdByKey);
-  const commonBoardType =
-    board.commonBoardType === null ? undefined : board.commonBoardType;
 
   await prisma.post.create({
     data: {
@@ -1207,6 +1262,13 @@ async function createSeedPost(seedPost: SeedPost, lookupMaps: LookupMaps, index:
         ? {
             qaQuestion: {
               create: seedPost.qaQuestion,
+            },
+          }
+        : {}),
+      ...(seedPost.lostFoundAlert
+        ? {
+            lostFoundAlert: {
+              create: seedPost.lostFoundAlert,
             },
           }
         : {}),

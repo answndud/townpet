@@ -57,6 +57,10 @@ describe("post integrity repair CLI wrapper", () => {
           updatedLikeCounts: 14,
           updatedDislikeCounts: 15,
         },
+        lostFoundAlertRepair: {
+          scannedPosts: 16,
+          repairedAlerts: 17,
+        },
       }),
     ).toBe(
       [
@@ -78,6 +82,8 @@ describe("post integrity repair CLI wrapper", () => {
         "- recount.updatedCommentCounts: 13",
         "- recount.updatedLikeCounts: 14",
         "- recount.updatedDislikeCounts: 15",
+        "- lostFoundAlerts.scannedPosts: 16",
+        "- lostFoundAlerts.repaired: 17",
       ].join("\n"),
     );
   });
