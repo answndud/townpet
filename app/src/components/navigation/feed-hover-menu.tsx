@@ -39,6 +39,8 @@ type FeedHoverMenuProps = {
   isAuthenticated: boolean;
   initialPreferredPetTypeIds: string[];
   boardActive?: boolean;
+  initialOpenMenu?: "board" | "pet" | null;
+  initialMobileOpenMenu?: "board" | "pet" | null;
 };
 
 function writePetTypePreferenceCookie(petTypeIds: string[]) {
@@ -56,6 +58,8 @@ export function FeedHoverMenu({
   isAuthenticated,
   initialPreferredPetTypeIds,
   boardActive = false,
+  initialOpenMenu = null,
+  initialMobileOpenMenu = null,
 }: FeedHoverMenuProps) {
   const groupedCommunities = groupPetTypeCommunities(communities);
   const selectableCommunities = groupedCommunities.flatMap((group) => group.items);
@@ -67,8 +71,10 @@ export function FeedHoverMenu({
     PostType.PRODUCT_REVIEW,
     PostType.PET_SHOWCASE,
   ];
-  const [openMenu, setOpenMenu] = useState<"board" | "pet" | null>(null);
-  const [mobileOpenMenu, setMobileOpenMenu] = useState<"board" | "pet" | null>(null);
+  const [openMenu, setOpenMenu] = useState<"board" | "pet" | null>(initialOpenMenu);
+  const [mobileOpenMenu, setMobileOpenMenu] = useState<"board" | "pet" | null>(
+    initialMobileOpenMenu,
+  );
   const [selectedPetTypeIds, setSelectedPetTypeIds] = useState<string[]>(() => {
     if (typeof document === "undefined" || isAuthenticated) {
       return initialPreferredPetTypeIds;

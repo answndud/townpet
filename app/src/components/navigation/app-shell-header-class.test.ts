@@ -85,10 +85,17 @@ describe("app shell header classes", () => {
       join(process.cwd(), "src/components/navigation/app-shell-header.tsx"),
       "utf8",
     );
+    const lazyMenuSource = readFileSync(
+      join(process.cwd(), "src/components/navigation/lazy-feed-hover-menu.tsx"),
+      "utf8",
+    );
 
     expect(source).toContain("next/dynamic");
     expect(source).not.toContain('import { AuthControls } from "@/components/auth/auth-controls"');
     expect(source).not.toContain('import { NotificationBell } from "@/components/notifications/notification-bell"');
+    expect(source).not.toContain('import { FeedHoverMenu } from "@/components/navigation/feed-hover-menu"');
+    expect(source).toContain('import { LazyFeedHoverMenu } from "@/components/navigation/lazy-feed-hover-menu"');
+    expect(lazyMenuSource).toContain('import("@/components/navigation/feed-hover-menu")');
   });
 
   it("keeps hidden pet menu inside the viewport on desktop", () => {

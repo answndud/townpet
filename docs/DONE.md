@@ -10743,3 +10743,10 @@
 - 변경: guest feed payload 서비스를 추출하고, 기존 `guest-feed-page-client`를 제거했으며, 업로드 렌더링 helper를 env-free 모듈로 분리했다.
 - 검증: targeted Vitest 5 tests, `lint`, `typecheck`, `next build`, local asset 측정 PASS.
 - 결과: script -3.2%, fetch -73.0%, resource total -7.9%; 대신 document body +54KB와 dynamic TTFB 증가가 다음 병목으로 남았다.
+
+### 2026-06-08 - AppShellHeader 피드 메뉴 상호작용 지연 로드
+
+- 요약: 공통 header가 `FeedHoverMenu` 구현을 초기 chunk에 싣지 않도록 작은 fallback + interaction lazy island로 분리했다.
+- 변경: `LazyFeedHoverMenu`를 추가하고, 첫 hover/focus/click 메뉴가 바로 열리도록 `FeedHoverMenu` 초기 open prop을 추가했다.
+- 검증: targeted Vitest 9 tests, `lint`, `typecheck`, `next build`, local asset 측정 PASS.
+- 결과: `/` script -14.5%, `/feed/guest`는 직전 서버 shell 기준 script -13.2%, resource total -11.0%.
