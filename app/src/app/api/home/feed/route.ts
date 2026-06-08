@@ -22,7 +22,9 @@ export async function GET(request: NextRequest) {
       cacheMs: 1_000,
     }));
 
-    const payload = await timing.measure("home_feed_query", () => getHomeFeedPayload());
+    const payload = await timing.measure("home_feed_query", () =>
+      getHomeFeedPayload({ timing }),
+    );
     const summary = timing.summary();
 
     return jsonOk(

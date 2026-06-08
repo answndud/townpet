@@ -31,6 +31,7 @@ export type TrafficSample = {
   error: string;
   vercelCache: string;
   vercelId: string;
+  serverTimings: Record<string, number>;
 };
 
 export type TrafficSummary = {
@@ -55,6 +56,7 @@ export type TrafficSummary = {
   bodyP99Ms: number;
   bodyMaxMs: number;
   bytesP50: number;
+  serverTimingP95: string;
   goalStatus: "PASS" | "FAIL";
   goalReasons: string[];
 };
@@ -239,6 +241,45 @@ function summarizeStatuses(samples: TrafficSample[]) {
     .join(", ");
 }
 
+function parseServerTiming(value: string | null) {
+  const timings: Record<string, number> = {};
+  if (!value) {
+    return timings;
+  }
+
+  for (const entry of value.split(",")) {
+    const [namePart, ...attributes] = entry.trim().split(";");
+    const name = namePart?.trim();
+    if (!name) {
+      continue;
+    }
+
+    const durationAttribute = attributes.find((attribute) =>
+      attribute.trim().startsWith("dur="),
+    );
+    const duration = Number(durationAttribute?.trim().slice("dur=".length));
+    if (Number.isFinite(duration)) {
+      timings[name] = duration;
+    }
+  }
+
+  return timings;
+}
+
+function formatServerTimingP95(samples: TrafficSample[]) {
+  const phaseNames = [...new Set(samples.flatMap((sample) => Object.keys(sample.serverTimings)))].sort();
+  if (phaseNames.length === 0) {
+    return "-";
+  }
+
+  return phaseNames
+    .map((phaseName) => {
+      const durations = samples.map((sample) => sample.serverTimings[phaseName] ?? 0);
+      return `${phaseName}=${formatMs(percentile(durations, 95))}`;
+    })
+    .join("; ");
+}
+
 export function buildDefaultTrafficTargets(): TrafficTarget[] {
   return [
     {
@@ -279,7 +320,7 @@ export function buildDefaultTrafficTargets(): TrafficTarget[] {
     },
     {
       label: "guest_feed_api",
-      path: "/api/feed/guest?limit=20",
+      path: "/api/feed/guest?limit=20&perf=1",
       method: "GET",
       weight: 4,
       maxP95Ms: 700,
@@ -288,7 +329,7 @@ export function buildDefaultTrafficTargets(): TrafficTarget[] {
     },
     {
       label: "home_feed_api",
-      path: "/api/home/feed",
+      path: "/api/home/feed?perf=1",
       method: "GET",
       weight: 2,
       maxP95Ms: 700,
@@ -404,6 +445,7 @@ export function summarizeTraffic(
         bodyP99Ms: percentile(bodyDurations, 99),
         bodyMaxMs: bodyDurations.length > 0 ? Math.max(...bodyDurations) : 0,
         bytesP50: percentile(bytes, 50),
+        serverTimingP95: formatServerTimingP95(group),
         goalStatus: reasons.length === 0 ? "PASS" : "FAIL",
         goalReasons: reasons,
       } satisfies TrafficSummary;
@@ -535,6 +577,7 @@ async function measureRequest(params: {
       error: "",
       vercelCache: response.headers.get("x-vercel-cache") ?? "",
       vercelId: response.headers.get("x-vercel-id") ?? "",
+      serverTimings: parseServerTiming(response.headers.get("server-timing")),
     } satisfies TrafficSample;
   } catch (error) {
     const durationMs = performance.now() - startedAt;
@@ -552,6 +595,7 @@ async function measureRequest(params: {
       error: error instanceof Error ? error.message : String(error),
       vercelCache: "",
       vercelId: "",
+      serverTimings: {},
     } satisfies TrafficSample;
   } finally {
     clearTimeout(timeout);
@@ -652,10 +696,10 @@ function buildMarkdown(params: {
   lines.push("## 부하 구간 요약(목표 판정 기준)");
   lines.push("");
   lines.push(
-    "| 대상 | 경로 | 요청 수 | RPS | 상태 | 오류율 | 전체 p50 | 전체 p95 | 전체 p99 | 전체 max | 헤더 p95 | 헤더 p99 | 본문 p95 | 본문 p99 | 전송량 p50 | 목표 |",
+    "| 대상 | 경로 | 요청 수 | RPS | 상태 | 오류율 | 전체 p50 | 전체 p95 | 전체 p99 | 전체 max | 헤더 p95 | 헤더 p99 | 본문 p95 | 본문 p99 | Server-Timing p95 | 전송량 p50 | 목표 |",
   );
   lines.push(
-    "| --- | --- | ---: | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
+    "| --- | --- | ---: | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | ---: | --- |",
   );
 
   for (const summary of params.summaries) {
@@ -675,6 +719,7 @@ function buildMarkdown(params: {
         formatMs(summary.headerP99Ms),
         formatMs(summary.bodyP95Ms),
         formatMs(summary.bodyP99Ms),
+        summary.serverTimingP95,
         formatBytes(summary.bytesP50),
         summary.goalStatus,
       ].join(" | ") + " |",
@@ -718,8 +763,8 @@ function buildMarkdown(params: {
   lines.push("");
   lines.push("## 원본 샘플");
   lines.push("");
-  lines.push("| # | 구간 | 워커 | 대상 | 상태 | 성공 | 전체 시간 | 헤더 | 본문 | 전송량 | 캐시 | Vercel ID | 오류 |");
-  lines.push("| ---: | --- | ---: | --- | ---: | --- | ---: | ---: | ---: | ---: | --- | --- | --- |");
+  lines.push("| # | 구간 | 워커 | 대상 | 상태 | 성공 | 전체 시간 | 헤더 | 본문 | 전송량 | Server-Timing | 캐시 | Vercel ID | 오류 |");
+  lines.push("| ---: | --- | ---: | --- | ---: | --- | ---: | ---: | ---: | ---: | --- | --- | --- | --- |");
   for (const sample of params.samples) {
     const bodyMs = Math.max(0, sample.durationMs - sample.headerMs);
     lines.push(
@@ -734,6 +779,11 @@ function buildMarkdown(params: {
         formatMs(sample.headerMs),
         formatMs(bodyMs),
         formatBytes(sample.bytes),
+        Object.keys(sample.serverTimings).length > 0
+          ? Object.entries(sample.serverTimings)
+              .map(([name, durationMs]) => `${name}=${formatMs(durationMs)}`)
+              .join("; ")
+          : "-",
         sample.vercelCache || "-",
         sample.vercelId || "-",
         sample.error ? sample.error.replace(/\|/gu, "/") : "-",

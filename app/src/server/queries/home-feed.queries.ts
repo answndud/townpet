@@ -35,6 +35,15 @@ export type HomeFeedPayload = {
   latest: HomeFeedItem[];
 };
 
+type HomeFeedTimingTracker = {
+  measure<T>(name: string, callback: () => Promise<T>): Promise<T>;
+  mark(name: string, durationMs: number): void;
+};
+
+type GetHomeFeedPayloadOptions = {
+  timing?: HomeFeedTimingTracker;
+};
+
 type RawHomePost = Record<string, unknown> & {
   id: string;
   type: string;
@@ -166,23 +175,34 @@ function serializeHomePost(rawPost: RawHomePost) {
   };
 }
 
-export async function getHomeFeedPayload(): Promise<HomeFeedPayload> {
-  const excludedTypes = await getGuestReadLoginRequiredPostTypes().catch((error) => {
+export async function getHomeFeedPayload(
+  options: GetHomeFeedPayloadOptions = {},
+): Promise<HomeFeedPayload> {
+  const measure =
+    options.timing?.measure.bind(options.timing) ??
+    (<T>(_name: string, callback: () => Promise<T>) => callback());
+  const mark = options.timing?.mark.bind(options.timing);
+
+  const excludedTypes = await measure("home_policy_query", () =>
+    getGuestReadLoginRequiredPostTypes(),
+  ).catch((error) => {
     if (isPrismaDatabaseUnavailableError(error)) {
       return [];
     }
     throw error;
   });
 
-  const latestPosts = await listPosts({
-    limit: HOME_FEED_QUERY_LIMIT,
-    page: 1,
-    scope: PostScope.GLOBAL,
-    sort: "LATEST",
-    excludeTypes: excludedTypes,
-    viewerId: undefined,
-    personalized: false,
-  }).catch((error) => {
+  const latestPosts = await measure("home_list_posts", () =>
+    listPosts({
+      limit: HOME_FEED_QUERY_LIMIT,
+      page: 1,
+      scope: PostScope.GLOBAL,
+      sort: "LATEST",
+      excludeTypes: excludedTypes,
+      viewerId: undefined,
+      personalized: false,
+    }),
+  ).catch((error) => {
     if (isPrismaDatabaseUnavailableError(error)) {
       return { items: [], nextCursor: null };
     }
@@ -190,11 +210,16 @@ export async function getHomeFeedPayload(): Promise<HomeFeedPayload> {
   });
 
   const latestCandidates = latestPosts.items as RawHomePost[];
+  const featuredStartedAt = performance.now();
   const featured = serializeFeaturedHomePosts(latestCandidates);
+  mark?.("home_serialize_featured", performance.now() - featuredStartedAt);
   const featuredPostIds = new Set(featured.map((post) => post.id));
+  const latestStartedAt = performance.now();
+  const latest = serializeHomePosts(latestCandidates, featuredPostIds);
+  mark?.("home_serialize_latest", performance.now() - latestStartedAt);
 
   return {
     featured,
-    latest: serializeHomePosts(latestCandidates, featuredPostIds),
+    latest,
   };
 }
