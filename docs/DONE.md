@@ -10611,3 +10611,10 @@
 - 변경: 자체 구조화 분실/목격 fixture를 만드는 `e2e/lost-found-mobile-flow.spec.ts`를 추가했다.
 - 검증: targeted Playwright chromium e2e, `quality:check` PASS.
 - 후속: 목격 댓글 실제 제출/저장까지 별도 e2e로 확장할지 결정한다.
+
+### 2026-06-08 - 분실/목격 목격 댓글 제출 e2e 확장
+
+- 요약: guest 모바일 상세에서 목격 댓글을 실제 제출하고 댓글 목록 반영과 DB 저장 필드를 함께 검증하도록 확장했다.
+- 변경: `e2e/lost-found-mobile-flow.spec.ts`에 비회원 목격 위치/시간/본문 제출, 성공 메시지, 댓글 카드, `LOST_FOUND_SIGHTING` 저장 검증을 추가했다.
+- 검증: targeted Playwright chromium e2e, `quality:check` PASS.
+- 후속: 댓글 제출 후 피드/랜딩 카드의 댓글 수 동기화까지 확인한다.

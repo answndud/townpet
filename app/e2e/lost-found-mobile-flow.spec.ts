@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import {
   BoardScope,
   CommonBoardType,
+  CommentKind,
   LostFoundStatus,
   LostFoundType,
   PostScope,
@@ -70,7 +71,7 @@ async function createLostFoundPost(runId: string) {
 }
 
 test.describe("lost-found mobile flow", () => {
-  test.setTimeout(60_000);
+  test.setTimeout(90_000);
 
   test.afterEach(async () => {
     await prisma.post.deleteMany({
@@ -125,6 +126,66 @@ test.describe("lost-found mobile flow", () => {
     });
     await expect(page.getByText("목격 위치", { exact: true })).toBeVisible();
     await expect(page.getByText("목격 시간", { exact: true })).toBeVisible();
+
+    const bodyWidth = await page.evaluate(() => document.body.scrollWidth);
+    const viewportWidth = await page.evaluate(() => window.innerWidth);
+    expect(bodyWidth).toBeLessThanOrEqual(viewportWidth + 2);
+  });
+
+  test("submits and persists a guest sighting comment on mobile", async ({ page }) => {
+    const runId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const post = await createLostFoundPost(runId);
+    const sightingLocation = `망원 한강공원 입구 ${runId}`;
+    const sightingSeenAt = "2026-06-08T18:40";
+    const sightingContent = `흰색 말티즈가 북쪽 산책로 방향으로 이동했습니다 ${runId}`;
+
+    await page.setViewportSize({ width: 393, height: 852 });
+    await page.goto(`/posts/${post.id}/guest#comments`);
+    await page.locator("#comments").scrollIntoViewIfNeeded();
+    if (!(await page.getByTestId("post-comment-root-input").isVisible({ timeout: 5_000 }).catch(() => false))) {
+      await page.getByRole("button", { name: "댓글 열기" }).click({ timeout: 15_000 }).catch(() => undefined);
+    }
+
+    await expect(page.getByText("목격 제보", { exact: true }).first()).toBeVisible({
+      timeout: 15_000,
+    });
+    await page.getByTestId("post-comment-guest-name").fill("목격자");
+    await page.getByTestId("post-comment-guest-password").fill(`pw-${runId}`);
+    await page.getByTestId("lost-found-sighting-location").fill(sightingLocation);
+    await page.getByTestId("lost-found-sighting-seen-at").fill(sightingSeenAt);
+    await page.getByTestId("post-comment-root-input").fill(sightingContent);
+    await page.getByTestId("post-comment-root-submit").click();
+
+    await expect(
+      page.getByText("목격 제보가 등록되었습니다. 공개 댓글에서 위치와 시간을 확인할 수 있습니다."),
+    ).toBeVisible({
+      timeout: 15_000,
+    });
+    const createdSighting = page
+      .locator("[data-testid^='post-comment-item-']")
+      .filter({ hasText: sightingContent })
+      .first();
+    await expect(createdSighting).toBeVisible();
+    await expect(createdSighting.getByText(sightingLocation)).toBeVisible();
+    await expect(createdSighting.getByText("목격 시간", { exact: true })).toBeVisible();
+
+    const storedComment = await prisma.comment.findFirst({
+      where: {
+        postId: post.id,
+        content: sightingContent,
+      },
+      select: {
+        kind: true,
+        sightingLocation: true,
+        sightingSeenAt: true,
+        isPrivateSighting: true,
+      },
+    });
+    expect(storedComment).not.toBeNull();
+    expect(storedComment?.kind).toBe(CommentKind.LOST_FOUND_SIGHTING);
+    expect(storedComment?.sightingLocation).toBe(sightingLocation);
+    expect(storedComment?.sightingSeenAt?.getTime()).toBe(new Date(sightingSeenAt).getTime());
+    expect(storedComment?.isPrivateSighting).toBe(false);
 
     const bodyWidth = await page.evaluate(() => document.body.scrollWidth);
     const viewportWidth = await page.evaluate(() => window.innerWidth);
