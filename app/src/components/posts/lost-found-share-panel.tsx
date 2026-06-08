@@ -6,9 +6,9 @@ import Image from "next/image";
 import type { PostDetailItem } from "@/components/posts/post-detail-types";
 import {
   buildLostFoundPosterAlt,
-  buildLostFoundPosterDownloadUrl,
-  buildLostFoundPosterFileName,
-  buildLostFoundPosterUrl,
+  buildLostFoundPosterPngDownloadUrl,
+  buildLostFoundPosterPngFileName,
+  buildLostFoundPosterPngUrl,
   buildLostFoundShareChecklist,
   buildLostFoundShareSummary,
   buildLostFoundShareText,
@@ -49,10 +49,10 @@ export function LostFoundSharePanel({ post, postUrl }: LostFoundSharePanelProps)
   const shareText = useMemo(() => buildLostFoundShareText(post), [post]);
   const checklist = useMemo(() => buildLostFoundShareChecklist(post), [post]);
   const shareSummary = useMemo(() => buildLostFoundShareSummary(post), [post]);
-  const posterUrl = buildLostFoundPosterUrl(post.id);
-  const posterDownloadUrl = buildLostFoundPosterDownloadUrl(post.id);
-  const posterFileName = buildLostFoundPosterFileName(post);
-  const posterPath = `/api/posts/${post.id}/lost-found-share.svg`;
+  const posterUrl = buildLostFoundPosterPngUrl(post.id);
+  const posterDownloadUrl = buildLostFoundPosterPngDownloadUrl(post.id);
+  const posterFileName = buildLostFoundPosterPngFileName(post);
+  const posterPath = `/api/posts/${post.id}/lost-found-share.svg?format=png`;
   const posterAlt = buildLostFoundPosterAlt(post);
 
   const handleCopyLink = async () => {
@@ -78,7 +78,7 @@ export function LostFoundSharePanel({ post, postUrl }: LostFoundSharePanelProps)
   };
 
   const handlePosterDownload = () => {
-    setMessage("전단 SVG 저장을 시작합니다.");
+    setMessage("전단 PNG 저장을 시작합니다.");
     void recordLostFoundShareAction(post.id, "POSTER_DOWNLOAD");
   };
 
@@ -134,7 +134,7 @@ export function LostFoundSharePanel({ post, postUrl }: LostFoundSharePanelProps)
             href={posterDownloadUrl}
             download={posterFileName}
             className={`${lostFoundShareTextActionClassName} w-full sm:w-auto`}
-            aria-label="분실/목격 전단 SVG 저장"
+            aria-label="분실/목격 전단 PNG 저장"
             onClick={handlePosterDownload}
           >
             전단 저장

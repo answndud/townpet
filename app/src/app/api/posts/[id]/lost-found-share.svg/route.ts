@@ -4,6 +4,7 @@ import { PostStatus, PostType } from "@prisma/client";
 import {
   buildLostFoundGuestPostUrl,
   buildLostFoundPosterFileName,
+  buildLostFoundPosterPngFileName,
   buildLostFoundShareTitle,
   formatLostFoundShareDate,
   getLostFoundAlertTypeLabel,
@@ -38,6 +39,12 @@ function buildContentDisposition(filename: string) {
   return `attachment; filename="${filename}"; filename*=UTF-8''${encodeURIComponent(filename)}`;
 }
 
+async function renderSvgAsPng(svg: string) {
+  const { default: sharp } = await import("sharp");
+
+  return sharp(Buffer.from(svg)).png({ quality: 92 }).toBuffer();
+}
+
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
@@ -66,7 +73,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const seenAt = formatLostFoundShareDate(alert.lastSeenAt);
     const postTitle = clipText(post.title, 36);
     const guestPostUrl = buildLostFoundGuestPostUrl(post.id);
-    const shouldDownload = new URL(request.url).searchParams.get("download") === "1";
+    const searchParams = new URL(request.url).searchParams;
+    const shouldDownload = searchParams.get("download") === "1";
+    const wantsPng = searchParams.get("format") === "png";
 
     const svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920" role="img" aria-label="${escapeXml(title)}">
@@ -96,6 +105,20 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   <text x="112" y="1588" font-size="22" font-weight="700" fill="#244a7f">${escapeXml(guestPostUrl)}</text>
   <text x="112" y="1748" font-size="26" font-weight="600" fill="#7b8fac">지역 반려생활 정보, TownPet</text>
 </svg>`;
+
+    if (wantsPng) {
+      const png = await renderSvgAsPng(svg);
+      const headers = new Headers({
+        "content-type": "image/png",
+        "cache-control": "public, max-age=60, stale-while-revalidate=300",
+      });
+
+      if (shouldDownload) {
+        headers.set("content-disposition", buildContentDisposition(buildLostFoundPosterPngFileName(post)));
+      }
+
+      return new Response(new Uint8Array(png), { headers });
+    }
 
     const headers = new Headers({
       "content-type": "image/svg+xml; charset=utf-8",

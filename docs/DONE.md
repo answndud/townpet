@@ -10785,3 +10785,10 @@
 - 변경: heavy run ACK guard, Web Vitals summary 선택 조회, 한국어 browser metric 리포트, 성능 budget 문서화를 추가했다.
 - 검증: targeted Vitest 15 tests, 관련 ESLint, `typecheck`, production-light 2회 실행 PASS.
 - 결과: 2차 warm sample 기준 mobile LCP `/` 256ms, `/feed/guest` 652ms로 production budget 안에 들어왔다.
+
+### 2026-06-08 - 분실/목격 전단 PNG 공유 개선
+
+- 요약: 기존 SVG 전단을 유지하면서 모바일 공유용 PNG 출력과 다운로드 경로를 추가했다.
+- 변경: `format=png` API 옵션, PNG 파일명 helper, 공유 패널 기본 저장/미리보기 URL, 결정 리포트를 추가했다.
+- 검증: targeted Vitest 19 tests PASS.
+- 후속: 보호자 전용 제보 관리 화면과 카카오 공유 SDK는 별도 작업으로 분리한다.
