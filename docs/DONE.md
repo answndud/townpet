@@ -10660,3 +10660,10 @@
 - 변경: `docs/resume/README.md`, `strategy.md`, `application-draft.md`, `interview-playbook.md`, `submission-checklist.md`를 추가하고 시퀀스 다이어그램의 신고 흐름 표현을 보정했다.
 - 검증: 문서 전략/초안 작성 작업이며 `docs/resume` 하위 문서 검증은 생략.
 - 후속: 개인 정보, GitHub URL, 실제 제출 글자 수 제한에 맞춰 최종 제출본을 압축한다.
+
+### 2026-06-08 - 트래픽 기반 성능 측정 하네스
+
+- 요약: 단발 latency가 아니라 제한된 동시 접속 트래픽으로 홈/피드/API hot path의 p50/p95/p99, 실패율, RPS를 측정하는 `perf:traffic` 루틴을 추가했다.
+- 변경: warm-up과 load phase를 분리하고 production 과부하 방지 ACK, Markdown/JSON 리포트, 목표 평가, helper unit test를 추가했다.
+- 검증: targeted Vitest, targeted ESLint, `typecheck`, `docs:refresh:check`, production 저강도 traffic run PASS.
+- 후속: traffic 리포트의 tail latency 기준으로 가장 느린 route 1개를 골라 cache/server-timing 병목을 좁힌다.
