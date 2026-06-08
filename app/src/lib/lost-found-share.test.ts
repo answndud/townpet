@@ -3,6 +3,8 @@ import { describe, expect, it } from "vitest";
 
 import {
   buildLostFoundMetadataDescription,
+  buildLostFoundPosterDownloadUrl,
+  buildLostFoundPosterFileName,
   buildLostFoundShareSummary,
   buildLostFoundPosterUrl,
   buildLostFoundShareChecklist,
@@ -43,6 +45,10 @@ describe("lost-found share helpers", () => {
 
   it("builds poster and metadata text for public sharing", () => {
     expect(buildLostFoundPosterUrl("post-1")).toContain("/api/posts/post-1/lost-found-share.svg");
+    expect(buildLostFoundPosterDownloadUrl("post-1")).toContain(
+      "/api/posts/post-1/lost-found-share.svg?download=1",
+    );
+    expect(buildLostFoundPosterFileName(lostFoundPost)).toBe("townpet-found-pet-post-1.svg");
     expect(buildLostFoundMetadataDescription(lostFoundPost)).toContain("목격/보호 · 제보 접수 중 · 고양이");
     expect(buildLostFoundShareSummary(lostFoundPost)).toEqual([
       "목격/보호",

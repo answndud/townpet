@@ -10584,3 +10584,9 @@
 - 요약: 카카오톡 복사 문구, 전단 SVG, OG 설명이 상태/위치/시간/개인정보 주의 기준을 일관되게 담도록 정리했다.
 - 변경: lost-found share helper에 상태/요약/guest URL helper를 추가하고 공유 패널 요약 칩과 SVG 제보 링크/주의 문구를 보강했다.
 - 검증: targeted share/SVG/metadata tests, 모바일 393px 상세 공유 패널/SVG/overflow 확인, `quality:check` PASS.
+
+### 2026-06-08 - 분실/목격 전단 저장/공유 편의 개선
+
+- 요약: 공유 패널에서 전단 저장과 이미지 열기를 분리하고 저장 파일명을 사용자에게 명확히 보여주도록 했다.
+- 변경: `?download=1` 전단 SVG attachment 응답, 안정적인 파일명 helper, `전단 저장` 액션과 `POSTER_DOWNLOAD` 기록을 추가했다.
+- 검증: targeted share/SVG/API tests, 모바일 393px 다운로드 링크/헤더/overflow 확인, `quality:check` PASS.

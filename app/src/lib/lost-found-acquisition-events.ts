@@ -12,7 +12,12 @@ type LostFoundCtaTarget =
   | "lost_found_first_24h_guide"
   | "lost_found_poster_guide";
 
-type LostFoundShareSource = "panel_open" | "LINK_COPY" | "KAKAO_TEXT_COPY" | "POSTER_OPEN";
+type LostFoundShareSource =
+  | "panel_open"
+  | "LINK_COPY"
+  | "KAKAO_TEXT_COPY"
+  | "POSTER_OPEN"
+  | "POSTER_DOWNLOAD";
 
 type LostFoundSightingSource = "root_form";
 

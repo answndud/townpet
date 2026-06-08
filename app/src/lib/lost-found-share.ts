@@ -116,6 +116,15 @@ export function buildLostFoundPosterUrl(postId: string) {
   return toAbsoluteUrl(`/api/posts/${postId}/lost-found-share.svg`);
 }
 
+export function buildLostFoundPosterDownloadUrl(postId: string) {
+  return toAbsoluteUrl(`/api/posts/${postId}/lost-found-share.svg?download=1`);
+}
+
+export function buildLostFoundPosterFileName(post: LostFoundSharePostLike) {
+  const alertType = post.lostFoundAlert?.alertType === "FOUND" ? "found" : "lost";
+  return `townpet-${alertType}-pet-${post.id}.svg`;
+}
+
 export function buildLostFoundPosterAlt(post: LostFoundSharePostLike) {
   return `${buildLostFoundShareTitle(post)} 공유 이미지`;
 }

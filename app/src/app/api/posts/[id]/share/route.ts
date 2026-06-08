@@ -15,7 +15,7 @@ type RouteParams = {
 };
 
 const shareActionSchema = z.object({
-  action: z.enum(["LINK_COPY", "KAKAO_TEXT_COPY", "POSTER_OPEN"]),
+  action: z.enum(["LINK_COPY", "KAKAO_TEXT_COPY", "POSTER_OPEN", "POSTER_DOWNLOAD"]),
 });
 
 export async function POST(request: NextRequest, { params }: RouteParams) {

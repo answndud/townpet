@@ -30,6 +30,11 @@ describe("lost found acquisition event builders", () => {
         buildLostFoundShareActionEvent("post-1", "KAKAO_TEXT_COPY"),
       ).success,
     ).toBe(true);
+    expect(
+      acquisitionEventSchema.safeParse(
+        buildLostFoundShareActionEvent("post-1", "POSTER_DOWNLOAD"),
+      ).success,
+    ).toBe(true);
   });
 
   it("builds schema-valid sighting comment events", () => {

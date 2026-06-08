@@ -3,6 +3,7 @@ import { PostStatus, PostType } from "@prisma/client";
 
 import {
   buildLostFoundGuestPostUrl,
+  buildLostFoundPosterFileName,
   buildLostFoundShareTitle,
   formatLostFoundShareDate,
   getLostFoundAlertTypeLabel,
@@ -33,6 +34,10 @@ function renderLine(text: string, x: number, y: number, size = 42, weight = 600)
   return `<text x="${x}" y="${y}" font-size="${size}" font-weight="${weight}" fill="#10284a">${escapeXml(text)}</text>`;
 }
 
+function buildContentDisposition(filename: string) {
+  return `attachment; filename="${filename}"; filename*=UTF-8''${encodeURIComponent(filename)}`;
+}
+
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
@@ -61,6 +66,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const seenAt = formatLostFoundShareDate(alert.lastSeenAt);
     const postTitle = clipText(post.title, 36);
     const guestPostUrl = buildLostFoundGuestPostUrl(post.id);
+    const shouldDownload = new URL(request.url).searchParams.get("download") === "1";
 
     const svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920" role="img" aria-label="${escapeXml(title)}">
@@ -91,12 +97,16 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   <text x="112" y="1748" font-size="26" font-weight="600" fill="#7b8fac">지역 반려생활 정보, TownPet</text>
 </svg>`;
 
-    return new Response(svg, {
-      headers: {
-        "content-type": "image/svg+xml; charset=utf-8",
-        "cache-control": "public, max-age=60, stale-while-revalidate=300",
-      },
+    const headers = new Headers({
+      "content-type": "image/svg+xml; charset=utf-8",
+      "cache-control": "public, max-age=60, stale-while-revalidate=300",
     });
+
+    if (shouldDownload) {
+      headers.set("content-disposition", buildContentDisposition(buildLostFoundPosterFileName(post)));
+    }
+
+    return new Response(svg, { headers });
   } catch (error) {
     await monitorUnhandledError(error, { route: "GET /api/posts/[id]/lost-found-share.svg", request });
     return new Response("Internal server error", { status: 500 });

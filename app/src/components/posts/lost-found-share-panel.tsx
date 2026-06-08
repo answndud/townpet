@@ -6,6 +6,8 @@ import Image from "next/image";
 import type { PostDetailItem } from "@/components/posts/post-detail-types";
 import {
   buildLostFoundPosterAlt,
+  buildLostFoundPosterDownloadUrl,
+  buildLostFoundPosterFileName,
   buildLostFoundPosterUrl,
   buildLostFoundShareChecklist,
   buildLostFoundShareSummary,
@@ -20,7 +22,7 @@ type LostFoundSharePanelProps = {
   postUrl: string;
 };
 
-type ShareAction = "LINK_COPY" | "KAKAO_TEXT_COPY" | "POSTER_OPEN";
+type ShareAction = "LINK_COPY" | "KAKAO_TEXT_COPY" | "POSTER_OPEN" | "POSTER_DOWNLOAD";
 
 const lostFoundShareTextActionClassName =
   "tp-text-muted inline-flex min-h-9 items-center justify-center px-1.5 text-xs font-semibold transition hover:text-[#2f5da4] hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1";
@@ -48,6 +50,8 @@ export function LostFoundSharePanel({ post, postUrl }: LostFoundSharePanelProps)
   const checklist = useMemo(() => buildLostFoundShareChecklist(post), [post]);
   const shareSummary = useMemo(() => buildLostFoundShareSummary(post), [post]);
   const posterUrl = buildLostFoundPosterUrl(post.id);
+  const posterDownloadUrl = buildLostFoundPosterDownloadUrl(post.id);
+  const posterFileName = buildLostFoundPosterFileName(post);
   const posterPath = `/api/posts/${post.id}/lost-found-share.svg`;
   const posterAlt = buildLostFoundPosterAlt(post);
 
@@ -73,6 +77,11 @@ export function LostFoundSharePanel({ post, postUrl }: LostFoundSharePanelProps)
     void recordLostFoundShareAction(post.id, "POSTER_OPEN");
   };
 
+  const handlePosterDownload = () => {
+    setMessage("전단 SVG 저장을 시작합니다.");
+    void recordLostFoundShareAction(post.id, "POSTER_DOWNLOAD");
+  };
+
   return (
     <section
       id="lost-found-share-tools"
@@ -88,7 +97,7 @@ export function LostFoundSharePanel({ post, postUrl }: LostFoundSharePanelProps)
             주변 공유 도구
           </h2>
           <p className="mt-1 max-w-[68ch] text-xs leading-5 text-[#526d95]">
-            복사 문구와 전단 이미지에 같은 핵심 정보를 넣습니다. 위치, 시간, 특징만 남기고 개인 연락처와 상세 주소는 제외합니다.
+            복사 문구와 전단 이미지에 같은 핵심 정보를 넣습니다. 저장한 전단은 이미지로 공유하거나 인쇄할 수 있습니다.
           </p>
           <div className="mt-2 flex flex-wrap gap-1.5" aria-label="공유 문구에 포함되는 정보">
             {shareSummary.map((item) => (
@@ -121,6 +130,15 @@ export function LostFoundSharePanel({ post, postUrl }: LostFoundSharePanelProps)
           >
             링크 복사
           </button>
+          <a
+            href={posterDownloadUrl}
+            download={posterFileName}
+            className={`${lostFoundShareTextActionClassName} w-full sm:w-auto`}
+            aria-label="분실/목격 전단 SVG 저장"
+            onClick={handlePosterDownload}
+          >
+            전단 저장
+          </a>
           <a
             href={posterUrl}
             target="_blank"
@@ -170,6 +188,9 @@ export function LostFoundSharePanel({ post, postUrl }: LostFoundSharePanelProps)
             loading="lazy"
           />
         </a>
+        <p className="text-[11px] leading-5 text-[#6a83a9] lg:col-start-2">
+          저장 파일: {posterFileName}
+        </p>
       </div>
 
       <p

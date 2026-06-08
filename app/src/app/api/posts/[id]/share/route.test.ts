@@ -68,6 +68,21 @@ describe("POST /api/posts/[id]/share contract", () => {
     });
   });
 
+  it("records poster download as a share action", async () => {
+    const response = await POST(createShareRequest({ action: "POSTER_DOWNLOAD" }), {
+      params: Promise.resolve({ id: "post-1" }),
+    });
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(payload).toMatchObject({ ok: true, data: { recorded: true } });
+    expect(mockLoggerInfo).toHaveBeenCalledWith("lost-found share action", {
+      postId: "post-1",
+      action: "POSTER_DOWNLOAD",
+      userId: null,
+    });
+  });
+
   it("returns INVALID_SHARE_ACTION for unsupported actions", async () => {
     const response = await POST(createShareRequest({ action: "UNKNOWN" }), {
       params: Promise.resolve({ id: "post-1" }),
