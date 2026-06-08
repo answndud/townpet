@@ -1,0 +1,6 @@
+TownPet static performance baseline probe.
+
+This file is intentionally plain text and lives under public/.
+The middleware matcher excludes .txt paths, so this route is useful as a low-overhead local queueing comparison target.
+
+Keep this file small and dependency-free.
