@@ -246,43 +246,43 @@ export function renderApiRouteContractsMarkdown(contracts: ApiRouteContract[]) {
   const monitoringCounts = countBy(contracts, (contract) => contract.monitoring);
   const lines: string[] = [];
 
-  lines.push("# TownPet API Route Contracts");
+  lines.push("# TownPet API 라우트 계약 리포트");
   lines.push("");
-  lines.push("Generated from `app/src/app/api/**/route.ts` with source-text heuristics.");
+  lines.push("`app/src/app/api/**/route.ts`를 소스 텍스트 기반 휴리스틱으로 스캔해 생성한 리포트다.");
   lines.push("");
-  lines.push("## Summary");
+  lines.push("## 요약");
   lines.push("");
-  lines.push(`- routeHandlers: ${contracts.length}`);
-  lines.push(`- missingMethodExports: ${missingMethods.length}`);
-  lines.push(`- missingAdjacentTests: ${missingAdjacentTests.length}`);
-  lines.push(`- accessHeuristics: ${formatCounts(accessCounts)}`);
-  lines.push(`- validationHeuristics: ${formatCounts(validationCounts)}`);
-  lines.push(`- monitoringHeuristics: ${formatCounts(monitoringCounts)}`);
+  lines.push(`- 라우트 핸들러 수: ${contracts.length}`);
+  lines.push(`- 메서드 export 누락: ${missingMethods.length}`);
+  lines.push(`- 인접 테스트 누락: ${missingAdjacentTests.length}`);
+  lines.push(`- 접근 제어 휴리스틱: ${formatCounts(accessCounts)}`);
+  lines.push(`- 검증 휴리스틱: ${formatCounts(validationCounts)}`);
+  lines.push(`- 모니터링 휴리스틱: ${formatCounts(monitoringCounts)}`);
   lines.push("");
-  lines.push("Heuristic labels are review aids, not a security proof. Source of truth remains route code and tests.");
+  lines.push("휴리스틱 라벨은 리뷰 보조 자료이며 보안 증명이 아니다. 소스 오브 트루스는 route 코드와 테스트다.");
   lines.push("");
-  lines.push("## Routes");
+  lines.push("## 라우트 목록");
   lines.push("");
-  lines.push("| Route | Methods | Access | Validation | Monitoring | Route file | Adjacent test |");
+  lines.push("| 라우트 | 메서드 | 접근 | 검증 | 모니터링 | 라우트 파일 | 인접 테스트 |");
   lines.push("|---|---:|---|---|---|---|---:|");
 
   for (const contract of contracts) {
     lines.push(
-      `| \`${contract.route}\` | ${contract.methods.length > 0 ? contract.methods.join(", ") : "NONE"} | ${contract.access} | ${contract.validation} | ${contract.monitoring} | \`${contract.file}\` | ${contract.adjacentTest ? "yes" : "no"} |`,
+      `| \`${contract.route}\` | ${contract.methods.length > 0 ? contract.methods.join(", ") : "없음"} | ${contract.access} | ${contract.validation} | ${contract.monitoring} | \`${contract.file}\` | ${contract.adjacentTest ? "예" : "아니오"} |`,
     );
   }
 
   lines.push("");
-  lines.push("## Gaps");
+  lines.push("## 누락 항목");
   lines.push("");
   if (missingMethods.length === 0 && missingAdjacentTests.length === 0) {
-    lines.push("- None");
+    lines.push("- 없음");
   } else {
     for (const contract of missingMethods) {
-      lines.push(`- missing method export: \`${contract.file}\``);
+      lines.push(`- 메서드 export 누락: \`${contract.file}\``);
     }
     for (const contract of missingAdjacentTests) {
-      lines.push(`- missing adjacent test: \`${contract.file}\``);
+      lines.push(`- 인접 테스트 누락: \`${contract.file}\``);
     }
   }
 

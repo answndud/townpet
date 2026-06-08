@@ -10701,4 +10701,10 @@
 - 요약: `perf:traffic` summary에 header/body percentile을 추가하고, 기존 spike 결과를 first-byte와 body/stream 관점으로 재해석했다.
 - 변경: `business/reports/traffic-spike-phase-breakdown-2026-06-08.md`에 header-led tail 증폭과 queueing 후보를 정리했다.
 - 검증: targeted Vitest, targeted ESLint, `typecheck`, local phase smoke, `docs:refresh:check` PASS.
-- 후속: `/`와 `/feed/guest`의 page route static/dynamic 상태, middleware/header work, first-byte work를 우선 점검한다.
+
+### 2026-06-08 - 리포트 한국어화와 첫 바이트 경로 점검
+
+- 요약: `business/reports`의 운영/성능/백엔드 리포트를 한국어 기준으로 재작성하고, 생성 리포트 템플릿도 한국어 출력으로 바꿨다.
+- 변경: `perf:traffic`, `api:contracts` Markdown 출력과 기존 traffic/API/backend/production report를 한국어화하고 first-byte route audit report를 추가했다.
+- 검증: targeted Vitest 23 tests, 관련 ESLint, `typecheck`, `api:contracts`, `docs:refresh:check`, `diff --check` PASS.
+- 후속: `/`의 `getHomeFeedPayload()` timing을 분리하고, targeted phase-aware spike로 queueing noise를 줄여 재측정한다.

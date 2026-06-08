@@ -307,18 +307,18 @@ function buildMarkdown(params: {
   summaries: MeasurementSummary[];
 }) {
   const lines: string[] = [];
-  lines.push("# TownPet Performance Baseline");
+  lines.push("# TownPet 성능 baseline");
   lines.push("");
-  lines.push(`- generatedAt: ${params.generatedAt}`);
-  lines.push(`- baseUrl: ${params.baseUrl}`);
-  lines.push(`- samplesPerTarget: ${params.sampleCount}`);
-  lines.push(`- pauseMs: ${params.pauseMs}`);
-  lines.push(`- slowThresholdMs: ${params.slowThresholdMs}`);
-  lines.push(`- note: Node fetch 기반 서버/다운로드 측정이며, 브라우저 FCP/LCP/hydration 측정은 별도 Playwright 단계에서 추가한다.`);
+  lines.push(`- 생성 시각: ${params.generatedAt}`);
+  lines.push(`- 기준 URL: ${params.baseUrl}`);
+  lines.push(`- 대상별 샘플 수: ${params.sampleCount}`);
+  lines.push(`- 샘플 간 대기(ms): ${params.pauseMs}`);
+  lines.push(`- 느린 요청 기준(ms): ${params.slowThresholdMs}`);
+  lines.push("- 참고: Node fetch 기반 서버/다운로드 측정이며, 브라우저 FCP/LCP/hydration 측정은 별도 Playwright 단계에서 추가한다.");
   lines.push("");
-  lines.push("## Summary");
+  lines.push("## 요약");
   lines.push("");
-  lines.push("| target | path | status | redirects | p50 header | p95 header | p50 total | p95 total | first total | warm p50 total | p50 bytes | slow |");
+  lines.push("| 대상 | 경로 | 상태 | redirect | 헤더 p50 | 헤더 p95 | 전체 p50 | 전체 p95 | 첫 요청 전체 | warm p50 전체 | 전송량 p50 | 느린 요청 |");
   lines.push("|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|");
   for (const summary of params.summaries) {
     lines.push(
@@ -339,9 +339,9 @@ function buildMarkdown(params: {
     );
   }
   lines.push("");
-  lines.push("## Raw Samples");
+  lines.push("## 원본 샘플");
   lines.push("");
-  lines.push("| target | run | status | redirected | header | total | bytes | cache | age | finalUrl |");
+  lines.push("| 대상 | 실행 | 상태 | redirect | 헤더 | 전체 | 전송량 | 캐시 | age | 최종 URL |");
   lines.push("|---|---:|---:|---:|---:|---:|---:|---|---:|---|");
   for (const sample of params.samples) {
     lines.push(
@@ -349,7 +349,7 @@ function buildMarkdown(params: {
         `| ${sample.label}`,
         String(sample.index),
         String(sample.status),
-        sample.redirected ? "yes" : "no",
+        sample.redirected ? "예" : "아니오",
         formatMs(sample.headerMs),
         formatMs(sample.totalMs),
         formatBytes(sample.bytes),
@@ -360,11 +360,11 @@ function buildMarkdown(params: {
     );
   }
   lines.push("");
-  lines.push("## Next Measurement");
+  lines.push("## 다음 측정");
   lines.push("");
-  lines.push("- Add browser performance trace for FCP/LCP/hydration and route transition timing.");
-  lines.push("- Re-run this exact baseline command after `/` shell/feed/comment optimizations.");
-  lines.push("- Use the same `samplesPerTarget`, target URL set, and base URL for before/after comparison.");
+  lines.push("- FCP/LCP/hydration과 route transition timing은 browser performance trace로 별도 측정한다.");
+  lines.push("- `/` shell/feed/comment 최적화 뒤 같은 baseline 명령을 다시 실행한다.");
+  lines.push("- 전후 비교는 같은 대상별 샘플 수, target URL 묶음, 기준 URL로 진행한다.");
   lines.push("");
 
   return `${lines.join("\n")}\n`;

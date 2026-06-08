@@ -1,147 +1,126 @@
-# Post Query/Create Refactor Slice Selection
+# 게시글 조회/생성 리팩터링 작업 단위 선정
 
-Date: 2026-05-18
+작성일: 2026-05-18
 
-## Purpose
+## 목적
 
-Select small, behavior-preserving refactor slices for the two largest post backend modules before changing implementation.
+가장 큰 게시글 백엔드 모듈 두 개를 변경하기 전에, 동작 보존이 가능한 작은 리팩터링 slice를 고른다.
 
-This is not a rewrite plan. The goal is to improve locality and testability while keeping the public import surface stable through `@/server/queries/post.queries` and `createPost`.
+이 문서는 rewrite 계획이 아니다. 목표는 `@/server/queries/post.queries`와 `createPost` public import surface를 유지하면서 locality와 testability를 높이는 것이다.
 
-## Initial Repository Evidence
+## 초기 repository 근거
 
-- `app/src/server/queries/posts/post.queries.ts`: 2,299 lines.
-  - Still owns schema fallback detection, feed personalization scoring, detail widget queries, feed list/count, best posts, and ranked search orchestration.
-  - Existing helper modules already cover list args, list where building, list fetch fallback, ranked search SQL/cache/hydration, search suggestions, user posts, and detail care queries.
-- `app/src/server/services/posts/post-create.service.ts`: 1,145 lines.
-  - One exported `createPost` function owns input parsing, guest/member author resolution, new-user/guest policy checks, structured field moderation, board validation, Prisma create payloads for each post type, upload finalization, cache invalidation, and hospital review risk logging.
-  - Structured create branches repeat `prisma.post.create`, `structuredSearchText`, include blocks, upload finalization, and cache notification.
-- Primary regression tests:
-  - `app/src/server/queries/post.queries.test.ts`: 1,904 lines.
-  - `app/src/server/services/post-create-policy.test.ts`: 1,008 lines.
-  - Additional service coverage exists in `post.service.test.ts`, `guest-post-management.service.test.ts`, and `post-read-access.service.test.ts`.
+- `app/src/server/queries/posts/post.queries.ts`: 2,299줄
+  - schema fallback detection, feed personalization scoring, detail widget query, feed list/count, best posts, ranked search orchestration을 함께 갖고 있었다.
+  - list args, list where building, list fetch fallback, ranked search SQL/cache/hydration, search suggestion, user posts, detail care query helper는 이미 일부 분리되어 있었다.
+- `app/src/server/services/posts/post-create.service.ts`: 1,145줄
+  - 하나의 `createPost`가 input parsing, guest/member author resolution, new-user/guest policy check, structured field moderation, board validation, post type별 Prisma create payload, upload finalization, cache invalidation, hospital review risk logging을 모두 담당했다.
+  - structured create branch에서 `prisma.post.create`, `structuredSearchText`, include block, upload finalization, cache notification이 반복되었다.
+- 주요 회귀 테스트:
+  - `app/src/server/queries/post.queries.test.ts`: 1,904줄
+  - `app/src/server/services/post-create-policy.test.ts`: 1,008줄
+  - 추가 service coverage: `post.service.test.ts`, `guest-post-management.service.test.ts`, `post-read-access.service.test.ts`
 
-## Current Refactor State
+## 현재 리팩터링 상태
 
-- `app/src/server/queries/posts/post.queries.ts`: 466 lines after detail widget, feed list/count, and feed personalization extraction.
-- `app/src/server/queries/posts/post-list.queries.ts`: owns feed list/count orchestration.
-- `app/src/server/queries/posts/post-feed-personalization.queries.ts`: owns feed personalization context loading, scoring, recent behavior/dwell/bookmark signals, and diversity interleaving.
-- `app/src/server/queries/posts/post-query-schema-support.ts`: owns shared guest/review/community schema fallback guards.
-- Public import surface through `@/server/queries/post.queries` remains stable.
+- `app/src/server/queries/posts/post.queries.ts`: detail widget, feed list/count, feed personalization 추출 후 466줄
+- `app/src/server/queries/posts/post-list.queries.ts`: feed list/count orchestration 담당
+- `app/src/server/queries/posts/post-feed-personalization.queries.ts`: feed personalization context loading, scoring, recent behavior/dwell/bookmark signal, diversity interleaving 담당
+- `app/src/server/queries/posts/post-query-schema-support.ts`: guest/review/community schema fallback guard 공유
+- `@/server/queries/post.queries`를 통한 public import surface는 안정적으로 유지
 
-## Candidate 1: Post Create Structured Variant Builders
+## 후보 1: 게시글 생성 structured variant builder
 
-- Files:
+- 대상 파일:
   - `app/src/server/services/posts/post-create.service.ts`
-  - new helper under `app/src/server/services/posts/`
+  - `app/src/server/services/posts/` 하위 신규 helper
   - `app/src/server/services/post-create-policy.test.ts`
-- Problem:
-  - `createPost` mixes policy decisions with per-type Prisma create payload construction.
-  - The policy logic is important and already tested, but payload construction is repeated across hospital review, place review, walk route, market listing, care request, adoption listing, shelter volunteer, and default posts.
-  - A reviewer must scan hundreds of lines to know whether a policy change affects persistence shape.
-- Solution:
-  - Keep `createPost` as the public service interface.
-  - Move the per-type structured create payload selection and common include fragments behind a private post-create helper module.
-  - Keep side effects such as upload finalization, cache invalidation, and hospital review risk logging in the orchestration path until a later slice.
-- Benefits:
-  - Locality: type-specific persistence rules live together instead of being interleaved with author and abuse policy.
-  - Testability: existing `createPost` behavior tests remain the public contract, and pure payload helpers can gain narrow tests if needed.
-  - Maintainability: future post types require one structured create variant change instead of editing the main policy path.
-- ADR impact:
-  - Respects existing service/query/validation boundary. Policy enforcement remains in service, and validation remains in Zod schemas.
-- Confidence:
-  - High.
+- 문제:
+  - `createPost`가 정책 판단과 post type별 Prisma create payload 생성을 함께 들고 있다.
+  - 정책 로직은 중요하고 이미 테스트되어 있지만, payload 생성이 병원 후기, 장소 후기, 산책 코스, 중고거래, 돌봄 요청, 입양, 봉사, 기본 글 branch에 반복된다.
+  - 리뷰어가 정책 변경이 persistence shape에 영향을 주는지 확인하려면 수백 줄을 훑어야 한다.
+- 해결:
+  - public service interface인 `createPost`는 유지한다.
+  - post type별 structured create payload 선택과 공통 include fragment를 private helper module로 옮긴다.
+  - upload finalization, cache invalidation, hospital review risk logging 같은 side effect는 이후 slice 전까지 orchestration path에 남긴다.
+- 효과:
+  - locality: type-specific persistence rule을 author/abuse policy와 섞지 않고 한곳에서 본다.
+  - testability: 기존 `createPost` behavior test가 public contract를 유지하고, 필요하면 pure payload helper에 좁은 테스트를 추가할 수 있다.
+  - maintainability: 새 post type 추가 시 main policy path 대신 structured create variant만 수정한다.
+- ADR 영향:
+  - 기존 service/query/validation boundary를 지킨다. 정책 집행은 service, 입력 검증은 Zod schema에 남긴다.
+- 확신도: 높음
+- 상태: 2026-05-18 완료
 
-## Candidate 2: Post Detail Widget Query Helper
+## 후보 2: 게시글 상세 widget query helper
 
-Status: completed on 2026-05-18.
-
-- Files:
+- 상태: 2026-05-18 완료
+- 대상 파일:
   - `app/src/server/queries/posts/post.queries.ts`
-  - possible helper under `app/src/server/queries/posts/`
-  - route tests for `/api/posts/[id]/stats`, `/content`, `/comments`, and detail route
-- Problem:
-  - `getPostMetadataById`, `getPostStatsById`, `getPostReadAccessById`, and `getPostContentById` repeat the same viewer-hidden-author filter, visible-author filter, anonymous cache decision, and `findFirst` structure.
-  - Each small public function is easy to read alone, but the repeated visibility/cache contract can drift.
-- Solution:
-  - Keep the exported function names stable.
-  - Extract a shared internal detail read helper that accepts the select shape and cache mode.
-- Benefits:
-  - Locality: visibility and anonymous cache behavior become one contract.
-  - Testability: existing route tests validate public behavior; one focused query test can cover hidden author/cache mode reuse.
-  - Maintainability: future detail widgets do not duplicate visibility rules.
-- ADR impact:
-  - Respects query read-only boundary and keeps service policy out of query code.
-- Confidence:
-  - High.
+  - `app/src/server/queries/posts/` 하위 helper
+  - `/api/posts/[id]/stats`, `/content`, `/comments`, detail route test
+- 문제:
+  - `getPostMetadataById`, `getPostStatsById`, `getPostReadAccessById`, `getPostContentById`가 viewer-hidden-author filter, visible-author filter, anonymous cache decision, `findFirst` 구조를 반복한다.
+  - 각 public function은 따로 보면 단순하지만, visibility/cache contract가 drift될 수 있다.
+- 해결:
+  - export 함수 이름은 유지한다.
+  - select shape과 cache mode를 받는 내부 detail read helper를 추출한다.
+- 효과:
+  - visibility와 anonymous cache behavior가 하나의 contract가 된다.
+  - 기존 route test가 public behavior를 검증하고, query test가 hidden author/cache mode reuse를 좁게 검증한다.
 
-## Candidate 3: Feed List/Count Orchestrator Module
+## 후보 3: feed list/count orchestrator module
 
-Status: completed on 2026-05-18.
-
-- Files:
+- 상태: 2026-05-18 완료
+- 대상 파일:
   - `app/src/server/queries/posts/post.queries.ts`
-  - new `post-list.queries.ts` or equivalent internal module
+  - `post-list.queries.ts`
   - `app/src/server/queries/post.queries.test.ts`
-- Problem:
-  - `listPosts`, `listBestPosts`, `countPosts`, and `countBestPosts` still coordinate hidden-author filters, exclusion expansion, legacy schema fallbacks, search fallback, bookmark attachment, personalization, and cache keys in the same file as unrelated detail/ranked-search functions.
-  - Existing helper modules reduced some complexity, but the orchestration file remains hard to navigate.
-- Solution:
-  - Move feed list/count orchestration to a dedicated query module while keeping `app/src/server/queries/post.queries.ts` as the stable facade.
-  - Do not change options, return shape, cache key semantics, or personalization behavior.
-- Benefits:
-  - Locality: feed list behavior can be reviewed without scanning detail/ranked-search/personalization helper exports.
-  - Testability: current `post.queries.test.ts` can remain the public contract during the move.
-  - AI navigability: future agents can find feed read behavior by filename.
-- ADR impact:
-  - Respects query read-only boundary.
-- Confidence:
-  - Medium. The move touches many imports and private fallback handlers, so it should follow smaller extraction slices.
+- 문제:
+  - `listPosts`, `listBestPosts`, `countPosts`, `countBestPosts`가 hidden-author filter, exclusion expansion, legacy schema fallback, search fallback, bookmark attachment, personalization, cache key를 unrelated detail/ranked-search 함수와 같은 파일에서 조율했다.
+- 해결:
+  - feed list/count orchestration을 전용 query module로 옮기고, `app/src/server/queries/post.queries.ts`는 stable facade로 유지한다.
+- 효과:
+  - feed read behavior만 따로 리뷰할 수 있다.
+  - 기존 `post.queries.test.ts`가 public contract를 유지한다.
+  - 앞으로 agent가 feed read behavior를 파일명으로 찾기 쉬워진다.
 
-## Candidate 4: Feed Personalization Context Module
+## 후보 4: feed personalization context module
 
-Status: completed on 2026-05-18.
-
-- Files:
+- 상태: 2026-05-18 완료
+- 대상 파일:
   - `app/src/server/queries/posts/post.queries.ts`
-  - possible `post-feed-personalization.queries.ts`
-  - personalization section of `app/src/server/queries/post.queries.test.ts`
-- Problem:
-  - Personalization scoring, viewer context loading, recent engagement/dwell/bookmark signals, ad-impression dampening, and diversity interleaving take a large middle section of `post.queries.ts`.
-  - This behavior is product-critical and has many tests, but it obscures the simpler query entrypoints around it.
-- Solution:
-  - Extract personalization context loading and scoring behind a query-local helper module.
-  - Keep `listPosts({ personalized: true })` as the only public feed entrypoint.
-- Benefits:
-  - Locality: personalization policy can evolve without editing basic feed query code.
-  - Testability: existing personalization tests remain contract tests; pure score helpers can be tested independently later.
-  - Maintainability: new signals can be added in one module.
-- ADR impact:
-  - Respects query boundary as long as the module remains read-only and does not mutate event logs.
-- Confidence:
-  - Medium. It has more behavioral risk than Candidate 1 or 2 because it touches ranking semantics.
+  - `post-feed-personalization.queries.ts`
+  - `app/src/server/queries/post.queries.test.ts` personalization section
+- 문제:
+  - personalization scoring, viewer context loading, recent engagement/dwell/bookmark signal, ad-impression dampening, diversity interleaving이 `post.queries.ts` 중간을 크게 차지했다.
+- 해결:
+  - personalization context loading과 scoring을 query-local helper module 뒤로 추출한다.
+  - `listPosts({ personalized: true })`를 public feed entrypoint로 유지한다.
+- 효과:
+  - personalization policy가 basic feed query code를 건드리지 않고 진화할 수 있다.
+  - existing personalization test가 contract test로 남는다.
+  - 새 signal 추가 지점이 한 module로 모인다.
 
-## Selected First Slice
+## 첫 slice 선정
 
-Implement Candidate 1 first: extract post create structured variant builders.
+첫 slice는 후보 1, 게시글 생성 structured variant builder 추출로 정했다.
 
-Status: completed on 2026-05-18.
+선정 이유:
 
-Reason:
+- 1,145줄 service를 줄이면서도 public behavior를 바꾸지 않는 가장 작은 slice였다.
+- `createPost` interface를 유지하고 기존 `post-create-policy.test.ts`를 regression contract로 사용할 수 있었다.
+- policy orchestration은 읽기 쉬워지고 persistence variant는 지역화되어 backend 면접 설명력이 좋아졌다.
 
-- It is the smallest slice that directly reduces a 1,145-line service without changing public behavior.
-- It preserves the current `createPost` interface and uses existing `post-create-policy.test.ts` as the regression contract.
-- It improves the clearest backend interview signal: policy orchestration stays readable while persistence variants become localized.
+## 실행 순서
 
-## Execution Order
+1. `post-create.service.ts`에서 shared include fragment와 post type별 Prisma create data construction을 private helper module로 추출한다.
+2. author resolution, guest policy, new-user policy, contact moderation, board validation, upload finalization, cache invalidation, hospital review risk logging은 `createPost`에 남긴다.
+3. `corepack pnpm@9.12.3 -C app test -- src/server/services/post-create-policy.test.ts`를 실행한다.
+4. `corepack pnpm@9.12.3 -C app typecheck`를 실행한다.
+5. diff가 여전히 넓으면 helper extraction에서 멈추고 query refactor와 섞지 않는다.
 
-1. Extract shared include fragments and per-type Prisma create data construction from `post-create.service.ts` into a private helper module.
-2. Keep author resolution, guest policy, new-user policy, contact moderation, board validation, upload finalization, cache invalidation, and hospital review risk logging in `createPost`.
-3. Run `corepack pnpm@9.12.3 -C app test -- src/server/services/post-create-policy.test.ts`.
-4. Run `corepack pnpm@9.12.3 -C app typecheck`.
-5. If the diff is still broad, stop after the helper extraction and do not combine it with query refactors.
+## 후속 순서
 
-## Follow-up Order
-
-1. Extend the generated API route contract report with access/validation heuristics if it becomes useful.
-2. Keep further post query refactors limited to clearly isolated behavior; the current facade is small enough to pause broad extraction.
+1. 필요성이 생기면 generated API route contract report에 access/validation heuristic을 확장한다.
+2. 추가 post query refactor는 명확히 고립된 동작에만 제한한다. 현재 facade는 충분히 작아졌으므로 broad extraction은 멈출 수 있다.

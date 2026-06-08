@@ -1,4 +1,4 @@
-# Backend Sequence Diagrams
+# 백엔드 시퀀스 다이어그램
 
 목적: TownPet의 복잡한 백엔드 흐름을 면접/리뷰에서 코드 없이 설명할 수 있게 Mermaid 시퀀스 다이어그램으로 고정한다.
 
@@ -21,33 +21,33 @@
 
 ```mermaid
 sequenceDiagram
-  actor User
+  actor 사용자
   participant UI as PostCreateForm
   participant UploadRoute as POST /api/upload
   participant UploadService as saveUploadedImage
-  participant Storage as Upload storage
+  participant Storage as 업로드 저장소
   participant PostRoute as POST /api/posts
   participant PostService as createPost
-  participant Policy as Policy/RateLimit/Sanction
+  participant Policy as 정책/레이트리밋/제재
   participant DB as Prisma/PostgreSQL
 
-  User->>UI: 이미지 선택
-  UI->>UploadRoute: multipart file + auth/guest headers
-  UploadRoute->>Policy: user sanction or guest step-up + rate-limit
-  Policy-->>UploadRoute: allowed
-  UploadRoute->>UploadService: validate signature/size/type
-  UploadService->>Storage: store trusted upload asset
+  사용자->>UI: 이미지 선택
+  UI->>UploadRoute: multipart file + auth/guest header
+  UploadRoute->>Policy: 회원 제재 또는 비회원 step-up + rate-limit
+  Policy-->>UploadRoute: 허용
+  UploadRoute->>UploadService: signature/size/type 검증
+  UploadService->>Storage: 신뢰 가능한 upload asset 저장
   Storage-->>UploadService: upload URL
-  UploadService-->>UploadRoute: normalized image metadata
+  UploadService-->>UploadRoute: 정규화된 이미지 metadata
   UploadRoute-->>UI: 201 upload payload
-  User->>UI: 게시글 제출
+  사용자->>UI: 게시글 제출
   UI->>PostRoute: title/content/type/structured fields/imageUrls
-  PostRoute->>Policy: authenticated or guest write limits
-  Policy-->>PostRoute: allowed
+  PostRoute->>Policy: 회원 또는 비회원 write limit
+  Policy-->>PostRoute: 허용
   PostRoute->>PostService: createPost(input)
-  PostService->>Policy: validation, contact policy, forbidden keywords, board policy
-  PostService->>DB: transaction create post + structured detail + image rows
-  DB-->>PostService: created post
+  PostService->>Policy: validation, contact policy, forbidden keyword, board policy
+  PostService->>DB: transaction으로 post + structured detail + image rows 생성
+  DB-->>PostService: 생성된 post
   PostService-->>PostRoute: public post payload
   PostRoute-->>UI: 201 created post
 ```
@@ -70,36 +70,36 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-  actor Reporter
+  actor 신고자
   participant ReportRoute as POST /api/reports
   participant Auth as requireCurrentUser
-  participant RateLimit as AuthenticatedWriteThrottle
+  participant RateLimit as 인증 사용자 write throttle
   participant ReportService as createReport
-  participant ModerationPolicy as Report moderation policy
+  participant ModerationPolicy as 신고 moderation policy
   participant DB as Prisma/PostgreSQL
   participant AdminQuery as report.queries
   participant AdminUI as /admin/reports
 
-  Reporter->>ReportRoute: report target + reason
-  ReportRoute->>Auth: require current user
-  Auth-->>ReportRoute: reporter id
+  신고자->>ReportRoute: 신고 대상 + 사유
+  ReportRoute->>Auth: 현재 사용자 요구
+  Auth-->>ReportRoute: 신고자 id
   ReportRoute->>RateLimit: report:create user/ip/fingerprint
-  RateLimit-->>ReportRoute: allowed
+  RateLimit-->>ReportRoute: 허용
   ReportRoute->>ReportService: createReport(reporterId, input)
-  ReportService->>DB: check duplicate report
-  ReportService->>DB: resolve active post/comment target
-  ReportService->>ModerationPolicy: reporter trust + pending signals
+  ReportService->>DB: 중복 신고 확인
+  ReportService->>DB: 활성 post/comment 대상 확인
+  ReportService->>ModerationPolicy: 신고자 trust + pending signal
   ModerationPolicy-->>ReportService: moderation summary
-  ReportService->>DB: transaction create pending report
-  opt auto-hide threshold reached
-    ReportService->>DB: hide post target + bump caches
+  ReportService->>DB: transaction으로 pending report 생성
+  opt 자동 숨김 threshold 도달
+    ReportService->>DB: post target 숨김 + cache bump
   end
   DB-->>ReportService: report row
   ReportService-->>ReportRoute: report payload
-  ReportRoute-->>Reporter: 201 created
+  ReportRoute-->>신고자: 201 created
   AdminUI->>AdminQuery: list pending reports
   AdminQuery->>DB: aggregate/report list query
-  DB-->>AdminQuery: queue items
+  DB-->>AdminQuery: queue item
   AdminQuery-->>AdminUI: moderation queue
 ```
 
@@ -121,37 +121,37 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-  actor User
+  actor 사용자
   participant NextAuth as NextAuth route
   participant Credentials as authorizeCredentialsLogin
-  participant RateLimit as Login rate limits
-  participant UserQuery as User query
+  participant RateLimit as 로그인 rate limit
+  participant UserQuery as 사용자 조회
   participant Password as verifyPassword
   participant Sanction as sanction.service
-  participant Audit as Auth audit log
+  participant Audit as 인증 감사 로그
   participant Session as JWT/session callbacks
 
-  User->>NextAuth: email/password sign in
+  사용자->>NextAuth: email/password sign in
   NextAuth->>Credentials: authorize(credentials, request)
-  Credentials->>RateLimit: IP/account+IP/account rules
-  RateLimit-->>Credentials: attempt states
-  Credentials->>UserQuery: find email case-insensitive
+  Credentials->>RateLimit: IP/account+IP/account rule
+  RateLimit-->>Credentials: attempt state
+  Credentials->>UserQuery: email case-insensitive 조회
   UserQuery-->>Credentials: user + passwordHash + sessionVersion
-  Credentials->>Password: verify password
-  Password-->>Credentials: valid
+  Credentials->>Password: password 검증
+  Password-->>Credentials: 유효
   Credentials->>Sanction: assertUserInteractionAllowed(userId)
-  Sanction-->>Credentials: allowed or blocked
-  Credentials->>Audit: LOGIN_SUCCESS or failure reason
+  Sanction-->>Credentials: 허용 또는 차단
+  Credentials->>Audit: LOGIN_SUCCESS 또는 failure reason
   Credentials-->>NextAuth: authorized user + sessionVersion
-  NextAuth->>Session: issue JWT/session
-  Session-->>User: authenticated session
+  NextAuth->>Session: JWT/session 발급
+  Session-->>사용자: 인증 session
 ```
 
 설계 포인트:
 - 로그인 실패도 동일한 감사 경로에 남기고, 실패 횟수에 따라 지연/제한을 적용한다.
 - `sessionVersion`을 세션 payload에 포함해 비밀번호 변경/세션 무효화 시 기존 JWT를 끊을 수 있게 한다.
 
-## 4. Vercel 배포 + security env preflight
+## 4. Vercel 배포 + 보안 env preflight
 
 상황: `main` push 후 Vercel이 production/staging 배포를 수행한다.
 
@@ -171,21 +171,21 @@ sequenceDiagram
   participant EnvCheck as ops:check:security-env:build
   participant Prisma as prisma migrate deploy
   participant NextBuild as next build
-  participant Runtime as Production deployment
+  participant Runtime as production deployment
 
   Developer->>GitHub: push main
   GitHub-->>Vercel: deployment trigger
   Vercel->>BuildScript: pnpm build:vercel
   BuildScript->>EnvCheck: build-profile security env preflight
-  EnvCheck-->>BuildScript: pass or failed keys
+  EnvCheck-->>BuildScript: 통과 또는 실패 key
   BuildScript->>Prisma: migrate deploy with retry/baseline handling
   Prisma-->>BuildScript: schema ready
   BuildScript->>Prisma: prisma generate
   Prisma-->>BuildScript: client generated
   BuildScript->>NextBuild: next build
   NextBuild-->>BuildScript: build output
-  BuildScript-->>Vercel: success
-  Vercel-->>Runtime: promote deployment
+  BuildScript-->>Vercel: 성공
+  Vercel-->>Runtime: 배포 승격
 ```
 
 설계 포인트:

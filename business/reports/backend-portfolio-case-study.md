@@ -1,73 +1,73 @@
-# TownPet Backend Portfolio Case Study
+# TownPet 백엔드 포트폴리오 케이스 스터디
 
-Last updated: 2026-06-07
+마지막 갱신일: 2026-06-07
 
-## Purpose
+## 목적
 
-TownPet is a service-style backend portfolio project for a pet community product. It is not only a board UI. The backend surface includes authentication, guest safety, structured posting, search, moderation, notifications, admin operations, retention cleanup, health checks, deployment preflight, and regression tests.
+TownPet는 반려동물 커뮤니티 제품을 위한 서비스형 백엔드 포트폴리오 프로젝트다. 단순 게시판 UI가 아니라 인증, 비회원 안전장치, 구조화 글쓰기, 검색, 모더레이션, 알림, 관리자 운영, retention cleanup, health check, 배포 preflight, 회귀 테스트까지 포함한다.
 
-## Backend Snapshot
+## 백엔드 스냅샷
 
-- Runtime app: Next.js App Router in `app/`
-- Data layer: Prisma + PostgreSQL
-- Validation: Zod schemas under `app/src/lib/validations`
-- Write orchestration: services under `app/src/server/services`
-- Read models: queries under `app/src/server/queries`
-- API routes: 55 App Router route handlers
-- Tests: 248 Vitest test files / 1198 tests plus 25 Playwright specs
-- Operations: health, security env preflight, latency snapshot, cleanup and repair scripts
+- 런타임 앱: `app/`의 Next.js App Router
+- 데이터 계층: Prisma + PostgreSQL
+- 입력 검증: `app/src/lib/validations`의 Zod schema
+- write orchestration: `app/src/server/services`
+- read model: `app/src/server/queries`
+- API route: App Router route handler 55개
+- 테스트: Vitest test file 248개 / test 1198개, Playwright spec 25개
+- 운영 도구: health, security env preflight, latency snapshot, cleanup/repair script
 
-## Domain Model Highlights
+## 도메인 모델 요약
 
-The schema models a community product rather than a CRUD demo:
+스키마는 CRUD 데모가 아니라 커뮤니티 제품을 모델링한다.
 
-- Identity and access: `User`, `Account`, `Session`, `PasswordResetToken`, `AuthAuditLog`
-- Community structure: `Neighborhood`, `Community`, `CommunityCategory`, `UserNeighborhood`
-- Content: `Post`, `Comment`, `PostReaction`, `PostBookmark`, `PostImage`
-- Structured boards: hospital reviews, walk routes, market listings, care requests, adoption, volunteer, place review, meetup, lost/found, Q&A
-- Safety and moderation: `Report`, `ReportAudit`, `UserSanction`, `ModerationActionLog`, `GuestAuthor`, `GuestBan`, `GuestViolation`
-- Operations and analytics: `SearchTermStat`, `SearchTermDailyMetric`, `Notification`, `NotificationDelivery`, feed personalization stats and event logs
+- identity/access: `User`, `Account`, `Session`, `PasswordResetToken`, `AuthAuditLog`
+- community structure: `Neighborhood`, `Community`, `CommunityCategory`, `UserNeighborhood`
+- content: `Post`, `Comment`, `PostReaction`, `PostBookmark`, `PostImage`
+- structured board: 병원 후기, 산책 코스, 중고거래, 돌봄 요청, 입양, 봉사, 장소 후기, 모임, 분실/목격, 질문/답변
+- safety/moderation: `Report`, `ReportAudit`, `UserSanction`, `ModerationActionLog`, `GuestAuthor`, `GuestBan`, `GuestViolation`
+- operations/analytics: `SearchTermStat`, `SearchTermDailyMetric`, `Notification`, `NotificationDelivery`, feed personalization stats/event log
 
-## Architecture Decisions
+## 아키텍처 결정
 
-### 1. Policy-first service layer
+### 1. 정책 우선 service layer
 
-High-risk flows are handled in service modules, not only UI checks. Write paths for posts, comments, reactions, reports, uploads, guest management, sanctions, and moderation actions go through backend policy enforcement.
+위험도가 높은 흐름은 UI 체크에만 의존하지 않고 service module에서 처리한다. 게시글, 댓글, 반응, 신고, 업로드, 비회원 관리, 제재, moderation action은 backend policy enforcement를 거친다.
 
-Evidence:
+근거 파일:
 
 - `app/src/server/services/posts/*`
 - `app/src/server/services/moderation/*`
 - `app/src/server/services/auth/*`
 - `app/src/server/services/notifications/*`
 
-### 2. Read model separation
+### 2. read model 분리
 
-List/detail/search/admin screens use query modules so read behavior can be optimized without mixing write-side policy orchestration.
+목록, 상세, 검색, 관리자 화면은 query module을 사용한다. 이렇게 해야 write-side policy orchestration과 섞지 않고 read behavior를 최적화할 수 있다.
 
-Evidence:
+근거 파일:
 
 - `app/src/server/queries/posts/*`
 - `app/src/server/queries/moderation/*`
 - `app/src/server/queries/notifications/*`
 - `app/src/server/queries/ops-overview.queries.ts`
 
-### 3. Guest support with explicit safety controls
+### 3. 명시적 안전장치를 둔 비회원 지원
 
-Guest read/write is product-critical, but guest flows are separated from authenticated write paths and guarded with rate limits, guest hashes, step-up checks, and moderation visibility rules.
+비회원 읽기/쓰기는 제품상 중요하지만, 회원 write path와 분리하고 rate limit, guest hash, step-up check, moderation visibility rule로 보호한다.
 
-Evidence:
+근거 파일:
 
 - `app/src/server/guest-step-up.ts`
 - `app/src/server/services/guest-author.service.ts`
 - `app/src/server/services/moderation/guest-safety.service.ts`
 - `app/src/server/services/posts/post-guest-management.service.ts`
 
-### 4. Operations are part of the backend
+### 4. 운영을 백엔드 일부로 취급
 
-The project includes production-oriented checks instead of only local tests.
+이 프로젝트는 로컬 테스트만이 아니라 production 운영에 가까운 점검을 포함한다.
 
-Evidence:
+근거 파일:
 
 - `app/scripts/check-health-endpoint.ts`
 - `app/scripts/check-security-env.ts`
@@ -76,49 +76,49 @@ Evidence:
 - `.github/workflows/quality-gate.yml`
 - `.github/workflows/ops-smoke-checks.yml`
 
-## Security And Abuse Work
+## 보안과 abuse 대응
 
-Completed security work includes:
+완료된 주요 보안 작업:
 
-- health response minimization and internal diagnostics token
-- CSP strict mode path
+- health response 최소화와 internal diagnostics token
+- CSP strict mode 경로
 - password policy, login lockout, session invalidation
-- guest identifier hardening with HMAC pepper
-- auth enumeration-safe responses
+- HMAC pepper 기반 guest identifier hardening
+- auth enumeration-safe response
 - production security env preflight
 - uploaded image provenance enforcement
-- comment response minimization
-- admin surface concealment and privileged audit trails
+- comment response 최소화
+- admin surface concealment와 privileged audit trail
 - guest write/read override hardening
 
-Source of truth:
+소스 오브 트루스:
 
 - `business/security/보안_계획.md`
 - `business/security/보안_위험_등록부.md`
 - `business/security/보안_진행상황.md`
 
-## Reliability And Operations
+## 신뢰성과 운영
 
-The backend has a minimal solo-operator routine:
+1인 운영 기준 최소 루틴:
 
 - `corepack pnpm -C app quality:check`
 - `corepack pnpm -C app ops:check:health`
 - `corepack pnpm -C app db:restore:local`
 
-It also has on-demand tools:
+on-demand 운영 도구:
 
 - security env strict check
 - Sentry ingestion check
 - latency snapshot
-- notification cleanup and delivery outbox retry
+- notification cleanup과 delivery outbox retry
 - auth audit cleanup
 - search-term cleanup
 - post integrity repair
 - guest legacy maintenance
 
-## API Surface
+## API 표면
 
-See `business/reports/api-route-inventory.md` for the route map. The most backend-relevant route groups are:
+라우트 지도는 `business/reports/api-route-inventory.md`를 본다. 백엔드 관점에서 중요한 route group은 다음과 같다.
 
 - `/api/auth/*`
 - `/api/posts/*`
@@ -130,44 +130,44 @@ See `business/reports/api-route-inventory.md` for the route map. The most backen
 - `/api/upload`
 - `/api/health`
 
-The generated contract report currently covers all 55 route handlers with 0 missing method exports, 0 adjacent test gaps, and 0 `validation=none` / 0 `monitoring=none` review labels.
+생성된 계약 리포트는 현재 route handler 55개를 다루며, method export 누락 0건, 인접 테스트 누락 0건, `validation=none` / `monitoring=none` 검토 라벨 0건이다.
 
-## Test Strategy
+## 테스트 전략
 
-The project uses layered verification:
+계층별 검증 방식:
 
-- Unit/integration: service, query, validation, script behavior
-- API route tests: request parsing, authorization, failure paths
-- Playwright: feed/search/auth/report/notification/editor hot paths
-- Quality gate: lint, typecheck, Vitest, Next build
-- Operations checks: health, security env, latency, Sentry optional smoke
+- unit/integration: service, query, validation, script behavior
+- API route test: request parsing, authorization, failure path
+- Playwright: feed/search/auth/report/notification/editor hot path
+- quality gate: lint, typecheck, Vitest, Next build
+- operations check: health, security env, latency, Sentry optional smoke
 
-Main command:
+대표 명령:
 
 ```bash
 corepack pnpm@9.12.3 -C app quality:check
 ```
 
-## Current Improvement Targets
+## 현재 개선 목표
 
-These are intentionally small, portfolio-visible next slices:
+포트폴리오 관점에서 작고 명확한 다음 slice:
 
-1. Keep production evidence reports current after each release candidate.
-2. Convert the strongest backend slices into interview Q&A cards and demo narration.
-3. Add targeted e2e coverage only when a changed feature has real browser-specific risk.
+1. release candidate 이후 production evidence report를 최신 상태로 유지한다.
+2. 가장 강한 backend slice를 면접 Q&A 카드와 demo narration으로 변환한다.
+3. 실제 browser-specific risk가 있는 기능 변경에만 targeted e2e를 추가한다.
 
-## Interview Talking Points
+## 면접에서 설명할 포인트
 
-- Why Local/Global is treated as a policy boundary, not only a UI filter.
-- How guest writing can exist without letting abuse bypass moderation.
-- Why read models and write services are separated.
-- How security env preflight prevented broken production deploys.
-- How the project balances solo-operator simplicity with release safety.
-- What parts were deliberately postponed: payment, automatic hard sanctions, map-heavy flows, and deep marketplace workflows.
+- `LOCAL / GLOBAL`을 단순 UI filter가 아니라 policy boundary로 다룬 이유
+- 비회원 글쓰기를 허용하면서 abuse가 moderation을 우회하지 못하게 한 방식
+- read model과 write service를 분리한 이유
+- security env preflight가 깨진 production deploy를 막은 사례
+- 1인 운영 단순성과 release safety를 균형 있게 잡은 방식
+- 의도적으로 미룬 범위: 결제, 자동 hard sanction, 지도 중심 deep flow, marketplace deep workflow
 
-## Known Tradeoffs
+## 알려진 trade-off
 
-- The project has strong breadth, but some backend modules are still large.
-- API route methods, adjacent tests, and access/validation/monitoring heuristic labels now have a generated check path; heuristic labels still require human review before they are treated as policy evidence.
-- Sentry is optional, so observability is currently health/log/script based unless external secrets are configured.
-- Production smoke is intentionally small for solo operation; deeper browser smoke is on-demand.
+- 프로젝트 범위는 넓지만 일부 backend module은 아직 크다.
+- API route method, adjacent test, access/validation/monitoring heuristic label은 생성 점검 경로가 있으나, heuristic label은 정책 증거로 쓰기 전에 사람이 리뷰해야 한다.
+- Sentry는 optional이라 외부 secret이 없으면 observability는 health/log/script 중심이다.
+- production smoke는 1인 운영에 맞게 작게 유지한다. 더 깊은 browser smoke는 on-demand로 분리한다.
