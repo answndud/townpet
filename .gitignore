@@ -68,6 +68,8 @@ docs/*
 !docs/product/**
 !docs/reports/
 docs/reports/*
+!docs/resume/
+!docs/resume/**
 !docs/security/
 !docs/security/**
 !docs/operations/manual-checks/
