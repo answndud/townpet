@@ -18,7 +18,8 @@
 
 ## 다음 작업 후보
 
-- `/feed/guest` client bundle 상위 chunk가 어떤 컴포넌트 경계에서 붙는지 확인하고, 피드 컨트롤/리스트/search client boundary 축소 후보를 찾는다.
+- `/feed/guest`에 남은 공통 chunk 중 70KB/31KB chunk의 성격을 확인하고 추가로 줄일 수 있는 client dependency를 찾는다.
+- `guest-feed-page-client`의 header/control/list shell 중 서버 렌더링 가능한 부분과 실제 interactive list 경계를 분리할 수 있는지 설계한다.
 - `/` 문서 41KB를 구성하는 server-rendered preview/section/footer markup을 점검하고, 전환에 직접 필요하지 않은 초기 HTML을 줄인다.
 - production 과부하를 피하는 저강도 browser metric 측정 루틴을 설계해 local spike와 실제 사용자 체감 성능을 분리한다.
 - 분실/목격 다음 확장 후보를 전단 이미지 품질, 카카오 공유 SDK, 보호자 전용 제보 관리 화면 중 하나로 좁혀 설계한다.

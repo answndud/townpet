@@ -1,4 +1,4 @@
-import { PostType } from "@prisma/client";
+import type { PostType } from "@prisma/client";
 
 import { formatKoreanDate } from "@/lib/date-format";
 

@@ -1,6 +1,10 @@
 import type { PostType } from "@prisma/client";
 
 import { buildPostContentExcerpt } from "@/lib/post-content-text";
+import {
+  getLostFoundAlertTypeLabel,
+  getLostFoundStatusLabel,
+} from "@/lib/lost-found-labels";
 import { toAbsoluteUrl } from "@/lib/site-url";
 
 type LostFoundAlertLike = {
@@ -21,21 +25,7 @@ type LostFoundSharePostLike = {
   neighborhood?: { city?: string | null; name?: string | null; district?: string | null } | null;
 };
 
-export function getLostFoundAlertTypeLabel(alertType?: string | null) {
-  return alertType === "FOUND" ? "목격/보호" : "실종";
-}
-
-export function getLostFoundStatusLabel(status?: string | null) {
-  if (status === "RESOLVED") {
-    return "해결됨";
-  }
-
-  if (status === "CLOSED") {
-    return "종료";
-  }
-
-  return "제보 접수 중";
-}
+export { getLostFoundAlertTypeLabel, getLostFoundStatusLabel };
 
 export function formatLostFoundShareDate(value?: string | Date | null) {
   if (!value) {

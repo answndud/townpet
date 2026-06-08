@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { PostType } from "@prisma/client";
+import type { PostType } from "@prisma/client";
 import type { ReactNode } from "react";
 
 import type { ReviewCategory } from "@/lib/review-category";
@@ -199,7 +199,7 @@ export function FeedControlPanel({
                   <Link
                     key={`feed-review-${option.value ?? "all"}`}
                     href={makeHref({
-                      nextType: PostType.PRODUCT_REVIEW,
+                      nextType: "PRODUCT_REVIEW",
                       nextReviewCategory: option.value ?? null,
                       nextPage: 1,
                     })}
