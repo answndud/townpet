@@ -10674,3 +10674,10 @@
 - 변경: profile별 기본 duration/concurrency/maxRequests/warmup을 두고, remote heavy profile은 `PERF_TRAFFIC_REMOTE_ACK`와 `PERF_TRAFFIC_ALLOW_HEAVY_REMOTE` 2단계 ACK 없이는 차단한다.
 - 검증: targeted Vitest, targeted ESLint, `typecheck`, production tiny smoke run PASS.
 - 후속: local/preview에서 baseline부터 반복 실행해 p95/p99가 무너지는 route와 concurrency 구간을 찾는다.
+
+### 2026-06-08 - 로컬 baseline 트래픽 3회 반복 측정
+
+- 요약: 로컬 production 서버에서 `perf:traffic` baseline profile을 3회 반복해 홈/피드/분실목격/API hot path의 p95/p99 흔들림을 확인했다.
+- 변경: `business/reports/traffic-baseline-local-2026-06-08.md`에 run별 수치와 cross-run 해석을 정리했다.
+- 검증: `db:restore:local`, `next build`, `next start`, baseline 3회 PASS. health는 로컬 운영 secret 누락으로 제외했다.
+- 후속: baseline은 한계를 드러내지 못했으므로 local `stress` profile로 올려 병목 route를 찾는다.
