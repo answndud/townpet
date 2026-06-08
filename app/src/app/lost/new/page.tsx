@@ -9,5 +9,5 @@ export const metadata = createNoIndexPageMetadata({
 });
 
 export default async function NewLostFoundPage() {
-  redirect("/posts/new?type=LOST_FOUND");
+  redirect("/posts/new?type=LOST_FOUND&template=lost_pet");
 }

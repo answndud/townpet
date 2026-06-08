@@ -10590,3 +10590,10 @@
 - 요약: 공유 패널에서 전단 저장과 이미지 열기를 분리하고 저장 파일명을 사용자에게 명확히 보여주도록 했다.
 - 변경: `?download=1` 전단 SVG attachment 응답, 안정적인 파일명 helper, `전단 저장` 액션과 `POSTER_DOWNLOAD` 기록을 추가했다.
 - 검증: targeted share/SVG/API tests, 모바일 393px 다운로드 링크/헤더/overflow 확인, `quality:check` PASS.
+
+### 2026-06-08 - 분실/목격 모바일 여정 마찰 점검
+
+- 요약: `/lost/new` 직접 진입도 분실 템플릿 작성 화면으로 수렴하도록 보정하고 모바일 hot path를 실제 클릭 기준으로 확인했다.
+- 변경: `/lost/new` redirect에 `template=lost_pet`을 포함하고 회귀 테스트를 추가했다.
+- 검증: targeted route/landing tests, 모바일 393px `/lost-found` → `/lost/new` → 구조화 상세 공유/목격 댓글 smoke, `quality:check` PASS.
+- 후속: 로컬 seed에 남은 `LostFoundAlert` 없는 레거시 `LOST_FOUND` 글의 backfill/CTA 분리 기준을 정리한다.
