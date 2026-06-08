@@ -18,7 +18,6 @@
 
 ## 다음 작업 후보
 
-- route asset 측정에 “문서 포함 총 전송량”과 “feed list visible timing”을 추가한다.
 - `/feed/guest` 서버 shell 전환 후 커진 문서/RSC payload를 줄일 수 있는지 목록 item markup과 props를 점검한다.
 - `/` 문서 41KB를 구성하는 server-rendered preview/section/footer markup을 점검하고, 전환에 직접 필요하지 않은 초기 HTML을 줄인다.
 - root `AppShellHeader` 전체를 route group별 server shell로 나눌 수 있는지 검토한다. root layout만으로는 pathname 구분이 어려워 route group 재구성이 필요할 수 있다.
