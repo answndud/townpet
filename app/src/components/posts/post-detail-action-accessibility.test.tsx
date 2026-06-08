@@ -158,10 +158,15 @@ describe("post detail action accessibility", () => {
     expect(html).toContain("서초구 반포동");
     expect(html).toContain("공개 연락처, 오픈채팅, 집 주소 전체 제외");
     expect(html).toContain("카카오톡 문구 복사");
+    expect(html).toContain("전단 저장");
     expect(html).toContain("인스타/전단 이미지");
     expect(html).toContain('aria-label="분실/목격 카카오톡 공유 문구 복사"');
     expect(html).toContain('aria-label="분실/목격 게시글 링크 복사"');
+    expect(html).toContain('aria-label="분실/목격 전단 SVG 저장"');
     expect(html).toContain('aria-label="분실/목격 인스타 또는 전단 이미지 새 창에서 열기"');
+    expect(html).toContain('download="townpet-found-pet-post-1.svg"');
+    expect(html).toContain("lost-found-share.svg?download=1");
+    expect(html).toContain("저장 파일: townpet-found-pet-post-1.svg");
     expect(html).toContain("목격자는 게시글 댓글로 위치와 시간을 제보");
     expect(html).toContain("개인 연락처와 집 주소 전체는 공개하지 않기");
     expect(html).toContain("공유 문구");

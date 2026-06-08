@@ -19,6 +19,12 @@ function createRequest(postId = "post-1") {
   return new Request(`http://localhost/api/posts/${postId}/lost-found-share.svg`) as NextRequest;
 }
 
+function createDownloadRequest(postId = "post-1") {
+  return new Request(
+    `http://localhost/api/posts/${postId}/lost-found-share.svg?download=1`,
+  ) as NextRequest;
+}
+
 function createParams(postId = "post-1") {
   return { params: Promise.resolve({ id: postId }) };
 }
@@ -57,6 +63,7 @@ describe("GET /api/posts/[id]/lost-found-share.svg", () => {
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toBe("image/svg+xml; charset=utf-8");
     expect(response.headers.get("cache-control")).toBe("public, max-age=60, stale-while-revalidate=300");
+    expect(response.headers.get("content-disposition")).toBeNull();
     expect(svg).toContain("<svg");
     expect(svg).toContain("TownPet");
     expect(svg).toContain("목격/보호");
@@ -68,6 +75,20 @@ describe("GET /api/posts/[id]/lost-found-share.svg", () => {
     expect(svg).toContain("/posts/post-1/guest");
     expect(mockGetPostById).toHaveBeenCalledWith("post-1");
     expect(mockAssertPostReadable).toHaveBeenCalledWith(expect.objectContaining({ id: "post-1" }));
+  });
+
+  it("serves a stable attachment filename when download is requested", async () => {
+    const response = await GET(createDownloadRequest(), createParams());
+    const svg = await response.text();
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-disposition")).toContain(
+      'attachment; filename="townpet-found-pet-post-1.svg"',
+    );
+    expect(response.headers.get("content-disposition")).toContain(
+      "filename*=UTF-8''townpet-found-pet-post-1.svg",
+    );
+    expect(svg).toContain("<svg");
   });
 
   it("returns 404 for non lost-found posts", async () => {
