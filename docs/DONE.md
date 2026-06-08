@@ -10688,3 +10688,10 @@
 - 변경: `business/reports/traffic-stress-local-2026-06-08.md`에 p50/p95/p99/max와 병목 후보를 정리했다.
 - 검증: stress profile 10,000 load requests, 0% error, 모든 route PASS.
 - 후속: stress도 실패를 만들지 못했으므로 local `spike` profile로 순간 concurrency 100 queueing/tail을 확인한다.
+
+### 2026-06-08 - 로컬 spike 트래픽 측정
+
+- 요약: 로컬 production 서버에서 `perf:traffic` spike profile을 실행해 순간 concurrency 100에서 page route p99가 1초대로 증폭되는 것을 확인했다.
+- 변경: `business/reports/traffic-spike-local-2026-06-08.md`에 stress 대비 p99 증폭과 병목 후보를 정리했다.
+- 검증: spike profile 5,000 load requests, 0% error, 모든 route PASS.
+- 후속: DB 인덱스보다 `/`, `/feed/guest`의 page render/body transfer/queueing을 phase별로 분해한다.
