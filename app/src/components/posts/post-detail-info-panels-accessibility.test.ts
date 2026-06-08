@@ -76,6 +76,8 @@ describe("post detail info panels accessibility", () => {
     expect(lostFoundSection).toContain("다음 행동");
     expect(lostFoundSection).toContain("보호자 또는 공유자");
     expect(lostFoundSection).toContain("공유 도구");
+    expect(lostFoundSection).toContain("제보 관리");
+    expect(lostFoundSection).toContain('href={`/posts/${post.id}/sightings`}');
     expect(lostFoundSection).toContain("목격자");
     expect(lostFoundSection).toContain("목격 제보");
     expect(lostFoundSection).toContain('href="#lost-found-share-tools"');

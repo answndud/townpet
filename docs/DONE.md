@@ -10792,3 +10792,10 @@
 - 변경: `format=png` API 옵션, PNG 파일명 helper, 공유 패널 기본 저장/미리보기 URL, 결정 리포트를 추가했다.
 - 검증: targeted Vitest 19 tests PASS.
 - 후속: 보호자 전용 제보 관리 화면과 카카오 공유 SDK는 별도 작업으로 분리한다.
+
+### 2026-06-08 - 분실/목격 보호자 제보 관리 화면
+
+- 요약: 분실/목격 글 작성자와 운영자가 목격 제보 댓글을 한 화면에서 확인하는 read-only 관리 화면을 추가했다.
+- 변경: `/posts/[id]/sightings`, 관리 query/service, 상세 패널 `제보 관리` 링크, 정책 리포트를 추가했다.
+- 검증: targeted Vitest 12 tests, 관련 ESLint, `typecheck` PASS.
+- 후속: 카카오 공유 SDK 조건 확인과 제보 상태/지도/비공개 대화 확장 후보를 분리한다.
