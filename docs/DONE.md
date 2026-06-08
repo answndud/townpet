@@ -10618,3 +10618,10 @@
 - 변경: `e2e/lost-found-mobile-flow.spec.ts`에 비회원 목격 위치/시간/본문 제출, 성공 메시지, 댓글 카드, `LOST_FOUND_SIGHTING` 저장 검증을 추가했다.
 - 검증: targeted Playwright chromium e2e, `quality:check` PASS.
 - 후속: 댓글 제출 후 피드/랜딩 카드의 댓글 수 동기화까지 확인한다.
+
+### 2026-06-08 - 분실/목격 댓글 수 동기화 회귀 검증
+
+- 요약: 목격 댓글 제출 후 DB `commentCount`, guest 피드 카드, `/lost-found` 랜딩 카드 댓글 수가 `댓글 1`로 반영되는지 고정했다.
+- 변경: 랜딩 최근 제보 카드에 안정적인 test id를 추가하고, 모바일 e2e가 제출 후 피드/랜딩 count를 확인하도록 확장했다.
+- 검증: lost-found page unit test, targeted Playwright chromium e2e, `quality:check` PASS.
+- 후속: 보호자 공개 목격 제보의 공개 노출 제한을 회귀 테스트로 확인한다.
