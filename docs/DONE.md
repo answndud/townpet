@@ -10729,3 +10729,10 @@
 - 변경: `lost-found-labels`, Prisma runtime import 제거, `feed-guest-client-boundary-reduction-2026-06-08.md` 리포트를 추가했다.
 - 검증: targeted Vitest 12 tests, 관련 ESLint, `typecheck`, `next build`, local asset 측정 PASS.
 - 결과: `/feed/guest` script transfer 256,112B -> 186,707B, total transfer 305,592B -> 235,887B.
+
+### 2026-06-08 - `/feed/guest` 잔여 공통 chunk 분석
+
+- 요약: 남은 70KB/31KB/21KB/18KB chunk는 대부분 Next/App Router와 root layout 공통 client shell 비용임을 확인했다.
+- 변경: `feed-guest-remaining-common-chunks-2026-06-08.md`에 web-vitals/scroll button 실험과 보류 판단을 정리했다.
+- 검증: 관련 ESLint, `typecheck`, `next build`, local asset 측정 PASS.
+- 후속: 다음 절감은 `guest-feed-page-client` server shell/client island 분리처럼 구조 변경이 필요하다.
