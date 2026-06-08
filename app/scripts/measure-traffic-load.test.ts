@@ -4,6 +4,7 @@ import {
   buildDefaultTrafficTargets,
   buildTrafficRunConfig,
   filterTrafficTargets,
+  parseTrafficProfile,
   percentile,
   selectWeightedTarget,
   summarizeTraffic,
@@ -45,6 +46,34 @@ describe("measure-traffic-load helpers", () => {
       "health",
     ]);
     expect(() => filterTrafficTargets(targets, "missing")).toThrow(/unknown target/);
+  });
+
+  it("parses traffic profiles and rejects unknown profile names", () => {
+    expect(parseTrafficProfile(undefined)).toBe("smoke");
+    expect(parseTrafficProfile("baseline")).toBe("baseline");
+    expect(parseTrafficProfile("SPIKE")).toBe("spike");
+    expect(() => parseTrafficProfile("burst")).toThrow(/PERF_TRAFFIC_PROFILE/);
+  });
+
+  it("applies profile defaults before env overrides", () => {
+    expect(
+      buildTrafficRunConfig({
+        PERF_TRAFFIC_PROFILE: "baseline",
+      }),
+    ).toMatchObject({
+      profile: "baseline",
+      durationMs: 60_000,
+      concurrency: 8,
+      maxRequests: 1_200,
+      warmupPerTarget: 2,
+    });
+
+    expect(
+      buildTrafficRunConfig({
+        PERF_TRAFFIC_PROFILE: "baseline",
+        PERF_TRAFFIC_CONCURRENCY: "3",
+      }).concurrency,
+    ).toBe(3);
   });
 
   it("selects targets by cumulative weight", () => {
@@ -105,5 +134,28 @@ describe("measure-traffic-load helpers", () => {
         PERF_TRAFFIC_REMOTE_ACK: "I_UNDERSTAND",
       }).concurrency,
     ).toBe(8);
+  });
+
+  it("requires a second acknowledgement for remote stress, spike, and soak profiles", () => {
+    expect(() =>
+      buildTrafficRunConfig({
+        PERF_TRAFFIC_BASE_URL: "https://townpet.vercel.app",
+        PERF_TRAFFIC_PROFILE: "stress",
+        PERF_TRAFFIC_REMOTE_ACK: "I_UNDERSTAND",
+      }),
+    ).toThrow(/Remote stress traffic run/);
+
+    expect(
+      buildTrafficRunConfig({
+        PERF_TRAFFIC_BASE_URL: "https://townpet.vercel.app",
+        PERF_TRAFFIC_PROFILE: "stress",
+        PERF_TRAFFIC_REMOTE_ACK: "I_UNDERSTAND",
+        PERF_TRAFFIC_ALLOW_HEAVY_REMOTE: "1",
+      }),
+    ).toMatchObject({
+      profile: "stress",
+      concurrency: 30,
+      maxRequests: 10_000,
+    });
   });
 });

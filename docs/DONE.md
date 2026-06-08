@@ -10667,3 +10667,10 @@
 - 변경: warm-up과 load phase를 분리하고 production 과부하 방지 ACK, Markdown/JSON 리포트, 목표 평가, helper unit test를 추가했다.
 - 검증: targeted Vitest, targeted ESLint, `typecheck`, `docs:refresh:check`, production 저강도 traffic run PASS.
 - 후속: traffic 리포트의 tail latency 기준으로 가장 느린 route 1개를 골라 cache/server-timing 병목을 좁힌다.
+
+### 2026-06-08 - 트래픽 한계 탐색 profile 확장
+
+- 요약: `perf:traffic`에 `smoke`, `baseline`, `stress`, `spike`, `soak` profile을 추가해 단순 동작 확인과 한계 탐색을 분리했다.
+- 변경: profile별 기본 duration/concurrency/maxRequests/warmup을 두고, remote heavy profile은 `PERF_TRAFFIC_REMOTE_ACK`와 `PERF_TRAFFIC_ALLOW_HEAVY_REMOTE` 2단계 ACK 없이는 차단한다.
+- 검증: targeted Vitest, targeted ESLint, `typecheck`, production tiny smoke run PASS.
+- 후속: local/preview에서 baseline부터 반복 실행해 p95/p99가 무너지는 route와 concurrency 구간을 찾는다.
