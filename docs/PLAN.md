@@ -18,6 +18,6 @@
 
 ## 다음 작업 후보
 
-- `/`와 `/feed/guest`의 page route static/dynamic 상태, middleware/header work, first-byte work를 점검한다.
-- traffic 리포트에서 tail latency가 가장 큰 `home`/`lost_found_page` cache 상태와 page payload를 좁혀 본다.
+- `/`의 `getHomeFeedPayload()`에 server timing 또는 debug timing을 추가해 ISR 재생성/DB read/직렬화 시간을 분리한다.
+- `PERF_TRAFFIC_TARGETS=home,guest_feed_page,guest_feed_api`로 phase-aware spike를 재실행해 local queueing noise를 줄인다.
 - 분실/목격 다음 확장 후보를 전단 이미지 품질, 카카오 공유 SDK, 보호자 전용 제보 관리 화면 중 하나로 좁혀 설계한다.

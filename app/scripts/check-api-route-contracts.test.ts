@@ -155,9 +155,9 @@ describe("api route contract check", () => {
       },
     ]);
 
-    expect(report).toContain("- missingAdjacentTests: 1");
-    expect(report).not.toContain("missing adjacent test: `src/app/api/auth/[...nextauth]/route.ts`");
-    expect(report).toContain("missing adjacent test: `src/app/api/posts/[id]/route.ts`");
+    expect(report).toContain("- 인접 테스트 누락: 1");
+    expect(report).not.toContain("인접 테스트 누락: `src/app/api/auth/[...nextauth]/route.ts`");
+    expect(report).toContain("인접 테스트 누락: `src/app/api/posts/[id]/route.ts`");
   });
 
   it("writes and checks a deterministic contract report", async () => {

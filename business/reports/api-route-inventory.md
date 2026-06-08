@@ -1,36 +1,39 @@
-# TownPet API Route Inventory
+# TownPet API 라우트 인벤토리
 
-Last updated: 2026-06-07
+마지막 갱신일: 2026-06-07
 
-## Purpose
+## 목적
 
-This inventory turns the App Router API surface into a backend review artifact. It helps reviewers see method coverage, access boundaries, validation, monitoring, and test gaps without reading every `route.ts` first.
+이 인벤토리는 App Router API 표면을 백엔드 리뷰 자료로 바꾼 문서다. 리뷰어가 모든 `route.ts`를 먼저 읽지 않아도 메서드 커버리지, 접근 경계, 입력 검증, 모니터링, 테스트 누락을 볼 수 있게 한다.
 
-Machine-generated method/test drift check with access/validation/monitoring heuristics:
+소스 텍스트 기반 method/test drift check와 access/validation/monitoring heuristic 생성 명령:
 
 ```bash
 corepack pnpm@9.12.3 -C app api:contracts
 corepack pnpm@9.12.3 -C app api:contracts:write
 ```
 
-Generated output: `business/reports/api-route-contracts.generated.md`
+생성 결과 파일: `business/reports/api-route-contracts.generated.md`
 
-## Summary
+## 요약
 
-- API route handlers: 55
-- Primary auth modes: public/guest, auth-aware, moderator/admin
-- Standard backend concerns: Zod validation, service/query delegation, structured JSON response, `monitorUnhandledError`
-- Immediate test-gap candidates: 0 direct implementation routes without adjacent `route.test.ts`
-- Generated contract report: `api-route-contracts.generated.md`, currently 55 route handlers, 0 missing method exports, 0 adjacent test gaps
-- Generated heuristic snapshot:
+- API route handler: 55개
+- 주요 auth mode: public/guest, auth-aware, moderator/admin
+- 표준 backend concern: Zod validation, service/query delegation, structured JSON response, `monitorUnhandledError`
+- 즉시 처리할 test-gap 후보: 인접 `route.test.ts`가 없는 직접 구현 route 0건
+- 생성 계약 리포트: `api-route-contracts.generated.md`
+  - route handler 55개
+  - method export 누락 0건
+  - 인접 테스트 누락 0건
+- 생성 heuristic snapshot:
   - access: admin=2, auth-aware=18, authenticated=10, moderator=6, provider-managed=1, public=15, public-internal-token=3
   - validation: manual=13, no-input=3, provider-managed=1, schema=25, service-delegated=12, static-response=1
   - monitoring: logger=1, monitorUnhandledError=52, provider-managed=1, static-response=1
-  - review result: `validation=none` 0 routes, `monitoring=none` 0 routes
+  - 검토 결과: `validation=none` 0 route, `monitoring=none` 0 route
 
-## Route Table
+## 라우트 목록
 
-| Route | Methods | Access / Controls |
+| 라우트 | 메서드 | 접근/통제 |
 |---|---:|---|
 | `/api/admin/auth-audits/export` | GET | moderator/admin, validated, monitored |
 | `/api/admin/auth-audits` | GET | moderator/admin, validated, monitored |
@@ -87,15 +90,15 @@ Generated output: `business/reports/api-route-contracts.generated.md`
 | `/api/users/[id]/relation` | GET | auth-aware, monitored |
 | `/api/viewer-shell` | GET | public/session-aware, monitored |
 
-## Adjacent Route Test Gaps
+## 인접 라우트 테스트 누락
 
-None. Provider-managed routes are excluded from adjacent unit-test gap accounting and remain covered through auth integration/e2e checks.
+없음. provider-managed route는 인접 unit-test 누락 계산에서 제외하고 auth integration/e2e check로 간접 보호한다.
 
-## Closed Route Test Gaps
+## 닫힌 라우트 테스트 누락
 
-The following adjacent tests were added after this inventory was created:
+이 인벤토리 생성 이후 추가된 인접 테스트:
 
-| Route file | Test file | Coverage |
+| route 파일 | 테스트 파일 | 커버리지 |
 |---|---|---|
 | `app/src/app/api/reports/[id]/route.ts` | `app/src/app/api/reports/[id]/route.test.ts` | moderator required, route id/body forwarding, service error mapping, internal error monitoring |
 | `app/src/app/api/reports/bulk/route.ts` | `app/src/app/api/reports/bulk/route.test.ts` | moderator required, body forwarding, service error mapping, internal error monitoring |
@@ -106,16 +109,16 @@ The following adjacent tests were added after this inventory was created:
 | `app/src/app/api/auth/verify/confirm/route.ts` | `app/src/app/api/auth/verify/confirm/route.test.ts` | invalid token, rate limit key, welcome email side effect, service error mapping, internal error monitoring |
 | `app/src/app/api/posts/[id]/lost-found-share.svg/route.ts` | `app/src/app/api/posts/[id]/lost-found-share.svg/route.test.ts` | public SVG response, not-found/read-access/inactive 404, unexpected error monitoring |
 
-## Recommended Next Slice
+## 추천 다음 작업 단위
 
-Keep provider-managed auth behavior covered indirectly unless a provider-specific regression needs a route-level harness:
+provider-managed auth behavior는 provider-specific regression이 필요해질 때까지 간접 커버리지로 유지한다.
 
 1. `app/e2e/kakao-login-entry.spec.ts`
 2. `app/e2e/naver-login-entry.spec.ts`
 3. `app/e2e/social-onboarding-flow.spec.ts`
 4. `app/e2e/profile-social-account-linking.spec.ts`
 
-Verification:
+검증 명령:
 
 ```bash
 corepack pnpm@9.12.3 -C app test:e2e -- e2e/kakao-login-entry.spec.ts e2e/naver-login-entry.spec.ts e2e/social-onboarding-flow.spec.ts e2e/profile-social-account-linking.spec.ts --project=chromium

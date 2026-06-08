@@ -632,25 +632,27 @@ function buildMarkdown(params: {
   const failedGoals = params.summaries.filter((summary) => summary.goalStatus === "FAIL");
   const lines: string[] = [];
 
-  lines.push("# TownPet Traffic Load Snapshot");
+  lines.push("# TownPet 트래픽 부하 스냅샷");
   lines.push("");
-  lines.push(`- generatedAt: ${params.generatedAt}`);
-  lines.push(`- profile: ${params.config.profile}`);
-  lines.push(`- baseUrl: ${params.config.baseUrl}`);
-  lines.push(`- durationMs: ${params.config.durationMs}`);
-  lines.push(`- concurrency: ${params.config.concurrency}`);
-  lines.push(`- timeoutMs: ${params.config.timeoutMs}`);
-  lines.push(`- thinkMs: ${params.config.thinkMs}`);
-  lines.push(`- warmupPerTarget: ${params.config.warmupPerTarget}`);
-  lines.push(`- maxRequests: ${params.config.maxRequests === 0 ? "unlimited" : params.config.maxRequests} (load phase cap)`);
-  lines.push(`- totalRequests: ${params.samples.length}`);
-  lines.push(`- loadRequests: ${params.samples.filter((sample) => sample.phase === "load").length}`);
-  lines.push(`- goalStatus: ${failedGoals.length === 0 ? "PASS" : "FAIL"}`);
+  lines.push(`- 생성 시각: ${params.generatedAt}`);
+  lines.push(`- 프로파일: ${params.config.profile}`);
+  lines.push(`- 기준 URL: ${params.config.baseUrl}`);
+  lines.push(`- 측정 시간(ms): ${params.config.durationMs}`);
+  lines.push(`- 동시성: ${params.config.concurrency}`);
+  lines.push(`- 제한 시간(ms): ${params.config.timeoutMs}`);
+  lines.push(`- 요청 간 대기(ms): ${params.config.thinkMs}`);
+  lines.push(`- 대상별 warm-up 요청 수: ${params.config.warmupPerTarget}`);
+  lines.push(
+    `- 최대 요청 수: ${params.config.maxRequests === 0 ? "제한 없음" : params.config.maxRequests} (부하 구간 기준)`,
+  );
+  lines.push(`- 전체 요청 수: ${params.samples.length}`);
+  lines.push(`- 부하 구간 요청 수: ${params.samples.filter((sample) => sample.phase === "load").length}`);
+  lines.push(`- 목표 판정: ${failedGoals.length === 0 ? "통과" : "실패"}`);
   lines.push("");
-  lines.push("## Load Summary (goal basis)");
+  lines.push("## 부하 구간 요약(목표 판정 기준)");
   lines.push("");
   lines.push(
-    "| target | path | requests | rps | status | error | total p50 | total p95 | total p99 | total max | header p95 | header p99 | body p95 | body p99 | bytes p50 | goal |",
+    "| 대상 | 경로 | 요청 수 | RPS | 상태 | 오류율 | 전체 p50 | 전체 p95 | 전체 p99 | 전체 max | 헤더 p95 | 헤더 p99 | 본문 p95 | 본문 p99 | 전송량 p50 | 목표 |",
   );
   lines.push(
     "| --- | --- | ---: | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
@@ -681,9 +683,9 @@ function buildMarkdown(params: {
 
   if (params.warmupSummaries.length > 0) {
     lines.push("");
-    lines.push("## Warm-up Summary (excluded from goal)");
+    lines.push("## Warm-up 요약(목표 판정 제외)");
     lines.push("");
-    lines.push("| target | requests | status | total p50 | total p95 | total p99 | header p99 | body p99 | max |");
+    lines.push("| 대상 | 요청 수 | 상태 | 전체 p50 | 전체 p95 | 전체 p99 | 헤더 p99 | 본문 p99 | max |");
     lines.push("| --- | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: |");
     for (const summary of params.warmupSummaries) {
       lines.push(
@@ -703,10 +705,10 @@ function buildMarkdown(params: {
   }
 
   lines.push("");
-  lines.push("## Goal Evaluation");
+  lines.push("## 목표 판정");
   lines.push("");
   if (failedGoals.length === 0) {
-    lines.push("- All configured route goals passed.");
+    lines.push("- 설정된 모든 경로 목표를 통과했다.");
   } else {
     for (const summary of failedGoals) {
       lines.push(`- ${summary.label}: ${summary.goalReasons.join("; ")}`);
@@ -714,9 +716,9 @@ function buildMarkdown(params: {
   }
 
   lines.push("");
-  lines.push("## Raw Samples");
+  lines.push("## 원본 샘플");
   lines.push("");
-  lines.push("| # | phase | worker | target | status | ok | duration | header | body | bytes | cache | vercel id | error |");
+  lines.push("| # | 구간 | 워커 | 대상 | 상태 | 성공 | 전체 시간 | 헤더 | 본문 | 전송량 | 캐시 | Vercel ID | 오류 |");
   lines.push("| ---: | --- | ---: | --- | ---: | --- | ---: | ---: | ---: | ---: | --- | --- | --- |");
   for (const sample of params.samples) {
     const bodyMs = Math.max(0, sample.durationMs - sample.headerMs);
@@ -727,7 +729,7 @@ function buildMarkdown(params: {
         String(sample.workerIndex),
         sample.targetLabel,
         String(sample.status),
-        sample.ok ? "yes" : "no",
+        sample.ok ? "예" : "아니오",
         formatMs(sample.durationMs),
         formatMs(sample.headerMs),
         formatMs(bodyMs),
@@ -740,7 +742,7 @@ function buildMarkdown(params: {
   }
 
   lines.push("");
-  lines.push("## How To Compare");
+  lines.push("## 비교 방법");
   lines.push("");
   lines.push("- 같은 profile, baseUrl, duration, concurrency, targets, warmup 설정으로 개선 전/후를 비교한다.");
   lines.push("- production에는 `stress`, `spike`, `soak` profile을 기본 차단한다. heavy remote run은 2단계 ACK가 필요하다.");
