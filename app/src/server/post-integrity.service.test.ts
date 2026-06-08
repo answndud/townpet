@@ -1,4 +1,10 @@
-import { PostReactionType, PostStatus } from "@prisma/client";
+import {
+  LostFoundStatus,
+  LostFoundType,
+  PostReactionType,
+  PostStatus,
+  PostType,
+} from "@prisma/client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { prisma } from "@/lib/prisma";
@@ -6,6 +12,7 @@ import {
   archiveInvalidNotificationTargets,
   recountPostEngagementCounts,
   repairDeletedPostIntegrity,
+  repairLostFoundAlertIntegrity,
 } from "@/server/post-integrity.service";
 
 vi.mock("@/lib/prisma", () => ({
@@ -13,6 +20,9 @@ vi.mock("@/lib/prisma", () => ({
     post: {
       findMany: vi.fn(),
       update: vi.fn(),
+    },
+    lostFoundAlert: {
+      create: vi.fn(),
     },
     comment: {
       findMany: vi.fn(),
@@ -40,6 +50,9 @@ const mockPrisma = vi.mocked(prisma) as unknown as {
     findMany: ReturnType<typeof vi.fn>;
     update: ReturnType<typeof vi.fn>;
   };
+  lostFoundAlert: {
+    create: ReturnType<typeof vi.fn>;
+  };
   comment: {
     findMany: ReturnType<typeof vi.fn>;
     count: ReturnType<typeof vi.fn>;
@@ -64,6 +77,7 @@ describe("post integrity service", () => {
   beforeEach(() => {
     mockPrisma.post.findMany.mockReset();
     mockPrisma.post.update.mockReset();
+    mockPrisma.lostFoundAlert.create.mockReset();
     mockPrisma.comment.findMany.mockReset();
     mockPrisma.comment.count.mockReset();
     mockPrisma.commentReaction.count.mockReset();
@@ -277,5 +291,59 @@ describe("post integrity service", () => {
         dislikeCount: 1,
       },
     });
+  });
+
+  it("repairs lost-found posts missing structured alert rows", async () => {
+    mockPrisma.post.findMany.mockResolvedValue([
+      {
+        id: "lost-1",
+        title: "망원동 회색 줄무늬 고양이 찾는 전단",
+        createdAt: new Date("2026-03-17T00:00:00.000Z"),
+        animalTags: ["고양이"],
+      },
+    ]);
+    mockPrisma.lostFoundAlert.create.mockResolvedValue({ id: "alert-1" });
+
+    const result = await repairLostFoundAlertIntegrity();
+
+    expect(result).toEqual({
+      scannedPosts: 1,
+      repairedAlerts: 1,
+    });
+    expect(mockPrisma.post.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          type: PostType.LOST_FOUND,
+          lostFoundAlert: null,
+        },
+      }),
+    );
+    expect(mockPrisma.lostFoundAlert.create).toHaveBeenCalledWith({
+      data: {
+        postId: "lost-1",
+        alertType: LostFoundType.LOST,
+        petType: "고양이",
+        breed: "망원동 회색 줄무늬 고양이 찾는 전단",
+        lastSeenAt: new Date("2026-03-17T00:00:00.000Z"),
+        lastSeenLocation: "위치 미확인",
+        status: LostFoundStatus.ACTIVE,
+      },
+    });
+  });
+
+  it("dry-runs lost-found alert repair without writing rows", async () => {
+    mockPrisma.post.findMany.mockResolvedValue([
+      {
+        id: "lost-2",
+        title: "",
+        createdAt: new Date("2026-03-18T00:00:00.000Z"),
+        animalTags: [],
+      },
+    ]);
+
+    const result = await repairLostFoundAlertIntegrity({ dryRun: true });
+
+    expect(result.repairedAlerts).toBe(1);
+    expect(mockPrisma.lostFoundAlert.create).not.toHaveBeenCalled();
   });
 });

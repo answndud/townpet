@@ -1,5 +1,14 @@
 import "dotenv/config";
-import { PostScope, PostType, PrismaClient } from "@prisma/client";
+import {
+  BoardScope,
+  CommonBoardType,
+  LostFoundStatus,
+  LostFoundType,
+  PostScope,
+  PostType,
+  Prisma,
+  PrismaClient,
+} from "@prisma/client";
 import { assertLocalDevelopmentDatabase } from "../src/server/local-database-guard";
 
 let prisma: PrismaClient;
@@ -14,9 +23,10 @@ type SearchSeedPost = {
   content: string;
   type: PostType;
   scope?: PostScope;
+  lostFoundAlert?: Prisma.LostFoundAlertCreateWithoutPostInput;
 };
 
-const SEARCH_SEED_POSTS: SearchSeedPost[] = [
+export const SEARCH_SEED_POSTS: SearchSeedPost[] = [
   {
     title: "강남 산책로 추천: 주차 가능한 코스",
     content: "강남에서 주차 가능 산책 코스를 정리했습니다.",
@@ -70,6 +80,14 @@ const SEARCH_SEED_POSTS: SearchSeedPost[] = [
     content: "분실 신고 글입니다. 목격 정보 부탁드립니다.",
     type: "LOST_FOUND",
     scope: "GLOBAL",
+    lostFoundAlert: {
+      alertType: LostFoundType.LOST,
+      petType: "강아지",
+      breed: "갈색 푸들",
+      lastSeenAt: new Date("2026-03-23T09:00:00.000Z"),
+      lastSeenLocation: "서울 서초구 서초동 산책로 주변",
+      status: LostFoundStatus.ACTIVE,
+    },
   },
   {
     title: "우리동네 병원 선택 기준",
@@ -151,6 +169,56 @@ const SEARCH_SEED_POSTS: SearchSeedPost[] = [
   },
 ];
 
+function buildSearchSeedPostCommonData(post: SearchSeedPost) {
+  const common = {
+    content: post.content,
+    type: post.type,
+    scope: post.scope ?? PostScope.GLOBAL,
+    status: "ACTIVE" as const,
+  };
+
+  if (!post.lostFoundAlert) {
+    return common;
+  }
+
+  return {
+    ...common,
+    boardScope: BoardScope.COMMON,
+    commonBoardType: CommonBoardType.LOST_FOUND,
+  };
+}
+
+export function buildSearchSeedPostCreateData(userId: string, post: SearchSeedPost) {
+  return {
+    authorId: userId,
+    title: post.title,
+    ...buildSearchSeedPostCommonData(post),
+    ...(post.lostFoundAlert
+      ? {
+          lostFoundAlert: {
+            create: post.lostFoundAlert,
+          },
+        }
+      : {}),
+  };
+}
+
+export function buildSearchSeedPostUpdateData(post: SearchSeedPost) {
+  return {
+    ...buildSearchSeedPostCommonData(post),
+    ...(post.lostFoundAlert
+      ? {
+          lostFoundAlert: {
+            upsert: {
+              create: post.lostFoundAlert,
+              update: post.lostFoundAlert,
+            },
+          },
+        }
+      : {}),
+  };
+}
+
 async function main() {
   assertLocalDevelopmentDatabase(process.env, "search case seeding");
 
@@ -182,26 +250,14 @@ async function main() {
     if (existing) {
       await prisma.post.update({
         where: { id: existing.id },
-        data: {
-          content: post.content,
-          type: post.type,
-          scope: post.scope ?? "GLOBAL",
-          status: "ACTIVE",
-        },
+        data: buildSearchSeedPostUpdateData(post),
       });
       updated += 1;
       continue;
     }
 
     await prisma.post.create({
-      data: {
-        authorId: user.id,
-        title: post.title,
-        content: post.content,
-        type: post.type,
-        scope: post.scope ?? "GLOBAL",
-        status: "ACTIVE",
-      },
+      data: buildSearchSeedPostCreateData(user.id, post),
     });
     created += 1;
   }
