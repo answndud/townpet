@@ -1,12 +1,10 @@
 import Link from "next/link";
 
-import { buildOperatorContentMetaLabel } from "@/components/posts/operator-content-source-panel";
 import type { HomeFeedItem, HomeFeedPayload } from "@/server/queries/home-feed.queries";
 
 type EmptyAction = {
   href: string;
   label: string;
-  note: string;
 };
 
 function formatDate(value: string) {
@@ -41,12 +39,9 @@ export function FeedPreviewList({
               key={action.href}
               href={action.href}
               prefetch={false}
-              className="grid gap-0.5 px-3 py-2 transition hover:bg-[#f6faff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#3567b5]"
+              className="block px-3 py-2 text-xs font-semibold leading-5 text-[#315b9a] transition hover:bg-[#f6faff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#3567b5]"
             >
-              <span className="text-xs font-semibold leading-5 text-[#315b9a]">
-                {action.label}
-              </span>
-              <span className="text-[11px] leading-4 text-[#6b84a8]">{action.note}</span>
+              {action.label}
             </Link>
           ))}
         </div>
@@ -56,7 +51,7 @@ export function FeedPreviewList({
 
   return (
     <div className="border-y border-[#dbe6f5] bg-[#fbfdff]">
-      {items.slice(0, 4).map((item) => (
+      {items.slice(0, 3).map((item) => (
         <Link
           key={item.id}
           href={item.href}
@@ -78,27 +73,16 @@ export function FeedPreviewList({
             <h3 className="mt-1 truncate text-sm font-semibold leading-5 text-[#173963] group-hover:text-[#214d8d]">
               {item.title}
             </h3>
-            {item.excerpt ? (
-              <p className="truncate text-[11px] leading-4 text-[#5a7397] sm:hidden">
-                {item.excerpt}
-              </p>
-            ) : null}
           </div>
           <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5 overflow-hidden text-[10px] leading-4 text-[#6b84a8] sm:justify-end sm:text-right">
             <span className="max-w-[8rem] truncate font-semibold text-[#48648d] sm:max-w-[7rem]">
               {item.authorName}
             </span>
             {item.isOperatorContent ? (
-              <span className="max-w-[12rem] truncate text-[#48648d]">
-                {buildOperatorContentMetaLabel({
-                  sourceName: item.operatorSourceName,
-                  lastVerifiedAt: item.operatorLastVerifiedAt,
-                })}
-              </span>
+              <span className="whitespace-nowrap text-[#48648d]">운영자 정리</span>
             ) : null}
             <span className="whitespace-nowrap">좋아요 {item.likeCount}</span>
             <span className="whitespace-nowrap">댓글 {item.commentCount}</span>
-            <span className="whitespace-nowrap">조회 {item.viewCount}</span>
           </div>
         </Link>
       ))}
@@ -140,12 +124,6 @@ export function HomeFeedPreview({ data }: { data: HomeFeedPayload }) {
               {
                 href: "/guides/24h-vet-checklist",
                 label: "24시 병원 확인 가이드",
-                note: "야간 진료 전 전화로 확인할 항목을 정리했습니다.",
-              },
-              {
-                href: "/feed/guest?type=HOSPITAL_REVIEW",
-                label: "동물병원 글",
-                note: "공개된 병원 경험 글을 최신순으로 확인합니다.",
               },
             ]}
           />
@@ -168,12 +146,10 @@ export function HomeFeedPreview({ data }: { data: HomeFeedPayload }) {
               {
                 href: "/guides/lost-pet-first-24-hours",
                 label: "분실동물 첫 24시간 가이드",
-                note: "찾아야 할 장소와 제보 정리 순서를 먼저 확인합니다.",
               },
               {
                 href: "/posts/new",
                 label: "첫 글 작성하기",
-                note: "병원, 산책, 분실, 중고거래 정보를 직접 남길 수 있습니다.",
               },
             ]}
           />

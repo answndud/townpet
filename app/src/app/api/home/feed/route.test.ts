@@ -89,17 +89,19 @@ describe("GET /api/home/feed", () => {
         scope: PostScope.GLOBAL,
         excludeTypes: [PostType.MEETUP],
         sort: "LATEST",
-        limit: 15,
+        limit: 12,
       }),
     );
     expect(payload.ok).toBe(true);
     expect(payload.data.featured[0]).toMatchObject({
       href: "/posts/post-1",
       title: "서초구 24시 병원 후기",
-      excerpt: "야간 진료 설명이 자세했습니다.",
       typeLabel: "병원 후기",
       neighborhoodLabel: "서초구 잠원동",
     });
+    expect(payload.data.featured[0]).not.toHaveProperty("excerpt");
+    expect(payload.data.featured[0]).not.toHaveProperty("viewCount");
+    expect(payload.data.featured[0]).not.toHaveProperty("operatorSourceName");
     expect(payload.data.best).toBeUndefined();
     expect(payload.data.latest).toEqual([]);
   });
@@ -211,9 +213,9 @@ describe("GET /api/home/feed", () => {
     ]);
     expect(payload.data.featured[0]).toMatchObject({
       isOperatorContent: true,
-      operatorSourceName: "TownPet 운영자 정리",
-      operatorLastVerifiedAt: "2026-05-24T01:00:00.000Z",
     });
+    expect(payload.data.featured[0]).not.toHaveProperty("operatorSourceName");
+    expect(payload.data.featured[0]).not.toHaveProperty("operatorLastVerifiedAt");
     expect(payload.data.best).toBeUndefined();
   });
 
@@ -248,10 +250,10 @@ describe("GET /api/home/feed", () => {
       "post-real-1",
       "post-real-2",
       "post-real-3",
-      "post-real-4",
-      "post-real-5",
     ]);
     expect(payload.data.latest.map((post: { id: string }) => post.id)).toEqual([
+      "post-real-4",
+      "post-real-5",
       "post-real-6",
     ]);
   });
