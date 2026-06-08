@@ -119,6 +119,39 @@ describe("measure-traffic-load helpers", () => {
     expect(summaries[0]?.goalReasons.join(" ")).toContain("error_rate=");
   });
 
+  it("summarizes header and body latency separately", () => {
+    const targets = [
+      {
+        label: "home",
+        path: "/",
+        method: "GET" as const,
+        weight: 1,
+        maxP95Ms: 500,
+        maxP99Ms: 500,
+        maxErrorRate: 0,
+      },
+    ];
+
+    const [summary] = summarizeTraffic(
+      [
+        sample({ targetLabel: "home", status: 200, durationMs: 100, headerMs: 20 }),
+        sample({ targetLabel: "home", status: 200, durationMs: 200, headerMs: 150 }),
+        sample({ targetLabel: "home", status: 200, durationMs: 300, headerMs: 260 }),
+      ],
+      targets,
+      1_000,
+    );
+
+    expect(summary).toMatchObject({
+      headerP50Ms: 150,
+      headerP95Ms: 260,
+      headerP99Ms: 260,
+      bodyP50Ms: 50,
+      bodyP95Ms: 80,
+      bodyP99Ms: 80,
+    });
+  });
+
   it("guards heavy remote runs unless explicitly acknowledged", () => {
     expect(() =>
       buildTrafficRunConfig({

@@ -46,7 +46,14 @@ export type TrafficSummary = {
   p95Ms: number;
   p99Ms: number;
   maxMs: number;
+  headerP50Ms: number;
   headerP95Ms: number;
+  headerP99Ms: number;
+  headerMaxMs: number;
+  bodyP50Ms: number;
+  bodyP95Ms: number;
+  bodyP99Ms: number;
+  bodyMaxMs: number;
   bytesP50: number;
   goalStatus: "PASS" | "FAIL";
   goalReasons: string[];
@@ -353,6 +360,7 @@ export function summarizeTraffic(
       const target = targetByLabel.get(label);
       const durations = group.map((sample) => sample.durationMs);
       const headerDurations = group.map((sample) => sample.headerMs);
+      const bodyDurations = group.map((sample) => Math.max(0, sample.durationMs - sample.headerMs));
       const bytes = group.map((sample) => sample.bytes);
       const failed = group.filter((sample) => !sample.ok).length;
       const errorRate = group.length > 0 ? failed / group.length : 0;
@@ -387,7 +395,14 @@ export function summarizeTraffic(
         p95Ms,
         p99Ms,
         maxMs: durations.length > 0 ? Math.max(...durations) : 0,
+        headerP50Ms: percentile(headerDurations, 50),
         headerP95Ms: percentile(headerDurations, 95),
+        headerP99Ms: percentile(headerDurations, 99),
+        headerMaxMs: headerDurations.length > 0 ? Math.max(...headerDurations) : 0,
+        bodyP50Ms: percentile(bodyDurations, 50),
+        bodyP95Ms: percentile(bodyDurations, 95),
+        bodyP99Ms: percentile(bodyDurations, 99),
+        bodyMaxMs: bodyDurations.length > 0 ? Math.max(...bodyDurations) : 0,
         bytesP50: percentile(bytes, 50),
         goalStatus: reasons.length === 0 ? "PASS" : "FAIL",
         goalReasons: reasons,
@@ -634,8 +649,12 @@ function buildMarkdown(params: {
   lines.push("");
   lines.push("## Load Summary (goal basis)");
   lines.push("");
-  lines.push("| target | path | requests | rps | status | error | p50 | p95 | p99 | max | header p95 | bytes p50 | goal |");
-  lines.push("| --- | --- | ---: | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |");
+  lines.push(
+    "| target | path | requests | rps | status | error | total p50 | total p95 | total p99 | total max | header p95 | header p99 | body p95 | body p99 | bytes p50 | goal |",
+  );
+  lines.push(
+    "| --- | --- | ---: | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
+  );
 
   for (const summary of params.summaries) {
     lines.push(
@@ -651,6 +670,9 @@ function buildMarkdown(params: {
         formatMs(summary.p99Ms),
         formatMs(summary.maxMs),
         formatMs(summary.headerP95Ms),
+        formatMs(summary.headerP99Ms),
+        formatMs(summary.bodyP95Ms),
+        formatMs(summary.bodyP99Ms),
         formatBytes(summary.bytesP50),
         summary.goalStatus,
       ].join(" | ") + " |",
@@ -661,8 +683,8 @@ function buildMarkdown(params: {
     lines.push("");
     lines.push("## Warm-up Summary (excluded from goal)");
     lines.push("");
-    lines.push("| target | requests | status | p50 | p95 | p99 | max |");
-    lines.push("| --- | ---: | --- | ---: | ---: | ---: | ---: |");
+    lines.push("| target | requests | status | total p50 | total p95 | total p99 | header p99 | body p99 | max |");
+    lines.push("| --- | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: |");
     for (const summary of params.warmupSummaries) {
       lines.push(
         [
@@ -672,6 +694,8 @@ function buildMarkdown(params: {
           formatMs(summary.p50Ms),
           formatMs(summary.p95Ms),
           formatMs(summary.p99Ms),
+          formatMs(summary.headerP99Ms),
+          formatMs(summary.bodyP99Ms),
           formatMs(summary.maxMs),
         ].join(" | ") + " |",
       );
@@ -692,9 +716,10 @@ function buildMarkdown(params: {
   lines.push("");
   lines.push("## Raw Samples");
   lines.push("");
-  lines.push("| # | phase | worker | target | status | ok | duration | header | bytes | cache | vercel id | error |");
-  lines.push("| ---: | --- | ---: | --- | ---: | --- | ---: | ---: | ---: | --- | --- | --- |");
+  lines.push("| # | phase | worker | target | status | ok | duration | header | body | bytes | cache | vercel id | error |");
+  lines.push("| ---: | --- | ---: | --- | ---: | --- | ---: | ---: | ---: | ---: | --- | --- | --- |");
   for (const sample of params.samples) {
+    const bodyMs = Math.max(0, sample.durationMs - sample.headerMs);
     lines.push(
       [
         `| ${sample.requestIndex}`,
@@ -705,6 +730,7 @@ function buildMarkdown(params: {
         sample.ok ? "yes" : "no",
         formatMs(sample.durationMs),
         formatMs(sample.headerMs),
+        formatMs(bodyMs),
         formatBytes(sample.bytes),
         sample.vercelCache || "-",
         sample.vercelId || "-",

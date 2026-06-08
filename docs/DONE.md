@@ -10695,3 +10695,10 @@
 - 변경: `business/reports/traffic-spike-local-2026-06-08.md`에 stress 대비 p99 증폭과 병목 후보를 정리했다.
 - 검증: spike profile 5,000 load requests, 0% error, 모든 route PASS.
 - 후속: DB 인덱스보다 `/`, `/feed/guest`의 page render/body transfer/queueing을 phase별로 분해한다.
+
+### 2026-06-08 - spike page route phase 분해
+
+- 요약: `perf:traffic` summary에 header/body percentile을 추가하고, 기존 spike 결과를 first-byte와 body/stream 관점으로 재해석했다.
+- 변경: `business/reports/traffic-spike-phase-breakdown-2026-06-08.md`에 header-led tail 증폭과 queueing 후보를 정리했다.
+- 검증: targeted Vitest, targeted ESLint, `typecheck`, local phase smoke, `docs:refresh:check` PASS.
+- 후속: `/`와 `/feed/guest`의 page route static/dynamic 상태, middleware/header work, first-byte work를 우선 점검한다.
