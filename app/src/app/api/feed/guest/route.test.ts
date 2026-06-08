@@ -18,7 +18,7 @@ import { enforceRateLimit } from "@/server/rate-limit";
 import {
   filterRenderableUploadImages,
   resolveRenderableUploadPathnames,
-} from "@/server/upload-asset.service";
+} from "@/server/upload-renderable-assets";
 
 vi.mock("@/server/error-monitor", () => ({ monitorUnhandledError: vi.fn() }));
 vi.mock("@/server/queries/community.queries", () => ({ listCommunityNavItems: vi.fn() }));
@@ -33,7 +33,7 @@ vi.mock("@/server/queries/post.queries", () => ({
 }));
 vi.mock("@/server/request-context", () => ({ getClientIp: vi.fn() }));
 vi.mock("@/server/rate-limit", () => ({ enforceRateLimit: vi.fn() }));
-vi.mock("@/server/upload-asset.service", () => ({
+vi.mock("@/server/upload-renderable-assets", () => ({
   filterRenderableUploadImages: vi.fn((images, renderableUploadPathnames) =>
     images.filter((image: { url?: string | null }) => {
       const url = image.url ?? "";
