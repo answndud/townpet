@@ -5,6 +5,9 @@ import {
   buildLostFoundMetadataDescription,
   buildLostFoundPosterDownloadUrl,
   buildLostFoundPosterFileName,
+  buildLostFoundPosterPngDownloadUrl,
+  buildLostFoundPosterPngFileName,
+  buildLostFoundPosterPngUrl,
   buildLostFoundShareSummary,
   buildLostFoundPosterUrl,
   buildLostFoundShareChecklist,
@@ -48,7 +51,14 @@ describe("lost-found share helpers", () => {
     expect(buildLostFoundPosterDownloadUrl("post-1")).toContain(
       "/api/posts/post-1/lost-found-share.svg?download=1",
     );
+    expect(buildLostFoundPosterPngUrl("post-1")).toContain(
+      "/api/posts/post-1/lost-found-share.svg?format=png",
+    );
+    expect(buildLostFoundPosterPngDownloadUrl("post-1")).toContain(
+      "/api/posts/post-1/lost-found-share.svg?format=png&download=1",
+    );
     expect(buildLostFoundPosterFileName(lostFoundPost)).toBe("townpet-found-pet-post-1.svg");
+    expect(buildLostFoundPosterPngFileName(lostFoundPost)).toBe("townpet-found-pet-post-1.png");
     expect(buildLostFoundMetadataDescription(lostFoundPost)).toContain("목격/보호 · 제보 접수 중 · 고양이");
     expect(buildLostFoundShareSummary(lostFoundPost)).toEqual([
       "목격/보호",

@@ -106,13 +106,26 @@ export function buildLostFoundPosterUrl(postId: string) {
   return toAbsoluteUrl(`/api/posts/${postId}/lost-found-share.svg`);
 }
 
+export function buildLostFoundPosterPngUrl(postId: string) {
+  return toAbsoluteUrl(`/api/posts/${postId}/lost-found-share.svg?format=png`);
+}
+
 export function buildLostFoundPosterDownloadUrl(postId: string) {
   return toAbsoluteUrl(`/api/posts/${postId}/lost-found-share.svg?download=1`);
+}
+
+export function buildLostFoundPosterPngDownloadUrl(postId: string) {
+  return toAbsoluteUrl(`/api/posts/${postId}/lost-found-share.svg?format=png&download=1`);
 }
 
 export function buildLostFoundPosterFileName(post: LostFoundSharePostLike) {
   const alertType = post.lostFoundAlert?.alertType === "FOUND" ? "found" : "lost";
   return `townpet-${alertType}-pet-${post.id}.svg`;
+}
+
+export function buildLostFoundPosterPngFileName(post: LostFoundSharePostLike) {
+  const alertType = post.lostFoundAlert?.alertType === "FOUND" ? "found" : "lost";
+  return `townpet-${alertType}-pet-${post.id}.png`;
 }
 
 export function buildLostFoundPosterAlt(post: LostFoundSharePostLike) {

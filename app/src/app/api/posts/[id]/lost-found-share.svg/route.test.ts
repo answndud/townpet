@@ -25,6 +25,18 @@ function createDownloadRequest(postId = "post-1") {
   ) as NextRequest;
 }
 
+function createPngRequest(postId = "post-1") {
+  return new Request(
+    `http://localhost/api/posts/${postId}/lost-found-share.svg?format=png`,
+  ) as NextRequest;
+}
+
+function createPngDownloadRequest(postId = "post-1") {
+  return new Request(
+    `http://localhost/api/posts/${postId}/lost-found-share.svg?format=png&download=1`,
+  ) as NextRequest;
+}
+
 function createParams(postId = "post-1") {
   return { params: Promise.resolve({ id: postId }) };
 }
@@ -89,6 +101,32 @@ describe("GET /api/posts/[id]/lost-found-share.svg", () => {
       "filename*=UTF-8''townpet-found-pet-post-1.svg",
     );
     expect(svg).toContain("<svg");
+  });
+
+  it("renders a PNG poster when format=png is requested", async () => {
+    const response = await GET(createPngRequest(), createParams());
+    const bytes = new Uint8Array(await response.arrayBuffer());
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toBe("image/png");
+    expect(response.headers.get("cache-control")).toBe("public, max-age=60, stale-while-revalidate=300");
+    expect(response.headers.get("content-disposition")).toBeNull();
+    expect(Array.from(bytes.slice(0, 8))).toEqual([137, 80, 78, 71, 13, 10, 26, 10]);
+  });
+
+  it("serves a PNG attachment filename when PNG download is requested", async () => {
+    const response = await GET(createPngDownloadRequest(), createParams());
+    const bytes = new Uint8Array(await response.arrayBuffer());
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toBe("image/png");
+    expect(response.headers.get("content-disposition")).toContain(
+      'attachment; filename="townpet-found-pet-post-1.png"',
+    );
+    expect(response.headers.get("content-disposition")).toContain(
+      "filename*=UTF-8''townpet-found-pet-post-1.png",
+    );
+    expect(Array.from(bytes.slice(0, 8))).toEqual([137, 80, 78, 71, 13, 10, 26, 10]);
   });
 
   it("returns 404 for non lost-found posts", async () => {
