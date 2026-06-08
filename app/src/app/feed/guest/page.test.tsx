@@ -1,13 +1,19 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-import GuestFeedPage from "@/app/feed/guest/page";
-import { GuestFeedPageClient } from "@/components/posts/guest-feed-page-client";
+function readSource(path: string) {
+  return readFileSync(join(process.cwd(), path), "utf8");
+}
 
 describe("GuestFeedPage", () => {
-  it("renders the guest client without server-side initial data fetch", async () => {
-    const tree = await GuestFeedPage();
+  it("renders the guest feed from a server payload instead of a page-wide client fetch", () => {
+    const code = readSource("src/app/feed/guest/page.tsx");
 
-    expect(tree.type).toBe(GuestFeedPageClient);
-    expect(tree.props).toEqual({});
+    expect(code).toContain("buildGuestFeedPageServiceResult");
+    expect(code).toContain("<GuestFeedShell data={result.data} />");
+    expect(code).not.toContain("GuestFeedPageClient");
+    expect(code).not.toContain("fetchJson");
+    expect(code).not.toContain("useSearchParams");
   });
 });

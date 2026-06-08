@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildGuestFeedHref,
   shouldReplaceGuestFeedCanonicalHref,
-} from "@/components/posts/guest-feed-page-client";
+} from "@/lib/posts/guest-feed-href";
 
 function readSource(path: string) {
   return readFileSync(join(process.cwd(), path), "utf8");
@@ -71,7 +71,7 @@ describe("shouldReplaceGuestFeedCanonicalHref", () => {
 
   it("keeps guest/member feed inline actions off legacy button tokens", () => {
     const code = [
-      readSource("src/components/posts/guest-feed-page-client.tsx"),
+      readSource("src/app/feed/guest/page.tsx"),
       readSource("src/app/feed/page.tsx"),
     ].join("\n");
 
