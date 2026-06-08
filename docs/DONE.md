@@ -10604,3 +10604,10 @@
 - 변경: board/search seed에 구조화 alert를 추가하고, seed 재실행 및 `db:repair:post-integrity`에서 누락 alert를 upsert/create하도록 했다.
 - 검증: targeted seed/repair/service tests, 로컬 repair apply 후 active `LOST_FOUND` 누락 alert 0건 확인, `quality:check` PASS.
 - 기록: `docs/errors/2026-06-08_lost-found-alert-seed-mismatch.md`
+
+### 2026-06-08 - 분실/목격 모바일 smoke 자동화
+
+- 요약: 분실/목격 랜딩, 직접 등록 진입, 피드 검색 노출, 상세 공유 패널, 댓글 lazy open 후 목격 제보 필드까지 모바일 hot path로 고정했다.
+- 변경: 자체 구조화 분실/목격 fixture를 만드는 `e2e/lost-found-mobile-flow.spec.ts`를 추가했다.
+- 검증: targeted Playwright chromium e2e, `quality:check` PASS.
+- 후속: 목격 댓글 실제 제출/저장까지 별도 e2e로 확장할지 결정한다.
