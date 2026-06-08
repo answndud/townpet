@@ -15,7 +15,7 @@ import {
   isPublicAcquisitionHeaderPath,
   shouldRefreshViewerShellOnFocus,
 } from "@/components/navigation/app-shell-header-class";
-import { FeedHoverMenu } from "@/components/navigation/feed-hover-menu";
+import { LazyFeedHoverMenu } from "@/components/navigation/lazy-feed-hover-menu";
 import { emitViewerShellSync, subscribeViewerShellSync } from "@/lib/viewer-shell-sync";
 
 type AppShellHeaderProps = {
@@ -318,7 +318,7 @@ export function AppShellHeader({ communities: initialCommunities = [] }: Partial
         </div>
         <nav className="flex flex-col gap-1.5 xl:flex-row xl:items-center xl:justify-between">
           <div className="flex flex-wrap items-center gap-1.5">
-            <FeedHoverMenu
+            <LazyFeedHoverMenu
               key={`${viewerShell.isAuthenticated ? "auth" : "guest"}:${preferredPetTypeIds.join(",")}`}
               communities={communities}
               isAuthenticated={viewerShell.isAuthenticated}
