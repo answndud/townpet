@@ -665,6 +665,12 @@ export function PostCommentThread({
     const sightingSeenAtText = comment.sightingSeenAt
       ? formatKoreanIsoDateTime(comment.sightingSeenAt)
       : null;
+    const hasVisibleSightingMeta = Boolean(
+      isSighting &&
+        !isDeleted &&
+        !isMutedPlaceholder &&
+        (comment.sightingLocation || sightingSeenAtText || comment.sightingImageUrl),
+    );
 
     return (
       <div
@@ -822,7 +828,7 @@ export function PostCommentThread({
               />
             </div>
 
-            {isSighting && !isDeleted && !isMutedPlaceholder ? (
+            {hasVisibleSightingMeta ? (
               <dl className={POST_COMMENT_THREAD_SIGHTING_META_CLASS_NAME}>
                 {comment.sightingLocation ? (
                   <div>

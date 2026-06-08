@@ -327,6 +327,35 @@ describe("PostCommentThread", () => {
     expect(html).not.toContain("rounded-lg border border-[#dbe6f5] bg-[#f8fbff] px-3 py-2");
   });
 
+  it("does not render private sighting metadata when query placeholders have hidden it", () => {
+    const html = renderToStaticMarkup(
+      <PostCommentThread
+        postId="post-1"
+        comments={[
+          buildComment("private-sighting-1", {
+            kind: "LOST_FOUND_SIGHTING",
+            content: "보호자에게만 공개된 목격 제보입니다.",
+            sightingLocation: undefined,
+            sightingSeenAt: undefined,
+            sightingImageUrl: undefined,
+            isPrivateSighting: true,
+          }),
+        ]}
+        bestComments={[]}
+        totalCommentCount={1}
+        currentPage={1}
+        totalPages={1}
+        canInteract={false}
+        lostFoundSightingEnabled
+      />,
+    );
+
+    expect(html).toContain("보호자 공개");
+    expect(html).toContain("보호자에게만 공개된 목격 제보입니다.");
+    expect(html).not.toContain(POST_COMMENT_THREAD_SIGHTING_META_CLASS_NAME);
+    expect(html).not.toContain("사진 열기");
+  });
+
   it("keeps sighting comment success messages specific to visibility", () => {
     const source = readFileSync(
       join(process.cwd(), "src/components/posts/post-comment-thread.tsx"),

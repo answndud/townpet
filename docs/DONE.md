@@ -10625,3 +10625,10 @@
 - 변경: 랜딩 최근 제보 카드에 안정적인 test id를 추가하고, 모바일 e2e가 제출 후 피드/랜딩 count를 확인하도록 확장했다.
 - 검증: lost-found page unit test, targeted Playwright chromium e2e, `quality:check` PASS.
 - 후속: 보호자 공개 목격 제보의 공개 노출 제한을 회귀 테스트로 확인한다.
+
+### 2026-06-08 - 보호자 공개 목격 제보 공개 노출 제한
+
+- 요약: `보호자에게만 공개` 목격 제보가 guest 공개 상세에서 위치/사진을 노출하지 않는지 모바일 e2e로 고정했다.
+- 변경: private placeholder 댓글은 빈 목격 메타 영역을 렌더하지 않게 정리하고, 저장 원본은 DB에 유지되는지 함께 확인했다.
+- 검증: post-comment-thread unit test, lost-found mobile Playwright e2e, `lint`, `typecheck` PASS.
+- 후속: 분실/목격 모바일 e2e를 on-demand hotpath 명령에 편입할지 결정한다.
