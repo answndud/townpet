@@ -46,6 +46,10 @@ describe("measure-traffic-load helpers", () => {
       "home",
       "health",
     ]);
+    expect(filterTrafficTargets(targets, "static_probe")[0]).toMatchObject({
+      label: "static_probe",
+      path: "/perf-static-baseline.txt",
+    });
     expect(() => filterTrafficTargets(targets, "missing")).toThrow(/unknown target/);
   });
 

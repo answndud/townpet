@@ -10,7 +10,12 @@ describe("route asset target selection", () => {
   it("keeps default asset targets when PERF_ASSET_TARGETS is empty", () => {
     const targets = buildAssetTargets({});
 
-    expect(targets.map((target) => target.label)).toEqual(["home", "login", "guest_feed"]);
+    expect(targets.map((target) => target.label)).toEqual([
+      "home",
+      "login",
+      "guest_feed",
+      "static_probe",
+    ]);
   });
 
   it("adds and selects public post detail when PERF_POST_PATH and PERF_ASSET_TARGETS are set", () => {

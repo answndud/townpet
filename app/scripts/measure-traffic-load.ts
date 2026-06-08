@@ -345,6 +345,15 @@ export function buildDefaultTrafficTargets(): TrafficTarget[] {
       maxP99Ms: 1_000,
       maxErrorRate: 0,
     },
+    {
+      label: "static_probe",
+      path: "/perf-static-baseline.txt",
+      method: "GET",
+      weight: 1,
+      maxP95Ms: 300,
+      maxP99Ms: 800,
+      maxErrorRate: 0,
+    },
   ];
 }
 

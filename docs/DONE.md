@@ -10715,3 +10715,10 @@
 - 변경: home feed API timing phase, traffic load Server-Timing 수집/요약, `traffic-targeted-spike-home-timing-2026-06-08.md` 리포트를 추가했다.
 - 검증: targeted Vitest 17 tests, 관련 ESLint, `typecheck`, `next build`, local targeted spike PASS.
 - 후속: page route HTML/RSC payload와 middleware/security header overhead를 분리한다.
+
+### 2026-06-08 - page payload와 static probe 비교
+
+- 요약: `/`, `/feed/guest` page route와 middleware 제외 정적 probe를 비교해 spike tail의 queueing/payload 경계를 분리했다.
+- 변경: static probe, route asset document bytes 측정, traffic static target, `traffic-page-static-payload-comparison-2026-06-08.md` 리포트를 추가했다.
+- 검증: targeted Vitest 17 tests, 관련 ESLint, `typecheck`, `next build`, local asset/spike 측정 PASS.
+- 후속: `/feed/guest` client bundle과 `/` 초기 HTML payload 축소 후보를 찾는다.

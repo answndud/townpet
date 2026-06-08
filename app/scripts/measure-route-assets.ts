@@ -28,6 +28,7 @@ type AssetSample = {
   path: string;
   status: number;
   finalUrl: string;
+  documentBytes: number;
   documentResponseEndMs: number;
   fcpMs: number;
   lcpMs: number;
@@ -96,6 +97,7 @@ function buildDefaultTargets(env: RouteAssetEnv): AssetTarget[] {
     { label: "home", path: "/" },
     { label: "login", path: "/login" },
     { label: "guest_feed", path: "/feed/guest" },
+    { label: "static_probe", path: "/perf-static-baseline.txt" },
   ];
 
   const postPath = env.PERF_POST_PATH?.trim();
@@ -260,6 +262,7 @@ async function measureRoute(params: {
     waitUntil: "load",
     timeout: 30_000,
   });
+  const documentBytes = response ? (await response.body()).byteLength : 0;
   if (params.settleMs > 0) {
     await page.waitForTimeout(params.settleMs);
   }
@@ -302,6 +305,7 @@ async function measureRoute(params: {
     path: params.target.path,
     status: response?.status() ?? 0,
     finalUrl: page.url(),
+    documentBytes,
     documentResponseEndMs: metrics.documentResponseEndMs,
     fcpMs: metrics.fcpMs,
     lcpMs: metrics.lcpMs,
@@ -337,31 +341,31 @@ function renderMarkdown(params: {
   samples: AssetSample[];
 }) {
   const lines = [
-    "# Route Asset Snapshot",
+    "# 라우트 asset 스냅샷",
     "",
-    `- generatedAt: \`${params.generatedAt}\``,
-    `- baseUrl: \`${params.baseUrl}\``,
+    `- 생성 시각: \`${params.generatedAt}\``,
+    `- 기준 URL: \`${params.baseUrl}\``,
     "",
-    "## Summary",
+    "## 요약",
     "",
-    "| profile | route | status | doc response | FCP | LCP | long tasks | scripts | script transfer | script encoded | CSS transfer | fetch transfer | total transfer |",
-    "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+    "| 프로파일 | 라우트 | 상태 | 문서 응답 | 문서 크기 | FCP | LCP | long task | script 수 | script 전송 | script encoded | CSS 전송 | fetch 전송 | 전체 전송 |",
+    "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
   ];
 
   for (const sample of params.samples) {
     lines.push(
-      `| ${sample.profile} | \`${sample.path}\` | ${sample.status} | ${formatMs(sample.documentResponseEndMs)} | ${formatMs(sample.fcpMs)} | ${formatMs(sample.lcpMs)} | ${formatMs(sample.longTaskTotalMs)} | ${sample.scriptCount} | ${formatBytes(sample.scriptTransferBytes)} | ${formatBytes(sample.scriptEncodedBytes)} | ${formatBytes(sample.stylesheetTransferBytes)} | ${formatBytes(sample.fetchTransferBytes)} | ${formatBytes(sample.totalTransferBytes)} |`,
+      `| ${sample.profile} | \`${sample.path}\` | ${sample.status} | ${formatMs(sample.documentResponseEndMs)} | ${formatBytes(sample.documentBytes)} | ${formatMs(sample.fcpMs)} | ${formatMs(sample.lcpMs)} | ${formatMs(sample.longTaskTotalMs)} | ${sample.scriptCount} | ${formatBytes(sample.scriptTransferBytes)} | ${formatBytes(sample.scriptEncodedBytes)} | ${formatBytes(sample.stylesheetTransferBytes)} | ${formatBytes(sample.fetchTransferBytes)} | ${formatBytes(sample.totalTransferBytes)} |`,
     );
   }
 
-  lines.push("", "## Top Scripts", "");
+  lines.push("", "## 큰 script 리소스", "");
   for (const sample of params.samples) {
     lines.push(`### ${sample.profile} ${sample.path}`, "");
     if (sample.topScripts.length === 0) {
-      lines.push("- No script resources reported.", "");
+      lines.push("- 기록된 script 리소스가 없다.", "");
       continue;
     }
-    lines.push("| script | transfer | encoded | duration |", "| --- | ---: | ---: | ---: |");
+    lines.push("| script | 전송량 | encoded | duration |", "| --- | ---: | ---: | ---: |");
     for (const script of sample.topScripts) {
       lines.push(
         `| \`${script.name}\` | ${formatBytes(script.transferSize)} | ${formatBytes(script.encodedBodySize)} | ${formatMs(script.duration)} |`,
