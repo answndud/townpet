@@ -30,12 +30,10 @@ describe("FeedPreviewList", () => {
           {
             href: "/guides/lost-pet-first-24-hours",
             label: "분실동물 첫 24시간 가이드",
-            note: "찾아야 할 장소와 제보 정리 순서를 먼저 확인합니다.",
           },
           {
             href: "/posts/new",
             label: "첫 글 작성하기",
-            note: "병원, 산책, 분실, 중고거래 정보를 직접 남길 수 있습니다.",
           },
         ]}
       />,
@@ -56,19 +54,13 @@ describe("FeedPreviewList", () => {
             id: "post-1",
             href: "/posts/post-1",
             title: "동네 병원 후기",
-            excerpt: "야간 진료 설명이 자세했습니다.",
-            type: "HOSPITAL_REVIEW",
             typeLabel: "병원 후기",
             createdAt: "2026-05-24T00:00:00.000Z",
             authorName: "알렉스",
             neighborhoodLabel: "서초구 잠원동",
             isOperatorContent: true,
-            operatorSourceName: "TownPet 운영자 정리",
-            operatorSourceUrl: null,
-            operatorLastVerifiedAt: "2026-05-24T00:00:00.000Z",
             commentCount: 2,
             likeCount: 5,
-            viewCount: 12,
           },
         ]}
         emptyText="최근 올라온 공개 글이 아직 없습니다."
@@ -76,7 +68,6 @@ describe("FeedPreviewList", () => {
           {
             href: "/posts/new",
             label: "첫 글 작성하기",
-            note: "병원, 산책, 분실, 중고거래 정보를 직접 남길 수 있습니다.",
           },
         ]}
       />,
@@ -84,7 +75,7 @@ describe("FeedPreviewList", () => {
 
     expect(html).toContain('href="/posts/post-1"');
     expect(html).toContain("동네 병원 후기");
-    expect(html).toContain("TownPet 운영자 정리");
+    expect(html).toContain("운영자 정리");
     expect(html).toContain("댓글 2");
     expect(html).not.toContain("첫 글 작성하기");
   });

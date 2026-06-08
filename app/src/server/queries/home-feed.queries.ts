@@ -6,8 +6,8 @@ import { isPrismaDatabaseUnavailableError } from "@/server/prisma-database-error
 import { getGuestReadLoginRequiredPostTypes } from "@/server/queries/policy.queries";
 import { listPosts } from "@/server/queries/post.queries";
 
-const HOME_FEED_LIMIT = 5;
-const HOME_FEED_QUERY_LIMIT = 15;
+const HOME_FEED_LIMIT = 3;
+const HOME_FEED_QUERY_LIMIT = 12;
 const HOME_PREVIEW_BLOCKED_TEXT_PATTERN =
   /(테스트|\[샘플|\[pw\b|\[visual smoke\]|샘플·|e2e|visual-smoke|\b(pw search|pwsearch|test-user|playwright|townpet-demo|adoption-demo|demo)\b)/iu;
 
@@ -15,19 +15,13 @@ export type HomeFeedItem = {
   id: string;
   href: string;
   title: string;
-  excerpt: string;
-  type: string;
   typeLabel: string;
   createdAt: string;
   authorName: string;
   neighborhoodLabel: string | null;
   isOperatorContent: boolean;
-  operatorSourceName: string | null;
-  operatorSourceUrl: string | null;
-  operatorLastVerifiedAt: string | null;
   commentCount: number;
   likeCount: number;
-  viewCount: number;
 };
 
 export type HomeFeedPayload = {
@@ -66,20 +60,6 @@ type RawHomePost = Record<string, unknown> & {
     district?: string | null;
   } | null;
 };
-
-function toPlainText(value: string) {
-  return value
-    .replace(/<[^>]*>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function truncate(value: string, maxLength: number) {
-  if (value.length <= maxLength) {
-    return value;
-  }
-  return `${value.slice(0, maxLength - 1).trimEnd()}…`;
-}
 
 function isHomePreviewEligible(rawPost: RawHomePost) {
   const searchableText = [
@@ -153,8 +133,6 @@ function serializeHomePost(rawPost: RawHomePost) {
     id: post.id,
     href: `/posts/${post.id}`,
     title: post.title,
-    excerpt: truncate(toPlainText(post.content), 86),
-    type: post.type,
     typeLabel: getPostTypeMeta(post.type).label,
     createdAt:
       post.createdAt instanceof Date
@@ -163,15 +141,8 @@ function serializeHomePost(rawPost: RawHomePost) {
     authorName: post.guestDisplayName ?? post.author?.nickname ?? "익명",
     neighborhoodLabel: neighborhoodParts.length > 0 ? neighborhoodParts.join(" ") : null,
     isOperatorContent: Boolean(post.isOperatorContent),
-    operatorSourceName: post.operatorSourceName ?? null,
-    operatorSourceUrl: post.operatorSourceUrl ?? null,
-    operatorLastVerifiedAt:
-      post.operatorLastVerifiedAt instanceof Date
-        ? post.operatorLastVerifiedAt.toISOString()
-        : post.operatorLastVerifiedAt ?? null,
     commentCount: post.commentCount,
     likeCount: post.likeCount,
-    viewCount: post.viewCount,
   };
 }
 

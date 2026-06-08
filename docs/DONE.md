@@ -10764,3 +10764,10 @@
 - 변경: `buildFeedSignalContent`를 추가하고 `scope`, `dislikeCount`, `author.image`, reaction/bookmark 기본값 등 미사용 필드를 내려보내지 않게 했다.
 - 검증: targeted Vitest 25 tests, 관련 ESLint, `typecheck`, `next build`, local asset 측정 PASS.
 - 결과: `/feed/guest` 문서 크기 76,542B -> 71,065B(-7.2%), 문서 포함 총전송 269,944B -> 264,467B(-2.0%).
+
+### 2026-06-08 - `/` 초기 문서 payload 축소
+
+- 요약: 홈 피드 preview의 노출 수와 미사용 item 필드/마크업을 줄여 static document payload를 낮췄다.
+- 변경: 홈 preview 컬럼당 최대 3개, excerpt/조회수/운영자 출처 세부 payload 제거, 빈 상태 note 제거.
+- 검증: targeted Vitest 13 tests, 관련 ESLint, `typecheck`, `next build`, local asset 측정, Playwright 모바일 smoke PASS.
+- 결과: `/` 문서 크기 40,712B -> 38,077B(-6.5%), 문서 포함 총전송 220,287B -> 217,652B(-1.2%).
