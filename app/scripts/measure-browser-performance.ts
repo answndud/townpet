@@ -341,18 +341,18 @@ function buildMarkdown(params: {
   samples: BrowserSample[];
 }) {
   const lines: string[] = [];
-  lines.push("# TownPet Browser Performance Baseline");
+  lines.push("# TownPet 브라우저 성능 기준선");
   lines.push("");
-  lines.push(`- generatedAt: ${params.generatedAt}`);
-  lines.push(`- baseUrl: ${params.baseUrl}`);
-  lines.push(`- samplesPerTarget: ${params.sampleCount}`);
-  lines.push(`- settleMsAfterLoad: ${params.settleMs}`);
-  lines.push(`- profiles: ${params.profiles.join(", ")}`);
-  lines.push(`- note: Playwright Chromium 기준 브라우저 navigation/paint/LCP 측정이다.`);
+  lines.push(`- 생성 시각: ${params.generatedAt}`);
+  lines.push(`- 기준 URL: ${params.baseUrl}`);
+  lines.push(`- 대상별 샘플 수: ${params.sampleCount}`);
+  lines.push(`- load 이후 대기: ${params.settleMs}ms`);
+  lines.push(`- 프로파일: ${params.profiles.join(", ")}`);
+  lines.push(`- 메모: Playwright Chromium 기준 브라우저 navigation/paint/LCP 측정이다.`);
   lines.push("");
-  lines.push("## Summary");
+  lines.push("## 요약");
   lines.push("");
-  lines.push("| profile | target | path | status | responseEnd p50 | FCP p50 | FCP p95 | LCP p50 | LCP p95 | load p50 | total goto p50 |");
+  lines.push("| 프로파일 | 대상 | 경로 | 상태 | responseEnd p50 | FCP p50 | FCP p95 | LCP p50 | LCP p95 | load p50 | 총 이동 p50 |");
   lines.push("|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|");
   for (const summary of params.summaries) {
     lines.push(
@@ -372,9 +372,9 @@ function buildMarkdown(params: {
     );
   }
   lines.push("");
-  lines.push("## Raw Samples");
+  lines.push("## 원본 샘플");
   lines.push("");
-  lines.push("| profile | target | run | status | responseEnd | FCP | LCP | load | totalGoto | bodyText | finalUrl |");
+  lines.push("| 프로파일 | 대상 | 실행 | 상태 | responseEnd | FCP | LCP | load | 총 이동 | 본문 길이 | 최종 URL |");
   lines.push("|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---|");
   for (const sample of params.samples) {
     lines.push(

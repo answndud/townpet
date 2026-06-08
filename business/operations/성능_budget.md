@@ -58,6 +58,25 @@ browser paint:
 PERF_BROWSER_TARGETS=post_detail PERF_POST_PATH=/posts/<public-post-id>/guest PERF_BROWSER_SAMPLES=2 PERF_BROWSER_SETTLE_MS=1500 PERF_BROWSER_PROFILES=desktop,mobile PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers pnpm -C app perf:browser:local
 ```
 
+production 저강도 browser metric:
+
+```bash
+OPS_BASE_URL=https://townpet.vercel.app PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers pnpm -C app perf:browser:production-light
+```
+
+기본값은 mobile `/`, `/feed/guest` 각 1회 방문이다. 총 browser visit이 `6`회를 넘으면 차단한다.
+토큰이 있으면 Web Vitals summary도 함께 조회한다.
+
+```bash
+OPS_BASE_URL=https://townpet.vercel.app OPS_HEALTH_INTERNAL_TOKEN=<HEALTH_INTERNAL_TOKEN> PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers pnpm -C app perf:browser:production-light
+```
+
+더 많은 production browser visit은 기본 금지다. 꼭 필요할 때만 아래 ACK를 명시하고, 실행 전 요청 수를 먼저 계산한다.
+
+```bash
+PROD_BROWSER_METRICS_ACK=ALLOW_PRODUCTION_BROWSER_METRICS_HEAVY_RUN PROD_BROWSER_METRICS_TARGETS=home,login,guest_feed PROD_BROWSER_METRICS_PROFILES=desktop,mobile PROD_BROWSER_METRICS_SAMPLES=2 pnpm -C app perf:browser:production-light
+```
+
 route asset:
 
 ```bash
@@ -110,6 +129,7 @@ OPS_BASE_URL=https://townpet.vercel.app OPS_HEALTH_INTERNAL_TOKEN=<HEALTH_INTERN
 | --- | --- | --- |
 | `perf:baseline` | `PERF_OUT=../docs/reports/performance-baseline-custom.md` | `PERF_JSON_OUT=../docs/reports/performance-baseline-custom.json` |
 | `perf:browser:local` | `PERF_BROWSER_OUT=../docs/reports/performance-browser-custom.md` | `PERF_BROWSER_JSON_OUT=../docs/reports/performance-browser-custom.json` |
+| `perf:browser:production-light` | `PROD_BROWSER_METRICS_SUMMARY_OUT=../docs/reports/production-browser-light-summary-custom.md` | `PROD_BROWSER_METRICS_BROWSER_JSON_OUT=../docs/reports/production-browser-light-custom.json` |
 | `perf:assets:local` | `PERF_ASSET_OUT=../docs/reports/performance-route-assets-custom.md` | `PERF_ASSET_JSON_OUT=../docs/reports/performance-route-assets-custom.json` |
 | `perf:api-timings` | `PERF_API_TIMING_OUT=../docs/reports/api-route-timings-custom.md` | - |
 | `ops:perf:snapshot` | `OPS_PERF_OUT=../docs/reports/api-latency-snapshot-custom.tsv` | `OPS_PERF_SUMMARY_OUT=../docs/reports/api-latency-snapshot-custom.summary.md` |

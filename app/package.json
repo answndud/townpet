@@ -88,6 +88,7 @@
     "perf:api-timings": "tsx scripts/measure-api-route-timings.ts",
     "perf:browser": "tsx scripts/measure-browser-performance.ts",
     "perf:browser:local": "PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers tsx scripts/measure-browser-performance.ts",
+    "perf:browser:production-light": "tsx scripts/run-production-browser-metrics.ts",
     "perf:assets": "tsx scripts/measure-route-assets.ts",
     "perf:assets:local": "PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers tsx scripts/measure-route-assets.ts",
     "perf:traffic": "tsx scripts/measure-traffic-load.ts",

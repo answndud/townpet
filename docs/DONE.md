@@ -10778,3 +10778,10 @@
 - 변경: `AppShellHeader`를 pathname wrapper로 축소하고, viewer/community/auth/notification 로직은 `AppShellInteractiveHeader`로 이동했다.
 - 검증: targeted Vitest 14 tests, 관련 ESLint, `typecheck`, `next build`, local asset 측정, Playwright header smoke PASS.
 - 결과: `/` script/resource -1,701B(-1.1%/-0.9%); `/feed/guest`는 CSS split 영향으로 resource +1,344B(+0.7%) tradeoff가 남았다.
+
+### 2026-06-08 - production 저강도 browser metric 루틴
+
+- 요약: production에 기본 2 browser visit만 보내는 `perf:browser:production-light` 루틴을 추가했다.
+- 변경: heavy run ACK guard, Web Vitals summary 선택 조회, 한국어 browser metric 리포트, 성능 budget 문서화를 추가했다.
+- 검증: targeted Vitest 15 tests, 관련 ESLint, `typecheck`, production-light 2회 실행 PASS.
+- 결과: 2차 warm sample 기준 mobile LCP `/` 256ms, `/feed/guest` 652ms로 production budget 안에 들어왔다.

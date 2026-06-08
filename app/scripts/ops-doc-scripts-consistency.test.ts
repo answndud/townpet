@@ -81,6 +81,8 @@ describe("operational documentation package scripts", () => {
     expect(performanceBudget).toContain("PERF_EXTRA_PATHS=/api/health");
     expect(performanceBudget).toContain("PERF_BROWSER_TARGETS=post_detail");
     expect(performanceBudget).toContain("PERF_BROWSER_EXTRA_PATHS=/feed/guest");
+    expect(performanceBudget).toContain("pnpm -C app perf:browser:production-light");
+    expect(performanceBudget).toContain("PROD_BROWSER_METRICS_ACK=ALLOW_PRODUCTION_BROWSER_METRICS_HEAVY_RUN");
     expect(performanceBudget).toContain("PERF_ASSET_TARGETS=guest_feed");
     expect(performanceBudget).toContain("PERF_ASSET_EXTRA_PATHS=/feed/guest");
     expect(performanceBudget).toContain("PERF_API_TIMING_TARGETS=guest_feed");
@@ -100,6 +102,12 @@ describe("operational documentation package scripts", () => {
     );
     expect(performanceBudget).toContain(
       "PERF_BROWSER_JSON_OUT=../docs/reports/performance-browser-custom.json",
+    );
+    expect(performanceBudget).toContain(
+      "PROD_BROWSER_METRICS_SUMMARY_OUT=../docs/reports/production-browser-light-summary-custom.md",
+    );
+    expect(performanceBudget).toContain(
+      "PROD_BROWSER_METRICS_BROWSER_JSON_OUT=../docs/reports/production-browser-light-custom.json",
     );
     expect(performanceBudget).toContain(
       "PERF_ASSET_OUT=../docs/reports/performance-route-assets-custom.md",
