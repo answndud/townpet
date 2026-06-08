@@ -85,6 +85,10 @@ describe("app shell header classes", () => {
       join(process.cwd(), "src/components/navigation/app-shell-header.tsx"),
       "utf8",
     );
+    const interactiveHeaderSource = readFileSync(
+      join(process.cwd(), "src/components/navigation/app-shell-interactive-header.tsx"),
+      "utf8",
+    );
     const lazyMenuSource = readFileSync(
       join(process.cwd(), "src/components/navigation/lazy-feed-hover-menu.tsx"),
       "utf8",
@@ -94,7 +98,11 @@ describe("app shell header classes", () => {
     expect(source).not.toContain('import { AuthControls } from "@/components/auth/auth-controls"');
     expect(source).not.toContain('import { NotificationBell } from "@/components/notifications/notification-bell"');
     expect(source).not.toContain('import { FeedHoverMenu } from "@/components/navigation/feed-hover-menu"');
-    expect(source).toContain('import { LazyFeedHoverMenu } from "@/components/navigation/lazy-feed-hover-menu"');
+    expect(source).not.toContain('import { LazyFeedHoverMenu } from "@/components/navigation/lazy-feed-hover-menu"');
+    expect(source).toContain('import("@/components/navigation/app-shell-interactive-header")');
+    expect(interactiveHeaderSource).toContain('import { LazyFeedHoverMenu } from "@/components/navigation/lazy-feed-hover-menu"');
+    expect(interactiveHeaderSource).toContain('import("@/components/auth/auth-controls")');
+    expect(interactiveHeaderSource).toContain('import("@/components/notifications/notification-bell")');
     expect(lazyMenuSource).toContain('import("@/components/navigation/feed-hover-menu")');
   });
 
@@ -122,6 +130,7 @@ describe("app shell header classes", () => {
     expect(isPublicAcquisitionHeaderPath("/posts/new")).toBe(false);
     expect(isPublicAcquisitionHeaderPath("/admin/ops")).toBe(false);
     expect(source).toContain("isPublicAcquisitionHeaderPath(pathname)");
+    expect(source).toContain("PublicAcquisitionHeader");
     expect(source).toContain('data-testid="header-login-link-home"');
     expect(source).toContain('aria-label="공개 안내 페이지 주요 이동"');
   });

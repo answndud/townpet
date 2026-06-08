@@ -10771,3 +10771,10 @@
 - 변경: 홈 preview 컬럼당 최대 3개, excerpt/조회수/운영자 출처 세부 payload 제거, 빈 상태 note 제거.
 - 검증: targeted Vitest 13 tests, 관련 ESLint, `typecheck`, `next build`, local asset 측정, Playwright 모바일 smoke PASS.
 - 결과: `/` 문서 크기 40,712B -> 38,077B(-6.5%), 문서 포함 총전송 220,287B -> 217,652B(-1.2%).
+
+### 2026-06-08 - public header wrapper / app header lazy 분리
+
+- 요약: 공개 acquisition header wrapper와 앱용 interactive header를 분리해 public home 초기 JS를 줄였다.
+- 변경: `AppShellHeader`를 pathname wrapper로 축소하고, viewer/community/auth/notification 로직은 `AppShellInteractiveHeader`로 이동했다.
+- 검증: targeted Vitest 14 tests, 관련 ESLint, `typecheck`, `next build`, local asset 측정, Playwright header smoke PASS.
+- 결과: `/` script/resource -1,701B(-1.1%/-0.9%); `/feed/guest`는 CSS split 영향으로 resource +1,344B(+0.7%) tradeoff가 남았다.
