@@ -170,6 +170,8 @@ corepack pnpm -C app dev
   - Production health evidence: `https://townpet.vercel.app/api/health` 200 / `ok`, elapsed 3974ms
 - [백엔드 case study](./business/reports/backend-portfolio-case-study.md)
   - 도메인 모델, API, 보안, 운영, 테스트, 성능, 리팩터링 후보를 면접용으로 한 번에 설명합니다.
+- [Backend sequence diagrams](./business/reports/backend-sequence-diagrams.md)
+  - 게시글 작성/업로드, 신고/모더레이션, 로그인/세션, 배포 preflight 흐름을 Mermaid로 설명합니다.
 - [API route inventory](./business/reports/api-route-inventory.md)
   - 55개 App Router API route의 method, 접근 수준, validation/monitoring 상태, 테스트 공백을 정리합니다.
 - [API route contract report](./business/reports/api-route-contracts.generated.md)

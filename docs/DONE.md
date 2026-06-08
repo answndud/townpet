@@ -10646,3 +10646,17 @@
 - 변경: `blog/32-분실목격-hotpath-안정화.md`를 추가하고 blog 목차/시리즈 계획, README 기술 성과를 갱신했다.
 - 검증: `docs:refresh:check` PASS.
 - 후속: 다음 확장은 전단 이미지 품질, 카카오 공유 SDK, 보호자 전용 제보 관리 화면 중 하나로 좁혀 설계한다.
+
+### 2026-06-08 - 백엔드 시퀀스 다이어그램 포트폴리오 문서화
+
+- 요약: README 백엔드 포트폴리오 증거에 Mermaid 기반 대표 시퀀스 다이어그램 문서를 연결했다.
+- 변경: 게시글 작성/업로드, 신고/모더레이션, 로그인/세션, Vercel 배포 preflight 흐름을 `business/reports/backend-sequence-diagrams.md`에 정리했다.
+- 검증: `node scripts/refresh-docs-index.mjs --check` PASS, `git diff --check` PASS.
+- 후속: 면접 준비 시 각 다이어그램을 실제 코드 파일과 함께 1분 설명으로 압축한다.
+
+### 2026-06-08 - Sionic AI Native Engineer 지원 패키지 초안
+
+- 요약: 공고 기준에 맞춰 TownPet을 AI-native 문제 해결 포트폴리오로 설명하는 지원 자료를 정리했다.
+- 변경: `docs/resume/README.md`, `strategy.md`, `application-draft.md`, `interview-playbook.md`, `submission-checklist.md`를 추가하고 시퀀스 다이어그램의 신고 흐름 표현을 보정했다.
+- 검증: 문서 전략/초안 작성 작업이며 `docs/resume` 하위 문서 검증은 생략.
+- 후속: 개인 정보, GitHub URL, 실제 제출 글자 수 제한에 맞춰 최종 제출본을 압축한다.
