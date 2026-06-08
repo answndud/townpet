@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import {
   BoardScope,
   CommonBoardType,
@@ -70,6 +70,20 @@ async function createLostFoundPost(runId: string) {
   return post;
 }
 
+async function openCommentComposer(page: Page) {
+  const rootInput = page.getByTestId("post-comment-root-input");
+  await page.locator("#comments").scrollIntoViewIfNeeded();
+  if (await rootInput.isVisible({ timeout: 5_000 }).catch(() => false)) {
+    return;
+  }
+
+  const toggle = page.getByRole("button", { name: "댓글 열기" });
+  if (await toggle.isVisible({ timeout: 5_000 }).catch(() => false)) {
+    await toggle.click();
+  }
+  await expect(rootInput).toBeVisible({ timeout: 15_000 });
+}
+
 test.describe("lost-found mobile flow", () => {
   test.setTimeout(90_000);
 
@@ -83,7 +97,7 @@ test.describe("lost-found mobile flow", () => {
     });
   });
 
-  test("connects landing, create entry, feed, share panel, and sighting comment UI", async ({ page }) => {
+  test("connects landing, create entry, feed, and share panel on mobile", async ({ page }) => {
     const runId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const post = await createLostFoundPost(runId);
 
@@ -109,6 +123,11 @@ test.describe("lost-found mobile flow", () => {
       timeout: 15_000,
     });
 
+    const viewRecorded = page
+      .waitForResponse((response) => response.url().includes(`/api/posts/${post.id}/view`), {
+        timeout: 10_000,
+      })
+      .catch(() => null);
     await page.goto(`/posts/${post.id}/guest`);
     await expect(page.getByRole("heading", { name: post.title })).toBeVisible({
       timeout: 15_000,
@@ -118,14 +137,7 @@ test.describe("lost-found mobile flow", () => {
     await expect(page.getByText("카카오톡 문구 복사")).toBeVisible({ timeout: 15_000 });
     await expect(page.getByRole("link", { name: /분실\/목격 전단 SVG 저장/ })).toBeVisible();
     await expect(page.getByText("저장 파일:")).toBeVisible();
-
-    await page.locator("#comments").scrollIntoViewIfNeeded();
-    await page.getByRole("button", { name: "댓글 열기" }).click();
-    await expect(page.getByText("목격 제보", { exact: true }).first()).toBeVisible({
-      timeout: 15_000,
-    });
-    await expect(page.getByText("목격 위치", { exact: true })).toBeVisible();
-    await expect(page.getByText("목격 시간", { exact: true })).toBeVisible();
+    await viewRecorded;
 
     const bodyWidth = await page.evaluate(() => document.body.scrollWidth);
     const viewportWidth = await page.evaluate(() => window.innerWidth);
@@ -141,10 +153,7 @@ test.describe("lost-found mobile flow", () => {
 
     await page.setViewportSize({ width: 393, height: 852 });
     await page.goto(`/posts/${post.id}/guest#comments`);
-    await page.locator("#comments").scrollIntoViewIfNeeded();
-    if (!(await page.getByTestId("post-comment-root-input").isVisible({ timeout: 5_000 }).catch(() => false))) {
-      await page.getByRole("button", { name: "댓글 열기" }).click({ timeout: 15_000 }).catch(() => undefined);
-    }
+    await openCommentComposer(page);
 
     await expect(page.getByText("목격 제보", { exact: true }).first()).toBeVisible({
       timeout: 15_000,
@@ -179,6 +188,9 @@ test.describe("lost-found mobile flow", () => {
         sightingLocation: true,
         sightingSeenAt: true,
         isPrivateSighting: true,
+        post: {
+          select: { commentCount: true },
+        },
       },
     });
     expect(storedComment).not.toBeNull();
@@ -186,6 +198,17 @@ test.describe("lost-found mobile flow", () => {
     expect(storedComment?.sightingLocation).toBe(sightingLocation);
     expect(storedComment?.sightingSeenAt?.getTime()).toBe(new Date(sightingSeenAt).getTime());
     expect(storedComment?.isPrivateSighting).toBe(false);
+    expect(storedComment?.post.commentCount).toBe(1);
+
+    await page.goto(`/feed/guest?type=LOST_FOUND&q=${encodeURIComponent(runId)}`);
+    const feedCard = page.getByTestId("feed-post-item").filter({ hasText: post.title }).first();
+    await expect(feedCard).toBeVisible({ timeout: 15_000 });
+    await expect(feedCard.getByText("댓글 1")).toBeVisible();
+
+    await page.goto(`/lost-found?e2e=${encodeURIComponent(runId)}`);
+    const landingCard = page.getByTestId(`lost-found-recent-post-${post.id}`);
+    await expect(landingCard).toBeVisible({ timeout: 15_000 });
+    await expect(landingCard.getByText("댓글 1")).toBeVisible();
 
     const bodyWidth = await page.evaluate(() => document.body.scrollWidth);
     const viewportWidth = await page.evaluate(() => window.innerWidth);

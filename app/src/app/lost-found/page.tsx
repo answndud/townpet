@@ -60,7 +60,10 @@ function LostFoundRecentPostCard({ post }: { post: PublicLostFoundLandingPost })
   const sightingHref = `${post.href}#comments`;
 
   return (
-    <article className="group grid gap-2 border-b border-[#e4edf8] px-3 py-3 transition last:border-b-0 hover:bg-[#f8fbff]">
+    <article
+      data-testid={`lost-found-recent-post-${post.id}`}
+      className="group grid gap-2 border-b border-[#e4edf8] px-3 py-3 transition last:border-b-0 hover:bg-[#f8fbff]"
+    >
       <div className="flex min-w-0 flex-wrap items-center gap-1.5 text-[11px] font-semibold text-[#5a7397]">
         <span className="rounded-md border border-rose-200 bg-rose-50 px-2 py-0.5 text-rose-700">
           {alertLabel}
