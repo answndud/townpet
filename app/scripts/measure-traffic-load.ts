@@ -5,6 +5,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 type HttpMethod = "GET";
+export type TrafficProfile = "smoke" | "baseline" | "stress" | "spike" | "soak";
 
 export type TrafficTarget = {
   label: string;
@@ -54,6 +55,7 @@ export type TrafficSummary = {
 type TrafficEnv = Partial<Record<string, string | undefined>>;
 
 type TrafficRunConfig = {
+  profile: TrafficProfile;
   baseUrl: string;
   durationMs: number;
   concurrency: number;
@@ -70,6 +72,60 @@ type TrafficRunConfig = {
 const CURRENT_FILE_PATH = fileURLToPath(import.meta.url);
 const DEFAULT_BASE_URL = "http://localhost:3000";
 const REMOTE_ACK_VALUE = "I_UNDERSTAND";
+const HEAVY_REMOTE_ACK_VALUE = "1";
+const HEAVY_REMOTE_PROFILES = new Set<TrafficProfile>(["stress", "spike", "soak"]);
+
+type TrafficProfileDefaults = {
+  durationMs: number;
+  concurrency: number;
+  timeoutMs: number;
+  thinkMs: number;
+  warmupPerTarget: number;
+  maxRequests: number;
+};
+
+const TRAFFIC_PROFILE_DEFAULTS: Record<TrafficProfile, TrafficProfileDefaults> = {
+  smoke: {
+    durationMs: 15_000,
+    concurrency: 4,
+    timeoutMs: 8_000,
+    thinkMs: 50,
+    warmupPerTarget: 1,
+    maxRequests: 120,
+  },
+  baseline: {
+    durationMs: 60_000,
+    concurrency: 8,
+    timeoutMs: 8_000,
+    thinkMs: 25,
+    warmupPerTarget: 2,
+    maxRequests: 1_200,
+  },
+  stress: {
+    durationMs: 120_000,
+    concurrency: 30,
+    timeoutMs: 10_000,
+    thinkMs: 0,
+    warmupPerTarget: 3,
+    maxRequests: 10_000,
+  },
+  spike: {
+    durationMs: 15_000,
+    concurrency: 100,
+    timeoutMs: 10_000,
+    thinkMs: 0,
+    warmupPerTarget: 1,
+    maxRequests: 5_000,
+  },
+  soak: {
+    durationMs: 1_800_000,
+    concurrency: 8,
+    timeoutMs: 8_000,
+    thinkMs: 100,
+    warmupPerTarget: 2,
+    maxRequests: 0,
+  },
+};
 
 function resolveRepoRoot() {
   return path.basename(process.cwd()) === "app" ? path.resolve(process.cwd(), "..") : process.cwd();
@@ -121,6 +177,19 @@ function parseBooleanFlag(name: string, value: string | undefined, fallback: boo
   }
 
   throw new Error(`${name} must be boolean-like. received=${value}`);
+}
+
+export function parseTrafficProfile(value: string | undefined): TrafficProfile {
+  if (!value) {
+    return "smoke";
+  }
+
+  const normalized = value.trim().toLowerCase();
+  if (["smoke", "baseline", "stress", "spike", "soak"].includes(normalized)) {
+    return normalized as TrafficProfile;
+  }
+
+  throw new Error("PERF_TRAFFIC_PROFILE must be one of smoke, baseline, stress, spike, soak.");
 }
 
 function sleep(ms: number) {
@@ -341,6 +410,18 @@ function assertRemoteLoadSafety(config: TrafficRunConfig, env: TrafficEnv) {
     return;
   }
 
+  if (HEAVY_REMOTE_PROFILES.has(config.profile)) {
+    if (
+      env.PERF_TRAFFIC_REMOTE_ACK !== REMOTE_ACK_VALUE ||
+      env.PERF_TRAFFIC_ALLOW_HEAVY_REMOTE !== HEAVY_REMOTE_ACK_VALUE
+    ) {
+      throw new Error(
+        `Remote ${config.profile} traffic run is blocked by default. Set PERF_TRAFFIC_REMOTE_ACK=${REMOTE_ACK_VALUE} and PERF_TRAFFIC_ALLOW_HEAVY_REMOTE=${HEAVY_REMOTE_ACK_VALUE} only after confirming this target can absorb heavy load.`,
+      );
+    }
+    return;
+  }
+
   const heavyRemoteRun = config.concurrency > 6 || config.durationMs > 30_000 || config.maxRequests > 300;
   if (heavyRemoteRun && env.PERF_TRAFFIC_REMOTE_ACK !== REMOTE_ACK_VALUE) {
     throw new Error(
@@ -353,6 +434,8 @@ export function buildTrafficRunConfig(env: TrafficEnv = process.env): TrafficRun
   const generatedAt = new Date();
   const timestamp = compactTimestamp(generatedAt);
   const repoRoot = resolveRepoRoot();
+  const profile = parseTrafficProfile(env.PERF_TRAFFIC_PROFILE);
+  const profileDefaults = TRAFFIC_PROFILE_DEFAULTS[profile];
   const baseUrl = normalizeBaseUrl(
     env.PERF_TRAFFIC_BASE_URL ?? env.PERF_BASE_URL ?? env.OPS_BASE_URL ?? DEFAULT_BASE_URL,
   );
@@ -361,12 +444,25 @@ export function buildTrafficRunConfig(env: TrafficEnv = process.env): TrafficRun
   );
   const jsonOutputPath = path.resolve(env.PERF_TRAFFIC_JSON_OUT ?? outputPath.replace(/\.md$/u, ".json"));
   const config = {
+    profile,
     baseUrl,
-    durationMs: parsePositiveInt("PERF_TRAFFIC_DURATION_MS", env.PERF_TRAFFIC_DURATION_MS, 15_000),
-    concurrency: parsePositiveInt("PERF_TRAFFIC_CONCURRENCY", env.PERF_TRAFFIC_CONCURRENCY, 4),
-    timeoutMs: parsePositiveInt("PERF_TRAFFIC_TIMEOUT_MS", env.PERF_TRAFFIC_TIMEOUT_MS, 8_000),
-    thinkMs: parseNonNegativeInt("PERF_TRAFFIC_THINK_MS", env.PERF_TRAFFIC_THINK_MS, 50),
-    maxRequests: parseNonNegativeInt("PERF_TRAFFIC_MAX_REQUESTS", env.PERF_TRAFFIC_MAX_REQUESTS, 120),
+    durationMs: parsePositiveInt(
+      "PERF_TRAFFIC_DURATION_MS",
+      env.PERF_TRAFFIC_DURATION_MS,
+      profileDefaults.durationMs,
+    ),
+    concurrency: parsePositiveInt(
+      "PERF_TRAFFIC_CONCURRENCY",
+      env.PERF_TRAFFIC_CONCURRENCY,
+      profileDefaults.concurrency,
+    ),
+    timeoutMs: parsePositiveInt("PERF_TRAFFIC_TIMEOUT_MS", env.PERF_TRAFFIC_TIMEOUT_MS, profileDefaults.timeoutMs),
+    thinkMs: parseNonNegativeInt("PERF_TRAFFIC_THINK_MS", env.PERF_TRAFFIC_THINK_MS, profileDefaults.thinkMs),
+    maxRequests: parseNonNegativeInt(
+      "PERF_TRAFFIC_MAX_REQUESTS",
+      env.PERF_TRAFFIC_MAX_REQUESTS,
+      profileDefaults.maxRequests,
+    ),
     failOnGoal: parseBooleanFlag("PERF_TRAFFIC_FAIL_ON_GOAL", env.PERF_TRAFFIC_FAIL_ON_GOAL, false),
     outputPath,
     jsonOutputPath,
@@ -374,7 +470,7 @@ export function buildTrafficRunConfig(env: TrafficEnv = process.env): TrafficRun
     warmupPerTarget: parseNonNegativeInt(
       "PERF_TRAFFIC_WARMUP_PER_TARGET",
       env.PERF_TRAFFIC_WARMUP_PER_TARGET,
-      1,
+      profileDefaults.warmupPerTarget,
     ),
   } satisfies TrafficRunConfig;
 
@@ -448,9 +544,9 @@ async function measureRequest(params: {
 }
 
 async function runTraffic(config: TrafficRunConfig) {
-  const deadline = Date.now() + config.durationMs;
   const samples: TrafficSample[] = [];
   let requestIndex = 0;
+  let loadRequestCount = 0;
 
   for (const target of config.targets) {
     for (let warmupIndex = 0; warmupIndex < config.warmupPerTarget; warmupIndex += 1) {
@@ -468,15 +564,18 @@ async function runTraffic(config: TrafficRunConfig) {
     }
   }
 
+  const deadline = Date.now() + config.durationMs;
+
   function claimRequestIndex() {
     if (Date.now() >= deadline) {
       return null;
     }
-    if (config.maxRequests > 0 && requestIndex >= config.maxRequests) {
+    if (config.maxRequests > 0 && loadRequestCount >= config.maxRequests) {
       return null;
     }
 
     requestIndex += 1;
+    loadRequestCount += 1;
     return requestIndex;
   }
 
@@ -521,13 +620,14 @@ function buildMarkdown(params: {
   lines.push("# TownPet Traffic Load Snapshot");
   lines.push("");
   lines.push(`- generatedAt: ${params.generatedAt}`);
+  lines.push(`- profile: ${params.config.profile}`);
   lines.push(`- baseUrl: ${params.config.baseUrl}`);
   lines.push(`- durationMs: ${params.config.durationMs}`);
   lines.push(`- concurrency: ${params.config.concurrency}`);
   lines.push(`- timeoutMs: ${params.config.timeoutMs}`);
   lines.push(`- thinkMs: ${params.config.thinkMs}`);
   lines.push(`- warmupPerTarget: ${params.config.warmupPerTarget}`);
-  lines.push(`- maxRequests: ${params.config.maxRequests === 0 ? "unlimited" : params.config.maxRequests}`);
+  lines.push(`- maxRequests: ${params.config.maxRequests === 0 ? "unlimited" : params.config.maxRequests} (load phase cap)`);
   lines.push(`- totalRequests: ${params.samples.length}`);
   lines.push(`- loadRequests: ${params.samples.filter((sample) => sample.phase === "load").length}`);
   lines.push(`- goalStatus: ${failedGoals.length === 0 ? "PASS" : "FAIL"}`);
@@ -616,8 +716,8 @@ function buildMarkdown(params: {
   lines.push("");
   lines.push("## How To Compare");
   lines.push("");
-  lines.push("- 같은 baseUrl, duration, concurrency, targets, warmup 설정으로 개선 전/후를 비교한다.");
-  lines.push("- production에는 기본값 이상의 부하를 걸지 않는다. 큰 remote run은 별도 ACK가 필요하다.");
+  lines.push("- 같은 profile, baseUrl, duration, concurrency, targets, warmup 설정으로 개선 전/후를 비교한다.");
+  lines.push("- production에는 `stress`, `spike`, `soak` profile을 기본 차단한다. heavy remote run은 2단계 ACK가 필요하다.");
   lines.push("- p95/p99가 튀는 route는 `perf:api-timings`, `ops:perf:snapshot`, server-timing을 이어서 확인한다.");
   lines.push("");
 
@@ -628,7 +728,7 @@ async function main() {
   const generatedAt = new Date().toISOString();
   const config = buildTrafficRunConfig(process.env);
 
-  console.log(`[traffic] baseUrl=${config.baseUrl}`);
+  console.log(`[traffic] profile=${config.profile} baseUrl=${config.baseUrl}`);
   console.log(
     `[traffic] durationMs=${config.durationMs} concurrency=${config.concurrency} warmupPerTarget=${config.warmupPerTarget} maxRequests=${config.maxRequests}`,
   );
