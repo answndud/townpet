@@ -109,7 +109,7 @@ pnpm quality:check
 - health 외 security/prewarm/latency evidence는 필요할 때만 `pnpm ops:evidence`로 실행합니다.
 - 먼저 볼 워크플로우는 `../.github/workflows/quality-gate.yml` 과 `../.github/workflows/ops-smoke-checks.yml` 두 개입니다.
 - 브라우저 smoke는 hot path에서 뺐고, 필요할 때 `../.github/workflows/browser-smoke.yml` 또는 `pnpm test:e2e:smoke`로만 확인합니다. 현재 smoke 범위는 로그인 진입, 소셜 온보딩, 에디터 툴바 regression까지 포함합니다.
-- 기능 hotpath e2e는 `../docs/reports/hotpath-e2e-scope-2026-05-14.md` 기준으로 변경 범위에 맞을 때만 `pnpm test:e2e:hotpath`를 실행합니다.
+- 기능 hotpath e2e는 `../docs/reports/hotpath-e2e-scope-2026-05-14.md` 기준으로 변경 범위에 맞을 때만 `pnpm test:e2e:hotpath`를 실행합니다. 분실/목격 획득·공유·목격 댓글 흐름은 기본 hotpath에 합치지 않고 `pnpm test:e2e:lost-found`로만 on-demand 실행합니다.
 - 나머지 `db:*`, `ops:*`, `test:e2e:*`, cleanup/backfill 스크립트와 maintenance workflow는 on-demand 유지보수 도구로 봅니다.
 
 ## 유지보수/운영 루틴
@@ -154,7 +154,7 @@ pnpm test:e2e -- e2e/profile-social-account-linking.spec.ts
 pnpm test:e2e -- --project=chromium
 ```
 
-특정 Playwright spec은 `package.json` alias를 늘리지 않고 `pnpm test:e2e -- e2e/<file>.spec.ts --project=chromium` 형태로 직접 실행합니다.
+특정 Playwright spec은 기본적으로 `package.json` alias를 늘리지 않고 `pnpm test:e2e -- e2e/<file>.spec.ts --project=chromium` 형태로 직접 실행합니다. 단, 분실/목격처럼 제품 획득 hot path로 반복 검증하는 좁은 묶음은 `pnpm test:e2e:lost-found`처럼 on-demand alias를 둡니다.
 
 ## 테스트 설정 참고 파일
 

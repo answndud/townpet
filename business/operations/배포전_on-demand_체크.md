@@ -45,6 +45,7 @@ corepack pnpm@9.12.3 -C app quality:check
 | 변경 범위 | 실행 명령 | 기준 |
 | --- | --- | --- |
 | feed/search/write/comment/report/admin policy | `corepack pnpm@9.12.3 -C app test:e2e:hotpath` | 기능 hotpath |
+| lost-found acquisition/share/sighting comment | `PLAYWRIGHT_BASE_URL=http://localhost:3000 corepack pnpm@9.12.3 -C app test:e2e:lost-found` | 분실/목격 hotpath |
 | auth/session/social link/profile account | `ENABLE_SOCIAL_DEV_LOGIN=1 PLAYWRIGHT_BASE_URL=http://localhost:3000 corepack pnpm@9.12.3 -C app test:e2e:auth` | 인증 hardening |
 | UI/touch target/layout | 아래 visual smoke 직접 실행 | 모바일/overflow |
 | post detail/comment/feed item 권한 또는 visual 변경 | 배포 후 `ops:check:detail-visual` | production 상세 화면군 |

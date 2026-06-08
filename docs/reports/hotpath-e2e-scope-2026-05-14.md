@@ -24,6 +24,7 @@
 | 기본 품질 | `corepack pnpm@9.12.3 -C app quality:check` | 로컬/CI 기본 | lint, typecheck, Vitest, Next build | 상시 |
 | 브라우저 smoke | `.github/workflows/browser-smoke.yml` 또는 `pnpm -C app test:e2e:smoke` | 배포 전 수동, 로그인/소셜/에디터 진입 의심 시 | loading skeleton, Kakao/Naver entry, social onboarding, editor toolbar | on-demand |
 | 기능 hotpath | `pnpm -C app test:e2e:hotpath` | feed/search/write/comment/report/notification/admin policy 변경 후 | 검색/게시판 필터, 게스트 글 관리, 댓글 auth sync, 알림 필터, 신규 유저 정책, 신고 흐름 | on-demand 유지 |
+| 분실/목격 hotpath | `pnpm -C app test:e2e:lost-found` | lost-found acquisition/share/sighting comment 변경 후 | 랜딩, 등록 진입, 피드/랜딩 댓글 수, 공유 도구, 공개/비공개 목격 제보 | on-demand 유지 |
 | 인증 hardening | `pnpm -C app test:e2e:auth` | auth/session/profile/social link 변경 후 | 세션 정규화, suspended login 차단, 소셜 계정 연결/해제 | on-demand 유지 |
 | 모바일 visual | 직접 spec 지정 | UI/touch target/layout 변경 후 | feed/search/detail, post create/editor, comment/report, care feedback mobile | on-demand 직접 실행 |
 | Care flow | 직접 `e2e/care-request-flow.spec.ts` 지정 | care request 정책/상태 변경 후 | care 작성/지원/완료/피드백/admin queue | on-demand 직접 실행 |
