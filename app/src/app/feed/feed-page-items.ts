@@ -1,4 +1,5 @@
 import type { FeedPostItem } from "@/components/posts/feed-infinite-list";
+import { buildFeedSignalContent } from "@/lib/feed-list-presenter";
 import { sanitizePublicGuestIdentity } from "@/lib/public-guest-identity";
 
 type RawFeedPost = {
@@ -75,65 +76,66 @@ export function buildInitialFeedItems(items: RawFeedPost[]): FeedPostItem[] {
     return {
       id: post.id,
       type: post.type,
-      scope: post.scope,
       status: post.status,
       title: post.title,
-      content: post.content,
+      content: buildFeedSignalContent(post.content),
       commentCount: post.commentCount,
       likeCount: post.likeCount,
-      dislikeCount: post.dislikeCount,
       viewCount: post.viewCount,
       createdAt: post.createdAt.toISOString(),
-      isOperatorContent: post.isOperatorContent ?? false,
-      operatorSourceName: post.operatorSourceName ?? null,
-      operatorSourceUrl: post.operatorSourceUrl ?? null,
-      operatorLastVerifiedAt:
-        post.operatorLastVerifiedAt instanceof Date
-          ? post.operatorLastVerifiedAt.toISOString()
-          : post.operatorLastVerifiedAt ?? null,
       author: {
         id: post.author.id,
         nickname: post.author.nickname,
-        image: post.author.image,
-        isFoundingMember: post.author.isFoundingMember ?? false,
+        ...(post.author.isFoundingMember ? { isFoundingMember: true } : {}),
       },
-      guestAuthorId: post.guestAuthorId ?? null,
-      guestDisplayName: post.guestDisplayName ?? null,
-      neighborhood: post.neighborhood
-        ? {
-            id: post.neighborhood.id,
-            name: post.neighborhood.name,
-            city: post.neighborhood.city,
-            district: post.neighborhood.district ?? "",
-          }
-        : null,
-      petType: petType
-        ? {
-            id: petType.id,
-            labelKo: petType.labelKo,
-            categoryLabelKo: petType.category.labelKo,
-          }
-        : null,
       images: post.images.map((image) => ({
         id: image.id,
         url: image.url ?? null,
       })),
-      marketListing: post.marketListing ?? null,
-      lostFoundAlert: post.lostFoundAlert
+      ...(post.isOperatorContent
         ? {
-            alertType: post.lostFoundAlert.alertType ?? null,
-            petType: post.lostFoundAlert.petType ?? null,
-            breed: post.lostFoundAlert.breed ?? null,
-            lastSeenAt:
-              post.lostFoundAlert.lastSeenAt instanceof Date
-                ? post.lostFoundAlert.lastSeenAt.toISOString()
-                : post.lostFoundAlert.lastSeenAt ?? null,
-            lastSeenLocation: post.lostFoundAlert.lastSeenLocation ?? null,
-            status: post.lostFoundAlert.status ?? null,
+            isOperatorContent: true,
+            operatorSourceName: post.operatorSourceName ?? null,
+            operatorLastVerifiedAt:
+              post.operatorLastVerifiedAt instanceof Date
+                ? post.operatorLastVerifiedAt.toISOString()
+                : post.operatorLastVerifiedAt ?? null,
           }
-        : null,
-      isBookmarked: Boolean(post.isBookmarked),
-      reactions: post.reactions?.map((reaction) => ({ type: reaction.type })) ?? [],
+        : {}),
+      ...(post.guestAuthorId ? { guestAuthorId: post.guestAuthorId } : {}),
+      ...(post.guestDisplayName ? { guestDisplayName: post.guestDisplayName } : {}),
+      ...(post.neighborhood
+        ? {
+            neighborhood: {
+              name: post.neighborhood.name,
+              city: post.neighborhood.city,
+            },
+          }
+        : {}),
+      ...(petType
+        ? {
+            petType: {
+              labelKo: petType.labelKo,
+              categoryLabelKo: petType.category.labelKo,
+            },
+          }
+        : {}),
+      ...(post.marketListing ? { marketListing: post.marketListing } : {}),
+      ...(post.lostFoundAlert
+        ? {
+            lostFoundAlert: {
+              alertType: post.lostFoundAlert.alertType ?? null,
+              petType: post.lostFoundAlert.petType ?? null,
+              breed: post.lostFoundAlert.breed ?? null,
+              lastSeenAt:
+                post.lostFoundAlert.lastSeenAt instanceof Date
+                  ? post.lostFoundAlert.lastSeenAt.toISOString()
+                  : post.lostFoundAlert.lastSeenAt ?? null,
+              lastSeenLocation: post.lostFoundAlert.lastSeenLocation ?? null,
+              status: post.lostFoundAlert.status ?? null,
+            },
+          }
+        : {}),
     };
   });
 }

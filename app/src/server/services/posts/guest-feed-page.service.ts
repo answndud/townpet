@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { FEED_PAGE_SIZE } from "@/lib/feed";
 import { isCommonBoardPostType } from "@/lib/community-board";
+import { buildFeedSignalContent } from "@/lib/feed-list-presenter";
 import { normalizeFeedPetTypeIds } from "@/lib/feed-pet-type-filter";
 import { isLoginRequiredPostType } from "@/lib/post-access";
 import { getPostTypeMeta } from "@/lib/post-presenter";
@@ -152,70 +153,40 @@ async function serializeFeedItems(
       (post.images as Array<{ id: string; url?: string | null }> | undefined) ?? [],
       renderableUploadPathnames,
     );
-
-    return {
-      id: post.id,
-      type: post.type,
-      scope: post.scope,
-      status: post.status,
-      title: post.title,
-      content: post.content,
-      commentCount: post.commentCount,
-      likeCount: post.likeCount,
-      dislikeCount: post.dislikeCount,
-      viewCount: post.viewCount,
-      createdAt:
-        post.createdAt instanceof Date
-          ? post.createdAt.toISOString()
-          : String(post.createdAt),
-      isOperatorContent: ((post as { isOperatorContent?: boolean | null }).isOperatorContent ??
-        false) as boolean,
-      operatorSourceName: ((post as { operatorSourceName?: string | null }).operatorSourceName ??
-        null) as string | null,
-      operatorSourceUrl: ((post as { operatorSourceUrl?: string | null }).operatorSourceUrl ??
-        null) as string | null,
-      operatorLastVerifiedAt:
-        (post as { operatorLastVerifiedAt?: Date | string | null }).operatorLastVerifiedAt instanceof Date
-          ? (post as { operatorLastVerifiedAt: Date }).operatorLastVerifiedAt.toISOString()
-          : (((post as { operatorLastVerifiedAt?: string | null }).operatorLastVerifiedAt ??
-              null) as string | null),
-      author: {
-        id: (post.author as { id: string }).id,
-        nickname: ((post.author as { nickname?: string | null }).nickname ?? null) as string | null,
-        image: ((post.author as { image?: string | null }).image ?? null) as string | null,
-        isFoundingMember:
-          ((post.author as { isFoundingMember?: boolean | null }).isFoundingMember ?? false) as boolean,
-      },
-      guestAuthorId: ((post as { guestAuthorId?: string | null }).guestAuthorId ?? null) as string | null,
-      guestDisplayName: ((post as { guestDisplayName?: string | null }).guestDisplayName ?? null) as string | null,
-      neighborhood: post.neighborhood
-        ? {
-            id: (post.neighborhood as { id: string }).id,
-            name: (post.neighborhood as { name: string }).name,
-            city: (post.neighborhood as { city: string }).city,
-            district: (post.neighborhood as { district: string }).district,
-          }
-        : null,
-      petType:
-        (post as {
-          petType?: {
-            id: string;
-            labelKo: string;
-            category: { labelKo: string };
-          } | null;
-        }).petType
-          ? {
-              id: (post as { petType: { id: string } }).petType.id,
-              labelKo: (post as { petType: { labelKo: string } }).petType.labelKo,
-              categoryLabelKo: (post as { petType: { category: { labelKo: string } } }).petType
-                .category.labelKo,
-            }
-          : null,
-      images: renderableImages.map((image) => ({
-        id: image.id,
-        url: image.url ?? null,
-      })),
-      marketListing: (post as {
+    const isOperatorContent = Boolean(
+      (post as { isOperatorContent?: boolean | null }).isOperatorContent,
+    );
+    const operatorLastVerifiedAtValue = (post as {
+      operatorLastVerifiedAt?: Date | string | null;
+    }).operatorLastVerifiedAt;
+    const operatorLastVerifiedAt =
+      operatorLastVerifiedAtValue instanceof Date
+        ? operatorLastVerifiedAtValue.toISOString()
+        : ((operatorLastVerifiedAtValue ?? null) as string | null);
+    const author = post.author as {
+      id: string;
+      nickname?: string | null;
+      isFoundingMember?: boolean | null;
+    };
+    const guestAuthorId = ((post as { guestAuthorId?: string | null }).guestAuthorId ??
+      null) as string | null;
+    const guestDisplayName = ((post as { guestDisplayName?: string | null }).guestDisplayName ??
+      null) as string | null;
+    const neighborhood = post.neighborhood as
+      | {
+          name: string;
+          city: string;
+        }
+      | null
+      | undefined;
+    const petType = (post as {
+      petType?: {
+        labelKo: string;
+        category: { labelKo: string };
+      } | null;
+    }).petType;
+    const marketListing =
+      (post as {
         marketListing?: {
           listingType?: string | null;
           price?: number | null;
@@ -224,13 +195,63 @@ async function serializeFeedItems(
           rentalPeriod?: string | null;
           status?: string | null;
         } | null;
-      }).marketListing ?? null,
-      lostFoundAlert: serializeLostFoundAlert((post as { lostFoundAlert?: unknown }).lostFoundAlert),
-      isBookmarked: false,
-      reactions:
-        ((post.reactions as Array<{ type: "LIKE" | "DISLIKE" }> | undefined) ?? []).map(
-          (reaction) => ({ type: reaction.type }),
-        ),
+      }).marketListing ?? null;
+    const lostFoundAlert = serializeLostFoundAlert(
+      (post as { lostFoundAlert?: unknown }).lostFoundAlert,
+    );
+
+    return {
+      id: post.id,
+      type: post.type,
+      status: post.status,
+      title: post.title,
+      content: buildFeedSignalContent(String(post.content ?? "")),
+      commentCount: post.commentCount,
+      likeCount: post.likeCount,
+      viewCount: post.viewCount,
+      createdAt:
+        post.createdAt instanceof Date
+          ? post.createdAt.toISOString()
+          : String(post.createdAt),
+      author: {
+        id: author.id,
+        nickname: (author.nickname ?? null) as string | null,
+        ...(author.isFoundingMember ? { isFoundingMember: true } : {}),
+      },
+      images: renderableImages.map((image) => ({
+        id: image.id,
+        url: image.url ?? null,
+      })),
+      ...(isOperatorContent
+        ? {
+            isOperatorContent: true,
+            operatorSourceName:
+              ((post as { operatorSourceName?: string | null }).operatorSourceName ?? null) as
+                | string
+                | null,
+            operatorLastVerifiedAt,
+          }
+        : {}),
+      ...(guestAuthorId ? { guestAuthorId } : {}),
+      ...(guestDisplayName ? { guestDisplayName } : {}),
+      ...(neighborhood
+        ? {
+            neighborhood: {
+              name: neighborhood.name,
+              city: neighborhood.city,
+            },
+          }
+        : {}),
+      ...(petType
+        ? {
+            petType: {
+              labelKo: petType.labelKo,
+              categoryLabelKo: petType.category.labelKo,
+            },
+          }
+        : {}),
+      ...(marketListing ? { marketListing } : {}),
+      ...(lostFoundAlert ? { lostFoundAlert } : {}),
     };
   }) as GuestFeedView["feed"]["items"];
 }

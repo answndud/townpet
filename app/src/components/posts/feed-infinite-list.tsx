@@ -52,13 +52,13 @@ type FeedStatus = "ACTIVE" | "HIDDEN" | "DELETED";
 export type FeedPostItem = {
   id: string;
   type: PostType;
-  scope: FeedScope;
+  scope?: FeedScope;
   status: FeedStatus;
   title: string;
   content: string;
   commentCount: number;
   likeCount: number;
-  dislikeCount: number;
+  dislikeCount?: number;
   viewCount: number;
   createdAt: string;
   isOperatorContent?: boolean | null;
@@ -73,14 +73,14 @@ export type FeedPostItem = {
   };
   guestAuthorId?: string | null;
   guestDisplayName?: string | null;
-  neighborhood: {
-    id: string;
+  neighborhood?: {
+    id?: string;
     name: string;
     city: string;
-    district: string;
+    district?: string;
   } | null;
   petType?: {
-    id: string;
+    id?: string;
     labelKo: string;
     categoryLabelKo: string;
   } | null;

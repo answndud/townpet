@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { buildFeedStatsLabel, getStableFeedDateLabel } from "@/lib/feed-list-presenter";
+import {
+  buildFeedSignalContent,
+  buildFeedStatsLabel,
+  getStableFeedDateLabel,
+} from "@/lib/feed-list-presenter";
 
 describe("getStableFeedDateLabel", () => {
   it("formats iso dates with hyphens for non-hydrated mobile feed rows", () => {
@@ -42,5 +46,29 @@ describe("buildFeedStatsLabel", () => {
         commentCount: 2,
       }),
     ).toBe("2026-03-07 · 조회 31 · 좋아요 4 · 댓글 2");
+  });
+});
+
+describe("buildFeedSignalContent", () => {
+  it("keeps short content unchanged", () => {
+    expect(buildFeedSignalContent("짧은 본문입니다.")).toBe("짧은 본문입니다.");
+  });
+
+  it("trims long non-link content for feed row payloads", () => {
+    const result = buildFeedSignalContent("가".repeat(500));
+
+    expect(result.length).toBe(240);
+    expect(result).toBe("가".repeat(240));
+  });
+
+  it("preserves unique links after the trimmed prefix for signal detection", () => {
+    const result = buildFeedSignalContent(
+      `${"본문".repeat(150)} https://instagram.com/townpet https://x.com/townpet https://instagram.com/townpet`,
+    );
+
+    expect(result.length).toBeLessThan(360);
+    expect(result).toContain("https://instagram.com/townpet");
+    expect(result).toContain("https://x.com/townpet");
+    expect(result.match(/instagram/g)).toHaveLength(1);
   });
 });
