@@ -10639,3 +10639,10 @@
 - 변경: `app/package.json`, app README, 배포 전 on-demand 체크, hotpath e2e 범위 문서를 갱신하고 문서 색인을 새로고침했다.
 - 검증: `test:e2e:lost-found` PASS, `docs:refresh:check` PASS.
 - 후속: 분실/목격 hot path 안정화 내용을 README/blog에 포트폴리오용으로 요약한다.
+
+### 2026-06-08 - 분실/목격 hot path 포트폴리오 요약
+
+- 요약: README와 blog에 분실/목격 랜딩, 공유, 목격 댓글, 보호자 공개 privacy, on-demand e2e 안정화 범위를 포트폴리오 관점으로 정리했다.
+- 변경: `blog/32-분실목격-hotpath-안정화.md`를 추가하고 blog 목차/시리즈 계획, README 기술 성과를 갱신했다.
+- 검증: `docs:refresh:check` PASS.
+- 후속: 다음 확장은 전단 이미지 품질, 카카오 공유 SDK, 보호자 전용 제보 관리 화면 중 하나로 좁혀 설계한다.

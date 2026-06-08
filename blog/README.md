@@ -70,6 +70,7 @@
 33. [29-성능개선-측정과-최적화-기록.md](./29-성능개선-측정과-최적화-기록.md)
 34. [30-운영-검증-문서화-루프.md](./30-운영-검증-문서화-루프.md)
 35. [31-성능개선-8단계-전후-기록.md](./31-성능개선-8단계-전후-기록.md)
+36. [32-분실목격-hotpath-안정화.md](./32-분실목격-hotpath-안정화.md)
 
 ## 이 시리즈가 다루는 범위
 
@@ -92,3 +93,4 @@
 - 실제 성능 피드백을 서버 응답, 브라우저 paint, route asset, DB readiness로 분리해 개선한 기록
 - production cleanup, detail visual smoke, 관리자 큐 인증 smoke, credential 보정, docs-quality, active plan closure를 하나의 운영 검증/문서화 루프로 닫은 기록
 - 접속/로딩 속도를 production baseline, Web Vitals, ISR, prefetch, API timing, resource budget으로 나눠 8단계로 개선한 기록
+- 분실/목격 제보를 랜딩, 작성 진입, 상세 공유, 목격 댓글, 보호자 공개 privacy, on-demand e2e까지 하나의 hot path로 닫은 기록
