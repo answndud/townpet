@@ -10750,3 +10750,10 @@
 - 변경: `LazyFeedHoverMenu`를 추가하고, 첫 hover/focus/click 메뉴가 바로 열리도록 `FeedHoverMenu` 초기 open prop을 추가했다.
 - 검증: targeted Vitest 9 tests, `lint`, `typecheck`, `next build`, local asset 측정 PASS.
 - 결과: `/` script -14.5%, `/feed/guest`는 직전 서버 shell 기준 script -13.2%, resource total -11.0%.
+
+### 2026-06-08 - route asset 문서 포함 지표 보강
+
+- 요약: route asset 스냅샷에 `documentIncludedTransferBytes`와 `targetVisibleMs`를 추가해 서버 shell 전환의 payload tradeoff를 직접 볼 수 있게 했다.
+- 변경: `guest_feed` target에 `#feed-list` 표시 시점을 붙이고 Markdown 표의 `resource 총전송`/`문서 포함 총전송`을 분리했다.
+- 검증: targeted Vitest 7 tests, script ESLint, `typecheck`, local asset 측정 PASS.
+- 결과: `/feed/guest` 문서 포함 총전송 약 264KB, 목록 표시 desktop 614ms/mobile 125ms로 다음 payload 축소 기준선을 확보했다.

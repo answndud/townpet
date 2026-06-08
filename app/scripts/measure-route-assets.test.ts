@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   buildAssetTargets,
+  calculateDocumentIncludedTransferBytes,
   filterAssetTargets,
   parseAssetTargetFilter,
 } from "./measure-route-assets";
@@ -10,11 +11,11 @@ describe("route asset target selection", () => {
   it("keeps default asset targets when PERF_ASSET_TARGETS is empty", () => {
     const targets = buildAssetTargets({});
 
-    expect(targets.map((target) => target.label)).toEqual([
-      "home",
-      "login",
-      "guest_feed",
-      "static_probe",
+    expect(targets).toEqual([
+      { label: "home", path: "/" },
+      { label: "login", path: "/login" },
+      { label: "guest_feed", path: "/feed/guest", visibleSelector: "#feed-list" },
+      { label: "static_probe", path: "/perf-static-baseline.txt" },
     ]);
   });
 
@@ -75,5 +76,14 @@ describe("route asset target selection", () => {
     expect(() => filterAssetTargets([{ label: "home", path: "/" }], "home,missing")).toThrow(
       "PERF_ASSET_TARGETS contains unknown target(s): missing",
     );
+  });
+
+  it("adds document bytes to resource transfer for document-inclusive totals", () => {
+    expect(
+      calculateDocumentIncludedTransferBytes({
+        documentBytes: 76_542,
+        totalTransferBytes: 193_402,
+      }),
+    ).toBe(269_944);
   });
 });

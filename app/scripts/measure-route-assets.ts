@@ -11,6 +11,7 @@ type AssetProfile = "desktop" | "mobile";
 type AssetTarget = {
   label: string;
   path: string;
+  visibleSelector?: string;
 };
 
 type ResourceTiming = {
@@ -30,6 +31,8 @@ type AssetSample = {
   finalUrl: string;
   documentBytes: number;
   documentResponseEndMs: number;
+  documentIncludedTransferBytes: number;
+  targetVisibleMs: number | null;
   fcpMs: number;
   lcpMs: number;
   longTaskTotalMs: number;
@@ -96,7 +99,7 @@ function buildDefaultTargets(env: RouteAssetEnv): AssetTarget[] {
   const targets: AssetTarget[] = [
     { label: "home", path: "/" },
     { label: "login", path: "/login" },
-    { label: "guest_feed", path: "/feed/guest" },
+    { label: "guest_feed", path: "/feed/guest", visibleSelector: "#feed-list" },
     { label: "static_probe", path: "/perf-static-baseline.txt" },
   ];
 
@@ -173,28 +176,70 @@ async function createPage(browser: Browser, profile: AssetProfile) {
   });
 }
 
-async function installObservers(page: Page) {
-  await page.addInitScript(() => {
-    window.__townpetAssetPerf = { lcp: 0, longTaskTotal: 0 };
+async function installObservers(page: Page, targetVisibleSelector?: string) {
+  await page.addInitScript((visibleSelector) => {
+    window.__townpetAssetPerf = { lcp: 0, longTaskTotal: 0, targetVisible: null };
+    const markTargetVisible = () => {
+      if (!visibleSelector || window.__townpetAssetPerf?.targetVisible) {
+        return;
+      }
+      const target = document.querySelector(visibleSelector);
+      if (!target) {
+        return;
+      }
+      const rects = target.getClientRects();
+      const style = window.getComputedStyle(target);
+      if (rects.length === 0 || style.visibility === "hidden" || style.display === "none") {
+        return;
+      }
+      window.__townpetAssetPerf = {
+        ...(window.__townpetAssetPerf ?? { lcp: 0, longTaskTotal: 0, targetVisible: null }),
+        targetVisible: performance.now(),
+      };
+    };
+
+    if (visibleSelector) {
+      const scheduleMark = () => window.requestAnimationFrame(markTargetVisible);
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", scheduleMark, { once: true });
+      } else {
+        scheduleMark();
+      }
+      const observer = new MutationObserver(markTargetVisible);
+      const observeWhenReady = () => {
+        observer.observe(document.documentElement, {
+          childList: true,
+          subtree: true,
+          attributes: true,
+          attributeFilter: ["class", "style", "hidden"],
+        });
+      };
+      if (document.documentElement) {
+        observeWhenReady();
+      } else {
+        document.addEventListener("DOMContentLoaded", observeWhenReady, { once: true });
+      }
+    }
+
     try {
       const lcpObserver = new PerformanceObserver((entryList) => {
         const entries = entryList.getEntries();
         const lastEntry = entries[entries.length - 1];
         if (lastEntry) {
           window.__townpetAssetPerf = {
-            ...(window.__townpetAssetPerf ?? { lcp: 0, longTaskTotal: 0 }),
+            ...(window.__townpetAssetPerf ?? { lcp: 0, longTaskTotal: 0, targetVisible: null }),
             lcp: lastEntry.startTime,
           };
         }
       });
       lcpObserver.observe({ type: "largest-contentful-paint", buffered: true });
     } catch {
-      window.__townpetAssetPerf = { lcp: 0, longTaskTotal: 0 };
+      window.__townpetAssetPerf = { lcp: 0, longTaskTotal: 0, targetVisible: null };
     }
 
     try {
       const longTaskObserver = new PerformanceObserver((entryList) => {
-        const current = window.__townpetAssetPerf ?? { lcp: 0, longTaskTotal: 0 };
+        const current = window.__townpetAssetPerf ?? { lcp: 0, longTaskTotal: 0, targetVisible: null };
         const added = entryList.getEntries().reduce((sum, entry) => sum + entry.duration, 0);
         window.__townpetAssetPerf = {
           ...current,
@@ -203,9 +248,9 @@ async function installObservers(page: Page) {
       });
       longTaskObserver.observe({ type: "longtask", buffered: true });
     } catch {
-      window.__townpetAssetPerf = window.__townpetAssetPerf ?? { lcp: 0, longTaskTotal: 0 };
+      window.__townpetAssetPerf = window.__townpetAssetPerf ?? { lcp: 0, longTaskTotal: 0, targetVisible: null };
     }
-  });
+  }, targetVisibleSelector ?? "");
 }
 
 declare global {
@@ -213,6 +258,7 @@ declare global {
     __townpetAssetPerf?: {
       lcp: number;
       longTaskTotal: number;
+      targetVisible: number | null;
     };
   }
 }
@@ -249,6 +295,46 @@ function compactUrl(value: string) {
   }
 }
 
+export function calculateDocumentIncludedTransferBytes({
+  documentBytes,
+  totalTransferBytes,
+}: {
+  documentBytes: number;
+  totalTransferBytes: number;
+}) {
+  return documentBytes + totalTransferBytes;
+}
+
+async function markTargetVisibleFallback(page: Page, selector: string | undefined) {
+  if (!selector) {
+    return;
+  }
+
+  try {
+    await page.locator(selector).first().waitFor({ state: "visible", timeout: 5_000 });
+    await page.evaluate((targetSelector) => {
+      const current = window.__townpetAssetPerf ?? {
+        lcp: 0,
+        longTaskTotal: 0,
+        targetVisible: null,
+      };
+      if (current.targetVisible) {
+        return;
+      }
+      const target = document.querySelector(targetSelector);
+      if (!target) {
+        return;
+      }
+      window.__townpetAssetPerf = {
+        ...current,
+        targetVisible: performance.now(),
+      };
+    }, selector);
+  } catch {
+    // Optional target visibility timing should never fail the asset snapshot.
+  }
+}
+
 async function measureRoute(params: {
   browser: Browser;
   baseUrl: string;
@@ -257,12 +343,13 @@ async function measureRoute(params: {
   settleMs: number;
 }) {
   const page = await createPage(params.browser, params.profile);
-  await installObservers(page);
+  await installObservers(page, params.target.visibleSelector);
   const response = await page.goto(`${params.baseUrl}${params.target.path}`, {
     waitUntil: "load",
     timeout: 30_000,
   });
   const documentBytes = response ? (await response.body()).byteLength : 0;
+  await markTargetVisibleFallback(page, params.target.visibleSelector);
   if (params.settleMs > 0) {
     await page.waitForTimeout(params.settleMs);
   }
@@ -285,6 +372,7 @@ async function measureRoute(params: {
 
     return {
       documentResponseEndMs: navigation?.responseEnd ?? 0,
+      targetVisibleMs: window.__townpetAssetPerf?.targetVisible ?? null,
       fcpMs: fcp,
       lcpMs: window.__townpetAssetPerf?.lcp ?? 0,
       longTaskTotalMs: window.__townpetAssetPerf?.longTaskTotal ?? 0,
@@ -307,6 +395,11 @@ async function measureRoute(params: {
     finalUrl: page.url(),
     documentBytes,
     documentResponseEndMs: metrics.documentResponseEndMs,
+    documentIncludedTransferBytes: calculateDocumentIncludedTransferBytes({
+      documentBytes,
+      totalTransferBytes: resources.reduce((sum, resource) => sum + resource.transferSize, 0),
+    }),
+    targetVisibleMs: metrics.targetVisibleMs,
     fcpMs: metrics.fcpMs,
     lcpMs: metrics.lcpMs,
     longTaskTotalMs: metrics.longTaskTotalMs,
@@ -348,13 +441,13 @@ function renderMarkdown(params: {
     "",
     "## 요약",
     "",
-    "| 프로파일 | 라우트 | 상태 | 문서 응답 | 문서 크기 | FCP | LCP | long task | script 수 | script 전송 | script encoded | CSS 전송 | fetch 전송 | 전체 전송 |",
-    "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+    "| 프로파일 | 라우트 | 상태 | 문서 응답 | 문서 크기 | 문서 포함 총전송 | 목표 표시 | FCP | LCP | long task | script 수 | script 전송 | script encoded | CSS 전송 | fetch 전송 | resource 총전송 |",
+    "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
   ];
 
   for (const sample of params.samples) {
     lines.push(
-      `| ${sample.profile} | \`${sample.path}\` | ${sample.status} | ${formatMs(sample.documentResponseEndMs)} | ${formatBytes(sample.documentBytes)} | ${formatMs(sample.fcpMs)} | ${formatMs(sample.lcpMs)} | ${formatMs(sample.longTaskTotalMs)} | ${sample.scriptCount} | ${formatBytes(sample.scriptTransferBytes)} | ${formatBytes(sample.scriptEncodedBytes)} | ${formatBytes(sample.stylesheetTransferBytes)} | ${formatBytes(sample.fetchTransferBytes)} | ${formatBytes(sample.totalTransferBytes)} |`,
+      `| ${sample.profile} | \`${sample.path}\` | ${sample.status} | ${formatMs(sample.documentResponseEndMs)} | ${formatBytes(sample.documentBytes)} | ${formatBytes(sample.documentIncludedTransferBytes)} | ${formatMs(sample.targetVisibleMs ?? 0)} | ${formatMs(sample.fcpMs)} | ${formatMs(sample.lcpMs)} | ${formatMs(sample.longTaskTotalMs)} | ${sample.scriptCount} | ${formatBytes(sample.scriptTransferBytes)} | ${formatBytes(sample.scriptEncodedBytes)} | ${formatBytes(sample.stylesheetTransferBytes)} | ${formatBytes(sample.fetchTransferBytes)} | ${formatBytes(sample.totalTransferBytes)} |`,
     );
   }
 
