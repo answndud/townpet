@@ -32,13 +32,13 @@ const feedInlinePrimaryActionClassName =
   "inline-flex min-h-10 items-center justify-center rounded-md bg-[#3567b5] px-3 text-xs font-semibold text-[#fbfdff] transition hover:bg-[#2f5da4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1";
 
 export const metadata: Metadata = {
-  title: "공개 반려생활 피드",
+  title: "공개 동네 반려생활 피드",
   description: "비회원에게 공개된 병원 후기, 산책코스, 분실/목격 제보와 인기글을 확인하세요.",
   alternates: {
     canonical: "/feed/guest",
   },
   openGraph: {
-    title: "TownPet 공개 반려생활 피드",
+    title: "TownPet 공개 동네 반려생활 피드",
     description: "비회원에게 공개된 병원 후기, 산책코스, 분실/목격 제보와 인기글을 확인하세요.",
     url: "/feed/guest",
   },

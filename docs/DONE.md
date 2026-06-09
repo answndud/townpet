@@ -10806,3 +10806,10 @@
 - 변경: SDK 준비 리포트와 콘솔 체크리스트를 추가하고, 1차 구현 범위를 `default template + lazy loader + fallback`으로 좁혔다.
 - 검증: Kakao Developers 공식 문서 확인, `docs:refresh:check` PASS.
 - 후속: `NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY` env와 SDK lazy loader를 추가한다.
+
+### 2026-06-09 - 카카오 공유 SDK 1차 구현
+
+- 요약: 분실/목격 공유 패널에 Kakao JavaScript SDK 기반 직접 공유와 텍스트 복사 fallback을 추가했다.
+- 변경: `NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY`, SDK lazy loader, default feed template helper, `KAKAO_SHARE` 이벤트/로그, 구현 리포트를 추가했다.
+- 검증: targeted Vitest 23 tests, 관련 ESLint, `typecheck` PASS.
+- 후속: Kakao Developers 도메인/env 설정과 Android/iOS 실기기 공유 smoke 증적을 확보한다.

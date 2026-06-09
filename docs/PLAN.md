@@ -14,9 +14,12 @@
 
 ## Active
 
-없음.
+- 없음.
 
 ## 다음 작업 후보
 
-- 카카오 공유 SDK 1차 구현을 `default template + lazy loader + 텍스트 복사 fallback` 범위로 진행한다.
+- 카카오 공유 SDK 실기기 smoke 증적을 확보한다.
+  - Kakao Developers JavaScript SDK 도메인/Product Link 웹 도메인 설정 확인
+  - Vercel `NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY` env 반영 확인
+  - Android/iOS 실기기 공유와 실패 fallback 확인
 - 분실/목격 제보 상태 변경, 보호자-제보자 비공개 대화, 지도 기반 표시 중 다음 확장 후보를 별도 설계한다.
