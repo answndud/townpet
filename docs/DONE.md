@@ -10799,3 +10799,10 @@
 - 변경: `/posts/[id]/sightings`, 관리 query/service, 상세 패널 `제보 관리` 링크, 정책 리포트를 추가했다.
 - 검증: targeted Vitest 12 tests, 관련 ESLint, `typecheck` PASS.
 - 후속: 카카오 공유 SDK 조건 확인과 제보 상태/지도/비공개 대화 확장 후보를 분리한다.
+
+### 2026-06-09 - 카카오 공유 SDK 적용 조건 확인
+
+- 요약: Kakao Developers 공식 문서 기준으로 JavaScript 키, SDK 도메인, Product Link 웹 도메인, 템플릿/웹훅 조건을 정리했다.
+- 변경: SDK 준비 리포트와 콘솔 체크리스트를 추가하고, 1차 구현 범위를 `default template + lazy loader + fallback`으로 좁혔다.
+- 검증: Kakao Developers 공식 문서 확인, `docs:refresh:check` PASS.
+- 후속: `NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY` env와 SDK lazy loader를 추가한다.
