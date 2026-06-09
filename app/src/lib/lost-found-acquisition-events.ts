@@ -16,6 +16,7 @@ type LostFoundShareSource =
   | "panel_open"
   | "LINK_COPY"
   | "KAKAO_TEXT_COPY"
+  | "KAKAO_SHARE"
   | "POSTER_OPEN"
   | "POSTER_DOWNLOAD";
 
@@ -63,6 +64,16 @@ export function buildLostFoundShareActionEvent(
     targetType: "POST",
     targetId: postId,
     source,
+  };
+}
+
+export function buildLostFoundKakaoShareClickedEvent(postId: string): AcquisitionEventInput {
+  return {
+    surface: "SHARE_PANEL",
+    event: "KAKAO_SHARE_CLICKED",
+    targetType: "POST",
+    targetId: postId,
+    source: "KAKAO_SHARE",
   };
 }
 

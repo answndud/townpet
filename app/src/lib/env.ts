@@ -22,6 +22,7 @@ const runtimeEnvSchema = z.object({
   DEMO_USER_EMAIL: z.string().optional(),
   KAKAO_CLIENT_ID: z.string().optional(),
   KAKAO_CLIENT_SECRET: z.string().optional(),
+  NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY: z.string().optional(),
   NAVER_CLIENT_ID: z.string().optional(),
   NAVER_CLIENT_SECRET: z.string().optional(),
 });
@@ -93,6 +94,7 @@ export const runtimeEnv = {
   demoUserEmail: parsed.DEMO_USER_EMAIL ?? "",
   kakaoClientId: parsed.KAKAO_CLIENT_ID ?? "",
   kakaoClientSecret: parsed.KAKAO_CLIENT_SECRET ?? "",
+  kakaoJavascriptKey: parsed.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY ?? "",
   isKakaoConfigured:
     Boolean(parsed.KAKAO_CLIENT_ID) && Boolean(parsed.KAKAO_CLIENT_SECRET),
   naverClientId: parsed.NAVER_CLIENT_ID ?? "",

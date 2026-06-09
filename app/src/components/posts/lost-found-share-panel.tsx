@@ -9,11 +9,19 @@ import {
   buildLostFoundPosterPngDownloadUrl,
   buildLostFoundPosterPngFileName,
   buildLostFoundPosterPngUrl,
+  buildLostFoundShareTitle,
   buildLostFoundShareChecklist,
   buildLostFoundShareSummary,
   buildLostFoundShareText,
 } from "@/lib/lost-found-share";
-import { buildLostFoundShareActionEvent } from "@/lib/lost-found-acquisition-events";
+import {
+  buildLostFoundKakaoShareClickedEvent,
+  buildLostFoundShareActionEvent,
+} from "@/lib/lost-found-acquisition-events";
+import {
+  isKakaoShareConfigured,
+  sendKakaoLostFoundShare,
+} from "@/lib/kakao-share";
 import { copyTextToClipboard } from "@/lib/post-share";
 import { sendAcquisitionEvent } from "@/lib/acquisition-tracking";
 
@@ -22,7 +30,7 @@ type LostFoundSharePanelProps = {
   postUrl: string;
 };
 
-type ShareAction = "LINK_COPY" | "KAKAO_TEXT_COPY" | "POSTER_OPEN" | "POSTER_DOWNLOAD";
+type ShareAction = "LINK_COPY" | "KAKAO_TEXT_COPY" | "KAKAO_SHARE" | "POSTER_OPEN" | "POSTER_DOWNLOAD";
 
 const lostFoundShareTextActionClassName =
   "tp-text-muted inline-flex min-h-9 items-center justify-center px-1.5 text-xs font-semibold transition hover:text-[#2f5da4] hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1";
@@ -49,11 +57,13 @@ export function LostFoundSharePanel({ post, postUrl }: LostFoundSharePanelProps)
   const shareText = useMemo(() => buildLostFoundShareText(post), [post]);
   const checklist = useMemo(() => buildLostFoundShareChecklist(post), [post]);
   const shareSummary = useMemo(() => buildLostFoundShareSummary(post), [post]);
+  const shareTitle = useMemo(() => buildLostFoundShareTitle(post), [post]);
   const posterUrl = buildLostFoundPosterPngUrl(post.id);
   const posterDownloadUrl = buildLostFoundPosterPngDownloadUrl(post.id);
   const posterFileName = buildLostFoundPosterPngFileName(post);
   const posterPath = `/api/posts/${post.id}/lost-found-share.svg?format=png`;
   const posterAlt = buildLostFoundPosterAlt(post);
+  const kakaoShareEnabled = isKakaoShareConfigured();
 
   const handleCopyLink = async () => {
     const result = await copyTextToClipboard(
@@ -71,6 +81,31 @@ export function LostFoundSharePanel({ post, postUrl }: LostFoundSharePanelProps)
     );
     setMessage(result.ok ? "카카오톡에 붙여넣을 문구를 복사했습니다." : result.message);
     void recordLostFoundShareAction(post.id, "KAKAO_TEXT_COPY");
+  };
+
+  const handleKakaoShare = async () => {
+    void sendAcquisitionEvent(buildLostFoundKakaoShareClickedEvent(post.id));
+    void recordLostFoundShareAction(post.id, "KAKAO_SHARE");
+
+    try {
+      await sendKakaoLostFoundShare({
+        title: shareTitle,
+        description: shareSummary.join(" · "),
+        imageUrl: posterUrl,
+        url: postUrl,
+      });
+      setMessage("카카오톡 공유 화면을 열었습니다.");
+    } catch {
+      const result = await copyTextToClipboard(
+        typeof navigator === "undefined" ? undefined : navigator.clipboard,
+        shareText,
+      );
+      setMessage(
+        result.ok
+          ? "카카오톡 공유를 열지 못해 붙여넣을 문구를 복사했습니다."
+          : "카카오톡 공유를 열지 못했습니다. 링크 복사나 전단 저장을 사용해 주세요.",
+      );
+    }
   };
 
   const handlePosterOpen = () => {
@@ -114,9 +149,19 @@ export function LostFoundSharePanel({ post, postUrl }: LostFoundSharePanelProps)
           </p>
         </div>
         <div className="flex flex-col gap-1.5 sm:flex-row sm:flex-wrap sm:justify-end">
+          {kakaoShareEnabled ? (
+            <button
+              type="button"
+              className={`${lostFoundSharePrimaryActionClassName} w-full sm:w-auto`}
+              aria-label="분실/목격 카카오톡으로 바로 공유"
+              onClick={handleKakaoShare}
+            >
+              카카오톡 공유
+            </button>
+          ) : null}
           <button
             type="button"
-            className={`${lostFoundSharePrimaryActionClassName} w-full sm:w-auto`}
+            className={`${kakaoShareEnabled ? lostFoundShareTextActionClassName : lostFoundSharePrimaryActionClassName} w-full sm:w-auto`}
             aria-label="분실/목격 카카오톡 공유 문구 복사"
             onClick={handleCopyKakaoText}
           >

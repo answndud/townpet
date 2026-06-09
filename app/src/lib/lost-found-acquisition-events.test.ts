@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   buildLostFoundCtaClickEvent,
+  buildLostFoundKakaoShareClickedEvent,
   buildLostFoundLandingViewEvent,
   buildLostFoundShareActionEvent,
   buildLostFoundSharePanelOpenedEvent,
@@ -29,6 +30,14 @@ describe("lost found acquisition event builders", () => {
       acquisitionEventSchema.safeParse(
         buildLostFoundShareActionEvent("post-1", "KAKAO_TEXT_COPY"),
       ).success,
+    ).toBe(true);
+    expect(
+      acquisitionEventSchema.safeParse(
+        buildLostFoundShareActionEvent("post-1", "KAKAO_SHARE"),
+      ).success,
+    ).toBe(true);
+    expect(
+      acquisitionEventSchema.safeParse(buildLostFoundKakaoShareClickedEvent("post-1")).success,
     ).toBe(true);
     expect(
       acquisitionEventSchema.safeParse(
