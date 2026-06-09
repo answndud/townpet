@@ -10813,3 +10813,10 @@
 - 변경: `NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY`, SDK lazy loader, default feed template helper, `KAKAO_SHARE` 이벤트/로그, 구현 리포트를 추가했다.
 - 검증: targeted Vitest 23 tests, 관련 ESLint, `typecheck` PASS.
 - 후속: Kakao Developers 도메인/env 설정과 Android/iOS 실기기 공유 smoke 증적을 확보한다.
+
+### 2026-06-09 - 카카오 공유 SDK production smoke
+
+- 요약: production 공유 도구 lazy-load/API/PNG 전단은 정상이나 `NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY` 미반영으로 direct Kakao button은 미노출임을 확인했다.
+- 변경: KST 날짜 포맷 고정, direct Kakao button env 테스트, smoke 리포트를 추가했다.
+- 검증: `quality:check`, GitHub Actions quality-gate/docs-quality PASS, production health/share API/PNG/click smoke PASS.
+- 후속: Vercel env와 Kakao Developers 도메인 설정 후 Android/iOS 실기기 전송 smoke를 재실행한다.
