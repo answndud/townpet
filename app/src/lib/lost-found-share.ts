@@ -38,6 +38,7 @@ export function formatLostFoundShareDate(value?: string | Date | null) {
   }
 
   return new Intl.DateTimeFormat("ko-KR", {
+    timeZone: "Asia/Seoul",
     month: "short",
     day: "numeric",
     hour: "2-digit",
