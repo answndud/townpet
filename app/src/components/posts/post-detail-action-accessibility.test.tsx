@@ -2,7 +2,7 @@ import type { AnchorHTMLAttributes, ImgHTMLAttributes, ReactNode } from "react";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { PostScope, PostStatus, PostType } from "@prisma/client";
 
 import { DeferredLostFoundSharePanel } from "@/components/posts/deferred-lost-found-share-panel";
@@ -48,6 +48,10 @@ vi.mock("@/server/actions/post", () => ({
 }));
 
 describe("post detail action accessibility", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it("keeps owner delete action mobile-safe", () => {
     const html = renderToStaticMarkup(<PostDetailActions postId="post-1" />);
 
@@ -180,6 +184,41 @@ describe("post detail action accessibility", () => {
     expect(html).not.toContain("tp-btn-soft");
     expect(html).not.toContain("tp-btn-primary");
     expect(html).not.toContain("min-h-32 overflow-auto whitespace-pre-wrap rounded-lg border border-[#dbe6f5] bg-[#f8fbff] p-3");
+  });
+
+  it("renders direct Kakao share when the public JavaScript key is configured", () => {
+    vi.stubEnv("NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY", "public-js-key");
+
+    const html = renderToStaticMarkup(
+      <LostFoundSharePanel
+        post={{
+          id: "post-1",
+          authorId: "author-1",
+          type: PostType.LOST_FOUND,
+          scope: PostScope.GLOBAL,
+          status: PostStatus.ACTIVE,
+          title: "반포동에서 고양이를 봤어요",
+          content: "노란 목줄",
+          createdAt: new Date("2026-05-21T09:30:00.000Z"),
+          updatedAt: new Date("2026-05-21T09:30:00.000Z"),
+          author: { id: "author-1", nickname: "작성자" },
+          images: [],
+          lostFoundAlert: {
+            alertType: "FOUND",
+            petType: "고양이",
+            breed: "치즈태비",
+            lastSeenAt: "2026-05-21T09:30:00.000Z",
+            lastSeenLocation: "서초구 반포동",
+            status: "ACTIVE",
+          },
+        }}
+        postUrl="https://townpet.example/posts/post-1"
+      />,
+    );
+
+    expect(html).toContain('aria-label="분실/목격 카카오톡으로 바로 공유"');
+    expect(html).toContain(">카카오톡 공유</button>");
+    expect(html).toContain('aria-label="분실/목격 카카오톡 공유 문구 복사"');
   });
 
   it("renders deferred lost-found share CTA with a clear discovery path", () => {
