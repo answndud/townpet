@@ -2,31 +2,25 @@ import type { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { GET } from "@/app/api/posts/[id]/reaction/route";
-import { prisma } from "@/lib/prisma";
 import { getCurrentUserIdFromRequest } from "@/server/auth";
 import { monitorUnhandledError } from "@/server/error-monitor";
+import { findViewerPostReaction } from "@/server/queries/post.queries";
 
 vi.mock("@/server/auth", () => ({ getCurrentUserIdFromRequest: vi.fn() }));
 vi.mock("@/server/error-monitor", () => ({ monitorUnhandledError: vi.fn() }));
-vi.mock("@/lib/prisma", () => ({
-  prisma: {
-    postReaction: {
-      findUnique: vi.fn(),
-    },
-  },
-}));
+vi.mock("@/server/queries/post.queries", () => ({ findViewerPostReaction: vi.fn() }));
 
 const mockGetCurrentUserIdFromRequest = vi.mocked(getCurrentUserIdFromRequest);
 const mockMonitorUnhandledError = vi.mocked(monitorUnhandledError);
-const mockFindUnique = vi.mocked(prisma.postReaction.findUnique);
+const mockFindViewerPostReaction = vi.mocked(findViewerPostReaction);
 
 describe("GET /api/posts/[id]/reaction contract", () => {
   beforeEach(() => {
     mockGetCurrentUserIdFromRequest.mockReset();
     mockMonitorUnhandledError.mockReset();
-    mockFindUnique.mockReset();
+    mockFindViewerPostReaction.mockReset();
     mockGetCurrentUserIdFromRequest.mockResolvedValue(null);
-    mockFindUnique.mockResolvedValue(null);
+    mockFindViewerPostReaction.mockResolvedValue(null);
   });
 
   it("returns AUTH_REQUIRED when user is not authenticated", async () => {
@@ -44,7 +38,7 @@ describe("GET /api/posts/[id]/reaction contract", () => {
 
   it("returns current reaction type for authenticated user", async () => {
     mockGetCurrentUserIdFromRequest.mockResolvedValue("user-1");
-    mockFindUnique.mockResolvedValue({ type: "LIKE" } as never);
+    mockFindViewerPostReaction.mockResolvedValue("LIKE");
     const request = new Request("http://localhost/api/posts/post-1/reaction") as NextRequest;
 
     const response = await GET(request, { params: Promise.resolve({ id: "post-1" }) });
@@ -55,20 +49,12 @@ describe("GET /api/posts/[id]/reaction contract", () => {
       ok: true,
       data: { reaction: "LIKE" },
     });
-    expect(mockFindUnique).toHaveBeenCalledWith({
-      where: {
-        postId_userId: {
-          postId: "post-1",
-          userId: "user-1",
-        },
-      },
-      select: { type: true },
-    });
+    expect(mockFindViewerPostReaction).toHaveBeenCalledWith({ postId: "post-1", userId: "user-1" });
   });
 
   it("returns 500 and monitors unexpected errors", async () => {
     mockGetCurrentUserIdFromRequest.mockResolvedValue("user-1");
-    mockFindUnique.mockRejectedValue(new Error("db down"));
+    mockFindViewerPostReaction.mockRejectedValue(new Error("db down"));
     const request = new Request("http://localhost/api/posts/post-1/reaction") as NextRequest;
 
     const response = await GET(request, { params: Promise.resolve({ id: "post-1" }) });

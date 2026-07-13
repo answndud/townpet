@@ -8,7 +8,7 @@
 - 메서드 export 누락: 0
 - 인접 테스트 누락: 0
 - 접근 제어 휴리스틱: admin=2, auth-aware=18, authenticated=10, moderator=6, provider-managed=1, public=15, public-internal-token=3
-- 검증 휴리스틱: manual=13, no-input=3, provider-managed=1, schema=25, service-delegated=12, static-response=1
+- 검증 휴리스틱: manual=14, no-input=3, provider-managed=1, schema=24, service-delegated=12, static-response=1
 - 모니터링 휴리스틱: logger=1, monitorUnhandledError=52, provider-managed=1, static-response=1
 
 휴리스틱 라벨은 리뷰 보조 자료이며 보안 증명이 아니다. 소스 오브 트루스는 route 코드와 테스트다.
@@ -38,7 +38,7 @@
 | `/api/comments/[id]` | PATCH, DELETE | auth-aware | service-delegated | monitorUnhandledError | `src/app/api/comments/[id]/route.ts` | 예 |
 | `/api/communities` | GET | public | schema | monitorUnhandledError | `src/app/api/communities/route.ts` | 예 |
 | `/api/corrections` | POST | auth-aware | service-delegated | monitorUnhandledError | `src/app/api/corrections/route.ts` | 예 |
-| `/api/feed/guest` | GET | public | schema | monitorUnhandledError | `src/app/api/feed/guest/route.ts` | 예 |
+| `/api/feed/guest` | GET | public | manual | monitorUnhandledError | `src/app/api/feed/guest/route.ts` | 예 |
 | `/api/feed/personalization` | POST | authenticated | schema | monitorUnhandledError | `src/app/api/feed/personalization/route.ts` | 예 |
 | `/api/guest/step-up` | POST | public | schema | monitorUnhandledError | `src/app/api/guest/step-up/route.ts` | 예 |
 | `/api/health` | GET | public-internal-token | manual | logger | `src/app/api/health/route.ts` | 예 |

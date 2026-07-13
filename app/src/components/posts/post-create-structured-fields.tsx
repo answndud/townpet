@@ -1,6 +1,6 @@
 "use client";
 
-import type { Dispatch, ReactNode, SetStateAction } from "react";
+import type { Dispatch, SetStateAction } from "react";
 
 import type { PostCreateFormState } from "@/components/posts/post-create-form-state";
 import {
@@ -13,38 +13,17 @@ import {
   marketListingTypeOptions,
 } from "@/components/posts/post-create-form-options";
 import { MARKET_SAFETY_CHECKLIST } from "@/lib/market-safety-policy";
-import {
-  ADOPTION_AGE_LABEL_SUGGESTIONS,
-  ADOPTION_ANIMAL_TYPE_SUGGESTIONS,
-  ADOPTION_BREED_SUGGESTIONS,
-  HOSPITAL_TREATMENT_TYPE_SUGGESTIONS,
-  STRUCTURED_REGION_SUGGESTIONS,
-  VOLUNTEER_TYPE_SUGGESTIONS,
-} from "@/lib/structured-field-normalization";
-
-type StructuredFieldSectionProps = {
-  title: string;
-  children: ReactNode;
-};
+import { StructuredFieldSection } from "@/components/posts/structured-field-primitives";
 
 type StructuredFieldsProps = {
   formState: PostCreateFormState;
   setFormState: Dispatch<SetStateAction<PostCreateFormState>>;
 };
 
-export function StructuredFieldSection({
-  title,
-  children,
-}: StructuredFieldSectionProps) {
-  return (
-    <section className="tp-card overflow-hidden">
-      <div className="tp-form-section-bar">
-        <p className="tp-form-section-title">{title}</p>
-      </div>
-      <div className="grid gap-3 p-3 sm:p-4 md:grid-cols-2">{children}</div>
-    </section>
-  );
-}
+export {
+  StructuredFieldDatalists,
+  StructuredFieldSection,
+} from "@/components/posts/structured-field-primitives";
 
 export function HospitalReviewFields({
   formState,
@@ -1458,42 +1437,5 @@ export function VolunteerRecruitmentFields({
         </select>
       </label>
     </StructuredFieldSection>
-  );
-}
-
-export function StructuredFieldDatalists() {
-  return (
-    <>
-      <datalist id="hospital-treatment-type-options">
-        {HOSPITAL_TREATMENT_TYPE_SUGGESTIONS.map((item) => (
-          <option key={item} value={item} />
-        ))}
-      </datalist>
-      <datalist id="structured-region-options">
-        {STRUCTURED_REGION_SUGGESTIONS.map((item) => (
-          <option key={item} value={item} />
-        ))}
-      </datalist>
-      <datalist id="adoption-animal-type-options">
-        {ADOPTION_ANIMAL_TYPE_SUGGESTIONS.map((item) => (
-          <option key={item} value={item} />
-        ))}
-      </datalist>
-      <datalist id="adoption-breed-options">
-        {ADOPTION_BREED_SUGGESTIONS.map((item) => (
-          <option key={item} value={item} />
-        ))}
-      </datalist>
-      <datalist id="adoption-age-label-options">
-        {ADOPTION_AGE_LABEL_SUGGESTIONS.map((item) => (
-          <option key={item} value={item} />
-        ))}
-      </datalist>
-      <datalist id="volunteer-type-options">
-        {VOLUNTEER_TYPE_SUGGESTIONS.map((item) => (
-          <option key={item} value={item} />
-        ))}
-      </datalist>
-    </>
   );
 }
