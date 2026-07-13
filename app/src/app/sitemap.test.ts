@@ -1,15 +1,10 @@
-import { Prisma } from "@prisma/client";
 import { describe, expect, it, vi } from "vitest";
 
-import { prisma } from "@/lib/prisma";
+import { listPublicSitemapPosts } from "@/server/queries/sitemap.queries";
 
-vi.mock("@/lib/prisma", () => ({
-  prisma: {
-    post: {
-      count: vi.fn().mockResolvedValue(0),
-      findMany: vi.fn().mockResolvedValue([]),
-    },
-  },
+vi.mock("@/server/queries/sitemap.queries", () => ({
+  countPublicSitemapPosts: vi.fn().mockResolvedValue(0),
+  listPublicSitemapPosts: vi.fn().mockResolvedValue([]),
 }));
 
 vi.mock("@/server/queries/policy.queries", () => ({
@@ -26,12 +21,7 @@ vi.mock("@/lib/pet-profile", () => ({
 
 import sitemap from "@/app/sitemap";
 
-const mockPrisma = vi.mocked(prisma) as unknown as {
-  post: {
-    count: ReturnType<typeof vi.fn>;
-    findMany: ReturnType<typeof vi.fn>;
-  };
-};
+const mockListPublicSitemapPosts = vi.mocked(listPublicSitemapPosts);
 
 describe("sitemap", () => {
   it("includes public legal surfaces on the first sitemap page", async () => {
@@ -70,9 +60,7 @@ describe("sitemap", () => {
   });
 
   it("falls back to static routes when the database is unavailable", async () => {
-    mockPrisma.post.findMany.mockRejectedValueOnce(
-      new Prisma.PrismaClientInitializationError("db down", "5.22.0"),
-    );
+    mockListPublicSitemapPosts.mockResolvedValueOnce([]);
 
     const entries = await sitemap({ id: Promise.resolve(0) });
     const urls = entries.map((entry) => entry.url);

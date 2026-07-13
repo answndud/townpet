@@ -4,14 +4,16 @@ import { PostScope, PostStatus } from "@prisma/client";
 import { hasBreedLoungeRoute } from "@/lib/pet-profile";
 import { listCampaignPaths } from "@/lib/campaign-pages";
 import { listGuidePaths } from "@/lib/guide-pages";
-import { prisma } from "@/lib/prisma";
 import { getSiteOrigin } from "@/lib/site-url";
 import { listTownLandingPaths } from "@/lib/town-landing";
 import { isPrismaDatabaseUnavailableError } from "@/server/prisma-database-error";
 import { listEffectiveBreedCatalogGroupedBySpecies } from "@/server/queries/breed-catalog.queries";
 import { getGuestReadLoginRequiredPostTypes } from "@/server/queries/policy.queries";
-
-const SITEMAP_POST_PAGE_SIZE = 5_000;
+import {
+  countPublicSitemapPosts,
+  listPublicSitemapPosts,
+  SITEMAP_POST_PAGE_SIZE,
+} from "@/server/queries/sitemap.queries";
 
 async function getPublicSitemapPostWhere() {
   const loginRequiredTypes = await getGuestReadLoginRequiredPostTypes();
@@ -26,12 +28,7 @@ async function getPublicSitemapPostWhere() {
 
 export async function generateSitemaps() {
   const where = await getPublicSitemapPostWhere();
-  const totalCount = await prisma.post.count({ where }).catch((error) => {
-    if (isPrismaDatabaseUnavailableError(error)) {
-      return 0;
-    }
-    throw error;
-  });
+  const totalCount = await countPublicSitemapPosts(where);
   const totalPages = Math.max(1, Math.ceil(totalCount / SITEMAP_POST_PAGE_SIZE));
 
   return Array.from({ length: totalPages }, (_, id) => ({ id }));
@@ -45,21 +42,7 @@ export default async function sitemap({
   const siteOrigin = getSiteOrigin();
   const resolvedId = Math.max(0, Number(await id) || 0);
   const where = await getPublicSitemapPostWhere();
-  const posts = await prisma.post.findMany({
-    where,
-    select: {
-      id: true,
-      updatedAt: true,
-    },
-    orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
-    skip: resolvedId * SITEMAP_POST_PAGE_SIZE,
-    take: SITEMAP_POST_PAGE_SIZE,
-  }).catch((error) => {
-    if (isPrismaDatabaseUnavailableError(error)) {
-      return [];
-    }
-    throw error;
-  });
+  const posts = await listPublicSitemapPosts({ where, page: resolvedId });
 
   const staticRoutes: MetadataRoute.Sitemap =
     resolvedId === 0
