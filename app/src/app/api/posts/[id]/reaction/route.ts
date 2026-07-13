@@ -1,9 +1,9 @@
 import { NextRequest } from "next/server";
 
-import { prisma } from "@/lib/prisma";
 import { getCurrentUserIdFromRequest } from "@/server/auth";
 import { monitorUnhandledError } from "@/server/error-monitor";
 import { jsonError, jsonOk } from "@/server/response";
+import { findViewerPostReaction } from "@/server/queries/post.queries";
 
 type RouteParams = {
   params: Promise<{ id: string }>;
@@ -20,17 +20,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     }
 
     const { id: postId } = await params;
-    const reaction = await prisma.postReaction.findUnique({
-      where: {
-        postId_userId: {
-          postId,
-          userId,
-        },
-      },
-      select: { type: true },
-    });
+    const reaction = await findViewerPostReaction({ postId, userId });
 
-    return jsonOk({ reaction: reaction?.type ?? null });
+    return jsonOk({ reaction });
   } catch (error) {
     await monitorUnhandledError(error, { route: "GET /api/posts/[id]/reaction", request });
     return jsonError(500, {

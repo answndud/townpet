@@ -68,6 +68,7 @@ export type { PostListSort } from "./post-list-args";
 export {
   listPostSearchSuggestions,
 } from "./post-search-suggestions.queries";
+export { findViewerPostReaction } from "./post-reaction.queries";
 export {
   listViewerRecentBehaviorSummaryLabels,
   listViewerRecentBookmarkSummaryLabels,
