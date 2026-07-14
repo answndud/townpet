@@ -170,7 +170,7 @@ function main() {
     if (options.strict && !readyToArchive) {
       process.exitCode = 1;
       console.error(
-        "OAuth manual check archive criteria not met. Both providers must be pass with evidence links before updating docs/DONE.md and clearing the matching docs/PLAN.md blocked item.",
+        "OAuth manual check completion criteria not met. Both providers must be pass with evidence links before archiving evidence in docs/reports/ and clearing the matching PLAN.md blocked item.",
       );
     }
   } catch (error) {

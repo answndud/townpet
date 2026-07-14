@@ -36,9 +36,9 @@ describe("state harness helper copy", () => {
       baseUrlChecks,
     );
 
-    expect(markdown).toContain("## DONE.md Snippet");
-    expect(markdown).toContain("docs/DONE.md");
-    expect(markdown).toContain("docs/PLAN.md");
+    expect(markdown).toContain("## Completion Summary");
+    expect(markdown).toContain("docs/reports/");
+    expect(markdown).toContain("PLAN.md");
     expect(markdown).not.toMatch(staleHarnessCopy);
   });
 

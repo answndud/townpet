@@ -15,8 +15,8 @@ describe("FeedPreviewList", () => {
     );
 
     expect(html).toContain("먼저 확인할 글");
-    expect(html).toContain("실시간 게시판");
-    expect(html).toContain("지금 올라온 글");
+    expect(html).toContain("공개 게시판");
+    expect(html).toContain("공개 글 미리보기");
     expect(html).not.toContain("지금 많이 보는 글");
     expect(html).not.toContain("Live board");
   });

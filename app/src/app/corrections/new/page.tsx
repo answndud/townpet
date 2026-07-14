@@ -114,7 +114,7 @@ export default async function CorrectionRequestPage({
       />
       <section className="mx-auto grid w-full max-w-[1120px] gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:px-10">
         <div className="tp-card p-5 sm:p-6">
-          <p className="tp-eyebrow">Correction request</p>
+          <p className="tp-eyebrow">정보 정정 안내</p>
           <h1 className="mt-2 text-2xl font-semibold text-[#10284a] sm:text-3xl">
             정보 정정 요청
           </h1>

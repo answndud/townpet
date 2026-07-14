@@ -194,7 +194,7 @@ export function renderDoneSnippet(options: CliOptions, baseUrlChecks: BaseUrlChe
     `- Base URL sanity: \`${baseUrlError ? "fail" : "pass"}\``,
     "- 후속 조치",
     "- [ ] Base URL sanity가 fail이면 콜백 도메인(운영 고정 URL)부터 수정 후 재점검",
-    "- [ ] 두 provider 모두 `pass`면 `docs/DONE.md`에 완료 요약을 남기고 `docs/PLAN.md`의 관련 blocked 항목을 제거",
+    "- [ ] 두 provider 모두 `pass`면 증적을 `docs/reports/`에 보관하고 `PLAN.md`의 관련 blocked 항목을 제거",
     "- [ ] 하나라도 `fail`이면 장애 원인/재시도 계획 기록",
   ];
 
@@ -235,10 +235,10 @@ export function renderMarkdown(options: CliOptions, baseUrlChecks: BaseUrlCheck[
   lines.push("");
   lines.push("## Follow-up");
   lines.push("- [ ] Base URL sanity `ERROR`가 있으면 Provider 콘솔 Redirect URI부터 수정.");
-  lines.push("- [ ] If both providers are pass, append the summary to `docs/DONE.md` and remove the matching blocked item from `docs/PLAN.md`.");
+  lines.push("- [ ] If both providers are pass, keep the evidence in `docs/reports/` and remove the matching blocked item from `PLAN.md`.");
   lines.push("- [ ] If any provider fails, log incident + retry owner/date.");
   lines.push("");
-  lines.push("## DONE.md Snippet");
+  lines.push("## Completion Summary");
   lines.push("```md");
   lines.push(renderDoneSnippet(options, baseUrlChecks).trimEnd());
   lines.push("```");

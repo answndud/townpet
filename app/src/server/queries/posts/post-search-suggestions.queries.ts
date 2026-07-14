@@ -6,6 +6,7 @@ import {
 } from "@/lib/search-document";
 import { prisma } from "@/lib/prisma";
 import { buildVisibleAuthorFilter } from "@/lib/sanction-visibility";
+import { buildPublicDemoContentExclusion } from "@/lib/public-content-policy";
 import { buildStructuredSearchVariants } from "@/lib/structured-field-normalization";
 import {
   expandExcludedPostTypes,
@@ -154,6 +155,7 @@ export async function listPostSearchSuggestions({
   const hiddenAuthorIds = await listHiddenAuthorIdsForViewer(viewerId);
   const baseWhere = {
     status: PostStatus.ACTIVE,
+    ...buildPublicDemoContentExclusion(),
     ...buildSuggestionPostTypeWhere(type, normalizedExcludeTypes),
     scope,
     ...buildSuggestionNeighborhoodWhere(scope, neighborhoodId),

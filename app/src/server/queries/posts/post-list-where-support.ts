@@ -1,6 +1,7 @@
 import { PostScope, PostStatus, PostType, Prisma } from "@prisma/client";
 
 import { buildVisibleAuthorFilter } from "@/lib/sanction-visibility";
+import { buildPublicDemoContentExclusion } from "@/lib/public-content-policy";
 import {
   expandExcludedPostTypes,
   getEquivalentPostTypes,
@@ -141,6 +142,7 @@ export function buildPostListWhere({
     ...(hiddenAuthorIds.length > 0 ? { authorId: { notIn: hiddenAuthorIds } } : {}),
     ...(since ? { createdAt: { gte: since } } : {}),
     ...buildPostSearchWhere(q, searchIn),
+    ...buildPublicDemoContentExclusion(),
     ...(andFilters.length > 0 ? { AND: andFilters } : {}),
   };
 }

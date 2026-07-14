@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 export default function TermsPage() {
   return (
     <LegalDocumentPage
-      eyebrow="Legal"
+      eyebrow="서비스 약관"
       title="이용약관"
       description="TownPet 서비스 이용 시 지켜야 할 기본 원칙과 운영 기준을 안내합니다."
       updatedAt="2026-03-27"
@@ -86,4 +86,3 @@ export default function TermsPage() {
     </LegalDocumentPage>
   );
 }
-

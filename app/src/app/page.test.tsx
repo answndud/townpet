@@ -35,7 +35,7 @@ describe("HomePage", () => {
     expect(html).toContain("관심 주제");
     expect(html).toContain('href="/campaigns/neighborhood-map"');
     expect(html).toContain('href="/lost-found"');
-    expect(html).toContain("지금 올라온 글");
+    expect(html).toContain("공개 글 미리보기");
     expect(html).not.toContain("첫 시작 지역");
     expect(html).not.toContain("/towns/");
     expect(html).not.toContain("처음 방문했다면");
