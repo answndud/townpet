@@ -8,6 +8,7 @@ import { listPosts } from "@/server/queries/post.queries";
 
 const HOME_FEED_LIMIT = 3;
 const HOME_FEED_QUERY_LIMIT = 12;
+const HOME_FEED_RECENCY_DAYS = 30;
 const HOME_PREVIEW_BLOCKED_TEXT_PATTERN =
   /(테스트|\[샘플|\[pw\b|\[visual smoke\]|샘플·|e2e|visual-smoke|\b(pw search|pwsearch|test-user|playwright|townpet-demo|adoption-demo|demo)\b)/iu;
 
@@ -169,6 +170,7 @@ export async function getHomeFeedPayload(
       page: 1,
       scope: PostScope.GLOBAL,
       sort: "LATEST",
+      days: HOME_FEED_RECENCY_DAYS,
       excludeTypes: excludedTypes,
       viewerId: undefined,
       personalized: false,

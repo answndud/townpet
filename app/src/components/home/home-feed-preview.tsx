@@ -96,11 +96,11 @@ export function HomeFeedPreview({ data }: { data: HomeFeedPayload }) {
       <div className="border-b border-[#dbe6f5] pb-2.5 sm:pb-3">
         <div>
           <p className="text-[11px] font-semibold leading-none tracking-[0.16em] text-[#486894]">
-            실시간 게시판
+            공개 게시판
           </p>
         </div>
         <h2 className="mt-1.5 text-lg font-semibold text-[#173963] sm:text-xl">
-          지금 올라온 글
+          공개 글 미리보기
         </h2>
       </div>
 
@@ -130,7 +130,7 @@ export function HomeFeedPreview({ data }: { data: HomeFeedPayload }) {
         </div>
         <div>
           <div className="mb-2 flex items-center justify-between gap-3">
-            <h3 className="text-sm font-semibold text-[#173963]">최근 올라온 글</h3>
+            <h3 className="text-sm font-semibold text-[#173963]">최근 공개 글</h3>
             <Link
               href="/feed/guest?sort=LATEST"
               prefetch={false}
@@ -141,7 +141,7 @@ export function HomeFeedPreview({ data }: { data: HomeFeedPayload }) {
           </div>
           <FeedPreviewList
             items={data.latest}
-            emptyText="최근 올라온 공개 글이 아직 없습니다."
+            emptyText="최근 30일 내 공개 글이 아직 없습니다. 운영 가이드를 먼저 확인해 보세요."
             emptyActions={[
               {
                 href: "/guides/lost-pet-first-24-hours",

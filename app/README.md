@@ -13,10 +13,7 @@
 - Codex 진입점:
   - `../AGENTS.md`
 - 현재 작업 상태:
-  - `../docs/PLAN.md`
-  - `../docs/PROGRESS.md`
-- 완료 이력 archive:
-  - `../docs/COMPLETED.md`
+  - `../PLAN.md`
 
 ## 디렉터리 구조
 
@@ -99,7 +96,7 @@ pnpm test:e2e
 pnpm quality:check
 ```
 
-`quality:check`는 lint, typecheck, Vitest unit, `next build`까지 포함합니다.
+`quality:check`는 Prisma Client 생성, lint, typecheck, Vitest unit, API contract freshness, `next build`까지 포함합니다.
 
 ## 최소 운영 루틴
 
@@ -118,6 +115,7 @@ pnpm quality:check
 
 ```bash
 pnpm build
+pnpm build:strict
 pnpm test:coverage
 pnpm quality:gate
 pnpm api:contracts

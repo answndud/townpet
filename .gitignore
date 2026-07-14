@@ -38,7 +38,6 @@ app/test-results/
 .playwright-browsers/
 
 # local planning artifacts
-PLAN.md
 PROGRESS.md
 
 # project/business docs
@@ -47,8 +46,6 @@ PROGRESS.md
 docs
 !docs/
 docs/*
-!docs/PLAN.md
-!docs/DONE.md
 !docs/문서_안내.md
 !docs/개발_운영_가이드.md
 !docs/제품_기술_개요.md

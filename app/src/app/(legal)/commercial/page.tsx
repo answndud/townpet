@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 export default function CommercialPage() {
   return (
     <LegalDocumentPage
-      eyebrow="Commercial"
+      eyebrow="광고·제휴 안내"
       title="광고·제휴 고지"
       description="TownPet은 커뮤니티 신뢰를 해치지 않는 범위에서 광고, 제휴, 스폰서 노출을 운영합니다."
       updatedAt="2026-03-27"
