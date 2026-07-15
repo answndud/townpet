@@ -49,6 +49,17 @@ describe("getClientIp", () => {
     expect(getClientIp(headers)).toBe("198.51.100.20");
   });
 
+  it("does not trust a short forwarded chain in production", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("TRUSTED_PROXY_HOPS", "");
+
+    const headers = makeHeaders({
+      "x-forwarded-for": "198.51.100.20",
+    });
+
+    expect(getClientIp(headers)).toBe("anonymous");
+  });
+
   it("respects explicit TRUSTED_PROXY_HOPS override", () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("TRUSTED_PROXY_HOPS", "2");

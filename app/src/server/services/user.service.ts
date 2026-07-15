@@ -252,7 +252,7 @@ export async function updateProfileImage({ userId, input }: UpdateProfileImagePa
     select: { id: true, image: true },
   });
 
-  await attachUploadUrls([canonicalImageUrl]);
+  await attachUploadUrls([canonicalImageUrl], { ownerUserId: userId });
   if (existing.image && existing.image !== canonicalImageUrl) {
     void releaseUploadUrlsIfUnreferenced([existing.image]).catch(() => undefined);
   }

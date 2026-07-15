@@ -7,7 +7,6 @@ import {
   PostStatus,
   PostType,
 } from "@prisma/client";
-import { randomBytes, scryptSync, timingSafeEqual } from "crypto";
 
 import { moderateContactContent } from "@/lib/contact-policy";
 import { findMatchedForbiddenKeywords } from "@/lib/forbidden-keyword-policy";
@@ -34,11 +33,17 @@ import {
 } from "@/server/services/notification.service";
 import {
   assertGuestNotBanned,
-  hashGuestIdentityCandidates,
   registerGuestViolation,
 } from "@/server/services/guest-safety.service";
 import { assertUserInteractionAllowed } from "@/server/services/sanction.service";
 import { ServiceError } from "@/server/services/service-error";
+import {
+  matchesGuestCommentIdentity,
+  resolveGuestCommentCredential,
+  verifyGuestCommentPassword,
+} from "@/server/services/comment-guest-support";
+
+export { hashGuestCommentPassword } from "@/server/services/comment-guest-support";
 
 type CreateCommentParams = {
   authorId: string;
@@ -64,66 +69,6 @@ function extractMentionNicknames(content: string) {
   );
 }
 
-function verifyGuestPassword(rawPassword: string, stored: string) {
-  const [salt, expectedHash] = stored.split(":");
-  if (!salt || !expectedHash) {
-    return false;
-  }
-
-  const actual = scryptSync(rawPassword, salt, 32);
-  const expected = Buffer.from(expectedHash, "hex");
-  if (actual.length !== expected.length) {
-    return false;
-  }
-
-  return timingSafeEqual(actual, expected);
-}
-
-export function hashGuestCommentPassword(rawPassword: string) {
-  const salt = randomBytes(16).toString("hex");
-  const derived = scryptSync(rawPassword, salt, 32).toString("hex");
-  return `${salt}:${derived}`;
-}
-
-function matchesGuestIdentity(
-  params: {
-    guestIpHash: string | null;
-    guestFingerprintHash: string | null;
-  },
-  identity: {
-    ip: string;
-    fingerprint?: string;
-  },
-) {
-  const { ipHashes, fingerprintHashes } = hashGuestIdentityCandidates(identity);
-  if (params.guestIpHash && ipHashes.includes(params.guestIpHash)) {
-    return true;
-  }
-  if (
-    params.guestFingerprintHash &&
-    fingerprintHashes.includes(params.guestFingerprintHash)
-  ) {
-    return true;
-  }
-  return false;
-}
-
-function resolveGuestCommentCredential(params: {
-  guestAuthorId?: string | null;
-  guestAuthor?: {
-    passwordHash: string;
-    ipHash: string;
-    fingerprintHash: string | null;
-  } | null;
-}) {
-  const passwordHash = params.guestAuthor?.passwordHash ?? null;
-  return {
-    passwordHash,
-    ipHash: params.guestAuthor?.ipHash ?? null,
-    fingerprintHash: params.guestAuthor?.fingerprintHash ?? null,
-    hasGuestMarker: Boolean(params.guestAuthorId || params.guestAuthor),
-  };
-}
 
 export async function createComment({
   authorId,
@@ -596,7 +541,7 @@ export async function updateGuestComment({
   }
 
   if (
-    !matchesGuestIdentity(
+    !matchesGuestCommentIdentity(
       {
         guestIpHash: guestCredential.ipHash,
         guestFingerprintHash: guestCredential.fingerprintHash,
@@ -614,7 +559,7 @@ export async function updateGuestComment({
     throw new ServiceError("수정 권한이 없습니다.", "FORBIDDEN", 403);
   }
 
-  if (!verifyGuestPassword(guestPassword, guestCredential.passwordHash)) {
+  if (!verifyGuestCommentPassword(guestPassword, guestCredential.passwordHash)) {
     await registerGuestViolation({
       identity: guestIdentity,
       category: GuestViolationCategory.POLICY,
@@ -722,7 +667,7 @@ export async function deleteGuestComment({
   }
 
   if (
-    !matchesGuestIdentity(
+    !matchesGuestCommentIdentity(
       {
         guestIpHash: guestCredential.ipHash,
         guestFingerprintHash: guestCredential.fingerprintHash,
@@ -740,7 +685,7 @@ export async function deleteGuestComment({
     throw new ServiceError("삭제 권한이 없습니다.", "FORBIDDEN", 403);
   }
 
-  if (!verifyGuestPassword(guestPassword, guestCredential.passwordHash)) {
+  if (!verifyGuestCommentPassword(guestPassword, guestCredential.passwordHash)) {
     await registerGuestViolation({
       identity: guestIdentity,
       category: GuestViolationCategory.POLICY,

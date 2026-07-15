@@ -108,7 +108,7 @@ export async function createPet({ userId, input }: PetMutationParams) {
   });
 
   if (created.imageUrl) {
-    await attachUploadUrls([created.imageUrl]);
+    await attachUploadUrls([created.imageUrl], { ownerUserId: userId });
   }
 
   return created;
@@ -147,7 +147,7 @@ export async function updatePet({ userId, input }: PetMutationParams) {
   });
 
   if (updated.imageUrl) {
-    await attachUploadUrls([updated.imageUrl]);
+    await attachUploadUrls([updated.imageUrl], { ownerUserId: userId });
   }
   if (previousPet?.imageUrl && previousPet.imageUrl !== updated.imageUrl) {
     void releaseUploadUrlsIfUnreferenced([previousPet.imageUrl]).catch(() => undefined);

@@ -724,11 +724,17 @@ describe("createPost new-user restriction", () => {
         input: {
           title: "비회원 자유글",
           content: "텍스트만 작성",
-          type: PostType.FREE_BOARD,
+          type: PostType.LOST_FOUND,
           scope: PostScope.GLOBAL,
-          petTypeId,
           guestDisplayName: "익명작성자",
           guestPassword: "1234",
+          lostFound: {
+            alertType: "LOST",
+            petType: "강아지",
+            breed: "믹스",
+            lastSeenAt: new Date("2026-05-21T09:00:00.000Z"),
+            lastSeenLocation: "서초구 반포동",
+          },
           imageUrls: [],
         },
         guestIdentity: {
@@ -767,6 +773,29 @@ describe("createPost new-user restriction", () => {
     });
 
     expect(mockPrisma.post.create).not.toHaveBeenCalled();
+  });
+
+  it("does not create an orphan guest author when later board validation fails", async () => {
+    mockPrisma.community.findUnique.mockResolvedValueOnce(null);
+    await expect(
+      createPost({
+        input: {
+          title: "잘못된 공용 글",
+          content: "본문",
+          type: PostType.FREE_POST,
+          scope: PostScope.GLOBAL,
+          petTypeId,
+          guestDisplayName: "익명작성자",
+          guestPassword: "1234",
+        },
+        guestIdentity: { ip: "127.0.0.1", fingerprint: "guest-orphan-check" },
+      }),
+    ).rejects.toMatchObject({
+      code: "POST_COMMUNITY_INVALID",
+      status: 400,
+    });
+
+    expect(mockPrisma.guestAuthor.create).not.toHaveBeenCalled();
   });
 
   it("allows guest users to write lost-found with structured fields under guest policy", async () => {

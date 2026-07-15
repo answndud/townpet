@@ -27,6 +27,17 @@ export async function getLostFoundSightingManagementSnapshot(postId: string) {
           lastSeenAt: true,
           lastSeenLocation: true,
           status: true,
+          statusEvents: {
+            orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+            take: 20,
+            select: {
+              id: true,
+              fromStatus: true,
+              toStatus: true,
+              createdAt: true,
+              actor: { select: { nickname: true, role: true } },
+            },
+          },
         },
       },
       comments: {

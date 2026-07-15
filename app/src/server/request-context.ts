@@ -47,7 +47,10 @@ function resolveForwardedForClientIp(forwardedFor: string) {
     return chain[candidateIndex] ?? "";
   }
 
-  return chain[0] ?? "";
+  // A production request must contain enough proxy hops to establish which
+  // forwarded value is client-controlled. Falling back to the first entry
+  // would let a direct caller distribute rate-limit keys with a spoofed XFF.
+  return "";
 }
 
 export function getClientIp(input: HeaderCarrier | Headers) {

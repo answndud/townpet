@@ -13,7 +13,7 @@ import {
   setForbiddenKeywords,
   setGuestReadLoginRequiredPostTypes,
   setPopularPostPolicy,
-} from "@/server/queries/policy.queries";
+} from "@/server/services/moderation/policy-write.service";
 import { ServiceError } from "@/server/services/service-error";
 
 type UpdateGuestReadPolicyParams = {

@@ -137,7 +137,9 @@ describe("pet service", () => {
         bio: "사람 좋아해요",
       },
     });
-    expect(mockAttachUploadUrls).toHaveBeenCalledWith(["/media/uploads/pet.jpg"]);
+    expect(mockAttachUploadUrls).toHaveBeenCalledWith(["/media/uploads/pet.jpg"], {
+      ownerUserId: "user-1",
+    });
     expect(mockPrisma.userAudienceSegment.deleteMany).toHaveBeenCalledWith({
       where: { userId: "user-1" },
     });

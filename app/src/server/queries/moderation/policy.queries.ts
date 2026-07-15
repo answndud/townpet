@@ -1,4 +1,4 @@
-import { PostType, Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 
 import {
   DEFAULT_CONTACT_BLOCK_WINDOW_HOURS,
@@ -6,7 +6,6 @@ import {
   DEFAULT_NEW_USER_RESTRICTED_POST_TYPES,
   NEW_USER_SAFETY_POLICY_KEY,
   normalizeNewUserSafetyPolicy,
-  type NewUserSafetyPolicy,
 } from "@/lib/new-user-safety-policy";
 import {
   DEFAULT_FORBIDDEN_KEYWORDS,
@@ -21,7 +20,6 @@ import {
 import {
   DEFAULT_GUEST_POST_POLICY,
   GUEST_POST_POLICY_KEY,
-  type GuestPostPolicy,
   normalizeGuestPostPolicy,
 } from "@/lib/guest-post-policy";
 import {
@@ -37,7 +35,7 @@ import {
   type PopularPostPolicy,
 } from "@/lib/popular-post-policy";
 import { prisma } from "@/lib/prisma";
-import { bumpCacheVersion, createQueryCacheKey, withQueryCache } from "@/server/cache/query-cache";
+import { createQueryCacheKey, withQueryCache } from "@/server/cache/query-cache";
 import { logger, serializeError } from "@/server/logger";
 import { isPrismaDatabaseUnavailableError } from "@/server/prisma-database-error";
 import { assertSchemaDelegate, rethrowSchemaSyncRequired } from "@/server/schema-sync";
@@ -58,10 +56,6 @@ type SiteSettingDelegate = {
     create: { key: string; value: unknown };
   }): Promise<SiteSettingRecord>;
 };
-
-type SetGuestReadPolicyResult =
-  | { ok: true; setting: SiteSettingRecord }
-  | { ok: false; reason: "SCHEMA_SYNC_REQUIRED" };
 
 let missingDelegateWarned = false;
 let missingTableWarned = false;
@@ -157,38 +151,6 @@ export async function getGuestReadLoginRequiredPostTypes() {
   });
 }
 
-export async function setGuestReadLoginRequiredPostTypes(types: PostType[]) {
-  const normalized = normalizeLoginRequiredPostTypes(
-    types,
-    DEFAULT_LOGIN_REQUIRED_POST_TYPES,
-    { allowEmpty: true },
-  );
-
-  const delegate = getSiteSettingDelegate();
-  if (!delegate) {
-    return { ok: false, reason: "SCHEMA_SYNC_REQUIRED" } as const;
-  }
-
-  let setting: SiteSettingRecord;
-  try {
-    setting = await delegate.upsert({
-      where: { key: GUEST_READ_POLICY_KEY },
-      update: { value: normalized },
-      create: { key: GUEST_READ_POLICY_KEY, value: normalized },
-    });
-  } catch (error) {
-    if (!isSiteSettingTableMissingError(error)) {
-      throw error;
-    }
-    warnMissingSiteSettingTable(error);
-    return { ok: false, reason: "SCHEMA_SYNC_REQUIRED" } as const;
-  }
-
-  void bumpCacheVersion("policy").catch(() => undefined);
-
-  return { ok: true, setting } as const satisfies SetGuestReadPolicyResult;
-}
-
 export async function getForbiddenKeywords() {
   const delegate = requireSiteSettingDelegate();
 
@@ -206,36 +168,6 @@ export async function getForbiddenKeywords() {
     setting?.value,
     DEFAULT_FORBIDDEN_KEYWORDS,
   );
-}
-
-export async function setForbiddenKeywords(keywords: string[]) {
-  const normalized = normalizeForbiddenKeywords(
-    keywords,
-    DEFAULT_FORBIDDEN_KEYWORDS,
-    { allowEmpty: true },
-  );
-
-  const delegate = getSiteSettingDelegate();
-  if (!delegate) {
-    return { ok: false, reason: "SCHEMA_SYNC_REQUIRED" } as const;
-  }
-
-  let setting: SiteSettingRecord;
-  try {
-    setting = await delegate.upsert({
-      where: { key: FORBIDDEN_KEYWORDS_POLICY_KEY },
-      update: { value: normalized },
-      create: { key: FORBIDDEN_KEYWORDS_POLICY_KEY, value: normalized },
-    });
-  } catch (error) {
-    if (!isSiteSettingTableMissingError(error)) {
-      throw error;
-    }
-    warnMissingSiteSettingTable(error);
-    return { ok: false, reason: "SCHEMA_SYNC_REQUIRED" } as const;
-  }
-
-  return { ok: true, setting } as const satisfies SetGuestReadPolicyResult;
 }
 
 export async function getNewUserSafetyPolicy() {
@@ -258,36 +190,6 @@ export async function getNewUserSafetyPolicy() {
   });
 }
 
-export async function setNewUserSafetyPolicy(input: NewUserSafetyPolicy) {
-  const normalized = normalizeNewUserSafetyPolicy(input, {
-    minAccountAgeHours: DEFAULT_NEW_USER_MIN_ACCOUNT_AGE_HOURS,
-    restrictedPostTypes: [...DEFAULT_NEW_USER_RESTRICTED_POST_TYPES],
-    contactBlockWindowHours: DEFAULT_CONTACT_BLOCK_WINDOW_HOURS,
-  });
-
-  const delegate = getSiteSettingDelegate();
-  if (!delegate) {
-    return { ok: false, reason: "SCHEMA_SYNC_REQUIRED" } as const;
-  }
-
-  let setting: SiteSettingRecord;
-  try {
-    setting = await delegate.upsert({
-      where: { key: NEW_USER_SAFETY_POLICY_KEY },
-      update: { value: normalized },
-      create: { key: NEW_USER_SAFETY_POLICY_KEY, value: normalized },
-    });
-  } catch (error) {
-    if (!isSiteSettingTableMissingError(error)) {
-      throw error;
-    }
-    warnMissingSiteSettingTable(error);
-    return { ok: false, reason: "SCHEMA_SYNC_REQUIRED" } as const;
-  }
-
-  return { ok: true, setting } as const satisfies SetGuestReadPolicyResult;
-}
-
 export async function getGuestPostPolicy() {
   const delegate = requireSiteSettingDelegate();
 
@@ -302,32 +204,6 @@ export async function getGuestPostPolicy() {
   }
 
   return normalizeGuestPostPolicy(setting?.value, DEFAULT_GUEST_POST_POLICY);
-}
-
-export async function setGuestPostPolicy(input: GuestPostPolicy) {
-  const normalized = normalizeGuestPostPolicy(input, DEFAULT_GUEST_POST_POLICY);
-
-  const delegate = getSiteSettingDelegate();
-  if (!delegate) {
-    return { ok: false, reason: "SCHEMA_SYNC_REQUIRED" } as const;
-  }
-
-  let setting: SiteSettingRecord;
-  try {
-    setting = await delegate.upsert({
-      where: { key: GUEST_POST_POLICY_KEY },
-      update: { value: normalized },
-      create: { key: GUEST_POST_POLICY_KEY, value: normalized },
-    });
-  } catch (error) {
-    if (!isSiteSettingTableMissingError(error)) {
-      throw error;
-    }
-    warnMissingSiteSettingTable(error);
-    return { ok: false, reason: "SCHEMA_SYNC_REQUIRED" } as const;
-  }
-
-  return { ok: true, setting } as const satisfies SetGuestReadPolicyResult;
 }
 
 export async function getFeedPersonalizationPolicy(): Promise<FeedPersonalizationPolicy> {
@@ -358,37 +234,6 @@ export async function getFeedPersonalizationPolicy(): Promise<FeedPersonalizatio
   });
 }
 
-export async function setFeedPersonalizationPolicy(input: FeedPersonalizationPolicy) {
-  const normalized = normalizeFeedPersonalizationPolicy(
-    input,
-    DEFAULT_FEED_PERSONALIZATION_POLICY,
-  );
-
-  const delegate = getSiteSettingDelegate();
-  if (!delegate) {
-    return { ok: false, reason: "SCHEMA_SYNC_REQUIRED" } as const;
-  }
-
-  let setting: SiteSettingRecord;
-  try {
-    setting = await delegate.upsert({
-      where: { key: FEED_PERSONALIZATION_POLICY_KEY },
-      update: { value: normalized },
-      create: { key: FEED_PERSONALIZATION_POLICY_KEY, value: normalized },
-    });
-  } catch (error) {
-    if (!isSiteSettingTableMissingError(error)) {
-      throw error;
-    }
-    warnMissingSiteSettingTable(error);
-    return { ok: false, reason: "SCHEMA_SYNC_REQUIRED" } as const;
-  }
-
-  void bumpCacheVersion("policy").catch(() => undefined);
-
-  return { ok: true, setting } as const satisfies SetGuestReadPolicyResult;
-}
-
 export async function getPopularPostPolicy(): Promise<PopularPostPolicy> {
   const delegate = requireSiteSettingDelegate();
 
@@ -405,39 +250,6 @@ export async function getPopularPostPolicy(): Promise<PopularPostPolicy> {
   return normalizePopularPostPolicy(setting?.value, {
     minLikes: DEFAULT_POPULAR_POST_MIN_LIKES,
   });
-}
-
-export async function setPopularPostPolicy(input: PopularPostPolicy) {
-  const normalized = normalizePopularPostPolicy(input, {
-    minLikes: DEFAULT_POPULAR_POST_MIN_LIKES,
-  });
-
-  const delegate = getSiteSettingDelegate();
-  if (!delegate) {
-    return { ok: false, reason: "SCHEMA_SYNC_REQUIRED" } as const;
-  }
-
-  let setting: SiteSettingRecord;
-  try {
-    setting = await delegate.upsert({
-      where: { key: POPULAR_POST_POLICY_KEY },
-      update: { value: normalized },
-      create: { key: POPULAR_POST_POLICY_KEY, value: normalized },
-    });
-  } catch (error) {
-    if (!isSiteSettingTableMissingError(error)) {
-      throw error;
-    }
-    warnMissingSiteSettingTable(error);
-    return { ok: false, reason: "SCHEMA_SYNC_REQUIRED" } as const;
-  }
-
-  await Promise.all([
-    bumpCacheVersion("policy"),
-    bumpCacheVersion("feed"),
-  ]);
-
-  return { ok: true, setting } as const satisfies SetGuestReadPolicyResult;
 }
 
 export async function assertPolicyControlPlaneReady() {

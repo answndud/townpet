@@ -203,7 +203,9 @@ describe("user service", () => {
       id: "user-1",
       image: "/media/uploads/new-avatar.png",
     });
-    expect(mockAttachUploadUrls).toHaveBeenCalledWith(["/media/uploads/new-avatar.png"]);
+    expect(mockAttachUploadUrls).toHaveBeenCalledWith(["/media/uploads/new-avatar.png"], {
+      ownerUserId: "user-1",
+    });
     expect(mockReleaseUploadUrlsIfUnreferenced).toHaveBeenCalledWith([
       "/uploads/old-avatar.png",
     ]);

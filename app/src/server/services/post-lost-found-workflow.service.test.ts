@@ -14,6 +14,7 @@ import { assertUserInteractionAllowed } from "@/server/services/sanction.service
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
+    $transaction: vi.fn(),
     user: {
       findUnique: vi.fn(),
     },
@@ -22,6 +23,9 @@ vi.mock("@/lib/prisma", () => ({
     },
     lostFoundAlert: {
       update: vi.fn(),
+    },
+    lostFoundStatusEvent: {
+      create: vi.fn(),
     },
   },
 }));
@@ -35,9 +39,11 @@ vi.mock("@/server/services/sanction.service", () => ({
 }));
 
 const mockPrisma = vi.mocked(prisma) as unknown as {
+  $transaction: ReturnType<typeof vi.fn>;
   user: { findUnique: ReturnType<typeof vi.fn> };
   post: { findUnique: ReturnType<typeof vi.fn> };
   lostFoundAlert: { update: ReturnType<typeof vi.fn> };
+  lostFoundStatusEvent: { create: ReturnType<typeof vi.fn> };
 };
 const mockRecordModerationAction = vi.mocked(recordModerationAction);
 const mockAssertUserInteractionAllowed = vi.mocked(assertUserInteractionAllowed);
@@ -45,8 +51,10 @@ const mockAssertUserInteractionAllowed = vi.mocked(assertUserInteractionAllowed)
 describe("updateLostFoundStatus", () => {
   beforeEach(() => {
     mockPrisma.user.findUnique.mockReset();
+    mockPrisma.$transaction.mockReset();
     mockPrisma.post.findUnique.mockReset();
     mockPrisma.lostFoundAlert.update.mockReset();
+    mockPrisma.lostFoundStatusEvent.create.mockReset();
     mockRecordModerationAction.mockReset();
     mockAssertUserInteractionAllowed.mockReset();
     mockAssertUserInteractionAllowed.mockResolvedValue(undefined);
@@ -64,8 +72,16 @@ describe("updateLostFoundStatus", () => {
       },
     });
     mockPrisma.lostFoundAlert.update.mockResolvedValue({
+      id: "alert-1",
       status: LostFoundStatus.RESOLVED,
     });
+    mockPrisma.lostFoundStatusEvent.create.mockResolvedValue({ id: "event-1" });
+    mockPrisma.$transaction.mockImplementation(async (callback: (tx: unknown) => unknown) =>
+      callback({
+        lostFoundAlert: mockPrisma.lostFoundAlert,
+        lostFoundStatusEvent: mockPrisma.lostFoundStatusEvent,
+      }),
+    );
   });
 
   it("allows the post author to resolve an active lost-found alert", async () => {
@@ -83,7 +99,15 @@ describe("updateLostFoundStatus", () => {
     expect(mockPrisma.lostFoundAlert.update).toHaveBeenCalledWith({
       where: { postId: "post-1" },
       data: { status: LostFoundStatus.RESOLVED },
-      select: { status: true },
+      select: { id: true, status: true },
+    });
+    expect(mockPrisma.lostFoundStatusEvent.create).toHaveBeenCalledWith({
+      data: {
+        alertId: "alert-1",
+        actorId: "owner-1",
+        fromStatus: LostFoundStatus.ACTIVE,
+        toStatus: LostFoundStatus.RESOLVED,
+      },
     });
     expect(mockRecordModerationAction).toHaveBeenCalledWith(
       expect.objectContaining({

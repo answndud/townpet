@@ -107,10 +107,21 @@ export async function updateLostFoundStatus({
     );
   }
 
-  const updated = await prisma.lostFoundAlert.update({
-    where: { postId },
-    data: { status: nextStatus },
-    select: { status: true },
+  const updated = await prisma.$transaction(async (tx) => {
+    const updatedAlert = await tx.lostFoundAlert.update({
+      where: { postId },
+      data: { status: nextStatus },
+      select: { id: true, status: true },
+    });
+    await tx.lostFoundStatusEvent.create({
+      data: {
+        alertId: updatedAlert.id,
+        actorId: actor.id,
+        fromStatus: previousStatus,
+        toStatus: updatedAlert.status,
+      },
+    });
+    return updatedAlert;
   });
 
   await recordModerationAction({

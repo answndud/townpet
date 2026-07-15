@@ -39,6 +39,11 @@ import {
   notifyNotificationCacheChange,
   notifyPostCacheChange,
 } from "./post-write-support";
+import {
+  canAcceptedApplicantTransitionCareStatus,
+  canAuthorTransitionCareStatus,
+  canModerateCareStatus,
+} from "./care-workflow-policy";
 
 type UpdateCareRequestStatusParams = {
   postId: string;
@@ -74,34 +79,6 @@ type UpdateCareFeedbackReviewParams = {
   actorId: string;
   input: unknown;
 };
-
-const AUTHOR_CARE_STATUS_TRANSITIONS: Record<CareRequestStatus, CareRequestStatus[]> = {
-  [CareRequestStatus.OPEN]: [CareRequestStatus.CANCELLED],
-  [CareRequestStatus.MATCHED]: [CareRequestStatus.IN_PROGRESS, CareRequestStatus.CANCELLED],
-  [CareRequestStatus.IN_PROGRESS]: [CareRequestStatus.COMPLETED],
-  [CareRequestStatus.COMPLETED]: [],
-  [CareRequestStatus.CANCELLED]: [],
-};
-
-const ACCEPTED_APPLICANT_CARE_STATUS_TRANSITIONS: Record<CareRequestStatus, CareRequestStatus[]> = {
-  [CareRequestStatus.OPEN]: [],
-  [CareRequestStatus.MATCHED]: [CareRequestStatus.IN_PROGRESS],
-  [CareRequestStatus.IN_PROGRESS]: [CareRequestStatus.COMPLETED],
-  [CareRequestStatus.COMPLETED]: [],
-  [CareRequestStatus.CANCELLED]: [],
-};
-
-function canAuthorTransitionCareStatus(from: CareRequestStatus, to: CareRequestStatus) {
-  return AUTHOR_CARE_STATUS_TRANSITIONS[from]?.includes(to) ?? false;
-}
-
-function canAcceptedApplicantTransitionCareStatus(from: CareRequestStatus, to: CareRequestStatus) {
-  return ACCEPTED_APPLICANT_CARE_STATUS_TRANSITIONS[from]?.includes(to) ?? false;
-}
-
-function canModerateCareStatus(role: UserRole) {
-  return role === UserRole.ADMIN || role === UserRole.MODERATOR;
-}
 
 export async function updateCareRequestStatus({
   postId,

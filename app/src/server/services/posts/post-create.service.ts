@@ -7,7 +7,6 @@ import {
   PostType,
   UserRole,
 } from "@prisma/client";
-import { randomBytes, scryptSync } from "crypto";
 
 import {
   isAnimalTagsRequiredCommonBoardPostType,
@@ -66,6 +65,20 @@ import {
   notifyPostCacheChange,
 } from "./post-write-support";
 import { createPostVariant } from "./post-create-variants";
+import {
+  ADOPTION_LISTING_TEXT_FIELDS,
+  CARE_REQUEST_TEXT_FIELDS,
+  GUEST_LINK_PATTERN,
+  LOST_FOUND_TEXT_FIELDS,
+  MARKET_LISTING_TEXT_FIELDS,
+  VOLUNTEER_RECRUITMENT_TEXT_FIELDS,
+  buildModerationText,
+  hashGuestPassword,
+  moderateHospitalReviewStructuredFields,
+  moderateStructuredTextFields,
+  normalizeAnimalTags,
+  stripImageTokensForGuestPolicy,
+} from "./post-create-policy-support";
 
 type CreatePostParams = {
   authorId?: string;
@@ -76,130 +89,6 @@ type CreatePostParams = {
     userAgent?: string;
   };
 };
-
-const GUEST_LINK_PATTERN = /https?:\/\/[\S]+/i;
-const GUEST_IMAGE_MARKDOWN_PATTERN = /!\[[^\]]*\]\(([^)\s]+)\)(?:\{\s*width\s*=\s*\d{1,4}\s*\})?/gi;
-
-const HOSPITAL_REVIEW_TEXT_FIELDS = [
-  "hospitalName",
-  "visitPurpose",
-  "animalType",
-  "treatmentType",
-] as const;
-const ADOPTION_LISTING_TEXT_FIELDS = [
-  "shelterName",
-  "region",
-  "animalType",
-  "breed",
-  "ageLabel",
-  "sizeLabel",
-] as const;
-const VOLUNTEER_RECRUITMENT_TEXT_FIELDS = [
-  "shelterName",
-  "region",
-  "volunteerType",
-] as const;
-const MARKET_LISTING_TEXT_FIELDS = ["rentalPeriod"] as const;
-const CARE_REQUEST_TEXT_FIELDS = ["locationNote", "petNote", "requirements"] as const;
-const LOST_FOUND_TEXT_FIELDS = ["petType", "breed", "lastSeenLocation"] as const;
-
-const normalizeAnimalTags = (animalTags: string[] | undefined) =>
-  Array.from(
-    new Set(
-      (animalTags ?? [])
-        .map((tag) => tag.trim())
-        .filter((tag) => tag.length > 0),
-    ),
-  ).slice(0, 5);
-
-function buildModerationText(parts: Array<string | null | undefined>) {
-  return parts
-    .map((part) => (typeof part === "string" ? part.trim() : ""))
-    .filter((part) => part.length > 0)
-    .join("\n");
-}
-
-function moderateHospitalReviewStructuredFields(params: {
-  review: HospitalReviewInput;
-  role: UserRole;
-  accountCreatedAt: Date;
-  blockWindowHours: number;
-}) {
-  const moderatedReview = { ...params.review };
-
-  for (const field of HOSPITAL_REVIEW_TEXT_FIELDS) {
-    const rawValue = moderatedReview[field];
-    if (!rawValue) {
-      continue;
-    }
-
-    const contactPolicy = moderateContactContent({
-      text: rawValue,
-      role: params.role,
-      accountCreatedAt: params.accountCreatedAt,
-      blockWindowHours: params.blockWindowHours,
-    });
-    if (contactPolicy.blocked) {
-      throw new ServiceError(
-        contactPolicy.message ?? "연락처가 포함된 내용은 현재 계정으로 작성할 수 없습니다.",
-        "CONTACT_RESTRICTED_FOR_NEW_USER",
-        403,
-      );
-    }
-
-    moderatedReview[field] = contactPolicy.sanitizedText;
-  }
-
-  return moderatedReview;
-}
-
-function moderateStructuredTextFields<
-  T extends Record<string, unknown>,
-  K extends keyof T & string,
->(params: {
-  data: T;
-  fields: readonly K[];
-  role: UserRole;
-  accountCreatedAt: Date;
-  blockWindowHours: number;
-}) {
-  const moderatedData = { ...params.data };
-
-  for (const field of params.fields) {
-    const rawValue = moderatedData[field];
-    if (typeof rawValue !== "string" || rawValue.trim().length === 0) {
-      continue;
-    }
-
-    const contactPolicy = moderateContactContent({
-      text: rawValue,
-      role: params.role,
-      accountCreatedAt: params.accountCreatedAt,
-      blockWindowHours: params.blockWindowHours,
-    });
-    if (contactPolicy.blocked) {
-      throw new ServiceError(
-        contactPolicy.message ?? "연락처가 포함된 내용은 현재 계정으로 작성할 수 없습니다.",
-        "CONTACT_RESTRICTED_FOR_NEW_USER",
-        403,
-      );
-    }
-
-    moderatedData[field] = contactPolicy.sanitizedText as T[K];
-  }
-
-  return moderatedData;
-}
-
-function stripImageTokensForGuestPolicy(value: string) {
-  return value.replace(GUEST_IMAGE_MARKDOWN_PATTERN, " ").replace(/\s+/g, " ").trim();
-}
-
-function hashGuestPassword(rawPassword: string) {
-  const salt = randomBytes(16).toString("hex");
-  const derived = scryptSync(rawPassword, salt, 32).toString("hex");
-  return `${salt}:${derived}`;
-}
 
 export async function createPost({ authorId, input, guestIdentity }: CreatePostParams) {
   const parsed = postCreateSchema.safeParse(input);
@@ -366,6 +255,16 @@ export async function createPost({ authorId, input, guestIdentity }: CreatePostP
   let guestCreateMeta:
     | {
         guestAuthorId: string;
+      }
+    | undefined;
+  let pendingGuestAuthorData:
+    | {
+        displayName: string;
+        passwordHash: string;
+        ipHash: string;
+        fingerprintHash: string | null;
+        ipDisplay: string | null;
+        ipLabel: string | null;
       }
     | undefined;
 
@@ -602,21 +501,15 @@ export async function createPost({ authorId, input, guestIdentity }: CreatePostP
       userAgent: guestIdentity.userAgent,
     });
     const guestSystemUserId = await getOrCreateGuestSystemUserId();
-    const guestAuthor = await prisma.guestAuthor.create({
-      data: {
-        displayName: normalizedGuestName,
-        passwordHash: hashGuestPassword(normalizedGuestPassword),
-        ipHash,
-        fingerprintHash,
-        ipDisplay: guestIpMeta.guestIpDisplay,
-        ipLabel: guestIpMeta.guestIpLabel,
-      },
-      select: { id: true },
-    });
-    resolvedAuthorId = guestSystemUserId;
-    guestCreateMeta = {
-      guestAuthorId: guestAuthor.id,
+    pendingGuestAuthorData = {
+      displayName: normalizedGuestName,
+      passwordHash: hashGuestPassword(normalizedGuestPassword),
+      ipHash,
+      fingerprintHash,
+      ipDisplay: guestIpMeta.guestIpDisplay,
+      ipLabel: guestIpMeta.guestIpLabel,
     };
+    resolvedAuthorId = guestSystemUserId;
   }
 
   if (effectiveScope === PostScope.LOCAL && !postData.neighborhoodId) {
@@ -654,6 +547,14 @@ export async function createPost({ authorId, input, guestIdentity }: CreatePostP
   const commonBoardAnimalTags =
     mappedBoard.boardScope === "COMMON" ? normalizedAnimalTags : [];
 
+  if (pendingGuestAuthorData) {
+    const guestAuthor = await prisma.guestAuthor.create({
+      data: pendingGuestAuthorData,
+      select: { id: true },
+    });
+    guestCreateMeta = { guestAuthorId: guestAuthor.id };
+  }
+
   const commonCreateData = {
     ...postData,
     structuredSearchText: buildPostStructuredSearchText({
@@ -688,7 +589,14 @@ export async function createPost({ authorId, input, guestIdentity }: CreatePostP
     careRequestInput,
     lostFoundInput,
   });
-  await finalizeUploadUrlChanges({ attachedUrls: normalizedImageUrls });
+  await finalizeUploadUrlChanges({
+    attachedUrls: normalizedImageUrls,
+    ownership: authorId
+      ? { ownerUserId: resolvedAuthorId }
+      : guestIdentity
+        ? { ownerGuestIdentity: guestIdentity }
+        : undefined,
+  });
   if (
     hospitalReviewRisk?.shouldCreateReview &&
     resolvedAuthorAccountCreatedAt &&

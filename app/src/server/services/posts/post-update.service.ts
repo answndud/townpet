@@ -207,6 +207,7 @@ export async function updatePost({ postId, authorId, input }: UpdatePostParams) 
     await finalizeUploadUrlChanges({
       attachedUrls: normalizedImageUrls,
       releasedUrls: previousImageUrls.filter((url) => !normalizedImageUrls.includes(url)),
+      ownership: { ownerUserId: authorId },
     });
   }
   notifyPostCacheChange();
