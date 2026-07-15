@@ -255,7 +255,11 @@ export function GuestSearchPageClient() {
           <section className="overflow-hidden rounded-xl border border-[#d9e5f7] bg-white">
             <EmptyState
               title="검색 결과가 없습니다"
-              description="검색 범위를 바꾸거나 인기 검색어를 선택해 다시 시도해 보세요."
+              description="검색 범위를 바꾸거나 인기 검색어를 선택해 다시 시도해 보세요. 찾으시는 정보가 아직 없다면 첫 글로 지역 콘텐츠를 시작할 수 있습니다."
+              actionHref="/posts/new"
+              actionLabel="새 글로 정보 보태기"
+              secondaryActionHref="/search/guest"
+              secondaryActionLabel="검색 조건 바꾸기"
             />
           </section>
         ) : (

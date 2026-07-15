@@ -91,7 +91,7 @@ export function GuestPostDetailActions({ postId }: GuestPostDetailActionsProps) 
       />
       <div className="flex flex-wrap items-center gap-1.5">
         <Link
-          href={`/posts/${postId}/edit?guest=1&pw=${encodeURIComponent(password.trim())}`}
+          href={`/posts/${postId}/edit?guest=1`}
           className={POST_DETAIL_ACTION_BUTTON_CLASS_NAME}
           data-dismissible-details-close
         >

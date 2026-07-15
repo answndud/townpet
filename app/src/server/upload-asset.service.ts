@@ -1,6 +1,7 @@
 import { del } from "@vercel/blob";
 import {
   PostStatus,
+  UploadAssetVisibility,
   UploadAssetStatus,
   UploadStorageProvider,
 } from "@prisma/client";
@@ -9,6 +10,7 @@ import path from "path";
 
 import { runtimeEnv } from "@/lib/env";
 import { prisma } from "@/lib/prisma";
+import { hashGuestIdentityCandidates } from "@/server/services/guest-safety.service";
 import {
   getTrustedUploadPathname,
   getTrustedUploadStorageProvider,
@@ -26,6 +28,9 @@ type RegisterUploadAssetParams = {
   thumbnailUrl?: string | null;
   width?: number | null;
   height?: number | null;
+  ownerGuestIpHash?: string | null;
+  ownerGuestFingerprintHash?: string | null;
+  visibility?: UploadAssetVisibility;
 };
 
 type UploadImageReference = {
@@ -158,6 +163,9 @@ export async function registerUploadAsset({
   thumbnailUrl = null,
   width = null,
   height = null,
+  ownerGuestIpHash = null,
+  ownerGuestFingerprintHash = null,
+  visibility = UploadAssetVisibility.PUBLIC,
 }: RegisterUploadAssetParams) {
   const storageKey = getTrustedUploadPathname(url);
   const storageProvider = getTrustedUploadStorageProvider(url);
@@ -184,6 +192,9 @@ export async function registerUploadAsset({
       width,
       height,
       ownerUserId,
+      ownerGuestIpHash,
+      ownerGuestFingerprintHash,
+      visibility,
       status: UploadAssetStatus.TEMPORARY,
       deletedAt: null,
     },
@@ -198,6 +209,9 @@ export async function registerUploadAsset({
       width,
       height,
       ownerUserId,
+      ownerGuestIpHash,
+      ownerGuestFingerprintHash,
+      visibility,
       status: UploadAssetStatus.TEMPORARY,
     },
     select: {
@@ -208,9 +222,40 @@ export async function registerUploadAsset({
   });
 }
 
-export async function attachUploadUrls(urls: string[]) {
+export async function attachUploadUrls(
+  urls: string[],
+  ownership:
+    | {
+        ownerUserId?: string;
+        ownerGuestIdentity?: { ip: string; fingerprint?: string };
+      }
+    | undefined = undefined,
+) {
   const trustedStorageKeys = normalizeTrustedUploadStorageKeys(urls);
   if (trustedStorageKeys.length === 0) {
+    return 0;
+  }
+
+  const ownerWhere = ownership?.ownerUserId
+    ? { ownerUserId: ownership.ownerUserId }
+    : ownership?.ownerGuestIdentity
+      ? (() => {
+          const { ipHashes, fingerprintHashes } = hashGuestIdentityCandidates(
+            ownership.ownerGuestIdentity,
+          );
+          return {
+            ownerUserId: null,
+            OR: [
+              { ownerGuestIpHash: { in: ipHashes } },
+              ...(fingerprintHashes.length > 0
+                ? [{ ownerGuestFingerprintHash: { in: fingerprintHashes } }]
+                : []),
+            ],
+          };
+        })()
+      : null;
+
+  if (!ownerWhere) {
     return 0;
   }
 
@@ -219,6 +264,7 @@ export async function attachUploadUrls(urls: string[]) {
       storageKey: {
         in: trustedStorageKeys,
       },
+      ...ownerWhere,
     },
     data: {
       status: UploadAssetStatus.ATTACHED,
@@ -337,6 +383,9 @@ async function findUploadAssetByStorageKey(storageKey: string) {
       thumbnailUrl: true,
       thumbnailStorageKey: true,
       storageProvider: true,
+      visibility: true,
+      ownerUserId: true,
+      deletedAt: true,
     },
   });
 }
@@ -347,10 +396,16 @@ export async function findStoredUploadSourceByPathname(storageKey: string) {
     return null;
   }
 
+  if (asset.deletedAt) {
+    return { blocked: true as const };
+  }
+
   const isThumbnail = asset.thumbnailStorageKey === storageKey && Boolean(asset.thumbnailUrl);
   return {
     sourceUrl: isThumbnail && asset.thumbnailUrl ? asset.thumbnailUrl : asset.url,
     storageProvider: asset.storageProvider,
+    visibility: asset.visibility,
+    ownerUserId: asset.ownerUserId,
   };
 }
 
@@ -455,10 +510,16 @@ export async function cleanupTemporaryUploadAssets(params?: {
 
   const temporaryAssets = await prisma.uploadAsset.findMany({
     where: {
-      status: UploadAssetStatus.TEMPORARY,
-      createdAt: {
-        lt: cutoff,
-      },
+      OR: [
+        {
+          status: UploadAssetStatus.TEMPORARY,
+          createdAt: { lt: cutoff },
+        },
+        {
+          status: UploadAssetStatus.ATTACHED,
+          attachedAt: { lt: cutoff },
+        },
+      ],
     },
     orderBy: { createdAt: "asc" },
     take: limit,
@@ -466,6 +527,26 @@ export async function cleanupTemporaryUploadAssets(params?: {
   });
 
   const urls = temporaryAssets.map((asset) => asset.url);
+  const referencedStorageKeys = await findReferencedUploadStorageKeys(urls);
+  let reattachedCount = 0;
+  if (referencedStorageKeys.size > 0) {
+    if (params?.dryRun) {
+      reattachedCount = referencedStorageKeys.size;
+    } else {
+      const reattached = await prisma.uploadAsset.updateMany({
+        where: {
+          storageKey: { in: Array.from(referencedStorageKeys) },
+          status: UploadAssetStatus.TEMPORARY,
+        },
+        data: {
+          status: UploadAssetStatus.ATTACHED,
+          attachedAt: new Date(),
+          deletedAt: null,
+        },
+      });
+      reattachedCount = reattached.count;
+    }
+  }
   const result = await releaseUploadUrlsIfUnreferenced(urls, {
     dryRun: params?.dryRun,
   });
@@ -475,5 +556,6 @@ export async function cleanupTemporaryUploadAssets(params?: {
     scannedCount: urls.length,
     deletedCount: result.deletedUrls.length,
     skippedCount: result.skippedUrls.length,
+    reattachedCount,
   };
 }

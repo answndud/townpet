@@ -6,6 +6,7 @@ import sharp from "sharp";
 
 import { runtimeEnv } from "@/lib/env";
 import { getUploadProxyPath } from "@/lib/upload-url";
+import { hashGuestIdentity } from "@/server/services/guest-safety.service";
 import { registerUploadAsset } from "@/server/upload-asset.service";
 import { ServiceError } from "@/server/services/service-error";
 
@@ -38,6 +39,10 @@ const SCRIPT_PAYLOAD_PATTERNS = [
 type SaveUploadedImageOptions = {
   maxSizeBytes?: number;
   ownerUserId?: string | null;
+  ownerGuestIdentity?: {
+    ip: string;
+    fingerprint?: string;
+  };
 };
 
 type ProcessedImageAsset = {
@@ -309,6 +314,8 @@ async function registerStoredUploadAsset(params: {
   mimeType: string;
   size: number;
   ownerUserId?: string | null;
+  ownerGuestIpHash?: string | null;
+  ownerGuestFingerprintHash?: string | null;
   thumbnailUrl?: string | null;
   width?: number;
   height?: number;
@@ -318,6 +325,8 @@ async function registerStoredUploadAsset(params: {
     mimeType: params.mimeType,
     size: params.size,
     ownerUserId: params.ownerUserId ?? null,
+    ownerGuestIpHash: params.ownerGuestIpHash ?? null,
+    ownerGuestFingerprintHash: params.ownerGuestFingerprintHash ?? null,
     thumbnailUrl: params.thumbnailUrl ?? null,
     width: params.width,
     height: params.height,
@@ -336,6 +345,8 @@ async function saveHostedUpload(params: {
   filenameBase: string;
   processed: ProcessedUploadPayload;
   ownerUserId?: string | null;
+  ownerGuestIpHash?: string | null;
+  ownerGuestFingerprintHash?: string | null;
 }) {
   if (!runtimeEnv.blobReadWriteToken) {
     throw new Error("blob token missing");
@@ -369,6 +380,8 @@ async function saveHostedUpload(params: {
       mimeType: params.processed.main.mimeType,
       size: params.processed.main.buffer.byteLength,
       ownerUserId: params.ownerUserId ?? null,
+      ownerGuestIpHash: params.ownerGuestIpHash ?? null,
+      ownerGuestFingerprintHash: params.ownerGuestFingerprintHash ?? null,
       thumbnailUrl: thumbnailBlob?.url ?? null,
       width: params.processed.main.width,
       height: params.processed.main.height,
@@ -399,6 +412,8 @@ async function saveLocalUpload(params: {
   filenameBase: string;
   processed: ProcessedUploadPayload;
   ownerUserId?: string | null;
+  ownerGuestIpHash?: string | null;
+  ownerGuestFingerprintHash?: string | null;
 }) {
   const uploadsDir = path.join(process.cwd(), "public", "uploads");
   await mkdir(uploadsDir, { recursive: true });
@@ -426,7 +441,9 @@ async function saveLocalUpload(params: {
       url,
       mimeType: params.processed.main.mimeType,
       size: params.processed.main.buffer.byteLength,
-      ownerUserId: params.ownerUserId ?? null,
+    ownerUserId: params.ownerUserId ?? null,
+    ownerGuestIpHash: params.ownerGuestIpHash ?? null,
+    ownerGuestFingerprintHash: params.ownerGuestFingerprintHash ?? null,
       thumbnailUrl,
       width: params.processed.main.width,
       height: params.processed.main.height,
@@ -478,12 +495,17 @@ export async function saveUploadedImage(file: File, options?: SaveUploadedImageO
   const processed = await processUploadedImage(file, rawBuffer);
   const filenameBase = `${Date.now()}-${randomUUID()}`;
   const isHostedRuntime = runtimeEnv.isProduction || process.env.VERCEL === "1";
+  const guestOwnership = options?.ownerGuestIdentity
+    ? hashGuestIdentity(options.ownerGuestIdentity)
+    : null;
 
   if (runtimeEnv.blobReadWriteToken) {
     return saveHostedUpload({
       filenameBase,
       processed,
       ownerUserId: options?.ownerUserId ?? null,
+      ownerGuestIpHash: guestOwnership?.ipHash ?? null,
+      ownerGuestFingerprintHash: guestOwnership?.fingerprintHash ?? null,
     });
   }
 
@@ -499,5 +521,7 @@ export async function saveUploadedImage(file: File, options?: SaveUploadedImageO
     filenameBase,
     processed,
     ownerUserId: options?.ownerUserId ?? null,
+    ownerGuestIpHash: guestOwnership?.ipHash ?? null,
+    ownerGuestFingerprintHash: guestOwnership?.fingerprintHash ?? null,
   });
 }

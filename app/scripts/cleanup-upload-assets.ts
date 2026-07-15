@@ -12,6 +12,7 @@ type UploadAssetCleanupResult = {
   scannedCount: number;
   deletedCount: number;
   skippedCount: number;
+  reattachedCount?: number;
 };
 
 type UploadAssetCleanupDeps = {
@@ -50,6 +51,10 @@ export function formatUploadAssetCleanupOutput(params: {
     `- skipped: ${result.skippedCount}`,
     `- cutoff: ${result.cutoff.toISOString()}`,
   ];
+
+  if ((result.reattachedCount ?? 0) > 0) {
+    lines.splice(5, 0, `- ${isDryRunMode(mode) ? "wouldReattach" : "reattached"}: ${result.reattachedCount}`);
+  }
 
   if (isDryRunMode(mode)) {
     lines.push("Dry-run mode. Re-run with --apply to delete upload assets.");

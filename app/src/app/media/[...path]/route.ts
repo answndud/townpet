@@ -7,6 +7,7 @@ import {
   isTrustedUploadPathname,
 } from "@/lib/upload-url";
 import { monitorUnhandledError } from "@/server/error-monitor";
+import { getCurrentUserId } from "@/server/auth";
 import { findStoredUploadSourceByPathname } from "@/server/upload-asset.service";
 
 export const runtime = "nodejs";
@@ -96,6 +97,29 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
   try {
     const storedSource = await findStoredUploadSourceByPathname(storageKey);
+
+    if (storedSource?.blocked) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: {
+            code: "MEDIA_NOT_FOUND",
+            message: "이미지를 찾을 수 없습니다.",
+          },
+        },
+        { status: 404 },
+      );
+    }
+
+    if (storedSource?.visibility === "PRIVATE") {
+      const currentUserId = await getCurrentUserId();
+      if (!currentUserId || storedSource.ownerUserId !== currentUserId) {
+        return NextResponse.json(
+          { ok: false, error: { code: "MEDIA_NOT_FOUND", message: "이미지를 찾을 수 없습니다." } },
+          { status: 404 },
+        );
+      }
+    }
 
     if (
       storedSource &&

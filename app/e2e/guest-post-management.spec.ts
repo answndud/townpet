@@ -4,8 +4,8 @@ import { DEFAULT_GUEST_POST_POLICY } from "../src/lib/guest-post-policy";
 import { prisma } from "../src/lib/prisma";
 import {
   getGuestPostPolicy,
-  setGuestPostPolicy,
 } from "../src/server/queries/policy.queries";
+import { setGuestPostPolicy } from "../src/server/services/moderation/policy-write.service";
 
 const GUEST_NICKNAME = "비회원E2E";
 const GUEST_PASSWORD = "1234";
@@ -61,10 +61,10 @@ test.describe("guest post management", () => {
       await page.goto(`/posts/${createdPostId}/guest`);
       await expect(page.getByRole("heading", { name: title })).toBeVisible({ timeout: 15_000 });
 
-      await page.goto(
-        `/posts/${createdPostId}/edit?guest=1&pw=${encodeURIComponent(GUEST_PASSWORD)}`,
-      );
+      await page.goto(`/posts/${createdPostId}/edit?guest=1`);
       await expect(page).toHaveURL(new RegExp(`/posts/${createdPostId}/edit`));
+      expect(page.url()).not.toContain(encodeURIComponent(GUEST_PASSWORD));
+      expect(page.url()).not.toContain(`pw=${GUEST_PASSWORD}`);
 
       await setEditorText(page, updatedContent);
       await page.getByLabel("글 비밀번호").fill(GUEST_PASSWORD);

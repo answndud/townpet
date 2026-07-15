@@ -335,6 +335,7 @@ export async function updateGuestPost({
     await finalizeUploadUrlChanges({
       attachedUrls: normalizedImageUrls,
       releasedUrls: previousImageUrls.filter((url) => !normalizedImageUrls.includes(url)),
+      ownership: { ownerGuestIdentity: guestIdentity },
     });
   }
   notifyPostCacheChange();

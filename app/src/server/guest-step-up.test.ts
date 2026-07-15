@@ -11,7 +11,18 @@ vi.mock("@/server/services/guest-safety.service", () => ({
   registerGuestViolation: vi.fn().mockResolvedValue(undefined),
 }));
 
+vi.mock("@/lib/prisma", () => ({
+  prisma: {
+    guestStepUpNonce: {
+      create: vi.fn().mockResolvedValue({ id: "nonce-1" }),
+    },
+  },
+}));
+
+import { prisma } from "@/lib/prisma";
+
 const mockRegisterGuestViolation = vi.mocked(registerGuestViolation);
+const mockGuestStepUpNonceCreate = vi.mocked(prisma.guestStepUpNonce.create);
 
 function solveProof(token: string, difficulty: number) {
   const targetPrefix = "0".repeat(difficulty);
@@ -29,6 +40,8 @@ function solveProof(token: string, difficulty: number) {
 describe("guest step-up", () => {
   beforeEach(() => {
     mockRegisterGuestViolation.mockClear();
+    mockGuestStepUpNonceCreate.mockReset();
+    mockGuestStepUpNonceCreate.mockResolvedValue({ id: "nonce-1" } as never);
   });
 
   it("raises difficulty for automation-like guest signals", () => {
@@ -85,6 +98,37 @@ describe("guest step-up", () => {
     ).rejects.toMatchObject({
       code: "GUEST_STEP_UP_REQUIRED",
       status: 428,
+    });
+  });
+
+  it("rejects replayed proof tokens after the first consumption", async () => {
+    const now = new Date("2026-03-07T00:00:00.000Z");
+    const challenge = issueGuestStepUpChallenge({
+      scope: "post:create",
+      ip: "127.0.0.1",
+      fingerprint: "guest-fp-replay",
+      userAgent: "Mozilla/5.0",
+      forwardedFor: "127.0.0.1",
+      acceptLanguage: "ko-KR",
+      now,
+    });
+    const proof = solveProof(challenge.token, challenge.difficulty);
+    const replayError = new Error("unique constraint");
+    Object.assign(replayError, { code: "P2002" });
+    mockGuestStepUpNonceCreate.mockRejectedValue(replayError);
+
+    await expect(
+      assertGuestStepUp({
+        scope: "post:create",
+        ip: "127.0.0.1",
+        fingerprint: "guest-fp-replay",
+        token: challenge.token,
+        proof,
+        now,
+      }),
+    ).rejects.toMatchObject({
+      code: "GUEST_STEP_UP_REPLAYED",
+      status: 403,
     });
   });
 

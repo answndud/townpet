@@ -2,6 +2,7 @@ import { createHash, createHmac, timingSafeEqual } from "crypto";
 import { GuestViolationCategory } from "@prisma/client";
 
 import { runtimeEnv } from "@/lib/env";
+import { prisma } from "@/lib/prisma";
 import { registerGuestViolation } from "@/server/services/guest-safety.service";
 import { ServiceError } from "@/server/services/service-error";
 
@@ -189,6 +190,40 @@ function isValidProof(token: string, proof: string, difficulty: number) {
   return digest.startsWith("0".repeat(Math.max(1, difficulty)));
 }
 
+async function consumeGuestStepUpToken(params: {
+  token: string;
+  payload: GuestStepUpPayload;
+  now: Date;
+}) {
+  const tokenHash = createHash("sha256").update(params.token).digest("hex");
+  try {
+    await prisma.guestStepUpNonce.create({
+      data: {
+        tokenHash,
+        scope: params.payload.scope,
+        ipHash: params.payload.ipHash,
+        fingerprintHash: params.payload.fingerprintHash,
+        expiresAt: new Date(params.payload.exp * 1000),
+        consumedAt: params.now,
+      },
+    });
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      "code" in error &&
+      (error as { code?: string }).code === "P2002"
+    ) {
+      throw new ServiceError(
+        "이미 사용한 추가 확인 토큰입니다. 다시 확인해 주세요.",
+        "GUEST_STEP_UP_REPLAYED",
+        403,
+      );
+    }
+
+    throw error;
+  }
+}
+
 export function issueGuestStepUpChallenge(
   params: IssueGuestStepUpChallengeParams,
 ): GuestStepUpChallenge {
@@ -289,6 +324,12 @@ export async function assertGuestStepUp(params: AssertGuestStepUpParams) {
       403,
     );
   }
+
+  await consumeGuestStepUpToken({
+    token,
+    payload,
+    now: new Date(now * 1000),
+  });
 
   return {
     riskLevel: payload.riskLevel,

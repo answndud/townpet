@@ -56,6 +56,12 @@ export async function POST(request: NextRequest) {
     const uploaded = await saveUploadedImage(file, {
       maxSizeBytes: userId ? undefined : GUEST_MAX_IMAGE_BYTES,
       ownerUserId: userId ?? null,
+      ownerGuestIdentity: userId
+        ? undefined
+        : {
+            ip: clientIp,
+            fingerprint: guestFingerprint,
+          },
     });
     void cleanupTemporaryUploadAssets({ limit: 5 }).catch(() => undefined);
     return jsonOk(uploaded, { status: 201 });

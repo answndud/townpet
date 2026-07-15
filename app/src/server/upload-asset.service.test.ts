@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { prisma } from "@/lib/prisma";
 import {
   buildUploadTemporaryCutoff,
+  attachUploadUrls,
   cleanupTemporaryUploadAssets,
   filterRenderableUploadImages,
   registerUploadAsset,
@@ -140,6 +141,42 @@ describe("upload asset service", () => {
         }),
       }),
     );
+  });
+
+  it("attaches an upload only to the authenticated owner", async () => {
+    await attachUploadUrls(["/media/uploads/pet.png"], { ownerUserId: "user-1" });
+
+    expect(mockPrisma.uploadAsset.updateMany).toHaveBeenCalledWith({
+      where: {
+        storageKey: { in: ["uploads/pet.png"] },
+        ownerUserId: "user-1",
+      },
+      data: expect.objectContaining({ status: "ATTACHED" }),
+    });
+  });
+
+  it("attaches a guest upload only to the matching guest identity", async () => {
+    await attachUploadUrls(["/uploads/guest.png"], {
+      ownerGuestIdentity: { ip: "203.0.113.10", fingerprint: "guest-fp-1" },
+    });
+
+    expect(mockPrisma.uploadAsset.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          storageKey: { in: ["uploads/guest.png"] },
+          ownerUserId: null,
+          OR: expect.arrayContaining([
+            expect.objectContaining({ ownerGuestIpHash: expect.any(Object) }),
+            expect.objectContaining({ ownerGuestFingerprintHash: expect.any(Object) }),
+          ]),
+        }),
+      }),
+    );
+  });
+
+  it("does not attach an asset without an ownership context", async () => {
+    await expect(attachUploadUrls(["/uploads/unscoped.png"])).resolves.toBe(0);
+    expect(mockPrisma.uploadAsset.updateMany).not.toHaveBeenCalled();
   });
 
   it("deletes unreferenced local upload urls", async () => {
@@ -286,5 +323,32 @@ describe("upload asset service", () => {
     expect(result.scannedCount).toBe(1);
     expect(result.deletedCount).toBe(1);
     expect(result.skippedCount).toBe(0);
+  });
+
+  it("reattaches expired temporary assets that are already referenced by active content", async () => {
+    mockPrisma.uploadAsset.findMany.mockResolvedValue([{ url: "/uploads/referenced.png" }]);
+    mockPrisma.postImage.findMany.mockResolvedValue([{ url: "/uploads/referenced.png" }]);
+
+    const result = await cleanupTemporaryUploadAssets({
+      retentionHours: 24,
+      now: new Date("2026-03-10T12:00:00.000Z"),
+    });
+
+    expect(result).toMatchObject({
+      scannedCount: 1,
+      reattachedCount: 1,
+      deletedCount: 0,
+      skippedCount: 0,
+    });
+    expect(mockPrisma.uploadAsset.updateMany).toHaveBeenCalledWith({
+      where: {
+        storageKey: { in: ["uploads/referenced.png"] },
+        status: "TEMPORARY",
+      },
+      data: expect.objectContaining({
+        status: "ATTACHED",
+        deletedAt: null,
+      }),
+    });
   });
 });

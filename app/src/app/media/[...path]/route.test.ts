@@ -6,6 +6,12 @@ import { monitorUnhandledError } from "@/server/error-monitor";
 import { findStoredUploadSourceByPathname } from "@/server/upload-asset.service";
 import { readFile } from "fs/promises";
 
+import { getCurrentUserId } from "@/server/auth";
+
+vi.mock("@/server/auth", () => ({
+  getCurrentUserId: vi.fn(),
+}));
+
 vi.mock("@/server/error-monitor", () => ({
   monitorUnhandledError: vi.fn(),
 }));
@@ -21,12 +27,14 @@ vi.mock("fs/promises", () => ({
 const mockMonitorUnhandledError = vi.mocked(monitorUnhandledError);
 const mockFindStoredUploadSourceByPathname = vi.mocked(findStoredUploadSourceByPathname);
 const mockReadFile = vi.mocked(readFile);
+const mockGetCurrentUserId = vi.mocked(getCurrentUserId);
 
 describe("GET /media/[...path]", () => {
   beforeEach(() => {
     mockMonitorUnhandledError.mockReset();
     mockFindStoredUploadSourceByPathname.mockReset();
     mockReadFile.mockReset();
+    mockGetCurrentUserId.mockReset();
     vi.restoreAllMocks();
   });
 
@@ -57,6 +65,36 @@ describe("GET /media/[...path]", () => {
     expect(response.headers.get("x-content-type-options")).toBe("nosniff");
     expect(response.headers.get("cross-origin-resource-policy")).toBe("same-site");
     expect(await response.text()).toBe("local-image");
+  });
+
+  it("does not serve a deleted asset from a leftover local file", async () => {
+    mockFindStoredUploadSourceByPathname.mockResolvedValue({ blocked: true } as never);
+
+    const request = new Request("http://localhost/media/uploads/deleted.webp") as NextRequest;
+    const response = await GET(request, {
+      params: Promise.resolve({ path: ["uploads", "deleted.webp"] }),
+    });
+
+    expect(response.status).toBe(404);
+    expect(mockReadFile).not.toHaveBeenCalled();
+  });
+
+  it("does not expose private assets to anonymous viewers", async () => {
+    mockFindStoredUploadSourceByPathname.mockResolvedValue({
+      sourceUrl: "/uploads/private.webp",
+      storageProvider: "LOCAL",
+      visibility: "PRIVATE",
+      ownerUserId: "owner-1",
+    } as never);
+    mockGetCurrentUserId.mockResolvedValue(null);
+
+    const response = await GET(
+      new Request("http://localhost/media/uploads/private.webp") as NextRequest,
+      { params: Promise.resolve({ path: ["uploads", "private.webp"] }) },
+    );
+
+    expect(response.status).toBe(404);
+    expect(mockReadFile).not.toHaveBeenCalled();
   });
 
   it("streams blob-backed upload assets through the media route", async () => {

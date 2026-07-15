@@ -56,6 +56,7 @@ model User {
   careApplicationDecisions   CareApplication[]              @relation("CareApplicationDecider")
   careCompletionFeedbacks    CareCompletionFeedback[]       @relation("CareCompletionFeedbackAuthor")
   careFeedbackReviews        CareCompletionFeedback[]       @relation("CareCompletionFeedbackReviewer")
+  lostFoundStatusEvents      LostFoundStatusEvent[]         @relation("LostFoundStatusEventActor")
   uploadAssets               UploadAsset[]
   createdAt                  DateTime                       @default(now())
   updatedAt                  DateTime                       @updatedAt
@@ -294,6 +295,7 @@ model Post {
   title                     String
   content                   String                         @db.Text
   structuredSearchText      String                         @default("") @db.Text
+  isDemoContent             Boolean                        @default(false)
   isOperatorContent         Boolean                        @default(false)
   operatorSourceName        String?
   operatorSourceUrl         String?
@@ -391,6 +393,19 @@ model GuestViolation {
 
   @@index([ipHash, createdAt(sort: Desc)])
   @@index([fingerprintHash, createdAt(sort: Desc)])
+}
+
+model GuestStepUpNonce {
+  id              String    @id @default(cuid())
+  tokenHash       String    @unique
+  scope           String
+  ipHash          String
+  fingerprintHash String?
+  expiresAt       DateTime
+  consumedAt      DateTime  @default(now())
+  createdAt       DateTime  @default(now())
+
+  @@index([expiresAt])
 }
 
 enum GuestViolationCategory {
@@ -772,6 +787,21 @@ model LostFoundAlert {
   lat              Float?
   lng              Float?
   status           LostFoundStatus @default(ACTIVE)
+  statusEvents     LostFoundStatusEvent[]
+}
+
+model LostFoundStatusEvent {
+  id         String          @id @default(cuid())
+  alertId    String
+  actorId    String
+  fromStatus LostFoundStatus?
+  toStatus   LostFoundStatus
+  createdAt  DateTime        @default(now())
+  alert      LostFoundAlert  @relation(fields: [alertId], references: [id], onDelete: Cascade)
+  actor      User            @relation("LostFoundStatusEventActor", fields: [actorId], references: [id])
+
+  @@index([alertId, createdAt(sort: Desc)])
+  @@index([actorId, createdAt(sort: Desc)])
 }
 
 enum LostFoundType {
@@ -860,6 +890,7 @@ model UploadAsset {
   thumbnailUrl        String?               @unique
   thumbnailStorageKey String?               @unique
   storageProvider     UploadStorageProvider
+  visibility          UploadAssetVisibility  @default(PUBLIC)
   mimeType            String
   size                Int
   width               Int?
@@ -867,6 +898,8 @@ model UploadAsset {
   status              UploadAssetStatus     @default(TEMPORARY)
   ownerUserId         String?
   ownerUser           User?                 @relation(fields: [ownerUserId], references: [id], onDelete: SetNull)
+  ownerGuestIpHash    String?
+  ownerGuestFingerprintHash String?
   attachedAt          DateTime?
   deletedAt           DateTime?
   createdAt           DateTime              @default(now())
@@ -874,11 +907,19 @@ model UploadAsset {
 
   @@index([status, createdAt(sort: Asc)])
   @@index([ownerUserId, status, createdAt(sort: Desc)])
+  @@index([ownerGuestIpHash, status, createdAt(sort: Desc)])
+  @@index([ownerGuestFingerprintHash, status, createdAt(sort: Desc)])
+  @@index([status, attachedAt(sort: Asc)])
 }
 
 enum UploadStorageProvider {
   LOCAL
   BLOB
+}
+
+enum UploadAssetVisibility {
+  PUBLIC
+  PRIVATE
 }
 
 enum UploadAssetStatus {
@@ -1355,4 +1396,5 @@ enum NotificationDeliveryStatus {
   PENDING
   DELIVERED
   FAILED
+  DEAD_LETTER
 }
