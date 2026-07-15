@@ -12,6 +12,7 @@ import { getClientIp } from "@/server/request-context";
 import { enforceRateLimit } from "@/server/rate-limit";
 import { jsonError, jsonOk } from "@/server/response";
 import { ServiceError } from "@/server/services/service-error";
+import { prepareNotificationList } from "@/server/services/notifications/notification.service";
 
 const notificationListSchema = z.object({
   cursor: z.string().cuid().optional(),
@@ -50,6 +51,8 @@ export async function GET(request: NextRequest) {
     }
 
     const unreadOnly = parseUnreadOnly(searchParams.get("unreadOnly"));
+
+    await prepareNotificationList(authenticatedUserId);
 
     const { items, nextCursor, page, totalPages, totalCount } = await listNotificationsByUser({
       userId: authenticatedUserId,

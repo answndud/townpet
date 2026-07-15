@@ -5,9 +5,16 @@ import {
 } from "@prisma/client";
 
 import {
+  archiveUnavailableNotificationsForUser,
   createNotificationDelivery,
   deliverNotificationDelivery,
-} from "@/server/queries/notification.queries";
+  flushNotificationDeliveriesForUser,
+} from "@/server/services/notifications/notification-write.service";
+
+export async function prepareNotificationList(userId: string) {
+  await flushNotificationDeliveriesForUser(userId);
+  await archiveUnavailableNotificationsForUser(userId);
+}
 
 type CreateUserNotificationParams = {
   userId: string;

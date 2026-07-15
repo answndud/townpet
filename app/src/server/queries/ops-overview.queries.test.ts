@@ -13,6 +13,7 @@ import { getFeedPersonalizationOverview } from "@/server/queries/feed-personaliz
 import { getInitialRegionOpsOverview } from "@/server/queries/initial-region-ops.queries";
 import { getAdminOpsOverview } from "@/server/queries/ops-overview.queries";
 import { getReportStats } from "@/server/queries/report.queries";
+import { getNotificationDeliveryOutboxStats } from "@/server/queries/notifications/notification.queries";
 import { getSearchInsightsOverview } from "@/server/queries/search.queries";
 
 vi.mock("@/server/health-overview", () => ({
@@ -52,6 +53,10 @@ vi.mock("@/server/queries/search.queries", () => ({
   getSearchInsightsOverview: vi.fn(),
 }));
 
+vi.mock("@/server/queries/notifications/notification.queries", () => ({
+  getNotificationDeliveryOutboxStats: vi.fn(),
+}));
+
 const mockGetHealthSnapshot = vi.mocked(getHealthSnapshot);
 const mockGetAdminQueueSmokeReadiness = vi.mocked(getAdminQueueSmokeReadiness);
 const mockGetCorrectionFlowOpsOverview = vi.mocked(getCorrectionFlowOpsOverview);
@@ -64,6 +69,7 @@ const mockGetFeedPersonalizationOverview = vi.mocked(getFeedPersonalizationOverv
 const mockGetInitialRegionOpsOverview = vi.mocked(getInitialRegionOpsOverview);
 const mockGetReportStats = vi.mocked(getReportStats);
 const mockGetSearchInsightsOverview = vi.mocked(getSearchInsightsOverview);
+const mockGetNotificationDeliveryOutboxStats = vi.mocked(getNotificationDeliveryOutboxStats);
 
 describe("ops overview queries", () => {
   beforeEach(() => {
@@ -77,9 +83,19 @@ describe("ops overview queries", () => {
     mockGetInitialRegionOpsOverview.mockReset();
     mockGetReportStats.mockReset();
     mockGetSearchInsightsOverview.mockReset();
+    mockGetNotificationDeliveryOutboxStats.mockReset();
   });
 
   it("combines health, auth, report, personalization, and search insights", async () => {
+    mockGetNotificationDeliveryOutboxStats.mockResolvedValue({
+      pending: 2,
+      failed: 1,
+      deadLetter: 0,
+      due: 1,
+      oldestDueAt: new Date("2026-03-18T23:59:00.000Z"),
+      oldestDueAgeSeconds: 60,
+      checkedAt: new Date("2026-03-19T00:00:00.000Z"),
+    });
     mockGetHealthSnapshot.mockResolvedValue({
       ok: true,
       status: "ok",
@@ -99,7 +115,21 @@ describe("ops overview queries", () => {
           bypassRemainingMs: 0,
           bypassUntil: null,
           lastFailureAt: null,
+          invalidation: {
+            failureCount: 0,
+            lastFailureAt: null,
+            lastFailureBucket: null,
+          },
           message: "distributed query cache healthy",
+        },
+        uploadFinalization: {
+          state: "ok",
+          attachFailureCount: 0,
+          releaseFailureCount: 0,
+          totalFailureCount: 0,
+          lastFailureAt: null,
+          lastFailureKind: null,
+          message: "upload finalization healthy",
         },
         search: { pgTrgm: { state: "ok", enabled: true, message: "enabled" } },
       },
@@ -329,6 +359,7 @@ describe("ops overview queries", () => {
     expect(mockGetCorrectionFlowOpsOverview).toHaveBeenCalledWith(7);
     expect(mockGetLostFoundAcquisitionOpsOverview).toHaveBeenCalledWith(7);
     expect(mockGetAdminQueueSmokeReadiness).toHaveBeenCalledWith();
+    expect(mockGetNotificationDeliveryOutboxStats).toHaveBeenCalledWith();
     expect(overview.health.status).toBe("ok");
     expect(overview.authAudit.totalEvents).toBe(5);
     expect(overview.reports.totalCount).toBe(7);
@@ -340,5 +371,43 @@ describe("ops overview queries", () => {
     expect(overview.lostFoundAcquisition.shareActionRate).toBe(0.6);
     expect(overview.adminQueueSmoke.status).toBe("BLOCKED");
     expect(overview.adminQueueSmoke.localFixtureCommand).toContain("ADMIN_QUEUE_SMOKE_LOCAL_FIXTURES=1");
+    expect(overview.notificationDelivery).toMatchObject({
+      pending: 2,
+      failed: 1,
+      due: 1,
+      schemaSyncRequired: false,
+    });
+  });
+
+  it("keeps the ops overview available when notification outbox stats are unavailable", async () => {
+    mockGetNotificationDeliveryOutboxStats.mockRejectedValue(new Error("missing table"));
+
+    mockGetHealthSnapshot.mockResolvedValue({
+      ok: true,
+      status: "ok",
+      timestamp: "2026-03-19T00:00:00.000Z",
+      uptimeSec: 10,
+      durationMs: 20,
+      env: { nodeEnv: "production", state: "ok", missing: [] },
+      checks: {} as never,
+    });
+    mockGetAuthAuditOverview.mockResolvedValue({} as never);
+    mockGetReportStats.mockResolvedValue({} as never);
+    mockGetCareFeedbackIssueStats.mockResolvedValue({} as never);
+    mockGetFeedPersonalizationOverview.mockResolvedValue({} as never);
+    mockGetSearchInsightsOverview.mockResolvedValue({} as never);
+    mockGetInitialRegionOpsOverview.mockResolvedValue({} as never);
+    mockGetCorrectionFlowOpsOverview.mockResolvedValue({} as never);
+    mockGetLostFoundAcquisitionOpsOverview.mockResolvedValue({} as never);
+    mockGetAdminQueueSmokeReadiness.mockReturnValue({} as never);
+
+    const overview = await getAdminOpsOverview();
+
+    expect(overview.notificationDelivery).toMatchObject({
+      pending: 0,
+      failed: 0,
+      due: 0,
+      schemaSyncRequired: true,
+    });
   });
 });

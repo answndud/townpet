@@ -8,7 +8,7 @@ import {
   archiveNotification,
   markAllNotificationsRead,
   markNotificationRead,
-} from "@/server/queries/notification.queries";
+} from "@/server/services/notifications/notification-write.service";
 import { ServiceError } from "@/server/services/service-error";
 
 type NotificationActionResult =

@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NotificationDeliveryStatus, PostStatus } from "@prisma/client";
 
 import {
+  archiveUnavailableNotificationsForUser,
   archiveNotification,
   createNotification,
   createNotificationDelivery,
@@ -9,6 +10,7 @@ import {
   flushNotificationDeliveries,
   flushNotificationDeliveriesForUser,
   getNotificationDeliveryOutboxStats,
+  getNotificationRetryAt,
   getNotificationNavigationTarget,
   listNotificationsByUser,
   markAllNotificationsRead,
@@ -50,6 +52,7 @@ vi.mock("@/lib/prisma", () => ({
     },
     notificationDelivery: {
       create: vi.fn(),
+      findFirst: vi.fn(),
       findUnique: vi.fn(),
       findMany: vi.fn(),
       count: vi.fn(),
@@ -72,6 +75,7 @@ const mockPrisma = vi.mocked(prisma) as unknown as {
   };
   notificationDelivery: {
     create: ReturnType<typeof vi.fn>;
+    findFirst: ReturnType<typeof vi.fn>;
     findUnique: ReturnType<typeof vi.fn>;
     findMany: ReturnType<typeof vi.fn>;
     count: ReturnType<typeof vi.fn>;
@@ -93,6 +97,7 @@ describe("notification queries cache behavior", () => {
     mockPrisma.notification.findMany.mockReset();
     mockPrisma.notificationDelivery.create.mockReset();
     mockPrisma.notificationDelivery.findUnique.mockReset();
+    mockPrisma.notificationDelivery.findFirst.mockReset();
     mockPrisma.notificationDelivery.findMany.mockReset();
     mockPrisma.notificationDelivery.count.mockReset();
     mockPrisma.notificationDelivery.update.mockReset();
@@ -161,7 +166,7 @@ describe("notification queries cache behavior", () => {
     });
 
     expect(mockPrisma.notification.findMany).toHaveBeenNthCalledWith(
-      2,
+      1,
       expect.objectContaining({
         where: expect.objectContaining({
           AND: expect.arrayContaining([
@@ -188,7 +193,7 @@ describe("notification queries cache behavior", () => {
     });
 
     expect(mockPrisma.notification.findMany).toHaveBeenNthCalledWith(
-      2,
+      1,
       expect.objectContaining({
         where: expect.objectContaining({
           AND: expect.arrayContaining([
@@ -437,6 +442,80 @@ describe("notification queries invalidation behavior", () => {
     });
   });
 
+  it("backs off failed delivery retries instead of rescheduling immediately", async () => {
+    const now = new Date("2026-05-18T00:00:00.000Z");
+    vi.useFakeTimers();
+    vi.setSystemTime(now);
+
+    mockPrisma.notificationDelivery.findUnique.mockResolvedValue({
+      id: "delivery-failed",
+      userId: "user-6",
+      actorId: null,
+      type: "SYSTEM",
+      entityType: "SYSTEM",
+      entityId: "event-failed",
+      postId: null,
+      commentId: null,
+      title: "실패 알림",
+      body: null,
+      metadata: null,
+      status: NotificationDeliveryStatus.PENDING,
+      attempts: 0,
+    });
+    mockPrisma.notification.create.mockRejectedValue(new Error("delivery unavailable"));
+    mockPrisma.notificationDelivery.update.mockResolvedValue({});
+
+    await expect(deliverNotificationDelivery("delivery-failed")).rejects.toThrow(
+      "delivery unavailable",
+    );
+
+    expect(mockPrisma.notificationDelivery.update).toHaveBeenCalledWith({
+      where: { id: "delivery-failed" },
+      data: {
+        status: NotificationDeliveryStatus.FAILED,
+        attempts: { increment: 1 },
+        scheduledAt: new Date("2026-05-18T00:01:00.000Z"),
+        lastError: "delivery unavailable",
+      },
+    });
+    expect(getNotificationRetryAt(10, now)).toEqual(new Date("2026-05-18T01:00:00.000Z"));
+    vi.useRealTimers();
+  });
+
+  it("moves repeatedly failing deliveries to the dead-letter state", async () => {
+    mockPrisma.notificationDelivery.findUnique.mockResolvedValue({
+      id: "delivery-dead",
+      userId: "user-6",
+      actorId: null,
+      type: "SYSTEM",
+      entityType: "SYSTEM",
+      entityId: "event-dead",
+      postId: null,
+      commentId: null,
+      title: "영구 실패 알림",
+      body: null,
+      metadata: null,
+      status: NotificationDeliveryStatus.FAILED,
+      attempts: 7,
+    });
+    mockPrisma.notification.create.mockRejectedValue(new Error("permanent failure"));
+    mockPrisma.notificationDelivery.update.mockResolvedValue({});
+
+    await expect(deliverNotificationDelivery("delivery-dead")).rejects.toThrow(
+      "permanent failure",
+    );
+
+    expect(mockPrisma.notificationDelivery.update).toHaveBeenCalledWith({
+      where: { id: "delivery-dead" },
+      data: {
+        status: NotificationDeliveryStatus.DEAD_LETTER,
+        attempts: { increment: 1 },
+        scheduledAt: expect.any(Date),
+        lastError: "permanent failure",
+      },
+    });
+  });
+
   it("flushes pending/failed deliveries for the same user", async () => {
     mockPrisma.notificationDelivery.findMany
       .mockResolvedValueOnce([
@@ -487,14 +566,21 @@ describe("notification queries invalidation behavior", () => {
     mockPrisma.notificationDelivery.count
       .mockResolvedValueOnce(3)
       .mockResolvedValueOnce(2)
+      .mockResolvedValueOnce(1)
       .mockResolvedValueOnce(4);
+    mockPrisma.notificationDelivery.findFirst.mockResolvedValue({
+      scheduledAt: new Date("2026-05-17T23:59:00.000Z"),
+    });
 
     const stats = await getNotificationDeliveryOutboxStats(now);
 
     expect(stats).toEqual({
       pending: 3,
       failed: 2,
+      deadLetter: 1,
       due: 4,
+      oldestDueAt: new Date("2026-05-17T23:59:00.000Z"),
+      oldestDueAgeSeconds: 60,
       checkedAt: now,
     });
     expect(mockPrisma.notificationDelivery.count).toHaveBeenNthCalledWith(1, {
@@ -504,12 +590,25 @@ describe("notification queries invalidation behavior", () => {
       where: { status: NotificationDeliveryStatus.FAILED },
     });
     expect(mockPrisma.notificationDelivery.count).toHaveBeenNthCalledWith(3, {
+      where: { status: NotificationDeliveryStatus.DEAD_LETTER },
+    });
+    expect(mockPrisma.notificationDelivery.count).toHaveBeenNthCalledWith(4, {
       where: {
         status: {
           in: [NotificationDeliveryStatus.PENDING, NotificationDeliveryStatus.FAILED],
         },
         scheduledAt: { lte: now },
       },
+    });
+    expect(mockPrisma.notificationDelivery.findFirst).toHaveBeenCalledWith({
+      where: {
+        status: {
+          in: [NotificationDeliveryStatus.PENDING, NotificationDeliveryStatus.FAILED],
+        },
+        scheduledAt: { lte: now },
+      },
+      orderBy: [{ scheduledAt: "asc" }, { createdAt: "asc" }],
+      select: { scheduledAt: true },
     });
   });
 
@@ -583,11 +682,7 @@ describe("notification queries invalidation behavior", () => {
     mockPrisma.notification.updateMany.mockResolvedValue({ count: 1 });
     mockPrisma.notification.count.mockResolvedValue(0);
 
-    await listNotificationsByUser({
-      userId: "user-cleanup",
-      kind: "ALL",
-      unreadOnly: false,
-    });
+    await archiveUnavailableNotificationsForUser("user-cleanup");
 
     expect(mockPrisma.notification.updateMany).toHaveBeenCalledWith({
       where: {
@@ -616,11 +711,7 @@ describe("notification queries invalidation behavior", () => {
     mockPrisma.notification.updateMany.mockResolvedValue({ count: 1 });
     mockPrisma.notification.count.mockResolvedValue(0);
 
-    await listNotificationsByUser({
-      userId: "user-comment-cleanup",
-      kind: "ALL",
-      unreadOnly: false,
-    });
+    await archiveUnavailableNotificationsForUser("user-comment-cleanup");
 
     expect(mockPrisma.notification.updateMany).toHaveBeenCalledWith({
       where: {

@@ -12,7 +12,7 @@ import {
   archiveNotification,
   markAllNotificationsRead,
   markNotificationRead,
-} from "@/server/queries/notification.queries";
+} from "@/server/services/notifications/notification-write.service";
 import { ServiceError } from "@/server/services/service-error";
 
 vi.mock("next/cache", () => ({
@@ -27,7 +27,7 @@ vi.mock("@/server/error-monitor", () => ({
   monitorUnhandledError: vi.fn(),
 }));
 
-vi.mock("@/server/queries/notification.queries", () => ({
+vi.mock("@/server/services/notifications/notification-write.service", () => ({
   markNotificationRead: vi.fn(),
   markAllNotificationsRead: vi.fn(),
   archiveNotification: vi.fn(),

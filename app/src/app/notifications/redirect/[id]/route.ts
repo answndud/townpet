@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { requireCurrentUserId } from "@/server/auth";
 import { monitorUnhandledError } from "@/server/error-monitor";
-import { getNotificationNavigationTarget } from "@/server/queries/notification.queries";
+import { getNotificationNavigationTarget } from "@/server/services/notifications/notification-write.service";
 import { ServiceError } from "@/server/services/service-error";
 
 type RouteParams = {

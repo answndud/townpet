@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { getQueryCacheHealth } from "@/server/cache/query-cache";
 import { checkModerationControlPlaneHealth } from "@/server/moderation-control-plane";
 import { checkRateLimitHealth } from "@/server/rate-limit";
+import { getUploadFinalizationHealth } from "@/server/upload-asset-health";
 
 type CheckState = "ok" | "error";
 type CheckWarningState = CheckState | "warn";
@@ -55,6 +56,7 @@ export async function getHealthSnapshot(options?: { includeDetailedHealth?: bool
   const rateLimitState = await checkRateLimitHealth();
   const controlPlaneState = await checkModerationControlPlaneHealth();
   const queryCacheHealth = getQueryCacheHealth();
+  const uploadFinalizationHealth = getUploadFinalizationHealth();
   const envState: CheckState = envValidation.ok ? "ok" : "error";
   const status: "ok" | "degraded" =
     dbState === "ok" &&
@@ -96,7 +98,11 @@ export async function getHealthSnapshot(options?: { includeDetailedHealth?: bool
         : {
             state: queryCacheHealth.state,
             backend: queryCacheHealth.backend,
-          },
+            invalidation: queryCacheHealth.invalidation,
+        },
+      uploadFinalization: includeDetailedHealth
+        ? uploadFinalizationHealth
+        : { state: uploadFinalizationHealth.state },
       ...(includeDetailedHealth && dbState === "ok"
         ? {
             search: {

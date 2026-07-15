@@ -9,24 +9,45 @@ import {
   notifyReactionOnPost,
 } from "@/server/services/notification.service";
 import {
+  archiveUnavailableNotificationsForUser,
   createNotificationDelivery,
   deliverNotificationDelivery,
-} from "@/server/queries/notification.queries";
+  flushNotificationDeliveriesForUser,
+} from "@/server/services/notifications/notification-write.service";
 
-vi.mock("@/server/queries/notification.queries", () => ({
+vi.mock("@/server/services/notifications/notification-write.service", () => ({
+  archiveUnavailableNotificationsForUser: vi.fn(),
   createNotificationDelivery: vi.fn(),
   deliverNotificationDelivery: vi.fn(),
+  flushNotificationDeliveriesForUser: vi.fn(),
 }));
 
 const mockCreateNotificationDelivery = vi.mocked(createNotificationDelivery);
 const mockDeliverNotificationDelivery = vi.mocked(deliverNotificationDelivery);
+const mockArchiveUnavailableNotificationsForUser = vi.mocked(archiveUnavailableNotificationsForUser);
+const mockFlushNotificationDeliveriesForUser = vi.mocked(flushNotificationDeliveriesForUser);
 
 describe("notification service", () => {
   beforeEach(() => {
     mockCreateNotificationDelivery.mockReset();
     mockDeliverNotificationDelivery.mockReset();
+    mockArchiveUnavailableNotificationsForUser.mockReset();
+    mockFlushNotificationDeliveriesForUser.mockReset();
     mockCreateNotificationDelivery.mockResolvedValue({ id: "delivery-1" } as never);
     mockDeliverNotificationDelivery.mockResolvedValue({ delivered: true } as never);
+    mockArchiveUnavailableNotificationsForUser.mockResolvedValue(0);
+    mockFlushNotificationDeliveriesForUser.mockResolvedValue(0);
+  });
+
+  it("prepares notification delivery and stale-target state before listing", async () => {
+    const { prepareNotificationList } = await import(
+      "@/server/services/notifications/notification.service"
+    );
+
+    await prepareNotificationList("user-prepare");
+
+    expect(mockFlushNotificationDeliveriesForUser).toHaveBeenCalledWith("user-prepare");
+    expect(mockArchiveUnavailableNotificationsForUser).toHaveBeenCalledWith("user-prepare");
   });
 
   it("skips self notifications", async () => {

@@ -13,6 +13,7 @@ import {
   countUnreadNotifications,
   listNotificationsByUser,
 } from "@/server/queries/notification.queries";
+import { prepareNotificationList } from "@/server/services/notifications/notification.service";
 
 type NotificationsPageProps = {
   searchParams?: Promise<{ kind?: string; unreadOnly?: string; page?: string; notice?: string }>;
@@ -79,6 +80,8 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
       </div>
     );
   }
+
+  await prepareNotificationList(currentUserId);
 
   const [{ items, totalPages, page }, unreadCount] = await Promise.all([
     listNotificationsByUser({

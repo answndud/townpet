@@ -8,11 +8,15 @@ import { listNotificationsByUser } from "@/server/queries/notification.queries";
 import { getClientIp } from "@/server/request-context";
 import { enforceRateLimit } from "@/server/rate-limit";
 import { ServiceError } from "@/server/services/service-error";
+import { prepareNotificationList } from "@/server/services/notifications/notification.service";
 
 vi.mock("@/server/auth", () => ({ requireCurrentUserId: vi.fn() }));
 vi.mock("@/server/error-monitor", () => ({ monitorUnhandledError: vi.fn() }));
 vi.mock("@/server/queries/notification.queries", () => ({
   listNotificationsByUser: vi.fn(),
+}));
+vi.mock("@/server/services/notifications/notification.service", () => ({
+  prepareNotificationList: vi.fn(),
 }));
 vi.mock("@/server/request-context", () => ({ getClientIp: vi.fn() }));
 vi.mock("@/server/rate-limit", () => ({ enforceRateLimit: vi.fn() }));
@@ -22,6 +26,7 @@ const mockMonitorUnhandledError = vi.mocked(monitorUnhandledError);
 const mockListNotificationsByUser = vi.mocked(listNotificationsByUser);
 const mockGetClientIp = vi.mocked(getClientIp);
 const mockEnforceRateLimit = vi.mocked(enforceRateLimit);
+const mockPrepareNotificationList = vi.mocked(prepareNotificationList);
 
 describe("GET /api/notifications contract", () => {
   beforeEach(() => {
@@ -30,10 +35,12 @@ describe("GET /api/notifications contract", () => {
     mockListNotificationsByUser.mockReset();
     mockGetClientIp.mockReset();
     mockEnforceRateLimit.mockReset();
+    mockPrepareNotificationList.mockReset();
 
     mockRequireCurrentUserId.mockResolvedValue("user-1");
     mockGetClientIp.mockReturnValue("127.0.0.1");
     mockEnforceRateLimit.mockResolvedValue();
+    mockPrepareNotificationList.mockResolvedValue();
     mockListNotificationsByUser.mockResolvedValue({
       items: [],
       nextCursor: null,

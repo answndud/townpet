@@ -81,7 +81,8 @@ describe("query cache build/runtime behavior", () => {
     const fetchSpy = vi.fn().mockRejectedValue(new Error("upstash down"));
     vi.stubGlobal("fetch", fetchSpy);
 
-    const { getQueryCacheHealth, withQueryCache } = await loadQueryCacheModule();
+    const { bumpFeedCacheVersion, getQueryCacheHealth, withQueryCache } =
+      await loadQueryCacheModule();
     const fetcher = vi
       .fn<() => Promise<string>>()
       .mockResolvedValueOnce("first")
@@ -105,6 +106,15 @@ describe("query cache build/runtime behavior", () => {
       state: "warn",
       backend: "upstash",
       bypassActive: true,
+    });
+
+    await bumpFeedCacheVersion();
+
+    expect(getQueryCacheHealth()).toMatchObject({
+      invalidation: {
+        failureCount: 1,
+        lastFailureBucket: "feed",
+      },
     });
   });
 });

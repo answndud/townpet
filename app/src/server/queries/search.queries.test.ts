@@ -6,8 +6,8 @@ import {
   getPopularSearchTerms,
   getSearchInsightsOverview,
   listSearchTermSuggestions,
-  recordSearchTerm,
 } from "@/server/queries/search.queries";
+import { recordSearchTerm } from "@/server/services/search/search-statistics.service";
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {

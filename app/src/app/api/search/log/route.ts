@@ -5,7 +5,7 @@ import { z } from "zod";
 import { getCurrentUserId } from "@/server/auth";
 import { monitorUnhandledError } from "@/server/error-monitor";
 import { getClientIp } from "@/server/request-context";
-import { recordSearchTerm } from "@/server/queries/search.queries";
+import { recordSearchTerm } from "@/server/services/search/search-statistics.service";
 import { enforceRateLimit } from "@/server/rate-limit";
 import { jsonError, jsonOk } from "@/server/response";
 import { ServiceError } from "@/server/services/service-error";

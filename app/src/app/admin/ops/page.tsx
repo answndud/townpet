@@ -274,6 +274,7 @@ export default async function AdminOpsPage({ searchParams }: AdminOpsPageProps) 
   const rateLimitState = normalizeDashboardState(overview.health.checks.rateLimit.status);
   const controlPlaneState = normalizeDashboardState(overview.health.checks.controlPlane.state);
   const pgTrgmState = normalizeDashboardState(overview.health.checks.search?.pgTrgm.state ?? "warn");
+  const uploadFinalization = overview.health.checks.uploadFinalization;
   const controlPlaneChecks =
     "checks" in overview.health.checks.controlPlane ? overview.health.checks.controlPlane.checks : [];
   const dailySummaries = overview.personalization.dailySummaries.slice(-7);
@@ -283,6 +284,7 @@ export default async function AdminOpsPage({ searchParams }: AdminOpsPageProps) 
   const correctionFlow = overview.correctionFlow;
   const lostFoundAcquisition = overview.lostFoundAcquisition;
   const adminQueueSmoke = overview.adminQueueSmoke;
+  const notificationDelivery = overview.notificationDelivery;
   const searchContextLabel = describeSearchContext({
     searchScope: selectedSearchScope,
     searchType: selectedSearchType,
@@ -335,9 +337,57 @@ export default async function AdminOpsPage({ searchParams }: AdminOpsPageProps) 
             <OpsStatusItem
               label="Cache/Search"
               value={overview.health.checks.cache.backend}
-              detail={`cache ${cacheState} · pg_trgm ${pgTrgmState}`}
+              detail={`cache ${cacheState} · invalidation ${overview.health.checks.cache.invalidation.failureCount} · pg_trgm ${pgTrgmState}`}
               state={cacheState}
             />
+          </div>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+            <div className="rounded-xl border border-[#dbe6f6] bg-[#f8fbff] p-3">
+              <p className="text-xs text-[#5a7398]">알림 대기</p>
+              <p className="mt-1 text-xl font-bold text-[#10284a]">
+                {formatCount(notificationDelivery.pending)}건
+              </p>
+              <p className="mt-1 text-[11px] text-[#6a7f9f]">
+                {notificationDelivery.schemaSyncRequired ? "schema sync 필요" : "outbox pending"}
+              </p>
+            </div>
+            <div className="rounded-xl border border-[#ead8a4] bg-[#fff9ea] p-3">
+              <p className="text-xs text-[#7f5b0d]">알림 실패</p>
+              <p className="mt-1 text-xl font-bold text-[#7f5b0d]">
+                {formatCount(notificationDelivery.failed)}건
+              </p>
+              <p className="mt-1 text-[11px] text-[#8f6f2c]">재처리 스크립트 대상</p>
+            </div>
+            <div className="rounded-xl border border-[#dbe6f6] bg-[#f8fbff] p-3">
+              <p className="text-xs text-[#5a7398]">재처리 예정</p>
+              <p className="mt-1 text-xl font-bold text-[#10284a]">
+                {formatCount(notificationDelivery.due)}건
+              </p>
+              <p className="mt-1 text-[11px] text-[#6a7f9f]">
+                {notificationDelivery.oldestDueAgeSeconds > 0
+                  ? `최대 지연 ${notificationDelivery.oldestDueAgeSeconds}초`
+                  : "due 없음"}
+                {` · ${new Date(notificationDelivery.checkedAt).toLocaleString("ko-KR")}`}
+              </p>
+            </div>
+            <div className="rounded-xl border border-[#efcaca] bg-[#fff4f4] p-3">
+              <p className="text-xs text-[#9b3434]">영구 실패</p>
+              <p className="mt-1 text-xl font-bold text-[#9b3434]">
+                {formatCount(notificationDelivery.deadLetter)}건
+              </p>
+              <p className="mt-1 text-[11px] text-[#a14d4d]">수동 원인 확인 필요</p>
+            </div>
+            <div className="rounded-xl border border-[#dbe6f6] bg-[#f8fbff] p-3">
+              <p className="text-xs text-[#5a7398]">업로드 정합성</p>
+              <p className="mt-1 text-xl font-bold text-[#10284a]">
+                {formatCount("totalFailureCount" in uploadFinalization ? uploadFinalization.totalFailureCount : 0)}건
+              </p>
+              <p className="mt-1 text-[11px] text-[#6a7f9f]">
+                {uploadFinalization.state === "ok"
+                  ? "finalization 정상"
+                  : `attach ${formatCount("attachFailureCount" in uploadFinalization ? uploadFinalization.attachFailureCount : 0)} · release ${formatCount("releaseFailureCount" in uploadFinalization ? uploadFinalization.releaseFailureCount : 0)}`}
+              </p>
+            </div>
           </div>
         </section>
 

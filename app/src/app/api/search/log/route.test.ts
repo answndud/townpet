@@ -6,14 +6,14 @@ import { POST } from "@/app/api/search/log/route";
 import { getCurrentUserId } from "@/server/auth";
 import { monitorUnhandledError } from "@/server/error-monitor";
 import { getClientIp } from "@/server/request-context";
-import { recordSearchTerm } from "@/server/queries/search.queries";
+import { recordSearchTerm } from "@/server/services/search/search-statistics.service";
 import { enforceRateLimit } from "@/server/rate-limit";
 import { ServiceError } from "@/server/services/service-error";
 
 vi.mock("@/server/auth", () => ({ getCurrentUserId: vi.fn() }));
 vi.mock("@/server/error-monitor", () => ({ monitorUnhandledError: vi.fn() }));
 vi.mock("@/server/request-context", () => ({ getClientIp: vi.fn() }));
-vi.mock("@/server/queries/search.queries", () => ({ recordSearchTerm: vi.fn() }));
+vi.mock("@/server/services/search/search-statistics.service", () => ({ recordSearchTerm: vi.fn() }));
 vi.mock("@/server/rate-limit", () => ({ enforceRateLimit: vi.fn() }));
 
 const mockGetCurrentUserId = vi.mocked(getCurrentUserId);

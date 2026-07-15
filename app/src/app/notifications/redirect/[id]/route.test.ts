@@ -4,12 +4,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { GET } from "@/app/notifications/redirect/[id]/route";
 import { requireCurrentUserId } from "@/server/auth";
 import { monitorUnhandledError } from "@/server/error-monitor";
-import { getNotificationNavigationTarget } from "@/server/queries/notification.queries";
+import { getNotificationNavigationTarget } from "@/server/services/notifications/notification-write.service";
 import { ServiceError } from "@/server/services/service-error";
 
 vi.mock("@/server/auth", () => ({ requireCurrentUserId: vi.fn() }));
 vi.mock("@/server/error-monitor", () => ({ monitorUnhandledError: vi.fn() }));
-vi.mock("@/server/queries/notification.queries", () => ({
+vi.mock("@/server/services/notifications/notification-write.service", () => ({
   getNotificationNavigationTarget: vi.fn(),
 }));
 

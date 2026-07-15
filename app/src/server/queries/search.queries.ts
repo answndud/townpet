@@ -11,12 +11,10 @@ import {
   buildSearchTermStatVariants,
   normalizeSearchTerm,
   normalizeSearchTermForStats,
-  sanitizeSearchTermForStats,
   shouldExcludeSearchTermFromStats,
-  type SearchTermSkipReason,
 } from "@/lib/search-term-privacy";
 import { logger } from "@/server/logger";
-import { bumpPopularCacheVersion, createQueryCacheKey, withQueryCache } from "@/server/cache/query-cache";
+import { createQueryCacheKey, withQueryCache } from "@/server/cache/query-cache";
 
 type SearchTermStatRecord = {
   termNormalized?: string;
@@ -33,7 +31,6 @@ type SearchTermStatRecord = {
 
 type SearchTermStatDelegate = {
   findMany(args: Record<string, unknown>): Promise<SearchTermStatRecord[]>;
-  upsert(args: Record<string, unknown>): Promise<unknown>;
 };
 
 type SearchTermDailyMetricRecord = {
@@ -45,7 +42,6 @@ type SearchTermDailyMetricRecord = {
 
 type SearchTermDailyMetricDelegate = {
   findMany(args: Record<string, unknown>): Promise<SearchTermDailyMetricRecord[]>;
-  upsert(args: Record<string, unknown>): Promise<unknown>;
 };
 
 export type SearchTermContext = {
@@ -61,11 +57,6 @@ type NormalizedSearchTermContext = {
 };
 
 type SearchTermContextInput = SearchTermContext | NormalizedSearchTermContext;
-
-type RecordSearchTermOptions = SearchTermContext & {
-  resultCount?: number | null;
-  incrementQueryCount?: boolean;
-};
 
 let missingSearchTermStatDelegateWarned = false;
 let missingSearchTermStatTableWarned = false;
@@ -83,7 +74,7 @@ const GLOBAL_SEARCH_TERM_CONTEXT: NormalizedSearchTermContext = {
   searchIn: SearchTermSearchIn.ALL,
 };
 
-function getSearchTermStatDelegate() {
+export function getSearchTermStatDelegate() {
   const delegate = (
     prisma as unknown as { searchTermStat?: SearchTermStatDelegate }
   ).searchTermStat;
@@ -98,7 +89,7 @@ function getSearchTermStatDelegate() {
   return delegate ?? null;
 }
 
-function getSearchTermDailyMetricDelegate() {
+export function getSearchTermDailyMetricDelegate() {
   const delegate = (
     prisma as unknown as { searchTermDailyMetric?: SearchTermDailyMetricDelegate }
   ).searchTermDailyMetric;
@@ -113,7 +104,7 @@ function getSearchTermDailyMetricDelegate() {
   return delegate ?? null;
 }
 
-function isSearchTermStatSchemaSyncError(error: unknown) {
+export function isSearchTermStatSchemaSyncError(error: unknown) {
   return (
     error instanceof Error &&
     "code" in error &&
@@ -123,7 +114,7 @@ function isSearchTermStatSchemaSyncError(error: unknown) {
   );
 }
 
-function warnMissingSearchTermStatTable(error: unknown) {
+export function warnMissingSearchTermStatTable(error: unknown) {
   if (missingSearchTermStatTableWarned) {
     return;
   }
@@ -134,7 +125,7 @@ function warnMissingSearchTermStatTable(error: unknown) {
   });
 }
 
-function warnMissingSearchTermDailyMetricTable(error: unknown) {
+export function warnMissingSearchTermDailyMetricTable(error: unknown) {
   if (missingSearchTermDailyMetricTableWarned) {
     return;
   }
@@ -144,11 +135,6 @@ function warnMissingSearchTermDailyMetricTable(error: unknown) {
     error: error instanceof Error ? error.message : String(error),
   });
 }
-
-export type RecordSearchTermResult =
-  | { ok: true; recorded: true }
-  | { ok: true; recorded: false; reason: SearchTermSkipReason }
-  | { ok: false; reason: "SCHEMA_SYNC_REQUIRED" };
 
 export type SearchTermInsight = {
   term: string;
@@ -235,7 +221,7 @@ function isGlobalSearchTermContext(context: NormalizedSearchTermContext) {
   );
 }
 
-function buildSearchTermStatKey(
+export function buildSearchTermStatKey(
   termNormalized: string,
   context: NormalizedSearchTermContext,
 ) {
@@ -251,7 +237,7 @@ function buildSearchTermContextWhere(context: NormalizedSearchTermContext) {
   };
 }
 
-function getSearchMetricDayStart(date = new Date()) {
+export function getSearchMetricDayStart(date = new Date()) {
   const kstDay = Math.floor((date.getTime() + KST_OFFSET_MS) / DAY_MS);
   return new Date(kstDay * DAY_MS - KST_OFFSET_MS);
 }
@@ -260,14 +246,14 @@ function formatSearchMetricDate(date: Date) {
   return new Date(date.getTime() + KST_OFFSET_MS).toISOString().slice(0, 10);
 }
 
-function buildSearchTermDailyMetricKey(
+export function buildSearchTermDailyMetricKey(
   day: Date,
   context: NormalizedSearchTermContext,
 ) {
   return `${formatSearchMetricDate(day)}|${context.scope}|${context.typeKey}|${context.searchIn}`;
 }
 
-function buildSearchTermContexts(context?: SearchTermContextInput) {
+export function buildSearchTermContexts(context?: SearchTermContextInput) {
   const normalizedContext = normalizeSearchTermContext(context);
   if (isGlobalSearchTermContext(normalizedContext)) {
     return [normalizedContext];
@@ -300,11 +286,11 @@ function resolveSearchTermContextRank(
   return 2;
 }
 
-function isTrackableSearchTerm(term: string) {
+export function isTrackableSearchTerm(term: string) {
   return !shouldExcludeSearchTermFromStats(term);
 }
 
-function normalizeResultCount(value: number | null | undefined) {
+export function normalizeResultCount(value: number | null | undefined) {
   if (typeof value !== "number" || !Number.isFinite(value)) {
     return null;
   }
@@ -808,131 +794,4 @@ export async function getSearchInsightsOverview(
       };
     },
   });
-}
-
-export async function recordSearchTerm(rawTerm: string, options: RecordSearchTermOptions = {}) {
-  const normalizedTerm = sanitizeSearchTermForStats(rawTerm);
-  if (!normalizedTerm) {
-    return {
-      ok: true,
-      recorded: false,
-      reason: shouldExcludeSearchTermFromStats(rawTerm) ? "SENSITIVE_TERM" : "INVALID_TERM",
-    } as const;
-  }
-
-  if (!isTrackableSearchTerm(normalizedTerm)) {
-    return { ok: true, recorded: false, reason: "SENSITIVE_TERM" } as const;
-  }
-
-  const normalizedKey = normalizedTerm.toLowerCase();
-  const resultCount = normalizeResultCount(options.resultCount);
-  const incrementQueryCount = options.incrementQueryCount !== false;
-  const statsDelegate = getSearchTermStatDelegate();
-  const dailyMetricDelegate = getSearchTermDailyMetricDelegate();
-  if (!statsDelegate) {
-    return { ok: false, reason: "SCHEMA_SYNC_REQUIRED" } as const;
-  }
-
-  const primaryContext = normalizeSearchTermContext(options);
-  const contexts = buildSearchTermContexts(primaryContext);
-  const metricDay = getSearchMetricDayStart(new Date());
-
-  try {
-    await Promise.all(
-      contexts.map((context) =>
-        statsDelegate.upsert({
-          where: { statKey: buildSearchTermStatKey(normalizedKey, context) },
-          update: {
-            termNormalized: normalizedKey,
-            termDisplay: normalizedTerm,
-            scope: context.scope,
-            typeKey: context.typeKey,
-            searchIn: context.searchIn,
-            ...(incrementQueryCount ? { count: { increment: 1 } } : {}),
-            ...(resultCount !== null
-              ? {
-                  lastResultCount: resultCount,
-                  totalResultCount: { increment: resultCount },
-                  ...(resultCount === 0
-                    ? {
-                        zeroResultCount: { increment: 1 },
-                      }
-                    : {}),
-                }
-              : {}),
-          },
-          create: {
-            statKey: buildSearchTermStatKey(normalizedKey, context),
-            termNormalized: normalizedKey,
-            termDisplay: normalizedTerm,
-            scope: context.scope,
-            typeKey: context.typeKey,
-            searchIn: context.searchIn,
-            count: incrementQueryCount ? 1 : 0,
-            ...(resultCount !== null
-              ? {
-                  lastResultCount: resultCount,
-                  totalResultCount: resultCount,
-                  zeroResultCount: resultCount === 0 ? 1 : 0,
-                }
-              : {}),
-          },
-        }),
-      ),
-    );
-  } catch (error) {
-    if (!isSearchTermStatSchemaSyncError(error)) {
-      throw error;
-    }
-    warnMissingSearchTermStatTable(error);
-    return { ok: false, reason: "SCHEMA_SYNC_REQUIRED" } as const;
-  }
-
-  if (dailyMetricDelegate) {
-    try {
-      await Promise.all(
-        contexts.map((context) =>
-          dailyMetricDelegate.upsert({
-            where: { metricKey: buildSearchTermDailyMetricKey(metricDay, context) },
-            update: {
-              day: metricDay,
-              scope: context.scope,
-              typeKey: context.typeKey,
-              searchIn: context.searchIn,
-              ...(incrementQueryCount ? { queryCount: { increment: 1 } } : {}),
-              ...(resultCount !== null
-                ? {
-                    totalResultCount: { increment: resultCount },
-                    ...(resultCount === 0
-                      ? {
-                          zeroResultCount: { increment: 1 },
-                        }
-                      : {}),
-                  }
-                : {}),
-            },
-            create: {
-              metricKey: buildSearchTermDailyMetricKey(metricDay, context),
-              day: metricDay,
-              scope: context.scope,
-              typeKey: context.typeKey,
-              searchIn: context.searchIn,
-              queryCount: incrementQueryCount ? 1 : 0,
-              totalResultCount: resultCount ?? 0,
-              zeroResultCount: resultCount === 0 ? 1 : 0,
-            },
-          }),
-        ),
-      );
-    } catch (error) {
-      if (!isSearchTermStatSchemaSyncError(error)) {
-        throw error;
-      }
-      warnMissingSearchTermDailyMetricTable(error);
-    }
-  }
-
-  void bumpPopularCacheVersion().catch(() => undefined);
-
-  return { ok: true, recorded: true } as const;
 }
