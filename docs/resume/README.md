@@ -25,7 +25,7 @@
 - Backend sequence diagrams: `business/reports/backend-sequence-diagrams.md`
 - API inventory: `business/reports/api-route-inventory.md`
 - Production evidence: `business/reports/production-evidence-latest.md`
-- Work log: `docs/DONE.md`
+- Current work state: `PLAN.md`
 
 ## 절대 피할 표현
 
@@ -34,4 +34,3 @@
 - "반려동물 커뮤니티 앱입니다"에서 끝나는 설명
 - 테스트 개수만 나열하고 무엇을 검증했는지 말하지 않는 설명
 - 대규모 트래픽이나 실제 유저 수를 과장하는 표현
-

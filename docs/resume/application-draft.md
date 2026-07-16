@@ -24,7 +24,7 @@ Fellowship에서는 실제 고객 문제를 더 큰 스케일로 다루며, AI�
 
 제가 AI를 사용하는 방식은 "질문하고 답을 받는 것"보다 "개발 루프를 함께 운용하는 것"에 가깝습니다.
 
-TownPet에서는 작업을 시작할 때 먼저 목표와 완료 기준을 정하고, AI agent와 함께 구현 범위를 좁혔습니다. 구현 이후에는 결과를 바로 신뢰하지 않고, 변경 범위에 따라 service/query test, API route test, Playwright e2e, `typecheck`, `lint`, `quality:check`, docs freshness check, Vercel deployment check를 실행했습니다. 완료한 작업은 `docs/DONE.md`에 남겨 다음 세션에서도 맥락이 이어지게 했습니다.
+TownPet에서는 작업을 시작할 때 먼저 목표와 완료 기준을 정하고, AI agent와 함께 구현 범위를 좁혔습니다. 구현 이후에는 결과를 바로 신뢰하지 않고, 변경 범위에 따라 service/query test, API route test, Playwright e2e, `typecheck`, `lint`, `quality:check`, docs freshness check, Vercel deployment check를 실행했습니다. 현재 작업 상태는 `PLAN.md`에 남겨 다음 세션에서도 맥락이 이어지게 했습니다.
 
 가장 대표적인 사례는 Vercel 배포 실패 재발 방지입니다. 배포가 `security env preflight failed`로 반복 실패했을 때, 처음에는 단순 환경변수 누락처럼 보였습니다. 하지만 로그와 스크립트를 따라가 보니 build 단계에서 production 필수 env 체크와 원격 `/api/health` control-plane 진단이 섞여 있었습니다. 이 구조에서는 실제 필수 secret이 있어도 원격 health drift 때문에 unrelated 변경 후 배포가 다시 실패할 수 있었습니다.
 
@@ -82,4 +82,3 @@ AI는 코드 자동완성 도구가 아니라 문제 분해, 구현, 검증, 문
 ```text
 포트폴리오는 TownPet 하나를 깊게 보시는 것을 추천드립니다. README에서 제품과 기술 개요를 확인한 뒤, `business/reports/backend-portfolio-case-study.md`와 `business/reports/backend-sequence-diagrams.md`를 보면 제가 문제를 어떻게 구조화하고 백엔드 책임 경계를 어떻게 나눴는지 빠르게 보실 수 있습니다.
 ```
-

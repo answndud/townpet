@@ -291,7 +291,7 @@ Codex가 저장소에 처음 들어왔을 때 이 파일 하나만 읽어도 현
 - 명령은 `app/package.json`을 기준으로만 판단합니다.
 - 앱 명령은 `app/`에서 실행하거나 `pnpm -C app ...` 형식을 사용합니다.
 - 테스트 동작은 아래 설정을 기준으로 봅니다.
-  - `app/vitest.config.ts`
+  - `app/vitest.config.mts`
   - `app/playwright.config.ts`
 
 자주 쓰는 기본 명령:
@@ -347,7 +347,7 @@ pnpm -C app dev
 ### Vitest
 
 - 설정 파일:
-  - `app/vitest.config.ts`
+  - `app/vitest.config.mts`
 - 포함 패턴:
   - `src/**/*.test.ts`
   - `src/**/*.test.tsx`
@@ -400,7 +400,7 @@ pnpm -C app dev
 - OpenCode 관련 문서 `business/operations/에이전트_*`는 Codex 전용 하네스가 아닙니다.
 - 제품 기준 충돌이 나면 `business/제품_기술_개요.md`, `business/policies/*`, `business/security/*`를 우선합니다.
 - 명령 충돌이 나면 `app/package.json`을 우선합니다.
-- 테스트 동작 충돌이 나면 `app/vitest.config.ts`, `app/playwright.config.ts`를 우선합니다.
+- 테스트 동작 충돌이 나면 `app/vitest.config.mts`, `app/playwright.config.ts`를 우선합니다.
 - 과거 초안/기록은 `business/archive/`를 참고하되 현재 기준으로 직접 사용하지 않습니다.
 
 ## 16. 작업 중 흔한 문제와 확인 순서
@@ -492,7 +492,7 @@ pnpm -C app ops:check:security-env:strict
 - 명령:
   - `app/package.json`
 - 테스트 설정:
-  - `app/vitest.config.ts`, `app/playwright.config.ts`
+  - `app/vitest.config.mts`, `app/playwright.config.ts`
 - 제품/정책 기준:
   - `business/제품_기술_개요.md`, `business/policies/*`, `business/security/*`
 - 작업 계획:

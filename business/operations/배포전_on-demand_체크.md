@@ -64,7 +64,7 @@ PLAYWRIGHT_BASE_URL=http://localhost:3000 corepack pnpm@9.12.3 -C app exec playw
   --project=chromium
 ```
 
-자세한 e2e 범위 판단은 [hotpath-e2e-scope-2026-05-14.md](../../docs/reports/hotpath-e2e-scope-2026-05-14.md)를 따른다.
+자세한 e2e 범위 판단은 `app/package.json`의 `test:e2e:*` scripts와 `app/e2e/` 시나리오를 따른다.
 
 ## 3. 배포 전 보안/env 확인
 

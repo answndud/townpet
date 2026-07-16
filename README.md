@@ -51,7 +51,7 @@
 - 배포 전에는 [`배포전_on-demand_체크.md`](/Users/alex/project/townpet/business/operations/%EB%B0%B0%ED%8F%AC%EC%A0%84_on-demand_%EC%B2%B4%ED%81%AC.md)에 따라 `quality:check -> 변경 범위별 e2e -> 배포 -> ops health` 순서로 확인합니다.
 - CI/배포 mental model도 [`quality-gate.yml`](/Users/alex/project/townpet/.github/workflows/quality-gate.yml) 과 [`ops-smoke-checks.yml`](/Users/alex/project/townpet/.github/workflows/ops-smoke-checks.yml) 두 개만 먼저 보면 됩니다.
 - 브라우저 smoke는 hot path에서 뺐고, 필요할 때 [`browser-smoke.yml`](/Users/alex/project/townpet/.github/workflows/browser-smoke.yml)이나 로컬 `test:e2e:smoke`로만 확인합니다.
-- 기능 hotpath e2e 범위는 [`hotpath-e2e-scope-2026-05-14.md`](/Users/alex/project/townpet/docs/reports/hotpath-e2e-scope-2026-05-14.md)에 따라 변경 범위별 on-demand로 실행합니다.
+- 기능 hotpath e2e는 `app/package.json`의 `test:e2e:hotpath` script와 `app/e2e/` 시나리오를 기준으로 변경 범위별 on-demand 실행합니다.
 - 나머지 `db:*`, `ops:*`, `test:e2e:*`, cleanup/backfill 스크립트는 평소 루틴이 아니라 필요할 때 찾는 유지보수 도구입니다.
 
 TownPet은 단순 커뮤니티가 아니라, 반려인이 `병원 · 입양 · 산책 · 거래 · 분실` 같은 상황별 정보를 더 빨리 찾고 더 신뢰할 수 있게 만드는 로컬 반려 플랫폼을 목표로 한 프로젝트입니다.
@@ -165,7 +165,7 @@ corepack pnpm -C app dev
 ## 백엔드 포트폴리오 증거
 
 - 최신 검증 상태
-  - `quality:check`: ESLint, TypeScript, Vitest 248 files / 1198 tests, Next production build 통과
+  - `quality:check`: ESLint, TypeScript, Vitest 361 files / 1779 tests, query boundary/API contract check, Next production build 통과
   - API contract: 55 routes, missing method 0, adjacent test gap 0
   - API review: `validation=none` 0 routes, `monitoring=none` 0 routes
   - Production health evidence: `https://townpet.vercel.app/api/health` 200 / `ok`, elapsed 3974ms

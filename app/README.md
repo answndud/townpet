@@ -106,7 +106,7 @@ pnpm quality:check
 - health 외 security/prewarm/latency evidence는 필요할 때만 `pnpm ops:evidence`로 실행합니다.
 - 먼저 볼 워크플로우는 `../.github/workflows/quality-gate.yml` 과 `../.github/workflows/ops-smoke-checks.yml` 두 개입니다.
 - 브라우저 smoke는 hot path에서 뺐고, 필요할 때 `../.github/workflows/browser-smoke.yml` 또는 `pnpm test:e2e:smoke`로만 확인합니다. 현재 smoke 범위는 로그인 진입, 소셜 온보딩, 에디터 툴바 regression까지 포함합니다.
-- 기능 hotpath e2e는 `../docs/reports/hotpath-e2e-scope-2026-05-14.md` 기준으로 변경 범위에 맞을 때만 `pnpm test:e2e:hotpath`를 실행합니다. 분실/목격 획득·공유·목격 댓글 흐름은 기본 hotpath에 합치지 않고 `pnpm test:e2e:lost-found`로만 on-demand 실행합니다.
+- 기능 hotpath e2e는 `package.json`의 `test:e2e:hotpath` script와 `e2e/` 시나리오를 기준으로 변경 범위에 맞을 때만 실행합니다. 분실/목격 획득·공유·목격 댓글 흐름은 기본 hotpath에 합치지 않고 `pnpm test:e2e:lost-found`로만 on-demand 실행합니다.
 - 나머지 `db:*`, `ops:*`, `test:e2e:*`, cleanup/backfill 스크립트와 maintenance workflow는 on-demand 유지보수 도구로 봅니다.
 
 ## 유지보수/운영 루틴
@@ -156,7 +156,7 @@ pnpm test:e2e -- --project=chromium
 
 ## 테스트 설정 참고 파일
 
-- `vitest.config.ts`
+- `vitest.config.mts`
 - `playwright.config.ts`
 
 현재 Playwright 기본값:
@@ -173,5 +173,5 @@ pnpm test:e2e -- --project=chromium
 
 ## 메모
 
-- 실제 명령은 `package.json`, 테스트 동작은 `vitest.config.ts`와 `playwright.config.ts`를 기준으로 봅니다.
+- 실제 명령은 `package.json`, 테스트 동작은 `vitest.config.mts`와 `playwright.config.ts`를 기준으로 봅니다.
 - OpenCode 관련 운영 문서는 `../business/operations/에이전트_*`에 있지만, Codex 기준 하네스는 `../AGENTS.md`를 먼저 봅니다.
