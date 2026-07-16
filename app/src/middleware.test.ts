@@ -20,6 +20,7 @@ const getTokenMock = vi.mocked(getToken);
 
 beforeEach(() => {
   vi.unstubAllEnvs();
+  vi.stubEnv("NODE_ENV", "production");
   getTokenMock.mockReset();
   delete process.env.AUTH_SECRET;
   delete process.env.NEXTAUTH_SECRET;
@@ -176,18 +177,16 @@ describe("middleware admin path protection", () => {
 });
 
 describe("middleware guest feed rewrite", () => {
-  it("keeps static CSP on the public home shell even when strict CSP is enabled", async () => {
+  it("enforces nonce CSP on the public home shell when strict CSP is enabled", async () => {
     process.env.CSP_ENFORCE_STRICT = "1";
 
     const request = new NextRequest("https://townpet.test/");
     const response = await middleware(request);
 
-    expect(response.headers.get("content-security-policy")).toContain(
-      "script-src 'self' 'unsafe-inline'",
-    );
-    expect(response.headers.get("content-security-policy")).not.toContain("'strict-dynamic'");
-    expect(response.headers.get("x-nonce")).toBeNull();
-    expect(response.headers.get("x-csp-nonce")).toBeNull();
+    expect(response.headers.get("content-security-policy")).toContain("'nonce-");
+    expect(response.headers.get("content-security-policy")).toContain("'strict-dynamic'");
+    expect(response.headers.get("x-nonce")).toBeTruthy();
+    expect(response.headers.get("x-csp-nonce")).toBeTruthy();
   });
 
   it("redirects guest /search requests to the guest feed search query", async () => {
@@ -200,7 +199,7 @@ describe("middleware guest feed rewrite", () => {
     );
   });
 
-  it("redirects guest /feed requests to /feed/guest with static CSP", async () => {
+  it("redirects guest /feed requests to /feed/guest with strict CSP", async () => {
     process.env.CSP_ENFORCE_STRICT = "1";
 
     const request = new NextRequest("https://townpet.test/feed");
@@ -208,41 +207,34 @@ describe("middleware guest feed rewrite", () => {
 
     expect(response.status).toBe(307);
     expect(response.headers.get("location")).toBe("https://townpet.test/feed/guest");
-    expect(response.headers.get("content-security-policy")).toContain("script-src 'self' 'unsafe-inline'");
-    expect(response.headers.get("content-security-policy")).not.toContain("'strict-dynamic'");
-    expect(response.headers.get("x-nonce")).toBeNull();
-    expect(response.headers.get("x-csp-nonce")).toBeNull();
+    expect(response.headers.get("content-security-policy")).toContain("'strict-dynamic'");
+    expect(response.headers.get("x-nonce")).toBeTruthy();
+    expect(response.headers.get("x-csp-nonce")).toBeTruthy();
   });
 
-  it("keeps static CSP on the rewritten /feed/guest shell path", async () => {
+  it("keeps strict CSP on the rewritten /feed/guest shell path", async () => {
     process.env.CSP_ENFORCE_STRICT = "1";
 
     const request = new NextRequest("https://townpet.test/feed/guest");
     const response = await middleware(request);
 
-    expect(response.headers.get("content-security-policy")).toContain(
-      "script-src 'self' 'unsafe-inline'",
-    );
-    expect(response.headers.get("content-security-policy")).not.toContain("'strict-dynamic'");
-    expect(response.headers.get("x-nonce")).toBeNull();
-    expect(response.headers.get("x-csp-nonce")).toBeNull();
+    expect(response.headers.get("content-security-policy")).toContain("'strict-dynamic'");
+    expect(response.headers.get("x-nonce")).toBeTruthy();
+    expect(response.headers.get("x-csp-nonce")).toBeTruthy();
   });
 
-  it("keeps hydration-safe CSP on public guide pages even when strict CSP is enabled", async () => {
+  it("uses strict CSP on public guide pages when strict CSP is enabled", async () => {
     process.env.CSP_ENFORCE_STRICT = "1";
 
     const request = new NextRequest("https://townpet.test/guides/24h-vet-checklist");
     const response = await middleware(request);
 
-    expect(response.headers.get("content-security-policy")).toContain(
-      "script-src 'self' 'unsafe-inline'",
-    );
-    expect(response.headers.get("content-security-policy")).not.toContain("'strict-dynamic'");
-    expect(response.headers.get("x-nonce")).toBeNull();
-    expect(response.headers.get("x-csp-nonce")).toBeNull();
+    expect(response.headers.get("content-security-policy")).toContain("'strict-dynamic'");
+    expect(response.headers.get("x-nonce")).toBeTruthy();
+    expect(response.headers.get("x-csp-nonce")).toBeTruthy();
   });
 
-  it("keeps hydration-safe CSP on HEAD checks for public guide pages", async () => {
+  it("enforces nonce CSP on HEAD checks for public guide pages", async () => {
     process.env.CSP_ENFORCE_STRICT = "1";
 
     const request = new NextRequest("https://townpet.test/guides/24h-vet-checklist", {
@@ -250,26 +242,20 @@ describe("middleware guest feed rewrite", () => {
     });
     const response = await middleware(request);
 
-    expect(response.headers.get("content-security-policy")).toContain(
-      "script-src 'self' 'unsafe-inline'",
-    );
-    expect(response.headers.get("content-security-policy")).not.toContain("'strict-dynamic'");
-    expect(response.headers.get("x-nonce")).toBeNull();
-    expect(response.headers.get("x-csp-nonce")).toBeNull();
+    expect(response.headers.get("content-security-policy")).toContain("'strict-dynamic'");
+    expect(response.headers.get("x-nonce")).toBeTruthy();
+    expect(response.headers.get("x-csp-nonce")).toBeTruthy();
   });
 
-  it("keeps hydration-safe CSP on the public write shell even when strict CSP is enabled", async () => {
+  it("enforces nonce CSP on the public write shell when strict CSP is enabled", async () => {
     process.env.CSP_ENFORCE_STRICT = "1";
 
     const request = new NextRequest("https://townpet.test/posts/new");
     const response = await middleware(request);
 
-    expect(response.headers.get("content-security-policy")).toContain(
-      "script-src 'self' 'unsafe-inline'",
-    );
-    expect(response.headers.get("content-security-policy")).not.toContain("'strict-dynamic'");
-    expect(response.headers.get("x-nonce")).toBeNull();
-    expect(response.headers.get("x-csp-nonce")).toBeNull();
+    expect(response.headers.get("content-security-policy")).toContain("'strict-dynamic'");
+    expect(response.headers.get("x-nonce")).toBeTruthy();
+    expect(response.headers.get("x-csp-nonce")).toBeTruthy();
   });
 
   it("keeps strict nonce CSP available for API routes when strict CSP is enabled", async () => {

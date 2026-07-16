@@ -70,6 +70,16 @@ describe("post detail action accessibility", () => {
     expect((html.match(/min-h-10/g) ?? []).length).toBeGreaterThanOrEqual(3);
   });
 
+  it("does not place the guest password in the edit URL", () => {
+    const source = readFileSync(
+      join(process.cwd(), "src/components/posts/guest-post-detail-actions.tsx"),
+      "utf8",
+    );
+
+    expect(source).not.toContain("pw=${encodeURIComponent(password.trim())}");
+    expect(source).toContain("/edit?guest=1");
+  });
+
   it("keeps guest management controls inside the overflow menu instead of the action bar", () => {
     const source = readFileSync(join(process.cwd(), "src/components/posts/guest-post-detail-actions.tsx"), "utf8");
     const primaryCardSource = readFileSync(

@@ -284,6 +284,7 @@ async function prepareLocalAdminQueueSmokeFixtures(
         authorId: author.id,
         type: PostType.FREE_BOARD,
         scope: PostScope.GLOBAL,
+        isDemoContent: true,
         status: PostStatus.ACTIVE,
         title: `[ADMIN QUEUE SMOKE] ${runId}`,
         content: "관리자 신고 큐 smoke 검증용 임시 게시글입니다.",

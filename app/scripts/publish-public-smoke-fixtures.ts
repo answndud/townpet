@@ -96,6 +96,7 @@ function buildPostCreateData(draft: PublicSmokeFixtureDraft, authorId: string, i
     title: draft.title,
     content: draft.content,
     structuredSearchText: buildStructuredSearchText(draft),
+    isDemoContent: true,
     isOperatorContent: true,
     operatorSourceName: draft.sourceName,
     operatorSourceUrl: draft.sourceUrl,

@@ -27,6 +27,18 @@ describe("resolveCspHeaders", () => {
     expect(result.cspReportOnly).toBeNull();
   });
 
+  it("can exercise the same strict policy in development smoke runs", () => {
+    const result = resolveCspHeaders({
+      nodeEnv: "development",
+      cspEnforceStrict: "1",
+      nonce: "nonce-dev-strict",
+    });
+
+    expect(result.csp).toContain("'nonce-nonce-dev-strict' 'strict-dynamic'");
+    expect(result.csp).not.toContain("'unsafe-inline'");
+    expect(result.cspReportOnly).toBeNull();
+  });
+
   it("keeps development CSP without report-only", () => {
     const result = resolveCspHeaders({ nodeEnv: "development", nonce: "nonce-c" });
 

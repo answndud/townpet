@@ -126,6 +126,7 @@ async function main() {
         content: adoptionPost.content,
         type: PostType.ADOPTION_LISTING,
         scope: PostScope.GLOBAL,
+        isDemoContent: true,
         boardScope: "COMMON",
         commonBoardType: CommonBoardType.ADOPTION,
         animalTags: [adoptionPost.listing.animalType],

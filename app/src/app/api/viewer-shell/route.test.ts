@@ -8,6 +8,7 @@ import { monitorUnhandledError } from "@/server/error-monitor";
 import { countUnreadNotifications } from "@/server/queries/notification.queries";
 import { getUserById } from "@/server/queries/user.queries";
 import { ServiceError } from "@/server/services/service-error";
+import { prepareNotificationList } from "@/server/services/notifications/notification.service";
 
 vi.mock("@/lib/auth", () => ({ auth: vi.fn() }));
 vi.mock("@/server/error-monitor", () => ({ monitorUnhandledError: vi.fn() }));
@@ -17,11 +18,15 @@ vi.mock("@/server/queries/notification.queries", () => ({
 vi.mock("@/server/queries/user.queries", () => ({
   getUserById: vi.fn(),
 }));
+vi.mock("@/server/services/notifications/notification.service", () => ({
+  prepareNotificationList: vi.fn(),
+}));
 
 const mockAuth = vi.mocked(auth);
 const mockMonitorUnhandledError = vi.mocked(monitorUnhandledError);
 const mockCountUnreadNotifications = vi.mocked(countUnreadNotifications);
 const mockGetUserById = vi.mocked(getUserById);
+const mockPrepareNotificationList = vi.mocked(prepareNotificationList);
 
 describe("GET /api/viewer-shell contract", () => {
   beforeEach(() => {
@@ -29,6 +34,7 @@ describe("GET /api/viewer-shell contract", () => {
     mockMonitorUnhandledError.mockReset();
     mockCountUnreadNotifications.mockReset();
     mockGetUserById.mockReset();
+    mockPrepareNotificationList.mockReset();
   });
 
   it("returns guest shell when session is absent", async () => {
@@ -64,6 +70,7 @@ describe("GET /api/viewer-shell contract", () => {
     const payload = await response.json();
 
     expect(response.status).toBe(200);
+    expect(mockPrepareNotificationList).toHaveBeenCalledWith("user-1");
     expect(payload).toEqual({
       ok: true,
       data: {

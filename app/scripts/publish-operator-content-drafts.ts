@@ -283,6 +283,7 @@ export async function publishOperatorContentDrafts(params: {
           title: draft.title,
           content: draft.content,
           structuredSearchText: buildStructuredSearchText(draft),
+          isDemoContent: true,
           isOperatorContent: true,
           operatorSourceName: draft.sourceName,
           operatorSourceUrl: draft.sourceUrl,

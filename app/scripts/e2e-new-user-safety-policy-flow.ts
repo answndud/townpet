@@ -4,8 +4,8 @@ import { PostScope, PostType, UserRole } from "@prisma/client";
 import { prisma } from "../src/lib/prisma";
 import {
   getNewUserSafetyPolicy,
-  setNewUserSafetyPolicy,
 } from "../src/server/queries/policy.queries";
+import { setNewUserSafetyPolicy } from "../src/server/services/moderation/policy-write.service";
 import { createComment } from "../src/server/services/comment.service";
 import { createPost } from "../src/server/services/post.service";
 import { ServiceError } from "../src/server/services/service-error";

@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import HomePage, { revalidate } from "@/app/page";
+import HomePage, { dynamic } from "@/app/page";
 import { getHomeFeedPayload } from "@/server/queries/home-feed.queries";
 
 vi.mock("@/server/queries/home-feed.queries", () => ({
@@ -11,8 +11,8 @@ vi.mock("@/server/queries/home-feed.queries", () => ({
 const mockGetHomeFeedPayload = vi.mocked(getHomeFeedPayload);
 
 describe("HomePage", () => {
-  it("keeps the landing page revalidation window long enough to avoid frequent regeneration outliers", () => {
-    expect(revalidate).toBe(300);
+  it("renders the landing shell dynamically so strict CSP can attach a request nonce", () => {
+    expect(dynamic).toBe("force-dynamic");
   });
 
   beforeEach(() => {
@@ -22,7 +22,7 @@ describe("HomePage", () => {
     });
   });
 
-  it("renders a static public home with visible entry content", async () => {
+  it("renders a public home with visible entry content", async () => {
     const html = renderToStaticMarkup(await HomePage());
 
     expect(html).toContain("우리 동네 반려생활 정보");
@@ -42,7 +42,7 @@ describe("HomePage", () => {
     expect(html).not.toContain("내 동네를 선택");
   });
 
-  it("keeps the static home entry focused on one onboarding CTA", async () => {
+  it("keeps the home entry focused on one onboarding CTA", async () => {
     const html = renderToStaticMarkup(await HomePage());
 
     expect((html.match(/href="\/onboarding"/g) ?? []).length).toBe(1);

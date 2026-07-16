@@ -200,6 +200,7 @@ async function runPopularPromotionSmoke(): Promise<PopularPromotionSmokeResult> 
         authorId: author.id,
         type: PostType.FREE_BOARD,
         scope: PostScope.GLOBAL,
+        isDemoContent: true,
         status: PostStatus.ACTIVE,
         title: `[POPULAR SMOKE] ${runId}`,
         content: "인기글 승격 smoke 검증용 임시 게시글입니다.",

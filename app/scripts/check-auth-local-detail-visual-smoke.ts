@@ -233,8 +233,9 @@ async function upsertSmokePost(params: {
         select: { id: true, title: true, type: true },
       })
     : await params.prisma.post.create({
-        data: {
+      data: {
           ...commonData,
+          isDemoContent: true,
           boardScope: params.type === PostType.HOSPITAL_REVIEW ? BoardScope.COMMON : BoardScope.COMMUNITY,
           commonBoardType:
             params.type === PostType.HOSPITAL_REVIEW ? CommonBoardType.HOSPITAL : undefined,

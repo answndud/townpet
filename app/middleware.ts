@@ -4,6 +4,7 @@ import { getToken } from "next-auth/jwt";
 
 import {
   buildStaticSecurityHeaders,
+  isStrictCspEnforced,
   resolveCspHeaders as resolveSecurityCspHeaders,
 } from "@/lib/security-headers";
 
@@ -185,7 +186,7 @@ function shouldUseHydrationSafeShellCsp(request: NextRequest) {
     return false;
   }
 
-  return true;
+  return !isStrictCspEnforced(process.env.CSP_ENFORCE_STRICT);
 }
 
 export async function middleware(request: NextRequest) {

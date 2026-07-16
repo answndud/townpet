@@ -946,6 +946,7 @@ async function seedPosts(params: {
         scope: spec.scope,
         title: spec.title,
         content: spec.content,
+        isDemoContent: true,
         structuredSearchText: buildPostStructuredSearchText({
           animalTags: spec.animalTags,
           hospitalReview: spec.hospitalReview

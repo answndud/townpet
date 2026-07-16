@@ -101,6 +101,13 @@ export function resolveCspHeaders(params: ResolveCspHeadersParams) {
     };
   }
 
+  if (enforceStrictCsp) {
+    return {
+      csp: buildStrictNonceEnforcedPolicy(nonce),
+      cspReportOnly: null,
+    };
+  }
+
   if (!isProduction) {
     return {
       csp: buildCspPolicy({
@@ -109,13 +116,6 @@ export function resolveCspHeaders(params: ResolveCspHeadersParams) {
         connectSrc: "'self' https: http: ws: wss:",
         includeUnsafeEval: true,
       }),
-      cspReportOnly: null,
-    };
-  }
-
-  if (enforceStrictCsp) {
-    return {
-      csp: buildStrictNonceEnforcedPolicy(nonce),
       cspReportOnly: null,
     };
   }

@@ -5,8 +5,8 @@ import { prisma } from "../src/lib/prisma";
 import { createPost } from "../src/server/services/post.service";
 import {
   getNewUserSafetyPolicy,
-  setNewUserSafetyPolicy,
 } from "../src/server/queries/policy.queries";
+import { setNewUserSafetyPolicy } from "../src/server/services/moderation/policy-write.service";
 import {
   ensureCredentialUser,
   loginWithCredentialsApi,

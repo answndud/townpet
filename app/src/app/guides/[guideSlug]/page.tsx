@@ -17,8 +17,10 @@ type GuidePageProps = {
   }>;
 };
 
-export const dynamic = "force-static";
-export const dynamicParams = false;
+// Dynamic rendering lets Next attach the middleware nonce to every HTML shell
+// script when strict CSP is enabled.
+export const dynamic = "force-dynamic";
+export const dynamicParams = true;
 
 export function generateStaticParams() {
   return listGuidePages().map((guide) => ({ guideSlug: guide.slug }));

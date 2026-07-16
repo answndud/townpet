@@ -7,6 +7,7 @@ import { countUnreadNotifications } from "@/server/queries/notification.queries"
 import { getUserById } from "@/server/queries/user.queries";
 import { jsonError, jsonOk } from "@/server/response";
 import { ServiceError } from "@/server/services/service-error";
+import { prepareNotificationList } from "@/server/services/notifications/notification.service";
 
 function extractPreferredPetTypeIds(user: unknown) {
   if (!user || typeof user !== "object") {
@@ -48,6 +49,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    await prepareNotificationList(userId);
     const [currentUser, unreadNotificationCount] = await Promise.all([
       getUserById(userId).catch(() => null),
       countUnreadNotifications(userId).catch((error) => {

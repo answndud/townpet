@@ -92,6 +92,11 @@ describe("GET /api/health", () => {
       bypassRemainingMs: 0,
       bypassUntil: null,
       lastFailureAt: null,
+      invalidation: {
+        failureCount: 0,
+        lastFailureAt: null,
+        lastFailureBucket: null,
+      },
       message: "distributed query cache healthy",
     });
     mockGetClientIp.mockReturnValue("127.0.0.1");
@@ -155,6 +160,11 @@ describe("GET /api/health", () => {
       bypassRemainingMs: 0,
       bypassUntil: null,
       lastFailureAt: null,
+      invalidation: {
+        failureCount: 0,
+        lastFailureAt: null,
+        lastFailureBucket: null,
+      },
       message: "distributed query cache healthy",
     });
   });
@@ -269,6 +279,11 @@ describe("GET /api/health", () => {
       bypassRemainingMs: 4321,
       bypassUntil: "2026-03-12T05:10:00.000Z",
       lastFailureAt: "2026-03-12T05:09:00.000Z",
+      invalidation: {
+        failureCount: 2,
+        lastFailureAt: "2026-03-12T05:09:30.000Z",
+        lastFailureBucket: "feed",
+      },
       message: "Redis cache bypass active; distributed query cache temporarily disabled.",
     });
 

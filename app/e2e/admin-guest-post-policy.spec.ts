@@ -5,8 +5,8 @@ import type { Page } from "@playwright/test";
 import { prisma } from "../src/lib/prisma";
 import {
   getGuestPostPolicy,
-  setGuestPostPolicy,
 } from "../src/server/queries/policy.queries";
+import { setGuestPostPolicy } from "../src/server/services/moderation/policy-write.service";
 import { hashPassword } from "../src/server/password";
 
 const adminEmail = "admin.platform@townpet.dev";

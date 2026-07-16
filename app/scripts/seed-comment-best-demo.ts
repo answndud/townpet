@@ -151,6 +151,7 @@ async function ensureDemoPost(authorId: string, communityId: string) {
       content: DEMO_POST_CONTENT,
       type: PostType.FREE_POST,
       scope: PostScope.GLOBAL,
+      isDemoContent: true,
       boardScope: board.boardScope,
       commonBoardType: board.commonBoardType,
       petTypeId: communityId,

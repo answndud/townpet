@@ -62,6 +62,15 @@ describe("LostFoundSightingManagementPage", () => {
           lastSeenAt: new Date("2026-05-21T08:30:00.000Z"),
           lastSeenLocation: "중앙공원 북문",
           status: "ACTIVE",
+          statusEvents: [
+            {
+              id: "event-1",
+              fromStatus: "ACTIVE",
+              toStatus: "RESOLVED",
+              createdAt: new Date("2026-05-21T11:00:00.000Z"),
+              actor: { nickname: "보호자", role: "USER" },
+            },
+          ],
         },
       },
       sightings: [
@@ -107,6 +116,8 @@ describe("LostFoundSightingManagementPage", () => {
     expect(html).toContain("비회원 목격자");
     expect(html).toContain("중앙공원 입구");
     expect(html).toContain("공원 입구에서 봤습니다.");
+    expect(html).toContain("제보 상태 타임라인");
+    expect(html).toContain("제보 접수 중 → 해결됨");
     expect(html).toContain('href="/posts/post-1#comments"');
     expect(html).toContain('href="/posts/post-1#lost-found-share-tools"');
     expect(html).not.toContain("전화번호 입력");

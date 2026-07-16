@@ -1162,6 +1162,7 @@ async function createSeedPost(seedPost: SeedPost, lookupMaps: LookupMaps, index:
         data: {
           boardScope: board.boardScope,
           commonBoardType,
+          isDemoContent: true,
           lostFoundAlert: {
             upsert: {
               create: seedPost.lostFoundAlert,
@@ -1187,6 +1188,7 @@ async function createSeedPost(seedPost: SeedPost, lookupMaps: LookupMaps, index:
       content: seedPost.content,
       type: seedPost.type,
       scope: seedPost.scope,
+      isDemoContent: true,
       boardScope: board.boardScope,
       commonBoardType,
       petTypeId,

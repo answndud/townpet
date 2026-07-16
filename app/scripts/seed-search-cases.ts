@@ -175,6 +175,7 @@ function buildSearchSeedPostCommonData(post: SearchSeedPost) {
     type: post.type,
     scope: post.scope ?? PostScope.GLOBAL,
     status: "ACTIVE" as const,
+    isDemoContent: true,
   };
 
   if (!post.lostFoundAlert) {

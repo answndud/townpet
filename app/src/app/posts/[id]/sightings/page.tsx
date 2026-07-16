@@ -142,6 +142,31 @@ export default async function LostFoundSightingManagementPage({
               공유 도구
             </Link>
           </div>
+          {alert.statusEvents.length > 0 ? (
+            <section className="mt-5 border-t border-[#e5edf8] pt-4" aria-labelledby="status-timeline-title">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#4e6f9f]">
+                상태 이력
+              </p>
+              <h2 id="status-timeline-title" className="tp-text-heading mt-1 text-base font-semibold">
+                제보 상태 타임라인
+              </h2>
+              <ol className="mt-3 grid gap-2">
+                {alert.statusEvents.map((event) => (
+                  <li key={event.id} className="flex flex-wrap items-center gap-2 text-xs">
+                    <span className="tp-chip-base tp-chip-muted">
+                      {event.fromStatus
+                        ? `${getLostFoundStatusLabel(event.fromStatus)} → `
+                        : "처음 기록 → "}
+                      {getLostFoundStatusLabel(event.toStatus)}
+                    </span>
+                    <span className="tp-text-muted">
+                      {formatKoreanDateTime(event.createdAt)} · {event.actor.nickname ?? "운영자"}
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            </section>
+          ) : null}
         </section>
 
         <section className="grid gap-3 sm:grid-cols-4" aria-label="목격 제보 요약">

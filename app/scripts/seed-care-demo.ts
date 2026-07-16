@@ -160,6 +160,7 @@ async function createCareRequestPost(params: {
       status: PostStatus.ACTIVE,
       title: `${DEMO_PREFIX} ${params.title}`,
       content: params.content,
+      isDemoContent: true,
       structuredSearchText: `${params.title}\n${params.content}`,
       careRequest: {
         create: {
