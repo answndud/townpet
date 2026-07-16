@@ -21,24 +21,20 @@ import {
   careFeedbackReviewUpdateSchema,
   careRequestStatusUpdateSchema,
 } from "@/lib/validations/post";
-import { logger, serializeError } from "@/server/logger";
 import { recordModerationAction } from "@/server/moderation-action-log";
 import {
   getForbiddenKeywords,
   getNewUserSafetyPolicy,
 } from "@/server/queries/policy.queries";
 import { hasBlockingRelation } from "@/server/queries/user-relation.queries";
-import {
-  notifyCareApplicationCreated,
-  notifyCareApplicationDecision,
-  notifyCareRequestStatusChanged,
-} from "@/server/services/notification.service";
 import { assertUserInteractionAllowed } from "@/server/services/sanction.service";
 import { ServiceError } from "@/server/services/service-error";
 import {
-  notifyNotificationCacheChange,
-  notifyPostCacheChange,
-} from "./post-write-support";
+  notifyCareApplicationCreatedEffect,
+  notifyCareApplicationDecisionEffect,
+  notifyCareRequestStatusChangedEffect,
+} from "./post-care-side-effects";
+import { notifyPostCacheChange } from "./post-write-support";
 import {
   canAcceptedApplicantTransitionCareStatus,
   canAuthorTransitionCareStatus,
@@ -211,26 +207,13 @@ export async function updateCareRequestStatus({
     existing.authorId,
     acceptedApplication?.applicantId ?? null,
   ].filter((userId): userId is string => Boolean(userId));
-  for (const recipientUserId of Array.from(new Set(notificationRecipients))) {
-    try {
-      await notifyCareRequestStatusChanged({
-        recipientUserId,
-        actorId: actor.id,
-        postId: existing.id,
-        postTitle: existing.title,
-        status: nextStatus,
-      });
-    } catch (error) {
-      logger.warn("돌봄 요청 상태 변경 알림 생성에 실패했습니다.", {
-        postId,
-        actorId: actor.id,
-        recipientUserId,
-        error: serializeError(error),
-      });
-    }
-  }
-  notifyNotificationCacheChange(notificationRecipients);
-  notifyPostCacheChange();
+  await notifyCareRequestStatusChangedEffect({
+    recipientUserIds: notificationRecipients,
+    actorId: actor.id,
+    postId: existing.id,
+    postTitle: existing.title,
+    status: nextStatus,
+  });
   return {
     changed: true,
     previousStatus,
@@ -370,8 +353,7 @@ export async function createCareApplication({
     return { application, post };
   });
 
-  try {
-    await notifyCareApplicationCreated({
+  await notifyCareApplicationCreatedEffect({
       recipientUserId: result.post.authorId,
       actorId: applicantId,
       postId: result.post.id,
@@ -379,16 +361,6 @@ export async function createCareApplication({
       postTitle: result.post.title,
       message: result.application.message,
     });
-    notifyNotificationCacheChange([result.post.authorId]);
-  } catch (error) {
-    logger.warn("돌봄 지원 생성 알림에 실패했습니다.", {
-      postId,
-      applicantId,
-      error: serializeError(error),
-    });
-  }
-
-  notifyPostCacheChange();
   return result.application;
 }
 
@@ -542,8 +514,7 @@ export async function decideCareApplication({
     return { application: updated, post: application.careRequest.post };
   });
 
-  try {
-    await notifyCareApplicationDecision({
+  await notifyCareApplicationDecisionEffect({
       recipientUserId: result.application.applicantId,
       actorId: actor.id,
       postId: result.post.id,
@@ -551,16 +522,6 @@ export async function decideCareApplication({
       postTitle: result.post.title,
       status: nextStatus,
     });
-    notifyNotificationCacheChange([result.application.applicantId]);
-  } catch (error) {
-    logger.warn("돌봄 지원 결정 알림에 실패했습니다.", {
-      applicationId,
-      actorId,
-      error: serializeError(error),
-    });
-  }
-
-  notifyPostCacheChange();
   return result.application;
 }
 
@@ -688,7 +649,6 @@ export async function createCareCompletionFeedback({
     });
   });
 
-  notifyPostCacheChange();
   return feedback;
 }
 
