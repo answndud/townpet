@@ -78,3 +78,5 @@ docs/operations/manual-checks/*
 docs/reports/*.md
 docs/operations/manual-checks/OAuth_수동점검_기록_*.md
 !docs/reports/.gitkeep
+.vercel
+.env*
