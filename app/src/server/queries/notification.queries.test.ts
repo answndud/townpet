@@ -581,6 +581,8 @@ describe("notification queries invalidation behavior", () => {
       due: 4,
       oldestDueAt: new Date("2026-05-17T23:59:00.000Z"),
       oldestDueAgeSeconds: 60,
+      oldestFailedAgeSeconds: 0,
+      oldestDeadLetterAgeSeconds: 0,
       checkedAt: now,
     });
     expect(mockPrisma.notificationDelivery.count).toHaveBeenNthCalledWith(1, {

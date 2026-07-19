@@ -225,10 +225,25 @@ export async function countUnreadNotifications(userId: string) {
   });
 }
 
-export async function getNotificationDeliveryOutboxStats(now = new Date()) {
+export type NotificationDeliveryOutboxStats = {
+  pending: number;
+  failed: number;
+  deadLetter: number;
+  due: number;
+  oldestDueAt: Date | null;
+  oldestDueAgeSeconds: number;
+  oldestFailedAgeSeconds?: number;
+  oldestDeadLetterAgeSeconds?: number;
+  checkedAt: Date;
+};
+
+export async function getNotificationDeliveryOutboxStats(
+  now = new Date(),
+): Promise<NotificationDeliveryOutboxStats> {
   const delegate = requireNotificationDeliveryDelegate();
   try {
-    const [pending, failed, deadLetter, due, oldestDue] = await Promise.all([
+    const [pending, failed, deadLetter, due, oldestDue, oldestFailed, oldestDeadLetter] =
+      await Promise.all([
       delegate.count({ where: { status: NotificationDeliveryStatus.PENDING } }),
       delegate.count({ where: { status: NotificationDeliveryStatus.FAILED } }),
       delegate.count({ where: { status: NotificationDeliveryStatus.DEAD_LETTER } }),
@@ -246,8 +261,21 @@ export async function getNotificationDeliveryOutboxStats(now = new Date()) {
         orderBy: [{ scheduledAt: "asc" }, { createdAt: "asc" }],
         select: { scheduledAt: true },
       }),
+      delegate.findFirst({
+        where: { status: NotificationDeliveryStatus.FAILED },
+        orderBy: [{ createdAt: "asc" }],
+        select: { createdAt: true },
+      }),
+      delegate.findFirst({
+        where: { status: NotificationDeliveryStatus.DEAD_LETTER },
+        orderBy: [{ createdAt: "asc" }],
+        select: { createdAt: true },
+      }),
     ]);
     const oldestDueAt = (oldestDue as { scheduledAt?: Date } | null)?.scheduledAt ?? null;
+    const oldestFailedAt = (oldestFailed as { createdAt?: Date } | null)?.createdAt ?? null;
+    const oldestDeadLetterAt =
+      (oldestDeadLetter as { createdAt?: Date } | null)?.createdAt ?? null;
     return {
       pending,
       failed,
@@ -256,6 +284,12 @@ export async function getNotificationDeliveryOutboxStats(now = new Date()) {
       oldestDueAt,
       oldestDueAgeSeconds: oldestDueAt
         ? Math.max(0, Math.floor((now.getTime() - oldestDueAt.getTime()) / 1000))
+        : 0,
+      oldestFailedAgeSeconds: oldestFailedAt
+        ? Math.max(0, Math.floor((now.getTime() - oldestFailedAt.getTime()) / 1000))
+        : 0,
+      oldestDeadLetterAgeSeconds: oldestDeadLetterAt
+        ? Math.max(0, Math.floor((now.getTime() - oldestDeadLetterAt.getTime()) / 1000))
         : 0,
       checkedAt: now,
     };

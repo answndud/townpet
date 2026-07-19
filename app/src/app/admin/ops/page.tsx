@@ -337,7 +337,7 @@ export default async function AdminOpsPage({ searchParams }: AdminOpsPageProps) 
             <OpsStatusItem
               label="Cache/Search"
               value={overview.health.checks.cache.backend}
-              detail={`cache ${cacheState} · invalidation ${overview.health.checks.cache.invalidation.failureCount} · pg_trgm ${pgTrgmState}`}
+              detail={`cache ${cacheState} · invalidation ${overview.health.checks.cache.invalidation.failureCount} · last failure ${"lastFailureAgeSeconds" in overview.health.checks.cache ? overview.health.checks.cache.lastFailureAgeSeconds ?? 0 : 0}초 전 · pg_trgm ${pgTrgmState}`}
               state={cacheState}
             />
           </div>
@@ -357,6 +357,11 @@ export default async function AdminOpsPage({ searchParams }: AdminOpsPageProps) 
                 {formatCount(notificationDelivery.failed)}건
               </p>
               <p className="mt-1 text-[11px] text-[#8f6f2c]">재처리 스크립트 대상</p>
+              <p className="text-[11px] text-[#8f6f2c]">
+                {notificationDelivery.oldestFailedAgeSeconds
+                  ? `가장 오래된 실패 ${notificationDelivery.oldestFailedAgeSeconds}초`
+                  : "실패 항목 없음"}
+              </p>
             </div>
             <div className="rounded-xl border border-[#dbe6f6] bg-[#f8fbff] p-3">
               <p className="text-xs text-[#5a7398]">재처리 예정</p>
@@ -376,6 +381,11 @@ export default async function AdminOpsPage({ searchParams }: AdminOpsPageProps) 
                 {formatCount(notificationDelivery.deadLetter)}건
               </p>
               <p className="mt-1 text-[11px] text-[#a14d4d]">수동 원인 확인 필요</p>
+              <p className="text-[11px] text-[#a14d4d]">
+                {notificationDelivery.oldestDeadLetterAgeSeconds
+                  ? `가장 오래된 항목 ${notificationDelivery.oldestDeadLetterAgeSeconds}초`
+                  : "dead-letter 없음"}
+              </p>
             </div>
             <div className="rounded-xl border border-[#dbe6f6] bg-[#f8fbff] p-3">
               <p className="text-xs text-[#5a7398]">업로드 정합성</p>

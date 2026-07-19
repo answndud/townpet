@@ -45,10 +45,12 @@ export type QueryCacheHealth = {
   bypassRemainingMs: number;
   bypassUntil: string | null;
   lastFailureAt: string | null;
+  lastFailureAgeSeconds?: number;
   invalidation: {
     failureCount: number;
     lastFailureAt: string | null;
     lastFailureBucket: string | null;
+    lastFailureAgeSeconds?: number;
   };
   message: string;
 };
@@ -67,6 +69,10 @@ function shouldUseUpstashAtRuntime() {
 
 function getNow() {
   return Date.now();
+}
+
+function getAgeSeconds(timestamp: number, now: number) {
+  return timestamp > 0 ? Math.max(0, Math.floor((now - timestamp) / 1000)) : 0;
 }
 
 function shouldBypassDistributedCache(now = getNow()) {
@@ -120,6 +126,7 @@ export function getQueryCacheHealth(now = getNow()): QueryCacheHealth {
       bypassRemainingMs: 0,
       bypassUntil: null,
       lastFailureAt: null,
+      lastFailureAgeSeconds: 0,
       invalidation: {
         failureCount: cacheInvalidationFailureCount,
         lastFailureAt:
@@ -127,6 +134,7 @@ export function getQueryCacheHealth(now = getNow()): QueryCacheHealth {
             ? new Date(lastCacheInvalidationFailureAt).toISOString()
             : null,
         lastFailureBucket: lastCacheInvalidationFailureBucket,
+        lastFailureAgeSeconds: getAgeSeconds(lastCacheInvalidationFailureAt, now),
       },
       message: "query cache disabled",
     };
@@ -141,6 +149,7 @@ export function getQueryCacheHealth(now = getNow()): QueryCacheHealth {
       bypassRemainingMs,
       bypassUntil: new Date(redisCacheBypassUntil).toISOString(),
       lastFailureAt: lastRedisFailureAt > 0 ? new Date(lastRedisFailureAt).toISOString() : null,
+      lastFailureAgeSeconds: getAgeSeconds(lastRedisFailureAt, now),
       invalidation: {
         failureCount: cacheInvalidationFailureCount,
         lastFailureAt:
@@ -148,6 +157,7 @@ export function getQueryCacheHealth(now = getNow()): QueryCacheHealth {
             ? new Date(lastCacheInvalidationFailureAt).toISOString()
             : null,
         lastFailureBucket: lastCacheInvalidationFailureBucket,
+        lastFailureAgeSeconds: getAgeSeconds(lastCacheInvalidationFailureAt, now),
       },
       message: "Redis cache bypass active; distributed query cache temporarily disabled.",
     };
@@ -159,16 +169,18 @@ export function getQueryCacheHealth(now = getNow()): QueryCacheHealth {
     backend,
     bypassActive,
     bypassRemainingMs: 0,
-    bypassUntil: null,
-    lastFailureAt: lastRedisFailureAt > 0 ? new Date(lastRedisFailureAt).toISOString() : null,
-    invalidation: {
+      bypassUntil: null,
+      lastFailureAt: lastRedisFailureAt > 0 ? new Date(lastRedisFailureAt).toISOString() : null,
+      lastFailureAgeSeconds: getAgeSeconds(lastRedisFailureAt, now),
+      invalidation: {
       failureCount: cacheInvalidationFailureCount,
       lastFailureAt:
         lastCacheInvalidationFailureAt > 0
           ? new Date(lastCacheInvalidationFailureAt).toISOString()
           : null,
-      lastFailureBucket: lastCacheInvalidationFailureBucket,
-    },
+        lastFailureBucket: lastCacheInvalidationFailureBucket,
+        lastFailureAgeSeconds: getAgeSeconds(lastCacheInvalidationFailureAt, now),
+      },
     message:
       backend === "upstash"
         ? "distributed query cache healthy"

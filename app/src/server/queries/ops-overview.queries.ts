@@ -36,6 +36,8 @@ async function getNotificationDeliveryOpsOverview() {
       due: 0,
       oldestDueAt: null,
       oldestDueAgeSeconds: 0,
+      oldestFailedAgeSeconds: 0,
+      oldestDeadLetterAgeSeconds: 0,
       checkedAt: new Date(),
       schemaSyncRequired: true,
     };
