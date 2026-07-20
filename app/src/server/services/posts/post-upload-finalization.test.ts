@@ -21,8 +21,11 @@ vi.mock("@/server/upload-asset.service", () => ({
 describe("upload finalization coordinator", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(attachUploadUrls).mockResolvedValue(undefined);
-    vi.mocked(releaseUploadUrlsIfUnreferenced).mockResolvedValue(undefined);
+    vi.mocked(attachUploadUrls).mockResolvedValue(0);
+    vi.mocked(releaseUploadUrlsIfUnreferenced).mockResolvedValue({
+      deletedUrls: [],
+      skippedUrls: [],
+    });
   });
 
   it("attaches assets before returning and reports attach failures", async () => {
@@ -47,4 +50,3 @@ describe("upload finalization coordinator", () => {
     expect(releaseUploadUrlsIfUnreferenced).toHaveBeenCalledWith(["/media/asset-1"]);
   });
 });
-
