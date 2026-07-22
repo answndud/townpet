@@ -2,7 +2,7 @@
 
 ## Goal
 
-대형 write orchestration의 변경 범위를 줄이고, 알림·캐시 실패를 관리자 화면에서 판단할 수 있게 만든다. 운영 화면, 문서, 품질 게이트까지 완료했다.
+지금까지 TownPet에서 진행한 보안·정합성·아키텍처·운영·테스트 개선을 검증 가능한 근거와 면접용 설명으로 정리했다. 최종 산출물은 `docs/reports/townpet-development-retrospective-2026-07-31.md`다.
 
 ## Active
 
