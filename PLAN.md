@@ -62,6 +62,7 @@ TownPet의 공개 피드·동물 게시판·공통 게시판을 최신 `townpet-
   - migration/schema 변경이 없더라도 변경 범위에 맞는 문서 index check를 확인한다.
 - [x] 화면 회귀와 테스트가 통과해 기능 단위 커밋 후 main push/deploy와 production 화면을 재확인했다. 최신 배포 커밋은 `e32f92a5`다.
 - [x] production 피드 행을 Spring Boot 기준으로 재점검해 제목·분류·작성자·날짜만 남기고 조회/반응/정책 요약/액션 링크를 제거했다. 배포 커밋은 `66295b4e`다.
+- [x] 비교 이미지 기준으로 전체글 화면의 breadcrumb/제목, indigo 액션·탭, 검색 폭, 제목 타이포그래피를 Spring Boot 화면에 맞췄다. 전체 테스트 `365 passed / 1786 passed`와 production build를 재확인한다.
 
 ## Backlog
 

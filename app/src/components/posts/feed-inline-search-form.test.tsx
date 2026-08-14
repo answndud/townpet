@@ -35,8 +35,8 @@ describe("FeedInlineSearchForm", () => {
     expect(html).toContain("h-9");
     expect(html).toContain("검색어 입력");
     expect(html).toContain("appearance-none");
-    expect(html).toContain("focus-within:border-[#8fb5e8]");
-    expect(html).toContain("border-[#c4d7f0] bg-[#fafdff]");
+    expect(html).toContain("focus-within:border-[#4f46e5]");
+    expect(html).toContain("border-[#d9deeb] bg-white");
     expect(html).toContain("hover:underline-offset-4");
     expect(html).not.toContain("tp-btn-primary");
     expect(html).not.toContain("tp-btn-soft");

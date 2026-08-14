@@ -29,7 +29,7 @@ type GuestFeedPageProps = {
 
 const feedBasePath = "/feed/guest";
 const feedInlinePrimaryActionClassName =
-  "inline-flex min-h-10 items-center justify-center rounded-md bg-[#3567b5] px-3 text-xs font-semibold text-[#fbfdff] transition hover:bg-[#2f5da4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1";
+  "inline-flex min-h-10 items-center justify-center rounded-md border border-[#4f46e5] bg-[#4f46e5] px-3 text-xs font-semibold text-[#fbfdff] transition hover:border-[#4338ca] hover:bg-[#4338ca] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4f46e5]/20 focus-visible:ring-offset-1";
 
 export const metadata: Metadata = {
   title: "공개 동네 반려생활 피드",
@@ -226,7 +226,11 @@ function GuestFeedShell({ data }: { data: GuestFeedPayload }) {
           >
             <div className="flex items-center justify-between gap-2 lg:items-center">
               <div className="min-w-0">
-                <p className="hidden text-[10px] font-semibold leading-none text-[#5a7398] sm:block">공개 피드</p>
+                <p className="flex items-center gap-1.5 text-[10px] font-semibold leading-none text-[#667085] sm:text-[11px]">
+                  <span>커뮤니티</span>
+                  <span aria-hidden="true">/</span>
+                  <span>{feedTitle === "전체 게시판" ? "전체글" : feedTitle}</span>
+                </p>
                 <h1
                   className={
                     isUltraDense
@@ -234,7 +238,7 @@ function GuestFeedShell({ data }: { data: GuestFeedPayload }) {
                       : "text-lg font-semibold text-[#1e3f74] sm:mt-1 sm:text-2xl"
                   }
                 >
-                  {feedTitle}
+                  {feedTitle === "전체 게시판" ? "전체글" : feedTitle}
                 </h1>
               </div>
               <div className="flex flex-wrap items-center gap-2">

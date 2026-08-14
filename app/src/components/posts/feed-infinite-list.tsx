@@ -12,7 +12,6 @@ import {
 
 import { FeedPostMetaBadges } from "@/components/posts/feed-post-meta-badges";
 import { PostListItemShell } from "@/components/posts/post-list-item-shell";
-import { FoundingMemberBadge } from "@/components/user/founding-member-badge";
 import type {
   FeedAudienceSourceValue,
   FeedPersonalizationEventValue,
@@ -442,7 +441,7 @@ export function FeedInfiniteList({
           const authorNode = isGuestPost ? (
             <span className="block truncate">{authorLabel}</span>
           ) : (
-            <span className="inline-flex min-w-0 items-center gap-1">
+            <span className="block min-w-0 truncate">
               <Link
                 href={`/users/${post.author.id}`}
                 prefetch={false}
@@ -450,7 +449,6 @@ export function FeedInfiniteList({
               >
                 {authorLabel}
               </Link>
-              {post.author.isFoundingMember ? <FoundingMemberBadge compact /> : null}
             </span>
           );
           const detailHref = preferGuestDetail ? `/posts/${post.id}/guest` : `/posts/${post.id}`;
@@ -504,15 +502,15 @@ export function FeedInfiniteList({
                   </div>
                 }
                 title={
-                  <span className="block min-w-0 truncate leading-[1.25]">
+                  <span className="block min-w-0 truncate text-[15px] leading-[1.25]">
                     {post.title}
                   </span>
                 }
                 titleLinkClassName={`mt-0.5 block min-w-0 truncate text-[13px] font-semibold leading-[1.22] transition sm:text-[13px] ${
                   readPostIds.has(post.id)
-                    ? "text-[#8c9db8] hover:text-[#7589a8]"
-                    : "text-[#163764] hover:text-[#2f5da4]"
-                } visited:text-[#8c9db8]`}
+                  ? "text-[#98a2b3] hover:text-[#667085]"
+                    : "text-[#101828] hover:text-[#4338ca]"
+                } visited:text-[#98a2b3]`}
                 onTitleClick={() => {
                   handlePostClick();
                 }}

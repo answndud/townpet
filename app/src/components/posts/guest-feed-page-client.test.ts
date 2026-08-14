@@ -76,7 +76,7 @@ describe("shouldReplaceGuestFeedCanonicalHref", () => {
     ].join("\n");
 
     expect(code).toContain("feedInlinePrimaryActionClassName");
-    expect(code).toContain("rounded-md bg-[#3567b5]");
+    expect(code).toContain("border-[#4f46e5] bg-[#4f46e5]");
     expect(code).not.toContain("feedInlineTextActionClassName");
     expect(code).not.toContain('href="#feed-list"');
     expect(code).not.toContain("tp-btn-primary inline-flex h-[30px]");

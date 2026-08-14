@@ -18,7 +18,7 @@ type FeedInlineSearchFormProps = {
 };
 
 const feedInlineSearchPrimaryActionClassName =
-  "inline-flex h-9 min-w-[50px] items-center justify-center rounded-[6px] border border-[#c4d7f0] bg-[#fafdff] px-3 text-[11px] font-semibold leading-none text-[#2f5da4] transition hover:border-[#a9c6ee] hover:bg-[#eef6ff] hover:text-[#244b86] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1";
+  "inline-flex h-9 min-w-[50px] items-center justify-center rounded-[6px] border border-[#d9deeb] bg-white px-3 text-[11px] font-semibold leading-none text-[#4338ca] transition hover:border-[#c7c4f8] hover:bg-[#f5f3ff] hover:text-[#3730a3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4f46e5]/20 focus-visible:ring-offset-1";
 const feedInlineSearchResetActionClassName =
   "tp-text-muted inline-flex h-9 min-w-[46px] items-center justify-center px-1.5 text-[11px] font-semibold leading-none transition hover:text-[#2f5da4] hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1";
 
@@ -46,7 +46,7 @@ export function FeedInlineSearchForm({
         <input key={petTypeId} type="hidden" name="petType" value={petTypeId} />
       ))}
 
-      <div className="flex h-9 min-w-0 items-center rounded-[7px] border border-[#cfddef] bg-white transition focus-within:border-[#8fb5e8] focus-within:ring-2 focus-within:ring-[#4e89d8]/15 sm:w-[360px]">
+      <div className="flex h-9 min-w-0 items-center rounded-[7px] border border-[#d9deeb] bg-transparent transition focus-within:border-[#4f46e5] focus-within:ring-2 focus-within:ring-[#4f46e5]/10 sm:w-[460px]">
         <label className="sr-only" htmlFor="feed-inline-search-in">
           검색 위치
         </label>
@@ -54,7 +54,7 @@ export function FeedInlineSearchForm({
           id="feed-inline-search-in"
           name="searchIn"
           defaultValue={searchIn}
-          className="h-full shrink-0 appearance-none rounded-l-[7px] bg-transparent px-3 pr-2 text-[12px] font-semibold text-[#274f82] outline-none"
+          className="h-full shrink-0 appearance-none rounded-l-[7px] bg-transparent px-3 pr-2 text-[12px] font-semibold text-[#475467] outline-none"
         >
           <option value="TITLE_CONTENT">제목+내용</option>
           <option value="TITLE">제목</option>
@@ -72,7 +72,7 @@ export function FeedInlineSearchForm({
           type="search"
           defaultValue={query}
           placeholder="검색어 입력"
-          className="h-full min-w-0 flex-1 bg-transparent px-3 text-[12px] text-[#1f3f71] outline-none placeholder:text-[#8ba0bd]"
+          className="h-full min-w-0 flex-1 bg-transparent px-3 text-[12px] text-[#1f3f71] outline-none placeholder:text-[#98a2b3]"
         />
       </div>
 

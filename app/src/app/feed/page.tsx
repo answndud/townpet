@@ -445,7 +445,7 @@ export default async function Home({ searchParams }: HomePageProps) {
     ? "리뷰 게시판"
     : type
       ? `${postTypeMeta[type].label} 게시판`
-      : "전체 게시판";
+      : "전체글";
   const normalizedReviewCategory: ReviewCategory | null = reviewCategory ?? null;
   const loginHref = (nextPath: string) =>
     `/login?next=${encodeURIComponent(nextPath)}`;

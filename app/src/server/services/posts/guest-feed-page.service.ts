@@ -553,7 +553,7 @@ export async function buildGuestFeedPageServiceResult({
     ? "리뷰 게시판"
     : type
       ? `${getPostTypeMeta(type).label} 게시판`
-      : "전체 게시판";
+      : "전체글";
   const feedQueryKey = [
     mode,
     effectiveScope,

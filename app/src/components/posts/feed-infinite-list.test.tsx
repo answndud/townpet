@@ -74,7 +74,7 @@ describe("FeedInfiniteList", () => {
     expect(html).not.toContain("좋아요");
   });
 
-  it("shows a compact founding member badge in the author metadata row", () => {
+  it("keeps the feed row focused on author and date metadata", () => {
     const html = renderToStaticMarkup(
       <FeedInfiniteList
         initialItems={[
@@ -93,8 +93,8 @@ describe("FeedInfiniteList", () => {
       />,
     );
 
-    expect(html).toContain("창립 멤버");
-    expect(html).toContain("text-[10px]");
+    expect(html).toContain("작성자");
+    expect(html).not.toContain("창립 멤버");
   });
 
   it("keeps operator source details out of compact feed rows", () => {

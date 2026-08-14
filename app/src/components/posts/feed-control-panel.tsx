@@ -42,11 +42,11 @@ const REVIEW_FILTER_OPTIONS: Array<{ label: string; value?: ReviewCategory }> = 
 ];
 
 const PRIMARY_TAB_CLASS_NAME =
-  "relative inline-flex h-8 items-center px-1 text-[13px] leading-none transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25";
+  "relative inline-flex h-8 items-center px-1 text-[13px] leading-none transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4f46e5]/20";
 const ACTIVE_PRIMARY_TAB_CLASS_NAME =
-  "font-semibold text-[#1f4f8f] after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:rounded-full after:bg-[#2f6fbd]";
+  "font-semibold text-[#4338ca] after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:bg-[#4f46e5]";
 const INACTIVE_PRIMARY_TAB_CLASS_NAME =
-  "font-medium text-[#647b9f] hover:text-[#274f82]";
+  "font-medium text-[#667085] hover:text-[#4338ca]";
 const FILTER_CHIP_CLASS_NAME =
   "inline-flex h-8 items-center rounded-[6px] border px-2.5 text-[11px] font-medium leading-none transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4e89d8]/25";
 const ACTIVE_FILTER_CHIP_CLASS_NAME = "border-[#a9c6ee] bg-[#eaf3ff] text-[#1f4f8f]";
