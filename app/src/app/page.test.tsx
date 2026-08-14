@@ -1,77 +1,23 @@
-import { renderToStaticMarkup } from "react-dom/server";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { describe, expect, it } from "vitest";
 
-import HomePage, { dynamic } from "@/app/page";
-import { getHomeFeedPayload } from "@/server/queries/home-feed.queries";
+import { dynamic } from "@/app/page";
 
-vi.mock("@/server/queries/home-feed.queries", () => ({
-  getHomeFeedPayload: vi.fn(),
-}));
-
-const mockGetHomeFeedPayload = vi.mocked(getHomeFeedPayload);
+function readSource(path: string) {
+  return readFileSync(join(process.cwd(), path), "utf8");
+}
 
 describe("HomePage", () => {
-  it("renders the landing shell dynamically so strict CSP can attach a request nonce", () => {
+  it("opens visitors on the public feed", () => {
+    const source = readSource("src/app/page.tsx");
+
+    expect(source).toContain('redirect("/feed/guest")');
+    expect(source).not.toContain("HomeFeedPreview");
+    expect(source).not.toContain("우리 동네 반려생활 정보");
+  });
+
+  it("keeps the root route dynamic for the redirect", () => {
     expect(dynamic).toBe("force-dynamic");
-  });
-
-  beforeEach(() => {
-    mockGetHomeFeedPayload.mockResolvedValue({
-      featured: [],
-      latest: [],
-    });
-  });
-
-  it("renders a public home with visible entry content", async () => {
-    const html = renderToStaticMarkup(await HomePage());
-
-    expect(html).toContain("우리 동네 반려생활 정보");
-    expect(html).toContain('href="/onboarding"');
-    expect(html).toContain('href="/feed/guest"');
-    expect(html.indexOf("전체 피드")).toBeLessThan(
-      html.indexOf("내 동네 설정"),
-    );
-    expect(html).toContain("내 동네 설정");
-    expect(html).toContain("관심 주제");
-    expect(html).toContain('href="/campaigns/neighborhood-map"');
-    expect(html).toContain('href="/lost-found"');
-    expect(html).toContain("공개 글 미리보기");
-    expect(html).not.toContain("첫 시작 지역");
-    expect(html).not.toContain("/towns/");
-    expect(html).not.toContain("처음 방문했다면");
-    expect(html).not.toContain("내 동네를 선택");
-  });
-
-  it("keeps the home entry focused on one onboarding CTA", async () => {
-    const html = renderToStaticMarkup(await HomePage());
-
-    expect((html.match(/href="\/onboarding"/g) ?? []).length).toBe(1);
-    expect((html.match(/href="\/feed\/guest"/g) ?? []).length).toBe(1);
-    expect(html).not.toContain("분실동물 등록하기");
-  });
-
-  it("server-renders home feed rows instead of waiting for client skeletons", async () => {
-    mockGetHomeFeedPayload.mockResolvedValue({
-      featured: [
-        {
-          id: "post-1",
-          href: "/posts/post-1",
-          title: "마포구 야간 병원 확인",
-          typeLabel: "병원 후기",
-          createdAt: "2026-05-30T00:00:00.000Z",
-          authorName: "TownPet 운영팀",
-          neighborhoodLabel: "마포구",
-          isOperatorContent: true,
-          commentCount: 0,
-          likeCount: 1,
-        },
-      ],
-      latest: [],
-    });
-
-    const html = renderToStaticMarkup(await HomePage());
-
-    expect(html).toContain("마포구 야간 병원 확인");
-    expect(html).not.toContain("animate-pulse");
   });
 });
