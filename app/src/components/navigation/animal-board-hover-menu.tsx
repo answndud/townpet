@@ -29,6 +29,7 @@ export function AnimalBoardHoverMenu({ boardActive = false }: Props) {
     closeTimer.current = null;
   };
   const scheduleClose = () => {
+    if (rootRef.current?.contains(document.activeElement)) return;
     clearClose();
     closeTimer.current = setTimeout(() => setOpen(false), 160);
   };
