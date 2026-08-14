@@ -103,17 +103,17 @@ describe("app shell header classes", () => {
     expect(interactiveHeaderSource).toContain('import { LazyFeedHoverMenu } from "@/components/navigation/lazy-feed-hover-menu"');
     expect(interactiveHeaderSource).toContain('import("@/components/auth/auth-controls")');
     expect(interactiveHeaderSource).toContain('import("@/components/notifications/notification-bell")');
-    expect(lazyMenuSource).toContain('import("@/components/navigation/feed-hover-menu")');
+    expect(lazyMenuSource).toContain('AnimalBoardHoverMenu');
   });
 
   it("keeps hidden pet menu inside the viewport on desktop", () => {
     const source = readFileSync(
-      join(process.cwd(), "src/components/navigation/feed-hover-menu.tsx"),
+      join(process.cwd(), "src/components/navigation/animal-board-hover-menu.tsx"),
       "utf8",
     );
 
-    expect(source).toContain("absolute right-0 top-full z-50 min-w-[240px]");
-    expect(source).not.toContain("absolute left-0 top-full z-50 min-w-[240px]");
+    expect(source).toContain("absolute z-50 pt-2");
+    expect(source).toContain("onMouseEnter={clearClose}");
   });
 
   it("uses a simplified public landing header on the home route", () => {

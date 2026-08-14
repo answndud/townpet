@@ -46,9 +46,6 @@ vi.mock("@/lib/prisma", () => ({
     siteSetting: {
       findUnique: vi.fn(),
     },
-    userPetTypePreference: {
-      findMany: vi.fn(),
-    },
     community: {
       findMany: vi.fn(),
     },
@@ -89,9 +86,6 @@ const mockPrisma = vi.mocked(prisma) as unknown as {
   siteSetting: {
     findUnique: ReturnType<typeof vi.fn>;
   };
-  userPetTypePreference: {
-    findMany: ReturnType<typeof vi.fn>;
-  };
   community: {
     findMany: ReturnType<typeof vi.fn>;
   };
@@ -129,8 +123,6 @@ describe("post queries", () => {
     mockPrisma.userAudienceSegment.findMany.mockResolvedValue([]);
     mockPrisma.siteSetting.findUnique.mockReset();
     mockPrisma.siteSetting.findUnique.mockResolvedValue(null);
-    mockPrisma.userPetTypePreference.findMany.mockReset();
-    mockPrisma.userPetTypePreference.findMany.mockResolvedValue([]);
     mockPrisma.community.findMany.mockReset();
     mockPrisma.community.findMany.mockResolvedValue([]);
     mockPrisma.postReaction.findMany.mockReset();
@@ -784,107 +776,6 @@ describe("post queries", () => {
     expect(result.nextCursor).toBe("p3");
   });
 
-  it("applies preferred pet type as secondary personalized feed signal", async () => {
-    mockPrisma.post.findMany.mockResolvedValue([
-      {
-        id: "p1",
-        petTypeId: "cat-community",
-        author: { id: "a1" },
-        createdAt: new Date("2026-02-02T00:00:00.000Z"),
-        likeCount: 0,
-        commentCount: 0,
-        viewCount: 0,
-      },
-      {
-        id: "p2",
-        petTypeId: "dog-community",
-        author: { id: "a2" },
-        createdAt: new Date("2026-02-01T23:00:00.000Z"),
-        likeCount: 0,
-        commentCount: 0,
-        viewCount: 0,
-      },
-      {
-        id: "p3",
-        petTypeId: "etc-community",
-        author: { id: "a3" },
-        createdAt: new Date("2026-02-01T22:00:00.000Z"),
-        likeCount: 0,
-        commentCount: 0,
-        viewCount: 0,
-      },
-    ]);
-    mockPrisma.userPetTypePreference.findMany.mockResolvedValue([
-      { petTypeId: "dog-community" },
-    ]);
-    mockPrisma.pet.findMany.mockResolvedValueOnce([]);
-
-    const result = await listPosts({
-      limit: 2,
-      scope: PostScope.GLOBAL,
-      personalized: true,
-      viewerId: "viewer-1",
-    });
-
-    expect(mockPrisma.userPetTypePreference.findMany).toHaveBeenCalledTimes(1);
-    expect(mockPrisma.pet.findMany).toHaveBeenCalledTimes(1);
-    expect(result.items[0]?.id).toBe("p2");
-    expect(result.nextCursor).toBe("p3");
-  });
-
-  it("applies preferred community tags as tertiary personalized feed signal", async () => {
-    mockPrisma.post.findMany.mockResolvedValue([
-      {
-        id: "p1",
-        type: PostType.FREE_BOARD,
-        petTypeId: "cat-community",
-        author: { id: "a1" },
-        createdAt: new Date("2026-02-02T00:00:00.000Z"),
-        likeCount: 0,
-        commentCount: 0,
-        viewCount: 0,
-      },
-      {
-        id: "p2",
-        type: PostType.WALK_ROUTE,
-        petTypeId: "cat-community",
-        author: { id: "a2" },
-        createdAt: new Date("2026-02-01T23:00:00.000Z"),
-        likeCount: 0,
-        commentCount: 0,
-        viewCount: 0,
-      },
-      {
-        id: "p3",
-        type: PostType.FREE_BOARD,
-        petTypeId: "bird-community",
-        author: { id: "a3" },
-        createdAt: new Date("2026-02-01T22:00:00.000Z"),
-        likeCount: 0,
-        commentCount: 0,
-        viewCount: 0,
-      },
-    ]);
-    mockPrisma.userPetTypePreference.findMany.mockResolvedValue([
-      { petTypeId: "dog-community" },
-    ]);
-    mockPrisma.community.findMany.mockResolvedValue([
-      { tags: ["산책", "건강"] },
-    ]);
-    mockPrisma.pet.findMany.mockResolvedValueOnce([]);
-
-    const result = await listPosts({
-      limit: 2,
-      scope: PostScope.GLOBAL,
-      personalized: true,
-      viewerId: "viewer-1",
-    });
-
-    expect(mockPrisma.community.findMany).toHaveBeenCalledTimes(1);
-    expect(result.items[0]?.id).toBe("p2");
-    expect(result.nextCursor).toBe("p3");
-  });
-
   it("applies recent positive reactions as fourth-order personalized feed signal", async () => {
     mockPrisma.post.findMany.mockResolvedValue([
       {
@@ -1178,9 +1069,6 @@ describe("post queries", () => {
         post: null,
       },
     ]);
-    mockPrisma.userPetTypePreference.findMany.mockResolvedValue([
-      { petTypeId: "dog-community" },
-    ]);
     mockPrisma.pet.findMany
       .mockResolvedValueOnce([])
       .mockResolvedValueOnce([
@@ -1208,7 +1096,7 @@ describe("post queries", () => {
         }),
       }),
     );
-    expect(result.items[0]?.id).toBe("p2");
+    expect(result.items[0]?.id).toBe("p1");
     expect(result.nextCursor).toBe("p3");
   });
 
@@ -1261,9 +1149,6 @@ describe("post queries", () => {
         post: null,
       })),
     );
-    mockPrisma.userPetTypePreference.findMany.mockResolvedValue([
-      { petTypeId: "dog-community" },
-    ]);
     mockPrisma.pet.findMany
       .mockResolvedValueOnce([])
       .mockResolvedValueOnce([
@@ -1284,7 +1169,7 @@ describe("post queries", () => {
       viewerId: "viewer-1",
     });
 
-    expect(result.items[0]?.id).toBe("p2");
+    expect(result.items[0]?.id).toBe("p1");
     expect(result.nextCursor).toBe("p3");
   });
 

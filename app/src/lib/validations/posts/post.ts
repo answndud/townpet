@@ -501,6 +501,7 @@ export const postUpdateSchema = z
     content: optionalTrimmedNonEmptyString({ max: POST_CONTENT_MAX_LENGTH }),
     scope: z.nativeEnum(PostScope).optional(),
     neighborhoodId: z.string().cuid().optional().nullable(),
+    petTypeId: z.string().cuid().optional().nullable(),
     imageUrls: z.array(imageUrlSchema).max(10).optional(),
   })
   .refine((data) => Object.keys(data).length > 0, {

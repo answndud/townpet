@@ -17,31 +17,11 @@ import {
 import { LazyFeedHoverMenu } from "@/components/navigation/lazy-feed-hover-menu";
 import { emitViewerShellSync, subscribeViewerShellSync } from "@/lib/viewer-shell-sync";
 
-type AppShellInteractiveHeaderProps = {
-  communities: Array<{
-    id: string;
-    slug: string;
-    labelKo: string;
-  }>;
-};
-
-type CommunityNavItem = AppShellInteractiveHeaderProps["communities"][number];
-
-type CommunitiesResponse =
-  | {
-      ok: true;
-      data: {
-        items: Array<CommunityNavItem & Record<string, unknown>>;
-      };
-    }
-  | { ok: false };
-
 type ViewerShellData = {
   isAuthenticated: boolean;
   userId?: string | null;
   canModerate: boolean;
   unreadNotificationCount: number;
-  preferredPetTypeIds: string[];
 };
 
 const DEFAULT_VIEWER_SHELL: ViewerShellData = {
@@ -49,7 +29,6 @@ const DEFAULT_VIEWER_SHELL: ViewerShellData = {
   userId: null,
   canModerate: false,
   unreadNotificationCount: 0,
-  preferredPetTypeIds: [],
 };
 
 const AuthControls = dynamic(
@@ -62,10 +41,7 @@ const NotificationBell = dynamic(
   { ssr: false },
 );
 
-export function AppShellInteractiveHeader({
-  communities: initialCommunities = [],
-}: Partial<AppShellInteractiveHeaderProps>) {
-  const [communities, setCommunities] = useState<CommunityNavItem[]>(initialCommunities);
+export function AppShellInteractiveHeader() {
   const [viewerShell, setViewerShell] = useState<ViewerShellData>(DEFAULT_VIEWER_SHELL);
   const authSnapshotRef = useRef(
     `${DEFAULT_VIEWER_SHELL.isAuthenticated}:${DEFAULT_VIEWER_SHELL.canModerate}`,
@@ -77,54 +53,6 @@ export function AppShellInteractiveHeader({
   const notificationNavActive = isHeaderNavActive(pathname, "notifications");
   const adminNavActive = isHeaderNavActive(pathname, "admin");
   const loginNavActive = isHeaderNavActive(pathname, "login");
-  const allPetTypeIds = communities.map((item) => item.id);
-  const preferredPetTypeIds =
-    viewerShell.preferredPetTypeIds.length > 0 ? viewerShell.preferredPetTypeIds : allPetTypeIds;
-
-  useEffect(() => {
-    if (initialCommunities.length > 0) {
-      return;
-    }
-
-    let cancelled = false;
-    const controller = new AbortController();
-
-    const loadCommunities = async () => {
-      try {
-        const response = await fetch("/api/communities?limit=50", {
-          method: "GET",
-          credentials: "same-origin",
-          signal: controller.signal,
-        });
-        const payload = (await response.json()) as CommunitiesResponse;
-        if (!response.ok || !payload.ok) {
-          return;
-        }
-
-        if (!cancelled) {
-          setCommunities(
-            payload.data.items.map((item) => ({
-              id: item.id,
-              slug: item.slug,
-              labelKo: item.labelKo,
-            })),
-          );
-        }
-      } catch (error) {
-        if ((error as { name?: string }).name === "AbortError") {
-          return;
-        }
-      }
-    };
-
-    void loadCommunities();
-
-    return () => {
-      cancelled = true;
-      controller.abort();
-    };
-  }, [initialCommunities.length]);
-
   useEffect(() => {
     let cancelled = false;
     const controller = new AbortController();
@@ -258,13 +186,7 @@ export function AppShellInteractiveHeader({
         </div>
         <nav className="flex flex-col gap-1.5 xl:flex-row xl:items-center xl:justify-between">
           <div className="flex flex-wrap items-center gap-1.5">
-            <LazyFeedHoverMenu
-              key={`${viewerShell.isAuthenticated ? "auth" : "guest"}:${preferredPetTypeIds.join(",")}`}
-              communities={communities}
-              isAuthenticated={viewerShell.isAuthenticated}
-              initialPreferredPetTypeIds={preferredPetTypeIds}
-              boardActive={boardNavActive}
-            />
+            <LazyFeedHoverMenu boardActive={boardNavActive} />
 
             <div className={`hidden md:flex ${APP_SHELL_DESKTOP_NAV_CLUSTER_CLASS_NAME}`}>
               <Link

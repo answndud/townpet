@@ -1,7 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { Prisma } from "@prisma/client";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { PostScope, PostType } from "@prisma/client";
 
@@ -24,10 +23,6 @@ import {
   isCommonBoardPostType,
 } from "@/lib/community-board";
 import { isLoginRequiredPostType } from "@/lib/post-access";
-import {
-  PET_TYPE_PREFERENCE_COOKIE,
-  parsePetTypePreferenceCookie,
-} from "@/lib/pet-type-preference-cookie";
 import { normalizeFeedPetTypeIds } from "@/lib/feed-pet-type-filter";
 import { isFreeBoardPostType } from "@/lib/post-type-groups";
 import { postTypeMeta } from "@/lib/post-presenter";
@@ -66,7 +61,6 @@ import {
   type FeedPersonalized,
   type FeedSearchIn,
   type HomePageProps,
-  extractPreferredPetTypeIds,
   getGuestFeedContext,
   isMissingAudienceSegmentQueryError,
   maybeDebugDelay,
@@ -101,13 +95,12 @@ export default async function Home({ searchParams }: HomePageProps) {
     forceLog: perfRequested,
   });
 
-  const [session, communities, cookieStore] = await feedPerf.measure(
+  const [session, communities] = await feedPerf.measure(
     "bootstrap.session_and_communities",
     () =>
       Promise.all([
         auth(),
         listCommunityNavItems(50).catch(() => []),
-        cookies(),
       ]),
   );
   const userId = session?.user?.id;
@@ -116,10 +109,6 @@ export default async function Home({ searchParams }: HomePageProps) {
     nickname: session?.user?.nickname,
   });
   const allPetTypeIds = communities.map((item) => item.id);
-  const communityById = new Map(communities.map((item) => [item.id, item]));
-  const cookiePetTypeIds = parsePetTypePreferenceCookie(
-    cookieStore.get(PET_TYPE_PREFERENCE_COOKIE)?.value,
-  ).filter((id) => allPetTypeIds.includes(id));
   const [user, loginRequiredTypes] = await feedPerf.measure("bootstrap.viewer_context", async () => {
     const resolvedUser = userId
       ? await getUserWithNeighborhoods(userId).catch((error) => {
@@ -135,21 +124,6 @@ export default async function Home({ searchParams }: HomePageProps) {
 
     return [resolvedUser, resolvedLoginRequiredTypes] as const;
   });
-  const preferredPetTypeIds = extractPreferredPetTypeIds(user);
-  const preferredPetTypeLabels = preferredPetTypeIds
-    .map((id) => communityById.get(id)?.labelKo ?? null)
-    .filter((label): label is string => typeof label === "string" && label.length > 0);
-  const preferredInterestLabels = Array.from(
-    new Set(
-      preferredPetTypeIds.flatMap((id) =>
-        Array.isArray(communityById.get(id)?.tags)
-          ? (communityById.get(id)?.tags ?? [])
-          : [],
-      ),
-    ),
-  )
-    .filter((label): label is string => typeof label === "string" && label.length > 0)
-    .slice(0, 3);
   const isAuthenticated = Boolean(user);
   const blockedTypesForGuest = !isAuthenticated ? loginRequiredTypes : [];
 
@@ -273,9 +247,7 @@ export default async function Home({ searchParams }: HomePageProps) {
     const serialized = params.toString();
     redirect(serialized ? `/feed?${serialized}` : "/feed");
   }
-  const defaultPetTypeIds = isAuthenticated
-    ? normalizeFeedPetTypeIds(preferredPetTypeIds, allPetTypeIds)
-    : normalizeFeedPetTypeIds(cookiePetTypeIds, allPetTypeIds);
+  const defaultPetTypeIds: string[] = [];
   const isCommonBoardType = type ? isCommonBoardPostType(type) : false;
   const isFreeBoardType = type ? isFreeBoardPostType(type) : false;
   const isLocalRequiredType = isLocalRequiredPostType(type);
@@ -564,8 +536,6 @@ export default async function Home({ searchParams }: HomePageProps) {
   const feedAudienceContext = resolveFeedAudienceContext({
     segment: primaryAudienceSegment,
     fallbackPet: primaryPet,
-    preferredPetTypeLabels,
-    preferredInterestLabels,
     recentEngagementLabels,
     recentBehaviorLabels,
     recentDwellLabels,

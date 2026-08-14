@@ -171,7 +171,7 @@ describe("FeedInfiniteList", () => {
         adConfig={{
           audienceKey: "default",
           headline: "동네 산책 코스 모음",
-          description: "관심 동물 기준으로 추천된 글입니다.",
+          description: "동물 게시판 기준으로 정리된 글입니다.",
           ctaLabel: "자세히",
           ctaHref: "/feed?personalized=1",
           sessionCap: 1,

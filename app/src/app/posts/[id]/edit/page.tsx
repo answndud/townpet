@@ -8,6 +8,7 @@ import { createNoIndexPageMetadata } from "@/lib/page-metadata";
 import { getGuestPostMeta } from "@/lib/post-guest-meta";
 import { redirectToProfileIfNicknameMissing } from "@/server/nickname-guard";
 import { getPostById } from "@/server/queries/post.queries";
+import { listCommunities } from "@/server/queries/community.queries";
 import { getUserWithNeighborhoods } from "@/server/queries/user.queries";
 
 export const metadata = createNoIndexPageMetadata({
@@ -35,6 +36,11 @@ export default async function PostEditPage({ params }: PostEditPageProps) {
   if (!post) {
     notFound();
   }
+
+  const editablePost = post as typeof post & { boardScope?: "COMMON" | "COMMUNITY"; petType?: { id: string } | null };
+  const communities = editablePost.boardScope === "COMMUNITY"
+    ? await listCommunities({ limit: 50 }).catch(() => ({ items: [] as Array<{ id: string; labelKo: string }> }))
+    : null;
 
   const isGuestPost = getGuestPostMeta(post).isGuestPost;
   const isGuestEdit = isGuestPost && !user;
@@ -85,6 +91,8 @@ export default async function PostEditPage({ params }: PostEditPageProps) {
                 }))
           }
           isAuthenticated={Boolean(user)}
+          petTypeId={editablePost.petType?.id ?? null}
+          communities={communities?.items ?? []}
         />
       </main>
     </div>

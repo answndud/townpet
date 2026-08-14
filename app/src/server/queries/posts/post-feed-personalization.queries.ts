@@ -14,7 +14,6 @@ import {
 import { prisma } from "@/lib/prisma";
 import type { ReviewCategory } from "@/lib/review-category";
 import { getFeedPersonalizationPolicy } from "@/server/queries/policy.queries";
-import { listPreferredPetTypeIdsByUserId } from "@/server/queries/user.queries";
 import {
   isMissingPostBookmarkTableError,
   isMissingPostReactionTableError,
@@ -52,8 +51,6 @@ type FeedPersonalizationEventLogLike = {
 type ViewerPersonalizationContext = {
   policy: FeedPersonalizationPolicy;
   petSignals: PetSignal[];
-  preferredPetTypeIds: string[];
-  preferredInterestLabels: string[];
   recentEngagementPetTypeIds: string[];
   recentNegativePetTypeIds: string[];
   recentEngagementInterestLabels: string[];
@@ -269,17 +266,6 @@ function calculatePersonalizationBoost(
   return best;
 }
 
-function calculatePreferredPetTypeBoost(
-  postPetTypeId: string | null | undefined,
-  preferredPetTypeIds: string[],
-) {
-  if (!postPetTypeId || preferredPetTypeIds.length === 0) {
-    return 0;
-  }
-
-  return preferredPetTypeIds.includes(postPetTypeId) ? 0.12 : 0;
-}
-
 function collectPostInterestLabels(post: PostInterestLike) {
   return dedupeInterestLabels([
     ...(post.animalTags ?? []).map((tag) => normalizeInterestLabel(tag)),
@@ -403,30 +389,6 @@ function buildRecentBookmarkSignal(
     recentBookmarkInterestWeights,
     summaryLabels: listTopWeightedDimensions(recentBookmarkSummaryWeights, 3),
   };
-}
-
-function calculatePreferredInterestBoost(
-  post: FeedLikePost,
-  preferredInterestLabels: string[],
-) {
-  if (preferredInterestLabels.length === 0) {
-    return 0;
-  }
-
-  const postInterestLabels = collectPostInterestLabels(post);
-  if (postInterestLabels.length === 0) {
-    return 0;
-  }
-
-  const preferredInterestSet = new Set(preferredInterestLabels);
-  let sharedCount = 0;
-  for (const label of postInterestLabels) {
-    if (preferredInterestSet.has(label)) {
-      sharedCount += 1;
-    }
-  }
-
-  return Math.min(0.09, sharedCount * 0.03);
 }
 
 function calculateRecentEngagementBoost(
@@ -612,14 +574,6 @@ function calculateViewerPersonalizationBoost(
     authorPetByUserId.get(post.author.id) ?? [],
     viewerContext.petSignals,
   );
-  const preferredPetTypeBoost = calculatePreferredPetTypeBoost(
-    post.petTypeId,
-    viewerContext.preferredPetTypeIds,
-  );
-  const preferredInterestBoost = calculatePreferredInterestBoost(
-    post,
-    viewerContext.preferredInterestLabels,
-  );
   const recentEngagementBoost = calculateRecentEngagementBoost(post, viewerContext);
   const recentBehaviorBoost = calculateRecentBehaviorBoost(
     post,
@@ -631,8 +585,6 @@ function calculateViewerPersonalizationBoost(
 
   return (
     petBoost +
-    preferredPetTypeBoost +
-    preferredInterestBoost +
     recentEngagementBoost +
     recentBehaviorBoost +
     recentDwellBoost +
@@ -1056,42 +1008,14 @@ export async function listViewerRecentBookmarkSummaryLabels(viewerId: string) {
 async function listViewerPersonalizationContext(
   viewerId: string,
 ): Promise<ViewerPersonalizationContext> {
-  const [policy, petSignals, preferredPetTypeIds, recentBehaviorEvents, recentDwellEvents, recentBookmarks] =
+  const [policy, petSignals, recentBehaviorEvents, recentDwellEvents, recentBookmarks] =
     await Promise.all([
       getFeedPersonalizationPolicy(),
       listViewerPetSignals(viewerId),
-      listPreferredPetTypeIdsByUserId(viewerId),
       listViewerRecentBehaviorEvents(viewerId, 20),
       listViewerRecentDwellEvents(viewerId, 20),
       listViewerRecentBookmarkedPosts(viewerId, 20),
     ]);
-  const normalizedPreferredPetTypeIds = Array.from(
-    new Set(
-      preferredPetTypeIds.filter(
-        (petTypeId): petTypeId is string =>
-          typeof petTypeId === "string" && petTypeId.length > 0,
-      ),
-    ),
-  );
-  const preferredCommunities =
-    normalizedPreferredPetTypeIds.length > 0
-      ? await prisma.community
-          .findMany({
-            where: {
-              id: { in: normalizedPreferredPetTypeIds },
-              isActive: true,
-            },
-            select: {
-              tags: true,
-            },
-          })
-          .catch((error) => {
-            if (isMissingCommunityBoardSchemaError(error)) {
-              return [];
-            }
-            throw error;
-          })
-      : [];
   const recentReactions = supportsPostReactionsField()
     ? await prisma.postReaction
         .findMany({
@@ -1136,12 +1060,6 @@ async function listViewerPersonalizationContext(
   return {
     policy,
     petSignals,
-    preferredPetTypeIds: normalizedPreferredPetTypeIds,
-    preferredInterestLabels: dedupeInterestLabels(
-      preferredCommunities.flatMap((community) =>
-        community.tags.map((tag) => normalizeInterestLabel(tag)),
-      ),
-    ),
     recentEngagementPetTypeIds: dedupeInterestLabels(
       positiveReactions.map((reaction) => reaction.post.petTypeId),
     ),
@@ -1176,8 +1094,6 @@ export async function applyPetPersonalization<T extends FeedLikePost>(
   const viewerContext = await listViewerPersonalizationContext(viewerId);
   if (
     viewerContext.petSignals.length === 0 &&
-    viewerContext.preferredPetTypeIds.length === 0 &&
-    viewerContext.preferredInterestLabels.length === 0 &&
     viewerContext.recentEngagementPetTypeIds.length === 0 &&
     viewerContext.recentNegativePetTypeIds.length === 0 &&
     viewerContext.recentEngagementInterestLabels.length === 0 &&

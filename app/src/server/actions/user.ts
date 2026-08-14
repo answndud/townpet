@@ -13,7 +13,6 @@ import {
 } from "@/server/cache/query-cache";
 import {
   setPrimaryNeighborhood,
-  updatePreferredPetTypes,
   updateProfile,
   updateProfileImage,
 } from "@/server/services/user.service";
@@ -107,27 +106,6 @@ export async function updateProfileImageAction(input: unknown): Promise<UserActi
     revalidatePath("/bookmarks");
     revalidatePath(`/users/${user.id}`);
     bumpUserPresentationCaches();
-    return { ok: true };
-  } catch (error) {
-    if (error instanceof ServiceError) {
-      return { ok: false, code: error.code, message: error.message };
-    }
-
-    return {
-      ok: false,
-      code: "INTERNAL_SERVER_ERROR",
-      message: "서버 오류가 발생했습니다.",
-    };
-  }
-}
-
-export async function updatePreferredPetTypesAction(input: unknown): Promise<UserActionResult> {
-  try {
-    const user = await requireCurrentUser();
-    await updatePreferredPetTypes({ userId: user.id, input });
-    revalidatePath("/");
-    revalidatePath("/feed");
-    revalidatePath("/profile");
     return { ok: true };
   } catch (error) {
     if (error instanceof ServiceError) {

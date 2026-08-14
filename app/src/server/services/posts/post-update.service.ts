@@ -4,6 +4,7 @@ import { findMatchedForbiddenKeywords } from "@/lib/forbidden-keyword-policy";
 import { moderateContactContent } from "@/lib/contact-policy";
 import { prisma } from "@/lib/prisma";
 import { evaluateAdminOnlyPostWritePolicy } from "@/lib/post-write-policy";
+import { isCommonBoardPostType } from "@/lib/community-board";
 import { postUpdateSchema } from "@/lib/validations/post";
 import {
   getForbiddenKeywords,
@@ -32,6 +33,17 @@ export async function updatePost({ postId, authorId, input }: UpdatePostParams) 
 
   if (parsed.data.scope === PostScope.LOCAL && !parsed.data.neighborhoodId) {
     throw new ServiceError("동네 정보가 필요합니다.", "NEIGHBORHOOD_REQUIRED", 400);
+  }
+
+  if (parsed.data.petTypeId !== undefined) {
+    const existingType = await prisma.post.findUnique({ where: { id: postId }, select: { type: true } });
+    if (existingType && isCommonBoardPostType(existingType.type) && parsed.data.petTypeId) {
+      throw new ServiceError("공용 게시판 글에는 동물 게시판 분류를 지정할 수 없습니다.", "POST_COMMUNITY_FORBIDDEN", 400);
+    }
+    if (parsed.data.petTypeId) {
+      const community = await prisma.community.findFirst({ where: { id: parsed.data.petTypeId, isActive: true }, select: { id: true } });
+      if (!community) throw new ServiceError("유효한 동물 게시판 분류가 아닙니다.", "POST_COMMUNITY_INVALID", 400);
+    }
   }
 
   const normalizedImageUrls = normalizeImageUrls(parsed.data.imageUrls);

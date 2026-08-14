@@ -61,34 +61,6 @@ function buildFallbackAudienceKey(input: {
   return parts.join(":");
 }
 
-function normalizePreferredPetTypeLabels(labels?: string[]) {
-  if (!Array.isArray(labels)) {
-    return [];
-  }
-
-  return Array.from(
-    new Set(
-      labels
-        .map((label) => label.trim())
-        .filter((label) => label.length > 0),
-    ),
-  ).slice(0, 3);
-}
-
-function normalizePreferredInterestLabels(labels?: string[]) {
-  if (!Array.isArray(labels)) {
-    return [];
-  }
-
-  return Array.from(
-    new Set(
-      labels
-        .map((label) => label.trim())
-        .filter((label) => label.length > 0),
-    ),
-  ).slice(0, 3);
-}
-
 function normalizeRecentEngagementLabels(labels?: string[]) {
   if (!Array.isArray(labels)) {
     return [];
@@ -101,6 +73,14 @@ function normalizeRecentEngagementLabels(labels?: string[]) {
         .filter((label) => label.length > 0),
     ),
   ).slice(0, 3);
+}
+
+function normalizePreferredPetTypeLabels(labels?: string[]) {
+  return Array.isArray(labels) ? Array.from(new Set(labels.map((label) => label.trim()).filter(Boolean))).slice(0, 3) : [];
+}
+
+function normalizePreferredInterestLabels(labels?: string[]) {
+  return Array.isArray(labels) ? Array.from(new Set(labels.map((label) => label.trim()).filter(Boolean))).slice(0, 3) : [];
 }
 
 function normalizeRecentBehaviorLabels(labels?: string[]) {
@@ -143,38 +123,6 @@ function normalizeRecentBookmarkLabels(labels?: string[]) {
         .filter((label) => label.length > 0),
     ),
   ).slice(0, 3);
-}
-
-function appendPreferredPetTypeHint(description: string, preferredPetTypeLabels: string[]) {
-  if (preferredPetTypeLabels.length === 0) {
-    return description;
-  }
-
-  return `${description} 선택한 커뮤니티 선호도 2차 신호로 함께 반영합니다.`;
-}
-
-function buildPreferredPetTypeEmphasis(preferredPetTypeLabels: string[]) {
-  if (preferredPetTypeLabels.length === 0) {
-    return null;
-  }
-
-  return `선호 커뮤니티 ${preferredPetTypeLabels.join(", ")}`;
-}
-
-function buildPreferredInterestEmphasis(preferredInterestLabels: string[]) {
-  if (preferredInterestLabels.length === 0) {
-    return null;
-  }
-
-  return `관심 태그 ${preferredInterestLabels.join(", ")}`;
-}
-
-function appendPreferredInterestHint(description: string, preferredInterestLabels: string[]) {
-  if (preferredInterestLabels.length === 0) {
-    return description;
-  }
-
-  return `${description} 관심 태그와 콘텐츠 분류 신호도 함께 반영합니다.`;
 }
 
 function buildRecentEngagementEmphasis(recentEngagementLabels: string[]) {
@@ -241,6 +189,22 @@ function appendRecentBookmarkHint(description: string, recentBookmarkLabels: str
   return `${description} 최근 북마크한 글 7차 신호도 약하게 반영합니다.`;
 }
 
+function appendPreferredPetTypeHint(description: string, labels: string[]) {
+  return labels.length > 0 ? `${description} 게시판 탐색 신호도 함께 반영합니다.` : description;
+}
+
+function buildPreferredPetTypeEmphasis(labels: string[]) {
+  return labels.length > 0 ? `게시판 ${labels.join(", ")}` : null;
+}
+
+function buildPreferredInterestEmphasis(labels: string[]) {
+  return labels.length > 0 ? `관심 주제 ${labels.join(", ")}` : null;
+}
+
+function appendPreferredInterestHint(description: string, labels: string[]) {
+  return labels.length > 0 ? `${description} 콘텐츠 분류 신호도 함께 반영합니다.` : description;
+}
+
 export function resolveFeedAudienceContext({
   segment,
   fallbackPet,
@@ -260,12 +224,8 @@ export function resolveFeedAudienceContext({
   recentDwellLabels?: string[];
   recentBookmarkLabels?: string[];
 }): FeedAudienceContext {
-  const normalizedPreferredPetTypeLabels = normalizePreferredPetTypeLabels(
-    preferredPetTypeLabels,
-  );
-  const normalizedPreferredInterestLabels = normalizePreferredInterestLabels(
-    preferredInterestLabels,
-  );
+  const normalizedPreferredPetTypeLabels = normalizePreferredPetTypeLabels(preferredPetTypeLabels);
+  const normalizedPreferredInterestLabels = normalizePreferredInterestLabels(preferredInterestLabels);
   const normalizedRecentEngagementLabels = normalizeRecentEngagementLabels(
     recentEngagementLabels,
   );
@@ -478,7 +438,7 @@ export function buildFeedPersonalizationSummary(context: FeedAudienceContext) {
     return {
       title:
         context.preferredPetTypeLabels.length > 0
-          ? "선호 커뮤니티 기준으로 기본 맞춤 추천 중"
+          ? "게시판 기준으로 기본 맞춤 추천 중"
           : context.preferredInterestLabels.length > 0
             ? "관심 태그 기준으로 기본 맞춤 추천 중"
             : context.recentEngagementLabels.length > 0

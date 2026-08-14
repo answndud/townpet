@@ -69,7 +69,7 @@ describe("remaining compact user control accessibility", () => {
       "src/components/posts/feed-search-form.tsx",
       "src/components/notifications/notification-bell.tsx",
     ].map(readSource).join("\n");
-    const feedHoverMenuCode = readSource("src/components/navigation/feed-hover-menu.tsx");
+    const feedHoverMenuCode = readSource("src/components/navigation/animal-board-hover-menu.tsx");
 
     expect(dismissibleDetailsCode).toContain('document.addEventListener("pointerdown"');
     expect(dismissibleDetailsCode).toContain('document.addEventListener("focusin"');
@@ -82,19 +82,15 @@ describe("remaining compact user control accessibility", () => {
     expect(menuSources).toContain("useDismissibleLayer");
     expect(menuSources).toContain("data-dismissible-details-close");
     expect(feedHoverMenuCode).toContain('document.addEventListener("pointerdown"');
-    expect(feedHoverMenuCode).toContain('document.addEventListener("focusin"');
+    expect(feedHoverMenuCode).toContain('document.addEventListener("keydown"');
     expect(feedHoverMenuCode).toContain('event.key === "Escape"');
   });
 
-  it("keeps feed hover pet menu actions compact but hierarchy-safe", () => {
-    const code = readSource("src/components/navigation/feed-hover-menu.tsx");
-
-    expect(code).toContain("FEED_HOVER_MENU_TEXT_ACTION_CLASS_NAME");
-    expect(code).toContain("FEED_HOVER_MENU_SAVE_ACTION_CLASS_NAME");
-    expect(code).toContain("inline-flex min-h-10 items-center justify-center rounded-md bg-[#3567b5]");
-    expect(code).toContain("hover:underline hover:underline-offset-4");
-    expect(code).not.toContain("tp-btn-soft px-2.5 py-1 text-[11px] font-semibold text-[#204f8a]");
-    expect(code).not.toContain("tp-btn-soft px-2 py-1 text-[11px] font-semibold text-[#204f8a]");
+  it("keeps the animal board menu keyboard accessible", () => {
+    const code = readSource("src/components/navigation/animal-board-hover-menu.tsx");
+    expect(code).toContain('event.key === "Escape"');
+    expect(code).toContain('event.key === "ArrowDown"');
+    expect(code).toContain('role="menuitem"');
   });
 
   it("keeps feed error recovery actions mobile-safe without legacy 30px buttons", () => {

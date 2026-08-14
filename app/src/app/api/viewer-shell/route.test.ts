@@ -51,7 +51,6 @@ describe("GET /api/viewer-shell contract", () => {
         userId: null,
         canModerate: false,
         unreadNotificationCount: 0,
-        preferredPetTypeIds: [],
       },
     });
     expect(response.headers.get("cache-control")).toBe("no-store");
@@ -62,7 +61,6 @@ describe("GET /api/viewer-shell contract", () => {
     mockGetUserById.mockResolvedValue({
       id: "user-1",
       role: UserRole.MODERATOR,
-      preferredPetTypes: [{ petTypeId: "pet-1" }, { petTypeId: "pet-2" }],
     } as never);
     mockCountUnreadNotifications.mockResolvedValue(4);
 
@@ -78,7 +76,6 @@ describe("GET /api/viewer-shell contract", () => {
         userId: "user-1",
         canModerate: true,
         unreadNotificationCount: 4,
-        preferredPetTypeIds: ["pet-1", "pet-2"],
       },
     });
   });
@@ -97,7 +94,6 @@ describe("GET /api/viewer-shell contract", () => {
         userId: null,
         canModerate: false,
         unreadNotificationCount: 0,
-        preferredPetTypeIds: [],
       },
     });
     expect(mockMonitorUnhandledError).not.toHaveBeenCalled();
@@ -108,7 +104,6 @@ describe("GET /api/viewer-shell contract", () => {
     mockGetUserById.mockResolvedValue({
       id: "user-1",
       role: UserRole.USER,
-      preferredPetTypes: [],
     } as never);
     mockCountUnreadNotifications.mockRejectedValue(
       new ServiceError("schema sync required", "SCHEMA_SYNC_REQUIRED", 503),
@@ -125,7 +120,6 @@ describe("GET /api/viewer-shell contract", () => {
         userId: "user-1",
         canModerate: false,
         unreadNotificationCount: 0,
-        preferredPetTypeIds: [],
       },
     });
   });

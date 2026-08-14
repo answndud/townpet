@@ -59,10 +59,10 @@ describe("viewer-shell-sync", () => {
     const listener = vi.fn();
     const unsubscribe = subscribeViewerShellSync(listener);
 
-    emitViewerShellSync({ reason: "preferred-pet-types-updated" });
+    emitViewerShellSync({ reason: "viewer-shell-updated" });
 
     expect(listener).toHaveBeenCalledWith({
-      reason: "preferred-pet-types-updated",
+      reason: "viewer-shell-updated",
     });
 
     unsubscribe();

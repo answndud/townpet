@@ -20,6 +20,9 @@ export const buildPostDetailBaseInclude = (includeGuestAuthor = true) =>
     neighborhood: {
       select: { id: true, name: true, city: true },
     },
+    petType: {
+      select: { id: true, labelKo: true },
+    },
     images: {
       select: { url: true, order: true },
     },

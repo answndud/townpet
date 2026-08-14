@@ -125,13 +125,13 @@ describe("feed personalization helpers", () => {
     expect(buildFeedPersonalizationSummary(context)).toMatchObject({
       title: "강아지 · 말티즈 · 소형 · 성체 기준으로 맞춤 추천 중",
       emphasis:
-        "세그먼트 신뢰도 83% · 선호 커뮤니티 강아지 일상, 강아지 건강 · 관심 태그 산책, 건강 · 최근 반응 산책, 후기 · 최근 클릭/광고 반응 말티즈, 산책 · 최근 오래 읽은 글 건강, 산책 · 최근 북마크 사료, 간식",
+          "세그먼트 신뢰도 83% · 게시판 강아지 일상, 강아지 건강 · 관심 주제 산책, 건강 · 최근 반응 산책, 후기 · 최근 클릭/광고 반응 말티즈, 산책 · 최근 오래 읽은 글 건강, 산책 · 최근 북마크 사료, 간식",
     });
     expect(buildFeedPersonalizationSummary(context).description).toContain(
-      "선택한 커뮤니티 선호도 2차 신호로 함께 반영합니다.",
+      "게시판 탐색 신호도 함께 반영합니다.",
     );
     expect(buildFeedPersonalizationSummary(context).description).toContain(
-      "관심 태그와 콘텐츠 분류 신호도 함께 반영합니다.",
+      "콘텐츠 분류 신호도 함께 반영합니다.",
     );
     expect(buildFeedPersonalizationSummary(context).description).toContain(
       "최근 좋아요/싫어요 반응 4차 신호도 약하게 반영합니다.",
@@ -158,9 +158,9 @@ describe("feed personalization helpers", () => {
     });
 
     expect(buildFeedPersonalizationSummary(context)).toMatchObject({
-      title: "선호 커뮤니티 기준으로 기본 맞춤 추천 중",
+        title: "게시판 기준으로 기본 맞춤 추천 중",
       emphasis:
-        "선호 커뮤니티 강아지 일상, 강아지 건강 · 관심 태그 산책, 건강 · 최근 반응 산책, 후기 · 최근 클릭/광고 반응 말티즈, 산책 · 최근 오래 읽은 글 건강, 산책 · 최근 북마크 사료, 간식",
+          "게시판 강아지 일상, 강아지 건강 · 관심 주제 산책, 건강 · 최근 반응 산책, 후기 · 최근 클릭/광고 반응 말티즈, 산책 · 최근 오래 읽은 글 건강, 산책 · 최근 북마크 사료, 간식",
     });
   });
 
@@ -176,7 +176,7 @@ describe("feed personalization helpers", () => {
     expect(buildFeedPersonalizationSummary(context)).toMatchObject({
       title: "관심 태그 기준으로 기본 맞춤 추천 중",
       emphasis:
-        "관심 태그 산책, 건강 · 최근 반응 산책, 후기 · 최근 클릭/광고 반응 말티즈, 산책 · 최근 오래 읽은 글 건강, 산책 · 최근 북마크 사료, 간식",
+          "관심 주제 산책, 건강 · 최근 반응 산책, 후기 · 최근 클릭/광고 반응 말티즈, 산책 · 최근 오래 읽은 글 건강, 산책 · 최근 북마크 사료, 간식",
     });
   });
 

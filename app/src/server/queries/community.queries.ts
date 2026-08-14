@@ -2,6 +2,7 @@ import { CommonBoardType, PostStatus, PostType, Prisma } from "@prisma/client";
 import { cache } from "react";
 
 import { prisma } from "@/lib/prisma";
+import { getAnimalBoardByCode } from "@/lib/animal-board-catalog";
 import { buildVisibleAuthorFilter } from "@/lib/sanction-visibility";
 import { buildStructuredSearchVariants } from "@/lib/structured-field-normalization";
 import { createStaticQueryCacheKey, withQueryCache } from "@/server/cache/query-cache";
@@ -30,6 +31,15 @@ type CommunityNavItem = {
   labelKo: string;
   tags?: string[];
 };
+
+export async function getCommunityForAnimalBoardCode(code: string) {
+  const catalogItem = getAnimalBoardByCode(code);
+  if (!catalogItem) return null;
+  return prisma.community.findFirst({
+    where: { slug: catalogItem.communitySlug, isActive: true, category: { isActive: true } },
+    select: { id: true, slug: true, labelKo: true },
+  });
+}
 
 export type AdoptionBoardPostItem = {
   id: string;

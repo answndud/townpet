@@ -64,7 +64,6 @@ test.describe("auth session hardening", () => {
         isAuthenticated: boolean;
         canModerate: boolean;
         unreadNotificationCount: number;
-        preferredPetTypeIds: string[];
       };
     };
     expect(staleSessionPayload).toMatchObject({
@@ -73,7 +72,6 @@ test.describe("auth session hardening", () => {
         isAuthenticated: false,
         canModerate: false,
         unreadNotificationCount: 0,
-        preferredPetTypeIds: [],
       },
     });
 

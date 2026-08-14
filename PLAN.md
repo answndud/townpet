@@ -6,7 +6,7 @@
 
 ## Active
 
-No active work.
+현재 진행 중인 작업이 없습니다. 다음 작업은 Backlog에서 선택합니다.
 
 ## Backlog
 

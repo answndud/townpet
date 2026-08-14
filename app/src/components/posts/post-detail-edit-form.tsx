@@ -28,6 +28,7 @@ type NeighborhoodOption = {
   city: string;
   district: string;
 };
+type CommunityOption = { id: string; labelKo: string };
 
 type PostDetailEditFormProps = {
   postId: string;
@@ -38,6 +39,8 @@ type PostDetailEditFormProps = {
   imageUrls: string[];
   neighborhoods: NeighborhoodOption[];
   isAuthenticated: boolean;
+  petTypeId?: string | null;
+  communities?: CommunityOption[];
   guestPassword?: string;
 };
 
@@ -71,6 +74,8 @@ export function PostDetailEditForm({
   imageUrls,
   neighborhoods,
   isAuthenticated,
+  petTypeId = null,
+  communities = [],
   guestPassword = "",
 }: PostDetailEditFormProps) {
   const router = useRouter();
@@ -89,6 +94,7 @@ export function PostDetailEditForm({
       neighborhoodId: neighborhoodId ?? "",
       imageUrls: contentImageUrls.length > 0 ? contentImageUrls : imageUrls,
       guestPassword,
+      petTypeId: petTypeId ?? "",
     };
   });
 
@@ -133,6 +139,7 @@ export function PostDetailEditForm({
         scope: isAuthenticated ? formState.scope : PostScope.GLOBAL,
         imageUrls: serializedImageUrls,
         neighborhoodId: showNeighborhood ? formState.neighborhoodId : null,
+        petTypeId: formState.petTypeId || null,
         guestPassword: isAuthenticated ? undefined : formState.guestPassword,
       };
 
@@ -201,6 +208,16 @@ export function PostDetailEditForm({
             required
           />
         </label>
+
+        {communities.length > 0 ? (
+          <label className="tp-form-label">
+            동물 게시판
+            <select className="tp-input-soft min-h-10 px-3 py-2 text-sm" value={formState.petTypeId} onChange={(event) => setFormState((prev) => ({ ...prev, petTypeId: event.target.value }))}>
+              <option value="">분류 없음</option>
+              {communities.map((community) => <option key={community.id} value={community.id}>{community.labelKo}</option>)}
+            </select>
+          </label>
+        ) : null}
 
         <label className="tp-form-label">
           범위

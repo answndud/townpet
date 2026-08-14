@@ -34,25 +34,6 @@ const MAX_DEBUG_DELAY_MS = 5_000;
 
 export type FeedPeriod = (typeof FEED_PERIOD_OPTIONS)[number];
 
-export function extractPreferredPetTypeIds(user: unknown) {
-  if (!user || typeof user !== "object") {
-    return [];
-  }
-
-  const preferredPetTypes = (user as { preferredPetTypes?: unknown }).preferredPetTypes;
-  if (!Array.isArray(preferredPetTypes)) {
-    return [];
-  }
-
-  return preferredPetTypes
-    .map((item) =>
-      item && typeof item === "object"
-        ? (item as { petTypeId?: string | null }).petTypeId
-        : null,
-    )
-    .filter((petTypeId): petTypeId is string => typeof petTypeId === "string");
-}
-
 export async function maybeDebugDelay(value?: string) {
   if (process.env.NODE_ENV === "production") {
     return;

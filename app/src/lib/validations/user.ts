@@ -85,15 +85,6 @@ export const profileImageUpdateSchema = z.object({
     .refine((value) => isTrustedUploadUrl(value), "허용된 업로드 이미지 URL만 사용할 수 있습니다."),
 });
 
-export const preferredPetTypesSchema = z
-  .object({
-    petTypeIds: z.array(z.string().cuid()).max(50),
-  })
-  .transform((value) => ({
-    petTypeIds: Array.from(new Set(value.petTypeIds)),
-  }));
-
 export type ProfileUpdateInput = z.infer<typeof profileUpdateSchema>;
 export type NeighborhoodSelectInput = z.infer<typeof neighborhoodSelectSchema>;
 export type ProfileImageUpdateInput = z.infer<typeof profileImageUpdateSchema>;
-export type PreferredPetTypesInput = z.infer<typeof preferredPetTypesSchema>;

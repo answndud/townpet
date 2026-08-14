@@ -9,25 +9,6 @@ import { jsonError, jsonOk } from "@/server/response";
 import { ServiceError } from "@/server/services/service-error";
 import { prepareNotificationList } from "@/server/services/notifications/notification.service";
 
-function extractPreferredPetTypeIds(user: unknown) {
-  if (!user || typeof user !== "object") {
-    return [];
-  }
-
-  const preferredPetTypes = (user as { preferredPetTypes?: unknown }).preferredPetTypes;
-  if (!Array.isArray(preferredPetTypes)) {
-    return [];
-  }
-
-  return preferredPetTypes
-    .map((item) =>
-      item && typeof item === "object"
-        ? (item as { petTypeId?: string | null }).petTypeId
-        : null,
-    )
-    .filter((petTypeId): petTypeId is string => typeof petTypeId === "string");
-}
-
 export async function GET(request: NextRequest) {
   try {
     const session = await auth().catch(() => null);
@@ -39,7 +20,6 @@ export async function GET(request: NextRequest) {
           userId: null,
           canModerate: false,
           unreadNotificationCount: 0,
-          preferredPetTypeIds: [] as string[],
         },
         {
           headers: {
@@ -68,7 +48,6 @@ export async function GET(request: NextRequest) {
         userId,
         canModerate,
         unreadNotificationCount,
-        preferredPetTypeIds: extractPreferredPetTypeIds(currentUser),
       },
       {
         headers: {
