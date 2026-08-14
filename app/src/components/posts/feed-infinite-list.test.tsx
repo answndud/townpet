@@ -39,7 +39,7 @@ describe("FeedInfiniteList", () => {
     vi.clearAllMocks();
   });
 
-  it("keeps feed rows dense without reserving blank thumbnail or comment columns", () => {
+  it("renders compact title-first rows without body content or thumbnail columns", () => {
     const posts: FeedPostItem[] = [
       basePost,
       {
@@ -62,13 +62,11 @@ describe("FeedInfiniteList", () => {
     );
 
     expect(html.match(/data-testid="feed-post-item"/g)).toHaveLength(2);
-    expect(html).toContain("min-h-[60px] grid-cols-[minmax(0,1fr)]");
-    expect(html).toContain("grid-cols-[minmax(0,1fr)_48px]");
-    expect(html).not.toContain("invisible aspect-square rounded-lg");
-    expect(html).not.toContain("justify-end self-center");
-    expect(html).not.toContain("h-[22px]");
+    expect(html).toContain("min-h-[46px] min-w-0 items-center");
+    expect(html).toContain("flex min-w-0 flex-1 items-center gap-2");
+    expect(html).not.toContain("sample.jpg");
+    expect(html).not.toContain("본문");
     expect(html).not.toContain("자유게시판");
-    expect(html).toContain("사진 글");
     expect(html).toContain("댓글 4");
   });
 
@@ -116,7 +114,7 @@ describe("FeedInfiniteList", () => {
     expect(html).toContain("TownPet 운영자 정리");
     expect(html).toContain("확인");
     expect(html).not.toContain("운영자 정리</span></span>");
-    expect(html).toContain("min-h-[60px] grid-cols-[minmax(0,1fr)]");
+    expect(html).toContain("min-h-[46px] min-w-0 items-center");
   });
 
   it("shows compact lost-found status and role actions in feed rows", () => {

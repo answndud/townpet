@@ -2,11 +2,15 @@
 @import "suneditor/dist/css/suneditor.min.css";
 
 :root {
-  --background: #f8fafd;
-  --foreground: #1e3f74;
-  --muted: #5f7ea8;
+  --background: #f7f8fc;
+  --foreground: #101828;
+  --muted: #667085;
   --surface: #ffffff;
-  --border: #dbe6f5;
+  --border: #e4e7ec;
+  --border-strong: #cfd4dc;
+  --surface-muted: #f8f9fc;
+  --brand-soft: #eef2ff;
+  --shadow-subtle: 0 1px 2px rgba(16, 24, 40, 0.04);
   --font-sans:
     -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR",
     "Segoe UI", sans-serif;
@@ -69,21 +73,21 @@ body {
 }
 
 .tp-page-bg {
-  background: linear-gradient(180deg, #fbfdff 0%, #f8fbff 58%, #f3f8ff 100%);
+  background: var(--background);
 }
 
 .tp-hero {
-  border: 1px solid #d9e5f7;
-  border-radius: 12px;
-  background: linear-gradient(180deg, #fafdff 0%, #f2f7ff 100%);
-  box-shadow: 0 10px 24px rgba(30, 63, 116, 0.06);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow-subtle);
 }
 
 .tp-card {
-  border: 1px solid #d9e5f7;
-  border-radius: 12px;
-  background: #fff;
-  box-shadow: 0 10px 24px rgba(30, 63, 116, 0.05);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow-subtle);
 }
 
 .tp-soft-card {

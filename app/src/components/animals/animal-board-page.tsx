@@ -53,16 +53,16 @@ export async function AnimalBoardPage({ code, boardType, searchParams }: { code:
     petType: row.petType ? { ...row.petType, categoryLabelKo: row.petType.category.labelKo } : null,
     };
   }) as unknown as React.ComponentProps<typeof FeedInfiniteList>["initialItems"];
-  return <main className="tp-page-bg min-h-screen"><div className="mx-auto w-full max-w-[1320px] px-4 py-5 sm:px-6 lg:px-10">
-    <section className="tp-hero p-4 sm:p-5"><p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#3f5f90]">동물 게시판</p><h1 className="mt-1 text-2xl font-bold text-[#10284a]">{title}</h1><p className="mt-1 text-xs text-[#4f678d]">동물별 게시판으로 이동해 같은 관심사의 글을 독립적으로 탐색하세요.</p></section>
-    <nav className="mt-3 flex gap-1.5 overflow-x-auto border-b border-[#dbe6f6] pb-2" aria-label="동물 게시판 유형">{tabs.map((tab) => <Link key={tab.slug || "all"} href={`${hrefForTab(tab.slug)}${searchSuffix}`} aria-current={(tab.type ?? undefined) === postType || (!postType && !tab.type) ? "page" : undefined} className={`tp-filter-pill whitespace-nowrap px-3 py-2 text-xs ${(tab.type ?? undefined) === postType || (!postType && !tab.type) ? "tp-filter-pill-active" : ""}`}>{tab.label}</Link>)}</nav>
-    <section id="feed-list" className="mt-4 overflow-hidden border-y border-[#d9e5f7] bg-white sm:rounded-xl sm:border">
-      <header className="flex flex-col gap-3 border-b border-[#e5edf8] bg-[#fbfdff] px-4 py-3 sm:px-5 md:flex-row md:items-center md:justify-between">
+  return <main className="tp-page-bg min-h-screen"><div className="mx-auto w-full max-w-[1320px] px-3 py-4 sm:px-4 sm:py-5 lg:px-6">
+    <section className="tp-hero px-4 py-3 sm:px-5"><p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#667085]">동물 게시판</p><h1 className="mt-1 text-xl font-semibold tracking-[-0.03em] text-[#101828] sm:text-2xl">{title}</h1></section>
+    <nav className="mt-3 flex gap-1 overflow-x-auto border-b border-[#e4e7ec]" aria-label="동물 게시판 유형">{tabs.map((tab) => <Link key={tab.slug || "all"} href={`${hrefForTab(tab.slug)}${searchSuffix}`} aria-current={(tab.type ?? undefined) === postType || (!postType && !tab.type) ? "page" : undefined} className={`inline-flex min-h-10 shrink-0 items-center border-b-2 border-transparent px-3 text-xs font-semibold text-[#667085] transition-colors hover:text-[#4338ca] ${(tab.type ?? undefined) === postType || (!postType && !tab.type) ? "border-[#4f46e5] text-[#4338ca]" : ""}`}>{tab.label}</Link>)}</nav>
+    <section id="feed-list" className="mt-3 overflow-hidden border border-[#e4e7ec] bg-white sm:rounded-lg">
+      <header className="flex flex-col gap-2 border-b border-[#e4e7ec] bg-white px-4 py-2.5 sm:px-5 md:flex-row md:items-center md:justify-between">
         <div className="min-w-0">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#5a7398]">게시글</p>
-          <h2 className="mt-1 truncate text-base font-semibold text-[#1e3f74]">{title} 게시글</h2>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#667085]">게시글</p>
+          <h2 className="mt-0.5 truncate text-sm font-semibold text-[#101828]">{title} 게시글</h2>
         </div>
-        <span className="shrink-0 rounded-full border border-[#dbe6f6] bg-white px-2.5 py-1 text-[11px] font-semibold text-[#5a7398]">
+        <span className="shrink-0 rounded border border-[#e4e7ec] bg-white px-2 py-1 text-[11px] font-semibold text-[#667085]">
           {total.toLocaleString("ko-KR")}개
         </span>
         <div className="w-full md:ml-auto md:w-auto">

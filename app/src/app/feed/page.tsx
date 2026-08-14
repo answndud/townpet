@@ -770,7 +770,7 @@ export default async function Home({ searchParams }: HomePageProps) {
           }
         />
 
-        <section id="feed-list" className="animate-fade-up overflow-hidden border-y border-[#d9e5f7] bg-white sm:rounded-xl sm:border">
+        <section id="feed-list" className="animate-fade-up overflow-hidden border border-[#e4e7ec] bg-white sm:rounded-lg">
           {items.length === 0 ? (
             <EmptyState
               eyebrow={emptyStateCopy.eyebrow}

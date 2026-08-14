@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import type { PostType } from "@prisma/client";
 import {
@@ -234,9 +233,7 @@ const lostFoundStatusLabel: Record<string, string> = {
 };
 
 const FEED_POST_ITEM_CLASS_NAME =
-  "group grid min-h-[60px] grid-cols-[minmax(0,1fr)] items-center gap-x-2 px-3 py-2 transition hover:bg-[#fbfdff] sm:min-h-[64px] sm:px-4 md:min-h-[62px] md:gap-x-2.5";
-const FEED_POST_ITEM_WITH_THUMBNAIL_CLASS_NAME =
-  `${FEED_POST_ITEM_CLASS_NAME} grid-cols-[minmax(0,1fr)_48px] sm:grid-cols-[minmax(0,1fr)_52px]`;
+  "group flex min-h-[46px] min-w-0 items-center gap-2 border-b border-[#e4e7ec] px-4 py-2 transition-colors hover:bg-[#f8f9ff] last:border-b-0 sm:min-h-[48px]";
 const FEED_AD_CTA_CLASS_NAME =
   "mt-2 inline-flex min-h-10 items-center justify-center rounded-md bg-[#3567b5] px-3 text-xs font-semibold text-[#fbfdff] transition hover:bg-[#2f5da4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1";
 
@@ -327,10 +324,6 @@ function isDefaultFreeBoardType(type: PostType) {
   return type === "FREE_POST" || type === "FREE_BOARD" || type === "DAILY_SHARE";
 }
 
-function shouldRenderFeedThumbnail(post: FeedPostItem) {
-  return typeof post.images[0]?.url === "string" && post.images[0].url.length > 0;
-}
-
 function buildLostFoundFeedSummary(post: FeedPostItem) {
   const alert = post.lostFoundAlert;
   if (post.type !== "LOST_FOUND" || !alert) {
@@ -346,39 +339,6 @@ function buildLostFoundFeedSummary(post: FeedPostItem) {
     .filter(Boolean)
     .join(" · ");
 }
-
-const FeedPostThumbnail = memo(function FeedPostThumbnail({
-  href,
-  title,
-  imageUrl,
-  onClick,
-}: {
-  href: string;
-  title: string;
-  imageUrl: string;
-  onClick?: () => void;
-}) {
-  return (
-    <Link
-      href={href}
-      prefetch={false}
-      className="group/thumb relative block aspect-square overflow-hidden rounded-lg border border-[#dce7f6] bg-[#eef5ff] transition hover:border-[#bfd4ef]"
-      onClick={onClick}
-    >
-      <Image
-        src={imageUrl}
-        alt={title}
-        fill
-        sizes="48px"
-        className="object-cover transition duration-300 group-hover/thumb:scale-[1.03]"
-      />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-5 bg-[linear-gradient(180deg,transparent_0%,rgba(16,40,74,0.36)_100%)]" />
-      <span className="sr-only">
-        사진 글
-      </span>
-    </Link>
-  );
-});
 
 export function FeedInfiniteList({
   initialItems,
@@ -595,7 +555,7 @@ export function FeedInfiniteList({
 
   return (
     <>
-      <div className="divide-y divide-[#e7eef9]" data-testid="feed-post-list">
+      <div data-testid="feed-post-list">
         {items.map((post, index) => {
           const meta = postTypeMeta[post.type];
           const signals = getPostSignals({
@@ -697,11 +657,6 @@ export function FeedInfiniteList({
               postId: post.id,
             });
           };
-          const hasThumbnail = shouldRenderFeedThumbnail(post);
-          const thumbnailUrl = hasThumbnail ? post.images[0]?.url ?? "" : "";
-          const nonThumbnailSignals = hasThumbnail
-            ? signals.filter((signal) => signal !== "image")
-            : signals;
 
           return (
             <div key={post.id}>
@@ -727,9 +682,10 @@ export function FeedInfiniteList({
               ) : null}
               <PostListItemShell
                 testId="feed-post-item"
+                variant="feed"
                 href={detailHref}
                 prefetch={false}
-                articleClassName={`${hasThumbnail ? FEED_POST_ITEM_WITH_THUMBNAIL_CLASS_NAME : FEED_POST_ITEM_CLASS_NAME} ${
+                articleClassName={`${FEED_POST_ITEM_CLASS_NAME} ${
                   post.status === "HIDDEN" ? "bg-[#fff7f7]" : ""
                 }`}
                 topContent={
@@ -747,7 +703,7 @@ export function FeedInfiniteList({
                         {[locationLabel, petTypeLabel].filter(Boolean).join(" · ")}
                       </span>
                     ) : null}
-                    <PostSignalIcons signals={nonThumbnailSignals} />
+                    <PostSignalIcons signals={signals} />
                   </div>
                 }
                 title={
@@ -763,8 +719,8 @@ export function FeedInfiniteList({
                 onTitleClick={() => {
                   handlePostClick();
                 }}
-                bottomContent={
-                  <div className="mt-0.5 flex min-w-0 flex-col gap-0.5 overflow-hidden text-[11px] leading-[1.35] text-[#5f789d] sm:flex-row sm:items-center sm:gap-x-1.5">
+                meta={
+                  <div className="flex min-w-0 max-w-[48vw] flex-col items-end gap-0.5 overflow-hidden text-[11px] leading-[1.3] text-[#667085] sm:max-w-[42vw] sm:flex-row sm:items-center sm:justify-end sm:gap-x-1.5">
                     {lostFoundSummary ? (
                       <div className="flex min-w-0 items-center gap-x-1.5 overflow-hidden">
                         <span className="min-w-0 truncate text-[#5d779e]">
@@ -823,19 +779,7 @@ export function FeedInfiniteList({
                     </span>
                   </div>
                 }
-                metaClassName="min-w-0 self-center"
-                meta={
-                  hasThumbnail ? (
-                    <FeedPostThumbnail
-                      href={detailHref}
-                      title={post.title}
-                      imageUrl={thumbnailUrl}
-                      onClick={() => {
-                        handlePostClick();
-                      }}
-                    />
-                  ) : undefined
-                }
+                metaClassName="min-w-0 shrink-0 self-center"
               />
             </div>
           );

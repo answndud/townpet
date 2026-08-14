@@ -18,6 +18,7 @@ type PostListItemShellProps = {
   prefetch?: boolean;
   onTitleClick?: () => void;
   testId?: string;
+  variant?: "default" | "feed";
 };
 
 export function PostListItemShell({
@@ -37,17 +38,23 @@ export function PostListItemShell({
   prefetch,
   onTitleClick,
   testId,
+  variant = "default",
 }: PostListItemShellProps) {
+  const isFeed = variant === "feed";
+
   return (
     <article
       data-testid={testId}
       className={
         articleClassName ??
-        "grid gap-3 px-4 py-4 sm:px-5 md:grid-cols-[minmax(0,1fr)_196px] md:items-start"
+        (isFeed
+          ? "group flex min-w-0 items-center gap-2 border-b border-[#e4e7ec] px-4 py-2 transition-colors hover:bg-[#f8f9ff]"
+          : "grid gap-3 px-4 py-4 sm:px-5 md:grid-cols-[minmax(0,1fr)_196px] md:items-start")
       }
     >
-      <div className="min-w-0">
-        {topContent}
+      <div className={isFeed ? "flex min-w-0 flex-1 items-center gap-2" : "min-w-0"}>
+        {isFeed && topContent ? <div className="min-w-0 shrink-0">{topContent}</div> : null}
+        {!isFeed ? topContent : null}
         <Link
           href={href}
           prefetch={prefetch}
@@ -63,14 +70,15 @@ export function PostListItemShell({
         {excerpt ? (
           <p className={excerptClassName ?? "mt-1 truncate text-[13px] text-[#4c6488]"}>{excerpt}</p>
         ) : null}
-        {bottomContent}
+        {!isFeed ? bottomContent : null}
       </div>
       {sideContent !== undefined ? (
         <div className={sideClassName ?? "text-xs text-[#4f678d]"}>{sideContent}</div>
       ) : null}
       {meta ? (
-        <div className={metaClassName ?? "text-xs text-[#4f678d] md:text-right"}>{meta}</div>
+        <div className={metaClassName ?? (isFeed ? "min-w-0 shrink-0 text-right text-[11px] text-[#667085]" : "text-xs text-[#4f678d] md:text-right")}>{meta}</div>
       ) : null}
+      {isFeed && bottomContent ? <div className="hidden">{bottomContent}</div> : null}
     </article>
   );
 }

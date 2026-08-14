@@ -220,7 +220,7 @@ function GuestFeedShell({ data }: { data: GuestFeedPayload }) {
       >
         <div className={isUltraDense ? "space-y-2" : "space-y-3"}>
           <header
-            className={`animate-float-in border-y border-[#e1e9f5] bg-[#fbfdff] sm:rounded-xl sm:border ${
+            className={`animate-float-in border border-[#e4e7ec] bg-white sm:rounded-lg ${
               isUltraDense ? "px-3 py-2 sm:px-4 sm:py-3" : "px-3 py-2.5 sm:px-5 sm:py-3"
             }`}
           >
@@ -236,9 +236,6 @@ function GuestFeedShell({ data }: { data: GuestFeedPayload }) {
                 >
                   {feedTitle}
                 </h1>
-                <p className="mt-1.5 hidden max-w-[640px] text-sm leading-6 text-[#4f678d] sm:block">
-                  비회원에게 공개된 커뮤니티 글과 인기글을 확인할 수 있습니다.
-                </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <Link
@@ -284,7 +281,7 @@ function GuestFeedShell({ data }: { data: GuestFeedPayload }) {
             }
           />
 
-          <section id="feed-list" className="animate-fade-up overflow-hidden border-y border-[#d9e5f7] bg-white sm:rounded-xl sm:border">
+          <section id="feed-list" className="animate-fade-up overflow-hidden border border-[#e4e7ec] bg-white sm:rounded-lg">
             {items.length === 0 ? (
               <EmptyState
                 eyebrow={emptyStateCopy.eyebrow}
