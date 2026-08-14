@@ -66,7 +66,7 @@ export function AnimalBoardHoverMenu({ boardActive = false }: Props) {
   }, [open]);
 
   return (
-    <div ref={rootRef} className="w-full md:w-auto" onMouseEnter={() => { clearClose(); setOpen(true); }} onMouseLeave={scheduleClose}>
+    <div ref={rootRef} className="relative w-full md:w-auto" onMouseEnter={() => { clearClose(); setOpen(true); }} onMouseLeave={scheduleClose}>
       <div className="md:hidden">
         <div className={APP_SHELL_MOBILE_DISCLOSURE_ROW_CLASS_NAME}>
           <button type="button" className={getAppShellMobileDisclosureTriggerClassName(boardActive)} aria-expanded={mobileOpen} onClick={() => setMobileOpen((value) => !value)}>
@@ -87,7 +87,7 @@ export function AnimalBoardHoverMenu({ boardActive = false }: Props) {
           동물 게시판
         </button>
         {open ? (
-          <div className="absolute z-50 pt-2" onMouseEnter={clearClose}>
+          <div className="absolute left-0 top-full z-50 pt-2" onMouseEnter={clearClose}>
             <div className="min-w-64 rounded-lg border border-[#d8e4f6] bg-white p-2 shadow-[0_14px_36px_rgba(31,63,113,0.16)]" role="menu" aria-label="동물 게시판">
               <Link href={buildAnimalBoardHref("all")} role="menuitem" className="block rounded-md px-3 py-2 text-xs font-semibold text-[#173963] hover:bg-[#f3f8ff]">전체 동물 게시판</Link>
               <div className="my-1 border-t border-[#edf2f9]" />

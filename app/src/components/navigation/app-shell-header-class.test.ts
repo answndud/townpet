@@ -112,7 +112,8 @@ describe("app shell header classes", () => {
       "utf8",
     );
 
-    expect(source).toContain("absolute z-50 pt-2");
+    expect(source).toContain("relative w-full md:w-auto");
+    expect(source).toContain("absolute left-0 top-full z-50 pt-2");
     expect(source).toContain("onMouseEnter={clearClose}");
   });
 

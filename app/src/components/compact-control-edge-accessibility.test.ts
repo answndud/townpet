@@ -93,6 +93,16 @@ describe("remaining compact user control accessibility", () => {
     expect(code).toContain('role="menuitem"');
   });
 
+  it("anchors the animal menu to its trigger and keeps animal pages scoped", () => {
+    const menuCode = readSource("src/components/navigation/animal-board-hover-menu.tsx");
+    const boardPageCode = readSource("src/components/animals/animal-board-page.tsx");
+
+    expect(menuCode).toContain("absolute left-0 top-full z-50 pt-2");
+    expect(boardPageCode).toContain('aria-label="동물 게시판 유형"');
+    expect(boardPageCode).not.toContain("ANIMAL_BOARD_CATALOG.filter");
+    expect(boardPageCode).not.toContain("candidate.label} 게시판");
+  });
+
   it("keeps feed error recovery actions mobile-safe without legacy 30px buttons", () => {
     const code = readSource("src/app/feed/error.tsx");
 
