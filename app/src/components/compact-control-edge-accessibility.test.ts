@@ -93,6 +93,15 @@ describe("remaining compact user control accessibility", () => {
     expect(code).toContain('role="menuitem"');
   });
 
+  it("keeps common boards visible as a separate navigation menu", () => {
+    const source = readSource("src/components/navigation/common-board-hover-menu.tsx");
+    expect(source).toContain("공통 게시판");
+    expect(source).toContain("COMMON_BOARD_NAV_ITEMS");
+    expect(source).toContain('event.key === "Escape"');
+    expect(source).toContain('event.key === "ArrowDown"');
+    expect(source).toContain('role="menuitem"');
+  });
+
   it("anchors the animal menu to its trigger and keeps animal pages scoped", () => {
     const menuCode = readSource("src/components/navigation/animal-board-hover-menu.tsx");
     const boardPageCode = readSource("src/components/animals/animal-board-page.tsx");

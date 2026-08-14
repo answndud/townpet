@@ -13,6 +13,17 @@ const COMMON_BOARD_TYPE = {
   VOLUNTEER: "VOLUNTEER",
 } as const satisfies Record<CommonBoardType, CommonBoardType>;
 
+export const COMMON_BOARD_NAV_ITEMS = [
+  { key: "adoption", label: "입양", href: "/boards/adoption" },
+  { key: "lost-found", label: "분실/목격", href: "/lost-found" },
+  { key: "hospital", label: "동물병원 후기", href: "/feed/guest?type=HOSPITAL_REVIEW" },
+  { key: "walk", label: "동네 산책코스", href: "/feed/guest?type=WALK_ROUTE" },
+  { key: "meetup", label: "동네 모임", href: "/feed/guest?type=MEETUP" },
+  { key: "market", label: "중고거래", href: "/feed/guest?type=MARKET_LISTING" },
+  { key: "care", label: "돌봄", href: "/feed/guest?type=CARE_REQUEST" },
+  { key: "volunteer", label: "봉사", href: "/feed/guest?type=SHELTER_VOLUNTEER" },
+] as const;
+
 export const COMMON_BOARD_POST_TYPES = [
   "HOSPITAL_REVIEW",
   "LOST_FOUND",

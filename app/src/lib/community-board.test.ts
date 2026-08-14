@@ -3,9 +3,27 @@ import { describe, expect, it } from "vitest";
 
 import {
   buildBoardListingHref,
+  COMMON_BOARD_NAV_ITEMS,
   getDedicatedBoardPathByPostType,
   resolveViewerFeedBasePath,
 } from "@/lib/community-board";
+
+describe("COMMON_BOARD_NAV_ITEMS", () => {
+  it("exposes every common board independently of animal board state", () => {
+    expect(COMMON_BOARD_NAV_ITEMS.map((item) => item.label)).toEqual([
+      "입양",
+      "분실/목격",
+      "동물병원 후기",
+      "동네 산책코스",
+      "동네 모임",
+      "중고거래",
+      "돌봄",
+      "봉사",
+    ]);
+    expect(COMMON_BOARD_NAV_ITEMS.map((item) => item.href)).toContain("/boards/adoption");
+    expect(COMMON_BOARD_NAV_ITEMS.map((item) => item.href)).toContain("/lost-found");
+  });
+});
 
 describe("getDedicatedBoardPathByPostType", () => {
   it("returns a dedicated board path for adoption listings", () => {
