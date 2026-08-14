@@ -31,7 +31,7 @@ TownPet의 공개 피드·동물 게시판·공통 게시판을 최신 `townpet-
 - [x] `app/src/components/posts/feed-infinite-list.tsx`, `app/src/components/posts/post-list-item-shell.tsx`를 단일 행 모델로 개편한다.
   - 기본 순서: 게시판 chip, 범위/동물 chip, 제목, 우측 작성자·날짜·간단한 engagement meta.
   - 본문 excerpt, 본문성 summary, 불필요한 운영 설명은 기본 목록에서 제거한다.
-  - 분실·목격/거래 등 정책상 필요한 상태와 위치/가격 등 핵심 필드는 짧은 meta로만 유지한다.
+  - 분실·목격/거래 등 정책상 세부 상태·위치·가격·운영 출처는 목록에서 제거하고 게시글 상세에서 제공한다.
   - desktop은 `display:flex; align-items:center`, mobile은 제목을 `min-width:0`·line clamp로 줄여 가로 overflow를 막는다.
   - hover/focus-visible, 링크 영역, screen reader label, 긴 제목/긴 게시판명 회귀를 함께 정의한다.
 - [x] 다음 화면이 동일 primitive를 사용하도록 적용한다.
@@ -61,6 +61,7 @@ TownPet의 공개 피드·동물 게시판·공통 게시판을 최신 `townpet-
   - `pnpm -C app build`
   - migration/schema 변경이 없더라도 변경 범위에 맞는 문서 index check를 확인한다.
 - [x] 화면 회귀와 테스트가 통과해 기능 단위 커밋 후 main push/deploy와 production 화면을 재확인했다. 최신 배포 커밋은 `e32f92a5`다.
+- [x] production 피드 행을 Spring Boot 기준으로 재점검해 제목·분류·작성자·날짜만 남기고 조회/반응/정책 요약/액션 링크를 제거했다. 배포 커밋은 `66295b4e`다.
 
 ## Backlog
 
