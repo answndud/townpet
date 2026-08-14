@@ -17,28 +17,28 @@ TownPet의 공개 피드·동물 게시판·공통 게시판을 최신 `townpet-
 
 ### Phase 1 — Atlas 토큰과 공용 셸 정리
 
-- [ ] `app/src/app/globals.css`의 공용 토큰을 Atlas 기준으로 재정렬한다.
+- [x] `app/src/app/globals.css`의 공용 토큰을 Atlas 기준으로 재정렬한다.
   - page background `#f7f8fc` 계열, white surface, hairline border, `4/6/8px` radius, `0 1px 2px` 수준 shadow, compact control을 기준으로 한다.
   - 기존 `tp-*` 계층과 실제 사용 중인 전역 규칙을 조사해 중복·상충 cascade를 제거하고, 임시 override를 남발하지 않는다.
-- [ ] `app/src/app/feed/guest/page.tsx`, `app/src/app/feed/page.tsx`, `app/src/components/animals/animal-board-page.tsx`, 공통 게시판 페이지의 공용 shell을 맞춘다.
+- [x] `app/src/app/feed/guest/page.tsx`, `app/src/app/feed/page.tsx`, `app/src/components/animals/animal-board-page.tsx`, 공통 게시판 페이지의 공용 shell을 맞춘다.
   - `max-width: 1320px`, 페이지 좌우 padding, hero 높이, toolbar/list 간격을 통일한다.
   - hero는 제목·breadcrumb·글쓰기만 남기고 페이지마다 다른 과도한 설명/패딩을 정리한다.
   - 게시판 탭, 검색 toolbar, 상태/빈 상태, pagination도 같은 surface/border 밀도를 사용한다.
-- [ ] header와 dropdown은 compact Atlas 톤으로 조정하되 기존 hover bridge, 바깥 클릭, Escape, Arrow/Home/End, 모바일 동작을 보존한다.
+- [x] header와 dropdown은 compact Atlas 톤으로 조정하되 기존 hover bridge, 바깥 클릭, Escape, Arrow/Home/End, 모바일 동작을 보존한다.
 
 ### Phase 2 — 공용 제목 중심 목록 primitive
 
-- [ ] `app/src/components/posts/feed-infinite-list.tsx`, `app/src/components/posts/post-list-item-shell.tsx`를 단일 행 모델로 개편한다.
+- [x] `app/src/components/posts/feed-infinite-list.tsx`, `app/src/components/posts/post-list-item-shell.tsx`를 단일 행 모델로 개편한다.
   - 기본 순서: 게시판 chip, 범위/동물 chip, 제목, 우측 작성자·날짜·간단한 engagement meta.
   - 본문 excerpt, 본문성 summary, 불필요한 운영 설명은 기본 목록에서 제거한다.
   - 분실·목격/거래 등 정책상 필요한 상태와 위치/가격 등 핵심 필드는 짧은 meta로만 유지한다.
   - desktop은 `display:flex; align-items:center`, mobile은 제목을 `min-width:0`·line clamp로 줄여 가로 overflow를 막는다.
   - hover/focus-visible, 링크 영역, screen reader label, 긴 제목/긴 게시판명 회귀를 함께 정의한다.
-- [ ] 다음 화면이 동일 primitive를 사용하도록 적용한다.
+- [x] 다음 화면이 동일 primitive를 사용하도록 적용한다.
   - `/`, `/feed/guest`, `/feed`
   - `/animals/all`, `/animals/dog`, `/animals/cat`, `/animals/:animalCode/:boardType`
   - `/boards/all`, `/boards/adoption`, `/boards/lost-found`, `/boards/hospital-reviews` 및 기존 공통 게시판 route
-- [ ] 목록 테스트를 보강한다.
+- [x] 목록 테스트를 보강한다.
   - 제목은 렌더링되고 본문은 목록 행에 렌더링되지 않음
   - catalog 기반 동물/게시판 표시명과 범위 chip 유지
   - 운영 상태/정책 필드가 필요한 게시판에서만 compact meta로 표시
@@ -46,21 +46,21 @@ TownPet의 공개 피드·동물 게시판·공통 게시판을 최신 `townpet-
 
 ### Phase 3 — 반응형·브라우저 회귀·품질 게이트
 
-- [ ] 인앱 브라우저에서 Spring Boot `http://localhost:5173/?view=all`과 TownPet 화면을 같은 viewport로 비교한다.
+- [ ] 인앱 브라우저에서 Spring Boot `http://localhost:5173/?view=all`과 최신 TownPet production 화면을 같은 viewport로 비교한다. GitHub push는 완료했으나 현재 Vercel CLI가 `Not authorized`로 배포되지 않아 최신 production 확인이 남아 있다.
   - desktop 1280×900: header, hero, toolbar, 목록 행 높이·폭·우측 meta 정렬
   - mobile 390×844: header/menu, toolbar, chip/title wrapping, horizontal overflow, pagination
 - [ ] 다음 TownPet route를 직접 확인한다.
   - `/`, `/feed/guest`, `/animals/all`, `/animals/dog`, `/animals/dog/questions`
   - `/boards/all`, `/boards/adoption`, `/boards/lost-found`, `/boards/hospital-reviews`, `/posts/:id`
   - 동물 게시판과 공통 게시판이 서로의 탭/글을 중복 표시하지 않는지 확인한다.
-- [ ] 검증을 실행하고 실제 결과만 기록한다.
+- [x] 검증을 실행하고 실제 결과만 기록한다.
   - `pnpm -C app lint`
   - `pnpm -C app typecheck`
   - 관련 Vitest 및 `pnpm -C app test`
   - 관련 Playwright smoke/e2e
   - `pnpm -C app build`
   - migration/schema 변경이 없더라도 변경 범위에 맞는 문서 index check를 확인한다.
-- [ ] 화면 회귀와 테스트가 통과하면 기능 단위 커밋 후 main push/deploy와 production 화면을 재확인한다.
+- [ ] 화면 회귀와 테스트가 통과하면 기능 단위 커밋 후 main push/deploy와 production 화면을 재확인한다. 커밋 `397bcc57`과 `main` push는 완료했으며, Vercel 인증 보완 후 production 재확인이 필요하다.
 
 ## Backlog
 
