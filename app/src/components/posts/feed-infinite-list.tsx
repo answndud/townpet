@@ -3,7 +3,6 @@
 import Link from "next/link";
 import type { PostType } from "@prisma/client";
 import {
-  memo,
   useCallback,
   useEffect,
   useMemo,
@@ -12,11 +11,7 @@ import {
 } from "react";
 
 import { FeedPostMetaBadges } from "@/components/posts/feed-post-meta-badges";
-import {
-  buildOperatorContentMetaLabel,
-} from "@/components/posts/operator-content-source-panel";
 import { PostListItemShell } from "@/components/posts/post-list-item-shell";
-import { PostSignalIcons } from "@/components/posts/post-signal-icons";
 import { FoundingMemberBadge } from "@/components/user/founding-member-badge";
 import type {
   FeedAudienceSourceValue,
@@ -27,16 +22,7 @@ import {
   sendFeedPersonalizationMetric,
 } from "@/lib/feed-personalization-tracking";
 import { formatKoreanMonthDay } from "@/lib/date-format";
-import {
-  getPostSignals,
-  postTypeMeta,
-} from "@/lib/post-presenter";
-import {
-  buildFeedStatsLabel,
-} from "@/lib/feed-list-presenter";
-import {
-  getLostFoundAlertTypeLabel,
-} from "@/lib/lost-found-labels";
+import { postTypeMeta } from "@/lib/post-presenter";
 import { resolvePublicGuestDisplayName } from "@/lib/public-guest-identity";
 import { resolveUserDisplayName } from "@/lib/user-display";
 import type { ReviewCategory } from "@/lib/review-category";
@@ -175,63 +161,6 @@ const SCROLL_RESTORE_TTL_MS = 30 * 60 * 1000;
 const READ_POSTS_STORAGE_KEY = "feed:read-posts:v1";
 const MAX_READ_POSTS = 500;
 
-const adoptionStatusLabel: Record<string, string> = {
-  OPEN: "입양 가능",
-  RESERVED: "상담 중",
-  ADOPTED: "입양 완료",
-  CLOSED: "마감",
-};
-
-const volunteerStatusLabel: Record<string, string> = {
-  OPEN: "모집 중",
-  FULL: "정원 마감",
-  CLOSED: "종료",
-  CANCELLED: "취소",
-};
-
-const marketTypeLabel: Record<string, string> = {
-  SELL: "판매",
-  RENT: "대여",
-  SHARE: "나눔",
-};
-
-const marketConditionLabel: Record<string, string> = {
-  NEW: "새상품",
-  LIKE_NEW: "거의 새것",
-  GOOD: "사용감 적음",
-  FAIR: "사용감 있음",
-};
-
-const marketStatusLabel: Record<string, string> = {
-  AVAILABLE: "거래 가능",
-  RESERVED: "예약 중",
-  SOLD: "거래 완료",
-  CANCELLED: "취소",
-};
-
-const careTypeLabel: Record<string, string> = {
-  WALK: "산책",
-  FEEDING: "급식",
-  VISIT_CARE: "방문 돌봄",
-  HOSPITAL_COMPANION: "병원 동행",
-  EMERGENCY_CHECK: "긴급 체크",
-  ERRAND: "심부름",
-};
-
-const careStatusLabel: Record<string, string> = {
-  OPEN: "요청 중",
-  MATCHED: "매칭됨",
-  IN_PROGRESS: "진행 중",
-  COMPLETED: "완료",
-  CANCELLED: "취소",
-};
-
-const lostFoundStatusLabel: Record<string, string> = {
-  ACTIVE: "제보 접수 중",
-  RESOLVED: "해결됨",
-  CLOSED: "종료",
-};
-
 const FEED_POST_ITEM_CLASS_NAME =
   "group flex min-h-[46px] min-w-0 flex-wrap items-center gap-x-2 gap-y-1 border-b border-[#e4e7ec] px-4 py-2 transition-colors hover:bg-[#f8f9ff] last:border-b-0 sm:min-h-[48px] sm:flex-nowrap sm:gap-y-0";
 const FEED_AD_CTA_CLASS_NAME =
@@ -241,19 +170,6 @@ type StoredReadPost = {
   id: string;
   ts: number;
 };
-
-function formatListDate(value: string | Date | null | undefined) {
-  if (!value) {
-    return null;
-  }
-
-  const date = value instanceof Date ? value : new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return null;
-  }
-
-  return formatKoreanMonthDay(date);
-}
 
 function parseReadPosts(raw: string | null): StoredReadPost[] {
   if (!raw) {
@@ -297,47 +213,8 @@ function parseReadPosts(raw: string | null): StoredReadPost[] {
   }
 }
 
-type FeedStatsLabelProps = {
-  createdAt: string;
-  viewCount: number;
-  likeCount: number;
-  commentCount: number;
-};
-
-const FeedStatsLabel = memo(function FeedStatsLabel({
-  createdAt,
-  viewCount,
-  likeCount,
-  commentCount,
-}: FeedStatsLabelProps) {
-  const statsLabel = buildFeedStatsLabel({
-    createdAt,
-    viewCount,
-    likeCount,
-    commentCount,
-  });
-
-  return <span className="break-keep text-[#5a759c]">{statsLabel}</span>;
-});
-
 function isDefaultFreeBoardType(type: PostType) {
   return type === "FREE_POST" || type === "FREE_BOARD" || type === "DAILY_SHARE";
-}
-
-function buildLostFoundFeedSummary(post: FeedPostItem) {
-  const alert = post.lostFoundAlert;
-  if (post.type !== "LOST_FOUND" || !alert) {
-    return null;
-  }
-
-  return [
-    getLostFoundAlertTypeLabel(alert.alertType),
-    alert.status ? (lostFoundStatusLabel[alert.status] ?? alert.status) : null,
-    alert.petType?.trim() || null,
-    alert.lastSeenLocation?.trim() || null,
-  ]
-    .filter(Boolean)
-    .join(" · ");
 }
 
 export function FeedInfiniteList({
@@ -558,80 +435,6 @@ export function FeedInfiniteList({
       <div data-testid="feed-post-list">
         {items.map((post, index) => {
           const meta = postTypeMeta[post.type];
-          const signals = getPostSignals({
-            title: post.title,
-            content: post.content,
-            imageCount: post.images.length,
-          });
-          const locationLabel = post.neighborhood
-            ? `${post.neighborhood.city} ${post.neighborhood.name}`
-            : null;
-          const petTypeLabel = post.petType
-            ? post.petType.categoryLabelKo === post.petType.labelKo
-              ? post.petType.labelKo
-              : `${post.petType.categoryLabelKo} · ${post.petType.labelKo}`
-            : null;
-          const adoptionSummary = post.adoptionListing
-            ? [
-                post.adoptionListing.shelterName,
-                post.adoptionListing.region,
-                post.adoptionListing.animalType,
-                post.adoptionListing.status
-                  ? (adoptionStatusLabel[post.adoptionListing.status] ?? post.adoptionListing.status)
-                  : null,
-              ]
-                .filter(Boolean)
-                .join(" · ")
-            : null;
-          const volunteerSummary = post.volunteerRecruitment
-            ? [
-                post.volunteerRecruitment.shelterName,
-                post.volunteerRecruitment.region,
-                formatListDate(post.volunteerRecruitment.volunteerDate),
-                post.volunteerRecruitment.status
-                  ? (volunteerStatusLabel[post.volunteerRecruitment.status] ??
-                    post.volunteerRecruitment.status)
-                  : null,
-              ]
-                .filter(Boolean)
-                .join(" · ")
-            : null;
-          const marketSummary = post.marketListing
-            ? [
-                post.marketListing.listingType
-                  ? (marketTypeLabel[post.marketListing.listingType] ?? post.marketListing.listingType)
-                  : null,
-                post.marketListing.price !== null && post.marketListing.price !== undefined
-                  ? `${post.marketListing.price.toLocaleString()}원`
-                  : null,
-                post.marketListing.condition
-                  ? (marketConditionLabel[post.marketListing.condition] ?? post.marketListing.condition)
-                  : null,
-                post.marketListing.status
-                  ? (marketStatusLabel[post.marketListing.status] ?? post.marketListing.status)
-                  : null,
-              ]
-                .filter(Boolean)
-                .join(" · ")
-            : null;
-          const careSummary = post.careRequest
-            ? [
-                post.careRequest.careType
-                  ? (careTypeLabel[post.careRequest.careType] ?? post.careRequest.careType)
-                  : null,
-                formatListDate(post.careRequest.startsAt),
-                post.careRequest.rewardAmount !== null && post.careRequest.rewardAmount !== undefined
-                  ? `${post.careRequest.rewardAmount.toLocaleString()}원`
-                  : null,
-                post.careRequest.isUrgent ? "긴급" : null,
-                post.careRequest.status
-                  ? (careStatusLabel[post.careRequest.status] ?? post.careRequest.status)
-                  : null,
-              ]
-                .filter(Boolean)
-                .join(" · ")
-            : null;
-          const lostFoundSummary = buildLostFoundFeedSummary(post);
           const isGuestPost = Boolean(post.guestAuthorId || post.guestDisplayName?.trim());
           const authorLabel = isGuestPost
             ? resolvePublicGuestDisplayName(post.guestDisplayName)
@@ -698,12 +501,6 @@ export function FeedInfiniteList({
                         className="mb-0 shrink-0 justify-start gap-1 text-[10px] [&_.tp-chip-base]:px-1.5 [&_.tp-chip-base]:py-[2px] [&_.tp-chip-base]:text-[10px]"
                       />
                     ) : null}
-                    {locationLabel || petTypeLabel ? (
-                      <span className="min-w-0 truncate text-[11px] font-medium text-[#6280aa]">
-                        {[locationLabel, petTypeLabel].filter(Boolean).join(" · ")}
-                      </span>
-                    ) : null}
-                    <PostSignalIcons signals={signals} />
                   </div>
                 }
                 title={
@@ -720,63 +517,14 @@ export function FeedInfiniteList({
                   handlePostClick();
                 }}
                 meta={
-                  <div className="flex min-w-0 max-w-full flex-col items-start gap-0.5 overflow-hidden text-[11px] leading-[1.3] text-[#667085] sm:max-w-[42vw] sm:flex-row sm:items-center sm:justify-end sm:gap-x-1.5">
-                    {lostFoundSummary ? (
-                      <div className="flex min-w-0 items-center gap-x-1.5 overflow-hidden">
-                        <span className="min-w-0 truncate text-[#5d779e]">
-                          {lostFoundSummary}
-                        </span>
-                        <span className="hidden shrink-0 text-[#bfd0e4] sm:inline">·</span>
-                        <Link
-                          href={`${detailHref}#lost-found-share-tools`}
-                          prefetch={false}
-                          className="shrink-0 font-semibold text-[#2f5da4] hover:text-[#1f4f8f] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1"
-                          onClick={handlePostClick}
-                        >
-                          공유 도구
-                        </Link>
-                        <Link
-                          href={`${detailHref}#comments`}
-                          prefetch={false}
-                          className="shrink-0 font-semibold text-[#2f5da4] hover:text-[#1f4f8f] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1"
-                          onClick={handlePostClick}
-                        >
-                          목격 제보
-                        </Link>
-                        <span className="hidden shrink-0 text-[#bfd0e4] sm:inline">·</span>
-                      </div>
-                    ) : marketSummary || careSummary || adoptionSummary || volunteerSummary ? (
-                      <div className="flex min-w-0 items-center gap-x-1.5 overflow-hidden">
-                        <span className="min-w-0 shrink truncate text-[#5d779e]">
-                          {marketSummary ?? careSummary ?? adoptionSummary ?? volunteerSummary}
-                        </span>
-                        <span className="hidden shrink-0 text-[#bfd0e4] sm:inline">·</span>
-                      </div>
-                    ) : null}
-                    <div className="flex min-w-0 items-center gap-x-1.5 overflow-hidden">
-                      <span className="min-w-0 shrink truncate font-medium text-[#1f3f71]">
-                        {authorNode}
-                      </span>
-                      {post.isOperatorContent ? (
-                        <>
-                          <span className="shrink-0 text-[#bfd0e4]">·</span>
-                          <span className="min-w-0 truncate text-[#55749e]">
-                            {buildOperatorContentMetaLabel({
-                              sourceName: post.operatorSourceName,
-                              lastVerifiedAt: post.operatorLastVerifiedAt,
-                            })}
-                          </span>
-                        </>
-                      ) : null}
-                    </div>
-                    <span className="min-w-0 shrink-0 text-[#58739a]">
-                      <FeedStatsLabel
-                        createdAt={post.createdAt}
-                        viewCount={post.viewCount}
-                        likeCount={post.likeCount}
-                        commentCount={post.commentCount}
-                      />
+                  <div className="flex min-w-0 max-w-full items-center justify-start gap-x-1 text-[11px] leading-[1.3] text-[#667085] sm:max-w-[42vw] sm:justify-end">
+                    <span className="min-w-0 max-w-[12rem] truncate font-medium text-[#1f3f71]">
+                      {authorNode}
                     </span>
+                    <span aria-hidden="true" className="shrink-0 text-[#bfd0e4]">·</span>
+                    <time dateTime={post.createdAt} className="shrink-0 text-[#58739a]">
+                      {formatKoreanMonthDay(post.createdAt)}
+                    </time>
                   </div>
                 }
                 metaClassName="w-full min-w-0 basis-full self-center text-left sm:w-auto sm:shrink-0 sm:basis-auto sm:text-right"

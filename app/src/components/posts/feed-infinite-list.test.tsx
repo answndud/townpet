@@ -67,7 +67,11 @@ describe("FeedInfiniteList", () => {
     expect(html).not.toContain("sample.jpg");
     expect(html).not.toContain("본문");
     expect(html).not.toContain("자유게시판");
-    expect(html).toContain("댓글 4");
+    expect(html).toContain("작성자");
+    expect(html).toContain("5.21");
+    expect(html).not.toContain("댓글 4");
+    expect(html).not.toContain("조회");
+    expect(html).not.toContain("좋아요");
   });
 
   it("shows a compact founding member badge in the author metadata row", () => {
@@ -93,7 +97,7 @@ describe("FeedInfiniteList", () => {
     expect(html).toContain("text-[10px]");
   });
 
-  it("shows operator source context in metadata without repeating the operator badge", () => {
+  it("keeps operator source details out of compact feed rows", () => {
     const html = renderToStaticMarkup(
       <FeedInfiniteList
         initialItems={[
@@ -111,13 +115,13 @@ describe("FeedInfiniteList", () => {
       />,
     );
 
-    expect(html).toContain("TownPet 운영자 정리");
-    expect(html).toContain("확인");
-    expect(html).not.toContain("운영자 정리</span></span>");
+    expect(html).toContain("작성자");
+    expect(html).not.toContain("TownPet 운영자 정리");
+    expect(html).not.toContain("확인");
     expect(html).toContain("min-h-[46px] min-w-0 flex-wrap items-center");
   });
 
-  it("shows compact lost-found status and role actions in feed rows", () => {
+  it("keeps lost-found detail and role actions out of feed rows", () => {
     const html = renderToStaticMarkup(
       <FeedInfiniteList
         initialItems={[
@@ -144,11 +148,10 @@ describe("FeedInfiniteList", () => {
       />,
     );
 
-    expect(html).toContain("목격/보호 · 제보 접수 중 · 강아지 · 망원동 공원 북문");
-    expect(html).toContain('href="/posts/lost-found-1/guest#lost-found-share-tools"');
-    expect(html).toContain('href="/posts/lost-found-1/guest#comments"');
-    expect(html).toContain("공유 도구");
-    expect(html).toContain("목격 제보");
+    expect(html).toContain("망원동 강아지 목격 제보");
+    expect(html).not.toContain("망원동 공원 북문");
+    expect(html).not.toContain("공유 도구");
+    expect(html).not.toContain("목격 제보</a>");
     expect(html).not.toContain("tp-btn");
   });
 
