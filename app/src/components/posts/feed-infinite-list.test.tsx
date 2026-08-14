@@ -63,6 +63,7 @@ describe("FeedInfiniteList", () => {
 
     expect(html.match(/data-testid="feed-post-item"/g)).toHaveLength(2);
     expect(html).toContain("min-h-[46px] min-w-0 flex-wrap items-center");
+    expect(html).toContain("border-b border-[#d0d5dd]");
     expect(html).toContain("flex min-w-0 w-full flex-1 items-center gap-2");
     expect(html).not.toContain("sample.jpg");
     expect(html).not.toContain("본문");
