@@ -720,7 +720,7 @@ export function FeedInfiniteList({
                   handlePostClick();
                 }}
                 meta={
-                  <div className="flex min-w-0 max-w-[48vw] flex-col items-end gap-0.5 overflow-hidden text-[11px] leading-[1.3] text-[#667085] sm:max-w-[42vw] sm:flex-row sm:items-center sm:justify-end sm:gap-x-1.5">
+                  <div className="flex min-w-0 max-w-full flex-col items-start gap-0.5 overflow-hidden text-[11px] leading-[1.3] text-[#667085] sm:max-w-[42vw] sm:flex-row sm:items-center sm:justify-end sm:gap-x-1.5">
                     {lostFoundSummary ? (
                       <div className="flex min-w-0 items-center gap-x-1.5 overflow-hidden">
                         <span className="min-w-0 truncate text-[#5d779e]">
