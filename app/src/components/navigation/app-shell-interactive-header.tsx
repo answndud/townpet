@@ -184,7 +184,7 @@ export function AppShellInteractiveHeader() {
             )}
           </div>
         </div>
-        <nav className="flex flex-col gap-1.5 xl:flex-row xl:items-center xl:justify-between">
+        <nav className="flex flex-row items-center justify-end gap-1.5 xl:justify-between">
           <div className="flex flex-wrap items-center gap-1.5">
             <LazyFeedHoverMenu boardActive={boardNavActive} />
 
