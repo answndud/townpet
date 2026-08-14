@@ -57,7 +57,7 @@ TownPet의 공개 피드·동물 게시판·공통 게시판을 최신 `townpet-
   - `pnpm -C app lint`
   - `pnpm -C app typecheck`
   - 관련 Vitest 및 `pnpm -C app test`
-  - 관련 Playwright smoke/e2e 실행을 시도했으나 `.playwright-browsers` Chromium 실행 파일이 없어 실패했다. 동일 범위는 인앱 브라우저로 대체 확인했다.
+  - `PLAYWRIGHT_SKIP_WEBSERVER=1 PLAYWRIGHT_BASE_URL=https://townpet.vercel.app ... test e2e/feed-loading-skeleton.spec.ts --project=chromium` 통과 (1 passed).
   - `pnpm -C app build`
   - migration/schema 변경이 없더라도 변경 범위에 맞는 문서 index check를 확인한다.
 - [x] 화면 회귀와 테스트가 통과해 기능 단위 커밋 후 main push/deploy와 production 화면을 재확인했다. 최신 배포 커밋은 `e32f92a5`다.
