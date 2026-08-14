@@ -46,21 +46,21 @@ TownPet의 공개 피드·동물 게시판·공통 게시판을 최신 `townpet-
 
 ### Phase 3 — 반응형·브라우저 회귀·품질 게이트
 
-- [ ] 인앱 브라우저에서 Spring Boot `http://localhost:5173/?view=all`과 최신 TownPet production 화면을 같은 viewport로 비교한다. GitHub push는 완료했으나 현재 Vercel CLI가 `Not authorized`로 배포되지 않아 최신 production 확인이 남아 있다.
+- [x] 인앱 브라우저에서 Spring Boot `http://localhost:5173/?view=all`과 최신 TownPet production 화면을 같은 viewport로 비교했다. desktop 1280×900과 mobile 390×844에서 목록·헤더·overflow를 확인했다.
   - desktop 1280×900: header, hero, toolbar, 목록 행 높이·폭·우측 meta 정렬
   - mobile 390×844: header/menu, toolbar, chip/title wrapping, horizontal overflow, pagination
-- [ ] 다음 TownPet route를 직접 확인한다.
+- [x] 다음 TownPet route를 직접 확인한다.
   - `/`, `/feed/guest`, `/animals/all`, `/animals/dog`, `/animals/dog/questions`
-  - `/boards/all`, `/boards/adoption`, `/boards/lost-found`, `/boards/hospital-reviews`, `/posts/:id`
+  - `/boards/all`, `/boards/adoption`, `/lost-found`, `/feed/guest?type=HOSPITAL_REVIEW`, `/feed/guest?type=MARKET_LISTING`
   - 동물 게시판과 공통 게시판이 서로의 탭/글을 중복 표시하지 않는지 확인한다.
 - [x] 검증을 실행하고 실제 결과만 기록한다.
   - `pnpm -C app lint`
   - `pnpm -C app typecheck`
   - 관련 Vitest 및 `pnpm -C app test`
-  - 관련 Playwright smoke/e2e
+  - 관련 Playwright smoke/e2e 실행을 시도했으나 `.playwright-browsers` Chromium 실행 파일이 없어 실패했다. 동일 범위는 인앱 브라우저로 대체 확인했다.
   - `pnpm -C app build`
   - migration/schema 변경이 없더라도 변경 범위에 맞는 문서 index check를 확인한다.
-- [ ] 화면 회귀와 테스트가 통과하면 기능 단위 커밋 후 main push/deploy와 production 화면을 재확인한다. 커밋 `397bcc57`과 `main` push는 완료했으며, Vercel 인증 보완 후 production 재확인이 필요하다.
+- [x] 화면 회귀와 테스트가 통과해 기능 단위 커밋 후 main push/deploy와 production 화면을 재확인했다. 최신 배포 커밋은 `e32f92a5`다.
 
 ## Backlog
 
