@@ -15,10 +15,9 @@ describe("FeedPagination", () => {
 
     expect(html).toContain('aria-label="피드 페이지 이동"');
     expect(html).toContain('aria-current="page"');
-    expect(html).toContain("min-h-10");
-    expect(html).toContain("min-w-10");
-    expect(html).toContain("hover:underline hover:underline-offset-4");
-    expect(html).toContain("bg-[#3567b5]");
+    expect(html).toContain("min-h-7");
+    expect(html).toContain("min-w-7");
+    expect(html).toContain("bg-[#eef2ff]");
     expect(html).not.toContain("h-[30px]");
     expect(html).not.toContain("min-w-[30px]");
     expect(html).not.toContain("border-[#cbdcf5] bg-white");
@@ -27,7 +26,7 @@ describe("FeedPagination", () => {
     expect(html).toContain('href="/feed?page=4"');
   });
 
-  it("omits controls for a single page", () => {
+  it("keeps controls visible for a single page", () => {
     const html = renderToStaticMarkup(
       <FeedPagination
         resolvedPage={1}
@@ -36,6 +35,7 @@ describe("FeedPagination", () => {
       />,
     );
 
-    expect(html).toBe("");
+    expect(html).toContain('aria-label="피드 페이지 이동"');
+    expect(html).toContain('aria-current="page"');
   });
 });

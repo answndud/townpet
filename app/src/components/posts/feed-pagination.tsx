@@ -9,20 +9,16 @@ type FeedPaginationProps = {
 };
 
 const pageLinkBaseClass =
-  "inline-flex min-h-10 items-center justify-center rounded-md px-2 text-[11px] font-semibold leading-none transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1";
+  "inline-flex min-h-7 min-w-7 items-center justify-center rounded-sm px-1.5 text-[12px] font-semibold leading-none transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4f46e5]/20 focus-visible:ring-offset-1";
 
 export function FeedPagination({
   resolvedPage,
   totalPages,
   makeHref,
 }: FeedPaginationProps) {
-  if (totalPages <= 1) {
-    return null;
-  }
-
   return (
     <nav
-      className="border-t border-[#dbe6f6] bg-[#f8fbff] px-3 py-2"
+      className="border-t border-[#e4e7ec] bg-transparent px-3 py-1"
       aria-label="피드 페이지 이동"
     >
       <div className="flex flex-wrap items-center justify-center gap-1">
@@ -31,21 +27,21 @@ export function FeedPagination({
           aria-disabled={resolvedPage <= 1}
           className={`${pageLinkBaseClass} px-2.5 ${
             resolvedPage <= 1
-              ? "pointer-events-none text-[#91a6c6]"
-              : "tp-text-muted hover:text-[#2f5da4] hover:underline hover:underline-offset-4"
+              ? "pointer-events-none text-[#98a2b3]"
+              : "tp-text-muted hover:bg-[#f2f4f7] hover:text-[#4338ca]"
           }`}
         >
-          이전
+          &lt;
         </Link>
         {buildPaginationWindow(resolvedPage, totalPages).map((pageNumber) => (
           <Link
             key={`feed-page-${pageNumber}`}
             href={makeHref({ nextPage: pageNumber })}
             aria-current={pageNumber === resolvedPage ? "page" : undefined}
-            className={`${pageLinkBaseClass} min-w-10 ${
+            className={`${pageLinkBaseClass} ${
               pageNumber === resolvedPage
-                ? "bg-[#3567b5] text-[#fbfdff]"
-                : "tp-text-muted hover:text-[#2f5da4] hover:underline hover:underline-offset-4"
+                ? "bg-[#eef2ff] text-[#4338ca]"
+                : "tp-text-muted hover:bg-[#f2f4f7] hover:text-[#4338ca]"
             }`}
           >
             {pageNumber}
@@ -56,11 +52,11 @@ export function FeedPagination({
           aria-disabled={resolvedPage >= totalPages}
           className={`${pageLinkBaseClass} px-2.5 ${
             resolvedPage >= totalPages
-              ? "pointer-events-none text-[#91a6c6]"
-              : "tp-text-muted hover:text-[#2f5da4] hover:underline hover:underline-offset-4"
+              ? "pointer-events-none text-[#98a2b3]"
+              : "tp-text-muted hover:bg-[#f2f4f7] hover:text-[#4338ca]"
           }`}
         >
-          다음
+          &gt;
         </Link>
       </div>
     </nav>

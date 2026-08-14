@@ -318,7 +318,7 @@ function GuestFeedShell({ data }: { data: GuestFeedPayload }) {
                 queryKey={feedQueryKey}
               />
             )}
-            {items.length > 0 && totalPages > 1 ? (
+            {items.length > 0 ? (
               <FeedPagination
                 resolvedPage={resolvedPage}
                 totalPages={totalPages}
