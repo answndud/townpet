@@ -62,7 +62,7 @@ export function CommonBoardHoverMenu({ boardActive = false }: Props) {
   }, [open]);
 
   return (
-    <div ref={rootRef} className="relative w-full md:w-auto" onMouseEnter={() => { clearClose(); setOpen(true); }} onMouseLeave={scheduleClose}>
+    <div ref={rootRef} className="relative w-auto" onMouseEnter={() => { clearClose(); setOpen(true); }} onMouseLeave={scheduleClose}>
       <div className="md:hidden">
         <div className={APP_SHELL_MOBILE_DISCLOSURE_ROW_CLASS_NAME}>
           <button type="button" className={getAppShellMobileDisclosureTriggerClassName(boardActive)} aria-expanded={mobileOpen} onClick={() => setMobileOpen((value) => !value)}>공통 게시판</button>

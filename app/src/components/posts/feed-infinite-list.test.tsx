@@ -62,8 +62,8 @@ describe("FeedInfiniteList", () => {
     );
 
     expect(html.match(/data-testid="feed-post-item"/g)).toHaveLength(2);
-    expect(html).toContain("min-h-[46px] min-w-0 items-center");
-    expect(html).toContain("flex min-w-0 flex-1 items-center gap-2");
+    expect(html).toContain("min-h-[46px] min-w-0 flex-wrap items-center");
+    expect(html).toContain("flex min-w-0 w-full flex-1 items-center gap-2");
     expect(html).not.toContain("sample.jpg");
     expect(html).not.toContain("본문");
     expect(html).not.toContain("자유게시판");
@@ -114,7 +114,7 @@ describe("FeedInfiniteList", () => {
     expect(html).toContain("TownPet 운영자 정리");
     expect(html).toContain("확인");
     expect(html).not.toContain("운영자 정리</span></span>");
-    expect(html).toContain("min-h-[46px] min-w-0 items-center");
+    expect(html).toContain("min-h-[46px] min-w-0 flex-wrap items-center");
   });
 
   it("shows compact lost-found status and role actions in feed rows", () => {

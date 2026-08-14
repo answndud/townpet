@@ -52,7 +52,7 @@ export function PostListItemShell({
           : "grid gap-3 px-4 py-4 sm:px-5 md:grid-cols-[minmax(0,1fr)_196px] md:items-start")
       }
     >
-      <div className={isFeed ? "flex min-w-0 flex-1 items-center gap-2" : "min-w-0"}>
+      <div className={isFeed ? "flex min-w-0 w-full flex-1 items-center gap-2 sm:w-auto" : "min-w-0"}>
         {isFeed && topContent ? <div className="min-w-0 shrink-0">{topContent}</div> : null}
         {!isFeed ? topContent : null}
         <Link

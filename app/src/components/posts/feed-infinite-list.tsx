@@ -233,7 +233,7 @@ const lostFoundStatusLabel: Record<string, string> = {
 };
 
 const FEED_POST_ITEM_CLASS_NAME =
-  "group flex min-h-[46px] min-w-0 items-center gap-2 border-b border-[#e4e7ec] px-4 py-2 transition-colors hover:bg-[#f8f9ff] last:border-b-0 sm:min-h-[48px]";
+  "group flex min-h-[46px] min-w-0 flex-wrap items-center gap-x-2 gap-y-1 border-b border-[#e4e7ec] px-4 py-2 transition-colors hover:bg-[#f8f9ff] last:border-b-0 sm:min-h-[48px] sm:flex-nowrap sm:gap-y-0";
 const FEED_AD_CTA_CLASS_NAME =
   "mt-2 inline-flex min-h-10 items-center justify-center rounded-md bg-[#3567b5] px-3 text-xs font-semibold text-[#fbfdff] transition hover:bg-[#2f5da4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bfd3f0] focus-visible:ring-offset-1";
 
@@ -779,7 +779,7 @@ export function FeedInfiniteList({
                     </span>
                   </div>
                 }
-                metaClassName="min-w-0 shrink-0 self-center"
+                metaClassName="w-full min-w-0 basis-full self-center text-left sm:w-auto sm:shrink-0 sm:basis-auto sm:text-right"
               />
             </div>
           );

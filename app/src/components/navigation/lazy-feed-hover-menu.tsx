@@ -5,7 +5,7 @@ import { CommonBoardHoverMenu } from "@/components/navigation/common-board-hover
 
 export function LazyFeedHoverMenu({ boardActive = false }: { boardActive?: boolean }) {
   return (
-    <div className="flex w-full flex-wrap items-center gap-1.5 md:w-auto">
+    <div className="flex w-auto flex-wrap items-center gap-1.5">
       <CommonBoardHoverMenu boardActive={boardActive} />
       <AnimalBoardHoverMenu boardActive={boardActive} />
     </div>
