@@ -110,6 +110,8 @@ describe("remaining compact user control accessibility", () => {
     expect(boardPageCode).toContain('aria-label="동물 게시판 유형"');
     expect(boardPageCode).not.toContain("ANIMAL_BOARD_CATALOG.filter");
     expect(boardPageCode).not.toContain("candidate.label} 게시판");
+    expect(boardPageCode).toContain("FeedInlineSearchForm");
+    expect(boardPageCode).toContain('searchIn === "TITLE"');
   });
 
   it("keeps feed error recovery actions mobile-safe without legacy 30px buttons", () => {
