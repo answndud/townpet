@@ -106,15 +106,15 @@
     "search:check:cases": "tsx scripts/check-search-cases.ts"
   },
   "dependencies": {
-    "@auth/prisma-adapter": "^2.7.4",
+    "@auth/prisma-adapter": "^2.11.3",
     "@prisma/client": "^5.22.0",
-    "@vercel/blob": "^2.3.1",
-    "next": "16.1.5",
-    "next-auth": "5.0.0-beta.30",
-    "react": "19.2.3",
-    "react-dom": "19.2.3",
+    "@vercel/blob": "^2.8.0",
+    "next": "16.3.1",
+    "next-auth": "5.0.0-beta.32",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
     "resend": "^4.1.0",
-    "sharp": "^0.34.5",
+    "sharp": "^0.35.3",
     "suneditor": "^2.47.10",
     "suneditor-react": "^3.6.1",
     "zod": "^4.3.6"
@@ -123,17 +123,23 @@
     "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
     "@vitest/coverage-v8": "^4.0.18",
     "dotenv": "^17.3.1",
     "eslint": "^9",
-    "eslint-config-next": "16.1.5",
+    "eslint-config-next": "16.3.1",
     "prisma": "^5.22.0",
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
     "typescript": "^5",
     "vitest": "^4.0.18"
+  },
+  "pnpm": {
+    "overrides": {
+      "@babel/core": "7.29.6",
+      "undici": "6.28.0"
+    }
   },
   "packageManager": "pnpm@9.12.3+sha512.cce0f9de9c5a7c95bef944169cc5dfe8741abfb145078c0d508b868056848a87c81e626246cb60967cbd7fd29a6c062ef73ff840d96b3c86c40ac92cf4a813ee"
 }
