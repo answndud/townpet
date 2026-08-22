@@ -105,7 +105,11 @@ async function withMigrationDatabaseUrl<T>(operation: () => Promise<T>) {
   const runtimeDatabaseUrl = process.env.DATABASE_URL;
   const directDatabaseUrl = process.env.DIRECT_URL?.trim();
 
-  if (directDatabaseUrl && hasTruthyFlag(process.env.VERCEL_USE_DIRECT_MIGRATION_URL)) {
+  if (
+    directDatabaseUrl &&
+    hasTruthyFlag(process.env.VERCEL_USE_DIRECT_MIGRATION_URL) &&
+    !isVercelBuild()
+  ) {
     process.env.DATABASE_URL = directDatabaseUrl;
   }
 
@@ -123,6 +127,10 @@ async function withMigrationDatabaseUrl<T>(operation: () => Promise<T>) {
 function hasTruthyFlag(value: string | undefined) {
   const normalized = value?.trim().toLowerCase() ?? "";
   return normalized === "1" || normalized === "true" || normalized === "yes";
+}
+
+function isVercelBuild(env: NodeJS.ProcessEnv = process.env) {
+  return Boolean(env.VERCEL) || Boolean(env.VERCEL_ENV?.trim());
 }
 
 function extractFailedCheckKeys(output: string) {
