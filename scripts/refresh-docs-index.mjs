@@ -19,8 +19,8 @@ function stableSort(items) {
   });
 }
 
-function gitLsFiles(...paths) {
-  return execFileSync("git", ["ls-files", "-z", ...paths], {
+function gitHeadFiles(...paths) {
+  return execFileSync("git", ["ls-tree", "-r", "--name-only", "-z", "HEAD", "--", ...paths], {
     cwd: repoRoot,
     encoding: "utf8",
   })
@@ -38,8 +38,8 @@ function normalizeContent(content) {
   return content.replaceAll("\r\n", "\n").normalize("NFC");
 }
 
-const activeDocsFiles = stableSort(gitLsFiles("docs").filter((path) => path.endsWith(".md")));
-const businessDocsFiles = stableSort(gitLsFiles("business").filter((path) => path.endsWith(".md")));
+const activeDocsFiles = stableSort(gitHeadFiles("docs").filter((path) => path.endsWith(".md")));
+const businessDocsFiles = stableSort(gitHeadFiles("business").filter((path) => path.endsWith(".md")));
 const docsFiles = stableSort([...new Set([...activeDocsFiles, ...businessDocsFiles])]);
 
 const packageJson = readJson(join(appDir, "package.json"));
@@ -48,7 +48,7 @@ const scripts = stableSort(Object.keys(packageJson.scripts ?? {}));
 const sortedMigrationDirs = stableSort(
   Array.from(
     new Set(
-      gitLsFiles("app/prisma/migrations")
+      gitHeadFiles("app/prisma/migrations")
         .filter((path) => path.startsWith("app/prisma/migrations/"))
         .map((path) => path.split("/")[3])
         .filter(Boolean),
@@ -57,7 +57,7 @@ const sortedMigrationDirs = stableSort(
 );
 
 const apiRoutes = stableSort(
-  gitLsFiles("app/src/app/api").filter(
+  gitHeadFiles("app/src/app/api").filter(
     (path) => path.endsWith("/route.ts") || path.endsWith("/route.tsx"),
   ),
 );
