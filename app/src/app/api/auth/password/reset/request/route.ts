@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 
 import { passwordResetRequestSchema } from "@/lib/validations/auth";
+import { enforceAuthEmailDeliveryRateLimit } from "@/server/auth-email-rate-limit";
 import { monitorUnhandledError } from "@/server/error-monitor";
 import { getClientIp } from "@/server/request-context";
 import { sendPasswordResetEmail } from "@/server/email";
@@ -16,6 +17,7 @@ export async function POST(request: NextRequest) {
       key: `auth:password:reset:${clientIp}`,
       limit: 5,
       windowMs: 60_000,
+      failureMode: "closed",
     });
 
     const body = await request.json();
@@ -26,6 +28,11 @@ export async function POST(request: NextRequest) {
         message: "입력값이 올바르지 않습니다.",
       });
     }
+
+    await enforceAuthEmailDeliveryRateLimit({
+      email: parsed.data.email,
+      clientIp,
+    });
 
     const result = await requestPasswordReset({ input: parsed.data });
 
