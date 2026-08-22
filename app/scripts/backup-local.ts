@@ -108,7 +108,7 @@ async function main() {
     return;
   }
 
-  const backupPath = process.argv[3];
+  const backupPath = process.argv.slice(3).find((argument) => argument !== "--");
   if (!backupPath) throw new Error("Usage: pnpm ops:db:backup:verify:local -- <backup-file>");
   await verifyLocalBackup(backupPath);
   console.log(`[backup-local] backup verified: ${resolve(backupPath)}`);
