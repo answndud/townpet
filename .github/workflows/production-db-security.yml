@@ -1,0 +1,50 @@
+name: production-db-security
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Every Monday at 02:45 UTC (KST 11:45)
+    - cron: "45 2 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  db-security:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: app
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DB_SECURITY_EXPECTED_ROLE: ${{ vars.DB_SECURITY_EXPECTED_ROLE }}
+      DB_SECURITY_REQUIRE_RLS: ${{ vars.DB_SECURITY_REQUIRE_RLS || '1' }}
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Validate database security configuration
+        run: |
+          if [ -z "${DATABASE_URL}" ]; then
+            echo "::error::Missing required secret: DATABASE_URL"
+            exit 1
+          fi
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v5
+        with:
+          version: 9.12.3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: app/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check production database role and RLS
+        run: pnpm ops:check:db-security

@@ -6,7 +6,7 @@ on:
     # Every 15 minutes
     - cron: "*/15 * * * *"
   workflow_run:
-    workflows: ["production-backup"]
+    workflows: ["production-backup", "production-db-security"]
     types: [completed]
 
 permissions:
