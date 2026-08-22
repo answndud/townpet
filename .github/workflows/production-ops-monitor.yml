@@ -6,7 +6,7 @@ on:
     # Every 15 minutes
     - cron: "*/15 * * * *"
   workflow_run:
-    workflows: ["production-backup", "production-db-security"]
+    workflows: ["production-db-security"]
     types: [completed]
 
 permissions:
@@ -65,15 +65,13 @@ jobs:
         env:
           EVENT_NAME: ${{ github.event_name }}
           WORKFLOW_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          BACKUP_CONCLUSION: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.conclusion || 'n/a' }}
         run: |
           set -euo pipefail
           payload="$(jq -n \
             --arg text "TownPet production operational check failed" \
             --arg event "${EVENT_NAME}" \
             --arg workflow "${WORKFLOW_URL}" \
-            --arg backup "${BACKUP_CONCLUSION}" \
-            '{text: $text, event: $event, workflow: $workflow, backup_conclusion: $backup}')"
+            '{text: $text, event: $event, workflow: $workflow}')"
           curl --fail-with-body --silent --show-error \
             --request POST \
             --header 'content-type: application/json' \

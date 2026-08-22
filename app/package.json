@@ -27,6 +27,8 @@
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
     "db:restore:local": "tsx scripts/restore-local-dev.ts",
+    "ops:db:backup:local": "tsx scripts/backup-local.ts",
+    "ops:db:backup:verify:local": "tsx scripts/backup-local.ts --verify",
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
     "db:sync:neighborhoods": "tsx scripts/sync-neighborhoods.ts",
