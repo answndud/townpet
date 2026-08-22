@@ -86,6 +86,7 @@
     "ops:check:security-env": "tsx scripts/check-security-env.ts",
     "ops:check:security-env:build": "NODE_ENV=production SECURITY_ENV_STRICT=1 tsx scripts/check-security-env.ts --profile=build",
     "ops:check:security-env:strict": "NODE_ENV=production SECURITY_ENV_STRICT=1 tsx scripts/check-security-env.ts",
+    "ops:check:db-security": "tsx scripts/check-db-security.ts",
     "ops:check:sentry": "tsx scripts/check-sentry-ingestion.ts",
     "ops:evidence": "tsx scripts/run-ops-evidence.ts",
     "ops:evidence:solo": "OPS_EVIDENCE_PROFILE=solo tsx scripts/run-ops-evidence.ts",
