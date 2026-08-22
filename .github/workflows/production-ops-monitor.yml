@@ -51,29 +51,44 @@ jobs:
     needs: [health]
     runs-on: ubuntu-latest
     env:
-      OPS_ALERT_WEBHOOK_URL: ${{ secrets.OPS_ALERT_WEBHOOK_URL }}
+      SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
 
     steps:
-      - name: Validate alert destination
+      - name: Validate Sentry alert destination
         run: |
-          if [ -z "${OPS_ALERT_WEBHOOK_URL}" ]; then
-            echo "::error::Missing required secret: OPS_ALERT_WEBHOOK_URL"
+          if [ -z "${SENTRY_DSN}" ]; then
+            echo "::error::Missing required secret: SENTRY_DSN"
             exit 1
           fi
 
-      - name: Send operational alert
+      - name: Send operational alert to Sentry
         env:
           EVENT_NAME: ${{ github.event_name }}
           WORKFLOW_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           set -euo pipefail
-          payload="$(jq -n \
-            --arg text "TownPet production operational check failed" \
-            --arg event "${EVENT_NAME}" \
-            --arg workflow "${WORKFLOW_URL}" \
-            '{text: $text, event: $event, workflow: $workflow}')"
-          curl --fail-with-body --silent --show-error \
-            --request POST \
-            --header 'content-type: application/json' \
-            --data "${payload}" \
-            "${OPS_ALERT_WEBHOOK_URL}"
+          node <<'NODE'
+          (async () => {
+          const dsn = new URL(process.env.SENTRY_DSN);
+          const projectId = dsn.pathname.split("/").filter(Boolean).pop();
+          if (!projectId || !dsn.username) throw new Error("Invalid SENTRY_DSN");
+          const endpoint = `${dsn.origin}/api/${projectId}/store/?sentry_version=7&sentry_key=${encodeURIComponent(dsn.username)}`;
+          const response = await fetch(endpoint, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+              event_id: crypto.randomUUID().replaceAll("-", ""),
+              timestamp: Date.now() / 1000,
+              platform: "github-actions",
+              level: "error",
+              message: "TownPet production operational check failed",
+              tags: { source: "production-ops-monitor", event: process.env.EVENT_NAME },
+              extra: { workflow: process.env.WORKFLOW_URL },
+            }),
+          });
+          if (!response.ok) throw new Error(`Sentry returned HTTP ${response.status}`);
+          })().catch((error) => {
+            console.error(error);
+            process.exit(1);
+          });
+          NODE
