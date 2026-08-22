@@ -72,6 +72,7 @@ describe("POST /api/auth/password/reset/confirm contract", () => {
       key: "auth:password:confirm:127.0.0.1",
       limit: 5,
       windowMs: 60_000,
+      failureMode: "closed",
     });
     expect(mockConfirmPasswordReset).toHaveBeenCalledWith({
       input: {

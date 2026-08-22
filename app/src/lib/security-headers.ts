@@ -38,8 +38,12 @@ function buildCspPolicy(params: CspPolicyParams) {
   ].join("; ");
 }
 
-export function isStrictCspEnforced(value?: string) {
+export function isStrictCspEnforced(value?: string, nodeEnv?: string) {
   const normalized = value?.trim().toLowerCase();
+  if (nodeEnv === "production" && !normalized) {
+    return true;
+  }
+
   return normalized === "1" || normalized === "true" || normalized === "yes";
 }
 
@@ -89,7 +93,7 @@ function buildStaticScriptSrc(isDevelopment: boolean) {
 
 export function resolveCspHeaders(params: ResolveCspHeadersParams) {
   const isProduction = params.nodeEnv === "production";
-  const enforceStrictCsp = isStrictCspEnforced(params.cspEnforceStrict);
+  const enforceStrictCsp = isStrictCspEnforced(params.cspEnforceStrict, params.nodeEnv);
   const nonce = params.nonce?.trim();
 
   if (!nonce) {

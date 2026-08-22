@@ -20,6 +20,7 @@ export type RegisterRateLimitRule = {
   limit: number;
   windowMs: number;
   reasonCode: RegisterRateLimitReasonCode;
+  failureMode?: "closed";
 };
 
 function normalizeRegisterFingerprint(value: string | null | undefined) {
@@ -42,6 +43,7 @@ export function buildRegisterPreValidationRateLimitRules(params: {
       limit: 6,
       windowMs: 10 * 60_000,
       reasonCode: "REGISTER_RATE_LIMIT_IP",
+      failureMode: "closed",
     },
   ];
 
@@ -52,6 +54,7 @@ export function buildRegisterPreValidationRateLimitRules(params: {
       limit: 4,
       windowMs: 10 * 60_000,
       reasonCode: "REGISTER_RATE_LIMIT_FINGERPRINT",
+      failureMode: "closed",
     });
   }
 
@@ -71,12 +74,14 @@ export function buildRegisterValidatedRateLimitRules(params: {
       limit: 3,
       windowMs: 30 * 60_000,
       reasonCode: "REGISTER_RATE_LIMIT_EMAIL_IP",
+      failureMode: "closed",
     },
     {
       key: `auth:register:email:${emailHash}`,
       limit: 5,
       windowMs: 24 * 60 * 60_000,
       reasonCode: "REGISTER_RATE_LIMIT_EMAIL",
+      failureMode: "closed",
     },
   ];
 }

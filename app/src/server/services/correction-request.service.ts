@@ -47,7 +47,7 @@ export async function createInformationCorrectionRequest({
     key: `correction-request:create:${ipHash}`,
     limit: 5,
     windowMs: 60 * 60 * 1000,
-    failureMode: "memory",
+    failureMode: "closed",
   });
 
   if (parsed.data.postId) {

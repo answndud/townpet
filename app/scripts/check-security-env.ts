@@ -89,7 +89,11 @@ export async function evaluateSecurityEnv(
   const nodeEnv = read(env, "NODE_ENV") || "development";
   const strictMode = hasTruthyFlag(read(env, "SECURITY_ENV_STRICT"));
   const enforceProdRules = nodeEnv === "production" || strictMode;
-  const strictCspEnabled = hasTruthyFlag(read(env, "CSP_ENFORCE_STRICT"));
+  const cspEnforceStrictValue = read(env, "CSP_ENFORCE_STRICT");
+  const strictCspEnabled =
+    nodeEnv === "production"
+      ? !cspEnforceStrictValue || hasTruthyFlag(cspEnforceStrictValue)
+      : hasTruthyFlag(cspEnforceStrictValue);
   const results: CheckResult[] = [];
 
   const authSecret = resolveAuthSecret(env);
@@ -119,8 +123,8 @@ export async function evaluateSecurityEnv(
     detail: !enforceProdRules
       ? "development/test에서는 local tooling 호환을 위해 완화된 CSP가 사용됩니다."
       : strictCspEnabled
-        ? "production API 응답에는 strict nonce CSP를 유지하고, 사용자-facing HTML shell은 Next hydration 호환을 위해 fallback CSP를 사용합니다."
-        : "현재 production은 hydration-safe fallback CSP를 enforce합니다. strict nonce CSP는 Next hydration 호환성 검증 후 제한적으로만 적용합니다.",
+        ? "production은 strict nonce CSP를 기본 적용하고, 명시적 비활성화 없이는 fallback CSP를 사용하지 않습니다."
+        : "현재 production에서 CSP strict enforcement가 명시적으로 비활성화되어 fallback CSP를 사용합니다.",
   });
 
   const demoAuthFallbackEnabled = hasTruthyFlag(read(env, "ENABLE_DEMO_AUTH_FALLBACK"));

@@ -69,6 +69,25 @@ describe("POST /api/upload contract", () => {
     mockSaveUploadedImage.mockResolvedValue({ url: "/media/uploads/image.webp" } as never);
   });
 
+  it("rejects an oversized multipart request before parsing form data", async () => {
+    const request = new Request("http://localhost/api/upload", {
+      method: "POST",
+      headers: { "content-length": String(2 * 1024 * 1024 + 256 * 1024 + 1) },
+      body: "ignored",
+    }) as NextRequest;
+
+    const response = await POST(request);
+    const payload = await response.json();
+
+    expect(response.status).toBe(413);
+    expect(payload).toMatchObject({
+      ok: false,
+      error: { code: "REQUEST_TOO_LARGE" },
+    });
+    expect(mockGetGuestPostPolicy).not.toHaveBeenCalled();
+    expect(mockSaveUploadedImage).not.toHaveBeenCalled();
+  });
+
   it("returns INVALID_FILE when file is missing", async () => {
     const request = new Request("http://localhost/api/upload", {
       method: "POST",

@@ -16,6 +16,7 @@ export async function POST(request: NextRequest) {
       key: `auth:password:confirm:${clientIp}`,
       limit: 5,
       windowMs: 60_000,
+      failureMode: "closed",
     });
 
     const body = await request.json();

@@ -28,13 +28,12 @@ beforeEach(() => {
 });
 
 describe("resolveCspHeaders", () => {
-  it("uses static fallback CSP with strict report-only policy in production", () => {
+  it("enforces strict nonce CSP by default in production", () => {
     const result = resolveCspHeaders({ nodeEnv: "production", nonce: "nonce-a" });
 
-    expect(result.csp).toContain("script-src 'self' 'unsafe-inline'");
-    expect(result.csp).not.toContain("'nonce-nonce-a'");
-    expect(result.cspReportOnly).toContain("script-src 'self' 'nonce-nonce-a'");
-    expect(result.cspReportOnly).not.toContain("script-src 'self' 'unsafe-inline'");
+    expect(result.csp).toContain("script-src 'self' 'nonce-nonce-a' 'strict-dynamic'");
+    expect(result.csp).not.toContain("'unsafe-inline'");
+    expect(result.cspReportOnly).toBeNull();
   });
 
   it("enforces strict nonce CSP in production when the flag is enabled", () => {

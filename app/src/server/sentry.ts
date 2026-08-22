@@ -1,7 +1,7 @@
 import { randomUUID } from "crypto";
 
 import { runtimeEnv } from "@/lib/env";
-import { logger, serializeError } from "@/server/logger";
+import { logger, redactLogValue, serializeError } from "@/server/logger";
 
 type SentryConfig = {
   host: string;
@@ -69,7 +69,7 @@ export async function captureException(error: unknown, context?: SentryContext) 
         message:
           serializedError.message ??
           (typeof error === "string" ? error : "Unknown server error"),
-        extra: context ?? {},
+        extra: redactLogValue(context ?? {}),
       }),
       signal: controller.signal,
       cache: "no-store",

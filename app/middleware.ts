@@ -186,7 +186,7 @@ function shouldUseHydrationSafeShellCsp(request: NextRequest) {
     return false;
   }
 
-  return !isStrictCspEnforced(process.env.CSP_ENFORCE_STRICT);
+  return !isStrictCspEnforced(process.env.CSP_ENFORCE_STRICT, process.env.NODE_ENV);
 }
 
 export async function middleware(request: NextRequest) {

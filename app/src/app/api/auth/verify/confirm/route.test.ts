@@ -73,6 +73,7 @@ describe("POST /api/auth/verify/confirm contract", () => {
       key: "auth:verify-confirm:127.0.0.1",
       limit: 5,
       windowMs: 60_000,
+      failureMode: "closed",
     });
     expect(mockConfirmEmailVerification).toHaveBeenCalledWith({
       input: { token: "verify-token-verify-token-verify-1" },

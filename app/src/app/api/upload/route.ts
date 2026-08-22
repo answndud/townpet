@@ -13,11 +13,29 @@ import { ServiceError } from "@/server/services/service-error";
 import { cleanupTemporaryUploadAssets } from "@/server/upload-asset.service";
 import { saveUploadedImage } from "@/server/upload";
 
+const MULTIPART_OVERHEAD_BYTES = 256 * 1024;
+
+function resolveUploadRequestLimitBytes(userId: string | null, guestMaxImageBytes: number) {
+  return (userId ? 12 * 1024 * 1024 : guestMaxImageBytes) + MULTIPART_OVERHEAD_BYTES;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const userId = await getCurrentUserId();
     const clientIp = getClientIp(request);
     const guestFingerprint = request.headers.get("x-guest-fingerprint")?.trim() || undefined;
+    const guestMaxImageBytes = GUEST_MAX_IMAGE_BYTES;
+
+    const contentLength = Number(request.headers.get("content-length"));
+    if (
+      Number.isFinite(contentLength) &&
+      contentLength > resolveUploadRequestLimitBytes(userId, guestMaxImageBytes)
+    ) {
+      return jsonError(413, {
+        code: "REQUEST_TOO_LARGE",
+        message: "업로드 요청 크기가 제한을 초과했습니다.",
+      });
+    }
 
     if (userId) {
       await assertUserInteractionAllowed(userId);
@@ -54,7 +72,7 @@ export async function POST(request: NextRequest) {
     }
 
     const uploaded = await saveUploadedImage(file, {
-      maxSizeBytes: userId ? undefined : GUEST_MAX_IMAGE_BYTES,
+        maxSizeBytes: userId ? undefined : guestMaxImageBytes,
       ownerUserId: userId ?? null,
       ownerGuestIdentity: userId
         ? undefined
