@@ -62,9 +62,13 @@ OAuth 연결 전 임시로 비워도 되는 값:
 - `KAKAO_CLIENT_ID`, `KAKAO_CLIENT_SECRET`
 - `NAVER_CLIENT_ID`, `NAVER_CLIENT_SECRET`
 
+운영 DB 권한 분리(권장):
+- `DATABASE_URL`: 앱 runtime 전용 최소 권한 role
+- `DIRECT_URL`: Prisma migration 전용 role/직접 연결
+- `DIRECT_URL`이 있으면 `build:vercel`의 migration만 이 URL을 사용하고, `next build`와 runtime은 `DATABASE_URL`을 계속 사용한다.
+
 선택(운영 고도화):
 - `SENTRY_DSN`
-- `DIRECT_URL` (현재 runtime 필수는 아니지만 migration/debug 용도로 둘 수 있음)
 
 넣지 말아야 하는 값:
 - `ENABLE_DEMO_AUTH_FALLBACK`
