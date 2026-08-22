@@ -105,7 +105,7 @@ async function withMigrationDatabaseUrl<T>(operation: () => Promise<T>) {
   const runtimeDatabaseUrl = process.env.DATABASE_URL;
   const directDatabaseUrl = process.env.DIRECT_URL?.trim();
 
-  if (directDatabaseUrl) {
+  if (directDatabaseUrl && hasTruthyFlag(process.env.VERCEL_USE_DIRECT_MIGRATION_URL)) {
     process.env.DATABASE_URL = directDatabaseUrl;
   }
 

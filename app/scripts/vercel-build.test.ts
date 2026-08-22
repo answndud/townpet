@@ -14,6 +14,7 @@ describe("vercel-build security preflight", () => {
     delete process.env.VERCEL_TARGET_ENV;
     delete process.env.DATABASE_URL;
     delete process.env.DIRECT_URL;
+    delete process.env.VERCEL_USE_DIRECT_MIGRATION_URL;
   });
 
   it("enables build preflight for production vercel targets", () => {
@@ -147,6 +148,7 @@ describe("vercel-build security preflight", () => {
     process.env.VERCEL_ENV = "production";
     process.env.DATABASE_URL = "postgres://runtime-role/db";
     process.env.DIRECT_URL = "postgres://migration-role/db";
+    process.env.VERCEL_USE_DIRECT_MIGRATION_URL = "1";
     const observedUrls: Array<string | undefined> = [];
     const commandRunner = vi.fn().mockImplementation(async (_command, args) => {
       observedUrls.push(process.env.DATABASE_URL);
@@ -163,6 +165,27 @@ describe("vercel-build security preflight", () => {
       "postgres://runtime-role/db",
     ]);
     expect(process.env.DATABASE_URL).toBe("postgres://runtime-role/db");
+  });
+
+  it("keeps the reachable runtime database URL when direct migration opt-in is absent", async () => {
+    process.env.VERCEL_ENV = "production";
+    process.env.DATABASE_URL = "postgres://pooler-role/db";
+    process.env.DIRECT_URL = "postgres://direct-role/db";
+    const observedUrls: Array<string | undefined> = [];
+    const commandRunner = vi.fn().mockImplementation(async () => {
+      observedUrls.push(process.env.DATABASE_URL);
+      return { code: 0, output: "" };
+    });
+
+    await runBuildVercel(commandRunner);
+
+    expect(observedUrls).toEqual([
+      "postgres://pooler-role/db",
+      "postgres://pooler-role/db",
+      "postgres://pooler-role/db",
+      "postgres://pooler-role/db",
+    ]);
+    expect(process.env.DATABASE_URL).toBe("postgres://pooler-role/db");
   });
 
   it("stops the build before prisma generate when prisma deploy fails", async () => {

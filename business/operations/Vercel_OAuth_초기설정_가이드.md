@@ -64,8 +64,8 @@ OAuth 연결 전 임시로 비워도 되는 값:
 
 운영 DB 권한 분리(권장):
 - `DATABASE_URL`: 앱 runtime 전용 최소 권한 role
-- `DIRECT_URL`: Prisma migration 전용 role/직접 연결
-- `DIRECT_URL`이 있으면 `build:vercel`의 migration만 이 URL을 사용하고, `next build`와 runtime은 `DATABASE_URL`을 계속 사용한다.
+- `DIRECT_URL`: Prisma migration 전용 role/직접 연결. Vercel에서 해당 endpoint 연결을 검증한 경우에만 사용한다.
+- `VERCEL_USE_DIRECT_MIGRATION_URL=1`: 검증된 `DIRECT_URL`을 `build:vercel`의 migration에 사용하도록 명시적으로 opt-in한다. 기본값은 Vercel에서 연결 가능한 `DATABASE_URL` pooler 경로이며, `next build`와 runtime은 항상 `DATABASE_URL`을 사용한다.
 
 선택(운영 고도화):
 - `SENTRY_DSN`
