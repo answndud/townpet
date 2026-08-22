@@ -3,6 +3,7 @@ import { Resend } from "resend";
 import { runtimeEnv } from "@/lib/env";
 import { logger, serializeError } from "@/server/logger";
 import { ServiceError } from "@/server/services/service-error";
+import { captureException } from "@/server/sentry";
 
 let hasWarnedMissingApiKey = false;
 
@@ -54,6 +55,13 @@ async function sendEmail(params: {
       throw result.error;
     }
   } catch (error) {
+    await captureException(error, {
+      alert: "email_delivery_failure",
+      provider: "resend",
+      kind: params.kind,
+      required,
+    });
+
     if (required && runtimeEnv.isProduction) {
       logger.error("필수 이메일 전송에 실패했습니다.", {
         kind: params.kind,
