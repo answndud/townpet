@@ -1,0 +1,81 @@
+name: production-ops-monitor
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Every 15 minutes
+    - cron: "*/15 * * * *"
+  workflow_run:
+    workflows: ["production-backup"]
+    types: [completed]
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  health:
+    if: ${{ github.event_name != 'workflow_run' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: app
+    env:
+      OPS_BASE_URL: ${{ vars.OPS_BASE_URL || 'https://townpet.vercel.app' }}
+      OPS_HEALTH_INTERNAL_TOKEN: ${{ secrets.HEALTH_INTERNAL_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v5
+        with:
+          version: 9.12.3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: app/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check production health
+        run: pnpm ops:check:health
+
+  alert:
+    if: ${{ always() && (needs.health.result == 'failure' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'failure')) }}
+    needs: [health]
+    runs-on: ubuntu-latest
+    env:
+      OPS_ALERT_WEBHOOK_URL: ${{ secrets.OPS_ALERT_WEBHOOK_URL }}
+
+    steps:
+      - name: Validate alert destination
+        run: |
+          if [ -z "${OPS_ALERT_WEBHOOK_URL}" ]; then
+            echo "::error::Missing required secret: OPS_ALERT_WEBHOOK_URL"
+            exit 1
+          fi
+
+      - name: Send operational alert
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          WORKFLOW_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          BACKUP_CONCLUSION: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.conclusion || 'n/a' }}
+        run: |
+          set -euo pipefail
+          payload="$(jq -n \
+            --arg text "TownPet production operational check failed" \
+            --arg event "${EVENT_NAME}" \
+            --arg workflow "${WORKFLOW_URL}" \
+            --arg backup "${BACKUP_CONCLUSION}" \
+            '{text: $text, event: $event, workflow: $workflow, backup_conclusion: $backup}')"
+          curl --fail-with-body --silent --show-error \
+            --request POST \
+            --header 'content-type: application/json' \
+            --data "${payload}" \
+            "${OPS_ALERT_WEBHOOK_URL}"
