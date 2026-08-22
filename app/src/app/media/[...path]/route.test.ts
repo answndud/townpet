@@ -7,6 +7,11 @@ import { findStoredUploadSourceByPathname } from "@/server/upload-asset.service"
 import { readFile } from "fs/promises";
 
 import { getCurrentUserId } from "@/server/auth";
+import { get as getBlob } from "@vercel/blob";
+
+vi.mock("@vercel/blob", () => ({
+  get: vi.fn(),
+}));
 
 vi.mock("@/server/auth", () => ({
   getCurrentUserId: vi.fn(),
@@ -28,6 +33,7 @@ const mockMonitorUnhandledError = vi.mocked(monitorUnhandledError);
 const mockFindStoredUploadSourceByPathname = vi.mocked(findStoredUploadSourceByPathname);
 const mockReadFile = vi.mocked(readFile);
 const mockGetCurrentUserId = vi.mocked(getCurrentUserId);
+const mockGetBlob = vi.mocked(getBlob);
 
 describe("GET /media/[...path]", () => {
   beforeEach(() => {
@@ -35,6 +41,7 @@ describe("GET /media/[...path]", () => {
     mockFindStoredUploadSourceByPathname.mockReset();
     mockReadFile.mockReset();
     mockGetCurrentUserId.mockReset();
+    mockGetBlob.mockReset();
     vi.restoreAllMocks();
   });
 
@@ -128,6 +135,39 @@ describe("GET /media/[...path]", () => {
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toBe("image/webp");
     expect(await response.text()).toBe("blob-image");
+  });
+
+  it("serves private blob assets only through the owner-checked proxy", async () => {
+    mockFindStoredUploadSourceByPathname.mockResolvedValue({
+      sourceUrl: "https://blob.public.blob.vercel-storage.com/uploads/private.webp",
+      storageProvider: "BLOB",
+      visibility: "PRIVATE",
+      ownerUserId: "owner-1",
+    } as never);
+    mockGetCurrentUserId.mockResolvedValue("owner-1");
+    mockGetBlob.mockResolvedValue({
+      statusCode: 200,
+      stream: new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode("private-image"));
+          controller.close();
+        },
+      }),
+      headers: new Headers({ "content-type": "image/webp", "content-length": "13" }),
+      blob: {} as never,
+    } as never);
+
+    const response = await GET(
+      new Request("http://localhost/media/uploads/private.webp") as NextRequest,
+      { params: Promise.resolve({ path: ["uploads", "private.webp"] }) },
+    );
+
+    expect(response.status).toBe(200);
+    expect(await response.text()).toBe("private-image");
+    expect(mockGetBlob).toHaveBeenCalledWith(
+      "https://blob.public.blob.vercel-storage.com/uploads/private.webp",
+      expect.objectContaining({ access: "private", useCache: false }),
+    );
   });
 
   it("rejects stored sources that do not match the requested trusted pathname", async () => {

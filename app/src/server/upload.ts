@@ -38,6 +38,7 @@ const SCRIPT_PAYLOAD_PATTERNS = [
 
 type SaveUploadedImageOptions = {
   maxSizeBytes?: number;
+  visibility?: "PUBLIC" | "PRIVATE";
   ownerUserId?: string | null;
   ownerGuestIdentity?: {
     ip: string;
@@ -319,6 +320,7 @@ async function registerStoredUploadAsset(params: {
   thumbnailUrl?: string | null;
   width?: number;
   height?: number;
+  visibility?: "PUBLIC" | "PRIVATE";
 }) {
   await registerUploadAsset({
     url: params.url,
@@ -330,6 +332,7 @@ async function registerStoredUploadAsset(params: {
     thumbnailUrl: params.thumbnailUrl ?? null,
     width: params.width,
     height: params.height,
+    visibility: params.visibility,
   });
 }
 
@@ -347,6 +350,7 @@ async function saveHostedUpload(params: {
   ownerUserId?: string | null;
   ownerGuestIpHash?: string | null;
   ownerGuestFingerprintHash?: string | null;
+  visibility: "PUBLIC" | "PRIVATE";
 }) {
   if (!runtimeEnv.blobReadWriteToken) {
     throw new Error("blob token missing");
@@ -359,14 +363,14 @@ async function saveHostedUpload(params: {
 
   const [blob, thumbnailBlob] = await Promise.all([
     put(`uploads/${mainFilename}`, params.processed.main.buffer, {
-      access: "public",
+      access: params.visibility === "PRIVATE" ? "private" : "public",
       addRandomSuffix: false,
       contentType: params.processed.main.mimeType,
       token: runtimeEnv.blobReadWriteToken,
     }),
     thumbnailFilename && params.processed.thumbnail
       ? put(`uploads/${thumbnailFilename}`, params.processed.thumbnail.buffer, {
-          access: "public",
+          access: params.visibility === "PRIVATE" ? "private" : "public",
           addRandomSuffix: false,
           contentType: params.processed.thumbnail.mimeType,
           token: runtimeEnv.blobReadWriteToken,
@@ -385,6 +389,7 @@ async function saveHostedUpload(params: {
       thumbnailUrl: thumbnailBlob?.url ?? null,
       width: params.processed.main.width,
       height: params.processed.main.height,
+      visibility: params.visibility,
     });
   } catch (error) {
     try {
@@ -476,6 +481,7 @@ export async function saveUploadedImage(file: File, options?: SaveUploadedImageO
   const arrayBuffer = await file.arrayBuffer();
   const rawBuffer = Buffer.from(arrayBuffer);
   const maxSizeBytes = options?.maxSizeBytes ?? MAX_UPLOAD_SIZE_BYTES;
+  const visibility = options?.visibility ?? "PUBLIC";
 
   if (rawBuffer.byteLength === 0) {
     throw new ServiceError("빈 파일은 업로드할 수 없습니다.", "EMPTY_FILE", 400);
@@ -506,7 +512,16 @@ export async function saveUploadedImage(file: File, options?: SaveUploadedImageO
       ownerUserId: options?.ownerUserId ?? null,
       ownerGuestIpHash: guestOwnership?.ipHash ?? null,
       ownerGuestFingerprintHash: guestOwnership?.fingerprintHash ?? null,
+      visibility,
     });
+  }
+
+  if (visibility === "PRIVATE") {
+    throw new ServiceError(
+      "비공개 이미지는 private Blob storage가 설정된 환경에서만 저장할 수 있습니다.",
+      "PRIVATE_UPLOAD_STORAGE_NOT_CONFIGURED",
+      503,
+    );
   }
 
   if (isHostedRuntime) {

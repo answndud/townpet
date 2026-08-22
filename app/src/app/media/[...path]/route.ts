@@ -1,6 +1,7 @@
 import { readFile } from "fs/promises";
 import path from "path";
 import { NextRequest, NextResponse } from "next/server";
+import { get as getBlob } from "@vercel/blob";
 
 import {
   getTrustedUploadPathname,
@@ -8,6 +9,7 @@ import {
 } from "@/lib/upload-url";
 import { monitorUnhandledError } from "@/server/error-monitor";
 import { getCurrentUserId } from "@/server/auth";
+import { runtimeEnv } from "@/lib/env";
 import { findStoredUploadSourceByPathname } from "@/server/upload-asset.service";
 
 export const runtime = "nodejs";
@@ -61,9 +63,12 @@ function normalizeImageContentType(contentType: string | null) {
 function buildMediaHeaders(params: {
   contentType?: string | null;
   contentLength?: string | null;
+  visibility?: "PUBLIC" | "PRIVATE";
 }) {
   const headers = new Headers({
-    "Cache-Control": "public, max-age=31536000, immutable",
+    "Cache-Control": params.visibility === "PRIVATE"
+      ? "private, no-store"
+      : "public, max-age=31536000, immutable",
     "Cross-Origin-Resource-Policy": "same-site",
     "X-Content-Type-Options": "nosniff",
   });
@@ -172,12 +177,19 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       }
     }
 
-    const upstream = await fetch(storedSource.sourceUrl, {
-      method: "GET",
-      cache: "force-cache",
-    });
+    const upstream = storedSource.visibility === "PRIVATE"
+      ? await getBlob(storedSource.sourceUrl, {
+          access: "private",
+          token: runtimeEnv.blobReadWriteToken,
+          useCache: false,
+        })
+      : await fetch(storedSource.sourceUrl, {
+          method: "GET",
+          cache: "force-cache",
+        });
 
-    if (!upstream.ok || !upstream.body) {
+    const upstreamBody = upstream && ("stream" in upstream ? upstream.stream : upstream.body);
+    if (!upstream || ("ok" in upstream && !upstream.ok) || !upstreamBody) {
       return NextResponse.json(
         {
           ok: false,
@@ -191,7 +203,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     }
 
     const upstreamContentType = normalizeImageContentType(
-      upstream.headers.get("content-type"),
+      "headers" in upstream ? upstream.headers.get("content-type") : null,
     );
     if (!upstreamContentType) {
       return NextResponse.json(
@@ -206,11 +218,12 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    return new Response(upstream.body, {
+    return new Response(upstreamBody, {
       status: 200,
       headers: buildMediaHeaders({
         contentType: upstreamContentType,
-        contentLength: upstream.headers.get("content-length"),
+        contentLength: "headers" in upstream ? upstream.headers.get("content-length") : null,
+        visibility: storedSource.visibility,
       }),
     });
   } catch (error) {

@@ -176,6 +176,9 @@ export async function registerUploadAsset({
   if (!storageKey || !storageProvider) {
     throw new Error(`Untrusted upload url cannot be registered: ${url}`);
   }
+  if (visibility === UploadAssetVisibility.PRIVATE && storageProvider === UploadStorageProvider.LOCAL) {
+    throw new Error("Private upload assets cannot use public local storage.");
+  }
   if (thumbnailUrl && !thumbnailStorageKey) {
     throw new Error(`Untrusted upload thumbnail url cannot be registered: ${thumbnailUrl}`);
   }
