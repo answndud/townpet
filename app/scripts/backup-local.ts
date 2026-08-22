@@ -1,6 +1,6 @@
 import { config } from "dotenv";
 import { existsSync } from "node:fs";
-import { copyFile, mkdir, mkdtemp, rm, stat } from "node:fs/promises";
+import { chmod, copyFile, mkdir, mkdtemp, rm, stat } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { basename, dirname, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
@@ -75,6 +75,7 @@ export async function createLocalBackup(
     runner("pg_dump", ["--format=custom", "--no-owner", "--file", dumpPath, env.DATABASE_URL!.trim()]);
     runner("age", ["--encrypt", "--recipient", env.BACKUP_AGE_RECIPIENT!.trim(), "--output", encryptedPath, dumpPath]);
     await copyFile(encryptedPath, outputPath);
+    await chmod(outputPath, 0o600);
     return { outputPath, bytes: (await stat(outputPath)).size };
   } finally {
     await rm(temporaryDir, { recursive: true, force: true });
