@@ -15,6 +15,7 @@ app/.turbo
 app/.swc
 app/.vercel
 tmp-*.log
+backups/
 
 # credentials / keys
 *.key
